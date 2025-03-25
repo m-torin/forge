@@ -1,0 +1,149 @@
+---
+description: "Monorepo Structure and Dependency Management Rules"
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/package.json", "pnpm-workspace.yaml"]
+alwaysApply: false
+---
+
+# Monorepo Structure and Dependency Management Rules
+
+## Purpose
+
+This document defines the standard structure and organization for the Next-Forge
+monorepo, including directory organization, naming conventions, and dependency
+management. Following these guidelines ensures consistency and maintainability
+across the entire codebase.
+
+## Directory Organization
+
+The monorepo is organized into specific top-level directories:
+- `apps/`: Contains all standalone applications
+- `packages/`: Contains all shared libraries and utilities
+- `docs/`: Contains documentation
+- `scripts/`: Contains build and utility scripts
+- `turbo/`: Contains Turborepo configuration
+
+## Application Structure
+
+Each application in the `apps/` directory should follow Next.js conventions:
+- `app/`: App Router components and routes
+- `components/`: Reusable UI components
+- `lib/`: Utility functions and helpers
+- `public/`: Static assets
+- `styles/`: CSS and styling files
+- `__tests__/`: Test files
+
+## Package Structure
+
+Each package in the `packages/` directory should follow a consistent structure:
+- `src/`: Source code
+- `dist/`: Build output (gitignored)
+- `__tests__/`: Test files
+- `tsconfig.json`: TypeScript configuration
+- `package.json`: Package metadata and scripts
+
+## Naming Conventions
+
+Use consistent naming conventions across the monorepo:
+- Use kebab-case for directory and file names
+- Use PascalCase for component files and classes
+- Use camelCase for utility functions and variables
+- Prefix internal packages with `@repo/` scope
+
+## Import Conventions
+
+**REQUIRED**: Always use package name imports for workspace packages:
+- Use relative imports for files within the same package
+- Use absolute imports for files across packages
+- Always use the `@repo/` scope for importing from other packages
+- Never use relative paths (../../) to reference workspace packages
+
+```typescript
+// Correct
+import { component } from '@repo/ui';
+
+// Incorrect
+import { component } from '../../packages/ui';
+```
+
+## Dependency Declaration
+
+Use `workspace:*` syntax for internal dependencies:
+
+```json
+// package.json
+{
+  "dependencies": {
+    "@repo/ui": "workspace:*"
+  }
+}
+```
+
+### Rules for Dependencies
+
+- Specify exact versions for external dependencies to ensure consistency
+- Use `pnpm-workspace.yaml` to define workspace packages
+- Keep development dependencies at the root level when possible
+- Only add package-specific dev dependencies when necessary
+- Use `pnpm -w add -D <package>` to add dev dependencies to the root
+
+## Version Management
+
+Keep dependency versions consistent across all packages:
+- Update dependencies using the root-level `pnpm bump-deps` command
+- Avoid manual version updates in individual package.json files
+- Use `pnpm -w add <package>` to add dependencies to the root workspace
+
+## Peer Dependencies
+
+Declare React and other framework libraries as peer dependencies in shared packages:
+
+```json
+// package.json
+{
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
+```
+
+- Specify compatible version ranges for peer dependencies
+- Include peer dependencies as dev dependencies for testing
+
+## Dependency Hoisting
+
+Use `.npmrc` to configure dependency hoisting behavior:
+- Set `hoist=false` to prevent dependency hoisting issues
+- Use `public-hoist-pattern[]` for specific packages that need hoisting
+
+## Lockfile Management
+
+Always commit `pnpm-lock.yaml` to version control:
+- Never manually edit the lockfile
+- Run `pnpm install --frozen-lockfile` in CI environments
+
+## Configuration Files
+
+- Root-level configuration files apply to all packages and applications
+- Package-specific configuration files override root-level configuration
+- Use `.gitignore` to exclude build artifacts and environment files
+
+## Common Issues and Solutions
+
+### Problem: Dependency version conflicts
+- **Cause**: Inconsistent versions across packages
+- **Solution**: Use workspace dependencies and root-level version management
+
+### Problem: Missing peer dependencies
+- **Cause**: Incorrect peer dependency declarations
+- **Solution**: Properly declare and version peer dependencies
+
+### Problem: Hoisting issues
+- **Cause**: Incorrect dependency hoisting configuration
+- **Solution**: Configure `.npmrc` with appropriate hoisting rules
+
+## Cross-References
+
+- For environment configuration, see [environment/structure.md](mdc:../environment/structure.md)
+- For testing setup, see [testing/configuration.md](mdc:../testing/configuration.md)
+- For TypeScript configuration, see [typescript/configuration.md](mdc:../typescript/configuration.md)

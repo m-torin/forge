@@ -1,0 +1,19 @@
+{
+  "name": "@repo/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./base.json": "./base.json",
+    "./nextjs.json": "./nextjs.json",
+    "./react-library.json": "./react-library.json",
+    "./library.json": "./library.json"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "lint": "eslint . --fix",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*"
+  }
+}

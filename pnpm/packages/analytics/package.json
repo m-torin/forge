@@ -1,0 +1,36 @@
+{
+  "name": "@repo/analytics",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@next/third-parties": "15.2.4",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@vercel/analytics": "^1.5.0",
+    "posthog-js": "^1.232.7",
+    "posthog-node": "^4.10.2",
+    "react": "catalog:",
+    "server-only": "^0.0.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "catalog:",
+    "vitest": "^3.0.9"
+  }
+}

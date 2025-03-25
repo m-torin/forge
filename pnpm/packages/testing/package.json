@@ -1,0 +1,40 @@
+{
+  "name": "@repo/testing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./vitest": "./src/vitest/index.ts",
+    "./vitest/server": "./src/vitest/server/index.ts",
+    "./vitest/mantine": "./src/vitest/mantine/index.ts",
+    "./cypress": "./src/cypress/index.ts",
+    "./shared": "./src/shared/index.ts",
+    "./generators": "./src/generators/vitest.config.js"
+  },
+  "bin": {
+    "migrate-testing-imports": "./scripts/migrate-imports.js",
+    "setup-vitest": "./scripts/setup-vitest.js"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo node_modules",
+    "generate-tests": "node src/vitest/scripts/generate-tests.ts",
+    "generate-tests:all": "node src/vitest/scripts/generate-tests-all.ts",
+    "migrate-imports": "node scripts/migrate-imports.js",
+    "setup-cypress": "node -e \"import('./src/cypress/scripts/setup.ts').then(m => m.setupCypress(process.argv[1] || '.'));\"",
+    "setup-vitest": "node scripts/setup-vitest.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@testing-library/cypress": "^10.0.3",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "^14.6.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "glob": "^11.0.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vitest": "catalog:"
+  }
+}

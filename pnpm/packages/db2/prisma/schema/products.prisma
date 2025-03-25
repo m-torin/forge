@@ -1,0 +1,301 @@
+//****************************************************************
+//** Product manaagement
+//****************************************************************
+
+model Crosscheck {
+    id String @id @default(cuid())
+
+    // Identification fields
+    name           String? @map("name")
+    mpn            String? @map("mpn")
+    upcA           BigInt? @unique @map("upc_a")
+    ean13          BigInt? @unique @map("ean_13")
+    gs1128         String? @unique @map("gs1_128")
+    upcE           BigInt? @unique @map("upc_e")
+    ean8           BigInt? @unique @map("ean_8")
+    asin           String? @unique @map("asin")
+    tcin           BigInt? @unique @map("tcin")
+    dpci           String? @unique @map("dpci")
+    themoviedbId   BigInt? @map("themoviedb_id")
+    hardcoverappId BigInt? @unique @map("hardcoverapp_id")
+
+    // Many-to-many
+    // [None for Crosscheck]
+    // Many-to-one
+    // [None for Crosscheck]
+    // One-to-many
+    // [None for Crosscheck]
+    // One-to-one
+    product          Product?        @relation(fields: [productId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+    productId        String?         @unique @map("product_id")
+    productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+    productVariantId String?         @unique @map("product_variant_id")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("crosschecks")
+}
+
+/// Core PIM merchandise entity that can be sold by multiple sellers/brands
+model Product {
+    id   String @id @default(cuid())
+    name String
+    slug String @unique
+
+    isStory Boolean @default(false) @map("is_story")
+
+    // Content
+    seoCopy      String? @map("seo_copy")
+    previewCopy  String? @map("preview_copy")
+    fullMarkdown String? @map("full_markdown")
+    seoName      String? @map("seo_name")
+
+    // Many-to-many
+    ProductsWithCategories    ProductsWithCategoriesJoin[]
+    ProductsWithCollections   ProductsWithCollectionsJoin[]
+    ProductsWithEvents        ProductsWithEventsJoin[]
+    ProductsWithLocations     ProductsWithLocationsJoin[]
+    ProductsWithFandoms       ProductsWithFandomsJoin[]
+    ProductsWithMetas         ProductsWithMetasJoin[]
+    ProductsWithStories       ProductsWithStoriesJoin[]
+    ProductsWithStoryCasts    ProductsWithStoryCastsJoin[]
+    ProductsWithStoryReleases ProductsWithStoryReleasesJoin[]
+    // Many-to-one
+    // [None for Product]
+    // One-to-many
+    variants                  ProductVariant[]
+    JollyRoger                JollyRoger[]
+    ProductPdpJoin            ProductPdpJoin[]
+    // One-to-one
+    crosscheck                Crosscheck?
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("products")
+}
+
+model ProductVariant {
+    id String @id @default(cuid())
+
+    releasedIn String? @map("released_in")
+    type       String?
+    mediaType  String? @map("media_type")
+    isbn10     String? @unique @map("isbn_10")
+    isbn13     String? @unique @map("isbn_13")
+    language   String?
+
+    // Many-to-many
+    // [None for ProductVariant]
+    // Many-to-one 
+    product               Product                 @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    productId             String                  @map("product_id")
+    // One-to-many
+    findReplaceRejects    FindReplaceReject[]
+    ProductVariantPdpJoin ProductVariantPdpJoin[]
+    // One-to-one
+    crosscheck            Crosscheck?
+
+    releasedOn DateTime? @map("released_on")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+
+    @@index([productId])
+    @@map("product_variants")
+}
+
+//****************************************************************
+//** JOIN TABLES - Product Detail Pages (PDPs)
+//****************************************************************
+
+model ProductPdpJoin {
+    // Essential fields
+    isAvailable Boolean  @default(true) @map("is_available")
+    priceHigh   Decimal? @map("price_high") @db.Decimal(10, 2)
+    priceSale   Decimal? @map("price_sale") @db.Decimal(10, 2)
+
+    // Additional details
+    sku          String?
+    relationType RelationType @default(RESELLER) @map("relation_type")
+
+    // Many-to-many
+    // [None for ProductPdpJoin]
+    // Many-to-one
+    product     Product          @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    productId   String           @map("product_id")
+    seller      Brand            @relation(fields: [sellerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    sellerId    String           @map("seller_id") // Using String to match Brand's ID type
+    // One-to-many
+    urlMappings UrlMappingJoin[]
+    // One-to-one
+    // [None for ProductPdpJoin]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@id([productId, sellerId])
+    @@index([sellerId])
+    @@index([productId])
+    @@map("product_pdps")
+}
+
+model ProductVariantPdpJoin {
+    // Essential fields
+    isAvailable Boolean  @default(true) @map("is_available")
+    priceHigh   Decimal? @map("price_high") @db.Decimal(10, 2)
+    priceSale   Decimal? @map("price_sale") @db.Decimal(10, 2)
+
+    // Additional details
+    sku          String?
+    relationType RelationType @default(RESELLER) @map("relation_type")
+
+    // Many-to-many
+    // [None for ProductVariantPdpJoin]
+    // Many-to-one
+    variant     ProductVariant   @relation(fields: [variantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    variantId   String           @map("variant_id") // Using String to match ProductVariant's ID type
+    seller      Brand            @relation(fields: [sellerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    sellerId    String           @map("seller_id") // Using String to match Brand's ID type
+    // One-to-many
+    urlMappings UrlMappingJoin[]
+    // One-to-one
+    // [None for ProductVariantPdpJoin]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@id([variantId, sellerId])
+    @@index([sellerId])
+    @@index([variantId])
+    @@map("product_variant_pdps")
+}
+
+//****************************************************************
+//** Product Relationships (Junction Tables)
+//****************************************************************
+
+model ProductsWithCollectionsJoin {
+    productId    String
+    collectionId String
+    assignedAt   DateTime @default(now())
+
+    product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, collectionId])
+    @@index([productId])
+    @@index([collectionId])
+    @@map("products_with_collections")
+}
+
+model ProductsWithEventsJoin {
+    productId  String
+    eventId    String
+    assignedAt DateTime @default(now())
+
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, eventId])
+    @@index([productId])
+    @@index([eventId])
+    @@map("products_with_events")
+}
+
+model ProductsWithLocationsJoin {
+    productId  String
+    locationId String
+    assignedAt DateTime @default(now())
+
+    product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    location Location @relation(fields: [locationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, locationId])
+    @@index([productId])
+    @@index([locationId])
+    @@map("products_with_locations")
+}
+
+model ProductsWithFandomsJoin {
+    productId  String
+    fandomId   String
+    assignedAt DateTime @default(now())
+
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    fandom  Fandom  @relation(fields: [fandomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, fandomId])
+    @@index([productId])
+    @@index([fandomId])
+    @@map("products_with_fandoms")
+}
+
+model ProductsWithMetasJoin {
+    productId  String
+    metaId     String
+    assignedAt DateTime @default(now())
+
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    meta    Meta    @relation(fields: [metaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, metaId])
+    @@index([productId])
+    @@index([metaId])
+    @@map("products_with_metas")
+}
+
+model ProductsWithStoriesJoin {
+    productId  String
+    storyId    String
+    assignedAt DateTime @default(now())
+
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    story   Story   @relation(fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, storyId])
+    @@index([productId])
+    @@index([storyId])
+    @@map("products_with_stories")
+}
+
+model ProductsWithStoryCastsJoin {
+    productId   String
+    storyCastId String
+    assignedAt  DateTime @default(now())
+
+    product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    storyCast StoryCast @relation(fields: [storyCastId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, storyCastId])
+    @@index([productId])
+    @@index([storyCastId])
+    @@map("products_with_storycasts")
+}
+
+model ProductsWithStoryReleasesJoin {
+    productId      String
+    storyReleaseId String
+    assignedAt     DateTime @default(now())
+
+    product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    storyRelease StoryRelease @relation(fields: [storyReleaseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId, storyReleaseId])
+    @@index([productId])
+    @@index([storyReleaseId])
+    @@map("products_with_story_releases")
+}
+
+model ProductsWithCategoriesJoin {
+    productId  String
+    categoryId String
+    assignedAt DateTime @default(now())
+
+    product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    category ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([productId]) // One category per product
+    @@index([categoryId])
+    @@map("products_with_categories")
+}

@@ -1,0 +1,60 @@
+---
+description: "Next-Forge Global Rules"
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.md", "**/*.json"]
+---
+
+# Next-Forge Global Rules
+
+This document provides high-level rules that apply to the entire Next-Forge
+monorepo. For detailed guidelines on specific topics, refer to the linked
+documents.
+
+## Project Structure
+- Follow the established monorepo structure:
+  - `apps/` for standalone applications
+  - `packages/` for shared libraries
+  - `docs/` for documentation
+  - `scripts/` for tooling and utilities
+
+## Build Process
+- All builds must be executed through pnpm workspace commands
+- Use `pnpm build` for the entire monorepo
+- Use `pnpm --filter <package-name> build` for individual packages
+- Test builds with `NODE_ENV=test pnpm build` to validate test configurations
+
+## Environment Variable Safety
+- Never commit real secrets to the repository
+- Always use .env.example files to document required variables
+- Add validation in application code for all environment variables
+- Enforce type safety for all environment access
+
+## Dependency Management
+- Use workspace dependencies with `workspace:*` syntax
+- Use catalog dependencies with `catalog:*` syntax for dependencies in pnpm-workspace.yaml
+- Keep dependencies consistent across packages
+- Run `pnpm bump-deps` to update dependencies across the monorepo
+- Avoid direct npm/yarn commands, always use pnpm
+
+## Module Format
+- **REQUIRED**: All packages MUST be written in TypeScript, not JavaScript
+- **REQUIRED**: All packages MUST use ESM format with direct TypeScript consumption (no builds)
+- **REQUIRED**: Use explicit file extensions in import paths (e.g., `.ts`, `.tsx`)
+- **REQUIRED**: Node 22+ is required for direct TypeScript ESM consumption
+
+## Code Quality
+- REQUIRED: All packages and applications MUST extend the TypeScript configuration in `packages/typescript-config`
+- Run `pnpm lint` before committing changes
+- Ensure all tests pass with `pnpm test`
+- REQUIRED: All testing configurations MUST extend from the `@repo/testing` package
+
+## Codebase Exploration
+- Use VSCode search tools (`search_files`) to understand code structure and patterns
+- Leverage Perplexity MCP for external documentation and best practices
+- Begin each task with systematic exploration of relevant code areas
+
+## Monorepo Commands
+- `pnpm build`: Build all packages and applications
+- `pnpm dev`: Start development servers for all applications
+- `pnpm test`: Run tests for all packages and applications
+- `pnpm lint`: Run linting for all packages and applications
+- `pnpm clean`: Clean build artifacts and node_modules

@@ -1,0 +1,209 @@
+//****************************************************************
+//** Entity Models (in alphabetical order)
+//****************************************************************
+
+model Collection {
+    id   String  @id @default(cuid())
+    agId String? @unique @map("agid")
+    name String
+    slug String  @unique
+
+    type String @default("productLine")
+
+    // Content
+    seoName      String? @map("seo_name")
+    seoCopy      String? @map("seo_copy")
+    previewCopy  String? @map("preview_copy")
+    fullMarkdown String? @map("full_markdown")
+
+    // Many-to-many
+    locations               Location[]                @relation("LocationCollections")
+    metas                   Meta[]                    @relation("MetaCollections")
+    ProductsWithCollections ProductsWithCollectionsJoin[]
+    // Many-to-one
+    event                   Event?                    @relation(fields: [eventId], references: [id])
+    eventId                 String?                   @map("event_id")
+    fandom                  Fandom?                   @relation(fields: [fandomId], references: [id])
+    fandomId                String?                   @map("fandom_id")
+    // One-to-many
+    findReplaceRejects      FindReplaceReject[]
+    // One-to-one
+    // [None for Collection]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([eventId])
+    @@index([fandomId])
+    @@map("collections")
+}
+
+model Event {
+    id   String  @id @default(cuid())
+    agId String? @unique @map("agid")
+    name String
+    slug String  @unique
+
+    startDate DateTime? @map("start_date")
+    endDate   DateTime? @map("end_date")
+
+    // Content
+    seoName      String? @map("seo_name")
+    seoCopy      String? @map("seo_copy")
+    previewCopy  String? @map("preview_copy")
+    fullMarkdown String? @map("full_markdown")
+
+    // Many-to-many
+    locations          Location[]           @relation("EventLocations")
+    metas              Meta[]               @relation("EventMetas")
+    stories            Story[]              @relation("EventStories")
+    storyCast          StoryCast[]          @relation("EventStoryCast")
+    ProductsWithEvents ProductsWithEventsJoin[]
+    // Many-to-one 
+    fandom             Fandom?              @relation(fields: [fandomId], references: [id])
+    fandomId           String?              @map("fandom_id")
+    // One-to-many 
+    collections        Collection[]
+    findReplaceRejects FindReplaceReject[]
+    // One-to-one
+    // [None for Event]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([fandomId])
+    @@map("events")
+}
+
+model Fandom {
+    id   String  @id @default(cuid())
+    agId String? @unique @map("agid")
+    name String
+    slug String  @unique
+
+    // Content
+    seoName      String? @map("seo_name")
+    seoCopy      String? @map("seo_copy")
+    previewCopy  String? @map("preview_copy")
+    fullMarkdown String? @map("full_markdown")
+
+    // Many-to-many
+    ProductsWithFandoms ProductsWithFandomsJoin[]
+    // Many-to-one
+    // [None for Fandom]
+    // One-to-many
+    Collection          Collection[]
+    Event               Event[]
+    Location            Location[]
+    Meta                Meta[]
+    Story               Story[]
+    StoryCast           StoryCast[]
+    StoryRelease        StoryRelease[]
+    findReplaceRejects  FindReplaceReject[]
+    // One-to-one
+    // [None for Fandom]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("fandoms")
+}
+
+model Location {
+    id   String  @id @default(cuid())
+    agId String? @unique @map("agid")
+
+    name         String
+    slug         String  @unique
+    locationType String? @map("location_type") // Real, Fictional, etc.
+    address      String?
+    city         String?
+    country      String?
+    coordinates  String? // Could store as "lat,lng" or use a more structured format
+
+    // Content
+    seoName      String? @map("seo_name")
+    seoCopy      String? @map("seo_copy")
+    previewCopy  String? @map("preview_copy")
+    fullMarkdown String? @map("full_markdown")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Many-to-many
+    events                Event[]                 @relation("EventLocations")
+    collections           Collection[]            @relation("LocationCollections")
+    stories               Story[]                 @relation("LocationStories")
+    ProductsWithLocations ProductsWithLocationsJoin[]
+    // Many-to-one
+    fandom                Fandom?                 @relation(fields: [fandomId], references: [id])
+    fandomId              String?                 @map("fandom_id")
+    // One-to-many
+    findReplaceRejects    FindReplaceReject[]
+    // One-to-one
+    // [None for Location]
+
+    @@index([fandomId])
+    @@map("locations")
+}
+
+model Meta {
+    id   String  @id @default(cuid())
+    agId String? @unique @map("agid")
+    name String
+    slug String  @unique
+
+    // Content
+    seoName      String? @map("seo_name")
+    seoCopy      String? @map("seo_copy")
+    previewCopy  String? @map("preview_copy")
+    fullMarkdown String? @map("full_markdown")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Many-to-many
+    events             Event[]             @relation("EventMetas")
+    collections        Collection[]        @relation("MetaCollections")
+    stories            Story[]             @relation("MetaStories")
+    storyCasts         StoryCast[]         @relation("MetaStoryCast")
+    ProductsWithMetas  ProductsWithMetasJoin[]
+    // Many-to-one
+    fandom             Fandom?             @relation(fields: [fandomId], references: [id])
+    fandomId           String?             @map("fandom_id")
+    // One-to-many
+    findReplaceRejects FindReplaceReject[]
+    // One-to-one
+    // [None for Meta]
+
+    @@index([fandomId])
+    @@map("metas")
+}
+
+model ProductCategory {
+    id   String  @id @default(cuid())
+    agId String? @unique @map("agid")
+    name String
+    slug String  @unique
+
+    // Content
+    seoName      String? @map("seo_name")
+    seoCopy      String? @map("seo_copy")
+    previewCopy  String? @map("preview_copy")
+    fullMarkdown String? @map("full_markdown")
+
+    // Many-to-many
+    // [None for ProductCategory]
+    // Many-to-one
+    // [None for ProductCategory]
+    // One-to-many
+    ProductsWithCategories ProductsWithCategoriesJoin[]
+    findReplaceRejects     FindReplaceReject[]
+    // One-to-one
+    // [None for ProductCategory]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("product_categories")
+}

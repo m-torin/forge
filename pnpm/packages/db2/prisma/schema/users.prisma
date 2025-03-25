@@ -1,0 +1,97 @@
+//****************************************************************
+//** User Management
+//****************************************************************
+
+model Account {
+  id                       String  @id @default(cuid())
+  access_token             String?
+  expires_at               Int?
+  id_token                 String?
+  oauth_token              String?
+  oauth_token_secret       String?
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  refresh_token_expires_in Int?
+  scope                    String?
+  session_state            String?
+  token_type               String?
+
+  // Many-to-many
+  // [None for Account]
+  // Many-to-one
+  user   User   @relation("UserAccounts", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+  // One-to-many
+  // [None for Account]
+  // One-to-one
+  // [None for Account]
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map(name: "u_accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  expires      DateTime
+  sessionToken String   @unique
+
+  // Many-to-many
+  // [None for Session]
+  // Many-to-one
+  user   User   @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+  // One-to-many
+  // [None for Session]
+  // One-to-one
+  // [None for Session]
+
+  @@index([userId])
+  @@map(name: "u_sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  firstName     String
+  lastName      String
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  name          String?
+
+  // Many-to-many
+  // [None for User]
+  // Many-to-one
+  // [None for User]
+  // One-to-many
+  sessions Session[] @relation("UserSessions")
+  accounts Account[] @relation("UserAccounts")
+  // One-to-one
+  // [None for User]
+
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map(name: "users")
+}
+
+model VerificationToken {
+  createdAt  DateTime @default(now())
+  expires    DateTime
+  identifier String
+  token      String   @unique
+
+  // Many-to-many
+  // [None for VerificationToken]
+  // Many-to-one
+  // [None for VerificationToken]
+  // One-to-many
+  // [None for VerificationToken]
+
+  @@unique([identifier, token])
+  @@index([createdAt])
+  @@map(name: "u_verification_tokens")
+}

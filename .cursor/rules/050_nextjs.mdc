@@ -1,0 +1,207 @@
+---
+description: "Next.js Configuration Rules"
+globs: ["**/next.config.ts", "**/next.config.js", "**/app/**/*.ts", "**/app/**/*.tsx", "**/pages/**/*.ts", "**/pages/**/*.tsx"]
+---
+
+# Next.js Configuration Rules
+
+## Purpose
+
+This document defines the standard patterns and requirements for Next.js
+configuration across all applications in the Next-Forge monorepo. Following
+these guidelines ensures consistency, maintainability, and proper integration
+with shared packages.
+
+## Core Configuration Structure
+
+- Use TypeScript for all Next.js configuration files (see
+  [monorepo/module-format.md](../monorepo/module-format.md) for TypeScript
+  requirements)
+- Export configuration as a default export
+- Apply configuration wrappers in a consistent order
+- Example:
+
+  ```typescript
+  // next.config.ts
+  import { env } from '@/env';
+  import { withAnalyzer } from '@repo/next-config';
+  import { withLogging, withSentry } from '@repo/observability/next-config';
+  import type { NextConfig } from 'next';
+
+  let nextConfig: NextConfig = {
+    // Base configuration
+  };
+
+  // Apply wrappers
+  nextConfig = withLogging(nextConfig);
+
+  if (env.ANALYZE === 'true') {
+    nextConfig = withAnalyzer(nextConfig);
+  }
+
+  export default nextConfig;
+  ```
+
+## Environment Variable Handling
+
+- Access environment variables through the validated env object
+- Never use process.env directly in Next.js configuration
+- Example:
+
+  ```typescript
+  // next.config.ts
+  import { env } from '@/env';
+
+  let nextConfig = {
+    env: {
+      API_URL: env.API_URL,
+    },
+  };
+  ```
+
+## Environment-Specific Configuration
+
+- Use environment variables to conditionally apply configuration
+- Handle test environments explicitly (see [Testing Configuration](#testing-configuration))
+- Example:
+  ```typescript
+  // Production-only optimizations
+  if (process.env.NODE_ENV === 'production') {
+    nextConfig = {
+      ...nextConfig,
+      compiler: {
+        removeConsole: {
+          exclude: ['error', 'warn'],
+        },
+      },
+    };
+  }
+  ```
+
+## Image Optimization
+
+- Configure `images.domains` or `images.remotePatterns` for external images
+- Use appropriate image formats in `images.formats`
+- Example:
+  ```typescript
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+    ],
+  },
+  ```
+
+## API Routes
+
+- Configure API routes with appropriate middleware
+- Use rewrites for proxy functionality
+- Example:
+  ```typescript
+  async rewrites() {
+    return [
+      {
+        source: '/api/proxy/:path*',
+        destination: 'https://api.example.com/:path*',
+      },
+    ];
+  },
+  ```
+
+## Webpack Configuration
+
+- Extend webpack configuration only when necessary
+- Use plugins from shared packages
+- Handle specific module issues with ignoreWarnings
+- Example:
+
+  ```typescript
+  webpack(config, { isServer }) {
+    if (isServer) {
+      config.plugins = config.plugins || [];
+      config.plugins.push(new PrismaPlugin());
+    }
+
+    config.ignoreWarnings = [{ module: /some-problematic-module/ }];
+
+    return config;
+  },
+  ```
+
+## Shared Configuration
+
+- **REQUIRED**: ALL Next.js configurations MUST extend the shared configuration
+  from `@repo/next-config`
+- Extend shared configuration with app-specific settings
+- Keep configuration DRY across applications
+- Example:
+
+  ```typescript
+  // next.config.ts
+  import { createConfig } from '@repo/next-config';
+
+  export default createConfig({
+    // App-specific configuration here
+    reactStrictMode: true,
+    experimental: {
+      // App-specific experimental features
+    },
+  });
+  ```
+
+## Testing Configuration
+
+- Configure Next.js for testing environments
+- Skip static optimization in test mode
+- Use a separate output directory for test builds
+- Example:
+  ```typescript
+  // next.config.ts
+  if (process.env.NODE_ENV === 'test') {
+    nextConfig = {
+      ...nextConfig,
+      distDir: '.next-test',
+      experimental: {
+        ...nextConfig.experimental,
+        isrMemoryCacheSize: 0,
+      },
+    };
+  }
+  ```
+
+## Common Issues and Solutions
+
+### Problem: Build fails due to missing environment variables
+- **Solution**: Ensure all required environment variables are defined in .env files
+- **Solution**: Use default values for non-critical environment variables
+
+### Problem: Images from external domains fail to load
+- **Solution**: Add the domain to `images.domains` or `images.remotePatterns`
+
+### Problem: Webpack configuration conflicts
+- **Solution**: Use `ignoreWarnings` to suppress warnings from problematic modules
+- **Solution**: Apply webpack configuration in the correct order
+
+### Problem: Configuration wrappers interfere with each other
+- **Solution**: Apply wrappers in the correct order (analytics first, then logging, etc.)
+- **Solution**: Check for conflicting settings between wrappers
+
+## ESLint Integration
+
+- **REQUIRED**: Next.js applications MUST use the Next.js-specific ESLint configuration
+- Create an `eslint.config.mjs` file in your Next.js app directory:
+  ```javascript
+  // eslint.config.mjs
+  import nextConfig from '@repo/eslint-config/next';
+  export default nextConfig;
+  ```
+- This configuration includes Next.js-specific rules for routing, image optimization, and other Next.js features
+
+## Cross-References
+
+- For environment variable validation, see [environment/validation.md](../environment/validation.md)
+- For test environment setup, see [testing/environments.md](../testing/environments.md)
+- For shared package configuration, see [monorepo/dependencies.md](../monorepo/dependencies.md)

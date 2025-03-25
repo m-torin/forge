@@ -1,0 +1,122 @@
+---
+description: "Testing Configuration Requirements"
+globs: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/*.cy.ts", "**/*.cy.tsx", "**/vitest.config.ts", "**/cypress.config.js"]
+alwaysApply: false
+---
+
+# Testing Configuration Requirements
+
+## Purpose
+
+This document defines the standard configuration requirements for testing across
+all applications and packages in the Next-Forge monorepo. Following these
+guidelines ensures consistent testing behavior, shared utilities, and proper
+integration with the monorepo's testing infrastructure.
+
+## Mandatory Testing Configuration Extension
+
+All projects MUST extend the testing configuration from the `@repo/testing`
+package. This ensures consistent testing behavior across the monorepo.
+
+## Vitest Configuration
+
+All applications and packages using Vitest MUST use the configuration from the
+testing package:
+
+```typescript
+// vitest.config.ts
+import { createConfig } from '@repo/testing/vitest';
+
+export default createConfig({
+  // Project-specific overrides here
+});
+```
+
+## Cypress Configuration
+
+All applications using Cypress MUST extend the base configuration:
+
+```javascript
+// cypress.config.js
+import { defineConfig } from 'cypress';
+import { createConfig } from '@repo/testing/cypress';
+
+export default defineConfig(
+  createConfig({
+    // Project-specific overrides here
+  }),
+);
+```
+
+## Component Testing Configuration
+
+```javascript
+// cypress.component.config.js
+import { defineConfig } from 'cypress';
+import { createComponentConfig } from '@repo/testing/cypress';
+
+export default defineConfig(
+  createComponentConfig({
+    // Project-specific component test overrides here
+  }),
+);
+```
+
+## Test Setup Files
+
+- Use the provided setup files from the testing package:
+  ```typescript
+  // setup-tests.ts
+  import '@repo/testing/vitest/setup';
+
+  // Add project-specific setup after importing the base setup
+  ```
+
+## Test Utilities
+
+- Use the testing helpers and utilities provided by the `@repo/testing` package:
+  ```typescript
+  import { render, screen } from '@repo/testing/src/helpers/render';
+  import { mockAuth } from '@repo/testing/src/mocks/auth';
+  ```
+
+## Common Issues and Solutions
+
+### Problem: Tests fail with configuration errors
+- **Cause**: Incorrect extension of base configuration
+- **Solution**: Ensure proper import and usage of createConfig
+
+### Problem: Tests work locally but fail in CI
+- **Cause**: Different configuration between environments
+- **Solution**: Use the shared configuration and environment-specific overrides
+
+### Problem: Component tests render incorrectly
+- **Cause**: Missing provider wrappers
+- **Solution**: Use the provided render utilities that include necessary providers
+
+## Test Environment
+- Tests run with NODE_ENV=test
+- Use .env.test files for environment variables
+- Mock external services in tests
+- Each application MUST include a .env.test file for CI/CD and testing
+- All required variables MUST have valid test values that pass validation
+
+## Test Placeholders
+- Clerk keys: Use prefix validation `sk_test_` and `pk_test_`
+- Stripe keys: Validate with `sk_test_` or `sk_live_` patterns
+- Resend tokens: Validate with `re_` prefix
+- API endpoints: Validate URL format with z.string().url()
+- Analytics IDs: Validate with appropriate prefixes (e.g., `G-` for Google Analytics)
+
+## Enforcement
+
+- CI pipelines will verify that all testing configurations properly extend from
+  the `@repo/testing` package
+- Pull requests that don't comply with these requirements will be automatically
+  flagged
+
+## Cross-References
+
+- For test environment setup, see [testing/environments.md](mdc:environments.md)
+- For test placeholder standards, see [testing/placeholders.md](mdc:placeholders.md)
+- For environment variable validation, see [environment/validation.md](mdc:../environment/validation.md)

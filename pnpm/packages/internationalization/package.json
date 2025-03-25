@@ -1,0 +1,31 @@
+{
+  "name": "@repo/internationalization",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "translate": "npx -y languine@latest translate",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@formatjs/intl-localematcher": "^0.6.1",
+    "negotiator": "^1.0.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/negotiator": "^0.6.3",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^4.3.4",
+    "next": "catalog:",
+    "vitest": "catalog:"
+  }
+}

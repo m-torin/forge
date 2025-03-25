@@ -1,0 +1,32 @@
+{
+  "name": "@repo/next-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@next/bundle-analyzer": "15.2.4",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^6.5.0",
+    "@t3-oss/env-core": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@vitejs/plugin-react": "^4.3.4",
+    "next": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,149 @@
+---
+description: "Next-Forge Interaction Guidelines"
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.md"]
+---
+
+# Next-Forge Interaction Guidelines
+
+## Purpose
+
+This document defines the standard patterns for interaction and communication
+within the Next-Forge monorepo. Following these guidelines ensures consistent
+and effective collaboration across the project.
+
+## Task Completion Options
+
+### Overview
+
+After completing each task cycle or "thread run" (a sequence of operations that
+accomplish a specific goal), always present the user with 3-5 distinct,
+actionable options for next steps. These options should be presented as a
+numbered list for easy selection.
+
+### When to Present Options
+
+- After completing any significant task or sequence of operations
+- When reporting back results of a build, test, or other operation
+- At the conclusion of any troubleshooting session
+- When presenting final results of a requested implementation
+
+### Option Format
+
+- Present as a numbered list (1, 2, 3, etc.)
+- Each option should be concise but descriptive (one line preferred)
+- Format should be consistent: `N. [Action]: Brief description of what this will do`
+- Example: `1. [Fix Remaining Errors]: Address the React DOM testing errors in app tests`
+
+### Option Categories
+
+Always include 3-5 options from the following categories:
+
+1. **Direct Follow-ups**: Improvements or extensions to the task just completed
+   - Example: `[Optimize]: Improve performance of the solution`
+   - Example: `[Extend]: Add additional features to the implementation`
+
+2. **Next Logical Steps**: What would naturally come next in the project workflow
+   - Example: `[Deploy]: Set up deployment pipeline for the application`
+   - Example: `[Test]: Create additional test coverage`
+
+3. **Diagnostic Options**: Ways to verify or troubleshoot the current solution
+   - Example: `[Verify]: Run additional tests to confirm the solution works`
+   - Example: `[Debug]: Investigate remaining warnings or errors`
+
+4. **Documentation**: Options to document what was done
+   - Example: `[Document]: Create documentation for the implemented solution`
+   - Example: `[Summarize]: Generate a summary of changes made`
+
+5. **Alternative Approaches**: Different ways to solve the same problem
+   - Example: `[Alternative]: Implement a different approach to solve the problem`
+
+## Error Handling and Feedback
+
+### Error Messages
+
+- All error messages should be clear and actionable
+- Include specific error codes where applicable
+- Provide context about where the error occurred
+- Suggest potential solutions when possible
+
+Example:
+```typescript
+throw new Error(
+  '[NF001] Failed to load environment variables. ' +
+  'Please ensure .env.local exists and contains required variables. ' +
+  'See .env.example for required fields.'
+);
+```
+
+### Success Messages
+
+- Confirm the action that was completed
+- Include relevant metrics or results
+- Provide next steps or related actions
+- Use consistent formatting
+
+Example:
+```typescript
+console.log(
+  '✓ Build completed successfully\n' +
+  '  - Build time: 3.2s\n' +
+  '  - Output size: 2.1MB\n' +
+  '  Run `pnpm start` to launch the application'
+);
+```
+
+## Documentation Standards
+
+### Code Comments
+
+- Use JSDoc comments for functions and classes
+- Include examples for complex functionality
+- Document any non-obvious behavior
+- Keep comments up to date with code changes
+
+Example:
+```typescript
+/**
+ * Validates environment variables for the application
+ * @param {Object} env - The environment variables to validate
+ * @throws {Error} If required variables are missing or invalid
+ * @returns {ValidatedEnv} The validated environment object
+ *
+ * @example
+ * const env = validateEnv(process.env);
+ * console.log(env.DATABASE_URL); // Typed and validated
+ */
+```
+
+### README Files
+
+- Each package and application should have a README.md
+- Include setup instructions
+- Document available commands
+- List dependencies and requirements
+- Provide troubleshooting guides
+
+## Example Implementation
+
+```
+Task completed successfully! Here are your options for next steps:
+
+1. [Fix App Tests]: Resolve React DOM testing errors in the app tests
+2. [Complete Web Build]: Run the web build separately to ensure it completes successfully
+3. [Add Documentation]: Create documentation for the environment variable handling
+4. [Optimize Build]: Improve build performance by optimizing the Turborepo configuration
+5. [Extend Validation]: Add test environment handling to remaining packages
+```
+
+## Implementation Notes
+
+- Ensure options are specific and actionable, not vague
+- Tailor options to the user's demonstrated priorities and interests
+- Include at least one option that addresses any remaining issues or errors
+- When appropriate, include an option for a completely different direction
+
+## Cross-References
+
+- For code quality standards, see [code-quality.md](../code-quality.md)
+- For testing guidelines, see [testing/configuration.md](../testing/configuration.md)
+- For environment setup, see [environment/structure.md](../environment/structure.md)

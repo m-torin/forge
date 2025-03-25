@@ -1,0 +1,117 @@
+---
+description: "TypeScript ESM Standards"
+globs: ["**/*.ts", "**/*.tsx"]
+---
+
+# TypeScript ESM Standards
+
+## Core Requirements
+- All packages MUST be written in TypeScript, not JavaScript
+- JavaScript should only be used when absolutely necessary (e.g., specific configuration files)
+- All packages MUST use ESM format with direct TypeScript consumption
+- Add `"type": "module"` to all package.json files
+- NO CommonJS modules (`require`/`module.exports`) should be used
+- Node 22+ is required for direct TypeScript ESM consumption
+
+## File Format Standards
+- Use `.ts` extension for all TypeScript files
+- Use `.tsx` extension for TypeScript files containing JSX
+- Convert any existing `.js` files to `.ts` files
+- Convert any existing `.jsx` files to `.tsx` files
+- Existing JavaScript files must be migrated to TypeScript during maintenance
+
+## Package.json Configuration
+- **Required**: Set `"type": "module"` in package.json
+- Configure exports to point directly to TypeScript source files
+- Remove build-related scripts (no transpilation needed)
+- Keep only essential scripts
+
+```json
+// package.json
+{
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./feature": "./src/feature/index.ts",
+    "./utils/*": "./src/utils/*.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo node_modules",
+    "typecheck": "tsc --noEmit"
+  }
+}
+```
+
+## TypeScript Configuration
+- **REQUIRED**: All packages and applications MUST extend the base TypeScript configuration
+- Set `"noEmit": true` in tsconfig.json
+- Use `"module": "NodeNext"` and `"moduleResolution": "NodeNext"`
+- Strict type checking should be enabled
+- Remove any settings related to transpilation
+
+```json
+// tsconfig.json
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "isolatedModules": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
+```
+
+## Import Format
+- **ALWAYS** use explicit file extensions in import paths
+
+```typescript
+// Correct
+import { something } from './file.ts';
+import { component } from './component.tsx';
+
+// Incorrect
+import { something } from './file';
+```
+
+For package imports, use the package name directly:
+
+```typescript
+// Importing from another workspace package
+import { util } from '@repo/utils';
+
+// Importing a specific export
+import { feature } from '@repo/package/feature';
+```
+
+## Type Safety
+- Avoid using `any` type 
+- Prefer explicit type annotations for all functions and variables
+- Use type guards and narrowing for more precise types
+
+## JSX in TypeScript
+When using JSX in TypeScript, avoid direct JSX syntax if type issues occur:
+
+```typescript
+// Instead of JSX:
+<Component prop={value}>
+  {children}
+</Component>
+
+// Use createElement:
+React.createElement(
+  Component,
+  { prop: value },
+  children
+);
+```
+
+## Common Issues and Solutions
+- **Type Errors with JSX**: Use React.createElement instead of JSX syntax, ensure proper type imports with `import type`
+- **Import Errors**: Check that all imports include proper file extensions, verify that package.json exports map is correct
+- **Module Resolution Issues**: Ensure tsconfig.json uses `"moduleResolution": "NodeNext"`, check Node.js version (22+ required)

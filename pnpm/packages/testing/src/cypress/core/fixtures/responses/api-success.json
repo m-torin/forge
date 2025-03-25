@@ -1,0 +1,32 @@
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "item-1",
+        "title": "Test Item 1",
+        "description": "This is a test item for API mocking"
+      },
+      {
+        "id": "item-2",
+        "title": "Test Item 2",
+        "description": "This is another test item for API mocking"
+      },
+      {
+        "id": "item-3",
+        "title": "Test Item 3",
+        "description": "This is yet another test item for API mocking"
+      }
+    ],
+    "pagination": {
+      "total": 3,
+      "page": 1,
+      "pageSize": 10,
+      "totalPages": 1
+    }
+  },
+  "meta": {
+    "requestId": "test-request-id",
+    "timestamp": "2025-03-18T07:21:00Z"
+  }
+}

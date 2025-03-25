@@ -1,0 +1,136 @@
+---
+description: "Code Quality Standards"
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+---
+
+# Code Quality Standards
+
+## Purpose
+
+This document defines the standard code quality tools, configurations, and usage
+patterns across all applications and packages in the Next-Forge monorepo.
+Following these guidelines ensures consistent code quality, prevents common
+bugs, and maintains a uniform coding style.
+
+## Overview
+
+The monorepo uses two primary tools for code quality:
+
+1. **ESLint** for code linting and static analysis
+2. **Prettier** for consistent code formatting
+
+These tools work together to ensure high-quality, consistent code across the
+entire monorepo.
+
+## ESLint Configuration
+
+### Requirements
+
+- **REQUIRED**: ESLint v9+ using flat config format
+- **REQUIRED**: Every app/package must have its own `eslint.config.mjs` file
+- **REQUIRED**: No ESLint configuration at the repository root level
+
+### Shared Configurations
+
+The monorepo provides specialized configurations for different project types:
+
+| Type    | Import Path                  | Use For                     |
+| ------- | ---------------------------- | --------------------------- |
+| Base    | `@repo/eslint-config`        | General TypeScript packages |
+| Next.js | `@repo/eslint-config/next`   | Next.js applications        |
+| React   | `@repo/eslint-config/react`  | React component libraries   |
+| Server  | `@repo/eslint-config/server` | Server-side code            |
+
+### Implementation
+
+Choose the appropriate configuration based on package content:
+
+```javascript
+// For server packages (e.g., API services)
+import serverConfig from '@repo/eslint-config/server';
+export default serverConfig;
+
+// For Next.js applications
+import nextConfig from '@repo/eslint-config/next';
+export default nextConfig;
+```
+
+## Prettier Configuration
+
+### Repository-Wide Configuration
+
+**REQUIRED**: Prettier configuration MUST ONLY exist at the repository root.
+Individual packages and applications MUST NOT have their own `.prettierrc` files
+or override the root configuration.
+
+The monorepo uses a single, shared Prettier configuration from the
+`@repo/config-prettier` package that applies to all projects.
+
+### Configuration Structure
+
+The root `.prettierrc.mjs` file imports the shared configuration:
+
+```javascript
+// .prettierrc.mjs (ROOT LEVEL ONLY)
+import config from './packages/config-prettier/index.mjs';
+export default config;
+```
+
+## Plugin Ecosystem
+
+The ESLint configuration uses several specialized plugins:
+
+- `@typescript-eslint`: TypeScript-specific linting rules
+- `eslint-plugin-react` and `eslint-plugin-react-hooks`: React best practices
+- `eslint-plugin-jsx-a11y`: Accessibility checks
+- `eslint-plugin-import`: Import organization
+- `eslint-plugin-security`: Security best practices
+- `eslint-plugin-unused-imports`: Dead code detection
+- `eslint-plugin-perfectionist`: Consistent code organization
+
+## Running Code Quality Tools
+
+### ESLint Commands
+
+```bash
+# Run ESLint for all projects
+pnpm eslint
+
+# Run ESLint for a specific project
+pnpm --filter <package-name> lint
+```
+
+### Prettier Commands
+
+```bash
+# Format all files with Prettier
+pnpm prettier
+
+# Format a specific directory
+prettier --write "apps/web/**/*.{ts,tsx}"
+
+# Check formatting without changing files
+prettier --check "packages/**/*.ts"
+```
+
+### Combined Linting
+
+```bash
+# Run both Prettier and ESLint
+pnpm lint
+```
+
+## Editor Integration
+
+Configure your IDE to integrate with ESLint and format on save with Prettier:
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.requireConfig": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+}
+```

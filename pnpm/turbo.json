@@ -1,0 +1,70 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "**/.env.*local"
+  ],
+  "ui": "tui",
+  "envMode": "loose",
+  "tasks": {
+    "build": {
+      "dependsOn": [
+        "^build",
+        "test"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "**/generated/**",
+        "storybook-static/**",
+        ".react-email/**"
+      ]
+    },
+    "lint": {
+      "dependsOn": [
+        "^lint"
+      ],
+      "outputs": []
+    },
+    "prettier": {
+      "cache": true,
+      "outputs": []
+    },
+    "eslint": {
+      "cache": true,
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": [
+        "^test"
+      ],
+      "cache": true,
+      "outputs": [],
+      "env": [
+        "TEST_*",
+        "VITEST_*",
+        "NODE_ENV"
+      ]
+    },
+    "analyze": {
+      "dependsOn": [
+        "^analyze"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "translate": {
+      "dependsOn": [
+        "^translate"
+      ],
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    },
+    "//#clean": {
+      "cache": false
+    }
+  }
+}

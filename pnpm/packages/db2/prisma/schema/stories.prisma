@@ -1,0 +1,99 @@
+
+model Story {
+  id   String  @id @default(cuid())
+  agId String? @unique @map("agid")
+  name String
+  slug String  @unique
+
+  // Content
+  seoName      String? @map("seo_name")
+  seoCopy      String? @map("seo_copy")
+  previewCopy  String? @map("preview_copy")
+  fullMarkdown String? @map("full_markdown")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Many-to-many
+  events              Event[]               @relation("EventStories")
+  locations           Location[]            @relation("LocationStories")
+  metas               Meta[]                @relation("MetaStories")
+  storyCasts          StoryCast[]           @relation("StoryCastStories")
+  ProductsWithStories ProductsWithStoriesJoin[]
+  // Many-to-one
+  fandom              Fandom?               @relation(fields: [fandomId], references: [id])
+  fandomId            String?               @map("fandom_id")
+  // One-to-many
+  findReplaceRejects  FindReplaceReject[]
+  // One-to-one
+  // [None for Story]
+
+  @@index([fandomId])
+  // Full-text search indexes for content
+  @@index([name])
+  @@map("stories")
+}
+
+model StoryCast {
+  id   String  @id @default(cuid())
+  agId String? @unique @map("agid")
+  name String
+  slug String  @unique
+
+  // Content
+  seoName      String? @map("seo_name")
+  seoCopy      String? @map("seo_copy")
+  previewCopy  String? @map("preview_copy")
+  fullMarkdown String? @map("full_markdown")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Many-to-many
+  events                 Event[]                  @relation("EventStoryCast")
+  metas                  Meta[]                   @relation("MetaStoryCast")
+  stories                Story[]                  @relation("StoryCastStories")
+  storyReleases          StoryRelease[]           @relation("StoryCastReleases")
+  ProductsWithStoryCasts ProductsWithStoryCastsJoin[]
+  // Many-to-one
+  fandom                 Fandom?                  @relation(fields: [fandomId], references: [id])
+  fandomId               String?                  @map("fandom_id")
+  // One-to-many
+  findReplaceRejects     FindReplaceReject[]
+  // One-to-one
+  // [None for StoryCast]
+
+  @@index([fandomId])
+  @@map("story_cast")
+}
+
+model StoryRelease {
+  id   String  @id @default(cuid())
+  agId String? @unique @map("agid")
+  name String
+  slug String  @unique
+
+  // Content
+  seoName      String? @map("seo_name")
+  seoCopy      String? @map("seo_copy")
+  previewCopy  String? @map("preview_copy")
+  fullMarkdown String? @map("full_markdown")
+
+  // Many-to-many
+  storyCasts                StoryCast[]                 @relation("StoryCastReleases")
+  ProductsWithStoryReleases ProductsWithStoryReleasesJoin[]
+  // Many-to-one
+  fandom                    Fandom?                     @relation(fields: [fandomId], references: [id])
+  fandomId                  String?                     @map("fandom_id")
+  // One-to-many
+  findReplaceRejects        FindReplaceReject[]
+  // One-to-one
+  // [None for StoryRelease]
+
+  releasedOn DateTime? @map("released_on")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([fandomId])
+  @@map("story_releases")
+}

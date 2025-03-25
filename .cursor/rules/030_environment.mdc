@@ -1,0 +1,259 @@
+---
+description: "Environment Variable Management Rules"
+globs: ["**/.env*", "**/env.ts", "**/keys.ts", "**/next.config.ts", "**/next.config.js"]
+alwaysApply: false
+---
+
+# Environment Variable Management Rules
+
+## Purpose
+
+This document defines the standard structure and organization for environment
+variables across all applications in the Next-Forge monorepo. Following these
+guidelines ensures proper isolation, security, and maintainability of
+environment configurations.
+
+## .env File Organization
+
+Each application in the monorepo must maintain its own environment files to
+ensure proper isolation and prevent leakage of environment variables between
+applications.
+
+### Required File Structure
+
+```
+apps/
+├── app/
+│   ├── .env.local         # Local development overrides (gitignored)
+│   ├── .env.development   # Development environment defaults
+│   ├── .env.test          # Testing environment configuration
+│   └── .env.production    # Production defaults (no secrets)
+├── web/
+│   ├── .env.local
+│   ├── .env.development
+│   ├── .env.test
+│   └── .env.production
+└── api/
+    ├── .env.local
+    ├── .env.development
+    ├── .env.test
+    └── .env.production
+```
+
+### Key Rules
+
+- Each Next.js application MUST have its own .env files in its package directory
+- Root-level .env files MUST NOT contain app-specific secrets
+- All applications MUST include a `.env.test` file for CI/CD and testing
+
+### File Loading Priority
+
+Next.js loads environment variables in the following order, with later files
+taking precedence:
+
+1. `apps/<app>/.env` (base defaults, rarely used)
+2. `apps/<app>/.env.local` (local overrides, not loaded in test environment)
+3. `apps/<app>/.env.development` or `.env.production` or `.env.test`
+   (environment-specific)
+4. `apps/<app>/.env.development.local` or `.env.production.local` (local
+   environment-specific overrides)
+
+## Variable Naming Conventions
+
+### Client-Side Variables
+
+Variables that need to be accessible in the browser must be prefixed with
+`NEXT_PUBLIC_`:
+
+```
+NEXT_PUBLIC_API_URL="https://api.example.com"
+NEXT_PUBLIC_FEATURE_FLAGS_ENABLED="true"
+```
+
+### Service-Specific Prefixes
+
+Group variables by service using consistent prefixes:
+
+- **Authentication**: `CLERK_`, `AUTH_`
+- **Database**: `DATABASE_`, `POSTGRES_`
+- **Email**: `RESEND_`, `EMAIL_`
+- **Analytics**: `ANALYTICS_`, `GA_`, `POSTHOG_`
+- **Payments**: `STRIPE_`, `PAYMENT_`
+- **Storage**: `STORAGE_`, `S3_`, `CLOUDINARY_`
+
+## Documentation Standards
+
+### .env.example Files
+
+Each application must include a `.env.example` file that:
+
+1. Lists all required environment variables
+2. Provides clear documentation for each variable
+3. Groups variables by service or functionality
+4. Indicates which variables are required vs. optional
+
+Example `.env.example` file:
+
+```
+# Authentication (required)
+CLERK_SECRET_KEY=""          # Clerk API secret key (sk_live_...)
+CLERK_WEBHOOK_SECRET=""      # Webhook signing secret (whsec_...)
+
+# Database (required)
+DATABASE_URL=""              # PostgreSQL connection string
+
+# Email (optional)
+RESEND_API_KEY=""            # Resend API key for sending emails
+RESEND_FROM=""               # Default sender email address
+
+# Feature Flags (optional)
+FEATURE_NEW_DASHBOARD="false"  # Enable new dashboard UI
+```
+
+## Environment Variable Access
+
+- Always use environment validation with zod in an `env.ts` file
+- Import the validated environment object instead of accessing `process.env`
+  directly
+- Example:
+
+  ```typescript
+  // env.ts
+  import { z } from 'zod';
+
+  export const env = z
+    .object({
+      DATABASE_URL: z.string().url(),
+      NEXT_PUBLIC_API_URL: z.string().url(),
+    })
+    .parse(process.env);
+
+  // usage.ts
+  import { env } from './env';
+
+  console.log(env.DATABASE_URL); // Type-safe access
+  ```
+
+## Test Environment Configuration
+
+Each application MUST include a .env.test file for CI/CD and testing:
+- All required variables MUST have valid test values that pass validation
+- Service API keys MUST use the appropriate test prefixes:
+  - Clerk: `sk_test_` and `pk_test_`
+  - Stripe: `sk_test_`
+  - Resend: `re_test_`
+  - Liveblocks: `sk_test_`
+  - Arcjet: `ajkey_test_`
+  - Svix: `sk_test_`
+
+## Common Issues and Solutions
+
+### Problem: Environment variables not available at runtime
+- **Cause**: Variables not properly defined or exported
+- **Solution**: Ensure variables are defined in the correct .env file and
+  properly validated
+
+### Problem: Environment variables leaking between applications
+- **Cause**: Using root-level .env files or sharing variables incorrectly
+- **Solution**: Maintain separate .env files for each application
+
+### Problem: Client-side variables not accessible
+- **Cause**: Missing NEXT_PUBLIC_ prefix
+- **Solution**: Add NEXT_PUBLIC_ prefix to all client-side variables
+
+## Cross-References
+
+- For environment variable validation, see [environment/validation.md](mdc:validation.md)
+- For environment security practices, see [environment/security.md](mdc:security.md)
+- For test environment setup, see [testing/environments.md](mdc:../testing/environments.md)
+
+```
+# Authentication (Clerk)
+CLERK_SECRET_KEY=""        # Clerk API secret key (sk_live_...)
+CLERK_WEBHOOK_SECRET=""    # Webhook signing secret (whsec_...)
+
+# Database
+DATABASE_URL=""            # PostgreSQL connection string
+```
+
+## Environment Variable Security
+Never commit real secrets to the repository:
+- Use environment variable encryption for CI/CD pipelines
+- Rotate secrets regularly and update all environments
+- Use different values for different environments (dev, staging, prod)
+
+## Environment Key Validation
+All environment validation files MUST use zod for schema validation:
+- Validation should accommodate test environments with NODE_ENV checks
+
+```typescript
+// keys.ts
+import { z } from 'zod';
+import { createEnv } from '@t3-oss/env-nextjs';
+
+export const keys = () => {
+  const isTestEnv = process.env.NODE_ENV === 'test';
+
+  return createEnv({
+    server: {
+      SERVICE_SECRET_KEY: isTestEnv
+        ? z.string().min(1)
+        : z.string().min(1).startsWith('sk_'),
+      // Other server-side variables
+    },
+    client: {
+      NEXT_PUBLIC_SERVICE_KEY: isTestEnv
+        ? z.string().min(1)
+        : z.string().min(1).startsWith('pk_'),
+      // Other client-side variables
+    },
+    runtimeEnv: {
+      SERVICE_SECRET_KEY: process.env.SERVICE_SECRET_KEY,
+      NEXT_PUBLIC_SERVICE_KEY: process.env.NEXT_PUBLIC_SERVICE_KEY,
+      // Other runtime environment variables
+    }
+  });
+}
+```
+
+## Test Environment Configuration
+Each application MUST include a .env.test file for CI/CD and testing:
+- All required variables MUST have valid test values that pass validation
+- Service API keys MUST use the appropriate test prefixes:
+  - Clerk: `sk_test_` and `pk_test_`
+  - Stripe: `sk_test_`
+  - Resend: `re_test_`
+  - Liveblocks: `sk_test_`
+  - Arcjet: `ajkey_test_`
+  - Svix: `sk_test_`
+
+```
+# Auth
+CLERK_SECRET_KEY="sk_test_clerk_secret_key"
+CLERK_WEBHOOK_SECRET="whsec_test_clerk_webhook_secret"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_clerk_publishable_key"
+
+# Email
+RESEND_FROM="test@example.com"
+RESEND_TOKEN="re_test_resend_token"
+
+# Database
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/test"
+```
+
+## Next.js Configuration for Tests
+Modify Next.js configuration to handle test environments:
+
+```javascript
+// next.config.js
+if (process.env.NODE_ENV === 'test') {
+  nextConfig = {
+    ...nextConfig,
+    distDir: '.next-test',
+    experimental: {
+      ...nextConfig.experimental,
+      // Skip static optimization for all pages in test environment
+      isrMemoryCacheSize: 0,
+    },
+  };
+}

@@ -1,0 +1,26 @@
+{
+  "admin": {
+    "id": "user_test_admin",
+    "email": "admin@example.com",
+    "password": "password123",
+    "firstName": "Admin",
+    "lastName": "User",
+    "role": "admin"
+  },
+  "regular": {
+    "id": "user_test_regular",
+    "email": "user@example.com",
+    "password": "password123",
+    "firstName": "Regular",
+    "lastName": "User",
+    "role": "user"
+  },
+  "guest": {
+    "id": "user_test_guest",
+    "email": "guest@example.com",
+    "password": "password123",
+    "firstName": "Guest",
+    "lastName": "User",
+    "role": "guest"
+  }
+}

@@ -1,0 +1,206 @@
+---
+description: "Next-Forge Monorepo Architecture"
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/package.json", "**/tsconfig.json", "**/turbo.json"]
+---
+
+# Next-Forge Monorepo Architecture
+
+## Project Overview
+
+Next-Forge is a comprehensive monorepo built with pnpm workspaces and Turborepo,
+designed to provide a scalable foundation for Next.js applications with shared
+packages. The architecture follows a modular approach with clear separation of
+concerns.
+
+## Directory Structure
+
+```mermaid
+graph TD
+    Root[Next-Forge Root]
+    Apps[apps/]
+    Packages[packages/]
+    Docs[docs/]
+    Scripts[scripts/]
+    Turbo[turbo/]
+
+    Root --> Apps
+    Root --> Packages
+    Root --> Docs
+    Root --> Scripts
+    Root --> Turbo
+
+    Apps --> App[app/]
+    Apps --> Web[web/]
+    Apps --> API[api/]
+    Apps --> Docs2[docs/]
+    Apps --> Email[email/]
+    Apps --> Studio[studio/]
+    Apps --> Storybook[storybook/]
+
+    Packages --> UI[design-system/]
+    Packages --> Auth[auth/]
+    Packages --> DB[database/]
+    Packages --> Analytics[analytics/]
+    Packages --> Config[next-config/]
+    Packages --> TS[typescript-config/]
+    Packages --> Collab[collaboration/]
+    Packages --> Flags[feature-flags/]
+    Packages --> Intl[internationalization/]
+    Packages --> Observe[observability/]
+    Packages --> Security[security/]
+    Packages --> SEO[seo/]
+    Packages --> Storage[storage/]
+    Packages --> Testing[testing/]
+    Packages --> Webhooks[webhooks/]
+```
+
+## Key Components
+
+### Applications (`apps/`)
+
+- **app**: Main application with authenticated routes
+- **web**: Public-facing website
+- **api**: Backend API services
+- **docs**: Documentation site
+- **email**: Email templates and preview
+- **studio**: Admin dashboard
+- **storybook**: Component library documentation
+
+### Packages (`packages/`)
+
+- **design-system**: Shared UI components and theming
+- **auth**: Authentication and authorization
+- **database**: Prisma schema, client, and migrations
+- **analytics**: Analytics integration and tracking
+- **next-config**: Shared Next.js configuration
+- **typescript-config**: Shared TypeScript configuration
+- **collaboration**: Real-time collaboration features
+- **feature-flags**: Feature flag management
+- **internationalization**: i18n utilities
+- **observability**: Logging, monitoring, and tracing
+- **security**: Security utilities and middleware
+- **seo**: SEO utilities and components
+- **storage**: File storage utilities
+- **testing**: Testing utilities and mocks
+- **webhooks**: Webhook handling and processing
+
+## Dependency Flow
+
+```mermaid
+flowchart TD
+    Apps[Applications] --> Packages[Shared Packages]
+    Packages --> Core[Core Packages]
+
+    subgraph Core Packages
+        TS[typescript-config]
+        Config[next-config]
+        DB[database]
+    end
+
+    subgraph Shared Packages
+        UI[design-system]
+        Auth[auth]
+        Analytics[analytics]
+        Flags[feature-flags]
+    end
+
+    subgraph Applications
+        App[app]
+        Web[web]
+        API[api]
+    end
+
+    TS --> Config
+    TS --> DB
+    TS --> UI
+    DB --> Auth
+    Config --> App
+    Config --> Web
+    Config --> API
+    UI --> App
+    UI --> Web
+    Auth --> App
+    Auth --> Web
+    Auth --> API
+    Analytics --> App
+    Analytics --> Web
+    Flags --> App
+    Flags --> Web
+    Flags --> API
+```
+
+## Build Pipeline
+
+The build pipeline is orchestrated by Turborepo, with dependencies defined in
+`turbo.json`. The pipeline ensures that packages are built in the correct order,
+with dependencies being built before dependents.
+
+```mermaid
+flowchart LR
+    TS[typescript-config] --> DB[database]
+    TS --> UI[design-system]
+    DB --> Auth[auth]
+    UI --> Apps[Applications]
+    Auth --> Apps
+```
+
+## Environment Configuration
+
+Each application has its own environment configuration, with shared validation
+patterns. Environment variables are validated using zod and the
+`@t3-oss/env-nextjs` package.
+
+```mermaid
+flowchart TD
+    EnvFiles[.env Files] --> EnvTS[env.ts]
+    EnvTS --> Keys[keys.ts in packages]
+    Keys --> Validation[Zod Validation]
+    Validation --> App[Application Code]
+```
+
+## Testing Strategy
+
+Tests are organized at both the package and application level. Each package has
+its own test suite, and applications have integration tests. Test environments
+are configured with `.env.test` files.
+
+```mermaid
+flowchart TD
+    Unit[Unit Tests] --> Integration[Integration Tests]
+    Integration --> E2E[End-to-End Tests]
+
+    subgraph Test Types
+        Unit
+        Integration
+        E2E
+    end
+
+    TestEnv[.env.test] --> TestConfig[Test Configuration]
+    TestConfig --> Unit
+    TestConfig --> Integration
+    TestConfig --> E2E
+```
+
+## Initial Setup Workflow
+
+Follow the standard initial setup process:
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/next-forge.git
+cd next-forge
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp apps/app/.env.example apps/app/.env.local
+cp apps/web/.env.example apps/web/.env.local
+cp apps/api/.env.example apps/api/.env.local
+
+# Generate Prisma client
+pnpm --filter @repo/database build
+
+# Start development servers
+pnpm dev
+```
