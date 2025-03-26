@@ -16,7 +16,7 @@
   "semanticCommits": "enabled",
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
-  "fetchReleaseNotes": true,
+  "fetchChangeLogs": "pr",
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": [
@@ -65,7 +65,7 @@
   "packageRules": [
     {
       "description": "Special handling for PNPM workspace catalog",
-      "matchFiles": [
+      "matchFileNames": [
         "pnpm-workspace.yaml"
       ],
       "rangeStrategy": "replace",
@@ -75,77 +75,77 @@
     {
       "description": "React & Next.js Framework",
       "groupName": "React & Next.js Core",
-      "matchPackagePatterns": [
-        "^react$",
-        "^react-dom$",
-        "^@types/react",
-        "^next$",
-        "^@types/next",
-        "^@next/"
-      ],
-      "prPriority": 9
+      "prPriority": 9,
+      "matchPackageNames": [
+        "/^react$/",
+        "/^react-dom$/",
+        "/^@types/react/",
+        "/^next$/",
+        "/^@types/next/",
+        "/^@next//"
+      ]
     },
     {
       "description": "Mantine UI Components",
       "groupName": "Mantine Ecosystem",
-      "matchPackagePatterns": [
-        "^@mantine/",
-        "^mantine-",
-        "^tailwind-preset-mantine"
-      ],
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash",
-      "prPriority": 8
+      "prPriority": 8,
+      "matchPackageNames": [
+        "/^@mantine//",
+        "/^mantine-/",
+        "/^tailwind-preset-mantine/"
+      ]
     },
     {
       "description": "Prisma & Database",
       "groupName": "Database Tools",
-      "matchPackagePatterns": [
-        "^prisma$",
-        "^@prisma/",
-        "^@neondatabase/",
-        "^zod-prisma"
-      ],
       "automerge": false,
-      "prPriority": 8
+      "prPriority": 8,
+      "matchPackageNames": [
+        "/^prisma$/",
+        "/^@prisma//",
+        "/^@neondatabase//",
+        "/^zod-prisma/"
+      ]
     },
     {
       "description": "Authentication",
       "groupName": "Auth Ecosystem",
-      "matchPackagePatterns": [
-        "^next-auth",
-        "^@clerk/"
-      ],
       "automerge": false,
-      "prPriority": 7
+      "prPriority": 7,
+      "matchPackageNames": [
+        "/^next-auth/",
+        "/^@clerk//"
+      ]
     },
     {
       "description": "AI SDK & Components",
       "groupName": "AI Ecosystem",
-      "matchPackagePatterns": [
-        "^ai$",
-        "^@ai-sdk/",
-        "^ai-"
-      ],
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash",
-      "prPriority": 6
+      "prPriority": 6,
+      "matchPackageNames": [
+        "/^ai$/",
+        "/^@ai-sdk//",
+        "/^ai-/"
+      ]
     },
     {
       "description": "UI Components & Styling",
       "groupName": "UI Components Ecosystem",
-      "matchPackagePatterns": [
-        "^@radix-ui/",
-        "^tailwindcss",
-        "^postcss",
-        "^autoprefixer$"
-      ],
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash",
-      "prPriority": 5
+      "prPriority": 5,
+      "matchPackageNames": [
+        "/^@radix-ui//",
+        "/^tailwindcss/",
+        "/^postcss/",
+        "/^autoprefixer$/"
+      ]
     },
     {
       "description": "Major updates require approval",
@@ -160,15 +160,13 @@
       "description": "Testing Tools & Frameworks",
       "groupName": "Testing Ecosystem",
       "matchPackageNames": [
-        "jsdom"
-      ],
-      "matchPackagePatterns": [
-        "^vitest",
-        "^@vitest/",
-        "^vitejs",
-        "^@vitejs/",
-        "^@testing-library/",
-        "^cypress"
+        "jsdom",
+        "/^vitest/",
+        "/^@vitest//",
+        "/^vitejs/",
+        "/^@vitejs//",
+        "/^@testing-library//",
+        "/^cypress/"
       ],
       "automerge": true,
       "automergeType": "pr",
@@ -178,27 +176,27 @@
     {
       "description": "Build Tools",
       "groupName": "Build & Infrastructure",
-      "matchPackagePatterns": [
-        "^turbo$",
-        "^@turbo/"
-      ],
       "automerge": false,
-      "prPriority": 2
+      "prPriority": 2,
+      "matchPackageNames": [
+        "/^turbo$/",
+        "/^@turbo//"
+      ]
     },
     {
       "description": "Linting & Validation Tools",
       "groupName": "Code Quality Tools",
-      "matchPackagePatterns": [
-        "^eslint",
-        "^stylelint",
-        "^@typescript-eslint/",
-        "^prettier",
-        "^@t3-oss/"
-      ],
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash",
-      "prPriority": 2
+      "prPriority": 2,
+      "matchPackageNames": [
+        "/^eslint/",
+        "/^stylelint/",
+        "/^@typescript-eslint//",
+        "/^prettier/",
+        "/^@t3-oss//"
+      ]
     },
     {
       "matchManagers": [
@@ -234,35 +232,35 @@
     },
     {
       "description": "Security and Crypto Packages",
-      "matchPackagePatterns": [
-        "^crypto",
-        "^passport",
-        "^jsonwebtoken",
-        "^bcrypt",
-        "^auth",
-        "security",
-        "^helmet",
-        "^jwt-",
-        "^jose$",
-        "^dotenv",
-        "^env-"
-      ],
       "automerge": false,
-      "prPriority": 9
+      "prPriority": 9,
+      "matchPackageNames": [
+        "/^crypto/",
+        "/^passport/",
+        "/^jsonwebtoken/",
+        "/^bcrypt/",
+        "/^auth/",
+        "/security/",
+        "/^helmet/",
+        "/^jwt-/",
+        "/^jose$/",
+        "/^dotenv/",
+        "/^env-/"
+      ]
     },
     {
       "description": "Security updates use appropriate commit format",
-      "matchPackagePatterns": [
-        "security",
-        "auth",
-        "crypto"
-      ],
       "semanticCommitType": "fix",
-      "semanticCommitScope": "security"
+      "semanticCommitScope": "security",
+      "matchPackageNames": [
+        "/security/",
+        "/auth/",
+        "/crypto/"
+      ]
     },
     {
       "description": "Special handling for PNPM catalog entries",
-      "matchFiles": [
+      "matchFileNames": [
         "pnpm-workspace.yaml"
       ],
       "matchStrings": [
