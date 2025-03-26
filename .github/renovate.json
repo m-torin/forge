@@ -1,0 +1,428 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests",
+    ":configMigration"
+  ],
+  "baseBranches": [
+    "main"
+  ],
+  "minimumReleaseAge": "3 days",
+  "prConcurrentLimit": 2,
+  "rebaseWhen": "conflicted",
+  "rangeStrategy": "replace",
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "fetchReleaseNotes": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": [
+      "security"
+    ],
+    "prPriority": 10
+  },
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency Dashboard",
+  "dependencyDashboardLabels": [
+    "dependencies"
+  ],
+  "dependencyDashboardAutoclose": true,
+  "dependencyDashboardHeader": "# Dependency Dashboard\n\nTrack and review updates to project dependencies.",
+  "platform": "github",
+  "enabledManagers": [
+    "composer",
+    "pip_requirements",
+    "pipenv",
+    "poetry",
+    "terraform",
+    "helm-requirements",
+    "helm-values",
+    "cocoapods",
+    "swift",
+    "docker-compose",
+    "dockerfile",
+    "git-submodules",
+    "github-actions",
+    "gitlabci",
+    "gitlabci-include",
+    "bitbucket-pipelines",
+    "azure-pipelines",
+    "homebrew",
+    "html",
+    "kubernetes",
+    "nvm",
+    "pre-commit"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "after 10pm on sunday"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Special handling for PNPM workspace catalog",
+      "matchFiles": [
+        "pnpm-workspace.yaml"
+      ],
+      "rangeStrategy": "replace",
+      "separateMajorMinor": true,
+      "prPriority": 10
+    },
+    {
+      "description": "React & Next.js Framework",
+      "groupName": "React & Next.js Core",
+      "matchPackagePatterns": [
+        "^react$",
+        "^react-dom$",
+        "^@types/react",
+        "^next$",
+        "^@types/next",
+        "^@next/"
+      ],
+      "prPriority": 9
+    },
+    {
+      "description": "Mantine UI Components",
+      "groupName": "Mantine Ecosystem",
+      "matchPackagePatterns": [
+        "^@mantine/",
+        "^mantine-",
+        "^tailwind-preset-mantine"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "prPriority": 8
+    },
+    {
+      "description": "Prisma & Database",
+      "groupName": "Database Tools",
+      "matchPackagePatterns": [
+        "^prisma$",
+        "^@prisma/",
+        "^@neondatabase/",
+        "^zod-prisma"
+      ],
+      "automerge": false,
+      "prPriority": 8
+    },
+    {
+      "description": "Authentication",
+      "groupName": "Auth Ecosystem",
+      "matchPackagePatterns": [
+        "^next-auth",
+        "^@clerk/"
+      ],
+      "automerge": false,
+      "prPriority": 7
+    },
+    {
+      "description": "AI SDK & Components",
+      "groupName": "AI Ecosystem",
+      "matchPackagePatterns": [
+        "^ai$",
+        "^@ai-sdk/",
+        "^ai-"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "prPriority": 6
+    },
+    {
+      "description": "UI Components & Styling",
+      "groupName": "UI Components Ecosystem",
+      "matchPackagePatterns": [
+        "^@radix-ui/",
+        "^tailwindcss",
+        "^postcss",
+        "^autoprefixer$"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "prPriority": 5
+    },
+    {
+      "description": "Major updates require approval",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": false,
+      "prPriority": 4
+    },
+    {
+      "description": "Testing Tools & Frameworks",
+      "groupName": "Testing Ecosystem",
+      "matchPackageNames": [
+        "jsdom"
+      ],
+      "matchPackagePatterns": [
+        "^vitest",
+        "^@vitest/",
+        "^vitejs",
+        "^@vitejs/",
+        "^@testing-library/",
+        "^cypress"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "prPriority": 3
+    },
+    {
+      "description": "Build Tools",
+      "groupName": "Build & Infrastructure",
+      "matchPackagePatterns": [
+        "^turbo$",
+        "^@turbo/"
+      ],
+      "automerge": false,
+      "prPriority": 2
+    },
+    {
+      "description": "Linting & Validation Tools",
+      "groupName": "Code Quality Tools",
+      "matchPackagePatterns": [
+        "^eslint",
+        "^stylelint",
+        "^@typescript-eslint/",
+        "^prettier",
+        "^@t3-oss/"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "prPriority": 2
+    },
+    {
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "groupName": "Dockerfile Updates",
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "prPriority": 1
+    },
+    {
+      "matchManagers": [
+        "docker-compose"
+      ],
+      "groupName": "Docker Compose Updates",
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "prPriority": 1
+    },
+    {
+      "matchPackageNames": [
+        "sass"
+      ],
+      "enabled": false
+    },
+    {
+      "matchDatasources": [
+        "docker"
+      ],
+      "versioning": "loose"
+    },
+    {
+      "description": "Security and Crypto Packages",
+      "matchPackagePatterns": [
+        "^crypto",
+        "^passport",
+        "^jsonwebtoken",
+        "^bcrypt",
+        "^auth",
+        "security",
+        "^helmet",
+        "^jwt-",
+        "^jose$",
+        "^dotenv",
+        "^env-"
+      ],
+      "automerge": false,
+      "prPriority": 9
+    },
+    {
+      "description": "Security updates use appropriate commit format",
+      "matchPackagePatterns": [
+        "security",
+        "auth",
+        "crypto"
+      ],
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "security"
+    },
+    {
+      "description": "Special handling for PNPM catalog entries",
+      "matchFiles": [
+        "pnpm-workspace.yaml"
+      ],
+      "matchStrings": [
+        "(?<depName>.*?)(?<currentValue>.*?)\\s+# renovate: catalog"
+      ],
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "npm",
+      "prPriority": 10
+    },
+    {
+      "description": "Don't touch workspace and catalog protocols",
+      "matchDepTypes": [
+        "dependencies",
+        "devDependencies",
+        "peerDependencies"
+      ],
+      "matchCurrentValue": "/^(workspace:|catalog:)/",
+      "enabled": false,
+      "prPriority": 10
+    },
+    {
+      "description": "Terraform file paths",
+      "matchManagers": [
+        "terraform"
+      ],
+      "fileMatch": [
+        "(^|/)main\\.tf$",
+        "(^|/)terraform\\.tf$",
+        "\\.tf$"
+      ]
+    },
+    {
+      "description": "Helm charts configuration",
+      "matchManagers": [
+        "helm-requirements",
+        "helm-values"
+      ],
+      "fileMatch": [
+        "(^|/)Chart\\.yaml$",
+        "(^|/)values\\.yaml$",
+        "(^|/)requirements\\.yaml$"
+      ]
+    },
+    {
+      "description": "Swift package manager",
+      "matchManagers": [
+        "swift"
+      ],
+      "fileMatch": [
+        "(^|/)Package\\.swift$"
+      ]
+    },
+    {
+      "description": "Python requirements files",
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "fileMatch": [
+        "(^|/)requirements\\.txt$",
+        "(^|/)requirements-dev\\.txt$",
+        "(^|/)requirements/.*\\.txt$"
+      ]
+    },
+    {
+      "description": "PHP Composer",
+      "matchManagers": [
+        "composer"
+      ],
+      "fileMatch": [
+        "(^|/)composer\\.json$"
+      ]
+    },
+    {
+      "description": "CocoaPods",
+      "matchManagers": [
+        "cocoapods"
+      ],
+      "fileMatch": [
+        "(^|/)Podfile$"
+      ]
+    },
+    {
+      "description": "Python Pipenv",
+      "matchManagers": [
+        "pipenv"
+      ],
+      "fileMatch": [
+        "(^|/)Pipfile$"
+      ]
+    },
+    {
+      "description": "CI/CD pipelines configuration",
+      "matchManagers": [
+        "github-actions",
+        "gitlabci",
+        "gitlabci-include",
+        "bitbucket-pipelines",
+        "azure-pipelines"
+      ],
+      "fileMatch": [
+        "^\\.github/workflows/[^/]+\\.ya?ml$",
+        "^\\.gitlab-ci\\.ya?ml$",
+        "^bitbucket-pipelines\\.ya?ml$",
+        "^azure-pipelines\\.ya?ml$",
+        "^azure-pipeline\\.ya?ml$"
+      ]
+    },
+    {
+      "description": "Git Submodules",
+      "matchManagers": [
+        "git-submodules"
+      ],
+      "fileMatch": [
+        "\\.gitmodules$"
+      ]
+    },
+    {
+      "description": "Homebrew",
+      "matchManagers": [
+        "homebrew"
+      ],
+      "fileMatch": [
+        "Brewfile$"
+      ]
+    },
+    {
+      "description": "HTML Links",
+      "matchManagers": [
+        "html"
+      ],
+      "fileMatch": [
+        "\\.html$"
+      ]
+    },
+    {
+      "description": "Kubernetes Manifests",
+      "matchManagers": [
+        "kubernetes"
+      ],
+      "fileMatch": [
+        "\\.ya?ml$"
+      ]
+    },
+    {
+      "description": "Node Version Manager",
+      "matchManagers": [
+        "nvm"
+      ],
+      "fileMatch": [
+        "\\.nvmrc$"
+      ]
+    },
+    {
+      "description": "Pre-commit Hooks",
+      "matchManagers": [
+        "pre-commit"
+      ],
+      "fileMatch": [
+        "\\.pre-commit-config\\.ya?ml$"
+      ]
+    }
+  ]
+}
