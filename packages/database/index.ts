@@ -3,7 +3,7 @@ import 'server-only';
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import ws from 'ws';
-import { PrismaClient } from './generated/client';
+import { PrismaClient } from './src/generated/client';
 import { keys } from './keys';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -19,4 +19,4 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = database;
 }
 
-export * from './generated/client';
+export * from './src/generated/client';

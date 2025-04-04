@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 // Import dependencies first
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { PrismaClient } from '../generated/client';
+import { PrismaClient } from '../src/generated/client';
 import ws from 'ws';
 import { keys } from '../keys';
 
@@ -17,7 +17,7 @@ vi.mock('@neondatabase/serverless', () => ({
 vi.mock('@prisma/adapter-neon', () => ({
   PrismaNeon: vi.fn().mockImplementation(() => ({})),
 }));
-vi.mock('../generated/client', () => ({
+vi.mock('../src/generated/client', () => ({
   PrismaClient: vi.fn().mockImplementation(() => ({
     // Mock common Prisma methods
     $connect: vi.fn().mockResolvedValue(undefined),
@@ -92,7 +92,7 @@ describe('Database Client', () => {
       // Re-mock dependencies
       vi.mock('@neondatabase/serverless');
       vi.mock('@prisma/adapter-neon');
-      vi.mock('../generated/client', () => {
+      vi.mock('../src/generated/client', () => {
         return {
           PrismaClient: vi.fn().mockImplementation(() => ({
             // Mock common Prisma methods
@@ -142,7 +142,7 @@ describe('Database Client', () => {
       // Re-mock dependencies
       vi.mock('@neondatabase/serverless');
       vi.mock('@prisma/adapter-neon');
-      vi.mock('../generated/client', () => {
+      vi.mock('../src/generated/client', () => {
         return {
           PrismaClient: vi.fn().mockImplementation(() => ({
             // Mock common Prisma methods

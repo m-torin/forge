@@ -2,6 +2,13 @@
   "name": "@repo/design-system",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./lib/*": "./lib/*.ts",
+    "./components/*": "./components/*.tsx",
+    "./components/ui/*": "./components/ui/*.tsx"
+  },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "lint": "eslint . --fix",
