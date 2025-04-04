@@ -96,6 +96,9 @@ catalogs:
     zod:
       specifier: ^3.24.1
       version: 3.24.2
+    zod-prisma-types:
+      specifier: ^3.2.4
+      version: 3.2.4
 
 importers:
 
@@ -891,6 +894,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.0.9(@types/debug@4.1.12)(@types/node@22.13.13)(@vitest/ui@3.0.9)(happy-dom@17.4.4)(jiti@2.4.2)(jsdom@26.0.0(bufferutil@4.0.9))(lightningcss@1.29.2)(sugarss@4.0.1(postcss@8.5.3))(terser@5.39.0)(tsx@4.19.3)
+      zod-prisma-types:
+        specifier: 'catalog:'
+        version: 3.2.4(@prisma/client@6.5.0(prisma@6.5.0(typescript@5.8.2))(typescript@5.8.2))(prisma@6.5.0(typescript@5.8.2))
 
   packages/design-system:
     dependencies:
@@ -3839,6 +3845,9 @@ packages:
 
   '@prisma/fetch-engine@6.5.0':
     resolution: {integrity: sha512-3LhYA+FXP6pqY8FLHCjewyE8pGXXJ7BxZw2rhPq+CZAhvflVzq4K8Qly3OrmOkn6wGlz79nyLQdknyCG2HBTuA==}
+
+  '@prisma/generator-helper@6.5.0':
+    resolution: {integrity: sha512-71ELYxnSE4soeV0BlWJEMgO4KkCowuzHsPY3o7quFOtlcmds5ZX190VZK/k9HMJWdPQ893HooBv3BkKvieR7vA==}
 
   '@prisma/get-platform@6.5.0':
     resolution: {integrity: sha512-xYcvyJwNMg2eDptBYFqFLUCfgi+wZLcj6HDMsj0Qw0irvauG4IKmkbywnqwok0B+k+W+p+jThM2DKTSmoPCkzw==}
@@ -7107,6 +7116,9 @@ packages:
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
+
+  code-block-writer@12.0.0:
+    resolution: {integrity: sha512-q4dMFMlXtKR3XNBHyMHt/3pwYNA69EDk00lloMOaaUMKPUXBw6lpXtbu3MMVG6/uOihGnRDOlkyqsONEUj60+w==}
 
   color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -12978,6 +12990,13 @@ packages:
     resolution: {integrity: sha512-GQHQqAopRhwU8Kt1DDM8NjibDXHC8eoh1erhGAJPEyveY9qqVeXvVikNKrDz69sHowPMorbPUrH/mx8c50eiBQ==}
     engines: {node: '>=18'}
 
+  zod-prisma-types@3.2.4:
+    resolution: {integrity: sha512-S4spVBMJAmecLv+aLyRhXK26qW9nWwcsOf1H1fRcEmiI8DPbftZ99u0fhqHlymuTpmMcUpuKxcNNOIqNY0ScSQ==}
+    hasBin: true
+    peerDependencies:
+      '@prisma/client': ^4.x.x || ^5.x.x || ^6.x.x
+      prisma: ^4.x.x || ^5.x.x || ^6.x.x
+
   zod-to-json-schema@3.24.5:
     resolution: {integrity: sha512-/AuWwMP+YqiPbsJx5D6TfgRTc4kTLjsh5SOcd4bLsfUg2RcEXrFMJl1DGgdHy2aCfsIA/cr/1JM0xcB2GZji8g==}
     peerDependencies:
@@ -15416,6 +15435,10 @@ snapshots:
       '@prisma/engines-version': 6.5.0-73.173f8d54f8d52e692c7e27e72a88314ec7aeff60
       '@prisma/get-platform': 6.5.0
 
+  '@prisma/generator-helper@6.5.0':
+    dependencies:
+      '@prisma/debug': 6.5.0
+
   '@prisma/get-platform@6.5.0':
     dependencies:
       '@prisma/debug': 6.5.0
@@ -17700,7 +17723,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 18.19.86
+      '@types/node': 22.13.13
       form-data: 4.0.2
 
   '@types/node-forge@1.3.11':
@@ -18434,7 +18457,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.12
       tinyrainbow: 2.0.0
-      vitest: 3.0.9(@types/debug@4.1.12)(@types/node@22.13.13)(@vitest/ui@3.0.9)(happy-dom@17.4.4)(jiti@2.4.2)(jsdom@24.1.3(bufferutil@4.0.9))(lightningcss@1.29.2)(sugarss@4.0.1(postcss@8.5.3))(terser@5.39.0)(tsx@4.19.3)
+      vitest: 3.0.9(@types/debug@4.1.12)(@types/node@22.13.13)(@vitest/ui@3.0.9)(happy-dom@17.4.4)(jiti@2.4.2)(jsdom@26.0.0(bufferutil@4.0.9))(lightningcss@1.29.2)(sugarss@4.0.1(postcss@8.5.3))(terser@5.39.0)(tsx@4.19.3)
 
   '@vitest/ui@3.1.1(vitest@3.1.1)':
     dependencies:
@@ -19303,6 +19326,8 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
       - '@types/react-dom'
+
+  code-block-writer@12.0.0: {}
 
   color-convert@1.9.3:
     dependencies:
@@ -26379,6 +26404,15 @@ snapshots:
   yocto-queue@1.2.1: {}
 
   yoctocolors@2.1.1: {}
+
+  zod-prisma-types@3.2.4(@prisma/client@6.5.0(prisma@6.5.0(typescript@5.8.2))(typescript@5.8.2))(prisma@6.5.0(typescript@5.8.2)):
+    dependencies:
+      '@prisma/client': 6.5.0(prisma@6.5.0(typescript@5.8.2))(typescript@5.8.2)
+      '@prisma/generator-helper': 6.5.0
+      code-block-writer: 12.0.0
+      lodash: 4.17.21
+      prisma: 6.5.0(typescript@5.8.2)
+      zod: 3.24.2
 
   zod-to-json-schema@3.24.5(zod@3.24.2):
     dependencies:
