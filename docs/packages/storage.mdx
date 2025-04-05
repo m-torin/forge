@@ -14,17 +14,17 @@ To use the `storage` package using Server Actions, follow the instructions on
 [Vercel's server action documentation](https://vercel.com/docs/storage/vercel-blob/server-upload#upload-a-file-using-server-actions).
 
 ```tsx page.tsx
-import { put } from '@repo/storage';
-import { revalidatePath } from 'next/cache';
+import { put } from "@repo/storage";
+import { revalidatePath } from "next/cache";
 
 export async function Form() {
   async function uploadImage(formData: FormData) {
-    'use server';
-    const imageFile = formData.get('image') as File;
+    "use server";
+    const imageFile = formData.get("image") as File;
     const blob = await put(imageFile.name, imageFile, {
-      access: 'public',
+      access: "public",
     });
-    revalidatePath('/');
+    revalidatePath("/");
     return blob;
   }
 
@@ -48,11 +48,11 @@ For client side usage, check out the
 [Vercel's client upload documentation](https://vercel.com/docs/storage/vercel-blob/client-upload).
 
 ```tsx page.tsx
-'use client';
+"use client";
 
-import { type PutBlobResult } from '@repo/storage';
-import { upload } from '@repo/storage/client';
-import { useState, useRef } from 'react';
+import { type PutBlobResult } from "@repo/storage";
+import { upload } from "@repo/storage/client";
+import { useState, useRef } from "react";
 
 export default function AvatarUploadPage() {
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -66,14 +66,14 @@ export default function AvatarUploadPage() {
           event.preventDefault();
 
           if (!inputFileRef.current?.files) {
-            throw new Error('No file selected');
+            throw new Error("No file selected");
           }
 
           const file = inputFileRef.current.files[0];
 
           const newBlob = await upload(file.name, file, {
-            access: 'public',
-            handleUploadUrl: '/api/avatar/upload',
+            access: "public",
+            handleUploadUrl: "/api/avatar/upload",
           });
 
           setBlob(newBlob);

@@ -1,39 +1,76 @@
-import { dirname, join } from 'node:path';
-import type { StorybookConfig } from '@storybook/nextjs';
+import { dirname, join } from "node:path";
+import type { StorybookConfig } from "@storybook/nextjs";
 
 /**
  * This function is used to resolve the absolute path of a package.
  * It is needed in projects that use Yarn PnP or are set up within a monorepo.
  */
-const getAbsolutePath = (value: string) =>
-  dirname(require.resolve(join(value, 'package.json')));
+const getAbsolutePath = (value: string): string =>
+  dirname(require.resolve(join(value, "package.json")));
 
 const config: StorybookConfig = {
   stories: [
-    '../stories/**/*.mdx',
-    '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    // '../../../apps/web/components/**/*.stories.@(js|jsx|mjs|ts|tsx)', // Commented out as web app doesn't exist
+    // Local stories in storybook app
+    "../stories/**/*.mdx",
+    "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+
+    // Design system stories - updated to match actual structure
+    "../../../packages/design-system/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../../../packages/design-system/**/*.mdx",
+
+    // App stories - keep src directory since it exists
+    "../../../apps/next-app-mantine-tailwind/src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../../../apps/next-app-mantine-tailwind/src/**/*.mdx",
+
+    // Email template stories - updated to match actual structure
+    "../../../apps/email/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../../../apps/email/**/*.mdx",
+
+    // Studio app stories - updated to match actual structure
+    "../../../apps/studio/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../../../apps/studio/**/*.mdx",
   ],
   addons: [
-    getAbsolutePath('@storybook/addon-onboarding'),
-    getAbsolutePath('@storybook/addon-essentials'),
-    getAbsolutePath('@chromatic-com/storybook'),
-    getAbsolutePath('@storybook/addon-interactions'),
-    getAbsolutePath('@storybook/addon-themes'),
-    getAbsolutePath('@storybook/addon-a11y'),
-    getAbsolutePath('@storybook/addon-measure'),
-    getAbsolutePath('@storybook/addon-outline'),
-    getAbsolutePath('@storybook/addon-links'),
+    getAbsolutePath("@storybook/addon-onboarding"),
+    getAbsolutePath("@storybook/addon-essentials"),
+    getAbsolutePath("@chromatic-com/storybook"),
+    getAbsolutePath("@storybook/addon-interactions"),
+    getAbsolutePath("@storybook/addon-themes"),
+    getAbsolutePath("@storybook/addon-a11y"),
+    getAbsolutePath("@storybook/addon-measure"),
+    getAbsolutePath("@storybook/addon-outline"),
+    getAbsolutePath("@storybook/addon-links"),
   ],
   framework: {
-    name: getAbsolutePath('@storybook/nextjs'),
+    name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
-  staticDirs: ['../public'],
+  staticDirs: ["../public"],
   docs: {
     autodocs: true,
-    defaultName: 'Documentation',
+    defaultName: "Documentation",
   },
+  // Typescript configuration
+  typescript: {
+    // Enables type checking in stories
+    check: true,
+    // Don't fail on type errors during development
+    checkOptions: {
+      typescript: {
+        diagnosticOptions: {
+          semantic: true,
+          syntactic: true,
+        },
+      },
+    },
+  },
+  // Core configuration for better error handling
+  core: {
+    disableTelemetry: true,
+    enableCrashReports: false,
+  },
+  // Log level configuration for better error visibility
+  logLevel: "warn",
 };
 
 export default config;

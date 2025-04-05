@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -15,15 +15,15 @@ export async function getBestDeals(options?: {
   const minDiscount = options?.minDiscountPercent || 15;
 
   return prisma.productPricingView.findMany({
+    orderBy: {
+      discountPercent: "desc",
+    },
+    take: limit,
     where: {
       discountPercent: { gte: minDiscount },
       isAvailable: true,
       ...(options?.categoryName ? { categoryName: options.categoryName } : {}),
     },
-    orderBy: {
-      discountPercent: 'desc',
-    },
-    take: limit,
   });
 }
 
@@ -33,12 +33,12 @@ export async function getBestDeals(options?: {
  */
 export async function comparePrices(productSlug: string) {
   return prisma.productPricingView.findMany({
-    where: {
-      productSlug,
-      isAvailable: true,
-    },
     orderBy: {
-      priceSale: 'asc',
+      priceSale: "asc",
+    },
+    where: {
+      isAvailable: true,
+      productSlug,
     },
   });
 }
@@ -55,14 +55,11 @@ export async function getTopStories(options?: {
   const minProducts = options?.minProductCount || 1;
 
   return prisma.storyStatsView.findMany({
+    orderBy: [{ productCount: "desc" }, { avgPrice: "desc" }],
+    take: limit,
     where: {
       productCount: { gte: minProducts },
     },
-    orderBy: [
-      { productCount: 'desc' },
-      { avgPrice: 'desc' },
-    ],
-    take: limit,
   });
 }
 
@@ -82,14 +79,14 @@ export async function getStoryStats(storySlug: string) {
  */
 export async function getPremiumStories(limit = 10) {
   return prisma.storyStatsView.findMany({
+    orderBy: {
+      avgPrice: "desc",
+    },
+    take: limit,
     where: {
       avgPrice: { not: null },
       productCount: { gt: 3 }, // Ensure we have enough products for meaningful averages
     },
-    orderBy: {
-      avgPrice: 'desc',
-    },
-    take: limit,
   });
 }
 
@@ -98,13 +95,13 @@ export async function getPremiumStories(limit = 10) {
  */
 export async function getPopularStories(limit = 10) {
   return prisma.storyStatsView.findMany({
+    orderBy: {
+      sellerCount: "desc",
+    },
+    take: limit,
     where: {
       sellerCount: { gt: 0 },
     },
-    orderBy: {
-      sellerCount: 'desc',
-    },
-    take: limit,
   });
 }
 
@@ -116,14 +113,14 @@ export async function generatePricingReport() {
   // Get top 5 stories by product count
   const topStories = await prisma.storyStatsView.findMany({
     orderBy: {
-      productCount: 'desc',
+      productCount: "desc",
     },
     take: 5,
   });
-  
+
   // For each story, get their top 3 products with the best deals
   const storyReports = await Promise.all(
-    topStories.map(async (story) => {
+    topStories.map(async (story: { storyId: number; [key: string]: any }) => {
       // Find products associated with this story using raw SQL joining the views
       const products = await prisma.$queryRaw<any[]>`
         SELECT ppv.*
@@ -134,20 +131,24 @@ export async function generatePricingReport() {
         ORDER BY ppv.discount_percent DESC
         LIMIT 3
       `;
-      
+
       return {
-        story,
         bestDeals: products,
+        story,
       };
-    })
+    }),
   );
-  
+
   return {
+    // Add additional metrics as needed
+    avgDiscount: storyReports
+      .flatMap((r) => r.bestDeals)
+      .filter((d) => d.discount_percent)
+      .reduce(
+        (sum, deal, _, array) => sum + deal.discount_percent / array.length,
+        0,
+      ),
     generatedAt: new Date(),
     topStories: storyReports,
-    // Add additional metrics as needed
-    avgDiscount: storyReports.flatMap(r => r.bestDeals)
-      .filter(d => d.discount_percent)
-      .reduce((sum, deal, _, array) => sum + deal.discount_percent / array.length, 0),
   };
 }

@@ -1,11 +1,12 @@
+import path from "node:path";
+
+import { FlatCompat } from "@eslint/eslintrc";
+import globals from "globals";
+
 // next.ts
-import reactConfig from './react-package';
-import globals from 'globals';
-import nextPlugin from '@next/eslint-plugin-next';
-import { FlatCompat } from '@eslint/eslintrc';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
-import type { Linter } from 'eslint';
+import reactConfig from "./react-package.js";
+
+import type { Linter } from "eslint";
 
 /*
  * This is a custom ESLint configuration for use with
@@ -24,7 +25,8 @@ import type { Linter } from 'eslint';
  */
 
 // Directory setup for compatibility layer
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Workaround for TS1470 error: Use path.resolve() instead of import.meta.url
+const __dirname = path.resolve(path.dirname(""));
 const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
@@ -34,73 +36,73 @@ const compat = new FlatCompat({
 // =========================================
 
 // Router patterns
-const APP_ROUTER_FILES = ['app/**/*.{js,jsx,ts,tsx}'];
-const PAGES_ROUTER_FILES = ['pages/**/*.{js,jsx,ts,tsx}'];
+const APP_ROUTER_FILES = ["app/**/*.{js,jsx,ts,tsx}"];
+const PAGES_ROUTER_FILES = ["pages/**/*.{js,jsx,ts,tsx}"];
 const ALL_ROUTER_FILES = [...APP_ROUTER_FILES, ...PAGES_ROUTER_FILES];
 
 // Server component patterns (default in App Router)
 const SERVER_COMPONENT_FILES = [
-  'app/**/page.{js,jsx,ts,tsx}',
-  'app/**/layout.{js,jsx,ts,tsx}',
-  'app/**/loading.{js,jsx,ts,tsx}',
-  'app/**/error.{js,jsx,ts,tsx}',
-  'app/**/not-found.{js,jsx,ts,tsx}',
+  "app/**/page.{js,jsx,ts,tsx}",
+  "app/**/layout.{js,jsx,ts,tsx}",
+  "app/**/loading.{js,jsx,ts,tsx}",
+  "app/**/error.{js,jsx,ts,tsx}",
+  "app/**/not-found.{js,jsx,ts,tsx}",
 ];
 
 // Server action patterns
 const SERVER_ACTION_FILES = [
-  'app/**/actions.{js,ts}',
-  'app/**/*actions.{js,ts}',
-  'app/**/*action.{js,ts}',
+  "app/**/actions.{js,ts}",
+  "app/**/*actions.{js,ts}",
+  "app/**/*action.{js,ts}",
 ];
 
 // Next.js specific files
-const NEXT_CONFIG_FILES = ['next.config.{js,ts,mjs}', 'middleware.{js,ts}'];
+const NEXT_CONFIG_FILES = ["next.config.{js,ts,mjs}", "middleware.{js,ts}"];
 
 // React component files
-const REACT_COMPONENT_FILES = ['**/*.{jsx,tsx}'];
+const REACT_COMPONENT_FILES = ["**/*.{jsx,tsx}"];
 
 // Test file patterns
 const TEST_FILE_PATTERNS = [
-  '**/*.{test,spec}.{js,jsx,ts,tsx}',
-  '**/__tests__/**/*.{js,jsx,ts,tsx}',
+  "**/*.{test,spec}.{js,jsx,ts,tsx}",
+  "**/__tests__/**/*.{js,jsx,ts,tsx}",
 ];
 
 // Next.js test file patterns
 const NEXT_TEST_FILE_PATTERNS = [
-  'app/**/*.{test,spec}.{js,jsx,ts,tsx}',
-  'pages/**/*.{test,spec}.{js,jsx,ts,tsx}',
-  'app/**/__tests__/**/*.{js,jsx,ts,tsx}',
-  'pages/**/__tests__/**/*.{js,jsx,ts,tsx}',
+  "app/**/*.{test,spec}.{js,jsx,ts,tsx}",
+  "pages/**/*.{test,spec}.{js,jsx,ts,tsx}",
+  "app/**/__tests__/**/*.{js,jsx,ts,tsx}",
+  "pages/**/__tests__/**/*.{js,jsx,ts,tsx}",
 ];
 
 // Cypress test file patterns
 const CYPRESS_TEST_FILE_PATTERNS = [
-  '**/*.cy.{js,jsx,ts,tsx}',
-  '**/cypress/**/*.{js,jsx,ts,tsx}',
+  "**/*.cy.{js,jsx,ts,tsx}",
+  "**/cypress/**/*.{js,jsx,ts,tsx}",
 ];
 
 // Next.js Cypress test file patterns
 const NEXT_CYPRESS_TEST_FILE_PATTERNS = [
-  'app/**/*.cy.{js,jsx,ts,tsx}',
-  'pages/**/*.cy.{js,jsx,ts,tsx}',
-  'app/**/cypress/**/*.{js,jsx,ts,tsx}',
-  'pages/**/cypress/**/*.{js,jsx,ts,tsx}',
+  "app/**/*.cy.{js,jsx,ts,tsx}",
+  "pages/**/*.cy.{js,jsx,ts,tsx}",
+  "app/**/cypress/**/*.{js,jsx,ts,tsx}",
+  "pages/**/cypress/**/*.{js,jsx,ts,tsx}",
 ];
 
 // Server component test patterns
 const SERVER_COMPONENT_TEST_PATTERNS = [
-  'app/**/page.{test,spec}.{js,jsx,ts,tsx}',
-  'app/**/layout.{test,spec}.{js,jsx,ts,tsx}',
-  'app/**/__tests__/**/page.{js,jsx,ts,tsx}',
-  'app/**/__tests__/**/layout.{js,jsx,ts,tsx}',
+  "app/**/page.{test,spec}.{js,jsx,ts,tsx}",
+  "app/**/layout.{test,spec}.{js,jsx,ts,tsx}",
+  "app/**/__tests__/**/page.{js,jsx,ts,tsx}",
+  "app/**/__tests__/**/layout.{js,jsx,ts,tsx}",
 ];
 
 // All source files
-const ALL_SOURCE_FILES = ['**/*.{js,jsx,ts,tsx}'];
+const ALL_SOURCE_FILES = ["**/*.{js,jsx,ts,tsx}"];
 
 // Build artifacts to ignore
-const IGNORE_PATTERNS = ['.next/**', 'out/**', 'dist/**'];
+const IGNORE_PATTERNS = [".next/**", "out/**", "dist/**"];
 
 // =========================================
 // Rule sets grouped by purpose
@@ -117,15 +119,15 @@ const baseNextRules: Linter.FlatConfig = {
   },
   rules: {
     // TypeScript relaxation for Next.js
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
 
     // Allow default exports for pages/components
-    'import/no-default-export': 'off',
+    "import/no-default-export": "off",
   },
   settings: {
     next: {
-      rootDir: '.',
+      rootDir: ".",
     },
   },
 };
@@ -135,11 +137,11 @@ const routeRules: Linter.FlatConfig = {
   files: ALL_ROUTER_FILES,
   rules: {
     // Export patterns for Next.js routes
-    'import/no-default-export': 'off',
-    'import/prefer-default-export': 'error',
+    "import/no-default-export": "off",
+    "import/prefer-default-export": "error",
 
     // Navigation patterns
-    '@next/next/no-html-link-for-pages': 'error',
+    "@next/next/no-html-link-for-pages": "error",
   },
 };
 
@@ -148,17 +150,17 @@ const performanceRules: Linter.FlatConfig = {
   files: ALL_SOURCE_FILES,
   rules: {
     // Image optimization
-    '@next/next/no-img-element': 'error',
+    "@next/next/no-img-element": "error",
 
+    "@next/next/inline-script-id": "error",
+    "@next/next/no-before-interactive-script-outside-document": "error",
+    "@next/next/next-script-for-ga": "error",
     // Script optimization
-    '@next/next/no-sync-scripts': 'error',
+    "@next/next/no-sync-scripts": "error",
 
     // Font optimization
-    '@next/next/google-font-display': 'warn',
-    '@next/next/no-page-custom-font': 'warn',
-
-    // Link optimization
-    // '@next/next/link-passhref': 'warn', // Removed - deprecated in newer versions
+    "@next/next/google-font-display": "warn",
+    "@next/next/google-font-preconnect": "warn",
   },
 };
 
@@ -166,12 +168,13 @@ const performanceRules: Linter.FlatConfig = {
 const appRouterRules: Linter.FlatConfig = {
   files: APP_ROUTER_FILES,
   rules: {
+    "@next/next/no-assign-module-variable": "error",
+    "@next/next/no-async-client-component": "error",
     // Document patterns
-    '@next/next/no-styled-jsx-in-document': 'error',
-
-    // Server/client boundaries
-    '@next/next/no-server-import-in-page': 'error',
-    '@next/next/no-document-import-in-page': 'error',
+    "@next/next/no-document-import-in-page": "error",
+    "@next/next/no-duplicate-head": "error",
+    "@next/next/no-head-import-in-document": "error",
+    "@next/next/no-html-link-for-pages": "error",
   },
 };
 
@@ -180,7 +183,7 @@ const serverComponentRules: Linter.FlatConfig = {
   files: SERVER_COMPONENT_FILES,
   rules: {
     // Prevent client-only code in server components
-    '@next/next/no-client-only-import-in-server-component': 'error',
+    "@next/next/no-client-only-import-in-server-component": "error",
   },
 };
 
@@ -190,10 +193,7 @@ const clientComponentRules: Linter.FlatConfig = {
   ignores: SERVER_COMPONENT_FILES,
   rules: {
     // Ensure 'use client' directive is present
-    '@next/next/use-client-directive': 'error',
-
-    // Allow client-side imports
-    '@next/next/no-client-only-import-in-server-component': 'off',
+    "@next/next/use-client-directive": "error",
   },
 };
 
@@ -202,15 +202,12 @@ const react19Rules: Linter.FlatConfig = {
   files: REACT_COMPONENT_FILES,
   rules: {
     // Support new React 19 hooks in exhaustive-deps
-    'react-hooks/exhaustive-deps': [
-      'warn',
+    "react-hooks/exhaustive-deps": [
+      "warn",
       {
-        additionalHooks: '(useActionState|useOptimistic)',
+        additionalHooks: "(useActionState|useOptimistic)",
       },
     ],
-
-    // Prevent server action misuse in useEffect
-    // '@next/next/no-server-action-in-use-effect': 'error', // Rule doesn't exist in current version
   },
 };
 
@@ -219,13 +216,7 @@ const serverActionRules: Linter.FlatConfig = {
   files: SERVER_ACTION_FILES,
   rules: {
     // Enforce proper 'use server' directive
-    '@next/next/use-server-directive': 'error',
-
-    // Ensure server actions export properly
-    '@next/next/export-server-actions-only': 'error',
-
-    // Prevent client-side code in server actions
-    '@next/next/no-client-only-import-in-server-action': 'error',
+    "@next/next/use-server-directive": "error",
   },
 };
 
@@ -234,14 +225,11 @@ const nextConfigRules: Linter.FlatConfig = {
   files: NEXT_CONFIG_FILES,
   rules: {
     // Allow default exports for Next.js config
-    'import/no-default-export': 'off',
-    'import/prefer-default-export': 'error',
+    "import/no-default-export": "off",
+    "import/prefer-default-export": "error",
 
     // Ensure middleware is properly typed
-    '@typescript-eslint/explicit-function-return-type': 'error',
-
-    // Prevent client-only code in middleware
-    '@next/next/no-client-only-import-in-middleware': 'error',
+    "@typescript-eslint/explicit-function-return-type": "error",
   },
 };
 
@@ -258,16 +246,16 @@ const ignorePatterns: Linter.FlatConfig = {
 const nextTestingRules: Linter.FlatConfig = {
   files: NEXT_TEST_FILE_PATTERNS,
   rules: {
+    "testing-library/no-container": "off", // Sometimes needed for Next.js testing
     // Adjust testing-library rules for Next.js
-    'testing-library/no-node-access': 'off', // Allow for server component testing
-    'testing-library/no-container': 'off', // Sometimes needed for Next.js testing
+    "testing-library/no-node-access": "off", // Allow for server component testing
 
     // Ensure proper testing patterns for Next.js
-    'testing-library/prefer-screen-queries': 'error',
-    'testing-library/render-result-naming-convention': 'error',
-    
+    "testing-library/prefer-screen-queries": "error",
+    "testing-library/render-result-naming-convention": "error",
+
     // Use the correct rule name for preventing render in lifecycle methods
-    'testing-library/no-render-in-lifecycle': 'error',
+    "testing-library/no-render-in-lifecycle": "error",
   },
 };
 
@@ -276,18 +264,18 @@ const nextCypressRules: Linter.FlatConfig = {
   files: NEXT_CYPRESS_TEST_FILE_PATTERNS,
   rules: {
     // Adjust Cypress rules for Next.js
-    'cypress/no-unnecessary-waiting': 'warn', // Downgrade to warning for Next.js routing
+    "cypress/no-unnecessary-waiting": "warn", // Downgrade to warning for Next.js routing
 
+    "@next/next/no-html-link-for-pages": "off", // Allow regular links in tests
     // Disable rules that conflict with Next.js patterns
-    '@next/next/no-img-element': 'off', // Allow img in Cypress tests
-    '@next/next/no-html-link-for-pages': 'off', // Allow regular links in tests
+    "@next/next/no-img-element": "off", // Allow img in Cypress tests
 
     // Ensure proper testing patterns for Next.js
-    'cypress/require-data-selectors': [
-      'warn',
+    "cypress/require-data-selectors": [
+      "warn",
       {
         allowCssSelectors: true,
-        customAttributeSelectors: ['data-testid', 'data-cy', 'data-test'],
+        customAttributeSelectors: ["data-testid", "data-cy", "data-test"],
       },
     ],
   },
@@ -297,13 +285,13 @@ const nextCypressRules: Linter.FlatConfig = {
 const serverComponentTestingRules: Linter.FlatConfig = {
   files: SERVER_COMPONENT_TEST_PATTERNS,
   rules: {
+    "testing-library/no-wait-for-side-effects": "off",
+    "jest-dom/prefer-in-document": "off",
     // Disable client-side specific rules for server component tests
-    'testing-library/await-async-queries': 'off',
-    'testing-library/no-wait-for-side-effects': 'off',
-    'jest-dom/prefer-in-document': 'off',
+    "testing-library/await-async-queries": "off",
 
     // These rules don't apply to server component testing
-    'testing-library/no-unnecessary-act': 'off',
+    "testing-library/no-unnecessary-act": "off",
   },
 };
 
@@ -315,8 +303,8 @@ const config: Linter.FlatConfig[] = [
   // Base configurations
   ...reactConfig,
   ...compat.extends(
-    'plugin:@next/next/recommended',
-    'plugin:@next/next/core-web-vitals',
+    "plugin:@next/next/recommended",
+    "plugin:@next/next/core-web-vitals",
   ),
 
   // Core Next.js rules

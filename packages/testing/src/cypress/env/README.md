@@ -15,7 +15,7 @@ import {
   addEnvironmentToConfig,
   testEnvVars,
   validationPatterns,
-} from '@repo/testing/cypress/env';
+} from "@repo/testing/cypress/env";
 
 // In your Cypress setup file (e.g., cypress/support/e2e.ts)
 before(() => {
@@ -24,29 +24,29 @@ before(() => {
 });
 
 // In your Cypress tests
-describe('My Test Suite', () => {
-  it('uses environment variables', () => {
+describe("My Test Suite", () => {
+  it("uses environment variables", () => {
     // Get a test environment variable
-    const apiKey = getTestEnv('API_KEY');
+    const apiKey = getTestEnv("API_KEY");
 
     // Verify required environment variables
-    verifyEnvironment(['API_KEY', 'DATABASE_URL']);
+    verifyEnvironment(["API_KEY", "DATABASE_URL"]);
 
     // Mock environment variables for a specific test
-    withMockEnv({ API_KEY: 'test-key' }, () => {
+    withMockEnv({ API_KEY: "test-key" }, () => {
       // Test code that uses API_KEY
     });
   });
 });
 
 // In your Cypress configuration file (e.g., cypress.config.ts)
-import { defineConfig } from 'cypress';
-import { addEnvironmentToConfig } from '@repo/testing/cypress/env';
+import { defineConfig } from "cypress";
+import { addEnvironmentToConfig } from "@repo/testing/cypress/env";
 
 export default defineConfig(
   addEnvironmentToConfig({
     e2e: {
-      baseUrl: 'http://localhost:3000',
+      baseUrl: "http://localhost:3000",
       // Other Cypress config
     },
   }),
@@ -73,10 +73,10 @@ Get a test environment variable from Cypress.env().
 
 ```typescript
 // Get a test environment variable
-const apiKey = getTestEnv('API_KEY');
+const apiKey = getTestEnv("API_KEY");
 
 // Get a test environment variable with a default value
-const apiKey = getTestEnv('API_KEY', 'default-key');
+const apiKey = getTestEnv("API_KEY", "default-key");
 ```
 
 ### `verifyEnvironment(requiredVars: string[]): void`
@@ -86,7 +86,7 @@ if any of the required variables are not set.
 
 ```typescript
 // Verify required environment variables
-verifyEnvironment(['API_KEY', 'DATABASE_URL']);
+verifyEnvironment(["API_KEY", "DATABASE_URL"]);
 ```
 
 ### `withMockEnv(envVars: Record<string, string>, callback: () => void): void`
@@ -96,7 +96,7 @@ conditions or edge cases.
 
 ```typescript
 // Mock environment variables for a specific test
-withMockEnv({ API_KEY: 'test-key' }, () => {
+withMockEnv({ API_KEY: "test-key" }, () => {
   // Test code that uses API_KEY
 });
 ```
@@ -108,13 +108,13 @@ Cypress configuration file.
 
 ```typescript
 // In your Cypress configuration file
-import { defineConfig } from 'cypress';
-import { addEnvironmentToConfig } from '@repo/testing/cypress/env';
+import { defineConfig } from "cypress";
+import { addEnvironmentToConfig } from "@repo/testing/cypress/env";
 
 export default defineConfig(
   addEnvironmentToConfig({
     e2e: {
-      baseUrl: 'http://localhost:3000',
+      baseUrl: "http://localhost:3000",
       // Other Cypress config
     },
   }),
@@ -127,7 +127,7 @@ The module re-exports the standard test values from the core environment
 utilities:
 
 ```typescript
-import { testEnvVars } from '@repo/testing/cypress/env';
+import { testEnvVars } from "@repo/testing/cypress/env";
 
 // Authentication
 testEnvVars.CLERK_SECRET_KEY; // 'sk_test_clerk_secret_key'
@@ -157,7 +157,7 @@ The module also re-exports the validation patterns from the core environment
 utilities:
 
 ```typescript
-import { validationPatterns } from '@repo/testing/cypress/env';
+import { validationPatterns } from "@repo/testing/cypress/env";
 
 // Authentication
 validationPatterns.clerk.secretKeyTest; // /^sk_test_/
@@ -183,15 +183,15 @@ interact with Node.js environment variables:
 
 ```typescript
 // In your cypress.config.ts
-import { defineConfig } from 'cypress';
-import { addEnvironmentToConfig } from '@repo/testing/cypress/env';
+import { defineConfig } from "cypress";
+import { addEnvironmentToConfig } from "@repo/testing/cypress/env";
 
 export default defineConfig(
   addEnvironmentToConfig({
     e2e: {
       setupNodeEvents(on, config) {
         // Add tasks for environment variable handling
-        on('task', {
+        on("task", {
           // Reset environment variables
           resetEnv: () => {
             process.env = { ...process.env };

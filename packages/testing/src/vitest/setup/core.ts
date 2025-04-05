@@ -1,7 +1,7 @@
 /**
  * Core setup functions for Vitest
  */
-import { vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { vi, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
 
 // Original console methods store
 let originalConsole: Record<string, any> = {};
@@ -77,7 +77,7 @@ afterAll(() => {
 
 // Reset mocks between tests
 beforeEach(() => {
-  vi.resetAllMocks();
+  vi.restoreAllMocks();
 });
 
 afterEach(() => {

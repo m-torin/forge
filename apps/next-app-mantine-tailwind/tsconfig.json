@@ -1,14 +1,16 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    // Add types needed for tests, as tsc doesn't run setupFiles
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@repo/*": ["../../packages/*"]
     },
     "incremental": true,
     "noErrorTruncation": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "."
   },
   "include": [
     "next-env.d.ts",
@@ -17,7 +19,5 @@
     ".next/types/**/*.ts",
     "types/**/*.d.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

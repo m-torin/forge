@@ -1,8 +1,8 @@
 // Import testing-library extensions and jest-dom
-import '@testing-library/jest-dom/vitest';
-import { afterAll, vi } from 'vitest';
-import * as React from 'react';
-import * as testingLibrary from '@testing-library/react';
+import "@testing-library/jest-dom/vitest";
+import * as testingLibrary from "@testing-library/react";
+import * as React from "react";
+import { vi } from "vitest";
 
 // Export a createRender function that can be used in tests
 export const createRender = () => {
@@ -13,8 +13,8 @@ export const createRender = () => {
 export const screen = testingLibrary.screen;
 
 // Add TextEncoder/TextDecoder polyfill for jsdom environment
-if (typeof global.TextEncoder === 'undefined') {
-  const { TextEncoder, TextDecoder } = require('util');
+if (typeof global.TextEncoder === "undefined") {
+  const { TextDecoder, TextEncoder } = require("util");
   global.TextEncoder = TextEncoder;
   global.TextDecoder = TextDecoder;
 }
@@ -22,7 +22,7 @@ if (typeof global.TextEncoder === 'undefined') {
 // Add package-specific setup here
 
 // Mock react-markdown to properly render markdown in tests
-vi.mock('react-markdown', () => {
+vi.mock("react-markdown", () => {
   return {
     default: ({
       children,
@@ -33,18 +33,18 @@ vi.mock('react-markdown', () => {
       className?: string;
       [key: string]: any;
     }) => {
-      if (typeof children !== 'string') {
-        return React.createElement('div', { className, ...props }, children);
+      if (typeof children !== "string") {
+        return React.createElement("div", { className, ...props }, children);
       }
 
       // Handle bold text
-      if (children.includes('**')) {
+      if (children.includes("**")) {
         const parts = children.split(/(\*\*.*?\*\*)/g);
         const elements = parts.map((part, index) => {
           const boldMatch = part.match(/^\*\*(.*?)\*\*$/);
           if (boldMatch) {
             return React.createElement(
-              'strong',
+              "strong",
               { key: `bold-${index}` },
               boldMatch[1],
             );
@@ -52,17 +52,17 @@ vi.mock('react-markdown', () => {
           return part || null;
         });
 
-        return React.createElement('div', { className, ...props }, ...elements);
+        return React.createElement("div", { className, ...props }, ...elements);
       }
 
       // Handle italic text
-      if (children.includes('*')) {
+      if (children.includes("*")) {
         const parts = children.split(/(\*.*?\*)/g);
         const elements = parts.map((part, index) => {
           const italicMatch = part.match(/^\*(.*?)\*$/);
           if (italicMatch) {
             return React.createElement(
-              'em',
+              "em",
               { key: `italic-${index}` },
               italicMatch[1],
             );
@@ -70,36 +70,44 @@ vi.mock('react-markdown', () => {
           return part || null;
         });
 
-        return React.createElement('div', { className, ...props }, ...elements);
+        return React.createElement("div", { className, ...props }, ...elements);
       }
 
       // Handle headings
-      if (children.startsWith('# ')) {
+      if (children.startsWith("# ")) {
         const headingMatch = children.match(/^# (.*?)$/);
         if (headingMatch) {
+          // Check if custom h1 component is provided
+          if (props.components && props.components.h1) {
+            return React.createElement(
+              "div",
+              { className },
+              React.createElement(props.components.h1, {}, headingMatch[1]),
+            );
+          }
           return React.createElement(
-            'div',
+            "div",
             { className, ...props },
-            React.createElement('h1', null, headingMatch[1]),
+            React.createElement("h1", null, headingMatch[1]),
           );
         }
       }
 
       // Default case: just return the content as is
-      return React.createElement('div', { className, ...props }, children);
+      return React.createElement("div", { className, ...props }, children);
     },
   };
 });
 
 // Standard mock for the keys module
-vi.mock('../keys', () => ({
+vi.mock("../keys", () => ({
   keys: vi.fn().mockImplementation(() => ({
-    OPENAI_API_KEY: 'sk_test_openai_key123456',
+    OPENAI_API_KEY: "sk_test_openai_key123456",
   })),
 }));
 
 // Mock OpenAI
-vi.mock('@ai-sdk/openai', () => ({
+vi.mock("@ai-sdk/openai", () => ({
   createOpenAI: vi.fn().mockImplementation(() => {
     // Return a function that can be called with a model name
     return (modelName: string) => {

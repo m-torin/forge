@@ -55,11 +55,11 @@ import {
   mockRequest,
   mockResponse,
   mockNext,
-} from '@repo/testing/vitest';
+} from "@repo/testing/vitest";
 
 // Example usage
-test('handles request', () => {
-  const req = mockRequest({ body: { name: 'Test' } });
+test("handles request", () => {
+  const req = mockRequest({ body: { name: "Test" } });
   const res = mockResponse();
   const next = mockNext;
 
@@ -78,11 +78,11 @@ import {
   mockDate,
   mockFetch,
   testEnvVars,
-} from '@repo/testing/vitest';
+} from "@repo/testing/vitest";
 
 // Example usage
-test('uses environment variables', () => {
-  const restore = mockEnvVars({ API_KEY: 'test-key' });
+test("uses environment variables", () => {
+  const restore = mockEnvVars({ API_KEY: "test-key" });
 
   // Test code that uses process.env.API_KEY
 
@@ -100,15 +100,15 @@ import {
   expect,
   beforeEach,
   afterEach,
-} from '@repo/testing/vitest';
+} from "@repo/testing/vitest";
 
 // Example usage
-describe('My test suite', () => {
+describe("My test suite", () => {
   beforeEach(() => {
     // Setup
   });
 
-  it('does something', () => {
+  it("does something", () => {
     const mock = vi.fn();
     expect(mock).not.toHaveBeenCalled();
   });
@@ -118,7 +118,7 @@ describe('My test suite', () => {
 ## Configuration Helpers
 
 ```typescript
-import { getConfig } from '@repo/testing/vitest';
+import { getConfig } from "@repo/testing/vitest";
 
 // In vitest.config.ts
 export default getConfig.react({

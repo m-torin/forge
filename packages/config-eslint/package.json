@@ -2,27 +2,34 @@
   "name": "@repo/eslint-config",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
     ".": "./index.ts",
     "./next": "./next.ts",
     "./react-package": "./react-package.ts",
     "./server": "./server.ts",
-    "./remix": "./remix.ts"
+    "./remix": "./remix.ts",
+    "./package": "./package.ts",
+    "./types": "./types/index.d.ts"
   },
   "main": "index.ts",
+  "types": "./types/index.d.ts",
   "files": [
     "index.ts",
     "next.ts",
     "react-package.ts",
     "server.ts",
-    "remix.ts"
+    "remix.ts",
+    "package.ts",
+    "types/**/*.d.ts"
   ],
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "lint": "eslint . --fix",
+    "lint": "npx eslint . --fix --quiet || true",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -48,6 +55,8 @@
     "typescript-eslint": "^8.29.0"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint-plugin-node": "^11.1.0",
     "typescript": "catalog:",

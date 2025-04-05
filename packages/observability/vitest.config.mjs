@@ -1,8 +1,8 @@
 // This is a vitest.config.mjs for the observability package
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get current directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -11,26 +11,26 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['./__tests__/setup.ts'],
-    include: ['**/*.test.{ts,tsx}'],
-    exclude: ['**/node_modules/**'],
+    setupFiles: ["./__tests__/setup.ts"],
+    include: ["**/*.test.{ts,tsx}"],
+    exclude: ["**/node_modules/**"],
     testTimeout: 10000,
     hookTimeout: 10000,
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       exclude: [
-        'coverage/**',
-        'dist/**',
-        '**/node_modules/**',
-        '**/*.d.ts',
-        'test/**',
-        'tests/**',
-        '**/__tests__/**',
-        '**/*.test.{ts,tsx}',
-        '**/vitest.config.*',
+        "coverage/**",
+        "dist/**",
+        "**/node_modules/**",
+        "**/*.d.ts",
+        "test/**",
+        "tests/**",
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/vitest.config.*",
       ],
       thresholds: {
         statements: 90,
@@ -42,8 +42,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname),
+      "@": path.resolve(__dirname),
     },
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
   },
 });

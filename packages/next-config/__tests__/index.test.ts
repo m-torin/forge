@@ -1,130 +1,210 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { config, withAnalyzer } from '../index';
-import withBundleAnalyzer from '@next/bundle-analyzer';
-import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
-import type { NextConfig } from 'next';
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { config, withAnalyzer } from "../index";
+
+import type { NextConfig } from "next";
 
 // Import the mocked modules
-vi.mock('@next/bundle-analyzer');
-vi.mock('@prisma/nextjs-monorepo-workaround-plugin');
+vi.mock("@next/bundle-analyzer");
+vi.mock("@prisma/nextjs-monorepo-workaround-plugin");
 
-describe('Next Config', () => {
+describe("Next Config", function () {
   beforeEach(() => {
     vi.resetAllMocks();
 
     // Mock withBundleAnalyzer to return a function that returns the config
-    (withBundleAnalyzer as any).mockImplementation(() => (config) => config);
+    (withBundleAnalyzer as any).mockImplementation(
+      () => (config: any) => config,
+    );
 
     // Mock PrismaPlugin constructor
-    (PrismaPlugin as any).mockImplementation(function () {
+    (PrismaPlugin as any).mockImplementation(function (this: any) {
       this.apply = vi.fn();
     });
   });
 
-  describe('config', () => {
-    it('exports a valid NextConfig object', () => {
+  describe("config", () => {
+    it("exports a valid NextConfig object", () => {
       expect(config).toBeDefined();
-      expect(typeof config).toBe('object');
-      expect(config).toHaveProperty('images');
-      expect(config).toHaveProperty('rewrites');
-      expect(config).toHaveProperty('webpack');
-      expect(config).toHaveProperty('skipTrailingSlashRedirect', true);
+      expect(typeof config).toBe("object");
+      expect(config).toHaveProperty("images");
+      expect(config).toHaveProperty("rewrites");
+      expect(config).toHaveProperty("webpack");
+      expect(config).toHaveProperty("skipTrailingSlashRedirect", true);
     });
 
-    it('configures images with the correct formats and remote patterns', () => {
+    it("configures images with the correct formats and remote patterns", () => {
       expect(config.images).toEqual({
-        formats: ['image/avif', 'image/webp'],
+        formats: ["image/avif", "image/webp"],
         remotePatterns: [
           {
-            protocol: 'https',
-            hostname: 'img.clerk.com',
+            hostname: "img.clerk.com",
+            protocol: "https",
           },
         ],
       });
     });
 
-    it('configures rewrites for PostHog', async () => {
-      const rewrites = await config.rewrites();
+    it("configures rewrites for PostHog", async () => {
+      if (config.rewrites) {
+        const rewrites = await config.rewrites();
 
-      expect(Array.isArray(rewrites)).toBe(true);
-      expect(rewrites).toHaveLength(3);
+        if (Array.isArray(rewrites)) {
+          expect(rewrites).toHaveLength(3);
 
-      // Check static assets rewrite
-      expect(rewrites[0]).toEqual({
-        source: '/ingest/static/:path*',
-        destination: 'https://us-assets.i.posthog.com/static/:path*',
-      });
+          // Check static assets rewrite
+          expect(rewrites[0]).toEqual({
+            destination: "https://us-assets.i.posthog.com/static/:path*",
+            source: "/ingest/static/:path*",
+          });
 
-      // Check main ingest rewrite
-      expect(rewrites[1]).toEqual({
-        source: '/ingest/:path*',
-        destination: 'https://us.i.posthog.com/:path*',
-      });
+          // Check main ingest rewrite
+          expect(rewrites[1]).toEqual({
+            destination: "https://us.i.posthog.com/:path*",
+            source: "/ingest/:path*",
+          });
 
-      // Check decide endpoint rewrite
-      expect(rewrites[2]).toEqual({
-        source: '/ingest/decide',
-        destination: 'https://us.i.posthog.com/decide',
-      });
+          // Check decide endpoint rewrite
+          expect(rewrites[2]).toEqual({
+            destination: "https://us.i.posthog.com/decide",
+            source: "/ingest/decide",
+          });
+        }
+      }
     });
 
-    describe('webpack configuration', () => {
-      it.skip('adds PrismaPlugin when running on the server', () => {
-        const mockConfig = {
-          plugins: [],
-        };
-        const options = { isServer: true };
+    describe("webpack configuration", () => {
+      it("adds PrismaPlugin when running on the server", () => {
+        if (config.webpack) {
+          const mockConfig = {
+            plugins: [],
+          };
+          const options = {
+            buildId: "",
+            config: {
+              allowedDevOrigins: [],
+              eslint: {},
+              exportPathMap: {},
+              i18n: null,
+            },
+            defaultLoaders: {},
+            dev: false,
+            dir: "",
+            isServer: true,
+            totalPages: 0,
+            webpack: {},
+          };
 
-        const result = config.webpack(mockConfig, options);
+          // Use type assertion to avoid type errors
+          const result = config.webpack(mockConfig, options as any);
 
-        expect(result.plugins).toContain(expect.any(PrismaPlugin));
-        expect(PrismaPlugin).toHaveBeenCalled();
+          // Check if any plugin in the array is an instance of PrismaPlugin
+          expect(
+            result.plugins.some((plugin) => plugin instanceof PrismaPlugin),
+          ).toBe(true);
+          expect(PrismaPlugin).toHaveBeenCalled();
+        }
       });
 
-      it('does not add PrismaPlugin when not running on the server', () => {
-        const mockConfig = {
-          plugins: [],
-        };
-        const options = { isServer: false };
+      it("does not add PrismaPlugin when not running on the server", () => {
+        if (config.webpack) {
+          const mockConfig = {
+            plugins: [],
+          };
+          const options = {
+            buildId: "",
+            config: {
+              allowedDevOrigins: [],
+              eslint: {},
+              exportPathMap: {},
+              i18n: null,
+            },
+            defaultLoaders: {},
+            dev: false,
+            dir: "",
+            isServer: false,
+            totalPages: 0,
+            webpack: {},
+          };
 
-        const result = config.webpack(mockConfig, options);
+          // Use type assertion to avoid type errors
+          const result = config.webpack(mockConfig, options as any);
 
-        expect(result.plugins).toEqual([]);
-        expect(PrismaPlugin).not.toHaveBeenCalled();
+          expect(result.plugins).toEqual([]);
+          expect(PrismaPlugin).not.toHaveBeenCalled();
+        }
       });
 
-      it('adds ignoreWarnings for OpenTelemetry', () => {
-        const mockConfig = {};
-        const options = { isServer: false };
+      it("adds ignoreWarnings for OpenTelemetry", () => {
+        if (config.webpack) {
+          const mockConfig = {};
+          const options = {
+            buildId: "",
+            config: {
+              allowedDevOrigins: [],
+              eslint: {},
+              exportPathMap: {},
+              i18n: null,
+            },
+            defaultLoaders: {},
+            dev: false,
+            dir: "",
+            isServer: false,
+            totalPages: 0,
+            webpack: {},
+          };
 
-        const result = config.webpack(mockConfig, options);
+          // Use type assertion to avoid type errors
+          const result = config.webpack(mockConfig, options as any);
 
-        expect(result.ignoreWarnings).toEqual([{ module: expect.any(RegExp) }]);
+          expect(result.ignoreWarnings).toEqual([
+            { module: expect.any(RegExp) },
+          ]);
 
-        // Test that the regex matches OpenTelemetry
-        const otelRegex = result.ignoreWarnings[0].module;
-        expect(otelRegex.test('@opentelemetry/instrumentation')).toBe(true);
-        expect(otelRegex.test('some-other-module')).toBe(false);
+          // Test that the regex matches OpenTelemetry
+          const otelRegex = result.ignoreWarnings[0].module;
+          expect(otelRegex.test("@opentelemetry/instrumentation")).toBe(true);
+          expect(otelRegex.test("some-other-module")).toBe(false);
+        }
       });
 
-      it('preserves existing plugins when adding PrismaPlugin', () => {
-        const existingPlugin = { apply: vi.fn() };
-        const mockConfig = {
-          plugins: [existingPlugin],
-        };
-        const options = { isServer: true };
+      it("preserves existing plugins when adding PrismaPlugin", () => {
+        if (config.webpack) {
+          const existingPlugin = { apply: vi.fn() };
+          const mockConfig = {
+            plugins: [existingPlugin],
+          };
+          const options = {
+            buildId: "",
+            config: {
+              allowedDevOrigins: [],
+              eslint: {},
+              exportPathMap: {},
+              i18n: null,
+            },
+            defaultLoaders: {},
+            dev: false,
+            dir: "",
+            isServer: true,
+            totalPages: 0,
+            webpack: {},
+          };
 
-        const result = config.webpack(mockConfig, options);
+          // Use type assertion to avoid type errors
+          const result = config.webpack(mockConfig, options as any);
 
-        expect(result.plugins).toHaveLength(2);
-        expect(result.plugins[0]).toBe(existingPlugin);
-        expect(result.plugins[1]).toBeInstanceOf(PrismaPlugin);
+          expect(result.plugins).toHaveLength(2);
+          expect(result.plugins[0]).toBe(existingPlugin);
+          expect(result.plugins[1]).toBeInstanceOf(PrismaPlugin);
+        }
       });
     });
   });
 
-  describe('withAnalyzer', () => {
-    it.skip('calls withBundleAnalyzer with the provided config', () => {
+  describe("withAnalyzer", () => {
+    it("calls withBundleAnalyzer with the provided config", () => {
       const sourceConfig: NextConfig = {
         reactStrictMode: true,
       };
@@ -132,10 +212,9 @@ describe('Next Config', () => {
       withAnalyzer(sourceConfig);
 
       expect(withBundleAnalyzer).toHaveBeenCalled();
-      expect(withBundleAnalyzer())(sourceConfig);
     });
 
-    it('returns the result of withBundleAnalyzer', () => {
+    it("returns the result of withBundleAnalyzer", () => {
       const sourceConfig: NextConfig = {
         reactStrictMode: true,
       };

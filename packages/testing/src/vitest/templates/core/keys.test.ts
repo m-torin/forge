@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterAll } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterAll } from "vitest";
 
 /**
  * Template for testing environment variable validation
@@ -17,7 +17,7 @@ import { describe, expect, it, vi, beforeEach, afterAll } from 'vitest';
 // import { keys } from '../keys';
 
 // Example test suite for environment variables
-describe('Environment Keys', () => {
+describe("Environment Keys", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -30,9 +30,9 @@ describe('Environment Keys', () => {
   });
 
   // Example test for required variables
-  it('validates required environment variables', () => {
+  it("validates required environment variables", () => {
     // Set required environment variables
-    process.env.REQUIRED_API_KEY = 'valid-key';
+    process.env.REQUIRED_API_KEY = "valid-key";
 
     // Call the keys function
     // const result = keys();
@@ -42,7 +42,7 @@ describe('Environment Keys', () => {
   });
 
   // Example test for missing required variables
-  it('throws an error when required variables are missing', () => {
+  it("throws an error when required variables are missing", () => {
     // Delete required environment variables
     delete process.env.REQUIRED_API_KEY;
 
@@ -51,9 +51,9 @@ describe('Environment Keys', () => {
   });
 
   // Example test for optional variables
-  it('handles optional environment variables', () => {
+  it("handles optional environment variables", () => {
     // Set optional environment variables
-    process.env.OPTIONAL_API_KEY = 'optional-key';
+    process.env.OPTIONAL_API_KEY = "optional-key";
 
     // Call the keys function
     // const result = keys();
@@ -63,7 +63,7 @@ describe('Environment Keys', () => {
   });
 
   // Example test for missing optional variables
-  it('returns undefined for missing optional variables', () => {
+  it("returns undefined for missing optional variables", () => {
     // Delete optional environment variables
     delete process.env.OPTIONAL_API_KEY;
 
@@ -75,21 +75,21 @@ describe('Environment Keys', () => {
   });
 
   // Example test for validation rules
-  it('validates environment variable format', () => {
+  it("validates environment variable format", () => {
     // Set environment variables with invalid format
-    process.env.REQUIRED_API_KEY = 'invalid-format';
+    process.env.REQUIRED_API_KEY = "invalid-format";
 
     // Expect the keys function to throw an error due to validation
     // expect(() => keys()).toThrow();
   });
 
   // Example test for test environment handling
-  it('relaxes validation in test environment', () => {
+  it("relaxes validation in test environment", () => {
     // Ensure we're in test environment
-    process.env.NODE_ENV = 'test';
+    process.env.NODE_ENV = "test";
 
     // Set environment variables that would be invalid in production
-    process.env.REQUIRED_API_KEY = 'test-key';
+    process.env.REQUIRED_API_KEY = "test-key";
 
     // Expect the keys function not to throw in test environment
     // expect(() => keys()).not.toThrow();

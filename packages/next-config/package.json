@@ -26,6 +26,7 @@
     "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "catalog:",
     "next": "catalog:",
     "vitest": "catalog:"
   }

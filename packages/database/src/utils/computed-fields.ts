@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-import { Prisma } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -17,17 +16,11 @@ export async function findBestDiscounts(options?: {
   const limit = options?.limit || 20;
 
   return prisma.productSellerBrand.findMany({
-    where: {
-      discountPercent: { gte: minDiscount },
-      isAvailable: true,
-      ...(options?.categoryId ? { product: { categoryId: options.categoryId } } : {}),
-      ...(options?.sellerId ? { sellerId: options.sellerId } : {}),
-    },
     include: {
       product: {
         include: {
-          category: true,
           canonicalUrl: true,
+          category: true,
         },
       },
       seller: {
@@ -39,9 +32,17 @@ export async function findBestDiscounts(options?: {
       },
     },
     orderBy: {
-      discountPercent: 'desc',
+      discountPercent: "desc",
     },
     take: limit,
+    where: {
+      discountPercent: { gte: minDiscount },
+      isAvailable: true,
+      ...(options?.categoryId
+        ? { product: { categoryId: options.categoryId } }
+        : {}),
+      ...(options?.sellerId ? { sellerId: options.sellerId } : {}),
+    },
   });
 }
 
@@ -58,11 +59,6 @@ export async function findHighProfitMarginProducts(options?: {
   const limit = options?.limit || 20;
 
   return prisma.productSellerBrand.findMany({
-    where: {
-      profitMargin: { gte: minMargin },
-      isAvailable: true,
-      ...(options?.categoryId ? { product: { categoryId: options.categoryId } } : {}),
-    },
     include: {
       product: {
         include: {
@@ -78,9 +74,16 @@ export async function findHighProfitMarginProducts(options?: {
       },
     },
     orderBy: {
-      profitMargin: 'desc',
+      profitMargin: "desc",
     },
     take: limit,
+    where: {
+      isAvailable: true,
+      profitMargin: { gte: minMargin },
+      ...(options?.categoryId
+        ? { product: { categoryId: options.categoryId } }
+        : {}),
+    },
   });
 }
 
@@ -98,11 +101,6 @@ export async function findOptimalProducts(options?: {
   const limit = options?.limit || 20;
 
   return prisma.productSellerBrand.findMany({
-    where: {
-      discountPercent: { gte: minDiscount },
-      profitMargin: { gte: minMargin },
-      isAvailable: true,
-    },
     include: {
       product: {
         include: {
@@ -113,10 +111,15 @@ export async function findOptimalProducts(options?: {
     },
     orderBy: [
       // Combined ordering for optimal products
-      { discountPercent: 'desc' },
-      { profitMargin: 'desc' },
+      { discountPercent: "desc" },
+      { profitMargin: "desc" },
     ],
     take: limit,
+    where: {
+      discountPercent: { gte: minDiscount },
+      isAvailable: true,
+      profitMargin: { gte: minMargin },
+    },
   });
 }
 
@@ -126,7 +129,7 @@ export async function findOptimalProducts(options?: {
  */
 export async function getDiscountDistribution() {
   // Using raw SQL for this complex aggregation
-  return prisma.$queryRaw<Array<{ range: string; count: number }>>`
+  return prisma.$queryRaw<{ range: string; count: number }[]>`
     SELECT 
       CASE 
         WHEN discount_percent >= 50 THEN 'Over 50%'
@@ -158,17 +161,21 @@ export async function getDiscountDistribution() {
  * Get products with the same discount percentage
  * Useful for creating "similar deals" recommendations
  */
-export async function getSimilarDiscounts(productId: number, sellerId: number, range = 5) {
+export async function getSimilarDiscounts(
+  productId: number,
+  sellerId: number,
+  range = 5,
+) {
   // First get the discount percent of the target product
   const targetProduct = await prisma.productSellerBrand.findUnique({
+    select: {
+      discountPercent: true,
+    },
     where: {
       productId_sellerId: {
         productId,
         sellerId,
       },
-    },
-    select: {
-      discountPercent: true,
     },
   });
 
@@ -178,19 +185,6 @@ export async function getSimilarDiscounts(productId: number, sellerId: number, r
 
   // Find products with similar discount percentage
   return prisma.productSellerBrand.findMany({
-    where: {
-      NOT: {
-        productId_sellerId: {
-          productId,
-          sellerId,
-        },
-      },
-      discountPercent: {
-        gte: targetProduct.discountPercent - range,
-        lte: targetProduct.discountPercent + range,
-      },
-      isAvailable: true,
-    },
     include: {
       product: true,
       seller: {
@@ -203,8 +197,21 @@ export async function getSimilarDiscounts(productId: number, sellerId: number, r
     },
     orderBy: {
       // Order by how close the discount is to the target
-      discountPercent: 'desc',
+      discountPercent: "desc",
     },
     take: 10,
+    where: {
+      discountPercent: {
+        gte: targetProduct.discountPercent - range,
+        lte: targetProduct.discountPercent + range,
+      },
+      isAvailable: true,
+      NOT: {
+        productId_sellerId: {
+          productId,
+          sellerId,
+        },
+      },
+    },
   });
 }

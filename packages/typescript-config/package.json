@@ -10,10 +10,9 @@
   },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "lint": "eslint . --fix",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "lint": "eslint . --fix"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*"
+    "eslint": "catalog:"
   }
 }

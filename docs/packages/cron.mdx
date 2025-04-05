@@ -26,13 +26,13 @@ named `cron` folder to hold our endpoints designed to run as cron jobs. For
 example:
 
 ```ts apps/api/app/cron/[your-function]/route.ts
-import { database } from '@repo/database';
+import { database } from "@repo/database";
 
 // Must use GET for Vercel cron jobs
 export const GET = async () => {
   // Do stuff
 
-  return new Response('OK', { status: 200 });
+  return new Response("OK", { status: 200 });
 };
 ```
 

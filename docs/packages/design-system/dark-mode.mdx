@@ -28,7 +28,7 @@ component which is located in the Design System package. We've already added it
 to the `app` sidebar and `web` navbar, but you can import it anywhere:
 
 ```tsx page.tsx
-import { ModeToggle } from '@repo/design-system/components/mode-toggle';
+import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 
 const MyPage = () => <ModeToggle />;
 ```
@@ -37,11 +37,11 @@ You can check the theme by using the `useTheme` hook directly from
 `next-themes`. For example:
 
 ```tsx page.tsx
-import { useTheme } from 'next-themes';
+import { useTheme } from "next-themes";
 
 const MyPage = () => {
   const { resolvedTheme } = useTheme();
 
-  return resolvedTheme === 'dark' ? 'Dark mode baby' : 'Light mode ftw';
+  return resolvedTheme === "dark" ? "Dark mode baby" : "Light mode ftw";
 };
 ```

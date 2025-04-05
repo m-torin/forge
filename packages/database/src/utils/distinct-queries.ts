@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -8,27 +8,27 @@ const prisma = new PrismaClient();
  */
 export async function getCategoryShowcaseProducts() {
   return prisma.product.findMany({
-    distinct: ['categoryId'],
+    distinct: ["categoryId"],
+    include: {
+      canonicalUrl: true,
+      category: true,
+      sellerRelationships: {
+        orderBy: { discountPercent: "desc" },
+        take: 1,
+        where: { isAvailable: true },
+      },
+    },
+    orderBy: {
+      name: "asc",
+    },
     where: {
       sellerRelationships: {
         some: {
+          discountPercent: { gt: 0 },
           isAvailable: true,
-          discountPercent: { gt: 0 }
-        }
-      }
-    },
-    include: {
-      category: true,
-      sellerRelationships: {
-        take: 1,
-        where: { isAvailable: true },
-        orderBy: { discountPercent: 'desc' }
+        },
       },
-      canonicalUrl: true
     },
-    orderBy: {
-      name: 'asc'
-    }
   });
 }
 
@@ -38,19 +38,19 @@ export async function getCategoryShowcaseProducts() {
  */
 export async function getDistinctSellersForCategory(categoryId: number) {
   return prisma.productSellerBrand.findMany({
-    where: {
-      product: { categoryId }
-    },
-    distinct: ['sellerId'],
+    distinct: ["sellerId"],
     include: {
       seller: {
         select: {
           id: true,
           name: true,
-          slug: true
-        }
-      }
-    }
+          slug: true,
+        },
+      },
+    },
+    where: {
+      product: { categoryId },
+    },
   });
 }
 
@@ -60,20 +60,20 @@ export async function getDistinctSellersForCategory(categoryId: number) {
  */
 export async function getDistinctStoryProducts(storyId: number) {
   return prisma.product.findMany({
-    where: {
-      stories: {
-        some: { id: storyId }
-      }
-    },
-    distinct: ['id'],
+    distinct: ["id"],
     include: {
+      category: true,
       sellerRelationships: {
+        orderBy: { priceSale: "asc" },
         take: 1,
         where: { isAvailable: true },
-        orderBy: { priceSale: 'asc' }
       },
-      category: true
-    }
+    },
+    where: {
+      stories: {
+        some: { id: storyId },
+      },
+    },
   });
 }
 
@@ -83,13 +83,13 @@ export async function getDistinctStoryProducts(storyId: number) {
  */
 export async function getDistinctMediaTypes() {
   return prisma.productVariant.findMany({
-    where: {
-      mediaType: { not: null }
-    },
-    distinct: ['mediaType'],
+    distinct: ["mediaType"],
     select: {
-      mediaType: true
-    }
+      mediaType: true,
+    },
+    where: {
+      mediaType: { not: null },
+    },
   });
 }
 
@@ -100,31 +100,31 @@ export async function getDistinctFandomsWithStories() {
   const fandoms = await prisma.fandom.findMany({
     include: {
       _count: {
-        select: { stories: true }
-      }
-    }
+        select: { stories: true },
+      },
+    },
   });
 
   // Get one story from each fandom for preview
   const fandomPreviews = await Promise.all(
-    fandoms.map(async (fandom) => {
+    fandoms.map(async (fandom: { id: number; [key: string]: any }) => {
       const previewStory = await prisma.story.findFirst({
-        where: { fandomId: fandom.id },
-        orderBy: { productCount: 'desc' },
         include: {
           products: {
-            take: 1
-          }
-        }
+            take: 1,
+          },
+        },
+        orderBy: { productCount: "desc" },
+        where: { fandomId: fandom.id },
       });
-      
+
       return {
         ...fandom,
-        previewStory
+        previewStory,
       };
-    })
+    }),
   );
-  
+
   return fandomPreviews;
 }
 
@@ -134,19 +134,19 @@ export async function getDistinctFandomsWithStories() {
  */
 export async function getDistinctBrandTypes() {
   return prisma.brand.findMany({
-    where: {
-      type: { not: null },
-      productsAsSeller: { some: {} }
+    distinct: ["type"],
+    orderBy: {
+      type: "asc",
     },
-    distinct: ['type'],
     select: {
       type: true,
       _count: {
-        select: { productsAsSeller: true }
-      }
+        select: { productsAsSeller: true },
+      },
     },
-    orderBy: {
-      type: 'asc'
-    }
+    where: {
+      type: { not: null },
+      productsAsSeller: { some: {} },
+    },
   });
 }

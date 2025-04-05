@@ -7,11 +7,11 @@
 
 // Show deprecation warning
 console.warn(
-  '[DEPRECATED] @repo/testing/env is deprecated. Please use @repo/testing/shared instead.',
+  "[DEPRECATED] @repo/testing/env is deprecated. Please use @repo/testing/shared instead.",
 );
 
 // Re-export from the new location for backward compatibility
-export * from '../shared/env/index.ts';
+export * from "../shared/env/index.ts";
 
 // Export templates for backward compatibility
-export * as templates from './templates/index.ts';
+export * as templates from "./templates/index.ts";

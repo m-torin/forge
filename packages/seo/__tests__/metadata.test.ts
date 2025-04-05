@@ -1,105 +1,108 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { createMetadata } from '../metadata';
-import merge from 'lodash.merge';
+import merge from "lodash.merge";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { createMetadata } from "../metadata";
 
 // Import the mocked modules
-vi.mock('lodash.merge');
+vi.mock("lodash.merge");
 
-describe('SEO Metadata', () => {
+describe("SEO Metadata", () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
     // Mock merge to behave like Object.assign
-    (merge as unknown as any).mockImplementation((target, ...sources) => {
-      return Object.assign({}, target, ...sources);
-    });
+    (merge as unknown as any).mockImplementation(
+      (target: Record<string, any>, ...sources: Record<string, any>[]) => {
+        return Object.assign({}, target, ...sources);
+      },
+    );
   });
 
-  it('creates metadata with required fields', () => {
+  it("creates metadata with required fields", () => {
     const metadata = createMetadata({
-      title: 'Test Page',
-      description: 'This is a test page',
+      description: "This is a test page",
+      title: "Test Page",
     });
 
     expect(metadata).toEqual(
       expect.objectContaining({
-        title: 'Test Page | next-forge',
-        description: 'This is a test page',
-        applicationName: 'next-forge',
+        appleWebApp: {
+          capable: true,
+          statusBarStyle: "default",
+          title: "Test Page | next-forge",
+        },
+        applicationName: "next-forge",
         authors: [
           {
-            name: 'Hayden Bleasel',
-            url: 'https://haydenbleasel.com/',
+            name: "Hayden Bleasel",
+            url: "https://haydenbleasel.com/",
           },
         ],
-        creator: 'Hayden Bleasel',
+        creator: "Hayden Bleasel",
+        description: "This is a test page",
         formatDetection: {
           telephone: false,
         },
-        appleWebApp: {
-          capable: true,
-          statusBarStyle: 'default',
-          title: 'Test Page | next-forge',
-        },
         openGraph: {
-          title: 'Test Page | next-forge',
-          description: 'This is a test page',
-          type: 'website',
-          siteName: 'next-forge',
-          locale: 'en_US',
+          type: "website",
+          description: "This is a test page",
+          locale: "en_US",
+          siteName: "next-forge",
+          title: "Test Page | next-forge",
         },
-        publisher: 'Hayden Bleasel',
+        publisher: "Hayden Bleasel",
+        title: "Test Page | next-forge",
         twitter: {
-          card: 'summary_large_image',
-          creator: '@haydenbleasel',
+          card: "summary_large_image",
+          creator: "@haydenbleasel",
         },
       }),
     );
   });
 
-  it('adds image to openGraph when provided', () => {
+  it("adds image to openGraph when provided", () => {
     const metadata = createMetadata({
-      title: 'Test Page',
-      description: 'This is a test page',
-      image: 'https://example.com/image.jpg',
+      description: "This is a test page",
+      image: "https://example.com/image.jpg",
+      title: "Test Page",
     });
 
     expect(metadata.openGraph).toEqual(
       expect.objectContaining({
         images: [
           {
-            url: 'https://example.com/image.jpg',
             width: 1200,
+            url: "https://example.com/image.jpg",
+            alt: "Test Page",
             height: 630,
-            alt: 'Test Page',
           },
         ],
       }),
     );
   });
 
-  it('merges additional properties with default metadata', () => {
+  it("merges additional properties with default metadata", () => {
     const metadata = createMetadata({
-      title: 'Test Page',
-      description: 'This is a test page',
-      keywords: ['test', 'page', 'seo'],
+      description: "This is a test page",
+      keywords: ["test", "page", "seo"],
       robots: {
-        index: false,
         follow: true,
+        index: false,
       },
+      title: "Test Page",
     });
 
     // Check that merge was called with the correct arguments
     expect(merge).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Test Page | next-forge',
-        description: 'This is a test page',
+        description: "This is a test page",
+        title: "Test Page | next-forge",
       }),
       expect.objectContaining({
-        keywords: ['test', 'page', 'seo'],
+        keywords: ["test", "page", "seo"],
         robots: {
-          index: false,
           follow: true,
+          index: false,
         },
       }),
     );
@@ -107,69 +110,76 @@ describe('SEO Metadata', () => {
     // Check that the result includes the merged properties
     expect(metadata).toEqual(
       expect.objectContaining({
-        title: 'Test Page | next-forge',
-        description: 'This is a test page',
-        keywords: ['test', 'page', 'seo'],
+        description: "This is a test page",
+        keywords: ["test", "page", "seo"],
         robots: {
-          index: false,
           follow: true,
+          index: false,
         },
+        title: "Test Page | next-forge",
       }),
     );
   });
 
-  it('formats title correctly', () => {
+  it("formats title correctly", () => {
     const metadata = createMetadata({
-      title: 'Custom Title',
-      description: 'This is a test page',
+      description: "This is a test page",
+      title: "Custom Title",
     });
 
-    expect(metadata.title).toBe('Custom Title | next-forge');
-    expect(metadata.openGraph?.title).toBe('Custom Title | next-forge');
-    expect(metadata.appleWebApp?.title).toBe('Custom Title | next-forge');
+    expect(metadata.title).toBe("Custom Title | next-forge");
+    expect(metadata.openGraph?.title).toBe("Custom Title | next-forge");
+    // Check appleWebApp title if it exists and is an object
+    if (
+      metadata.appleWebApp &&
+      typeof metadata.appleWebApp === "object" &&
+      "title" in metadata.appleWebApp
+    ) {
+      expect(metadata.appleWebApp.title).toBe("Custom Title | next-forge");
+    }
   });
 
-  it('sets description in multiple places', () => {
+  it("sets description in multiple places", () => {
     const metadata = createMetadata({
-      title: 'Test Page',
-      description: 'Custom description for testing',
+      description: "Custom description for testing",
+      title: "Test Page",
     });
 
-    expect(metadata.description).toBe('Custom description for testing');
+    expect(metadata.description).toBe("Custom description for testing");
     expect(metadata.openGraph?.description).toBe(
-      'Custom description for testing',
+      "Custom description for testing",
     );
   });
 
-  it('handles complex additional properties', () => {
+  it("handles complex additional properties", () => {
     const metadata = createMetadata({
-      title: 'Test Page',
-      description: 'This is a test page',
       alternates: {
-        canonical: 'https://example.com/page',
+        canonical: "https://example.com/page",
         languages: {
-          'en-US': 'https://example.com/page',
-          'fr-FR': 'https://example.com/fr/page',
+          "en-US": "https://example.com/page",
+          "fr-FR": "https://example.com/fr/page",
         },
       },
+      description: "This is a test page",
+      title: "Test Page",
       verification: {
-        google: 'google-verification-code',
-        yandex: 'yandex-verification-code',
+        google: "google-verification-code",
+        yandex: "yandex-verification-code",
       },
     });
 
     expect(metadata).toEqual(
       expect.objectContaining({
         alternates: {
-          canonical: 'https://example.com/page',
+          canonical: "https://example.com/page",
           languages: {
-            'en-US': 'https://example.com/page',
-            'fr-FR': 'https://example.com/fr/page',
+            "en-US": "https://example.com/page",
+            "fr-FR": "https://example.com/fr/page",
           },
         },
         verification: {
-          google: 'google-verification-code',
-          yandex: 'yandex-verification-code',
+          google: "google-verification-code",
+          yandex: "yandex-verification-code",
         },
       }),
     );

@@ -1,6 +1,8 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    // Add types needed for tests, as tsc doesn't run setupFiles
+    "types": ["vitest/globals", "@testing-library/jest-dom", "cypress"],
     "baseUrl": "."
   },
   "include": [

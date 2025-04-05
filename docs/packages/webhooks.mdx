@@ -26,11 +26,11 @@ To send a webhook, simply use the `send` function from the `@repo/webhooks`
 package:
 
 ```tsx
-import { webhooks } from '@repo/webhooks';
+import { webhooks } from "@repo/webhooks";
 
-await webhooks.send('invoice.created', {
+await webhooks.send("invoice.created", {
   data: {
-    id: 'inv_1234567890',
+    id: "inv_1234567890",
   },
 });
 ```
@@ -48,7 +48,7 @@ To get access to the application portal, use the `getAppPortal` function from
 `@repo/webhooks` and use the returned URL in an `iframe` on your dashboard.
 
 ```tsx
-import { webhooks } from '@repo/webhooks';
+import { webhooks } from "@repo/webhooks";
 
 const { url } = await webhooks.getAppPortal();
 

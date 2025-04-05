@@ -2,4 +2,4 @@
  * Mantine test templates
  */
 
-export * from './component.test.tsx';
+export * from "./component.test.tsx";

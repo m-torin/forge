@@ -1,5 +1,5 @@
 // Minimal Vitest setup for ESLint config tests
-import { vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, vi } from "vitest";
 
 // Reset all mocks automatically between tests
 beforeEach(() => {

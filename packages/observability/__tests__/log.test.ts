@@ -1,10 +1,10 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { log as logtail } from '@logtail/next';
+import { log as logtail } from "@logtail/next";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Store the original NODE_ENV
 let originalNodeEnv: string | undefined;
 
-describe.skip('Logging', () => {
+describe.skip("Logging", () => {
   beforeEach(() => {
     // Store the original NODE_ENV
     originalNodeEnv = process.env.NODE_ENV;
@@ -13,12 +13,12 @@ describe.skip('Logging', () => {
     vi.resetAllMocks();
 
     // Re-mock @logtail/next for each test
-    vi.mock('@logtail/next', () => ({
+    vi.mock("@logtail/next", () => ({
       log: {
-        info: vi.fn(),
-        error: vi.fn(),
-        warn: vi.fn(),
         debug: vi.fn(),
+        error: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
       },
     }));
 
@@ -37,69 +37,69 @@ describe.skip('Logging', () => {
     vi.resetModules();
   });
 
-  it('uses Logtail in production environment', async () => {
+  it("uses Logtail in production environment", async () => {
     // Set NODE_ENV to production
-    process.env.NODE_ENV = 'production';
+    process.env.NODE_ENV = "production";
 
     // Import the module to test (must be done after setting NODE_ENV)
-    const { log } = await import('../log');
+    const { log } = await import("../log");
 
     // Verify that log is defined
     expect(log).toBeDefined();
 
     // Test logging methods
-    log.info('Test info message');
-    log.error('Test error message');
-    log.warn('Test warning message');
+    log.info("Test info message");
+    log.error("Test error message");
+    log.warn("Test warning message");
 
     // Since we're testing the production mode where log should be logtail
     // we can check if logtail methods were called
-    expect(vi.mocked(logtail.info)).toHaveBeenCalledWith('Test info message');
-    expect(vi.mocked(logtail.error)).toHaveBeenCalledWith('Test error message');
+    expect(vi.mocked(logtail.info)).toHaveBeenCalledWith("Test info message");
+    expect(vi.mocked(logtail.error)).toHaveBeenCalledWith("Test error message");
     expect(vi.mocked(logtail.warn)).toHaveBeenCalledWith(
-      'Test warning message',
+      "Test warning message",
     );
   });
 
-  it('uses console in development environment', async () => {
+  it("uses console in development environment", async () => {
     // Set NODE_ENV to development
-    process.env.NODE_ENV = 'development';
+    process.env.NODE_ENV = "development";
 
     // Import the module to test (must be done after setting NODE_ENV)
-    const { log } = await import('../log');
+    const { log } = await import("../log");
 
     // Verify that log is defined
     expect(log).toBeDefined();
 
     // Test logging methods
-    log.info('Test info message');
-    log.error('Test error message');
-    log.warn('Test warning message');
+    log.info("Test info message");
+    log.error("Test error message");
+    log.warn("Test warning message");
 
     // Verify that console methods were called
-    expect(console.info).toHaveBeenCalledWith('Test info message');
-    expect(console.error).toHaveBeenCalledWith('Test error message');
-    expect(console.warn).toHaveBeenCalledWith('Test warning message');
+    expect(console.info).toHaveBeenCalledWith("Test info message");
+    expect(console.error).toHaveBeenCalledWith("Test error message");
+    expect(console.warn).toHaveBeenCalledWith("Test warning message");
   });
 
-  it('uses console in test environment', async () => {
+  it("uses console in test environment", async () => {
     // Set NODE_ENV to test
-    process.env.NODE_ENV = 'test';
+    process.env.NODE_ENV = "test";
 
     // Import the module to test (must be done after setting NODE_ENV)
-    const { log } = await import('../log');
+    const { log } = await import("../log");
 
     // Verify that log is defined
     expect(log).toBeDefined();
 
     // Test logging methods
-    log.info('Test info message');
-    log.error('Test error message');
-    log.warn('Test warning message');
+    log.info("Test info message");
+    log.error("Test error message");
+    log.warn("Test warning message");
 
     // Verify that console methods were called
-    expect(console.info).toHaveBeenCalledWith('Test info message');
-    expect(console.error).toHaveBeenCalledWith('Test error message');
-    expect(console.warn).toHaveBeenCalledWith('Test warning message');
+    expect(console.info).toHaveBeenCalledWith("Test info message");
+    expect(console.error).toHaveBeenCalledWith("Test error message");
+    expect(console.warn).toHaveBeenCalledWith("Test warning message");
   });
 });

@@ -7,7 +7,7 @@ Today we're going to create an AI chatbot using next-forge and the built-in AI
 package, powered by [Vercel AI SDK](https://sdk.vercel.ai/).
 
 <Frame>
-  <img src="/images/ai-chatbot.png" style={{ borderRadius: '0.5rem' }} />
+  <img src="/images/ai-chatbot.png" style={{ borderRadius: "0.5rem" }} />
 </Frame>
 
 ## 1. Create a new project
@@ -44,21 +44,21 @@ going to use a few things here:
 - `SendIcon` from `lucide-react` to create a send icon.
 
 ```tsx apps/app/app/(authenticated)/components/chatbot.tsx
-'use client';
+"use client";
 
-import { Message } from '@repo/ai/components/message';
-import { Thread } from '@repo/ai/components/thread';
-import { useChat } from '@repo/ai/lib/react';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Input } from '@repo/design-system/components/ui/input';
-import { handleError } from '@repo/design-system/lib/utils';
-import { SendIcon } from 'lucide-react';
+import { Message } from "@repo/ai/components/message";
+import { Thread } from "@repo/ai/components/thread";
+import { useChat } from "@repo/ai/lib/react";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Input } from "@repo/design-system/components/ui/input";
+import { handleError } from "@repo/design-system/lib/utils";
+import { SendIcon } from "lucide-react";
 
 export const Chatbot = () => {
   const { messages, input, handleInputChange, isLoading, handleSubmit } =
     useChat({
       onError: handleError,
-      api: '/api/chat',
+      api: "/api/chat",
     });
 
   return (
@@ -98,24 +98,24 @@ our AI package to get the OpenAI provider, and the `log` function from our
 Observability package to log the chatbot's responses.
 
 ```tsx apps/app/app/api/chat/route.ts
-import { streamText } from '@repo/ai';
-import { log } from '@repo/observability/log';
-import { models } from '@repo/ai/lib/models';
+import { streamText } from "@repo/ai";
+import { log } from "@repo/observability/log";
+import { models } from "@repo/ai/lib/models";
 
 export const POST = async (req: Request) => {
   const body = await req.json();
 
-  log.info('🤖 Chat request received.', { body });
+  log.info("🤖 Chat request received.", { body });
   const { messages } = body;
 
-  log.info('🤖 Generating response...');
+  log.info("🤖 Generating response...");
   const result = streamText({
     model: models.chat,
-    system: 'You are a helpful assistant.',
+    system: "You are a helpful assistant.",
     messages,
   });
 
-  log.info('🤖 Streaming response...');
+  log.info("🤖 Streaming response...");
   return result.toDataStreamResponse();
 };
 ```
@@ -126,14 +126,14 @@ Finally, we'll update the `app/page.tsx` file to be a simple entry point that
 renders the chatbot UI.
 
 ```tsx apps/app/app/(authenticated)/page.tsx
-import { auth } from '@repo/auth/server';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { Chatbot } from './components/chatbot';
-import { Header } from './components/header';
+import { auth } from "@repo/auth/server";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Chatbot } from "./components/chatbot";
+import { Header } from "./components/header";
 
-const title = 'Acme Inc';
-const description = 'My application.';
+const title = "Acme Inc";
+const description = "My application.";
 
 export const metadata: Metadata = {
   title,
@@ -149,7 +149,7 @@ const App = async () => {
 
   return (
     <>
-      <Header pages={['Building Your Application']} page="AI Chatbot" />
+      <Header pages={["Building Your Application"]} page="AI Chatbot" />
       <Chatbot />
     </>
   );

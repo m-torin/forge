@@ -1,6 +1,6 @@
-import { UserConfig } from 'vitest/config';
-import { createReactConfig } from './react.ts';
-import path from 'path';
+import { UserConfig } from "vitest/config";
+import { createReactConfig } from "./react.ts";
+import path from "path";
 
 /**
  * Creates a Vitest configuration for Mantine packages in the monorepo
@@ -17,7 +17,7 @@ export function createMantineConfig(
       test: {
         setupFiles: [
           ...(customConfig.test?.setupFiles || []),
-          path.resolve(__dirname, '../setup/mantine.ts'),
+          path.resolve(__dirname, "../setup/mantine.ts"),
         ],
         ...(customConfig.test || {}),
       },

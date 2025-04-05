@@ -1,6 +1,9 @@
-import 'server-only';
-import type en from './dictionaries/en.json';
-import languine from './languine.json';
+import "server-only";
+
+import languine from "./languine.json";
+
+import type en from "./dictionaries/en.json";
+import type { I18nConfig } from "./types";
 
 export const locales = [
   languine.locale.source,
@@ -19,19 +22,19 @@ const dictionaries: Record<string, () => Promise<Dictionary>> =
           .catch((err) => {
             console.error(
               `Failed to load dictionary for locale: ${locale}`,
-              err
+              err,
             );
-            return import('./dictionaries/en.json').then((mod) => mod.default);
+            return import("./dictionaries/en.json").then((mod) => mod.default);
           }),
-    ])
+    ]),
   );
 
 export const getDictionary = async (locale: string): Promise<Dictionary> => {
-  const normalizedLocale = locale.split('-')[0];
+  const normalizedLocale = locale.split("-")[0];
 
   if (!locales.includes(normalizedLocale as any)) {
     console.warn(`Locale "${locale}" is not supported, defaulting to "en"`);
-    return dictionaries['en']();
+    return dictionaries["en"]();
   }
 
   try {
@@ -39,8 +42,36 @@ export const getDictionary = async (locale: string): Promise<Dictionary> => {
   } catch (error) {
     console.error(
       `Error loading dictionary for locale "${normalizedLocale}", falling back to "en"`,
-      error
+      error,
     );
-    return dictionaries['en']();
+    return dictionaries["en"]();
   }
 };
+
+export async function loadMessages(
+  locale: string,
+  namespace: string,
+): Promise<Record<string, string>> {
+  try {
+    const messages = await import(`./messages/${locale}/${namespace}.json`);
+    return messages.default || {};
+  } catch (error) {
+    console.error(`Failed to load messages for ${locale}/${namespace}:`, error);
+    return {};
+  }
+}
+
+export async function initializeI18n(config: I18nConfig): Promise<void> {
+  const { namespaces, defaultLocale } = config;
+
+  // Load all messages in parallel
+  const messagePromises = namespaces.map((namespace) =>
+    loadMessages(defaultLocale, namespace),
+  );
+
+  try {
+    await Promise.all(messagePromises);
+  } catch (error) {
+    console.error("Failed to initialize i18n:", error);
+  }
+}

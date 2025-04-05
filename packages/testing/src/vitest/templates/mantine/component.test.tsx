@@ -1,10 +1,10 @@
-import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import React from "react";
+import { describe, it, expect, vi } from "vitest";
 import {
   renderWithMantine,
   screen,
   fireEvent,
-} from '@repo/testing/vitest/mantine';
+} from "@repo/testing/vitest/mantine";
 
 /**
  * Template for testing Mantine components
@@ -23,21 +23,21 @@ import {
 // import { MantineComponent } from '../components/MantineComponent';
 
 // Example test suite for a Mantine component
-describe('MantineComponent', () => {
+describe("MantineComponent", () => {
   // Example test for basic rendering
-  it('renders correctly', () => {
+  it("renders correctly", () => {
     // renderWithMantine(<MantineComponent />);
     // expect(screen.getByText('Example')).toBeInTheDocument();
   });
 
   // Example test for rendering with dark theme
-  it('renders with dark theme', () => {
+  it("renders with dark theme", () => {
     // renderWithMantine(<MantineComponent />, { colorScheme: 'dark' });
     // expect(screen.getByRole('button')).toHaveClass('mantine-Button-filled');
   });
 
   // Example test for theme overrides
-  it('handles theme overrides', () => {
+  it("handles theme overrides", () => {
     // renderWithMantine(
     //   <MantineComponent />,
     //   {
@@ -52,7 +52,7 @@ describe('MantineComponent', () => {
   });
 
   // Example test for user interactions
-  it('handles user interactions', () => {
+  it("handles user interactions", () => {
     // const handleClick = vi.fn();
     // renderWithMantine(<MantineComponent onClick={handleClick} />);
     // fireEvent.click(screen.getByRole('button'));
@@ -60,7 +60,7 @@ describe('MantineComponent', () => {
   });
 
   // Example test for conditional rendering
-  it('conditionally renders content', () => {
+  it("conditionally renders content", () => {
     // renderWithMantine(<MantineComponent showContent={true} />);
     // expect(screen.getByText('Conditional Content')).toBeInTheDocument();
     // renderWithMantine(<MantineComponent showContent={false} />);
@@ -68,13 +68,13 @@ describe('MantineComponent', () => {
   });
 
   // Example test for accessibility
-  it('has proper accessibility attributes', () => {
+  it("has proper accessibility attributes", () => {
     // renderWithMantine(<MantineComponent />);
     // expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Example Button');
   });
 
   // Example test for responsive behavior
-  it('adapts to different screen sizes', () => {
+  it("adapts to different screen sizes", () => {
     // Mock window.matchMedia for testing responsive behavior
     // window.matchMedia = vi.fn().mockImplementation((query) => ({
     //   matches: query.includes('(min-width: 768px)'),
@@ -100,7 +100,7 @@ describe('MantineComponent', () => {
   });
 
   // Example test for snapshot
-  it('matches snapshot', () => {
+  it("matches snapshot", () => {
     // const { container } = renderWithMantine(<MantineComponent />);
     // expect(container).toMatchSnapshot();
   });

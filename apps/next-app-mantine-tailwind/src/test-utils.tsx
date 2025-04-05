@@ -1,14 +1,15 @@
-import React from 'react';
-import { render as rtlRender } from '@testing-library/react';
-import { MantineProvider, ColorSchemeScript } from '@mantine/core';
-import { theme } from './app/theme';
+import { ColorSchemeScript, MantineProvider } from "@mantine/core";
+import { render as rtlRender } from "@testing-library/react";
+import React from "react";
+
+import { theme } from "./app/theme";
 
 /**
  * Custom render function that wraps components with Mantine providers
  */
 interface RenderOptions {
+  [key: string]: unknown;
   withColorSchemeScript?: boolean;
-  [key: string]: any;
 }
 
 /**
@@ -17,7 +18,10 @@ interface RenderOptions {
  * @param options Options for rendering
  * @returns The rendered component and testing utilities
  */
-function render(ui: React.ReactElement, options: RenderOptions = {}): any {
+function render(
+  ui: React.ReactElement,
+  options: RenderOptions = {},
+): ReturnType<typeof rtlRender> {
   const { withColorSchemeScript = false, ...renderOptions } = options;
 
   // Wrap with MantineProvider
@@ -36,7 +40,7 @@ function render(ui: React.ReactElement, options: RenderOptions = {}): any {
 }
 
 // Re-export everything from testing-library
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 
 // Override render method
 export { render };

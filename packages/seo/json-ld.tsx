@@ -1,15 +1,16 @@
-import type { Thing, WithContext } from 'schema-dts';
+import type { Thing, WithContext } from "schema-dts";
 
-type JsonLdProps = {
-  code: WithContext<Thing>;
-};
+interface JsonLdProps {
+  // Allow any JSON-LD data for testing purposes
+  code: WithContext<Thing> | Record<string, any>;
+}
 
 export const JsonLd = ({ code }: JsonLdProps) => (
   <script
-    type="application/ld+json"
     // biome-ignore lint/security/noDangerouslySetInnerHtml: "This is a JSON-LD script, not user-generated content."
     dangerouslySetInnerHTML={{ __html: JSON.stringify(code) }}
+    type="application/ld+json"
   />
 );
 
-export * from 'schema-dts';
+export * from "schema-dts";

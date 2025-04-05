@@ -1,7 +1,8 @@
-import { describe, expect, it, vi, beforeEach, afterAll } from 'vitest';
-import { keys } from '../keys';
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-describe('Environment Keys', () => {
+import { keys } from "../keys";
+
+describe("Environment Keys", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -13,18 +14,18 @@ describe('Environment Keys', () => {
     process.env = originalEnv;
   });
 
-  it('handles NEXT_PUBLIC_POSTHOG_KEY', () => {
+  it("handles NEXT_PUBLIC_POSTHOG_KEY", () => {
     // Set the environment variable
-    process.env.NEXT_PUBLIC_POSTHOG_KEY = 'phc_test_key_custom';
+    process.env.NEXT_PUBLIC_POSTHOG_KEY = "phc_test_key_custom";
 
     // Call the keys function
     const result = keys();
 
     // Check that the environment variable is returned
-    expect(result.NEXT_PUBLIC_POSTHOG_KEY).toBe('phc_test_key_custom');
+    expect(result.NEXT_PUBLIC_POSTHOG_KEY).toBe("phc_test_key_custom");
   });
 
-  it('handles missing NEXT_PUBLIC_POSTHOG_KEY', () => {
+  it("handles missing NEXT_PUBLIC_POSTHOG_KEY", () => {
     // Delete the environment variable
     delete process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
@@ -32,21 +33,21 @@ describe('Environment Keys', () => {
     const result = keys();
 
     // Check default value from our mock
-    expect(result.NEXT_PUBLIC_POSTHOG_KEY).toBe('phc_test_key');
+    expect(result.NEXT_PUBLIC_POSTHOG_KEY).toBe("phc_test_key");
   });
 
-  it('handles NEXT_PUBLIC_POSTHOG_HOST', () => {
+  it("handles NEXT_PUBLIC_POSTHOG_HOST", () => {
     // Set the environment variable
-    process.env.NEXT_PUBLIC_POSTHOG_HOST = 'https://custom.posthog.com';
+    process.env.NEXT_PUBLIC_POSTHOG_HOST = "https://custom.posthog.com";
 
     // Call the keys function
     const result = keys();
 
     // Check that the environment variable is returned
-    expect(result.NEXT_PUBLIC_POSTHOG_HOST).toBe('https://custom.posthog.com');
+    expect(result.NEXT_PUBLIC_POSTHOG_HOST).toBe("https://custom.posthog.com");
   });
 
-  it('handles missing NEXT_PUBLIC_POSTHOG_HOST', () => {
+  it("handles missing NEXT_PUBLIC_POSTHOG_HOST", () => {
     // Delete the environment variable
     delete process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
@@ -54,21 +55,21 @@ describe('Environment Keys', () => {
     const result = keys();
 
     // Check default value from our mock
-    expect(result.NEXT_PUBLIC_POSTHOG_HOST).toBe('https://test.posthog.com');
+    expect(result.NEXT_PUBLIC_POSTHOG_HOST).toBe("https://test.posthog.com");
   });
 
-  it('handles NEXT_PUBLIC_GA_MEASUREMENT_ID', () => {
+  it("handles NEXT_PUBLIC_GA_MEASUREMENT_ID", () => {
     // Set the environment variable
-    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = 'G-CUSTOM123';
+    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = "G-CUSTOM123";
 
     // Call the keys function
     const result = keys();
 
     // Check that the environment variable is returned
-    expect(result.NEXT_PUBLIC_GA_MEASUREMENT_ID).toBe('G-CUSTOM123');
+    expect(result.NEXT_PUBLIC_GA_MEASUREMENT_ID).toBe("G-CUSTOM123");
   });
 
-  it('handles missing NEXT_PUBLIC_GA_MEASUREMENT_ID', () => {
+  it("handles missing NEXT_PUBLIC_GA_MEASUREMENT_ID", () => {
     // Delete the environment variable
     delete process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -76,6 +77,6 @@ describe('Environment Keys', () => {
     const result = keys();
 
     // Check default value from our mock
-    expect(result.NEXT_PUBLIC_GA_MEASUREMENT_ID).toBe('G-TEST123');
+    expect(result.NEXT_PUBLIC_GA_MEASUREMENT_ID).toBe("G-TEST123");
   });
 });

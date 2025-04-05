@@ -10,9 +10,9 @@
  * - type: Type of configuration to generate (react, next, node, default: react)
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get the directory where this script is located
 const __filename = fileURLToPath(import.meta.url);
@@ -21,20 +21,20 @@ const __dirname = path.dirname(__filename);
 // Default configuration templates
 const TEMPLATES = {
   react: {
-    config: '../templates/vitest.config.mjs',
-    setup: '../templates/setup.template.ts'
+    config: "../templates/vitest.config.mjs",
+    setup: "../templates/setup.template.ts",
   },
   next: {
-    config: '../templates/vitest.config.mjs',
-    setup: '../templates/setup.template.ts'
+    config: "../templates/vitest.config.mjs",
+    setup: "../templates/setup.template.ts",
   },
   node: {
-    config: '../templates/vitest.node.config.mjs',
-    setup: '../templates/setup.template.ts'
-  }
+    config: "../templates/vitest.node.config.mjs",
+    setup: "../templates/setup.template.ts",
+  },
 };
 
-async function setupVitest(packagePath = '.', type = 'react') {
+async function setupVitest(packagePath = ".", type = "react") {
   try {
     // Resolve paths
     const targetDir = path.resolve(process.cwd(), packagePath);
@@ -47,7 +47,7 @@ async function setupVitest(packagePath = '.', type = 'react') {
     }
 
     // Create __tests__ directory if it doesn't exist
-    const testsDir = path.join(targetDir, '__tests__');
+    const testsDir = path.join(targetDir, "__tests__");
     if (!fs.existsSync(testsDir)) {
       fs.mkdirSync(testsDir, { recursive: true });
       console.log(`Created directory: ${testsDir}`);
@@ -55,12 +55,12 @@ async function setupVitest(packagePath = '.', type = 'react') {
 
     // Copy vitest.config.mjs
     const configTemplatePath = path.resolve(__dirname, templates.config);
-    const configTargetPath = path.join(targetDir, 'vitest.config.mjs');
+    const configTargetPath = path.join(targetDir, "vitest.config.mjs");
 
-    let configContent = fs.readFileSync(configTemplatePath, 'utf8');
+    let configContent = fs.readFileSync(configTemplatePath, "utf8");
 
     // Modify for Node.js if needed
-    if (type === 'node') {
+    if (type === "node") {
       configContent = configContent
         .replace("environment: 'jsdom'", "environment: 'node'")
         .replace("plugins: [react()],", "// No plugins needed for Node.js");
@@ -71,18 +71,24 @@ async function setupVitest(packagePath = '.', type = 'react') {
 
     // Copy setup.ts
     const setupTemplatePath = path.resolve(__dirname, templates.setup);
-    const setupTargetPath = path.join(testsDir, 'setup.ts');
+    const setupTargetPath = path.join(testsDir, "setup.ts");
 
     if (!fs.existsSync(setupTargetPath)) {
-      let setupContent = fs.readFileSync(setupTemplatePath, 'utf8');
+      let setupContent = fs.readFileSync(setupTemplatePath, "utf8");
 
       // Modify for Node.js if needed (remove React-specific code)
-      if (type === 'node') {
+      if (type === "node") {
         setupContent = setupContent
           .replace("import * as React from 'react';", "")
-          .replace("import * as testingLibrary from '@testing-library/react';", "")
+          .replace(
+            "import * as testingLibrary from '@testing-library/react';",
+            "",
+          )
           .replace(/\/\/ Export.*screen.*\n/g, "")
-          .replace(/export const createRender[\s\S]*?};/m, "// No rendering utilities needed for Node.js tests");
+          .replace(
+            /export const createRender[\s\S]*?};/m,
+            "// No rendering utilities needed for Node.js tests",
+          );
       }
 
       fs.writeFileSync(setupTargetPath, setupContent);
@@ -91,36 +97,44 @@ async function setupVitest(packagePath = '.', type = 'react') {
       console.log(`Setup file already exists: ${setupTargetPath}`);
     }
 
-    console.log('\nRemember to install required dependencies:');
-    if (type === 'node') {
-      console.log('pnpm add -D vitest');
+    console.log("\nRemember to install required dependencies:");
+    if (type === "node") {
+      console.log("pnpm add -D vitest");
     } else {
-      console.log('pnpm add -D vitest @vitejs/plugin-react @testing-library/react');
+      console.log(
+        "pnpm add -D vitest @vitejs/plugin-react @testing-library/react",
+      );
     }
 
-    console.log('\nYou can update package.json scripts with:');
-    console.log(JSON.stringify({
-      scripts: {
-        test: 'vitest run',
-        'test:watch': 'vitest',
-        'test:coverage': 'vitest run --coverage'
-      }
-    }, null, 2));
+    console.log("\nYou can update package.json scripts with:");
+    console.log(
+      JSON.stringify(
+        {
+          scripts: {
+            test: "vitest run",
+            "test:watch": "vitest",
+            "test:coverage": "vitest run --coverage",
+          },
+        },
+        null,
+        2,
+      ),
+    );
 
     return {
       configPath: configTargetPath,
-      setupPath: setupTargetPath
+      setupPath: setupTargetPath,
     };
   } catch (error) {
-    console.error('Error setting up Vitest configuration:', error);
+    console.error("Error setting up Vitest configuration:", error);
     process.exit(1);
   }
 }
 
 // If this script is run directly, parse arguments and execute
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const packagePath = process.argv[2] || '.';
-  const type = process.argv[3] || 'react';
+  const packagePath = process.argv[2] || ".";
+  const type = process.argv[3] || "react";
   setupVitest(packagePath, type);
 }
 

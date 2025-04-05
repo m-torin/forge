@@ -12,7 +12,7 @@ You can use Stripe anywhere in your app by importing the `stripe` object like
 so:
 
 ```ts page.tsx {1,5}
-import { stripe } from '@repo/payments';
+import { stripe } from "@repo/payments";
 
 // ...
 
@@ -82,7 +82,7 @@ For example, in `apps/app/app/(authenticated)/layout.tsx` you could add this
 after the call to `aj.protect()`:
 
 ```ts
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 // ...
 
 if (
@@ -94,14 +94,14 @@ if (
   // The IP is from a hosting provider, VPN, or proxy. We can check the name
   // of the service and customize the response
   if (decision.ip.hasService()) {
-    if (decision.ip.service !== 'Apple Private Relay') {
+    if (decision.ip.service !== "Apple Private Relay") {
       // We trust Apple Private Relay because it requires an active iCloud
       // subscription, so deny all other VPNs
-      redirect('/vpn-blocked');
+      redirect("/vpn-blocked");
     }
   } else {
     // The service name is not available, but we still think it's a VPN
-    redirect('/vpn-blocked');
+    redirect("/vpn-blocked");
   }
 }
 ```

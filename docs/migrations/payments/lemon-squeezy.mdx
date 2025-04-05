@@ -27,7 +27,7 @@ pnpm add @lemonsqueezy/lemonsqueezy.js --filter @repo/payments
 Next, update the environment variables across the project, for example:
 
 ```js apps/app/.env
-NEXT_PUBLIC_LEMON_SQUEEZY_API_KEY = '';
+NEXT_PUBLIC_LEMON_SQUEEZY_API_KEY = "";
 ```
 
 Additionally, replace all instances of `STRIPE_SECRET_KEY` with
@@ -39,15 +39,15 @@ Initialize the payments client in the `packages/payments/index.ts` file with the
 new API key. Then, export the `lemonSqueezySetup` function from the file.
 
 ```ts packages/payments/index.ts
-import { env } from '@repo/env';
-import { lemonSqueezySetup } from '@lemonsqueezy/lemonsqueezy.js';
+import { env } from "@repo/env";
+import { lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
 
 lemonSqueezySetup({
   apiKey,
-  onError: (error) => console.error('Error!', error),
+  onError: (error) => console.error("Error!", error),
 });
 
-export * from '@lemonsqueezy/lemonsqueezy.js';
+export * from "@lemonsqueezy/lemonsqueezy.js";
 ```
 
 ## 4. Update the payments webhook handler
@@ -61,10 +61,10 @@ rm apps/api/app/webhooks/stripe/route.ts
 ... and create a new webhook handler for Lemon Squeezy:
 
 ```ts apps/api/app/webhooks/lemon-squeezy/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export const POST = async (request: Request) => {
-  return NextResponse.json({ message: 'Hello World' });
+  return NextResponse.json({ message: "Hello World" });
 };
 ```
 
@@ -94,7 +94,7 @@ resources for more information:
 Finally, use the new payments client in your app.
 
 ```tsx apps/app/app/(authenticated)/page.tsx
-import { getStore } from '@repo/payments';
+import { getStore } from "@repo/payments";
 
 const Page = async () => {
   const store = await getStore(123456);

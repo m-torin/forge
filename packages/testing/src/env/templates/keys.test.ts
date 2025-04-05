@@ -14,7 +14,7 @@ import {
   mockEnvVars,
   testEnvVars,
   validationPatterns,
-} from '../test-env.ts';
+} from "../test-env.ts";
 
 /**
  * Example test suite for environment variables
@@ -22,7 +22,7 @@ import {
  * This is a template that can be copied and adapted for specific packages.
  * Replace the comments with actual test code for your environment validation.
  */
-export function createEnvTests(testFramework: 'vitest' | 'cypress') {
+export function createEnvTests(testFramework: "vitest" | "cypress") {
   // This function returns a test suite that can be used with either Vitest or Cypress
 
   // For Vitest usage:
@@ -36,7 +36,7 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
   //   createEnvTests('cypress');
   // });
 
-  if (testFramework === 'vitest') {
+  if (testFramework === "vitest") {
     // Vitest implementation
     const {
       describe,
@@ -45,9 +45,9 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       beforeEach,
       afterAll,
       vi,
-    } = require('vitest');
+    } = require("vitest");
 
-    describe('Environment Keys', () => {
+    describe("Environment Keys", () => {
       const originalEnv = process.env;
 
       beforeEach(() => {
@@ -60,9 +60,9 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for required variables
-      it('validates required environment variables', () => {
+      it("validates required environment variables", () => {
         // Set required environment variables
-        process.env.REQUIRED_API_KEY = 'valid-key';
+        process.env.REQUIRED_API_KEY = "valid-key";
 
         // Call the keys function
         // const result = keys();
@@ -72,7 +72,7 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for missing required variables
-      it('throws an error when required variables are missing', () => {
+      it("throws an error when required variables are missing", () => {
         // Delete required environment variables
         delete process.env.REQUIRED_API_KEY;
 
@@ -81,9 +81,9 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for optional variables
-      it('handles optional environment variables', () => {
+      it("handles optional environment variables", () => {
         // Set optional environment variables
-        process.env.OPTIONAL_API_KEY = 'optional-key';
+        process.env.OPTIONAL_API_KEY = "optional-key";
 
         // Call the keys function
         // const result = keys();
@@ -93,7 +93,7 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for missing optional variables
-      it('returns undefined for missing optional variables', () => {
+      it("returns undefined for missing optional variables", () => {
         // Delete optional environment variables
         delete process.env.OPTIONAL_API_KEY;
 
@@ -105,38 +105,38 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for validation rules
-      it('validates environment variable format', () => {
+      it("validates environment variable format", () => {
         // Set environment variables with invalid format
-        process.env.REQUIRED_API_KEY = 'invalid-format';
+        process.env.REQUIRED_API_KEY = "invalid-format";
 
         // Expect the keys function to throw an error due to validation
         // expect(() => keys()).toThrow();
       });
 
       // Example test for test environment handling
-      it('relaxes validation in test environment', () => {
+      it("relaxes validation in test environment", () => {
         // Ensure we're in test environment
-        process.env.NODE_ENV = 'test';
+        process.env.NODE_ENV = "test";
 
         // Set environment variables that would be invalid in production
-        process.env.REQUIRED_API_KEY = 'test-key';
+        process.env.REQUIRED_API_KEY = "test-key";
 
         // Expect the keys function not to throw in test environment
         // expect(() => keys()).not.toThrow();
       });
     });
-  } else if (testFramework === 'cypress') {
+  } else if (testFramework === "cypress") {
     // Cypress implementation
-    describe('Environment Keys', () => {
+    describe("Environment Keys", () => {
       beforeEach(() => {
         // Reset environment variables for each test
-        cy.task('resetEnv');
+        cy.task("resetEnv");
       });
 
       // Example test for required variables
-      it('validates required environment variables', () => {
+      it("validates required environment variables", () => {
         // Set required environment variables
-        cy.task('setEnv', { REQUIRED_API_KEY: 'valid-key' });
+        cy.task("setEnv", { REQUIRED_API_KEY: "valid-key" });
 
         // Call the keys function and verify
         // cy.window().then(win => {
@@ -146,9 +146,9 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for missing required variables
-      it('throws an error when required variables are missing', () => {
+      it("throws an error when required variables are missing", () => {
         // Delete required environment variables
-        cy.task('deleteEnv', 'REQUIRED_API_KEY');
+        cy.task("deleteEnv", "REQUIRED_API_KEY");
 
         // Expect the keys function to throw an error
         // cy.window().then(win => {
@@ -157,9 +157,9 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for optional variables
-      it('handles optional environment variables', () => {
+      it("handles optional environment variables", () => {
         // Set optional environment variables
-        cy.task('setEnv', { OPTIONAL_API_KEY: 'optional-key' });
+        cy.task("setEnv", { OPTIONAL_API_KEY: "optional-key" });
 
         // Call the keys function and verify
         // cy.window().then(win => {
@@ -169,9 +169,9 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for missing optional variables
-      it('returns undefined for missing optional variables', () => {
+      it("returns undefined for missing optional variables", () => {
         // Delete optional environment variables
-        cy.task('deleteEnv', 'OPTIONAL_API_KEY');
+        cy.task("deleteEnv", "OPTIONAL_API_KEY");
 
         // Call the keys function and verify
         // cy.window().then(win => {
@@ -181,9 +181,9 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for validation rules
-      it('validates environment variable format', () => {
+      it("validates environment variable format", () => {
         // Set environment variables with invalid format
-        cy.task('setEnv', { REQUIRED_API_KEY: 'invalid-format' });
+        cy.task("setEnv", { REQUIRED_API_KEY: "invalid-format" });
 
         // Expect the keys function to throw an error due to validation
         // cy.window().then(win => {
@@ -192,12 +192,12 @@ export function createEnvTests(testFramework: 'vitest' | 'cypress') {
       });
 
       // Example test for test environment handling
-      it('relaxes validation in test environment', () => {
+      it("relaxes validation in test environment", () => {
         // Ensure we're in test environment
-        cy.task('setEnv', { NODE_ENV: 'test' });
+        cy.task("setEnv", { NODE_ENV: "test" });
 
         // Set environment variables that would be invalid in production
-        cy.task('setEnv', { REQUIRED_API_KEY: 'test-key' });
+        cy.task("setEnv", { REQUIRED_API_KEY: "test-key" });
 
         // Expect the keys function not to throw in test environment
         // cy.window().then(win => {

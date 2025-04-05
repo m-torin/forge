@@ -10,6 +10,8 @@
     "./components/ui/*": "./components/ui/*.tsx"
   },
   "scripts": {
+    "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker && pnpm install && pnpm update-catalog-refs",
+    "bump-ui": "npx shadcn@latest add --all --overwrite -c .",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "lint": "eslint . --fix",
     "test": "vitest run",
@@ -81,6 +83,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "catalog:",
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",

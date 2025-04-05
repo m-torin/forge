@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { useTheme } from 'next-themes';
-import { Toaster as Sonner, type ToasterProps } from 'sonner';
+import { useTheme } from "next-themes";
+import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = 'system' } = useTheme();
+  const { theme = "system" } = useTheme();
 
   return (
     <Sonner
       toastOptions={{
         classNames: {
           actionButton:
-            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground font-medium',
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground font-medium",
           cancelButton:
-            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground font-medium',
-          description: 'group-[.toast]:text-muted-foreground',
+            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground font-medium",
+          description: "group-[.toast]:text-muted-foreground",
           toast:
-            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
         },
       }}
       className="toaster group"
-      theme={theme as ToasterProps['theme']}
+      theme={theme as ToasterProps["theme"]}
       {...props}
     />
   );

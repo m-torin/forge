@@ -5,10 +5,10 @@
  * for dependencies that are defined in the catalog section of pnpm-workspace.yaml.
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as process from 'process';
-import * as yaml from 'js-yaml';
+import * as fs from "fs/promises";
+import * as path from "path";
+import * as process from "process";
+import * as yaml from "js-yaml";
 
 // Define types for package.json structure
 interface PackageJson {
@@ -27,19 +27,19 @@ interface PnpmWorkspace {
 }
 
 // Get the root directory of the monorepo
-const rootDir = path.resolve(process.cwd(), '..');
+const rootDir = path.resolve(process.cwd(), "..");
 
 async function main(): Promise<void> {
   try {
     // Read the catalog entries from pnpm-workspace.yaml
     const workspaceYaml = await fs.readFile(
-      path.join(rootDir, 'pnpm-workspace.yaml'),
-      'utf8',
+      path.join(rootDir, "pnpm-workspace.yaml"),
+      "utf8",
     );
     const workspace = yaml.load(workspaceYaml) as PnpmWorkspace;
 
     if (!workspace.catalog) {
-      console.error('No catalog section found in pnpm-workspace.yaml');
+      console.error("No catalog section found in pnpm-workspace.yaml");
       process.exit(1);
     }
 
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
       `Updated ${totalUpdates} dependencies to use catalog: references`,
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
     process.exit(1);
   }
 }
@@ -77,13 +77,13 @@ async function findPackageJsonFiles(rootDir: string): Promise<string[]> {
       const fullPath = path.join(dir, entry.name);
 
       // Skip node_modules directories
-      if (entry.isDirectory() && entry.name === 'node_modules') {
+      if (entry.isDirectory() && entry.name === "node_modules") {
         continue;
       }
 
       if (entry.isDirectory()) {
         await findFiles(fullPath);
-      } else if (entry.name === 'package.json') {
+      } else if (entry.name === "package.json") {
         packageJsonFiles.push(fullPath);
       }
     }
@@ -98,7 +98,7 @@ async function updatePackageJson(
   catalogDependencies: string[],
 ): Promise<number> {
   // Read the package.json file
-  const packageJsonContent = await fs.readFile(filePath, 'utf8');
+  const packageJsonContent = await fs.readFile(filePath, "utf8");
   const packageJson = JSON.parse(packageJsonContent) as PackageJson;
 
   let updates = 0;
@@ -108,10 +108,10 @@ async function updatePackageJson(
     for (const [dep, version] of Object.entries(packageJson.dependencies)) {
       if (
         catalogDependencies.includes(dep) &&
-        !version.startsWith('workspace:') &&
-        !version.startsWith('catalog:')
+        !version.startsWith("workspace:") &&
+        !version.startsWith("catalog:")
       ) {
-        packageJson.dependencies[dep] = 'catalog:';
+        packageJson.dependencies[dep] = "catalog:";
         updates++;
       }
     }
@@ -122,10 +122,10 @@ async function updatePackageJson(
     for (const [dep, version] of Object.entries(packageJson.devDependencies)) {
       if (
         catalogDependencies.includes(dep) &&
-        !version.startsWith('workspace:') &&
-        !version.startsWith('catalog:')
+        !version.startsWith("workspace:") &&
+        !version.startsWith("catalog:")
       ) {
-        packageJson.devDependencies[dep] = 'catalog:';
+        packageJson.devDependencies[dep] = "catalog:";
         updates++;
       }
     }
@@ -136,10 +136,10 @@ async function updatePackageJson(
     for (const [dep, version] of Object.entries(packageJson.peerDependencies)) {
       if (
         catalogDependencies.includes(dep) &&
-        !version.startsWith('workspace:') &&
-        !version.startsWith('catalog:')
+        !version.startsWith("workspace:") &&
+        !version.startsWith("catalog:")
       ) {
-        packageJson.peerDependencies[dep] = 'catalog:';
+        packageJson.peerDependencies[dep] = "catalog:";
         updates++;
       }
     }
@@ -152,8 +152,8 @@ async function updatePackageJson(
         catalogDependencies.includes(dep) &&
         packageJson.peerDependencies &&
         packageJson.peerDependencies[dep] &&
-        !packageJson.peerDependencies[dep].startsWith('workspace:') &&
-        !packageJson.peerDependencies[dep].startsWith('catalog:')
+        !packageJson.peerDependencies[dep].startsWith("workspace:") &&
+        !packageJson.peerDependencies[dep].startsWith("catalog:")
       ) {
         // This is just to log that we found a peerDependenciesMeta entry
         // The actual update happens in the peerDependencies section
@@ -168,7 +168,7 @@ async function updatePackageJson(
     console.log(`Updating ${relativePath} (${updates} dependencies)`);
 
     // Write the updated package.json file with proper formatting
-    await fs.writeFile(filePath, JSON.stringify(packageJson, null, 2) + '\n');
+    await fs.writeFile(filePath, JSON.stringify(packageJson, null, 2) + "\n");
   }
 
   return updates;

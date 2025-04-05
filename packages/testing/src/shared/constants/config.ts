@@ -10,26 +10,26 @@
 export const paths = {
   // Setup files
   setupFiles: {
-    vitest: 'setup-tests.ts',
+    vitest: "setup-tests.ts",
     cypress: {
-      e2e: 'cypress/support/e2e.ts',
-      component: 'cypress/support/component.ts',
+      e2e: "cypress/support/e2e.ts",
+      component: "cypress/support/component.ts",
     },
   },
 
   // Test directories
   testDirs: {
-    vitest: '__tests__',
+    vitest: "__tests__",
     cypress: {
-      e2e: 'cypress/e2e',
-      component: 'cypress/component',
+      e2e: "cypress/e2e",
+      component: "cypress/component",
     },
   },
 
   // Config files
   configFiles: {
-    vitest: 'vitest.config.ts',
-    cypress: 'cypress.config.ts',
+    vitest: "vitest.config.ts",
+    cypress: "cypress.config.ts",
   },
 };
 
@@ -39,18 +39,18 @@ export const paths = {
 export const filePatterns = {
   // Test file patterns
   testFiles: {
-    vitest: ['**/*.test.ts', '**/*.test.tsx'],
+    vitest: ["**/*.test.ts", "**/*.test.tsx"],
     cypress: {
-      e2e: ['**/*.cy.ts', '**/*.cy.tsx'],
-      component: ['**/*.cy.ts', '**/*.cy.tsx'],
+      e2e: ["**/*.cy.ts", "**/*.cy.tsx"],
+      component: ["**/*.cy.ts", "**/*.cy.tsx"],
     },
   },
 
   // Source file patterns
-  sourceFiles: ['**/*.ts', '**/*.tsx', '!**/*.d.ts', '!node_modules/**'],
+  sourceFiles: ["**/*.ts", "**/*.tsx", "!**/*.d.ts", "!node_modules/**"],
 
   // Ignored file patterns
-  ignoredFiles: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+  ignoredFiles: ["**/node_modules/**", "**/dist/**", "**/.turbo/**"],
 };
 
 /**
@@ -73,15 +73,15 @@ export const timeouts = {
 export const environments = {
   // Node environment
   node: {
-    test: 'test',
-    development: 'development',
-    production: 'production',
+    test: "test",
+    development: "development",
+    production: "production",
   },
 
   // Test environment
   test: {
-    jsdom: 'jsdom',
-    node: 'node',
-    happy: 'happy-dom',
+    jsdom: "jsdom",
+    node: "node",
+    happy: "happy-dom",
   },
 };

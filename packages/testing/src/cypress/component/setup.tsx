@@ -6,25 +6,28 @@
  */
 
 // Import environment utilities
-import { setupCypressEnv } from '../env/index.ts';
+import { setupCypressEnv } from "../env/index.ts";
 
 // Import commands will be added here once implemented
 // import '../core/commands/index.ts';
-import { mount } from 'cypress/react18';
-import React from 'react';
+import { mount } from "cypress/react18";
+import React from "react";
 
 // Add the mount command for React components
-Cypress.Commands.add('mount', mount);
+// @ts-ignore - Cypress.Commands is defined at runtime
+Cypress.Commands.add("mount", mount);
 
 // Disable uncaught exception handling
-Cypress.on('uncaught:exception', (err: Error, runnable: Mocha.Runnable) => {
+// @ts-ignore - Cypress.on is defined at runtime
+Cypress.on("uncaught:exception", (err: Error, runnable: Mocha.Runnable) => {
   // Returning false here prevents Cypress from failing the test
-  console.log('Uncaught exception in component test:', err.message);
+  console.log("Uncaught exception in component test:", err.message);
   return false;
 });
 
 // Set up global styles for component testing
-Cypress.on('mount', (component: React.ReactNode) => {
+// @ts-ignore - Cypress.on is defined at runtime
+Cypress.on("mount", (component: React.ReactNode) => {
   // You can add global styles or providers here
   // This is useful for theme providers, store providers, etc.
   return component;
@@ -38,10 +41,11 @@ interface MountWithProvidersOptions {
 }
 
 // Add custom mount command with common providers
+// @ts-ignore - Cypress.Commands is defined at runtime
 Cypress.Commands.add(
-  'mountWithProviders',
+  "mountWithProviders",
   (component: React.ReactNode, options: MountWithProvidersOptions = {}) => {
-    const { theme = 'light', locale = 'en', ...mountOptions } = options;
+    const { theme = "light", locale = "en", ...mountOptions } = options;
 
     // This is a placeholder for your actual providers
     // You'll need to customize this based on your application's needs
@@ -61,10 +65,12 @@ before(() => {
   setupCypressEnv();
 
   // Mark as component test
-  Cypress.env('componentTest', true);
+  // @ts-ignore - Cypress.env is defined at runtime
+  Cypress.env("componentTest", true);
 
   // Log test environment info
   cy.log(
-    `Running component tests in ${Cypress.env('testEnvironment')} environment`,
+    // @ts-ignore - Cypress.env is defined at runtime
+    `Running component tests in ${Cypress.env("testEnvironment")} environment`,
   );
 });

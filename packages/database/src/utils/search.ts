@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +12,7 @@ export async function searchProducts(
     categories?: string[];
     limit?: number;
     includeUnavailable?: boolean;
-  }
+  },
 ) {
   // Default options
   const limit = options?.limit || 20;
@@ -46,12 +45,10 @@ export async function searchProducts(
 
   // Execute the search
   return prisma.product.findMany({
-    where: baseWhere,
     include: {
-      category: true,
       canonicalUrl: true,
+      category: true,
       sellerRelationships: {
-        where: includeUnavailable ? {} : { isAvailable: true },
         include: {
           seller: {
             select: {
@@ -62,9 +59,11 @@ export async function searchProducts(
           },
         },
         take: 3, // Just include top 3 seller relationships
+        where: includeUnavailable ? {} : { isAvailable: true },
       },
     },
     take: limit,
+    where: baseWhere,
   });
 }
 
@@ -78,29 +77,29 @@ export async function advancedSearch(
     categories?: string[];
     limit?: number;
     threshold?: number; // similarity threshold (0-1)
-  }
+  },
 ) {
   const limit = options?.limit || 20;
   const threshold = options?.threshold || 0.3;
   const categoryFilter = options?.categories?.length
-    ? `AND pc.slug IN (${options.categories.map(c => `'${c}'`).join(',')})`
-    : '';
+    ? `AND pc.slug IN (${options.categories.map((c) => `'${c}'`).join(",")})`
+    : "";
 
   // Use raw SQL for advanced control over the search algorithm
   const products = await prisma.$queryRaw<any[]>`
-    SELECT 
-      p.id, 
-      p.name, 
+    SELECT
+      p.id,
+      p.name,
       p.slug,
       pc.name as category_name,
-      similarity(p.name, ${query}) * 2.0 + 
+      similarity(p.name, ${query}) * 2.0 +
       similarity(COALESCE(p.full_markdown, ''), ${query}) * 0.5 +
       similarity(COALESCE(p.preview_copy, ''), ${query}) * 0.8 AS rank
     FROM products p
     LEFT JOIN product_categories pc ON p.category_id = pc.id
-    WHERE 
+    WHERE
       (similarity(p.name, ${query}) > ${threshold} OR
-       similarity(COALESCE(p.full_markdown, ''), ${query}) > ${threshold} OR  
+       similarity(COALESCE(p.full_markdown, ''), ${query}) > ${threshold} OR
        similarity(COALESCE(p.preview_copy, ''), ${query}) > ${threshold})
       ${Prisma.raw(categoryFilter)}
     ORDER BY rank DESC
@@ -109,12 +108,8 @@ export async function advancedSearch(
 
   // If you need the associated relationships, fetch them separately
   if (products.length > 0) {
-    const productIds = products.map(p => p.id);
+    const productIds = products.map((p: { id: number }) => p.id);
     const relationships = await prisma.productSellerBrand.findMany({
-      where: {
-        productId: { in: productIds },
-        isAvailable: true,
-      },
       include: {
         seller: {
           select: {
@@ -124,19 +119,29 @@ export async function advancedSearch(
           },
         },
       },
+      where: {
+        isAvailable: true,
+        productId: { in: productIds },
+      },
     });
 
     // Group relationships by product ID
-    const relationshipsByProduct = relationships.reduce((acc, rel) => {
-      if (!acc[rel.productId]) {
-        acc[rel.productId] = [];
-      }
-      acc[rel.productId].push(rel);
-      return acc;
-    }, {} as Record<number, typeof relationships>);
+    const relationshipsByProduct = relationships.reduce(
+      (
+        acc: Record<number, typeof relationships>,
+        rel: { productId: number; [key: string]: any },
+      ) => {
+        if (!acc[rel.productId]) {
+          acc[rel.productId] = [];
+        }
+        acc[rel.productId].push(rel);
+        return acc;
+      },
+      {} as Record<number, typeof relationships>,
+    );
 
     // Attach relationships to products
-    return products.map(product => ({
+    return products.map((product: { id: number; [key: string]: any }) => ({
       ...product,
       sellerRelationships: relationshipsByProduct[product.id] || [],
     }));
@@ -150,6 +155,11 @@ export async function advancedSearch(
  */
 export async function searchStories(query: string, limit = 20) {
   return prisma.story.findMany({
+    include: {
+      cast: true,
+      fandom: true,
+    },
+    take: limit,
     where: {
       OR: [
         { name: { search: query } },
@@ -158,10 +168,5 @@ export async function searchStories(query: string, limit = 20) {
         { fullDescription: { search: query } },
       ],
     },
-    include: {
-      fandom: true,
-      cast: true,
-    },
-    take: limit,
   });
 }

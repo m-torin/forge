@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useMantineColorScheme, Button, Group } from '@mantine/core';
+import { Button, Group, useMantineColorScheme } from "@mantine/core";
+import React from "react";
 
 export function ColorSchemesSwitcher() {
-  const { setColorScheme, clearColorScheme } = useMantineColorScheme();
+  const { clearColorScheme, setColorScheme } = useMantineColorScheme();
 
   return (
     <Group>
-      <Button onClick={() => setColorScheme('light')}>Light</Button>
-      <Button onClick={() => setColorScheme('dark')}>Dark</Button>
-      <Button onClick={() => setColorScheme('auto')}>Auto</Button>
+      <Button onClick={() => setColorScheme("light")}>Light</Button>
+      <Button onClick={() => setColorScheme("dark")}>Dark</Button>
+      <Button onClick={() => setColorScheme("auto")}>Auto</Button>
       <Button onClick={clearColorScheme}>Clear</Button>
     </Group>
   );

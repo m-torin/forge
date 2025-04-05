@@ -6,7 +6,7 @@ consistent code formatting experience across all projects in the repository.
 ## Features
 
 - Extends the Vercel Style Guide configuration
-- Adds support for PHP, Shell scripts, and package.json formatting
+- Adds support for PHP and package.json formatting
 - Customized rules for different file types (TS/JS, CSS, YAML, Markdown,
   GraphQL, etc.)
 - Ready-to-use format scripts
@@ -38,13 +38,13 @@ If you want to use this configuration in a separate project:
 1. Install the package:
 
    ```bash
-   npm install --save-dev prettier @vercel/style-guide @prettier/plugin-php prettier-plugin-packagejson prettier-plugin-sh
+   npm install --save-dev prettier @vercel/style-guide @prettier/plugin-php prettier-plugin-packagejson
    ```
 
 2. Create a `.prettierrc.ts` file:
 
    ```typescript
-   import config from './path/to/this/repo/packages/config-prettier/index.ts';
+   import config from "./path/to/this/repo/packages/config-prettier/index.ts";
    export default config;
    ```
 

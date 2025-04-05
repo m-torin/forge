@@ -13,20 +13,20 @@
  *   node generate-tests.ts packages/ui
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get the current directory and root directory
 const currentDir = process.cwd();
-const rootDir = path.resolve(currentDir, '../..');
+const rootDir = path.resolve(currentDir, "../..");
 
 // Get the package path from command line arguments
 let packagePath = process.argv[2];
 
 if (!packagePath) {
-  console.error('Please provide a package path');
-  console.error('Usage: node generate-tests.ts <package-path>');
+  console.error("Please provide a package path");
+  console.error("Usage: node generate-tests.ts <package-path>");
   process.exit(1);
 }
 
@@ -44,14 +44,14 @@ if (!fs.existsSync(packagePath)) {
 console.log(`Generating tests for ${packagePath}`);
 
 // Create the __tests__ directory if it doesn't exist
-const testsDir = path.join(packagePath, '__tests__');
+const testsDir = path.join(packagePath, "__tests__");
 if (!fs.existsSync(testsDir)) {
   fs.mkdirSync(testsDir);
   console.log(`Created ${testsDir}`);
 }
 
 // Create the setup.ts file if it doesn't exist
-const setupFile = path.join(testsDir, 'setup.ts');
+const setupFile = path.join(testsDir, "setup.ts");
 if (!fs.existsSync(setupFile)) {
   const setupContent = `// Import shared testing setup
 import { vi, describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@repo/testing/vitest';
@@ -63,13 +63,13 @@ import { vi, describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } 
 }
 
 // Check if the package has a keys.ts file
-const keysFile = path.join(packagePath, 'keys.ts');
+const keysFile = path.join(packagePath, "keys.ts");
 if (fs.existsSync(keysFile)) {
   // Create a keys.test.ts file if it doesn't exist
-  const keysTestFile = path.join(testsDir, 'keys.test.ts');
+  const keysTestFile = path.join(testsDir, "keys.test.ts");
   if (!fs.existsSync(keysTestFile)) {
     // Read the keys.ts file to extract the environment variables
-    const keysContent = fs.readFileSync(keysFile, 'utf8');
+    const keysContent = fs.readFileSync(keysFile, "utf8");
 
     // Extract environment variables from the keys.ts file
     const envVars: string[] = [];
@@ -125,7 +125,7 @@ ${envVars
   });
 `,
   )
-  .join('')}
+  .join("")}
 });
 `;
 
@@ -135,19 +135,19 @@ ${envVars
 }
 
 // Check if the package has an index.ts or index.tsx file
-const indexFile = fs.existsSync(path.join(packagePath, 'index.tsx'))
-  ? path.join(packagePath, 'index.tsx')
-  : path.join(packagePath, 'index.ts');
+const indexFile = fs.existsSync(path.join(packagePath, "index.tsx"))
+  ? path.join(packagePath, "index.tsx")
+  : path.join(packagePath, "index.ts");
 
 if (fs.existsSync(indexFile)) {
   // Create an index.test.ts or index.test.tsx file if it doesn't exist
-  const indexTestFile = indexFile.endsWith('.tsx')
-    ? path.join(testsDir, 'index.test.tsx')
-    : path.join(testsDir, 'index.test.ts');
+  const indexTestFile = indexFile.endsWith(".tsx")
+    ? path.join(testsDir, "index.test.tsx")
+    : path.join(testsDir, "index.test.ts");
 
   if (!fs.existsSync(indexTestFile)) {
     // Read the index file to extract exports
-    const indexContent = fs.readFileSync(indexFile, 'utf8');
+    const indexContent = fs.readFileSync(indexFile, "utf8");
 
     // Extract exports from the index file
     const exports: string[] = [];
@@ -172,7 +172,7 @@ import * as exports from '../index';
 describe('Package Exports', () => {
   it('exports all expected items', () => {
     // Check that all expected exports are defined
-${exports.map((exp) => `    expect(exports.${exp}).toBeDefined();`).join('\n')}
+${exports.map((exp) => `    expect(exports.${exp}).toBeDefined();`).join("\n")}
   });
 
   it('has the correct number of exports', () => {
@@ -189,7 +189,7 @@ ${
     expect(Object.keys(exports).length).toBeGreaterThan(${exports.length});
   });
 `
-    : ''
+    : ""
 }
 });
 `;
@@ -200,10 +200,10 @@ ${
 }
 
 // Check for components directory
-const componentsDir = path.join(packagePath, 'components');
+const componentsDir = path.join(packagePath, "components");
 if (fs.existsSync(componentsDir)) {
   // Create a components directory in __tests__ if it doesn't exist
-  const componentsTestDir = path.join(testsDir, 'components');
+  const componentsTestDir = path.join(testsDir, "components");
   if (!fs.existsSync(componentsTestDir)) {
     fs.mkdirSync(componentsTestDir);
     console.log(`Created ${componentsTestDir}`);
@@ -212,7 +212,7 @@ if (fs.existsSync(componentsDir)) {
   // Get all component files
   const componentFiles = fs
     .readdirSync(componentsDir)
-    .filter((file) => file.endsWith('.tsx') || file.endsWith('.jsx'));
+    .filter((file) => file.endsWith(".tsx") || file.endsWith(".jsx"));
 
   // Create test files for each component
   componentFiles.forEach((componentFile) => {
@@ -251,10 +251,10 @@ describe('${componentName}', () => {
 }
 
 // Check for hooks directory
-const hooksDir = path.join(packagePath, 'hooks');
+const hooksDir = path.join(packagePath, "hooks");
 if (fs.existsSync(hooksDir)) {
   // Create a hooks directory in __tests__ if it doesn't exist
-  const hooksTestDir = path.join(testsDir, 'hooks');
+  const hooksTestDir = path.join(testsDir, "hooks");
   if (!fs.existsSync(hooksTestDir)) {
     fs.mkdirSync(hooksTestDir);
     console.log(`Created ${hooksTestDir}`);
@@ -263,7 +263,7 @@ if (fs.existsSync(hooksDir)) {
   // Get all hook files
   const hookFiles = fs
     .readdirSync(hooksDir)
-    .filter((file) => file.endsWith('.ts') || file.endsWith('.tsx'));
+    .filter((file) => file.endsWith(".ts") || file.endsWith(".tsx"));
 
   // Create test files for each hook
   hookFiles.forEach((hookFile) => {
@@ -300,10 +300,10 @@ describe('${hookName}', () => {
 }
 
 // Check for utils directory
-const utilsDir = path.join(packagePath, 'utils');
+const utilsDir = path.join(packagePath, "utils");
 if (fs.existsSync(utilsDir)) {
   // Create a utils directory in __tests__ if it doesn't exist
-  const utilsTestDir = path.join(testsDir, 'utils');
+  const utilsTestDir = path.join(testsDir, "utils");
   if (!fs.existsSync(utilsTestDir)) {
     fs.mkdirSync(utilsTestDir);
     console.log(`Created ${utilsTestDir}`);
@@ -312,7 +312,7 @@ if (fs.existsSync(utilsDir)) {
   // Get all utility files
   const utilFiles = fs
     .readdirSync(utilsDir)
-    .filter((file) => file.endsWith('.ts') || file.endsWith('.js'));
+    .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 
   // Create test files for each utility
   utilFiles.forEach((utilFile) => {
@@ -341,13 +341,13 @@ describe('${utilName} utilities', () => {
 }
 
 // Check if the package has a vitest.config.mjs file
-const vitestConfigFile = path.join(packagePath, 'vitest.config.mjs');
+const vitestConfigFile = path.join(packagePath, "vitest.config.mjs");
 if (!fs.existsSync(vitestConfigFile)) {
   console.log(`Creating vitest.config.mjs for ${packagePath}...`);
   // Determine if the package has React components
   const hasReactComponents =
     fs.existsSync(componentsDir) ||
-    (fs.existsSync(indexFile) && indexFile.endsWith('.tsx'));
+    (fs.existsSync(indexFile) && indexFile.endsWith(".tsx"));
 
   // Create a vitest.config.mjs file
   const vitestConfigContent = hasReactComponents
@@ -370,4 +370,4 @@ export default createBaseConfig({
   console.log(`Created ${vitestConfigFile}`);
 }
 
-console.log('Test generation complete!');
+console.log("Test generation complete!");

@@ -1,11 +1,11 @@
 /**
  * Stripe Mock Keys
- * 
+ *
  * Service-specific helpers for Stripe mock values.
  * This provides a convenient interface for getting and overriding Stripe-related mock values.
  */
 
-import { mockRegistry } from '../registry.ts';
+import { mockRegistry } from "../registry.ts";
 
 /**
  * Stripe mock keys interface
@@ -24,7 +24,7 @@ export const mockStripeKeys = {
    * @returns The Stripe secret key
    */
   getSecretKey: (): string => {
-    return mockRegistry.get<string>('STRIPE_SECRET_KEY');
+    return mockRegistry.get<string>("STRIPE_SECRET_KEY");
   },
 
   /**
@@ -32,7 +32,7 @@ export const mockStripeKeys = {
    * @returns The Stripe webhook secret
    */
   getWebhookSecret: (): string => {
-    return mockRegistry.get<string>('STRIPE_WEBHOOK_SECRET');
+    return mockRegistry.get<string>("STRIPE_WEBHOOK_SECRET");
   },
 
   /**
@@ -41,8 +41,8 @@ export const mockStripeKeys = {
    */
   getAll: (): StripeKeys => {
     return {
-      secretKey: mockRegistry.get<string>('STRIPE_SECRET_KEY'),
-      webhookSecret: mockRegistry.get<string>('STRIPE_WEBHOOK_SECRET'),
+      secretKey: mockRegistry.get<string>("STRIPE_SECRET_KEY"),
+      webhookSecret: mockRegistry.get<string>("STRIPE_WEBHOOK_SECRET"),
     };
   },
 
@@ -51,7 +51,7 @@ export const mockStripeKeys = {
    * @param value The Stripe secret key
    */
   setSecretKey: (value: string): void => {
-    mockRegistry.set('STRIPE_SECRET_KEY', value);
+    mockRegistry.set("STRIPE_SECRET_KEY", value);
   },
 
   /**
@@ -59,7 +59,7 @@ export const mockStripeKeys = {
    * @param value The Stripe webhook secret
    */
   setWebhookSecret: (value: string): void => {
-    mockRegistry.set('STRIPE_WEBHOOK_SECRET', value);
+    mockRegistry.set("STRIPE_WEBHOOK_SECRET", value);
   },
 
   /**
@@ -68,10 +68,10 @@ export const mockStripeKeys = {
    */
   setAll: (keys: StripeKeys): void => {
     if (keys.secretKey !== undefined) {
-      mockRegistry.set('STRIPE_SECRET_KEY', keys.secretKey);
+      mockRegistry.set("STRIPE_SECRET_KEY", keys.secretKey);
     }
     if (keys.webhookSecret !== undefined) {
-      mockRegistry.set('STRIPE_WEBHOOK_SECRET', keys.webhookSecret);
+      mockRegistry.set("STRIPE_WEBHOOK_SECRET", keys.webhookSecret);
     }
   },
 
@@ -82,15 +82,15 @@ export const mockStripeKeys = {
    */
   override: (keys: StripeKeys, callback: () => void): void => {
     const overrides: Record<string, any> = {};
-    
+
     if (keys.secretKey !== undefined) {
-      overrides['STRIPE_SECRET_KEY'] = keys.secretKey;
+      overrides["STRIPE_SECRET_KEY"] = keys.secretKey;
     }
-    
+
     if (keys.webhookSecret !== undefined) {
-      overrides['STRIPE_WEBHOOK_SECRET'] = keys.webhookSecret;
+      overrides["STRIPE_WEBHOOK_SECRET"] = keys.webhookSecret;
     }
-    
+
     mockRegistry.override(overrides, callback);
   },
 
@@ -100,10 +100,10 @@ export const mockStripeKeys = {
   reset: (): void => {
     // Only reset Stripe-related keys
     const allValues = mockRegistry.getAll();
-    const defaultStripeSecretKey = 'sk_test_stripe_secret_key';
-    const defaultStripeWebhookSecret = 'whsec_test_stripe_webhook_secret';
-    
-    mockRegistry.set('STRIPE_SECRET_KEY', defaultStripeSecretKey);
-    mockRegistry.set('STRIPE_WEBHOOK_SECRET', defaultStripeWebhookSecret);
+    const defaultStripeSecretKey = "sk_test_stripe_secret_key";
+    const defaultStripeWebhookSecret = "whsec_test_stripe_webhook_secret";
+
+    mockRegistry.set("STRIPE_SECRET_KEY", defaultStripeSecretKey);
+    mockRegistry.set("STRIPE_WEBHOOK_SECRET", defaultStripeWebhookSecret);
   },
 };

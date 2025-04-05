@@ -1,6 +1,6 @@
-import { UserConfig } from 'vitest/config';
-import path from 'path';
-import { createBaseConfig } from './base.ts';
+import { UserConfig } from "vitest/config";
+import path from "path";
+import { createBaseConfig } from "./base.ts";
 
 /**
  * Creates a server-specific Vitest configuration for packages in the monorepo
@@ -21,12 +21,14 @@ export function createServerConfig(
     test: {
       ...baseConfig.test,
       // Override with server-specific test settings
-      environment: 'node', // Always use Node environment for server packages
+      environment: "node", // Always use Node environment for server packages
       globals: true,
 
       // Enhanced coverage configuration with higher thresholds for server code
       coverage: {
         ...(baseConfig.test?.coverage || {}),
+        provider: "v8",
+        enabled: true,
         thresholds: {
           statements: 95,
           branches: 95,
@@ -42,7 +44,7 @@ export function createServerConfig(
       // Additional server-specific test settings
       typecheck: {
         enabled: true,
-        tsconfig: path.resolve(packageDir, 'tsconfig.json'),
+        tsconfig: path.resolve(packageDir, "tsconfig.json"),
       },
 
       ...(customConfig.test || {}),

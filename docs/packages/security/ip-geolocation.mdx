@@ -3,28 +3,28 @@ title: IP Geolocation
 description: Accessing IP geolocation data in your application.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "next-forge",
+        id: "next-forge",
       },
     },
     {
       user: {
-        name: 'David Mytton',
-        id: 'davidmytton',
+        name: "David Mytton",
+        id: "davidmytton",
       },
       company: {
-        name: 'Arcjet',
-        id: 'arcjet',
+        name: "Arcjet",
+        id: "arcjet",
       },
     },
   ]}
@@ -55,19 +55,19 @@ you can use various utility functions to retrieve the data.
 // ...
 const decision = await aj.protect(req);
 
-if (decision.ip.hasCity() && decision.ip.city === 'San Francisco') {
+if (decision.ip.hasCity() && decision.ip.city === "San Francisco") {
   // Create a custom response for San Francisco
 }
 
-if (decision.ip.hasRegion() && decision.ip.region === 'California') {
+if (decision.ip.hasRegion() && decision.ip.region === "California") {
   // Create a custom response for California
 }
 
-if (decision.ip.hasCountry() && decision.ip.country === 'US') {
+if (decision.ip.hasCountry() && decision.ip.country === "US") {
   // Create a custom response for the United States
 }
 
-if (decision.ip.hasContinent() && decision.ip.continent === 'NA') {
+if (decision.ip.hasContinent() && decision.ip.continent === "NA") {
   // Create a custom response for North America
 }
 ```

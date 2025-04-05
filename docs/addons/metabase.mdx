@@ -1,31 +1,30 @@
 ---
 title: Metabase
-description:
-  How to add business intelligence and analytics to your app with Metabase.
+description: How to add business intelligence and analytics to your app with Metabase.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "next-forge",
+        id: "next-forge",
       },
     },
     {
       user: {
-        name: 'Matthew Hefferon',
-        id: 'heffhq',
+        name: "Matthew Hefferon",
+        id: "heffhq",
       },
       company: {
-        name: 'Metabase',
-        id: 'metabase',
+        name: "Metabase",
+        id: "metabase",
       },
     },
   ]}
@@ -73,7 +72,7 @@ You can find these details in your `DATABASE_URL` environment variable:
 
 ```js
 DATABASE_URL =
-  'postgresql://[username]:[password]@[hostname]:[port]/[database_name]?sslmode=require';
+  "postgresql://[username]:[password]@[hostname]:[port]/[database_name]?sslmode=require";
 ```
 
 Next, plug your database connection credentials into Metabase:
@@ -81,7 +80,7 @@ Next, plug your database connection credentials into Metabase:
 <Frame>
   <img
     src="/images/metabase-add-database.png"
-    style={{ borderRadius: '0.5rem' }}
+    style={{ borderRadius: "0.5rem" }}
   />
 </Frame>
 

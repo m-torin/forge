@@ -1,11 +1,12 @@
-import { config as baseConfig } from '@repo/next-config';
-import type { NextConfig } from 'next';
+import { config as baseConfig } from "@repo/next-config";
+
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   ...baseConfig,
   experimental: {
     ...baseConfig.experimental,
-    optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
+    optimizePackageImports: ["@mantine/core", "@mantine/hooks"],
   },
 };
 

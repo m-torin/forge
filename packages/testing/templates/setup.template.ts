@@ -1,15 +1,15 @@
 // Package-specific test setup file
 // Used to set up tests with proper utilities and mocks
 
-import * as React from 'react';
-import { afterAll, vi } from 'vitest';
-import '@testing-library/jest-dom/vitest';
-import * as testingLibrary from '@testing-library/react';
+import * as React from "react";
+import { afterAll, vi } from "vitest";
+import "@testing-library/jest-dom/vitest";
+import * as testingLibrary from "@testing-library/react";
 
 // Local implementation of console mocks
 const setupConsoleMocks = () => {
-  vi.spyOn(console, 'error').mockImplementation(() => {});
-  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 };
 
 const restoreConsoleMocks = () => {

@@ -1,37 +1,37 @@
 // vitest.config.mjs
-import { defineConfig } from 'file:///Users/torin/repos/next-forge/node_modules/.pnpm/vitest@1.6.1_@types+node@22.13.10_@vitest+ui@3.0.9_vitest@3.0.9__happy-dom@17.4.4_jsdom_42bebe3875cf841abf8a4b9a37b2577b/node_modules/vitest/dist/config.js';
-import react from 'file:///Users/torin/repos/next-forge/node_modules/.pnpm/@vitejs+plugin-react@4.3.4_vite@6.2.2_@types+node@22.13.10_jiti@2.4.2_lightningcss@1.29_135286b5024d48da8e5e3b3fb19211b0/node_modules/@vitejs/plugin-react/dist/index.mjs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from "file:///Users/torin/repos/next-forge/node_modules/.pnpm/vitest@1.6.1_@types+node@22.13.10_@vitest+ui@3.0.9_vitest@3.0.9__happy-dom@17.4.4_jsdom_42bebe3875cf841abf8a4b9a37b2577b/node_modules/vitest/dist/config.js";
+import react from "file:///Users/torin/repos/next-forge/node_modules/.pnpm/@vitejs+plugin-react@4.3.4_vite@6.2.2_@types+node@22.13.10_jiti@2.4.2_lightningcss@1.29_135286b5024d48da8e5e3b3fb19211b0/node_modules/@vitejs/plugin-react/dist/index.mjs";
+import path from "path";
+import { fileURLToPath } from "url";
 var __vite_injected_original_import_meta_url =
-  'file:///Users/torin/repos/next-forge/packages/analytics/vitest.config.mjs';
+  "file:///Users/torin/repos/next-forge/packages/analytics/vitest.config.mjs";
 var __dirname = path.dirname(
   fileURLToPath(__vite_injected_original_import_meta_url),
 );
 var vitest_config_default = defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['./__tests__/setup.ts'],
+    setupFiles: ["./__tests__/setup.ts"],
     // Customize this path if needed
-    include: ['**/*.test.{ts,tsx}'],
-    exclude: ['**/node_modules/**'],
+    include: ["**/*.test.{ts,tsx}"],
+    exclude: ["**/node_modules/**"],
     testTimeout: 1e4,
     hookTimeout: 1e4,
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       exclude: [
-        'coverage/**',
-        'dist/**',
-        '**/node_modules/**',
-        '**/*.d.ts',
-        'test/**',
-        'tests/**',
-        '**/__tests__/**',
-        '**/*.test.{ts,tsx}',
-        '**/vitest.config.*',
+        "coverage/**",
+        "dist/**",
+        "**/node_modules/**",
+        "**/*.d.ts",
+        "test/**",
+        "tests/**",
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/vitest.config.*",
       ],
       thresholds: {
         statements: 90,
@@ -43,9 +43,9 @@ var vitest_config_default = defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname),
+      "@": path.resolve(__dirname),
     },
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
   },
 });
 export { vitest_config_default as default };

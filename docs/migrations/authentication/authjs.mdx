@@ -45,7 +45,7 @@ Delete the existing `client.ts` and `server.ts` files in the `auth` package.
 Then, create the following file:
 
 ```tsx packages/auth/index.ts
-import NextAuth from 'next-auth';
+import NextAuth from "next-auth";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [],
@@ -58,9 +58,9 @@ Update the `middleware.ts` file in the `auth` package with the following
 content:
 
 ```tsx packages/auth/middleware.ts
-import 'server-only';
+import "server-only";
 
-export { auth as authMiddleware } from './';
+export { auth as authMiddleware } from "./";
 ```
 
 ## 5. Update the auth components
@@ -72,12 +72,12 @@ up users. Update both the `sign-in.tsx` and `sign-up.tsx` components in the
 <CodeGroup>
 
 ```tsx packages/auth/components/sign-in.tsx
-import { signIn } from '../';
+import { signIn } from "../";
 
 export const SignIn = () => (
   <form
     action={async () => {
-      'use server';
+      "use server";
       await signIn();
     }}
   >
@@ -87,12 +87,12 @@ export const SignIn = () => (
 ```
 
 ```tsx packages/auth/components/sign-up.tsx
-import { signIn } from '../';
+import { signIn } from "../";
 
 export const SignUp = () => (
   <form
     action={async () => {
-      'use server';
+      "use server";
       await signIn();
     }}
   >
@@ -109,7 +109,7 @@ Auth.js has no concept of a Provider as a higher-order component, so you can
 either remove it entirely or just replace it with a stub, like so:
 
 ```tsx packages/auth/provider.tsx
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -124,7 +124,7 @@ In your `app` application, create an auth route handler file with the following
 content:
 
 ```tsx apps/app/api/auth/[...nextauth]/route.ts
-import { handlers } from '@repo/auth';
+import { handlers } from "@repo/auth";
 
 export const { GET, POST } = handlers;
 ```

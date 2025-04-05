@@ -1,5 +1,4 @@
-import React from 'react';
-import { ColorSchemesSwitcher } from '@/components/color-schemes-switcher';
+import { ColorSchemesSwitcher } from "@/components/color-schemes-switcher";
 import {
   AppShell,
   AppShellHeader,
@@ -7,8 +6,9 @@ import {
   Group,
   Text,
   Title,
-} from '@mantine/core';
-import Image from 'next/image';
+} from "@mantine/core";
+import Image from "next/image";
+import React from "react";
 
 export default function Home() {
   return (
@@ -16,42 +16,42 @@ export default function Home() {
       <AppShellHeader>
         <Group className="h-full px-md">
           <Image
-            className="dark:invert"
-            src="https://nextjs.org/icons/next.svg"
-            alt="logo"
             width={100}
+            className="dark:invert"
+            alt="logo"
             height={100}
+            src="https://nextjs.org/icons/next.svg"
           />
         </Group>
       </AppShellHeader>
       <AppShellMain>
         <Title className="text-center mt-20">
-          Welcome to{' '}
+          Welcome to{" "}
           <Text
+            component="span"
+            gradient={{ from: "pink", to: "yellow" }}
             inherit
             variant="gradient"
-            component="span"
-            gradient={{ from: 'pink', to: 'yellow' }}
           >
             Mantine
-          </Text>{' '}
+          </Text>{" "}
           +
           <Text
+            component="span"
+            gradient={{ from: "blue", to: "green" }}
             inherit
             variant="gradient"
-            component="span"
-            gradient={{ from: 'blue', to: 'green' }}
           >
             TailwindCSS
           </Text>
         </Title>
         <Text
-          className="text-center text-gray-700 dark:text-gray-300 max-w-[500px] mx-auto mt-xl"
-          ta="center"
-          size="lg"
+          className="text-center text-gray-700 dark:text-gray-300"
           maw={580}
-          mx="auto"
           mt="xl"
+          mx="auto"
+          size="lg"
+          ta="center"
         >
           This starter Next.js project includes a minimal setup for Mantine with
           TailwindCSS. To get started edit page.tsx file.

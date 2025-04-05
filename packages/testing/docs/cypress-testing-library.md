@@ -43,13 +43,13 @@ The following Testing Library commands are available in your Cypress tests:
 
 ```typescript
 // Find a button by its text
-cy.findByText('Submit').click();
+cy.findByText("Submit").click();
 
 // Find an input by its label
-cy.findByLabelText('Email').type('user@example.com');
+cy.findByLabelText("Email").type("user@example.com");
 
 // Find a navigation element by its role
-cy.findByRole('navigation').should('be.visible');
+cy.findByRole("navigation").should("be.visible");
 ```
 
 ### Using with Regular Cypress Commands
@@ -58,23 +58,23 @@ Testing Library commands can be chained with regular Cypress commands:
 
 ```typescript
 // Find a form and then find a button within it
-cy.get('form').findByText('Submit').click();
+cy.get("form").findByText("Submit").click();
 
 // Find a dialog and then find a button within it
-cy.findByRole('dialog').findByText('Close').click();
+cy.findByRole("dialog").findByText("Close").click();
 ```
 
 ### Using with Assertions
 
 ```typescript
 // Assert that an element exists
-cy.findByText('Welcome').should('exist');
+cy.findByText("Welcome").should("exist");
 
 // Assert that an element has a specific attribute
-cy.findByLabelText('Password').should('have.attr', 'type', 'password');
+cy.findByLabelText("Password").should("have.attr", "type", "password");
 
 // Assert that an element has a specific class
-cy.findByRole('button').should('have.class', 'primary');
+cy.findByRole("button").should("have.class", "primary");
 ```
 
 ## Best Practices

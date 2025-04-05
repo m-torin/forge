@@ -3,28 +3,28 @@ title: Switch to ESLint
 description: How to change the default linter to ESLint.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "next-forge",
+        id: "next-forge",
       },
     },
     {
       user: {
-        name: 'Nicholas C. Zakas',
-        id: 'slicknet',
+        name: "Nicholas C. Zakas",
+        id: "slicknet",
       },
       company: {
-        name: 'ESLint',
-        id: 'eslint',
+        name: "ESLint",
+        id: "eslint",
       },
     },
   ]}
@@ -54,29 +54,29 @@ Delete the existing `biome.json` file in the root of the project, and create a
 new `eslint.config.ts` file:
 
 ```typescript eslint.config.ts
-import react from 'eslint-plugin-react';
-import next from '@next/eslint-plugin-next';
-import hooks from 'eslint-plugin-react-hooks';
-import ts from 'typescript-eslint';
+import react from "eslint-plugin-react";
+import next from "@next/eslint-plugin-next";
+import hooks from "eslint-plugin-react-hooks";
+import ts from "typescript-eslint";
 
 export default [
   ...ts.configs.recommended,
   {
-    ignores: ['**/.next'],
+    ignores: ["**/.next"],
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ["**/*.ts", "**/*.tsx"],
     plugins: {
       react: react,
-      'react-hooks': hooks,
-      '@next/next': next,
+      "react-hooks": hooks,
+      "@next/next": next,
     },
     rules: {
-      ...react.configs['jsx-runtime'].rules,
+      ...react.configs["jsx-runtime"].rules,
       ...hooks.configs.recommended.rules,
       ...next.configs.recommended.rules,
-      ...next.configs['core-web-vitals'].rules,
-      '@next/next/no-img-element': 'error',
+      ...next.configs["core-web-vitals"].rules,
+      "@next/next/no-img-element": "error",
     },
   },
 ];

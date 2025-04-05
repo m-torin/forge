@@ -1,16 +1,19 @@
-import React from 'react';
-import type { Metadata } from 'next';
 import {
   ColorSchemeScript,
   mantineHtmlProps,
   MantineProvider,
-} from '@mantine/core';
-import { theme } from './theme';
-import './globals.css';
+} from "@mantine/core";
+import React from "react";
+
+import { theme } from "./theme";
+
+import type { Metadata } from "next";
+
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Next App Mantine Tailwind Template',
-  description: 'Next App Mantine Tailwind Template',
+  description: "Next App Mantine Tailwind Template",
+  title: "Next App Mantine Tailwind Template",
 };
 
 export default function RootLayout({

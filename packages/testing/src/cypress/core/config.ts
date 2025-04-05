@@ -3,7 +3,7 @@ import {
   PluginEvents,
   PluginConfigOptions,
   CypressConfig,
-} from 'cypress';
+} from "cypress";
 
 /**
  * Base configuration for Cypress
@@ -17,7 +17,7 @@ export const baseConfig: Partial<CypressConfig> = {
   video: false,
   screenshotOnRunFailure: true,
   env: {
-    testEnvironment: 'test',
+    testEnvironment: "test",
   },
   // Special handling for Next.js and React
   experimentalFetchPolyfill: true,
@@ -43,8 +43,8 @@ export const createComponentConfig = (
   return defineConfig({
     component: {
       devServer: {
-        framework: 'react',
-        bundler: 'vite',
+        framework: "react",
+        bundler: "vite",
       },
       setupNodeEvents(
         on: PluginEvents,
@@ -53,7 +53,7 @@ export const createComponentConfig = (
         // Custom event handlers
         return config;
       },
-      specPattern: 'cypress/component/**/*.cy.{js,jsx,ts,tsx}',
+      specPattern: "cypress/component/**/*.cy.{js,jsx,ts,tsx}",
       ...baseConfig,
       ...customConfig,
     },
@@ -76,8 +76,8 @@ export const createE2EConfig = (customConfig: Partial<CypressConfig> = {}) => {
         // Custom event handlers
         return config;
       },
-      baseUrl: 'http://localhost:3000',
-      specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+      baseUrl: "http://localhost:3000",
+      specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
       ...baseConfig,
       ...customConfig,
     },

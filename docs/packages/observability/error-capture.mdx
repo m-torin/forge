@@ -34,9 +34,9 @@ If you want to capture a specific exception rather than letting it bubble up to
 Sentry, you can use the `captureException` function:
 
 ```tsx page.tsx
-import { captureException } from '@sentry/nextjs';
+import { captureException } from "@sentry/nextjs";
 
-captureException(new Error('My error message'));
+captureException(new Error("My error message"));
 ```
 
 ## Tunneling

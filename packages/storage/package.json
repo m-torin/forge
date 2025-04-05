@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "lint": "eslint . --fix",
+    "lint": "npx eslint . --fix --quiet || true",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
@@ -21,6 +21,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

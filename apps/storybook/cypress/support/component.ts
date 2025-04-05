@@ -1,31 +1,18 @@
-import { mount } from 'cypress/react'
-import { composeStories } from '@storybook/testing-react'
-import '@testing-library/cypress/add-commands'
+import React from "react";
+import { mount } from "cypress/react";
+import type { StoryFn } from "@storybook/react";
+import "@testing-library/cypress/add-commands";
 
-// Augment the Cypress namespace to include type definitions for
-// your custom command.
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      /**
-       * Custom command to mount a Storybook story
-       * @example cy.mountStory(stories.Default)
-       */
-      mountStory: typeof mountStory
-    }
-  }
-}
+type StoryComponent = StoryFn & {
+  args?: Record<string, unknown>;
+};
 
-/**
- * Mount a story with its args and decorators
- */
-function mountStory(story: any) {
-  const composed = composeStories({ [story.name]: story })
-  const Story = composed[story.name]
-  return mount(<Story />)
-}
+// Register the custom command
+// @ts-expect-error - Cypress.Commands is defined at runtime
+Cypress.Commands.add("mountStory", (story: StoryComponent) => {
+  const StoryComponent = story as unknown as React.ComponentType;
+  return mount(React.createElement(StoryComponent, story.args || {}));
+});
 
-Cypress.Commands.add('mountStory', mountStory)
-
-// Import commands.js using ES2015 syntax:
-import './commands'
+// Import additional Cypress commands
+import "./commands";

@@ -1,58 +1,58 @@
-import { describe, it, expect } from 'vitest';
-import { theme } from '@/app/theme';
-import { MantineTheme } from '@mantine/core';
+import { theme } from "@/app/theme";
+import { type MantineTheme } from "@mantine/core";
+import { describe, expect, it } from "vitest";
 
-describe.skip('Mantine Theme Configuration', () => {
-  it('has the correct primary color set to brand', () => {
-    expect(theme.primaryColor).toBe('brand');
+describe.skip("Mantine Theme Configuration", () => {
+  it("has the correct primary color set to brand", () => {
+    expect(theme.primaryColor).toBe("brand");
   });
 
-  it('has the correct brand color palette with 10 shades', () => {
+  it("has the correct brand color palette with 10 shades", () => {
     expect(theme.colors.brand).toBeDefined();
     expect(theme.colors.brand.length).toBe(10);
 
     // Check specific brand colors
-    expect(theme.colors.brand[0]).toBe('#e6f7ff'); // Lightest shade
-    expect(theme.colors.brand[5]).toBe('#1890ff'); // Middle shade
-    expect(theme.colors.brand[9]).toBe('#002766'); // Darkest shade
+    expect(theme.colors.brand[0]).toBe("#e6f7ff"); // Lightest shade
+    expect(theme.colors.brand[5]).toBe("#1890ff"); // Middle shade
+    expect(theme.colors.brand[9]).toBe("#002766"); // Darkest shade
   });
 
-  it('has the correct breakpoints defined', () => {
+  it("has the correct breakpoints defined", () => {
     expect(theme.breakpoints).toBeDefined();
-    expect(theme.breakpoints.xs).toBe('36em');
-    expect(theme.breakpoints.sm).toBe('48em');
-    expect(theme.breakpoints.md).toBe('62em');
-    expect(theme.breakpoints.lg).toBe('75em');
-    expect(theme.breakpoints.xl).toBe('88em');
+    expect(theme.breakpoints.xs).toBe("36em");
+    expect(theme.breakpoints.sm).toBe("48em");
+    expect(theme.breakpoints.md).toBe("62em");
+    expect(theme.breakpoints.lg).toBe("75em");
+    expect(theme.breakpoints.xl).toBe("88em");
   });
 
-  it('has the correct default radius', () => {
-    expect(theme.defaultRadius).toBe('md');
+  it("has the correct default radius", () => {
+    expect(theme.defaultRadius).toBe("md");
   });
 
-  it('has auto contrast enabled', () => {
+  it("has auto contrast enabled", () => {
     expect(theme.autoContrast).toBe(true);
   });
 
-  it('has the correct font family', () => {
+  it("has the correct font family", () => {
     expect(theme.fontFamily).toBe(
-      'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+      "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
     );
   });
 
-  it('has the correct focus ring setting', () => {
-    expect(theme.focusRing).toBe('auto');
+  it("has the correct focus ring setting", () => {
+    expect(theme.focusRing).toBe("auto");
   });
 
-  it('has all required theme properties', () => {
+  it("has all required theme properties", () => {
     // Check that the theme has all the required properties of a MantineTheme
     const requiredProperties: (keyof MantineTheme)[] = [
-      'colors',
-      'primaryColor',
-      'breakpoints',
-      'fontFamily',
-      'defaultRadius',
-      'focusRing',
+      "colors",
+      "primaryColor",
+      "breakpoints",
+      "fontFamily",
+      "defaultRadius",
+      "focusRing",
     ];
 
     requiredProperties.forEach((prop) => {
@@ -60,7 +60,7 @@ describe.skip('Mantine Theme Configuration', () => {
     });
   });
 
-  it('has valid color values in the brand palette', () => {
+  it("has valid color values in the brand palette", () => {
     // Check that all brand colors are valid hex colors
     const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
 
@@ -69,7 +69,7 @@ describe.skip('Mantine Theme Configuration', () => {
     });
   });
 
-  it('has a properly structured color palette', () => {
+  it("has a properly structured color palette", () => {
     // Check that the brand color palette follows the expected pattern
     // (from lightest to darkest)
     const brandColors = theme.colors.brand;

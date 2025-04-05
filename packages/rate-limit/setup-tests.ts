@@ -1,67 +1,82 @@
-import '@repo/testing/src/vitest/core/setup';
-import { vi } from 'vitest';
+import "@repo/testing/src/vitest/core/setup";
+import { vi } from "vitest";
+
+// Define types for mocks
+type Procedure = Record<string, any>;
 
 // Mock environment variables
-process.env.UPSTASH_REDIS_REST_URL = 'https://test-upstash-redis-url.com';
-process.env.UPSTASH_REDIS_REST_TOKEN = 'test-upstash-redis-token';
+process.env.UPSTASH_REDIS_REST_URL = "https://test-upstash-redis-url.com";
+process.env.UPSTASH_REDIS_REST_TOKEN = "test-upstash-redis-token";
 
 // Mock @upstash/redis
-vi.mock('@upstash/redis', () => {
+vi.mock("@upstash/redis", () => {
   const mockRedis = vi.fn().mockImplementation(() => ({
-    get: vi.fn().mockResolvedValue(null),
-    set: vi.fn().mockResolvedValue('OK'),
     del: vi.fn().mockResolvedValue(1),
-    incr: vi.fn().mockResolvedValue(1),
     expire: vi.fn().mockResolvedValue(1),
+    get: vi.fn().mockResolvedValue(null),
+    incr: vi.fn().mockResolvedValue(1),
     pipeline: vi.fn().mockReturnValue({
-      get: vi.fn().mockReturnThis(),
-      set: vi.fn().mockReturnThis(),
       del: vi.fn().mockReturnThis(),
-      incr: vi.fn().mockReturnThis(),
-      expire: vi.fn().mockReturnThis(),
       exec: vi.fn().mockResolvedValue([]),
+      expire: vi.fn().mockReturnThis(),
+      get: vi.fn().mockReturnThis(),
+      incr: vi.fn().mockReturnThis(),
+      set: vi.fn().mockReturnThis(),
     }),
+    set: vi.fn().mockResolvedValue("OK"),
   }));
 
   return { Redis: mockRedis };
 });
 
 // Mock @upstash/ratelimit
-vi.mock('@upstash/ratelimit', () => {
+vi.mock("@upstash/ratelimit", () => {
   const mockRatelimit = vi
     .fn()
-    .mockImplementation(({ redis, limiter, prefix }) => ({
-      limit: vi.fn().mockResolvedValue({
-        success: true,
-        limit: 10,
-        remaining: 9,
-        reset: Date.now() + 10000,
-        pending: Promise.resolve(),
+    .mockImplementation(
+      ({
+        limiter,
+        prefix,
+        redis,
+      }: {
+        redis: any;
+        limiter: any;
+        prefix: string;
+      }) => ({
+        blockUntilReady: vi.fn().mockResolvedValue(undefined),
+        limit: vi.fn().mockResolvedValue({
+          limit: 10,
+          pending: Promise.resolve(),
+          remaining: 9,
+          reset: Date.now() + 10000,
+          success: true,
+        }),
       }),
-      blockUntilReady: vi.fn().mockResolvedValue(undefined),
-    }));
+    ) as Procedure;
 
   mockRatelimit.slidingWindow = vi
     .fn()
-    .mockImplementation((maxRequests, window) => ({
+    .mockImplementation((maxRequests: number, window: number) => ({
       maxRequests,
       window,
     }));
 
   mockRatelimit.fixedWindow = vi
     .fn()
-    .mockImplementation((maxRequests, window) => ({
+    .mockImplementation((maxRequests: number, window: number) => ({
       maxRequests,
       window,
     }));
 
   mockRatelimit.tokenBucket = vi
     .fn()
-    .mockImplementation((maxTokens, refillRate, interval) => ({
-      maxTokens,
-      refillRate,
-      interval,
-    }));
+    .mockImplementation(
+      (maxTokens: number, refillRate: number, interval: number) => ({
+        interval,
+        maxTokens,
+        refillRate,
+      }),
+    );
 
   return {
     Ratelimit: mockRatelimit,
@@ -69,12 +84,27 @@ vi.mock('@upstash/ratelimit', () => {
 });
 
 // Mock @t3-oss/env-nextjs
-vi.mock('@t3-oss/env-nextjs', () => ({
-  createEnv: vi.fn().mockImplementation(({ server, runtimeEnv }) => {
-    const env = {};
-    Object.keys(server).forEach((key) => {
-      env[key] = runtimeEnv[key];
-    });
-    return () => env;
-  }),
+vi.mock("@t3-oss/env-nextjs", () => ({
+  createEnv: vi
+    .fn()
+    .mockImplementation(
+      ({
+        runtimeEnv,
+        server,
+      }: {
+        server: Record<string, any>;
+        runtimeEnv: Record<string, any>;
+      }) => {
+        const env: Record<string, any> = {};
+        Object.keys(server).forEach((key) => {
+          env[key] = runtimeEnv[key];
+        });
+        return () => env;
+      },
+    ),
+}));
+
+// Mock @repo/testing
+vi.mock("@repo/testing", () => ({
+  vitest: vi,
 }));

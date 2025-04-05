@@ -5,7 +5,7 @@
  */
 
 // Export React-specific configuration
-export { createReactConfig } from '../../configs/react.ts';
+export { createReactConfig } from "../../configs/react.ts";
 
 // Export React-specific renderer
 export {
@@ -25,14 +25,14 @@ export {
   queries,
   queryHelpers,
   userEvent,
-} from '../../renderers/react.ts';
+} from "../../renderers/react.ts";
 
 // Export React-specific mocks
-export { MockAuthProvider } from '../../mocks/auth-react.tsx';
+export { MockAuthProvider } from "../../mocks/auth-react.tsx";
 
 // Export React-specific templates
-export * as componentTemplate from '../../templates/react/component.test.tsx';
-export * as hookTemplate from '../../templates/react/hook.test.tsx';
+export * as componentTemplate from "../../templates/react/component.test.tsx";
+export * as hookTemplate from "../../templates/react/hook.test.tsx";
 
 // Re-export shared utilities for convenience
-export * from '../../shared/index.ts';
+export * from "../../shared/index.ts";

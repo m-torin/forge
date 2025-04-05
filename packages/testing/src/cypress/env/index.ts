@@ -7,8 +7,8 @@
 
 // Show deprecation warning
 console.warn(
-  '[DEPRECATED] @repo/testing/cypress/env is deprecated. Please use @repo/testing/shared/cypress instead.',
+  "[DEPRECATED] @repo/testing/cypress/env is deprecated. Please use @repo/testing/shared/cypress instead.",
 );
 
 // Re-export from the new location for backward compatibility
-export * from '../../shared/env/cypress/index.ts';
+export * from "../../shared/env/cypress/index.ts";

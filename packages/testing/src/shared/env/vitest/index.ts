@@ -4,7 +4,7 @@
  * This module provides Vitest-specific utilities for handling environment variables in tests.
  * It builds on the core environment utilities but adds Vitest-specific functionality.
  */
-import { vi } from 'vitest';
+import { vi } from "vitest";
 import {
   isTestEnvironment,
   createTestAwareValidator,
@@ -16,7 +16,7 @@ import {
   mockDate as coreMockDate,
   setupConsoleMocks as coreSetupConsoleMocks,
   restoreConsoleMocks as coreRestoreConsoleMocks,
-} from '../core/index.ts';
+} from "../core/index.ts";
 
 // Re-export core utilities
 export {
@@ -48,12 +48,8 @@ export function mockEnvVars(envVars: Record<string, string>): () => void {
   return () => {
     Object.entries(originalValues).forEach(([key, value]) => {
       if (value === undefined) {
-        // Use vi.unstubEnv when available, otherwise delete from process.env
-        if (typeof vi.unstubEnv === 'function') {
-          vi.unstubEnv(key);
-        } else {
-          delete process.env[key];
-        }
+        // Reset to original undefined state
+        delete process.env[key];
       } else {
         vi.stubEnv(key, value);
       }
@@ -86,9 +82,9 @@ export function setupAllTestEnvVars(
 ): () => void {
   if (!envVars) {
     console.warn(
-      'No environment variables provided to setupAllTestEnvVars. ' +
+      "No environment variables provided to setupAllTestEnvVars. " +
         "You should provide your application's environment variables. " +
-        'See exampleEnvVars for format examples.',
+        "See exampleEnvVars for format examples.",
     );
     return () => {};
   }
@@ -132,22 +128,27 @@ export function restoreConsoleMocks(): void {
  * @param date - Date to mock
  * @returns Function to restore original Date
  */
-export function mockDate(date: Date = new Date('2023-01-01')): () => void {
+export function mockDate(date: Date = new Date("2023-01-01")): () => void {
   const RealDate = Date;
 
-  // @ts-ignore - We're intentionally mocking the Date constructor
-  global.Date = class extends RealDate {
-    constructor(...args: any[]) {
-      if (args.length === 0) {
-        return new RealDate(date);
+  // Create a mock Date class
+  class MockDate extends RealDate {
+    constructor(...args: ConstructorParameters<typeof RealDate>) {
+      // @ts-ignore - Allow comparison between different types
+      if (args.length == 0) {
+        super(date);
+      } else {
+        super(...args);
       }
-      return new RealDate(...args);
     }
 
     static now() {
       return date.getTime();
     }
-  };
+  }
+
+  // Replace global Date with our mock
+  global.Date = MockDate as DateConstructor;
 
   return () => {
     global.Date = RealDate;
@@ -159,7 +160,7 @@ export function mockDate(date: Date = new Date('2023-01-01')): () => void {
  * @param mockResponse - Response to mock
  * @returns Mock function
  */
-export function mockFetch(mockResponse: any = {}): ReturnType<typeof vi.fn> {
+export function mockFetch(mockResponse: any = {}): any {
   const mock = vi.fn().mockResolvedValue({
     ok: true,
     json: vi.fn().mockResolvedValue(mockResponse),

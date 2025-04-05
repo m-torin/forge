@@ -80,8 +80,8 @@ The Next.js configuration uses a modular approach with named rule sets:
 
 ```typescript
 // File pattern constants
-const APP_ROUTER_FILES = ['app/**/*.{js,jsx,ts,tsx}'];
-const SERVER_COMPONENT_FILES = ['app/**/page.{js,jsx,ts,tsx}' /* ... */];
+const APP_ROUTER_FILES = ["app/**/*.{js,jsx,ts,tsx}"];
+const SERVER_COMPONENT_FILES = ["app/**/page.{js,jsx,ts,tsx}" /* ... */];
 // ...more pattern constants
 
 // Rule sets grouped by purpose
@@ -154,33 +154,33 @@ In your package's `eslint.config.ts`:
 
 ```typescript
 // For React libraries
-import reactConfig from '@repo/eslint-config/react-package';
+import reactConfig from "@repo/eslint-config/react-package";
 export default reactConfig;
 
 // For Next.js apps
-import nextConfig from '@repo/eslint-config/next';
+import nextConfig from "@repo/eslint-config/next";
 export default nextConfig;
 
 // For Next.js 15 apps with custom overrides
-import nextConfig from '@repo/eslint-config/next';
+import nextConfig from "@repo/eslint-config/next";
 export default [
   ...nextConfig,
   {
     // Project-specific overrides
-    files: ['app/**/*.tsx'],
+    files: ["app/**/*.tsx"],
     rules: {
       // Customize specific rules if needed
-      '@next/next/no-img-element': 'warn', // Downgrade to warning if needed
+      "@next/next/no-img-element": "warn", // Downgrade to warning if needed
     },
   },
 ];
 
 // For server packages
-import serverConfig from '@repo/eslint-config/server';
+import serverConfig from "@repo/eslint-config/server";
 export default serverConfig;
 
 // For Remix apps
-import remixConfig from '@repo/eslint-config/remix';
+import remixConfig from "@repo/eslint-config/remix";
 export default remixConfig;
 ```
 
@@ -230,7 +230,7 @@ these configs.
 All configurations are exported with proper TypeScript type declarations:
 
 ```typescript
-import type { Linter } from 'eslint';
+import type { Linter } from "eslint";
 
 /**
  * ESLint configurations for the monorepo

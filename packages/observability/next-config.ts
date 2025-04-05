@@ -1,10 +1,11 @@
-import { withLogtail } from '@logtail/next';
-import { withSentryConfig } from '@sentry/nextjs';
-import { keys } from './keys';
+import { withLogtail } from "@logtail/next";
+import { withSentryConfig } from "@sentry/nextjs";
+
+import { keys } from "./keys";
 
 export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
-  org: keys()?.SENTRY_ORG || 'test-org',
-  project: keys()?.SENTRY_PROJECT || 'test-project',
+  org: keys()?.SENTRY_ORG || "test-org",
+  project: keys()?.SENTRY_PROJECT || "test-project",
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
@@ -23,7 +24,7 @@ export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
    * Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
    * side errors will fail.
    */
-  tunnelRoute: '/monitoring',
+  tunnelRoute: "/monitoring",
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,
@@ -37,15 +38,24 @@ export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
   automaticVercelMonitors: true,
 };
 
-export const withSentry = (sourceConfig: object): object => {
+interface NextConfig {
+  [key: string]: any;
+  reactStrictMode?: boolean;
+  transpilePackages?: string[];
+}
+
+export const withSentry = (sourceConfig: NextConfig): NextConfig => {
   const configWithTranspile = {
     ...sourceConfig,
-    transpilePackages: ['@sentry/nextjs'],
+    transpilePackages: [
+      ...(sourceConfig.transpilePackages || []),
+      "@sentry/nextjs",
+    ],
   };
 
-  return withSentryConfig(configWithTranspile, sentryConfig);
+  return withSentryConfig(configWithTranspile, sentryConfig) as NextConfig;
 };
 
-export const withLogging = (config: object): object => {
-  return withLogtail(config);
+export const withLogging = (config: NextConfig): NextConfig => {
+  return withLogtail(config) as NextConfig;
 };

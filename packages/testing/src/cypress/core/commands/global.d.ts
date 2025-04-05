@@ -45,10 +45,10 @@ declare namespace Cypress {
      */
     setViewport(
       size:
-        | 'mobile'
-        | 'tablet'
-        | 'desktop'
-        | 'widescreen'
+        | "mobile"
+        | "tablet"
+        | "desktop"
+        | "widescreen"
         | { width: number; height: number },
     ): Chainable<Element>;
 
@@ -59,7 +59,7 @@ declare namespace Cypress {
     mountWithProviders(
       component: React.ReactNode,
       options?: {
-        theme?: 'light' | 'dark';
+        theme?: "light" | "dark";
         locale?: string;
         [key: string]: any;
       },

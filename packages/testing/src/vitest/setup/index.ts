@@ -2,5 +2,5 @@
  * Setup utilities for test environments
  */
 
-export * from './core.ts';
-export * from './mantine.ts';
+export * from "./core";
+export * from "./mantine";

@@ -1,33 +1,34 @@
 // eslint.config.ts
-import nextConfig from '@repo/eslint-config/next';
-import type { Linter } from 'eslint';
+import nextConfig from "@repo/eslint-config/next";
+
+import type { Linter } from "eslint";
 
 // Override the perfectionist/sort-imports rule to fix the regex issue
 const overriddenConfig: Linter.FlatConfig[] = nextConfig.map((config) => {
-  if (config.rules && config.rules['perfectionist/sort-imports']) {
+  if (config.rules && config.rules["perfectionist/sort-imports"]) {
     return {
       ...config,
       rules: {
         ...config.rules,
-        'perfectionist/sort-imports': [
-          'error',
+        "perfectionist/sort-imports": [
+          "error",
           {
-            type: 'natural',
-            order: 'asc',
-            ignoreCase: true,
+            type: "natural",
             groups: [
-              'builtin',
-              'external',
-              'internal',
-              'parent',
-              'sibling',
-              'index',
-              'object',
-              'type',
-              'unknown',
+              "builtin",
+              "external",
+              "internal",
+              "parent",
+              "sibling",
+              "index",
+              "object",
+              "type",
+              "unknown",
             ],
-            newlinesBetween: 'always',
-            internalPattern: ['^@repo/'],
+            ignoreCase: true,
+            internalPattern: ["^@repo/"],
+            newlinesBetween: "always",
+            order: "asc",
           },
         ],
       },

@@ -2,7 +2,7 @@
  * Mock authentication utilities for testing
  * This file provides mock implementations of auth-related functions and hooks
  */
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 /**
  * Interface for Liveblocks auth response
@@ -35,27 +35,27 @@ export interface Session {
 // Mock user data
 export const mockUsers = {
   admin: {
-    id: 'user_test_admin',
-    email: 'admin@example.com',
-    firstName: 'Admin',
-    lastName: 'User',
-    role: 'admin',
+    id: "user_test_admin",
+    email: "admin@example.com",
+    firstName: "Admin",
+    lastName: "User",
+    role: "admin",
     isSignedIn: true,
   },
   regular: {
-    id: 'user_test_regular',
-    email: 'user@example.com',
-    firstName: 'Regular',
-    lastName: 'User',
-    role: 'user',
+    id: "user_test_regular",
+    email: "user@example.com",
+    firstName: "Regular",
+    lastName: "User",
+    role: "user",
     isSignedIn: true,
   },
   guest: {
-    id: 'user_test_guest',
-    email: 'guest@example.com',
-    firstName: 'Guest',
-    lastName: 'User',
-    role: 'guest',
+    id: "user_test_guest",
+    email: "guest@example.com",
+    firstName: "Guest",
+    lastName: "User",
+    role: "guest",
     isSignedIn: true,
   },
   unauthenticated: {
@@ -74,10 +74,10 @@ export const mockUseAuth = (user = mockUsers.regular) => {
     user,
     isLoaded: true,
     isSignedIn: user.isSignedIn,
-    signIn: vi.fn().mockResolvedValue({ status: 'complete' }),
-    signOut: vi.fn().mockResolvedValue({ status: 'complete' }),
-    signUp: vi.fn().mockResolvedValue({ status: 'complete' }),
-    getToken: vi.fn().mockResolvedValue('mock-token'),
+    signIn: vi.fn().mockResolvedValue({ status: "complete" }),
+    signOut: vi.fn().mockResolvedValue({ status: "complete" }),
+    signUp: vi.fn().mockResolvedValue({ status: "complete" }),
+    getToken: vi.fn().mockResolvedValue("mock-token"),
   };
 };
 
@@ -95,8 +95,8 @@ export const mockClerk = (user = mockUsers.regular) => {
       : null,
     session: user.isSignedIn
       ? {
-          id: 'sess_test',
-          status: 'active',
+          id: "sess_test",
+          status: "active",
           lastActiveAt: new Date(),
           expireAt: new Date(Date.now() + 1000 * 60 * 60),
           abandonAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -104,10 +104,10 @@ export const mockClerk = (user = mockUsers.regular) => {
       : null,
     isLoaded: true,
     isSignedIn: user.isSignedIn,
-    signIn: vi.fn().mockResolvedValue({ status: 'complete' }),
-    signOut: vi.fn().mockResolvedValue({ status: 'complete' }),
-    signUp: vi.fn().mockResolvedValue({ status: 'complete' }),
-    getToken: vi.fn().mockResolvedValue('mock-token'),
+    signIn: vi.fn().mockResolvedValue({ status: "complete" }),
+    signOut: vi.fn().mockResolvedValue({ status: "complete" }),
+    signUp: vi.fn().mockResolvedValue({ status: "complete" }),
+    getToken: vi.fn().mockResolvedValue("mock-token"),
   };
 };
 
@@ -124,7 +124,7 @@ export const mockAuthMiddleware = (user = mockUsers.regular) => {
         role: user.role,
       },
       isAuthenticated: user.isSignedIn,
-      token: 'mock-token',
+      token: "mock-token",
     };
     next();
   };
@@ -135,11 +135,11 @@ export const mockAuthMiddleware = (user = mockUsers.regular) => {
  */
 export const mockLiveblocksAuth = {
   // Mock the Liveblocks client
-  authorize: vi.fn<[], Promise<LiveblocksAuthResponse>>().mockResolvedValue({
+  authorize: vi.fn().mockResolvedValue({
     status: 200,
     body: {
-      token: 'mock-liveblocks-token',
-      userId: 'mock-user-id',
+      token: "mock-liveblocks-token",
+      userId: "mock-user-id",
     },
   }),
 };
@@ -149,37 +149,35 @@ export const mockLiveblocksAuth = {
  */
 export const mockAuthService = {
   // Basic auth functions
-  signIn: vi
-    .fn<[], Promise<{ success: boolean; userId: string }>>()
-    .mockResolvedValue({
-      success: true,
-      userId: 'mock-user-id',
-    }),
-  signOut: vi.fn<[], Promise<{ success: boolean }>>().mockResolvedValue({
+  signIn: vi.fn().mockResolvedValue({
+    success: true,
+    userId: "mock-user-id",
+  }),
+  signOut: vi.fn().mockResolvedValue({
     success: true,
   }),
-  getSession: vi.fn<[], Promise<Session>>().mockResolvedValue({
+  getSession: vi.fn().mockResolvedValue({
     user: {
-      id: 'mock-user-id',
-      email: 'user@example.com',
-      name: 'Test User',
+      id: "mock-user-id",
+      email: "user@example.com",
+      name: "Test User",
     },
     expires: new Date(Date.now() + 86400000).toISOString(),
   }),
 
   // User management
-  getUser: vi.fn<[], Promise<User>>().mockResolvedValue({
-    id: 'mock-user-id',
-    email: 'user@example.com',
-    name: 'Test User',
+  getUser: vi.fn().mockResolvedValue({
+    id: "mock-user-id",
+    email: "user@example.com",
+    name: "Test User",
   }),
-  updateUser: vi.fn<[], Promise<{ success: boolean }>>().mockResolvedValue({
+  updateUser: vi.fn().mockResolvedValue({
     success: true,
   }),
 
   // Session management
-  isAuthenticated: vi.fn<[], Promise<boolean>>().mockResolvedValue(true),
-  hasPermission: vi.fn<[string], Promise<boolean>>().mockResolvedValue(true),
+  isAuthenticated: vi.fn().mockResolvedValue(true),
+  hasPermission: vi.fn().mockResolvedValue(true),
 };
 
 /**

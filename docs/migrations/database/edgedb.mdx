@@ -3,28 +3,28 @@ title: Switch to EdgeDB
 description: How to change the database provider to EdgeDB.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "next-forge",
+        id: "next-forge",
       },
     },
     {
       user: {
-        name: 'Aleksandra Sikora',
-        id: 'beerose',
+        name: "Aleksandra Sikora",
+        id: "beerose",
       },
       company: {
-        name: 'EdgeDB',
-        id: 'edgedb',
+        name: "EdgeDB",
+        id: "edgedb",
       },
     },
   ]}
@@ -102,9 +102,9 @@ rm -fr packages/database/prisma
 Update the database connection code to use an EdgeDB client:
 
 ```ts packages/database/index.ts
-import 'server-only';
+import "server-only";
 
-import { createClient } from 'edgedb';
+import { createClient } from "edgedb";
 
 export const database = createClient();
 ```
@@ -150,14 +150,14 @@ For example, here’s how we can update the `page` query in
 `app/(authenticated)/page.tsx`:
 
 ```tsx app/(authenticated)/page.tsx {2,7-8}
-import { database } from '@repo/database';
-import edgeql from '@repo/database/dbschema/edgeql-js';
+import { database } from "@repo/database";
+import edgeql from "@repo/database/dbschema/edgeql-js";
 
 // ...
 
 const App = async () => {
   const pagesQuery = edgeql.select(edgeql.Page, () => ({
-    ...edgeql.Page['*'],
+    ...edgeql.Page["*"],
   }));
   const pages = await pagesQuery.run(database);
 

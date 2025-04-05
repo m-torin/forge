@@ -120,8 +120,8 @@ Add a "Common Issues and Solutions" section for practical guidance:
 
 ```markdown
 ---
-description: 'TypeScript ESM Standards'
-globs: ['**/*.ts', '**/*.tsx']
+description: "TypeScript ESM Standards"
+globs: ["**/*.ts", "**/*.tsx"]
 ---
 
 # TypeScript ESM Standards

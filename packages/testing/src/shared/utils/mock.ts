@@ -65,8 +65,8 @@ export function createMockResponse<T = any>(
 ): MockResponse<T> {
   const {
     status = 200,
-    statusText = 'OK',
-    headers = { 'Content-Type': 'application/json' },
+    statusText = "OK",
+    headers = { "Content-Type": "application/json" },
     body = {},
   } = options;
 
@@ -77,10 +77,10 @@ export function createMockResponse<T = any>(
     body: body as T,
     json: () => Promise.resolve(body as T),
     text: () =>
-      Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
+      Promise.resolve(typeof body === "string" ? body : JSON.stringify(body)),
     blob: () =>
       Promise.resolve(
-        new Blob([typeof body === 'string' ? body : JSON.stringify(body)]),
+        new Blob([typeof body === "string" ? body : JSON.stringify(body)]),
       ),
   };
 }

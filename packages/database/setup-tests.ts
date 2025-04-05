@@ -1,31 +1,31 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock server-only
-vi.mock('server-only', () => ({}));
+vi.mock("server-only", () => ({}));
 
 // Mock @neondatabase/serverless
-vi.mock('@neondatabase/serverless', () => ({
-  Pool: vi.fn().mockImplementation(() => ({
-    connect: vi.fn(),
-    query: vi.fn(),
-    end: vi.fn(),
-  })),
+vi.mock("@neondatabase/serverless", () => ({
   neonConfig: {
     webSocketConstructor: null,
   },
+  Pool: vi.fn().mockImplementation(() => ({
+    connect: vi.fn(),
+    end: vi.fn(),
+    query: vi.fn(),
+  })),
 }));
 
 // Mock @prisma/adapter-neon
-vi.mock('@prisma/adapter-neon', () => ({
+vi.mock("@prisma/adapter-neon", () => ({
   PrismaNeon: vi.fn().mockImplementation(() => ({
+    executeRaw: vi.fn(),
     // Mock adapter methods
     queryRaw: vi.fn(),
-    executeRaw: vi.fn(),
   })),
 }));
 
 // Mock PrismaClient
-vi.mock('./generated/client', () => {
+vi.mock("./generated/client", () => {
   const mockPrismaClient = vi.fn().mockImplementation(() => ({
     // Mock common Prisma methods
     $connect: vi.fn().mockResolvedValue(undefined),
@@ -33,11 +33,11 @@ vi.mock('./generated/client', () => {
     $transaction: vi.fn().mockImplementation((callback) => callback({})),
     // Add other model methods as needed
     user: {
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
       create: vi.fn(),
-      update: vi.fn(),
       delete: vi.fn(),
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
     },
     // Add other models as needed
   }));
@@ -48,24 +48,24 @@ vi.mock('./generated/client', () => {
 });
 
 // Mock ws
-vi.mock('ws', () => {
+vi.mock("ws", () => {
   return { default: vi.fn() };
 });
 
 // Mock @t3-oss/env-nextjs
-vi.mock('@t3-oss/env-nextjs', () => ({
-  createEnv: vi.fn().mockImplementation(({ server, runtimeEnv }) => {
+vi.mock("@t3-oss/env-nextjs", () => ({
+  createEnv: vi.fn().mockImplementation(({ runtimeEnv, server }) => {
     // Simple implementation that validates DATABASE_URL
     if (!runtimeEnv.DATABASE_URL) {
-      throw new Error('DATABASE_URL is required');
+      throw new Error("DATABASE_URL is required");
     }
 
-    if (runtimeEnv.DATABASE_URL === 'not-a-url') {
-      throw new Error('DATABASE_URL must be a valid URL');
+    if (runtimeEnv.DATABASE_URL === "not-a-url") {
+      throw new Error("DATABASE_URL must be a valid URL");
     }
 
-    if (runtimeEnv.DATABASE_URL === '') {
-      throw new Error('DATABASE_URL must not be empty');
+    if (runtimeEnv.DATABASE_URL === "") {
+      throw new Error("DATABASE_URL must not be empty");
     }
 
     return runtimeEnv;
@@ -73,4 +73,4 @@ vi.mock('@t3-oss/env-nextjs', () => ({
 }));
 
 // Mock environment variables
-process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/test';
+process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/test";

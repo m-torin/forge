@@ -4,19 +4,15 @@ interface PluginAPI {
   // Add other methods as needed
 }
 
-interface PluginArgs {
-  [key: string]: any;
-}
+type PluginArgs = Record<string, unknown>;
 
-interface PluginOptions {
-  [key: string]: any;
-}
+type PluginOptions = Record<string, unknown>;
 
 function plugin(args: PluginArgs, opts: PluginOptions) {
   console.log({ args, opts });
   const f = ({ addVariant }: PluginAPI) => {
     addVariant(
-      'dark',
+      "dark",
       "&:where([data-mantine-color-scheme='dark'], [data-mantine-color-scheme='dark'] *)",
     );
   };

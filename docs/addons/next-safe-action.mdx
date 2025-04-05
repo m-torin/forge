@@ -1,7 +1,6 @@
 ---
 title: Next Safe Action
-description:
-  A powerful library for managing and securing your Next.js Server Actions.
+description: A powerful library for managing and securing your Next.js Server Actions.
 ---
 
 ### Installation
@@ -23,10 +22,10 @@ Actions:
 <CodeGroup>
 
 ```ts action.ts
-'use server';
+"use server";
 
-import { createSafeActionClient } from 'next-safe-action';
-import { z } from 'zod';
+import { createSafeActionClient } from "next-safe-action";
+import { z } from "zod";
 
 export const serverAction = createSafeActionClient()
   .schema(
@@ -47,26 +46,26 @@ export const serverAction = createSafeActionClient()
 ```
 
 ```tsx my-component.tsx
-'use client';
+"use client";
 
-import { serverAction } from './action';
-import { useAction } from 'next-safe-action/hooks';
-import { toast } from '@repo/design-system/components/ui/sonner';
+import { serverAction } from "./action";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "@repo/design-system/components/ui/sonner";
 
 function MyComponent() {
   const { execute, isPending } = useAction(serverAction, {
     onSuccess() {
       // Display success message to client
-      toast.success('Action Success');
+      toast.success("Action Success");
     },
     onError({ error }) {
       // Display error message to client
-      toast.error('Action Failed');
+      toast.error("Action Failed");
     },
   });
 
   const onClick = () => {
-    execute({ name: 'next-forge', id: 'example' });
+    execute({ name: "next-forge", id: "example" });
   };
 
   return (

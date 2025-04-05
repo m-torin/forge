@@ -8,7 +8,7 @@ import {
   afterAll,
   beforeEach,
   afterEach,
-} from '@repo/testing/vitest';
+} from "@repo/testing/vitest";
 
 // Import package-specific setup
-import '../setup-tests';
+import "../setup-tests";

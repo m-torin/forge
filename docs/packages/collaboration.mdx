@@ -3,28 +3,28 @@ title: Collaboration
 description: next-forge is multiplayer out of the box.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "next-forge",
+        id: "next-forge",
       },
     },
     {
       user: {
-        name: 'Chris Nicholas',
-        id: 'ctnicholas',
+        name: "Chris Nicholas",
+        id: "ctnicholas",
       },
       company: {
-        name: 'Liveblocks',
-        id: 'liveblocks',
+        name: "Liveblocks",
+        id: "liveblocks",
       },
     },
   ]}
@@ -121,8 +121,8 @@ and
 [`Composer`](https://liveblocks.io/docs/api-reference/liveblocks-react-ui#Composer).
 
 ```tsx comments.tsx
-import { useThreads } from '@liveblocks/react/suspense';
-import { Thread, Composer } from '@liveblocks/react-ui';
+import { useThreads } from "@liveblocks/react/suspense";
+import { Thread, Composer } from "@liveblocks/react-ui";
 
 function Comments() {
   // Get each thread of comments and render them
@@ -151,9 +151,9 @@ import {
   useLiveblocksExtension,
   FloatingComposer,
   FloatingThreads,
-} from '@liveblocks/react-tiptap';
-import { useThreads, useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+} from "@liveblocks/react-tiptap";
+import { useThreads, useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 export function Editor() {
   const { threads } = useThreads();
@@ -183,8 +183,8 @@ meaning you can send in-app notifications to users that are tagged in comments,
 are mentioned in the text editor, or for any custom purpose.
 
 ```tsx notifications.tsx
-import { useInboxNotifications } from '@liveblocks/react/suspense';
-import { InboxNotification, InboxNotificationList } from '@liveblocks/react-ui';
+import { useInboxNotifications } from "@liveblocks/react/suspense";
+import { InboxNotification, InboxNotificationList } from "@liveblocks/react-ui";
 
 export function CollaborativeApp() {
   // Get each notification for the current user

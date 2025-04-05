@@ -3,10 +3,10 @@
  *
  * This module provides all the utilities needed for testing server-side code.
  */
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Export Server-specific configuration
-export { createServerConfig } from '../../configs/server.ts';
+export { createServerConfig } from "../../configs/server.ts";
 
 // Export Server-specific mocks
 export {
@@ -18,18 +18,18 @@ export {
   mockLiveblocksAuth,
   mockAuthService,
   setupAuthMocks,
-} from '../../mocks/auth-node.ts';
+} from "../../mocks/auth-node.ts";
 
 // Export Server-specific templates
-export * as keysTemplate from '../../templates/core/keys.test.ts';
-export * as utilityTemplate from '../../templates/core/utility.test.ts';
+export * as keysTemplate from "../../templates/core/keys.test.ts";
+export * as utilityTemplate from "../../templates/core/utility.test.ts";
 
 // Re-export shared utilities for convenience
-export * from '../../shared/index.ts';
+export * from "../../shared/index.ts";
 
 // Additional server-specific utilities
 export const mockRequest = (overrides = {}) => ({
-  headers: { 'content-type': 'application/json' },
+  headers: { "content-type": "application/json" },
   query: {},
   cookies: {},
   body: {},

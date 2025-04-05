@@ -16,7 +16,7 @@ import {
   mockEnvVars,
   testEnvVars,
   validationPatterns,
-} from '@repo/testing/env';
+} from "@repo/testing/env";
 
 // Check if we're in a test environment
 if (isTestEnvironment()) {
@@ -26,13 +26,13 @@ if (isTestEnvironment()) {
 // Create environment-aware validators
 const apiKeyValidator = createTestAwareValidator(
   z.string().min(1), // Test environment - more relaxed
-  z.string().min(1).startsWith('sk_live_'), // Production - stricter
+  z.string().min(1).startsWith("sk_live_"), // Production - stricter
 );
 
 // Mock environment variables for tests
 const restore = mockEnvVars({
-  API_KEY: 'test-key',
-  DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test',
+  API_KEY: "test-key",
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test",
 });
 
 // Use standard test values
@@ -55,11 +55,11 @@ import {
   setupConsoleMocks,
   mockDate,
   mockFetch,
-} from '@repo/testing/vitest/env';
+} from "@repo/testing/vitest/env";
 
 // Mock environment variables using vi.stubEnv
 const restore = mockEnvVars({
-  API_KEY: 'test-key',
+  API_KEY: "test-key",
 });
 
 // Setup all standard test environment variables
@@ -69,10 +69,10 @@ const restoreAll = setupAllTestEnvVars();
 const restoreConsole = setupConsoleMocks();
 
 // Mock the current date
-const restoreDate = mockDate(new Date('2025-01-01'));
+const restoreDate = mockDate(new Date("2025-01-01"));
 
 // Mock fetch
-const fetchMock = mockFetch({ data: 'test' });
+const fetchMock = mockFetch({ data: "test" });
 
 // Restore everything
 restore();
@@ -92,19 +92,19 @@ import {
   verifyEnvironment,
   withMockEnv,
   addEnvironmentToConfig,
-} from '@repo/testing/cypress/env';
+} from "@repo/testing/cypress/env";
 
 // Setup standard test environment variables
 setupCypressEnv();
 
 // Get a test environment variable
-const apiKey = getTestEnv('API_KEY');
+const apiKey = getTestEnv("API_KEY");
 
 // Verify required environment variables
-verifyEnvironment(['API_KEY', 'DATABASE_URL']);
+verifyEnvironment(["API_KEY", "DATABASE_URL"]);
 
 // Mock environment variables for a specific test
-withMockEnv({ API_KEY: 'test-key' }, () => {
+withMockEnv({ API_KEY: "test-key" }, () => {
   // Test code that uses API_KEY
 });
 
@@ -120,17 +120,17 @@ The module also provides templates for testing environment variable validation:
 
 ```typescript
 // For Vitest
-import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
-import { templates } from '@repo/testing/env';
+import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
+import { templates } from "@repo/testing/env";
 
 // Create a test suite for environment variables
-templates.createEnvTests('vitest');
+templates.createEnvTests("vitest");
 
 // For Cypress
-import { templates } from '@repo/testing/env';
+import { templates } from "@repo/testing/env";
 
-describe('Environment Variables', () => {
-  templates.createEnvTests('cypress');
+describe("Environment Variables", () => {
+  templates.createEnvTests("cypress");
 });
 ```
 
@@ -139,7 +139,7 @@ describe('Environment Variables', () => {
 The module provides standard test values for common environment variables:
 
 ```typescript
-import { testEnvVars } from '@repo/testing/env';
+import { testEnvVars } from "@repo/testing/env";
 
 // Authentication
 testEnvVars.CLERK_SECRET_KEY; // 'sk_test_clerk_secret_key'
@@ -168,7 +168,7 @@ testEnvVars.FEATURE_FLAGS_API_KEY; // 'test_feature_flags_key'
 The module also provides validation patterns for common environment variables:
 
 ```typescript
-import { validationPatterns } from '@repo/testing/env';
+import { validationPatterns } from "@repo/testing/env";
 
 // Authentication
 validationPatterns.clerk.secretKeyTest; // /^sk_test_/

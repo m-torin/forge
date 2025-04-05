@@ -15,18 +15,18 @@ Start by importing the `analytics` object for the relevant environment:
 
 ```tsx
 // For server-side code
-import { analytics } from '@repo/analytics/posthog/server';
+import { analytics } from "@repo/analytics/posthog/server";
 
 // For client-side code
-import { analytics } from '@repo/analytics/posthog/client';
+import { analytics } from "@repo/analytics/posthog/client";
 ```
 
 Then, you can use the `capture` method to send events:
 
 ```tsx
 analytics.capture({
-  event: 'Product Purchased',
-  distinctId: 'user_123',
+  event: "Product Purchased",
+  distinctId: "user_123",
 });
 ```
 

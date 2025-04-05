@@ -1,1 +1,1 @@
-declare module 'eslint-plugin-cypress/flat';
+declare module "eslint-plugin-cypress/flat";

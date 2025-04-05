@@ -1,16 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*local"
-  ],
+  "globalDependencies": ["**/.env.*local"],
   "ui": "tui",
   "envMode": "loose",
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build",
-        "test"
-      ],
+      "dependsOn": ["^build", "test"],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
@@ -20,48 +15,38 @@
       ]
     },
     "lint": {
-      "dependsOn": [
-        "^lint"
-      ],
+      "dependsOn": ["^lint"],
+      "cache": false,
       "outputs": []
     },
     "prettier": {
       "cache": true,
       "outputs": []
     },
-    "eslint": {
-      "cache": true,
-      "outputs": []
-    },
     "test": {
-      "dependsOn": [
-        "^test"
-      ],
+      "dependsOn": ["^test"],
       "cache": true,
       "outputs": [],
-      "env": [
-        "TEST_*",
-        "VITEST_*",
-        "NODE_ENV"
-      ]
+      "env": ["TEST_*", "VITEST_*", "NODE_ENV"]
     },
     "analyze": {
-      "dependsOn": [
-        "^analyze"
-      ]
+      "dependsOn": ["^analyze"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "translate": {
-      "dependsOn": [
-        "^translate"
-      ],
+      "dependsOn": ["^translate"],
       "cache": false
     },
     "clean": {
       "cache": false
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "cache": true,
+      "outputs": []
     },
     "//#clean": {
       "cache": false

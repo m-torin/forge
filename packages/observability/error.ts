@@ -1,8 +1,9 @@
 /**
  * Error handling utilities for the observability package
  */
-import { captureException } from '@sentry/nextjs';
-import { log } from './log';
+import { captureException } from "@sentry/nextjs";
+
+import { log } from "./log";
 
 /**
  * Parse an error into a user-friendly message
@@ -18,22 +19,22 @@ export const parseError = (error: unknown): string => {
 
     if (error instanceof Error) {
       message = error.message;
-    } else if (typeof error === 'string') {
+    } else if (typeof error === "string") {
       message = error;
     } else if (error === null) {
-      message = 'null';
+      message = "null";
     } else if (error === undefined) {
-      message = 'undefined';
-    } else if (typeof error === 'number') {
+      message = "undefined";
+    } else if (typeof error === "number") {
       message = String(error);
     } else if (
-      typeof error === 'object' &&
+      typeof error === "object" &&
       error !== null &&
-      'message' in error
+      "message" in error
     ) {
       message = String(error.message);
     } else {
-      message = 'Unknown error';
+      message = "Unknown error";
     }
 
     // Log the error
@@ -42,13 +43,13 @@ export const parseError = (error: unknown): string => {
     return message;
   } catch (e) {
     // Handle errors during error reporting
-    console.error('Error parsing error:', e);
+    console.error("Error parsing error:", e);
 
     if (error instanceof Error) {
       return error.message;
     }
 
-    return 'Unknown error';
+    return "Unknown error";
   }
 };
 
@@ -62,6 +63,6 @@ export const logError = (
   context?: Record<string, unknown>,
 ): void => {
   const message = parseError(error);
-  console.error('[Error]', message, error, context);
+  console.error("[Error]", message, error, context);
   // In a real implementation, this would send the error to an error tracking service
 };

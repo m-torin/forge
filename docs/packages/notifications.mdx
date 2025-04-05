@@ -3,28 +3,28 @@ title: Notifications
 description: In-app notifications for your users.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "next-forge",
+        id: "next-forge",
       },
     },
     {
       user: {
-        name: 'Jeff Everhart',
-        id: 'j_everhart383',
+        name: "Jeff Everhart",
+        id: "j_everhart383",
       },
       company: {
-        name: 'Knock',
-        id: 'knock',
+        name: "Knock",
+        id: "knock",
       },
     },
   ]}
@@ -52,7 +52,7 @@ component from the `@repo/notifications` package and use it in your app. We've
 already added this to the sidebar in the example app:
 
 ```tsx apps/app/app/(authenticated)/components/sidebar.tsx
-import { NotificationsTrigger } from '@repo/notifications/components/trigger';
+import { NotificationsTrigger } from "@repo/notifications/components/trigger";
 
 <NotificationsTrigger>
   <Button variant="ghost" size="icon" className="shrink-0">
@@ -78,17 +78,17 @@ for a particular user in your app, passing in the necessary data to populate the
 message template:
 
 ```tsx notify.ts
-import { notifications } from '@repo/notifications';
+import { notifications } from "@repo/notifications";
 
-await notifications.workflows.trigger('workflow-key', {
+await notifications.workflows.trigger("workflow-key", {
   recipients: [
     {
-      id: 'user-id',
-      email: 'user-email',
+      id: "user-id",
+      email: "user-email",
     },
   ],
   data: {
-    message: 'Hello, world!',
+    message: "Hello, world!",
   },
 });
 ```

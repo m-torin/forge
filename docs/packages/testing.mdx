@@ -33,16 +33,16 @@ In the `__tests__` folder, create a new file called `[page].test.tsx` (where
 for the `home` page:
 
 ```tsx apps/app/__tests__/home.test.tsx
-import { render, screen } from '@testing-library/react';
-import { expect, test } from 'vitest';
-import Page from '../app/(unauthenticated)/home/page';
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
+import Page from "../app/(unauthenticated)/home/page";
 
-test('Home Page', () => {
+test("Home Page", () => {
   render(<Page />);
   expect(
-    screen.getByRole('heading', {
+    screen.getByRole("heading", {
       level: 1,
-      name: 'Hello, world!',
+      name: "Hello, world!",
     }),
   ).toBeDefined();
 });
@@ -84,27 +84,27 @@ Create a new file called `vitest.config.mjs` in the root of the app and add the
 following configuration:
 
 ```js apps/[app]/vitest.config.mjs
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: './__tests__/setup.ts',
-    include: ['**/__tests__/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**'],
+    setupFiles: "./__tests__/setup.ts",
+    include: ["**/__tests__/**/*.{test,spec}.{ts,tsx}"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**"],
     testTimeout: 10000,
     hookTimeout: 10000,
   },
   resolve: {
     alias: {
-      '@app': path.resolve(__dirname, './src'),
+      "@app": path.resolve(__dirname, "./src"),
     },
   },
 });

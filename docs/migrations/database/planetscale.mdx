@@ -22,12 +22,12 @@ Update your environment variables to use the new PlanetScale connection string:
 
 ```js apps/database/.env
 DATABASE_URL =
-  'mysql://<username>:<password>@<region>.aws.connect.psdb.cloud/<database>';
+  "mysql://<username>:<password>@<region>.aws.connect.psdb.cloud/<database>";
 ```
 
 ```js apps/app/.env.local
 DATABASE_URL =
-  'mysql://<username>:<password>@<region>.aws.connect.psdb.cloud/<database>';
+  "mysql://<username>:<password>@<region>.aws.connect.psdb.cloud/<database>";
 ```
 
 Etcetera.
@@ -51,12 +51,12 @@ pnpm add @planetscale/database @prisma/adapter-planetscale --filter @repo/databa
 Update the database connection code to use the new PlanetScale adapter:
 
 ```ts packages/database/index.ts {3-4, 17-18}
-import 'server-only';
+import "server-only";
 
-import { Client, connect } from '@planetscale/database';
-import { PrismaPlanetScale } from '@prisma/adapter-planetscale';
-import { PrismaClient } from '@prisma/client';
-import { env } from '@repo/env';
+import { Client, connect } from "@planetscale/database";
+import { PrismaPlanetScale } from "@prisma/adapter-planetscale";
+import { PrismaClient } from "@prisma/client";
+import { env } from "@repo/env";
 
 declare global {
   var cachedPrisma: PrismaClient | undefined;

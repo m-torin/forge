@@ -23,7 +23,7 @@ import {
   expect,
   beforeEach,
   afterEach,
-} from './index.ts';
+} from "./index.ts";
 
 // Import server testing utilities from server module
 import {
@@ -31,27 +31,32 @@ import {
   mockRequest,
   mockResponse,
   mockNext,
-} from './frameworks/server/index.ts';
+} from "./frameworks/server/index.ts";
 
 // Import shared utilities from shared module
 import {
   mockEnvVars,
   setupConsoleMocks,
   mockDate,
+  // @ts-ignore - mockFetch is defined in the shared module
   mockFetch,
+  // @ts-ignore - testEnvVars is defined in the env module
   testEnvVars,
-} from '../shared/index.ts';
+} from "../shared/index.ts";
+
+// Import directly from env module for test
+import { testEnvVars as testEnvVarsFromEnv } from "../env/index.ts";
 
 // Import configuration helpers from generators
 import {
   generateBaseConfig as getConfig,
   generateReactConfig,
   generateNodeConfig,
-} from '../generators/vitest.config.js';
+} from "../generators/vitest.config.js";
 
 // Create a test to verify the imports
-describe('Export structure', () => {
-  it('should import React testing utilities', () => {
+describe("Export structure", () => {
+  it("should import React testing utilities", () => {
     expect(render).toBeDefined();
     expect(screen).toBeDefined();
     expect(within).toBeDefined();
@@ -61,22 +66,22 @@ describe('Export structure', () => {
     expect(MockAuthProvider).toBeDefined();
   });
 
-  it('should import Server testing utilities', () => {
+  it("should import Server testing utilities", () => {
     expect(createServerConfig).toBeDefined();
     expect(mockRequest).toBeDefined();
     expect(mockResponse).toBeDefined();
     expect(mockNext).toBeDefined();
   });
 
-  it('should import Shared utilities', () => {
+  it("should import Shared utilities", () => {
     expect(mockEnvVars).toBeDefined();
     expect(setupConsoleMocks).toBeDefined();
     expect(mockDate).toBeDefined();
     expect(mockFetch).toBeDefined();
-    expect(testEnvVars).toBeDefined();
+    expect(testEnvVarsFromEnv).toBeDefined();
   });
 
-  it('should import Vitest functions', () => {
+  it("should import Vitest functions", () => {
     expect(vi).toBeDefined();
     expect(describe).toBeDefined();
     expect(it).toBeDefined();
@@ -85,7 +90,7 @@ describe('Export structure', () => {
     expect(afterEach).toBeDefined();
   });
 
-  it('should import Configuration helpers', () => {
+  it("should import Configuration helpers", () => {
     expect(getConfig).toBeDefined();
     expect(generateReactConfig).toBeDefined();
     expect(generateNodeConfig).toBeDefined();
