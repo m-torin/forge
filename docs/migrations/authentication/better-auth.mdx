@@ -3,28 +3,28 @@ title: Switch to Better Auth
 description: How to change the authentication provider to Better Auth.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "forge",
+        id: "forge",
       },
     },
     {
       user: {
-        name: 'Bereket Engida',
-        id: 'imbereket',
+        name: "Bereket Engida",
+        id: "imbereket",
       },
       company: {
-        name: 'Better Auth',
-        id: 'better-auth',
+        name: "Better Auth",
+        id: "better-auth",
       },
     },
   ]}
@@ -69,14 +69,14 @@ Update the `auth` package files with the following code:
 <CodeGroup>
 
 ```ts packages/auth/server.ts
-import { betterAuth } from 'better-auth';
-import { nextCookies } from 'better-auth/next-js';
-import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { database } from '@repo/database';
+import { betterAuth } from "better-auth";
+import { nextCookies } from "better-auth/next-js";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { database } from "@repo/database";
 
 export const auth = betterAuth({
   database: prismaAdapter(database, {
-    provider: 'postgresql',
+    provider: "postgresql",
   }),
   plugins: [
     nextCookies(),
@@ -87,7 +87,7 @@ export const auth = betterAuth({
 ```
 
 ```ts packages/auth/client.ts
-import { createAuthClient } from 'better-auth/react';
+import { createAuthClient } from "better-auth/react";
 
 export const { signIn, signOut, signUp, useSession } = createAuthClient();
 ```
@@ -105,14 +105,14 @@ to use the `signIn` and `signUp` functions from the `client` file.
 <CodeGroup>
 
 ```tsx packages/auth/components/sign-in.tsx
-'use client';
+"use client";
 
-import { signIn } from '../client';
-import { useState } from 'react';
+import { signIn } from "../client";
+import { useState } from "react";
 
 export const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
     <form
@@ -141,15 +141,15 @@ export const SignIn = () => {
 ```
 
 ```tsx packages/auth/components/sign-up.tsx
-'use client';
+"use client";
 
-import { signUp } from '../client';
-import { useState } from 'react';
+import { signUp } from "../client";
+import { useState } from "react";
 
 export const SignUp = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
 
   return (
     <form
@@ -210,7 +210,7 @@ Better Auth has no concept of a Provider as a higher-order component, so you can
 either remove it entirely or just replace it with a stub, like so:
 
 ```tsx packages/auth/provider.tsx
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -224,25 +224,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => children;
 Change the middleware in the `auth` package to the following:
 
 ```tsx packages/auth/middleware.ts
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const isProtectedRoute = (request: NextRequest) => {
-  return request.url.startsWith('/dashboard'); // change this to your protected route
+  return request.url.startsWith("/dashboard"); // change this to your protected route
 };
 
 export const authMiddleware = async (request: NextRequest) => {
-  const url = new URL('/api/auth/get-session', request.nextUrl.origin);
+  const url = new URL("/api/auth/get-session", request.nextUrl.origin);
   const response = await fetch(url, {
     headers: {
-      cookie: request.headers.get('cookie') || '',
+      cookie: request.headers.get("cookie") || "",
     },
   });
 
   const session = await response.json();
 
   if (isProtectedRoute(request) && !session) {
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   return NextResponse.next();
@@ -266,7 +266,7 @@ const session = await auth.api.getSession({
   headers: await headers(), // from next/headers
 });
 if (!session?.user) {
-  return redirect('/sign-in'); // from next/navigation
+  return redirect("/sign-in"); // from next/navigation
 }
 // do something with session.user
 ```
@@ -288,7 +288,7 @@ const fullOrganization = await auth.api.getFullOrganization({
 ```
 
 ```tsx webhooks/stripe/route.ts
-import { clerkClient } from '@repo/auth/server';
+import { clerkClient } from "@repo/auth/server";
 
 const clerk = await clerkClient();
 const users = await clerk.users.getUserList();
@@ -298,7 +298,7 @@ const user = users.data.find(
 
 // to
 
-import { database } from '@repo/database';
+import { database } from "@repo/database";
 
 const user = await database.user.findFirst({
   where: {

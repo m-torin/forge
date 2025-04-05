@@ -60,8 +60,8 @@ based on the package content:
 - For React packages (with `.tsx` files or a `components` directory):
 
   ```typescript
-  import { createReactConfig } from '@repo/testing/vitest/react';
-  import path from 'path';
+  import { createReactConfig } from "@repo/testing/vitest/react";
+  import path from "path";
 
   export default createReactConfig(
     {
@@ -74,8 +74,8 @@ based on the package content:
 - For non-React packages:
 
   ```typescript
-  import { createBaseConfig } from '@repo/testing/vitest/core';
-  import path from 'path';
+  import { createBaseConfig } from "@repo/testing/vitest/core";
+  import path from "path";
 
   export default createBaseConfig(
     {

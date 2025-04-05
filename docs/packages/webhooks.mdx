@@ -3,7 +3,7 @@ title: Webhooks
 description: Send webhooks to your users using Svix.
 ---
 
-next-forge supports sending webhooks to your users using
+forge supports sending webhooks to your users using
 [Svix](https://www.svix.com/). Svix is an enterprise-ready webhooks sending
 service.
 
@@ -14,7 +14,7 @@ service.
 
 ## How it works
 
-next-forge uses the Svix API in a stateless manner. The organization ID from the
+forge uses the Svix API in a stateless manner. The organization ID from the
 authenticated user is used as the Svix application UID, which is created
 automatically when the first message is sent.
 
@@ -26,11 +26,11 @@ To send a webhook, simply use the `send` function from the `@repo/webhooks`
 package:
 
 ```tsx
-import { webhooks } from '@repo/webhooks';
+import { webhooks } from "@repo/webhooks";
 
-await webhooks.send('invoice.created', {
+await webhooks.send("invoice.created", {
   data: {
-    id: 'inv_1234567890',
+    id: "inv_1234567890",
   },
 });
 ```
@@ -48,7 +48,7 @@ To get access to the application portal, use the `getAppPortal` function from
 `@repo/webhooks` and use the returned URL in an `iframe` on your dashboard.
 
 ```tsx
-import { webhooks } from '@repo/webhooks';
+import { webhooks } from "@repo/webhooks";
 
 const { url } = await webhooks.getAppPortal();
 

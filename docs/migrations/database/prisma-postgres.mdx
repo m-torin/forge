@@ -3,28 +3,28 @@ title: Switch to Prisma Postgres
 description: How to change the database provider to Prisma Postgres.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "forge",
+        id: "forge",
       },
     },
     {
       user: {
-        name: 'Nikolas Burk',
-        id: 'nikolasburk',
+        name: "Nikolas Burk",
+        id: "nikolasburk",
       },
       company: {
-        name: 'Prisma',
-        id: 'prisma',
+        name: "Prisma",
+        id: "prisma",
       },
     },
   ]}
@@ -52,7 +52,7 @@ Update your environment variables to use the new Prisma Postgres connection
 string:
 
 ```js apps/database/.env
-DATABASE_URL = 'prisma+postgres://accelerate.prisma-data.net/?api_key=ey....';
+DATABASE_URL = "prisma+postgres://accelerate.prisma-data.net/?api_key=ey....";
 ```
 
 ## 3. Swap out the required dependencies in `@repo/database`
@@ -74,11 +74,11 @@ pnpm add @prisma/extension-accelerate
 Update the database connection code to use the new Prisma Postgres adapter:
 
 ```ts packages/database/index.ts {4,7}
-import 'server-only';
+import "server-only";
 
-import { env } from '@repo/env';
-import { withAccelerate } from '@prisma/extension-accelerate';
-import { PrismaClient } from '@prisma/client';
+import { env } from "@repo/env";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { PrismaClient } from "@prisma/client";
 
 export const database = new PrismaClient().$extends(withAccelerate());
 ```
@@ -125,7 +125,7 @@ pnpm add @prisma/extension-pulse
 Next, you need to add your Pulse API key as an environment variable:
 
 ```ts apps/database/.env
-PULSE_API_KEY = 'ey....';
+PULSE_API_KEY = "ey....";
 ```
 
 <Info>
@@ -141,7 +141,7 @@ variable:
 ```ts packages/env/index.ts {3,11}
 export const server = {
   // ...
-  PULSE_API_KEY: z.string().min(1).startsWith('ey'),
+  PULSE_API_KEY: z.string().min(1).startsWith("ey"),
 };
 
 export const env = createEnv({
@@ -157,11 +157,11 @@ export const env = createEnv({
 Finally, update the database connection code to include the Pulse extension:
 
 ```ts packages/database/index.ts {2, 7-9}
-import 'server-only';
-import { withPulse } from '@prisma/extension-pulse';
-import { withAccelerate } from '@prisma/extension-accelerate';
-import { PrismaClient } from '@prisma/client';
-import { env } from '@repo/env';
+import "server-only";
+import { withPulse } from "@prisma/extension-pulse";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { PrismaClient } from "@prisma/client";
+import { env } from "@repo/env";
 
 export const database = new PrismaClient()
   .$extends(withAccelerate())
@@ -177,7 +177,7 @@ const stream = await prisma.page.stream();
 console.log(`Waiting for an event on the \`Page\` table ... `);
 
 for await (const event of stream) {
-  console.log('Received an event:', event);
+  console.log("Received an event:", event);
 }
 ```
 

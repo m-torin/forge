@@ -7,7 +7,7 @@ description: How to change the database provider to Supabase.
 providing a Postgres database, Authentication, instant APIs, Edge Functions,
 Realtime subscriptions, and Storage.
 
-`next-forge` uses Neon as the database provider with Prisma as the ORM as well
+`forge` uses Neon as the database provider with Prisma as the ORM as well
 as Clerk for authentication. This guide will provide the steps you need to
 switch the database provider from Neon to Supabase. This guide is based on a few
 existing resources, including
@@ -21,7 +21,7 @@ existing resources, including
 </Note>
 
 Here's how to switch from Neon to [Supabase](https://supabase.com) for your
-`next-forge` project.
+`forge` project.
 
 ## 1. Sign up to Supabase
 
@@ -52,8 +52,8 @@ Update the `.env` file with the Supabase connection details. Make sure you add
 
 ```js .env
 DATABASE_URL =
-  'postgres://postgres:postgres@127.0.0.1:54322/postgres?pgbouncer=true&connection_limit=1';
-DIRECT_URL = 'postgres://postgres:postgres@127.0.0.1:54322/postgres';
+  "postgres://postgres:postgres@127.0.0.1:54322/postgres?pgbouncer=true&connection_limit=1";
+DIRECT_URL = "postgres://postgres:postgres@127.0.0.1:54322/postgres";
 ```
 
 <Note>
@@ -87,12 +87,12 @@ Supabase directly, which should automatically use the environment variables we
 set earlier.
 
 ```ts packages/database/index.ts
-import 'server-only';
-import { PrismaClient } from '@prisma/client';
+import "server-only";
+import { PrismaClient } from "@prisma/client";
 
 export const database = new PrismaClient();
 
-export * from '@prisma/client';
+export * from "@prisma/client";
 ```
 
 ## 6. Update the Prisma schema
@@ -110,7 +110,7 @@ datasource db {
 }
 ```
 
-Now you can run the migration from the root of your `next-forge` project:
+Now you can run the migration from the root of your `forge` project:
 
 ```sh Terminal
 pnpm run migrate

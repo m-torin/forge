@@ -8,13 +8,16 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./cli": "./cli.ts"
   },
   "main": "index.ts",
+  "bin": {
+    "repo-prettier": "./cli.ts"
+  },
   "scripts": {
-    "format": "prettier --write \"../../**/*.{ts,tsx,js,jsx,json,md,mdx,mjs,cjs,css,scss,yaml,yml,graphql,gql,php,sh}\"",
-    "format:check": "prettier --check \"../../**/*.{ts,tsx,js,jsx,json,md,mdx,mjs,cjs,css,scss,yaml,yml,graphql,gql,php,sh}\"",
-    "format:staged": "prettier --write $(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(ts|tsx|js|jsx|json|md|mdx|mjs|cjs|css|scss|yaml,yml,graphql,gql,php,sh)$')",
+    "format": "prettier --ignore-path ./.prettierignore --write \"../../**/*.{ts,tsx,js,jsx,json,md,mdx,mjs,cjs,css,scss,yaml,yml,graphql,gql,php}\"",
+    "format:staged": "prettier --ignore-path ./.prettierignore --write $(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(ts|tsx|js|jsx|json|md|mdx|mjs|cjs|css|scss|yaml,yml,graphql,gql,php)$')",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx,.mjs,.cjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -22,19 +25,14 @@
   },
   "dependencies": {
     "@prettier/plugin-php": "^0.22.4",
-    "@typescript-eslint/eslint-plugin": "^8.29.0",
-    "@typescript-eslint/parser": "^8.29.0",
-    "@vercel/style-guide": "^6.0.0",
-    "eslint-plugin-jest": "^28.11.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "prettier-plugin-packagejson": "^2.5.10",
-    "prettier-plugin-sh": "^0.16.0"
+    "@vercel/style-guide": "catalog:",
+    "prettier": "^3.5.3",
+    "prettier-plugin-packagejson": "^2.5.10"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.4.0",
     "eslint": "catalog:",
-    "prettier": "^3.5.3",
     "vitest": "catalog:"
   },
   "peerDependencies": {

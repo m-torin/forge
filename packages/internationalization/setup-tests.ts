@@ -1,184 +1,184 @@
-import '@repo/testing/src/vitest/core/setup';
-import { vi } from 'vitest';
+import "@repo/testing/src/vitest/core/setup";
+import { vi } from "vitest";
 
 // Mock server-only
-vi.mock('server-only', () => ({}));
+vi.mock("server-only", () => ({}));
 
 // Mock dictionaries
-vi.mock('./dictionaries/en.json', () => ({
+vi.mock("./dictionaries/en.json", () => ({
   default: {
     web: {
       global: {
-        primaryCta: 'Book a call',
-        secondaryCta: 'Sign up',
+        primaryCta: "Book a call",
+        secondaryCta: "Sign up",
       },
       header: {
-        home: 'Home',
+        blog: "Blog",
+        contact: "Contact",
+        docs: "Docs",
+        home: "Home",
         product: {
-          title: 'Product',
-          description: 'Managing a small business today is already tough.',
-          pricing: 'Pricing',
+          description: "Managing a small business today is already tough.",
+          pricing: "Pricing",
+          title: "Product",
         },
-        blog: 'Blog',
-        docs: 'Docs',
-        contact: 'Contact',
-        signIn: 'Sign in',
-        signUp: 'Get started',
+        signIn: "Sign in",
+        signUp: "Get started",
       },
     },
   },
 }));
 
-vi.mock('./dictionaries/es.json', () => ({
+vi.mock("./dictionaries/es.json", () => ({
   default: {
     web: {
       global: {
-        primaryCta: 'Reservar una llamada',
-        secondaryCta: 'Registrarse',
+        primaryCta: "Reservar una llamada",
+        secondaryCta: "Registrarse",
       },
       header: {
-        home: 'Inicio',
+        blog: "Blog",
+        contact: "Contacto",
+        docs: "Documentación",
+        home: "Inicio",
         product: {
-          title: 'Producto',
-          description: 'Administrar un pequeño negocio hoy ya es difícil.',
-          pricing: 'Precios',
+          description: "Administrar un pequeño negocio hoy ya es difícil.",
+          pricing: "Precios",
+          title: "Producto",
         },
-        blog: 'Blog',
-        docs: 'Documentación',
-        contact: 'Contacto',
-        signIn: 'Iniciar sesión',
-        signUp: 'Comenzar',
+        signIn: "Iniciar sesión",
+        signUp: "Comenzar",
       },
     },
   },
 }));
 
-vi.mock('./dictionaries/de.json', () => ({
+vi.mock("./dictionaries/de.json", () => ({
   default: {
     web: {
       global: {
-        primaryCta: 'Anruf buchen',
-        secondaryCta: 'Registrieren',
+        primaryCta: "Anruf buchen",
+        secondaryCta: "Registrieren",
       },
       header: {
-        home: 'Startseite',
+        blog: "Blog",
+        contact: "Kontakt",
+        docs: "Dokumentation",
+        home: "Startseite",
         product: {
-          title: 'Produkt',
           description:
-            'Die Verwaltung eines kleinen Unternehmens ist heute schon schwierig.',
-          pricing: 'Preise',
+            "Die Verwaltung eines kleinen Unternehmens ist heute schon schwierig.",
+          pricing: "Preise",
+          title: "Produkt",
         },
-        blog: 'Blog',
-        docs: 'Dokumentation',
-        contact: 'Kontakt',
-        signIn: 'Anmelden',
-        signUp: 'Loslegen',
+        signIn: "Anmelden",
+        signUp: "Loslegen",
       },
     },
   },
 }));
 
-vi.mock('./dictionaries/fr.json', () => ({
+vi.mock("./dictionaries/fr.json", () => ({
   default: {
     web: {
       global: {
-        primaryCta: 'Réserver un appel',
+        primaryCta: "Réserver un appel",
         secondaryCta: "S'inscrire",
       },
       header: {
-        home: 'Accueil',
+        blog: "Blog",
+        contact: "Contact",
+        docs: "Documentation",
+        home: "Accueil",
         product: {
-          title: 'Produit',
           description:
             "Gérer une petite entreprise aujourd'hui est déjà difficile.",
-          pricing: 'Tarifs',
+          pricing: "Tarifs",
+          title: "Produit",
         },
-        blog: 'Blog',
-        docs: 'Documentation',
-        contact: 'Contact',
-        signIn: 'Se connecter',
-        signUp: 'Commencer',
+        signIn: "Se connecter",
+        signUp: "Commencer",
       },
     },
   },
 }));
 
-vi.mock('./dictionaries/pt.json', () => ({
+vi.mock("./dictionaries/pt.json", () => ({
   default: {
     web: {
       global: {
-        primaryCta: 'Agendar uma chamada',
-        secondaryCta: 'Cadastrar-se',
+        primaryCta: "Agendar uma chamada",
+        secondaryCta: "Cadastrar-se",
       },
       header: {
-        home: 'Início',
+        blog: "Blog",
+        contact: "Contato",
+        docs: "Documentação",
+        home: "Início",
         product: {
-          title: 'Produto',
-          description: 'Gerenciar um pequeno negócio hoje já é difícil.',
-          pricing: 'Preços',
+          description: "Gerenciar um pequeno negócio hoje já é difícil.",
+          pricing: "Preços",
+          title: "Produto",
         },
-        blog: 'Blog',
-        docs: 'Documentação',
-        contact: 'Contato',
-        signIn: 'Entrar',
-        signUp: 'Começar',
+        signIn: "Entrar",
+        signUp: "Começar",
       },
     },
   },
 }));
 
-vi.mock('./dictionaries/zh.json', () => ({
+vi.mock("./dictionaries/zh.json", () => ({
   default: {
     web: {
       global: {
-        primaryCta: '预约通话',
-        secondaryCta: '注册',
+        primaryCta: "预约通话",
+        secondaryCta: "注册",
       },
       header: {
-        home: '首页',
+        blog: "博客",
+        contact: "联系我们",
+        docs: "文档",
+        home: "首页",
         product: {
-          title: '产品',
-          description: '如今，管理小型企业已经很困难了。',
-          pricing: '价格',
+          description: "如今，管理小型企业已经很困难了。",
+          pricing: "价格",
+          title: "产品",
         },
-        blog: '博客',
-        docs: '文档',
-        contact: '联系我们',
-        signIn: '登录',
-        signUp: '开始使用',
+        signIn: "登录",
+        signUp: "开始使用",
       },
     },
   },
 }));
 
 // Mock languine.json
-vi.mock('./languine.json', () => ({
+vi.mock("./languine.json", () => ({
   default: {
-    locale: {
-      source: 'en',
-      targets: ['es', 'de', 'zh', 'fr', 'pt'],
-    },
     files: {
       json: {
-        include: ['dictionaries/[locale].json'],
+        include: ["dictionaries/[locale].json"],
       },
+    },
+    locale: {
+      source: "en",
+      targets: ["es", "de", "zh", "fr", "pt"],
     },
   },
 }));
 
 // Mock next/server
-vi.mock('next/server', () => ({
+vi.mock("next/server", () => ({
   NextResponse: {
     redirect: vi.fn().mockImplementation((url) => ({
       url,
       status: 307,
-      statusText: 'Temporary Redirect',
+      statusText: "Temporary Redirect",
     })),
   },
 }));
 
 // Mock @formatjs/intl-localematcher
-vi.mock('@formatjs/intl-localematcher', () => ({
+vi.mock("@formatjs/intl-localematcher", () => ({
   match: vi.fn().mockImplementation((languages, locales, defaultLocale) => {
     // Simple mock implementation that returns the first matching locale or the default
     const matchedLocale = languages.find((lang: string) =>
@@ -189,8 +189,8 @@ vi.mock('@formatjs/intl-localematcher', () => ({
 }));
 
 // Mock negotiator
-vi.mock('negotiator', () => ({
+vi.mock("negotiator", () => ({
   default: vi.fn().mockImplementation(() => ({
-    languages: vi.fn().mockReturnValue(['en-US', 'en', 'es']),
+    languages: vi.fn().mockReturnValue(["en-US", "en", "es"]),
   })),
 }));

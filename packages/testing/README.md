@@ -20,19 +20,19 @@ This package has undergone significant changes to simplify its API:
 
    ```typescript
    // ❌ Old approach
-   import { render } from '@repo/testing/vitest/frameworks/react';
+   import { render } from "@repo/testing/vitest/frameworks/react";
    // or
-   import { react } from '@repo/testing/vitest';
+   import { react } from "@repo/testing/vitest";
    const { render } = react;
 
    // ✅ New approach for React (default)
-   import { render } from '@repo/testing/vitest';
+   import { render } from "@repo/testing/vitest";
 
    // ✅ New approach for Mantine
-   import { render as mantineRender } from '@repo/testing/vitest/mantine';
+   import { render as mantineRender } from "@repo/testing/vitest/mantine";
 
    // ✅ New approach for Server
-   import { createServerConfig } from '@repo/testing/vitest/server';
+   import { createServerConfig } from "@repo/testing/vitest/server";
    ```
 
 3. **Root Package Import Removed**: The root package import is no longer
@@ -40,10 +40,10 @@ This package has undergone significant changes to simplify its API:
 
    ```typescript
    // ❌ No longer available
-   import { vitest } from '@repo/testing';
+   import { vitest } from "@repo/testing";
 
    // ✅ Use direct imports instead
-   import * as vitest from '@repo/testing/vitest';
+   import * as vitest from "@repo/testing/vitest";
    ```
 
 4. **Simplified Import Patterns**: All utilities are now available from one of
@@ -51,15 +51,15 @@ This package has undergone significant changes to simplify its API:
 
    ```typescript
    // ❌ Old approach - deep imports
-   import { mockEnvVars } from '@repo/testing/shared/env';
-   import { render } from '@repo/testing/vitest/frameworks/react';
+   import { mockEnvVars } from "@repo/testing/shared/env";
+   import { render } from "@repo/testing/vitest/frameworks/react";
 
    // ✅ New approach - direct imports
-   import { mockEnvVars } from '@repo/testing/shared';
-   import { render } from '@repo/testing/vitest';
-   import { render as mantineRender } from '@repo/testing/vitest/mantine';
-   import { createServerConfig } from '@repo/testing/vitest/server';
-   import { generateReactConfig } from '@repo/testing/generators';
+   import { mockEnvVars } from "@repo/testing/shared";
+   import { render } from "@repo/testing/vitest";
+   import { render as mantineRender } from "@repo/testing/vitest/mantine";
+   import { createServerConfig } from "@repo/testing/vitest/server";
+   import { generateReactConfig } from "@repo/testing/generators";
    ```
 
 ## Overview
@@ -116,16 +116,16 @@ import {
   fireEvent,
   renderHook,
   createReactConfig,
-} from '@repo/testing/vitest';
+} from "@repo/testing/vitest";
 
 // Import Mantine-specific utilities directly
-import { render as mantineRender } from '@repo/testing/vitest/mantine';
+import { render as mantineRender } from "@repo/testing/vitest/mantine";
 
 // Import server-specific utilities directly
-import { createServerConfig } from '@repo/testing/vitest/server';
+import { createServerConfig } from "@repo/testing/vitest/server";
 
 // Import Vitest functions
-import { describe, it, expect } from '@repo/testing/vitest';
+import { describe, it, expect } from "@repo/testing/vitest";
 
 // Create a Vitest configuration
 export default createReactConfig({
@@ -134,7 +134,7 @@ export default createReactConfig({
 
 // Test a React hook
 const { result } = renderHook(() => useMyCustomHook());
-expect(result.current.value).toBe('expected value');
+expect(result.current.value).toBe("expected value");
 ```
 
 ### Cypress
@@ -145,13 +145,13 @@ import {
   createE2EConfig,
   createComponentConfig,
   baseConfig,
-} from '@repo/testing/cypress';
+} from "@repo/testing/cypress";
 
 // Import Testing Library commands (automatically available in tests)
 // These commands are added by @testing-library/cypress
-cy.findByText('Submit').click();
-cy.findByRole('button', { name: /submit/i }).click();
-cy.findByLabelText('Email').type('user@example.com');
+cy.findByText("Submit").click();
+cy.findByRole("button", { name: /submit/i }).click();
+cy.findByLabelText("Email").type("user@example.com");
 
 // Create a Cypress configuration with performance optimizations
 export default createE2EConfig({
@@ -168,20 +168,20 @@ export default createComponentConfig({
 
 ```typescript
 // Import utilities
-import { formatTestId, dataTestIdSelector } from '@repo/testing/shared';
+import { formatTestId, dataTestIdSelector } from "@repo/testing/shared";
 
 // Import constants
-import { testUser, testDates } from '@repo/testing/shared';
+import { testUser, testDates } from "@repo/testing/shared";
 
 // Import environment utilities
 import {
   mockEnvVars,
   exampleEnvVars,
   validationPatterns,
-} from '@repo/testing/shared';
+} from "@repo/testing/shared";
 
 // Import presets
-import { createBaseConfig } from '@repo/testing/shared';
+import { createBaseConfig } from "@repo/testing/shared";
 ```
 
 ### Environment Utilities
@@ -192,8 +192,8 @@ import {
   mockEnvVars,
   exampleEnvVars,
   validationPatterns,
-} from '@repo/testing/shared';
-import { env } from './env'; // Your application's environment
+} from "@repo/testing/shared";
+import { env } from "./env"; // Your application's environment
 
 // Mock environment variables from your application's environment
 const restore = mockEnvVars({
@@ -206,7 +206,7 @@ restore();
 
 // Use validation patterns for environment variables
 const isValidClerkKey =
-  validationPatterns.clerk.secretKeyTest.test('sk_test_abc123');
+  validationPatterns.clerk.secretKeyTest.test("sk_test_abc123");
 ```
 
 ### Vitest Configuration Generators
@@ -218,7 +218,7 @@ import {
   generateReactConfig,
   generateNodeConfig,
   getConfig,
-} from '@repo/testing/generators';
+} from "@repo/testing/generators";
 
 // Create a Vitest configuration for a React package
 export default generateReactConfig({
@@ -226,7 +226,7 @@ export default generateReactConfig({
 });
 
 // Or use the getConfig helper to choose the right config based on type
-export default getConfig('react', {
+export default getConfig("react", {
   // Custom configuration options
 });
 ```
@@ -244,9 +244,9 @@ user-centric testing:
 
 ```typescript
 // These commands are automatically available in your Cypress tests
-cy.findByText('Submit').click();
-cy.findByRole('button', { name: /submit/i }).click();
-cy.findByLabelText('Email').type('user@example.com');
+cy.findByText("Submit").click();
+cy.findByRole("button", { name: /submit/i }).click();
+cy.findByLabelText("Email").type("user@example.com");
 ```
 
 Benefits:
@@ -266,11 +266,11 @@ The `renderHook` function is now directly exported from the Vitest module for
 easier hook testing:
 
 ```typescript
-import { renderHook } from '@repo/testing/vitest';
+import { renderHook } from "@repo/testing/vitest";
 
-test('my custom hook', () => {
+test("my custom hook", () => {
   const { result } = renderHook(() => useMyCustomHook());
-  expect(result.current.value).toBe('expected value');
+  expect(result.current.value).toBe("expected value");
 });
 ```
 

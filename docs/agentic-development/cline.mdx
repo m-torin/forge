@@ -1,0 +1,41 @@
+---
+title: Cline Rules (.clinerules)
+description: Project-specific instructions and guidelines for AI development agents like Cline, stored in the .clinerules directory.
+---
+
+# Cline Rules (.clinerules Directory)
+
+The `.clinerules` directory, located at the root of the Forge repository, contains project-specific instructions, guidelines, and standards intended for use by AI development agents (like Cline).
+
+## Purpose
+
+The primary goal of `.clinerules` is to provide context and constraints to AI agents working on this specific codebase. This helps ensure that AI-generated code, modifications, and contributions align with the project's architecture, coding standards, testing practices, and overall philosophy.
+
+By providing these rules directly within the repository, we can:
+
+- Improve the quality and consistency of AI contributions.
+- Reduce the need for manual correction of AI-generated output.
+- Onboard AI agents more quickly to the project's specific requirements.
+- Ensure adherence to specific technology choices (e.g., UI frameworks, testing libraries).
+
+## Structure
+
+The `.clinerules` directory is organized into subdirectories based on different aspects of the project:
+
+- `code/`: Standards related to code quality, module format, and TypeScript usage.
+- `config/`: Guidelines for environment variables, Next.js configuration, and security.
+- `core/`: Information about the core monorepo architecture, structure, and development workflows.
+- `interaction/`: Patterns for how the AI agent should interact with the user (e.g., presenting options).
+- `packages/`: Rules for package creation and dependency management.
+- `testing/`: Configuration and standards for writing tests (Vitest, Cypress).
+- `ui/`: Standards for the UI framework (e.g., Mantine).
+
+## Usage
+
+AI agents interacting with this repository should consult the relevant files within `.clinerules` before performing tasks. For example:
+
+- Before creating a new package, consult `.clinerules/packages/creation.md`.
+- Before writing a component test, consult `.clinerules/testing/standards.md`.
+- Before modifying Next.js configuration, consult `.clinerules/config/nextjs.md`.
+
+These rules supplement the agent's general knowledge and provide project-specific context.

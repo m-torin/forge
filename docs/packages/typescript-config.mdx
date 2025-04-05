@@ -1,0 +1,91 @@
+---
+title: TypeScript Config Package
+description: Shared TypeScript configurations for the Forge monorepo (@repo/typescript-config).
+---
+
+import { Tab, Tabs } from "mintlify/components";
+
+# TypeScript Config Package (@repo/typescript-config)
+
+This package provides centralized TypeScript configurations (`tsconfig.json`) used across the Forge monorepo. Using shared configurations ensures consistency in compiler options and type-checking behavior for different types of projects.
+
+## Available Configurations
+
+The package exports several `tsconfig.json` configurations, each extending a common `base.json`:
+
+<Tabs>
+  <Tab title="base.json">
+    The foundational configuration providing strict, modern TypeScript settings:
+    - **Target**: `ES2022`
+    - **Module System**: `NodeNext` (for module and moduleResolution)
+    - **Strict Checks**: `strict: true`, `strictNullChecks: true`
+    - **Interop**: `esModuleInterop: true`
+    - **Type Definitions**: `declaration: true`, `declarationMap: true`
+    - **Other**: `skipLibCheck: true`, `isolatedModules: true`, `resolveJsonModule: true`
+
+    This config forms the basis for all other shared configurations. It should generally not be extended directly by apps or packages; use one of the more specific configs below.
+
+  </Tab>
+  <Tab title="library.json">
+    Designed for standard TypeScript libraries within the monorepo (non-React).
+    - **Extends**: `base.json`
+    - **Key Settings**:
+        - `noEmit: true`: Aligns with direct TypeScript consumption (no build step).
+        - `allowImportingTsExtensions: true`: Allows importing `.ts` files directly.
+        - `module: NodeNext`, `moduleResolution: NodeNext`
+  </Tab>
+  <Tab title="react-library.json">
+    Tailored for shared React component libraries.
+    - **Extends**: `base.json`
+    - **Key Settings**:
+        - `jsx: "react-jsx"`: Enables modern JSX transform.
+        - `allowImportingTsExtensions: true`
+    - **Note**: This config currently does *not* set `noEmit: true`. While packages typically don't emit build artifacts, ensure this aligns with your library's needs.
+  </Tab>
+  <Tab title="nextjs.json">
+    Specifically configured for Next.js applications (App or Pages Router).
+    - **Extends**: `base.json`
+    - **Key Settings**:
+        - `module: "ESNext"`, `moduleResolution: "Bundler"`: Recommended for Next.js/bundler environments.
+        - `jsx: "preserve"`: Next.js handles JSX transformation.
+        - `noEmit: true`: Next.js handles the build process.
+        - `allowJs: true`: Allows mixing JavaScript files.
+        - `plugins: [{ "name": "next" }]`: Integrates with Next.js compiler features.
+        - `paths: { "@/*": ["./*"] }`: Configures the common `@/` path alias.
+  </Tab>
+</Tabs>
+
+## Usage
+
+To use one of these shared configurations in an app or package, extend it in that project's `tsconfig.json` file:
+
+```json tsconfig.json
+{
+  // Example for a Next.js application
+  "extends": "@repo/typescript-config/nextjs.json",
+  "compilerOptions": {
+    // Add project-specific compiler options here
+    "baseUrl": ".", // Often needed for path aliases
+    "paths": {
+      "@/*": ["src/*"] // Adjust if your source is in 'src'
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+```json tsconfig.json
+{
+  // Example for a React library package
+  "extends": "@repo/typescript-config/react-library.json",
+  "compilerOptions": {
+    // Project-specific options
+    "baseUrl": "."
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+**Important:** Always extend one of the specific configurations (`library.json`, `react-library.json`, `nextjs.json`) rather than `base.json` directly, unless you have a very specific reason. Choose the configuration that best matches the type of project you are configuring.

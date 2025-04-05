@@ -1,38 +1,43 @@
-// index.ts
-import js from '@eslint/js';
-import eslintConfigPrettier from 'eslint-config-prettier';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import markdownPlugin from '@eslint/markdown';
-import { resolve } from 'node:path';
-import type { Linter } from 'eslint';
+import path from "node:path";
 
+// index.ts
+import js from "@eslint/js";
+import markdownPlugin from "@eslint/markdown";
+import eslintConfigPrettier from "eslint-config-prettier";
 // Import plugins with type assertions to avoid TypeScript errors
 // @ts-ignore
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from "eslint-plugin-import";
 // @ts-ignore
-import onlyWarn from 'eslint-plugin-only-warn';
+import onlyWarn from "eslint-plugin-only-warn";
 // @ts-ignore
-import securityPlugin from 'eslint-plugin-security';
+import perfectionistPlugin from "eslint-plugin-perfectionist";
 // @ts-ignore
-import promisePlugin from 'eslint-plugin-promise';
+import promisePlugin from "eslint-plugin-promise";
 // @ts-ignore
-import perfectionistPlugin from 'eslint-plugin-perfectionist';
+import securityPlugin from "eslint-plugin-security";
 // @ts-ignore
-import unusedImportsPlugin from 'eslint-plugin-unused-imports';
+import unusedImportsPlugin from "eslint-plugin-unused-imports";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
-const project = resolve(process.cwd(), 'tsconfig.json');
+import type { Linter } from "eslint";
+
+const project = path.resolve(process.cwd(), "tsconfig.json");
 
 // Common sort order configuration for perfectionist rules
 const perfectionistSortConfig = {
-  type: 'natural',
-  order: 'asc',
+  type: "natural",
   ignoreCase: true,
+  order: "asc",
 } as const;
 
 // File patterns
-const MARKDOWN_FILES = ['**/*.md'];
-const MARKDOWN_CODE_BLOCKS = ['**/*.md/*.{js,jsx,ts,tsx}'];
+const MARKDOWN_FILES = ["**/*.md"];
+const MARKDOWN_CODE_BLOCKS = [
+  "**/*.md/*.{js,jsx,ts,tsx}",
+  "**/README.md/*.{js,jsx,ts,tsx}",
+  "**/README.md/[0-9]*_[0-9]*.ts",
+];
 
 const config: Linter.FlatConfig[] = [
   // Base ESLint recommended rules
@@ -42,36 +47,42 @@ const config: Linter.FlatConfig[] = [
   ...markdownPlugin.configs.recommended,
   {
     files: MARKDOWN_FILES,
-    processor: 'markdown/markdown',
-    language: 'markdown/gfm',
+    language: "markdown/gfm",
+    processor: "markdown/markdown",
     rules: {
-      'markdown/fenced-code-language': ['error', { allowEmpty: false }],
-      'markdown/no-html': 'warn',
-      'markdown/no-duplicate-headings': 'error',
+      "markdown/fenced-code-language": "error",
+      "markdown/no-duplicate-headings": "error",
+      "markdown/no-html": "warn",
     },
   },
   {
     files: MARKDOWN_CODE_BLOCKS,
+    languageOptions: {
+      parserOptions: {
+        project: null, // Disable TypeScript project configuration for markdown files
+      },
+    },
     rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "import/no-unresolved": "off",
       // Relax rules for documentation examples
-      'no-console': 'off',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'import/no-unresolved': 'off',
-      'unused-imports/no-unused-imports': 'off',
-      'unused-imports/no-unused-vars': 'off',
+      "no-console": "off",
+      "no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "off",
+      "unused-imports/no-unused-vars": "off",
     },
   },
 
   // TypeScript ESLint recommended rules
   {
-    files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        { fixStyle: "inline-type-imports", prefer: "type-imports" },
       ],
+      "@typescript-eslint/no-explicit-any": "warn",
     },
   },
   ...tseslint.configs.recommended,
@@ -81,37 +92,36 @@ const config: Linter.FlatConfig[] = [
   {
     ...securityPlugin.configs.recommended,
     rules: {
-      'security/detect-unsafe-regex': 'error',
-      'security/detect-buffer-noassert': 'error',
-      'security/detect-child-process': 'error',
-      'security/detect-eval-with-expression': 'error',
+      "security/detect-buffer-noassert": "error",
+      "security/detect-child-process": "error",
+      "security/detect-eval-with-expression": "error",
+      "security/detect-unsafe-regex": "error",
     },
   },
 
   // Promise Plugin flat/recommended rules
-  promisePlugin.configs['flat/recommended'],
+  promisePlugin.configs["flat/recommended"],
 
   // JavaScript-specific configuration
   {
     // Match all JavaScript files (not TypeScript)
-    files: ['**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs'],
+    files: ["**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs"],
 
     // Standard ignores plus build artifacts
     ignores: [
-      '.*',
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      '.cache/**',
-      'coverage/**',
-      '**/*.min.js',
-      '**/*.css',
-      '.eslintrc.js',
+      ".*",
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      ".cache/**",
+      "coverage/**",
+      "**/*.min.js",
+      "**/*.css",
+      ".eslintrc.js",
     ],
 
     languageOptions: {
       ecmaVersion: 2024,
-      sourceType: 'module',
       globals: {
         ...globals.node,
         ...globals.browser,
@@ -121,176 +131,177 @@ const config: Linter.FlatConfig[] = [
           jsx: true,
         },
       },
+      sourceType: "module",
     },
 
     linterOptions: {
-      reportUnusedDisableDirectives: true,
       noInlineConfig: false,
+      reportUnusedDisableDirectives: true,
     },
 
     // Configure all shared plugins
     plugins: {
       import: importPlugin,
-      'only-warn': onlyWarn,
-      security: securityPlugin,
-      promise: promisePlugin,
+      "only-warn": onlyWarn,
       perfectionist: perfectionistPlugin,
-      'unused-imports': unusedImportsPlugin,
+      promise: promisePlugin,
+      security: securityPlugin,
+      "unused-imports": unusedImportsPlugin,
     },
   },
 
   // TypeScript-specific configuration with rules
   {
     // Match all TypeScript files
-    files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
 
     // Standard ignores plus build artifacts
     ignores: [
-      '.*',
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      '.cache/**',
-      'coverage/**',
-      '**/*.min.js',
-      '**/*.css',
-      '.eslintrc.js',
+      ".*",
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      ".cache/**",
+      "coverage/**",
+      "**/*.min.js",
+      "**/*.css",
+      ".eslintrc.js",
     ],
 
     languageOptions: {
       ecmaVersion: 2024,
-      sourceType: 'module',
-      parser: tseslint.parser,
-      parserOptions: {
-        project,
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
       globals: {
         ...globals.node,
         ...globals.browser,
       },
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        project,
+      },
+      sourceType: "module",
     },
 
     linterOptions: {
-      reportUnusedDisableDirectives: true,
       noInlineConfig: false,
+      reportUnusedDisableDirectives: true,
     },
 
     // Configure all shared plugins
     plugins: {
-      '@typescript-eslint': tseslint.plugin,
+      "@typescript-eslint": tseslint.plugin,
       import: importPlugin,
-      'only-warn': onlyWarn,
-      security: securityPlugin,
-      promise: promisePlugin,
+      "only-warn": onlyWarn,
       perfectionist: perfectionistPlugin,
-      'unused-imports': unusedImportsPlugin,
+      promise: promisePlugin,
+      security: securityPlugin,
+      "unused-imports": unusedImportsPlugin,
     },
 
     // TypeScript-aware import resolution
     settings: {
-      'import/resolver': {
+      "import/extensions": [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"],
+      "import/internal-regex": "^@repo/",
+      "import/parsers": {
+        "@typescript-eslint/parser": [".ts", ".tsx", ".mts", ".cts"],
+      },
+      "import/resolver": {
         typescript: {
-          project,
           alwaysTryTypes: true,
+          project,
         },
         node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.mjs', '.cjs'],
-          moduleDirectory: ['node_modules', '../../node_modules'],
+          extensions: [".js", ".jsx", ".ts", ".tsx", ".d.ts", ".mjs", ".cjs"],
+          moduleDirectory: ["node_modules", "../../node_modules"],
         },
       },
-      'import/parsers': {
-        '@typescript-eslint/parser': ['.ts', '.tsx', '.mts', '.cts'],
-      },
-      'import/extensions': ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs'],
-      'import/internal-regex': '^@repo/',
     },
 
     rules: {
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        { "ts-ignore": "allow-with-description" },
+      ],
+      "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        { fixStyle: "inline-type-imports", prefer: "type-imports" },
+      ],
+      "@typescript-eslint/no-empty-function": [
+        "warn",
+        { allow: ["arrowFunctions"] },
+      ],
       // TypeScript-specific rules (that aren't already in the recommended/stylistic presets)
-      '@typescript-eslint/no-explicit-any': 'warn', // Override from recommended which has it as 'error'
-      '@typescript-eslint/no-unused-vars': 'off', // Explicitly disable as we use unused-imports instead
-      '@typescript-eslint/no-empty-function': [
-        'warn',
-        { allow: ['arrowFunctions'] },
-      ],
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
-      ],
-      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-      '@typescript-eslint/ban-ts-comment': [
-        'error',
-        { 'ts-ignore': 'allow-with-description' },
-      ],
+      "@typescript-eslint/no-explicit-any": "warn", // Override from recommended which has it as 'error'
+      "@typescript-eslint/no-unused-vars": "off", // Explicitly disable as we use unused-imports instead
 
       // Security rules
-      'security/detect-object-injection': 'off', // Disable object injection warning (too many false positives)
+      "security/detect-object-injection": "off", // Disable object injection warning (too many false positives)
 
       // Unused imports - better handling with auto-fix
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn',
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
         {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          args: 'after-used',
-          argsIgnorePattern: '^_',
+          args: "after-used",
+          argsIgnorePattern: "^_",
+          vars: "all",
+          varsIgnorePattern: "^_",
         },
       ],
 
       // Import organization and validation (non-sorting rules)
-      'import/first': 'error',
-      'import/no-duplicates': 'error',
-      'import/no-cycle': 'error',
-      'import/no-useless-path-segments': 'error',
-      'import/no-unresolved': 'error',
-      'import/order': 'off', // Explicitly disable as we use perfectionist instead
+      "import/first": "error",
+      "import/no-cycle": "error",
+      "import/no-duplicates": "error",
+      "import/no-unresolved": "error",
+      "import/no-useless-path-segments": "error",
+      "import/order": "off", // Explicitly disable as we use perfectionist instead
 
       // Perfectionist sorting rules - each serves a unique purpose
 
       // 1. Import sorting - handles the overall file imports
-      'perfectionist/sort-imports': [
-        'error',
+      "perfectionist/sort-imports": [
+        "error",
         {
           ...perfectionistSortConfig,
           groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-            'unknown',
+            "builtin",
+            "external",
+            "internal",
+            "parent",
+            "sibling",
+            "index",
+            "object",
+            "type",
+            "unknown",
           ],
-          newlinesBetween: 'always',
-          internalPattern: ['^@repo/'],
+          internalPattern: ["^@repo/"],
+          newlinesBetween: "always",
         },
       ],
 
       // 2. Object property sorting
-      'perfectionist/sort-objects': [
-        'error',
+      "perfectionist/sort-objects": [
+        "error",
         {
           ...perfectionistSortConfig,
-          partitionByNewLine: true,
           customGroups: {
-            id: 'id',
-            name: 'name',
-            type: 'type',
-            url: 'url',
+            id: "id",
+            name: "name",
+            type: "type",
+            url: "url",
           },
-          groups: ['id', 'name', 'type', 'url', 'unknown'],
+          groups: ["id", "name", "type", "url", "unknown"],
+          partitionByNewLine: true,
         },
       ],
 
       // 3. TypeScript interface and type sorting
-      'perfectionist/sort-interfaces': [
-        'error',
+      "perfectionist/sort-interfaces": [
+        "error",
         {
           ...perfectionistSortConfig,
           partitionByNewLine: true,
@@ -298,33 +309,33 @@ const config: Linter.FlatConfig[] = [
       ],
 
       // 4. Enum sorting
-      'perfectionist/sort-enums': ['error', perfectionistSortConfig],
+      "perfectionist/sort-enums": ["error", perfectionistSortConfig],
 
       // 5. Named imports sorting - explicitly handles the imports within curly braces
-      'perfectionist/sort-named-imports': ['error', perfectionistSortConfig],
+      "perfectionist/sort-named-imports": ["error", perfectionistSortConfig],
 
       // 6. Named exports sorting
-      'perfectionist/sort-named-exports': ['error', perfectionistSortConfig],
+      "perfectionist/sort-named-exports": ["error", perfectionistSortConfig],
 
       // 7. JSX props sorting
-      'perfectionist/sort-jsx-props': [
-        'error',
+      "perfectionist/sort-jsx-props": [
+        "error",
         {
           ...perfectionistSortConfig,
           customGroups: {
-            key: 'key',
-            id: 'id',
-            ref: 'ref',
-            callback: ['on*', 'handle*'],
-            styling: ['style', 'className', 'class', 'classes', 'sx'],
+            id: "id",
+            callback: ["on*", "handle*"],
+            key: "key",
+            ref: "ref",
+            styling: ["style", "className", "class", "classes", "sx"],
           },
-          groups: ['key', 'id', 'ref', 'callback', 'styling', 'unknown'],
+          groups: ["key", "id", "ref", "callback", "styling", "unknown"],
         },
       ],
 
       // 8. Array sorting if needed
-      'perfectionist/sort-array-includes': [
-        'warn', // Only warn as this may not always be desirable
+      "perfectionist/sort-array-includes": [
+        "warn", // Only warn as this may not always be desirable
         perfectionistSortConfig,
       ],
     },

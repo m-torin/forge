@@ -4,7 +4,7 @@
  * This module provides scripts for setting up and working with Cypress in the Next-Forge monorepo.
  */
 
-import { setupCypress, copyFixtures } from './setup.ts';
+import { setupCypress, copyFixtures } from "./setup.ts";
 
 // Re-export setup utilities
 export { setupCypress, copyFixtures };

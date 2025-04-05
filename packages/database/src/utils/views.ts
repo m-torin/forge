@@ -1,153 +1,150 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 /**
- * Get best deals across all products using the ProductPricingView
- * This demonstrates the efficiency of using database views for complex queries
+ * Get user authentication statistics
  */
-export async function getBestDeals(options?: {
-  categoryName?: string;
-  minDiscountPercent?: number;
-  limit?: number;
-}) {
-  const limit = options?.limit || 10;
-  const minDiscount = options?.minDiscountPercent || 15;
+export async function getUserAuthStats() {
+  // This would ideally use a database view, but here we'll simulate with a raw query
+  return prisma.$queryRaw<
+    {
+      total_users: number;
+      users_with_accounts: number;
+      users_with_active_sessions: number;
+      avg_sessions_per_user: number;
+    }[]
+  >`
+    SELECT
+      COUNT(DISTINCT u.id) as total_users,
+      COUNT(DISTINCT a.user_id) as users_with_accounts,
+      COUNT(DISTINCT s.user_id) as users_with_active_sessions,
+      (SELECT COUNT(*)::float / NULLIF(COUNT(DISTINCT user_id), 0) FROM sessions) as avg_sessions_per_user
+    FROM users u
+    LEFT JOIN accounts a ON u.id = a.user_id
+    LEFT JOIN sessions s ON u.id = s.user_id AND s.expires > NOW()
+  `;
+}
 
-  return prisma.productPricingView.findMany({
-    where: {
-      discountPercent: { gte: minDiscount },
-      isAvailable: true,
-      ...(options?.categoryName ? { categoryName: options.categoryName } : {}),
+/**
+ * Get account provider distribution
+ */
+export async function getProviderDistribution() {
+  return prisma.$queryRaw<
+    {
+      provider: string;
+      user_count: number;
+      percentage: number;
+    }[]
+  >`
+    WITH provider_counts AS (
+      SELECT
+        provider,
+        COUNT(DISTINCT user_id) as user_count
+      FROM accounts
+      GROUP BY provider
+    ),
+    total AS (
+      SELECT COUNT(DISTINCT user_id) as total_users
+      FROM accounts
+    )
+    SELECT
+      pc.provider,
+      pc.user_count,
+      (pc.user_count::float / t.total_users * 100) as percentage
+    FROM provider_counts pc, total t
+    ORDER BY pc.user_count DESC
+  `;
+}
+
+/**
+ * Get session expiration analytics
+ */
+export async function getSessionExpiryAnalytics() {
+  const now = new Date();
+
+  return prisma.$queryRaw<
+    {
+      status: string;
+      count: number;
+      percentage: number;
+    }[]
+  >`
+    WITH session_categories AS (
+      SELECT
+        CASE
+          WHEN expires < ${now} THEN 'Expired'
+          WHEN expires < ${new Date(now.getTime() + 1000 * 60 * 60 * 24)} THEN 'Expiring Today'
+          WHEN expires < ${new Date(now.getTime() + 1000 * 60 * 60 * 24 * 7)} THEN 'Expiring This Week'
+          ELSE 'Active'
+        END as status,
+        COUNT(*) as count
+      FROM sessions
+      GROUP BY status
+    ),
+    total AS (
+      SELECT COUNT(*) as total_sessions FROM sessions
+    )
+    SELECT
+      sc.status,
+      sc.count,
+      (sc.count::float / t.total_sessions * 100) as percentage
+    FROM session_categories sc, total t
+    ORDER BY
+      CASE
+        WHEN sc.status = 'Expired' THEN 1
+        WHEN sc.status = 'Expiring Today' THEN 2
+        WHEN sc.status = 'Expiring This Week' THEN 3
+        ELSE 4
+      END
+  `;
+}
+
+/**
+ * Generate user authentication report
+ */
+export async function generateAuthReport() {
+  const [userStats] = await getUserAuthStats();
+  const providerDistribution = await getProviderDistribution();
+  const sessionStats = await getSessionExpiryAnalytics();
+
+  // Get recently active users (users with sessions that expire in the future)
+  const recentlyActiveUsers = await prisma.user.findMany({
+    include: {
+      sessions: {
+        where: {
+          expires: {
+            gt: new Date(),
+          },
+        },
+        orderBy: {
+          expires: "desc",
+        },
+        take: 1,
+      },
     },
     orderBy: {
-      discountPercent: 'desc',
-    },
-    take: limit,
-  });
-}
-
-/**
- * Compare prices for a specific product across different sellers
- * Uses the ProductPricingView for efficient queries
- */
-export async function comparePrices(productSlug: string) {
-  return prisma.productPricingView.findMany({
-    where: {
-      productSlug,
-      isAvailable: true,
-    },
-    orderBy: {
-      priceSale: 'asc',
-    },
-  });
-}
-
-/**
- * Get top-performing stories based on product count and pricing
- * Demonstrates aggregation via database views
- */
-export async function getTopStories(options?: {
-  limit?: number;
-  minProductCount?: number;
-}) {
-  const limit = options?.limit || 10;
-  const minProducts = options?.minProductCount || 1;
-
-  return prisma.storyStatsView.findMany({
-    where: {
-      productCount: { gte: minProducts },
-    },
-    orderBy: [
-      { productCount: 'desc' },
-      { avgPrice: 'desc' },
-    ],
-    take: limit,
-  });
-}
-
-/**
- * Get detailed statistics for a specific story
- */
-export async function getStoryStats(storySlug: string) {
-  return prisma.storyStatsView.findFirst({
-    where: {
-      storySlug,
-    },
-  });
-}
-
-/**
- * Get stories with the highest average product prices
- */
-export async function getPremiumStories(limit = 10) {
-  return prisma.storyStatsView.findMany({
-    where: {
-      avgPrice: { not: null },
-      productCount: { gt: 3 }, // Ensure we have enough products for meaningful averages
-    },
-    orderBy: {
-      avgPrice: 'desc',
-    },
-    take: limit,
-  });
-}
-
-/**
- * Get stories with the most sellers
- */
-export async function getPopularStories(limit = 10) {
-  return prisma.storyStatsView.findMany({
-    where: {
-      sellerCount: { gt: 0 },
-    },
-    orderBy: {
-      sellerCount: 'desc',
-    },
-    take: limit,
-  });
-}
-
-/**
- * Generate a pricing report using both views
- * Example of combining multiple database views for complex reporting
- */
-export async function generatePricingReport() {
-  // Get top 5 stories by product count
-  const topStories = await prisma.storyStatsView.findMany({
-    orderBy: {
-      productCount: 'desc',
+      sessions: {
+        _count: "desc",
+      },
     },
     take: 5,
+    where: {
+      sessions: {
+        some: {
+          expires: {
+            gt: new Date(),
+          },
+        },
+      },
+    },
   });
-  
-  // For each story, get their top 3 products with the best deals
-  const storyReports = await Promise.all(
-    topStories.map(async (story) => {
-      // Find products associated with this story using raw SQL joining the views
-      const products = await prisma.$queryRaw<any[]>`
-        SELECT ppv.*
-        FROM product_pricing_view ppv
-        JOIN _ProductToStory pts ON ppv.product_id = pts.product_id
-        WHERE pts.story_id = ${story.storyId}
-        AND ppv.discount_percent IS NOT NULL
-        ORDER BY ppv.discount_percent DESC
-        LIMIT 3
-      `;
-      
-      return {
-        story,
-        bestDeals: products,
-      };
-    })
-  );
-  
+
   return {
     generatedAt: new Date(),
-    topStories: storyReports,
-    // Add additional metrics as needed
-    avgDiscount: storyReports.flatMap(r => r.bestDeals)
-      .filter(d => d.discount_percent)
-      .reduce((sum, deal, _, array) => sum + deal.discount_percent / array.length, 0),
+    mostActiveUsers: recentlyActiveUsers,
+    providerDistribution,
+    sessionStats,
+    userStats,
   };
 }

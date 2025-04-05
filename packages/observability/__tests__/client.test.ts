@@ -1,75 +1,76 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { initializeSentry } from '../client';
-import { init, replayIntegration } from '@sentry/nextjs';
-import { keys } from '../keys';
+import { init, replayIntegration } from "@sentry/nextjs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { initializeSentryClient } from "../client";
+import { keys } from "../keys";
 
 // Import the mocked modules
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   init: vi.fn().mockReturnValue({}),
   replayIntegration: vi.fn(),
 }));
 
-vi.mock('../keys');
+vi.mock("../keys");
 
-describe('Sentry Client', () => {
+describe("Sentry Client", () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
     // Mock keys to return test values
     (keys as any).mockReturnValue({
-      NEXT_PUBLIC_SENTRY_DSN: 'https://test-sentry-dsn.ingest.sentry.io/test',
+      NEXT_PUBLIC_SENTRY_DSN: "https://test-sentry-dsn.ingest.sentry.io/test",
     });
 
     // Mock replayIntegration to return a mock integration
     (replayIntegration as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      name: 'replay',
+      name: "replay",
       setup: vi.fn(),
     });
   });
 
-  it.skip('initializes Sentry with the correct configuration', () => {
-    initializeSentry();
+  it.skip("initializes Sentry with the correct configuration", () => {
+    initializeSentryClient();
 
     expect(init).toHaveBeenCalledWith(
       expect.objectContaining({
         dsn: expect.any(String),
-        tracesSampleRate: 1,
+        integrations: expect.any(Array),
         replaysOnErrorSampleRate: 1,
         replaysSessionSampleRate: 0.1,
-        integrations: expect.any(Array),
+        tracesSampleRate: 1,
       }),
     );
   });
 
-  it.skip('configures replay integration with maskAllText and blockAllMedia', () => {
-    initializeSentry();
+  it.skip("configures replay integration with maskAllText and blockAllMedia", () => {
+    initializeSentryClient();
 
     expect(replayIntegration).toHaveBeenCalledWith(
       expect.objectContaining({
-        maskAllText: true,
         blockAllMedia: true,
+        maskAllText: true,
       }),
     );
   });
 
-  it.skip('uses the DSN from environment variables', () => {
+  it.skip("uses the DSN from environment variables", () => {
     // Set a mock DSN
-    process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://test@sentry.io/1234';
+    process.env.NEXT_PUBLIC_SENTRY_DSN = "https://test@sentry.io/1234";
 
-    initializeSentry();
+    initializeSentryClient();
 
     expect(init).toHaveBeenCalledWith(
       expect.objectContaining({
-        dsn: 'https://test@sentry.io/1234',
+        dsn: "https://test@sentry.io/1234",
       }),
     );
   });
 
-  it.skip('handles missing DSN gracefully', () => {
+  it.skip("handles missing DSN gracefully", () => {
     // Clear DSN
     delete process.env.NEXT_PUBLIC_SENTRY_DSN;
 
-    initializeSentry();
+    initializeSentryClient();
 
     expect(init).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -78,12 +79,12 @@ describe('Sentry Client', () => {
     );
   });
 
-  it.skip('returns the result of init', () => {
+  it.skip("returns the result of init", () => {
     // Mock init to return a specific value
-    (init as unknown as ReturnType<typeof vi.fn>).mockReturnValue('test-value');
+    (init as unknown as ReturnType<typeof vi.fn>).mockReturnValue("test-value");
 
-    const result = initializeSentry();
+    const result = initializeSentryClient();
 
-    expect(result).toBe('test-value');
+    expect(result).toBe("test-value");
   });
 });

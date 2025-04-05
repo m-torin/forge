@@ -7,10 +7,10 @@
  */
 
 // Export Vitest presets directly
-export * from './vitest.ts';
+export * from "./vitest.ts";
 
 // Import for default export
-import * as vitestPresets from './vitest.ts';
+import * as vitestPresets from "./vitest.ts";
 
 // Export default object with all presets
 export default {

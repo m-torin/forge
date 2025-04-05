@@ -3,34 +3,34 @@ title: Application Security
 description: Security measures taken to protect your applications.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "forge",
+        id: "forge",
       },
     },
     {
       user: {
-        name: 'David Mytton',
-        id: 'davidmytton',
+        name: "David Mytton",
+        id: "davidmytton",
       },
       company: {
-        name: 'Arcjet',
-        id: 'arcjet',
+        name: "Arcjet",
+        id: "arcjet",
       },
     },
   ]}
 />
 
-next-forge uses [Arcjet](https://arcjet.com/), a security as code product that
+forge uses [Arcjet](https://arcjet.com/), a security as code product that
 includes several features that can be used individually or combined to provide
 defense in depth for your site. You can
 [sign up for a free account](https://arcjet.com/) and add the API key to the
@@ -53,7 +53,7 @@ production.
 
 ## Configuration
 
-Arcjet is configured in next-forge with two main features: bot detection and the
+Arcjet is configured in forge with two main features: bot detection and the
 Arcjet Shield WAF:
 
 - [Bot detection](https://docs.arcjet.com/bot-protection/concepts) is configured
@@ -92,7 +92,7 @@ the error in a different way as needed.
 
 ## Scaling up your security
 
-next-forge includes a boilerplate setup for Arcjet that protects against common
+forge includes a boilerplate setup for Arcjet that protects against common
 threats to SaaS applications, but since the rules are defined in code, you can
 easily adjust them dynamically at runtime.
 

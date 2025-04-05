@@ -1,32 +1,38 @@
-import { defineConfig } from 'vitest/config';
-import path from 'path';
+import { defineConfig } from "vitest/config";
+
+// Define common patterns once
+const commonExcludes = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/.react-email/**/*.spec.ts",
+  "**/.react-email/**/*.test.ts",
+  "**/.react-email/**/*.spec.tsx",
+  "**/.react-email/**/*.test.tsx",
+];
 
 export default defineConfig({
   test: {
-    environment: 'jsdom',
+    exclude: commonExcludes,
     globals: true,
-    setupFiles: ['./setup-tests.ts'],
-    exclude: [
-      '**/node_modules/**',
-      // Exclude problematic test files that cause esbuild errors
-      '**/.react-email/src/utils/get-email-component.spec.ts',
-      // Exclude test with path issues
-      '**/.react-email/src/utils/get-emails-directory-metadata.spec.ts',
+    workspace: [
+      {
+        test: {
+          name: "react-tests",
+          environment: "jsdom",
+          // Include only test files
+          include: ["./__tests__/**/*.tsx"],
+        },
+      },
+      {
+        test: {
+          name: "node-tests",
+          environment: "node",
+          // Only need to add the additional exclusion specific to this workspace
+          exclude: ["**/*.tsx"],
+          // Include only test files
+          include: ["./__tests__/**/*.ts"],
+        },
+      },
     ],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/coverage/**',
-        '**/*.d.ts',
-      ],
-    },
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname),
-    },
   },
 });

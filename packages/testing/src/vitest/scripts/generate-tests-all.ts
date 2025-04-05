@@ -10,29 +10,29 @@
  *   node generate-tests-all.ts
  */
 
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
+import fs from "fs";
+import path from "path";
+import { execSync } from "child_process";
 
 // Get the current directory and root directory
 const currentDir = process.cwd();
-const rootDir = path.resolve(currentDir, '../..');
+const rootDir = path.resolve(currentDir, "../..");
 
 // Get all packages in the packages directory
-const packagesDir = path.join(rootDir, 'packages');
+const packagesDir = path.join(rootDir, "packages");
 const packages = fs
   .readdirSync(packagesDir)
   .filter((pkg) => fs.statSync(path.join(packagesDir, pkg)).isDirectory());
 
 // Generate tests for each package
 packages.forEach((pkg) => {
-  const packagePath = path.join('packages', pkg);
+  const packagePath = path.join("packages", pkg);
   console.log(`Generating tests for ${packagePath}`);
   try {
     execSync(
-      `node ${path.join(currentDir, 'scripts', 'generate-tests.ts')} ${packagePath}`,
+      `node ${path.join(currentDir, "scripts", "generate-tests.ts")} ${packagePath}`,
       {
-        stdio: 'inherit',
+        stdio: "inherit",
       },
     );
   } catch (error) {
@@ -40,4 +40,4 @@ packages.forEach((pkg) => {
   }
 });
 
-console.log('All tests generated!');
+console.log("All tests generated!");

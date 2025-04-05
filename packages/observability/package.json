@@ -20,10 +20,10 @@
   },
   "dependencies": {
     "@logtail/next": "^0.2.0",
-    "@sentry/nextjs": "^9.11.0",
+    "@sentry/nextjs": "^9.12.0",
     "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",
-    "server-only": "^0.0.1",
+    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -34,7 +34,8 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.4.0",
+    "eslint": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

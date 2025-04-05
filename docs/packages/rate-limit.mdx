@@ -1,0 +1,97 @@
+---
+title: Rate Limit Package
+description: Provides rate limiting functionality using Upstash Redis (@repo/rate-limit).
+---
+
+import { Callout } from "mintlify/components";
+
+# Rate Limit Package (@repo/rate-limit)
+
+This package integrates [Upstash RateLimit](https://upstash.com/docs/ratelimit/overview) to provide easy-to-use rate limiting capabilities for applications within the Forge monorepo. It uses Upstash Redis as the backend for storing rate limit counters.
+
+## Features
+
+- Simple setup using environment variables.
+- Configurable rate limiting algorithms (defaults to sliding window).
+- Exports a ready-to-use Upstash Redis client instance.
+- Provides a factory function (`createRateLimiter`) for creating customized `Ratelimit` instances.
+- Re-exports common Upstash `Ratelimit` algorithms like `slidingWindow`.
+
+## Setup
+
+### Environment Variables
+
+To enable rate limiting, you need to set the following environment variables in your application's `.env` file (e.g., `apps/web/.env.local`):
+
+```env .env.local
+UPSTASH_REDIS_REST_URL="YOUR_UPSTASH_REDIS_URL"
+UPSTASH_REDIS_REST_TOKEN="YOUR_UPSTASH_REDIS_TOKEN"
+```
+
+You can obtain these credentials from your Upstash console after creating a Redis database.
+
+<Callout intent="info">
+  If these environment variables are not provided, the package will still
+  function, but rate limiting attempts might fail or be ineffective as the Redis
+  client won't connect. The environment variable validation in `keys.ts` marks
+  them as optional to allow applications to run without rate limiting
+  configured.
+</Callout>
+
+### Installation
+
+This package is typically used as an internal dependency within the monorepo. Ensure it's listed in the `dependencies` of the `package.json` for the app or package where you intend to use rate limiting:
+
+```json package.json
+{
+  "dependencies": {
+    "@repo/rate-limit": "workspace:*"
+    // ... other dependencies
+  }
+}
+```
+
+## Usage
+
+Import the `createRateLimiter` function to create a rate limiter instance.
+
+```typescript api/some-route.ts
+import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
+import { NextRequest, NextResponse } from "next/server";
+
+// Example: Limit requests to 5 per 60 seconds per IP address
+const rateLimiter = createRateLimiter({
+  limiter: slidingWindow(5, "60 s"), // 5 requests per 60 seconds
+  prefix: "api_route_limit", // Optional custom prefix for Redis keys
+});
+
+export async function GET(request: NextRequest) {
+  const ip = request.ip ?? "127.0.0.1"; // Get user's IP address
+
+  const { success, limit, remaining, reset } = await rateLimiter.limit(ip);
+
+  if (!success) {
+    return new NextResponse("Too Many Requests", {
+      status: 429,
+      headers: {
+        "X-RateLimit-Limit": limit.toString(),
+        "X-RateLimit-Remaining": remaining.toString(),
+        "X-RateLimit-Reset": reset.toString(),
+      },
+    });
+  }
+
+  // Proceed with the API logic if the rate limit is not exceeded
+  return NextResponse.json({ message: "Success!" });
+}
+```
+
+### Key Exports
+
+- `redis`: An initialized Upstash `Redis` client instance connected using the provided environment variables. You can use this for other Redis operations if needed.
+- `createRateLimiter(config)`: A factory function to create `Ratelimit` instances. Takes an optional configuration object:
+  - `limiter`: The rate limiting algorithm (e.g., `slidingWindow(10, "10 s")`). Defaults to `slidingWindow(10, "10 s")`.
+  - `prefix`: A string prefix for the keys stored in Redis (defaults to `"forge"`).
+- `slidingWindow`: Re-exported from `@upstash/ratelimit` for convenience. Other algorithms like `fixedWindow` or `tokenBucket` can be imported directly from `@upstash/ratelimit` if needed.
+
+Refer to the [Upstash RateLimit documentation](https://upstash.com/docs/ratelimit/sdks/ts/usage) for more details on available algorithms and configuration options.

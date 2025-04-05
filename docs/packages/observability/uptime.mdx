@@ -1,6 +1,6 @@
 ---
 title: Uptime Monitoring
-description: How we've configured uptime monitoring in next-forge.
+description: How we've configured uptime monitoring in forge.
 ---
 
 Uptime monitoring functionality is configured through BetterStack's dashboard.
@@ -8,20 +8,20 @@ Uptime monitoring functionality is configured through BetterStack's dashboard.
 ## Setting up monitoring
 
 When you create your project, I recommend adding some specific URLs to monitor.
-Assuming we're using `next-forge.com` and it's subdomains, here's what you
+Assuming we're using `forge.com` and it's subdomains, here's what you
 should add:
 
-1. `next-forge.com` - the `web` project, should be up if the index page returns
+1. `forge.com` - the `web` project, should be up if the index page returns
    a successful response.
-2. `app.next-forge.com` - the `app` project, should be up if the index page
+2. `app.forge.com` - the `app` project, should be up if the index page
    returns a successful response.
-3. `api.next-forge.com/health` - the `api` project, should be up if the `health`
+3. `api.forge.com/health` - the `api` project, should be up if the `health`
    route returns a successful response. This is a stub endpoint that runs on
    Edge runtime so it's very quick.
 
 ## Usage in the UI
 
-next-forge provides a `Status` component from `@repo/observability` that
+forge provides a `Status` component from `@repo/observability` that
 displays the current status of the application. You can see an example of this
 in the website footer.
 

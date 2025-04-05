@@ -74,13 +74,13 @@ export function waitForCondition(
  * @returns The formatted value
  */
 export function formatValue(value: unknown): string {
-  if (value === undefined) return 'undefined';
-  if (value === null) return 'null';
-  if (typeof value === 'string') return `"${value}"`;
-  if (typeof value === 'number' || typeof value === 'boolean')
+  if (value === undefined) return "undefined";
+  if (value === null) return "null";
+  if (typeof value === "string") return `"${value}"`;
+  if (typeof value === "number" || typeof value === "boolean")
     return String(value);
-  if (Array.isArray(value)) return `[${value.map(formatValue).join(', ')}]`;
-  if (typeof value === 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(formatValue).join(", ")}]`;
+  if (typeof value === "object") return JSON.stringify(value);
   return String(value);
 }
 
@@ -96,5 +96,5 @@ export function createErrorMessage(
   actual: unknown,
   message?: string,
 ): string {
-  return `${message ? message + ': ' : ''}Expected ${formatValue(expected)} but got ${formatValue(actual)}`;
+  return `${message ? message + ": " : ""}Expected ${formatValue(expected)} but got ${formatValue(actual)}`;
 }

@@ -1,7 +1,7 @@
-import type { Config } from 'pixeleye';
+import type { Config } from "pixeleye";
 
 const config: Config = {
-  token: process.env.PIXELEYE_PROJECT_TOKEN || '',
+  token: process.env.PIXELEYE_PROJECT_TOKEN || "",
   storybookOptions: {
     variants: [
       {
@@ -13,7 +13,7 @@ const config: Config = {
         params: "globals=theme:light",
       },
     ],
-  }
+  },
 };
 
 export default config;

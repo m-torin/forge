@@ -10,25 +10,25 @@
  */
 export const testEnvVars = {
   // Authentication
-  CLERK_SECRET_KEY: 'sk_test_clerk_secret_key',
-  CLERK_PUBLISHABLE_KEY: 'pk_test_clerk_publishable_key',
+  CLERK_SECRET_KEY: "sk_test_clerk_secret_key",
+  CLERK_PUBLISHABLE_KEY: "pk_test_clerk_publishable_key",
 
   // Database
-  DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test',
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test",
 
   // Email
-  RESEND_API_KEY: 're_test_resend_token',
+  RESEND_API_KEY: "re_test_resend_token",
 
   // Analytics
-  GOOGLE_ANALYTICS_ID: 'G-TEST12345',
-  POSTHOG_API_KEY: 'phc_test12345',
+  GOOGLE_ANALYTICS_ID: "G-TEST12345",
+  POSTHOG_API_KEY: "phc_test12345",
 
   // Payments
-  STRIPE_SECRET_KEY: 'sk_test_stripe_secret_key',
-  STRIPE_WEBHOOK_SECRET: 'whsec_test_stripe_webhook_secret',
+  STRIPE_SECRET_KEY: "sk_test_stripe_secret_key",
+  STRIPE_WEBHOOK_SECRET: "whsec_test_stripe_webhook_secret",
 
   // Feature flags
-  FEATURE_FLAGS_API_KEY: 'test_feature_flags_key',
+  FEATURE_FLAGS_API_KEY: "test_feature_flags_key",
 };
 
 /**

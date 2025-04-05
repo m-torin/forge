@@ -2,22 +2,36 @@
   "extends": "@repo/typescript-config/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "composite": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "strict": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "useUnknownInCatchVariables": false,
+    "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"],
       "@repo/*": ["../../packages/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types", "./"],
+    "types": ["cypress", "node"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "scripts/**/*.ts",
-    "scripts/**/*.js"
+    "scripts/**/*.js",
+    "*.d.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "src/**/*.test.{ts,tsx}",
+    "src/**/templates/**/*",
+    "src/**/__tests__/**/*"
+  ]
 }

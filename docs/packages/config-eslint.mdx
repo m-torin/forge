@@ -1,0 +1,108 @@
+---
+title: ESLint Config Package
+description: Shared ESLint configurations for the Forge monorepo (@repo/config-eslint).
+---
+
+import { Tab, Tabs } from "mintlify/components";
+
+# ESLint Config Package (@repo/config-eslint)
+
+This package provides a collection of internal ESLint configurations for the Forge monorepo, built using ESLint 9's flat config system. It ensures consistent code style, quality, and security across different types of projects within the repository.
+
+## Configurations
+
+The package exports several pre-configured ESLint setups tailored for specific environments:
+
+<Tabs>
+  <Tab title="Base (index.ts)">
+    The foundational configuration that all other configs extend. It includes: -
+    Modern TypeScript support with type-checking. - Comprehensive code
+    organization and sorting via `eslint-plugin-perfectionist` (imports,
+    objects, types, JSX props, etc.). - Automatic removal of unused imports. -
+    Security scanning for common vulnerabilities. - Prettier integration for
+    consistent formatting. - Promise error handling checks. - Common ignore
+    patterns for build artifacts and configuration files. - Markdown linting and
+    code block validation.
+  </Tab>
+  <Tab title="React (react-package.ts)">
+    Extends the base config with rules specific to React libraries: ```mermaid
+    graph TD A[Base] --> B[React Package] ``` - JSX support and best practices.
+    - React Hooks rules (`eslint-plugin-react-hooks`). - Accessibility checks
+    (`eslint-plugin-jsx-a11y`). - Testing Library and Jest DOM rules for test
+    files (`*.test.{(ts, tsx)}`).
+  </Tab>
+  <Tab title="Next.js (next.ts)">
+    Extends the React config for Next.js applications: ```mermaid graph TD
+    A[Base] --> B[React Package] --> C[Next.js] ``` - Enforces Next.js
+    conventions (App Router, Pages Router). - Includes rules from
+    `@next/eslint-plugin-next`. - Specific rules for Server Components, Client
+    Components, and Server Actions. - React 19 integration (new hooks, server
+    action validation). - Performance rules (Image optimization, font loading,
+    script loading). - Testing overrides for Next.js environments.
+  </Tab>
+  <Tab title="Server (server.ts)">
+    Extends the base config for server-side Node.js packages: ```mermaid graph
+    TD A[Base] --> B[Server] ``` - Node.js environment rules and best practices
+    (`eslint-plugin-node`). - Stricter TypeScript rules suitable for backend
+    code. - Enhanced security checks for server environments.
+  </Tab>
+  <Tab title="Remix (remix.ts)">
+    Extends both React and Server configs for Remix applications: ```mermaid
+    graph TD A[Base] --> B[React Package] A --> C[Server] B --> D[Remix] C --> D
+    ``` - Fullstack environment support. - Enforces Remix file conventions and
+    routing patterns. - Handles mixed client/server rules.
+  </Tab>
+</Tabs>
+
+## Usage
+
+To use a configuration in your app or package, import it in your `eslint.config.ts` file:
+
+```typescript eslint.config.ts
+// Example for a Next.js app
+import nextConfig from "@repo/eslint-config/next";
+
+export default [
+  ...nextConfig,
+  // Add project-specific overrides here if needed
+  // {
+  //   files: ["app/**/*.tsx"],
+  //   rules: {
+  //     "@next/next/no-img-element": "warn",
+  //   },
+  // },
+];
+```
+
+Replace `/next` with `/react-package`, `/server`, or `/remix` depending on the project type. The base configuration is the default export (`import baseConfig from "@repo/eslint-config"`).
+
+## Key Features
+
+- **ESLint 9 Flat Config**: Utilizes the latest ESLint configuration system.
+- **TypeScript First**: Designed for TypeScript projects with integrated type-checking.
+- **Code Organization**: Enforces consistent sorting and organization using `eslint-plugin-perfectionist`.
+- **Unused Imports**: Automatically detects and removes unused imports.
+- **Security**: Includes security scanning via `eslint-plugin-security`.
+- **Accessibility**: Provides JSX accessibility checks for React projects.
+- **Testing**: Integrates rules for Testing Library, Jest DOM, and Cypress.
+- **Monorepo Aware**: Designed to work seamlessly within the pnpm/Turborepo structure.
+- **Prettier Integration**: Ensures compatibility with the root Prettier configuration.
+
+## Included Plugins
+
+This package bundles necessary ESLint plugins, so individual projects generally don't need to install them separately. Key plugins include:
+
+- `@typescript-eslint/eslint-plugin`
+- `eslint-plugin-perfectionist`
+- `eslint-plugin-import`
+- `eslint-plugin-unused-imports`
+- `eslint-plugin-react` & `eslint-plugin-react-hooks`
+- `eslint-plugin-jsx-a11y`
+- `eslint-plugin-testing-library` & `eslint-plugin-jest-dom`
+- `eslint-plugin-security`
+- `eslint-plugin-promise`
+- `@next/eslint-plugin-next` (in Next.js config)
+- `eslint-plugin-node` (in Server config)
+- `eslint-plugin-cypress` (in React/Next.js configs)
+
+Refer to the package's `README.md` for a detailed list of rules provided by each configuration.

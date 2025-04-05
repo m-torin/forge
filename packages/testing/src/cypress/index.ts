@@ -12,22 +12,22 @@ export {
   baseConfig,
   createComponentConfig,
   createE2EConfig,
-} from './core/config.ts';
+} from "./core/config.ts";
 
 // Export core functionality directly
-export * from './core/index.ts';
+export * from "./core/index.ts";
 
-// Export E2E functionality directly
-export * from './e2e/index.ts';
-
-// Export component functionality directly
-export * from './component/index.ts';
+// Export E2E and component functionality directly
+// @ts-ignore - Suppress ambiguity warnings
+export * from "./e2e/index.ts";
+// @ts-ignore - Suppress ambiguity warnings
+export * from "./component/index.ts";
 
 // Export scripts directly
-export * from './scripts/index.ts';
+export * from "./scripts/index.ts";
 
 // Export environment utilities directly
-export * from './env/index.ts';
+export * from "./env/index.ts";
 
 // Export shared utilities and constants directly
 export {
@@ -43,7 +43,7 @@ export {
   // Mock utilities
   createMockResponse,
   createStorageMock,
-} from '../shared/utils/index.ts';
+} from "../shared/utils/index.ts";
 
 export {
   // Constants
@@ -57,12 +57,12 @@ export {
   filePatterns,
   timeouts,
   environments,
-} from '../shared/constants/index.ts';
+} from "../shared/constants/index.ts";
 
 // Export paths to support files
 export const paths = {
-  e2eSupport: './e2e/setup.ts',
-  componentSupport: './component/setup.tsx',
-  commands: './core/commands',
-  fixtures: './core/fixtures',
+  e2eSupport: "./e2e/setup.ts",
+  componentSupport: "./component/setup.tsx",
+  commands: "./core/commands",
+  fixtures: "./core/fixtures",
 };

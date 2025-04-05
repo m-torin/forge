@@ -1,12 +1,12 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { init } from '@sentry/nextjs';
+import { init } from "@sentry/nextjs";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock @sentry/nextjs for all tests
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   init: vi.fn().mockReturnValue({}),
 }));
 
-describe('Instrumentation', () => {
+describe("Instrumentation", () => {
   // Store the original environment variables
   let originalEnv: NodeJS.ProcessEnv;
 
@@ -22,13 +22,13 @@ describe('Instrumentation', () => {
     process.env = originalEnv;
   });
 
-  it.skip('initializes Sentry for Node.js runtime', () => {
+  it.skip("initializes Sentry for Node.js runtime", () => {
     // Set the runtime environment
-    process.env.NEXT_RUNTIME = 'nodejs';
-    process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://test@sentry.io/1234';
+    process.env.NEXT_RUNTIME = "nodejs";
+    process.env.NEXT_PUBLIC_SENTRY_DSN = "https://test@sentry.io/1234";
 
     // Import the module to test (must be done after setting NEXT_RUNTIME)
-    const { initializeSentry } = require('../instrumentation');
+    const { initializeSentry } = require("../instrumentation");
 
     // Call the function
     initializeSentry();
@@ -36,18 +36,18 @@ describe('Instrumentation', () => {
     // Verify that init was called with the correct configuration
     expect(init).toHaveBeenCalledWith(
       expect.objectContaining({
-        dsn: 'https://test@sentry.io/1234',
+        dsn: "https://test@sentry.io/1234",
       }),
     );
   });
 
-  it.skip('initializes Sentry for Edge runtime', () => {
+  it.skip("initializes Sentry for Edge runtime", () => {
     // Set the runtime environment
-    process.env.NEXT_RUNTIME = 'edge';
-    process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://test@sentry.io/1234';
+    process.env.NEXT_RUNTIME = "edge";
+    process.env.NEXT_PUBLIC_SENTRY_DSN = "https://test@sentry.io/1234";
 
     // Import the module to test (must be done after setting NEXT_RUNTIME)
-    const { initializeSentry } = require('../instrumentation');
+    const { initializeSentry } = require("../instrumentation");
 
     // Call the function
     initializeSentry();
@@ -55,18 +55,18 @@ describe('Instrumentation', () => {
     // Verify that init was called with the correct configuration
     expect(init).toHaveBeenCalledWith(
       expect.objectContaining({
-        dsn: 'https://test@sentry.io/1234',
+        dsn: "https://test@sentry.io/1234",
       }),
     );
   });
 
-  it.skip('does not initialize Sentry for unknown runtime', () => {
+  it.skip("does not initialize Sentry for unknown runtime", () => {
     // Set the runtime environment to an unknown value
-    process.env.NEXT_RUNTIME = 'unknown';
-    process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://test@sentry.io/1234';
+    process.env.NEXT_RUNTIME = "unknown";
+    process.env.NEXT_PUBLIC_SENTRY_DSN = "https://test@sentry.io/1234";
 
     // Import the module to test (must be done after setting NEXT_RUNTIME)
-    const { initializeSentry } = require('../instrumentation');
+    const { initializeSentry } = require("../instrumentation");
 
     // Call the function
     initializeSentry();
@@ -75,13 +75,13 @@ describe('Instrumentation', () => {
     expect(init).not.toHaveBeenCalled();
   });
 
-  it.skip('uses the DSN from environment variables', () => {
+  it.skip("uses the DSN from environment variables", () => {
     // Set the runtime environment
-    process.env.NEXT_RUNTIME = 'nodejs';
-    process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://custom@sentry.io/5678';
+    process.env.NEXT_RUNTIME = "nodejs";
+    process.env.NEXT_PUBLIC_SENTRY_DSN = "https://custom@sentry.io/5678";
 
     // Import the module to test (must be done after setting NEXT_RUNTIME)
-    const { initializeSentry } = require('../instrumentation');
+    const { initializeSentry } = require("../instrumentation");
 
     // Call the function
     initializeSentry();
@@ -89,18 +89,18 @@ describe('Instrumentation', () => {
     // Verify that init was called with the correct DSN
     expect(init).toHaveBeenCalledWith(
       expect.objectContaining({
-        dsn: 'https://custom@sentry.io/5678',
+        dsn: "https://custom@sentry.io/5678",
       }),
     );
   });
 
-  it.skip('handles missing DSN gracefully', () => {
+  it.skip("handles missing DSN gracefully", () => {
     // Set the runtime environment but no DSN
-    process.env.NEXT_RUNTIME = 'nodejs';
+    process.env.NEXT_RUNTIME = "nodejs";
     delete process.env.NEXT_PUBLIC_SENTRY_DSN;
 
     // Import the module to test (must be done after setting NEXT_RUNTIME)
-    const { initializeSentry } = require('../instrumentation');
+    const { initializeSentry } = require("../instrumentation");
 
     // Call the function
     const result = initializeSentry();

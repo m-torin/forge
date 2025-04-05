@@ -1,897 +1,179 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-    provider        = "prisma-client-js"
-    output          = "../src/generated/client"
-    previewFeatures = ["fullTextSearchPostgres", "postgresqlExtensions", "nativeDistinct"]
-}
+// -----------------------------------------------------------------------------
+// DATABASE CONNECTION
+// -----------------------------------------------------------------------------
 
 datasource db {
-    provider     = "postgresql"
-    url          = env("DATABASE_URL")
-    relationMode = "foreignKeys" // Changed from "prisma" to v6 default
-    extensions   = [pgcrypto, pg_trgm, fuzzystrmatch]
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+  extensions   = [pgcrypto, pg_trgm, fuzzystrmatch]
 }
 
+// -----------------------------------------------------------------------------
+// CLIENT GENERATORS
+// -----------------------------------------------------------------------------
+
+// Standard Node.js client
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated/client-node"
+  previewFeatures = ["postgresqlExtensions", "nativeDistinct", "prismaSchemaFolder"]
+  binaryTargets   = ["native", "darwin-arm64", "debian-openssl-3.0.x"]
+  runtime         = "node"
+}
+
+// Cloudflare Workers client
+generator cloudflareClient {
+  provider        = "prisma-client-js"
+  output          = "../generated/client-cloudflare"
+  previewFeatures = ["postgresqlExtensions", "nativeDistinct", "prismaSchemaFolder"]
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  runtime         = "workerd"
+}
+
+// Vercel Edge Functions client
+generator vercelClient {
+  provider        = "prisma-client-js"
+  output          = "../generated/client-vercel"
+  previewFeatures = ["postgresqlExtensions", "nativeDistinct", "prismaSchemaFolder"]
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  runtime         = "edge-light"
+}
+
+// -----------------------------------------------------------------------------
+// TOOLING GENERATORS
+// -----------------------------------------------------------------------------
+
+// Zod schema validation
 generator zod {
-    provider                         = "zod-prisma-types"
-    output                           = "../src/generated/zod"
-    createOptionalDefaultValuesTypes = true
-    createRelationValuesTypes        = true
+  provider         = "zod-prisma-types"
+  output           = "../generated/zod"
+  tsConfigFilePath = "../tsconfig.json"
 }
 
-//****************************************************************
-//** URL Registry - Centralized URL Management
-//****************************************************************
-
-/// Central registry for all URLs across entities with advanced management capabilities
-model UrlRegistry {
-    id       Int       @id @default(autoincrement())
-    url      String    @unique
-    urlType  UrlType   @default(EXTERNAL)
-    status   UrlStatus @default(ACTIVE)
-    soldBy3P Boolean   @default(false) @map("sold_by_3p") // Preserved from PdpUrl
-
-    // Optimize for lookup speed
-    modelName   ModelName? // What model owns this URL
-    modelId     Int? // The ID of the owning model
-    purpose     UrlPurpose? // What this URL represents (canonical, sitemap, etc)
-    urlMappings UrlMapping[]
-
-    // Support metadata
-    metadata Json? @db.JsonB
-    priority Int?
-
-    // Redirection
-    redirectsTo     Int?          @map("redirects_to") // Reference to another UrlRegistry entry
-    redirectTarget  UrlRegistry?  @relation("UrlRedirects", fields: [redirectsTo], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    redirectSources UrlRegistry[] @relation("UrlRedirects")
-
-    // Tracking
-    lastChecked DateTime? @map("last_checked")
-    createdAt   DateTime  @default(now()) @map("created_at")
-    updatedAt   DateTime  @updatedAt @map("updated_at")
-
-    // URLs for different entity types - purpose determined by urlType and purpose fields
-    products                Product[]                   @relation("ProductUrl")
-    productVariants         ProductVariant[]            @relation("ProductVariantUrl")
-    productSellers          ProductSellerBrand[]        @relation("ProductSellerUrl")
-    variantSellers          ProductVariantSellerBrand[] @relation("VariantSellerUrl")
-    brands                  Brand[]                     @relation("BrandUrl")
-    productCanonical        Product[]                   @relation("ProductCanonicalUrl")
-    productVariantCanonical ProductVariant[]            @relation("ProductVariantCanonicalUrl")
-    productSellerCanonical  ProductSellerBrand[]        @relation("ProductSellerCanonicalUrl")
-    variantSellerCanonical  ProductVariantSellerBrand[] @relation("VariantSellerCanonicalUrl")
-    brandBase               Brand[]                     @relation("BrandBaseUrl")
-
-    /// Direct URL lookup (high priority, frequent use)
-    @@index([url], name: "url_lookup_idx")
-    /// Group by status (monitoring, reporting)
-    @@index([status], name: "status_group_idx")
-    /// Group by URL type (analytics, filtering)
-    @@index([urlType], name: "url_type_idx")
-    /// Find sources of redirects
-    @@index([redirectsTo], name: "redirect_lookup_idx")
-    /// All URLs for a specific model
-    @@index([modelName, modelId], name: "model_lookup_idx")
-    /// Group by URL purpose
-    @@index([purpose], name: "purpose_group_idx")
-    @@map("url_registry")
+// ERD Documentation
+generator markdown {
+  provider = "prisma-markdown"
+  output   = "../generated/docs/ERD.md"
+  title    = "Authentication Database Schema"
 }
 
-/// Join table mapping domain objects to URLs with purpose tracking
-model UrlMapping {
-    id        Int         @id @default(autoincrement())
-    modelName ModelName // Brand, Engagement, etc.
-    modelId   Int // ID of the model
-    url       UrlRegistry @relation(fields: [urlId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    urlId     Int
-    purpose   UrlPurpose // alt, fandom, sitemap, etc.
-    priority  Int         @default(0)
-    metadata  Json?       @db.JsonB
-
-    /// Ensure unique model-url-purpose combinations
-    @@unique([modelName, modelId, urlId, purpose], name: "model_url_purpose_unq")
-    /// Find all URLs for a model
-    @@index([modelName, modelId], name: "model_urls_idx")
-    /// Find all entities using a specific URL
-    @@index([urlId], name: "url_references_idx")
-    @@map("url_mappings")
+// TypeScript interface generation
+generator typescriptInterfaces {
+  provider    = "prisma-generator-typescript-interfaces"
+  output      = "../generated/interfaces/prisma-interfaces.ts"
+  dateType    = "Date"
+  bigIntType  = "bigint"
+  decimalType = "Decimal"
+  bytesType   = "Buffer"
 }
 
-enum UrlType {
-    PLATFORM         @map("platform")
-    SELLER_CANONICAL @map("seller_canonical")
-    REDIRECT         @map("redirect")
-    HISTORICAL       @map("historical")
-    EXTERNAL         @map("external")
+// JSON-compatible TypeScript interfaces
+generator typescriptJsonInterfaces {
+  provider    = "prisma-generator-typescript-interfaces"
+  output      = "../generated/interfaces/prisma-json-interfaces.ts"
+  modelSuffix = "Json"
+  dateType    = "string"
+  bigIntType  = "string"
+  decimalType = "string"
+  bytesType   = "ArrayObject"
 }
 
-enum UrlStatus {
-    ACTIVE      @map("active")
-    REDIRECT    @map("redirect")
-    DEAD        @map("dead")
-    BLACKLISTED @map("blacklisted")
-    NEW         @map("new")
-    PROCESSED   @map("processed")
-    BANNED      @map("banned")
+// Mock data generation
+generator fakeData {
+  provider     = "prisma-generator-fake-data"
+  output       = "../generated/mockData/index.ts"
+  emptyValueAs = "null"
+  extraImport  = "import { faker } from '@faker-js/faker';"
+  extraExport  = "export * from '../../src/testing/mock-factories';"
 }
 
-enum ModelName {
-    BRAND           @map("brand")
-    PRODUCT         @map("product")
-    PRODUCT_VARIANT @map("product_variant")
-    STORY           @map("story")
-    ENGAGEMENT      @map("engagement")
-    JOLLY_ROGER     @map("jolly_roger")
-}
-
-enum UrlPurpose {
-    CANONICAL    @map("canonical")
-    BASE         @map("base")
-    ALTERNATE    @map("alternate")
-    SITEMAP      @map("sitemap")
-    FANDOM       @map("fandom")
-    API_ENDPOINT @map("api_endpoint")
-    IMAGE        @map("image")
-    LEGACY       @map("legacy")
-}
-
-//****************************************************************
-//** PIM Models
-//****************************************************************
-
-/// Core PIM merchandise entity that can be sold by multiple sellers/brands
-model Product {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    isStory   Boolean? @map("is_story")
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    brands      Brand[]          @relation("ProductToBrand")
-    collections Collection[]     @relation("ProductToCollection")
-    events      Event[]          @relation("ProductToEvent")
-    category    ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    categoryId  Int?             @map("category_id")
-    stories     Story[]          @relation("ProductToStory")
-    cast        StoryCast[]      @relation("ProductToStoryCast")
-    releases    StoryRelease[]   @relation("ProductToStoryRelease")
-    metas       Meta[]           @relation("ProductToMeta")
-    locations   Location[]       @relation("ProductToLocation")
-
-    // One to many relations
-    variants ProductVariant[]
-
-    // One to one relations
-    crosscheck   Crosscheck? @relation(fields: [crosscheckId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    crosscheckId Int?        @unique @map("crosscheck_id")
-
-    // Content
-    seoCopy      String? @map("seo_copy")
-    previewCopy  String? @map("preview_copy")
-    fullMarkdown String? @map("full_markdown")
-    seoName      String? @map("seo_name")
-
-    // URL Management
-    canonicalUrlId Int?         @map("canonical_url_id")
-    urlCanonical   UrlRegistry? @relation("ProductCanonicalUrl", fields: [canonicalUrlId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("ProductToFindReplaceReject")
-    jollyRoger         JollyRoger?         @relation(fields: [jollyRogerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    jollyRogerId       Int?                @unique @map("jolly_roger_id")
-
-    // New relationship tables (replacing PDPs)
-    productSeller ProductSellerBrand[]
-    url           UrlRegistry?         @relation("ProductUrl", fields: [urlId], references: [id])
-    urlId         Int?
-
-    @@index([categoryId])
-    @@index([crosscheckId])
-    @@index([jollyRogerId])
-    @@index([canonicalUrlId])
-    // Full-text search indexes for content
-    @@index([name])
-    @@index([fullMarkdown(ops: raw("gin_trgm_ops"))], type: Gin)
-    @@index([previewCopy(ops: raw("gin_trgm_ops"))], type: Gin)
-    @@map("products")
-}
-
-/// Narrative/content entity representing media franchises that products can be associated with
-model Story {
-    id               Int      @id @default(autoincrement())
-    name             String
-    slug             String   @unique
-    studio           String?
-    shortDescription String?  @map("short_description")
-    fullDescription  String?  @map("full_description")
-    createdAt        DateTime @default(now()) @map("created_at")
-    updatedAt        DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    cast        StoryCast[]    @relation("StoryToStoryCast")
-    releases    StoryRelease[]
-    fandom      Fandom?        @relation(fields: [fandomId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    fandomId    Int?           @map("fandom_id")
-    metas       Meta[]         @relation("StoryToMeta")
-    collections Collection[]   @relation("StoryToCollection")
-    products    Product[]      @relation("ProductToStory")
-
-    // One to one relations
-    crosscheck   Crosscheck? @relation(fields: [crosscheckId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    crosscheckId Int?        @unique @map("crosscheck_id")
-
-    // Content
-    seoCopy      String? @map("seo_copy")
-    previewCopy  String? @map("preview_copy")
-    fullMarkdown String? @map("full_markdown")
-    seoName      String? @map("seo_name")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("StoryToFindReplaceReject")
-    engagement         Engagement?         @relation("StoryToEngagement")
-
-    @@index([fandomId])
-    @@index([crosscheckId])
-    // Full-text search indexes for content
-    @@index([name])
-    @@index([fullMarkdown(ops: raw("gin_trgm_ops"))], type: Gin)
-    @@index([shortDescription(ops: raw("gin_trgm_ops"))], type: Gin)
-    @@index([fullDescription(ops: raw("gin_trgm_ops"))], type: Gin)
-    @@map("stories")
-}
-
-model ProductVariant {
-    id         Int       @id @default(autoincrement())
-    releasedOn DateTime? @map("released_on")
-    releasedIn String?   @map("released_in")
-    type       String?
-    mediaType  String?   @map("media_type")
-    isbn10     String?   @unique @map("isbn_10")
-    isbn13     String?   @unique @map("isbn_13")
-    language   String?
-    createdAt  DateTime  @default(now()) @map("created_at")
-    updatedAt  DateTime  @updatedAt @map("updated_at")
-
-    // Relations
-    product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    productId    Int         @map("product_id")
-    publisher    Brand?      @relation("PublisherToBrand", fields: [publisherId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    publisherId  Int?        @map("publisher_id")
-    crosscheck   Crosscheck? @relation(fields: [crosscheckId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    crosscheckId Int?        @map("crosscheck_id")
-
-    // URL Management
-    canonicalUrlId Int?         @map("canonical_url_id")
-    urlCanonical   UrlRegistry? @relation("ProductVariantCanonicalUrl", fields: [canonicalUrlId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-    // New relationship tables (replacing PDPs)
-    productVariantSeller ProductVariantSellerBrand[]
-    url                  UrlRegistry?                @relation("ProductVariantUrl", fields: [urlId], references: [id])
-    urlId                Int?
-
-    @@index([productId])
-    @@index([publisherId])
-    @@index([crosscheckId])
-    @@index([canonicalUrlId])
-    @@map("product_variants")
-}
-
-/// Manufacturer, seller, or publisher entity that produces or sells products
-model Brand {
-    id               Int      @id @default(autoincrement())
-    name             String
-    slug             String   @unique
-    baseUrl          String?  @map("base_url")
-    altUrls          String?  @map("alt_urls")
-    shortDescription String?  @map("short_description")
-    hasStorefront    Boolean? @default(false) @map("has_storefront")
-    type             String?
-    amzMarketplaceId String?  @unique @map("amz_marketplace_id")
-    createdAt        DateTime @default(now()) @map("created_at")
-    updatedAt        DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    collections Collection[] @relation("BrandToCollection")
-    products    Product[]    @relation("ProductToBrand")
-    ownedBy     Brand?       @relation("BrandOwnership", fields: [ownedById], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    ownedById   Int?         @map("owned_by_id")
-    owns        Brand[]      @relation("BrandOwnership")
-
-    // One to one relations
-    crosscheck   Crosscheck? @relation(fields: [crosscheckId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    crosscheckId Int?        @unique @map("crosscheck_id")
-
-    // One to many relations
-    publishedVariants ProductVariant[] @relation("PublisherToBrand")
-
-    // New relationship tables (replacing PDPs)
-    productSeller        ProductSellerBrand[]
-    productVariantSeller ProductVariantSellerBrand[]
-
-    // Content
-    seoCopy      String? @map("seo_copy")
-    previewCopy  String? @map("preview_copy")
-    fullMarkdown String? @map("full_markdown")
-    seoName      String? @map("seo_name")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("BrandToFindReplaceReject")
-    jollyRoger         JollyRoger?         @relation(fields: [jollyRogerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    jollyRogerId       Int?                @unique @map("jolly_roger_id")
-
-    // URL management - base URL relation
-    urlBase   UrlRegistry? @relation("BrandBaseUrl", fields: [baseUrlId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    baseUrlId Int?         @map("base_url_id")
-    url       UrlRegistry? @relation("BrandUrl", fields: [urlId], references: [id])
-    urlId     Int?
-
-    @@index([ownedById])
-    @@index([crosscheckId])
-    @@index([jollyRogerId])
-    @@index([baseUrlId])
-    // Full-text search indexes for content
-    @@index([name])
-    @@index([fullMarkdown(ops: raw("gin_trgm_ops"))], type: Gin)
-    @@index([shortDescription(ops: raw("gin_trgm_ops"))], type: Gin)
-    @@map("brands")
-}
-
-/// Many-to-many relationship model connecting Products to Seller Brands with pricing and availability
-model ProductSellerBrand {
-    // Relation fields and IDs
-    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    productId Int     @map("product_id")
-    seller    Brand   @relation(fields: [sellerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    sellerId  Int     @map("seller_id")
-
-    // Fields from ProductPdp
-    name        String?
-    sku         String?
-    isAvailable Boolean? @default(true) @map("is_available")
-    priceHigh   Decimal? @map("price_high") @db.Decimal(10, 2)
-    priceSale   Decimal? @map("price_sale") @db.Decimal(10, 2)
-
-    // Computed fields
-    discountPercent Decimal? @default(dbgenerated("CASE WHEN price_high > 0 AND price_sale > 0 AND price_high > price_sale THEN ((price_high - price_sale) / price_high * 100) ELSE NULL END")) @db.Decimal(5, 2)
-    profitMargin    Decimal? @default(dbgenerated("CASE WHEN price_sale > 0 THEN ((price_sale - (price_sale * 0.7)) / price_sale * 100) ELSE NULL END")) @db.Decimal(5, 2)
-
-    apiRaw    Json?    @map("api_raw") @db.JsonB
-    published Boolean  @default(false)
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relationship metadata
-    relationType RelationType @default(RESELLER) @map("relation_type")
-
-    // Content
-    seoCopy      String? @map("seo_copy")
-    previewCopy  String? @map("preview_copy")
-    fullMarkdown String? @map("full_markdown")
-    seoName      String? @map("seo_name")
-
-    // URL Management
-    canonicalUrlId Int?         @map("canonical_url_id")
-    urlCanonical   UrlRegistry? @relation("ProductSellerCanonicalUrl", fields: [canonicalUrlId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-    // Crosscheck relationship
-    crosscheck   Crosscheck? @relation(fields: [crosscheckId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    crosscheckId Int?        @map("crosscheck_id")
-
-    // Legacy URL storage structure (JSON storage for backward compatibility)
-    urls  Json?        @db.JsonB
-    url   UrlRegistry? @relation("ProductSellerUrl", fields: [urlId], references: [id])
-    urlId Int?
-
-    @@id([productId, sellerId])
-    @@index([sellerId])
-    @@index([productId])
-    @@index([crosscheckId])
-    @@index([canonicalUrlId])
-    @@map("product_seller_brands")
-}
-
-/// Many-to-many relationship model connecting ProductVariants to Seller Brands with pricing data
-model ProductVariantSellerBrand {
-    // Relation fields and IDs
-    variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    variantId Int            @map("variant_id")
-    seller    Brand          @relation(fields: [sellerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    sellerId  Int            @map("seller_id")
-
-    // Fields from ProductPdp
-    name        String?
-    sku         String?
-    isAvailable Boolean? @default(true) @map("is_available")
-    priceHigh   Decimal? @map("price_high") @db.Decimal(10, 2)
-    priceSale   Decimal? @map("price_sale") @db.Decimal(10, 2)
-
-    // Computed fields
-    discountPercent Decimal? @default(dbgenerated("CASE WHEN price_high > 0 AND price_sale > 0 AND price_high > price_sale THEN ((price_high - price_sale) / price_high * 100) ELSE NULL END")) @db.Decimal(5, 2)
-    profitMargin    Decimal? @default(dbgenerated("CASE WHEN price_sale > 0 THEN ((price_sale - (price_sale * 0.7)) / price_sale * 100) ELSE NULL END")) @db.Decimal(5, 2)
-
-    apiRaw    Json?    @map("api_raw") @db.JsonB
-    published Boolean  @default(false)
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relationship metadata
-    relationType RelationType @default(RESELLER) @map("relation_type")
-
-    // Content
-    seoCopy      String? @map("seo_copy")
-    previewCopy  String? @map("preview_copy")
-    fullMarkdown String? @map("full_markdown")
-    seoName      String? @map("seo_name")
-
-    // URL Management
-    canonicalUrlId Int?         @map("canonical_url_id")
-    urlCanonical   UrlRegistry? @relation("VariantSellerCanonicalUrl", fields: [canonicalUrlId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-    // Crosscheck relationship
-    crosscheck   Crosscheck? @relation(fields: [crosscheckId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    crosscheckId Int?        @map("crosscheck_id")
-
-    // Legacy URL storage structure (JSON storage for backward compatibility)
-    urls  Json?        @db.JsonB
-    url   UrlRegistry? @relation("VariantSellerUrl", fields: [urlId], references: [id])
-    urlId Int?
-
-    @@id([variantId, sellerId])
-    @@index([sellerId])
-    @@index([variantId])
-    @@index([crosscheckId])
-    @@index([canonicalUrlId])
-    @@map("product_variant_seller_brands")
-}
-
-model Crosscheck {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Identification fields
-    name           String? @map("name")
-    mpn            String? @map("mpn")
-    upcA           BigInt? @unique @map("upc_a")
-    ean13          BigInt? @unique @map("ean_13")
-    gs1128         String? @unique @map("gs1_128")
-    upcE           BigInt? @unique @map("upc_e")
-    ean8           BigInt? @unique @map("ean_8")
-    asin           String? @unique @map("asin")
-    tcin           BigInt? @unique @map("tcin")
-    dpci           String? @unique @map("dpci")
-    themoviedbId   BigInt? @map("themoviedb_id")
-    hardcoverappId BigInt? @unique @map("hardcoverapp_id")
-    isbn10         BigInt? @map("isbn_10")
-    isbn13         BigInt? @map("isbn_13")
-
-    // One to one relations
-    product Product?
-    story   Story?
-    brand   Brand?
-
-    // One to many relations
-    productVariants      ProductVariant[]
-    productSeller        ProductSellerBrand[]
-    productVariantSeller ProductVariantSellerBrand[]
-
-    @@map("crosschecks")
-}
-
-model ProductCategory {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    products Product[]
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("ProductCategoryToFindReplaceReject")
-
-    @@map("product_categories")
-}
-
-model StoryCast {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    stories     Story[]      @relation("StoryToStoryCast")
-    products    Product[]    @relation("ProductToStoryCast")
-    collections Collection[] @relation("CollectionToStoryCast")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("StoryCastToFindReplaceReject")
-    fandom             Fandom?             @relation("FandomToCast", fields: [fandomId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    fandomId           Int?                @map("fandom_id")
-
-    @@index([fandomId])
-    @@map("story_casts")
-}
-
-model StoryRelease {
-    id         Int       @id @default(autoincrement())
-    name       String
-    slug       String    @unique
-    releasedOn DateTime? @map("released_on")
-    createdAt  DateTime  @default(now()) @map("created_at")
-    updatedAt  DateTime  @updatedAt @map("updated_at")
-
-    // Relations
-    story    Story?    @relation(fields: [storyId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    storyId  Int?      @map("story_id")
-    products Product[] @relation("ProductToStoryRelease")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("StoryReleaseToFindReplaceReject")
-
-    @@index([storyId])
-    @@map("story_releases")
-}
-
-/// Business domain entity representing groupable collections of products/brands/stories (NOT URL collection)
-model Collection {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    type      String   @default("productLine") @map("type") // Enum: "productLine", "collaboration", "platform", "user"
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    products Product[]   @relation("ProductToCollection")
-    brands   Brand[]     @relation("BrandToCollection")
-    stories  Story[]     @relation("StoryToCollection")
-    cast     StoryCast[] @relation("CollectionToStoryCast")
-    events   Event[]     @relation("CollectionToEvent")
-    metas    Meta[]      @relation("CollectionToMeta")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("CollectionToFindReplaceReject")
-    fandom             Fandom?             @relation("FandomToCollection", fields: [fandomId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    fandomId           Int?                @map("fandom_id")
-
-    @@index([fandomId])
-    @@map("collections")
-}
-
-model Event {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    products    Product[]    @relation("ProductToEvent")
-    collections Collection[] @relation("CollectionToEvent")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("EventToFindReplaceReject")
-    fandom             Fandom?             @relation("FandomToEvent", fields: [fandomId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    fandomId           Int?                @map("fandom_id")
-
-    @@index([fandomId])
-    @@map("events")
-}
-
-model Meta {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    products    Product[]    @relation("ProductToMeta")
-    stories     Story[]      @relation("StoryToMeta")
-    collections Collection[] @relation("CollectionToMeta")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("MetaToFindReplaceReject")
-    fandom             Fandom?             @relation("FandomToMeta", fields: [fandomId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    fandomId           Int?                @map("fandom_id")
-
-    @@index([fandomId])
-    @@map("metas")
-}
-
-model Location {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relations
-    products Product[] @relation("ProductToLocation")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("LocationToFindReplaceReject")
-    fandom             Fandom?             @relation("FandomToLocation", fields: [fandomId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    fandomId           Int?                @map("fandom_id")
-
-    @@index([fandomId])
-    @@map("locations")
-}
-
-model Fandom {
-    id        Int      @id @default(autoincrement())
-    name      String
-    slug      String   @unique
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Centralized relationships - all many-to-one pointing to Fandom
-    stories     Story[] // Existing relation
-    casts       StoryCast[]  @relation("FandomToCast")
-    events      Event[]      @relation("FandomToEvent")
-    metas       Meta[]       @relation("FandomToMeta")
-    locations   Location[]   @relation("FandomToLocation")
-    collections Collection[] @relation("FandomToCollection")
-
-    // Component relations
-    findReplaceRejects FindReplaceReject[] @relation("FandomToFindReplaceReject")
-
-    @@map("fandoms")
-}
-
-//****************************************************************
-//** Strapi Component Models
-//****************************************************************
-
-// Engagement Components
-model Engagement {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    // Relation to parent entity
-    story   Story? @relation("StoryToEngagement", fields: [storyId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-    storyId Int?   @unique @map("story_id")
-
-    // Relationship to URLs (as JSON since it's a repeatable component)
-    fandomUrls Json? @map("fandom_urls") @db.JsonB
-
-    @@index([storyId])
-    @@map("engagements")
-}
-
-//****************************************************************
-//** JOLLY ROGER
-//****************************************************************
-
-// Jolly Roger Components
-model FindReplaceReject {
-    id          Int      @id @default(autoincrement())
-    lookFor     String   @map("look_for")
-    replaceWith String?  @map("replace_with")
-    action      String // enum: ["matchOn", "rejectOn", "replace"]
-    createdAt   DateTime @default(now()) @map("created_at")
-    updatedAt   DateTime @updatedAt @map("updated_at")
-
-    // Relations to potential parent entities
-    product           Product?         @relation("ProductToFindReplaceReject", fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    productId         Int?             @map("product_id")
-    story             Story?           @relation("StoryToFindReplaceReject", fields: [storyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    storyId           Int?             @map("story_id")
-    brand             Brand?           @relation("BrandToFindReplaceReject", fields: [brandId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    brandId           Int?             @map("brand_id")
-    productCategory   ProductCategory? @relation("ProductCategoryToFindReplaceReject", fields: [productCategoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    productCategoryId Int?             @map("product_category_id")
-    storyCast         StoryCast?       @relation("StoryCastToFindReplaceReject", fields: [storyCastId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    storyCastId       Int?             @map("story_cast_id")
-    storyRelease      StoryRelease?    @relation("StoryReleaseToFindReplaceReject", fields: [storyReleaseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    storyReleaseId    Int?             @map("story_release_id")
-    collection        Collection?      @relation("CollectionToFindReplaceReject", fields: [collectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    collectionId      Int?             @map("collection_id")
-    event             Event?           @relation("EventToFindReplaceReject", fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    eventId           Int?             @map("event_id")
-    meta              Meta?            @relation("MetaToFindReplaceReject", fields: [metaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    metaId            Int?             @map("meta_id")
-    location          Location?        @relation("LocationToFindReplaceReject", fields: [locationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    locationId        Int?             @map("location_id")
-    fandom            Fandom?          @relation("FandomToFindReplaceReject", fields: [fandomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    fandomId          Int?             @map("fandom_id")
-
-    @@index([productId])
-    @@index([storyId])
-    @@index([brandId])
-    @@index([productCategoryId])
-    @@index([storyCastId])
-    @@index([storyReleaseId])
-    @@index([collectionId])
-    @@index([eventId])
-    @@index([metaId])
-    @@index([locationId])
-    @@index([fandomId])
-    @@map("find_replace_rejects")
-}
-
-model JollyRoger {
-    id            Int      @id @default(autoincrement())
-    chartSitemaps Boolean  @default(false) @map("chart_sitemaps")
-    sitemap       String?
-    createdAt     DateTime @default(now()) @map("created_at")
-    updatedAt     DateTime @updatedAt @map("updated_at")
-
-    // One-to-one relations with parent entities
-    product Product?
-    brand   Brand?
-
-    @@map("jolly_rogers")
-}
-
-// Status enum values preserved in UrlStatus, expanded with more options
-
-enum RelationType {
-    MANUFACTURER      @map("manufacturer")
-    RESELLER          @map("reseller")
-    AUTHORIZED_DEALER @map("authorized_dealer")
-    EXCLUSIVE_SELLER  @map("exclusive_seller")
-    MARKETPLACE       @map("marketplace")
-    DIRECT            @map("direct")
-    AFFILIATE         @map("affiliate")
-    DISTRIBUTOR       @map("distributor")
-}
-
-//****************************************************************
-//** User Management
-//****************************************************************
-
-model Account {
-    access_token             String?
-    expires_at               Int?
-    id                       String  @id @default(cuid())
-    id_token                 String?
-    oauth_token              String?
-    oauth_token_secret       String?
-    provider                 String
-    providerAccountId        String
-    refresh_token            String?
-    refresh_token_expires_in Int?
-    scope                    String?
-    session_state            String?
-    token_type               String?
-    user                     User    @relation("UserAccounts", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId                   String
-
-    @@unique([provider, providerAccountId])
-    @@index([userId])
-    @@map(name: "u_accounts")
-}
-
-model Session {
-    createdAt    DateTime @default(now())
-    expires      DateTime
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    user         User     @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId       String
-
-    @@index([userId])
-    @@map(name: "u_sessions")
-}
-
+// -----------------------------------------------------------------------------
+// AUTHENTICATION MODELS
+// -----------------------------------------------------------------------------
+
+/// User account with profile information and authentication methods
 model User {
-    id            String    @id @default(cuid())
-    createdAt     DateTime  @default(now())
-    firstName     String
-    lastName      String
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    name          String?
-    sessions      Session[] @relation("UserSessions")
-    accounts      Account[] @relation("UserAccounts")
-    updatedAt     DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  name          String? /// User's display name
+  email         String    @unique /// User's email address (must be unique)
+  emailVerified DateTime? /// When the email was verified
+  image         String? /// Profile image URL
 
-    @@index([email])
-    @@map(name: "users")
+  /// Authentication and session relationships
+  accounts      Account[] /// OAuth account connections
+  sessions      Session[] /// Active sessions
+  Authenticator Authenticator[] /// WebAuthn credentials (optional)
+
+  /// Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+/// OAuth provider account connection
+model Account {
+  userId            String /// Reference to the user who owns this account
+  type              String /// The type of account (usually "oauth")
+  provider          String /// The OAuth provider (google, github, etc.)
+  providerAccountId String /// ID from the provider
+
+  /// OAuth tokens and data
+  refresh_token String?
+  access_token  String?
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String?
+  session_state String?
+
+  /// Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+/// User session data
+model Session {
+  sessionToken String   @unique /// Unique token that identifies this session
+  userId       String /// User who owns this session
+  expires      DateTime /// When this session expires
+
+  /// Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Email verification token
 model VerificationToken {
-    createdAt  DateTime @default(now())
-    expires    DateTime
-    identifier String
-    token      String   @unique
+  identifier String /// Usually the user's email
+  token      String /// Random token generated for verification
+  expires    DateTime /// When this token expires
 
-    @@unique([identifier, token])
-    @@index([createdAt])
-    @@map(name: "u_verification_tokens")
+  @@id([identifier, token])
 }
 
-//****************************************************************
-//** Enums
-//****************************************************************
+/// WebAuthn (passwordless) authenticator
+model Authenticator {
+  credentialID      String @unique /// Unique identifier for this authenticator
+  userId            String /// User who owns this authenticator
+  providerAccountId String /// Provider-specific account ID
 
-enum MantineColor {
-    BLUE   @map("blue")
-    CYAN   @map("cyan")
-    GRAPE  @map("grape")
-    GREEN  @map("green")
-    INDIGO @map("indigo")
-    LIME   @map("lime")
-    ORANGE @map("orange")
-    PINK   @map("pink")
-    RED    @map("red")
-    TEAL   @map("teal")
-    VIOLET @map("violet")
-    YELLOW @map("yellow")
-}
+  /// WebAuthn specific fields
+  credentialPublicKey  String /// Public key for verification
+  counter              Int /// Security counter to prevent replay attacks
+  credentialDeviceType String /// Type of credential (e.g., "platform", "cross-platform")
+  credentialBackedUp   Boolean /// Whether this credential is backed up
+  transports           String? /// How the credential communicates (e.g., "usb", "nfc")
 
-//****************************************************************
-//** Database Views
-//****************************************************************
+  /// Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// View model for efficiently querying product pricing 
-// (must be created as a view in the database using SQL)
-/// @view
-model ProductPricingView {
-    // Core identifiers
-    productId    Int     @map("product_id")
-    productName  String  @map("product_name")
-    productSlug  String  @map("product_slug")
-    categoryId   Int?    @map("category_id")
-    categoryName String? @map("category_name")
-
-    // Seller information  
-    sellerId     Int    @map("seller_id")
-    sellerName   String @map("seller_name")
-    relationType String @map("relation_type")
-
-    // Pricing information
-    priceHigh       Decimal? @map("price_high") @db.Decimal(10, 2)
-    priceSale       Decimal? @map("price_sale") @db.Decimal(10, 2)
-    discountPercent Decimal? @map("discount_percent") @db.Decimal(5, 2)
-    isAvailable     Boolean  @map("is_available")
-
-    // Metadata
-    sku           String? @map("sku")
-    publisherId   Int?    @map("publisher_id")
-    publisherName String? @map("publisher_name")
-
-    // Set composite primary key
-    @@id([productId, sellerId])
-    @@map("product_pricing_view")
-    @@ignore
-}
-
-// View model for story statistics with aggregated product counts
-/// @view
-model StoryStatsView {
-    // Core story data
-    storyId   Int    @id @map("story_id")
-    storyName String @map("story_name")
-    storySlug String @map("story_slug")
-
-    // Relationships
-    fandomId   Int?    @map("fandom_id")
-    fandomName String? @map("fandom_name")
-
-    // Aggregated metrics
-    productCount Int      @map("product_count")
-    sellerCount  Int      @map("seller_count")
-    variantCount Int      @map("variant_count")
-    totalLinks   Int      @map("total_links")
-    minPrice     Decimal? @map("min_price") @db.Decimal(10, 2)
-    maxPrice     Decimal? @map("max_price") @db.Decimal(10, 2)
-    avgPrice     Decimal? @map("avg_price") @db.Decimal(10, 2)
-
-    // Timestamps
-    updatedAt DateTime @map("updated_at")
-
-    @@map("story_stats_view")
-    @@ignore
+  @@id([userId, credentialID])
 }

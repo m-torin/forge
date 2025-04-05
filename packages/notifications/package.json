@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "lint": "eslint . --fix",
+    "lint": "npx eslint . --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@knocklabs/node": "^0.6.19",
-    "@knocklabs/react": "0.7.0",
+    "@knocklabs/react": "0.7.3",
     "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",
     "zod": "catalog:"
@@ -26,7 +26,8 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.4.0",
+    "eslint": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

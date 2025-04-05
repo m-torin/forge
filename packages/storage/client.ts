@@ -12,7 +12,7 @@ export async function getPutUrl(options: {
   return {
     url: `https://example.com${options.pathname}`,
     headers: {
-      'Content-Type': options.contentType,
+      "Content-Type": options.contentType,
     },
   };
 }
@@ -29,8 +29,8 @@ export function getUrl(pathname: string) {
  */
 export function createFolder(options: { folderPath: string }) {
   return Promise.resolve({
-    url: `https://example.com${options.folderPath}`,
     pathname: options.folderPath,
+    url: `https://example.com${options.folderPath}`,
   });
 }
 

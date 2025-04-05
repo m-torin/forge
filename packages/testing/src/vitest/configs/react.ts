@@ -1,7 +1,7 @@
-import { UserConfig } from 'vitest/config';
-import { createBaseConfig } from './base.ts';
-import path from 'path';
-import react from '@vitejs/plugin-react';
+import { UserConfig } from "vitest/config";
+import { createBaseConfig } from "./base.ts";
+import path from "path";
+import react from "@vitejs/plugin-react";
 
 /**
  * Creates a Vitest configuration for React packages in the monorepo
@@ -17,22 +17,22 @@ export function createReactConfig(
     {
       plugins: [react(), ...(customConfig.plugins || [])],
       test: {
-        environment: 'jsdom',
+        environment: "jsdom",
         globals: true,
         hookTimeout: 10000,
         testTimeout: 10000,
         coverage: {
-          provider: 'v8',
-          reporter: ['text', 'json', 'html'],
+          provider: "v8",
+          enabled: true,
           exclude: [
-            'coverage/**',
-            'dist/**',
-            '**/node_modules/**',
-            '**/*.d.ts',
-            'test?(s)/**',
-            '**/__tests__/**',
-            '**/*.test.{ts,tsx}',
-            '**/vitest.config.*',
+            "coverage/**",
+            "dist/**",
+            "**/node_modules/**",
+            "**/*.d.ts",
+            "test?(s)/**",
+            "**/__tests__/**",
+            "**/*.test.{ts,tsx}",
+            "**/vitest.config.*",
           ],
           ...(customConfig.test?.coverage || {}),
         },

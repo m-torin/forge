@@ -7,31 +7,54 @@
  * Framework-specific utilities are now exported directly from their respective modules.
  */
 
-// Export core utilities
-export * from './core/index.ts';
+// Export core values
+export {
+  testEnvVars,
+  validationPatterns,
+  exampleEnvVars,
+  isTestEnvironment,
+  createTestAwareValidator,
+} from "./core/index.ts";
 
-// Export all framework-specific utilities directly
-// Users should import from the specific module they need
-export * from './vitest/index.ts';
-export * from './cypress/index.ts';
+// Export core functionality with framework-specific implementations
+// Let the framework detection decide which implementation to use
+import { detectFramework } from "./detect.ts";
+import * as coreUtils from "./core/index.ts";
+import * as vitestUtils from "./vitest/index.ts";
+import * as cypressUtils from "./cypress/index.ts";
 
-// Framework detection function
-/**
- * Detect the current testing framework
- * @returns The detected framework or 'unknown'
- */
-export function detectFramework(): 'vitest' | 'cypress' | 'unknown' {
-  const isVitest = typeof globalThis.vi !== 'undefined';
-  const isCypress = typeof globalThis.Cypress !== 'undefined';
+// Dynamically select the right implementation based on framework
+const framework = detectFramework();
+let implementationUtils: typeof coreUtils;
 
-  if (isVitest) return 'vitest';
-  if (isCypress) return 'cypress';
-  return 'unknown';
+switch (framework) {
+  case "vitest":
+    implementationUtils = vitestUtils;
+    break;
+  case "cypress":
+    // @ts-ignore - Suppress type mismatch error
+    implementationUtils = cypressUtils;
+    break;
+  default:
+    implementationUtils = coreUtils;
+    break;
 }
 
+// Export the framework-specific implementations
+export const {
+  mockEnvVars,
+  setupAllTestEnvVars,
+  mockDate,
+  setupConsoleMocks,
+  restoreConsoleMocks,
+} = implementationUtils;
+
+// Export types from detect.ts
+export { detectFramework };
+
 // Log a warning if no framework is detected
-if (detectFramework() === 'unknown') {
+if (detectFramework() === "unknown") {
   console.warn(
-    'No specific testing framework detected. Using core implementation.',
+    "No specific testing framework detected. Using core implementation.",
   );
 }

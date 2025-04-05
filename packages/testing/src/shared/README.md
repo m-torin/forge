@@ -24,16 +24,16 @@ shared/
 
 ```typescript
 // Import specific utilities
-import { formatTestId, dataTestIdSelector } from '@repo/testing/shared/utils';
+import { formatTestId, dataTestIdSelector } from "@repo/testing/shared/utils";
 
 // Import specific constants
-import { testEnvVars, testUser } from '@repo/testing/shared/constants';
+import { testEnvVars, testUser } from "@repo/testing/shared/constants";
 
 // Import specific presets
-import { basePreset, reactPreset } from '@repo/testing/shared/presets/vitest';
+import { basePreset, reactPreset } from "@repo/testing/shared/presets/vitest";
 
 // Import all shared utilities
-import * as shared from '@repo/testing/shared';
+import * as shared from "@repo/testing/shared";
 ```
 
 ### DOM Utilities
@@ -43,31 +43,31 @@ import {
   formatTestId,
   dataTestIdSelector,
   ariaLabelSelector,
-} from '@repo/testing/shared/utils';
+} from "@repo/testing/shared/utils";
 
 // Format a string as a test ID
-const testId = formatTestId('Submit Button'); // 'test-submit-button'
+const testId = formatTestId("Submit Button"); // 'test-submit-button'
 
 // Create a data-testid selector
-const selector = dataTestIdSelector('submit-button'); // '[data-testid="submit-button"]'
+const selector = dataTestIdSelector("submit-button"); // '[data-testid="submit-button"]'
 
 // Create an aria-label selector
-const ariaSelector = ariaLabelSelector('Submit'); // '[aria-label="Submit"]'
+const ariaSelector = ariaLabelSelector("Submit"); // '[aria-label="Submit"]'
 ```
 
 ### Test Utilities
 
 ```typescript
-import { createTestCases, waitForCondition } from '@repo/testing/shared/utils';
+import { createTestCases, waitForCondition } from "@repo/testing/shared/utils";
 
 // Create test cases
 const testCases = createTestCases([
-  { input: 1, expected: 2, description: 'adds 1' },
-  { input: 2, expected: 3, description: 'adds 1' },
+  { input: 1, expected: 2, description: "adds 1" },
+  { input: 2, expected: 3, description: "adds 1" },
 ]);
 
 // Wait for a condition
-await waitForCondition(() => document.querySelector('.loaded') !== null);
+await waitForCondition(() => document.querySelector(".loaded") !== null);
 ```
 
 ### Mock Utilities
@@ -76,17 +76,17 @@ await waitForCondition(() => document.querySelector('.loaded') !== null);
 import {
   createMockResponse,
   createStorageMock,
-} from '@repo/testing/shared/utils';
+} from "@repo/testing/shared/utils";
 
 // Create a mock response
 const response = createMockResponse({
   status: 200,
-  body: { data: 'test' },
+  body: { data: "test" },
 });
 
 // Create a mock storage
 const storage = createStorageMock();
-storage.setItem('key', 'value');
+storage.setItem("key", "value");
 ```
 
 ### Constants
@@ -97,7 +97,7 @@ import {
   testUser,
   testAdmin,
   testDates,
-} from '@repo/testing/shared/constants';
+} from "@repo/testing/shared/constants";
 
 // Use test environment variables
 process.env.CLERK_SECRET_KEY = testEnvVars.CLERK_SECRET_KEY;
@@ -115,7 +115,7 @@ const now = testDates.now;
 ### Presets
 
 ```typescript
-import { basePreset, reactPreset } from '@repo/testing/shared/presets/vitest';
+import { basePreset, reactPreset } from "@repo/testing/shared/presets/vitest";
 
 // Create a Vitest configuration
 export default basePreset({

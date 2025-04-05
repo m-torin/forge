@@ -5,7 +5,7 @@
  */
 
 // Export Mantine-specific configuration
-export { createMantineConfig } from '../../configs/mantine.ts';
+export { createMantineConfig } from "../../configs/mantine.ts";
 
 // Export Mantine-specific renderer
 // Note: We rename mantineRender to render for consistency
@@ -18,16 +18,16 @@ export {
   waitForElementToBeRemoved,
   act,
   cleanup,
-} from '../../renderers/index.ts';
+} from "../../renderers/index.ts";
 
 // Export Mantine-specific setup
-export { setupMantine } from '../../setup/mantine.ts';
+export { setupMantine } from "../../setup/mantine.ts";
 
 // Export Mantine-specific templates
-export * as componentTemplate from '../../templates/mantine/component.test.tsx';
+export * as componentTemplate from "../../templates/mantine/component.test.tsx";
 
 // Re-export React utilities that are compatible with Mantine
-export { MockAuthProvider } from '../../mocks/auth-react.tsx';
+export { MockAuthProvider } from "../../mocks/auth-react.tsx";
 
 // Re-export shared utilities for convenience
-export * from '../../shared/index.ts';
+export * from "../../shared/index.ts";

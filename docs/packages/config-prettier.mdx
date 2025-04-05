@@ -1,0 +1,53 @@
+---
+title: Prettier Config Package
+description: Shared Prettier configuration for the Forge monorepo (@repo/config-prettier).
+---
+
+# Prettier Config Package (@repo/config-prettier)
+
+This package provides the shared Prettier configuration used across the Forge monorepo, ensuring consistent code formatting for all projects.
+
+## Features
+
+- **Base Configuration**: Extends the widely-used `@vercel/style-guide/prettier` configuration.
+- **Plugin Support**: Includes plugins for enhanced formatting:
+  - `@prettier/plugin-php`: For formatting PHP files.
+  - `prettier-plugin-packagejson`: For formatting `package.json` files consistently.
+- **Custom Overrides**: Provides specific formatting rules tailored for different file types within the monorepo, including:
+  - TypeScript/JavaScript (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`)
+  - JSON (`package.json`)
+  - YAML (`.yaml`, `.yml`)
+  - PHP (`.php`)
+  - Markdown (`.md`, `.mdx`)
+  - GraphQL (`.graphql`, `.gql`)
+  - CSS/SCSS (`.css`, `.scss`)
+- **Monorepo Integration**: Designed to be used seamlessly within the pnpm/Turborepo setup.
+
+## Configuration Details
+
+The core configuration (`index.ts`) sets defaults like `printWidth: 80`, `singleQuote: true`, and `tabWidth: 2`. It then applies specific overrides for different file extensions. For example:
+
+- `package.json` files have a very wide `printWidth` to avoid excessive line wrapping.
+- Markdown files have `proseWrap: "always"` for better readability.
+- PHP files are configured for PHP 8.2 syntax.
+
+Refer to the [`index.ts`](https://github.com/m-torin/forge/blob/main/packages/config-prettier/index.ts) file for the complete set of rules and overrides.
+
+## Usage
+
+This configuration is automatically applied when using the formatting scripts defined in the root `package.json` or the scripts within this package.
+
+**Common Formatting Commands:**
+
+```bash
+# Format all supported files in the entire monorepo
+pnpm prettier
+
+# Format only staged files (useful for pre-commit hooks)
+# (Requires a script like 'format:staged' in the root package.json)
+# Example script: pnpm --filter @repo/prettier-config format:staged
+```
+
+The package also includes a `.prettierignore` file to exclude certain files and directories (like build outputs and `node_modules`) from formatting.
+
+**Note:** There should be **no** `.prettierrc` or similar configuration files in individual apps or packages. All formatting rules are centralized in this `@repo/prettier-config` package and the root `prettier.config.js` file that imports it.

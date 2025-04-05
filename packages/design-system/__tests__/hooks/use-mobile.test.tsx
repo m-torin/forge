@@ -1,7 +1,7 @@
-import { describe, it } from 'vitest';
+import { describe, it } from "vitest";
 
-describe('useMobile', () => {
-  it('returns the correct initial state', () => {
+describe("useMobile", () => {
+  it("returns the correct initial state", () => {
     // Render the hook
     // const { result } = renderHook(() => useMobile());
     // Add assertions based on the hook's behavior

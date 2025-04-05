@@ -1,6 +1,7 @@
 # Advanced Prisma Schema Features Guide
 
-This guide explains how to use the advanced PostgreSQL features implemented in our Prisma schema.
+This guide explains how to use the advanced PostgreSQL features implemented in
+our Prisma schema.
 
 ## Table of Contents
 
@@ -16,12 +17,16 @@ This guide explains how to use the advanced PostgreSQL features implemented in o
 
 ## Overview
 
-Our Prisma schema leverages advanced PostgreSQL features to enhance performance, functionality, and developer experience:
+Our Prisma schema leverages advanced PostgreSQL features to enhance performance,
+functionality, and developer experience:
 
-- **PostgreSQL Extensions**: Using powerful extensions like `pg_trgm` for text similarity searches
-- **Full-Text Search**: Advanced indexing with Gin trigram operators for fuzzy search capabilities
+- **PostgreSQL Extensions**: Using powerful extensions like `pg_trgm` for text
+  similarity searches
+- **Full-Text Search**: Advanced indexing with Gin trigram operators for fuzzy
+  search capabilities
 - **Computed Fields**: Database-level computed columns for real-time analytics
-- **Database Views**: Pre-aggregated and optimized data access for complex queries
+- **Database Views**: Pre-aggregated and optimized data access for complex
+  queries
 
 ## PostgreSQL Extensions Setup
 
@@ -45,7 +50,8 @@ generator client {
 
 ### 2. Install Extensions on PostgreSQL Server
 
-If you're using a managed PostgreSQL service (e.g., RDS, Supabase), ensure these extensions are enabled. On a self-hosted PostgreSQL server:
+If you're using a managed PostgreSQL service (e.g., RDS, Supabase), ensure these
+extensions are enabled. On a self-hosted PostgreSQL server:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -65,7 +71,8 @@ npx prisma migrate dev --name add-postgres-extensions
 
 ### How It Works
 
-Trigram indexes break text into three-character chunks for fuzzy matching. For example, "hello" becomes "hel", "ell", "llo".
+Trigram indexes break text into three-character chunks for fuzzy matching. For
+example, "hello" becomes "hel", "ell", "llo".
 
 ### Usage
 
@@ -73,11 +80,8 @@ Trigram indexes break text into three-character chunks for fuzzy matching. For e
 // Search for "hobbit" with typo tolerance (e.g., will match "hobit")
 const results = await prisma.product.findMany({
   where: {
-    OR: [
-      { name: { search: "hobit" } }, 
-      { fullMarkdown: { search: "hobit" } }
-    ]
-  }
+    OR: [{ name: { search: "hobit" } }, { fullMarkdown: { search: "hobit" } }],
+  },
 });
 
 // More powerful search with weights (field importance)
@@ -104,8 +108,10 @@ const results = await prisma.$queryRaw`
 
 ### Configuration Options
 
-- Use `@@index([field(ops: raw("gin_trgm_ops"))], type: Gin)` for fuzzy text search
-- For more precise control, use raw SQL with PostgreSQL's `%` operator for similarity
+- Use `@@index([field(ops: raw("gin_trgm_ops"))], type: Gin)` for fuzzy text
+  search
+- For more precise control, use raw SQL with PostgreSQL's `%` operator for
+  similarity
 
 ## Computed Fields
 
@@ -123,18 +129,18 @@ discountPercent Decimal? @default(dbgenerated("CASE WHEN price_high > 0 AND pric
 // Find products with at least 20% discount
 const discountedProducts = await prisma.productSellerBrand.findMany({
   where: {
-    discountPercent: { gte: 20 }
+    discountPercent: { gte: 20 },
   },
   orderBy: {
-    discountPercent: 'desc'
-  }
+    discountPercent: "desc",
+  },
 });
 
 // Find products with at least 30% profit margin
 const highProfitProducts = await prisma.productSellerBrand.findMany({
   where: {
-    profitMargin: { gte: 30 }
-  }
+    profitMargin: { gte: 30 },
+  },
 });
 ```
 
@@ -149,7 +155,8 @@ const highProfitProducts = await prisma.productSellerBrand.findMany({
 
 ### Setup Process
 
-Our schema includes two views: `ProductPricingView` and `StoryStatsView`. To create these views in your database:
+Our schema includes two views: `ProductPricingView` and `StoryStatsView`. To
+create these views in your database:
 
 1. Create a new migration file:
 
@@ -162,7 +169,7 @@ npx prisma migrate dev --create-only --name add-database-views
 ```sql
 -- CreateView
 CREATE VIEW product_pricing_view AS
-SELECT 
+SELECT
     p.id AS product_id,
     p.name AS product_name,
     p.slug AS product_slug,
@@ -178,22 +185,22 @@ SELECT
     psb.sku,
     pv.publisher_id,
     pb.name AS publisher_name
-FROM 
+FROM
     products p
-JOIN 
+JOIN
     product_seller_brands psb ON p.id = psb.product_id
-JOIN 
+JOIN
     brands b ON psb.seller_id = b.id
-LEFT JOIN 
+LEFT JOIN
     product_categories pc ON p.category_id = pc.id
-LEFT JOIN 
+LEFT JOIN
     product_variants pv ON pv.product_id = p.id
-LEFT JOIN 
+LEFT JOIN
     brands pb ON pv.publisher_id = pb.id;
 
 -- CreateView
 CREATE VIEW story_stats_view AS
-SELECT 
+SELECT
     s.id AS story_id,
     s.name AS story_name,
     s.slug AS story_slug,
@@ -207,25 +214,25 @@ SELECT
     MAX(psb.price_sale) AS max_price,
     AVG(psb.price_sale) AS avg_price,
     s.updated_at
-FROM 
+FROM
     stories s
-LEFT JOIN 
+LEFT JOIN
     fandoms f ON s.fandom_id = f.id
-LEFT JOIN 
+LEFT JOIN
     products p ON p.id IN (
-        SELECT product_id 
-        FROM _ProductToStory 
+        SELECT product_id
+        FROM _ProductToStory
         WHERE story_id = s.id
     )
-LEFT JOIN 
+LEFT JOIN
     product_variants pv ON p.id = pv.product_id
-LEFT JOIN 
+LEFT JOIN
     product_seller_brands psb ON p.id = psb.product_id
-LEFT JOIN 
+LEFT JOIN
     url_registry url ON (
         url.entity_type = 'STORY' AND url.entity_id = s.id
     )
-GROUP BY 
+GROUP BY
     s.id, s.name, s.slug, s.fandom_id, f.name, s.updated_at;
 ```
 
@@ -240,41 +247,44 @@ npx prisma migrate dev
 ```typescript
 // Using the ProductPricingView
 const productPricing = await prisma.productPricingView.findMany({
-  where: { 
+  where: {
     categoryName: "Fantasy",
-    isAvailable: true 
+    isAvailable: true,
   },
-  orderBy: { 
-    priceSale: 'asc' 
+  orderBy: {
+    priceSale: "asc",
   },
-  take: 10
+  take: 10,
 });
 
 // Using the StoryStatsView
 const storyStats = await prisma.storyStatsView.findMany({
   where: {
-    fandomName: "Harry Potter"
+    fandomName: "Harry Potter",
   },
   orderBy: {
-    productCount: 'desc'
-  }
+    productCount: "desc",
+  },
 });
 
 // Getting detailed stats for a specific story
 const harryPotterStats = await prisma.storyStatsView.findUnique({
   where: {
-    storyId: 1 // Harry Potter story ID
-  }
+    storyId: 1, // Harry Potter story ID
+  },
 });
 console.log(`Story: ${harryPotterStats.storyName}`);
 console.log(`Products: ${harryPotterStats.productCount}`);
-console.log(`Price range: $${harryPotterStats.minPrice} - $${harryPotterStats.maxPrice}`);
+console.log(
+  `Price range: $${harryPotterStats.minPrice} - $${harryPotterStats.maxPrice}`,
+);
 console.log(`Average price: $${harryPotterStats.avgPrice}`);
 ```
 
 ## Prisma Preview Features
 
-Our project leverages several Prisma preview features to enhance database capabilities:
+Our project leverages several Prisma preview features to enhance database
+capabilities:
 
 ### fullTextSearchPostgres
 
@@ -295,15 +305,15 @@ async function searchProducts(query: string) {
   return prisma.product.findMany({
     where: {
       OR: [
-        { name: { search: query, mode: 'insensitive' } },
-        { fullMarkdown: { search: query, mode: 'insensitive' } },
-        { previewCopy: { search: query, mode: 'insensitive' } }
-      ]
+        { name: { search: query, mode: "insensitive" } },
+        { fullMarkdown: { search: query, mode: "insensitive" } },
+        { previewCopy: { search: query, mode: "insensitive" } },
+      ],
     },
     include: {
       category: true,
-      sellerRelationships: { include: { seller: true }, take: 3 }
-    }
+      sellerRelationships: { include: { seller: true }, take: 3 },
+    },
   });
 }
 ```
@@ -358,7 +368,7 @@ model AnalyticsEvent {
   eventType String   @map("event_type")
   userId    String?  @map("user_id")
   timestamp DateTime @default(now())
-  
+
   @@map("events")
   @@schema("analytics")
 }
@@ -373,22 +383,23 @@ Improves query performance for related records by optimizing the generated SQL.
 const result = await prisma.product.findMany({
   where: {
     category: {
-      slug: 'fantasy-books'
-    }
+      slug: "fantasy-books",
+    },
   },
   include: {
     sellerRelationships: {
       include: {
-        seller: true
-      }
-    }
-  }
+        seller: true,
+      },
+    },
+  },
 });
 ```
 
 ### nativeDistinct
 
-Optimizes distinct queries by pushing the DISTINCT operation to the database level rather than handling it in Prisma's query engine.
+Optimizes distinct queries by pushing the DISTINCT operation to the database
+level rather than handling it in Prisma's query engine.
 
 ```prisma
 generator client {
@@ -403,28 +414,28 @@ generator client {
 // Get one product from each category (efficient database-level distinct)
 const distinctCategoryProducts = await prisma.product.findMany({
   where: {
-    isAvailable: true
+    isAvailable: true,
   },
-  distinct: ['categoryId'],
+  distinct: ["categoryId"],
   include: {
-    category: true
+    category: true,
   },
   orderBy: {
-    name: 'asc'
-  }
+    name: "asc",
+  },
 });
 
 // Get distinct sellers for a specific product type
 const distinctSellers = await prisma.productSellerBrand.findMany({
   where: {
     product: {
-      categoryId: 5 // e.g., Fantasy Books
-    }
+      categoryId: 5, // e.g., Fantasy Books
+    },
   },
-  distinct: ['sellerId'],
+  distinct: ["sellerId"],
   include: {
-    seller: true
-  }
+    seller: true,
+  },
 });
 ```
 
@@ -435,23 +446,25 @@ These extensions enhance Prisma Client with additional functionality:
 ### Extension Setup
 
 ```typescript
-import { PrismaClient } from '@prisma/client'
-import { withAccelerate } from '@prisma/extension-accelerate'
-import { withCache } from 'prisma-extension-caching'
-import { withRandom } from 'prisma-extension-random'
-import { withPagination } from 'prisma-paginate'
+import { PrismaClient } from "@prisma/client";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { withCache } from "prisma-extension-caching";
+import { withRandom } from "prisma-extension-random";
+import { withPagination } from "prisma-paginate";
 
 // Create client with extensions
 const prisma = new PrismaClient()
   .$extends(withAccelerate())
-  .$extends(withCache({
-    models: {
-      Product: {
-        ttl: 300, // 5 minutes
-        excludeMethods: ['create', 'update', 'delete']
-      }
-    }
-  }))
+  .$extends(
+    withCache({
+      models: {
+        Product: {
+          ttl: 300, // 5 minutes
+          excludeMethods: ["create", "update", "delete"],
+        },
+      },
+    }),
+  )
   .$extends(withRandom())
   .$extends(withPagination());
 
@@ -465,7 +478,7 @@ Official Prisma extension for global database caching.
 ```typescript
 // Accelerate automatically caches read queries
 const categories = await prisma.productCategory.findMany({
-  orderBy: { name: 'asc' }
+  orderBy: { name: "asc" },
 });
 
 // Query will be served from cache if called again within TTL period
@@ -479,15 +492,17 @@ Adds ability to cache complex queries.
 // The prisma-extension-caching extension will automatically cache this query
 const products = await prisma.product.findMany({
   where: { categoryId: 1 },
-  include: { 
+  include: {
     category: true,
-    sellerRelationships: true 
-  }
+    sellerRelationships: true,
+  },
 });
 
 // Cached queries can be invalidated when data changes
 await prisma.product.create({
-  data: { /* product data */ }
+  data: {
+    /* product data */
+  },
 }); // This will invalidate Product caches
 ```
 
@@ -498,11 +513,11 @@ Lets you query for random rows in your database.
 ```typescript
 // Get random featured products for homepage
 const featuredProducts = await prisma.product.findRandom({
-  where: { 
-    category: { slug: 'featured' },
-    sellerRelationships: { some: { isAvailable: true } }
+  where: {
+    category: { slug: "featured" },
+    sellerRelationships: { some: { isAvailable: true } },
   },
-  take: 4
+  take: 4,
 });
 ```
 
@@ -519,12 +534,12 @@ const { data, meta } = await prisma.product.paginate({
     sellerRelationships: {
       where: { isAvailable: true },
       include: { seller: true },
-      take: 1
-    }
+      take: 1,
+    },
   },
-  orderBy: { name: 'asc' },
+  orderBy: { name: "asc" },
   perPage: 20,
-  page: 1
+  page: 1,
 });
 
 console.log(`Showing ${data.length} of ${meta.total} results`);
@@ -535,7 +550,8 @@ console.log(`Page ${meta.currentPage} of ${meta.lastPage}`);
 
 ### 1. Product Search and Recommendation System
 
-This example combines full-text search, database views, and the random extension:
+This example combines full-text search, database views, and the random
+extension:
 
 ```typescript
 async function searchAndRecommend(searchTerm: string) {
@@ -543,50 +559,50 @@ async function searchAndRecommend(searchTerm: string) {
   const searchResults = await prisma.product.findMany({
     where: {
       OR: [
-        { name: { search: searchTerm, mode: 'insensitive' } },
-        { fullMarkdown: { search: searchTerm, mode: 'insensitive' } }
-      ]
+        { name: { search: searchTerm, mode: "insensitive" } },
+        { fullMarkdown: { search: searchTerm, mode: "insensitive" } },
+      ],
     },
     include: {
       category: true,
-      canonicalUrl: true
+      canonicalUrl: true,
     },
-    take: 10
+    take: 10,
   });
-  
+
   // Get category of first search result (if any)
   const categoryId = searchResults[0]?.categoryId;
-  
+
   // Get related random products from the same category
-  const recommendations = categoryId 
+  const recommendations = categoryId
     ? await prisma.product.findRandom({
         where: {
           categoryId,
-          id: { notIn: searchResults.map(p => p.id) }
+          id: { notIn: searchResults.map((p) => p.id) },
         },
         include: {
           category: true,
           sellerRelationships: {
             where: { isAvailable: true },
             include: { seller: true },
-            take: 1
-          }
+            take: 1,
+          },
         },
-        take: 4
+        take: 4,
       })
     : [];
-    
+
   // Get pricing information from the view
-  const pricing = searchResults.length 
+  const pricing = searchResults.length
     ? await prisma.productPricingView.findMany({
         where: {
-          productId: { in: searchResults.map(p => p.id) },
-          isAvailable: true
+          productId: { in: searchResults.map((p) => p.id) },
+          isAvailable: true,
         },
-        orderBy: { priceSale: 'asc' }
+        orderBy: { priceSale: "asc" },
       })
     : [];
-    
+
   return {
     searchResults,
     recommendations,
@@ -602,31 +618,31 @@ async function searchAndRecommend(searchTerm: string) {
 async function generateDashboardData() {
   // Use database views for performance metrics
   const topStories = await prisma.storyStatsView.findMany({
-    orderBy: { productCount: 'desc' },
-    take: 5
+    orderBy: { productCount: "desc" },
+    take: 5,
   });
-  
+
   // Use computed fields for discount analysis
   const bestDeals = await prisma.productSellerBrand.findMany({
     where: {
       discountPercent: { gte: 25 },
-      isAvailable: true
+      isAvailable: true,
     },
-    orderBy: { discountPercent: 'desc' },
+    orderBy: { discountPercent: "desc" },
     take: 5,
     include: {
       product: true,
-      seller: true
-    }
+      seller: true,
+    },
   });
-  
+
   // Use pagination for recent products
   const { data: recentProducts } = await prisma.product.paginate({
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
     perPage: 10,
-    page: 1
+    page: 1,
   });
-  
+
   // Use search for trending terms
   const searchAnalytics = await prisma.$queryRaw`
     SELECT 
@@ -638,13 +654,13 @@ async function generateDashboardData() {
     ORDER BY search_count DESC
     LIMIT 10
   `;
-  
+
   return {
     topStories,
     bestDeals,
     recentProducts,
     searchAnalytics,
-    timestamp: new Date()
+    timestamp: new Date(),
   };
 }
 ```
@@ -658,14 +674,14 @@ export async function searchProducts(searchTerm: string) {
       OR: [
         { name: { search: searchTerm } },
         { fullMarkdown: { search: searchTerm } },
-        { previewCopy: { search: searchTerm } }
-      ]
+        { previewCopy: { search: searchTerm } },
+      ],
     },
     include: {
       category: true,
-      canonicalUrl: true
+      canonicalUrl: true,
     },
-    take: 25
+    take: 25,
   });
 }
 ```
@@ -673,34 +689,37 @@ export async function searchProducts(searchTerm: string) {
 ### 2. Finding Best Deals Using Computed Fields
 
 ```typescript
-export async function findBestDeals(categorySlug: string, minDiscountPercent = 20) {
+export async function findBestDeals(
+  categorySlug: string,
+  minDiscountPercent = 20,
+) {
   const category = await prisma.productCategory.findUnique({
-    where: { slug: categorySlug }
+    where: { slug: categorySlug },
   });
-  
+
   if (!category) return [];
-  
+
   return prisma.productSellerBrand.findMany({
     where: {
       product: {
-        categoryId: category.id
+        categoryId: category.id,
       },
       discountPercent: { gte: minDiscountPercent },
-      isAvailable: true
+      isAvailable: true,
     },
     orderBy: {
-      discountPercent: 'desc'
+      discountPercent: "desc",
     },
     include: {
       product: true,
       seller: {
         select: {
           name: true,
-          slug: true
-        }
-      }
+          slug: true,
+        },
+      },
     },
-    take: 10
+    take: 10,
   });
 }
 ```
@@ -711,24 +730,21 @@ export async function findBestDeals(categorySlug: string, minDiscountPercent = 2
 export async function getStoryPerformanceReport() {
   return prisma.storyStatsView.findMany({
     where: {
-      productCount: { gt: 0 }
+      productCount: { gt: 0 },
     },
-    orderBy: [
-      { productCount: 'desc' },
-      { avgPrice: 'desc' }
-    ],
-    take: 20
+    orderBy: [{ productCount: "desc" }, { avgPrice: "desc" }],
+    take: 20,
   });
 }
 
 export async function getProductPricingComparison(productSlug: string) {
   return prisma.productPricingView.findMany({
     where: {
-      productSlug
+      productSlug,
     },
     orderBy: {
-      priceSale: 'asc'
-    }
+      priceSale: "asc",
+    },
   });
 }
 ```
@@ -741,32 +757,39 @@ export async function getProductPricingComparison(productSlug: string) {
 
 **Error**: `Error: Extension "pg_trgm" was not found`
 
-**Solution**: Ensure your PostgreSQL server has the extensions installed. For hosted services, check their documentation on enabling extensions.
+**Solution**: Ensure your PostgreSQL server has the extensions installed. For
+hosted services, check their documentation on enabling extensions.
 
 #### 2. Search Not Working Correctly
 
 **Problem**: Search not returning expected results or not tolerating typos
 
-**Solution**: 
+**Solution**:
+
 - Ensure you're using the correct search syntax with Prisma
 - Verify the Gin indexes are properly created in the database
-- For more control, use raw SQL to leverage PostgreSQL's full text search capabilities
+- For more control, use raw SQL to leverage PostgreSQL's full text search
+  capabilities
 
 #### 3. View Access Issues
 
 **Error**: `Error: Table "product_pricing_view" not found`
 
 **Solution**:
+
 - Make sure the views were created successfully with the migration
 - Check the view definition in the database
 - Ensure your database user has SELECT permissions on the views
 
 #### 4. Computed Fields Not Updating
 
-**Problem**: Computed fields like `discountPercent` are not updating when related fields change
+**Problem**: Computed fields like `discountPercent` are not updating when
+related fields change
 
 **Solution**:
-- Remember that computed fields are only calculated when a record is inserted or updated
+
+- Remember that computed fields are only calculated when a record is inserted or
+  updated
 - Update the `priceHigh` or `priceSale` fields to trigger recalculation
 - If needed, run a database update query to refresh all values
 
@@ -779,8 +802,8 @@ To validate your setup is working correctly, run these queries:
 SELECT * FROM pg_extension WHERE extname IN ('pg_trgm', 'pgcrypto', 'fuzzystrmatch');
 
 -- Check if views exist
-SELECT table_name FROM information_schema.views 
-WHERE table_schema = 'public' AND 
+SELECT table_name FROM information_schema.views
+WHERE table_schema = 'public' AND
 table_name IN ('product_pricing_view', 'story_stats_view');
 
 -- Test trigram similarity
@@ -789,4 +812,5 @@ SELECT similarity('hobbit', 'hobit');
 -- Should return a value between 0 and 1 (e.g., 0.833333)
 ```
 
-For more help, consult the PostgreSQL documentation or our internal team resources.
+For more help, consult the PostgreSQL documentation or our internal team
+resources.

@@ -1,9 +1,9 @@
-import * as blobModule from '@vercel/blob';
+import * as blobModule from "@vercel/blob";
 
 /**
  * Re-export all functions and classes from @vercel/blob
  */
-export * from '@vercel/blob';
+export * from "@vercel/blob";
 
 /**
  * Re-export specific functions from @vercel/blob
@@ -19,9 +19,9 @@ export const BlobAccessError = blobModule.BlobAccessError;
  */
 export const get = async (pathname: string) => {
   return {
-    blob: new Blob(['test content']),
-    contentType: 'application/octet-stream',
-    contentDisposition: 'attachment',
+    blob: new Blob(["test content"]),
+    contentDisposition: "attachment",
+    contentType: "application/octet-stream",
     size: 1024,
   };
 };

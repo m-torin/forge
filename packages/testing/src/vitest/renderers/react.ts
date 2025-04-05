@@ -1,9 +1,9 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement } from "react";
 import {
   render as rtlRender,
   renderHook as rtlRenderHook,
-} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // Re-export userEvent and renderHook for convenience
 export { userEvent, rtlRenderHook as renderHook };
@@ -20,7 +20,8 @@ interface BaseRenderOptions {
  * @param options - Options for rendering
  * @returns The rendered component and testing utilities
  */
-export function render(ui: ReactElement, options: BaseRenderOptions = {}) {
+// @ts-ignore - Return type inference issue with external dependencies
+export function render(ui: ReactElement, options: BaseRenderOptions = {}): any {
   const { wrapper: Wrapper, ...renderOptions } = options;
   const user = userEvent.setup();
 
@@ -42,9 +43,10 @@ export function render(ui: ReactElement, options: BaseRenderOptions = {}) {
  * @param Providers - Array of provider components to wrap the rendered component
  * @returns A render function that wraps the component with the provided providers
  */
+// @ts-ignore - Return type inference issue with external dependencies
 export function createRender(
   Providers: Array<React.ComponentType<{ children: React.ReactNode }>> = [],
-) {
+): (ui: ReactElement, options?: BaseRenderOptions) => any {
   return (ui: ReactElement, options: BaseRenderOptions = {}) => {
     const AllProviders = ({ children }: { children: React.ReactNode }) => {
       // Create initial element with children
@@ -53,6 +55,7 @@ export function createRender(
       // Apply each Provider in reverse order
       for (let i = Providers.length - 1; i >= 0; i--) {
         const Provider = Providers[i];
+        // @ts-ignore - Type compatibility between React element types
         element = React.createElement(Provider, null, element);
       }
 
@@ -64,4 +67,4 @@ export function createRender(
 }
 
 // Re-export everything from testing-library
-export * from '@testing-library/react';
+export * from "@testing-library/react";

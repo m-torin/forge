@@ -1,29 +1,30 @@
-import '@repo/testing/src/vitest/core/setup';
-import { vi } from 'vitest';
-import React from 'react';
+import "@repo/testing/src/vitest/core/setup";
+
+import React from "react";
+import { vi } from "vitest";
 
 // Mock Resend
-vi.mock('resend', () => ({
+vi.mock("resend", () => ({
   Resend: vi.fn().mockImplementation(() => ({
     emails: {
       send: vi.fn().mockResolvedValue({
-        id: 'mock-email-id',
-        from: 'test@example.com',
-        to: ['recipient@example.com'],
-        subject: 'Test Email',
-        status: 'success',
+        id: "mock-email-id",
+        from: "test@example.com",
+        status: "success",
+        subject: "Test Email",
+        to: ["recipient@example.com"],
       }),
     },
   })),
 }));
 
 // Mock environment variables
-process.env.RESEND_FROM = 'test@example.com';
-process.env.RESEND_TOKEN = 're_test_token';
+process.env.RESEND_FROM = "test@example.com";
+process.env.RESEND_TOKEN = "re_test_token";
 
 // Mock @t3-oss/env-nextjs
-vi.mock('@t3-oss/env-nextjs', () => ({
-  createEnv: vi.fn().mockImplementation(({ server, runtimeEnv }: any) => {
+vi.mock("@t3-oss/env-nextjs", () => ({
+  createEnv: vi.fn().mockImplementation(({ runtimeEnv, server }: any) => {
     const env: Record<string, any> = {};
     Object.keys(server).forEach((key) => {
       env[key] = runtimeEnv[key];
@@ -33,7 +34,7 @@ vi.mock('@t3-oss/env-nextjs', () => ({
 }));
 
 // Mock React Email components
-vi.mock('@react-email/components', () => ({
+vi.mock("@react-email/components", () => ({
   Body: ({
     children,
     ...props
@@ -42,8 +43,8 @@ vi.mock('@react-email/components', () => ({
     [key: string]: any;
   }) =>
     React.createElement(
-      'div',
-      { 'data-testid': 'email-body', ...props },
+      "div",
+      { "data-testid": "email-body", ...props },
       children,
     ),
   Container: ({
@@ -54,13 +55,13 @@ vi.mock('@react-email/components', () => ({
     [key: string]: any;
   }) =>
     React.createElement(
-      'div',
-      { 'data-testid': 'email-container', ...props },
+      "div",
+      { "data-testid": "email-container", ...props },
       children,
     ),
-  Head: () => React.createElement('div', { 'data-testid': 'email-head' }),
+  Head: () => React.createElement("div", { "data-testid": "email-head" }),
   Hr: (props: Record<string, any>) =>
-    React.createElement('hr', { 'data-testid': 'email-hr', ...props }),
+    React.createElement("hr", { "data-testid": "email-hr", ...props }),
   Html: ({
     children,
     ...props
@@ -69,8 +70,8 @@ vi.mock('@react-email/components', () => ({
     [key: string]: any;
   }) =>
     React.createElement(
-      'div',
-      { 'data-testid': 'email-html', ...props },
+      "div",
+      { "data-testid": "email-html", ...props },
       children,
     ),
   Preview: ({
@@ -81,8 +82,8 @@ vi.mock('@react-email/components', () => ({
     [key: string]: any;
   }) =>
     React.createElement(
-      'div',
-      { 'data-testid': 'email-preview', ...props },
+      "div",
+      { "data-testid": "email-preview", ...props },
       children,
     ),
   Section: ({
@@ -93,8 +94,8 @@ vi.mock('@react-email/components', () => ({
     [key: string]: any;
   }) =>
     React.createElement(
-      'div',
-      { 'data-testid': 'email-section', ...props },
+      "div",
+      { "data-testid": "email-section", ...props },
       children,
     ),
   Tailwind: ({
@@ -105,8 +106,8 @@ vi.mock('@react-email/components', () => ({
     [key: string]: any;
   }) =>
     React.createElement(
-      'div',
-      { 'data-testid': 'email-tailwind', ...props },
+      "div",
+      { "data-testid": "email-tailwind", ...props },
       children,
     ),
   Text: ({
@@ -117,8 +118,8 @@ vi.mock('@react-email/components', () => ({
     [key: string]: any;
   }) =>
     React.createElement(
-      'div',
-      { 'data-testid': 'email-text', ...props },
+      "div",
+      { "data-testid": "email-text", ...props },
       children,
     ),
 }));

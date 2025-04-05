@@ -1,6 +1,6 @@
 ---
 title: Logging
-description: How we've configured logging in next-forge.
+description: How we've configured logging in forge.
 ---
 
 The logging functionality is abstracted through a simple wrapper that provides a
@@ -19,7 +19,7 @@ same interface as the `console` object, so you can replace `console` with `log`
 in your codebase.
 
 ```tsx page.tsx
-import { log } from '@repo/observability/log';
+import { log } from "@repo/observability/log";
 
-log.info('Hello, world!');
+log.info("Hello, world!");
 ```

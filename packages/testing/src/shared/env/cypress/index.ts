@@ -4,13 +4,14 @@
  * This module provides Cypress-specific utilities for handling environment variables in tests.
  * It builds on the core environment utilities but adds Cypress-specific functionality.
  */
+/// <reference path="./cypress.d.ts" />
 import {
   isTestEnvironment,
   createTestAwareValidator,
   testEnvVars,
   exampleEnvVars,
   validationPatterns,
-} from '../core/index.ts';
+} from "../core/index.ts";
 
 // Re-export core utilities
 export {
@@ -41,14 +42,14 @@ export {
  */
 export function setupCypressEnv(envVars?: Record<string, string>): void {
   // Set test mode
-  Cypress.env('testMode', true);
-  Cypress.env('testEnvironment', 'test');
+  Cypress.env("testMode", true);
+  Cypress.env("testEnvironment", "test");
 
   if (!envVars) {
     console.warn(
-      'No environment variables provided to setupCypressEnv. ' +
+      "No environment variables provided to setupCypressEnv. " +
         "You should provide your application's environment variables. " +
-        'See exampleEnvVars for format examples.',
+        "See exampleEnvVars for format examples.",
     );
     return;
   }
@@ -59,7 +60,7 @@ export function setupCypressEnv(envVars?: Record<string, string>): void {
   });
 
   // Log environment setup
-  cy.log('Test environment variables configured');
+  cy.log("Test environment variables configured");
 }
 
 /**
@@ -145,7 +146,7 @@ export function addEnvironmentToConfig(
   config.env = {
     ...config.env,
     testMode: true,
-    testEnvironment: process.env.NODE_ENV || 'test',
+    testEnvironment: process.env.NODE_ENV || "test",
   };
 
   // Add provided environment variables
@@ -156,9 +157,9 @@ export function addEnvironmentToConfig(
     };
   } else {
     console.warn(
-      'No environment variables provided to addEnvironmentToConfig. ' +
+      "No environment variables provided to addEnvironmentToConfig. " +
         "You should provide your application's environment variables. " +
-        'See exampleEnvVars for format examples.',
+        "See exampleEnvVars for format examples.",
     );
   }
 

@@ -1,42 +1,44 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { send, getAppPortal } from '../../lib/svix';
-import { Svix } from 'svix';
-import { auth } from '@repo/auth/server';
-import { keys } from '../../keys';
+import { Svix } from "svix";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { auth } from "@repo/auth/server";
+
+import { keys } from "../../keys";
+import { getAppPortal, send } from "../../lib/svix";
 
 // Import the mocked modules
-vi.mock('svix');
-vi.mock('@repo/auth/server');
-vi.mock('../../keys');
+vi.mock("svix");
+vi.mock("@repo/auth/server");
+vi.mock("../../keys");
 
-describe('Svix Module', () => {
+describe("Svix Module", () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
     // Mock the keys function to return a specific value
     (keys as any).mockReturnValue({
-      SVIX_TOKEN: 'sk_test_svix_token',
+      SVIX_TOKEN: "sk_test_svix_token",
     });
 
     // Mock the auth function to return a specific value
     (auth as any).mockResolvedValue({
-      orgId: 'test-org-id',
-      userId: 'test-user-id',
+      orgId: "test-org-id",
+      userId: "test-user-id",
     });
 
     // Mock the Svix constructor
     (Svix as any).mockImplementation(() => ({
-      message: {
-        create: vi.fn().mockResolvedValue({
-          id: 'msg_test123',
-          eventType: 'test.event',
-          payload: {},
-        }),
-      },
       authentication: {
         appPortalAccess: vi.fn().mockResolvedValue({
-          url: 'https://app.svix.com/portal/test',
-          token: 'test-token',
+          url: "https://app.svix.com/portal/test",
+          token: "test-token",
+        }),
+      },
+      message: {
+        create: vi.fn().mockResolvedValue({
+          id: "msg_test123",
+          eventType: "test.event",
+          payload: {},
         }),
       },
     }));
@@ -46,46 +48,46 @@ describe('Svix Module', () => {
     vi.resetAllMocks();
   });
 
-  describe('send', () => {
-    it('creates a Svix instance with the correct token', async () => {
-      await send('test.event', { data: 'test' });
+  describe("send", () => {
+    it("creates a Svix instance with the correct token", async () => {
+      await send("test.event", { data: "test" });
 
-      expect(Svix).toHaveBeenCalledWith('sk_test_svix_token');
+      expect(Svix).toHaveBeenCalledWith("sk_test_svix_token");
     });
 
-    it('throws an error if SVIX_TOKEN is not set', async () => {
+    it("throws an error if SVIX_TOKEN is not set", async () => {
       // Mock the keys function to return undefined SVIX_TOKEN
       (keys as any).mockReturnValue({
         SVIX_TOKEN: undefined,
       });
 
-      await expect(send('test.event', { data: 'test' })).rejects.toThrow(
-        'SVIX_TOKEN is not set',
+      await expect(send("test.event", { data: "test" })).rejects.toThrow(
+        "SVIX_TOKEN is not set",
       );
     });
 
-    it('calls auth to get the orgId', async () => {
-      await send('test.event', { data: 'test' });
+    it("calls auth to get the orgId", async () => {
+      await send("test.event", { data: "test" });
 
       expect(auth).toHaveBeenCalled();
     });
 
-    it('returns early if orgId is not available', async () => {
+    it("returns early if orgId is not available", async () => {
       // Mock the auth function to return undefined orgId
       (auth as any).mockResolvedValue({
-        userId: 'test-user-id',
+        userId: "test-user-id",
       });
 
-      const result = await send('test.event', { data: 'test' });
+      const result = await send("test.event", { data: "test" });
 
       expect(result).toBeUndefined();
     });
 
-    it('calls svix.message.create with the correct parameters', async () => {
+    it("calls svix.message.create with the correct parameters", async () => {
       const mockCreate = vi.fn().mockResolvedValue({
-        id: 'msg_test123',
-        eventType: 'test.event',
-        payload: { data: 'test' },
+        id: "msg_test123",
+        eventType: "test.event",
+        payload: { data: "test" },
       });
 
       // Mock the Svix constructor to return a specific implementation
@@ -95,26 +97,26 @@ describe('Svix Module', () => {
         },
       }));
 
-      await send('test.event', { data: 'test' });
+      await send("test.event", { data: "test" });
 
-      expect(mockCreate).toHaveBeenCalledWith('test-org-id', {
-        eventType: 'test.event',
-        payload: {
-          eventType: 'test.event',
-          data: 'test',
-        },
+      expect(mockCreate).toHaveBeenCalledWith("test-org-id", {
         application: {
-          name: 'test-org-id',
-          uid: 'test-org-id',
+          uid: "test-org-id",
+          name: "test-org-id",
+        },
+        eventType: "test.event",
+        payload: {
+          data: "test",
+          eventType: "test.event",
         },
       });
     });
 
-    it('returns the result from svix.message.create', async () => {
+    it("returns the result from svix.message.create", async () => {
       const expectedResult = {
-        id: 'msg_test123',
-        eventType: 'test.event',
-        payload: { data: 'test' },
+        id: "msg_test123",
+        eventType: "test.event",
+        payload: { data: "test" },
       };
 
       const mockCreate = vi.fn().mockResolvedValue(expectedResult);
@@ -126,38 +128,38 @@ describe('Svix Module', () => {
         },
       }));
 
-      const result = await send('test.event', { data: 'test' });
+      const result = await send("test.event", { data: "test" });
 
       expect(result).toEqual(expectedResult);
     });
   });
 
-  describe('getAppPortal', () => {
-    it('creates a Svix instance with the correct token', async () => {
+  describe("getAppPortal", () => {
+    it("creates a Svix instance with the correct token", async () => {
       await getAppPortal();
 
-      expect(Svix).toHaveBeenCalledWith('sk_test_svix_token');
+      expect(Svix).toHaveBeenCalledWith("sk_test_svix_token");
     });
 
-    it('throws an error if SVIX_TOKEN is not set', async () => {
+    it("throws an error if SVIX_TOKEN is not set", async () => {
       // Mock the keys function to return undefined SVIX_TOKEN
       (keys as any).mockReturnValue({
         SVIX_TOKEN: undefined,
       });
 
-      await expect(getAppPortal()).rejects.toThrow('SVIX_TOKEN is not set');
+      await expect(getAppPortal()).rejects.toThrow("SVIX_TOKEN is not set");
     });
 
-    it('calls auth to get the orgId', async () => {
+    it("calls auth to get the orgId", async () => {
       await getAppPortal();
 
       expect(auth).toHaveBeenCalled();
     });
 
-    it('returns early if orgId is not available', async () => {
+    it("returns early if orgId is not available", async () => {
       // Mock the auth function to return undefined orgId
       (auth as any).mockResolvedValue({
-        userId: 'test-user-id',
+        userId: "test-user-id",
       });
 
       const result = await getAppPortal();
@@ -165,10 +167,10 @@ describe('Svix Module', () => {
       expect(result).toBeUndefined();
     });
 
-    it('calls svix.authentication.appPortalAccess with the correct parameters', async () => {
+    it("calls svix.authentication.appPortalAccess with the correct parameters", async () => {
       const mockAppPortalAccess = vi.fn().mockResolvedValue({
-        url: 'https://app.svix.com/portal/test',
-        token: 'test-token',
+        url: "https://app.svix.com/portal/test",
+        token: "test-token",
       });
 
       // Mock the Svix constructor to return a specific implementation
@@ -180,18 +182,18 @@ describe('Svix Module', () => {
 
       await getAppPortal();
 
-      expect(mockAppPortalAccess).toHaveBeenCalledWith('test-org-id', {
+      expect(mockAppPortalAccess).toHaveBeenCalledWith("test-org-id", {
         application: {
-          name: 'test-org-id',
-          uid: 'test-org-id',
+          uid: "test-org-id",
+          name: "test-org-id",
         },
       });
     });
 
-    it('returns the result from svix.authentication.appPortalAccess', async () => {
+    it("returns the result from svix.authentication.appPortalAccess", async () => {
       const expectedResult = {
-        url: 'https://app.svix.com/portal/test',
-        token: 'test-token',
+        url: "https://app.svix.com/portal/test",
+        token: "test-token",
       };
 
       const mockAppPortalAccess = vi.fn().mockResolvedValue(expectedResult);

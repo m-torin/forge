@@ -8,7 +8,7 @@ import {
   baseConfig,
   createComponentConfig,
   createE2EConfig,
-} from './config.ts';
+} from "./config.ts";
 
 // Re-export configuration
 export { baseConfig, createComponentConfig, createE2EConfig };

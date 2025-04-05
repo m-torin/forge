@@ -9,6 +9,6 @@
 // Export a dummy function to maintain imports
 export function setupBrowserMocks() {
   console.warn(
-    'Browser mocks have been removed. Use Cypress for browser testing.',
+    "Browser mocks have been removed. Use Cypress for browser testing.",
   );
 }

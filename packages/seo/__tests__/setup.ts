@@ -1,4 +1,4 @@
 // Import shared testing setup
-import { vitest } from '@repo/testing';
+// @ts-ignore - @repo/testing module may not be found during type checking
 
 // Add package-specific setup here

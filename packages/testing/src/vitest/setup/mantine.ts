@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
+import "@testing-library/jest-dom/vitest";
+import { vi } from "vitest";
 
 // Define a type-only ReactNode to avoid importing React
 type ReactNode = any;
@@ -9,7 +9,7 @@ type ReactNode = any;
  */
 export function setupMantine() {
   // Common mocks for Mantine components
-  vi.mock('@mantine/core', () => ({
+  vi.mock("@mantine/core", () => ({
     MantineProvider: ({
       children,
       ...props
@@ -19,22 +19,22 @@ export function setupMantine() {
     }) => {
       // Use the global React that will be injected by the test environment
       return global.React.createElement(
-        'div',
-        { 'data-testid': 'mantine-provider', ...props },
+        "div",
+        { "data-testid": "mantine-provider", ...props },
         children,
       );
     },
   }));
 
-  vi.mock('@mantine/hooks', () => ({
-    useColorScheme: vi.fn().mockReturnValue('light'),
+  vi.mock("@mantine/hooks", () => ({
+    useColorScheme: vi.fn().mockReturnValue("light"),
     useMediaQuery: vi.fn().mockReturnValue(false),
     useHotkeys: vi.fn(),
     useViewportSize: vi.fn().mockReturnValue({ width: 1024, height: 768 }),
   }));
 
   // Mock Mantine notifications
-  vi.mock('@mantine/notifications', () => ({
+  vi.mock("@mantine/notifications", () => ({
     notifications: {
       show: vi.fn(),
       error: vi.fn(),

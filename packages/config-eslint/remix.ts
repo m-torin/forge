@@ -1,8 +1,10 @@
+import globals from "globals";
+
 // remix.ts
-import reactPackageConfig from './react-package.ts';
-import serverConfig from './server.ts';
-import globals from 'globals';
-import type { Linter } from 'eslint';
+import reactPackageConfig from "./react-package.ts";
+import serverConfig from "./server.ts";
+
+import type { Linter } from "eslint";
 
 /*
  * This is a custom ESLint configuration for use with
@@ -14,8 +16,8 @@ const config: Linter.FlatConfig[] = [
   ...serverConfig, // Base server rules
   ...reactPackageConfig, // Base React rules (using react-package instead of non-existent react.mjs)
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    ignores: ['public/**'],
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    ignores: ["public/**"],
     languageOptions: {
       globals: {
         ...globals.browser, // Browser globals for client components
@@ -24,31 +26,31 @@ const config: Linter.FlatConfig[] = [
     },
     rules: {
       // Override any conflicting rules
-      'import/no-default-export': 'off', // Remix needs default exports
+      "import/no-default-export": "off", // Remix needs default exports
 
       // Use perfectionist for Remix-specific import sorting (consistent with base config)
-      'perfectionist/sort-imports': [
-        'error',
+      "perfectionist/sort-imports": [
+        "error",
         {
-          type: 'natural',
-          order: 'asc',
-          ignoreCase: true,
+          type: "natural",
           groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-            'unknown',
+            "builtin",
+            "external",
+            "internal",
+            "parent",
+            "sibling",
+            "index",
+            "object",
+            "type",
+            "unknown",
           ],
-          newlinesBetween: 'always',
+          ignoreCase: true,
           internalPattern: [
-            '~/**', // Remix convention for app imports
-            '@repo/**',
+            "~/**", // Remix convention for app imports
+            "@repo/**",
           ],
+          newlinesBetween: "always",
+          order: "asc",
         },
       ],
     },
@@ -56,24 +58,24 @@ const config: Linter.FlatConfig[] = [
   {
     // Remix-specific file patterns
     files: [
-      'app/routes/**/*.{js,jsx,ts,tsx}',
-      'app/root.{js,jsx,ts,tsx}',
-      'app/entry.*.{js,jsx,ts,tsx}',
+      "app/routes/**/*.{js,jsx,ts,tsx}",
+      "app/root.{js,jsx,ts,tsx}",
+      "app/entry.*.{js,jsx,ts,tsx}",
     ],
     rules: {
-      'import/prefer-default-export': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off', // Remix handles types
+      "@typescript-eslint/explicit-function-return-type": "off", // Remix handles types
+      "import/prefer-default-export": "off",
     },
   },
   {
     // Server-side only files
     files: [
-      'app/server/**/*.{js,ts}',
-      'app/models/**/*.{js,ts}',
-      'app/services/**/*.{js,ts}',
+      "app/server/**/*.{js,ts}",
+      "app/models/**/*.{js,ts}",
+      "app/services/**/*.{js,ts}",
     ],
     rules: {
-      '@typescript-eslint/explicit-function-return-type': 'error',
+      "@typescript-eslint/explicit-function-return-type": "error",
     },
   },
 ];

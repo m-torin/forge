@@ -29,14 +29,14 @@ export {
   queries,
   queryHelpers,
   userEvent,
-} from './renderers/react.ts';
+} from "./renderers/react.ts";
 
 // Export configurations
-export { createReactConfig } from './configs/react.ts';
-export { createBaseConfig } from './configs/base.ts';
+export { createReactConfig } from "./configs/react.ts";
+export { createBaseConfig } from "./configs/base.ts";
 
 // Export React mocks
-export { MockAuthProvider } from './mocks/auth-react.tsx';
+export { MockAuthProvider } from "./mocks/auth-react.tsx";
 
 // Re-export Vitest functions for convenience
 export {
@@ -48,8 +48,11 @@ export {
   afterAll,
   beforeEach,
   afterEach,
-} from 'vitest';
+} from "vitest";
 
 // Export templates directly
-export { default as componentTestTemplate } from './templates/react/component.test.tsx';
-export { default as hookTestTemplate } from './templates/react/hook.test.tsx';
+export * as componentTestTemplate from "./templates/react/component.test.tsx";
+export * as hookTestTemplate from "./templates/react/hook.test.tsx";
+
+// Note: The generators config is exported via package.json exports
+// but not directly here to avoid import resolution issues

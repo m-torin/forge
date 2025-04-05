@@ -1,23 +1,18 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-
-  "name": "next-forge docs",
-
+  "name": "forge docs",
   "logo": {
     "dark": "/images/logo-dark.svg",
     "light": "/images/logo-light.svg"
   },
-
-  "background": { "style": "windows" },
-
+  "background": {
+    "style": "windows"
+  },
   "codeBlock": {
     "mode": "auto"
   },
-
   "favicon": "/images/icon.png",
-
   "layout": "topnav",
-
   "colors": {
     "primary": "#f35815",
     "light": "#f35815",
@@ -27,16 +22,13 @@
       "to": "#f35815"
     }
   },
-
   "topbarCtaButton": {
     "type": "github",
-    "url": "https://github.com/haydenbleasel/next-forge"
+    "url": "https://github.com/m-torin/forge"
   },
-
   "search": {
     "prompt": "Search or ask..."
   },
-
   "tabs": [
     {
       "name": "Getting Started",
@@ -63,7 +55,6 @@
       "url": "/addons"
     }
   ],
-
   "navigation": [
     {
       "group": "Introduction",
@@ -74,15 +65,17 @@
       "pages": ["setup/prerequisites", "setup/installation", "setup/env"]
     },
     {
-      "group": "",
+      "group": "Agentic Development",
+      "pages": ["agentic-development/cline", "agentic-development/cursor"]
+    },
+    {
+      "group": "Apps",
       "pages": [
-        "apps/api",
-        "apps/app",
         "apps/docs",
         "apps/email",
+        "apps/next-app-mantine-tailwind",
         "apps/storybook",
-        "apps/studio",
-        "apps/web"
+        "apps/studio"
       ]
     },
     {
@@ -93,10 +86,10 @@
           "group": "Analytics",
           "pages": ["packages/analytics/web", "packages/analytics/product"]
         },
-        "packages/authentication",
-        "packages/cms",
+        "packages/auth",
         "packages/collaboration",
-        "packages/cron",
+        "packages/config-eslint",
+        "packages/config-prettier",
         "packages/database",
         {
           "group": "Design System",
@@ -109,8 +102,7 @@
           ]
         },
         "packages/email",
-        "packages/flags",
-        "packages/formatting",
+        "packages/feature-flags",
         "packages/internationalization",
         {
           "group": "Observability",
@@ -134,10 +126,10 @@
           "group": "Security",
           "pages": [
             "packages/security/application",
-            "packages/security/rate-limiting",
             "packages/security/dependencies",
             "packages/security/headers",
-            "packages/security/ip-geolocation"
+            "packages/security/ip-geolocation",
+            "packages/rate-limit"
           ]
         },
         {
@@ -150,7 +142,7 @@
         },
         "packages/storage",
         "packages/testing",
-        "packages/toolbar",
+        "packages/typescript-config",
         "packages/webhooks"
       ]
     },
@@ -160,10 +152,6 @@
         "migrations/authentication/authjs",
         "migrations/authentication/better-auth"
       ]
-    },
-    {
-      "group": "CMS",
-      "pages": ["migrations/cms/content-collections"]
     },
     {
       "group": "Database",
@@ -183,10 +171,6 @@
     {
       "group": "Feature flags",
       "pages": ["migrations/flags/hypertune"]
-    },
-    {
-      "group": "Formatting",
-      "pages": ["migrations/formatting/eslint"]
     },
     {
       "group": "Deployment",
@@ -224,13 +208,11 @@
       "pages": ["addons/dub", "addons/metabase"]
     }
   ],
-
   "footerSocials": {
     "x": "https://x.com/haydenbleasel",
-    "github": "https://github.com/haydenbleasel/next-forge",
+    "github": "https://github.com/m-torin/forge",
     "linkedin": "https://www.linkedin.com/in/haydenbleasel"
   },
-
   "redirects": [
     {
       "source": "/features/:slug*",
@@ -246,7 +228,7 @@
     },
     {
       "source": "/authentication",
-      "destination": "/packages/authentication"
+      "destination": "/packages/auth"
     },
     {
       "source": "/authentication/authjs",
@@ -267,18 +249,6 @@
     {
       "source": "/collaboration",
       "destination": "/packages/collaboration"
-    },
-    {
-      "source": "/cms",
-      "destination": "/packages/cms"
-    },
-    {
-      "source": "/cms/content-collections",
-      "destination": "/migrations/cms/content-collections"
-    },
-    {
-      "source": "/cron",
-      "destination": "/packages/cron"
     },
     {
       "source": "/database",
@@ -326,7 +296,7 @@
     },
     {
       "source": "/email/clerk",
-      "destination": "/packages/authentication"
+      "destination": "/packages/auth"
     },
     {
       "source": "/email/resend",
@@ -338,15 +308,7 @@
     },
     {
       "source": "/flags",
-      "destination": "/packages/flags"
-    },
-    {
-      "source": "/formatting",
-      "destination": "/packages/formatting"
-    },
-    {
-      "source": "/formatting/eslint",
-      "destination": "/migrations/formatting/eslint"
+      "destination": "/packages/feature-flags"
     },
     {
       "source": "/observability/:slug*",

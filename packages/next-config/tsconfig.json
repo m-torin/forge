@@ -1,8 +1,17 @@
 {
   "extends": "../typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "paths": {
+      "eslint": ["./types/eslint.d.ts"],
+      "eslint-plugin-node": ["./types/eslint-plugin-node.d.ts"],
+      "@repo/testing": ["./vitest.d.ts"]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "vitest.d.ts"],
   "exclude": ["node_modules"]
 }

@@ -3,20 +3,20 @@ title: Updates
 description: Built-in helpers to help you keep your project up to date.
 ---
 
-## Upgrading next-forge
+## Upgrading forge
 
-As next-forge evolves, you may want to stay up to date with the latest changes.
+As forge evolves, you may want to stay up to date with the latest changes.
 This can be difficult to do manually, so we've created a script to help you.
 
 ```sh Terminal
-npx next-forge@latest update
+npx forge@latest update
 ```
 
 This will run our update script, which will guide you through the process of
 updating your project.
 
 ```
-┌  Let's update your next-forge project!
+┌  Let's update your forge project!
 │
 │
 ◆  Select a version to update to:
@@ -28,12 +28,12 @@ updating your project.
 └
 ```
 
-This will clone the latest version of next-forge into a temporary directory,
+This will clone the latest version of forge into a temporary directory,
 apply the updates, and then copy the files over to your project. From here, you
 can commit the changes and push them to your repository.
 
 <Tip>
-  Because next-forge is a boilerplate and not a library, you'll likely need to
+  Because forge is a boilerplate and not a library, you'll likely need to
   manually merge the changes you've made with the changes from the update.
 </Tip>
 
@@ -79,3 +79,34 @@ dependencies in the Design System's `package.json` file.
   Tailwind config file and global CSS. Make sure you review changes before
   committing them.
 </Warning>
+
+## Cleaning the Monorepo
+
+If you encounter persistent build errors, caching issues, or problems after updating dependencies, you might need to perform a thorough clean of the monorepo. The `clean-everything.sh` script located at the root of the repository is designed for this purpose.
+
+```sh Terminal
+./clean-everything.sh
+```
+
+<Callout intent="warning">
+  This script must be run with Zsh (`zsh ./clean-everything.sh`), not Bash or
+  Sh. It performs destructive actions, so use it with caution.
+</Callout>
+
+This script will:
+
+- Remove common build artifact directories (`.next`, `dist`, `build`, `.turbo`, `.cache`, etc.).
+- Remove cache-related directories.
+- Delete log files (`*.log`).
+- Remove potentially conflicting lock files (`package-lock.json`, `yarn.lock`) and `tsconfig.tsbuildinfo`.
+- **Delete all `node_modules` directories** across the entire monorepo.
+- Prune the pnpm store cache (`pnpm store prune`).
+- Remove the root `pnpm-lock.yaml` file.
+
+After running this script, you will need to reinstall all dependencies:
+
+```sh Terminal
+pnpm install
+```
+
+This ensures a completely fresh state, resolving issues caused by stale caches, inconsistent node_modules, or conflicting lock files.

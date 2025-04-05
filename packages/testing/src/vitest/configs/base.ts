@@ -1,5 +1,5 @@
-import { UserConfig } from 'vitest/config';
-import path from 'path';
+import { UserConfig } from "vitest/config";
+import path from "path";
 
 /**
  * Creates a base Vitest configuration for packages in the monorepo
@@ -13,28 +13,28 @@ export function createBaseConfig(
 ): UserConfig {
   return {
     test: {
-      environment: 'node',
+      environment: "node",
       globals: true,
       setupFiles: [
         ...(customConfig.test?.setupFiles || []),
         // Don't rely on a missing setup file
         // path.resolve(__dirname, '../setup/index.ts'),
       ],
-      include: ['**/*.test.{ts,tsx}'],
+      include: ["**/*.test.{ts,tsx}"],
 
       // Enhanced coverage configuration with higher thresholds
       coverage: {
-        provider: 'v8',
-        reporter: ['text', 'json', 'html'],
+        provider: "v8",
+        enabled: true,
         exclude: [
-          'coverage/**',
-          'dist/**',
-          '**/node_modules/**',
-          '**/*.d.ts',
-          'test?(s)/**',
-          '**/__tests__/**',
-          '**/*.test.{ts,tsx}',
-          '**/vitest.config.*',
+          "coverage/**",
+          "dist/**",
+          "**/node_modules/**",
+          "**/*.d.ts",
+          "test?(s)/**",
+          "**/__tests__/**",
+          "**/*.test.{ts,tsx}",
+          "**/vitest.config.*",
         ],
         thresholds: {
           statements: 95,
@@ -52,12 +52,12 @@ export function createBaseConfig(
       // Sequence options for test ordering
       sequence: {
         shuffle: false,
-        hooks: 'stack',
-        setupFiles: 'parallel',
+        hooks: "stack",
+        setupFiles: "parallel",
       },
 
       // Pool options for parallel testing
-      pool: 'threads',
+      pool: "threads",
       poolOptions: {
         threads: {
           singleThread: false,
@@ -79,7 +79,7 @@ export function createBaseConfig(
     },
     resolve: {
       alias: {
-        '@': path.resolve(packageDir),
+        "@": path.resolve(packageDir),
         ...(customConfig.resolve?.alias || {}),
       },
     },
@@ -110,8 +110,8 @@ export interface TestConfig {
     };
   };
   coverage: {
-    provider: string;
-    reporter: string[];
+    provider: "v8";
+    enabled?: boolean;
     exclude: string[];
     thresholds: {
       statements: number;
@@ -125,11 +125,11 @@ export interface TestConfig {
 // Common test configuration
 export const commonTestConfig: TestConfig = {
   // Base configuration
-  environment: 'node',
+  environment: "node",
   globals: true,
-  setupFiles: ['./__tests__/setup.ts'],
-  include: ['**/*.test.{ts,tsx}'],
-  exclude: ['**/node_modules/**'],
+  setupFiles: ["./__tests__/setup.ts"],
+  include: ["**/*.test.{ts,tsx}"],
+  exclude: ["**/node_modules/**"],
   testTimeout: 10000,
   hookTimeout: 10000,
 
@@ -141,18 +141,18 @@ export const commonTestConfig: TestConfig = {
 
   // Coverage configuration
   coverage: {
-    provider: 'v8',
-    reporter: ['text', 'json', 'html'],
+    provider: "v8",
+    enabled: true,
     exclude: [
-      'coverage/**',
-      'dist/**',
-      '**/node_modules/**',
-      '**/*.d.ts',
-      'test/**',
-      'tests/**',
-      '**/__tests__/**',
-      '**/*.test.{ts,tsx}',
-      '**/vitest.config.*',
+      "coverage/**",
+      "dist/**",
+      "**/node_modules/**",
+      "**/*.d.ts",
+      "test/**",
+      "tests/**",
+      "**/__tests__/**",
+      "**/*.test.{ts,tsx}",
+      "**/vitest.config.*",
     ],
     thresholds: {
       statements: 80,
@@ -166,7 +166,7 @@ export const commonTestConfig: TestConfig = {
 // React testing configuration that extends the common config
 export const reactTestConfig: TestConfig = {
   ...commonTestConfig,
-  environment: 'jsdom',
+  environment: "jsdom",
   deps: {
     ...commonTestConfig.deps,
     // Special handling for React packages
@@ -181,5 +181,5 @@ export const reactTestConfig: TestConfig = {
 // Node testing configuration - same as common but explicitly set
 export const nodeTestConfig: TestConfig = {
   ...commonTestConfig,
-  environment: 'node',
+  environment: "node",
 };

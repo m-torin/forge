@@ -2,9 +2,9 @@
  * React-specific authentication mocks for testing
  * This file provides mock implementations of React auth components and hooks
  */
-import React from 'react';
-import { vi } from 'vitest';
-import { mockUsers, mockUseAuth } from './auth-node.ts';
+import React from "react";
+import { vi } from "vitest";
+import { mockUsers, mockUseAuth } from "./auth-node.ts";
 
 // Mock auth context provider for React components
 export interface AuthProviderProps {
@@ -34,8 +34,8 @@ const MockProvider: React.FC<{
   value: ReturnType<typeof mockUseAuth>;
 }> = ({ children, value }) => {
   return React.createElement(
-    'div',
-    { 'data-testid': 'auth-provider' },
+    "div",
+    { "data-testid": "auth-provider" },
     children,
   );
 };
@@ -44,4 +44,4 @@ const MockProvider: React.FC<{
 AuthContext.Provider = MockProvider as unknown as typeof AuthContext.Provider;
 
 // Re-export node auth mocks for convenience
-export * from './auth-node.ts';
+export * from "./auth-node.ts";

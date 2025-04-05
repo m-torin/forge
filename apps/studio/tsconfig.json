@@ -1,5 +1,8 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
-  "include": ["**/*.ts", "**/*.tsx"],
+  "extends": "../../packages/typescript-config/library.json", // Use relative path
+  "include": [
+    "**/*.ts",
+    "ambient.d.ts" // Include local ambient declarations
+  ],
   "exclude": ["node_modules"]
 }

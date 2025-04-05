@@ -1,8 +1,14 @@
 {
   "extends": "../typescript-config/base.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "allowImportingTsExtensions": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "noEmit": true
-  }
+    "noEmit": true,
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types", "./@types", "./types"]
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts", "ambient.d.ts"],
+  "exclude": ["node_modules"]
 }

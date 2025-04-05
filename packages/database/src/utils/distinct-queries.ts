@@ -1,152 +1,92 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 /**
- * Get one product from each category - optimized with nativeDistinct
- * Useful for creating category showcase sections
+ * Get distinct providers from user accounts
  */
-export async function getCategoryShowcaseProducts() {
-  return prisma.product.findMany({
-    distinct: ['categoryId'],
-    where: {
-      sellerRelationships: {
-        some: {
-          isAvailable: true,
-          discountPercent: { gt: 0 }
-        }
-      }
-    },
-    include: {
-      category: true,
-      sellerRelationships: {
-        take: 1,
-        where: { isAvailable: true },
-        orderBy: { discountPercent: 'desc' }
+export async function getDistinctProviders() {
+  return prisma.account.findMany({
+    distinct: ["provider"],
+    select: {
+      provider: true,
+      _count: {
+        select: { user: true },
       },
-      canonicalUrl: true
     },
-    orderBy: {
-      name: 'asc'
-    }
+    where: {
+      provider: { not: null },
+    },
   });
 }
 
 /**
- * Get all distinct sellers for a specific product category
- * Useful for marketplace filtering
+ * Get users with distinct session expiry ranges
  */
-export async function getDistinctSellersForCategory(categoryId: number) {
-  return prisma.productSellerBrand.findMany({
-    where: {
-      product: { categoryId }
-    },
-    distinct: ['sellerId'],
+export async function getUsersBySessionExpiryRange() {
+  const now = new Date();
+
+  // Expiring today
+  const endOfDay = new Date(now);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  // Expiring this week
+  const endOfWeek = new Date(now);
+  endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
+
+  // Expiring this month
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  return {
+    expiringToday: await getSessionsByRange(now, endOfDay),
+    expiringThisWeek: await getSessionsByRange(now, endOfWeek),
+    expiringThisMonth: await getSessionsByRange(now, endOfMonth),
+    expired: await getSessionsByRange(undefined, now, true),
+  };
+}
+
+async function getSessionsByRange(start?: Date, end?: Date, expired = false) {
+  const where: any = {};
+
+  if (expired) {
+    where.expires = { lt: end };
+  } else {
+    where.expires = {};
+    if (start) where.expires.gte = start;
+    if (end) where.expires.lte = end;
+  }
+
+  return prisma.session.findMany({
+    distinct: ["userId"],
     include: {
-      seller: {
+      user: true,
+    },
+    where,
+  });
+}
+
+/**
+ * Get users with multiple accounts by provider
+ */
+export async function getUsersWithMultipleProviders() {
+  const users = await prisma.user.findMany({
+    include: {
+      accounts: {
         select: {
-          id: true,
-          name: true,
-          slug: true
-        }
-      }
-    }
-  });
-}
-
-/**
- * Get distinct products for a given story
- * Useful when a story has multiple entries for the same product with different sellers
- */
-export async function getDistinctStoryProducts(storyId: number) {
-  return prisma.product.findMany({
-    where: {
-      stories: {
-        some: { id: storyId }
-      }
-    },
-    distinct: ['id'],
-    include: {
-      sellerRelationships: {
-        take: 1,
-        where: { isAvailable: true },
-        orderBy: { priceSale: 'asc' }
+          provider: true,
+        },
       },
-      category: true
-    }
-  });
-}
-
-/**
- * Get distinct product types (variants) by media type
- * Useful for faceted navigation
- */
-export async function getDistinctMediaTypes() {
-  return prisma.productVariant.findMany({
+    },
     where: {
-      mediaType: { not: null }
+      accounts: {
+        some: {},
+      },
     },
-    distinct: ['mediaType'],
-    select: {
-      mediaType: true
-    }
-  });
-}
-
-/**
- * Get distinct fandoms with story counts - for homepage sections
- */
-export async function getDistinctFandomsWithStories() {
-  const fandoms = await prisma.fandom.findMany({
-    include: {
-      _count: {
-        select: { stories: true }
-      }
-    }
   });
 
-  // Get one story from each fandom for preview
-  const fandomPreviews = await Promise.all(
-    fandoms.map(async (fandom) => {
-      const previewStory = await prisma.story.findFirst({
-        where: { fandomId: fandom.id },
-        orderBy: { productCount: 'desc' },
-        include: {
-          products: {
-            take: 1
-          }
-        }
-      });
-      
-      return {
-        ...fandom,
-        previewStory
-      };
-    })
-  );
-  
-  return fandomPreviews;
-}
-
-/**
- * Get distinct brand types with at least one product
- * Useful for brand directory
- */
-export async function getDistinctBrandTypes() {
-  return prisma.brand.findMany({
-    where: {
-      type: { not: null },
-      productsAsSeller: { some: {} }
-    },
-    distinct: ['type'],
-    select: {
-      type: true,
-      _count: {
-        select: { productsAsSeller: true }
-      }
-    },
-    orderBy: {
-      type: 'asc'
-    }
+  // Filter to only users with multiple distinct providers
+  return users.filter((user) => {
+    const distinctProviders = new Set(user.accounts.map((a) => a.provider));
+    return distinctProviders.size > 1;
   });
 }

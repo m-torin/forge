@@ -15,15 +15,15 @@ import {
   mockFetch,
   testEnvVars,
   validationPatterns,
-} from '@repo/testing/vitest/env';
+} from "@repo/testing/vitest/env";
 
-describe('My Test Suite', () => {
+describe("My Test Suite", () => {
   // Setup before tests
   beforeEach(() => {
     // Mock environment variables using vi.stubEnv
     mockEnvVars({
-      API_KEY: 'test-key',
-      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test',
+      API_KEY: "test-key",
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test",
     });
 
     // Or use standard test values
@@ -33,14 +33,14 @@ describe('My Test Suite', () => {
     setupConsoleMocks();
 
     // Mock the current date
-    mockDate(new Date('2025-01-01'));
+    mockDate(new Date("2025-01-01"));
 
     // Mock fetch
-    mockFetch({ data: 'test' });
+    mockFetch({ data: "test" });
   });
 
   // Your tests here
-  it('uses environment variables', () => {
+  it("uses environment variables", () => {
     // Test code that uses environment variables
   });
 });
@@ -55,8 +55,8 @@ Mock environment variables for Vitest tests. This implementation uses
 
 ```typescript
 const restore = mockEnvVars({
-  API_KEY: 'test-key',
-  DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test',
+  API_KEY: "test-key",
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test",
 });
 
 // Restore original environment
@@ -83,10 +83,10 @@ functions.
 const restore = setupConsoleMocks();
 
 // Test code that uses console methods
-console.log('test'); // This is now a mock function
+console.log("test"); // This is now a mock function
 
 // Verify console was called
-expect(console.log).toHaveBeenCalledWith('test');
+expect(console.log).toHaveBeenCalledWith("test");
 
 // Restore original console methods
 restore();
@@ -112,7 +112,7 @@ Mock the current date for testing. This replaces the global Date constructor
 with a mock that returns the specified date.
 
 ```typescript
-const restore = mockDate(new Date('2025-01-01'));
+const restore = mockDate(new Date("2025-01-01"));
 
 // Test code that uses Date
 const now = new Date(); // This will be 2025-01-01
@@ -129,16 +129,16 @@ returns the specified response.
 
 ```typescript
 const fetchMock = mockFetch({
-  data: 'test',
+  data: "test",
   status: 200,
 });
 
 // Test code that uses fetch
-const response = await fetch('https://example.com');
+const response = await fetch("https://example.com");
 const data = await response.json(); // { data: 'test' }
 
 // Verify fetch was called
-expect(fetchMock).toHaveBeenCalledWith('https://example.com');
+expect(fetchMock).toHaveBeenCalledWith("https://example.com");
 ```
 
 ## Standard Test Values
@@ -147,7 +147,7 @@ The module re-exports the standard test values from the core environment
 utilities:
 
 ```typescript
-import { testEnvVars } from '@repo/testing/vitest/env';
+import { testEnvVars } from "@repo/testing/vitest/env";
 
 // Authentication
 testEnvVars.CLERK_SECRET_KEY; // 'sk_test_clerk_secret_key'
@@ -177,7 +177,7 @@ The module also re-exports the validation patterns from the core environment
 utilities:
 
 ```typescript
-import { validationPatterns } from '@repo/testing/vitest/env';
+import { validationPatterns } from "@repo/testing/vitest/env";
 
 // Authentication
 validationPatterns.clerk.secretKeyTest; // /^sk_test_/

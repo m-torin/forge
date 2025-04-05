@@ -187,8 +187,8 @@ Follow the standard initial setup process:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/next-forge.git
-cd next-forge
+git clone https://github.com/your-org/forge.git
+cd forge
 
 # Install dependencies
 pnpm install

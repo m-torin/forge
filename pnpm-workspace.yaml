@@ -4,52 +4,57 @@ packages:
   - functions/*
   - infrastructure/*
 catalog:
-  react: ^19.0.0
-  react-dom: ^19.0.0
-  next: ^15.1.6
-  next-auth: beta
-  '@types/react': ^19.0.7
-  '@types/react-dom': ^19.0.4
-  '@types/node': ^22.13.1
-  typescript: ^5.3.3
-  eslint: ^9.21.0
-  vitest: ^3.0.7
-  '@vitest/coverage-v8': ^3.0.8
-  '@vitest/ui': ^3.0.8
-  '@testing-library/react': ^16.2.0
-  vitest-mock-extended: ^3.0.1
-  '@next/eslint-plugin-next': ^15.2.2
-  '@mantine/core': ^7.17.1
-  '@mantine/form': ^7.17.1
-  '@mantine/hooks': ^7.17.1
-  '@mantine/modals': ^7.17.1
-  '@mantine/notifications': ^7.17.1
-  '@tabler/icons-react': ^3.29.0
-  postcss: ^8.5.3
+  "@clerk/nextjs": ^6.15.0
+  "@clerk/themes": ^2.2.32
+  "@mantine/core": ^7.17.4
+  "@mantine/form": ^7.17.4
+  "@mantine/hooks": ^7.17.4
+  "@mantine/modals": ^7.17.4
+  "@mantine/notifications": ^7.17.4
+  "@next/eslint-plugin-next": ^15.3.0
+  "@prisma/client": ^6.6.0
+  "@t3-oss/env-core": ^0.12.0
+  "@t3-oss/env-nextjs": ^0.12.0
+  "@tabler/icons-react": ^3.31.0
+  "@tailwindcss/postcss": ^4.1.4
+  "@testing-library/jest-dom": ^6.6.3
+  "@testing-library/react-hooks": ^8.0.1
+  "@testing-library/react": ^16.3.0
+  "@types/node": ^22.14.1
+  "@types/react-dom": ^19.1.2
+  "@types/react": ^19.1.2
+  "@vercel/style-guide": ^6.0.0
+  "@vitest/coverage-v8": ^3.1.1
+  "@vitest/ui": ^3.1.1
+  next-themes: ^0.4.6
+  server-only: ^0.0.1
+  autoprefixer: ^10.4.21
+  clsx: ^2.1.1
+  eslint: ^9.24.0
+  framer-motion: ^12.7.3
+  jsdom: ^26.1.0
+  mantine-form-zod-resolver: ^1.1.0
+  next-auth: 4.24.11
+  next: ^15.3.0
   postcss-loader: ^8.1.1
   postcss-preset-mantine: ^1.17.0
   postcss-simple-vars: ^7.0.1
-  autoprefixer: ^10.4.21
-  tailwindcss: ^4.0.14
-  '@tailwindcss/postcss': ^4.0.14
-  tailwind-preset-mantine: ^2.0.4
-  prisma: ^6.4.1
-  '@prisma/client': ^6.4.1
-  zod: ^3.24.1
+  postcss: ^8.5.3
+  prisma: ^6.6.0
+  react-dom: ^19.1.0
+  react: ^19.1.0
+  tailwind-preset-mantine: ^2.0.5
+  tailwindcss: ^4.1.4
+  typescript: 5.8.3
+  vitest-mock-extended: ^3.1.0
+  vitest: ^3.1.1
   zod-prisma-types: ^3.2.4
-  mantine-form-zod-resolver: ^1.1.0
-  framer-motion: ^12.4.10
-  '@t3-oss/env-core': ^0.12.0
-  '@t3-oss/env-nextjs': ^0.12.0
-  clsx: ^2.1.1
-  jsdom: ^24.0.0
-  '@testing-library/react-hooks': ^8.0.1
-  '@testing-library/jest-dom': ^6.4.6
+  zod: ^3.24.2
 onlyBuiltDependencies:
-  - '@clerk/shared'
-  - '@prisma/client'
-  - '@prisma/engines'
-  - '@sentry/cli'
+  - "@clerk/shared"
+  - "@prisma/client"
+  - "@prisma/engines"
+  - "@sentry/cli"
   - bufferutil
   - core-js
   - core-js-pure

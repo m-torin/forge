@@ -25,17 +25,17 @@ For React component tests, create a file in the `__tests__/components` directory
 with a `.test.tsx` extension.
 
 ```tsx
-import { describe, expect, it } from 'vitest';
-import { createRender, screen } from '../setup';
-import { YourComponent } from '../../components/your-component';
+import { describe, expect, it } from "vitest";
+import { createRender, screen } from "../setup";
+import { YourComponent } from "../../components/your-component";
 
 // Create a custom render function
 const customRender = createRender();
 
-describe('YourComponent', () => {
-  it('renders correctly', () => {
+describe("YourComponent", () => {
+  it("renders correctly", () => {
     customRender(<YourComponent />);
-    expect(screen.getByText('Some text')).toBeInTheDocument();
+    expect(screen.getByText("Some text")).toBeInTheDocument();
   });
 });
 ```

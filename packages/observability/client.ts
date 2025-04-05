@@ -4,10 +4,11 @@
  * https://docs.sentry.io/platforms/javascript/guides/nextjs/
  */
 
-import { init, replayIntegration } from '@sentry/nextjs';
-import { keys } from './keys';
+import { init, replayIntegration } from "@sentry/nextjs";
 
-export const initializeSentry = (): ReturnType<typeof init> =>
+import { keys } from "./keys";
+
+export const initializeSentryClient = (): ReturnType<typeof init> =>
   init({
     dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
 
@@ -28,9 +29,9 @@ export const initializeSentry = (): ReturnType<typeof init> =>
     // You can remove this option if you're not planning to use the Sentry Session Replay feature:
     integrations: [
       replayIntegration({
+        blockAllMedia: true,
         // Additional Replay configuration goes in here, for example:
         maskAllText: true,
-        blockAllMedia: true,
       }),
     ],
   });

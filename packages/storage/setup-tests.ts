@@ -1,70 +1,80 @@
-import '@repo/testing/src/vitest/core/setup';
-import { vi } from 'vitest';
+import "@repo/testing/src/vitest/core/setup";
+import { vi } from "vitest";
 
 // Mock environment variables
-process.env.BLOB_READ_WRITE_TOKEN = 'test-blob-token';
-process.env.NODE_ENV = 'test';
+process.env.BLOB_READ_WRITE_TOKEN = "test-blob-token";
+process.env.NODE_ENV = "test";
 
 // Mock @t3-oss/env-nextjs
-vi.mock('@t3-oss/env-nextjs', () => ({
-  createEnv: vi.fn().mockImplementation(({ server, runtimeEnv }) => {
-    const env = {};
-    Object.keys(server).forEach((key) => {
-      env[key] = runtimeEnv[key];
-    });
-    return () => env;
-  }),
+vi.mock("@t3-oss/env-nextjs", () => ({
+  createEnv: vi
+    .fn()
+    .mockImplementation(
+      ({
+        runtimeEnv,
+        server,
+      }: {
+        server: Record<string, any>;
+        runtimeEnv: Record<string, any>;
+      }) => {
+        const env: Record<string, any> = {};
+        Object.keys(server).forEach((key) => {
+          env[key] = runtimeEnv[key];
+        });
+        return () => env;
+      },
+    ),
 }));
 
 // Mock @vercel/blob
-vi.mock('@vercel/blob', () => {
+vi.mock("@vercel/blob", () => {
   return {
-    put: vi.fn().mockResolvedValue({
-      url: 'https://example.com/test-blob',
-      pathname: '/test-blob',
-      contentType: 'application/octet-stream',
-      contentDisposition: 'attachment',
+    del: vi.fn().mockResolvedValue(undefined),
+    get: vi.fn().mockResolvedValue({
+      blob: new Blob(["test content"]),
+      contentDisposition: "attachment",
+      contentType: "application/octet-stream",
       size: 1024,
+    }),
+    head: vi.fn().mockResolvedValue({
+      pathname: "/test-blob",
+      url: "https://example.com/test-blob",
+      contentDisposition: "attachment",
+      contentType: "application/octet-stream",
+      size: 1024,
+      uploadedAt: new Date(),
     }),
     list: vi.fn().mockResolvedValue({
       blobs: [
         {
-          url: 'https://example.com/test-blob-1',
-          pathname: '/test-blob-1',
-          contentType: 'application/octet-stream',
-          contentDisposition: 'attachment',
+          pathname: "/test-blob-1",
+          url: "https://example.com/test-blob-1",
+          contentDisposition: "attachment",
+          contentType: "application/octet-stream",
           size: 1024,
           uploadedAt: new Date(),
         },
       ],
       cursor: null,
     }),
-    get: vi.fn().mockResolvedValue({
-      blob: new Blob(['test content']),
-      contentType: 'application/octet-stream',
-      contentDisposition: 'attachment',
+    put: vi.fn().mockResolvedValue({
+      pathname: "/test-blob",
+      url: "https://example.com/test-blob",
+      contentDisposition: "attachment",
+      contentType: "application/octet-stream",
       size: 1024,
-    }),
-    del: vi.fn().mockResolvedValue(undefined),
-    head: vi.fn().mockResolvedValue({
-      url: 'https://example.com/test-blob',
-      pathname: '/test-blob',
-      contentType: 'application/octet-stream',
-      contentDisposition: 'attachment',
-      size: 1024,
-      uploadedAt: new Date(),
     }),
   };
 });
 
 // Mock @vercel/blob/client
-vi.mock('@vercel/blob/client', () => {
+vi.mock("@vercel/blob/client", () => {
   return {
     // Client-side functions
     getPutUrl: vi.fn().mockResolvedValue({
-      url: 'https://example.com/upload-url',
+      url: "https://example.com/upload-url",
       headers: {
-        'Content-Type': 'application/octet-stream',
+        "Content-Type": "application/octet-stream",
       },
     }),
     getUrl: vi.fn().mockImplementation((pathname) => {

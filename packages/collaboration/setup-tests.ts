@@ -1,8 +1,9 @@
-import { vi } from 'vitest';
-import '@repo/testing/src/vitest/core/setup';
+import { vi } from "vitest";
+
+import "@repo/testing/src/vitest/core/setup";
 
 // Mock Liveblocks
-vi.mock('@liveblocks/react/suspense', () => ({
+vi.mock("@liveblocks/react/suspense", () => ({
   ClientSideSuspense: ({
     children,
     fallback,
@@ -15,27 +16,27 @@ vi.mock('@liveblocks/react/suspense', () => ({
   useMyPresence: vi.fn().mockReturnValue([{ cursor: null }, vi.fn()]),
   useOthers: vi.fn().mockReturnValue([]),
   useRoom: vi.fn().mockReturnValue({
+    getStorage: vi.fn(),
     subscribe: vi.fn(),
     unsubscribe: vi.fn(),
-    getStorage: vi.fn(),
   }),
 }));
 
-vi.mock('@liveblocks/node', () => ({
+vi.mock("@liveblocks/node", () => ({
   Liveblocks: vi.fn().mockImplementation(() => ({
     prepareSession: vi.fn().mockImplementation((userId) => ({
-      FULL_ACCESS: 'full',
       allow: vi.fn(),
       authorize: vi.fn().mockResolvedValue({
-        status: 200,
         body: JSON.stringify({ userId }),
+        status: 200,
       }),
+      FULL_ACCESS: "full",
     })),
   })),
 }));
 
 // Mock server-only
-vi.mock('server-only', () => ({}));
+vi.mock("server-only", () => ({}));
 
 // Mock environment variables
-process.env.LIVEBLOCKS_SECRET = 'sk_test_liveblocks_secret';
+process.env.LIVEBLOCKS_SECRET = "sk_test_liveblocks_secret";

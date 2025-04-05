@@ -14,7 +14,7 @@
  * ```
  */
 export function formatTestId(name: string): string {
-  return `test-${name.toLowerCase().replace(/\s+/g, '-')}`;
+  return `test-${name.toLowerCase().replace(/\s+/g, "-")}`;
 }
 
 /**
@@ -53,9 +53,9 @@ export function isElementVisible(element: HTMLElement): boolean {
 
   const style = window.getComputedStyle(element);
   return (
-    style.display !== 'none' &&
-    style.visibility !== 'hidden' &&
-    style.opacity !== '0' &&
+    style.display !== "none" &&
+    style.visibility !== "hidden" &&
+    style.opacity !== "0" &&
     element.offsetWidth > 0 &&
     element.offsetHeight > 0
   );
@@ -67,7 +67,7 @@ export function isElementVisible(element: HTMLElement): boolean {
  * @returns The normalized text content
  */
 export function getNormalizedText(element: HTMLElement): string {
-  return (element.textContent || '').trim().replace(/\s+/g, ' ');
+  return (element.textContent || "").trim().replace(/\s+/g, " ");
 }
 
 /**

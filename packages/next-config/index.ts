@@ -1,18 +1,17 @@
-import withBundleAnalyzer from '@next/bundle-analyzer';
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
 
-// @ts-expect-error No declaration file
-import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const otelRegex = /@opentelemetry\/instrumentation/;
 
 export const config: NextConfig = {
   images: {
-    formats: ['image/avif', 'image/webp'],
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'img.clerk.com',
+        hostname: "img.clerk.com",
+        protocol: "https",
       },
     ],
   },
@@ -20,16 +19,16 @@ export const config: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/ingest/static/:path*',
-        destination: 'https://us-assets.i.posthog.com/static/:path*',
+        destination: "https://us-assets.i.posthog.com/static/:path*",
+        source: "/ingest/static/:path*",
       },
       {
-        source: '/ingest/:path*',
-        destination: 'https://us.i.posthog.com/:path*',
+        destination: "https://us.i.posthog.com/:path*",
+        source: "/ingest/:path*",
       },
       {
-        source: '/ingest/decide',
-        destination: 'https://us.i.posthog.com/decide',
+        destination: "https://us.i.posthog.com/decide",
+        source: "/ingest/decide",
       },
     ];
   },

@@ -3,28 +3,28 @@ title: Switch to Turso
 description: How to change the database provider to Turso.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "forge",
+        id: "forge",
       },
     },
     {
       user: {
-        name: 'Jamie Barton',
-        id: 'notrab',
+        name: "Jamie Barton",
+        id: "notrab",
       },
       company: {
-        name: 'Turso',
-        id: 'turso',
+        name: "Turso",
+        id: "turso",
       },
     },
   ]}
@@ -35,7 +35,7 @@ types of apps, including AI apps with on-device RAG, local-first vector search,
 offline writes, and privacy-focused data access with low latency.
 
 Here's how to switch from Neon to [Turso](https://turso.tech) for your
-`next-forge` project.
+`forge` project.
 
 ## 1. Sign up to Turso
 
@@ -78,13 +78,13 @@ turso db tokens create <database-name>
 Update your environment variables to use the new Turso connection string:
 
 ```js apps/database/.env
-DATABASE_URL = 'libsql://<database-name>-<account-or-org-slug>.turso.io';
-DATABASE_AUTH_TOKEN = '...';
+DATABASE_URL = "libsql://<database-name>-<account-or-org-slug>.turso.io";
+DATABASE_AUTH_TOKEN = "...";
 ```
 
 ```js apps/app/.env.local
-DATABASE_URL = 'libsql://<database-name>-<account-or-org-slug>.turso.io';
-DATABASE_AUTH_TOKEN = '...';
+DATABASE_URL = "libsql://<database-name>-<account-or-org-slug>.turso.io";
+DATABASE_AUTH_TOKEN = "...";
 ```
 
 Etcetera.
@@ -93,7 +93,7 @@ Now inside `packages/env/index.ts`, add `DATABASE_AUTH_TOKEN` to the `server`
 and `runtimeEnv` objects:
 
 ```ts {3,12}
-const server: Parameters<typeof createEnv>[0]['server'] = {
+const server: Parameters<typeof createEnv>[0]["server"] = {
   // ...
   DATABASE_AUTH_TOKEN: z.string(),
   // ...
@@ -137,7 +137,7 @@ let nextConfig: NextConfig = {
   ...config,
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.externals = [...(config.externals || []), '@libsql/client'];
+      config.externals = [...(config.externals || []), "@libsql/client"];
     }
 
     // ...
@@ -150,10 +150,10 @@ let nextConfig: NextConfig = {
 Open `packages/database/index.ts` and make the following changes:
 
 ```ts packages/database/index.ts
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@libsql/client';
-import { env } from '@repo/env';
+import { createClient } from "@libsql/client";
+import { env } from "@repo/env";
 
 const libsql = createClient({
   url: env.DATABASE_URL,
@@ -186,7 +186,7 @@ CREATE TABLE pages (
 Now wherever you would usually call Prisma, use the `libsql` client instead:
 
 ```ts packages/app/app/(authenticated)/page.tsx
-import { database } from '@repo/database';
+import { database } from "@repo/database";
 
 type PageType = {
   id: number;

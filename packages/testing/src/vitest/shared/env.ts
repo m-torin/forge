@@ -12,7 +12,7 @@ import {
   restoreConsoleMocks as newRestoreConsoleMocks,
   mockDate as newMockDate,
   mockFetch as newMockFetch,
-} from '../env/index.ts';
+} from "../env/index.ts";
 
 /**
  * @deprecated Use imports from '@repo/testing/vitest/env' instead

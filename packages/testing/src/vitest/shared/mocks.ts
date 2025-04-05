@@ -3,7 +3,7 @@
  *
  * These mocks can be used with any testing setup.
  */
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 /**
  * Setup console mocks to prevent noisy console output in tests
@@ -26,7 +26,9 @@ export function setupConsoleMocks(): void {
   console.debug = vi.fn();
 
   // Add restore function to global afterAll
-  if (typeof afterAll === 'function') {
+  // @ts-ignore - afterAll is defined in the global scope
+  if (typeof afterAll === "function") {
+    // @ts-ignore - afterAll is defined in the global scope
     afterAll(() => {
       // Restore original console methods
       if (originalConsole.log) {
@@ -47,7 +49,7 @@ export function restoreConsoleMocks(): void {
   // This is a no-op if setupConsoleMocks wasn't called
   // The actual restoration happens in the afterAll hook
   console.warn(
-    'restoreConsoleMocks is deprecated. Console mocks are automatically restored in afterAll.',
+    "restoreConsoleMocks is deprecated. Console mocks are automatically restored in afterAll.",
   );
 }
 
@@ -56,15 +58,17 @@ export function restoreConsoleMocks(): void {
  * @param fixedDate - The date to fix to (defaults to 2023-01-01)
  * @returns Function to restore the original Date
  */
-export function mockDate(fixedDate: Date = new Date('2023-01-01')): () => void {
+export function mockDate(fixedDate: Date = new Date("2023-01-01")): () => void {
   const RealDate = global.Date;
 
   // @ts-ignore - we're intentionally mocking the Date constructor
   global.Date = class extends RealDate {
     constructor(...args: any[]) {
+      super();
       if (args.length === 0) {
         return new RealDate(fixedDate);
       }
+      // @ts-ignore - spread argument with any[] type
       return new RealDate(...args);
     }
 

@@ -1,6 +1,6 @@
-import { describe } from 'vitest';
+import { describe } from "vitest";
 
 // Skip all tests in this file due to esbuild errors in the test environment
-describe.skip('StatusIndicator', () => {
+describe.skip("StatusIndicator", () => {
   // Tests are skipped due to environment configuration issues
 });

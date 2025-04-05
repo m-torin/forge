@@ -60,11 +60,11 @@ with `content-collections`.
 <CodeGroup>
 
 ```ts packages/cms/next-config.ts
-export { withContentCollections as withCMS } from '@content-collections/next';
+export { withContentCollections as withCMS } from "@content-collections/next";
 ```
 
 ```ts packages/cms/index.ts
-import { allPosts, allLegals } from 'content-collections';
+import { allPosts, allLegals } from "content-collections";
 
 export const blog = {
   postsQuery: null,
@@ -90,11 +90,11 @@ export const legal = {
 ```
 
 ```tsx packages/cms/components/body.tsx
-import { MDXContent } from '@content-collections/mdx/react';
-import type { ComponentProps } from 'react';
+import { MDXContent } from "@content-collections/mdx/react";
+import type { ComponentProps } from "react";
 
-type BodyProperties = Omit<ComponentProps<typeof MDXContent>, 'code'> & {
-  content: ComponentProps<typeof MDXContent>['code'];
+type BodyProperties = Omit<ComponentProps<typeof MDXContent>, "code"> & {
+  content: ComponentProps<typeof MDXContent>["code"];
 };
 
 export const Body = ({ content, ...props }: BodyProperties) => (
@@ -117,7 +117,7 @@ export const Toolbar = () => null;
 ```
 
 ```tsx packages/cms/components/toc.tsx
-import { getTableOfContents } from 'fumadocs-core/server';
+import { getTableOfContents } from "fumadocs-core/server";
 
 type TableOfContentsProperties = {
   data: string;
@@ -158,18 +158,18 @@ Update the `sitemap.ts` file to scan the `content` directory for MDX files:
 // ...
 
 const blogs = fs
-  .readdirSync('content/blog', { withFileTypes: true })
+  .readdirSync("content/blog", { withFileTypes: true })
   .filter((file) => !file.isDirectory())
-  .filter((file) => !file.name.startsWith('_'))
-  .filter((file) => !file.name.startsWith('('))
-  .map((file) => file.name.replace('.mdx', ''));
+  .filter((file) => !file.name.startsWith("_"))
+  .filter((file) => !file.name.startsWith("("))
+  .map((file) => file.name.replace(".mdx", ""));
 
 const legals = fs
-  .readdirSync('content/legal', { withFileTypes: true })
+  .readdirSync("content/legal", { withFileTypes: true })
   .filter((file) => !file.isDirectory())
-  .filter((file) => !file.name.startsWith('_'))
-  .filter((file) => !file.name.startsWith('('))
-  .map((file) => file.name.replace('.mdx', ''));
+  .filter((file) => !file.name.startsWith("_"))
+  .filter((file) => !file.name.startsWith("("))
+  .map((file) => file.name.replace(".mdx", ""));
 
 // ...
 ```
@@ -181,19 +181,19 @@ collections in the `web` package.
 
 <Note>
   We're remapping the `title` field to `_title` and the `_meta.path` field to
-  `_slug` to match the default next-forge CMS.
+  `_slug` to match the default forge CMS.
 </Note>
 
 <CodeGroup>
 
 ```ts packages/cms/collections.ts
-import { defineCollection, defineConfig } from '@content-collections/core';
-import { compileMDX } from '@content-collections/mdx';
+import { defineCollection, defineConfig } from "@content-collections/core";
+import { compileMDX } from "@content-collections/mdx";
 
 const posts = defineCollection({
-  name: 'posts',
-  directory: 'content/blog',
-  include: '**/*.mdx',
+  name: "posts",
+  directory: "content/blog",
+  include: "**/*.mdx",
   schema: (z) => ({
     title: z.string(),
     description: z.string(),
@@ -217,9 +217,9 @@ const posts = defineCollection({
 });
 
 const legals = defineCollection({
-  name: 'legal',
-  directory: 'content/legal',
-  include: '**/*.mdx',
+  name: "legal",
+  directory: "content/legal",
+  include: "**/*.mdx",
   schema: (z) => ({
     title: z.string(),
     description: z.string(),
@@ -245,7 +245,7 @@ export default defineConfig({
 ```
 
 ```ts packages/web/content-collections.ts
-export { default } from '@repo/cms/collections';
+export { default } from "@repo/cms/collections";
 ```
 
 </CodeGroup>
@@ -258,8 +258,8 @@ frontmatter will be used to generate the blog post page. For example:
 
 ```mdx apps/web/content/blog/my-first-post.mdx
 ---
-title: 'My First Post'
-description: 'This is my first blog post'
+title: "My First Post"
+description: "This is my first blog post"
 date: 2024-10-23
 image: /blog/my-first-post.png
 ---
@@ -286,12 +286,12 @@ import {
   rehypeCode,
   remarkGfm,
   remarkHeading,
-} from 'fumadocs-core/mdx-plugins';
+} from "fumadocs-core/mdx-plugins";
 
 const rehypeCodeOptions: RehypeCodeOptions = {
   themes: {
-    light: 'catppuccin-mocha',
-    dark: 'catppuccin-mocha',
+    light: "catppuccin-mocha",
+    dark: "catppuccin-mocha",
   },
 };
 
@@ -317,7 +317,7 @@ You can calculate reading time for your collection by adding a transform
 function.
 
 ```ts {1,10}
-import readingTime from 'reading-time';
+import readingTime from "reading-time";
 
 const posts = defineCollection({
   // ...
@@ -338,7 +338,7 @@ You can generate a low-quality image placeholder for your collection by adding a
 transform function.
 
 ```ts {1,8-19,23,24}
-import { sqip } from 'sqip';
+import { sqip } from "sqip";
 
 const posts = defineCollection({
   // ...
@@ -349,9 +349,9 @@ const posts = defineCollection({
       sqip({
         input: `./public/${page.image}`,
         plugins: [
-          'sqip-plugin-primitive',
-          'sqip-plugin-svgo',
-          'sqip-plugin-data-uri',
+          "sqip-plugin-primitive",
+          "sqip-plugin-svgo",
+          "sqip-plugin-data-uri",
         ],
       }),
     );

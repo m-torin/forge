@@ -5,7 +5,7 @@
  * It helps standardize how test environments are detected and how validation rules
  * are applied differently in test vs. production environments.
  */
-import { exampleEnvVars, testEnvVars, validationPatterns } from './values.ts';
+import { exampleEnvVars, testEnvVars, validationPatterns } from "./values.ts";
 
 // Re-export constants for convenience
 export { exampleEnvVars, testEnvVars, validationPatterns };
@@ -15,7 +15,7 @@ export { exampleEnvVars, testEnvVars, validationPatterns };
  * @returns boolean indicating if NODE_ENV === 'test'
  */
 export const isTestEnvironment = (): boolean => {
-  return process.env.NODE_ENV === 'test';
+  return process.env.NODE_ENV === "test";
 };
 
 /**
@@ -94,9 +94,9 @@ export function setupAllTestEnvVars(
 ): () => void {
   if (!envVars) {
     console.warn(
-      'No environment variables provided to setupAllTestEnvVars. ' +
+      "No environment variables provided to setupAllTestEnvVars. " +
         "You should provide your application's environment variables. " +
-        'See exampleEnvVars for format examples.',
+        "See exampleEnvVars for format examples.",
     );
     return () => {};
   }
@@ -108,22 +108,27 @@ export function setupAllTestEnvVars(
  * @param date - Date to mock (defaults to 2023-01-01)
  * @returns Function to restore original Date
  */
-export function mockDate(date: Date = new Date('2023-01-01')): () => void {
+export function mockDate(date: Date = new Date("2023-01-01")): () => void {
   const RealDate = global.Date;
 
-  // @ts-ignore - We're intentionally mocking the Date constructor
-  global.Date = class extends RealDate {
-    constructor(...args: any[]) {
-      if (args.length === 0) {
-        return new RealDate(date);
+  // Create a mock Date class
+  class MockDate extends RealDate {
+    constructor(...args: ConstructorParameters<typeof RealDate>) {
+      // @ts-ignore - Allow comparison between different types
+      if (args.length == 0) {
+        super(date);
+      } else {
+        super(...args);
       }
-      return new RealDate(...args);
     }
 
     static now() {
       return date.getTime();
     }
-  };
+  }
+
+  // Replace global Date with our mock
+  global.Date = MockDate as DateConstructor;
 
   return () => {
     global.Date = RealDate;
@@ -163,6 +168,6 @@ export function setupConsoleMocks(): () => void {
  */
 export function restoreConsoleMocks(): void {
   console.warn(
-    'restoreConsoleMocks is deprecated. Console mocks are automatically restored by the returned function from setupConsoleMocks.',
+    "restoreConsoleMocks is deprecated. Console mocks are automatically restored by the returned function from setupConsoleMocks.",
   );
 }

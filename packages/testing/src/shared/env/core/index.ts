@@ -5,7 +5,7 @@
  */
 
 // Export all utilities
-export * from './utils.ts';
+export * from "./utils.ts";
 
 // Export all values
-export * from './values.ts';
+export * from "./values.ts";

@@ -1,9 +1,9 @@
 ---
 title: Error Capture
-description: How we've configured error capture in next-forge.
+description: How we've configured error capture in forge.
 ---
 
-next-forge uses [Sentry](https://sentry.io/) for error tracking and performance
+forge uses [Sentry](https://sentry.io/) for error tracking and performance
 monitoring. It helps identify, debug, and resolve issues by providing detailed
 error reports, stack traces, and performance metrics across both server and
 client environments. When an error occurs, Sentry captures the full context
@@ -34,9 +34,9 @@ If you want to capture a specific exception rather than letting it bubble up to
 Sentry, you can use the `captureException` function:
 
 ```tsx page.tsx
-import { captureException } from '@sentry/nextjs';
+import { captureException } from "@sentry/nextjs";
 
-captureException(new Error('My error message'));
+captureException(new Error("My error message"));
 ```
 
 ## Tunneling

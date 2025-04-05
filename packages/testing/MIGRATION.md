@@ -36,20 +36,20 @@ patterns:
 
 ```typescript
 // Namespace approach
-import { react } from '@repo/testing/vitest';
+import { react } from "@repo/testing/vitest";
 const { render, screen } = react;
 
 // Deep imports
-import { render } from '@repo/testing/vitest/frameworks/react';
+import { render } from "@repo/testing/vitest/frameworks/react";
 ```
 
 **After:**
 
 ```typescript
 // Direct exports
-import { render, screen, renderHook } from '@repo/testing/vitest';
-import { render as mantineRender } from '@repo/testing/vitest/mantine';
-import { createServerConfig } from '@repo/testing/vitest/server';
+import { render, screen, renderHook } from "@repo/testing/vitest";
+import { render as mantineRender } from "@repo/testing/vitest/mantine";
+import { createServerConfig } from "@repo/testing/vitest/server";
 ```
 
 #### Cypress
@@ -58,11 +58,11 @@ import { createServerConfig } from '@repo/testing/vitest/server';
 
 ```typescript
 // Namespace approach
-import { core } from '@repo/testing/cypress';
+import { core } from "@repo/testing/cypress";
 const { createE2EConfig } = core;
 
 // Deep imports
-import { createE2EConfig } from '@repo/testing/cypress/core';
+import { createE2EConfig } from "@repo/testing/cypress/core";
 ```
 
 **After:**
@@ -73,7 +73,7 @@ import {
   createE2EConfig,
   createComponentConfig,
   baseConfig,
-} from '@repo/testing/cypress';
+} from "@repo/testing/cypress";
 ```
 
 #### Shared Utilities
@@ -82,15 +82,15 @@ import {
 
 ```typescript
 // Deep imports
-import { mockEnvVars } from '@repo/testing/shared/env';
-import { formatTestId } from '@repo/testing/shared/utils';
+import { mockEnvVars } from "@repo/testing/shared/env";
+import { formatTestId } from "@repo/testing/shared/utils";
 ```
 
 **After:**
 
 ```typescript
 // Direct exports
-import { mockEnvVars, formatTestId } from '@repo/testing/shared';
+import { mockEnvVars, formatTestId } from "@repo/testing/shared";
 ```
 
 ## New Features
@@ -116,9 +116,9 @@ how users interact with your application:
 
 ```typescript
 // These commands are automatically available in your Cypress tests
-cy.findByText('Submit').click();
-cy.findByRole('button', { name: /submit/i }).click();
-cy.findByLabelText('Email').type('user@example.com');
+cy.findByText("Submit").click();
+cy.findByRole("button", { name: /submit/i }).click();
+cy.findByLabelText("Email").type("user@example.com");
 ```
 
 This approach encourages writing more resilient tests that are less likely to

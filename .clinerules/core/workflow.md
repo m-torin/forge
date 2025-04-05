@@ -16,7 +16,7 @@
 - **Required**: Yes
 - **Summary**: Standard process for setting up the development environment.
 - **Details**:
-  - Clone the repository: `git clone https://github.com/your-org/next-forge.git`
+  - Clone the repository: `git clone https://github.com/your-org/forge.git`
   - Install dependencies: `pnpm install`
   - Copy environment files: cp apps/_/.env.example apps/_/.env.local
   - Build core packages: `pnpm --filter @repo/database build`

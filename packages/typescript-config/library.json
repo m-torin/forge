@@ -3,6 +3,7 @@
   "display": "Library",
   "extends": "./base.json",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": true

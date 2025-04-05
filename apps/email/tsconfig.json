@@ -1,5 +1,16 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
-  "include": ["**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    // Add types needed for tests, as tsc doesn't run setupFiles
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "setup-tests.ts",
+    "ambient.d.ts", // Include local ambient declarations
+    ".react-email/**/*.ts",
+    ".react-email/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }

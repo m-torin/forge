@@ -5,7 +5,7 @@
  * It helps standardize how test environments are detected and how validation rules
  * are applied differently in test vs. production environments.
  */
-import { testEnvVars, validationPatterns } from './constants.ts';
+import { testEnvVars, validationPatterns } from "./constants.ts";
 
 // Re-export constants for convenience
 export { testEnvVars, validationPatterns };
@@ -15,7 +15,7 @@ export { testEnvVars, validationPatterns };
  * @returns boolean indicating if NODE_ENV === 'test'
  */
 export const isTestEnvironment = (): boolean => {
-  return process.env.NODE_ENV === 'test';
+  return process.env.NODE_ENV === "test";
 };
 
 /**

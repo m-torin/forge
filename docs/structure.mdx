@@ -1,13 +1,13 @@
 ---
 title: Structure
-description: Learn how next-forge apps and packages are structured.
+description: Learn how forge apps and packages are structured.
 ---
 
 <Frame>
   <img src="/images/structure.png" alt="" />
 </Frame>
 
-next-forge is a monorepo, which means it contains multiple packages in a single
+forge is a monorepo, which means it contains multiple packages in a single
 repository. This is a common pattern for modern web applications, as it allows
 you to share code between different parts of the application, and manage them
 all together.
@@ -17,9 +17,69 @@ tool for managing monorepos. It provides a simple way to manage multiple
 packages in a single repository, and is designed to work with modern web
 applications.
 
+## Package Management with pnpm
+
+Dependency management and workspace orchestration are handled by [pnpm](https://pnpm.io/) (version 10+). pnpm is used for its efficiency in managing `node_modules` and its robust support for monorepo features.
+
+### Workspaces
+
+The `pnpm-workspace.yaml` file at the root defines the locations of the packages within the monorepo:
+
+```yaml pnpm-workspace.yaml
+packages:
+  - apps/*
+  - packages/*
+  # Potentially others like functions/*, infrastructure/*
+```
+
+This tells pnpm where to find the individual projects (`apps` and `packages`) that make up the workspace.
+
+### Dependency Catalog
+
+To ensure consistency and simplify dependency version management across the monorepo, Forge utilizes pnpm's `catalog:` protocol. Common dependencies and their versions are defined centrally in the `catalog` section of `pnpm-workspace.yaml`:
+
+```yaml pnpm-workspace.yaml
+catalog:
+  # Frameworks & Core Libraries
+  react: ^19.0.0
+  next: ^15.1.6
+  typescript: 5.4.3
+
+  # Tooling
+  eslint: ^9.21.0
+  vitest: ^3.0.7
+
+  # UI (Example)
+  "@mantine/core": ^7.17.1
+  # ... other common dependencies
+```
+
+Packages within the monorepo reference these catalog entries in their `package.json` files using the `catalog:` protocol:
+
+```json package.json
+{
+  "dependencies": {
+    "react": "catalog:",
+    "@mantine/core": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
+```
+
+This approach offers several benefits:
+
+- **Consistency**: All packages use the exact same version of shared dependencies defined in the catalog.
+- **Simplified Updates**: Updating a dependency across the entire monorepo only requires changing the version in `pnpm-workspace.yaml` and running `pnpm install`.
+- **Clarity**: It's easy to see which common dependencies are used and their standard versions.
+
+Refer to the [pnpm documentation on workspaces](https://pnpm.io/workspaces) and the [catalog protocol](https://pnpm.io/workspaces#dependency-catalog) for more details.
+
 ## Apps
 
-next-forge contains a number of [apps](/apps) that make up your project. Each
+forge contains a number of [apps](/apps) that make up your project. Each
 app is a self-contained application that can be deployed independently.
 
 While you can choose to run these apps on the subdomain of your choice, the
@@ -33,7 +93,7 @@ from the packages it depends on.
 
 ## Packages
 
-next-forge contains a number of shared packages that are used across the
+forge contains a number of shared packages that are used across the
 monorepo. The purpose of these packages is to isolate shared code from the main
 app, making it easier to manage and update.
 

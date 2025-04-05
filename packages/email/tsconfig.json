@@ -1,8 +1,20 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false
   },
-  "include": ["./*.ts", "./*.tsx"],
+  "include": [
+    "./*.ts",
+    "./*.tsx",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }

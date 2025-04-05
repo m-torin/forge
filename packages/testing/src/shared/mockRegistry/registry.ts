@@ -1,12 +1,12 @@
 /**
  * MockRegistry
- * 
+ *
  * A global registry for managing mock values in tests.
  * This allows tests to override default values temporarily and ensures
  * consistent mock values across the test suite.
  */
 
-import { exampleEnvVars } from '../env/core/values.ts';
+import { exampleEnvVars } from "../env/core/values.ts";
 
 // Default values from the existing example environment variables
 const defaultValues: Record<string, any> = {
@@ -34,7 +34,7 @@ const defaultValues: Record<string, any> = {
 
 /**
  * MockRegistry class for managing mock values in tests
- * 
+ *
  * This is implemented as a singleton to ensure consistent values across tests.
  */
 export class MockRegistry {
@@ -82,7 +82,7 @@ export class MockRegistry {
   public override(overrides: Record<string, any>, callback: () => void): void {
     // Save original values
     this.originalValues = { ...this.values };
-    
+
     // Apply overrides
     Object.entries(overrides).forEach(([key, value]) => {
       this.values[key] = value;

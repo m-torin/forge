@@ -1,13 +1,13 @@
 ---
 title: Testing
-description: How we've configured testing in next-forge.
+description: How we've configured testing in forge.
 ---
 
 <Frame>
   <img src="/images/testing.png" alt="" />
 </Frame>
 
-next-forge uses [Vitest](https://vitest.dev/) for unit testing. It's a fast and
+forge uses [Vitest](https://vitest.dev/) for unit testing. It's a fast and
 lightweight testing framework that's compatible with Jest's API. Unit tests are
 run automatically as part of the `build` task in Turborepo.
 
@@ -33,16 +33,16 @@ In the `__tests__` folder, create a new file called `[page].test.tsx` (where
 for the `home` page:
 
 ```tsx apps/app/__tests__/home.test.tsx
-import { render, screen } from '@testing-library/react';
-import { expect, test } from 'vitest';
-import Page from '../app/(unauthenticated)/home/page';
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
+import Page from "../app/(unauthenticated)/home/page";
 
-test('Home Page', () => {
+test("Home Page", () => {
   render(<Page />);
   expect(
-    screen.getByRole('heading', {
+    screen.getByRole("heading", {
       level: 1,
-      name: 'Hello, world!',
+      name: "Hello, world!",
     }),
   ).toBeDefined();
 });
@@ -67,7 +67,7 @@ of the `package.json` file:
 
 ## Setting up Vitest
 
-To set up Vitest for your Next-Forge packages, run the following command:
+To set up Vitest for your Forge packages, run the following command:
 
 ```bash
 pnpm -F @repo/testing setup-vitest <package-path> <type>
@@ -84,27 +84,27 @@ Create a new file called `vitest.config.mjs` in the root of the app and add the
 following configuration:
 
 ```js apps/[app]/vitest.config.mjs
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: './__tests__/setup.ts',
-    include: ['**/__tests__/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**'],
+    setupFiles: "./__tests__/setup.ts",
+    include: ["**/__tests__/**/*.{test,spec}.{ts,tsx}"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**"],
     testTimeout: 10000,
     hookTimeout: 10000,
   },
   resolve: {
     alias: {
-      '@app': path.resolve(__dirname, './src'),
+      "@app": path.resolve(__dirname, "./src"),
     },
   },
 });

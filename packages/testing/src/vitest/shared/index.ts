@@ -5,10 +5,38 @@
  */
 
 // Export environment utilities
-export * from '../env/index.ts';
+export {
+  createTestAwareValidator,
+  // Use the correct exports from the env module
+  testEnvVars,
+  isTestEnvironment,
+  mockEnvVars,
+} from "../env/index.ts";
+
+// Define missing functions for compatibility
+export const getTestEnv = (key: string): string | undefined => {
+  // @ts-ignore - Access testEnvVars
+  return testEnvVars[key];
+};
+
+export const setupTestEnv = (): void => {
+  console.warn("setupTestEnv is deprecated. Use mockEnvVars instead.");
+};
+
+export const validateTestEnv = (): boolean => {
+  console.warn(
+    "validateTestEnv is deprecated. Use createTestAwareValidator instead.",
+  );
+  return true;
+};
 
 // Export mock utilities
-export * from './mocks.ts';
+export {
+  setupConsoleMocks,
+  restoreConsoleMocks,
+  mockDate,
+  mockFetch,
+} from "./mocks.ts";
 
 // Re-export Vitest functions for convenience
 export {
@@ -20,9 +48,9 @@ export {
   afterAll,
   beforeEach,
   afterEach,
-} from 'vitest';
+} from "vitest";
 
 /**
  * @deprecated Use imports from '@repo/testing/vitest/env' instead
  */
-export * from './env.ts';
+export * from "./env.ts";

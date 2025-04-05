@@ -3,38 +3,38 @@ title: Switch to Hypertune
 description: How to change the feature flag provider to Hypertune.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "forge",
+        id: "forge",
       },
     },
     {
       user: {
-        name: 'Michal Bock',
-        id: 'michalbock',
+        name: "Michal Bock",
+        id: "michalbock",
       },
       company: {
-        name: 'Hypertune',
-        id: 'hypertune',
+        name: "Hypertune",
+        id: "hypertune",
       },
     },
     {
       user: {
-        name: 'Miraan Tabrez',
-        id: 'miraantabrez',
+        name: "Miraan Tabrez",
+        id: "miraantabrez",
       },
       company: {
-        name: 'Hypertune',
-        id: 'hypertune',
+        name: "Hypertune",
+        id: "hypertune",
       },
     },
   ]}
@@ -45,12 +45,12 @@ feature flags, A/B testing, analytics and app configuration. Built with full
 end-to-end type-safety, Git version control and local, synchronous, in-memory
 flag evaluation. Optimized for TypeScript, React and Next.js.
 
-Here's how to switch your next-forge project to use Hypertune for feature flags!
+Here's how to switch your forge project to use Hypertune for feature flags!
 
 ## 1. Create a new Hypertune project
 
 Go to Hypertune and create a new project using the
-[next-forge template](https://app.hypertune.com/?new_project=1&new_project_template=next-forge).
+[forge template](https://app.hypertune.com/?new_project=1&new_project_template=forge).
 Then go to the Settings page of your project and copy the main token.
 
 ## 2. Update the environment variables
@@ -59,7 +59,7 @@ Update the environment variables across the project. For example:
 
 ```js apps/app/.env
 // Add this:
-NEXT_PUBLIC_HYPERTUNE_TOKEN = '';
+NEXT_PUBLIC_HYPERTUNE_TOKEN = "";
 ```
 
 Add a `.env` file to the `feature-flags` package with the following contents:
@@ -78,8 +78,8 @@ Use the `NEXT_PUBLIC_HYPERTUNE_TOKEN` environment variable in the call to
 `createEnv`:
 
 ```ts packages/feature-flags/keys.ts {6-8,14}
-import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod';
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
 
 export const keys = () =>
   createEnv({
@@ -147,14 +147,14 @@ Add a `getHypertune.ts` file in the `feature-flags` package which defines a
 SDK on the server:
 
 ```ts packages/feature-flags/lib/getHypertune.ts
-import 'server-only';
-import { auth } from '@repo/auth/server';
-import { unstable_noStore as noStore } from 'next/cache';
-import type { ReadonlyHeaders } from 'next/dist/server/web/spec-extension/adapters/headers';
-import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
-import { createSource } from '../generated/hypertune';
-import { getVercelOverride } from '../generated/hypertune.vercel';
-import { keys } from '../keys';
+import "server-only";
+import { auth } from "@repo/auth/server";
+import { unstable_noStore as noStore } from "next/cache";
+import type { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+import { createSource } from "../generated/hypertune";
+import { getVercelOverride } from "../generated/hypertune.vercel";
+import { keys } from "../keys";
 
 const hypertuneSource = createSource({
   token: keys().NEXT_PUBLIC_HYPERTUNE_TOKEN,
@@ -176,8 +176,8 @@ export default async function getHypertune(params?: {
     args: {
       context: {
         environment: process.env.NODE_ENV,
-        user: { id: userId ?? '', sessionId: sessionId ?? '' },
-        org: { id: orgId ?? '' },
+        user: { id: userId ?? "", sessionId: sessionId ?? "" },
+        org: { id: orgId ?? "" },
       },
     },
   });
@@ -191,7 +191,7 @@ package. To export them the same way as before, update the `index.ts` file to
 export everything from the `generated/hypertune.vercel.ts` file:
 
 ```ts packages/feature-flags/index.ts
-export * from './generated/hypertune.vercel.tsx';
+export * from "./generated/hypertune.vercel.tsx";
 ```
 
 Hypertune adds a `Flag` suffix to all these generated feature flag functions, so

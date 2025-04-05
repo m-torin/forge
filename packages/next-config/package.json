@@ -15,8 +15,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@next/bundle-analyzer": "15.2.4",
-    "@prisma/nextjs-monorepo-workaround-plugin": "^6.5.0",
+    "@next/bundle-analyzer": "15.3.0",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^6.6.0",
     "@t3-oss/env-core": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "zod": "catalog:"
@@ -25,7 +25,8 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.4.0",
+    "eslint": "catalog:",
     "next": "catalog:",
     "vitest": "catalog:"
   }

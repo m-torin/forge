@@ -5,10 +5,10 @@
  * that can be imported directly in vitest.config.ts files.
  */
 
-import path from 'path';
-import { defineConfig, mergeConfig, UserConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import { timeouts, filePatterns, environments } from '../constants/config.ts';
+import path from "path";
+import { defineConfig, mergeConfig, UserConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import { timeouts, filePatterns, environments } from "../constants/config.ts";
 
 // Base configuration for any package
 export function basePreset(
@@ -24,18 +24,18 @@ export function basePreset(
       testTimeout: timeouts.test,
       hookTimeout: timeouts.hook,
       coverage: {
-        provider: 'v8',
-        reporter: ['text', 'json', 'html'],
+        provider: "v8",
+        reporter: ["text", "json", "html"],
         exclude: [
-          'coverage/**',
-          'dist/**',
-          '**/node_modules/**',
-          '**/*.d.ts',
-          'test/**',
-          'tests/**',
-          '**/__tests__/**',
-          '**/*.test.{ts,tsx}',
-          '**/vitest.config.*',
+          "coverage/**",
+          "dist/**",
+          "**/node_modules/**",
+          "**/*.d.ts",
+          "test/**",
+          "tests/**",
+          "**/__tests__/**",
+          "**/*.test.{ts,tsx}",
+          "**/vitest.config.*",
         ],
         thresholds: {
           statements: 90,
@@ -47,9 +47,9 @@ export function basePreset(
     },
     resolve: {
       alias: {
-        '@': path.resolve(packageDir),
+        "@": path.resolve(packageDir),
       },
-      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+      extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
     },
   });
 

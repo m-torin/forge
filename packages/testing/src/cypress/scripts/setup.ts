@@ -4,10 +4,10 @@
  * This script sets up a new Cypress project with the Next-Forge configuration.
  */
 
-import path from 'node:path';
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { execSync } from 'child_process';
+import path from "node:path";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
+import { execSync } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +20,7 @@ export interface SetupCypressOptions {
    * Type of Cypress setup
    * @default 'both'
    */
-  type?: 'e2e' | 'component' | 'both';
+  type?: "e2e" | "component" | "both";
 
   /**
    * Whether to copy fixtures
@@ -35,8 +35,8 @@ export interface SetupCypressOptions {
  * @returns Target directory path
  */
 export const copyFixtures = (destDir: string): string => {
-  const fixturesDir = path.resolve(__dirname, '../core/fixtures');
-  const targetDir = path.join(destDir, 'cypress/fixtures');
+  const fixturesDir = path.resolve(__dirname, "../core/fixtures");
+  const targetDir = path.join(destDir, "cypress/fixtures");
 
   // Create directory if it doesn't exist
   if (!fs.existsSync(targetDir)) {
@@ -60,18 +60,18 @@ export const setupCypress = (
   options: SetupCypressOptions = {},
 ): string => {
   const {
-    type = 'both', // 'e2e', 'component', or 'both'
+    type = "both", // 'e2e', 'component', or 'both'
     copyFixtures: shouldCopyFixtures = true,
   } = options;
 
   // Create cypress directory structure
-  const cypressDir = path.join(projectDir, 'cypress');
+  const cypressDir = path.join(projectDir, "cypress");
   if (!fs.existsSync(cypressDir)) {
     fs.mkdirSync(cypressDir, { recursive: true });
   }
 
   // Create config files
-  if (type === 'e2e' || type === 'both') {
+  if (type === "e2e" || type === "both") {
     const e2eConfigContent = `
 import { e2e } from '@repo/testing/cypress';
 
@@ -85,12 +85,12 @@ export default e2e.createE2EConfig({
     `.trim();
 
     fs.writeFileSync(
-      path.join(projectDir, 'cypress.config.js'),
+      path.join(projectDir, "cypress.config.js"),
       e2eConfigContent,
     );
 
     // Create e2e directory
-    const e2eDir = path.join(cypressDir, 'e2e');
+    const e2eDir = path.join(cypressDir, "e2e");
     if (!fs.existsSync(e2eDir)) {
       fs.mkdirSync(e2eDir, { recursive: true });
     }
@@ -105,10 +105,10 @@ describe('Basic Navigation', () => {
 });
     `.trim();
 
-    fs.writeFileSync(path.join(e2eDir, 'navigation.cy.ts'), exampleE2ETest);
+    fs.writeFileSync(path.join(e2eDir, "navigation.cy.ts"), exampleE2ETest);
   }
 
-  if (type === 'component' || type === 'both') {
+  if (type === "component" || type === "both") {
     const componentConfigContent = `
 import { component } from '@repo/testing/cypress';
 
@@ -120,20 +120,20 @@ export default component.createComponentConfig({
 });
     `.trim();
 
-    if (type === 'component') {
+    if (type === "component") {
       fs.writeFileSync(
-        path.join(projectDir, 'cypress.config.js'),
+        path.join(projectDir, "cypress.config.js"),
         componentConfigContent,
       );
     } else {
       fs.writeFileSync(
-        path.join(projectDir, 'cypress.component.config.js'),
+        path.join(projectDir, "cypress.component.config.js"),
         componentConfigContent,
       );
     }
 
     // Create component directory
-    const componentDir = path.join(cypressDir, 'component');
+    const componentDir = path.join(cypressDir, "component");
     if (!fs.existsSync(componentDir)) {
       fs.mkdirSync(componentDir, { recursive: true });
     }
@@ -158,19 +158,19 @@ describe('Button Component', () => {
     `.trim();
 
     fs.writeFileSync(
-      path.join(componentDir, 'Button.cy.tsx'),
+      path.join(componentDir, "Button.cy.tsx"),
       exampleComponentTest,
     );
   }
 
   // Create support directory and files
-  const supportDir = path.join(cypressDir, 'support');
+  const supportDir = path.join(cypressDir, "support");
   if (!fs.existsSync(supportDir)) {
     fs.mkdirSync(supportDir, { recursive: true });
   }
 
   // Create e2e support file
-  if (type === 'e2e' || type === 'both') {
+  if (type === "e2e" || type === "both") {
     const e2eSupportContent = `
 // Import the shared e2e support file
 import '@repo/testing/cypress/e2e/setup';
@@ -178,11 +178,11 @@ import '@repo/testing/cypress/e2e/setup';
 // Add any app-specific commands or overrides here
     `.trim();
 
-    fs.writeFileSync(path.join(supportDir, 'e2e.ts'), e2eSupportContent);
+    fs.writeFileSync(path.join(supportDir, "e2e.ts"), e2eSupportContent);
   }
 
   // Create component support file
-  if (type === 'component' || type === 'both') {
+  if (type === "component" || type === "both") {
     const componentSupportContent = `
 // Import the shared component support file
 import '@repo/testing/cypress/component/setup';
@@ -191,7 +191,7 @@ import '@repo/testing/cypress/component/setup';
     `.trim();
 
     fs.writeFileSync(
-      path.join(supportDir, 'component.tsx'),
+      path.join(supportDir, "component.tsx"),
       componentSupportContent,
     );
   }

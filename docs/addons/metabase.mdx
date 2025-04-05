@@ -1,37 +1,36 @@
 ---
 title: Metabase
-description:
-  How to add business intelligence and analytics to your app with Metabase.
+description: How to add business intelligence and analytics to your app with Metabase.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "forge",
+        id: "forge",
       },
     },
     {
       user: {
-        name: 'Matthew Hefferon',
-        id: 'heffhq',
+        name: "Matthew Hefferon",
+        id: "heffhq",
       },
       company: {
-        name: 'Metabase',
-        id: 'metabase',
+        name: "Metabase",
+        id: "metabase",
       },
     },
   ]}
 />
 
-While next-forge does not come with BI tooling out of the box, you can easily
+While forge does not come with BI tooling out of the box, you can easily
 add business intelligence and analytics to your app with
 [Metabase](https://www.metabase.com/).
 
@@ -60,7 +59,7 @@ installations:
 
 ## Database Connection
 
-By default, next-forge uses Neon as its database provider. Metabase works great
+By default, forge uses Neon as its database provider. Metabase works great
 with Postgres databases so if you're ready to connect, here's what you'll need:
 
 - The `hostname` of the server where your database lives
@@ -73,7 +72,7 @@ You can find these details in your `DATABASE_URL` environment variable:
 
 ```js
 DATABASE_URL =
-  'postgresql://[username]:[password]@[hostname]:[port]/[database_name]?sslmode=require';
+  "postgresql://[username]:[password]@[hostname]:[port]/[database_name]?sslmode=require";
 ```
 
 Next, plug your database connection credentials into Metabase:
@@ -81,7 +80,7 @@ Next, plug your database connection credentials into Metabase:
 <Frame>
   <img
     src="/images/metabase-add-database.png"
-    style={{ borderRadius: '0.5rem' }}
+    style={{ borderRadius: "0.5rem" }}
   />
 </Frame>
 

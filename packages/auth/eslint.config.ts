@@ -1,7 +1,3 @@
-// eslint.config.ts
-import reactConfig from '@repo/eslint-config/react-package';
-import type { Linter } from 'eslint';
-
-const config: Linter.FlatConfig[] = reactConfig;
+import config from "@repo/eslint-config/server";
 
 export default config;

@@ -1,7 +1,14 @@
 // eslint.config.ts
-import serverConfig from '@repo/eslint-config/server';
-import type { Linter } from 'eslint';
+import serverConfig from "@repo/eslint-config/server";
 
-const config: Linter.FlatConfig[] = serverConfig;
+// Override the server config to disable the problematic rule
+const config = [
+  ...serverConfig,
+  {
+    rules: {
+      "node/no-deprecated-api": "off", // Disable this rule due to compatibility issues with ESLint v9
+    },
+  },
+];
 
 export default config;

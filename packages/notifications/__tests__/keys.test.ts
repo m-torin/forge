@@ -1,11 +1,12 @@
-import { describe, expect, it, vi, beforeEach, afterAll } from 'vitest';
-import { keys } from '../keys';
-import { createEnv } from '@t3-oss/env-nextjs';
+import { createEnv } from "@t3-oss/env-nextjs";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { keys } from "../keys";
 
 // Import the mocked modules
-vi.mock('@t3-oss/env-nextjs');
+vi.mock("@t3-oss/env-nextjs");
 
-describe.skip('Notifications Keys', () => {
+describe.skip("Notifications Keys", function () {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -13,7 +14,7 @@ describe.skip('Notifications Keys', () => {
     process.env = { ...originalEnv };
 
     // Mock createEnv to return a function that returns the environment variables
-    (createEnv as any).mockImplementation(({ server, client, runtimeEnv }) => {
+    (createEnv as any).mockImplementation(({ client, runtimeEnv, server }) => {
       const env = {};
       Object.keys(server).forEach((key) => {
         env[key] = runtimeEnv[key];
@@ -29,14 +30,11 @@ describe.skip('Notifications Keys', () => {
     process.env = originalEnv;
   });
 
-  it('calls createEnv with the correct parameters', () => {
+  it("calls createEnv with the correct parameters", () => {
     keys();
 
     expect(createEnv).toHaveBeenCalledWith(
       expect.objectContaining({
-        server: expect.objectContaining({
-          KNOCK_SECRET_API_KEY: expect.any(Object),
-        }),
         client: expect.objectContaining({
           NEXT_PUBLIC_KNOCK_API_KEY: expect.any(Object),
           NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: expect.any(Object),
@@ -47,33 +45,38 @@ describe.skip('Notifications Keys', () => {
           NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID:
             process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID,
         }),
+        server: expect.objectContaining({
+          KNOCK_SECRET_API_KEY: expect.any(Object),
+        }),
       }),
     );
   });
 
-  it('returns the correct environment variables', () => {
+  it("returns the correct environment variables", () => {
     // Set up test environment variables
-    process.env.KNOCK_SECRET_API_KEY = 'test-knock-secret-api-key';
-    process.env.NEXT_PUBLIC_KNOCK_API_KEY = 'test-knock-public-api-key';
+    process.env.KNOCK_SECRET_API_KEY = "test-knock-secret-api-key";
+    process.env.NEXT_PUBLIC_KNOCK_API_KEY = "test-knock-public-api-key";
     process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID =
-      'test-knock-feed-channel-id';
+      "test-knock-feed-channel-id";
 
-    const result = keys()();
+    // Use type assertion to avoid type errors
+    const result = (keys() as any)();
 
     expect(result).toEqual({
-      KNOCK_SECRET_API_KEY: 'test-knock-secret-api-key',
-      NEXT_PUBLIC_KNOCK_API_KEY: 'test-knock-public-api-key',
-      NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: 'test-knock-feed-channel-id',
+      KNOCK_SECRET_API_KEY: "test-knock-secret-api-key",
+      NEXT_PUBLIC_KNOCK_API_KEY: "test-knock-public-api-key",
+      NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: "test-knock-feed-channel-id",
     });
   });
 
-  it('handles missing optional environment variables', () => {
+  it("handles missing optional environment variables", () => {
     // Clear all environment variables
     delete process.env.KNOCK_SECRET_API_KEY;
     delete process.env.NEXT_PUBLIC_KNOCK_API_KEY;
     delete process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID;
 
-    const result = keys()();
+    // Use type assertion to avoid type errors
+    const result = (keys() as any)();
 
     expect(result).toEqual({
       KNOCK_SECRET_API_KEY: undefined,
@@ -82,9 +85,9 @@ describe.skip('Notifications Keys', () => {
     });
   });
 
-  it('validates environment variables correctly', () => {
+  it("validates environment variables correctly", () => {
     // Mock createEnv to simulate validation
-    (createEnv as any).mockImplementation(({ server, client, runtimeEnv }) => {
+    (createEnv as any).mockImplementation(({ client, runtimeEnv, server }) => {
       // Simulate validation by checking if values are defined
       const validateValue = (schema: any, value: any) => {
         if (schema.min && (!value || value.length < schema.min)) {
@@ -126,17 +129,17 @@ describe.skip('Notifications Keys', () => {
     });
 
     // Set valid values
-    process.env.KNOCK_SECRET_API_KEY = 'valid-key';
-    process.env.NEXT_PUBLIC_KNOCK_API_KEY = 'valid-key';
-    process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = 'valid-id';
+    process.env.KNOCK_SECRET_API_KEY = "valid-key";
+    process.env.NEXT_PUBLIC_KNOCK_API_KEY = "valid-key";
+    process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = "valid-id";
 
     // Should not throw for valid values
     expect(() => keys()).not.toThrow();
 
     // Set empty values (should be allowed for optional fields)
-    process.env.KNOCK_SECRET_API_KEY = '';
-    process.env.NEXT_PUBLIC_KNOCK_API_KEY = '';
-    process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = '';
+    process.env.KNOCK_SECRET_API_KEY = "";
+    process.env.NEXT_PUBLIC_KNOCK_API_KEY = "";
+    process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = "";
 
     // Should not throw for empty values on optional fields
     expect(() => keys()).not.toThrow();

@@ -1,38 +1,20 @@
-import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod';
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
 
-export const keys = () =>
-  createEnv({
-    server: {
-      CLERK_SECRET_KEY:
-        process.env.NODE_ENV === 'test'
-          ? z.string().min(1)
-          : z.string().min(1).startsWith('sk_'),
-      CLERK_WEBHOOK_SECRET:
-        process.env.NODE_ENV === 'test'
-          ? z.string().min(1).optional()
-          : z.string().min(1).startsWith('whsec_').optional(),
-    },
+export function getAuthKeys(): {
+  CLERK_SECRET_KEY: string;
+  CLERK_PUBLISHABLE_KEY: string;
+} {
+  return createEnv({
     client: {
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-        process.env.NODE_ENV === 'test'
-          ? z.string().min(1)
-          : z.string().min(1).startsWith('pk_'),
-      NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string().min(1).startsWith('/'),
-      NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().min(1).startsWith('/'),
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string().min(1).startsWith('/'),
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: z.string().min(1).startsWith('/'),
+      CLERK_PUBLISHABLE_KEY: z.string().min(1),
     },
     runtimeEnv: {
+      CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
       CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
-      CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-      NEXT_PUBLIC_CLERK_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,
-      NEXT_PUBLIC_CLERK_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL:
-        process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL:
-        process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
+    },
+    server: {
+      CLERK_SECRET_KEY: z.string().min(1),
     },
   });
+}

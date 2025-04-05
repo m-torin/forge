@@ -1,10 +1,10 @@
 // This is a vitest.config.mjs template for Next-Forge packages
 // This file uses .mjs to avoid TypeScript ESM issues
 
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get current directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,20 +13,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'node', // Default environment for API and utils tests
+    environment: "node", // Default environment for API and utils tests
     globals: true,
-    setupFiles: ['./__tests__/setup.ts'], // Customize this path if needed
-    include: ['**/*.test.{ts,tsx}'],
-    exclude: ['**/node_modules/**'],
+    setupFiles: ["./__tests__/setup.ts"], // Customize this path if needed
+    include: ["**/*.test.{ts,tsx}"],
+    exclude: ["**/node_modules/**"],
     testTimeout: 10000,
     hookTimeout: 10000,
 
     // Define specific environment configurations for different test files
     environmentMatchGlobs: [
       // Use jsdom for React component tests
-      ['**/*.test.tsx', 'jsdom'],
+      ["**/*.test.tsx", "jsdom"],
       // Use node for other tests (API, utilities)
-      ['**/*.test.ts', 'node'],
+      ["**/*.test.ts", "node"],
     ],
 
     // Skip esbuild transformation for tests
@@ -36,18 +36,18 @@ export default defineConfig({
     },
 
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       exclude: [
-        'coverage/**',
-        'dist/**',
-        '**/node_modules/**',
-        '**/*.d.ts',
-        'test/**',
-        'tests/**',
-        '**/__tests__/**',
-        '**/*.test.{ts,tsx}',
-        '**/vitest.config.*',
+        "coverage/**",
+        "dist/**",
+        "**/node_modules/**",
+        "**/*.d.ts",
+        "test/**",
+        "tests/**",
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/vitest.config.*",
       ],
       thresholds: {
         statements: 80,
@@ -59,8 +59,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname),
+      "@": path.resolve(__dirname),
     },
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
   },
 });

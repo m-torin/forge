@@ -3,38 +3,38 @@ title: Switch to Paddle Billing
 description: How to change the default payment processor to Paddle Billing.
 ---
 
-import { Authors } from '/snippets/authors.mdx';
+import { Authors } from "/snippets/authors.mdx";
 
 <Authors
   data={[
     {
       user: {
-        name: 'Hayden Bleasel',
-        id: 'haydenbleasel',
+        name: "Hayden Bleasel",
+        id: "haydenbleasel",
       },
       company: {
-        name: 'next-forge',
-        id: 'next-forge',
+        name: "forge",
+        id: "forge",
       },
     },
     {
       user: {
-        name: 'Dan Billson',
-        id: 'danbillson',
+        name: "Dan Billson",
+        id: "danbillson",
       },
       company: {
-        name: 'Paddle',
-        id: 'paddle',
+        name: "Paddle",
+        id: "paddle",
       },
     },
     {
       user: {
-        name: 'Michael McGovern',
-        id: 'heymcgovern',
+        name: "Michael McGovern",
+        id: "heymcgovern",
       },
       company: {
-        name: 'Paddle',
-        id: 'paddle',
+        name: "Paddle",
+        id: "paddle",
       },
     },
   ]}
@@ -69,9 +69,9 @@ pnpm add @paddle/paddle-node-sdk --filter @repo/payments
 Update the required Payment keys in the `packages/payments/keys.ts` file:
 
 ```ts packages/payments/keys.ts
-import { createEnv } from '@t3-oss/env-nextjs';
-import { Environment } from '@paddle/paddle-node-sdk';
-import { z } from 'zod';
+import { createEnv } from "@t3-oss/env-nextjs";
+import { Environment } from "@paddle/paddle-node-sdk";
+import { z } from "zod";
 
 export const keys = () =>
   createEnv({
@@ -84,8 +84,8 @@ export const keys = () =>
     },
     client: {
       NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.union([
-        z.string().min(1).startsWith('live_'),
-        z.string().min(1).startsWith('test_'),
+        z.string().min(1).startsWith("live_"),
+        z.string().min(1).startsWith("test_"),
       ]),
       NEXT_PUBLIC_PADDLE_ENV: z
         .enum([Environment.sandbox, Environment.production])
@@ -124,9 +124,9 @@ Initialize the payments client in the `packages/payments/index.ts` file with the
 new API key.
 
 ```ts packages/payments/index.ts
-import 'server-only';
-import { type Environment, Paddle } from '@paddle/paddle-node-sdk';
-import { keys } from './keys';
+import "server-only";
+import { type Environment, Paddle } from "@paddle/paddle-node-sdk";
+import { keys } from "./keys";
 
 const { PADDLE_SECRET_KEY, PADDLE_ENV } = keys();
 
@@ -134,7 +134,7 @@ export const paddle = new Paddle(PADDLE_SECRET_KEY, {
   environment: PADDLE_ENV,
 });
 
-export * from '@paddle/paddle-node-sdk';
+export * from "@paddle/paddle-node-sdk";
 ```
 
 ## 5. Update the payments webhook handler
@@ -218,15 +218,15 @@ Then, create a new hook to initialize Paddle in the
 `packages/payments/checkout.tsx` file:
 
 ```tsx packages/payments/checkout.tsx
-'use client';
+"use client";
 
 import {
   type Environments,
   type Paddle,
   initializePaddle,
-} from '@paddle/paddle-js';
-import { useEffect, useState } from 'react';
-import { keys } from './keys';
+} from "@paddle/paddle-js";
+import { useEffect, useState } from "react";
+import { keys } from "./keys";
 
 const { NEXT_PUBLIC_PADDLE_CLIENT_TOKEN, NEXT_PUBLIC_PADDLE_ENV } = keys();
 
@@ -239,7 +239,7 @@ export function usePaddle() {
       token: NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
       checkout: {
         settings: {
-          variant: 'one-page',
+          variant: "one-page",
         },
       },
     }).then((paddleInstance: Paddle | undefined) => {
@@ -258,9 +258,9 @@ export function usePaddle() {
 Finally, open a checkout on your pricing page:
 
 ```tsx apps/web/app/pricing/page.tsx
-'use client';
+"use client";
 
-import { usePaddle } from '@repo/payments/checkout';
+import { usePaddle } from "@repo/payments/checkout";
 
 const Pricing = () => {
   const paddle = usePaddle();
@@ -279,7 +279,7 @@ const Pricing = () => {
   return (
     <Button
       className="mt-8 gap-4"
-      onClick={() => openCheckout('pri_01jkzb4x1hc91s8w38cr3m86yy')}
+      onClick={() => openCheckout("pri_01jkzb4x1hc91s8w38cr3m86yy")}
     >
       Subscribe now <MoveRight className="h-4 w-4" />
     </Button>

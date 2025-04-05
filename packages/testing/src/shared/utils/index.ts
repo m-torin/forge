@@ -5,10 +5,10 @@
  */
 
 // Export DOM utilities
-export * from './dom.ts';
+export * from "./dom.ts";
 
 // Export test utilities
-export * from './test.ts';
+export * from "./test.ts";
 
 // Export mock utilities
-export * from './mock.ts';
+export * from "./mock.ts";

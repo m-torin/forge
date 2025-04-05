@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 /**
  * Template for testing utility functions
@@ -18,7 +18,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // import { formatDate, parseDate } from '../utils/date';
 
 // Example test suite for utility functions
-describe('Date Utilities', () => {
+describe("Date Utilities", () => {
   // Example setup and teardown
   beforeEach(() => {
     // Setup code that runs before each test
@@ -33,7 +33,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for basic functionality
-  it('formats dates correctly', () => {
+  it("formats dates correctly", () => {
     // Create a test date
     // const date = new Date('2023-01-01T12:00:00Z');
     // Call the utility function
@@ -43,7 +43,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for edge cases
-  it('handles edge cases', () => {
+  it("handles edge cases", () => {
     // Test with null
     // expect(formatDate(null, 'yyyy-MM-dd')).toBe('');
     // Test with undefined
@@ -55,7 +55,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for different formats
-  it('supports different formats', () => {
+  it("supports different formats", () => {
     // Create a test date
     // const date = new Date('2023-01-01T12:00:00Z');
     // Test different formats
@@ -65,7 +65,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for parsing
-  it('parses dates correctly', () => {
+  it("parses dates correctly", () => {
     // Parse a date string
     // const result = parseDate('2023-01-01');
     // Check the result
@@ -75,7 +75,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for invalid input
-  it('handles invalid input', () => {
+  it("handles invalid input", () => {
     // Test with invalid input
     // expect(() => parseDate('invalid')).toThrow();
     // expect(() => parseDate('')).toThrow('Empty date string');
@@ -83,7 +83,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test with mocked dependencies
-  it('works with mocked dependencies', () => {
+  it("works with mocked dependencies", () => {
     // Mock a dependency
     // vi.mock('../utils/timezone', () => ({
     //   getCurrentTimezone: vi.fn(() => 'UTC'),
@@ -95,7 +95,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for function spying
-  it('calls internal functions correctly', () => {
+  it("calls internal functions correctly", () => {
     // Spy on an internal function
     // const formatSpy = vi.spyOn(dateUtils, 'formatDate');
     // const parseSpy = vi.spyOn(dateUtils, 'parseDate');
@@ -107,7 +107,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for performance
-  it('is performant for large inputs', () => {
+  it("is performant for large inputs", () => {
     // Create a large input
     // const dates = Array.from({ length: 1000 }, (_, i) => new Date(2023, 0, i + 1));
     // Measure performance
@@ -119,7 +119,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for internationalization
-  it('supports internationalization', () => {
+  it("supports internationalization", () => {
     // Create a test date
     // const date = new Date('2023-01-01T12:00:00Z');
     // Test with different locales
@@ -129,14 +129,14 @@ describe('Date Utilities', () => {
   });
 
   // Example test for error handling
-  it('provides helpful error messages', () => {
+  it("provides helpful error messages", () => {
     // Test with various error conditions
     // expect(() => formatDate(new Date(), 'invalid-format')).toThrow('Invalid format: invalid-format');
     // expect(() => parseDate('2023-13-01')).toThrow('Invalid month: 13');
   });
 
   // Example test for function composition
-  it('composes functions correctly', () => {
+  it("composes functions correctly", () => {
     // Test function composition
     // const date = new Date('2023-01-01T12:00:00Z');
     // const formatted = formatDate(date, 'yyyy-MM-dd');
@@ -148,7 +148,7 @@ describe('Date Utilities', () => {
   });
 
   // Example test for snapshot
-  it('matches snapshot for complex output', () => {
+  it("matches snapshot for complex output", () => {
     // Test a function that returns complex output
     // const result = dateUtils.getDateDetails(new Date('2023-01-01T12:00:00Z'));
     // Check against a snapshot

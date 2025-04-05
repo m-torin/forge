@@ -12,13 +12,13 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@next/third-parties": "15.2.4",
+    "@next/third-parties": "15.3.0",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/analytics": "^1.5.0",
-    "posthog-js": "^1.234.8",
-    "posthog-node": "^4.11.1",
+    "posthog-js": "^1.236.1",
+    "posthog-node": "^4.11.6",
     "react": "catalog:",
-    "server-only": "^0.0.1",
+    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -29,7 +29,8 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.4.0",
+    "eslint": "catalog:",
     "jsdom": "catalog:",
     "vitest": "^3.1.1"
   }

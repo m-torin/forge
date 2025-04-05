@@ -1,11 +1,12 @@
-import { describe, expect, it, vi, beforeEach, afterAll } from 'vitest';
-import { keys } from '../keys';
-import { createEnv } from '@t3-oss/env-nextjs';
+import { createEnv } from "@t3-oss/env-nextjs";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { keys } from "../keys";
 
 // Import the mocked modules
-vi.mock('@t3-oss/env-nextjs');
+vi.mock("@t3-oss/env-nextjs");
 
-describe('Storage Keys', () => {
+describe("Storage Keys", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -13,7 +14,7 @@ describe('Storage Keys', () => {
     process.env = { ...originalEnv };
 
     // Mock createEnv to return a function that returns the environment variables
-    (createEnv as any).mockImplementation(({ server, runtimeEnv }) => {
+    (createEnv as any).mockImplementation(({ runtimeEnv, server }) => {
       const env = {};
       Object.keys(server).forEach((key) => {
         env[key] = runtimeEnv[key];
@@ -26,33 +27,33 @@ describe('Storage Keys', () => {
     process.env = originalEnv;
   });
 
-  it('calls createEnv with the correct parameters', () => {
+  it("calls createEnv with the correct parameters", () => {
     keys();
 
     expect(createEnv).toHaveBeenCalledWith(
       expect.objectContaining({
-        server: expect.objectContaining({
-          BLOB_READ_WRITE_TOKEN: expect.any(Object),
-        }),
         runtimeEnv: expect.objectContaining({
           BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
+        }),
+        server: expect.objectContaining({
+          BLOB_READ_WRITE_TOKEN: expect.any(Object),
         }),
       }),
     );
   });
 
-  it('returns the correct environment variables', () => {
+  it("returns the correct environment variables", () => {
     // Set up test environment variables
-    process.env.BLOB_READ_WRITE_TOKEN = 'test-blob-token';
+    process.env.BLOB_READ_WRITE_TOKEN = "test-blob-token";
 
     const result = keys();
 
     expect(result).toEqual({
-      BLOB_READ_WRITE_TOKEN: 'test-blob-token',
+      BLOB_READ_WRITE_TOKEN: "test-blob-token",
     });
   });
 
-  it('handles missing optional environment variables', () => {
+  it("handles missing optional environment variables", () => {
     // Clear all environment variables
     delete process.env.BLOB_READ_WRITE_TOKEN;
 
@@ -63,9 +64,9 @@ describe('Storage Keys', () => {
     });
   });
 
-  it('validates BLOB_READ_WRITE_TOKEN format', () => {
+  it("validates BLOB_READ_WRITE_TOKEN format", () => {
     // Mock createEnv to simulate validation
-    (createEnv as any).mockImplementation(({ server, runtimeEnv }) => {
+    (createEnv as any).mockImplementation(({ runtimeEnv, server }) => {
       // Simulate validation by checking if values are defined
       const validateValue = (schema: any, value: any) => {
         if (schema.min && (!value || value.length < schema.min)) {
@@ -94,25 +95,25 @@ describe('Storage Keys', () => {
     });
 
     // Set valid BLOB_READ_WRITE_TOKEN
-    process.env.BLOB_READ_WRITE_TOKEN = 'valid-token';
+    process.env.BLOB_READ_WRITE_TOKEN = "valid-token";
 
     // Should not throw for valid token
     expect(() => keys()).not.toThrow();
 
     // Set empty BLOB_READ_WRITE_TOKEN
-    process.env.BLOB_READ_WRITE_TOKEN = '';
+    process.env.BLOB_READ_WRITE_TOKEN = "";
 
     // Should throw for empty token
     expect(() => keys()).toThrow();
   });
 
-  it('allows undefined BLOB_READ_WRITE_TOKEN because it is optional', () => {
+  it("allows undefined BLOB_READ_WRITE_TOKEN because it is optional", () => {
     // Mock createEnv to simulate validation
-    (createEnv as any).mockImplementation(({ server, runtimeEnv }) => {
+    (createEnv as any).mockImplementation(({ runtimeEnv, server }) => {
       // Simulate validation by checking if values are defined
       const validateValue = (schema: any, value: any) => {
         if (!schema.optional && value === undefined) {
-          throw new Error('Value is required');
+          throw new Error("Value is required");
         }
         if (schema.min && value && value.length < schema.min) {
           throw new Error(

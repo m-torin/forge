@@ -1,22 +1,23 @@
-import 'server-only';
-import { Liveblocks as LiveblocksNode } from '@liveblocks/node';
-import { keys } from './keys';
+import "server-only";
+import { Liveblocks as LiveblocksNode } from "@liveblocks/node";
 
-type AuthenticateOptions = {
-  userId: string;
+import { keys } from "./keys";
+
+interface AuthenticateOptions {
   orgId: string;
-  userInfo: Liveblocks['UserMeta']['info'];
-};
+  userId: string;
+  userInfo: Liveblocks["UserMeta"]["info"];
+}
 
 const secret = keys().LIVEBLOCKS_SECRET;
 
 export const authenticate = async ({
-  userId,
   orgId,
+  userId,
   userInfo,
 }: AuthenticateOptions) => {
   if (!secret) {
-    throw new Error('LIVEBLOCKS_SECRET is not set');
+    throw new Error("LIVEBLOCKS_SECRET is not set");
   }
 
   const liveblocks = new LiveblocksNode({ secret });
@@ -29,7 +30,7 @@ export const authenticate = async ({
   session.allow(`${orgId}:*`, session.FULL_ACCESS);
 
   // Authorize the user and return the result
-  const { status, body } = await session.authorize();
+  const { body, status } = await session.authorize();
 
   return new Response(body, { status });
 };

@@ -3,7 +3,7 @@
  */
 
 // Export React renderer
-export * from './react.ts';
+export * from "./react.ts";
 
 // Export Mantine renderer with renamed exports to avoid conflicts
 import {
@@ -12,5 +12,5 @@ import {
   within,
   fireEvent,
   waitFor,
-} from './mantine.ts';
+} from "./mantine.ts";
 export { mantineRender, screen, within, fireEvent, waitFor };

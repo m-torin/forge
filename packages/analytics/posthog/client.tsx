@@ -1,29 +1,31 @@
-'use client';
+"use client";
 
-import posthog, { type PostHog } from 'posthog-js';
-import { PostHogProvider as PostHogProviderRaw } from 'posthog-js/react';
-import type { ReactNode } from 'react';
-import { useEffect } from 'react';
-import { keys } from '../keys';
+import posthog from "posthog-js";
+import { PostHogProvider as PostHogProviderRaw } from "posthog-js/react";
+import { useEffect } from "react";
 
-type PostHogProviderProps = {
+import { keys } from "../keys";
+
+import type { ReactNode } from "react";
+
+interface PostHogProviderProps {
   readonly children: ReactNode;
-};
+}
 
 export const PostHogProvider = (
-  properties: Omit<PostHogProviderProps, 'client'>,
+  properties: Omit<PostHogProviderProps, "client">,
 ) => {
   useEffect(() => {
     posthog.init(keys().NEXT_PUBLIC_POSTHOG_KEY, {
-      api_host: '/ingest',
-      ui_host: keys().NEXT_PUBLIC_POSTHOG_HOST,
-      person_profiles: 'identified_only',
-      capture_pageview: false, // Disable automatic pageview capture, as we capture manually
+      api_host: "/ingest",
       capture_pageleave: true, // Overrides the `capture_pageview` setting
-    }) as PostHog;
+      capture_pageview: false, // Disable automatic pageview capture, as we capture manually
+      person_profiles: "identified_only",
+      ui_host: keys().NEXT_PUBLIC_POSTHOG_HOST,
+    });
   }, []);
 
   return <PostHogProviderRaw client={posthog} {...properties} />;
 };
 
-export { usePostHog as useAnalytics } from 'posthog-js/react';
+export { usePostHog as useAnalytics } from "posthog-js/react";

@@ -1,4 +1,4 @@
 // Import shared testing setup
-import { vitest } from '@repo/testing';
+// Using our local vitest.d.ts declaration instead of @repo/testing
 
 // Add package-specific setup here

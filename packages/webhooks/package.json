@@ -13,8 +13,8 @@
   "dependencies": {
     "@repo/auth": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
-    "server-only": "^0.0.1",
-    "svix": "^1.63.1",
+    "server-only": "catalog:",
+    "svix": "^1.64.0",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -22,7 +22,8 @@
     "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.4.0",
+    "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

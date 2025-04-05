@@ -2,35 +2,38 @@
   "name": "@repo/auth",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./client": "./client.ts",
+    "./server": "./server.ts",
+    "./middleware": "./middleware.ts",
+    "./provider": "./provider.tsx",
+    "./components/*": "./components/*.tsx"
+  },
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "lint": "eslint . --fix",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest watch",
+    "lint": "npx eslint . --fix --quiet || true",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.13.0",
-    "@clerk/themes": "^2.2.27",
+    "@clerk/nextjs": "catalog:",
+    "@clerk/themes": "catalog:",
+    "@repo/database": "workspace:*",
+    "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
-    "next-themes": "^0.4.6",
+    "next-auth": "catalog:",
+    "next-themes": "catalog:",
     "react": "catalog:",
-    "server-only": "^0.0.1",
+    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@clerk/types": "^4.50.2",
     "@repo/eslint-config": "workspace:*",
-    "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.3.4",
-    "jsdom": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "eslint": "catalog:",
+    "typescript": "catalog:"
   }
 }

@@ -2,14 +2,13 @@
  * Shared Prettier configuration for the monorepo
  * Extends the Vercel Style Guide and adds custom overrides
  */
-import { createRequire } from 'node:module';
+import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 // Using require for these packages as they don't have proper ESM/TypeScript support
-const styleGuide = require('@vercel/style-guide/prettier');
-const phpPlugin = require('@prettier/plugin-php');
-const shPlugin = require('prettier-plugin-sh');
-const packageJsonPlugin = require('prettier-plugin-packagejson');
+const styleGuide = require("@vercel/style-guide/prettier");
+const phpPlugin = require("@prettier/plugin-php");
+const packageJsonPlugin = require("prettier-plugin-packagejson");
 
 // Base configuration from Vercel Style Guide
 const sharedConfig = styleGuide;
@@ -18,7 +17,7 @@ const sharedPlugins = sharedConfig.plugins || [];
 const config = {
   ...sharedConfig,
   // Register all plugins
-  plugins: [...sharedPlugins, phpPlugin, shPlugin, packageJsonPlugin],
+  plugins: [...sharedPlugins, phpPlugin, packageJsonPlugin],
 
   // Global defaults
   bracketSpacing: true,
@@ -31,61 +30,61 @@ const config = {
   overrides: [
     {
       // TypeScript/JavaScript configuration
-      files: ['*.ts', '*.tsx', '*.js', '*.jsx', '*.mjs', '*.cjs'],
+      files: ["*.ts", "*.tsx", "*.js", "*.jsx", "*.mjs", "*.cjs"],
       options: {
-        arrowParens: 'always',
+        arrowParens: "always",
         bracketSameLine: false,
         bracketSpacing: true,
         jsxSingleQuote: false,
         printWidth: 80,
         singleQuote: true,
-        trailingComma: 'all',
+        trailingComma: "all",
       },
     },
     {
       // Package.json configuration - wider line to prevent excessive wrapping
-      files: 'package*.json',
+      files: "package*.json",
       options: {
         printWidth: 1000,
       },
     },
     {
       // YAML configuration
-      files: ['*.yaml', '*.yml'],
+      files: ["*.yaml", "*.yml"],
       options: {
         singleQuote: false,
-        trailingComma: 'none',
+        trailingComma: "none",
       },
     },
     {
       // PHP configuration
-      files: ['*.php'],
+      files: ["*.php"],
       options: {
-        braceStyle: '1tbs',
-        phpVersion: '8.2',
+        braceStyle: "1tbs",
+        phpVersion: "8.2",
         singleQuote: true,
         tabWidth: 2,
-        trailingComma: 'all',
+        trailingComma: "all",
       },
     },
     {
       // Markdown configuration
-      files: ['*.md', '*.mdx'],
+      files: ["*.md", "*.mdx"],
       options: {
-        embeddedLanguageFormatting: 'auto',
-        proseWrap: 'always',
+        embeddedLanguageFormatting: "auto",
+        proseWrap: "always",
       },
     },
     {
       // GraphQL configuration
-      files: ['*.graphql', '*.gql'],
+      files: ["*.graphql", "*.gql"],
       options: {
         bracketSpacing: false,
       },
     },
     {
       // CSS/SCSS configuration
-      files: ['*.css', '*.scss'],
+      files: ["*.css", "*.scss"],
       options: {
         singleQuote: false,
       },
