@@ -6,7 +6,9 @@
     "helpers:pinGitHubActionDigests",
     ":configMigration"
   ],
-  "baseBranches": ["main"],
+  "baseBranches": [
+    "main"
+  ],
   "minimumReleaseAge": "3 days",
   "prConcurrentLimit": 2,
   "rebaseWhen": "conflicted",
@@ -17,12 +19,16 @@
   "fetchChangeLogs": "pr",
   "vulnerabilityAlerts": {
     "enabled": true,
-    "labels": ["security"],
+    "labels": [
+      "security"
+    ],
     "prPriority": 10
   },
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Dependency Dashboard",
-  "dependencyDashboardLabels": ["dependencies"],
+  "dependencyDashboardLabels": [
+    "dependencies"
+  ],
   "dependencyDashboardAutoclose": true,
   "dependencyDashboardHeader": "# Dependency Dashboard\n\nTrack and review updates to project dependencies.",
   "platform": "github",
@@ -52,12 +58,16 @@
   ],
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["after 10pm on sunday"]
+    "schedule": [
+      "after 10pm on sunday"
+    ]
   },
   "packageRules": [
     {
       "description": "Special handling for PNPM workspace catalog",
-      "matchFileNames": ["pnpm-workspace.yaml"],
+      "matchFileNames": [
+        "pnpm-workspace.yaml"
+      ],
       "rangeStrategy": "replace",
       "separateMajorMinor": true,
       "prPriority": 10
@@ -105,7 +115,10 @@
       "groupName": "Auth Ecosystem",
       "automerge": false,
       "prPriority": 7,
-      "matchPackageNames": ["/^next-auth/", "/^@clerk//"]
+      "matchPackageNames": [
+        "/^next-auth/",
+        "/^@clerk//"
+      ]
     },
     {
       "description": "AI SDK & Components",
@@ -114,7 +127,11 @@
       "automergeType": "pr",
       "automergeStrategy": "squash",
       "prPriority": 6,
-      "matchPackageNames": ["/^ai$/", "/^@ai-sdk//", "/^ai-/"]
+      "matchPackageNames": [
+        "/^ai$/",
+        "/^@ai-sdk//",
+        "/^ai-/"
+      ]
     },
     {
       "description": "UI Components & Styling",
@@ -132,7 +149,9 @@
     },
     {
       "description": "Major updates require approval",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "dependencyDashboardApproval": true,
       "automerge": false,
       "prPriority": 4
@@ -159,7 +178,10 @@
       "groupName": "Build & Infrastructure",
       "automerge": false,
       "prPriority": 2,
-      "matchPackageNames": ["/^turbo$/", "/^@turbo//"]
+      "matchPackageNames": [
+        "/^turbo$/",
+        "/^@turbo//"
+      ]
     },
     {
       "description": "Linting & Validation Tools",
@@ -177,7 +199,9 @@
       ]
     },
     {
-      "matchManagers": ["dockerfile"],
+      "matchManagers": [
+        "dockerfile"
+      ],
       "groupName": "Dockerfile Updates",
       "automerge": true,
       "automergeType": "pr",
@@ -185,7 +209,9 @@
       "prPriority": 1
     },
     {
-      "matchManagers": ["docker-compose"],
+      "matchManagers": [
+        "docker-compose"
+      ],
       "groupName": "Docker Compose Updates",
       "automerge": true,
       "automergeType": "pr",
@@ -193,11 +219,15 @@
       "prPriority": 1
     },
     {
-      "matchPackageNames": ["sass"],
+      "matchPackageNames": [
+        "sass"
+      ],
       "enabled": false
     },
     {
-      "matchDatasources": ["docker"],
+      "matchDatasources": [
+        "docker"
+      ],
       "versioning": "loose"
     },
     {
@@ -222,11 +252,17 @@
       "description": "Security updates use appropriate commit format",
       "semanticCommitType": "fix",
       "semanticCommitScope": "security",
-      "matchPackageNames": ["/security/", "/auth/", "/crypto/"]
+      "matchPackageNames": [
+        "/security/",
+        "/auth/",
+        "/crypto/"
+      ]
     },
     {
       "description": "Special handling for PNPM catalog entries",
-      "matchFileNames": ["pnpm-workspace.yaml"],
+      "matchFileNames": [
+        "pnpm-workspace.yaml"
+      ],
       "matchStrings": [
         "(?<depName>.*?)(?<currentValue>.*?)\\s+# renovate: catalog"
       ],
@@ -236,53 +272,84 @@
     },
     {
       "description": "Don't touch workspace and catalog protocols",
-      "matchDepTypes": ["dependencies", "devDependencies", "peerDependencies"],
+      "matchDepTypes": [
+        "dependencies",
+        "devDependencies",
+        "peerDependencies"
+      ],
       "matchCurrentValue": "/^(workspace:|catalog:)/",
       "enabled": false,
       "prPriority": 10
     },
     {
       "description": "Terraform file paths",
-      "matchManagers": ["terraform"],
-      "fileMatch": ["(^|/)main\\.tf$", "(^|/)terraform\\.tf$", "\\.tf$"]
+      "matchManagers": [
+        "terraform"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)main\\.tf$/",
+        "/(^|/)terraform\\.tf$/",
+        "/\\.tf$/"
+      ]
     },
     {
       "description": "Helm charts configuration",
-      "matchManagers": ["helm-requirements", "helm-values"],
-      "fileMatch": [
-        "(^|/)Chart\\.yaml$",
-        "(^|/)values\\.yaml$",
-        "(^|/)requirements\\.yaml$"
+      "matchManagers": [
+        "helm-requirements",
+        "helm-values"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)Chart\\.yaml$/",
+        "/(^|/)values\\.yaml$/",
+        "/(^|/)requirements\\.yaml$/"
       ]
     },
     {
       "description": "Swift package manager",
-      "matchManagers": ["swift"],
-      "fileMatch": ["(^|/)Package\\.swift$"]
+      "matchManagers": [
+        "swift"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)Package\\.swift$/"
+      ]
     },
     {
       "description": "Python requirements files",
-      "matchManagers": ["pip_requirements"],
-      "fileMatch": [
-        "(^|/)requirements\\.txt$",
-        "(^|/)requirements-dev\\.txt$",
-        "(^|/)requirements/.*\\.txt$"
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)requirements\\.txt$/",
+        "/(^|/)requirements-dev\\.txt$/",
+        "/(^|/)requirements/.*\\.txt$/"
       ]
     },
     {
       "description": "PHP Composer",
-      "matchManagers": ["composer"],
-      "fileMatch": ["(^|/)composer\\.json$"]
+      "matchManagers": [
+        "composer"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)composer\\.json$/"
+      ]
     },
     {
       "description": "CocoaPods",
-      "matchManagers": ["cocoapods"],
-      "fileMatch": ["(^|/)Podfile$"]
+      "matchManagers": [
+        "cocoapods"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)Podfile$/"
+      ]
     },
     {
       "description": "Python Pipenv",
-      "matchManagers": ["pipenv"],
-      "fileMatch": ["(^|/)Pipfile$"]
+      "matchManagers": [
+        "pipenv"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)Pipfile$/"
+      ]
     },
     {
       "description": "CI/CD pipelines configuration",
@@ -293,43 +360,67 @@
         "bitbucket-pipelines",
         "azure-pipelines"
       ],
-      "fileMatch": [
-        "^\\.github/workflows/[^/]+\\.ya?ml$",
-        "^\\.gitlab-ci\\.ya?ml$",
-        "^bitbucket-pipelines\\.ya?ml$",
-        "^azure-pipelines\\.ya?ml$",
-        "^azure-pipeline\\.ya?ml$"
+      "managerFilePatterns": [
+        "/^\\.github/workflows/[^/]+\\.ya?ml$/",
+        "/^\\.gitlab-ci\\.ya?ml$/",
+        "/^bitbucket-pipelines\\.ya?ml$/",
+        "/^azure-pipelines\\.ya?ml$/",
+        "/^azure-pipeline\\.ya?ml$/"
       ]
     },
     {
       "description": "Git Submodules",
-      "matchManagers": ["git-submodules"],
-      "fileMatch": ["\\.gitmodules$"]
+      "matchManagers": [
+        "git-submodules"
+      ],
+      "managerFilePatterns": [
+        "/\\.gitmodules$/"
+      ]
     },
     {
       "description": "Homebrew",
-      "matchManagers": ["homebrew"],
-      "fileMatch": ["Brewfile$"]
+      "matchManagers": [
+        "homebrew"
+      ],
+      "managerFilePatterns": [
+        "/Brewfile$/"
+      ]
     },
     {
       "description": "HTML Links",
-      "matchManagers": ["html"],
-      "fileMatch": ["\\.html$"]
+      "matchManagers": [
+        "html"
+      ],
+      "managerFilePatterns": [
+        "/\\.html$/"
+      ]
     },
     {
       "description": "Kubernetes Manifests",
-      "matchManagers": ["kubernetes"],
-      "fileMatch": ["\\.ya?ml$"]
+      "matchManagers": [
+        "kubernetes"
+      ],
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ]
     },
     {
       "description": "Node Version Manager",
-      "matchManagers": ["nvm"],
-      "fileMatch": ["\\.nvmrc$"]
+      "matchManagers": [
+        "nvm"
+      ],
+      "managerFilePatterns": [
+        "/\\.nvmrc$/"
+      ]
     },
     {
       "description": "Pre-commit Hooks",
-      "matchManagers": ["pre-commit"],
-      "fileMatch": ["\\.pre-commit-config\\.ya?ml$"]
+      "matchManagers": [
+        "pre-commit"
+      ],
+      "managerFilePatterns": [
+        "/\\.pre-commit-config\\.ya?ml$/"
+      ]
     }
   ]
 }
