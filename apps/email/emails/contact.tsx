@@ -1,3 +1,4 @@
+import React from "react";
 import { ContactTemplate } from "@repo/email/templates/contact";
 
 const ExampleContactEmail = () => (

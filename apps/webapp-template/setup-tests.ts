@@ -1,6 +1,7 @@
 // Import shared testing setup
 import "@repo/testing/vitest/setup";
-import { vi } from "vitest";
+import { vi, afterEach } from "vitest";
+import { cleanup } from "@testing-library/react";
 // Do not import "@repo/testing/vitest/mantine" as we'll create our own mocks
 
 // Create a comprehensive mock for Mantine components

@@ -1,0 +1,89 @@
+// -----------------------------------------------------------------------------
+// ACCOUNT MODELS
+// -----------------------------------------------------------------------------
+
+/// User account with profile information and authentication methods
+model User {
+    id            String    @id @default(cuid())
+    name          String? /// User's display name
+    email         String    @unique /// User's email address (must be unique)
+    emailVerified DateTime? /// When the email was verified
+    image         String? /// Profile image URL
+
+    /// Authentication and session relationships
+    accounts      Account[] /// OAuth account connections
+    sessions      Session[] /// Active sessions
+    Authenticator Authenticator[] /// WebAuthn credentials (optional)
+
+    /// Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+/// OAuth provider account connection
+model Account {
+    userId            String /// Reference to the user who owns this account
+    type              String /// The type of account (usually "oauth")
+    provider          String /// The OAuth provider (google, github, etc.)
+    providerAccountId String /// ID from the provider
+
+    /// OAuth tokens and data
+    refresh_token String?
+    access_token  String?
+    expires_at    Int?
+    token_type    String?
+    scope         String?
+    id_token      String?
+    session_state String?
+
+    /// Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    /// Relationships
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([provider, providerAccountId])
+}
+
+/// User session data
+model Session {
+    sessionToken String   @unique /// Unique token that identifies this session
+    userId       String /// User who owns this session
+    expires      DateTime /// When this session expires
+
+    /// Relationships
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    /// Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+/// Email verification token
+model VerificationToken {
+    identifier String /// Usually the user's email
+    token      String /// Random token generated for verification
+    expires    DateTime /// When this token expires
+
+    @@id([identifier, token])
+}
+
+/// WebAuthn (passwordless) authenticator
+model Authenticator {
+    credentialID      String @unique /// Unique identifier for this authenticator
+    userId            String /// User who owns this authenticator
+    providerAccountId String /// Provider-specific account ID
+
+    /// WebAuthn specific fields
+    credentialPublicKey  String /// Public key for verification
+    counter              Int /// Security counter to prevent replay attacks
+    credentialDeviceType String /// Type of credential (e.g., "platform", "cross-platform")
+    credentialBackedUp   Boolean /// Whether this credential is backed up
+    transports           String? /// How the credential communicates (e.g., "usb", "nfc")
+
+    /// Relationships
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([userId, credentialID])
+}

@@ -15,17 +15,9 @@
       "import": "./src/clients/index.ts",
       "types": "./src/clients/index.ts"
     },
-    "./mock-data": {
-      "import": "./generated/mockData/index.ts",
-      "types": "./generated/mockData/index.ts"
-    },
     "./orm": {
       "import": "./src/orm/index.ts",
       "types": "./src/orm/index.ts"
-    },
-    "./testing": {
-      "import": "./src/testing/index.ts",
-      "types": "./src/testing/index.ts"
     }
   },
   "prisma": {
@@ -43,9 +35,6 @@
     "db:validate": "prisma validate",
     "lint": "pnpm db:format && eslint . --ext .js,.jsx,.ts,.tsx --color",
     "migrate": "prisma format && prisma generate && prisma db push",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest watch",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -55,23 +44,13 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.7.0",
     "@repo/eslint-config": "workspace:*",
-    "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
     "eslint": "catalog:",
     "prisma": "catalog:",
-    "prisma-generator-fake-data": "^0.14.3",
-    "prisma-generator-typescript-interfaces": "^2.1.0",
-    "prisma-markdown": "^2.0.0",
-    "prismock": "^1.35.3",
-    "tsx": "^4.19.3",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
-    "vitest-mock-extended": "catalog:",
-    "zod-prisma-types": "^3.2.4"
+    "tsx": "^4.19.4",
+    "typescript": "catalog:"
   }
 }

@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@arcjet/next": "1.0.0-beta.5",
-    "@nosecone/next": "1.0.0-beta.5",
+    "@arcjet/next": "1.0.0-beta.7",
+    "@nosecone/next": "1.0.0-beta.7",
     "@t3-oss/env-nextjs": "catalog:",
     "zod": "catalog:"
   },
@@ -22,7 +22,7 @@
     "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -12,12 +12,12 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.3.12",
+    "@ai-sdk/openai": "^1.3.22",
     "@t3-oss/env-nextjs": "catalog:",
-    "ai": "^4.3.7",
+    "ai": "^4.3.15",
     "react": "catalog:",
     "react-markdown": "^10.1.0",
-    "tailwind-merge": "^3.2.0",
+    "tailwind-merge": "^3.3.0",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -30,7 +30,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "eslint": "catalog:",
     "vitest": "catalog:"
   }

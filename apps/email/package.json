@@ -14,10 +14,10 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "0.0.36",
+    "@react-email/components": "0.0.41",
     "@repo/email": "workspace:*",
     "react": "catalog:",
-    "react-email": "4.0.7"
+    "react-email": "4.0.13"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

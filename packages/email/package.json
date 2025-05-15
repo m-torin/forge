@@ -11,11 +11,11 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "0.0.36",
+    "@react-email/components": "0.0.41",
     "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "resend": "^4.3.0",
+    "resend": "^4.5.1",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -26,7 +26,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",

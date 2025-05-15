@@ -12,7 +12,7 @@ vi.mock("../keys", () => ({
   }),
 }));
 
-describe.skip("Security Module", () => {
+describe("Security Module", () => {
   beforeEach(() => {
     vi.resetAllMocks();
 

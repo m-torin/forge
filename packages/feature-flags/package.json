@@ -16,7 +16,7 @@
     "@repo/design-system": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/toolbar": "^0.1.36",
-    "flags": "^3.2.0",
+    "flags": "^4.0.0",
     "react": "catalog:",
     "zod": "catalog:"
   },
@@ -28,7 +28,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "jsdom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -13,7 +13,7 @@ vi.mock("../keys", () => ({
   keys: vi.fn(() => mockKeysObject),
 }));
 
-describe.skip("Security Keys", () => {
+describe("Security Keys", () => {
   it("calls createEnv with the correct parameters", () => {
     const result = keys();
 

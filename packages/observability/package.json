@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@logtail/next": "^0.2.0",
-    "@sentry/nextjs": "^9.12.0",
+    "@sentry/nextjs": "^9.19.0",
     "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",
     "server-only": "catalog:",
@@ -34,7 +34,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",

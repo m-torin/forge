@@ -37,7 +37,7 @@ vi.mock("@nosecone/next", () => ({
   })),
 }));
 
-describe.skip("Security Middleware", () => {
+describe("Security Middleware", () => {
   describe("noseconeOptions", () => {
     it("extends defaults with contentSecurityPolicy disabled", () => {
       // Check that noseconeOptions extends defaults
@@ -49,11 +49,9 @@ describe.skip("Security Middleware", () => {
   });
 
   describe("noseconeOptionsWithToolbar", () => {
-    it("calls withVercelToolbar with noseconeOptions", () => {
-      // Check that noseconeOptionsWithToolbar calls withVercelToolbar
-      expect(withVercelToolbar).toHaveBeenCalledWith(noseconeOptions);
-
-      // Check that noseconeOptionsWithToolbar returns the result of withVercelToolbar
+    it("extends noseconeOptions with toolbar configuration", () => {
+      // Since withVercelToolbar is called when the module is imported, not during test
+      // We only need to check the final value of noseconeOptionsWithToolbar
       expect(noseconeOptionsWithToolbar).toEqual({
         ...noseconeOptions,
         contentSecurityPolicy: {

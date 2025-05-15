@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@liveblocks/client": "^2.22.3",
-    "@liveblocks/react": "^2.22.3",
+    "@liveblocks/client": "^2.24.2",
+    "@liveblocks/react": "^2.24.2",
     "@t3-oss/env-nextjs": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "react": "catalog:",
@@ -22,7 +22,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@liveblocks/node": "^2.22.3",
+    "@liveblocks/node": "^2.24.2",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
@@ -32,9 +32,9 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "eslint": "catalog:",
-    "happy-dom": "^17.4.4",
+    "happy-dom": "^17.4.7",
     "jsdom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -12,11 +12,11 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@next/third-parties": "15.3.0",
+    "@next/third-parties": "15.3.2",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/analytics": "^1.5.0",
-    "posthog-js": "^1.236.1",
-    "posthog-node": "^4.11.6",
+    "posthog-js": "^1.242.2",
+    "posthog-node": "^4.17.1",
     "react": "catalog:",
     "server-only": "catalog:",
     "zod": "catalog:"
@@ -29,9 +29,9 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.4.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "eslint": "catalog:",
     "jsdom": "catalog:",
-    "vitest": "^3.1.1"
+    "vitest": "catalog:"
   }
 }
