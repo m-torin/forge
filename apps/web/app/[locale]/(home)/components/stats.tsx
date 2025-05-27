@@ -1,54 +1,65 @@
-import type { Dictionary } from '@repo/internationalization';
-import { MoveDownLeft, MoveUpRight } from 'lucide-react';
+import { Box, Container, Grid, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { IconArrowDownLeft, IconArrowUpRight } from '@tabler/icons-react';
 
-type StatsProps = {
+import type { Dictionary } from '@repo/internationalization';
+
+interface StatsProps {
   dictionary: Dictionary;
-};
+}
 
 export const Stats = ({ dictionary }: StatsProps) => (
-  <div className="w-full py-20 lg:py-40">
-    <div className="container mx-auto">
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-        <div className="flex flex-col items-start gap-4">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-left font-regular text-xl tracking-tighter md:text-5xl lg:max-w-xl">
+  <Box py={{ base: 40, lg: 80 }} w="100%">
+    <Container size="xl">
+      <Grid gutter={{ base: 40, lg: 60 }}>
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <Stack gap="md">
+            <Title order={2} fw={400} maw={{ lg: 600 }} size="h1">
               {dictionary.web.home.stats.title}
-            </h2>
-            <p className="text-left text-lg text-muted-foreground leading-relaxed tracking-tight lg:max-w-sm">
+            </Title>
+            <Text c="dimmed" maw={{ lg: 400 }} size="lg">
               {dictionary.web.home.stats.description}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center justify-center">
-          <div className="grid w-full grid-cols-1 gap-2 text-left sm:grid-cols-2 lg:grid-cols-2">
+            </Text>
+          </Stack>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <Grid gutter="sm">
             {dictionary.web.home.stats.items.map((item, index) => (
-              <div
-                className="flex flex-col justify-between gap-0 rounded-md border p-6"
-                key={index}
-              >
-                {Number.parseFloat(item.delta) > 0 ? (
-                  <MoveUpRight className="mb-10 h-4 w-4 text-primary" />
-                ) : (
-                  <MoveDownLeft className="mb-10 h-4 w-4 text-destructive" />
-                )}
-                <h2 className="flex max-w-xl flex-row items-end gap-4 text-left font-regular text-4xl tracking-tighter">
-                  {item.type === 'currency' && '$'}
-                  {new Intl.NumberFormat().format(
-                    Number.parseFloat(item.metric)
-                  )}
-                  <span className="text-muted-foreground text-sm tracking-normal">
-                    {Number.parseFloat(item.delta) > 0 ? '+' : ''}
-                    {item.delta}%
-                  </span>
-                </h2>
-                <p className="max-w-xl text-left text-base text-muted-foreground leading-relaxed tracking-tight">
-                  {item.title}
-                </p>
-              </div>
+              <Grid.Col key={index} span={{ base: 12, sm: 6 }}>
+                <Paper withBorder h="100%" p="xl" radius="md">
+                  <Stack h="100%" justify="space-between">
+                    <Box>
+                      {Number.parseFloat(item.delta) > 0 ? (
+                        <IconArrowUpRight
+                          style={{ color: 'var(--mantine-color-blue-6)' }}
+                          size={16}
+                        />
+                      ) : (
+                        <IconArrowDownLeft
+                          style={{ color: 'var(--mantine-color-red-6)' }}
+                          size={16}
+                        />
+                      )}
+                    </Box>
+                    <Box>
+                      <Group align="flex-end" gap="xs" mb="xs">
+                        <Title order={2} fw={400} size="h1">
+                          {item.type === 'currency' && '$'}
+                          {new Intl.NumberFormat().format(Number.parseFloat(item.metric))}
+                        </Title>
+                        <Text c="dimmed" size="sm">
+                          {Number.parseFloat(item.delta) > 0 ? '+' : ''}
+                          {item.delta}%
+                        </Text>
+                      </Group>
+                      <Text c="dimmed">{item.title}</Text>
+                    </Box>
+                  </Stack>
+                </Paper>
+              </Grid.Col>
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+          </Grid>
+        </Grid.Col>
+      </Grid>
+    </Container>
+  </Box>
 );

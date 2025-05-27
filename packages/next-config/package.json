@@ -2,19 +2,24 @@
   "name": "@repo/next-config",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "next": "15.3.2"
+    "@types/eslint": "^9.6.1",
+    "eslint": "catalog:",
+    "next": "catalog:"
   },
   "dependencies": {
-    "@next/bundle-analyzer": "15.3.2",
+    "@next/bundle-analyzer": "15.4.0-canary.42",
     "@prisma/nextjs-monorepo-workaround-plugin": "^6.8.2",
-    "@t3-oss/env-core": "^0.13.4",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "zod": "^3.25.28"
+    "@t3-oss/env-core": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "zod": "catalog:"
   }
 }

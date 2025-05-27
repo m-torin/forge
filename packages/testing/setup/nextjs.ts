@@ -1,0 +1,34 @@
+// Common setup for Next.js applications
+import '@testing-library/jest-dom';
+import { beforeEach, vi } from 'vitest';
+
+// Import setupBrowserMocks and setupNextMocks
+import { setupBrowserMocks } from '../mocks/browser.js';
+import { setupNextMocks } from '../mocks/next.js';
+
+import { suppressConsoleErrors } from './common.js';
+
+// Setup console error suppression
+suppressConsoleErrors();
+
+// Setup browser and Next.js mocks
+setupBrowserMocks();
+setupNextMocks();
+
+// Clear all mocks between tests
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+// Mock environment variables for testing
+process.env = {
+  ...process.env,
+  NEXT_PUBLIC_VERCEL_URL: 'http://localhost:3000',
+  NODE_ENV: 'test',
+};
+
+export default {
+  setupBrowserMocks,
+  setupNextMocks,
+  suppressConsoleErrors,
+};

@@ -1,4 +1,5 @@
 import { init } from '@sentry/nextjs';
+
 import { keys } from './keys';
 
 const opts = {

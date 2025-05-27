@@ -1,45 +1,69 @@
 {
-  "name": "next-forge",
-  "version": "4.4.4",
+  "name": "forge",
+  "version": "4.2.10",
   "bin": {
-    "next-forge": "dist/index.js"
+    "forge": "dist/index.js"
   },
   "files": [
     "dist/index.js"
   ],
   "scripts": {
-    "build": "turbo build",
+    "prebuild": "pnpm --filter=@repo/database build",
+    "predev": "pnpm --filter=@repo/database build",
     "dev": "turbo dev",
-    "lint": "ultracite lint",
-    "format": "ultracite format",
-    "test": "turbo test",
+    "build": "turbo build --parallel",
+    "doppler": "pnpm exec turbo run doppler || npx turbo run doppler",
+    "lint": "pnpm prettier && turbo lint --parallel",
+    "prettier": "prettier --log-level=error \"**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml,graphql,gql}\" --write",
+    "bump-deps": "node scripts/update-workspace.mjs",
+    "test": "turbo test --parallel --concurrency=10",
+    "typecheck": "turbo typecheck",
     "analyze": "turbo analyze",
     "translate": "turbo translate",
     "boundaries": "turbo boundaries",
-    "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker",
     "bump-ui": "npx shadcn@latest add --all --overwrite -c packages/design-system",
-    "migrate": "cd packages/database && npx prisma format && npx prisma generate && npx prisma db push",
-    "clean": "git clean -xdf node_modules"
+    "migrate": "pnpm --filter @repo/database migrate",
+    "clean": "./scripts/clean-everything.sh",
+    "mac-setup": "./scripts/mac-setup.sh"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",
-    "@biomejs/biome": "1.9.4",
+    "@next/eslint-plugin-next": "catalog:",
     "@repo/typescript-config": "workspace:*",
     "@turbo/gen": "^2.5.3",
-    "@types/node": "^22.15.21",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "glob": "^11.0.2",
+    "js-yaml": "^4.1.0",
+    "madge": "^8.0.0",
+    "prettier": "^3.5.3",
     "tsup": "^8.5.0",
     "turbo": "^2.5.3",
-    "typescript": "^5.8.3",
-    "ultracite": "^4.2.5",
-    "vitest": "^3.1.4"
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.32.1",
+    "vitest": "catalog:"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22",
+    "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.6.3",
   "dependencies": {
     "@clack/prompts": "^0.11.0",
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "server-only": "catalog:"
   },
-  "type": "module"
+  "type": "module",
+  "pnpm": {
+    "overrides": {
+      "path-to-regexp@>=4.0.0 <6.3.0": ">=6.3.0",
+      "@octokit/request-error@>=1.0.0 <5.1.1": ">=5.1.1",
+      "@octokit/request@>=1.0.0 <8.4.1": ">=8.4.1",
+      "@octokit/plugin-paginate-rest@>=1.0.0 <9.2.2": ">=9.2.2",
+      "cookie@<0.7.0": ">=0.7.0",
+      "next@>=15.0.0 <15.2.3": ">=15.2.3"
+    }
+  }
 }

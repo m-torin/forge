@@ -1,89 +1,287 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import {
-  AudioWaveform,
-  BadgeCheck,
-  Bell,
-  BookOpen,
-  Bot,
-  ChevronRight,
-  ChevronsUpDown,
-  Command,
-  CreditCard,
-  Folder,
-  Forward,
-  Frame,
-  GalleryVerticalEnd,
-  LogOut,
-  // biome-ignore lint/suspicious/noShadowRestrictedNames: "icon name"
-  Map,
-  MoreHorizontal,
-  PieChart,
-  Plus,
-  Settings2,
-  Sparkles,
-  SquareTerminal,
-  Trash2,
-} from 'lucide-react';
-
+  IconWaveSquare,
+  IconRosetteDiscountCheck,
+  IconBell,
+  IconBook,
+  IconRobot,
+  IconChevronRight,
+  IconSelector,
+  IconCommand,
+  IconCreditCard,
+  IconFolder,
+  IconPlayerTrackNext,
+  IconFrame,
+  IconLayoutRows,
+  IconLogout,
+  IconMap,
+  IconDots,
+  IconChartPie,
+  IconPlus,
+  IconSettings2,
+  IconSparkles,
+  IconTerminal,
+  IconTrash,
+} from '@tabler/icons-react';
 import {
+  AppShell,
+  NavLink,
+  ScrollArea,
+  Group,
+  ActionIcon,
+  Menu,
   Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@repo/design-system/components/ui/breadcrumb';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@repo/design-system/components/ui/collapsible';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Separator } from '@repo/design-system/components/ui/separator';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarRail,
-  SidebarTrigger,
-} from '@repo/design-system/components/ui/sidebar';
+  Text,
+  Box,
+  Divider,
+  Badge,
+  Breadcrumbs,
+  Anchor,
+  Burger,
+  Stack,
+  UnstyledButton,
+  Collapse,
+  Paper,
+} from '@mantine/core';
 import { useState } from 'react';
+import { useDisclosure } from '@mantine/hooks';
 
-const meta: Meta<typeof Sidebar> = {
-  title: 'ui/Sidebar',
-  component: Sidebar,
-  tags: ['autodocs'],
-  argTypes: {},
+// Mock sidebar component for Storybook
+const MockSidebar = () => {
+  const [opened, { toggle }] = useDisclosure();
+  const [activeTeam, setActiveTeam] = useState(data.teams[0]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['Playground']);
+
+  const toggleExpanded = (title: string) => {
+    setExpandedItems((prev) =>
+      prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title],
+    );
+  };
+
+  return (
+    <AppShell
+      header={{ height: 60 }}
+      navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      padding="md"
+    >
+      <AppShell.Header>
+        <Group h="100%" px="md">
+          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+          <Breadcrumbs separator="›">
+            <Anchor href="#" size="sm">
+              Building Your Application
+            </Anchor>
+            <Text size="sm">Data Fetching</Text>
+          </Breadcrumbs>
+        </Group>
+      </AppShell.Header>
+
+      <AppShell.Navbar p="md">
+        <AppShell.Section>
+          <Menu shadow="md" width={200}>
+            <Menu.Target>
+              <UnstyledButton
+                p="sm"
+                style={{
+                  borderRadius: 'var(--mantine-radius-md)',
+                  '&:hover': { backgroundColor: 'var(--mantine-color-gray-1)' },
+                }}
+              >
+                <Group justify="space-between">
+                  <Group>
+                    <Box
+                      bg="blue"
+                      c="white"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 'var(--mantine-radius-md)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <activeTeam.logo size={16} />
+                    </Box>
+                    <Box>
+                      <Text size="sm" fw={600}>
+                        {activeTeam.name}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {activeTeam.plan}
+                      </Text>
+                    </Box>
+                  </Group>
+                  <IconSelector size={16} />
+                </Group>
+              </UnstyledButton>
+            </Menu.Target>
+
+            <Menu.Dropdown>
+              <Menu.Label>Teams</Menu.Label>
+              {data.teams.map((team, index) => (
+                <Menu.Item
+                  key={team.name}
+                  leftSection={<team.logo size={16} />}
+                  rightSection={
+                    <Text size="xs" c="dimmed">
+                      ⌘{index + 1}
+                    </Text>
+                  }
+                  onClick={() => setActiveTeam(team)}
+                >
+                  {team.name}
+                </Menu.Item>
+              ))}
+              <Menu.Divider />
+              <Menu.Item leftSection={<IconPlus size={16} />}>Add team</Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </AppShell.Section>
+
+        <AppShell.Section grow component={ScrollArea} mt="md">
+          <Stack gap="xs">
+            <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb="xs">
+              Platform
+            </Text>
+            {data.navMain.map((item) => (
+              <Box key={item.title}>
+                <NavLink
+                  label={item.title}
+                  leftSection={<item.icon size={18} />}
+                  rightSection={
+                    <IconChevronRight
+                      size={14}
+                      style={{
+                        transform: expandedItems.includes(item.title) ? 'rotate(90deg)' : 'none',
+                        transition: 'transform 200ms ease',
+                      }}
+                    />
+                  }
+                  onClick={() => toggleExpanded(item.title)}
+                  active={item.isActive}
+                />
+                <Collapse in={expandedItems.includes(item.title)}>
+                  <Stack gap={0} ml="lg">
+                    {item.items?.map((subItem) => (
+                      <NavLink key={subItem.title} label={subItem.title} href={subItem.url} />
+                    ))}
+                  </Stack>
+                </Collapse>
+              </Box>
+            ))}
+
+            <Divider my="md" />
+
+            <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb="xs">
+              Projects
+            </Text>
+            {data.projects.map((item) => (
+              <Group key={item.name} wrap="nowrap">
+                <NavLink
+                  style={{ flex: 1 }}
+                  label={item.name}
+                  leftSection={<item.icon size={18} />}
+                  href={item.url}
+                />
+                <Menu shadow="md" width={200}>
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" size="sm">
+                      <IconDots size={16} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item leftSection={<IconFolder size={16} />}>View Project</Menu.Item>
+                    <Menu.Item leftSection={<IconPlayerTrackNext size={16} />}>
+                      Share Project
+                    </Menu.Item>
+                    <Menu.Divider />
+                    <Menu.Item color="red" leftSection={<IconTrash size={16} />}>
+                      Delete Project
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </Group>
+            ))}
+            <NavLink label="More" leftSection={<IconDots size={18} />} c="dimmed" />
+          </Stack>
+        </AppShell.Section>
+
+        <AppShell.Section>
+          <Divider my="md" />
+          <Menu shadow="md" width={250}>
+            <Menu.Target>
+              <UnstyledButton
+                p="sm"
+                style={{
+                  borderRadius: 'var(--mantine-radius-md)',
+                  width: '100%',
+                  '&:hover': { backgroundColor: 'var(--mantine-color-gray-1)' },
+                }}
+              >
+                <Group justify="space-between">
+                  <Group>
+                    <Avatar size="sm" radius="md" src={data.user.avatar}>
+                      CN
+                    </Avatar>
+                    <Box>
+                      <Text size="sm" fw={600}>
+                        {data.user.name}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {data.user.email}
+                      </Text>
+                    </Box>
+                  </Group>
+                  <IconSelector size={16} />
+                </Group>
+              </UnstyledButton>
+            </Menu.Target>
+
+            <Menu.Dropdown>
+              <Box p="xs">
+                <Group>
+                  <Avatar size="md" radius="md" src={data.user.avatar}>
+                    CN
+                  </Avatar>
+                  <Box>
+                    <Text size="sm" fw={600}>
+                      {data.user.name}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {data.user.email}
+                    </Text>
+                  </Box>
+                </Group>
+              </Box>
+              <Menu.Divider />
+              <Menu.Item leftSection={<IconSparkles size={16} />}>Upgrade to Pro</Menu.Item>
+              <Menu.Divider />
+              <Menu.Item leftSection={<IconRosetteDiscountCheck size={16} />}>Account</Menu.Item>
+              <Menu.Item leftSection={<IconCreditCard size={16} />}>Billing</Menu.Item>
+              <Menu.Item leftSection={<IconBell size={16} />}>Notifications</Menu.Item>
+              <Menu.Divider />
+              <Menu.Item color="red" leftSection={<IconLogout size={16} />}>
+                Log out
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </AppShell.Section>
+      </AppShell.Navbar>
+
+      <AppShell.Main>
+        <Stack gap="md">
+          <Group grow>
+            <Paper shadow="xs" p="md" radius="md" withBorder style={{ aspectRatio: '16/9' }} />
+            <Paper shadow="xs" p="md" radius="md" withBorder style={{ aspectRatio: '16/9' }} />
+            <Paper shadow="xs" p="md" radius="md" withBorder style={{ aspectRatio: '16/9' }} />
+          </Group>
+          <Paper shadow="xs" p="md" radius="md" withBorder style={{ minHeight: '60vh' }} />
+        </Stack>
+      </AppShell.Main>
+    </AppShell>
+  );
 };
-export default meta;
-
-type Story = StoryObj<typeof Sidebar>;
 
 const data = {
   user: {
@@ -94,17 +292,17 @@ const data = {
   teams: [
     {
       name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
+      logo: IconLayoutRows,
       plan: 'Enterprise',
     },
     {
       name: 'Acme Corp.',
-      logo: AudioWaveform,
+      logo: IconWaveSquare,
       plan: 'Startup',
     },
     {
       name: 'Evil Corp.',
-      logo: Command,
+      logo: IconCommand,
       plan: 'Free',
     },
   ],
@@ -112,7 +310,7 @@ const data = {
     {
       title: 'Playground',
       url: '#',
-      icon: SquareTerminal,
+      icon: IconTerminal,
       isActive: true,
       items: [
         {
@@ -132,7 +330,7 @@ const data = {
     {
       title: 'Models',
       url: '#',
-      icon: Bot,
+      icon: IconRobot,
       items: [
         {
           title: 'Genesis',
@@ -151,7 +349,7 @@ const data = {
     {
       title: 'Documentation',
       url: '#',
-      icon: BookOpen,
+      icon: IconBook,
       items: [
         {
           title: 'Introduction',
@@ -174,7 +372,7 @@ const data = {
     {
       title: 'Settings',
       url: '#',
-      icon: Settings2,
+      icon: IconSettings2,
       items: [
         {
           title: 'General',
@@ -199,296 +397,42 @@ const data = {
     {
       name: 'Design Engineering',
       url: '#',
-      icon: Frame,
+      icon: IconFrame,
     },
     {
       name: 'Sales & Marketing',
       url: '#',
-      icon: PieChart,
+      icon: IconChartPie,
     },
     {
       name: 'Travel',
       url: '#',
-      icon: Map,
+      icon: IconMap,
     },
   ],
 };
 
-export const Base: Story = {
-  render: () => {
-    const [activeTeam, setActiveTeam] = useState(data.teams[0]);
-
-    return (
-      <SidebarProvider>
-        <Sidebar collapsible="icon">
-          <SidebarHeader>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton
-                      size="lg"
-                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                    >
-                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                        <activeTeam.logo className="size-4" />
-                      </div>
-                      <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                          {activeTeam.name}
-                        </span>
-                        <span className="truncate text-xs">
-                          {activeTeam.plan}
-                        </span>
-                      </div>
-                      <ChevronsUpDown className="ml-auto" />
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                    align="start"
-                    side="bottom"
-                    sideOffset={4}
-                  >
-                    <DropdownMenuLabel className="text-muted-foreground text-xs">
-                      Teams
-                    </DropdownMenuLabel>
-                    {data.teams.map((team, index) => (
-                      <DropdownMenuItem
-                        key={team.name}
-                        onClick={() => setActiveTeam(team)}
-                        className="gap-2 p-2"
-                      >
-                        <div className="flex size-6 items-center justify-center rounded-sm border">
-                          <team.logo className="size-4 shrink-0" />
-                        </div>
-                        {team.name}
-                        <DropdownMenuShortcut>
-                          ⌘{index + 1}
-                        </DropdownMenuShortcut>
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="gap-2 p-2">
-                      <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                        <Plus className="size-4" />
-                      </div>
-                      <div className="font-medium text-muted-foreground">
-                        Add team
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Platform</SidebarGroupLabel>
-              <SidebarMenu>
-                {data.navMain.map((item) => (
-                  <Collapsible
-                    key={item.title}
-                    asChild
-                    defaultOpen={item.isActive}
-                    className="group/collapsible"
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={item.title}>
-                          {item.icon && <item.icon />}
-                          <span>{item.title}</span>
-                          <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild>
-                                <a href={subItem.url}>
-                                  <span>{subItem.title}</span>
-                                </a>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-              <SidebarGroupLabel>Projects</SidebarGroupLabel>
-              <SidebarMenu>
-                {data.projects.map((item) => (
-                  <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton asChild>
-                      <a href={item.url}>
-                        <item.icon />
-                        <span>{item.name}</span>
-                      </a>
-                    </SidebarMenuButton>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <SidebarMenuAction showOnHover>
-                          <MoreHorizontal />
-                          <span className="sr-only">More</span>
-                        </SidebarMenuAction>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        className="w-48 rounded-lg"
-                        side="bottom"
-                        align="end"
-                      >
-                        <DropdownMenuItem>
-                          <Folder className="text-muted-foreground" />
-                          <span>View Project</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Forward className="text-muted-foreground" />
-                          <span>Share Project</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Trash2 className="text-muted-foreground" />
-                          <span>Delete Project</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </SidebarMenuItem>
-                ))}
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="text-sidebar-foreground/70">
-                    <MoreHorizontal className="text-sidebar-foreground/70" />
-                    <span>More</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-          <SidebarFooter>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton
-                      size="lg"
-                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                    >
-                      <Avatar className="h-8 w-8 rounded-lg">
-                        <AvatarImage
-                          src={data.user.avatar}
-                          alt={data.user.name}
-                        />
-                        <AvatarFallback className="rounded-lg">
-                          CN
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                          {data.user.name}
-                        </span>
-                        <span className="truncate text-xs">
-                          {data.user.email}
-                        </span>
-                      </div>
-                      <ChevronsUpDown className="ml-auto size-4" />
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                    side="bottom"
-                    align="end"
-                    sideOffset={4}
-                  >
-                    <DropdownMenuLabel className="p-0 font-normal">
-                      <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                        <Avatar className="h-8 w-8 rounded-lg">
-                          <AvatarImage
-                            src={data.user.avatar}
-                            alt={data.user.name}
-                          />
-                          <AvatarFallback className="rounded-lg">
-                            CN
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="grid flex-1 text-left text-sm leading-tight">
-                          <span className="truncate font-semibold">
-                            {data.user.name}
-                          </span>
-                          <span className="truncate text-xs">
-                            {data.user.email}
-                          </span>
-                        </div>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem>
-                        <Sparkles />
-                        Upgrade to Pro
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem>
-                        <BadgeCheck />
-                        Account
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <CreditCard />
-                        Billing
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Bell />
-                        Notifications
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <LogOut />
-                      Log out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
-          <SidebarRail />
-        </Sidebar>
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      Building Your Application
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
-          </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-              <div className="aspect-video rounded-xl bg-muted/50" />
-              <div className="aspect-video rounded-xl bg-muted/50" />
-              <div className="aspect-video rounded-xl bg-muted/50" />
-            </div>
-            <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    );
+/**
+ * Displays a sidebar navigation with Mantine components.
+ */
+const meta: Meta<typeof MockSidebar> = {
+  title: 'ui/Sidebar',
+  component: MockSidebar,
+  tags: ['autodocs'],
+  argTypes: {},
+  parameters: {
+    layout: 'fullscreen',
   },
+};
+
+export default meta;
+
+type Story = StoryObj<typeof MockSidebar>;
+
+/**
+ * The default form of the sidebar using Mantine's AppShell.
+ */
+export const Base: Story = {
+  render: () => <MockSidebar />,
   args: {},
 };

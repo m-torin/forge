@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Bold, Italic } from 'lucide-react';
+import { IconBold, IconItalic } from '@tabler/icons-react';
 
 import { Toggle } from '@repo/design-system/components/ui/toggle';
 
@@ -16,7 +16,7 @@ const meta: Meta<typeof Toggle> = {
     },
   },
   args: {
-    children: <Bold className="h-4 w-4" />,
+    children: <IconBold className="h-4 w-4" />,
     'aria-label': 'Toggle bold',
   },
   parameters: {
@@ -39,7 +39,7 @@ export const Default: Story = {};
 export const Outline: Story = {
   args: {
     variant: 'outline',
-    children: <Italic className="h-4 w-4" />,
+    children: <IconItalic className="h-4 w-4" />,
     'aria-label': 'Toggle italic',
   },
 };
@@ -50,7 +50,7 @@ export const Outline: Story = {
 export const WithText: Story = {
   render: (args) => (
     <Toggle {...args}>
-      <Italic className="mr-2 h-4 w-4" />
+      <IconItalic className="mr-2 h-4 w-4" />
       Italic
     </Toggle>
   ),

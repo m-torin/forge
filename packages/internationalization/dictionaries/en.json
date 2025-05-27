@@ -1,4 +1,8 @@
 {
+  "common": {
+    "locale": "English",
+    "language": "Language"
+  },
   "web": {
     "global": {
       "primaryCta": "Book a call",

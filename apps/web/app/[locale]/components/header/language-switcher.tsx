@@ -1,14 +1,10 @@
 'use client';
 
-import { Button } from '@repo/design-system/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Languages } from 'lucide-react';
+import { ActionIcon, Menu } from '@mantine/core';
+import { IconLanguage } from '@tabler/icons-react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
+
+import type { Route } from 'next';
 
 const languages = [
   { label: '🇬🇧 English', value: 'en' },
@@ -25,44 +21,25 @@ export const LanguageSwitcher = () => {
   const params = useParams();
 
   const switchLanguage = (locale: string) => {
-    const defaultLocale = 'en';
-    let newPathname = pathname;
-
-    // Case 1: If current locale is default and missing from the URL
-    if (
-      !pathname.startsWith(`/${params.locale}`) &&
-      params.locale === defaultLocale
-    ) {
-      // Add the default locale to the beginning to normalize
-      newPathname = `/${params.locale}${pathname}`;
-    }
-
-    // Replace current locale with the selected one
-    newPathname = newPathname.replace(`/${params.locale}`, `/${locale}`);
-    console.log(newPathname);
-
-    router.push(newPathname);
+    // Replace the current locale in the pathname with the new one
+    const newPathname = pathname.replace(`/${params.locale}`, `/${locale}`);
+    router.push(newPathname as Route);
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 text-foreground"
-        >
-          <Languages className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Switch language</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
+    <Menu width={200} position="bottom-end">
+      <Menu.Target>
+        <ActionIcon color="gray" aria-label="Switch language" size="lg" variant="subtle">
+          <IconLanguage size={20} />
+        </ActionIcon>
+      </Menu.Target>
+      <Menu.Dropdown>
         {languages.map(({ label, value }) => (
-          <DropdownMenuItem key={value} onClick={() => switchLanguage(value)}>
+          <Menu.Item key={value} onClick={() => switchLanguage(value)}>
             {label}
-          </DropdownMenuItem>
+          </Menu.Item>
         ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </Menu.Dropdown>
+    </Menu>
   );
 };

@@ -1,16 +1,26 @@
-import type { HTMLAttributes } from 'react';
-import { twMerge } from 'tailwind-merge';
+import { Box } from '@mantine/core';
 
-type ThreadProps = HTMLAttributes<HTMLDivElement>;
+import type { BoxProps } from '@mantine/core';
+import type { ReactNode } from 'react';
 
-export const Thread = ({ children, className, ...props }: ThreadProps) => (
-  <div
-    className={twMerge(
-      'flex flex-1 flex-col items-start gap-4 overflow-y-auto p-8 pb-0',
-      className
-    )}
+type ThreadProps = BoxProps & {
+  children: ReactNode;
+};
+
+export const Thread = ({ children, ...props }: ThreadProps) => (
+  <Box
+    style={{
+      alignItems: 'flex-start',
+      flex: 1,
+      flexDirection: 'column',
+      gap: '1rem',
+      overflowY: 'auto',
+    }}
+    display="flex"
+    p="xl"
+    pb={0}
     {...props}
   >
     {children}
-  </div>
+  </Box>
 );

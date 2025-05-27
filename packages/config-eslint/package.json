@@ -1,0 +1,70 @@
+{
+  "name": "@repo/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./next": "./next.ts",
+    "./react-package": "./react-package.ts",
+    "./server": "./server.ts",
+    "./remix": "./remix.ts",
+    "./package": "./package.ts",
+    "./types": "./types/index.d.ts"
+  },
+  "main": "index.ts",
+  "types": "./types/index.d.ts",
+  "files": [
+    "index.ts",
+    "next.ts",
+    "react-package.ts",
+    "server.ts",
+    "remix.ts",
+    "package.ts",
+    "types/**/*.d.ts"
+  ],
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "lint": "npx eslint . --fix --quiet || true",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.27.0",
+    "@eslint/markdown": "^6.4.0",
+    "@next/eslint-plugin-next": "catalog:",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-cypress": "^4.3.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest-dom": "^5.5.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "eslint-plugin-perfectionist": "^4.13.0",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-testing-library": "^7.2.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^16.1.0",
+    "typescript-eslint": "^8.32.1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitejs/plugin-react": "^4.5.0",
+    "eslint-import-resolver-typescript": "^4.3.5",
+    "eslint-plugin-node": "^11.1.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  }
+}

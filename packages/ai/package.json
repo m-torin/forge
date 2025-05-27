@@ -2,23 +2,28 @@
   "name": "@repo/ai",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",
-    "@t3-oss/env-nextjs": "^0.13.4",
+    "@mantine/core": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
     "ai": "^4.3.16",
-    "react": "^19.1.0",
+    "react": "catalog:",
     "react-markdown": "^10.1.0",
-    "tailwind-merge": "^3.3.0",
-    "zod": "^3.25.28"
+    "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5"
+    "@types/eslint": "^9.6.1",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:"
   }
 }

@@ -5,6 +5,7 @@
  */
 
 import { init, replayIntegration } from '@sentry/nextjs';
+
 import { keys } from './keys';
 
 export const initializeSentry = (): ReturnType<typeof init> =>
@@ -28,9 +29,9 @@ export const initializeSentry = (): ReturnType<typeof init> =>
     // You can remove this option if you're not planning to use the Sentry Session Replay feature:
     integrations: [
       replayIntegration({
+        blockAllMedia: true,
         // Additional Replay configuration goes in here, for example:
         maskAllText: true,
-        blockAllMedia: true,
       }),
     ],
   });

@@ -1,14 +1,8 @@
 'use client';
 
-import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
+import { ActionIcon, Menu, useMantineColorScheme } from '@mantine/core';
+import { IconMoon, IconSun } from '@tabler/icons-react';
 import { useTheme } from 'next-themes';
-import { Button } from '../components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../components/ui/dropdown-menu';
 
 const themes = [
   { label: 'Light', value: 'light' },
@@ -17,28 +11,23 @@ const themes = [
 ];
 
 export const ModeToggle = () => {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+  const { colorScheme } = useMantineColorScheme();
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 text-foreground"
-        >
-          <SunIcon className="dark:-rotate-90 h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:scale-0" />
-          <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
+    <Menu>
+      <Menu.Target>
+        <ActionIcon aria-label="Toggle theme" size="lg" variant="subtle">
+          {colorScheme === 'dark' ? <IconMoon size={20} /> : <IconSun size={20} />}
+        </ActionIcon>
+      </Menu.Target>
+      <Menu.Dropdown>
         {themes.map(({ label, value }) => (
-          <DropdownMenuItem key={value} onClick={() => setTheme(value)}>
+          <Menu.Item key={value} onClick={() => setTheme(value)}>
             {label}
-          </DropdownMenuItem>
+          </Menu.Item>
         ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </Menu.Dropdown>
+    </Menu>
   );
 };

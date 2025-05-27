@@ -1,4 +1,5 @@
 import merge from 'lodash.merge';
+
 import type { Metadata } from 'next';
 
 type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {
@@ -7,48 +8,46 @@ type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {
   image?: string;
 };
 
-const applicationName = 'next-forge';
+const applicationName = 'forge';
 const author: Metadata['authors'] = {
   name: 'Hayden Bleasel',
   url: 'https://haydenbleasel.com/',
 };
 const publisher = 'Hayden Bleasel';
 const twitterHandle = '@haydenbleasel';
-const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 
 export const createMetadata = ({
-  title,
   description,
   image,
+  title,
   ...properties
 }: MetadataGenerator): Metadata => {
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
   const parsedTitle = `${title} | ${applicationName}`;
   const defaultMetadata: Metadata = {
-    title: parsedTitle,
-    description,
-    applicationName,
-    metadataBase: productionUrl
-      ? new URL(`${protocol}://${productionUrl}`)
-      : undefined,
-    authors: [author],
-    creator: author.name,
-    formatDetection: {
-      telephone: false,
-    },
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
       title: parsedTitle,
     },
+    applicationName,
+    authors: [author],
+    creator: author.name,
+    description,
+    formatDetection: {
+      telephone: false,
+    },
+    metadataBase: productionUrl ? new URL(`${protocol}://${productionUrl}`) : undefined,
     openGraph: {
-      title: parsedTitle,
-      description,
       type: 'website',
-      siteName: applicationName,
+      description,
       locale: 'en_US',
+      siteName: applicationName,
+      title: parsedTitle,
     },
     publisher,
+    title: parsedTitle,
     twitter: {
       card: 'summary_large_image',
       creator: twitterHandle,
@@ -60,10 +59,10 @@ export const createMetadata = ({
   if (image && metadata.openGraph) {
     metadata.openGraph.images = [
       {
-        url: image,
         width: 1200,
-        height: 630,
+        url: image,
         alt: title,
+        height: 630,
       },
     ];
   }

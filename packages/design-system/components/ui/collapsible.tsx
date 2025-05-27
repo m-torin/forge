@@ -1,33 +1,39 @@
-"use client"
+'use client';
 
-import * as CollapsiblePrimitive from "@radix-ui/react-collapsible"
+// Use Mantine Collapse for Collapsible functionality
+import { Collapse, UnstyledButton } from '@mantine/core';
+import * as React from 'react';
 
-function Collapsible({
-  ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.Root>) {
-  return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
-}
+export const Collapsible = ({ children, onOpenChange, open }: any) => {
+  const [isOpen, setIsOpen] = React.useState(open || false);
 
-function CollapsibleTrigger({
-  ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger>) {
+  React.useEffect(() => {
+    if (open !== undefined) setIsOpen(open);
+  }, [open]);
+
   return (
-    <CollapsiblePrimitive.CollapsibleTrigger
-      data-slot="collapsible-trigger"
-      {...props}
-    />
-  )
-}
+    <div>
+      {React.Children.map(children, (child) => {
+        if (child?.type === CollapsibleTrigger) {
+          return React.cloneElement(child, {
+            onClick: () => {
+              const newOpen = !isOpen;
+              setIsOpen(newOpen);
+              onOpenChange?.(newOpen);
+            },
+          });
+        }
+        if (child?.type === CollapsibleContent) {
+          return <Collapse in={isOpen}>{child.props.children}</Collapse>;
+        }
+        return child;
+      })}
+    </div>
+  );
+};
 
-function CollapsibleContent({
-  ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
-  return (
-    <CollapsiblePrimitive.CollapsibleContent
-      data-slot="collapsible-content"
-      {...props}
-    />
-  )
-}
+export const CollapsibleTrigger = ({ children, onClick }: any) => (
+  <UnstyledButton onClick={onClick}>{children}</UnstyledButton>
+);
 
-export { Collapsible, CollapsibleTrigger, CollapsibleContent }
+export const CollapsibleContent = ({ children }: { children: React.ReactNode }) => <>{children}</>;

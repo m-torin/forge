@@ -1,22 +1,29 @@
 import { env } from '@/env';
-import { withCMS } from '@repo/cms/next-config';
+
 import { withToolbar } from '@repo/feature-flags/lib/toolbar';
 import { config, withAnalyzer } from '@repo/next-config';
 import { withLogging, withSentry } from '@repo/observability/next-config';
+
 import type { NextConfig } from 'next';
 
-let nextConfig: NextConfig = withToolbar(withLogging(config));
+let nextConfig: NextConfig = withToolbar(
+  withLogging({
+    ...config,
+    experimental: {
+      nodeMiddleware: true,
+      optimizePackageImports: ['@mantine/core', '@mantine/hooks', '@mantine/form'],
+    },
+  }),
+);
 
-nextConfig.images?.remotePatterns?.push({
-  protocol: 'https',
-  hostname: 'assets.basehub.com',
-});
+// Configure server external packages to prevent posthog-node from being bundled on the client side
+nextConfig.serverExternalPackages = [...(nextConfig.serverExternalPackages || []), 'posthog-node'];
 
 if (process.env.NODE_ENV === 'production') {
   const redirects: NextConfig['redirects'] = async () => [
     {
-      source: '/legal',
       destination: '/legal/privacy',
+      source: '/legal',
       statusCode: 301,
     },
   ];
@@ -32,4 +39,4 @@ if (env.ANALYZE === 'true') {
   nextConfig = withAnalyzer(nextConfig);
 }
 
-export default withCMS(nextConfig);
+export default nextConfig;

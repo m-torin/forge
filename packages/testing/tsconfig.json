@@ -1,8 +1,13 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "types": ["vitest/globals", "node"]
   },
-  "include": ["./src/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"],
   "exclude": ["node_modules"]
 }

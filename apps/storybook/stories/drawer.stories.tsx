@@ -28,10 +28,7 @@ const meta: Meta<typeof Drawer> = {
           <DrawerDescription>This action cannot be undone.</DrawerDescription>
         </DrawerHeader>
         <DrawerFooter>
-          <button
-            type="button"
-            className="rounded bg-primary px-4 py-2 text-primary-foreground"
-          >
+          <button type="button" className="rounded bg-primary px-4 py-2 text-primary-foreground">
             Submit
           </button>
           <DrawerClose>
@@ -50,9 +47,11 @@ const meta: Meta<typeof Drawer> = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof Drawer>;
 
 /**
  * The default form of the drawer.
  */
-export const Default: Story = {};
+export const Default: Story = {
+  args: {},
+};

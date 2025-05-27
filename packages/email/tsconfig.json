@@ -3,6 +3,13 @@
   "compilerOptions": {
     "baseUrl": "."
   },
-  "include": ["./*.ts", "./*.tsx"],
+  "include": [
+    "./*.ts",
+    "./*.tsx",
+    "./templates/**/*.ts",
+    "./templates/**/*.tsx",
+    "./__tests__/**/*.ts",
+    "./__tests__/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }

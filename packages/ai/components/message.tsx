@@ -1,22 +1,25 @@
+import { Box, Paper } from '@mantine/core';
+import Markdown from 'react-markdown';
+
 import type { Message as MessageType } from 'ai';
 import type { ComponentProps } from 'react';
-import Markdown from 'react-markdown';
-import { twMerge } from 'tailwind-merge';
 
-type MessageProps = {
+interface MessageProps {
   data: MessageType;
   markdown?: ComponentProps<typeof Markdown>;
-};
+}
 
 export const Message = ({ data, markdown }: MessageProps) => (
-  <div
-    className={twMerge(
-      'flex max-w-[80%] flex-col gap-2 rounded-xl px-4 py-2',
-      data.role === 'user'
-        ? 'self-end bg-foreground text-background'
-        : 'self-start bg-muted'
-    )}
+  <Paper
+    style={{ alignSelf: data.role === 'user' ? 'flex-end' : 'flex-start' }}
+    bg={data.role === 'user' ? 'dark.6' : 'gray.1'}
+    c={data.role === 'user' ? 'white' : undefined}
+    maw="80%"
+    p="sm"
+    radius="md"
   >
-    <Markdown {...markdown}>{data.content}</Markdown>
-  </div>
+    <Box>
+      <Markdown {...markdown}>{data.content}</Markdown>
+    </Box>
+  </Paper>
 );

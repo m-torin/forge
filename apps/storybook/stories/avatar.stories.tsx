@@ -1,10 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system/components/ui/avatar';
 
 /**
  * An image element with a fallback for representing the user.

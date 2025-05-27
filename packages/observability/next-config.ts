@@ -1,5 +1,6 @@
 import { withLogtail } from '@logtail/next';
 import { withSentryConfig } from '@sentry/nextjs';
+
 import { keys } from './keys';
 
 export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {

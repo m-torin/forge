@@ -27,8 +27,8 @@ const meta = {
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            This action cannot be undone. This will permanently delete your account and remove your
+            data from our servers.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-4">
@@ -36,10 +36,7 @@ const meta = {
             Cancel
           </button>
           <DialogClose>
-            <button
-              type="button"
-              className="rounded bg-primary px-4 py-2 text-primary-foreground"
-            >
+            <button type="button" className="rounded bg-primary px-4 py-2 text-primary-foreground">
               Continue
             </button>
           </DialogClose>

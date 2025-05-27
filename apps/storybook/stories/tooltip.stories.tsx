@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Plus } from 'lucide-react';
+import { IconPlus } from '@tabler/icons-react';
 
 import {
   Tooltip,
@@ -38,7 +38,7 @@ const meta: Meta<typeof TooltipContent> = {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
-          <Plus className="h-4 w-4" />
+          <IconPlus className="h-4 w-4" />
           <span className="sr-only">Add</span>
         </TooltipTrigger>
         <TooltipContent {...args} />

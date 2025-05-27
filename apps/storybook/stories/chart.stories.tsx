@@ -107,10 +107,7 @@ export const StackedAreaChart: Story = {
           tickMargin={8}
           tickFormatter={(value) => value.slice(0, 3)}
         />
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent indicator="dot" />}
-        />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
         <Area
           dataKey="mobile"
           type="natural"
@@ -150,10 +147,7 @@ export const StackedBarChart: Story = {
           axisLine={false}
           tickFormatter={(value) => value.slice(0, 3)}
         />
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent indicator="dashed" />}
-        />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
         <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
         <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
       </BarChart>
@@ -186,10 +180,7 @@ export const MultiLineChart: Story = {
           tickMargin={8}
           tickFormatter={(value) => value.slice(0, 3)}
         />
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent hideLabel />}
-        />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
         <Line
           dataKey="desktop"
           type="natural"
@@ -223,10 +214,7 @@ export const DoughnutChart: Story = {
     return (
       <ChartContainer {...args}>
         <PieChart>
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
           <Pie
             data={singleSeriesData}
             dataKey="visitors"

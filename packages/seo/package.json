@@ -2,21 +2,34 @@
   "name": "@repo/seo",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
     "lodash.merge": "^4.6.2",
-    "react": "^19.1.0",
+    "react": "catalog:",
     "schema-dts": "^1.1.5"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@testing-library/react": "catalog:",
+    "@types/eslint": "^9.6.1",
     "@types/lodash.merge": "^4.6.9",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5",
-    "next": "15.3.2"
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "next": "catalog:",
+    "vitest": "catalog:"
   }
 }

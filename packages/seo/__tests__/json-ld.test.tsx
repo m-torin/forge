@@ -1,0 +1,72 @@
+import { render } from '@testing-library/react';
+import * as React from 'react';
+import { describe, expect, it } from 'vitest';
+
+// Import the component to test
+import { JsonLd } from '../json-ld';
+
+describe('@repo/seo/json-ld', () => {
+  it('renders JSON-LD script tag with the provided data', () => {
+    const testData = {
+      name: 'Test Website',
+      '@type': 'WebSite',
+      url: 'https://example.com',
+      '@context': 'https://schema.org',
+    };
+
+    const { container } = render(<JsonLd code={testData as any} />);
+
+    // Find the script tag
+    const scriptElement = container.querySelector('script');
+
+    expect(scriptElement).not.toBeNull();
+    expect(scriptElement?.type).toBe('application/ld+json');
+
+    // Parse the script content
+    const scriptContent = scriptElement?.textContent;
+    const parsedContent = JSON.parse(scriptContent || '{}');
+
+    expect(parsedContent).toEqual(testData);
+  });
+
+  it('renders with the correct type attribute', () => {
+    const testData = { name: 'Test Person', '@type': 'Person' };
+
+    const { container } = render(<JsonLd code={testData as any} />);
+    const scriptElement = container.querySelector('script');
+
+    expect(scriptElement?.type).toBe('application/ld+json');
+  });
+
+  it('passes through additional properties to the script tag', () => {
+    const testData = { name: 'Test Person', '@type': 'Person' };
+
+    const { container } = render(<JsonLd code={testData as any} />);
+
+    const scriptElement = container.querySelector('script');
+
+    expect(scriptElement).not.toBeNull();
+    expect(scriptElement?.type).toBe('application/ld+json');
+  });
+
+  it('renders nested objects correctly', () => {
+    const testData = {
+      name: 'Test Person',
+      '@type': 'Person',
+      '@context': 'https://schema.org',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Test City',
+        streetAddress: '123 Main St',
+      },
+    };
+
+    const { container } = render(<JsonLd code={testData as any} />);
+    const scriptElement = container.querySelector('script');
+    const scriptContent = scriptElement?.textContent;
+    const parsedContent = JSON.parse(scriptContent || '{}');
+
+    expect(parsedContent.address['@type']).toBe('PostalAddress');
+    expect(parsedContent.address.streetAddress).toBe('123 Main St');
+  });
+});

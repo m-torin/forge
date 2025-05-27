@@ -1,0 +1,16 @@
+# Build artifacts
+.next/
+dist/
+storybook-static/
+coverage/
+generated/
+
+# Package files
+node_modules/
+.turbo/
+.cache/
+
+# Project files
+pnpm-lock.yaml
+.env*
+.vscode/

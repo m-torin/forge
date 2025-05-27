@@ -1,57 +1,59 @@
 import { env } from '@/env';
-import { blog } from '@repo/cms';
-import { Feed } from '@repo/cms/components/feed';
-import { Button } from '@repo/design-system/components/ui/button';
-import type { Dictionary } from '@repo/internationalization';
-import { MoveRight, PhoneCall } from 'lucide-react';
+import { Box, Button, Container, Group, Stack, Text, Title } from '@mantine/core';
+import { IconArrowRight, IconPhone } from '@tabler/icons-react';
 import Link from 'next/link';
 
-type HeroProps = {
+import type { Dictionary } from '@repo/internationalization';
+import type { Route } from 'next';
+
+interface HeroProps {
   dictionary: Dictionary;
-};
+}
 
 export const Hero = async ({ dictionary }: HeroProps) => (
-  <div className="w-full">
-    <div className="container mx-auto">
-      <div className="flex flex-col items-center justify-center gap-8 py-20 lg:py-40">
-        <div>
-          <Feed queries={[blog.latestPostQuery]}>
-            {/* biome-ignore lint/suspicious/useAwait: "Server Actions must be async" */}
-            {async ([data]) => {
-              'use server';
-
-              return (
-                <Button variant="secondary" size="sm" className="gap-4" asChild>
-                  <Link href={`/blog/${data.blog.posts.item?._slug}`}>
-                    {dictionary.web.home.hero.announcement}{' '}
-                    <MoveRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              );
-            }}
-          </Feed>
-        </div>
-        <div className="flex flex-col gap-4">
-          <h1 className="max-w-2xl text-center font-regular text-5xl tracking-tighter md:text-7xl">
+  <Box w="100%">
+    <Container size="xl">
+      <Stack align="center" gap="xl" justify="center" py={{ base: 40, lg: 80 }}>
+        <Box>
+          <Button
+            href={'/blog/hello-world' as Route}
+            component={Link}
+            rightSection={<IconArrowRight size={16} />}
+            size="sm"
+            variant="light"
+          >
+            {dictionary.web.home.hero.announcement}
+          </Button>
+        </Box>
+        <Stack align="center" gap="md">
+          <Title
+            order={1}
+            style={{ letterSpacing: '-0.05em' }}
+            fw={400}
+            maw={800}
+            size="4rem"
+            ta="center"
+          >
             {dictionary.web.home.meta.title}
-          </h1>
-          <p className="max-w-2xl text-center text-lg text-muted-foreground leading-relaxed tracking-tight md:text-xl">
+          </Title>
+          <Text c="dimmed" maw={800} size="xl" ta="center">
             {dictionary.web.home.meta.description}
-          </p>
-        </div>
-        <div className="flex flex-row gap-3">
-          <Button size="lg" className="gap-4" variant="outline" asChild>
-            <Link href="/contact">
-              Get in touch <PhoneCall className="h-4 w-4" />
-            </Link>
+          </Text>
+        </Stack>
+        <Group gap="sm">
+          <Button leftSection={<IconPhone size={16} />} size="lg" variant="default">
+            {dictionary.web.global.primaryCta}
           </Button>
-          <Button size="lg" className="gap-4" asChild>
-            <Link href={env.NEXT_PUBLIC_APP_URL}>
-              Sign up <MoveRight className="h-4 w-4" />
-            </Link>
+          <Button
+            href={`mailto:hello@${env.VERCEL_PROJECT_PRODUCTION_URL}`}
+            component={Link}
+            rightSection={<IconArrowRight size={16} />}
+            size="lg"
+          >
+            {dictionary.web.global.secondaryCta}
           </Button>
-        </div>
-      </div>
-    </div>
-  </div>
+        </Group>
+      </Stack>
+    </Container>
+  </Box>
 );

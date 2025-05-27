@@ -1,13 +1,2 @@
-import { cn } from "@repo/design-system/lib/utils"
-
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="skeleton"
-      className={cn("bg-accent animate-pulse rounded-md", className)}
-      {...props}
-    />
-  )
-}
-
-export { Skeleton }
+// Export Mantine Skeleton directly
+export { Skeleton, type SkeletonProps } from '@mantine/core';

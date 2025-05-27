@@ -1,40 +1,47 @@
 import { env } from '@/env';
-import { Button } from '@repo/design-system/components/ui/button';
-import type { Dictionary } from '@repo/internationalization';
-import { MoveRight, PhoneCall } from 'lucide-react';
+import { Box, Button, Container, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { IconArrowRight, IconPhone } from '@tabler/icons-react';
 import Link from 'next/link';
 
-type CTAProps = {
+import type { Dictionary } from '@repo/internationalization';
+import type { Route } from 'next';
+
+interface CTAProps {
   dictionary: Dictionary;
-};
+}
 
 export const CTA = ({ dictionary }: CTAProps) => (
-  <div className="w-full py-20 lg:py-40">
-    <div className="container mx-auto">
-      <div className="flex flex-col items-center gap-8 rounded-md bg-muted p-4 text-center lg:p-14">
-        <div className="flex flex-col gap-2">
-          <h3 className="max-w-xl font-regular text-3xl tracking-tighter md:text-5xl">
-            {dictionary.web.home.cta.title}
-          </h3>
-          <p className="max-w-xl text-lg text-muted-foreground leading-relaxed tracking-tight">
-            {dictionary.web.home.cta.description}
-          </p>
-        </div>
-        <div className="flex flex-row gap-4">
-          <Button className="gap-4" variant="outline" asChild>
-            <Link href="/contact">
-              {dictionary.web.global.primaryCta}{' '}
-              <PhoneCall className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button className="gap-4" asChild>
-            <Link href={env.NEXT_PUBLIC_APP_URL}>
-              {dictionary.web.global.secondaryCta}{' '}
-              <MoveRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <Box py={{ base: 40, lg: 80 }} w="100%">
+    <Container size="xl">
+      <Paper bg="gray.0" p={{ base: 'md', lg: 56 }} radius="md">
+        <Stack align="center" gap="xl" ta="center">
+          <Stack gap="xs">
+            <Title order={3} style={{ letterSpacing: '-0.05em' }} fw={400} maw={600} size="h1">
+              {dictionary.web.home.cta.title}
+            </Title>
+            <Text style={{ lineHeight: 1.6 }} c="dimmed" maw={600} size="lg">
+              {dictionary.web.home.cta.description}
+            </Text>
+          </Stack>
+          <Group gap="sm">
+            <Button
+              href="/contact"
+              component={Link}
+              leftSection={<IconPhone size={16} />}
+              variant="default"
+            >
+              {dictionary.web.global.primaryCta}
+            </Button>
+            <Button
+              href={env.NEXT_PUBLIC_APP_URL as Route}
+              component={Link}
+              rightSection={<IconArrowRight size={16} />}
+            >
+              {dictionary.web.global.secondaryCta}
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
+    </Container>
+  </Box>
 );

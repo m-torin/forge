@@ -5,16 +5,27 @@
   "type": "module",
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage --run",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.7",
     "@nosecone/next": "1.0.0-beta.7",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "zod": "^3.25.28"
+    "@t3-oss/env-nextjs": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.8.3"
+    "@types/eslint": "^9.6.1",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

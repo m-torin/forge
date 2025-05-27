@@ -1,15 +1,17 @@
 import { match as matchLocale } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
 import { createI18nMiddleware } from 'next-international/middleware';
-import type { NextRequest } from 'next/server';
+
 import languine from './languine.json';
+
+import type { NextRequest } from 'next/server';
 
 const locales = [languine.locale.source, ...languine.locale.targets];
 
 const I18nMiddleware = createI18nMiddleware({
-  locales,
-  defaultLocale: 'en',
   urlMappingStrategy: 'rewriteDefault',
+  defaultLocale: 'en',
+  locales,
   resolveLocaleFromRequest: (request: NextRequest) => {
     const headers = Object.fromEntries(request.headers.entries());
     const negotiator = new Negotiator({ headers });

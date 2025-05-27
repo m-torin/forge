@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Loader2, Mail } from 'lucide-react';
-
-import { Button } from '@repo/design-system/components/ui/button';
+import { IconLoader2, IconMail } from '@tabler/icons-react';
+import { Button } from '@mantine/core';
 
 /**
- * Displays a button or a component that looks like a button.
+ * Displays a button or a component that looks like a button using Mantine.
  */
 const meta = {
   title: 'ui/Button',
@@ -14,13 +13,36 @@ const meta = {
     children: {
       control: 'text',
     },
+    variant: {
+      control: 'select',
+      options: ['filled', 'light', 'outline', 'subtle', 'white', 'default', 'gradient'],
+    },
+    color: {
+      control: 'select',
+      options: [
+        'blue',
+        'red',
+        'green',
+        'yellow',
+        'orange',
+        'teal',
+        'cyan',
+        'grape',
+        'pink',
+        'gray',
+      ],
+    },
+    size: {
+      control: 'select',
+      options: ['xs', 'sm', 'md', 'lg', 'xl'],
+    },
   },
   parameters: {
     layout: 'centered',
   },
   args: {
-    variant: 'default',
-    size: 'default',
+    variant: 'filled',
+    size: 'md',
     children: 'Button',
   },
 } satisfies Meta<typeof Button>;
@@ -32,7 +54,12 @@ type Story = StoryObj<typeof meta>;
 /**
  * The default form of the button, used for primary actions and commands.
  */
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    variant: 'filled',
+    color: 'blue',
+  },
+};
 
 /**
  * Use the `outline` button to reduce emphasis on secondary actions, such as
@@ -41,63 +68,64 @@ export const Default: Story = {};
 export const Outline: Story = {
   args: {
     variant: 'outline',
+    color: 'blue',
   },
 };
 
 /**
- * Use the `ghost` button is minimalistic and subtle, for less intrusive
+ * Use the `subtle` button is minimalistic and subtle, for less intrusive
  * actions.
  */
-export const Ghost: Story = {
+export const Subtle: Story = {
   args: {
-    variant: 'ghost',
+    variant: 'subtle',
+    color: 'gray',
   },
 };
 
 /**
- * Use the `secondary` button to call for less emphasized actions, styled to
+ * Use the `light` button to call for less emphasized actions, styled to
  * complement the primary button while being less conspicuous.
  */
-export const Secondary: Story = {
+export const Light: Story = {
   args: {
-    variant: 'secondary',
+    variant: 'light',
+    color: 'blue',
   },
 };
 
 /**
- * Use the `destructive` button to indicate errors, alerts, or the need for
+ * Use the red colored button to indicate errors, alerts, or the need for
  * immediate attention.
  */
 export const Destructive: Story = {
   args: {
-    variant: 'destructive',
+    variant: 'filled',
+    color: 'red',
   },
 };
 
 /**
- * Use the `link` button to reduce emphasis on tertiary actions, such as
+ * Use the transparent button to reduce emphasis on tertiary actions, such as
  * hyperlink or navigation, providing a text-only interactive element.
  */
-export const Link: Story = {
+export const Transparent: Story = {
   args: {
-    variant: 'link',
+    variant: 'transparent',
+    color: 'blue',
   },
 };
 
 /**
- * Add the `disabled` prop to a button to prevent interactions and add a
+ * Add the `loading` prop to a button to prevent interactions and add a
  * loading indicator, such as a spinner, to signify an in-progress action.
  */
 export const Loading: Story = {
-  render: (args) => (
-    <Button {...args}>
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      Button
-    </Button>
-  ),
   args: {
-    ...Outline.args,
-    disabled: true,
+    variant: 'outline',
+    color: 'blue',
+    loading: true,
+    children: 'Loading...',
   },
 };
 
@@ -107,12 +135,13 @@ export const Loading: Story = {
  */
 export const WithIcon: Story = {
   render: (args) => (
-    <Button {...args}>
-      <Mail className="mr-2 h-4 w-4" /> Login with Email Button
+    <Button {...args} leftSection={<IconMail size={16} />}>
+      Login with Email
     </Button>
   ),
   args: {
-    ...Secondary.args,
+    variant: 'light',
+    color: 'blue',
   },
 };
 
@@ -123,6 +152,8 @@ export const WithIcon: Story = {
 export const Small: Story = {
   args: {
     size: 'sm',
+    variant: 'filled',
+    color: 'blue',
   },
 };
 
@@ -133,17 +164,23 @@ export const Small: Story = {
 export const Large: Story = {
   args: {
     size: 'lg',
+    variant: 'filled',
+    color: 'blue',
   },
 };
 
 /**
- * Use the "icon" size for a button with only an icon.
+ * Use a compact button for a button with only an icon.
  */
-export const Icon: Story = {
+export const IconOnly: Story = {
+  render: (args) => (
+    <Button {...args} size="md" px="xs">
+      <IconMail size={18} />
+    </Button>
+  ),
   args: {
-    ...Secondary.args,
-    size: 'icon',
-    children: <Mail />,
+    variant: 'light',
+    color: 'blue',
   },
 };
 

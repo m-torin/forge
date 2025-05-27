@@ -1,0 +1,53 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx", "*.js", "*.jsx", "*.mjs", "*.cjs"],
+      "options": {
+        "arrowParens": "always",
+        "bracketSameLine": false,
+        "jsxSingleQuote": false,
+        "singleQuote": true,
+        "trailingComma": "all"
+      }
+    },
+    {
+      "files": "package*.json",
+      "options": {
+        "printWidth": 1000
+      }
+    },
+    {
+      "files": ["*.yaml", "*.yml"],
+      "options": {
+        "singleQuote": false,
+        "trailingComma": "none"
+      }
+    },
+    {
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "embeddedLanguageFormatting": "auto",
+        "proseWrap": "always"
+      }
+    },
+    {
+      "files": ["*.graphql", "*.gql"],
+      "options": {
+        "bracketSpacing": false
+      }
+    },
+    {
+      "files": ["*.css", "*.scss"],
+      "options": {
+        "singleQuote": false
+      }
+    }
+  ]
+}

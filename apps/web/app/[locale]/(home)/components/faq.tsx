@@ -1,51 +1,52 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@repo/design-system/components/ui/accordion';
-import { Button } from '@repo/design-system/components/ui/button';
-import type { Dictionary } from '@repo/internationalization';
-import { PhoneCall } from 'lucide-react';
+import { Accordion, Box, Button, Container, Grid, Stack, Text, Title } from '@mantine/core';
+import { IconPhone } from '@tabler/icons-react';
 import Link from 'next/link';
 
-type FAQProps = {
+import type { Dictionary } from '@repo/internationalization';
+
+interface FAQProps {
   dictionary: Dictionary;
-};
+}
 
 export const FAQ = ({ dictionary }: FAQProps) => (
-  <div className="w-full py-20 lg:py-40">
-    <div className="container mx-auto">
-      <div className="grid gap-10 lg:grid-cols-2">
-        <div className="flex flex-col gap-10">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <h4 className="max-w-xl text-left font-regular text-3xl tracking-tighter md:text-5xl">
-                {dictionary.web.home.faq.title}
-              </h4>
-              <p className="max-w-xl text-left text-lg text-muted-foreground leading-relaxed tracking-tight lg:max-w-lg">
-                {dictionary.web.home.faq.description}
-              </p>
-            </div>
-            <div className="">
-              <Button className="gap-4" variant="outline" asChild>
-                <Link href="/contact">
-                  {dictionary.web.home.faq.cta}{' '}
-                  <PhoneCall className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-        <Accordion type="single" collapsible className="w-full">
-          {dictionary.web.home.faq.items.map((item, index) => (
-            <AccordionItem key={index} value={`index-${index}`}>
-              <AccordionTrigger>{item.question}</AccordionTrigger>
-              <AccordionContent>{item.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </div>
-    </div>
-  </div>
+  <Box py={{ base: 40, lg: 80 }} w="100%">
+    <Container size="xl">
+      <Grid gutter="xl">
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <Stack gap="xl">
+            <Stack gap="md">
+              <Stack gap="xs">
+                <Title order={4} style={{ letterSpacing: '-0.05em' }} fw={400} maw={600} size="h1">
+                  {dictionary.web.home.faq.title}
+                </Title>
+                <Text style={{ lineHeight: 1.6 }} c="dimmed" maw={{ base: 600, lg: 400 }} size="lg">
+                  {dictionary.web.home.faq.description}
+                </Text>
+              </Stack>
+              <Box>
+                <Button
+                  href="/contact"
+                  component={Link}
+                  leftSection={<IconPhone size={16} />}
+                  variant="default"
+                >
+                  {dictionary.web.home.faq.cta}
+                </Button>
+              </Box>
+            </Stack>
+          </Stack>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <Accordion radius="md" variant="separated">
+            {dictionary.web.home.faq.items.map((item, index) => (
+              <Accordion.Item key={index} value={`index-${index}`}>
+                <Accordion.Control>{item.question}</Accordion.Control>
+                <Accordion.Panel>{item.answer}</Accordion.Panel>
+              </Accordion.Item>
+            ))}
+          </Accordion>
+        </Grid.Col>
+      </Grid>
+    </Container>
+  </Box>
 );

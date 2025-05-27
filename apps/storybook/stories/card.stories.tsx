@@ -1,14 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { BellRing } from 'lucide-react';
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@repo/design-system/components/ui/card';
+import { IconBellRinging } from '@tabler/icons-react';
+import { Card, Title, Text, Button, Group, Stack, Box } from '@mantine/core';
 
 const notifications = [
   {
@@ -26,38 +18,64 @@ const notifications = [
 ];
 
 /**
- * Displays a card with header, content, and footer.
+ * Displays a card with header, content, and footer using Mantine.
  */
 const meta = {
   title: 'ui/Card',
   component: Card,
   tags: ['autodocs'],
-  argTypes: {},
+  argTypes: {
+    shadow: {
+      control: 'select',
+      options: ['xs', 'sm', 'md', 'lg', 'xl'],
+    },
+    radius: {
+      control: 'select',
+      options: ['xs', 'sm', 'md', 'lg', 'xl'],
+    },
+    withBorder: {
+      control: 'boolean',
+    },
+  },
   args: {
-    className: 'w-96',
+    shadow: 'sm',
+    radius: 'md',
+    withBorder: true,
+    p: 'lg',
+    w: 384,
   },
   render: (args) => (
     <Card {...args}>
-      <CardHeader>
-        <CardTitle>Notifications</CardTitle>
-        <CardDescription>You have 3 unread messages.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
+      <Card.Section p="lg" pb="md">
+        <Title order={3}>Notifications</Title>
+        <Text size="sm" c="dimmed">
+          You have 3 unread messages.
+        </Text>
+      </Card.Section>
+
+      <Stack gap="md">
         {notifications.map((notification, index) => (
-          <div key={index} className="flex items-center gap-4">
-            <BellRing className="size-6" />
-            <div>
-              <p>{notification.title}</p>
-              <p className="text-foreground/50">{notification.description}</p>
-            </div>
-          </div>
+          <Group key={index} align="flex-start">
+            <Box c="blue">
+              <IconBellRinging size={24} />
+            </Box>
+            <Box style={{ flex: 1 }}>
+              <Text size="sm" fw={500}>
+                {notification.title}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {notification.description}
+              </Text>
+            </Box>
+          </Group>
         ))}
-      </CardContent>
-      <CardFooter>
-        <button type="button" className="hover:underline">
+      </Stack>
+
+      <Card.Section p="lg" pt="md">
+        <Button variant="subtle" fullWidth>
           Close
-        </button>
-      </CardFooter>
+        </Button>
+      </Card.Section>
     </Card>
   ),
   parameters: {

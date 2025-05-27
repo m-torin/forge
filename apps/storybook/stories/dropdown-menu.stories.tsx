@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Mail, Plus, PlusCircle, Search, UserPlus } from 'lucide-react';
+import { IconMail, IconPlus, IconCirclePlus, IconSearch, IconUserPlus } from '@tabler/icons-react';
 
 import {
   DropdownMenu,
@@ -92,24 +92,24 @@ export const WithSubmenus: Story = {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Plus className="mr-2 size-4" />
+            <IconPlus className="mr-2 size-4" />
             <span>New Team</span>
             <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-              <UserPlus className="mr-2 size-4" />
+              <IconUserPlus className="mr-2 size-4" />
               <span>Invite users</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuItem>
-                  <Mail className="mr-2 size-4" />
+                  <IconMail className="mr-2 size-4" />
                   <span>Email</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <PlusCircle className="mr-2 size-4" />
+                  <IconCirclePlus className="mr-2 size-4" />
                   <span>More...</span>
                 </DropdownMenuItem>
               </DropdownMenuSubContent>

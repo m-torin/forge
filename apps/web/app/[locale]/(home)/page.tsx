@@ -1,7 +1,7 @@
 import { showBetaFeature } from '@repo/feature-flags';
 import { getDictionary } from '@repo/internationalization';
 import { createMetadata } from '@repo/seo/metadata';
-import type { Metadata } from 'next';
+
 import { Cases } from './components/cases';
 import { CTA } from './components/cta';
 import { FAQ } from './components/faq';
@@ -10,15 +10,15 @@ import { Hero } from './components/hero';
 import { Stats } from './components/stats';
 import { Testimonials } from './components/testimonials';
 
-type HomeProps = {
+import type { Metadata } from 'next';
+
+interface HomeProps {
   params: Promise<{
     locale: string;
   }>;
-};
+}
 
-export const generateMetadata = async ({
-  params,
-}: HomeProps): Promise<Metadata> => {
+export const generateMetadata = async ({ params }: HomeProps): Promise<Metadata> => {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
 

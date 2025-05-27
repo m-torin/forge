@@ -1,58 +1,73 @@
 'use client';
 
-import {
-  Carousel,
-  type CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from '@repo/design-system/components/ui/carousel';
-import type { Dictionary } from '@repo/internationalization';
+import { Carousel } from '@mantine/carousel';
+import { Box, Container, Paper, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useState } from 'react';
 
-type CasesProps = {
+import type { Dictionary } from '@repo/internationalization';
+
+interface CasesProps {
   dictionary: Dictionary;
-};
+}
 
 export const Cases = ({ dictionary }: CasesProps) => {
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
+  const [embla, setEmbla] = useState<any>(null);
 
   useEffect(() => {
-    if (!api) {
+    if (!embla) {
       return;
     }
 
-    setTimeout(() => {
-      if (api.selectedScrollSnap() + 1 === api.scrollSnapList().length) {
-        setCurrent(0);
-        api.scrollTo(0);
+    const interval = setInterval(() => {
+      if (embla.canScrollNext()) {
+        embla.scrollNext();
       } else {
-        api.scrollNext();
-        setCurrent(current + 1);
+        embla.scrollTo(0);
       }
     }, 1000);
-  }, [api, current]);
+
+    return () => clearInterval(interval);
+  }, [embla]);
 
   return (
-    <div className="w-full py-20 lg:py-40">
-      <div className="container mx-auto">
-        <div className="flex flex-col gap-10">
-          <h2 className="text-left font-regular text-xl tracking-tighter md:text-5xl lg:max-w-xl">
+    <Box py={{ base: 40, lg: 80 }} w="100%">
+      <Container size="xl">
+        <Stack gap="xl">
+          <Title
+            order={2}
+            style={{ letterSpacing: '-0.05em' }}
+            fw={400}
+            maw={{ lg: 600 }}
+            size="h1"
+          >
             {dictionary.web.home.cases.title}
-          </h2>
-          <Carousel setApi={setApi} className="w-full">
-            <CarouselContent>
-              {Array.from({ length: 15 }).map((_, index) => (
-                <CarouselItem className="basis-1/4 lg:basis-1/6" key={index}>
-                  <div className="flex aspect-square items-center justify-center rounded-md bg-muted p-6">
-                    <span className="text-sm">Logo {index + 1}</span>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
+          </Title>
+          <Carousel
+            slideGap="md"
+            slideSize={{ base: '25%', lg: '16.66%' }}
+            withControls={false}
+            getEmblaApi={setEmbla}
+            w="100%"
+          >
+            {Array.from({ length: 15 }).map((_, index) => (
+              <Carousel.Slide key={index}>
+                <Paper style={{ aspectRatio: '1' }} bg="gray.0" p="xl" radius="md">
+                  <Box
+                    style={{
+                      alignItems: 'center',
+                      display: 'flex',
+                      height: '100%',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text size="sm">Logo {index + 1}</Text>
+                  </Box>
+                </Paper>
+              </Carousel.Slide>
+            ))}
           </Carousel>
-        </div>
-      </div>
-    </div>
+        </Stack>
+      </Container>
+    </Box>
   );
 };

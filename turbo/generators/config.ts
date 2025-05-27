@@ -7,8 +7,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
       {
         type: 'input',
         name: 'name',
-        message:
-          'What is the name of the package? (You can skip the `@repo/` prefix)',
+        message: 'What is the name of the package? (You can skip the `@repo/` prefix)',
       },
     ],
     actions: [

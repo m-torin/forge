@@ -1,90 +1,92 @@
-import { Sidebar } from '@/components/sidebar';
-import { ArrowLeftIcon } from '@radix-ui/react-icons';
-import { legal } from '@repo/cms';
-import { Body } from '@repo/cms/components/body';
-import { Feed } from '@repo/cms/components/feed';
-import { TableOfContents } from '@repo/cms/components/toc';
-import { createMetadata } from '@repo/seo/metadata';
-import type { Metadata } from 'next';
+import {
+  Anchor,
+  Box,
+  Container,
+  Group,
+  Stack,
+  Text,
+  Title,
+  TypographyStylesProvider,
+} from '@mantine/core';
+import { IconArrowLeft } from '@tabler/icons-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
-type LegalPageProperties = {
+import { createMetadata } from '@repo/seo/metadata';
+
+import type { Metadata, Route } from 'next';
+
+interface LegalPageProperties {
   readonly params: Promise<{
     slug: string;
   }>;
-};
+}
 
-export const generateMetadata = async ({
-  params,
-}: LegalPageProperties): Promise<Metadata> => {
+export const generateMetadata = async ({ params }: LegalPageProperties): Promise<Metadata> => {
   const { slug } = await params;
-  const post = await legal.getPost(slug);
-
-  if (!post) {
-    return {};
-  }
 
   return createMetadata({
-    title: post._title,
-    description: post.description,
+    description: `${slug === 'privacy' ? 'Privacy Policy' : 'Terms of Service'} for Forge Ahead`,
+    title: slug === 'privacy' ? 'Privacy Policy' : 'Terms of Service',
   });
 };
 
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => {
-  const posts = await legal.getPosts();
-
-  return posts.map(({ _slug }) => ({ slug: _slug }));
+  return [{ slug: 'privacy' }, { slug: 'terms' }];
 };
 
 const LegalPage = async ({ params }: LegalPageProperties) => {
   const { slug } = await params;
 
   return (
-    <Feed queries={[legal.postQuery(slug)]}>
-      {/* biome-ignore lint/suspicious/useAwait: "Server Actions must be async" */}
-      {async ([data]) => {
-        'use server';
+    <Container py={64}>
+      <Anchor href={'/' as Route} component={Link} c="dimmed" mb={16} size="sm" underline="never">
+        <Group align="center" gap={4}>
+          <IconArrowLeft size={16} />
+          Back to Home
+        </Group>
+      </Anchor>
+      <Box maw={800} mt={64}>
+        <Title order={1} fw={800} mb={32} size="h1">
+          {slug === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
+        </Title>
+        <TypographyStylesProvider>
+          <Stack gap="xl">
+            <Text c="dimmed">Last updated: {new Date().toLocaleDateString()}</Text>
 
-        const page = data.legalPages.item;
-
-        if (!page) {
-          notFound();
-        }
-
-        return (
-          <div className="container max-w-5xl py-16">
-            <Link
-              className="mb-4 inline-flex items-center gap-1 text-muted-foreground text-sm focus:underline focus:outline-none"
-              href="/"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back to Home
-            </Link>
-            <h1 className="scroll-m-20 text-balance font-extrabold text-4xl tracking-tight lg:text-5xl">
-              {page._title}
-            </h1>
-            <p className="text-balance leading-7 [&:not(:first-child)]:mt-6">
-              {page.description}
-            </p>
-            <div className="mt-16 flex flex-col items-start gap-8 sm:flex-row">
-              <div className="sm:flex-1">
-                <div className="prose prose-neutral dark:prose-invert">
-                  <Body content={page.body.json.content} />
-                </div>
-              </div>
-              <div className="sticky top-24 hidden shrink-0 md:block">
-                <Sidebar
-                  toc={<TableOfContents data={page.body.json.toc} />}
-                  readingTime={`${page.body.readingTime} min read`}
-                  date={new Date()}
-                />
-              </div>
+            <div>
+              <Title order={2} mb="md" size="h2">
+                Hello World
+              </Title>
+              <Text>
+                This is a placeholder for the{' '}
+                {slug === 'privacy' ? 'Privacy Policy' : 'Terms of Service'} content.
+              </Text>
             </div>
-          </div>
-        );
-      }}
-    </Feed>
+
+            <div>
+              <Title order={3} mb="sm" size="h3">
+                Acceptance
+              </Title>
+              <Text>By using our service, you agree to these terms.</Text>
+            </div>
+
+            <div>
+              <Title order={3} mb="sm" size="h3">
+                Changes
+              </Title>
+              <Text>We may update this policy from time to time.</Text>
+            </div>
+
+            <div>
+              <Title order={3} mb="sm" size="h3">
+                Contact
+              </Title>
+              <Text>If you have any questions, please contact us.</Text>
+            </div>
+          </Stack>
+        </TypographyStylesProvider>
+      </Box>
+    </Container>
   );
 };
 

@@ -1,39 +1,46 @@
 import './styles.css';
-import { Toolbar as CMSToolbar } from '@repo/cms/components/toolbar';
-import { DesignSystemProvider } from '@repo/design-system';
+
+import '@mantine/core/styles.css';
+import { ColorSchemeScript, createTheme, mantineHtmlProps, MantineProvider } from '@mantine/core';
+
 import { fonts } from '@repo/design-system/lib/fonts';
 import { cn } from '@repo/design-system/lib/utils';
 import { Toolbar } from '@repo/feature-flags/components/toolbar';
 import { getDictionary } from '@repo/internationalization';
-import type { ReactNode } from 'react';
+
 import { Footer } from './components/footer';
 import { Header } from './components/header';
 
-type RootLayoutProperties = {
+import type { ReactNode } from 'react';
+
+// Create a custom theme
+const theme = createTheme({
+  // You can customize the theme here
+});
+
+interface RootLayoutProperties {
   readonly children: ReactNode;
   readonly params: Promise<{
     locale: string;
   }>;
-};
+}
 
 const RootLayout = async ({ children, params }: RootLayoutProperties) => {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
 
   return (
-    <html
-      lang="en"
-      className={cn(fonts, 'scroll-smooth')}
-      suppressHydrationWarning
-    >
+    <html className={cn(fonts, 'scroll-smooth')} lang="en" {...mantineHtmlProps}>
+      <head>
+        <ColorSchemeScript defaultColorScheme="auto" />
+      </head>
       <body>
-        <DesignSystemProvider>
+        <MantineProvider theme={theme}>
           <Header dictionary={dictionary} />
           {children}
           <Footer />
-        </DesignSystemProvider>
+        </MantineProvider>
         <Toolbar />
-        <CMSToolbar />
       </body>
     </html>
   );

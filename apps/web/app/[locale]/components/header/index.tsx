@@ -1,198 +1,247 @@
 'use client';
 
 import { env } from '@/env';
-import { ModeToggle } from '@repo/design-system/components/mode-toggle';
-import { Button } from '@repo/design-system/components/ui/button';
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@repo/design-system/components/ui/navigation-menu';
-import { Menu, MoveRight, X } from 'lucide-react';
+  AppShell,
+  Box,
+  Button,
+  Container,
+  Divider,
+  Drawer,
+  Group,
+  Menu,
+  Stack,
+  Text,
+  UnstyledButton,
+} from '@mantine/core';
+import { IconArrowRight, IconMenu2, IconX } from '@tabler/icons-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import type { Dictionary } from '@repo/internationalization';
-import Image from 'next/image';
+import { ModeToggle } from '@repo/design-system/components/mode-toggle';
+
 import { LanguageSwitcher } from './language-switcher';
 import Logo from './logo.svg';
 
-type HeaderProps = {
+import type { Dictionary } from '@repo/internationalization';
+import type { Route } from 'next';
+
+interface HeaderProps {
   dictionary: Dictionary;
-};
+}
 
 export const Header = ({ dictionary }: HeaderProps) => {
   const navigationItems = [
     {
-      title: dictionary.web.header.home,
-      href: '/',
       description: '',
+      href: '/',
+      title: dictionary.web.header.home,
     },
     {
-      title: dictionary.web.header.product.title,
       description: dictionary.web.header.product.description,
       items: [
         {
-          title: dictionary.web.header.product.pricing,
           href: '/pricing',
+          title: dictionary.web.header.product.pricing,
         },
       ],
+      title: dictionary.web.header.product.title,
     },
     {
-      title: dictionary.web.header.blog,
-      href: '/blog',
       description: '',
+      href: '/blog',
+      title: dictionary.web.header.blog,
     },
   ];
 
   if (env.NEXT_PUBLIC_DOCS_URL) {
     navigationItems.push({
-      title: dictionary.web.header.docs,
-      href: env.NEXT_PUBLIC_DOCS_URL,
       description: '',
+      href: env.NEXT_PUBLIC_DOCS_URL,
+      title: dictionary.web.header.docs,
     });
   }
 
-  const [isOpen, setOpen] = useState(false);
+  const [drawerOpened, setDrawerOpened] = useState(false);
+
   return (
-    <header className="sticky top-0 left-0 z-40 w-full border-b bg-background">
-      <div className="container relative mx-auto flex min-h-20 flex-row items-center gap-4 lg:grid lg:grid-cols-3">
-        <div className="hidden flex-row items-center justify-start gap-4 lg:flex">
-          <NavigationMenu className="flex items-start justify-start">
-            <NavigationMenuList className="flex flex-row justify-start gap-4">
-              {navigationItems.map((item) => (
-                <NavigationMenuItem key={item.title}>
-                  {item.href ? (
-                    <>
-                      <NavigationMenuLink asChild>
-                        <Button variant="ghost" asChild>
-                          <Link href={item.href}>{item.title}</Link>
-                        </Button>
-                      </NavigationMenuLink>
-                    </>
-                  ) : (
-                    <>
-                      <NavigationMenuTrigger className="font-medium text-sm">
+    <AppShell.Header
+      withBorder
+      styles={{
+        header: {
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+        },
+      }}
+    >
+      <Container h={80} size="lg">
+        <Group h="100%" justify="space-between">
+          {/* Desktop Navigation */}
+          <Group visibleFrom="lg">
+            {navigationItems.map((item) => (
+              <Box key={item.title}>
+                {item.href ? (
+                  <Button href={item.href as Route} color="gray" component={Link} variant="subtle">
+                    {item.title}
+                  </Button>
+                ) : (
+                  <Menu width={450} position="bottom-start" trigger="hover">
+                    <Menu.Target>
+                      <Button color="gray" fw={500} size="sm" variant="subtle">
                         {item.title}
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent className="!w-[450px] p-4">
-                        <div className="flex grid-cols-2 flex-col gap-4 lg:grid">
-                          <div className="flex h-full flex-col justify-between">
-                            <div className="flex flex-col">
-                              <p className="text-base">{item.title}</p>
-                              <p className="text-muted-foreground text-sm">
-                                {item.description}
-                              </p>
-                            </div>
-                            <Button size="sm" className="mt-10" asChild>
-                              <Link href="/contact">
-                                {dictionary.web.global.primaryCta}
-                              </Link>
-                            </Button>
-                          </div>
-                          <div className="flex h-full flex-col justify-end text-sm">
-                            {item.items?.map((subItem, idx) => (
-                              <NavigationMenuLink
-                                href={subItem.href}
-                                key={idx}
-                                className="flex flex-row items-center justify-between rounded px-4 py-2 hover:bg-muted"
-                              >
-                                <span>{subItem.title}</span>
-                                <MoveRight className="h-4 w-4 text-muted-foreground" />
-                              </NavigationMenuLink>
-                            ))}
-                          </div>
-                        </div>
-                      </NavigationMenuContent>
-                    </>
-                  )}
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
-        <div className="flex items-center gap-2 lg:justify-center">
-          <Image
-            src={Logo}
-            alt="Logo"
-            width={24}
-            height={24}
-            className="dark:invert"
-          />
-          <p className="whitespace-nowrap font-semibold">next-forge</p>
-        </div>
-        <div className="flex w-full justify-end gap-4">
-          <Button variant="ghost" className="hidden md:inline" asChild>
-            <Link href="/contact">{dictionary.web.header.contact}</Link>
-          </Button>
-          <div className="hidden border-r md:inline" />
-          <div className="hidden md:inline">
-            <LanguageSwitcher />
-          </div>
-          <div className="hidden md:inline">
-            <ModeToggle />
-          </div>
-          <Button variant="outline" asChild className="hidden md:inline">
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-in`}>
+                      </Button>
+                    </Menu.Target>
+                    <Menu.Dropdown p="md">
+                      <Group gap="xl">
+                        <Stack style={{ flex: 1 }} justify="space-between">
+                          <Stack gap={4}>
+                            <Text size="md">{item.title}</Text>
+                            <Text c="dimmed" size="sm">
+                              {item.description}
+                            </Text>
+                          </Stack>
+                          <Button href="/contact" component={Link} mt="xl" size="sm">
+                            {dictionary.web.global.primaryCta}
+                          </Button>
+                        </Stack>
+                        <Stack style={{ flex: 1 }} gap={4} justify="flex-end">
+                          {item.items?.map((subItem, idx) => (
+                            <UnstyledButton
+                              key={idx}
+                              href={subItem.href as Route}
+                              component={Link}
+                              style={{
+                                '&:hover': {
+                                  backgroundColor: 'var(--mantine-color-gray-light)',
+                                },
+                                borderRadius: 'var(--mantine-radius-default)',
+                              }}
+                              p="xs"
+                              px="md"
+                            >
+                              <Group justify="space-between">
+                                <Text size="sm">{subItem.title}</Text>
+                                <IconArrowRight color="var(--mantine-color-dimmed)" size={16} />
+                              </Group>
+                            </UnstyledButton>
+                          ))}
+                        </Stack>
+                      </Group>
+                    </Menu.Dropdown>
+                  </Menu>
+                )}
+              </Box>
+            ))}
+          </Group>
+
+          {/* Logo */}
+          <Group gap="xs">
+            <Image
+              width={24}
+              style={{ filter: 'var(--dark-mode-logo-filter, none)' }}
+              alt="Logo"
+              height={24}
+              src={Logo}
+            />
+            <Text style={{ whiteSpace: 'nowrap' }} fw={600}>
+              forge
+            </Text>
+          </Group>
+
+          {/* Right side actions */}
+          <Group>
+            <Button href="/contact" color="gray" component={Link} visibleFrom="md" variant="subtle">
+              {dictionary.web.header.contact}
+            </Button>
+
+            <Divider orientation="vertical" visibleFrom="md" />
+
+            <Box visibleFrom="md">
+              <LanguageSwitcher />
+            </Box>
+
+            <Box visibleFrom="md">
+              <ModeToggle />
+            </Box>
+
+            <Button
+              href={`${env.NEXT_PUBLIC_APP_URL}/sign-in` as Route}
+              component={Link}
+              visibleFrom="md"
+              variant="default"
+            >
               {dictionary.web.header.signIn}
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
+            </Button>
+
+            <Button href={`${env.NEXT_PUBLIC_APP_URL}/sign-up` as Route} component={Link}>
               {dictionary.web.header.signUp}
-            </Link>
-          </Button>
-        </div>
-        <div className="flex w-12 shrink items-end justify-end lg:hidden">
-          <Button variant="ghost" onClick={() => setOpen(!isOpen)}>
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-          {isOpen && (
-            <div className="container absolute top-20 right-0 flex w-full flex-col gap-8 border-t bg-background py-4 shadow-lg">
-              {navigationItems.map((item) => (
-                <div key={item.title}>
-                  <div className="flex flex-col gap-2">
-                    {item.href ? (
-                      <Link
-                        href={item.href}
-                        className="flex items-center justify-between"
-                        target={
-                          item.href.startsWith('http') ? '_blank' : undefined
-                        }
-                        rel={
-                          item.href.startsWith('http')
-                            ? 'noopener noreferrer'
-                            : undefined
-                        }
-                      >
-                        <span className="text-lg">{item.title}</span>
-                        <MoveRight className="h-4 w-4 stroke-1 text-muted-foreground" />
-                      </Link>
-                    ) : (
-                      <p className="text-lg">{item.title}</p>
-                    )}
-                    {item.items?.map((subItem) => (
-                      <Link
-                        key={subItem.title}
-                        href={subItem.href}
-                        className="flex items-center justify-between"
-                      >
-                        <span className="text-muted-foreground">
-                          {subItem.title}
-                        </span>
-                        <MoveRight className="h-4 w-4 stroke-1" />
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </header>
+            </Button>
+
+            {/* Mobile menu button */}
+            <Button
+              hiddenFrom="lg"
+              color="gray"
+              onClick={() => setDrawerOpened(!drawerOpened)}
+              px="xs"
+              variant="subtle"
+            >
+              {drawerOpened ? <IconX size={20} /> : <IconMenu2 size={20} />}
+            </Button>
+          </Group>
+        </Group>
+      </Container>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        onClose={() => setDrawerOpened(false)}
+        opened={drawerOpened}
+        position="top"
+        withCloseButton={false}
+        styles={{
+          body: { paddingTop: 0 },
+        }}
+        size="auto"
+      >
+        <Container py="md">
+          <Stack gap="xl">
+            {navigationItems.map((item) => (
+              <Stack key={item.title} gap="xs">
+                {item.href ? (
+                  <UnstyledButton
+                    href={item.href as Route}
+                    component={Link}
+                    onClick={() => setDrawerOpened(false)}
+                    rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    target={item.href.startsWith('http') ? '_blank' : undefined}
+                  >
+                    <Group justify="space-between">
+                      <Text size="lg">{item.title}</Text>
+                      <IconArrowRight color="var(--mantine-color-dimmed)" stroke={1} size={16} />
+                    </Group>
+                  </UnstyledButton>
+                ) : (
+                  <Text size="lg">{item.title}</Text>
+                )}
+                {item.items?.map((subItem) => (
+                  <UnstyledButton
+                    key={subItem.title}
+                    href={subItem.href as Route}
+                    component={Link}
+                    onClick={() => setDrawerOpened(false)}
+                  >
+                    <Group justify="space-between">
+                      <Text c="dimmed">{subItem.title}</Text>
+                      <IconArrowRight stroke={1} size={16} />
+                    </Group>
+                  </UnstyledButton>
+                ))}
+              </Stack>
+            ))}
+          </Stack>
+        </Container>
+      </Drawer>
+    </AppShell.Header>
   );
 };

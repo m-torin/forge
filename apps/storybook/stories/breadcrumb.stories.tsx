@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ArrowRightSquare } from 'lucide-react';
+import { IconSquareArrowRight } from '@tabler/icons-react';
 
 import {
   Breadcrumb,
@@ -61,13 +61,13 @@ export const WithCustomSeparator: Story = {
           <BreadcrumbLink>Home</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator>
-          <ArrowRightSquare />
+          <IconSquareArrowRight />
         </BreadcrumbSeparator>
         <BreadcrumbItem>
           <BreadcrumbLink>Components</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator>
-          <ArrowRightSquare />
+          <IconSquareArrowRight />
         </BreadcrumbSeparator>
         <BreadcrumbItem>
           <BreadcrumbPage>Breadcrumb</BreadcrumbPage>

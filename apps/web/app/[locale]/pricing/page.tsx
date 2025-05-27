@@ -1,156 +1,447 @@
 import { env } from '@/env';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Check, Minus, MoveRight, PhoneCall } from 'lucide-react';
+import {
+  Anchor,
+  Box,
+  Button,
+  Center,
+  Container,
+  Grid,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
+import { IconArrowRight, IconCheck, IconMinus, IconPhone } from '@tabler/icons-react';
 import Link from 'next/link';
 
+import type { Route } from 'next';
+
 const Pricing = () => (
-  <div className="w-full py-20 lg:py-40">
-    <div className="container mx-auto">
-      <div className="flex flex-col items-center justify-center gap-4 text-center">
-        <div className="flex flex-col gap-2">
-          <h2 className="max-w-xl text-center font-regular text-3xl tracking-tighter md:text-5xl">
+  <Box py={{ base: 80, lg: 160 }}>
+    <Container size="xl">
+      <Stack align="center" gap="lg">
+        <Stack align="center" gap="sm" maw={600}>
+          <Title order={2} fw={400} size="h1" ta="center">
             Prices that make sense!
-          </h2>
-          <p className="max-w-xl text-center text-lg text-muted-foreground leading-relaxed tracking-tight">
+          </Title>
+          <Text c="dimmed" size="lg" ta="center">
             Managing a small business today is already tough.
-          </p>
-        </div>
-        <div className="grid w-full grid-cols-3 divide-x pt-20 text-left lg:grid-cols-4">
-          <div className="col-span-3 lg:col-span-1" />
-          <div className="flex flex-col gap-2 px-3 py-1 md:px-6 md:py-4">
-            <p className="text-2xl">Startup</p>
-            <p className="text-muted-foreground text-sm">
-              Our goal is to streamline SMB trade, making it easier and faster
-              than ever for everyone and everywhere.
-            </p>
-            <p className="mt-8 flex flex-col gap-2 text-xl lg:flex-row lg:items-center">
-              <span className="text-4xl">$40</span>
-              <span className="text-muted-foreground text-sm"> / month</span>
-            </p>
-            <Button variant="outline" className="mt-8 gap-4" asChild>
-              <Link href={env.NEXT_PUBLIC_APP_URL}>
-                Try it <MoveRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2 px-3 py-1 md:px-6 md:py-4">
-            <p className="text-2xl">Growth</p>
-            <p className="text-muted-foreground text-sm">
-              Our goal is to streamline SMB trade, making it easier and faster
-              than ever for everyone and everywhere.
-            </p>
-            <p className="mt-8 flex flex-col gap-2 text-xl lg:flex-row lg:items-center">
-              <span className="text-4xl">$40</span>
-              <span className="text-muted-foreground text-sm"> / month</span>
-            </p>
-            <Button className="mt-8 gap-4" asChild>
-              <Link href={env.NEXT_PUBLIC_APP_URL}>
-                Try it <MoveRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2 px-3 py-1 md:px-6 md:py-4">
-            <p className="text-2xl">Enterprise</p>
-            <p className="text-muted-foreground text-sm">
-              Our goal is to streamline SMB trade, making it easier and faster
-              than ever for everyone and everywhere.
-            </p>
-            <p className="mt-8 flex flex-col gap-2 text-xl lg:flex-row lg:items-center">
-              <span className="text-4xl">$40</span>
-              <span className="text-muted-foreground text-sm"> / month</span>
-            </p>
-            <Button variant="outline" className="mt-8 gap-4" asChild>
-              <Link href="/contact">
-                Contact us <PhoneCall className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">
-            <b>Features</b>
-          </div>
-          <div />
-          <div />
-          <div />
-          {/* New Line */}
-          <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">SSO</div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          {/* New Line */}
-          <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">
+          </Text>
+        </Stack>
+
+        <Grid
+          style={{
+            borderLeft: '1px solid var(--mantine-color-gray-3)',
+            borderTop: '1px solid var(--mantine-color-gray-3)',
+          }}
+          gutter={0}
+          mt={80}
+        >
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            span={{ base: 12, lg: 3 }}
+          />
+
+          {/* Startup Plan */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Stack gap="sm">
+              <Text fw={500} size="xl">
+                Startup
+              </Text>
+              <Text c="dimmed" size="sm">
+                Our goal is to streamline SMB trade, making it easier and faster than ever for
+                everyone and everywhere.
+              </Text>
+              <Group align="baseline" gap="xs" mt={32}>
+                <Text fw={500} size="36px">
+                  $40
+                </Text>
+                <Text c="dimmed" size="sm">
+                  /month
+                </Text>
+              </Group>
+              <Anchor href={env.NEXT_PUBLIC_APP_URL as Route} component={Link} underline="never">
+                <Button
+                  fullWidth
+                  rightSection={<IconArrowRight size={16} />}
+                  mt={32}
+                  variant="outline"
+                >
+                  Try it
+                </Button>
+              </Anchor>
+            </Stack>
+          </Grid.Col>
+
+          {/* Growth Plan */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Stack gap="sm">
+              <Text fw={500} size="xl">
+                Growth
+              </Text>
+              <Text c="dimmed" size="sm">
+                Our goal is to streamline SMB trade, making it easier and faster than ever for
+                everyone and everywhere.
+              </Text>
+              <Group align="baseline" gap="xs" mt={32}>
+                <Text fw={500} size="36px">
+                  $40
+                </Text>
+                <Text c="dimmed" size="sm">
+                  /month
+                </Text>
+              </Group>
+              <Anchor href={env.NEXT_PUBLIC_APP_URL as Route} component={Link} underline="never">
+                <Button fullWidth rightSection={<IconArrowRight size={16} />} mt={32}>
+                  Try it
+                </Button>
+              </Anchor>
+            </Stack>
+          </Grid.Col>
+
+          {/* Enterprise Plan */}
+          <Grid.Col
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Stack gap="sm">
+              <Text fw={500} size="xl">
+                Enterprise
+              </Text>
+              <Text c="dimmed" size="sm">
+                Our goal is to streamline SMB trade, making it easier and faster than ever for
+                everyone and everywhere.
+              </Text>
+              <Group align="baseline" gap="xs" mt={32}>
+                <Text fw={500} size="36px">
+                  $40
+                </Text>
+                <Text c="dimmed" size="sm">
+                  /month
+                </Text>
+              </Group>
+              <Anchor href={'/contact' as Route} component={Link} underline="never">
+                <Button fullWidth rightSection={<IconPhone size={16} />} mt={32} variant="outline">
+                  Contact us
+                </Button>
+              </Anchor>
+            </Stack>
+          </Grid.Col>
+
+          {/* Features Header */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 12, lg: 3 }}
+          >
+            <Text fw={700}>Features</Text>
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            span={{ base: 4, lg: 3 }}
+          />
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            span={{ base: 4, lg: 3 }}
+          />
+          <Grid.Col
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+            span={{ base: 4, lg: 3 }}
+          />
+
+          {/* SSO */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 12, lg: 3 }}
+          >
+            SSO
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+
+          {/* AI Assistant */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 12, lg: 3 }}
+          >
             AI Assistant
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Minus className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          {/* New Line */}
-          <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconMinus color="var(--mantine-color-gray-5)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+
+          {/* Version Control */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 12, lg: 3 }}
+          >
             Version Control
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Minus className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          {/* New Line */}
-          <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconMinus color="var(--mantine-color-gray-5)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+
+          {/* Members */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 12, lg: 3 }}
+          >
             Members
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <p className="text-muted-foreground text-sm">5 members</p>
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <p className="text-muted-foreground text-sm">25 members</p>
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <p className="text-muted-foreground text-sm">100+ members</p>
-          </div>
-          {/* New Line */}
-          <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <Text c="dimmed" size="sm">
+                5 members
+              </Text>
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <Text c="dimmed" size="sm">
+                25 members
+              </Text>
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <Text c="dimmed" size="sm">
+                100+ members
+              </Text>
+            </Center>
+          </Grid.Col>
+
+          {/* Multiplayer Mode */}
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 12, lg: 3 }}
+          >
             Multiplayer Mode
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Minus className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          {/* New Line */}
-          <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconMinus color="var(--mantine-color-gray-5)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)',
+              borderRight: '1px solid var(--mantine-color-gray-3)',
+            }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+
+          {/* Orchestration */}
+          <Grid.Col
+            style={{ borderRight: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 12, md: 24 }}
+            span={{ base: 12, lg: 3 }}
+          >
             Orchestration
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Minus className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex justify-center px-3 py-1 md:px-6 md:py-4">
-            <Check className="h-4 w-4 text-primary" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+          </Grid.Col>
+          <Grid.Col
+            style={{ borderRight: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconMinus color="var(--mantine-color-gray-5)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col
+            style={{ borderRight: '1px solid var(--mantine-color-gray-3)' }}
+            p={{ base: 4, md: 16 }}
+            span={{ base: 4, lg: 3 }}
+          >
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+          <Grid.Col p={{ base: 4, md: 16 }} span={{ base: 4, lg: 3 }}>
+            <Center>
+              <IconCheck color="var(--mantine-color-blue-6)" size={16} />
+            </Center>
+          </Grid.Col>
+        </Grid>
+      </Stack>
+    </Container>
+  </Box>
 );
 
 export default Pricing;
