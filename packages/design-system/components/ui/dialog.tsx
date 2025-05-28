@@ -8,8 +8,8 @@ export const Dialog = Modal;
 export type DialogProps = ModalProps;
 
 // Compatibility components for shadcn/ui API
-export const DialogTrigger = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const DialogContent = Modal.Root;
+export const DialogTrigger = ({ children }: { children: React.ReactNode }) => children;
+export const DialogContent = ({ children }: { children: React.ReactNode }) => children;
 export const DialogHeader = Modal.Header;
 export const DialogTitle = Modal.Title;
 export const DialogDescription = ({ children }: { children: React.ReactNode }) => (

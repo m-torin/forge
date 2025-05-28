@@ -10,7 +10,7 @@ import { geistMono, geistSans } from './fonts';
 
 // Convert OKLCH to HEX for Mantine
 // This is a simplified converter - for production, use a proper library
-function oklchToHex(oklch: string): string {
+function _oklchToHex(oklch: string): string {
   // For now, we'll define some key color mappings
   // In production, use a proper OKLCH to HEX converter
   const colorMap: Record<string, string> = {

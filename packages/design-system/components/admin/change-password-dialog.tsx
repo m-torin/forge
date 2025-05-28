@@ -8,12 +8,12 @@ import { IconKey } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
 interface ChangePasswordDialogProps {
-  onSuccess?: () => void;
-  userId: string;
+  _onSuccess?: () => void;
+  _userId: string;
   userName: string;
 }
 
-export function ChangePasswordDialog({ onSuccess, userId, userName }: ChangePasswordDialogProps) {
+export function ChangePasswordDialog({ _onSuccess, _userId, userName }: ChangePasswordDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +36,7 @@ export function ChangePasswordDialog({ onSuccess, userId, userName }: ChangePass
     },
   });
 
-  const handleSubmit = async (values: typeof form.values) => {
+  const handleSubmit = async (_values: typeof form.values) => {
     try {
       setLoading(true);
 
@@ -46,15 +46,6 @@ export function ChangePasswordDialog({ onSuccess, userId, userName }: ChangePass
       //   newPassword: values.password,
       // } as any);
       throw new Error('Password change not yet implemented');
-
-      notifications.show({
-        color: 'green',
-        message: 'Password changed successfully',
-        title: 'Success',
-      });
-      setIsOpen(false);
-      form.reset();
-      onSuccess?.();
     } catch (error) {
       console.error('Failed to change password:', error);
       notifications.show({

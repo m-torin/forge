@@ -17,6 +17,7 @@
     "@aws-sdk/s3-request-presigner": "^3.817.0",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/blob": "^1.1.1",
+    "chalk": "^5.4.1",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -5,20 +5,23 @@ import { ThemeProvider } from '../../providers/theme';
 // Mock next-themes
 vi.mock('next-themes', () => ({
   ThemeProvider: ({ children, ...props }: any) => {
-    const filteredProps: any = {};
-    // Convert boolean props to strings for DOM attributes
+    // Create data attributes for testing while avoiding invalid DOM props
+    const dataAttributes: any = {};
+
+    // Convert props to data attributes for testing
     Object.keys(props).forEach((key) => {
+      const dataKey = `data-${key.toLowerCase()}`;
       if (typeof props[key] === 'boolean') {
-        filteredProps[key] = props[key].toString();
+        dataAttributes[dataKey] = props[key].toString();
       } else if (Array.isArray(props[key])) {
-        filteredProps[key] = props[key].join(',');
+        dataAttributes[dataKey] = props[key].join(',');
       } else {
-        filteredProps[key] = props[key];
+        dataAttributes[dataKey] = props[key];
       }
     });
 
     return (
-      <div data-testid="theme-provider" {...filteredProps}>
+      <div data-testid="theme-provider" {...dataAttributes}>
         {children}
       </div>
     );
@@ -44,10 +47,10 @@ describe('ThemeProvider', () => {
     );
 
     const themeProvider = screen.getByTestId('theme-provider');
-    expect(themeProvider).toHaveAttribute('attribute', 'class');
-    expect(themeProvider).toHaveAttribute('defaultTheme', 'system');
-    expect(themeProvider).toHaveAttribute('enableSystem', 'true');
-    expect(themeProvider).toHaveAttribute('storageKey', 'test-theme');
+    expect(themeProvider).toHaveAttribute('data-attribute', 'class');
+    expect(themeProvider).toHaveAttribute('data-defaulttheme', 'system');
+    expect(themeProvider).toHaveAttribute('data-enablesystem', 'true');
+    expect(themeProvider).toHaveAttribute('data-storagekey', 'test-theme');
   });
 
   it('uses default props when not provided', () => {
@@ -58,9 +61,9 @@ describe('ThemeProvider', () => {
     );
 
     const themeProvider = screen.getByTestId('theme-provider');
-    expect(themeProvider).toHaveAttribute('attribute', 'class');
-    expect(themeProvider).toHaveAttribute('defaultTheme', 'system');
-    expect(themeProvider).toHaveAttribute('enableSystem', 'true');
+    expect(themeProvider).toHaveAttribute('data-attribute', 'class');
+    expect(themeProvider).toHaveAttribute('data-defaulttheme', 'system');
+    expect(themeProvider).toHaveAttribute('data-enablesystem', 'true');
   });
 
   it('disables transitions on theme change', () => {
@@ -71,7 +74,7 @@ describe('ThemeProvider', () => {
     );
 
     const themeProvider = screen.getByTestId('theme-provider');
-    expect(themeProvider).toHaveAttribute('disableTransitionOnChange', 'true');
+    expect(themeProvider).toHaveAttribute('data-disabletransitiononchange', 'true');
   });
 
   it('can have custom theme names', () => {
@@ -82,7 +85,7 @@ describe('ThemeProvider', () => {
     );
 
     const themeProvider = screen.getByTestId('theme-provider');
-    expect(themeProvider).toHaveAttribute('themes', 'light,dark,custom');
+    expect(themeProvider).toHaveAttribute('data-themes', 'light,dark,custom');
   });
 
   it('accepts custom storage key', () => {
@@ -93,6 +96,6 @@ describe('ThemeProvider', () => {
     );
 
     const themeProvider = screen.getByTestId('theme-provider');
-    expect(themeProvider).toHaveAttribute('storageKey', 'my-app-theme');
+    expect(themeProvider).toHaveAttribute('data-storagekey', 'my-app-theme');
   });
 });

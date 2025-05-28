@@ -65,8 +65,8 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
               size="md"
               spacing="lg"
             >
-              {dictionary.web.contact.hero.benefits.map((benefit, index) => (
-                <List.Item key={index}>
+              {dictionary.web.contact.hero.benefits.map((benefit) => (
+                <List.Item key={benefit.title}>
                   <Text fw={500}>{benefit.title}</Text>
                   <Text c="dimmed" size="sm">
                     {benefit.description}

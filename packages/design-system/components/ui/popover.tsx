@@ -1,9 +1,9 @@
-// For compatibility, re-export Popover sub-components
+'use client';
+
+// For compatibility
 import { Popover } from '@mantine/core';
 
-('use client');
-
-// Export Mantine Popover components
+// Export Mantine Popover directly
 export { Popover, type PopoverProps } from '@mantine/core';
 export const PopoverTrigger = Popover.Target;
 export const PopoverContent = Popover.Dropdown;

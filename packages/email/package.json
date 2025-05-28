@@ -15,6 +15,7 @@
   "dependencies": {
     "@react-email/components": "0.0.41",
     "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "resend": "^4.5.1",

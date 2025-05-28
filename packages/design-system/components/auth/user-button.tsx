@@ -6,7 +6,7 @@ import { IconLogout } from '@tabler/icons-react';
 import { signOut, useSession } from '@repo/auth/client';
 
 interface UserButtonProps {
-  appearance?: {
+  _appearance?: {
     elements?: {
       rootBox?: string;
       userButtonBox?: string;
@@ -16,7 +16,7 @@ interface UserButtonProps {
   showName?: boolean;
 }
 
-export const UserButton = ({ appearance, showName = false }: UserButtonProps) => {
+export function UserButton({ _appearance, showName = false }: UserButtonProps) {
   const { data: session } = useSession();
 
   if (!session?.user) {
@@ -61,4 +61,4 @@ export const UserButton = ({ appearance, showName = false }: UserButtonProps) =>
       </Menu.Dropdown>
     </Menu>
   );
-};
+}

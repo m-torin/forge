@@ -5,4 +5,4 @@ export { Alert, type AlertProps } from '@mantine/core';
 export const AlertTitle = ({ children }: { children: React.ReactNode }) => (
   <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{children}</div>
 );
-export const AlertDescription = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+export const AlertDescription = ({ children }: { children: React.ReactNode }) => children;

@@ -14,10 +14,11 @@
   },
   "dependencies": {
     "@knocklabs/node": "^1.3.0",
-    "@knocklabs/react": "^0.7.11",
+    "@knocklabs/react": "^0.7.12",
     "@mantine/notifications": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "@tabler/icons-react": "catalog:",
+    "chalk": "^5.4.1",
     "react": "catalog:",
     "zod": "catalog:"
   },

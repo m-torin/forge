@@ -23,8 +23,8 @@ export const Stats = ({ dictionary }: StatsProps) => (
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }}>
           <Grid gutter="sm">
-            {dictionary.web.home.stats.items.map((item, index) => (
-              <Grid.Col key={index} span={{ base: 12, sm: 6 }}>
+            {dictionary.web.home.stats.items.map((item) => (
+              <Grid.Col key={item.title} span={{ base: 12, sm: 6 }}>
                 <Paper withBorder h="100%" p="xl" radius="md">
                   <Stack h="100%" justify="space-between">
                     <Box>

@@ -13,7 +13,7 @@ interface TestimonialsProps {
 
 export const Testimonials = ({ dictionary }: TestimonialsProps) => {
   const [embla, setEmbla] = useState<any>(null);
-  const [current, setCurrent] = useState(0);
+  const [_current, _setCurrent] = useState(0);
 
   useEffect(() => {
     if (!embla) {
@@ -50,8 +50,8 @@ export const Testimonials = ({ dictionary }: TestimonialsProps) => {
             getEmblaApi={setEmbla}
             w="100%"
           >
-            {dictionary.web.home.testimonials.items.map((item, index) => (
-              <Carousel.Slide key={index}>
+            {dictionary.web.home.testimonials.items.map((item) => (
+              <Carousel.Slide key={item.title}>
                 <Paper style={{ aspectRatio: '16/9' }} bg="gray.0" h="100%" p="xl" radius="md">
                   <Stack h="100%" justify="space-between">
                     <IconUser stroke={1} size={32} />

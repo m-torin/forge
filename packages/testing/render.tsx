@@ -17,7 +17,7 @@ interface TestProviderProps {
 export function TestProviders({
   children,
   colorScheme = 'light',
-  locale = 'en',
+  locale: _locale = 'en',
   theme = {},
 }: TestProviderProps) {
   return (
@@ -73,8 +73,8 @@ export function renderDark(
 // Helper to render with specific locale
 export function renderWithLocale(
   ui: ReactElement,
-  locale: string,
+  _locale: string,
   options?: Omit<CustomRenderOptions, 'locale'>,
 ): ReturnType<typeof rtlRender> {
-  return render(ui, { ...options, locale });
+  return render(ui, { ...options, locale: _locale });
 }

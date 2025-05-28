@@ -2,6 +2,6 @@
 export * from '@mantine/charts';
 
 // Compatibility exports for shadcn/ui chart config
-export const ChartContainer = ({ children, config }: any) => <div>{children}</div>;
+export const ChartContainer = ({ _config, children }: any) => <div>{children}</div>;
 export const ChartTooltip = () => null;
 export const ChartTooltipContent = () => null;

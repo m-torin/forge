@@ -1,49 +1,55 @@
-import './styles.css';
+import { getDictionary } from "@/lib/dictionary";
 
-import '@mantine/core/styles.css';
-import { ColorSchemeScript, createTheme, mantineHtmlProps, MantineProvider } from '@mantine/core';
+import { Link } from "@repo/internationalization/client";
 
-import { fonts } from '@repo/design-system/lib/fonts';
-import { cn } from '@repo/design-system/lib/utils';
-import { Toolbar } from '@repo/feature-flags/components/toolbar';
-import { getDictionary } from '@repo/internationalization';
+import type { ReactNode } from "react";
 
-import { Footer } from './components/footer';
-import { Header } from './components/header';
-
-import type { ReactNode } from 'react';
-
-// Create a custom theme
-const theme = createTheme({
-  // You can customize the theme here
-});
-
-interface RootLayoutProperties {
+interface LocaleLayoutProperties {
   readonly children: ReactNode;
   readonly params: Promise<{
     locale: string;
   }>;
 }
 
-const RootLayout = async ({ children, params }: RootLayoutProperties) => {
+const LocaleLayout = async ({ children, params }: LocaleLayoutProperties) => {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
 
   return (
-    <html className={cn(fonts, 'scroll-smooth')} lang="en" {...mantineHtmlProps}>
-      <head>
-        <ColorSchemeScript defaultColorScheme="auto" />
-      </head>
-      <body>
-        <MantineProvider theme={theme}>
-          <Header dictionary={dictionary} />
-          {children}
-          <Footer />
-        </MantineProvider>
-        <Toolbar />
-      </body>
-    </html>
+    <>
+      <header className="p-4 border-b">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Template App</h1>
+            <p className="text-sm text-gray-600">
+              {dictionary.common?.language || "Language"}:{" "}
+              {dictionary.common?.locale || locale}
+            </p>
+          </div>
+          <nav className="flex gap-4">
+            <Link
+              href="/"
+              locale={locale}
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              {dictionary.template?.navigation?.home || "Home"}
+            </Link>
+            <Link
+              href="/about"
+              locale={locale}
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              {dictionary.template?.navigation?.about || "About"}
+            </Link>
+          </nav>
+        </div>
+      </header>
+      <main className="min-h-screen">{children}</main>
+      <footer className="p-4 border-t text-center text-sm text-gray-600">
+        © 2024 Template App
+      </footer>
+    </>
   );
 };
 
-export default RootLayout;
+export default LocaleLayout;

@@ -1,15 +1,8 @@
-import nextConfig from '@repo/eslint-config/next';
+import baseConfig from "@repo/eslint-config/next";
 
-import type { Linter } from 'eslint';
-
-const config: Linter.FlatConfig[] = [
+export default [
+  ...baseConfig,
   {
-    ignores: [
-      // Ignore well-known files that might not be in the tsconfig
-      'app/.well-known/**',
-    ],
+    ignores: ["app/.well-known/**/*"],
   },
-  ...nextConfig,
 ];
-
-export default config;

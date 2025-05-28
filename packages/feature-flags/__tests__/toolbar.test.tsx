@@ -41,9 +41,9 @@ describe('Toolbar component', () => {
     mockKeys.mockReturnValue({ FLAGS_SECRET: undefined });
 
     const { Toolbar } = await import('../components/toolbar');
-    const { container } = render(<Toolbar />);
+    const { container: _container } = render(<Toolbar />);
 
-    expect(container).toBeEmptyDOMElement();
+    expect(_container).toBeEmptyDOMElement();
     expect(mockVercelToolbar).not.toHaveBeenCalled();
   });
 
@@ -51,9 +51,9 @@ describe('Toolbar component', () => {
     mockKeys.mockReturnValue({ FLAGS_SECRET: '' });
 
     const { Toolbar } = await import('../components/toolbar');
-    const { container } = render(<Toolbar />);
+    const { container: _container } = render(<Toolbar />);
 
-    expect(container).toBeEmptyDOMElement();
+    expect(_container).toBeEmptyDOMElement();
     expect(mockVercelToolbar).not.toHaveBeenCalled();
   });
 
@@ -79,7 +79,7 @@ describe('Toolbar component', () => {
 
     // First render with secret
     mockKeys.mockReturnValue({ FLAGS_SECRET: 'secret_1' });
-    const { container, queryByTestId, rerender } = render(<Toolbar />);
+    const { container: _container, queryByTestId, rerender } = render(<Toolbar />);
     expect(queryByTestId('vercel-toolbar')).toBeInTheDocument();
 
     // Re-render without secret

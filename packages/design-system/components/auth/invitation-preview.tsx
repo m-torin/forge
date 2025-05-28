@@ -22,7 +22,7 @@ export const InvitationPreview = ({ invitationId, onAccept }: InvitationPreviewP
           query: { id: invitationId },
         });
         setInvitation(inviteData);
-      } catch (err) {
+      } catch {
         setError('Invalid or expired invitation');
       } finally {
         setLoading(false);

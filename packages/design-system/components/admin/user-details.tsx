@@ -23,7 +23,7 @@ import {
   IconMapPin,
   IconUserCheck,
 } from '@tabler/icons-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import {
   banUser,
@@ -72,13 +72,11 @@ export function UserDetails({ onUpdate, user }: UserDetailsProps) {
   const [banDuration, setBanDuration] = useState('7'); // days
   const [dialogAction, setDialogAction] = useState<'ban' | 'unban' | 'revoke-all' | null>(null);
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await listUserSessions({ userId: user.id });
-      if (response && !('error' in response)) {
-        setSessions(response as Session[]);
-      }
+      const userSessions = await listUserSessions({ userId: user.id });
+      setSessions(userSessions);
     } catch (error) {
       console.error('Failed to fetch sessions:', error);
       notifications.show({
@@ -89,11 +87,11 @@ export function UserDetails({ onUpdate, user }: UserDetailsProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.id]);
 
   useEffect(() => {
     fetchSessions();
-  }, [user.id]);
+  }, [fetchSessions]);
 
   const handleRevokeSession = async (sessionToken: string) => {
     try {
@@ -366,7 +364,7 @@ export function UserDetails({ onUpdate, user }: UserDetailsProps) {
             >
               Revoke All Sessions
             </Button>
-            <ChangePasswordDialog onSuccess={onUpdate} userId={user.id} userName={user.name} />
+            <ChangePasswordDialog _onSuccess={onUpdate} _userId={user.id} userName={user.name} />
           </Group>
         </Stack>
       </Card>

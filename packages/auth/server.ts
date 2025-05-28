@@ -53,14 +53,14 @@ export const auth: any = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // Set to true if you want to require email verification
-    sendResetPassword: async ({ url, token, user }, request) => {
+    sendResetPassword: async ({ url, token, user }, _request) => {
       await sendPasswordResetEmail({ url, token, user });
     },
   },
   emailVerification: {
     autoSignInAfterVerification: true,
     sendOnSignUp: false, // Set to true to automatically send verification email on signup
-    sendVerificationEmail: async ({ url, token, user }, request) => {
+    sendVerificationEmail: async ({ url, token, user }, _request) => {
       await sendVerificationEmail({ url, token, user });
     },
   },
@@ -120,7 +120,7 @@ export const auth: any = betterAuth({
       ac,
       roles,
 
-      allowUserToCreateOrganization: async (user) => {
+      allowUserToCreateOrganization: async (_user) => {
         // You can implement custom logic here
         // For example, check if user has a pro subscription
         return true;
@@ -142,7 +142,7 @@ export const auth: any = betterAuth({
 
       // Organization lifecycle hooks
       organizationCreation: {
-        afterCreate: async ({ member, organization, user }, request) => {
+        afterCreate: async ({ member: _member, organization, user }, _request) => {
           // Send welcome email to the organization creator
           await sendWelcomeEmail({
             name: user.name || user.email,
@@ -161,7 +161,7 @@ export const auth: any = betterAuth({
             },
           });
         },
-        beforeCreate: async ({ organization, user }, request) => {
+        beforeCreate: async ({ organization, user }, _request) => {
           // Add custom metadata before creation
           return {
             data: {
@@ -178,7 +178,7 @@ export const auth: any = betterAuth({
 
       // Organization deletion hooks
       organizationDeletion: {
-        afterDelete: async (data, request) => {
+        afterDelete: async (data, _request) => {
           // Track organization deletion
           analytics.capture({
             distinctId: data.user.id,
@@ -188,7 +188,7 @@ export const auth: any = betterAuth({
             },
           });
         },
-        beforeDelete: async (data, request) => {
+        beforeDelete: async (data, _request) => {
           // Log deletion attempt
           console.log(`Attempting to delete organization ${data.organization.id}`);
         },
@@ -203,7 +203,7 @@ export const auth: any = betterAuth({
     }),
     apiKey({
       // Custom API key validation
-      customAPIKeyValidator: ({ ctx, key }) => {
+      customAPIKeyValidator: ({ ctx: _ctx, key: _key }) => {
         // Add any custom validation logic here
         // For example, check if key has a specific format
         return true; // Accept all keys by default
@@ -236,7 +236,7 @@ export const auth: any = betterAuth({
       minimumNameLength: 3,
       minimumPrefixLength: 3,
       permissions: {
-        defaultPermissions: async (userId, ctx) => {
+        defaultPermissions: async (_userId: string, _ctx: any) => {
           // Default permissions for new API keys
           return {
             read: ['user', 'organization'],

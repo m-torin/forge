@@ -107,9 +107,9 @@ export const Header = ({ dictionary }: HeaderProps) => {
                           </Button>
                         </Stack>
                         <Stack style={{ flex: 1 }} gap={4} justify="flex-end">
-                          {item.items?.map((subItem, idx) => (
+                          {item.items?.map((subItem) => (
                             <UnstyledButton
-                              key={idx}
+                              key={subItem.title}
                               href={subItem.href as Route}
                               component={Link}
                               style={{

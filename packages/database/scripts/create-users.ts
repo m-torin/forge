@@ -132,6 +132,6 @@ async function createUsersThroughAuth() {
   console.log('  User: user@example.com / user123');
 }
 
-createUsersThroughAuth()
+void createUsersThroughAuth()
   .catch(console.error)
   .finally(() => prisma.$disconnect());

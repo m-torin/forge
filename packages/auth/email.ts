@@ -28,7 +28,7 @@ export const sendOrganizationInvitation = async (data: InvitationEmailData) => {
     });
 
     // Example email content structure
-    const emailContent = `
+    const _emailContent = `
       <h2>You've been invited to join ${data.organization.name}</h2>
       <p>${data.inviter.user.name || 'Someone'} (${data.inviter.user.email}) has invited you to join their organization.</p>
       <p>Click the link below to accept the invitation:</p>
@@ -42,7 +42,7 @@ export const sendOrganizationInvitation = async (data: InvitationEmailData) => {
     // await resend.send({
     //   to: data.email,
     //   subject: `Invitation to join ${data.organization.name}`,
-    //   html: emailContent,
+    //   html: _emailContent,
     // });
   } catch (error) {
     console.error('Failed to send organization invitation email:', error);
@@ -81,7 +81,7 @@ export const sendApiKeyCreatedEmail = async (data: {
     });
 
     // Example email content structure
-    const emailContent = `
+    const _emailContent = `
       <h2>API Key Created</h2>
       <p>Hi ${data.name},</p>
       <p>An API key "${data.apiKeyName}" has been created for your account.</p>
@@ -94,7 +94,7 @@ export const sendApiKeyCreatedEmail = async (data: {
     // await resend.send({
     //   to: data.email,
     //   subject: `API Key "${data.apiKeyName}" Created`,
-    //   html: emailContent,
+    //   html: _emailContent,
     // });
   } catch (error) {
     console.error('Failed to send API key created email:', error);
@@ -114,7 +114,7 @@ export const sendVerificationEmail = async (data: {
       verificationLink: data.url,
     });
 
-    const emailContent = `
+    const _emailContent = `
       <h2>Verify Your Email Address</h2>
       <p>Hi ${data.user.name || 'there'},</p>
       <p>Please click the link below to verify your email address:</p>
@@ -129,7 +129,7 @@ export const sendVerificationEmail = async (data: {
     // await resend.send({
     //   to: data.user.email,
     //   subject: 'Verify your email address',
-    //   html: emailContent,
+    //   html: _emailContent,
     // });
   } catch (error) {
     console.error('Failed to send verification email:', error);
@@ -149,7 +149,7 @@ export const sendPasswordResetEmail = async (data: {
       to: data.user.email,
     });
 
-    const emailContent = `
+    const _emailContent = `
       <h2>Reset Your Password</h2>
       <p>Hi ${data.user.name || 'there'},</p>
       <p>You requested to reset your password. Click the link below to create a new password:</p>
@@ -164,7 +164,7 @@ export const sendPasswordResetEmail = async (data: {
     // await resend.send({
     //   to: data.user.email,
     //   subject: 'Reset your password',
-    //   html: emailContent,
+    //   html: _emailContent,
     // });
   } catch (error) {
     console.error('Failed to send password reset email:', error);

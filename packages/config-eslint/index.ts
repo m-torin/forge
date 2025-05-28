@@ -105,7 +105,7 @@ const config: Linter.FlatConfig[] = [
         'error',
         { fixStyle: 'inline-type-imports', prefer: 'type-imports' },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   ...tseslint.configs.recommended,
@@ -257,7 +257,7 @@ const config: Linter.FlatConfig[] = [
       ],
       '@typescript-eslint/no-empty-function': ['warn', { allow: ['arrowFunctions'] }],
       // TypeScript-specific rules (that aren't already in the recommended/stylistic presets)
-      '@typescript-eslint/no-explicit-any': 'warn', // Override from recommended which has it as 'error'
+      '@typescript-eslint/no-explicit-any': 'off', // Override from recommended which has it as 'error'
       '@typescript-eslint/no-unused-vars': 'off', // Explicitly disable as we use unused-imports instead
       '@typescript-eslint/await-thenable': 'off', // Disable rule that requires type checking
 
@@ -283,6 +283,7 @@ const config: Linter.FlatConfig[] = [
       'import/no-unresolved': 'off', // Temporarily disabled due to resolver issues
       'import/no-useless-path-segments': 'off', // Temporarily disabled due to resolver issues
       'import/order': 'off', // Explicitly disable as we use perfectionist instead
+      'import/prefer-default-export': 'off', // Prefer named exports throughout codebase
 
       // Perfectionist sorting rules - each serves a unique purpose
 

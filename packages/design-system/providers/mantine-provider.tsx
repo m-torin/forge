@@ -37,7 +37,7 @@ interface MantineProviderProps {
 }
 
 export function MantineProvider({ children }: MantineProviderProps) {
-  const { resolvedTheme, theme: nextTheme } = useTheme();
+  const { resolvedTheme, theme: _nextTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

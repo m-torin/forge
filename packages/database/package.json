@@ -18,6 +18,7 @@
     "@prisma/client": "catalog:",
     "@prisma/extension-accelerate": "^2.0.0",
     "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
     "server-only": "catalog:",
     "zod": "catalog:"
   },

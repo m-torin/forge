@@ -126,7 +126,7 @@ describe('createFlag', () => {
     });
 
     it('creates flag with correct parameters', async () => {
-      const flag = createFlag('test-flag');
+      const _flag = createFlag('test-flag');
 
       expect(mockFlag).toHaveBeenCalledWith({
         decide: expect.any(Function),

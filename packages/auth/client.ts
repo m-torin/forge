@@ -6,8 +6,8 @@ import {
   adminClient,
   apiKeyClient,
   organizationClient,
-  passkeyClient,
-  twoFactorClient,
+  // passkeyClient, // Not available in current better-auth version
+  // twoFactorClient, // Not available in current better-auth version
 } from 'better-auth/client/plugins';
 
 import { adminAccessController, adminRoles } from './admin-permissions';
@@ -33,8 +33,8 @@ export const authClient: BetterAuthClient = createAuthClient({
       ac: adminAccessController,
       roles: adminRoles,
     }),
-    twoFactorClient(),
-    passkeyClient(),
+    // passkeyClient(),
+    // twoFactorClient(),
   ],
 });
 
@@ -53,7 +53,7 @@ let originalUseSession: any;
 try {
   // Try to use the original hook
   originalUseSession = authClient.useSession;
-} catch (e) {
+} catch {
   console.warn('Better Auth useSession hook failed to load, using compatibility layer');
 }
 
@@ -62,8 +62,8 @@ export const useSession = () => {
     if (originalUseSession) {
       return originalUseSession();
     }
-  } catch (e) {
-    console.warn('Better Auth useSession hook failed at runtime, using compatibility layer');
+  } catch {
+    console.warn('Better Auth useSession hook failed to load, using compatibility layer');
   }
 
   // Fallback implementation for React 19 compatibility
@@ -150,7 +150,7 @@ export const signUpWithPasskey = authClient.passkey!.signUp;
 
 // Create useUser hook that maps Better Auth user data to expected interface
 export const useUser = () => {
-  const { data: session, error, isPending } = useSession();
+  const { data: session, error: _error, isPending } = useSession();
 
   if (!session?.user) {
     return { isLoaded: !isPending, user: null };

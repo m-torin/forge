@@ -4,7 +4,7 @@
 export { Select, type SelectProps } from '@mantine/core';
 
 // For compatibility with shadcn/ui compound components
-export const SelectTrigger = ({ children, ...props }: any) => children;
-export const SelectContent = ({ children, ...props }: any) => children;
-export const SelectItem = ({ children, value, ...props }: any) => ({ label: children, value });
-export const SelectValue = ({ ...props }: any) => null;
+export const SelectTrigger = ({ _props, children }: any) => <div>{children}</div>;
+export const SelectValue = ({ _props, children }: any) => <span>{children}</span>;
+export const SelectContent = ({ _props, children }: any) => <div>{children}</div>;
+export const SelectItem = ({ _props, children }: any) => <div>{children}</div>;

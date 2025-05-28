@@ -11,13 +11,16 @@ export type Dictionary = typeof en;
 const dictionaries: Record<string, () => Promise<Dictionary>> = Object.fromEntries(
   locales.map((locale) => [
     locale,
-    () =>
-      import(`./dictionaries/${locale}.json`)
-        .then((mod) => mod.default)
-        .catch((err) => {
-          console.error(`Failed to load dictionary for locale: ${locale}`, err);
-          return import('./dictionaries/en.json').then((mod) => mod.default);
-        }),
+    async () => {
+      try {
+        const mod = await import(`./dictionaries/${locale}.json`);
+        return mod.default;
+      } catch (err) {
+        console.error(`Failed to load dictionary for locale: ${locale}`, err);
+        const fallbackMod = await import('./dictionaries/en.json');
+        return fallbackMod.default;
+      }
+    },
   ]),
 );
 

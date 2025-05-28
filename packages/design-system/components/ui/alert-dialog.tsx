@@ -29,8 +29,8 @@ export const AlertDialogTrigger = ({ children, onClick }: any) => {
   return React.cloneElement(children, { onClick });
 };
 
-export const AlertDialogContent = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const AlertDialogHeader = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+export const AlertDialogContent = ({ children }: { children: React.ReactNode }) => children;
+export const AlertDialogHeader = ({ children }: { children: React.ReactNode }) => children;
 export const AlertDialogTitle = Modal.Title;
 export const AlertDialogDescription = ({ children }: { children: React.ReactNode }) => (
   <Text c="dimmed" mt="xs" size="sm">

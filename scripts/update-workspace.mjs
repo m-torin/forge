@@ -45,24 +45,24 @@ const execAsync = promisify(exec);
 // Helper function to find all package.json files recursively (platform-agnostic)
 function findPackageJsonFiles(dir = '.', files = []) {
   const entries = readdirSync(dir);
-  
+
   for (const entry of entries) {
     const fullPath = path.join(dir, entry);
-    
+
     // Skip node_modules and hidden directories
     if (entry === 'node_modules' || entry.startsWith('.')) {
       continue;
     }
-    
+
     const stat = statSync(fullPath);
-    
+
     if (stat.isDirectory()) {
       findPackageJsonFiles(fullPath, files);
     } else if (entry === 'package.json') {
       files.push(fullPath);
     }
   }
-  
+
   return files;
 }
 
@@ -73,7 +73,7 @@ function parseJsonPreserveFormat(content) {
   const hasTrailingNewline = content.endsWith('\n');
   const indentMatch = content.match(/^(\s*)"[^"]+":/m);
   const indent = indentMatch ? indentMatch[1] : '  ';
-  
+
   return {
     data: JSON.parse(content),
     format: {
@@ -95,7 +95,7 @@ function semverCompare(a, b) {
   // Remove build metadata (everything after +)
   const cleanA = a.split('+')[0];
   const cleanB = b.split('+')[0];
-  
+
   // Parse versions into components
   const parseVersion = (v) => {
     const prereleaseSplit = v.split('-');
@@ -230,14 +230,14 @@ function runCommand(command, silent = SILENT_FLAG) {
 // Helper function to get latest version of a package with caching
 async function getLatestVersion(packageName, includePrerelease = false) {
   const cacheKey = `${packageName}:${includePrerelease}`;
-  
+
   if (npmVersionCache.has(cacheKey)) {
     return npmVersionCache.get(cacheKey);
   }
-  
+
   try {
     let version;
-    
+
     if (includePrerelease) {
       // Get all versions including prereleases
       const { stdout } = await execAsync(`npm show ${packageName} versions --json`, {
@@ -252,7 +252,7 @@ async function getLatestVersion(packageName, includePrerelease = false) {
       });
       version = stdout.trim();
     }
-    
+
     npmVersionCache.set(cacheKey, version);
     return version;
   } catch (error) {
@@ -265,26 +265,26 @@ async function getLatestVersion(packageName, includePrerelease = false) {
 // Helper function to get latest prerelease matching a pattern
 async function getLatestPrerelease(packageName, prereleaseId) {
   const cacheKey = `${packageName}:pre:${prereleaseId}`;
-  
+
   if (npmVersionCache.has(cacheKey)) {
     return npmVersionCache.get(cacheKey);
   }
-  
+
   try {
     const { stdout } = await execAsync(`npm show ${packageName} versions --json`, {
       encoding: 'utf-8'
     });
     const allVersions = JSON.parse(stdout);
-    
+
     // Filter versions with the same prerelease identifier
     const matchingPrereleases = allVersions.filter(v => v.includes(`-${prereleaseId}`));
-    
+
     if (matchingPrereleases.length > 0) {
       const latestPrerelease = findLatestVersion(matchingPrereleases);
       npmVersionCache.set(cacheKey, latestPrerelease);
       return latestPrerelease;
     }
-    
+
     npmVersionCache.set(cacheKey, null);
     return null;
   } catch (error) {
@@ -331,10 +331,10 @@ function restoreBackups() {
 // Main function
 async function main() {
   console.log('🚀 Starting workspace update');
-  
+
   // Acquire lock to prevent concurrent runs
   acquireLock();
-  
+
   // Set up cleanup handlers
   process.on('exit', releaseLock);
   process.on('SIGINT', () => {
@@ -342,7 +342,7 @@ async function main() {
     releaseLock();
     process.exit(1);
   });
-  
+
   try {
     // Step 0: Validate we're in a pnpm workspace
     if (!existsSync('pnpm-workspace.yaml')) {
@@ -350,12 +350,16 @@ async function main() {
       console.error('Please run this command from the root of your pnpm workspace.');
       exit(1);
     }
-    
+
     console.log('✅ Found pnpm-workspace.yaml');
 
   // Step 1: Upgrade PNPM to latest version using corepack
   console.log('\n1️⃣  Upgrading PNPM to latest version');
-  runCommand('corepack prepare pnpm@latest --activate');
+  console.log('Running: corepack use pnpm@latest');
+  runCommand('corepack use pnpm@latest');
+
+  // Add a small delay to ensure corepack command completes
+  await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
 
   // Get PNPM version
   const pnpmVersion = runCommand('pnpm --version', true).trim();
@@ -383,7 +387,7 @@ async function main() {
 
   // Step 6: Update all dependencies to the latest versions
   console.log('\n6️⃣  Updating all dependencies to latest versions');
-  
+
   console.log('📦  First running pnpm install to ensure catalog is synchronized');
   try {
       execSync('pnpm install', { stdio: 'inherit' });
@@ -412,13 +416,13 @@ async function main() {
           console.log('📦  Verifying packages can be packed correctly');
           const verifyDir = './.pnpm-pack-verify';
           const logFile = './.pack-output.log';
-          
+
           try {
             // Create verification directory
             if (!existsSync(verifyDir)) {
               execSync(`mkdir -p ${verifyDir}`, { stdio: 'ignore' });
             }
-            
+
             // Use a temporary file to capture output but not display it
             execSync(
               `pnpm -r pack --pack-destination ${verifyDir} > ${logFile} 2>&1`,
@@ -470,12 +474,12 @@ async function main() {
     console.log('\n✨  Workspace update complete');
   } catch (error) {
     console.error('\n❌ Fatal error during workspace update:', error.message);
-    
+
     if (fileBackups.size > 0) {
       console.log('\n🔄 Rolling back changes...');
       restoreBackups();
     }
-    
+
     throw error;
   } finally {
     // Always clean up the lock file
@@ -536,14 +540,14 @@ async function fixMalformedCatalogReferences() {
 function parseCatalogEntry(line) {
   const trimmed = line.trim();
   if (!trimmed) return null;
-  
+
   // Match quoted or unquoted package names
   const match = trimmed.match(/^("?@?[^":\s]+(?:\/[^":\s]+)?"?):\s*(.+)$/);
   if (!match) return null;
-  
+
   const packageName = match[1].replace(/"/g, '');
   const version = match[2].trim();
-  
+
   return { packageName, version };
 }
 
@@ -560,11 +564,11 @@ function formatCatalogEntry(packageName, version) {
 function parseCatalogSection(yamlContent) {
   // More robust regex that handles end-of-file and various formats
   const catalogMatch = yamlContent.match(/^catalog:\s*\n((?:^\s+[^\n]+\n?)*)/m);
-  
+
   if (!catalogMatch || !catalogMatch[1]) {
     return null;
   }
-  
+
   return catalogMatch[1];
 }
 
@@ -573,10 +577,10 @@ async function updateCatalogEntries() {
   try {
     // Read workspace yaml directly
     const workspaceYamlPath = path.join(process.cwd(), 'pnpm-workspace.yaml');
-    
+
     // Backup the file before modifying
     backupFile(workspaceYamlPath);
-    
+
     let workspaceYaml = readFileSync(workspaceYamlPath, 'utf-8');
 
     // First, let's normalize the workspace YAML by ensuring proper quotes for scoped packages
@@ -608,7 +612,7 @@ async function updateCatalogEntries() {
         console.log('🔧  Fixing scoped package names in pnpm-workspace.yaml');
         // Replace the existing catalog section
         const fixedCatalog = `catalog:\n${fixedLines.join('\n')}`;
-        
+
         // More robust replacement that handles various formats
         workspaceYaml = workspaceYaml.replace(
           /^catalog:\s*\n((?:^\s+[^\n]+\n?)*)$/m,
@@ -638,7 +642,7 @@ async function updateCatalogEntries() {
 
     for (const line of lines) {
       const entry = parseCatalogEntry(line);
-      
+
       if (!entry) {
         // Keep empty lines or comments as-is
         if (line.trim()) {
@@ -648,7 +652,7 @@ async function updateCatalogEntries() {
       }
 
       const { packageName, version } = entry;
-      
+
       // Store the current version in catalogEntries
       catalogEntries[packageName] = version;
 
@@ -744,13 +748,13 @@ async function updateCatalogEntries() {
 // Helper function to validate version string
 function isValidVersion(version) {
   if (typeof version !== 'string') return false;
-  
+
   // Check for special protocols that aren't semver
   const specialProtocols = ['workspace:', 'file:', 'link:', 'git+', 'github:', 'npm:', 'http:', 'https:'];
   if (specialProtocols.some(proto => version.startsWith(proto))) {
     return true; // These are valid but not semver
   }
-  
+
   // Check for version ranges and tags
   const validPatterns = [
     /^[~^]?\d+\.\d+\.\d+/, // Basic semver with optional prefix
@@ -759,7 +763,7 @@ function isValidVersion(version) {
     /^\*$/, // Wildcard
     /^latest$/, // Tags
   ];
-  
+
   return validPatterns.some(pattern => pattern.test(version));
 }
 
@@ -771,9 +775,9 @@ function detectVersionPrefix(packageJson) {
     ...Object.values(packageJson.devDependencies || {}),
     ...Object.values(packageJson.peerDependencies || {})
   ].filter(v => typeof v === 'string' && /^[~^]?\d+\.\d+\.\d+/.test(v));
-  
+
   if (allVersions.length === 0) return DEFAULT_CONFIG.versionPrefix;
-  
+
   // Count prefix usage
   const prefixCounts = { '^': 0, '~': 0, '': 0 };
   allVersions.forEach(v => {
@@ -781,7 +785,7 @@ function detectVersionPrefix(packageJson) {
     else if (v.startsWith('~')) prefixCounts['~']++;
     else prefixCounts['']++;
   });
-  
+
   // Return most common prefix
   return Object.entries(prefixCounts)
     .sort(([,a], [,b]) => b - a)[0][0] || DEFAULT_CONFIG.versionPrefix;
@@ -813,15 +817,15 @@ async function checkAndFixPackageJsonFiles() {
 
     // Track package.json files that need to be updated
     let totalUpdates = 0;
-    
+
     console.log(`  Found ${packageJsonFiles.length} package.json files to check`);
 
     for (let i = 0; i < packageJsonFiles.length; i++) {
       const packageJsonPath = packageJsonFiles[i];
-      
+
       try {
         backupFile(packageJsonPath); // Backup before any modifications
-        
+
         const packageJsonContent = readFileSync(packageJsonPath, 'utf-8');
         const parsed = parseJsonPreserveFormat(packageJsonContent);
         const packageJson = parsed.data;
@@ -837,7 +841,7 @@ async function checkAndFixPackageJsonFiles() {
             if (!isValidVersion(version)) {
               continue;
             }
-            
+
             // Check if the dependency is in the catalog but not using catalog:
             if (
               typeof version === 'string' &&
@@ -915,27 +919,27 @@ async function fixMissingCatalogReferences(catalogEntries) {
               !catalogEntries[pkg]
             ) {
               const latestVersion = await getLatestVersion(pkg, false);
-              
+
               if (latestVersion) {
                 // Respect existing version range preferences if we can detect them
                 let prefix = '^'; // Default to caret
-                
+
                 // Check if this package uses exact versions elsewhere
                 const hasExactVersion = Object.values(packageJson[section] || {})
                   .concat(Object.values(packageJson.dependencies || {}))
                   .concat(Object.values(packageJson.devDependencies || {}))
                   .some(v => typeof v === 'string' && /^\d+\.\d+\.\d+/.test(v));
-                
+
                 if (hasExactVersion || section === 'peerDependencies') {
                   prefix = '';
                 }
-                
+
                 packageJson[section][pkg] = `${prefix}${latestVersion}`;
               } else {
                 // If we can't get the latest version, use '*'
                 packageJson[section][pkg] = '*';
               }
-              
+
               needsUpdate = true;
               updates.push(pkg);
             }

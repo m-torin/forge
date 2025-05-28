@@ -49,8 +49,8 @@ export const Cases = ({ dictionary }: CasesProps) => {
             getEmblaApi={setEmbla}
             w="100%"
           >
-            {Array.from({ length: 15 }).map((_, index) => (
-              <Carousel.Slide key={index}>
+            {Array.from({ length: 15 }, (_, index) => index + 1).map((logoNumber) => (
+              <Carousel.Slide key={`logo-${logoNumber}`}>
                 <Paper style={{ aspectRatio: '1' }} bg="gray.0" p="xl" radius="md">
                   <Box
                     style={{
@@ -60,7 +60,7 @@ export const Cases = ({ dictionary }: CasesProps) => {
                       justifyContent: 'center',
                     }}
                   >
-                    <Text size="sm">Logo {index + 1}</Text>
+                    <Text size="sm">Logo {logoNumber}</Text>
                   </Box>
                 </Paper>
               </Carousel.Slide>

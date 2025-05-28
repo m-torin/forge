@@ -44,11 +44,13 @@ async function main() {
   console.log('🌱 Seed completed!');
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+void (async () => {
+  await main()
+    .catch((e) => {
+      console.error('❌ Seed failed:', e);
+      process.exit(1);
+    })
+    .finally(() => {
+      void prisma.$disconnect();
+    });
+})();

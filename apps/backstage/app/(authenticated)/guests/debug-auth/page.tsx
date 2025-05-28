@@ -447,9 +447,9 @@ export default function DebugAuthPage() {
                     defaultOpened={activeSection === section.id}
                     label={section.title}
                   >
-                    {section.buttons.map((button, index) => (
+                    {section.buttons.map((button) => (
                       <NavLink
-                        key={`${section.id}-${index}`}
+                        key={`${section.id}-${button.label}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           button.onClick();

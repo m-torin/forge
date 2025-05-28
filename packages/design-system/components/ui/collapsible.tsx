@@ -36,4 +36,4 @@ export const CollapsibleTrigger = ({ children, onClick }: any) => (
   <UnstyledButton onClick={onClick}>{children}</UnstyledButton>
 );
 
-export const CollapsibleContent = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+export const CollapsibleContent = ({ children }: { children: React.ReactNode }) => children;

@@ -1,7 +1,7 @@
+'use client';
+
 // For compatibility
 import { Drawer } from '@mantine/core';
-
-('use client');
 
 // Export Mantine Drawer directly
 export { Drawer, type DrawerProps } from '@mantine/core';

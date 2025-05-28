@@ -35,9 +35,22 @@ const compat = new FlatCompat({
 // File pattern constants for better readability
 // =========================================
 
-// Router patterns
+// Router patterns - more specific to actual route files
 const APP_ROUTER_FILES = ['app/**/*.{js,jsx,ts,tsx}'];
 const PAGES_ROUTER_FILES = ['pages/**/*.{js,jsx,ts,tsx}'];
+const NEXT_ROUTE_FILES = [
+  // App Router route files that require default exports
+  'app/**/page.{js,jsx,ts,tsx}',
+  'app/**/layout.{js,jsx,ts,tsx}',
+  'app/**/loading.{js,jsx,ts,tsx}',
+  'app/**/error.{js,jsx,ts,tsx}',
+  'app/**/not-found.{js,jsx,ts,tsx}',
+  'app/**/default.{js,jsx,ts,tsx}',
+  'app/**/template.{js,jsx,ts,tsx}',
+  'app/**/global-error.{js,jsx,ts,tsx}',
+  // Pages Router files
+  ...PAGES_ROUTER_FILES,
+];
 const ALL_ROUTER_FILES = [...APP_ROUTER_FILES, ...PAGES_ROUTER_FILES];
 
 // Server component patterns (default in App Router)
@@ -131,7 +144,7 @@ const baseNextRules: Linter.FlatConfig = {
 
 // Rules for all Next.js routes (pages and app)
 const routeRules: Linter.FlatConfig = {
-  files: ALL_ROUTER_FILES,
+  files: NEXT_ROUTE_FILES,
   rules: {
     // Export patterns for Next.js routes
     'import/no-default-export': 'off',

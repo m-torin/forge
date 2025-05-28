@@ -54,7 +54,7 @@ const reactComponentConfig: Linter.FlatConfig = {
     'react/prop-types': 'off',
     'react/jsx-curly-brace-presence': ['error', { children: 'never', props: 'never' }],
     'react/jsx-fragments': ['error', 'syntax'],
-    'react/jsx-no-useless-fragment': 'error',
+    'react/jsx-no-useless-fragment': ['error', { allowExpressions: false }],
     'react/jsx-uses-react': 'off',
     'react/no-array-index-key': 'warn',
     'react/no-unstable-nested-components': 'error',

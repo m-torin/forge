@@ -12,12 +12,12 @@ export const Form = ({ children, ...props }: React.FormHTMLAttributes<HTMLFormEl
 
 // These are no-op exports for compatibility with existing code
 // Components should be updated to use Mantine form components directly
-export const FormField = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const FormItem = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const FormLabel = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const FormControl = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const FormDescription = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const FormMessage = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+export const FormField = ({ children }: { children: React.ReactNode }) => children;
+export const FormItem = ({ children }: { children: React.ReactNode }) => children;
+export const FormLabel = ({ children }: { children: React.ReactNode }) => children;
+export const FormControl = ({ children }: { children: React.ReactNode }) => children;
+export const FormDescription = ({ children }: { children: React.ReactNode }) => children;
+export const FormMessage = ({ children }: { children: React.ReactNode }) => children;
 
 // Re-export commonly used Mantine form components
 export {

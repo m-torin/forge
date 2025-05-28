@@ -42,6 +42,7 @@ export function AdvancedSearchDialog({ onSearch }: AdvancedSearchDialogProps) {
     operator: 'eq',
     value: '',
   });
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
   const handleAddFilter = () => {
     if (newFilter.value) {
@@ -66,6 +67,9 @@ export function AdvancedSearchDialog({ onSearch }: AdvancedSearchDialogProps) {
       searchValue || undefined,
     );
     setIsOpen(false);
+    if (searchValue) {
+      setSearchHistory([...searchHistory, searchValue]);
+    }
   };
 
   const handleReset = () => {
@@ -135,7 +139,7 @@ export function AdvancedSearchDialog({ onSearch }: AdvancedSearchDialogProps) {
             {filters.length > 0 && (
               <Stack gap="xs">
                 {filters.map((filter, index) => (
-                  <Group key={index} gap="xs">
+                  <Group key={`${filter.field}-${filter.operator}-${filter.value}`} gap="xs">
                     <Badge size="lg" variant="light">
                       {filter.field} {filter.operator} {filter.value}
                     </Badge>
@@ -181,6 +185,27 @@ export function AdvancedSearchDialog({ onSearch }: AdvancedSearchDialogProps) {
                 <IconPlus size={16} />
               </ActionIcon>
             </Group>
+          </Stack>
+
+          <Divider />
+
+          {/* Search History Section */}
+          <Stack gap="sm">
+            <Text fw={500}>Search History</Text>
+            {searchHistory.length > 0 && (
+              <Stack gap="xs">
+                {searchHistory.map((term) => (
+                  <Button
+                    key={term}
+                    onClick={() => setSearchValue(term)}
+                    size="xs"
+                    variant="subtle"
+                  >
+                    {term}
+                  </Button>
+                ))}
+              </Stack>
+            )}
           </Stack>
         </Stack>
 

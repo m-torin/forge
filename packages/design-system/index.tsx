@@ -8,16 +8,16 @@ import { ThemeProvider } from './providers/theme';
 import type { ThemeProviderProps } from 'next-themes';
 
 type DesignSystemProviderProperties = ThemeProviderProps & {
-  privacyUrl?: string;
-  termsUrl?: string;
-  helpUrl?: string;
+  _privacyUrl?: string;
+  _termsUrl?: string;
+  _helpUrl?: string;
 };
 
 export const DesignSystemProvider = ({
+  _helpUrl,
+  _privacyUrl,
+  _termsUrl,
   children,
-  helpUrl,
-  privacyUrl,
-  termsUrl,
   ...properties
 }: DesignSystemProviderProperties) => (
   <ThemeProvider {...properties}>

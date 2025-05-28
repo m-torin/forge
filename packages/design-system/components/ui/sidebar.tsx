@@ -143,16 +143,7 @@ export function SidebarMenuItem({ children, ...props }: React.ComponentProps<'di
   return <div {...props}>{children}</div>;
 }
 
-export function SidebarMenuButton({
-  asChild,
-  children,
-  tooltip,
-  ...props
-}: React.ComponentPropsWithoutRef<typeof NavLink> & {
-  asChild?: boolean;
-  tooltip?: string;
-  children?: React.ReactNode;
-}) {
+export function SidebarMenuButton({ _asChild, children, tooltip, ...props }: any) {
   const content = <NavLink {...props}>{children}</NavLink>;
 
   if (tooltip) {

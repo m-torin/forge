@@ -16,8 +16,11 @@ describe('@repo/seo/json-ld', () => {
 
     const { container } = render(<JsonLd code={testData as any} />);
 
-    // Find the script tag
-    const scriptElement = container.querySelector('script');
+    // Find the script tag using container query since Testing Library doesn't provide a method for script tags
+    // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
+    const scriptElement = container.querySelector(
+      'script[type="application/ld+json"]',
+    ) as HTMLScriptElement;
 
     expect(scriptElement).not.toBeNull();
     expect(scriptElement?.type).toBe('application/ld+json');
@@ -33,7 +36,10 @@ describe('@repo/seo/json-ld', () => {
     const testData = { name: 'Test Person', '@type': 'Person' };
 
     const { container } = render(<JsonLd code={testData as any} />);
-    const scriptElement = container.querySelector('script');
+    // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
+    const scriptElement = container.querySelector(
+      'script[type="application/ld+json"]',
+    ) as HTMLScriptElement;
 
     expect(scriptElement?.type).toBe('application/ld+json');
   });
@@ -43,7 +49,10 @@ describe('@repo/seo/json-ld', () => {
 
     const { container } = render(<JsonLd code={testData as any} />);
 
-    const scriptElement = container.querySelector('script');
+    // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
+    const scriptElement = container.querySelector(
+      'script[type="application/ld+json"]',
+    ) as HTMLScriptElement;
 
     expect(scriptElement).not.toBeNull();
     expect(scriptElement?.type).toBe('application/ld+json');
@@ -62,7 +71,10 @@ describe('@repo/seo/json-ld', () => {
     };
 
     const { container } = render(<JsonLd code={testData as any} />);
-    const scriptElement = container.querySelector('script');
+    // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
+    const scriptElement = container.querySelector(
+      'script[type="application/ld+json"]',
+    ) as HTMLScriptElement;
     const scriptContent = scriptElement?.textContent;
     const parsedContent = JSON.parse(scriptContent || '{}');
 

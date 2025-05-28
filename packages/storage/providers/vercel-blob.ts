@@ -89,7 +89,7 @@ export class VercelBlobProvider implements StorageProvider {
     );
   }
 
-  async getUrl(key: string, options?: { expiresIn?: number }): Promise<string> {
+  async getUrl(key: string, _options?: { expiresIn?: number }): Promise<string> {
     // Vercel Blob URLs are permanent for public files
     // For private files, they include auth in the URL
     const blob = await head(key, { token: this.token });

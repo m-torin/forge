@@ -160,7 +160,7 @@ describe('secure', () => {
 
     try {
       await secure([]);
-    } catch (_e) {
+    } catch {
       // Expected to throw
     }
 

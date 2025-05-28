@@ -18,6 +18,7 @@
     "@repo/design-system": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/toolbar": "^0.1.37",
+    "chalk": "^5.4.1",
     "flags": "^4.0.1",
     "react": "catalog:",
     "zod": "catalog:"

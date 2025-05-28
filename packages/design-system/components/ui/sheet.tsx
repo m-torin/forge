@@ -4,8 +4,8 @@
 import { Drawer } from '@mantine/core';
 
 export const Sheet = Drawer;
-export const SheetTrigger = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const SheetContent = Drawer.Root;
+export const SheetTrigger = ({ children }: { children: React.ReactNode }) => children;
+export const SheetContent = ({ children }: { children: React.ReactNode }) => children;
 export const SheetHeader = Drawer.Header;
 export const SheetTitle = Drawer.Title;
 export const SheetDescription = ({ children }: { children: React.ReactNode }) => (

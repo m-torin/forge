@@ -20,6 +20,7 @@
     "@prisma/nextjs-monorepo-workaround-plugin": "^6.8.2",
     "@t3-oss/env-core": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
     "zod": "catalog:"
   }
 }

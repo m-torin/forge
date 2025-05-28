@@ -30,7 +30,7 @@ describe('Dictionary Files', () => {
       // Try to import the dictionary
       try {
         await import(dictPath);
-      } catch (_error) {
+      } catch {
         // In test environment, we might get module not found errors
         // but the mock should handle it
         expect(vi.isMockFunction(vi.fn)).toBe(true);

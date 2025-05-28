@@ -38,8 +38,8 @@ export const FAQ = ({ dictionary }: FAQProps) => (
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }}>
           <Accordion radius="md" variant="separated">
-            {dictionary.web.home.faq.items.map((item, index) => (
-              <Accordion.Item key={index} value={`index-${index}`}>
+            {dictionary.web.home.faq.items.map((item) => (
+              <Accordion.Item key={item.question} value={item.question}>
                 <Accordion.Control>{item.question}</Accordion.Control>
                 <Accordion.Panel>{item.answer}</Accordion.Panel>
               </Accordion.Item>

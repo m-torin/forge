@@ -6,4 +6,4 @@ export type AvatarProps = MantineAvatarProps;
 
 // For compatibility with shadcn/ui compound components
 export const AvatarImage = MantineAvatar;
-export const AvatarFallback = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+export const AvatarFallback = ({ children }: { children: React.ReactNode }) => children;

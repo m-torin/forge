@@ -12,15 +12,13 @@ export const NavigationMenuList = ({ children }: { children: React.ReactNode }) 
   <Group gap="md">{children}</Group>
 );
 
-export const NavigationMenuItem = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+export const NavigationMenuItem = ({ children }: { children: React.ReactNode }) => children;
 
 export const NavigationMenuTrigger = ({ children, ...props }: any) => (
   <UnstyledButton {...props}>{children}</UnstyledButton>
 );
 
-export const NavigationMenuContent = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ left: 0, position: 'absolute', top: '100%' }}>{children}</div>
-);
+export const NavigationMenuContent = ({ children }: { children: React.ReactNode }) => children;
 
 export const NavigationMenuLink = ({ children, href, ...props }: any) => (
   <a href={href} {...props}>

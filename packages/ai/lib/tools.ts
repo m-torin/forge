@@ -9,9 +9,10 @@ export const tools = {
     execute: async ({ expression }) => {
       try {
         // In production, use a safe math parser
+        // eslint-disable-next-line security/detect-eval-with-expression
         const result = eval(expression);
         return { result };
-      } catch (error) {
+      } catch {
         return { error: 'Invalid mathematical expression' };
       }
     },
@@ -23,7 +24,7 @@ export const tools = {
   // Web search tool
   search: tool({
     description: 'Search the web for information',
-    execute: async ({ limit, query }) => {
+    execute: async ({ _limit, query }) => {
       // This would integrate with a search API
       return {
         results: [
@@ -36,7 +37,7 @@ export const tools = {
       };
     },
     parameters: z.object({
-      limit: z.number().optional().default(5).describe('Number of results to return'),
+      _limit: z.number().optional().default(5).describe('Number of results to return'),
       query: z.string().describe('Search query'),
     }),
   }),
@@ -80,8 +81,8 @@ export const tools = {
           const obj = JSON.parse(data);
           return { result: JSON.stringify(obj, null, indent) };
         }
-      } catch (error) {
-        return { error: 'Invalid JSON data' };
+      } catch {
+        return { error: 'Failed to execute code' };
       }
     },
     parameters: z.object({

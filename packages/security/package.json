@@ -16,6 +16,7 @@
     "@arcjet/next": "1.0.0-beta.7",
     "@nosecone/next": "1.0.0-beta.7",
     "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
     "zod": "catalog:"
   },
   "devDependencies": {

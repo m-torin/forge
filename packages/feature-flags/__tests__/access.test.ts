@@ -41,7 +41,7 @@ describe('access handler', () => {
 
       const request = {
         headers: {
-          get: (key: string) => null,
+          get: (_key: string) => null,
         },
       } as unknown as NextRequest;
 

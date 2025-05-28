@@ -11,7 +11,7 @@ const themes = [
 ];
 
 export const ModeToggle = () => {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, theme: _theme } = useTheme();
   const { colorScheme } = useMantineColorScheme();
 
   return (

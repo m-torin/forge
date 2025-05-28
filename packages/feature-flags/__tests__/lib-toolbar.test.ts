@@ -48,9 +48,9 @@ describe('withToolbar', () => {
       reactStrictMode: true,
     };
 
-    const wrappedConfig = withToolbar(baseConfig);
+    const _wrappedConfig = withToolbar(baseConfig);
 
-    expect(wrappedConfig).toBe(baseConfig);
+    expect(_wrappedConfig).toBe(baseConfig);
     expect(mockWithVercelToolbar).not.toHaveBeenCalled();
   });
 
@@ -62,7 +62,7 @@ describe('withToolbar', () => {
       reactStrictMode: true,
     });
 
-    const wrappedConfig = withToolbar(baseConfig);
+    const _wrappedConfig = withToolbar(baseConfig);
 
     expect(mockWithVercelToolbar).toHaveBeenCalledWith(baseConfig);
   });
@@ -85,8 +85,8 @@ describe('withToolbar', () => {
     const { withToolbar } = await import('../lib/toolbar');
     const baseConfig = { experimental: { appDir: true } };
 
-    const wrappedConfig = withToolbar(baseConfig);
-    expect(wrappedConfig).toBe(baseConfig);
+    const _wrappedConfig = withToolbar(baseConfig);
+    expect(_wrappedConfig).toBe(baseConfig);
     expect(mockWithVercelToolbar).not.toHaveBeenCalled();
   });
 
@@ -100,7 +100,7 @@ describe('withToolbar', () => {
       reactStrictMode: true,
     });
 
-    const wrappedConfig = withToolbar(baseConfig);
+    const _wrappedConfig = withToolbar(baseConfig);
     expect(mockWithVercelToolbar).toHaveBeenCalledWith(baseConfig);
   });
 
@@ -115,7 +115,7 @@ describe('withToolbar', () => {
       otherPlugin: true,
     });
 
-    const wrappedConfig = withToolbar(withOtherPlugin(baseConfig));
+    const _wrappedConfig = withToolbar(withOtherPlugin(baseConfig));
 
     expect(mockWithVercelToolbar).toHaveBeenCalledWith({
       otherPlugin: true,

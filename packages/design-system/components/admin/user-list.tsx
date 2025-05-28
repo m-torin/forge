@@ -26,7 +26,7 @@ import {
   IconUserPlus,
   IconUserX,
 } from '@tabler/icons-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import {
   banUser,
@@ -59,7 +59,7 @@ export function UserList({ onCreateUser, onUserSelect }: UserListProps) {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [_statusFilter, _setStatusFilter] = useState<string>('all');
   const [pagination, setPagination] = useState({
     limit: 25,
     page: 1,
@@ -70,67 +70,46 @@ export function UserList({ onCreateUser, onUserSelect }: UserListProps) {
   const [dialogAction, setDialogAction] = useState<'ban' | 'unban' | 'delete' | null>(null);
   const [opened, { close, open }] = useDisclosure(false);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      const query: any = {
+      const response = await listUsers({
         limit: pagination.limit,
-        offset: (pagination.page - 1) * pagination.limit,
-        sortBy: 'createdAt',
-        sortDirection: 'desc',
-      };
+        page: pagination.page,
+        role: roleFilter === 'all' ? undefined : roleFilter,
+        search: searchTerm || undefined,
+      });
 
-      if (searchTerm) {
-        // First try to search by email
-        query.searchField = 'email';
-        query.searchOperator = 'contains';
-        query.searchValue = searchTerm;
-      }
-
-      if (roleFilter !== 'all') {
-        query.filterField = 'role';
-        query.filterOperator = 'eq';
-        query.filterValue = roleFilter;
-      }
-
-      const response = await listUsers({ query });
-      console.log('UserList response:', response);
-
-      if (response && response.data) {
-        const { total, users } = response.data;
-        if (users) {
-          setUsers(
-            users.map((u: any) => ({
-              ...u,
-              role: u.role || 'user',
-            })),
-          );
-          setPagination((prev) => ({ ...prev, total: total || 0 }));
-        }
-      } else if (response && response.error) {
-        console.error('Error from API:', response.error);
-        throw new Error(response.error);
+      if (response && !('error' in response)) {
+        setUsers(response.users);
+        setPagination((prev) => ({
+          ...prev,
+          total: response.total,
+        }));
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
-      notifications.show({ color: 'red', message: 'Failed to load users', title: 'Error' });
+      notifications.show({
+        color: 'red',
+        message: 'Failed to load users',
+        title: 'Error',
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, searchTerm, roleFilter]);
 
   useEffect(() => {
     fetchUsers();
-  }, [pagination.page, searchTerm, roleFilter, statusFilter]);
+  }, [fetchUsers]);
 
   useEffect(() => {
     if (dialogAction !== null) {
       open();
     }
-  }, [dialogAction]);
+  }, [dialogAction, open]);
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
+  const _handleRoleChange = async (userId: string, newRole: string) => {
     try {
       setActionLoading(userId);
       await setUserRole({ role: newRole as any, userId });

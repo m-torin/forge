@@ -9,10 +9,11 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@liveblocks/client": "^2.24.2",
-    "@liveblocks/node": "^2.24.2",
-    "@liveblocks/react": "^2.24.2",
+    "@liveblocks/client": "^2.24.3",
+    "@liveblocks/node": "^2.24.3",
+    "@liveblocks/react": "^2.24.3",
     "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
     "react": "catalog:",
     "server-only": "catalog:",
     "zod": "catalog:"

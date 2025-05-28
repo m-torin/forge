@@ -23,7 +23,7 @@ export function createNextConfig(options: NextConfigOptions = {}): UserConfig {
     if (require.resolve(defaultNextSetupPath)) {
       setupFiles.push(defaultNextSetupPath);
     }
-  } catch (error) {
+  } catch {
     // If the file doesn't exist, we just don't add it
   }
 
