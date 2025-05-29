@@ -13,7 +13,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@arcjet/next": "1.0.0-beta.7",
+    "@arcjet/next": "1.0.0-beta.8",
     "@mantine/carousel": "^8.0.2",
     "@mantine/core": "catalog:",
     "@mantine/dates": "^8.0.2",
