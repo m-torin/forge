@@ -5,15 +5,7 @@
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
-    "./client": {
-      "types": "./src/client/index.ts",
-      "default": "./src/client/index.ts"
-    },
-    "./qstash/schedules": {
-      "types": "./src/qstash/schedules.ts",
-      "default": "./src/qstash/schedules.ts"
+      "import": "./src/index.ts"
     }
   },
   "scripts": {

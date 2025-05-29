@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { createWorkflowClient } from '@repo/orchestration/client';
+import { createWorkflowClient } from '@repo/orchestration';
 
 /**
  * Image Processing Results Viewer API

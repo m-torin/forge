@@ -3,7 +3,7 @@ import {
   CronExpressions,
   type PerUserScheduleConfig,
   type ScheduleConfig,
-} from '@repo/orchestration/qstash/schedules';
+} from '@repo/orchestration';
 
 /**
  * Workflow Schedules API

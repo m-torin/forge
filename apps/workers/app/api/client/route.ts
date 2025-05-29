@@ -1,4 +1,4 @@
-import { createWorkflowClient } from '@repo/orchestration/client';
+import { createWorkflowClient } from '@repo/orchestration';
 
 /**
  * Workflow Client API Route

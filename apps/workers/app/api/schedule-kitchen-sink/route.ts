@@ -16,8 +16,8 @@ import {
  */
 
 const scheduler = createWorkflowScheduler({
-  qstashToken: process.env.QSTASH_TOKEN!,
-  qstashUrl: process.env.QSTASH_URL,
+  token: process.env.QSTASH_TOKEN!,
+  baseUrl: process.env.QSTASH_URL,
 });
 
 // Create or update the daily schedule for Kitchen Sink workflow
@@ -28,12 +28,10 @@ export async function POST(request: Request) {
     // Default configuration for daily Kitchen Sink execution
     const scheduleConfig: ScheduleConfig = {
       cron: body.cron || '0 9 * * *', // Default: 9 AM daily
-      metadata: {
-        environment: process.env.NODE_ENV || 'development',
-        scheduledBy: 'api',
-        workflowType: 'kitchen-sink',
-      },
-      payload: {
+      scheduleId: `kitchen-sink-daily-${Date.now()}`,
+      destination: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3400'}/api/workflows/kitchen-sink`,
+      retries: body.retries || 3,
+      body: {
         name: 'Scheduled Daily Kitchen Sink Run',
         // Default payload for scheduled execution
         options: {
@@ -51,12 +49,23 @@ export async function POST(request: Request) {
         },
         priority: 5,
         taskId: `scheduled-${new Date().toISOString().split('T')[0]}`,
+        metadata: {
+          environment: process.env.NODE_ENV || 'development',
+          scheduledBy: 'api',
+          workflowType: 'kitchen-sink',
+        },
         // You can add more default payload properties here
         ...body.payload,
       },
-      retries: body.retries || 3,
-      timezone: body.timezone || 'UTC',
-      workflowUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3400'}/api/kitchen-sink-workflow`,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Schedule-Type': 'kitchen-sink',
+      },
+      flowControl: body.flowControl || {
+        key: 'kitchen-sink-scheduled',
+        parallelism: 3,
+        rate: 5,
+      },
     };
 
     const result = await scheduler.createSchedule(scheduleConfig);
@@ -64,10 +73,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       cron: scheduleConfig.cron,
       message: 'Daily Kitchen Sink workflow schedule created successfully',
-      nextRun: calculateNextRun(scheduleConfig.cron, scheduleConfig.timezone),
+      nextRun: calculateNextRun(scheduleConfig.cron),
       scheduleId: result.scheduleId,
       success: true,
-      timezone: scheduleConfig.timezone,
     });
   } catch (error) {
     console.error('Failed to create schedule:', error);
@@ -88,7 +96,11 @@ export async function GET() {
 
     // Filter for Kitchen Sink workflow schedules
     const kitchenSinkSchedules = schedules.filter(
-      (schedule) => schedule.metadata?.workflowType === 'kitchen-sink',
+      (schedule) => {
+        // Check if it's a kitchen sink schedule by ID pattern or destination
+        return schedule.scheduleId.includes('kitchen-sink') || 
+               schedule.destination.includes('/api/workflows/kitchen-sink');
+      }
     );
 
     return NextResponse.json({
@@ -140,7 +152,7 @@ export async function DELETE(request: Request) {
 }
 
 // Helper function to calculate next run time
-function calculateNextRun(cron: string, timezone = 'UTC'): string {
+function calculateNextRun(cron: string): string {
   // This is a simplified implementation
   // In production, you'd use a proper cron parser library
   const now = new Date();

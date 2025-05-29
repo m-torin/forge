@@ -11,3 +11,6 @@ export * from './hooks/use-ai-chat';
 // Export UI components
 export { Message } from './components/message';
 export { Thread } from './components/thread';
+
+// Export AI providers
+export * from './providers';

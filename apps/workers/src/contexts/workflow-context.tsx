@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useLocalStorage, useToggle } from '@mantine/hooks';
+import { useId, useToggle } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconAlertCircle, IconCircleCheck, IconX } from '@tabler/icons-react';
 import { createContext, useContext, useEffect, useMemo, useOptimistic, useState } from 'react';
@@ -74,18 +74,10 @@ const WorkflowContext = createContext<WorkflowContextValue | null>(null);
 
 export function WorkflowProvider({ children }: { children: React.ReactNode }) {
   const [runs, setRuns] = useState<WorkflowRun[]>([]);
-  const [triggeredWorkflows, setTriggeredWorkflows] = useLocalStorage<
-    Record<string, WorkflowStatus>
-  >({
-    defaultValue: {},
-    key: 'triggered-workflows',
-  });
+  const [triggeredWorkflows, setTriggeredWorkflows] = useState<Record<string, WorkflowStatus>>({});
   const [loading, setLoadingState] = useState(new Map<string, boolean>());
   const [sseConnected, toggleSSE] = useToggle([false, true] as const);
-  const [filters, setFiltersState] = useLocalStorage<WorkflowFilters>({
-    defaultValue: { runId: '', workflowUrl: '' },
-    key: 'workflow-filters',
-  });
+  const [filters, setFiltersState] = useState<WorkflowFilters>({ runId: '', workflowUrl: '' });
   const uniqueId = useId();
 
   const [optimisticWorkflows, addOptimisticWorkflow] = useOptimistic(
@@ -329,6 +321,9 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       if (actualPayload.taskId) {
         actualPayload.taskId = `task-${workflowUniqueId}`;
       }
+      // Add explicit dedupId for clear deduplication
+      actualPayload.dedupId = `basic-${workflowUniqueId}`;
+      
       if (actualPayload.tasks && Array.isArray(actualPayload.tasks)) {
         actualPayload.tasks = actualPayload.tasks.map((task: any, index: number) => ({
           ...task,
@@ -349,6 +344,9 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       if (actualPayload.taskId) {
         actualPayload.taskId = `task-${workflowUniqueId}`;
       }
+      // Add explicit dedupId for clear deduplication
+      actualPayload.dedupId = `kitchen-sink-${workflowUniqueId}`;
+      
       // Also ensure tasks have unique IDs if present
       if (actualPayload.tasks && Array.isArray(actualPayload.tasks)) {
         actualPayload.tasks = actualPayload.tasks.map((task: any, index: number) => ({
@@ -356,6 +354,13 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
           id: `task-${workflowUniqueId}-${index}`,
         }));
       }
+    } else if (workflow.id === 'image-processing') {
+      // Image processing workflow
+      if (actualPayload.imageId) {
+        actualPayload.imageId = `img-${workflowUniqueId}`;
+      }
+      // Add explicit dedupId for clear deduplication
+      actualPayload.dedupId = `image-${workflowUniqueId}`;
     }
 
     await triggerWorkflow(workflow.endpoint, actualPayload);

@@ -5,12 +5,9 @@ import { headers } from 'next/headers';
 import { auth } from '@repo/auth/server';
 
 import { database } from '../index';
-
-export interface PrismaResponse<T = any> {
-  data: T | null;
-  error?: string;
-  success: boolean;
-}
+import { DatabaseResponse } from '../types';
+import { prisma } from '../prisma';
+import { Database } from '../database';
 
 // Helper to check if user is authenticated
 async function checkAuth() {
@@ -21,25 +18,55 @@ async function checkAuth() {
   return session;
 }
 
+// Get the appropriate database client based on provider
+function getDbClient() {
+  // For direct Prisma operations, we use the Prisma client
+  // This is a temporary solution during migration to support both providers
+  if ((database as Database).getProvider() === 'prisma') {
+    return prisma;
+  }
+
+  // Otherwise use the abstraction layer
+  return database;
+}
+
 // User Queries
-export async function getUsersFromDatabase(): Promise<PrismaResponse> {
+export async function getUsersFromDatabase(): Promise<DatabaseResponse> {
   try {
     await checkAuth();
+    const db = getDbClient();
 
-    const users = await database.user.findMany({
-      include: {
-        accounts: true,
-        members: {
-          include: {
-            organization: true,
+    if (db === prisma) {
+      // Using Prisma directly
+      const users = await db.user.findMany({
+        include: {
+          accounts: true,
+          members: {
+            include: {
+              organization: true,
+            },
           },
+          sessions: true,
         },
-        sessions: true,
-      },
-      take: 100,
-    });
-
-    return { data: users, success: true };
+        take: 100,
+      });
+      return { data: users, success: true };
+    } else {
+      // Using abstraction layer
+      const users = await db.findMany('user', {
+        include: {
+          accounts: true,
+          members: {
+            include: {
+              organization: true,
+            },
+          },
+          sessions: true,
+        },
+        take: 100,
+      });
+      return { data: users, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -49,24 +76,42 @@ export async function getUsersFromDatabase(): Promise<PrismaResponse> {
   }
 }
 
-export async function getCurrentUserFromDatabase(): Promise<PrismaResponse> {
+export async function getCurrentUserFromDatabase(): Promise<DatabaseResponse> {
   try {
     const session = await checkAuth();
+    const db = getDbClient();
 
-    const user = await database.user.findUnique({
-      include: {
-        accounts: true,
-        members: {
-          include: {
-            organization: true,
+    if (db === prisma) {
+      // Using Prisma directly
+      const user = await db.user.findUnique({
+        include: {
+          accounts: true,
+          members: {
+            include: {
+              organization: true,
+            },
           },
+          sessions: true,
         },
-        sessions: true,
-      },
-      where: { id: session.user.id },
-    });
-
-    return { data: user, success: true };
+        where: { id: session.user.id },
+      });
+      return { data: user, success: true };
+    } else {
+      // Using abstraction layer
+      const user = await db.findUnique('user', {
+        include: {
+          accounts: true,
+          members: {
+            include: {
+              organization: true,
+            },
+          },
+          sessions: true,
+        },
+        where: { id: session.user.id },
+      });
+      return { data: user, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -77,21 +122,36 @@ export async function getCurrentUserFromDatabase(): Promise<PrismaResponse> {
 }
 
 // Session Queries
-export async function getSessionsFromDatabase(): Promise<PrismaResponse> {
+export async function getSessionsFromDatabase(): Promise<DatabaseResponse> {
   try {
     await checkAuth();
+    const db = getDbClient();
 
-    const sessions = await database.session.findMany({
-      include: {
-        user: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 100,
-    });
-
-    return { data: sessions, success: true };
+    if (db === prisma) {
+      // Using Prisma directly
+      const sessions = await db.session.findMany({
+        include: {
+          user: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 100,
+      });
+      return { data: sessions, success: true };
+    } else {
+      // Using abstraction layer
+      const sessions = await db.findMany('session', {
+        include: {
+          user: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 100,
+      });
+      return { data: sessions, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -101,18 +161,30 @@ export async function getSessionsFromDatabase(): Promise<PrismaResponse> {
   }
 }
 
-export async function getCurrentSessionFromDatabase(): Promise<PrismaResponse> {
+export async function getCurrentSessionFromDatabase(): Promise<DatabaseResponse> {
   try {
     const authSession = await checkAuth();
+    const db = getDbClient();
 
-    const session = await database.session.findUnique({
-      include: {
-        user: true,
-      },
-      where: { id: authSession.session.id },
-    });
-
-    return { data: session, success: true };
+    if (db === prisma) {
+      // Using Prisma directly
+      const session = await db.session.findUnique({
+        include: {
+          user: true,
+        },
+        where: { id: authSession.session.id },
+      });
+      return { data: session, success: true };
+    } else {
+      // Using abstraction layer
+      const session = await db.findUnique('session', {
+        include: {
+          user: true,
+        },
+        where: { id: authSession.session.id },
+      });
+      return { data: session, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -123,23 +195,40 @@ export async function getCurrentSessionFromDatabase(): Promise<PrismaResponse> {
 }
 
 // Organization Queries
-export async function getOrganizationsFromDatabase(): Promise<PrismaResponse> {
+export async function getOrganizationsFromDatabase(): Promise<DatabaseResponse> {
   try {
     await checkAuth();
+    const db = getDbClient();
 
-    const organizations = await database.organization.findMany({
-      include: {
-        members: {
-          include: {
-            user: true,
+    if (db === prisma) {
+      // Using Prisma directly
+      const organizations = await db.organization.findMany({
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
           },
+          teams: true,
         },
-        teams: true,
-      },
-      take: 100,
-    });
-
-    return { data: organizations, success: true };
+        take: 100,
+      });
+      return { data: organizations, success: true };
+    } else {
+      // Using abstraction layer
+      const organizations = await db.findMany('organization', {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+          teams: true,
+        },
+        take: 100,
+      });
+      return { data: organizations, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -149,27 +238,44 @@ export async function getOrganizationsFromDatabase(): Promise<PrismaResponse> {
   }
 }
 
-export async function getCurrentOrganizationFromDatabase(): Promise<PrismaResponse> {
+export async function getCurrentOrganizationFromDatabase(): Promise<DatabaseResponse> {
   try {
     const session = await checkAuth();
+    const db = getDbClient();
 
     if (!session.session.activeOrganizationId) {
       return { data: null, error: 'No active organization', success: false };
     }
 
-    const organization = await database.organization.findUnique({
-      include: {
-        members: {
-          include: {
-            user: true,
+    if (db === prisma) {
+      // Using Prisma directly
+      const organization = await db.organization.findUnique({
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
           },
+          teams: true,
         },
-        teams: true,
-      },
-      where: { id: session.session.activeOrganizationId },
-    });
-
-    return { data: organization, success: true };
+        where: { id: session.session.activeOrganizationId },
+      });
+      return { data: organization, success: true };
+    } else {
+      // Using abstraction layer
+      const organization = await db.findUnique('organization', {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+          teams: true,
+        },
+        where: { id: session.session.activeOrganizationId },
+      });
+      return { data: organization, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -179,28 +285,50 @@ export async function getCurrentOrganizationFromDatabase(): Promise<PrismaRespon
   }
 }
 
-export async function getUserOrganizationsFromDatabase(): Promise<PrismaResponse> {
+export async function getUserOrganizationsFromDatabase(): Promise<DatabaseResponse> {
   try {
     const session = await checkAuth();
+    const db = getDbClient();
 
-    const organizations = await database.organization.findMany({
-      include: {
-        members: {
-          include: {
-            user: true,
+    if (db === prisma) {
+      // Using Prisma directly
+      const organizations = await db.organization.findMany({
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
           },
         },
-      },
-      where: {
-        members: {
-          some: {
-            userId: session.user.id,
+        where: {
+          members: {
+            some: {
+              userId: session.user.id,
+            },
           },
         },
-      },
-    });
-
-    return { data: organizations, success: true };
+      });
+      return { data: organizations, success: true };
+    } else {
+      // Using abstraction layer
+      const organizations = await db.findMany('organization', {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+        where: {
+          members: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+      });
+      return { data: organizations, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -211,17 +339,28 @@ export async function getUserOrganizationsFromDatabase(): Promise<PrismaResponse
 }
 
 // API Key Queries
-export async function getApiKeysFromDatabase(): Promise<PrismaResponse> {
+export async function getApiKeysFromDatabase(): Promise<DatabaseResponse> {
   try {
     const session = await checkAuth();
+    const db = getDbClient();
 
-    const apiKeys = await database.apiKey.findMany({
-      where: {
-        userId: session.user.id,
-      },
-    });
-
-    return { data: apiKeys, success: true };
+    if (db === prisma) {
+      // Using Prisma directly
+      const apiKeys = await db.apiKey.findMany({
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: apiKeys, success: true };
+    } else {
+      // Using abstraction layer
+      const apiKeys = await db.findMany('apiKey', {
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: apiKeys, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -232,20 +371,34 @@ export async function getApiKeysFromDatabase(): Promise<PrismaResponse> {
 }
 
 // Two-Factor Queries
-export async function getTwoFactorFromDatabase(): Promise<PrismaResponse> {
+export async function getTwoFactorFromDatabase(): Promise<DatabaseResponse> {
   try {
     const session = await checkAuth();
+    const db = getDbClient();
 
-    const twoFactor = await database.twoFactor.findUnique({
-      include: {
-        backupCodes: true,
-      },
-      where: {
-        userId: session.user.id,
-      },
-    });
-
-    return { data: twoFactor, success: true };
+    if (db === prisma) {
+      // Using Prisma directly
+      const twoFactor = await db.twoFactor.findUnique({
+        include: {
+          backupCodes: true,
+        },
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: twoFactor, success: true };
+    } else {
+      // Using abstraction layer
+      const twoFactor = await db.findUnique('twoFactor', {
+        include: {
+          backupCodes: true,
+        },
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: twoFactor, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -256,17 +409,28 @@ export async function getTwoFactorFromDatabase(): Promise<PrismaResponse> {
 }
 
 // Passkey Queries
-export async function getPasskeysFromDatabase(): Promise<PrismaResponse> {
+export async function getPasskeysFromDatabase(): Promise<DatabaseResponse> {
   try {
     const session = await checkAuth();
+    const db = getDbClient();
 
-    const passkeys = await database.passkey.findMany({
-      where: {
-        userId: session.user.id,
-      },
-    });
-
-    return { data: passkeys, success: true };
+    if (db === prisma) {
+      // Using Prisma directly
+      const passkeys = await db.passkey.findMany({
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: passkeys, success: true };
+    } else {
+      // Using abstraction layer
+      const passkeys = await db.findMany('passkey', {
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: passkeys, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -277,20 +441,34 @@ export async function getPasskeysFromDatabase(): Promise<PrismaResponse> {
 }
 
 // Account Queries
-export async function getAccountsFromDatabase(): Promise<PrismaResponse> {
+export async function getAccountsFromDatabase(): Promise<DatabaseResponse> {
   try {
     const session = await checkAuth();
+    const db = getDbClient();
 
-    const accounts = await database.account.findMany({
-      include: {
-        user: true,
-      },
-      where: {
-        userId: session.user.id,
-      },
-    });
-
-    return { data: accounts, success: true };
+    if (db === prisma) {
+      // Using Prisma directly
+      const accounts = await db.account.findMany({
+        include: {
+          user: true,
+        },
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: accounts, success: true };
+    } else {
+      // Using abstraction layer
+      const accounts = await db.findMany('account', {
+        include: {
+          user: true,
+        },
+        where: {
+          userId: session.user.id,
+        },
+      });
+      return { data: accounts, success: true };
+    }
   } catch (error) {
     return {
       data: null,
@@ -301,52 +479,100 @@ export async function getAccountsFromDatabase(): Promise<PrismaResponse> {
 }
 
 // Stats Query
-export async function getDatabaseStats(): Promise<PrismaResponse> {
+export async function getDatabaseStats(): Promise<DatabaseResponse> {
   try {
     await checkAuth();
+    const db = getDbClient();
 
-    const [
-      userCount,
-      sessionCount,
-      organizationCount,
-      apiKeyCount,
-      accountCount,
-      invitationCount,
-      teamCount,
-      memberCount,
-      twoFactorCount,
-      passkeyCount,
-      backupCodeCount,
-    ] = await Promise.all([
-      database.user.count(),
-      database.session.count(),
-      database.organization.count(),
-      database.apiKey.count(),
-      database.account.count(),
-      database.invitation.count(),
-      database.team.count(),
-      database.member.count(),
-      database.twoFactor.count(),
-      database.passkey.count(),
-      database.backupCode.count(),
-    ]);
-
-    return {
-      data: {
-        accountCount,
-        apiKeyCount,
-        backupCodeCount,
-        invitationCount,
-        memberCount,
-        organizationCount,
-        passkeyCount,
-        sessionCount,
-        teamCount,
-        twoFactorCount,
+    if (db === prisma) {
+      // Using Prisma directly
+      const [
         userCount,
-      },
-      success: true,
-    };
+        sessionCount,
+        organizationCount,
+        apiKeyCount,
+        accountCount,
+        invitationCount,
+        teamCount,
+        memberCount,
+        twoFactorCount,
+        passkeyCount,
+        backupCodeCount,
+      ] = await Promise.all([
+        db.user.count(),
+        db.session.count(),
+        db.organization.count(),
+        db.apiKey.count(),
+        db.account.count(),
+        db.invitation.count(),
+        db.team.count(),
+        db.member.count(),
+        db.twoFactor.count(),
+        db.passkey.count(),
+        db.backupCode.count(),
+      ]);
+
+      return {
+        data: {
+          accountCount,
+          apiKeyCount,
+          backupCodeCount,
+          invitationCount,
+          memberCount,
+          organizationCount,
+          passkeyCount,
+          sessionCount,
+          teamCount,
+          twoFactorCount,
+          userCount,
+        },
+        success: true,
+      };
+    } else {
+      // Using abstraction layer
+      const [
+        userCount,
+        sessionCount,
+        organizationCount,
+        apiKeyCount,
+        accountCount,
+        invitationCount,
+        teamCount,
+        memberCount,
+        twoFactorCount,
+        passkeyCount,
+        backupCodeCount,
+      ] = await Promise.all([
+        db.count('user'),
+        db.count('session'),
+        db.count('organization'),
+        db.count('apiKey'),
+        db.count('account'),
+        db.count('invitation'),
+        db.count('team'),
+        db.count('member'),
+        db.count('twoFactor'),
+        db.count('passkey'),
+        db.count('backupCode'),
+      ]);
+
+      return {
+        data: {
+          accountCount,
+          apiKeyCount,
+          backupCodeCount,
+          invitationCount,
+          memberCount,
+          organizationCount,
+          passkeyCount,
+          sessionCount,
+          teamCount,
+          twoFactorCount,
+          userCount,
+        },
+        success: true,
+      };
+    }
   } catch (error) {
     return {
       data: null,

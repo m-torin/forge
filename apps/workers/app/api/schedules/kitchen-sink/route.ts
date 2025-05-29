@@ -13,12 +13,12 @@ import { WorkflowScheduler } from '@repo/orchestration';
 
 const KITCHEN_SINK_SCHEDULE_ID = 'kitchen-sink-daily';
 const KITCHEN_SINK_WORKFLOW_URL = process.env.NEXT_PUBLIC_APP_URL
-  ? `${process.env.NEXT_PUBLIC_APP_URL}/api/kitchen-sink-workflow`
-  : 'http://localhost:3400/api/kitchen-sink-workflow';
+  ? `${process.env.NEXT_PUBLIC_APP_URL}/api/workflows/kitchen-sink`
+  : 'http://localhost:3400/api/workflows/kitchen-sink';
 
 const scheduler = new WorkflowScheduler({
-  qstashToken: process.env.QSTASH_TOKEN!,
-  qstashUrl: process.env.QSTASH_URL,
+  token: process.env.QSTASH_TOKEN!,
+  baseUrl: process.env.QSTASH_URL,
 });
 
 // GET: Check schedule status
@@ -90,8 +90,9 @@ export async function POST(request: Request) {
 
     // Try to update existing schedule first
     try {
-      const result = await scheduler.updateSchedule(KITCHEN_SINK_SCHEDULE_ID, {
-        body: JSON.stringify(payload),
+      await scheduler.updateSchedule({
+        scheduleId: KITCHEN_SINK_SCHEDULE_ID,
+        body: payload,
         cron,
         destination: KITCHEN_SINK_WORKFLOW_URL,
         headers: {
@@ -100,17 +101,20 @@ export async function POST(request: Request) {
         retries: 3,
       });
 
+      // Get updated schedule info
+      const updatedSchedule = await scheduler.getSchedule(KITCHEN_SINK_SCHEDULE_ID);
+
       return NextResponse.json({
         cron,
         message: 'Kitchen Sink daily schedule updated',
-        nextRun: result.nextRun,
+        nextRun: new Date(updatedSchedule.nextRun).toISOString(),
         scheduleId: KITCHEN_SINK_SCHEDULE_ID,
         timezone,
       });
     } catch (updateError) {
       // Schedule doesn't exist, create it
       const result = await scheduler.createSchedule({
-        body: JSON.stringify(payload),
+        body: payload,
         cron,
         destination: KITCHEN_SINK_WORKFLOW_URL,
         headers: {

@@ -1,32 +1,8 @@
-// Core types
-export * from './types';
+// Runtime (client, builder, context, deduplication, and QStash features)
+export * from './runtime';
 
-// Client and builder
-export * from './client';
-
-// Context and deduplication
-export * from './context';
-
-// Development and testing
-export * from './dev';
-
-// Error handling
-export * from './errors';
-
-// Monitoring
-export * from './monitoring';
-
-// Utilities
+// Utilities (includes types, error handling, monitoring, logging, and testing)
 export * from './utils';
 
-// Workflows and patterns
+// Workflows (includes AI, data, media, SaaS, and example workflows)
 export * from './workflows';
-
-// QStash features
-export * from './qstash';
-
-// AI integrations
-export * from './ai';
-
-// Example workflows
-export * from './examples';
