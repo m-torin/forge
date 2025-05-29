@@ -26,7 +26,10 @@ describe('Analytics Package Integration', () => {
       }),
     }));
 
-    const mockPostHogNode = vi.fn();
+    const mockPostHogNode = vi.fn().mockReturnValue({
+      identify: vi.fn(),
+      capture: vi.fn(),
+    });
     vi.doMock('posthog-node', () => ({
       PostHog: mockPostHogNode,
     }));
@@ -34,6 +37,12 @@ describe('Analytics Package Integration', () => {
     const { analytics } = await import('../posthog/server');
 
     expect(analytics).toBeDefined();
+
+    // Access a property to trigger initialization
+    const identifyFn = analytics.identify;
+    expect(identifyFn).toBeDefined();
+
+    // Now PostHog should have been initialized
     expect(mockPostHogNode).toHaveBeenCalled();
   });
 

@@ -1,11 +1,11 @@
 // Configurations
 // Common default configuration
-import { createReactConfig } from './config/react.js';
+import { createReactConfig } from './config/react';
 
-export { createBaseConfig } from './config/base.js';
-export { createReactConfig } from './config/react.js';
-export { createNextConfig } from './config/next.js';
-export { createNodeConfig } from './config/node.js';
+export { createBaseConfig } from './config/base';
+export { createReactConfig } from './config/react';
+export { createNextConfig } from './config/next';
+export { createNodeConfig } from './config/node';
 
 // Vitest presets
 export {
@@ -14,19 +14,19 @@ export {
   nextPreset,
   nodePreset,
   reactPreset,
-} from './vitest-presets.js';
+} from './vitest-presets';
 
 // Setup utilities
-export { setTestEnv, suppressConsoleErrors } from './setup/common.js';
+export { setTestEnv, suppressConsoleErrors } from './setup/common';
 
 // Mocks
-export { setupBrowserMocks } from './mocks/browser.js';
-export { mockNextImage, mockNextNavigation, mockNextThemes, setupNextMocks } from './mocks/next.js';
-export * from './mocks/auth.js';
+export { setupBrowserMocks } from './mocks/browser';
+export { mockNextImage, mockNextNavigation, mockNextThemes, setupNextMocks } from './mocks/next';
+export * from './mocks/auth';
 
 // Testing utilities
-export { customRender } from './utils/render.js';
-export { render, renderDark, renderWithLocale, TestProviders } from './render.js';
+export { customRender } from './utils/render';
+export { render, renderDark, renderWithLocale, TestProviders } from './render';
 export * from '@testing-library/react';
 
 // Default export is a React-specific config

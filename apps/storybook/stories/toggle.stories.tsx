@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { IconBold, IconItalic } from '@tabler/icons-react';
 
 import { Toggle } from '@repo/design-system/components/ui/toggle';

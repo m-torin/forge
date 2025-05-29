@@ -1,0 +1,5 @@
+{
+  "token": "local_qstash_token",
+  "signingKey": "sig_local_signing_key",
+  "nextSigningKey": "sig_local_next_signing_key"
+}

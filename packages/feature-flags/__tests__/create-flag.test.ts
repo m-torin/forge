@@ -5,6 +5,7 @@ const mockAnalytics = {
   isFeatureEnabled: vi.fn(),
 };
 const mockFlag = vi.fn();
+const mockKeys = vi.fn();
 
 vi.mock('@repo/auth/server', () => ({
   currentUser: () => mockCurrentUser(),
@@ -18,10 +19,20 @@ vi.mock('flags/next', () => ({
   flag: mockFlag,
 }));
 
+vi.mock('../keys', () => ({
+  keys: () => mockKeys(),
+}));
+
 describe('createFlag', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+
+    // Default to having FLAGS_SECRET available
+    mockKeys.mockReturnValue({
+      FLAGS_SECRET: 'test-secret',
+    });
+
     // Setup flag mock to return a function
     mockFlag.mockImplementation(({ decide, defaultValue, key }) => {
       const flagFunc = async () => {
@@ -147,6 +158,29 @@ describe('createFlag', () => {
       expect(mockFlag).toHaveBeenCalledTimes(2);
       expect(mockFlag).toHaveBeenCalledWith(expect.objectContaining({ key: 'flag-1' }));
       expect(mockFlag).toHaveBeenCalledWith(expect.objectContaining({ key: 'flag-2' }));
+    });
+  });
+
+  describe('when FLAGS_SECRET is missing', () => {
+    beforeEach(() => {
+      mockKeys.mockReturnValue({
+        FLAGS_SECRET: undefined,
+      });
+    });
+
+    it('returns a simple flag that always returns false', async () => {
+      const { createFlag } = await import('../lib/create-flag');
+      const flag = createFlag('test-flag') as any;
+
+      expect(flag.key).toBe('test-flag');
+      expect(flag.defaultValue).toBe(false);
+      expect(flag.decide).toBeDefined();
+
+      const result = await flag.decide();
+      expect(result).toBe(false);
+
+      // Should not call the analytics service
+      expect(mockFlag).not.toHaveBeenCalled();
     });
   });
 });

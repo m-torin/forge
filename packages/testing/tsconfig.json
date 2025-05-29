@@ -1,11 +1,11 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": false,
+    "allowImportingTsExtensions": true,
     "types": ["vitest/globals", "node"]
   },
   "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"],

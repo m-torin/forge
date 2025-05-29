@@ -1,16 +1,24 @@
 {
   "name": "template",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
     "predev": "pnpm --filter=@repo/database build",
-    "dev": "next dev",
+    "dev": "doppler run -- next dev -p 3100",
+    "dev:offline": "next dev -p 3100",
     "prebuild": "pnpm --filter=@repo/database build",
-    "build": "next build",
-    "start": "next start",
+    "build": "doppler run -- next build",
+    "build:offline": "next build",
+    "start": "doppler run -- next start",
+    "start:offline": "next start",
     "lint": "eslint . --fix",
     "test": "vitest --run",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "test:doppler": "doppler run -- vitest --run",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:open": "doppler open"
   },
   "dependencies": {
     "@mantine/core": "catalog:",
@@ -24,7 +32,7 @@
     "@repo/observability": "workspace:*",
     "@repo/rate-limit": "workspace:*",
     "@repo/security": "workspace:*",
-    "@sentry/nextjs": "^9.22.0",
+    "@sentry/nextjs": "^9.23.0",
     "@t3-oss/env-nextjs": "catalog:",
     "next": "catalog:",
     "react": "catalog:",

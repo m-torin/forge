@@ -1,10 +1,8 @@
 {
   "name": "@repo/webhooks",
-  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix",
     "test": "vitest --run",

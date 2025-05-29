@@ -1,10 +1,8 @@
 {
   "name": "@repo/payments",
-  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix"
   },
@@ -13,7 +11,7 @@
     "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
     "server-only": "catalog:",
-    "stripe": "^18.1.1",
+    "stripe": "^18.2.0",
     "zod": "catalog:"
   },
   "devDependencies": {

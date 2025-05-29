@@ -1,14 +1,20 @@
 {
   "name": "email",
-  "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "email build",
-    "dev": "email dev --port 3500",
-    "export": "email export",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "build": "doppler run -- email build",
+    "build:offline": "email build",
+    "dev": "doppler run -- email dev --port 3500",
+    "dev:offline": "email dev --port 3500",
+    "export": "doppler run -- email export",
+    "export:offline": "email export",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "lint": "echo 'Skipping ESLint check for email app'"
+    "lint": "echo 'Skipping ESLint check for email app'",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:open": "doppler open"
   },
   "dependencies": {
     "@react-email/components": "0.0.41",

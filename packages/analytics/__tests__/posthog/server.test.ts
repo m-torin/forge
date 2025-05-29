@@ -23,8 +23,19 @@ describe('posthog/server', () => {
     vi.resetModules();
   });
 
-  it('creates PostHog instance with correct configuration', async () => {
-    await import('../../posthog/server');
+  it('creates PostHog instance with correct configuration on first use', async () => {
+    const mockInstance = {
+      identify: vi.fn(),
+      alias: vi.fn(),
+      capture: vi.fn(),
+      shutdown: vi.fn(),
+    };
+    mockPostHog.mockReturnValue(mockInstance);
+
+    const { analytics } = await import('../../posthog/server');
+
+    // Access a property to trigger initialization
+    analytics.identify;
 
     expect(mockPostHog).toHaveBeenCalledWith('phc_test123', {
       flushAt: 1,
@@ -34,19 +45,31 @@ describe('posthog/server', () => {
   });
 
   it('configures for serverless environment', async () => {
-    await import('../../posthog/server');
+    const mockInstance = { identify: vi.fn() };
+    mockPostHog.mockReturnValue(mockInstance);
+
+    const { analytics } = await import('../../posthog/server');
+
+    // Access a property to trigger initialization
+    analytics.identify;
 
     const config = mockPostHog.mock.calls[0][1];
     expect(config.flushAt).toBe(1);
     expect(config.flushInterval).toBe(0);
   });
 
-  it('exports analytics instance', async () => {
-    const mockInstance = { identify: vi.fn(), capture: vi.fn() };
+  it('exports analytics proxy that provides PostHog methods', async () => {
+    const mockInstance = {
+      identify: vi.fn(),
+      alias: vi.fn(),
+      capture: vi.fn(),
+      shutdown: vi.fn(),
+    };
     mockPostHog.mockReturnValue(mockInstance);
 
     const { analytics } = await import('../../posthog/server');
 
-    expect(analytics).toBe(mockInstance);
+    expect(analytics.identify).toBe(mockInstance.identify);
+    expect(analytics.capture).toBe(mockInstance.capture);
   });
 });

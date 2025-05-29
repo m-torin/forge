@@ -3,7 +3,7 @@ import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { type UserConfig } from 'vitest/config';
 
-import { type BaseConfigOptions, createBaseConfig } from './base.js';
+import { type BaseConfigOptions, createBaseConfig } from './base';
 
 export interface NextConfigOptions extends BaseConfigOptions {
   includeAppDir?: boolean;

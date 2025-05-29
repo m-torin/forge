@@ -29,6 +29,38 @@ export function createStorageProvider(config: StorageConfig): StorageProvider {
 
 // Singleton storage instance
 let storageInstance: StorageProvider | null = null;
+let hasLoggedWarning = false;
+
+// Mock storage provider for development
+class MockStorageProvider implements StorageProvider {
+  async upload(key: string, data: any): Promise<{ url: string }> {
+    return { url: `https://mock-storage.local/${key}` };
+  }
+
+  async download(key: string): Promise<Blob> {
+    return new Blob(['mock data'], { type: 'text/plain' });
+  }
+
+  async delete(key: string): Promise<void> {
+    // No-op
+  }
+
+  async exists(key: string): Promise<boolean> {
+    return false;
+  }
+
+  async getUrl(key: string): Promise<string> {
+    return `https://mock-storage.local/${key}`;
+  }
+
+  async list(): Promise<{ keys: string[] }> {
+    return { keys: [] };
+  }
+
+  async getMetadata(key: string): Promise<any> {
+    return { contentType: 'text/plain', key, size: 0 };
+  }
+}
 
 // Initialize storage with environment variables
 export function initializeStorage(): StorageProvider {
@@ -38,6 +70,16 @@ export function initializeStorage(): StorageProvider {
 
   const env = keys();
   const provider = env.STORAGE_PROVIDER;
+
+  // Return mock provider if no provider is configured
+  if (!provider) {
+    if (!hasLoggedWarning) {
+      console.warn('Storage service is disabled: Missing STORAGE_PROVIDER configuration');
+      hasLoggedWarning = true;
+    }
+    storageInstance = new MockStorageProvider();
+    return storageInstance;
+  }
 
   const config: StorageConfig = {
     provider,

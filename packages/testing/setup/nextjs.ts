@@ -3,10 +3,10 @@ import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 
 // Import setupBrowserMocks and setupNextMocks
-import { setupBrowserMocks } from '../mocks/browser.js';
-import { setupNextMocks } from '../mocks/next.js';
+import { setupBrowserMocks } from '../mocks/browser';
+import { setupNextMocks } from '../mocks/next';
 
-import { suppressConsoleErrors } from './common.js';
+import { suppressConsoleErrors } from './common';
 
 // Setup console error suppression
 suppressConsoleErrors();

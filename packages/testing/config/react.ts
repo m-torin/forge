@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { type UserConfig } from 'vitest/config';
 
-import { type BaseConfigOptions, createBaseConfig } from './base.js';
+import { type BaseConfigOptions, createBaseConfig } from './base';
 
 export interface ReactConfigOptions extends BaseConfigOptions {
   reactOptions?: Parameters<typeof react>[0];

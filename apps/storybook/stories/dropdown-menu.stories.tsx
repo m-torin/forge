@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { IconMail, IconPlus, IconCirclePlus, IconSearch, IconUserPlus } from '@tabler/icons-react';
 
 import {

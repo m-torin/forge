@@ -2,6 +2,41 @@ import { Knock } from '@knocklabs/node';
 
 import { keys } from './keys';
 
-const key = keys().KNOCK_SECRET_API_KEY || '';
+// Initialize Knock immediately with the API key
+const apiKey = keys().KNOCK_SECRET_API_KEY || 'test-knock-key';
+const knock = new Knock({ apiKey });
 
-export const notifications = new Knock({ apiKey: key });
+let hasLoggedWarning = false;
+
+const getKnock = () => {
+  if (!apiKey) {
+    if (!hasLoggedWarning) {
+      console.warn(
+        '[Notifications] Knock API key not configured. Notification features are disabled.',
+      );
+      hasLoggedWarning = true;
+    }
+    return null;
+  }
+
+  return knock;
+};
+
+// Export a proxy that lazily initializes Knock
+export const notifications = new Proxy({} as Knock, {
+  get(target, prop) {
+    const knockClient = getKnock();
+
+    if (!knockClient) {
+      // Return no-op functions for common methods
+      if (typeof prop === 'string' && ['notify', 'send', 'trigger'].includes(prop)) {
+        return async () => {
+          // Silently do nothing when Knock is not configured
+        };
+      }
+      return undefined;
+    }
+
+    return knockClient[prop as keyof Knock];
+  },
+});

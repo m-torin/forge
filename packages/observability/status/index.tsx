@@ -4,11 +4,18 @@ import { keys } from '../keys';
 
 import type { BetterStackResponse } from './types';
 
-const apiKey = keys().BETTERSTACK_API_KEY;
-const url = keys().BETTERSTACK_URL;
+let hasLoggedWarning = false;
 
 export const Status = async () => {
+  const { BETTERSTACK_API_KEY: apiKey, BETTERSTACK_URL: url } = keys();
+
   if (!apiKey || !url) {
+    if (!hasLoggedWarning) {
+      console.warn(
+        'BetterStack status monitoring is disabled: Missing BETTERSTACK_API_KEY or BETTERSTACK_URL',
+      );
+      hasLoggedWarning = true;
+    }
     return null;
   }
 

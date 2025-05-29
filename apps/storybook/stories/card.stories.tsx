@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { IconBellRinging } from '@tabler/icons-react';
 import { Card, Title, Text, Button, Group, Stack, Box } from '@mantine/core';
 

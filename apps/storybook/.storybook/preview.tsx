@@ -2,7 +2,7 @@ import { TooltipProvider } from '@repo/design-system/components/ui/tooltip';
 import { ThemeProvider } from '@repo/design-system/providers/theme';
 import { MantineProvider } from '@repo/design-system/providers/mantine-provider';
 import { withThemeByClassName } from '@storybook/addon-themes';
-import type { Preview } from '@storybook/react';
+import type { Preview } from '@storybook/nextjs';
 import { withAuthMock } from '@repo/auth/mocks/storybook-decorator';
 
 // Import global styles

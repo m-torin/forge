@@ -3,8 +3,28 @@ import { flag } from 'flags/next';
 import { analytics } from '@repo/analytics/posthog/server';
 import { currentUser } from '@repo/auth/server';
 
-export const createFlag = (key: string) =>
-  flag({
+import { keys } from '../keys';
+
+let hasLoggedWarning = false;
+
+export const createFlag = (key: string) => {
+  const flagsSecret = keys().FLAGS_SECRET;
+
+  if (!flagsSecret) {
+    if (!hasLoggedWarning) {
+      console.warn('[Feature Flags] FLAGS_SECRET not configured. Feature flags are disabled.');
+      hasLoggedWarning = true;
+    }
+
+    // Return a simple flag that always returns the default value
+    return {
+      decide: async () => false,
+      defaultValue: false,
+      key,
+    };
+  }
+
+  return flag({
     async decide() {
       const user = await currentUser();
 
@@ -19,3 +39,4 @@ export const createFlag = (key: string) =>
     defaultValue: false,
     key,
   });
+};

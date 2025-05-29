@@ -1,5 +1,5 @@
 import { Button } from '@mantine/core';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 
 const meta = {
   title: 'Mantine/Button',

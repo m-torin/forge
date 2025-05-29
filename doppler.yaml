@@ -1,0 +1,39 @@
+# Doppler configuration for forge monorepo
+# This file maps workspace packages to their respective Doppler projects
+
+setup:
+  # Apps - all apps use the same Doppler project
+  - path: apps/api
+    project: next-apps
+    config: phold
+  - path: apps/backstage
+    project: next-apps
+    config: backstage
+  - path: apps/docs
+    project: next-apps
+    config: phold
+  - path: apps/email
+    project: next-apps
+    config: phold
+  - path: apps/storybook
+    project: next-apps
+    config: phold
+  - path: apps/studio
+    project: monorepo
+    config: dev
+  - path: apps/template
+    project: next-apps
+    config: phold
+  - path: apps/web
+    project: next-apps
+    config: webapp
+  - path: apps/workers
+    project: next-app-workers
+    config: dev
+
+  # Only database package needs runtime secrets for CLI commands
+  - path: packages/database
+    project: monorepo
+    config: dev
+# Note: Other packages have keys.ts for validation but don't need
+# runtime secrets - they get env vars from the apps that use them

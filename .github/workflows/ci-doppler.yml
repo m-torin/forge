@@ -1,0 +1,146 @@
+name: CI with Doppler
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Test
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN_TEST }}
+        run: pnpm test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [api, app, backstage, web, workers]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build ${{ matrix.app }}
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN_BUILD }}
+        run: pnpm build --filter=${{ matrix.app }}
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter=@repo/testing exec playwright install --with-deps
+
+      - name: Run E2E tests
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN_TEST }}
+        run: pnpm --filter=@repo/testing test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: packages/testing/playwright-report/
+          retention-days: 30

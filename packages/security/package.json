@@ -1,10 +1,8 @@
 {
   "name": "@repo/security",
-  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -13,8 +11,8 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@arcjet/next": "1.0.0-beta.7",
-    "@nosecone/next": "1.0.0-beta.7",
+    "@arcjet/next": "1.0.0-beta.8",
+    "@nosecone/next": "1.0.0-beta.8",
     "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
     "zod": "catalog:"

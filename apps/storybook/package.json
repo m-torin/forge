@@ -1,14 +1,20 @@
 {
   "name": "storybook",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "storybook dev -p 3700 --quiet --loglevel warn --no-open",
-    "build": "storybook build --quiet --loglevel warn",
-    "chromatic": "chromatic --exit-zero-on-changes",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "dev": "doppler run -- storybook dev -p 3700 --quiet --loglevel warn --no-open",
+    "dev:offline": "storybook dev -p 3700 --quiet --loglevel warn --no-open",
+    "build": "doppler run -- storybook build --quiet --loglevel warn",
+    "build:offline": "storybook build --quiet --loglevel warn",
+    "chromatic": "doppler run -- chromatic --exit-zero-on-changes",
+    "chromatic:offline": "chromatic --exit-zero-on-changes",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "lint": "echo 'Skipping ESLint check for storybook'"
+    "lint": "echo 'Skipping ESLint check for storybook'",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:open": "doppler open"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -16,7 +22,6 @@
     "@mantine/dates": "^8.0.2",
     "@mantine/hooks": "catalog:",
     "@repo/design-system": "workspace:*",
-    "@storybook/addon-actions": "^8.6.14",
     "@tabler/icons-react": "catalog:",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
@@ -28,18 +33,14 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^3.2.6",
+    "@chromatic-com/storybook": "^4.0.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.27.0",
     "@repo/typescript-config": "workspace:*",
-    "@storybook/addon-essentials": "^8.6.14",
-    "@storybook/addon-interactions": "^8.6.14",
-    "@storybook/addon-onboarding": "^8.6.14",
-    "@storybook/addon-themes": "^8.6.14",
-    "@storybook/blocks": "^8.6.14",
-    "@storybook/nextjs": "^8.6.14",
-    "@storybook/react": "^8.6.14",
-    "@storybook/test": "^8.6.14",
+    "@storybook/addon-docs": "^9.0.0",
+    "@storybook/addon-onboarding": "^9.0.0",
+    "@storybook/addon-themes": "^9.0.0",
+    "@storybook/nextjs": "^9.0.0",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
@@ -52,11 +53,11 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-storybook": "9.0.0-rc.3",
+    "eslint-plugin-storybook": "9.0.0",
     "eslint-plugin-testing-library": "^7.2.2",
     "eslint-plugin-vitest": "^0.5.4",
     "postcss": "catalog:",
-    "storybook": "^8.6.14",
+    "storybook": "^9.0.0",
     "typescript": "catalog:"
   }
 }

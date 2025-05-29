@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { IconAlertCircle, IconInfoCircle } from '@tabler/icons-react';
 import { Alert, Title, Text } from '@mantine/core';
 

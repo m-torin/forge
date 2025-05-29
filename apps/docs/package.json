@@ -2,8 +2,14 @@
   "name": "docs",
   "private": true,
   "scripts": {
-    "dev": "mintlify dev --port 3400",
-    "lint": "echo 'Skipping broken links check in docs' || mintlify broken-links"
+    "dev": "doppler run -- mintlify dev --port 3800",
+    "dev:offline": "mintlify dev --port 3800",
+    "lint": "echo 'Skipping broken links check in docs' || mintlify broken-links",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:open": "doppler open"
   },
   "devDependencies": {
     "typescript": "catalog:"

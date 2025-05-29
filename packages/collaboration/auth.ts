@@ -9,11 +9,24 @@ interface AuthenticateOptions {
   userInfo: Liveblocks['UserMeta']['info'];
 }
 
-const secret = keys().LIVEBLOCKS_SECRET;
+let hasLoggedWarning = false;
 
 export const authenticate = async ({ orgId, userId, userInfo }: AuthenticateOptions) => {
+  const secret = keys().LIVEBLOCKS_SECRET;
+
   if (!secret) {
-    throw new Error('LIVEBLOCKS_SECRET is not set');
+    if (!hasLoggedWarning) {
+      console.warn(
+        '[Collaboration] LIVEBLOCKS_SECRET not configured. Real-time collaboration is disabled.',
+      );
+      hasLoggedWarning = true;
+    }
+
+    // Return a mock response when Liveblocks is not configured
+    return new Response(JSON.stringify({ error: 'Collaboration not configured' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 501, // Not Implemented
+    });
   }
 
   const liveblocks = new LiveblocksNode({ secret });

@@ -1,10 +1,8 @@
 {
   "name": "@repo/feature-flags",
-  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",

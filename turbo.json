@@ -14,6 +14,16 @@
         ".react-email/**"
       ]
     },
+    "build:offline": {
+      "dependsOn": ["^build:offline"],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "**/generated/**",
+        "storybook-static/**",
+        ".react-email/**"
+      ]
+    },
     "test": {
       "dependsOn": ["^test"]
     },
@@ -38,6 +48,21 @@
       "cache": false
     },
     "//#clean": {
+      "cache": false
+    },
+    "doppler:secrets": {
+      "cache": false
+    },
+    "doppler:secrets:upload": {
+      "cache": false
+    },
+    "doppler:secrets:download": {
+      "cache": false
+    },
+    "doppler:open": {
+      "cache": false
+    },
+    "doppler:pull": {
       "cache": false
     }
   }

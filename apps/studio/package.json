@@ -1,12 +1,16 @@
 {
   "name": "studio",
-  "version": "0.0.0",
   "scripts": {
     "predev": "pnpm --filter=@repo/database build",
-    "dev": "prisma studio --schema ../../packages/database/prisma/schema.prisma --port 3600",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "dev": "doppler run -- prisma studio --schema ../../packages/database/prisma/schema.prisma --port 3600",
+    "dev:offline": "prisma studio --schema ../../packages/database/prisma/schema.prisma --port 3600",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:open": "doppler open"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

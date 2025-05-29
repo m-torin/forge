@@ -5,14 +5,35 @@ import { auth } from '@repo/auth/server';
 
 import { keys } from '../keys';
 
-const svixToken = keys().SVIX_TOKEN;
+let svix: Svix | null = null;
+let hasLoggedWarning = false;
 
-export const send = async (eventType: string, payload: object) => {
+const getSvix = () => {
+  const svixToken = keys().SVIX_TOKEN;
+
   if (!svixToken) {
-    throw new Error('SVIX_TOKEN is not set');
+    if (!hasLoggedWarning) {
+      console.warn('[Webhooks] SVIX_TOKEN not configured. Webhook functionality is disabled.');
+      hasLoggedWarning = true;
+    }
+    return null;
   }
 
-  const svix = new Svix(svixToken);
+  if (!svix) {
+    svix = new Svix(svixToken);
+  }
+
+  return svix;
+};
+
+export const send = async (eventType: string, payload: object) => {
+  const svixClient = getSvix();
+
+  if (!svixClient) {
+    // Silently return when Svix is not configured
+    return;
+  }
+
   const session = await auth.api.getSession({
     headers: new Headers(), // You'll need to pass proper headers in real usage
   });
@@ -22,7 +43,7 @@ export const send = async (eventType: string, payload: object) => {
     return;
   }
 
-  return svix.message.create(orgId, {
+  return svixClient.message.create(orgId, {
     application: {
       uid: orgId,
       name: orgId,
@@ -36,21 +57,23 @@ export const send = async (eventType: string, payload: object) => {
 };
 
 export const getAppPortal = async () => {
-  if (!svixToken) {
-    throw new Error('SVIX_TOKEN is not set');
+  const svixClient = getSvix();
+
+  if (!svixClient) {
+    // Return null when Svix is not configured
+    return null;
   }
 
-  const svix = new Svix(svixToken);
   const session = await auth.api.getSession({
     headers: new Headers(), // You'll need to pass proper headers in real usage
   });
   const orgId = session?.session?.activeOrganizationId;
 
   if (!orgId) {
-    return;
+    return null;
   }
 
-  return svix.authentication.appPortalAccess(orgId, {
+  return svixClient.authentication.appPortalAccess(orgId, {
     application: {
       uid: orgId,
       name: orgId,

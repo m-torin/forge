@@ -15,8 +15,14 @@ vi.mock('@t3-oss/env-nextjs', () => ({
     Object.entries(config.client).forEach(([key, schema]: [string, any]) => {
       const value = mockEnv[key as keyof typeof mockEnv];
 
+      // Check if schema is optional (handles .optional() and .or(z.literal(''))
+      const isOptional =
+        schema._def?.typeName === 'ZodOptional' ||
+        schema._def?.typeName === 'ZodUnion' ||
+        schema._def?.typeName === 'ZodDefault';
+
       // Simulate validation
-      if (!value && schema._def?.typeName !== 'ZodOptional') {
+      if (!value && !isOptional) {
         throw new Error(`Missing required environment variable: ${key}`);
       }
 
@@ -33,7 +39,7 @@ vi.mock('@t3-oss/env-nextjs', () => ({
         }
       }
 
-      result[key] = value;
+      result[key] = value || undefined;
     });
 
     return result;
@@ -81,11 +87,14 @@ describe('keys', () => {
     expect(() => keys()).toThrow('NEXT_PUBLIC_GA_MEASUREMENT_ID must start with G-');
   });
 
-  it('throws error when required PostHog key is missing', async () => {
+  it('allows missing PostHog key in non-production', async () => {
     delete (mockEnv as any).NEXT_PUBLIC_POSTHOG_KEY;
 
     const { keys } = await import('../keys');
-    expect(() => keys()).toThrow('Missing required environment variable: NEXT_PUBLIC_POSTHOG_KEY');
+    const env = keys();
+
+    // In non-production, PostHog key is optional
+    expect(env.NEXT_PUBLIC_POSTHOG_KEY).toBeUndefined();
   });
 
   it('allows optional GA measurement ID to be undefined', async () => {

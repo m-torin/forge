@@ -24,20 +24,22 @@ Then read the [docs](https://docs.forge.com) for more information.
 
 This repository contains the following applications:
 
-- **app** (Main Application) - Port **3100**
-  - Primary user-facing application with authentication and collaboration
+- **template** (Template App) - Port **3100**
+  - Template application for creating new apps
 - **web** (Marketing Website) - Port **3200**
   - Public marketing site with SEO optimization
-- **api** (API Backend) - Port **3300**
-  - RESTful API with database operations and payment processing
-- **docs** (Documentation) - Port **3400**
-  - Mintlify documentation site
+- **backstage** (Admin Panel) - Port **3300**
+  - Admin dashboard for user and organization management
+- **workers** (Worker Service) - Port **3400**
+  - Background job processing and workflow management
 - **email** (Email Service) - Port **3500**
   - React Email development server
 - **studio** (Prisma Studio) - Port **3600**
   - Database management interface
 - **storybook** (Component Library) - Port **3700**
   - UI component development and documentation
+- **docs** (Documentation) - Port **3800**
+  - Mintlify documentation site
 
 ## Getting Started
 

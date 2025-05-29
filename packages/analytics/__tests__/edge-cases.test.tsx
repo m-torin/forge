@@ -20,20 +20,24 @@ describe('Analytics Edge Cases', () => {
     vi.doMock('server-only', () => ({}));
 
     // Mock PostHog constructor
-    const mockPostHogNode = vi.fn();
+    const mockPostHogNode = vi.fn().mockReturnValue({ identify: vi.fn(), capture: vi.fn() });
     vi.doMock('posthog-node', () => ({
       PostHog: mockPostHogNode,
     }));
 
     const { analytics } = await import('../posthog/server');
 
-    // Should still create PostHog instance with empty config
-    expect(mockPostHogNode).toHaveBeenCalledWith('', {
-      flushAt: 1,
-      flushInterval: 0,
-      host: '',
-    });
-    expect(analytics).toBeDefined();
+    // With empty config, the proxy should return no-op functions
+    const identifyFn = analytics.identify;
+    expect(identifyFn).toBeDefined();
+    expect(typeof identifyFn).toBe('function');
+
+    // Verify it returns a promise
+    const result = await identifyFn();
+    expect(result).toBeUndefined();
+
+    // PostHog should NOT be initialized with empty keys
+    expect(mockPostHogNode).not.toHaveBeenCalled();
   });
 
   it('tests key validation structure', () => {

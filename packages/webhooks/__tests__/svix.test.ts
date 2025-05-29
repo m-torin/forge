@@ -83,7 +83,7 @@ describe('@repo/webhooks/lib/svix', () => {
       });
 
       const result = await getAppPortal();
-      expect(result).toBeUndefined();
+      expect(result).toBeNull();
       expect(mockAppPortalAccess).not.toHaveBeenCalled();
     });
   });

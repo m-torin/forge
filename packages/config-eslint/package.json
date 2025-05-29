@@ -1,6 +1,5 @@
 {
   "name": "@repo/eslint-config",
-  "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -24,7 +23,6 @@
     "types/**/*.d.ts"
   ],
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
     "lint": "npx eslint . --fix --quiet || true",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

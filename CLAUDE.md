@@ -3,6 +3,10 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this
 repository.
 
+## Important Restrictions
+
+**NEVER run `pnpm dev` or `npm dev` commands.** These commands should only be run by the user.
+
 ## Project Context
 
 This is a Next.js monorepo using Turborepo, based on the forge template. Key technologies:
@@ -270,13 +274,12 @@ settings.
 
 ## Package-Specific Rules
 
-### `/apps/app` - Main Application (Port: 3100)
+### `/apps/template` - Template Application (Port: 3100)
 
-- Primary user-facing application
-- Authentication required via `@repo/auth`
-- Real-time collaboration via `@repo/collaboration` (Liveblocks)
-- Features: API key management, webhooks, search functionality
-- Protected routes under `(authenticated)` group
+- Template for creating new applications
+- Basic Next.js setup with internationalization
+- Example pages and components
+- Development starting point
 
 ### `/apps/web` - Marketing Website (Port: 3200)
 
@@ -287,15 +290,7 @@ settings.
 - Contact form with server actions
 - Prefer Mantine UI for new components
 
-### `/apps/api` - API Backend (Port: 3300)
-
-- RESTful API endpoints
-- Protected routes require authentication
-- Webhook handlers (Stripe)
-- Health check endpoints
-- CORS and security headers
-
-### `/apps/backstage` - Admin Panel
+### `/apps/backstage` - Admin Panel (Port: 3300)
 
 - Admin-only application
 - User management (list, ban, impersonate)
@@ -305,12 +300,13 @@ settings.
 - Role-based access (super-admin, admin, moderator, support)
 - Full Better Auth integration
 
-### `/apps/docs` - Documentation (Port: 3400)
+### `/apps/workers` - Worker Service (Port: 3400)
 
-- Mintlify documentation platform
-- API reference from OpenAPI spec
-- Development guides
-- Code examples
+- Background job processing
+- Workflow orchestration
+- QStash integration for distributed tasks
+- Event-driven architecture
+- Health monitoring endpoints
 
 ### `/apps/email` - Email Service (Port: 3500)
 
@@ -332,6 +328,13 @@ settings.
 - Visual testing
 - Theme variations
 - Supports both Mantine and Tailwind components
+
+### `/apps/docs` - Documentation (Port: 3800)
+
+- Mintlify documentation platform
+- API reference from OpenAPI spec
+- Development guides
+- Code examples
 
 ## Key Shared Packages
 
