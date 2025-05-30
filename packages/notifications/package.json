@@ -11,7 +11,7 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
-    "@knocklabs/node": "^1.3.0",
+    "@knocklabs/node": "^1.4.1",
     "@knocklabs/react": "^0.7.12",
     "@mantine/notifications": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",

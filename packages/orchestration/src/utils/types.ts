@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import type { BaseOperationResult } from './results';
 // Import types from QStash and Workflow
 import type { Client } from '@upstash/qstash';
 import type { Receiver } from '@upstash/qstash';
@@ -128,7 +129,7 @@ export const ScrapingConfigSchema = z.object({
 
 export type ScrapingConfig = z.infer<typeof ScrapingConfigSchema>;
 
-export interface ScrapingResult {
+export interface ScrapingResult extends BaseOperationResult {
   results: {
     url: string;
     data?: unknown;
@@ -329,24 +330,20 @@ export const CRON_PATTERNS = {
 } as const;
 
 // ===== Common Result Types =====
+// Re-export from centralized results module for backward compatibility
+export type {
+  BaseOperationResult,
+  BatchOperationResult,
+  HealthCheckResult,
+  OperationResult,
+  PaginatedResult,
+  StreamResult,
+  ValidationResult,
+} from './results';
 
-// Standard operation result
-export interface OperationResult<T = unknown> {
-  data?: T;
-  duration?: number;
-  error?: string;
-  success: boolean;
-  timestamp?: number;
-}
-
-// Batch operation result (simple version)
-export interface BatchOperationResult<T = unknown> {
-  duration: number;
-  failed: number;
-  results: OperationResult<T>[];
-  successful: number;
-  total: number;
-}
+// Deprecated type alias for backward compatibility
+/** @deprecated Use BatchOperationResult instead */
+export type BatchResult<T> = import('./results').BatchOperationResult<T>;
 
 // Retry configuration
 export interface RetryConfig {

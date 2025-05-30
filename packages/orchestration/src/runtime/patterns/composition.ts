@@ -4,7 +4,7 @@ import { devLog } from '../../utils/observability';
 import { createResponse, workflowError } from '../../utils/response';
 import { createWorkflow } from '../core/workflow-builder';
 
-import { approvalGate, parallelExecute, processBatch } from './patterns';
+import { approvalGate, parallelExecute, processBatchPattern } from './patterns';
 
 import type { WorkflowContext } from '../../utils/types';
 
@@ -186,10 +186,10 @@ export function createDataProcessingWorkflow<T, R>(config: {
         // Load phase with batching
         if (config.batchSize && config.batchSize > 0) {
           devLog.workflow(context, `Starting batch load with size ${config.batchSize}`);
-          const results = await processBatch(context, {
+          const results = await processBatchPattern(context, {
             batchSize: config.batchSize,
             items: transformedData,
-            processor: async (batch) =>
+            processor: async (batch: any) =>
               withWorkflowErrorHandling(() => config.load(context, [batch]), 'batch-load', {
                 batchSize: config.batchSize,
                 workflowRunId: context.workflowRunId,

@@ -11,7 +11,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@next/third-parties": "15.3.2",
+    "@next/third-parties": "15.3.3",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/analytics": "^1.5.0",
     "posthog-js": "^1.248.1",

@@ -1,3 +1,4 @@
+import { isDevelopment } from '../utils/environment';
 import { cleanupExpiredEntries, cleanupOldestEntries } from '../utils/helpers';
 import { devLog } from '../utils/observability';
 import { ENV_CONFIGS, type Environment } from '../utils/types';
@@ -388,39 +389,14 @@ export async function withDeduplication<T = any>(
   return handler();
 }
 
-/**
- * Generate a unique deduplication ID
- *
- * @param prefix - Optional prefix for the ID
- * @param includeTimestamp - Whether to include timestamp (default: true)
- * @returns A unique deduplication ID
- *
- * @example
- * ```typescript
- * // Basic usage
- * const dedupId = generateDedupId(); // Returns: "dedup_1648234567890_abc123"
- *
- * // With prefix
- * const dedupId = generateDedupId('order'); // Returns: "order_1648234567890_abc123"
- *
- * // Without timestamp (shorter, but less unique)
- * const dedupId = generateDedupId('task', false); // Returns: "task_abc123"
- * ```
- */
-export function generateDedupId(prefix?: string, includeTimestamp = true): string {
-  const randomSuffix = Math.random().toString(36).substring(2, 8);
-  const timestamp = includeTimestamp ? Date.now() : null;
-
-  const parts = [prefix || 'dedup', timestamp, randomSuffix].filter(Boolean);
-
-  return parts.join('_');
-}
+// Re-export from centralized id-generation module
+export { generateDedupId } from '../utils/id-generation';
 
 /**
  * Clear all deduplication caches (development only)
  */
 export function clearDeduplicationCache(): void {
-  if (process.env.NODE_ENV !== 'development') {
+  if (!isDevelopment()) {
     throw new Error('Cache clearing is only available in development');
   }
 

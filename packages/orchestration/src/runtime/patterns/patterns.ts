@@ -1,13 +1,12 @@
-import { calculateBackoff, chunkArray } from '../../utils/helpers';
+import { BatchProcessor } from '../../utils/batch-processor';
 import { devLog } from '../../utils/observability';
+import { executeParallel as executeParallelBase } from '../../utils/parallel';
 import { CircuitBreaker } from '../../utils/resilience';
 import { workflowError } from '../../utils/response';
+import { retryOperation } from '../../utils/retry';
 import { DEFAULT_RETRIES, DEFAULT_TIMEOUTS } from '../../utils/types';
 
-import type {
-  CircuitBreakerConfig,
-  WorkflowContext,
-} from '../../utils/types';
+import type { CircuitBreakerConfig, WorkflowContext } from '../../utils/types';
 
 /**
  * Reusable workflow patterns for common scenarios
@@ -16,9 +15,9 @@ import type {
 
 /**
  * Batch processing pattern
- * Processes items in configurable batches with optional delays
+ * Delegates to centralized BatchProcessor for consistency
  */
-export async function processBatch<T, R>(
+export async function processBatchPattern<T, R>(
   context: WorkflowContext<any>,
   options: {
     items: T[];
@@ -35,38 +34,39 @@ export async function processBatch<T, R>(
     items,
     onBatchComplete,
     processor,
-    stepPrefix: _stepPrefix = 'batch',
+    stepPrefix = 'batch',
   } = options;
 
-  const results: R[] = [];
-  const batches = chunkArray(items, batchSize);
+  return context.run(`${stepPrefix}-process`, async () => {
+    const result = await BatchProcessor.process(
+      items,
+      processor,
+      {
+        batchSize,
+        continueOnError: false,
+        delayBetweenBatches: delayBetweenBatches * 1000, // Convert seconds to ms
+        maxConcurrentBatches: 1, // Sequential batches as per original pattern
+      },
+      {
+        onBatchComplete: onBatchComplete
+          ? async (batchIndex, results) => {
+              await onBatchComplete(batchIndex + 1, results);
+            }
+          : undefined,
+      },
+    );
 
-  for (let i = 0; i < batches.length; i++) {
-    // Add delay between batches (except first)
-    if (i > 0 && delayBetweenBatches > 0) {
-      await context.sleep('batch-delay', delayBetweenBatches);
+    if (!result.success) {
+      throw new Error(`Batch processing failed: ${result.totalFailed} items failed`);
     }
 
-    // Process batch in parallel within a single step
-    const batch = batches[i];
-    const batchResults = await context.run('process-batch', async () => {
-      return await Promise.all(batch.map((item, index) => processor(item, i * batchSize + index)));
-    });
-
-    results.push(...batchResults);
-
-    // Optional batch completion callback
-    if (onBatchComplete) {
-      await context.run('batch-complete', () => onBatchComplete(i + 1, batchResults));
-    }
-  }
-
-  return results;
+    // Flatten all batch results
+    return result.batches.flatMap(batch => batch.results);
+  });
 }
 
 /**
- * Parallel processing pattern
- * Executes multiple operations in parallel and waits for all to complete
+ * Parallel processing pattern - uses centralized parallel execution
  */
 export async function parallelExecute<T extends Record<string, () => Promise<any>>>(
   context: WorkflowContext<any>,
@@ -78,27 +78,16 @@ export async function parallelExecute<T extends Record<string, () => Promise<any
 ): Promise<{ [K in keyof T]: Awaited<ReturnType<T[K]>> | Error }> {
   const { continueOnError = false, stepPrefix = 'parallel' } = options;
 
-  const entries = Object.entries(operations) as [keyof T, T[keyof T]][];
-
-  const results = await Promise.all(
-    entries.map(async ([name, operation]) => {
-      try {
-        const result = await context.run(`${stepPrefix}-${String(name)}`, operation);
-        return [name, result] as const;
-      } catch (error) {
-        if (!continueOnError) throw error;
-        return [name, error] as const;
-      }
-    }),
+  return context.run(`${stepPrefix}-execute`, () =>
+    executeParallelBase(operations, { continueOnError }),
   );
-
-  return Object.fromEntries(results) as any;
 }
 
 /**
- * Retry pattern with exponential backoff - ES2022 modernized
+ * Retry pattern with exponential backoff
+ * Delegates to centralized retry module
  */
-export async function retryWithBackoff<T>(
+export async function retryWithBackoffPattern<T>(
   context: WorkflowContext<any>,
   options: {
     operation: () => Promise<T>;
@@ -112,47 +101,29 @@ export async function retryWithBackoff<T>(
     stepName: string;
   },
 ): Promise<T> {
-  const {
-    baseDelayMs = DEFAULT_TIMEOUTS.retry,
-    jitter = false,
-    maxAttempts = DEFAULT_RETRIES.api,
-    maxDelayMs = 60000,
-    multiplier = 2,
-    operation,
-    shouldRetry = () => true,
-    stepName,
-    strategy = 'exponential',
-  } = options;
+  const { stepName, ...retryOptions } = options;
 
-  let lastError: Error | undefined;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      return await context.run(`${stepName}-attempt-${attempt}`, operation);
-    } catch (error) {
-      lastError = error as Error;
-
-      if (attempt === maxAttempts || !shouldRetry(lastError, attempt)) {
-        // Enhanced error with cause
-        throw new Error(`Operation failed after ${attempt} attempts`, {
-          cause: { attempts: attempt, lastError, stepName },
-        });
-      }
-
-      const delayMs = calculateBackoff(attempt - 1, {
-        baseDelayMs,
-        jitter,
-        maxDelayMs,
-        multiplier,
-        strategy,
-      });
-
-      devLog.info(`Retrying ${stepName} in ${delayMs}ms (attempt ${attempt}/${maxAttempts})`);
-      await context.sleep(`${stepName}-backoff-${attempt}`, delayMs / 1000);
-    }
-  }
-
-  throw lastError!;
+  return context.run(stepName, async () => {
+    return retryOperation(
+      options.operation,
+      {
+        baseDelayMs: retryOptions.baseDelayMs ?? DEFAULT_TIMEOUTS.retry,
+        jitter: retryOptions.jitter,
+        maxAttempts: retryOptions.maxAttempts ?? DEFAULT_RETRIES.api,
+        maxDelayMs: retryOptions.maxDelayMs ?? 60000,
+        multiplier: retryOptions.multiplier,
+        onRetry: async (error, attempt, delay) => {
+          devLog.info(`[${stepName}] Retrying in ${delay}ms (attempt ${attempt})`);
+          // Convert ms to seconds for context.sleep
+          await context.sleep(`${stepName}-backoff-${attempt}`, delay / 1000);
+        },
+        shouldRetry: retryOptions.shouldRetry
+          ? (error: unknown, attempt: number) => retryOptions.shouldRetry!(error as Error, attempt)
+          : undefined,
+        strategy: retryOptions.strategy,
+      },
+    );
+  });
 }
 
 /**
@@ -283,7 +254,7 @@ export async function mapReduce<T, M, R>(
   } = options;
 
   // Map phase - process in batches
-  const mapped = await processBatch(context, {
+  const mapped = await processBatchPattern(context, {
     batchSize,
     items,
     processor: mapper,

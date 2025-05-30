@@ -1,32 +1,22 @@
-import { chunkArray, createErrorMessage, formatTimestamp, sleep } from '../../utils/helpers';
-import { devLog } from '../../utils/observability';
+import { type BatchConfig as BaseBatchConfig, BatchProcessor } from '../../utils/batch-processor';
+import { createErrorMessage } from '../../utils/helpers';
+import { formatTimestamp } from '../../utils/time';
 
+import type { BaseOperationResult } from '../../utils/results';
 import type { WorkflowContext } from '@upstash/workflow';
 
 /**
- * Batch processing configuration
+ * Batch processing configuration (extends base config for workflow-specific features)
  */
-export interface BatchConfig {
-  /** Size of each batch */
-  batchSize: number;
-  /** Timeout for each batch in milliseconds */
+export interface BatchConfig extends BaseBatchConfig {
+  /** Workflow-specific batch timeout */
   batchTimeout?: number;
-  /** Whether to continue processing if a batch fails */
-  continueOnError?: boolean;
-  /** Delay between batches in milliseconds */
-  delayBetweenBatches?: number;
-  /** Maximum concurrent batches */
-  maxConcurrentBatches?: number;
 }
 
-/**
- * Batch processing result
- */
-export interface BatchResult<T> {
+export interface BatchResult<T> extends BaseOperationResult {
   batchIndex: number;
   batchSize: number;
   completedAt: string;
-  duration: number;
   errors: { index: number; error: string }[];
   failedItems: number;
   processedItems: number;
@@ -38,10 +28,9 @@ export interface BatchResult<T> {
 /**
  * Overall batch processing result
  */
-export interface BatchProcessingResult<T> {
+export interface BatchProcessingResult<T> extends BaseOperationResult {
   batches: BatchResult<T>[];
   completedAt: string;
-  duration: number;
   failedBatches: number;
   processedBatches: number;
   startedAt: string;
@@ -55,6 +44,7 @@ export interface BatchProcessingResult<T> {
 
 /**
  * Process items in batches with parallel execution
+ * Delegates to the centralized BatchProcessor with workflow context
  */
 export async function processBatches<TInput, TOutput>(
   context: WorkflowContext<any>,
@@ -64,109 +54,57 @@ export async function processBatches<TInput, TOutput>(
   config: BatchConfig,
 ): Promise<BatchProcessingResult<TOutput>> {
   return context.run(stepName, async () => {
-    const startTime = Date.now();
-    const startedAt = formatTimestamp(startTime);
-
-    const {
-      batchSize,
-      batchTimeout = 30000,
-      continueOnError = true,
-      delayBetweenBatches = 0,
-      maxConcurrentBatches = 3,
-    } = config;
-
-    // Split items into batches
-    const batches = chunkArray(items, batchSize);
-
-    devLog.info(
-      `Processing ${items.length} items in ${batches.length} batches (size: ${batchSize})`,
-    );
-
-    const batchResults: BatchResult<TOutput>[] = [];
-    let processedBatches = 0;
-    let successfulBatches = 0;
-    let failedBatches = 0;
-
-    // Process batches with concurrency control
-    for (let i = 0; i < batches.length; i += maxConcurrentBatches) {
-      const concurrentBatches = batches.slice(i, i + maxConcurrentBatches);
-
-      const batchPromises = concurrentBatches.map(async (batch, concurrentIndex) => {
-        const batchIndex = i + concurrentIndex;
-        return processSingleBatch(context, batch, processor, batchIndex, batchTimeout);
-      });
-
-      try {
-        const concurrentResults = await Promise.allSettled(batchPromises);
-
-        for (const result of concurrentResults) {
-          if (result.status === 'fulfilled') {
-            batchResults.push(result.value);
-            successfulBatches++;
-          } else {
-            failedBatches++;
-            if (!continueOnError) {
-              throw new Error(`Batch processing failed: ${result.reason}`);
-            }
-
-            // Create a failure result
-            const failedBatch: BatchResult<TOutput> = {
-              batchIndex: processedBatches,
-              batchSize: 0,
-              completedAt: new Date().toISOString(),
-              duration: 0,
-              errors: [{ error: result.reason?.message || 'Unknown error', index: 0 }],
-              failedItems: 0,
-              processedItems: 0,
-              results: [],
-              startedAt: formatTimestamp(Date.now()),
-              successfulItems: 0,
-            };
-            batchResults.push(failedBatch);
-          }
-          processedBatches++;
-        }
-      } catch (error) {
-        if (!continueOnError) {
-          throw error;
-        }
-        devLog.error(`Error processing batch group: ${error}`);
-      }
-
-      // Delay between batch groups
-      if (i + maxConcurrentBatches < batches.length && delayBetweenBatches > 0) {
-        await sleep(delayBetweenBatches);
-      }
-    }
-
-    const completedAt = formatTimestamp(Date.now());
-    const duration = Date.now() - startTime;
-
-    // Calculate totals
-    const totalProcessedItems = batchResults.reduce((sum, batch) => sum + batch.processedItems, 0);
-    const totalSuccessfulItems = batchResults.reduce(
-      (sum, batch) => sum + batch.successfulItems,
-      0,
-    );
-    const totalFailedItems = batchResults.reduce((sum, batch) => sum + batch.failedItems, 0);
-
-    const result: BatchProcessingResult<TOutput> = {
-      batches: batchResults,
-      completedAt,
-      duration,
-      failedBatches,
-      processedBatches,
-      startedAt,
-      successfulBatches,
-      totalBatches: batches.length,
-      totalFailedItems,
-      totalItems: items.length,
-      totalProcessedItems,
-      totalSuccessfulItems,
+    // Adapt the processor to work with BatchProcessor (which doesn't pass batchIndex)
+    const adaptedProcessor = (item: TInput, index: number) => {
+      // Calculate batch index from item index
+      const batchIndex = Math.floor(index / config.batchSize);
+      return processor(item, index, batchIndex);
     };
 
-    devLog.info(`Completed: ${totalSuccessfulItems}/${items.length} items successful`);
-    return result;
+    // Use centralized BatchProcessor
+    const result = await BatchProcessor.process(
+      items,
+      adaptedProcessor,
+      config,
+      {
+        onProgress: (processed, total) => {
+          if (processed % 10 === 0 || processed === total) {
+            console.log(`[${stepName}] Progress: ${processed}/${total}`);
+          }
+        },
+      },
+    );
+
+    // Transform the result to match the expected interface
+    const transformedBatches: BatchResult<TOutput>[] = result.batches.map((batch) => ({
+      batchIndex: batch.batchIndex,
+      batchSize: batch.batchSize,
+      completedAt: formatTimestamp(Date.now()),
+      duration: batch.duration,
+      errors: batch.errors,
+      failedItems: batch.failed,
+      processedItems: batch.items,
+      results: batch.results,
+      startedAt: formatTimestamp(Date.now() - (batch.duration || 0)),
+      success: batch.success,
+      successfulItems: batch.successful,
+    }));
+
+    return {
+      batches: transformedBatches,
+      completedAt: formatTimestamp(Date.now()),
+      duration: result.duration,
+      failedBatches: result.failedBatches,
+      processedBatches: result.processedBatches,
+      startedAt: formatTimestamp(Date.now() - (result.duration || 0)),
+      success: result.success,
+      successfulBatches: result.successfulBatches,
+      totalBatches: result.totalBatches,
+      totalFailedItems: result.totalFailed,
+      totalItems: result.totalItems,
+      totalProcessedItems: result.totalSuccessful + result.totalFailed,
+      totalSuccessfulItems: result.totalSuccessful,
+    };
   });
 }
 
@@ -224,6 +162,7 @@ async function processSingleBatch<TInput, TOutput>(
     processedItems: batch.length,
     results: results.filter((r) => r !== undefined),
     startedAt,
+    success: failedItems === 0,
     successfulItems,
   };
 }
@@ -370,8 +309,8 @@ export function aggregateBatchResults<T>(batchResult: BatchProcessingResult<T>):
   const { batches, duration, totalItems, totalSuccessfulItems } = batchResult;
   const successRate = ((totalSuccessfulItems / totalItems) * 100).toFixed(2);
   const averageBatchDuration =
-    batches.reduce((sum, batch) => sum + batch.duration, 0) / batches.length;
-  const itemsPerSecond = (totalItems / duration) * 1000;
+    batches.reduce((sum, batch) => sum + (batch.duration || 0), 0) / batches.length;
+  const itemsPerSecond = duration ? (totalItems / duration) * 1000 : 0;
 
   // Group errors by type
   const errorSummary: Record<string, number> = {};
@@ -387,7 +326,7 @@ export function aggregateBatchResults<T>(batchResult: BatchProcessingResult<T>):
       averageBatchDuration: Math.round(averageBatchDuration),
       itemsPerSecond: Math.round(itemsPerSecond * 100) / 100,
       successRate: `${successRate}%`,
-      totalDuration: duration,
+      totalDuration: duration || 0,
     },
   };
 }

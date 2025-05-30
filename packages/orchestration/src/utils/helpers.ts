@@ -1,16 +1,10 @@
 import crypto from 'node:crypto';
 
 import { devLog } from './observability';
+// Import from centralized modules
+import { sleep } from './time';
 
 // ===== Constants =====
-const TIME_UNITS = {
-  d: 24 * 60 * 60 * 1000,
-  h: 60 * 60 * 1000,
-  m: 60 * 1000,
-  s: 1000,
-} as const;
-
-const HOUR_MS = 3600000;
 const DEFAULT_POLL_INTERVAL = 2000;
 const DEFAULT_POLL_TIMEOUT = 300000;
 
@@ -48,33 +42,8 @@ export function hashUrl(url: string): string {
   return crypto.createHash('md5').update(url).digest('hex');
 }
 
-/**
- * Calculates next run time for a cron expression - ES2022 modernized
- */
-export function calculateNextCronRun(cron: string): Date {
-  // This is a simplified implementation
-  // In production, use a library like node-cron or croner
-  const now = new Date();
-  const [minute, hour] = cron.split(' ');
-
-  if (minute === '0' && hour === '*') {
-    // Every hour - use structuredClone-like approach
-    const next = new Date(now);
-    next.setHours(next.getHours() + 1, 0, 0, 0);
-    return next;
-  }
-
-  if (minute === '0' && hour === '0') {
-    // Daily
-    const next = new Date(now);
-    next.setDate(next.getDate() + 1);
-    next.setHours(0, 0, 0, 0);
-    return next;
-  }
-
-  // Default: 1 hour from now using constant
-  return new Date(now.getTime() + HOUR_MS);
-}
+// Re-export from centralized time module
+export { calculateNextCronRun } from './time';
 
 /**
  * Flexible backoff calculator supporting exponential and custom strategies
@@ -159,69 +128,18 @@ export function extractWithSelectors(
   }
 }
 
-/**
- * Generate a unique session ID
- */
-export function generateSessionId(prefix = 'session'): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 9);
-  return `${prefix}_${timestamp}_${random}`;
-}
+// Re-export from centralized id-generation module
+export { generateSessionId } from './id-generation';
 
-/**
- * Validate URL format
- */
-export function isValidUrl(url: string): boolean {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
+// Re-export from centralized validation module
+export { isValidUrl } from './validation';
 
-/**
- * Sleep for specified milliseconds
- */
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+// Re-export from centralized time module
+export { sleep } from './time';
 
 // ===== Date/Time Utilities =====
-
-/**
- * Format a timestamp to ISO string
- */
-export function formatTimestamp(timestamp: number): string {
-  return new Date(timestamp).toISOString();
-}
-
-/**
- * Get a future date from now
- */
-export function getTimeFromNow(ms: number): Date {
-  return new Date(Date.now() + ms);
-}
-
-/**
- * Format duration in human-readable format
- */
-export function formatDuration(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-
-  if (hours > 0) return `${hours}h ${minutes % 60}m`;
-  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-  return `${seconds}s`;
-}
-
-/**
- * Calculate elapsed time in milliseconds
- */
-export function calculateElapsedTime(startTime: number): number {
-  return Date.now() - startTime;
-}
+// Re-export from centralized time module
+export { calculateElapsedTime, formatDuration, formatTimestamp, getTimeFromNow, parseTimeWindow } from './time';
 
 // ===== URL/Domain Utilities =====
 
@@ -254,21 +172,11 @@ export function normalizeUrl(url: string): string {
 
 // ===== Key/ID Generation =====
 
-/**
- * Generate a namespaced key
- */
-export function generateKey(prefix: string, ...parts: (string | number)[]): string {
-  return [prefix, ...parts].filter(Boolean).join(':');
-}
+// Re-export from centralized id-generation module
+export { generateKey } from './id-generation';
 
-/**
- * Generate a unique ID with optional prefix
- */
-export function generateUniqueId(prefix?: string): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 9);
-  return prefix ? `${prefix}_${timestamp}_${random}` : `${timestamp}_${random}`;
-}
+// Re-export from centralized id-generation module
+export { generateUniqueId } from './id-generation';
 
 // ===== Error Utilities =====
 
@@ -280,77 +188,15 @@ export function createErrorMessage(operation: string, error: unknown): string {
   return `${operation}: ${String(error)}`;
 }
 
-/**
- * Enhanced error classification with ES2022 features
- */
-export function classifyError(error: unknown): {
-  type: 'network' | 'timeout' | 'rate_limit' | 'unknown';
-  message: string;
-} {
-  if (!(error instanceof Error)) {
-    return { type: 'unknown', message: String(error) };
-  }
+// Re-export from centralized error-handling module
+export { classifyError } from './error-handling';
 
-  const message = error.message.toLowerCase();
-
-  if (error instanceof TypeError && message.includes('fetch')) {
-    return { type: 'network', message: error.message };
-  }
-
-  if (message.includes('timeout') || message.includes('timed out')) {
-    return { type: 'timeout', message: error.message };
-  }
-
-  if (message.includes('rate limit') || message.includes('too many requests')) {
-    return { type: 'rate_limit', message: error.message };
-  }
-
-  return { type: 'unknown', message: error.message };
-}
-
-/**
- * Check if error is a network error
- */
-export function isNetworkError(error: unknown): boolean {
-  return classifyError(error).type === 'network';
-}
-
-/**
- * Check if error is a timeout error
- */
-export function isTimeoutError(error: unknown): boolean {
-  return classifyError(error).type === 'timeout';
-}
-
-/**
- * Check if error is a rate limit error
- */
-export function isRateLimitError(error: unknown): boolean {
-  return classifyError(error).type === 'rate_limit';
-}
+// Re-export from centralized error-handling module
+export { isNetworkError, isRateLimitError, isTimeoutError } from './error-handling';
 
 // ===== Type Guards and Validators =====
-
-/**
- * Check if value is a non-empty string
- */
-export function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
-}
-
-/**
- * Check if value is a record object - ES2022 modernized
- */
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * Check if object has own property - ES2022 Object.hasOwn
- */
-export function hasOwnProperty<T extends object>(obj: T, key: PropertyKey): key is keyof T {
-  return Object.hasOwn(obj, key);
-}
+// Re-export from centralized validation module
+export { hasOwnProperty, isNonEmptyString, isRecord } from './validation';
 
 // ===== Polling Utilities =====
 
@@ -393,49 +239,13 @@ export async function pollUntilCondition<T>(
 
 // ===== Environment Detection =====
 
-/**
- * Development environment detection
- */
-export function isDevelopment(): boolean {
-  return (
-    (process.env.NODE_ENV === 'development' ||
-      process.env.QSTASH_URL?.includes('localhost') === true ||
-      process.env.QSTASH_URL?.includes('127.0.0.1') === true ||
-      process.env.QSTASH_URL?.includes('host.docker.internal') === true) ??
-    false
-  );
-}
-
-/**
- * Production environment detection
- */
-export function isProduction(): boolean {
-  return process.env.NODE_ENV === 'production' && !isDevelopment();
-}
+// Re-export from centralized environment module
+export { isDevelopment, isProduction } from './environment';
 
 // ===== Result Type Guards =====
 
-/**
- * Check if result is successful with data
- */
-export function isSuccessResult<T>(result: {
-  success: boolean;
-  data?: T;
-  error?: string;
-}): result is { success: true; data: T } {
-  return result.success === true && result.data !== undefined;
-}
-
-/**
- * Check if result is an error
- */
-export function isErrorResult(result: {
-  success: boolean;
-  data?: unknown;
-  error?: string;
-}): result is { success: false; error: string } {
-  return result.success === false && result.error !== undefined;
-}
+// Re-export from centralized results module
+export { isErrorResult, isSuccessResult } from './results';
 
 // ===== Map Utilities =====
 
@@ -489,47 +299,8 @@ export function cleanupOldestEntries(
 
 // ===== Validation Utilities =====
 
-/**
- * Validate required fields in payload
- */
-export function validatePayload<T extends Record<string, any>>(
-  payload: T | undefined,
-  requiredFields: (keyof T)[],
-): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  if (!payload || !isRecord(payload)) {
-    errors.push('Missing or invalid request payload');
-    return { valid: false, errors };
-  }
-
-  for (const field of requiredFields) {
-    const value = payload[field];
-    if (value === undefined || value === null) {
-      errors.push(`Missing required field: ${String(field)}`);
-    } else if (typeof field === 'string' && field.endsWith('Id') && !isNonEmptyString(value)) {
-      errors.push(`Invalid value for field: ${String(field)} (must be non-empty string)`);
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
-}
-
-/**
- * Safe payload extraction with defaults
- */
-export function extractPayload<T extends Record<string, any>>(
-  context: { requestPayload?: T | null },
-  defaults: Partial<T>,
-): T {
-  return {
-    ...defaults,
-    ...context.requestPayload,
-  } as T;
-}
+// Re-export from centralized validation module  
+export { extractPayload, validatePayload } from './validation';
 
 // ===== State Machine Utilities =====
 
@@ -578,13 +349,8 @@ export class StateMachine<TState extends string, TContext = any> {
 
 // ===== Additional DRY Consolidation Helpers =====
 
-/**
- * QStash environment detection
- */
-export function isLocalQStash(): boolean {
-  const qstashUrl = process.env.QSTASH_URL;
-  return !!(qstashUrl && (qstashUrl.includes('127.0.0.1') || qstashUrl.includes('localhost')));
-}
+// Re-export from centralized environment module
+export { isLocalQStash } from './environment';
 
 /**
  * Build workflow URL with optional base URL
@@ -596,19 +362,7 @@ export function buildWorkflowUrl(url: string, baseUrl?: string): string {
   return normalizeUrl(`${baseUrl || ''}${url}`);
 }
 
-/**
- * Parse time window strings (e.g., '5m', '1h', '2d') - ES2022 modernized
- */
-export function parseTimeWindow(window: string): number {
-  const match = window.match(/^(\d+)([smhd])$/);
-  if (!match) return 0;
-
-  const [, value, unit] = match;
-  const num = parseInt(value, 10);
-
-  // Use const assertion and nullish coalescing
-  return num * (TIME_UNITS[unit as keyof typeof TIME_UNITS] ?? 0);
-}
+// Re-export from centralized time module (already imported above)
 
 /**
  * Convert data to CSV format

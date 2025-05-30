@@ -1613,14 +1613,14 @@ async function processComprehensiveWorkflow(
   let retryWithBackoffResult = null;
   if (options.mode === 'full') {
     retryWithBackoffResult = await context.run('retry-backoff-demo', async () => {
-      const { retryWithBackoff } = await import('../../runtime/patterns/patterns');
+      const { retryWithBackoffPattern } = await import('../../runtime/patterns/patterns');
 
       let attemptCount = 0;
       const startTime = Date.now();
 
       // Example: Calling an unreliable external API
       try {
-        const apiResult = await retryWithBackoff(context, {
+        const apiResult = await retryWithBackoffPattern(context, {
           baseDelayMs: 1000,
           jitter: true,
           maxAttempts: 5,
@@ -1644,7 +1644,7 @@ async function processComprehensiveWorkflow(
               timeElapsed: Date.now() - startTime,
             };
           },
-          shouldRetry: (error, _attempt) => {
+          shouldRetry: (error: any, _attempt: number) => {
             // Don't retry on 4xx errors
             return !error.message.includes('4');
           },

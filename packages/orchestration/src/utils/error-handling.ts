@@ -1,4 +1,4 @@
-import { classifyError as classifyErrorHelper, createErrorMessage } from './helpers';
+import { createErrorMessage } from './helpers';
 import { devLog } from './observability';
 import { DEFAULT_RETRIES, DEFAULT_TIMEOUTS, type RetryConfig } from './types';
 
@@ -156,29 +156,30 @@ export const errorHandlers = {
       }
     }
 
-    // Use enhanced error classification
-    const classification = classifyErrorHelper(error);
+    // Use consolidated error classification
+    const errorType = classifyWorkflowError(error);
+    const message = error instanceof Error ? error.message : String(error);
 
-    switch (classification.type) {
-      case 'network':
+    switch (errorType) {
+      case WorkflowErrorType.NETWORK:
         return new WorkflowError(
           WorkflowErrorType.NETWORK,
           `Network error calling ${api}`,
-          { api, error: classification.message, ...context },
+          { api, error: message, ...context },
           true,
         );
-      case 'timeout':
+      case WorkflowErrorType.TIMEOUT:
         return new WorkflowError(
           WorkflowErrorType.TIMEOUT,
           `Timeout calling ${api}`,
-          { api, error: classification.message, ...context },
+          { api, error: message, ...context },
           true,
         );
-      case 'rate_limit':
+      case WorkflowErrorType.RATE_LIMIT:
         return new WorkflowError(
           WorkflowErrorType.RATE_LIMIT,
           `Rate limit exceeded for ${api}`,
-          { api, error: classification.message, ...context },
+          { api, error: message, ...context },
           true,
         );
     }
@@ -250,45 +251,130 @@ export const RETRY_CONFIGS = {
 } as const satisfies Record<string, RetryConfig & { retryOn: readonly WorkflowErrorType[] }>;
 
 /**
- * Classify error into WorkflowErrorType - ES2022 modernized
- * This wraps the helper function to return WorkflowErrorType instead of the helper's return type
+ * Classify error into WorkflowErrorType - primary error classifier
  */
 export function classifyWorkflowError(error: unknown): WorkflowErrorType {
   if (error instanceof WorkflowError) {
     return error.type;
   }
 
-  // Use the enhanced helper function
-  const classification = classifyErrorHelper(error);
+  // Check for HTTP status codes
+  if (error && typeof error === 'object' && 'status' in error) {
+    const status = (error as any).status;
 
-  // Map helper classifications to WorkflowErrorType
-  const typeMap = {
-    network: WorkflowErrorType.NETWORK,
-    rate_limit: WorkflowErrorType.RATE_LIMIT,
-    timeout: WorkflowErrorType.TIMEOUT,
-    unknown: WorkflowErrorType.INTERNAL,
-  } as const;
-
-  const mappedType = typeMap[classification.type];
-  if (mappedType) {
-    return mappedType;
+    switch (status) {
+      case 401:
+        return WorkflowErrorType.AUTHENTICATION;
+      case 403:
+        return WorkflowErrorType.PERMISSION;
+      case 404:
+        return WorkflowErrorType.NOT_FOUND;
+      case 409:
+        return WorkflowErrorType.CONFLICT;
+      case 429:
+        return WorkflowErrorType.RATE_LIMIT;
+      case 408:
+      case 504:
+        return WorkflowErrorType.TIMEOUT;
+      default:
+        if (status >= 500) {
+          return WorkflowErrorType.EXTERNAL_API;
+        }
+    }
   }
 
-  // Additional checks for specific error patterns
+  // Check error message patterns
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
+
+    // Network errors
+    if (error instanceof TypeError && message.includes('fetch')) {
+      return WorkflowErrorType.NETWORK;
+    }
+    if (message.includes('econnrefused') || message.includes('enotfound')) {
+      return WorkflowErrorType.NETWORK;
+    }
+
+    // Timeout errors
+    if (message.includes('timeout') || message.includes('timed out')) {
+      return WorkflowErrorType.TIMEOUT;
+    }
+
+    // Rate limit errors
+    if (message.includes('rate limit') || message.includes('too many requests')) {
+      return WorkflowErrorType.RATE_LIMIT;
+    }
+
+    // Not found errors
     if (message.includes('not found') || message.includes('404')) {
       return WorkflowErrorType.NOT_FOUND;
     }
-    if (message.includes('unauthorized') || message.includes('401')) {
+
+    // Authentication errors
+    if (
+      message.includes('unauthorized') ||
+      message.includes('401') ||
+      message.includes('authentication')
+    ) {
       return WorkflowErrorType.AUTHENTICATION;
     }
-    if (message.includes('forbidden') || message.includes('403')) {
+
+    // Permission errors
+    if (
+      message.includes('forbidden') ||
+      message.includes('403') ||
+      message.includes('permission')
+    ) {
       return WorkflowErrorType.PERMISSION;
+    }
+
+    // Validation errors
+    if (message.includes('validation') || message.includes('invalid')) {
+      return WorkflowErrorType.VALIDATION;
+    }
+
+    // Configuration errors
+    if (message.includes('configuration') || message.includes('config')) {
+      return WorkflowErrorType.CONFIGURATION;
     }
   }
 
   return WorkflowErrorType.INTERNAL;
+}
+
+/**
+ * Classify error into simple type (backward compatible)
+ */
+export function classifyError(error: unknown): {
+  type: 'network' | 'timeout' | 'rate_limit' | 'unknown';
+  message: string;
+} {
+  const workflowType = classifyWorkflowError(error);
+
+  // Map WorkflowErrorType to simple types
+  const typeMap: Record<WorkflowErrorType, 'network' | 'timeout' | 'rate_limit' | 'unknown'> = {
+    [WorkflowErrorType.AUTHENTICATION]: 'unknown',
+    [WorkflowErrorType.CONFIGURATION]: 'unknown',
+    [WorkflowErrorType.CONFLICT]: 'unknown',
+    [WorkflowErrorType.DATA_CORRUPTION]: 'unknown',
+    [WorkflowErrorType.EXTERNAL_API]: 'unknown',
+    [WorkflowErrorType.INTERNAL]: 'unknown',
+    [WorkflowErrorType.NETWORK]: 'network',
+    [WorkflowErrorType.NOT_FOUND]: 'unknown',
+    [WorkflowErrorType.PERMISSION]: 'unknown',
+    [WorkflowErrorType.RATE_LIMIT]: 'rate_limit',
+    [WorkflowErrorType.RESOURCE_EXHAUSTED]: 'unknown',
+    [WorkflowErrorType.TIMEOUT]: 'timeout',
+    [WorkflowErrorType.UNAVAILABLE]: 'unknown',
+    [WorkflowErrorType.VALIDATION]: 'unknown',
+  };
+
+  const message = error instanceof Error ? error.message : String(error);
+
+  return {
+    type: typeMap[workflowType],
+    message,
+  };
 }
 
 /**
@@ -417,6 +503,7 @@ export async function withWorkflowErrorHandling<T>(
 
 /**
  * Error handling wrapper with retry logic
+ * @deprecated Use retryOperation from utils/retry.ts instead
  */
 export async function withRetryErrorHandling<T>(
   operation: () => Promise<T>,
@@ -469,4 +556,86 @@ export async function withRetryErrorHandling<T>(
   }
 
   throw lastError!;
+}
+
+/**
+ * Helper functions for error type checking
+ */
+export function isNetworkError(error: unknown): boolean {
+  return classifyWorkflowError(error) === WorkflowErrorType.NETWORK;
+}
+
+export function isTimeoutError(error: unknown): boolean {
+  return classifyWorkflowError(error) === WorkflowErrorType.TIMEOUT;
+}
+
+export function isRateLimitError(error: unknown): boolean {
+  return classifyWorkflowError(error) === WorkflowErrorType.RATE_LIMIT;
+}
+
+export function isAuthenticationError(error: unknown): boolean {
+  return classifyWorkflowError(error) === WorkflowErrorType.AUTHENTICATION;
+}
+
+export function isPermissionError(error: unknown): boolean {
+  return classifyWorkflowError(error) === WorkflowErrorType.PERMISSION;
+}
+
+export function isNotFoundError(error: unknown): boolean {
+  return classifyWorkflowError(error) === WorkflowErrorType.NOT_FOUND;
+}
+
+export function isValidationError(error: unknown): boolean {
+  return classifyWorkflowError(error) === WorkflowErrorType.VALIDATION;
+}
+
+/**
+ * HTTP status constants for consistent error handling
+ */
+export const HTTP_STATUS = {
+  // Client errors
+  BAD_REQUEST: 400,
+  CONFLICT: 409,
+  FORBIDDEN: 403,
+  METHOD_NOT_ALLOWED: 405,
+  NOT_FOUND: 404,
+  RATE_LIMIT: 429,
+  UNAUTHORIZED: 401,
+  UNPROCESSABLE_ENTITY: 422,
+
+  BAD_GATEWAY: 502,
+  GATEWAY_TIMEOUT: 504,
+  // Server errors
+  INTERNAL_SERVER: 500,
+  SERVICE_UNAVAILABLE: 503,
+} as const;
+
+/**
+ * Map HTTP status to WorkflowErrorType
+ */
+export function classifyHttpStatus(status: number): WorkflowErrorType {
+  switch (status) {
+    case HTTP_STATUS.UNAUTHORIZED:
+      return WorkflowErrorType.AUTHENTICATION;
+    case HTTP_STATUS.FORBIDDEN:
+      return WorkflowErrorType.PERMISSION;
+    case HTTP_STATUS.NOT_FOUND:
+      return WorkflowErrorType.NOT_FOUND;
+    case HTTP_STATUS.CONFLICT:
+      return WorkflowErrorType.CONFLICT;
+    case HTTP_STATUS.RATE_LIMIT:
+      return WorkflowErrorType.RATE_LIMIT;
+    case HTTP_STATUS.GATEWAY_TIMEOUT:
+      return WorkflowErrorType.TIMEOUT;
+    case HTTP_STATUS.SERVICE_UNAVAILABLE:
+      return WorkflowErrorType.UNAVAILABLE;
+    case HTTP_STATUS.BAD_REQUEST:
+    case HTTP_STATUS.UNPROCESSABLE_ENTITY:
+      return WorkflowErrorType.VALIDATION;
+    default:
+      if (status >= 500) {
+        return WorkflowErrorType.EXTERNAL_API;
+      }
+      return WorkflowErrorType.INTERNAL;
+  }
 }

@@ -9,7 +9,7 @@ catalog:
   "@mantine/hooks": ^8.0.2
   "@mantine/modals": ^8.0.2
   "@mantine/notifications": ^8.0.2
-  "@next/eslint-plugin-next": ^15.3.2
+  "@next/eslint-plugin-next": ^15.3.3
   "@prisma/client": ^6.8.2
   "@t3-oss/env-core": ^0.13.6
   "@t3-oss/env-nextjs": ^0.13.6
@@ -18,7 +18,7 @@ catalog:
   "@testing-library/jest-dom": ^6.6.3
   "@testing-library/react-hooks": ^8.0.1
   "@testing-library/react": ^16.3.0
-  "@types/node": ^22.15.24
+  "@types/node": ^22.15.28
   "@types/react-dom": ^19.1.5
   "@types/react": ^19.1.6
   "@vercel/style-guide": ^6.0.0
@@ -33,7 +33,7 @@ catalog:
   jsdom: ^26.1.0
   mantine-form-zod-resolver: ^1.2.1
   next-auth: 4.24.11
-  next: ^15.4.0-canary.56
+  next: ^15.4.0-canary.58
   postcss-loader: ^8.1.1
   postcss-preset-mantine: ^1.17.0
   postcss-simple-vars: ^7.0.1
@@ -47,7 +47,7 @@ catalog:
   vitest-mock-extended: ^3.1.0
   vitest: ^3.1.4
   zod-prisma-types: ^3.2.4
-  zod: ^3.25.36
+  zod: ^3.25.42
 
 onlyBuiltDependencies:
   - "@prisma/client"

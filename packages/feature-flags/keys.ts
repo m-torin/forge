@@ -15,8 +15,6 @@ export const keys = () =>
       FLAGS_SECRET: process.env.FLAGS_SECRET || undefined,
     },
     server: {
-      FLAGS_SECRET: requireInProduction
-        ? z.string().min(1)
-        : z.string().min(1).optional(),
+      FLAGS_SECRET: requireInProduction ? z.string().min(1) : z.string().min(1).optional(),
     },
   });

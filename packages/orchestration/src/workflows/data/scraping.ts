@@ -164,8 +164,8 @@ async function scrapeUrl(
         `scraping ${url}`,
         {
           baseDelayMs: 1000,
-          maxDelayMs: 60000,
           maxAttempts: 2,
+          maxDelayMs: 60000,
           retryOn: [
             WorkflowErrorType.NETWORK,
             WorkflowErrorType.TIMEOUT,
@@ -264,6 +264,7 @@ async function finalizeResults(
     return {
       results: allResults,
       sessionId,
+      success: failed.length === 0,
       summary: {
         deduplicated: totalUrls - validUrls.length,
         failed: failed.length,

@@ -6,8 +6,8 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasRequiredEnvVars = Boolean(
   process.env.KNOCK_SECRET_API_KEY ||
-  process.env.NEXT_PUBLIC_KNOCK_API_KEY ||
-  process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID
+    process.env.NEXT_PUBLIC_KNOCK_API_KEY ||
+    process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID,
 );
 
 // Make env vars optional in development or when they're missing (indicating .env.local usage)
