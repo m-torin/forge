@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
 
 const calculateTimeLeft = () => {
-  let year = new Date().getFullYear();
-  let month = new Date().getMonth();
-  let difference = +new Date(`${month + 2}/10/${year}`) - +new Date();
+  const year = new Date().getFullYear();
+  const month = new Date().getMonth();
+  const difference = +new Date(`${month + 2}/10/${year}`) - +new Date();
 
   let timeLeft = {
     days: 0,

@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { Link } from '@/components/Link'
-import { usePathname } from 'next/navigation'
+import { Link } from '@/components/Link';
+import { usePathname } from 'next/navigation';
 
 const pages: {
-  name: string
-  link: string
+  name: string;
+  link: string;
 }[] = [
   {
     name: 'Settings',
@@ -27,18 +27,18 @@ const pages: {
     name: 'Billing',
     link: '/account-billing',
   },
-]
+];
 
 const PageTab = () => {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <div>
       <div className="hidden-scrollbar flex gap-x-8 overflow-x-auto md:gap-x-14">
         {pages.map((item) => {
-          let isActive = pathname === item.link
+          let isActive = pathname === item.link;
           if (item.link === '/orders' && pathname.includes('/orders/')) {
-            isActive = true
+            isActive = true;
           }
 
           return (
@@ -53,11 +53,11 @@ const PageTab = () => {
             >
               {item.name}
             </Link>
-          )
+          );
         })}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PageTab
+export default PageTab;

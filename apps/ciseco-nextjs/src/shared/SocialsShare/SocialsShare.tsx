@@ -1,22 +1,22 @@
-import { FC } from 'react'
+import { type FC } from 'react';
 
 export interface SocialsShareProps {
-  className?: string
-  itemClass?: string
+  className?: string;
+  itemClass?: string;
 }
 
 export interface SocialType {
-  name: string
-  icon: string
-  href: string
+  href: string;
+  icon: string;
+  name: string;
 }
 
 const socials: SocialType[] = [
-  { name: 'Facebook', icon: 'lab la-facebook-f', href: '#' },
-  { name: 'Twitter', icon: 'lab la-twitter', href: '#' },
-  { name: 'Linkedin', icon: 'lab la-linkedin-in', href: '#' },
-  { name: 'Instagram', icon: 'lab la-instagram', href: '#' },
-]
+  { name: 'Facebook', href: '#', icon: 'lab la-facebook-f' },
+  { name: 'Twitter', href: '#', icon: 'lab la-twitter' },
+  { name: 'Linkedin', href: '#', icon: 'lab la-linkedin-in' },
+  { name: 'Instagram', href: '#', icon: 'lab la-instagram' },
+];
 
 const SocialsShare: FC<SocialsShareProps> = ({
   className = 'grid gap-[6px]',
@@ -30,16 +30,16 @@ const SocialsShare: FC<SocialsShareProps> = ({
         className={`flex items-center justify-center rounded-full bg-white leading-none text-neutral-600 ${itemClass}`}
         title={`Share on ${item.name}`}
       >
-        <i className={item.icon}></i>
+        <i className={item.icon} />
       </a>
-    )
-  }
+    );
+  };
 
   return (
-    <div className={`nc-SocialsShare ${className}`} data-nc-id="SocialsShare">
+    <div data-nc-id="SocialsShare" className={`nc-SocialsShare ${className}`}>
       {socials.map(renderItem)}
     </div>
-  )
-}
+  );
+};
 
-export default SocialsShare
+export default SocialsShare;

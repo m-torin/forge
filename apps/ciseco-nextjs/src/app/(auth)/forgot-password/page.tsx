@@ -1,11 +1,11 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import Input from '@/shared/Input/Input'
-import Link from 'next/link'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import Input from '@/shared/Input/Input';
+import Link from 'next/link';
 
 export const metadata = {
-  title: 'Forgot Password',
   description: 'Forgot password page for the application',
-}
+  title: 'Forgot Password',
+};
 
 const PageForgotPass = () => {
   return (
@@ -21,10 +21,10 @@ const PageForgotPass = () => {
 
       <div className="mx-auto max-w-md space-y-6">
         {/* FORM */}
-        <form className="grid grid-cols-1 gap-6" action="#" method="post">
+        <form action="#" method="post" className="grid grid-cols-1 gap-6">
           <label className="block">
             <span className="text-neutral-800 dark:text-neutral-200">Email address</span>
-            <Input type="email" placeholder="example@example.com" className="mt-1" />
+            <Input placeholder="example@example.com" className="mt-1" type="email" />
           </label>
           <ButtonPrimary type="submit">Continue</ButtonPrimary>
         </form>
@@ -42,7 +42,7 @@ const PageForgotPass = () => {
         </span>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PageForgotPass
+export default PageForgotPass;

@@ -1,56 +1,56 @@
-import { CustomLink } from '@/data/types'
-import Logo from '@/shared/Logo/Logo'
-import SocialsList1 from '@/shared/SocialsList1/SocialsList1'
-import React from 'react'
+import { type CustomLink } from '@/data/types';
+import Logo from '@/shared/Logo/Logo';
+import SocialsList1 from '@/shared/SocialsList1/SocialsList1';
+import React from 'react';
 
 export interface WidgetFooterMenu {
-  id: string
-  title: string
-  menus: CustomLink[]
+  id: string;
+  menus: CustomLink[];
+  title: string;
 }
 
 const widgetMenus: WidgetFooterMenu[] = [
   {
     id: '5',
-    title: 'Getting started',
     menus: [
       { href: '/', label: 'Release Notes' },
       { href: '/', label: 'Upgrade Guide' },
       { href: '/', label: 'Browser Support' },
       { href: '/', label: 'Dark Mode' },
     ],
+    title: 'Getting started',
   },
   {
     id: '1',
-    title: 'Explore',
     menus: [
       { href: '/', label: 'Prototyping' },
       { href: '/', label: 'Design systems' },
       { href: '/', label: 'Pricing' },
       { href: '/', label: 'Security' },
     ],
+    title: 'Explore',
   },
   {
     id: '2',
-    title: 'Resources',
     menus: [
       { href: '/', label: 'Best practices' },
       { href: '/', label: 'Support' },
       { href: '/', label: 'Developers' },
       { href: '/', label: 'Learn design' },
     ],
+    title: 'Resources',
   },
   {
     id: '4',
-    title: 'Community',
     menus: [
       { href: '/', label: 'Discussion Forums' },
       { href: '/', label: 'Code of Conduct' },
       { href: '/', label: 'Contributing' },
       { href: '/', label: 'API Reference' },
     ],
+    title: 'Community',
   },
-]
+];
 
 const Footer: React.FC = () => {
   const renderWidgetMenuItem = (menu: WidgetFooterMenu, index: number) => {
@@ -62,10 +62,10 @@ const Footer: React.FC = () => {
             <li key={index}>
               <a
                 key={index}
-                className="text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
                 href={item.href}
-                target="_blank"
+                className="text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
                 rel="noopener noreferrer"
+                target="_blank"
               >
                 {item.label}
               </a>
@@ -73,8 +73,8 @@ const Footer: React.FC = () => {
           ))}
         </ul>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="nc-Footer relative border-t border-neutral-200 py-20 lg:pt-28 lg:pb-24 dark:border-neutral-700">
@@ -90,7 +90,7 @@ const Footer: React.FC = () => {
         {widgetMenus.map(renderWidgetMenuItem)}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

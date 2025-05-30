@@ -1,56 +1,69 @@
-'use client'
+'use client';
 
-import { Checkbox, Disclosure, DisclosureButton, DisclosurePanel, Fieldset, Label, Legend } from '@headlessui/react'
+import {
+  Checkbox,
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Fieldset,
+  Label,
+  Legend,
+} from '@headlessui/react';
+import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import clsx from 'clsx';
 
-import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import clsx from 'clsx'
-import { Aside } from './aside/aside'
+import { Aside } from './aside/aside';
 
 const filters = [
   {
     id: 'color',
     name: 'Color',
     options: [
-      { value: 'white', label: 'White' },
-      { value: 'beige', label: 'Beige' },
-      { value: 'blue', label: 'Blue' },
-      { value: 'brown', label: 'Brown' },
-      { value: 'green', label: 'Green' },
-      { value: 'purple', label: 'Purple' },
+      { label: 'White', value: 'white' },
+      { label: 'Beige', value: 'beige' },
+      { label: 'Blue', value: 'blue' },
+      { label: 'Brown', value: 'brown' },
+      { label: 'Green', value: 'green' },
+      { label: 'Purple', value: 'purple' },
     ],
   },
   {
     id: 'category',
     name: 'Category',
     options: [
-      { value: 'new-arrivals', label: 'All New Arrivals' },
-      { value: 'tees', label: 'Tees' },
-      { value: 'crewnecks', label: 'Crewnecks' },
-      { value: 'sweatshirts', label: 'Sweatshirts' },
-      { value: 'pants-shorts', label: 'Pants & Shorts' },
+      { label: 'All New Arrivals', value: 'new-arrivals' },
+      { label: 'Tees', value: 'tees' },
+      { label: 'Crewnecks', value: 'crewnecks' },
+      { label: 'Sweatshirts', value: 'sweatshirts' },
+      { label: 'Pants & Shorts', value: 'pants-shorts' },
     ],
   },
   {
     id: 'sizes',
     name: 'Sizes',
     options: [
-      { value: 'xs', label: 'XS' },
-      { value: 's', label: 'S' },
-      { value: 'm', label: 'M' },
-      { value: 'l', label: 'L' },
-      { value: 'xl', label: 'XL' },
-      { value: '2xl', label: '2XL' },
+      { label: 'XS', value: 'xs' },
+      { label: 'S', value: 's' },
+      { label: 'M', value: 'm' },
+      { label: 'L', value: 'l' },
+      { label: 'XL', value: 'xl' },
+      { label: '2XL', value: '2xl' },
     ],
   },
-]
+];
 interface Props {
-  className?: string
+  className?: string;
 }
 
 const AsideCategoryFilters = ({ className = '' }: Props) => {
   return (
-    <Aside openFrom="right" type="category-filters" heading="Filters" contentMaxWidthClassName="max-w-sm">
+    <Aside
+      contentMaxWidthClassName="max-w-sm"
+      openFrom="right"
+      heading="Filters"
+      type="category-filters"
+    >
       <div className={clsx('flex h-full flex-col', className)}>
         {/* CONTENT */}
 
@@ -59,18 +72,22 @@ const AsideCategoryFilters = ({ className = '' }: Props) => {
             {/* Filters */}
             <form className="">
               {filters.map((section) => (
-                <Disclosure key={section.name} as="div" className="border-b border-neutral-200 pt-4 pb-4">
+                <Disclosure
+                  key={section.name}
+                  className="border-b border-neutral-200 pt-4 pb-4"
+                  as="div"
+                >
                   <Fieldset>
                     <Legend className="w-full">
                       <DisclosureButton className="group flex w-full items-center justify-between p-2 text-neutral-400 hover:text-neutral-500">
                         <p className="text-sm font-medium text-neutral-900">{section.name}</p>
                         <span className="ms-6 flex h-7 items-center">
                           <HugeiconsIcon
+                            strokeWidth={1.5}
+                            color="currentColor"
                             icon={ArrowDown01Icon}
                             className="size-5 shrink-0 group-data-open:-rotate-180"
                             size={16}
-                            color="currentColor"
-                            strokeWidth={1.5}
                           />
                         </span>
                       </DisclosureButton>
@@ -95,7 +112,7 @@ const AsideCategoryFilters = ({ className = '' }: Props) => {
         </div>
       </div>
     </Aside>
-  )
-}
+  );
+};
 
-export default AsideCategoryFilters
+export default AsideCategoryFilters;

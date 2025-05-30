@@ -1,47 +1,50 @@
-'use client'
+'use client';
 
-import { TCollection } from '@/data/data'
-import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
-import type { EmblaOptionsType } from 'embla-carousel'
-import useEmblaCarousel from 'embla-carousel-react'
-import CollectionCard3 from './CollectionCard3'
-import Heading from './Heading/Heading'
+import { type TCollection } from '@/data/data';
+import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons';
+import useEmblaCarousel from 'embla-carousel-react';
+
+import CollectionCard3 from './CollectionCard3';
+import Heading from './Heading/Heading';
+
+import type { EmblaOptionsType } from 'embla-carousel';
 
 interface Props {
-  className?: string
-  emblaOptions?: EmblaOptionsType
-  collections: TCollection[]
-  headingDim?: string
-  heading?: string
+  className?: string;
+  collections: TCollection[];
+  emblaOptions?: EmblaOptionsType;
+  heading?: string;
+  headingDim?: string;
 }
 
 const SectionCollectionSlider = ({
   className,
   collections,
-  headingDim = 'Good things are waiting for you',
-  heading = 'Discover more',
   emblaOptions = {
     slidesToScroll: 'auto',
   },
+  heading = 'Discover more',
+  headingDim = 'Good things are waiting for you',
 }: Props) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
-  const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
+  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
+    useCarouselArrowButtons(emblaApi);
 
   return (
     <div className={className}>
       <Heading
-        className="container mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50"
-        headingDim={headingDim}
-        hasNextPrev
-        prevBtnDisabled={prevBtnDisabled}
-        nextBtnDisabled={nextBtnDisabled}
-        onClickPrev={onPrevButtonClick}
         onClickNext={onNextButtonClick}
+        onClickPrev={onPrevButtonClick}
+        className="container mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50"
+        hasNextPrev
+        headingDim={headingDim}
+        nextBtnDisabled={nextBtnDisabled}
+        prevBtnDisabled={prevBtnDisabled}
       >
         {heading}
       </Heading>
 
-      <div className="embla pl-container" ref={emblaRef}>
+      <div ref={emblaRef} className="embla pl-container">
         <div className="-ms-5 embla__container">
           {collections.map((collection) => (
             <div
@@ -54,7 +57,7 @@ const SectionCollectionSlider = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SectionCollectionSlider
+export default SectionCollectionSlider;

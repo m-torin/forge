@@ -1,18 +1,18 @@
-import ReviewItem from '@/components/ReviewItem'
-import { TReview } from '@/data/data'
-import { StarIcon } from '@heroicons/react/24/solid'
-import clsx from 'clsx'
+import ReviewItem from '@/components/ReviewItem';
+import { type TReview } from '@/data/data';
+import { StarIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
 
 const ProductReviews = ({
+  className,
   rating,
   reviewNumber,
   reviews,
-  className,
 }: {
-  reviews: TReview[]
-  className?: string
-  rating: number
-  reviewNumber: number
+  reviews: TReview[];
+  className?: string;
+  rating: number;
+  reviewNumber: number;
 }) => {
   const renderReviews = () => {
     return (
@@ -34,10 +34,10 @@ const ProductReviews = ({
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
-  return <div className={clsx(className)}>{renderReviews()}</div>
-}
+  return <div className={clsx(className)}>{renderReviews()}</div>;
+};
 
-export default ProductReviews
+export default ProductReviews;

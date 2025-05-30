@@ -1,11 +1,19 @@
-import { Route } from 'next'
+import { type Route } from 'next';
 
 export interface CustomLink {
-  label: string
-  href: Route
-  targetBlank?: boolean
+  href: Route;
+  label: string;
+  targetBlank?: boolean;
 }
 
-export type TwMainColor = 'pink' | 'green' | 'yellow' | 'red' | 'indigo' | 'blue' | 'purple' | 'gray'
+export type TwMainColor =
+  | 'pink'
+  | 'green'
+  | 'yellow'
+  | 'red'
+  | 'indigo'
+  | 'blue'
+  | 'purple'
+  | 'gray';
 
 //

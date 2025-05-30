@@ -1,43 +1,42 @@
-import { Divider } from '@/components/Divider'
-import Heading from '@/components/Heading/Heading'
-import Prices from '@/components/Prices'
-import { getOrders } from '@/data/data'
-import { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { Divider } from '@/components/Divider';
+import Heading from '@/components/Heading/Heading';
+import Prices from '@/components/Prices';
+import { getOrders } from '@/data/data';
+import { type Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: 'Order Successful',
   description: 'Your order has been successfully placed.',
-}
+  title: 'Order Successful',
+};
 
 export default async function Page() {
   // for demo purposes, you need to use the getOrder(number) function to get the order by number, example: getOrder(123456789)
-  const order = (await getOrders())[0]
+  const order = (await getOrders())[0];
 
   if (!order) {
-    return notFound()
+    return notFound();
   }
-  const products = order.products
+  const products = order.products;
 
   return (
-    <>
-      <main className="container">
+    <main className="container">
         <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:max-w-3xl">
           <div>
             <p className="text-xs font-medium uppercase">Thanks for ordering</p>
             <Heading className="mt-4">Payment successful!</Heading>
 
             <p className="mt-2.5 max-w-2xl text-neutral-500">
-              We appreciate your order, we’re currently processing it. So hang tight and we’ll send you confirmation
-              very soon!
+              We appreciate your order, we're currently processing it. So hang tight and we'll send
+              you confirmation very soon!
             </p>
 
             <dl className="mt-16 text-sm">
               <dt className="text-neutral-500">Tracking number</dt>
               <dd>
-                <Link className="mt-2 text-lg font-medium" href="/orders/123456789">
+                <Link href="/orders/123456789" className="mt-2 text-lg font-medium">
                   #{order.number}
                   <span aria-hidden="true"> &rarr;</span>
                 </Link>
@@ -53,31 +52,37 @@ export default async function Page() {
                   <div className="relative aspect-3/4 w-24 flex-none">
                     {product.featuredImage && (
                       <Image
+                        className="rounded-md bg-neutral-100 object-cover"
                         alt={product.featuredImage.alt}
-                        src={product.featuredImage}
                         fill
                         sizes="200px"
-                        className="rounded-md bg-neutral-100 object-cover"
+                        src={product.featuredImage}
                       />
                     )}
                   </div>
                   <div className="flex flex-auto flex-col gap-y-1.5">
                     <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                      <Link href={'/products/' + product.handle}>{product.title}</Link>
+                      <Link href={`/products/${product.handle}` as const}>{product.title}</Link>
                     </h3>
                     <div className="flex items-center gap-x-2 text-neutral-500 dark:text-neutral-300">
-                      <p className="text-sm text-neutral-500 dark:text-neutral-300">{product.color}</p>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-300">
+                        {product.color}
+                      </p>
                       {product.size ? <p className="text-sm text-neutral-300">/</p> : null}
                       {product.size ? (
-                        <p className="text-sm text-neutral-500 dark:text-neutral-300">{product.size}</p>
+                        <p className="text-sm text-neutral-500 dark:text-neutral-300">
+                          {product.size}
+                        </p>
                       ) : null}
                     </div>
-                    <Prices price={product.price} className="flex justify-start sm:hidden" />
+                    <Prices className="flex justify-start sm:hidden" price={product.price} />
 
-                    <p className="mt-auto text-sm text-neutral-500 dark:text-neutral-300">Qty {product.quantity}</p>
+                    <p className="mt-auto text-sm text-neutral-500 dark:text-neutral-300">
+                      Qty {product.quantity}
+                    </p>
                   </div>
 
-                  <Prices price={product.price} className="hidden sm:block" />
+                  <Prices className="hidden sm:block" price={product.price} />
                 </li>
               ))}
             </ul>
@@ -85,17 +90,23 @@ export default async function Page() {
             <dl className="space-y-6 border-t border-neutral-200 pt-6 text-sm font-medium text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
               <div className="flex justify-between">
                 <dt className="uppercase">Subtotal</dt>
-                <dd className="text-neutral-900 dark:text-neutral-100">${order.cost.subtotal.toFixed(2)}</dd>
+                <dd className="text-neutral-900 dark:text-neutral-100">
+                  ${order.cost.subtotal.toFixed(2)}
+                </dd>
               </div>
 
               <div className="flex justify-between">
                 <dt className="uppercase">Shipping</dt>
-                <dd className="text-neutral-900 dark:text-neutral-100">${order.cost.shipping.toFixed(2)}</dd>
+                <dd className="text-neutral-900 dark:text-neutral-100">
+                  ${order.cost.shipping.toFixed(2)}
+                </dd>
               </div>
 
               <div className="flex justify-between">
                 <dt className="uppercase">Taxes</dt>
-                <dd className="text-neutral-900 dark:text-neutral-100">${order.cost.tax.toFixed(2)}</dd>
+                <dd className="text-neutral-900 dark:text-neutral-100">
+                  ${order.cost.tax.toFixed(2)}
+                </dd>
               </div>
 
               <div className="flex items-center justify-between border-t border-neutral-200 pt-6 text-neutral-900 dark:border-neutral-700 dark:text-neutral-100">
@@ -119,8 +130,14 @@ export default async function Page() {
                 <dt className="font-medium uppercase">Payment Information</dt>
                 <dd className="mt-2 space-y-2 sm:flex sm:space-y-0 sm:gap-x-4">
                   <div className="flex-none">
-                    <svg width={36} height={24} viewBox="0 0 36 24" aria-hidden="true" className="h-6 w-auto">
-                      <rect rx={4} fill="#224DBA" width={36} height={24} />
+                    <svg
+                      aria-hidden="true"
+                      width={36}
+                      viewBox="0 0 36 24"
+                      className="h-6 w-auto"
+                      height={24}
+                    >
+                      <rect width={36} fill="#224DBA" height={24} rx={4} />
                       <path
                         d="M10.925 15.673H8.874l-1.538-6c-.073-.276-.228-.52-.456-.635A6.575 6.575 0 005 8.403v-.231h3.304c.456 0 .798.347.855.75l.798 4.328 2.05-5.078h1.994l-3.076 7.5zm4.216 0h-1.937L14.8 8.172h1.937l-1.595 7.5zm4.101-5.422c.057-.404.399-.635.798-.635a3.54 3.54 0 011.88.346l.342-1.615A4.808 4.808 0 0020.496 8c-1.88 0-3.248 1.039-3.248 2.481 0 1.097.969 1.673 1.653 2.02.74.346 1.025.577.968.923 0 .519-.57.75-1.139.75a4.795 4.795 0 01-1.994-.462l-.342 1.616a5.48 5.48 0 002.108.404c2.108.057 3.418-.981 3.418-2.539 0-1.962-2.678-2.077-2.678-2.942zm9.457 5.422L27.16 8.172h-1.652a.858.858 0 00-.798.577l-2.848 6.924h1.994l.398-1.096h2.45l.228 1.096h1.766zm-2.905-5.482l.57 2.827h-1.596l1.026-2.827z"
                         fill="#fff"
@@ -147,6 +164,5 @@ export default async function Page() {
 
         <Divider />
       </main>
-    </>
-  )
+  );
 }

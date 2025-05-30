@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
-import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline'
-import { FC } from 'react'
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
+import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { type FC } from 'react';
 
 const DEMO_DATA = [
   {
@@ -48,16 +48,16 @@ const DEMO_DATA = [
   </ul>
     `,
   },
-]
+];
 
 interface Props {
-  panelClassName?: string
-  data?: typeof DEMO_DATA
+  data?: typeof DEMO_DATA;
+  panelClassName?: string;
 }
 
 const AccordionInfo: FC<Props> = ({
-  panelClassName = 'p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6',
   data = DEMO_DATA,
+  panelClassName = 'p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6',
 }) => {
   return (
     <div className="w-full space-y-2.5 rounded-2xl">
@@ -76,17 +76,17 @@ const AccordionInfo: FC<Props> = ({
                   )}
                 </DisclosureButton>
                 <DisclosurePanel className={panelClassName} as="div">
-                  <div dangerouslySetInnerHTML={{ __html: item.content }}></div>
+                  <div dangerouslySetInnerHTML={{ __html: item.content }} />
                 </DisclosurePanel>
               </div>
             )}
           </Disclosure>
-        )
+        );
       })}
 
       {/* ============ */}
     </div>
-  )
-}
+  );
+};
 
-export default AccordionInfo
+export default AccordionInfo;

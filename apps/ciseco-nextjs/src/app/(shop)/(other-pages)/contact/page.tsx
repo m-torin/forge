@@ -1,31 +1,31 @@
-import { Divider } from '@/components/Divider'
-import Label from '@/components/Label/Label'
-import SectionPromo1 from '@/components/SectionPromo1'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import Input from '@/shared/Input/Input'
-import SocialsList from '@/shared/SocialsList/SocialsList'
-import Textarea from '@/shared/Textarea/Textarea'
-import { Metadata } from 'next'
+import { Divider } from '@/components/Divider';
+import Label from '@/components/Label/Label';
+import SectionPromo1 from '@/components/SectionPromo1';
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import Input from '@/shared/Input/Input';
+import SocialsList from '@/shared/SocialsList/SocialsList';
+import Textarea from '@/shared/Textarea/Textarea';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact',
   description: 'Contact us for any inquiries or support',
-}
+  title: 'Contact',
+};
 
 const info = [
   {
-    title: '🗺 ADDRESS',
     desc: 'Photo booth tattooed prism, portland taiyaki hoodie neutra typewriter',
+    title: '🗺 ADDRESS',
   },
   {
-    title: '💌 EMAIL',
     desc: 'nc.example@example.com',
+    title: '💌 EMAIL',
   },
   {
-    title: '☎ PHONE',
     desc: '000-123-456-7890',
+    title: '☎ PHONE',
   },
-]
+];
 
 const PageContact = () => {
   return (
@@ -38,28 +38,34 @@ const PageContact = () => {
           <div className="flex max-w-sm flex-col gap-y-8">
             {info.map((item, index) => (
               <div key={index}>
-                <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">{item.title}</p>
-                <span className="mt-4 block text-neutral-500 dark:text-neutral-400">{item.desc}</span>
+                <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">
+                  {item.title}
+                </p>
+                <span className="mt-4 block text-neutral-500 dark:text-neutral-400">
+                  {item.desc}
+                </span>
               </div>
             ))}
             <div>
-              <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">🌏 SOCIALS</p>
+              <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">
+                🌏 SOCIALS
+              </p>
               <SocialsList className="mt-4" />
             </div>
           </div>
           <div>
-            <form className="grid grid-cols-1 gap-6" action="#" method="post">
+            <form action="#" method="post" className="grid grid-cols-1 gap-6">
               <label className="block">
                 <Label>Full name</Label>
-                <Input placeholder="Example Doe" type="text" className="mt-1" />
+                <Input placeholder="Example Doe" className="mt-1" type="text" />
               </label>
               <label className="block">
                 <Label>Email address</Label>
-                <Input type="email" placeholder="example@example.com" className="mt-1" />
+                <Input placeholder="example@example.com" className="mt-1" type="email" />
               </label>
               <label className="block">
                 <Label>Message</Label>
-                <Textarea className="mt-1" rows={6} />
+                <Textarea rows={6} className="mt-1" />
               </label>
               <div>
                 <ButtonPrimary type="submit">Send Message</ButtonPrimary>
@@ -74,7 +80,7 @@ const PageContact = () => {
         <SectionPromo1 />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PageContact
+export default PageContact;

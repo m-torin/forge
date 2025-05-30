@@ -1,18 +1,18 @@
-import ProductCard from '@/components/ProductCard'
-import SidebarFilters from '@/components/SidebarFilters'
-import TabFiltersPopover from '@/components/TabFiltersPopover'
-import { getProducts } from '@/data/data'
+import ProductCard from '@/components/ProductCard';
+import SidebarFilters from '@/components/SidebarFilters';
+import TabFiltersPopover from '@/components/TabFiltersPopover';
+import { getProducts } from '@/data/data';
 import {
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@/shared/Pagination/Pagination'
+} from '@/shared/Pagination/Pagination';
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
-  const { handle } = await params
-  const products = await getProducts()
+  const { handle } = await params;
+  const products = await getProducts();
 
   return (
     <main>
@@ -23,12 +23,12 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
           <TabFiltersPopover className="block lg:hidden" />
         </div>
 
-        <div className="mb-10 shrink-0 lg:mx-8 lg:mb-0"></div>
+        <div className="mb-10 shrink-0 lg:mx-8 lg:mb-0" />
 
         <div className="flex-1">
           <div className="grid flex-1 gap-x-8 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((item) => (
-              <ProductCard data={item} key={item.id} />
+              <ProductCard key={item.id} data={item} />
             ))}
           </div>
 
@@ -49,5 +49,5 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         </div>
       </div>
     </main>
-  )
+  );
 }

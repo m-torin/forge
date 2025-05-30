@@ -1,22 +1,26 @@
-'use client'
+'use client';
 
-import { getHeaderDropdownCategories } from '@/data/navigation'
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/24/solid'
-import { Link } from '../Link'
+import { type getHeaderDropdownCategories } from '@/data/navigation';
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
+import { ChevronDownIcon } from '@heroicons/react/24/solid';
+
+import { Link } from '../Link';
 
 interface Props {
-  className?: string
-  categories: Awaited<ReturnType<typeof getHeaderDropdownCategories>>
+  categories: Awaited<ReturnType<typeof getHeaderDropdownCategories>>;
+  className?: string;
 }
 
-export default function CategoriesDropdown({ className, categories }: Props) {
+export default function CategoriesDropdown({ categories, className }: Props) {
   return (
     <div className={className}>
       <Popover className="group">
         <PopoverButton className="-m-2.5 flex items-center rounded-md p-2.5 text-sm font-medium focus:outline-hidden sm:text-base">
           <span>Shops</span>
-          <ChevronDownIcon className="ms-2 size-5 text-neutral-700 group-data-open:-rotate-180" aria-hidden="true" />
+          <ChevronDownIcon
+            aria-hidden="true"
+            className="ms-2 size-5 text-neutral-700 group-data-open:-rotate-180"
+          />
         </PopoverButton>
 
         <PopoverPanel
@@ -28,7 +32,7 @@ export default function CategoriesDropdown({ className, categories }: Props) {
             {categories.map((item, index) => (
               <Link
                 key={index}
-                href={'/collections/' + item.handle}
+                href={`/collections/${item.handle}`}
                 className="flex items-center focus:outline-hidden focus-visible:ring-0"
               >
                 <div
@@ -37,7 +41,9 @@ export default function CategoriesDropdown({ className, categories }: Props) {
                 />
                 <div className="ms-4">
                   <p className="text-sm font-medium">{item.name}</p>
-                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-300">{item.description}</p>
+                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-300">
+                    {item.description}
+                  </p>
                 </div>
               </Link>
             ))}
@@ -54,5 +60,5 @@ export default function CategoriesDropdown({ className, categories }: Props) {
         </PopoverPanel>
       </Popover>
     </div>
-  )
+  );
 }

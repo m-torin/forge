@@ -1,16 +1,16 @@
-import backgroundLineSvg from '@/images/BackgroundLine.svg'
-import rightImgDemo from '@/images/promo3.png'
-import Badge from '@/shared/Badge/Badge'
-import ButtonCircle from '@/shared/Button/ButtonCircle'
-import Input from '@/shared/Input/Input'
-import NcImage from '@/shared/NcImage/NcImage'
-import { ArrowRightIcon } from '@heroicons/react/24/solid'
-import clsx from 'clsx'
-import Image from 'next/image'
-import { FC } from 'react'
+import backgroundLineSvg from '@/images/BackgroundLine.svg';
+import rightImgDemo from '@/images/promo3.png';
+import Badge from '@/shared/Badge/Badge';
+import ButtonCircle from '@/shared/Button/ButtonCircle';
+import Input from '@/shared/Input/Input';
+import NcImage from '@/shared/NcImage/NcImage';
+import { ArrowRightIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
+import Image from 'next/image';
+import { type FC } from 'react';
 
 export interface SectionPromo3Props {
-  className?: string
+  className?: string;
 }
 
 const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
@@ -19,10 +19,10 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
       <div className="relative flex flex-col rounded-2xl bg-neutral-50 p-4 pb-0 sm:rounded-[40px] sm:p-5 sm:pb-0 lg:flex-row lg:p-14 xl:px-20 xl:py-24 2xl:py-32 dark:bg-neutral-800">
         <div className="absolute inset-10">
           <Image
-            fill
             className="absolute h-full w-full object-contain object-bottom dark:opacity-5"
-            src={backgroundLineSvg}
             alt="backgroundLineSvg"
+            fill
+            src={backgroundLineSvg}
           />
         </div>
 
@@ -36,7 +36,9 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
           <ul className="mt-10 flex flex-col gap-y-4">
             <li className="flex items-center gap-x-4">
               <Badge color="purple" name="01" />
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">Savings combos</span>
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                Savings combos
+              </span>
             </li>
             <li className="flex items-center gap-x-4">
               <Badge name="02" />
@@ -44,27 +46,38 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
             </li>
             <li className="flex items-center gap-x-4">
               <Badge color="red" name="03" />
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">Premium magazines</span>
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                Premium magazines
+              </span>
             </li>
           </ul>
           <form className="relative mt-10 max-w-sm">
-            <Input required aria-required placeholder="Enter your email" type="email" rounded="rounded-full" />
-            <ButtonCircle type="submit" className="absolute top-1/2 right-1 -translate-y-1/2 transform">
+            <Input
+              placeholder="Enter your email"
+              rounded="rounded-full"
+              aria-required
+              required
+              type="email"
+            />
+            <ButtonCircle
+              className="absolute top-1/2 right-1 -translate-y-1/2 transform"
+              type="submit"
+            >
               <ArrowRightIcon className="size-4" />
             </ButtonCircle>
           </form>
         </div>
 
         <NcImage
-          alt="right hero"
           containerClassName="relative block lg:absolute lg:right-0 lg:bottom-0 mt-10 lg:mt-0 max-w-lg lg:max-w-[calc(50%-40px)]"
-          src={rightImgDemo}
-          sizes="(max-width: 768px) 100vw, 50vw"
           className=""
+          alt="right hero"
+          sizes="(max-width: 768px) 100vw, 50vw"
+          src={rightImgDemo}
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SectionPromo3
+export default SectionPromo3;

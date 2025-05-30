@@ -1,18 +1,18 @@
-import Header from '@/components/Header/Header'
-import AsideProductQuickView from '@/components/aside-product-quickview'
-import AsideSidebarCart from '@/components/aside-sidebar-cart'
-import AsideSidebarNavigation from '@/components/aside-sidebar-navigation'
-import Footer from '@/shared/Footer/Footer'
-import 'rc-slider/assets/index.css'
-import React, { ReactNode } from 'react'
+import AsideProductQuickView from '@/components/aside-product-quickview';
+import AsideSidebarCart from '@/components/aside-sidebar-cart';
+import AsideSidebarNavigation from '@/components/aside-sidebar-navigation';
+import Header from '@/components/Header/Header';
+import Footer from '@/shared/Footer/Footer';
+import 'rc-slider/assets/index.css';
+import React, { type ReactNode } from 'react';
 
 interface ComponentProps {
-  children: ReactNode
-  header?: ReactNode
-  footer?: ReactNode
+  children: ReactNode;
+  footer?: ReactNode;
+  header?: ReactNode;
 }
 
-const ApplicationLayout: React.FC<ComponentProps> = ({ children, header, footer }) => {
+const ApplicationLayout: React.FC<ComponentProps> = ({ children, footer, header }) => {
   return (
     <div>
       {header ? header : <Header hasBorderBottom />}
@@ -24,7 +24,7 @@ const ApplicationLayout: React.FC<ComponentProps> = ({ children, header, footer 
       <AsideSidebarCart />
       <AsideProductQuickView />
     </div>
-  )
-}
+  );
+};
 
-export { ApplicationLayout }
+export { ApplicationLayout };

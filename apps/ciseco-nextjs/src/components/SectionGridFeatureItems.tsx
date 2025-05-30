@@ -1,22 +1,22 @@
-import HeaderFilterSection from '@/components/HeaderFilterSection'
-import ProductCard from '@/components/ProductCard'
-import { TProductItem } from '@/data/data'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import { ArrowRightIcon } from '@heroicons/react/24/solid'
-import { FC } from 'react'
+import HeaderFilterSection from '@/components/HeaderFilterSection';
+import ProductCard from '@/components/ProductCard';
+import { type TProductItem } from '@/data/data';
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import { ArrowRightIcon } from '@heroicons/react/24/solid';
+import { type FC } from 'react';
 
 //
 export interface SectionGridFeatureItemsProps {
-  data: TProductItem[]
+  data: TProductItem[];
 }
 
 const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }) => {
   return (
     <div className="nc-SectionGridFeatureItems relative">
       <HeaderFilterSection heading="Find your favorite products." />
-      <div className={`grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {data.map((item) => (
-          <ProductCard data={item} key={item.id} />
+          <ProductCard key={item.id} data={item} />
         ))}
       </div>
       <div className="mt-16 flex items-center justify-center">
@@ -26,7 +26,7 @@ const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }) => 
         </ButtonPrimary>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SectionGridFeatureItems
+export default SectionGridFeatureItems;

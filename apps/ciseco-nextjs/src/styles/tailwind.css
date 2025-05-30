@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/aspect-ratio";
 
@@ -48,10 +48,10 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 
-  [type='button'] {
+  [type="button"] {
     -webkit-appearance: none !important;
   }
-  input[type='time']::-webkit-calendar-picker-indicator {
+  input[type="time"]::-webkit-calendar-picker-indicator {
     @apply rounded-md dark:bg-neutral-500;
   }
 }
@@ -233,7 +233,7 @@ root {
 
 /* MENU */
 .menuIsNew_lv1 > a::before {
-  content: 'New!';
+  content: "New!";
   position: absolute;
   top: -2px;
   right: 0;
@@ -247,7 +247,7 @@ root {
   font-weight: normal;
 }
 .menuIsNew > a::after {
-  content: 'New!';
+  content: "New!";
   display: inline-block;
   padding: 0 5px;
   line-height: 15px;

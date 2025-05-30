@@ -1,19 +1,19 @@
-import I404Png from '@/images/404.png'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import NcImage from '@/shared/NcImage/NcImage'
-import { Metadata } from 'next'
+import I404Png from '@/images/404.png';
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import NcImage from '@/shared/NcImage/NcImage';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Page Not Found',
   description: "The page you were looking for doesn't exist.",
-}
+  title: 'Page Not Found',
+};
 
 const Page404 = () => (
   <div className="nc-Page404">
     <div className="relative container pt-5 pb-16 lg:pt-5 lg:pb-20">
       {/* HEADER */}
       <header className="mx-auto max-w-2xl space-y-2 text-center">
-        <NcImage src={I404Png} alt="not-found" />
+        <NcImage alt="not-found" src={I404Png} />
         <span className="block text-sm font-medium tracking-wider text-neutral-800 sm:text-base dark:text-neutral-200">
           {`THE PAGE YOU WERE LOOKING FOR DOESN'T EXIST.`}{' '}
         </span>
@@ -23,6 +23,6 @@ const Page404 = () => (
       </header>
     </div>
   </div>
-)
+);
 
-export default Page404
+export default Page404;

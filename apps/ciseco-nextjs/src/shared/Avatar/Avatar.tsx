@@ -1,34 +1,34 @@
-import VerifyIcon from '@/components/VerifyIcon'
-import avatarImage from '@/images/users/avatar4.jpg'
-import Image, { StaticImageData } from 'next/image'
-import { FC } from 'react'
+import VerifyIcon from '@/components/VerifyIcon';
+import avatarImage from '@/images/users/avatar4.jpg';
+import Image, { type StaticImageData } from 'next/image';
+import { type FC } from 'react';
 
 export interface AvatarProps {
-  containerClassName?: string
-  sizeClass?: string
-  radius?: string
-  imgUrl?: string | StaticImageData
-  userName?: string
-  hasChecked?: boolean
-  hasCheckedClass?: string
+  containerClassName?: string;
+  hasChecked?: boolean;
+  hasCheckedClass?: string;
+  imgUrl?: string | StaticImageData;
+  radius?: string;
+  sizeClass?: string;
+  userName?: string;
 }
 
 const Avatar: FC<AvatarProps> = ({
   containerClassName = 'ring-1 ring-white dark:ring-neutral-900',
-  sizeClass = 'size-6 text-sm',
-  radius = 'rounded-full',
-  imgUrl = avatarImage.src,
-  userName,
   hasChecked,
   hasCheckedClass = 'w-4 h-4 bottom-1 -right-0.5',
+  imgUrl = avatarImage.src,
+  radius = 'rounded-full',
+  sizeClass = 'size-6 text-sm',
+  userName,
 }) => {
-  const url = imgUrl || ''
-  const name = userName || 'John Doe'
+  const url = imgUrl || '';
+  const name = userName || 'John Doe';
   const _setBgColor = (name: string) => {
-    const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FF8C33']
-    const index = name.charCodeAt(0) % colors.length
-    return colors[index]
-  }
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FF8C33'];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
 
   return (
     <div
@@ -37,11 +37,11 @@ const Avatar: FC<AvatarProps> = ({
     >
       {url && (
         <Image
+          className={`absolute inset-0 h-full w-full object-cover ${radius}`}
+          alt={name}
           fill
           sizes="100px"
-          className={`absolute inset-0 h-full w-full object-cover ${radius}`}
           src={url}
-          alt={name}
         />
       )}
       <span className="wil-avatar__name">{name[0]}</span>
@@ -52,7 +52,7 @@ const Avatar: FC<AvatarProps> = ({
         </span>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Avatar
+export default Avatar;

@@ -1,56 +1,62 @@
-import { Divider } from '@/components/Divider'
-import HeaderFilterSection from '@/components/HeaderFilterSection'
-import ProductCard from '@/components/ProductCard'
-import SectionPromo1 from '@/components/SectionPromo1'
-import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
-import { getProducts } from '@/data/data'
-import ButtonCircle from '@/shared/Button/ButtonCircle'
-import Input from '@/shared/Input/Input'
+import { Divider } from '@/components/Divider';
+import HeaderFilterSection from '@/components/HeaderFilterSection';
+import ProductCard from '@/components/ProductCard';
+import SectionPromo1 from '@/components/SectionPromo1';
+import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct';
+import { getProducts } from '@/data/data';
+import ButtonCircle from '@/shared/Button/ButtonCircle';
+import Input from '@/shared/Input/Input';
 import {
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@/shared/Pagination/Pagination'
-import { ArrowRightIcon } from '@heroicons/react/24/outline'
-import { Search01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Metadata } from 'next'
+} from '@/shared/Pagination/Pagination';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { Search01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Search',
   description: 'Search page for products',
-}
+  title: 'Search',
+};
 
 const PageSearch = async () => {
-  const products = await getProducts()
-  const featuredProducts = products.slice(0, 4)
+  const products = await getProducts();
+  const featuredProducts = products.slice(0, 4);
 
   return (
     <div>
-      <div className={'top-0 right-0 left-0 h-24 w-full bg-primary-50 2xl:h-28 dark:bg-neutral-800/20'} />
+      <div
+        className="top-0 right-0 left-0 h-24 w-full bg-primary-50 2xl:h-28 dark:bg-neutral-800/20"
+      />
       <div className="container">
         <header className="mx-auto -mt-10 flex max-w-2xl flex-col lg:-mt-7">
-          <form className="relative w-full" method="post">
+          <form method="post" className="relative w-full">
             <label htmlFor="search-input" className="text-neutral-500 dark:text-neutral-300">
               <span className="sr-only">Search all icons</span>
               <HugeiconsIcon
-                className="absolute top-1/2 left-5 -translate-y-1/2 transform text-2xl md:left-6"
-                icon={Search01Icon}
-                size={24}
-                color="currentColor"
                 strokeWidth={1.5}
+                color="currentColor"
+                icon={Search01Icon}
+                className="absolute top-1/2 left-5 -translate-y-1/2 transform text-2xl md:left-6"
+                size={24}
               />
               <Input
-                className="border-0 shadow-lg dark:border"
                 id="search-input"
-                type="search"
                 placeholder="Type your keywords"
-                sizeClass="pl-14 py-5 pr-5 md:pl-16"
                 rounded="rounded-full"
+                className="border-0 shadow-lg dark:border"
+                sizeClass="pl-14 py-5 pr-5 md:pl-16"
+                type="search"
               />
-              <ButtonCircle className="absolute top-1/2 right-2.5 -translate-y-1/2" size="size-11" type="submit">
+              <ButtonCircle
+                className="absolute top-1/2 right-2.5 -translate-y-1/2"
+                size="size-11"
+                type="submit"
+              >
                 <ArrowRightIcon className="size-5 text-white" />
               </ButtonCircle>
             </label>
@@ -66,7 +72,7 @@ const PageSearch = async () => {
           {/* LOOP ITEMS */}
           <div className="mt-8 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((item) => (
-              <ProductCard data={item} key={item.id} />
+              <ProductCard key={item.id} data={item} />
             ))}
           </div>
 
@@ -93,7 +99,7 @@ const PageSearch = async () => {
         <SectionPromo1 />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PageSearch
+export default PageSearch;

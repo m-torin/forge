@@ -1,9 +1,9 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
 
 export const metadata = {
-  title: 'Account - Payments & payouts',
   description: 'Account - Payments & payouts page',
-}
+  title: 'Account - Payments & payouts',
+};
 
 const Page = () => {
   return (
@@ -23,8 +23,9 @@ const Page = () => {
           which can be set up below. Go to FAQ.`}
           <br />
           <br />
-          To get paid, you need to set up a payout method releases payouts about 24 hours after a guest’s scheduled
-          time. The time it takes for the funds to appear in your account depends on your payout method.{` `}
+          To get paid, you need to set up a payout method releases payouts about 24 hours after a
+          guest’s scheduled time. The time it takes for the funds to appear in your account depends
+          on your payout method.{` `}
           <a href="##">Learn more</a>
         </span>
         <div className="pt-10">
@@ -32,7 +33,7 @@ const Page = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

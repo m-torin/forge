@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import Logo from '@/shared/Logo/Logo'
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
-import { Cancel01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import clsx from 'clsx'
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import Logo from '@/shared/Logo/Logo';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
+import { Cancel01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import clsx from 'clsx';
+import { createContext, type ReactNode, useContext, useState } from 'react';
 
 /**
  * Drawer component that opens on user click.
@@ -16,31 +16,31 @@ import { createContext, useContext, useState, type ReactNode } from 'react'
  * @param children - react children node.
  */
 export function Aside({
+  contentMaxWidthClassName = 'max-w-lg',
+  type,
+  children,
   heading,
   logoOnHeading = false,
   openFrom = 'right',
-  children,
-  type,
-  contentMaxWidthClassName = 'max-w-lg',
   showHeading = true,
 }: {
-  heading?: string
-  logoOnHeading?: boolean
-  openFrom: 'right' | 'left'
-  children: React.ReactNode
-  type: AsideType
-  contentMaxWidthClassName?: string
-  showHeading?: boolean
+  heading?: string;
+  logoOnHeading?: boolean;
+  openFrom: 'right' | 'left';
+  children: React.ReactNode;
+  type: AsideType;
+  contentMaxWidthClassName?: string;
+  showHeading?: boolean;
 }) {
-  const { type: activeType, close } = useAside()
-  const open = type === activeType
+  const { type: activeType, close } = useAside();
+  const open = type === activeType;
 
-  const onClose = close
+  const onClose = close;
 
-  const hasHeading = !!heading || logoOnHeading
+  const hasHeading = !!heading || logoOnHeading;
 
   return (
-    <Dialog as="div" className="relative z-50" onClose={onClose} open={open}>
+    <Dialog onClose={onClose} open={open} className="relative z-50" as="div">
       <DialogBackdrop
         transition
         className="fixed inset-0 bg-neutral-900/50 duration-300 ease-out data-closed:opacity-0"
@@ -48,14 +48,16 @@ export function Aside({
 
       <div className="fixed inset-0">
         <div className="absolute inset-0 overflow-hidden">
-          <div className={clsx('fixed inset-y-0 flex max-w-full', openFrom === 'right' && 'right-0')}>
+          <div
+            className={clsx('fixed inset-y-0 flex max-w-full', openFrom === 'right' && 'right-0')}
+          >
             <DialogPanel
               transition
               className={clsx(
                 contentMaxWidthClassName,
                 'h-screen w-screen translate-x-0 overflow-hidden bg-white text-start align-middle shadow-xl transition duration-200 ease-in-out dark:bg-neutral-800',
                 openFrom === 'left' && 'data-closed:-translate-x-20 data-closed:opacity-0',
-                openFrom === 'right' && 'data-closed:translate-x-20 data-closed:opacity-0'
+                openFrom === 'right' && 'data-closed:translate-x-20 data-closed:opacity-0',
               )}
             >
               <div className="flex h-full flex-col px-4 md:px-8">
@@ -76,12 +78,16 @@ export function Aside({
                       </>
                     )}
 
-                    <button type="button" className="group -m-4 cursor-pointer p-4" onClick={onClose}>
+                    <button
+                      onClick={onClose}
+                      className="group -m-4 cursor-pointer p-4"
+                      type="button"
+                    >
                       <HugeiconsIcon
-                        className="transition-transform duration-200 group-hover:rotate-90"
-                        icon={Cancel01Icon}
-                        size={24}
                         strokeWidth={1}
+                        icon={Cancel01Icon}
+                        className="transition-transform duration-200 group-hover:rotate-90"
+                        size={24}
                       />
                     </button>
                   </header>
@@ -93,64 +99,70 @@ export function Aside({
         </div>
       </div>
     </Dialog>
-  )
+  );
 }
 
 /* Use for associating arialabelledby with the title*/
-Aside.Title = DialogTitle
+Aside.Title = DialogTitle;
 
 export function useDrawer(openDefault = false) {
-  const [isOpen, setIsOpen] = useState(openDefault)
+  const [isOpen, setIsOpen] = useState(openDefault);
 
   function openDrawer() {
-    setIsOpen(true)
+    setIsOpen(true);
   }
 
   function closeDrawer() {
-    setIsOpen(false)
+    setIsOpen(false);
   }
 
   return {
+    closeDrawer,
     isOpen,
     openDrawer,
-    closeDrawer,
-  }
+  };
 }
 
-type AsideType = 'search' | 'cart' | 'closed' | 'sidebar-navigation' | 'category-filters' | 'product-quick-view'
-type AsideContextValue = {
-  type: AsideType
-  open: (mode: AsideType) => void
-  close: () => void
-  productQuickViewHandle?: string
-  setProductQuickViewHandle: (handle: string) => void
+type AsideType =
+  | 'search'
+  | 'cart'
+  | 'closed'
+  | 'sidebar-navigation'
+  | 'category-filters'
+  | 'product-quick-view';
+interface AsideContextValue {
+  close: () => void;
+  open: (mode: AsideType) => void;
+  productQuickViewHandle?: string;
+  setProductQuickViewHandle: (handle: string) => void;
+  type: AsideType;
 }
 //
-const AsideContext = createContext<AsideContextValue | null>(null)
+const AsideContext = createContext<AsideContextValue | null>(null);
 
 export function AsideProvider({ children }: { children: ReactNode }) {
-  const [type, setType] = useState<AsideType>('closed')
-  const [productQuickViewHandle, setProductQuickViewHandle] = useState<string>()
+  const [type, setType] = useState<AsideType>('closed');
+  const [productQuickViewHandle, setProductQuickViewHandle] = useState<string>();
 
   return (
     <AsideContext.Provider
       value={{
         type,
-        open: setType,
         close: () => setType('closed'),
+        open: setType,
         productQuickViewHandle,
         setProductQuickViewHandle,
       }}
     >
       {children}
     </AsideContext.Provider>
-  )
+  );
 }
 
 export function useAside() {
-  const aside = useContext(AsideContext)
+  const aside = useContext(AsideContext);
   if (!aside) {
-    throw new Error('useAside must be used within an AsideProvider')
+    throw new Error('useAside must be used within an AsideProvider');
   }
-  return aside
+  return aside;
 }

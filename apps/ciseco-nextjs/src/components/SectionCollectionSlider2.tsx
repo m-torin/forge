@@ -1,54 +1,57 @@
-'use client'
+'use client';
 
-import Heading from '@/components/Heading/Heading'
-import { TCollection } from '@/data/data'
-import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
-import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import clsx from 'clsx'
-import type { EmblaOptionsType } from 'embla-carousel'
-import useEmblaCarousel from 'embla-carousel-react'
-import Link from 'next/link'
-import { FC } from 'react'
-import CollectionCard2 from './CollectionCard2'
+import Heading from '@/components/Heading/Heading';
+import { type TCollection } from '@/data/data';
+import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons';
+import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import clsx from 'clsx';
+import useEmblaCarousel from 'embla-carousel-react';
+import Link from 'next/link';
+import { type FC } from 'react';
+
+import CollectionCard2 from './CollectionCard2';
+
+import type { EmblaOptionsType } from 'embla-carousel';
 
 export interface SectionSliderCategoriesProps {
-  className?: string
-  collections: TCollection[]
-  subHeading?: string
-  heading?: string
-  headingDim?: string
-  emblaOptions?: EmblaOptionsType
+  className?: string;
+  collections: TCollection[];
+  emblaOptions?: EmblaOptionsType;
+  heading?: string;
+  headingDim?: string;
+  subHeading?: string;
 }
 
 const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
-  heading = 'Shop by department',
-  headingDim = 'Explore the absolute',
-  subHeading,
   className,
   collections,
   emblaOptions = {
     slidesToScroll: 'auto',
   },
+  heading = 'Shop by department',
+  headingDim = 'Explore the absolute',
+  subHeading,
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
-  const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
+  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
+    useCarouselArrowButtons(emblaApi);
 
   return (
     <div className={clsx(className)}>
       <Heading
         description={subHeading}
+        onClickNext={onNextButtonClick}
+        onClickPrev={onPrevButtonClick}
         hasNextPrev
         headingDim={headingDim}
-        prevBtnDisabled={prevBtnDisabled}
         nextBtnDisabled={nextBtnDisabled}
-        onClickPrev={onPrevButtonClick}
-        onClickNext={onNextButtonClick}
+        prevBtnDisabled={prevBtnDisabled}
       >
         {heading}
       </Heading>
 
-      <div className={'embla'} ref={emblaRef}>
+      <div ref={emblaRef} className="embla">
         <div className="-ms-5 embla__container sm:-ms-8">
           {collections.map((collection) => (
             <div
@@ -66,26 +69,26 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
                   <div className="relative flex text-neutral-900">
                     <span className="text-lg font-semibold">More collections</span>
                     <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      size={24}
-                      className="absolute left-full ms-2 size-5 group-hover:scale-110"
-                      color="currentColor"
                       strokeWidth={1.5}
+                      color="currentColor"
+                      icon={ArrowUpRight01Icon}
+                      className="absolute left-full ms-2 size-5 group-hover:scale-110"
+                      size={24}
                     />
                   </div>
                   <span className="mt-1 text-sm text-neutral-800">Show me more</span>
                 </div>
               </div>
               <Link
-                href={'/collections/all'}
+                href="/collections/all"
                 className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover:opacity-100"
-              ></Link>
+               />
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SectionCollectionSlider2
+export default SectionCollectionSlider2;

@@ -1,14 +1,15 @@
-import { Divider } from '@/components/Divider'
-import Header2 from '@/components/Header/Header2'
-import AsideProductQuickView from '@/components/aside-product-quickview'
-import AsideSidebarCart from '@/components/aside-sidebar-cart'
-import AsideSidebarNavigation from '@/components/aside-sidebar-navigation'
-import Footer from '@/shared/Footer/Footer'
-import React, { FC } from 'react'
-import PageTab from './PageTab'
+import AsideProductQuickView from '@/components/aside-product-quickview';
+import AsideSidebarCart from '@/components/aside-sidebar-cart';
+import AsideSidebarNavigation from '@/components/aside-sidebar-navigation';
+import { Divider } from '@/components/Divider';
+import Header2 from '@/components/Header/Header2';
+import Footer from '@/shared/Footer/Footer';
+import React, { type FC } from 'react';
+
+import PageTab from './PageTab';
 
 interface Props {
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 const Layout: FC<Props> = ({ children }) => {
@@ -21,7 +22,9 @@ const Layout: FC<Props> = ({ children }) => {
             <div className="max-w-2xl">
               <h2 className="text-3xl font-semibold xl:text-4xl">Account</h2>
               <span className="mt-4 block text-base text-neutral-500 sm:text-lg dark:text-neutral-400">
-                <span className="font-semibold text-neutral-900 dark:text-neutral-200">Enrico Cole,</span>{' '}
+                <span className="font-semibold text-neutral-900 dark:text-neutral-200">
+                  Enrico Cole,
+                </span>{' '}
                 ciseco@gmail.com · Los Angeles, CA
               </span>
             </div>
@@ -40,7 +43,7 @@ const Layout: FC<Props> = ({ children }) => {
       <AsideSidebarCart />
       <AsideProductQuickView />
     </>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;

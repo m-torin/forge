@@ -1,18 +1,18 @@
 export const variants = (x = 1000, opacity = 0) => ({
+  center: {
+    opacity: 1,
+    x: 0,
+  },
   enter: (direction: number) => {
     return {
-      x: direction > 0 ? x : -x,
       opacity,
+      x: direction > 0 ? x : -x,
     };
-  },
-  center: {
-    x: 0,
-    opacity: 1,
   },
   exit: (direction: number) => {
     return {
-      x: direction < 0 ? x : -x,
       opacity,
+      x: direction < 0 ? x : -x,
     };
   },
 });

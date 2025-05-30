@@ -1,17 +1,18 @@
-import Header from '@/components/Header/Header'
-import { FC } from 'react'
-import { ApplicationLayout } from '../application-layout'
+import Header from '@/components/Header/Header';
+import { type FC } from 'react';
+
+import { ApplicationLayout } from '../application-layout';
 
 interface Props {
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 const Layout: FC<Props> = ({ children }) => {
   return (
-    <ApplicationLayout header={<Header hasBorderBottom />} footer={<div />}>
+    <ApplicationLayout footer={<div />} header={<Header hasBorderBottom />}>
       {children}
     </ApplicationLayout>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;

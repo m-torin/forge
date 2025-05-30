@@ -1,11 +1,11 @@
-import Label from '@/components/Label/Label'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import Input from '@/shared/Input/Input'
+import Label from '@/components/Label/Label';
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import Input from '@/shared/Input/Input';
 
 export const metadata = {
-  title: 'Account - Password',
   description: 'Account - Password page',
-}
+  title: 'Account - Password',
+};
 
 const Page = () => {
   return (
@@ -21,22 +21,22 @@ const Page = () => {
       <div className="flex max-w-xl flex-col gap-y-6">
         <div>
           <Label>Current password</Label>
-          <Input type="password" className="mt-1.5" />
+          <Input className="mt-1.5" type="password" />
         </div>
         <div>
           <Label>New password</Label>
-          <Input type="password" className="mt-1.5" />
+          <Input className="mt-1.5" type="password" />
         </div>
         <div>
           <Label>Confirm password</Label>
-          <Input type="password" className="mt-1.5" />
+          <Input className="mt-1.5" type="password" />
         </div>
         <div className="pt-2">
           <ButtonPrimary>Update password</ButtonPrimary>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

@@ -1,28 +1,29 @@
-import Heading from '@/components/Heading/Heading'
-import { TBlogPost } from '@/data/data'
+import Heading from '@/components/Heading/Heading';
+import { type TBlogPost } from '@/data/data';
 import {
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@/shared/Pagination/Pagination'
-import { FC } from 'react'
-import PostCard1 from './PostCard1'
+} from '@/shared/Pagination/Pagination';
+import { type FC } from 'react';
+
+import PostCard1 from './PostCard1';
 
 //
 export interface SectionLatestPostsProps {
-  className?: string
-  posts: TBlogPost[]
+  className?: string;
+  posts: TBlogPost[];
 }
 
 const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }) => {
   return (
     <div className={`relative ${className}`}>
       <Heading>Latest Articles 🎈</Heading>
-      <div className={'grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 sm:gap-y-16 lg:grid-cols-3'}>
+      <div className="grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 sm:gap-y-16 lg:grid-cols-3">
         {posts.map((post) => (
-          <PostCard1 size="sm" key={post.id} post={post} />
+          <PostCard1 key={post.id} post={post} size="sm" />
         ))}
       </div>
       <div className="mt-16 flex justify-center md:mt-24">
@@ -40,7 +41,7 @@ const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }
         </Pagination>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SectionGridPosts
+export default SectionGridPosts;

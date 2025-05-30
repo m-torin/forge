@@ -1,13 +1,13 @@
-import backgroundLineSvg from '@/images/Moon.svg'
-import rightImgDemo from '@/images/promo2.png'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import Logo from '@/shared/Logo/Logo'
-import clsx from 'clsx'
-import Image from 'next/image'
-import { FC } from 'react'
+import backgroundLineSvg from '@/images/Moon.svg';
+import rightImgDemo from '@/images/promo2.png';
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import Logo from '@/shared/Logo/Logo';
+import clsx from 'clsx';
+import Image from 'next/image';
+import { type FC } from 'react';
 
 export interface SectionPromo2Props {
-  className?: string
+  className?: string;
 }
 
 const SectionPromo2: FC<SectionPromo2Props> = ({ className }) => {
@@ -15,7 +15,12 @@ const SectionPromo2: FC<SectionPromo2Props> = ({ className }) => {
     <div className={clsx(className, 'xl:pt-10 2xl:pt-24')}>
       <div className="relative flex flex-col rounded-2xl bg-yellow-50 p-4 pb-0 sm:rounded-[40px] sm:p-5 sm:pb-0 lg:flex-row lg:justify-end lg:p-14 xl:px-20 xl:py-24 2xl:py-32 dark:bg-neutral-800">
         <div className="absolute inset-5">
-          <Image fill className="object-contain dark:opacity-5" src={backgroundLineSvg} alt="backgroundLineSvg" />
+          <Image
+            className="object-contain dark:opacity-5"
+            alt="backgroundLineSvg"
+            fill
+            src={backgroundLineSvg}
+          />
         </div>
 
         <div className="relative max-w-lg lg:w-[45%]">
@@ -35,11 +40,16 @@ const SectionPromo2: FC<SectionPromo2Props> = ({ className }) => {
         </div>
 
         <div className="relative mt-10 block max-w-xl lg:absolute lg:bottom-0 lg:left-0 lg:mt-0 lg:max-w-[calc(55%-40px)]">
-          <Image alt="section promo 2" src={rightImgDemo} sizes="(max-width: 768px) 100vw, 50vw" className="" />
+          <Image
+            className=""
+            alt="section promo 2"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            src={rightImgDemo}
+          />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SectionPromo2
+export default SectionPromo2;

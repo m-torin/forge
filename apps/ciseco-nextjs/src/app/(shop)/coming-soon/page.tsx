@@ -1,12 +1,12 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import Input from '@/shared/Input/Input'
-import { Metadata } from 'next'
-import Link from 'next/link'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import Input from '@/shared/Input/Input';
+import { type Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Coming Soon',
   description: 'Coming soon page for the application',
-}
+  title: 'Coming Soon',
+};
 
 const Page = () => {
   return (
@@ -23,14 +23,14 @@ const Page = () => {
 
       <div className="mx-auto flex max-w-md flex-col gap-y-6">
         {/* FORM */}
-        <form className="grid grid-cols-1 gap-5" action="#" method="post">
+        <form action="#" method="post" className="grid grid-cols-1 gap-5">
           <label className="block">
             <Input
-              type="email"
+              fontClass="text-base font-normal"
               placeholder="Your email address"
               className="mt-1"
               sizeClass="h-[52px] px-5 py-3"
-              fontClass="text-base font-normal"
+              type="email"
             />
           </label>
           <ButtonPrimary type="submit">Notify Me</ButtonPrimary>
@@ -46,7 +46,7 @@ const Page = () => {
         </span>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

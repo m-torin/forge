@@ -1,15 +1,15 @@
-import ProductCard from '@/components/ProductCard'
-import { getProducts } from '@/data/data'
-import ButtonSecondary from '@/shared/Button/ButtonSecondary'
-import { Metadata } from 'next'
+import ProductCard from '@/components/ProductCard';
+import { getProducts } from '@/data/data';
+import ButtonSecondary from '@/shared/Button/ButtonSecondary';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Saved Products',
   description: 'Saved Products page',
-}
+  title: 'Saved Products',
+};
 
 const Page = async () => {
-  const products = (await getProducts()).slice(0, 6)
+  const products = (await getProducts()).slice(0, 6);
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
@@ -30,7 +30,7 @@ const Page = async () => {
         <ButtonSecondary loading>Show me more</ButtonSecondary>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

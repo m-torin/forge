@@ -1,47 +1,52 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import ButtonSecondary from '@/shared/Button/ButtonSecondary'
-import { CheckIcon } from '@heroicons/react/24/solid'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import ButtonSecondary from '@/shared/Button/ButtonSecondary';
+import { CheckIcon } from '@heroicons/react/24/solid';
 
 export interface PricingItem {
-  isPopular: boolean
-  name: string
-  pricing: string
-  desc: string
-  per: string
-  features: string[]
+  desc: string;
+  features: string[];
+  isPopular: boolean;
+  name: string;
+  per: string;
+  pricing: string;
 }
 
 const pricings: PricingItem[] = [
   {
-    isPopular: false,
     name: 'Starter',
-    pricing: '$5',
-    per: '/mo',
+    desc: ` Literally you probably haven't heard of them jean shorts.`,
     features: ['Automated Reporting', 'Faster Processing', 'Customizations'],
-    desc: ` Literally you probably haven't heard of them jean shorts.`,
-  },
-  {
-    isPopular: true,
-    name: 'Basic',
-    pricing: '$15',
-    per: '/mo',
-    features: ['Everything in Starter', '100 Builds', 'Progress Reports', 'Premium Support'],
-    desc: ` Literally you probably haven't heard of them jean shorts.`,
-  },
-  {
     isPopular: false,
-    name: 'Plus',
-    pricing: '$25',
     per: '/mo',
-    features: ['Everything in Basic', 'Unlimited Builds', 'Advanced Analytics', 'Company Evaluations'],
-    desc: ` Literally you probably haven't heard of them jean shorts.`,
+    pricing: '$5',
   },
-]
+  {
+    name: 'Basic',
+    desc: ` Literally you probably haven't heard of them jean shorts.`,
+    features: ['Everything in Starter', '100 Builds', 'Progress Reports', 'Premium Support'],
+    isPopular: true,
+    per: '/mo',
+    pricing: '$15',
+  },
+  {
+    name: 'Plus',
+    desc: ` Literally you probably haven't heard of them jean shorts.`,
+    features: [
+      'Everything in Basic',
+      'Unlimited Builds',
+      'Advanced Analytics',
+      'Company Evaluations',
+    ],
+    isPopular: false,
+    per: '/mo',
+    pricing: '$25',
+  },
+];
 
 export const metadata = {
-  title: 'Subscription',
   description: 'Subscription page for products',
-}
+  title: 'Subscription',
+};
 
 const PageSubcription = () => {
   const renderPricingItem = (pricing: PricingItem, index: number) => {
@@ -68,9 +73,9 @@ const PageSubcription = () => {
         </div>
         <nav className="mb-8 space-y-4">
           {pricing.features.map((item, index) => (
-            <li className="flex items-center" key={index}>
+            <li key={index} className="flex items-center">
               <span className="mr-4 inline-flex shrink-0 text-primary-600">
-                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                <CheckIcon aria-hidden="true" className="h-5 w-5" />
               </span>
               <span className="text-neutral-700 dark:text-neutral-300">{item}</span>
             </li>
@@ -87,8 +92,8 @@ const PageSubcription = () => {
           <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">{pricing.desc}</p>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="container pb-24 lg:pb-32">
@@ -105,7 +110,7 @@ const PageSubcription = () => {
         <div className="grid gap-5 lg:grid-cols-3 xl:gap-8">{pricings.map(renderPricingItem)}</div>
       </section>
     </div>
-  )
-}
+  );
+};
 
-export default PageSubcription
+export default PageSubcription;
