@@ -289,8 +289,8 @@ export default function WorkersPage() {
                             </Text>
 
                             <Stack gap="xs">
-                              {workflow.features.slice(0, 3).map((feature, index) => (
-                                <Group key={index} gap="xs">
+                              {workflow.features.slice(0, 3).map((feature) => (
+                                <Group key={feature} gap="xs">
                                   <ThemeIcon color="teal" size="xs" variant="light">
                                     <IconCheck size={12} />
                                   </ThemeIcon>
@@ -376,7 +376,7 @@ export default function WorkersPage() {
                                       payloadsMap.get(workflow.id) || '{}',
                                     );
                                     triggerWorkflowWithExample(workflow, payload);
-                                  } catch (error) {
+                                  } catch {
                                     // Invalid JSON - validation error will show
                                   }
                                 }}

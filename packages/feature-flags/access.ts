@@ -14,9 +14,9 @@ export const getFlags = async (request: NextRequest) => {
     Object.values(flags).map((flag) => [
       flag.key,
       {
-        description: flag.description,
-        options: flag.options,
-        origin: flag.origin,
+        description: (flag as any).description,
+        options: (flag as any).options,
+        origin: (flag as any).origin,
       },
     ]),
   );

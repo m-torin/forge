@@ -1,7 +1,7 @@
 import { Client } from '@upstash/workflow';
 
-import { devLog } from '../../utils/observability';
 import { getDomain, normalizeUrl } from '../../utils/helpers';
+import { devLog } from '../../utils/observability';
 
 /**
  * Start local QStash server for development
@@ -32,7 +32,7 @@ export function createLocalWorkflowClient(options?: { token?: string; baseUrl?: 
   }
 
   const baseUrl = options?.baseUrl || process.env.QSTASH_URL;
-  
+
   return new Client({
     baseUrl: baseUrl ? normalizeUrl(baseUrl) : undefined,
     token: options?.token || process.env.QSTASH_TOKEN!,

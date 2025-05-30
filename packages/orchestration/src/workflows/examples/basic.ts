@@ -1,6 +1,7 @@
 import { createResponse, extractPayload, validatePayload, workflowError } from '../../runtime';
 import { withDeduplication } from '../../runtime/deduplication';
-import { formatPercentage } from '../../utils/helpers';
+import { formatPercentage, isDevelopment } from '../../utils/helpers';
+import { devLog } from '../../utils/observability';
 
 import type { EnhancedContext } from '../../runtime';
 import type { WorkflowContext } from '../../utils/types';
@@ -26,7 +27,7 @@ export interface BasicWorkflowPayload {
   requiresValidation?: boolean;
   taskId?: string;
   tasks: { id: string; priority: number; data: any }[];
-  
+
   // Explicit deduplication support
   dedupId?: string;
 }
@@ -34,7 +35,7 @@ export interface BasicWorkflowPayload {
 // Main Basic workflow logic
 export async function basicWorkflow(context: EnhancedContext<BasicWorkflowPayload>) {
   // Development logging
-  context.dev.log('Starting basic workflow', {
+  devLog.workflow(context, 'Starting basic workflow', {
     payload: context.requestPayload,
     workflowRunId: context.workflowRunId,
   });
@@ -48,7 +49,13 @@ export async function basicWorkflow(context: EnhancedContext<BasicWorkflowPayloa
     tasks: [],
   });
 
-  const { requiresValidation, name, requiresApproval, taskId, tasks } = payload;
+  const {
+    requiresValidation: _requiresValidation,
+    name,
+    requiresApproval: _requiresApproval,
+    taskId: _taskId,
+    tasks,
+  } = payload;
 
   // Handle deduplication with flexible ID extraction
   const result = await withDeduplication(
@@ -64,12 +71,12 @@ export async function basicWorkflow(context: EnhancedContext<BasicWorkflowPayloa
         return workflowError.validation('Tasks must be a non-empty array');
       }
 
-      context.dev.log(`Starting enhanced basic workflow: ${name}`);
-      context.dev.log(`Processing ${tasks.length} tasks with enhanced features`);
+      devLog.workflow(context, `Starting enhanced basic workflow: ${name}`);
+      devLog.workflow(context, `Processing ${tasks.length} tasks with enhanced features`);
 
       return processEnhancedBasicWorkflow(context, payload);
     },
-    { 
+    {
       debug: context.dev?.isDevelopment,
       // Uses dedupId by default, with fallback to taskId for compatibility
     },
@@ -89,7 +96,7 @@ async function processEnhancedBasicWorkflow(
   let taskValidationResult = null;
   if (requiresValidation) {
     taskValidationResult = await context.run('validate-task-requirements', async () => {
-      context.dev.log(`Validating requirements for task ${taskId}`);
+      devLog.workflow(context, `Validating requirements for task ${taskId}`);
 
       // Simulate parallel validation checks (like inventory, fraud detection)
       const [resourceCheck, qualityCheck, securityCheck] = await Promise.all([
@@ -98,7 +105,7 @@ async function processEnhancedBasicWorkflow(
           setTimeout(
             () =>
               resolve({
-                available: Math.random() > 0.1,
+                available: true,
                 resources: ['cpu', 'memory', 'storage'],
                 status: 'checked',
               }),
@@ -112,8 +119,8 @@ async function processEnhancedBasicWorkflow(
             () =>
               resolve({
                 criteria: ['format', 'completeness', 'accuracy'],
-                passed: Math.random() > 0.05,
-                score: Math.floor(Math.random() * 20) + 80,
+                passed: true,
+                score: 95,
               }),
             700,
           ),
@@ -121,15 +128,26 @@ async function processEnhancedBasicWorkflow(
 
         // Security validation
         new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                checks: ['auth', 'permissions', 'integrity'],
-                riskLevel: 'low',
-                secure: Math.random() > 0.02,
-              }),
-            300,
-          ),
+          setTimeout(() => {
+            // Check for QStash signature header
+            const hasSignature = context.headers?.['upstash-signature'] !== undefined;
+
+            // Always pass in development mode
+            const secure = context.dev?.isDevelopment || hasSignature;
+
+            devLog.workflow(context, 'Security check', {
+              hasSignature,
+              headers: Object.keys(context.headers || {}),
+              isDevelopment: context.dev?.isDevelopment,
+              secure,
+            });
+
+            resolve({
+              checks: ['auth', 'permissions', 'integrity'],
+              riskLevel: secure ? 'low' : 'high',
+              secure,
+            });
+          }, 300),
         ),
       ]);
 
@@ -158,7 +176,8 @@ async function processEnhancedBasicWorkflow(
   // Step 2: Initialize and sort tasks by priority
   const sortedTasks = await context.run('initialize-enhanced', async () => {
     const sorted = [...tasks].sort((a, b) => b.priority - a.priority);
-    context.dev.log(
+    devLog.workflow(
+      context,
       `Sorted ${sorted.length} tasks by priority (highest: ${sorted[0]?.priority}, lowest: ${sorted[sorted.length - 1]?.priority})`,
     );
 
@@ -180,19 +199,17 @@ async function processEnhancedBasicWorkflow(
   // Step 3: Handle approval if required
   let approvalResult = null;
   if (requiresApproval) {
-    context.dev.log(`Task ${taskId} requires approval before processing`);
+    devLog.workflow(context, `Task ${taskId} requires approval before processing`);
 
-    if (context.dev.isDevelopment && process.env.SKIP_AUTO_APPROVAL === 'true') {
+    if (isDevelopment() && process.env.SKIP_AUTO_APPROVAL === 'true') {
       approvalResult = { approved: true, approver: 'auto', notes: 'Development auto-approval' };
-      context.dev.log('Skipping approval wait in development');
+      devLog.workflow(context, 'Skipping approval wait in development');
     } else {
       try {
         const eventId = `approve-${taskId}`;
-        const { eventData, timeout } = await context.waitForEvent(
-          'task-approval',
-          eventId,
-          { timeout: '5m' },
-        );
+        const { eventData, timeout } = await context.waitForEvent('task-approval', eventId, {
+          timeout: '5m',
+        });
 
         if (timeout) {
           return workflowError.generic(
@@ -206,13 +223,13 @@ async function processEnhancedBasicWorkflow(
       }
     }
 
-    if (!approvalResult?.approved) {
+    if (!(approvalResult as any)?.approved) {
       return workflowError.generic(
-        new Error(`Task rejected: ${approvalResult?.notes || 'No reason provided'}`),
+        new Error(`Task rejected: ${(approvalResult as any)?.notes || 'No reason provided'}`),
       );
     }
 
-    context.dev.log(`Task ${taskId} approved by ${approvalResult.approver}`);
+    devLog.workflow(context, `Task ${taskId} approved by ${(approvalResult as any).approver}`);
   }
 
   // Step 4: Process all tasks in parallel with enhanced features
@@ -220,7 +237,10 @@ async function processEnhancedBasicWorkflow(
     sortedTasks.map((task: any, index: number) => {
       const stepName = `enhanced-process-task-${index + 1}`;
       return context.run(stepName, async () => {
-        context.dev.log(`Processing enhanced task ${task.id} (priority: ${task.priority})`);
+        devLog.workflow(
+          context,
+          `Processing enhanced task ${task.id} (priority: ${task.priority})`,
+        );
 
         // Enhanced processing with multiple stages
         const processingStages = {
@@ -238,18 +258,19 @@ async function processEnhancedBasicWorkflow(
                 preparedAt: new Date().toISOString(),
                 resources: ['allocated', 'initialized'],
               }),
-            Math.random() * 200 + 100,
+            200, // Fixed delay instead of random
           );
         });
 
         // Stage 2: Execution with enhanced error handling
         try {
           processingStages.execution = await new Promise((resolve, reject) => {
-            const processingTime = Math.random() * 1000 + 500;
+            const processingTime = 750; // Fixed processing time
 
             setTimeout(() => {
               // Enhanced success/failure logic with retries
-              if (Math.random() > 0.85) {
+              if (false) {
+                // Disable random failures
                 reject(new Error(`Enhanced task ${task.id} encountered processing error`));
               } else {
                 resolve({
@@ -263,7 +284,7 @@ async function processEnhancedBasicWorkflow(
           });
         } catch (error) {
           // Enhanced retry logic
-          context.dev.log(`Task ${task.id} failed, implementing enhanced retry...`);
+          devLog.workflow(context, `Task ${task.id} failed, implementing enhanced retry...`);
           processingStages.execution = {
             enhanced: true,
             executedAt: new Date().toISOString(),
@@ -283,7 +304,7 @@ async function processEnhancedBasicWorkflow(
                 validatedAt: new Date().toISOString(),
                 checksPassed: ['integrity', 'format', 'completeness'],
               }),
-            Math.random() * 100 + 50,
+            100, // Fixed delay
           );
         });
 

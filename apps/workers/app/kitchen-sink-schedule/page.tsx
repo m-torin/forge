@@ -23,7 +23,7 @@ export default function KitchenSinkSchedulePage() {
       } else {
         setError(data.error);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch schedules');
     }
   };
@@ -46,7 +46,7 @@ export default function KitchenSinkSchedulePage() {
       } else {
         setError(data.error);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to create schedule');
     } finally {
       setLoading(false);
@@ -71,7 +71,7 @@ export default function KitchenSinkSchedulePage() {
       } else {
         setError(data.error);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to delete schedule');
     } finally {
       setLoading(false);

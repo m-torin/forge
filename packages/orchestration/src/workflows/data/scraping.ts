@@ -2,26 +2,27 @@ import { Redis } from '@upstash/redis';
 import { serve } from '@upstash/workflow/nextjs';
 
 import {
-  ScrapingConfigSchema,
-  type ScrapingConfig,
-  type ScrapingResult,
-  type WorkflowContext,
-} from '../../utils/types';
+  errorHandlers,
+  withRetryErrorHandling,
+  WorkflowErrorType,
+} from '../../utils/error-handling';
 import {
-  calculateBackoff,
   chunkArray,
+  createErrorMessage,
   extractWithSelectors,
   generateSessionId,
   hashUrl,
-  isValidUrl,
-  sleep,
-  createErrorMessage,
   isDevelopment,
+  isValidUrl,
 } from '../../utils/helpers';
-import { CircuitBreaker, DomainRateLimiter } from '../../utils/resilience';
 import { devLog } from '../../utils/observability';
-import { withRetryErrorHandling, errorHandlers } from '../../utils/error-handling';
-import { createResponse, workflowError } from '../../utils/response';
+import { CircuitBreaker, DomainRateLimiter } from '../../utils/resilience';
+import {
+  type ScrapingConfig,
+  ScrapingConfigSchema,
+  type ScrapingResult,
+  type WorkflowContext,
+} from '../../utils/types';
 
 // Circuit breakers per domain
 const circuitBreakers = new Map<string, CircuitBreaker>();
@@ -162,16 +163,26 @@ async function scrapeUrl(
         },
         `scraping ${url}`,
         {
-          maxRetries: config.retryAttempts - 1,
           baseDelayMs: 1000,
           maxDelayMs: 30000,
-          retryOn: ['NETWORK', 'TIMEOUT', 'EXTERNAL_API', 'RATE_LIMIT'],
+          maxRetries: 3,
+          retryOn: [
+            WorkflowErrorType.NETWORK,
+            WorkflowErrorType.TIMEOUT,
+            WorkflowErrorType.EXTERNAL_API,
+            WorkflowErrorType.RATE_LIMIT,
+          ] as any,
         },
         { url, domain },
       );
 
-      // Extract data using selectors
-      const extracted = extractWithSelectors(result, selectors);
+      // Handle scraping results
+      const scrapedData = (result as any)?.data || result || {};
+
+      // Extract data using selectors - ensure result is proper type
+      const dataToExtract =
+        typeof scrapedData === 'object' || typeof scrapedData === 'string' ? scrapedData : {};
+      const extracted = extractWithSelectors(dataToExtract, selectors);
 
       // Cache successful results
       if (config.cacheResults) {
@@ -185,7 +196,7 @@ async function scrapeUrl(
       return { url, data: extracted, success: true };
     });
   } catch (error) {
-    devLog.error(`Failed to scrape ${url}`, error);
+    devLog.error(`Failed to scrape ${url}:`, String(error));
     return {
       url,
       error: createErrorMessage('Scraping failed', error),
@@ -207,7 +218,7 @@ async function updateProgress(
   onProgress?: (sessionId: string, progress: number) => Promise<void>,
 ): Promise<void> {
   const progress = Math.round(((batchIndex + 1) / totalBatches) * 100);
-  
+
   await context.run('update-progress', async () => {
     await redis.hset(`session:${sessionId}`, {
       lastUpdated: Date.now(),
@@ -227,7 +238,7 @@ async function updateProgress(
 async function finalizeResults(
   context: WorkflowContext<ScrapingConfig>,
   sessionId: string,
-  allResults: Array<{ url: string; data?: unknown; error?: string; success: boolean }>,
+  allResults: { url: string; data?: unknown; error?: string; success: boolean }[],
   totalUrls: number,
   validUrls: string[],
   redis: Redis,
@@ -343,13 +354,13 @@ export function createScrapingWorkflow(options: {
 
         // Step 4: Execute scraping with controlled concurrency
         const batches = chunkArray(validUrls, config.maxConcurrency || maxConcurrency);
-        const allResults: Array<{ url: string; data?: unknown; error?: string; success: boolean }> = [];
+        const allResults: { url: string; data?: unknown; error?: string; success: boolean }[] = [];
 
         for (const [batchIndex, batch] of batches.entries()) {
           const batchResults = await context.run('scrape-batch', async () => {
             // Process all URLs in this batch concurrently within a single step
             return await Promise.all(
-              batch.map(async (url, urlIndex) => {
+              batch.map(async (url, _urlIndex) => {
                 return await scrapeUrl(
                   context,
                   url,
@@ -401,7 +412,13 @@ export function createScrapingWorkflow(options: {
     },
     {
       failureFunction: async ({ context, failHeaders, failResponse, failStatus }) => {
-        await handleWorkflowFailure(context, failHeaders, failResponse, failStatus, redis);
+        await handleWorkflowFailure(
+          context as any,
+          failHeaders as any,
+          failResponse,
+          failStatus,
+          redis,
+        );
       },
       failureUrl: failureWebhook,
       flowControl: {

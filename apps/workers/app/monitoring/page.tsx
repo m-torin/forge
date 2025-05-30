@@ -260,41 +260,45 @@ export default function MonitoringPage() {
 
                         <Timeline lineWidth={2} bulletSize={20}>
                           {run.steps.flatMap((stepGroup: any, groupIndex: number) =>
-                            stepGroup.steps.map((step: any, stepIndex: number) => (
-                              <Timeline.Item
-                                key={`${groupIndex}-${stepIndex}`}
-                                bullet={
-                                  step.status === 'completed' ? (
-                                    <ThemeIcon color="green" radius="xl" size={20}>
-                                      <IconCheck size={12} />
-                                    </ThemeIcon>
-                                  ) : step.status === 'failed' ? (
-                                    <ThemeIcon color="red" radius="xl" size={20}>
-                                      <IconX size={12} />
-                                    </ThemeIcon>
-                                  ) : (
-                                    <ThemeIcon color="blue" radius="xl" size={20}>
-                                      <IconClock size={12} />
-                                    </ThemeIcon>
-                                  )
-                                }
-                                title={step.stepName}
-                              >
-                                <Text c="dimmed" size="xs">
-                                  {step.startedAt
-                                    ? new Date(Number(step.startedAt)).toLocaleString()
-                                    : 'N/A'}
-                                </Text>
-                                {step.error && (
-                                  <Alert color="red" mt="xs" p="xs">
-                                    <Text size="xs">{step.error}</Text>
-                                  </Alert>
-                                )}
-                                {step.messageId && (
-                                  <Code mt="xs">Message ID: {step.messageId}</Code>
-                                )}
-                              </Timeline.Item>
-                            )),
+                            stepGroup.steps.map((step: any, stepIndex: number) => {
+                              // Create a more unique key using workflowRunId and step info
+                              const uniqueKey = `${run.workflowRunId}-${groupIndex}-${stepIndex}-${step.stepName}`;
+                              return (
+                                <Timeline.Item
+                                  key={uniqueKey}
+                                  bullet={
+                                    step.status === 'completed' ? (
+                                      <ThemeIcon color="green" radius="xl" size={20}>
+                                        <IconCheck size={12} />
+                                      </ThemeIcon>
+                                    ) : step.status === 'failed' ? (
+                                      <ThemeIcon color="red" radius="xl" size={20}>
+                                        <IconX size={12} />
+                                      </ThemeIcon>
+                                    ) : (
+                                      <ThemeIcon color="blue" radius="xl" size={20}>
+                                        <IconClock size={12} />
+                                      </ThemeIcon>
+                                    )
+                                  }
+                                  title={step.stepName}
+                                >
+                                  <Text c="dimmed" size="xs">
+                                    {step.startedAt
+                                      ? new Date(Number(step.startedAt)).toLocaleString()
+                                      : 'N/A'}
+                                  </Text>
+                                  {step.error && (
+                                    <Alert color="red" mt="xs" p="xs">
+                                      <Text size="xs">{step.error}</Text>
+                                    </Alert>
+                                  )}
+                                  {step.messageId && (
+                                    <Code mt="xs">Message ID: {step.messageId}</Code>
+                                  )}
+                                </Timeline.Item>
+                              );
+                            }),
                           )}
                         </Timeline>
 

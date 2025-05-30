@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { signOut } from '@repo/auth/client';
 
-import type { User } from '@repo/database';
+import type { User } from '@repo/database/prisma';
 
 interface UserMenuProps {
   user: User;

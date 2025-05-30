@@ -2,12 +2,18 @@ import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
+// In local dev or build:local, these env vars might not be set if using .env.local
+const hasRequiredEnvVars = Boolean(process.env.BETTERSTACK_API_KEY && process.env.SENTRY_ORG);
+
+// Make env vars optional in development or when they're missing (indicating .env.local usage)
+const requireInProduction = isProduction && hasRequiredEnvVars;
 
 export const keys = () =>
   createEnv({
     client: {
       // Added by Sentry Integration, Vercel Marketplace
-      NEXT_PUBLIC_SENTRY_DSN: isProduction
+      NEXT_PUBLIC_SENTRY_DSN: requireInProduction
         ? z.string().url()
         : z.string().url().optional().or(z.literal('')),
     },
@@ -19,11 +25,11 @@ export const keys = () =>
       SENTRY_PROJECT: process.env.SENTRY_PROJECT || undefined,
     },
     server: {
-      BETTERSTACK_API_KEY: isProduction ? z.string().min(1) : z.string().min(1).optional(),
-      BETTERSTACK_URL: isProduction ? z.string().url() : z.string().url().optional(),
+      BETTERSTACK_API_KEY: requireInProduction ? z.string().min(1) : z.string().min(1).optional(),
+      BETTERSTACK_URL: requireInProduction ? z.string().url() : z.string().url().optional(),
 
       // Added by Sentry Integration, Vercel Marketplace
-      SENTRY_ORG: isProduction ? z.string().min(1) : z.string().min(1).optional(),
-      SENTRY_PROJECT: isProduction ? z.string().min(1) : z.string().min(1).optional(),
+      SENTRY_ORG: requireInProduction ? z.string().min(1) : z.string().min(1).optional(),
+      SENTRY_PROJECT: requireInProduction ? z.string().min(1) : z.string().min(1).optional(),
     },
   });

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Now we can import the server module
+// Now we can import the server module after all mocks are defined
 import { auth, currentUser, getSession } from '../server';
 
 // Mock server-only module before any imports
@@ -20,8 +20,40 @@ vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue(new Headers()),
 }));
 
-vi.mock('@repo/database', () => ({
-  database: {},
+vi.mock('@repo/database/prisma', () => ({
+  prisma: {
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+    apiKey: {
+      create: vi.fn(),
+      delete: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    member: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    organization: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    session: {
+      create: vi.fn(),
+      delete: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    user: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+  },
 }));
 
 // Mock Better Auth

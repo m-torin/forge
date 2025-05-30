@@ -1,14 +1,44 @@
 import crypto from 'node:crypto';
 
+import { devLog } from './observability';
+
+// ===== Constants =====
+const TIME_UNITS = {
+  d: 24 * 60 * 60 * 1000,
+  h: 60 * 60 * 1000,
+  m: 60 * 1000,
+  s: 1000,
+} as const;
+
+const HOUR_MS = 3600000;
+const DEFAULT_POLL_INTERVAL = 2000;
+const DEFAULT_POLL_TIMEOUT = 300000;
+
 /**
- * Chunks an array into smaller arrays of specified size
+ * Chunks an array into smaller arrays of specified size - ES2022 modernized
  */
 export function chunkArray<T>(array: T[], size: number): T[][] {
+  if (size <= 0) return [array];
+
   const chunks: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
     chunks.push(array.slice(i, i + size));
   }
   return chunks;
+}
+
+/**
+ * Get last element of array using ES2022 .at() method
+ */
+export function getLastElement<T>(array: T[]): T | undefined {
+  return array.at(-1);
+}
+
+/**
+ * Get first element of array using ES2022 .at() method
+ */
+export function getFirstElement<T>(array: T[]): T | undefined {
+  return array.at(0);
 }
 
 /**
@@ -19,35 +49,31 @@ export function hashUrl(url: string): string {
 }
 
 /**
- * Calculates next run time for a cron expression
+ * Calculates next run time for a cron expression - ES2022 modernized
  */
 export function calculateNextCronRun(cron: string): Date {
   // This is a simplified implementation
   // In production, use a library like node-cron or croner
   const now = new Date();
-  const parts = cron.split(' ');
+  const [minute, hour] = cron.split(' ');
 
-  if (parts[0] === '0' && parts[1] === '*') {
-    // Every hour
+  if (minute === '0' && hour === '*') {
+    // Every hour - use structuredClone-like approach
     const next = new Date(now);
-    next.setHours(next.getHours() + 1);
-    next.setMinutes(0);
-    next.setSeconds(0);
+    next.setHours(next.getHours() + 1, 0, 0, 0);
     return next;
   }
 
-  if (parts[0] === '0' && parts[1] === '0') {
+  if (minute === '0' && hour === '0') {
     // Daily
     const next = new Date(now);
     next.setDate(next.getDate() + 1);
-    next.setHours(0);
-    next.setMinutes(0);
-    next.setSeconds(0);
+    next.setHours(0, 0, 0, 0);
     return next;
   }
 
-  // Default: 1 hour from now
-  return new Date(now.getTime() + 3600000);
+  // Default: 1 hour from now using constant
+  return new Date(now.getTime() + HOUR_MS);
 }
 
 /**
@@ -61,18 +87,18 @@ export function calculateBackoff(
     multiplier?: number;
     jitter?: boolean | number;
     strategy?: 'exponential' | 'linear' | 'constant';
-  } = {}
+  } = {},
 ): number {
   const {
     baseDelayMs = 1000,
+    jitter = false,
     maxDelayMs = 30000,
     multiplier = 2,
-    jitter = false,
-    strategy = 'exponential'
+    strategy = 'exponential',
   } = options;
 
   let delay: number;
-  
+
   switch (strategy) {
     case 'exponential':
       delay = baseDelayMs * Math.pow(multiplier, attempt);
@@ -92,15 +118,12 @@ export function calculateBackoff(
 
   // Add jitter if requested
   if (jitter) {
-    const jitterAmount = typeof jitter === 'number' 
-      ? jitter 
-      : baseDelayMs * 0.5; // Default 50% of base
+    const jitterAmount = typeof jitter === 'number' ? jitter : baseDelayMs * 0.5; // Default 50% of base
     delay += Math.random() * jitterAmount;
   }
 
   return Math.floor(delay);
 }
-
 
 /**
  * Extract data from HTML/JSON using selectors
@@ -187,7 +210,7 @@ export function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
-  
+
   if (hours > 0) return `${hours}h ${minutes % 60}m`;
   if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
   return `${seconds}s`;
@@ -258,32 +281,52 @@ export function createErrorMessage(operation: string, error: unknown): string {
 }
 
 /**
+ * Enhanced error classification with ES2022 features
+ */
+export function classifyError(error: unknown): {
+  type: 'network' | 'timeout' | 'rate_limit' | 'unknown';
+  message: string;
+} {
+  if (!(error instanceof Error)) {
+    return { type: 'unknown', message: String(error) };
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (error instanceof TypeError && message.includes('fetch')) {
+    return { type: 'network', message: error.message };
+  }
+
+  if (message.includes('timeout') || message.includes('timed out')) {
+    return { type: 'timeout', message: error.message };
+  }
+
+  if (message.includes('rate limit') || message.includes('too many requests')) {
+    return { type: 'rate_limit', message: error.message };
+  }
+
+  return { type: 'unknown', message: error.message };
+}
+
+/**
  * Check if error is a network error
  */
 export function isNetworkError(error: unknown): boolean {
-  return error instanceof TypeError && error.message.includes('fetch');
+  return classifyError(error).type === 'network';
 }
 
 /**
  * Check if error is a timeout error
  */
 export function isTimeoutError(error: unknown): boolean {
-  if (error instanceof Error) {
-    const message = error.message.toLowerCase();
-    return message.includes('timeout') || message.includes('timed out');
-  }
-  return false;
+  return classifyError(error).type === 'timeout';
 }
 
 /**
  * Check if error is a rate limit error
  */
 export function isRateLimitError(error: unknown): boolean {
-  if (error instanceof Error) {
-    const message = error.message.toLowerCase();
-    return message.includes('rate limit') || message.includes('too many requests');
-  }
-  return false;
+  return classifyError(error).type === 'rate_limit';
 }
 
 // ===== Type Guards and Validators =====
@@ -296,17 +339,23 @@ export function isNonEmptyString(value: unknown): value is string {
 }
 
 /**
- * Check if value is a record object
+ * Check if value is a record object - ES2022 modernized
  */
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Check if object has own property - ES2022 Object.hasOwn
+ */
+export function hasOwnProperty<T extends object>(obj: T, key: PropertyKey): key is keyof T {
+  return Object.hasOwn(obj, key);
+}
 
 // ===== Polling Utilities =====
 
 /**
- * Generic polling utility with resource cleanup
+ * Generic polling utility with resource cleanup - ES2022 modernized
  */
 export async function pollUntilCondition<T>(
   operation: () => Promise<T>,
@@ -315,18 +364,18 @@ export async function pollUntilCondition<T>(
     intervalMs?: number;
     timeoutMs?: number;
     onPoll?: (result: T, attempt: number) => void;
-  } = {}
+  } = {},
 ): Promise<T> {
-  const { intervalMs = 2000, timeoutMs = 300000, onPoll } = options;
+  const { intervalMs = DEFAULT_POLL_INTERVAL, onPoll, timeoutMs = DEFAULT_POLL_TIMEOUT } = options;
+
   const startTime = Date.now();
   let attempt = 0;
 
   while (Date.now() - startTime < timeoutMs) {
     const result = await operation();
-    
-    if (onPoll) {
-      onPoll(result, attempt);
-    }
+
+    // Use optional chaining
+    onPoll?.(result, attempt);
 
     if (condition(result)) {
       return result;
@@ -336,7 +385,10 @@ export async function pollUntilCondition<T>(
     await sleep(intervalMs);
   }
 
-  throw new Error(`Polling timeout after ${timeoutMs}ms`);
+  // Enhanced error with cause
+  throw new Error(`Polling timeout after ${timeoutMs}ms`, {
+    cause: { attempts: attempt, duration: Date.now() - startTime },
+  });
 }
 
 // ===== Environment Detection =====
@@ -402,14 +454,18 @@ export function cleanupExpiredEntries(map: Map<string, number>, ttl: number, deb
   }
 
   if (debug && cleaned > 0) {
-    console.log(`[CLEANUP] Cleaned up ${cleaned} expired entries`);
+    devLog.info(`[CLEANUP] Cleaned up ${cleaned} expired entries`);
   }
 }
 
 /**
  * Clean up oldest entries when map exceeds maximum size
  */
-export function cleanupOldestEntries(map: Map<string, number>, maxEntries: number, debug = false): void {
+export function cleanupOldestEntries(
+  map: Map<string, number>,
+  maxEntries: number,
+  debug = false,
+): void {
   if (map.size <= maxEntries) {
     return;
   }
@@ -427,7 +483,7 @@ export function cleanupOldestEntries(map: Map<string, number>, maxEntries: numbe
   }
 
   if (debug) {
-    console.log(`[CLEANUP] Removed ${removeCount} oldest entries to maintain size limit`);
+    devLog.info(`[CLEANUP] Removed ${removeCount} oldest entries to maintain size limit`);
   }
 }
 
@@ -484,7 +540,7 @@ export class StateMachine<TState extends string, TContext = any> {
   constructor(
     private state: TState,
     private transitions: Record<TState, Partial<Record<string, TState>>>,
-    private context?: TContext
+    private context?: TContext,
   ) {}
 
   getState(): TState {
@@ -541,22 +597,17 @@ export function buildWorkflowUrl(url: string, baseUrl?: string): string {
 }
 
 /**
- * Parse time window strings (e.g., '5m', '1h', '2d')
+ * Parse time window strings (e.g., '5m', '1h', '2d') - ES2022 modernized
  */
 export function parseTimeWindow(window: string): number {
   const match = window.match(/^(\d+)([smhd])$/);
   if (!match) return 0;
-  
+
   const [, value, unit] = match;
   const num = parseInt(value, 10);
-  
-  switch (unit) {
-    case 's': return num * 1000;
-    case 'm': return num * 60 * 1000;
-    case 'h': return num * 60 * 60 * 1000;
-    case 'd': return num * 24 * 60 * 60 * 1000;
-    default: return 0;
-  }
+
+  // Use const assertion and nullish coalescing
+  return num * (TIME_UNITS[unit as keyof typeof TIME_UNITS] ?? 0);
 }
 
 /**
@@ -564,20 +615,22 @@ export function parseTimeWindow(window: string): number {
  */
 export function convertToCSV(data: any[]): string {
   if (!data.length) return '';
-  
+
   const headers = Object.keys(data[0]);
   const csvContent = [
     headers.join(','),
-    ...data.map(row => 
-      headers.map(header => {
-        const value = row[header];
-        return typeof value === 'string' && value.includes(',') 
-          ? `"${value.replace(/"/g, '""')}"` 
-          : value;
-      }).join(',')
-    )
+    ...data.map((row) =>
+      headers
+        .map((header) => {
+          const value = row[header];
+          return typeof value === 'string' && value.includes(',')
+            ? `"${value.replace(/"/g, '""')}"`
+            : value;
+        })
+        .join(','),
+    ),
   ];
-  
+
   return csvContent.join('\n');
 }
 
@@ -589,7 +642,9 @@ export function convertToXML(data: any[], rootElement = 'data'): string {
     return Object.entries(obj)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
-          return value.map(item => `${indent}<${key}>${toXML(item, indent + '  ')}</${key}>`).join('\n');
+          return value
+            .map((item) => `${indent}<${key}>${toXML(item, indent + '  ')}</${key}>`)
+            .join('\n');
         }
         if (typeof value === 'object' && value !== null) {
           return `${indent}<${key}>\n${toXML(value, indent + '  ')}\n${indent}</${key}>`;
@@ -598,8 +653,8 @@ export function convertToXML(data: any[], rootElement = 'data'): string {
       })
       .join('\n');
   };
-  
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootElement}>\n${data.map(item => toXML(item, '  ')).join('\n')}\n</${rootElement}>`;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootElement}>\n${data.map((item) => toXML(item, '  ')).join('\n')}\n</${rootElement}>`;
 }
 
 /**
@@ -639,17 +694,17 @@ export function formatPercentage(value: number, decimals = 2): string {
  * Aggregate data by key with sum operation
  */
 export function aggregateByKey<T>(
-  data: T[], 
-  keyFn: (item: T) => string, 
-  valueFn: (item: T) => number
+  data: T[],
+  keyFn: (item: T) => string,
+  valueFn: (item: T) => number,
 ): Record<string, number> {
   const result: Record<string, number> = {};
-  
+
   for (const item of data) {
     const key = keyFn(item);
     result[key] = (result[key] || 0) + valueFn(item);
   }
-  
+
   return result;
 }
 
@@ -657,12 +712,12 @@ export function aggregateByKey<T>(
  * Enhanced safe JSON parsing with optional validation
  */
 export function safeJsonParseWithValidation<T>(
-  str: string | null | undefined, 
+  str: string | null | undefined,
   fallback: T,
-  validator?: (data: any) => data is T
+  validator?: (data: any) => data is T,
 ): T {
   if (!str) return fallback;
-  
+
   try {
     const parsed = JSON.parse(str);
     if (validator && !validator(parsed)) {

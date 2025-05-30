@@ -1,5 +1,6 @@
-import { PrismaClient } from '../generated/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
+
+import { PrismaClient } from './generated/client';
 
 // Global type for Prisma client singleton
 const globalForPrisma = global as unknown as { prisma: PrismaClient };

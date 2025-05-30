@@ -1,7 +1,13 @@
-import { chunkArray, calculateBackoff } from '../../utils/helpers';
+import { calculateBackoff, chunkArray } from '../../utils/helpers';
+import { devLog } from '../../utils/observability';
 import { CircuitBreaker } from '../../utils/resilience';
-import { createResponse, workflowError } from '../../utils/response';
-import type { WorkflowContext, CircuitBreakerConfig } from '../../utils/types';
+import { workflowError } from '../../utils/response';
+import { DEFAULT_RETRIES, DEFAULT_TIMEOUTS } from '../../utils/types';
+
+import type {
+  CircuitBreakerConfig,
+  WorkflowContext,
+} from '../../utils/types';
 
 /**
  * Reusable workflow patterns for common scenarios
@@ -29,7 +35,7 @@ export async function processBatch<T, R>(
     items,
     onBatchComplete,
     processor,
-    stepPrefix = 'batch',
+    stepPrefix: _stepPrefix = 'batch',
   } = options;
 
   const results: R[] = [];
@@ -44,9 +50,7 @@ export async function processBatch<T, R>(
     // Process batch in parallel within a single step
     const batch = batches[i];
     const batchResults = await context.run('process-batch', async () => {
-      return await Promise.all(
-        batch.map((item, index) => processor(item, i * batchSize + index)),
-      );
+      return await Promise.all(batch.map((item, index) => processor(item, i * batchSize + index)));
     });
 
     results.push(...batchResults);
@@ -92,8 +96,7 @@ export async function parallelExecute<T extends Record<string, () => Promise<any
 }
 
 /**
- * Retry pattern with exponential backoff
- * Retries an operation with configurable backoff strategy
+ * Retry pattern with exponential backoff - ES2022 modernized
  */
 export async function retryWithBackoff<T>(
   context: WorkflowContext<any>,
@@ -110,38 +113,42 @@ export async function retryWithBackoff<T>(
   },
 ): Promise<T> {
   const {
-    baseDelayMs = 1000,
-    maxAttempts = 3,
+    baseDelayMs = DEFAULT_TIMEOUTS.retry,
+    jitter = false,
+    maxAttempts = DEFAULT_RETRIES.api,
     maxDelayMs = 60000,
     multiplier = 2,
-    jitter = false,
-    strategy = 'exponential',
     operation,
     shouldRetry = () => true,
     stepName,
+    strategy = 'exponential',
   } = options;
 
-  let lastError: Error;
+  let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      return await context.run('retry-attempt', operation);
+      return await context.run(`${stepName}-attempt-${attempt}`, operation);
     } catch (error) {
       lastError = error as Error;
 
       if (attempt === maxAttempts || !shouldRetry(lastError, attempt)) {
-        throw lastError;
+        // Enhanced error with cause
+        throw new Error(`Operation failed after ${attempt} attempts`, {
+          cause: { attempts: attempt, lastError, stepName },
+        });
       }
 
       const delayMs = calculateBackoff(attempt - 1, {
         baseDelayMs,
+        jitter,
         maxDelayMs,
         multiplier,
-        jitter,
         strategy,
       });
 
-      await context.sleep('retry-backoff', delayMs / 1000);
+      devLog.info(`Retrying ${stepName} in ${delayMs}ms (attempt ${attempt}/${maxAttempts})`);
+      await context.sleep(`${stepName}-backoff-${attempt}`, delayMs / 1000);
     }
   }
 
@@ -244,7 +251,7 @@ export async function circuitBreaker<T>(
     config?: CircuitBreakerConfig;
   },
 ): Promise<T> {
-  const { operation, stepName, config = {} } = options;
+  const { config = {}, operation, stepName } = options;
 
   const breaker = new CircuitBreaker(config);
 
@@ -311,7 +318,7 @@ export async function pipeline<T>(
 
   let currentData = input;
 
-  for (const [index, stage] of stages.entries()) {
+  for (const [_index, stage] of stages.entries()) {
     try {
       currentData = await context.run(`${stepPrefix}-${stage.name}`, () =>
         stage.transform(currentData),
@@ -405,18 +412,22 @@ export async function waitForMultipleEvents(
     stepPrefix?: string;
   },
 ): Promise<{ results: any[]; completed: number; timeouts: number }> {
-  const { waitStrategy, threshold = 1, stepPrefix = 'multi-event' } = options;
+  const {
+    stepPrefix = 'multi-event',
+    threshold: _threshold = 1,
+    waitStrategy: _waitStrategy,
+  } = options;
 
-  const eventPromises = events.map(async (event, index) => {
+  const _eventPromises = events.map(async (event, index) => {
     try {
       const { eventData, timeout } = await context.waitForEvent(
         `${stepPrefix}-${index}`,
         event.eventId,
         { timeout: event.timeout as any },
       );
-      return { index, eventData, timeout, eventId: event.eventId };
+      return { eventData, eventId: event.eventId, index, timeout };
     } catch (error) {
-      return { index, error, eventId: event.eventId };
+      return { error, eventId: event.eventId, index };
     }
   });
 
@@ -424,17 +435,17 @@ export async function waitForMultipleEvents(
   return await context.run(`${stepPrefix}-wait`, async () => {
     const results = await Promise.all(
       events.map(async (event, index) => ({
-        index,
-        eventId: event.eventId,
         eventData: { simulated: true, timestamp: Date.now() },
+        eventId: event.eventId,
+        index,
         timeout: false,
       })),
     );
 
     return {
-      results: results.map(r => r.eventData),
-      completed: results.filter(r => !r.timeout).length,
-      timeouts: results.filter(r => r.timeout).length,
+      completed: results.filter((r) => !r.timeout).length,
+      results: results.map((r) => r.eventData),
+      timeouts: results.filter((r) => r.timeout).length,
     };
   });
 }
@@ -448,26 +459,26 @@ export async function parallelRacePattern<T>(
   operations: (() => Promise<T>)[],
   options: { timeout?: number; stepPrefix?: string } = {},
 ): Promise<{ winner: T; index: number; duration: number }> {
-  const { timeout = 30000, stepPrefix = 'race' } = options;
+  const { stepPrefix = 'race', timeout = 30000 } = options;
 
   return await context.run(`${stepPrefix}-execute`, async () => {
     const startTime = Date.now();
-    
+
     const racePromises = operations.map(async (operation, index) => {
       const result = await operation();
-      return { result, index, duration: Date.now() - startTime };
+      return { duration: Date.now() - startTime, index, result };
     });
 
     if (timeout > 0) {
-      const timeoutPromise = new Promise<never>((_, reject) => {
+      const timeoutPromise = new Promise<never>((_resolve, reject) => {
         setTimeout(() => reject(new Error('Race timeout')), timeout);
       });
-      
+
       const winner = await Promise.race([...racePromises, timeoutPromise]);
-      return { winner: winner.result, index: winner.index, duration: winner.duration };
+      return { duration: winner.duration, index: winner.index, winner: winner.result };
     } else {
       const winner = await Promise.race(racePromises);
-      return { winner: winner.result, index: winner.index, duration: winner.duration };
+      return { duration: winner.duration, index: winner.index, winner: winner.result };
     }
   });
 }
@@ -486,18 +497,18 @@ export async function sagaPattern(
   options: { stepPrefix?: string } = {},
 ): Promise<{ success: boolean; results: any[]; compensations: string[] }> {
   const { stepPrefix = 'saga' } = options;
-  
+
   const results: any[] = [];
   const compensations: string[] = [];
-  
+
   try {
     // Execute steps sequentially
-    for (const [index, step] of steps.entries()) {
+    for (const [_index, step] of steps.entries()) {
       const result = await context.run(`${stepPrefix}-${step.name}`, step.action);
       results.push(result);
     }
-    
-    return { success: true, results, compensations };
+
+    return { compensations, results, success: true };
   } catch (error) {
     // Compensate in reverse order for completed steps
     for (let i = results.length - 1; i >= 0; i--) {
@@ -506,10 +517,10 @@ export async function sagaPattern(
         compensations.push(steps[i].name);
       } catch (compensationError) {
         // Log compensation failure but continue
-        console.error(`Compensation failed for ${steps[i].name}:`, compensationError);
+        devLog.error(`Compensation failed for ${steps[i].name}`, compensationError);
       }
     }
-    
+
     throw error;
   }
 }
@@ -525,19 +536,19 @@ export async function compensateOnFailure<T>(
   options: { stepPrefix?: string } = {},
 ): Promise<{ success: boolean; result?: T; compensationResult?: any; error?: string }> {
   const { stepPrefix = 'compensate' } = options;
-  
+
   try {
     const result = await context.run(`${stepPrefix}-operation`, operation);
-    return { success: true, result };
+    return { result, success: true };
   } catch (error) {
     try {
-      const compensationResult = await context.run(`${stepPrefix}-compensation`, () => 
-        compensate(error as Error)
+      const compensationResult = await context.run(`${stepPrefix}-compensation`, () =>
+        compensate(error as Error),
       );
-      return { 
-        success: false, 
-        compensationResult, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        compensationResult,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        success: false,
       };
     } catch (compensationError) {
       throw new Error(`Both operation and compensation failed: ${error}, ${compensationError}`);

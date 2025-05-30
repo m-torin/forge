@@ -21,11 +21,12 @@ import { useState } from 'react';
 
 import { ModeToggle } from '@repo/design-system/components/mode-toggle';
 
-import { LanguageSwitcher } from './language-switcher';
-import Logo from './logo.svg';
+import { LanguageSwitcher } from './language-switcher'; // Placeholder logo path
 
 import type { Dictionary } from '@repo/internationalization';
 import type { Route } from 'next';
+// import Logo from './logo.svg'; // SVG file not found
+const Logo = '/placeholder-logo.svg';
 
 interface HeaderProps {
   dictionary: Dictionary;

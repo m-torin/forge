@@ -1,6 +1,11 @@
-import { database } from '@repo/database';
+import { createPrismaAdapter } from '@repo/database/prisma';
+
+const adapter = createPrismaAdapter();
 
 export const GET = async () => {
+  await adapter.initialize();
+  const database = await adapter.raw('client', {});
+
   const newPage = await database.page.create({
     data: {
       name: 'cron-temp',

@@ -1,4 +1,3 @@
-import type { WorkflowContext } from '@upstash/workflow';
 import {
   type AnthropicConfig,
   type BatchContentAnalysisRequest,
@@ -6,6 +5,8 @@ import {
   type ContentModerationResult,
   createAnthropicClient,
 } from '@repo/ai/providers/anthropic';
+
+import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Workflow wrapper for Anthropic content moderation

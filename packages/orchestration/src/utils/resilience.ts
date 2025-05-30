@@ -1,4 +1,5 @@
 import { type Redis } from '@upstash/redis';
+
 import { formatTimestamp, generateKey, getDomain, sleep } from './helpers';
 
 import type { CircuitBreakerConfig, CircuitBreakerState, RateLimiterConfig } from './types';
@@ -74,9 +75,7 @@ export class CircuitBreaker {
       failures: this.failures,
       lastFailureTime: this.lastFailureTime,
       nextRetryTime:
-        this.state === 'OPEN'
-          ? formatTimestamp(this.lastFailureTime + this.recoveryTimeout)
-          : null,
+        this.state === 'OPEN' ? formatTimestamp(this.lastFailureTime + this.recoveryTimeout) : null,
       state: this.state,
     };
   }

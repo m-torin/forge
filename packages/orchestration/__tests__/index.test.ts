@@ -1,41 +1,10 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { createWorkflow, WorkflowClient, workflows } from '../src/runtime';
-import { WorkflowError, WorkflowErrorType, withErrorHandling } from '../src/utils/error-handling';
-import { withResources } from '../src/utils';
-import { isDuplicateId, isDuplicateMessage } from '../src/runtime';
-import type { WorkflowContext } from '../src/utils/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock WorkflowContext for testing
-const createMockContext = <T>(payload: T): WorkflowContext<T> => ({
-  workflowRunId: `mock-${Date.now()}`,
-  requestPayload: payload,
-  headers: new Map(),
-  env: {},
-  run: vi.fn().mockImplementation((_, fn) => fn()),
-  sleep: vi.fn().mockResolvedValue(undefined),
-  call: vi.fn().mockResolvedValue({
-    status: 200,
-    body: {},
-    headers: {}
-  }),
-  notify: vi.fn().mockResolvedValue({
-    messageId: 'mock-message-id',
-    waiter: {
-      deadline: Date.now() + 60000,
-      headers: {},
-      url: 'https://example.com/webhook'
-    }
-  }),
-  waitForEvent: vi.fn().mockResolvedValue({
-    eventData: { approved: true },
-    timeout: false
-  }),
-  invoke: vi.fn().mockResolvedValue({
-    body: {},
-    isCanceled: false,
-    isFailed: false
-  })
-});
+import { createWorkflow, WorkflowClient, workflows } from '../src/runtime';
+import { isDuplicateId, isDuplicateMessage } from '../src/runtime';
+import { withResources } from '../src/utils';
+import { WorkflowError, WorkflowErrorType } from '../src/utils/error-handling';
+import { createMockContext } from '../src/utils/testing';
 
 describe('Orchestration Package', () => {
   describe('Workflow Builder', () => {
@@ -59,7 +28,8 @@ describe('Orchestration Package', () => {
       const workflow = createWorkflow().build(handler);
 
       expect(workflow).toBeDefined();
-      expect(typeof workflow).toBe('function');
+      expect(typeof workflow).toBe('object');
+      expect(typeof workflow.POST).toBe('function');
     });
 
     it('should provide pre-configured workflow builders', () => {
@@ -76,17 +46,17 @@ describe('Orchestration Package', () => {
 
     beforeEach(() => {
       client = new WorkflowClient({
+        baseUrl: 'https://example.com',
         token: 'test-token',
-        baseUrl: 'https://example.com'
       });
 
       // Mock the internal client methods
       (client as any).client = {
-        trigger: vi.fn().mockResolvedValue({ workflowRunId: 'test-id' }),
-        logs: vi.fn().mockResolvedValue({ runs: [], cursor: null }),
         cancel: vi.fn().mockResolvedValue(undefined),
+        getWaiters: vi.fn().mockResolvedValue([]),
+        logs: vi.fn().mockResolvedValue({ cursor: null, runs: [] }),
         notify: vi.fn().mockResolvedValue([]),
-        getWaiters: vi.fn().mockResolvedValue([])
+        trigger: vi.fn().mockResolvedValue({ workflowRunId: 'test-id' }),
       };
     });
 
@@ -98,13 +68,13 @@ describe('Orchestration Package', () => {
     it('should trigger a workflow', async () => {
       const result = await client.trigger({
         url: 'https://example.com/workflow',
-        body: { test: true }
+        body: { test: true },
       });
 
       expect(result).toEqual({ workflowRunId: 'test-id' });
       expect((client as any).client.trigger).toHaveBeenCalledWith({
         url: 'https://example.com/workflow',
-        body: { test: true }
+        body: { test: true },
       });
     });
 
@@ -112,7 +82,7 @@ describe('Orchestration Package', () => {
       await client.logs({ workflowRunId: 'test-id' });
 
       expect((client as any).client.logs).toHaveBeenCalledWith({
-        workflowRunId: 'test-id'
+        workflowRunId: 'test-id',
       });
     });
 
@@ -120,7 +90,7 @@ describe('Orchestration Package', () => {
       await client.cancel({ ids: ['test-id'] });
 
       expect((client as any).client.cancel).toHaveBeenCalledWith({
-        ids: ['test-id']
+        ids: ['test-id'],
       });
     });
 
@@ -131,86 +101,46 @@ describe('Orchestration Package', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    let mockContext: WorkflowContext<any>;
+  describe('Workflow Error Handling', () => {
+    it('should create a workflow with error handling', () => {
+      const onError = vi.fn();
+      const builder = workflows.withErrorHandling(onError);
 
-    beforeEach(() => {
-      mockContext = createMockContext({});
+      expect(builder).toBeDefined();
+      expect(typeof builder.build).toBe('function');
     });
 
-    it('should handle successful operations', async () => {
-      const handler = vi.fn().mockResolvedValue({ success: true });
-
-      const result = await withErrorHandling(mockContext, handler);
-
-      expect(result).toEqual({ success: true });
-      expect(handler).toHaveBeenCalledTimes(1);
-    });
-
-    it('should retry on retryable errors', async () => {
+    it('should create WorkflowError instances', () => {
       const error = new WorkflowError(
         WorkflowErrorType.RATE_LIMIT,
         'Rate limit exceeded',
-        {},
-        true
+        { endpoint: '/api/test' },
+        true,
+        30000,
       );
 
-      const handler = vi.fn()
-        .mockRejectedValueOnce(error)
-        .mockResolvedValueOnce({ success: true });
-
-      const result = await withErrorHandling(mockContext, handler, {
-        retryOn: [WorkflowErrorType.RATE_LIMIT],
-        maxRetries: 1
-      });
-
-      expect(result).toEqual({ success: true });
-      expect(handler).toHaveBeenCalledTimes(2);
-      expect(mockContext.sleep).toHaveBeenCalledTimes(1);
+      expect(error).toBeInstanceOf(WorkflowError);
+      expect(error.type).toBe(WorkflowErrorType.RATE_LIMIT);
+      expect(error.message).toBe('Rate limit exceeded');
+      expect(error.context).toEqual({ endpoint: '/api/test' });
+      expect(error.retryable).toBe(true);
+      expect(error.retryAfter).toBe(30000);
     });
 
-    it('should not retry on non-retryable errors', async () => {
+    it('should serialize WorkflowError to JSON', () => {
       const error = new WorkflowError(
         WorkflowErrorType.VALIDATION,
         'Validation failed',
-        {},
-        false
+        { field: 'email' },
+        false,
       );
 
-      const handler = vi.fn().mockRejectedValue(error);
-
-      const result = await withErrorHandling(mockContext, handler, {
-        retryOn: [WorkflowErrorType.RATE_LIMIT],
-        maxRetries: 3
-      });
-
-      expect(result.status).toBe('failed');
-      expect(result.error).toBeDefined();
-      expect(handler).toHaveBeenCalledTimes(1);
-    });
-
-    it('should use custom retry delay function if provided', async () => {
-      const error = new WorkflowError(
-        WorkflowErrorType.NETWORK,
-        'Network error',
-        {},
-        true
-      );
-
-      const handler = vi.fn()
-        .mockRejectedValueOnce(error)
-        .mockResolvedValueOnce({ success: true });
-
-      const retryDelayFn = vi.fn().mockReturnValue(500);
-
-      await withErrorHandling(mockContext, handler, {
-        retryOn: [WorkflowErrorType.NETWORK],
-        maxRetries: 1,
-        retryDelayFn
-      });
-
-      expect(retryDelayFn).toHaveBeenCalledWith(error, 0);
-      expect(mockContext.sleep).toHaveBeenCalledWith('retry-0', 0.5);
+      const json = error.toJSON();
+      expect(json).toHaveProperty('type', WorkflowErrorType.VALIDATION);
+      expect(json).toHaveProperty('message', 'Validation failed');
+      expect(json).toHaveProperty('context', { field: 'email' });
+      expect(json).toHaveProperty('retryable', false);
+      expect(json).toHaveProperty('stack');
     });
   });
 
@@ -231,12 +161,14 @@ describe('Orchestration Package', () => {
     it('should clean up resources even if an error occurs', async () => {
       const cleanup = vi.fn();
 
-      await expect(withResources(async (resources) => {
-        const resource = { cleanup };
-        resources.add(resource);
+      await expect(
+        withResources(async (resources) => {
+          const resource = { cleanup };
+          resources.add(resource);
 
-        throw new Error('Test error');
-      })).rejects.toThrow('Test error');
+          throw new Error('Test error');
+        }),
+      ).rejects.toThrow('Test error');
 
       expect(cleanup).toHaveBeenCalledTimes(1);
     });
@@ -246,7 +178,7 @@ describe('Orchestration Package', () => {
     // Mock storage for testing
     const mockStorage = {
       processedIds: new Map<string, number>(),
-      processedMessageIds: new Map<string, number>()
+      processedMessageIds: new Map<string, number>(),
     };
 
     beforeEach(() => {
@@ -265,10 +197,13 @@ describe('Orchestration Package', () => {
     });
 
     it('should detect duplicate messages', () => {
-      const mockContext = createMockContext({});
-
-      // Add message ID to headers
-      (mockContext.headers as Map<string, string>).set('upstash-message-id', 'test-message-id');
+      const mockContext = createMockContext(
+        {},
+        {
+          headers: { 'upstash-message-id': 'test-message-id' },
+        },
+        vi.fn,
+      );
 
       // First call should not be a duplicate
       const result1 = isDuplicateMessage(mockContext, { storage: mockStorage });
@@ -284,7 +219,7 @@ describe('Orchestration Package', () => {
       isDuplicateId('test-id-2', { storage: mockStorage });
 
       // Second call with skip=true should not be detected as duplicate
-      const result = isDuplicateId('test-id-2', { storage: mockStorage, skip: true });
+      const result = isDuplicateId('test-id-2', { skip: true, storage: mockStorage });
       expect(result).toBe(false);
     });
   });

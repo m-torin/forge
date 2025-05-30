@@ -1,5 +1,6 @@
-import { initializeApp, cert, getApps, App } from 'firebase-admin/app';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { type App, cert, getApps, initializeApp } from 'firebase-admin/app';
+import { type Firestore, getFirestore } from 'firebase-admin/firestore';
+
 import { keys } from '../keys';
 
 // Initialize Firebase app
@@ -12,9 +13,9 @@ export function initializeFirebaseApp(): App {
   const env = keys();
   return initializeApp({
     credential: cert({
-      projectId: env.FIREBASE_PROJECT_ID,
       clientEmail: env.FIREBASE_CLIENT_EMAIL,
       privateKey: env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      projectId: env.FIREBASE_PROJECT_ID,
     }),
   });
 }

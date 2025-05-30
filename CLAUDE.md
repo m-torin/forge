@@ -7,6 +7,18 @@ repository.
 
 **NEVER run `pnpm dev` or `npm dev` commands.** These commands should only be run by the user.
 
+## Environment Variables & Doppler
+
+This project uses Doppler for secret management in CI/CD environments, but local development uses
+`.env.local` files:
+
+- **Local Development**: Uses `.env.local` files (no Doppler required)
+- **CI/CD & Production**: Uses Doppler for centralized secret management
+- **Setup**: Run `pnpm doppler:pull:all` to download all secrets to `.env.local` files
+- **Build Options**:
+  - `pnpm build` - Production build with Doppler (for CI/CD)
+  - `pnpm build:local` - Local build using `.env.local` files
+
 ## Project Context
 
 This is a Next.js monorepo using Turborepo, based on the forge template. Key technologies:
@@ -80,9 +92,12 @@ searching file contents.
 # Install dependencies
 pnpm install
 
-# Development
+# Development (No Doppler - uses .env.local files)
 pnpm dev                # Run all apps in development mode
 pnpm dev --filter=app   # Run specific app
+
+# Doppler Setup (for downloading secrets to .env.local)
+pnpm doppler:pull:all   # Download all secrets to .env.local files in each app
 
 # Testing
 pnpm test              # Run all tests with Vitest (parallel, concurrency=10)
@@ -102,11 +117,12 @@ pnpm typecheck         # Run TypeScript type checking
 # - Prettier: Run at repo root only with `pnpm prettier`
 
 # Building
-pnpm build             # Build all apps in parallel
+pnpm build             # Build all apps in parallel (uses Doppler for CI/CD)
+pnpm build:local       # Build all apps locally (uses .env.local files)
 pnpm build --filter=app # Build specific app
 
 # Database operations
-pnpm migrate           # Run Prisma migrations
+pnpm migrate           # Run Prisma migrations (uses Doppler)
 pnpm --filter @repo/database generate # Regenerate Prisma client
 pnpm studio            # Open Prisma Studio (port 3600)
 

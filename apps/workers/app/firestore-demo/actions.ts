@@ -1,55 +1,91 @@
 'use server';
 
-import { createDocument, getDocuments, updateDocument, deleteDocument } from '@repo/database/actions/firestore-server';
+import { createFirestoreAdapter } from '@repo/database/firestore';
+
+// Create adapter instance
+const adapter = createFirestoreAdapter();
 
 // Define the Todo type
 export interface Todo {
-  id: string;
-  title: string;
   completed: boolean;
   createdAt?: Date;
+  id: string;
+  title: string;
   updatedAt?: Date;
 }
 
 // Server action to add a new todo
-export async function addTodo(formData: FormData): Promise<{ success: boolean; message: string; todo?: Todo }> {
+export async function addTodo(
+  formData: FormData,
+): Promise<{ success: boolean; message: string; todo?: Todo }> {
   const title = formData.get('title') as string;
 
   if (!title || title.trim() === '') {
-    return { success: false, message: 'Title is required' };
+    return { message: 'Title is required', success: false };
   }
 
   const todoData = {
-    title: title.trim(),
     completed: false,
+    title: title.trim(),
   };
 
-  const result = await createDocument<Todo>('todos', todoData);
+  try {
+    await adapter.initialize();
+    const result = await adapter.create<Todo>('todos', todoData);
 
-  if (!result.success) {
-    return { success: false, message: result.error || 'Failed to create todo' };
+    return {
+      message: 'Todo created successfully',
+      success: true,
+      todo: result,
+    };
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : 'Failed to create todo',
+      success: false,
+    };
   }
-
-  return {
-    success: true,
-    message: 'Todo created successfully',
-    todo: result.data ?? undefined
-  };
 }
 
 // Server action to get all todos
 export async function getTodos() {
-  return getDocuments<Todo>('todos', {
-    orderBy: [['createdAt', 'desc']]
-  });
+  try {
+    await adapter.initialize();
+    const result = await adapter.findMany<Todo>('todos', {
+      orderBy: { createdAt: 'desc' },
+    });
+    return { data: result, success: true };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Failed to get todos',
+      success: false,
+    };
+  }
 }
 
 // Server action to toggle todo completion status
 export async function toggleTodoStatus(id: string, completed: boolean) {
-  return updateDocument<Todo>('todos', id, { completed });
+  try {
+    await adapter.initialize();
+    const result = await adapter.update<Todo>('todos', id, { completed });
+    return { data: result, success: true };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Failed to update todo',
+      success: false,
+    };
+  }
 }
 
 // Server action to delete a todo
 export async function removeTodo(id: string) {
-  return deleteDocument<Todo>('todos', id);
+  try {
+    await adapter.initialize();
+    const result = await adapter.delete<Todo>('todos', id);
+    return { data: result, success: true };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Failed to delete todo',
+      success: false,
+    };
+  }
 }

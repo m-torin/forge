@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { database } from '@repo/database';
+import { prisma as database } from '@repo/database/prisma';
 
 export const getCurrentOrganization = async (userId: string) => {
   // Better Auth stores active organization differently

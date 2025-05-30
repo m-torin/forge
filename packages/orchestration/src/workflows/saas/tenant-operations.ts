@@ -3,7 +3,11 @@ import {
   isDuplicateId,
   withDeduplication,
 } from '../../runtime/deduplication';
-import { type BatchConfig, batchHTTPRequests, processBatches } from '../../runtime/features/batch-processing';
+import {
+  type BatchConfig,
+  batchHTTPRequests,
+  processBatches,
+} from '../../runtime/features/batch-processing';
 import { type DLQConfig, runWithDLQ } from '../../runtime/features/dlq-handling';
 import {
   createFlowControl,
@@ -11,18 +15,15 @@ import {
   runWithFlowControl,
 } from '../../runtime/features/flow-control';
 import { createURLGroup, fanOutToURLGroup } from '../../runtime/features/url-groups';
-
-import { 
-  buildApiEndpoint, 
-  calculateSuccessRate, 
+import { withApiErrorHandling, withWorkflowErrorHandling } from '../../utils/error-handling';
+import {
+  buildApiEndpoint,
+  calculateElapsedTime,
+  calculateSuccessRate,
   formatTimestamp,
   generateUniqueId,
-  isDevelopment,
-  calculateElapsedTime 
 } from '../../utils/helpers';
 import { devLog, getEnvironmentConfig } from '../../utils/observability';
-import { createResponse, workflowError } from '../../utils/response';
-import { withApiErrorHandling, withWorkflowErrorHandling } from '../../utils/error-handling';
 
 import type { WorkflowContext } from '@upstash/workflow';
 
@@ -30,8 +31,8 @@ import type { WorkflowContext } from '@upstash/workflow';
  * Multi-Tenant SaaS Operation Configuration
  */
 export interface SaaSTenantOperationConfig {
-  deduplicationId?: string; // Legacy field for compatibility
   dedupId?: string; // Preferred explicit deduplication ID
+  deduplicationId?: string; // Legacy field for compatibility
   operationData: any;
   operationType: 'user_onboarding' | 'data_sync' | 'billing_update' | 'feature_rollout';
   options?: {
@@ -89,7 +90,7 @@ export async function processSaaSTenantOperation(
 
   devLog.info(`Starting ${operationType} for tenant ${tenantId}`, { operationId, tenantId });
 
-  // Handle deduplication if ID provided  
+  // Handle deduplication if ID provided
   const envConfig = getEnvironmentConfig();
   const deduplicationOptions: DeduplicationOptions = {
     debug: envConfig.isDevelopment,
@@ -98,14 +99,17 @@ export async function processSaaSTenantOperation(
   };
 
   if (deduplicationId && isDuplicateId(deduplicationId, deduplicationOptions)) {
-    devLog.info(`Skipping duplicate operation: ${deduplicationId}`, { deduplicationId, operationType });
+    devLog.info(`Skipping duplicate operation: ${deduplicationId}`, {
+      deduplicationId,
+      operationType,
+    });
     return {
       deduplicationStatus: 'skipped_duplicate',
-      metrics: { 
-        duration: 0, 
-        notificationsSent: 0, 
-        operationsExecuted: 0, 
-        successRate: calculateSuccessRate(1, 1) 
+      metrics: {
+        duration: 0,
+        notificationsSent: 0,
+        operationsExecuted: 0,
+        successRate: calculateSuccessRate(1, 1),
       },
       operationId,
       operationType,
@@ -135,12 +139,10 @@ export async function processSaaSTenantOperation(
         retryableErrors: ['network', 'rate_limit', 'server_error'],
       };
 
-      let mainOperationResult;
-      let syncOperationsResult;
-      let notificationResult;
+      let syncOperationsResult: any = null;
 
       // Step 1: Execute main operation based on type
-      mainOperationResult = await runWithFlowControl(
+      const mainOperationResult = await runWithFlowControl(
         context,
         'main-operation',
         async () => {
@@ -190,7 +192,7 @@ export async function processSaaSTenantOperation(
       }
 
       // Step 3: Send tenant-specific notifications
-      notificationResult = await context.run('send-tenant-notifications', async () => {
+      const notificationResult = await context.run('send-tenant-notifications', async () => {
         if (tenantConfig.endpoints.length === 0) {
           return { notificationsSent: 0, results: [] };
         }
@@ -261,61 +263,68 @@ async function processUserOnboarding(
   context: WorkflowContext<any>,
   tenantId: string,
   userData: any,
-  flowControl: FlowControlConfig,
+  _flowControl: FlowControlConfig,
 ): Promise<any> {
   return context.run('user-onboarding', async () => {
     const { email, metadata, plan, userId } = userData;
 
     // Step 1: Create user account
     const userAccount = await withApiErrorHandling(
-      () => context.call('create-user-account', {
-        url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/users'),
-        body: { email, metadata, plan, userId },
-        headers: {
-          Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        retries: 3,
-      }),
+      () =>
+        context.call('create-user-account', {
+          url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/users'),
+          body: { email, metadata, plan, userId },
+          headers: {
+            Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          retries: 3,
+        }),
       'SAAS-API',
-      { operation: 'create-user-account', tenantId, userId }
+      { operation: 'create-user-account', tenantId, userId },
     );
 
     // Step 2: Setup user permissions
     const permissions = await withApiErrorHandling(
-      () => context.call('setup-permissions', {
-        url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, `/users/${userId}/permissions`),
-        body: { customPermissions: metadata.permissions || [], plan },
-        headers: {
-          Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        retries: 3,
-      }),
+      () =>
+        context.call('setup-permissions', {
+          url: buildApiEndpoint(
+            process.env.SAAS_API_BASE!,
+            tenantId,
+            `/users/${userId}/permissions`,
+          ),
+          body: { customPermissions: metadata.permissions || [], plan },
+          headers: {
+            Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          retries: 3,
+        }),
       'SAAS-API',
-      { operation: 'setup-permissions', tenantId, userId }
+      { operation: 'setup-permissions', tenantId, userId },
     );
 
     // Step 3: Send welcome email
     const welcomeEmail = await withApiErrorHandling(
-      () => context.call('send-welcome-email', {
-        url: `${process.env.EMAIL_SERVICE_URL}/send`,
-        body: {
-          data: { plan, tenantId, userId },
-          template: 'welcome',
-          to: email,
-        },
-        headers: {
-          Authorization: `Bearer ${process.env.EMAIL_SERVICE_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        retries: 2,
-      }),
+      () =>
+        context.call('send-welcome-email', {
+          url: `${process.env.EMAIL_SERVICE_URL}/send`,
+          body: {
+            data: { plan, tenantId, userId },
+            template: 'welcome',
+            to: email,
+          },
+          headers: {
+            Authorization: `Bearer ${process.env.EMAIL_SERVICE_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          retries: 2,
+        }),
       'EMAIL-SERVICE',
-      { operation: 'send-welcome-email', tenantId, userId, email }
+      { email, operation: 'send-welcome-email', tenantId, userId },
     );
 
     return {
@@ -334,7 +343,7 @@ async function processDataSync(
   context: WorkflowContext<any>,
   tenantId: string,
   syncData: any,
-  flowControl: FlowControlConfig,
+  _flowControl: FlowControlConfig,
 ): Promise<any> {
   return context.run('data-sync', async () => {
     const { options = {}, sourceData, syncType } = syncData;
@@ -351,24 +360,25 @@ async function processDataSync(
       context,
       'sync-data-batches',
       sourceData,
-      async (item, index) => {
+      async (item, _index) => {
         const response = await withApiErrorHandling(
-          () => context.call('sync-data-item', {
-            url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/sync'),
-            body: { item, options, syncType },
-            headers: {
-              Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            retries: 2,
-          }),
+          () =>
+            context.call('sync-data-item', {
+              url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/sync'),
+              body: { item, options, syncType },
+              headers: {
+                Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
+                'Content-Type': 'application/json',
+              },
+              method: 'POST',
+              retries: 2,
+            }),
           'SAAS-API',
-          { operation: 'sync-item', tenantId, itemIndex: index }
+          { itemIndex: _index, operation: 'sync-item', tenantId },
         );
 
         return {
-          itemId: item.id || index,
+          itemId: (item as any).id || _index,
           result: response.body,
           synced: true,
         };
@@ -394,41 +404,43 @@ async function processBillingUpdate(
   context: WorkflowContext<any>,
   tenantId: string,
   billingData: any,
-  flowControl: FlowControlConfig,
+  _flowControl: FlowControlConfig,
 ): Promise<any> {
   return context.run('billing-update', async () => {
     const { customerId, metadata, plan, proration } = billingData;
 
     // Step 1: Update subscription
     const subscription = await withApiErrorHandling(
-      () => context.call('update-subscription', {
-        url: `${process.env.BILLING_API_BASE}/customers/${customerId}/subscription`,
-        body: { metadata, plan, proration },
-        headers: {
-          Authorization: `Bearer ${process.env.BILLING_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'PATCH',
-        retries: 3,
-      }),
+      () =>
+        context.call('update-subscription', {
+          url: `${process.env.BILLING_API_BASE}/customers/${customerId}/subscription`,
+          body: { metadata, plan, proration },
+          headers: {
+            Authorization: `Bearer ${process.env.BILLING_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'PATCH',
+          retries: 3,
+        }),
       'BILLING-API',
-      { operation: 'update-subscription', tenantId, customerId }
+      { customerId, operation: 'update-subscription', tenantId },
     );
 
     // Step 2: Update tenant limits
     const limits = await withApiErrorHandling(
-      () => context.call('update-tenant-limits', {
-        url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/limits'),
-        body: { customLimits: metadata.limits, plan },
-        headers: {
-          Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'PUT',
-        retries: 3,
-      }),
+      () =>
+        context.call('update-tenant-limits', {
+          url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/limits'),
+          body: { customLimits: metadata.limits, plan },
+          headers: {
+            Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'PUT',
+          retries: 3,
+        }),
       'SAAS-API',
-      { operation: 'update-tenant-limits', tenantId }
+      { operation: 'update-tenant-limits', tenantId },
     );
 
     return {
@@ -446,41 +458,43 @@ async function processFeatureRollout(
   context: WorkflowContext<any>,
   tenantId: string,
   rolloutData: any,
-  flowControl: FlowControlConfig,
+  _flowControl: FlowControlConfig,
 ): Promise<any> {
   return context.run('feature-rollout', async () => {
     const { configuration, enabled, featureName, rolloutPercentage } = rolloutData;
 
     // Step 1: Update feature flags
     const featureFlags = await withApiErrorHandling(
-      () => context.call('update-feature-flags', {
-        url: buildApiEndpoint(process.env.FEATURE_FLAGS_API!, tenantId, '/features'),
-        body: { configuration, enabled, featureName, rolloutPercentage },
-        headers: {
-          Authorization: `Bearer ${process.env.FEATURE_FLAGS_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        retries: 3,
-      }),
+      () =>
+        context.call('update-feature-flags', {
+          url: buildApiEndpoint(process.env.FEATURE_FLAGS_API!, tenantId, '/features'),
+          body: { configuration, enabled, featureName, rolloutPercentage },
+          headers: {
+            Authorization: `Bearer ${process.env.FEATURE_FLAGS_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          retries: 3,
+        }),
       'FEATURE-FLAGS-API',
-      { operation: 'update-feature-flags', tenantId, featureName }
+      { featureName, operation: 'update-feature-flags', tenantId },
     );
 
     // Step 2: Update tenant configuration
     const tenantConfig = await withApiErrorHandling(
-      () => context.call('update-tenant-config', {
-        url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/config'),
-        body: { features: { [featureName]: { configuration, enabled } } },
-        headers: {
-          Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        method: 'PATCH',
-        retries: 3,
-      }),
+      () =>
+        context.call('update-tenant-config', {
+          url: buildApiEndpoint(process.env.SAAS_API_BASE!, tenantId, '/config'),
+          body: { features: { [featureName]: { configuration, enabled } } },
+          headers: {
+            Authorization: `Bearer ${process.env.SAAS_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'PATCH',
+          retries: 3,
+        }),
       'SAAS-API',
-      { operation: 'update-tenant-config', tenantId, featureName }
+      { featureName, operation: 'update-tenant-config', tenantId },
     );
 
     return {
@@ -501,7 +515,7 @@ async function processTenantSyncOperations(
   tenantId: string,
   operationType: string,
   mainResult: any,
-  flowControl: FlowControlConfig,
+  _flowControl: FlowControlConfig,
 ): Promise<any> {
   return context.run('tenant-sync-operations', async () => {
     // Sync operations based on main operation type
@@ -575,53 +589,54 @@ export async function batchProcessTenantOperations(
   successRate: string;
 }> {
   return withWorkflowErrorHandling(
-    () => context.run(stepName, async () => {
-      devLog.info(`Starting batch processing of ${operations.length} tenant operations`, { 
-        stepName, 
-        operationCount: operations.length 
-      });
+    () =>
+      context.run(stepName, async () => {
+        devLog.info(`Starting batch processing of ${operations.length} tenant operations`, {
+          operationCount: operations.length,
+          stepName,
+        });
 
-      const results: (SaaSTenantOperationResult | { error: string })[] = [];
-      let successfulOperations = 0;
-      let failedOperations = 0;
+        const results: (SaaSTenantOperationResult | { error: string })[] = [];
+        let successfulOperations = 0;
+        let failedOperations = 0;
 
-      // Process operations in parallel with tenant-specific flow control
-      const operationPromises = operations.map(async (operation) => {
-        try {
-          const result = await processSaaSTenantOperation(context, operation);
-          results.push(result);
-          successfulOperations++;
-          return result;
-        } catch (error) {
-          const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
-          results.push(errorResult);
-          failedOperations++;
-          devLog.error(`Failed to process tenant operation for ${operation.tenantId}`, error);
-          return errorResult;
-        }
-      });
+        // Process operations in parallel with tenant-specific flow control
+        const operationPromises = operations.map(async (operation) => {
+          try {
+            const result = await processSaaSTenantOperation(context, operation);
+            results.push(result);
+            successfulOperations++;
+            return result;
+          } catch (error) {
+            const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+            results.push(errorResult);
+            failedOperations++;
+            devLog.error(`Failed to process tenant operation for ${operation.tenantId}`, error);
+            return errorResult;
+          }
+        });
 
-      await Promise.allSettled(operationPromises);
+        await Promise.allSettled(operationPromises);
 
-      const totalOperations = operations.length;
-      const successRate = calculateSuccessRate(successfulOperations, totalOperations);
+        const totalOperations = operations.length;
+        const successRate = calculateSuccessRate(successfulOperations, totalOperations);
 
-      devLog.info(`Completed batch processing`, { 
-        totalOperations, 
-        successfulOperations, 
-        failedOperations, 
-        successRate 
-      });
+        devLog.info(`Completed batch processing`, {
+          failedOperations,
+          successfulOperations,
+          successRate,
+          totalOperations,
+        });
 
-      return {
-        failedOperations,
-        results,
-        successfulOperations,
-        successRate,
-        totalOperations,
-      };
-    }),
+        return {
+          failedOperations,
+          results,
+          successfulOperations,
+          successRate,
+          totalOperations,
+        };
+      }),
     `batchProcessTenantOperations-${stepName}`,
-    { stepName, operationCount: operations.length }
+    { operationCount: operations.length, stepName },
   );
 }

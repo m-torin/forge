@@ -1,7 +1,7 @@
 import './styles.css';
 
 import '@mantine/core/styles.css';
-import { ColorSchemeScript, createTheme, mantineHtmlProps, MantineProvider } from '@mantine/core';
+import { ColorSchemeScript, createTheme, MantineProvider } from '@mantine/core';
 
 import { fonts } from '@repo/design-system/lib/fonts';
 import { cn } from '@repo/design-system/lib/utils';
@@ -30,7 +30,7 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
   const dictionary = await getDictionary(locale);
 
   return (
-    <html className={cn(fonts, 'scroll-smooth')} lang="en" {...mantineHtmlProps}>
+    <html className={cn(fonts, 'scroll-smooth')} lang="en">
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>

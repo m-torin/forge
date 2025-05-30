@@ -7,7 +7,7 @@ import { keys } from '../keys';
 
 let hasLoggedWarning = false;
 
-export const createFlag = (key: string) => {
+export const createFlag = (key: string): any => {
   const flagsSecret = keys().FLAGS_SECRET;
 
   if (!flagsSecret) {

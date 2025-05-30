@@ -4,10 +4,21 @@ export async function GET(request: NextRequest) {
   // Create a ReadableStream for SSE
   const stream = new ReadableStream({
     start(controller) {
+      let isControllerOpen = true;
+
       // Function to send data to client
       const sendEvent = (data: any) => {
-        const message = `data: ${JSON.stringify(data)}\n\n`;
-        controller.enqueue(new TextEncoder().encode(message));
+        if (!isControllerOpen) {
+          return; // Don't try to send if controller is closed
+        }
+
+        try {
+          const message = `data: ${JSON.stringify(data)}\n\n`;
+          controller.enqueue(new TextEncoder().encode(message));
+        } catch (error) {
+          console.error('SSE: Failed to send event:', error);
+          isControllerOpen = false;
+        }
       };
 
       // Send initial connection event
@@ -15,6 +26,11 @@ export async function GET(request: NextRequest) {
 
       // Set up interval to send workflow status updates
       const interval = setInterval(async () => {
+        if (!isControllerOpen) {
+          clearInterval(interval);
+          return;
+        }
+
         try {
           // Fetch latest workflow runs
           const response = await fetch(`${request.nextUrl.origin}/api/client/logs?count=10`);
@@ -39,8 +55,14 @@ export async function GET(request: NextRequest) {
 
       // Handle client disconnect
       request.signal.addEventListener('abort', () => {
+        isControllerOpen = false;
         clearInterval(interval);
-        controller.close();
+        try {
+          controller.close();
+        } catch (error) {
+          // Controller might already be closed
+          console.error('SSE: Error closing controller:', error);
+        }
       });
     },
   });

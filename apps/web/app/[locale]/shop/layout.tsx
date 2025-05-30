@@ -1,5 +1,6 @@
-import { ProtectedRoute } from "@/components/auth/protected-route";
 import React from "react";
+
+import ProtectedRoute from "../../../components/auth/protected-route";
 
 interface ShopLayoutProps {
   analytics: React.ReactNode;

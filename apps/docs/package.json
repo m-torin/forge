@@ -2,8 +2,7 @@
   "name": "docs",
   "private": true,
   "scripts": {
-    "dev": "doppler run -- mintlify dev --port 3800",
-    "dev:offline": "mintlify dev --port 3800",
+    "dev": "mintlify dev --port 3800",
     "lint": "echo 'Skipping broken links check in docs' || mintlify broken-links",
     "doppler:secrets": "doppler secrets",
     "doppler:secrets:upload": "doppler secrets upload .env.local",

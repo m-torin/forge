@@ -1,5 +1,6 @@
 import { type Client, Receiver } from '@upstash/qstash';
 import { serve } from '@upstash/workflow/nextjs';
+
 import { WorkflowError, WorkflowErrorType } from '../../utils/error-handling';
 import { createErrorMessage, isDevelopment } from '../../utils/helpers';
 import { devLog } from '../../utils/observability';
@@ -70,7 +71,8 @@ export class WorkflowBuilder<TPayload = unknown> {
    * Set custom payload parser
    */
   withPayloadParser<T>(parser: (payload: unknown) => T): WorkflowBuilder<T> {
-    this.config.initialPayloadParser = parser;
+    // Use any to bypass the complex type constraint issue
+    (this.config as any).initialPayloadParser = parser;
     return this as unknown as WorkflowBuilder<T>;
   }
 
@@ -140,15 +142,27 @@ export class WorkflowBuilder<TPayload = unknown> {
         throw new WorkflowError(
           WorkflowErrorType.INTERNAL,
           createErrorMessage('Workflow execution failed', error),
-          { originalError: String(error) }
+          { originalError: String(error) },
         );
       }
     };
 
-    return serve<TPayload>(wrappedHandler, {
+    // Fix FlowControl type constraint by ensuring rate is defined
+    const serveOptions = {
       ...this.config,
+      flowControl:
+        this.config.flowControl && this.config.flowControl.rate !== undefined
+          ? {
+              key: this.config.flowControl.key,
+              parallelism: this.config.flowControl.parallelism,
+              period: this.config.flowControl.period,
+              rate: this.config.flowControl.rate,
+            }
+          : undefined,
       verbose: this.config.verbose ? true : undefined,
-    });
+    };
+
+    return serve<TPayload>(wrappedHandler, serveOptions as any);
   }
 }
 
@@ -224,15 +238,17 @@ export const workflows = {
       .withFlowControl({
         key,
         parallelism: 3, // Limit concurrent executions
-        rate: 20,       // Allow higher rate for critical operations
-        period: '1m'
+        period: '1m',
+        rate: 20, // Allow higher rate for critical operations
       })
       .withFailureFunction(async (params) => {
-        devLog.error(createErrorMessage('Critical workflow failed', {
-          workflowRunId: params.context.workflowRunId,
-          status: params.failStatus,
-          response: params.failResponse
-        }));
+        devLog.error(
+          createErrorMessage('Critical workflow failed', {
+            response: params.failResponse,
+            status: params.failStatus,
+            workflowRunId: params.context.workflowRunId,
+          }),
+        );
 
         // Additional failure handling could be implemented here
         // such as sending alerts or logging to monitoring systems
@@ -243,11 +259,11 @@ export const workflows = {
    * Create a workflow with resource cleanup
    */
   withResources<T = unknown>() {
-    return createWorkflow<T>().build(async (context) => {
+    return createWorkflow<T>().build(async (_context) => {
       // Import dynamically to avoid circular dependencies
       const { withResources } = await import('../../utils');
 
-      return withResources(async (resources) => {
+      return withResources(async (_resources) => {
         // Your workflow implementation goes here
         // Use resources.add() to register cleanup functions
 
@@ -259,5 +275,5 @@ export const workflows = {
         return { success: true };
       });
     });
-  }
+  },
 };

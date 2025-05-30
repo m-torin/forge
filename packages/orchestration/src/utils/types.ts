@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+// Import types from QStash and Workflow
+import type { Client } from '@upstash/qstash';
+import type { Receiver } from '@upstash/qstash';
 import type { WorkflowContext } from '@upstash/workflow';
 
 // Re-export WorkflowContext from @upstash/workflow
@@ -79,11 +82,6 @@ export interface InvokeResult<T> {
   isCanceled: boolean;
   isFailed: boolean;
 }
-
-// Import types from QStash and Workflow
-import type { Client } from '@upstash/qstash';
-import type { Receiver } from '@upstash/qstash';
-import type { Client as WorkflowClient } from '@upstash/workflow';
 
 // Workflow configuration (updated with all options from docs)
 export interface WorkflowConfig {
@@ -208,11 +206,7 @@ export interface NotifyResult {
  * Options for triggering a workflow
  */
 export interface TriggerOptions {
-  url: string;
   body?: unknown;
-  headers?: Record<string, string>;
-  workflowRunId?: string;
-  retries?: number;
   delay?: string;
   flowControl?: {
     key: string;
@@ -220,18 +214,22 @@ export interface TriggerOptions {
     parallelism?: number;
     period?: string;
   };
+  headers?: Record<string, string>;
+  retries?: number;
+  url: string;
+  workflowRunId?: string;
 }
 
 /**
  * Options for getting workflow logs
  */
 export interface LogsOptions {
-  workflowRunId?: string;
   count?: number;
-  state?: WorkflowState;
-  workflowUrl?: string;
-  workflowCreatedAt?: number;
   cursor?: string;
+  state?: WorkflowState;
+  workflowCreatedAt?: number;
+  workflowRunId?: string;
+  workflowUrl?: string;
 }
 
 /**
@@ -246,8 +244,8 @@ export type CancelOptions =
  * Options for notifying a workflow
  */
 export interface NotifyOptions {
-  eventId: string;
   eventData?: unknown;
+  eventId: string;
 }
 
 /**
@@ -274,6 +272,41 @@ export interface RateLimiterConfig {
   windowMs: number;
 }
 
+// ===== Common Constants =====
+
+// Default timeouts and delays
+export const DEFAULT_TIMEOUTS = {
+  api: 30000,
+  fanout: 100,
+  polling: 2000,
+  retry: 1000,
+  workflow: 300000,
+} as const;
+
+// Default retry configurations
+export const DEFAULT_RETRIES = {
+  aggressive: 7,
+  api: 3,
+  conservative: 2,
+  network: 5,
+} as const;
+
+// Environment-specific configurations
+export const ENV_CONFIGS = {
+  development: {
+    logLevel: 'debug',
+    maxEntries: 1000,
+    skipDeduplication: true,
+    ttl: 60 * 1000, // 1 minute
+  },
+  production: {
+    logLevel: 'info',
+    maxEntries: 10000,
+    skipDeduplication: false,
+    ttl: 30 * 60 * 1000, // 30 minutes
+  },
+} as const;
+
 // Common CRON patterns
 export const CRON_PATTERNS = {
   everyDayMidnight: '0 0 * * *',
@@ -289,3 +322,51 @@ export const CRON_PATTERNS = {
   twiceDaily: '0 9,17 * * *',
 } as const;
 
+// ===== Common Result Types =====
+
+// Standard operation result
+export interface OperationResult<T = unknown> {
+  data?: T;
+  duration?: number;
+  error?: string;
+  success: boolean;
+  timestamp?: number;
+}
+
+// Batch operation result (simple version)
+export interface BatchOperationResult<T = unknown> {
+  duration: number;
+  failed: number;
+  results: OperationResult<T>[];
+  successful: number;
+  total: number;
+}
+
+// Retry configuration
+export interface RetryConfig {
+  baseDelayMs: number;
+  jitter?: boolean;
+  maxAttempts: number;
+  maxDelayMs: number;
+  multiplier?: number;
+  strategy?: 'exponential' | 'linear' | 'constant';
+}
+
+// ===== Common Utility Types =====
+
+// Environment type
+export type Environment = 'development' | 'production' | 'test';
+
+// Log level type
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+// Generic callback types
+export type AsyncCallback<T = void, R = void> = (data: T) => Promise<R>;
+export type SyncCallback<T = void, R = void> = (data: T) => R;
+
+// Error with context
+export interface ContextualError extends Error {
+  context?: Record<string, unknown>;
+  retryable?: boolean;
+  retryAfter?: number;
+}

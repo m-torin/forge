@@ -10,7 +10,7 @@ export function getBaseUrl(): string {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  
+
   // In development, use localhost
   return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3400';
 }
@@ -20,11 +20,11 @@ export function getBaseUrl(): string {
  */
 export function buildWorkflowUrls() {
   const baseUrl = getBaseUrl();
-  
+
   return {
     basic: `${baseUrl}/api/workflows/basic`,
-    'kitchen-sink': `${baseUrl}/api/workflows/kitchen-sink`,
     'image-processing': `${baseUrl}/api/workflows/image-processing`,
+    'kitchen-sink': `${baseUrl}/api/workflows/kitchen-sink`,
   };
 }
 
@@ -41,10 +41,10 @@ export function buildWorkflowUrl(workflowName: string): string {
  */
 export function buildScheduleUrls() {
   const baseUrl = getBaseUrl();
-  
+
   return {
-    manage: `${baseUrl}/api/schedules`,
     kitchenSink: `${baseUrl}/api/schedules/kitchen-sink`,
+    manage: `${baseUrl}/api/schedules`,
   };
 }
 
@@ -53,12 +53,12 @@ export function buildScheduleUrls() {
  */
 export function buildClientUrls() {
   const baseUrl = getBaseUrl();
-  
+
   return {
-    trigger: `${baseUrl}/api/client/trigger`,
     cancel: `${baseUrl}/api/client/cancel`,
-    notify: `${baseUrl}/api/client/notify`,
     logs: `${baseUrl}/api/client/logs`,
+    notify: `${baseUrl}/api/client/notify`,
+    trigger: `${baseUrl}/api/client/trigger`,
     waiters: `${baseUrl}/api/client/waiters`,
   };
 }
@@ -68,10 +68,10 @@ export function buildClientUrls() {
  */
 export function buildNotificationUrls() {
   const baseUrl = getBaseUrl();
-  
+
   return {
-    success: `${baseUrl}/api/webhooks/workflow-success`,
-    failure: `${baseUrl}/api/webhooks/workflow-failure`,
     completion: `${baseUrl}/api/webhooks/workflow-completion`,
+    failure: `${baseUrl}/api/webhooks/workflow-failure`,
+    success: `${baseUrl}/api/webhooks/workflow-success`,
   };
 }

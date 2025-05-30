@@ -1,11 +1,7 @@
 import "./globals.css";
 
 import "@mantine/core/styles.css";
-import {
-  ColorSchemeScript,
-  mantineHtmlProps,
-  MantineProvider,
-} from "@mantine/core";
+import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 
 import { Toolbar } from "@repo/feature-flags/components/toolbar";
 
@@ -25,7 +21,7 @@ interface RootLayoutProperties {
 
 const RootLayout = ({ children }: RootLayoutProperties) => {
   return (
-    <html className="scroll-smooth" {...mantineHtmlProps}>
+    <html className="scroll-smooth" lang="en">
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>

@@ -17,8 +17,8 @@ const KITCHEN_SINK_WORKFLOW_URL = process.env.NEXT_PUBLIC_APP_URL
   : 'http://localhost:3400/api/workflows/kitchen-sink';
 
 const scheduler = new WorkflowScheduler({
-  token: process.env.QSTASH_TOKEN!,
   baseUrl: process.env.QSTASH_URL,
+  token: process.env.QSTASH_TOKEN!,
 });
 
 // GET: Check schedule status
@@ -29,7 +29,7 @@ export async function GET() {
       schedule,
       status: 'active',
     });
-  } catch (error) {
+  } catch {
     // Schedule might not exist yet
     return NextResponse.json(
       {
@@ -91,7 +91,6 @@ export async function POST(request: Request) {
     // Try to update existing schedule first
     try {
       await scheduler.updateSchedule({
-        scheduleId: KITCHEN_SINK_SCHEDULE_ID,
         body: payload,
         cron,
         destination: KITCHEN_SINK_WORKFLOW_URL,
@@ -99,6 +98,7 @@ export async function POST(request: Request) {
           'Content-Type': 'application/json',
         },
         retries: 3,
+        scheduleId: KITCHEN_SINK_SCHEDULE_ID,
       });
 
       // Get updated schedule info
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
         scheduleId: KITCHEN_SINK_SCHEDULE_ID,
         timezone,
       });
-    } catch (updateError) {
+    } catch {
       // Schedule doesn't exist, create it
       const result = await scheduler.createSchedule({
         body: payload,

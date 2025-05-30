@@ -1,25 +1,25 @@
-import { createErrorMessage } from './helpers';
+import { classifyError as classifyErrorHelper, createErrorMessage } from './helpers';
 import { devLog } from './observability';
-import { isNetworkError, isTimeoutError, isRateLimitError } from './helpers';
+import { DEFAULT_RETRIES, DEFAULT_TIMEOUTS, type RetryConfig } from './types';
 
 /**
  * Error types for workflows
  */
 export enum WorkflowErrorType {
+  AUTHENTICATION = 'authentication',
+  CONFIGURATION = 'configuration',
   CONFLICT = 'conflict',
+  DATA_CORRUPTION = 'data_corruption',
   EXTERNAL_API = 'external_api',
   INTERNAL = 'internal',
   NETWORK = 'network',
   NOT_FOUND = 'not_found',
   PERMISSION = 'permission',
   RATE_LIMIT = 'rate_limit',
-  TIMEOUT = 'timeout',
-  VALIDATION = 'validation',
   RESOURCE_EXHAUSTED = 'resource_exhausted',
+  TIMEOUT = 'timeout',
   UNAVAILABLE = 'unavailable',
-  DATA_CORRUPTION = 'data_corruption',
-  CONFIGURATION = 'configuration',
-  AUTHENTICATION = 'authentication',
+  VALIDATION = 'validation',
 }
 
 /**
@@ -35,10 +35,7 @@ export const ERROR_RETRY_CATEGORIES = {
   ],
 
   // Errors that should be retried with constant delay
-  constantDelay: [
-    WorkflowErrorType.TIMEOUT,
-    WorkflowErrorType.EXTERNAL_API,
-  ],
+  constantDelay: [WorkflowErrorType.TIMEOUT, WorkflowErrorType.EXTERNAL_API],
 
   // Errors that should never be retried
   noRetry: [
@@ -60,12 +57,12 @@ export class WorkflowError extends Error {
     public readonly type: WorkflowErrorType,
     message: string,
     public readonly context?: Record<string, unknown>,
-    public readonly retryable: boolean = false,
-    public readonly retryAfter?: number
+    public readonly retryable = false,
+    public readonly retryAfter?: number,
   ) {
     super(message);
     this.name = 'WorkflowError';
-    
+
     // Maintain proper stack trace
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, WorkflowError);
@@ -75,8 +72,8 @@ export class WorkflowError extends Error {
   toJSON() {
     return {
       type: this.type,
-      message: this.message,
       context: this.context,
+      message: this.message,
       retryable: this.retryable,
       retryAfter: this.retryAfter,
       stack: this.stack,
@@ -91,7 +88,11 @@ export const errorHandlers = {
   /**
    * Handle API-related errors with intelligent classification
    */
-  handleApiError: (error: unknown, api: string, context?: Record<string, unknown>): WorkflowError => {
+  handleApiError: (
+    error: unknown,
+    api: string,
+    context?: Record<string, unknown>,
+  ): WorkflowError => {
     // If already a WorkflowError, return as-is
     if (error instanceof WorkflowError) {
       return error;
@@ -100,13 +101,13 @@ export const errorHandlers = {
     // Handle HTTP status codes
     if (error && typeof error === 'object' && 'status' in error) {
       const status = (error as any).status;
-      
+
       if (status === 401 || status === 403) {
         return new WorkflowError(
           WorkflowErrorType.PERMISSION,
           `Permission denied for ${api}`,
           { api, status, ...context },
-          false
+          false,
         );
       }
       if (status === 404) {
@@ -114,7 +115,7 @@ export const errorHandlers = {
           WorkflowErrorType.NOT_FOUND,
           `Resource not found in ${api}`,
           { api, status, ...context },
-          false
+          false,
         );
       }
       if (status === 409) {
@@ -122,19 +123,19 @@ export const errorHandlers = {
           WorkflowErrorType.CONFLICT,
           `Conflict in ${api}`,
           { api, status, ...context },
-          false
+          false,
         );
       }
       if (status === 429) {
-        const retryAfter = (error as any).headers?.['retry-after'] 
-          ? parseInt((error as any).headers['retry-after']) * 1000 
+        const retryAfter = (error as any).headers?.['retry-after']
+          ? parseInt((error as any).headers['retry-after']) * 1000
           : undefined;
         return new WorkflowError(
           WorkflowErrorType.RATE_LIMIT,
           `Rate limit exceeded for ${api}`,
           { api, status, ...context },
           true,
-          retryAfter
+          retryAfter,
         );
       }
       if (status >= 500) {
@@ -142,7 +143,7 @@ export const errorHandlers = {
           WorkflowErrorType.EXTERNAL_API,
           `${api} server error`,
           { api, status, ...context },
-          true
+          true,
         );
       }
       if (status === 408 || status === 504) {
@@ -150,46 +151,43 @@ export const errorHandlers = {
           WorkflowErrorType.TIMEOUT,
           `Request to ${api} timed out`,
           { api, status, ...context },
-          true
+          true,
         );
       }
     }
 
-    // Network errors
-    if (isNetworkError(error)) {
-      return new WorkflowError(
-        WorkflowErrorType.NETWORK,
-        `Network error calling ${api}`,
-        { api, error: String(error), ...context },
-        true
-      );
-    }
+    // Use enhanced error classification
+    const classification = classifyErrorHelper(error);
 
-    // Timeout errors
-    if (isTimeoutError(error)) {
-      return new WorkflowError(
-        WorkflowErrorType.TIMEOUT,
-        `Timeout calling ${api}`,
-        { api, error: String(error), ...context },
-        true
-      );
-    }
-
-    // Rate limit errors
-    if (isRateLimitError(error)) {
-      return new WorkflowError(
-        WorkflowErrorType.RATE_LIMIT,
-        `Rate limit exceeded for ${api}`,
-        { api, error: String(error), ...context },
-        true
-      );
+    switch (classification.type) {
+      case 'network':
+        return new WorkflowError(
+          WorkflowErrorType.NETWORK,
+          `Network error calling ${api}`,
+          { api, error: classification.message, ...context },
+          true,
+        );
+      case 'timeout':
+        return new WorkflowError(
+          WorkflowErrorType.TIMEOUT,
+          `Timeout calling ${api}`,
+          { api, error: classification.message, ...context },
+          true,
+        );
+      case 'rate_limit':
+        return new WorkflowError(
+          WorkflowErrorType.RATE_LIMIT,
+          `Rate limit exceeded for ${api}`,
+          { api, error: classification.message, ...context },
+          true,
+        );
     }
 
     return new WorkflowError(
       WorkflowErrorType.EXTERNAL_API,
       `Failed to call ${api}`,
       { api, error: String(error), ...context },
-      true
+      true,
     );
   },
 
@@ -209,59 +207,84 @@ export const errorHandlers = {
 };
 
 /**
- * Retry configuration presets
+ * Retry configuration presets - ES2022 modernized with shared constants
  */
 export const RETRY_CONFIGS = {
   aggressive: {
-    maxRetries: 5,
-    baseDelayMs: 1000,
+    baseDelayMs: DEFAULT_TIMEOUTS.retry,
     maxDelayMs: 30000,
-    retryOn: [...ERROR_RETRY_CATEGORIES.exponentialBackoff, ...ERROR_RETRY_CATEGORIES.constantDelay],
+    maxRetries: DEFAULT_RETRIES.aggressive,
+    retryOn: [
+      ...ERROR_RETRY_CATEGORIES.exponentialBackoff,
+      ...ERROR_RETRY_CATEGORIES.constantDelay,
+    ],
   },
-  
+
   conservative: {
-    maxRetries: 3,
-    baseDelayMs: 2000,
+    baseDelayMs: DEFAULT_TIMEOUTS.retry * 2,
     maxDelayMs: 60000,
+    maxRetries: DEFAULT_RETRIES.conservative,
     retryOn: ERROR_RETRY_CATEGORIES.exponentialBackoff,
   },
-  
+
   networkOnly: {
-    maxRetries: 3,
-    baseDelayMs: 1000,
+    baseDelayMs: DEFAULT_TIMEOUTS.retry,
     maxDelayMs: 10000,
+    maxRetries: DEFAULT_RETRIES.network,
     retryOn: [WorkflowErrorType.NETWORK, WorkflowErrorType.TIMEOUT],
   },
-  
+
+  api: {
+    baseDelayMs: DEFAULT_TIMEOUTS.retry,
+    maxDelayMs: DEFAULT_TIMEOUTS.api,
+    maxRetries: DEFAULT_RETRIES.api,
+    retryOn: ERROR_RETRY_CATEGORIES.exponentialBackoff,
+  },
+
   noRetry: {
+    baseDelayMs: 0,
+    maxDelayMs: 0,
     maxRetries: 0,
     retryOn: [],
   },
-};
+} as const satisfies Record<string, RetryConfig & { retryOn: readonly WorkflowErrorType[] }>;
 
 /**
- * Error classification utility
+ * Classify error into WorkflowErrorType - ES2022 modernized
+ * This wraps the helper function to return WorkflowErrorType instead of the helper's return type
  */
-export function classifyError(error: unknown): WorkflowErrorType {
+export function classifyWorkflowError(error: unknown): WorkflowErrorType {
   if (error instanceof WorkflowError) {
     return error.type;
   }
 
-  if (isNetworkError(error)) {
-    return WorkflowErrorType.NETWORK;
+  // Use the enhanced helper function
+  const classification = classifyErrorHelper(error);
+
+  // Map helper classifications to WorkflowErrorType
+  const typeMap = {
+    network: WorkflowErrorType.NETWORK,
+    rate_limit: WorkflowErrorType.RATE_LIMIT,
+    timeout: WorkflowErrorType.TIMEOUT,
+    unknown: WorkflowErrorType.INTERNAL,
+  } as const;
+
+  const mappedType = typeMap[classification.type];
+  if (mappedType) {
+    return mappedType;
   }
 
-  if (isTimeoutError(error)) {
-    return WorkflowErrorType.TIMEOUT;
-  }
-
-  if (isRateLimitError(error)) {
-    return WorkflowErrorType.RATE_LIMIT;
-  }
-
+  // Additional checks for specific error patterns
   if (error instanceof Error) {
-    if (error.message.includes('not found') || error.message.includes('404')) {
+    const message = error.message.toLowerCase();
+    if (message.includes('not found') || message.includes('404')) {
       return WorkflowErrorType.NOT_FOUND;
+    }
+    if (message.includes('unauthorized') || message.includes('401')) {
+      return WorkflowErrorType.AUTHENTICATION;
+    }
+    if (message.includes('forbidden') || message.includes('403')) {
+      return WorkflowErrorType.PERMISSION;
     }
   }
 
@@ -272,22 +295,25 @@ export function classifyError(error: unknown): WorkflowErrorType {
  * Determine if an error should be retried
  */
 export function isRetryableError(errorType: WorkflowErrorType): boolean {
-  return ERROR_RETRY_CATEGORIES.exponentialBackoff.includes(errorType) ||
-         ERROR_RETRY_CATEGORIES.constantDelay.includes(errorType);
+  return (
+    (ERROR_RETRY_CATEGORIES.exponentialBackoff as readonly WorkflowErrorType[]).includes(
+      errorType,
+    ) || (ERROR_RETRY_CATEGORIES.constantDelay as readonly WorkflowErrorType[]).includes(errorType)
+  );
 }
 
 /**
  * Error factory functions for consistent error creation
  */
 export const createWorkflowError = {
-  timeout: (operation: string, duration?: number) => 
+  timeout: (operation: string, duration?: number) =>
     new WorkflowError(
-      WorkflowErrorType.TIMEOUT, 
-      `Operation timed out: ${operation}`, 
-      { operation, duration },
-      true
+      WorkflowErrorType.TIMEOUT,
+      `Operation timed out: ${operation}`,
+      { duration, operation },
+      true,
     ),
-    
+
   validation: (errors: string[] | Record<string, string>) => {
     const message = Array.isArray(errors)
       ? errors.join(', ')
@@ -296,62 +322,60 @@ export const createWorkflowError = {
           .join(', ');
     return new WorkflowError(WorkflowErrorType.VALIDATION, message, { errors }, false);
   },
-  
+
   rateLimit: (resource: string, retryAfter?: number) =>
     new WorkflowError(
       WorkflowErrorType.RATE_LIMIT,
       `Rate limit exceeded for ${resource}`,
       { resource, retryAfter },
-      true
+      true,
     ),
-    
+
   notFound: (resource: string) =>
     new WorkflowError(
       WorkflowErrorType.NOT_FOUND,
       `Resource not found: ${resource}`,
       { resource },
-      false
+      false,
     ),
-    
+
   network: (operation: string, error?: unknown) =>
     new WorkflowError(
       WorkflowErrorType.NETWORK,
       `Network error during ${operation}`,
       { operation, originalError: String(error) },
-      true
+      true,
     ),
-    
+
   internal: (message: string, details?: Record<string, any>) =>
-    new WorkflowError(
-      WorkflowErrorType.INTERNAL,
-      message,
-      details,
-      false
-    ),
-    
+    new WorkflowError(WorkflowErrorType.INTERNAL, message, details, false),
+
   conflict: (resource: string, reason?: string) =>
     new WorkflowError(
       WorkflowErrorType.CONFLICT,
       `Conflict on ${resource}${reason ? `: ${reason}` : ''}`,
-      { resource, reason },
-      false
+      { reason, resource },
+      false,
     ),
-    
+
   permission: (action: string, resource?: string) =>
     new WorkflowError(
       WorkflowErrorType.PERMISSION,
       `Permission denied for ${action}${resource ? ` on ${resource}` : ''}`,
       { action, resource },
-      false
+      false,
     ),
-    
+
   externalApi: (api: string, status?: number, error?: unknown) =>
     new WorkflowError(
       WorkflowErrorType.EXTERNAL_API,
       `External API error from ${api}`,
-      { api, status, originalError: String(error) },
-      true
+      { api, originalError: String(error), status },
+      true,
     ),
+
+  configuration: (message: string, context?: Record<string, unknown>) =>
+    new WorkflowError(WorkflowErrorType.CONFIGURATION, message, context, false),
 };
 
 /**
@@ -360,7 +384,7 @@ export const createWorkflowError = {
 export async function withApiErrorHandling<T>(
   operation: () => Promise<T>,
   apiName: string,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
 ): Promise<T> {
   try {
     return await operation();
@@ -375,7 +399,7 @@ export async function withApiErrorHandling<T>(
 export async function withWorkflowErrorHandling<T>(
   operation: () => Promise<T>,
   operationName: string,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
 ): Promise<T> {
   try {
     return await operation();
@@ -386,7 +410,7 @@ export async function withWorkflowErrorHandling<T>(
     throw new WorkflowError(
       WorkflowErrorType.INTERNAL,
       createErrorMessage(`${operationName} failed`, error),
-      { ...context, originalError: String(error) }
+      { ...context, originalError: String(error) },
     );
   }
 }
@@ -398,45 +422,51 @@ export async function withRetryErrorHandling<T>(
   operation: () => Promise<T>,
   operationName: string,
   retryConfig = RETRY_CONFIGS.conservative,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
 ): Promise<T> {
   let lastError: WorkflowError | undefined;
-  
+
   for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
-      const workflowError = error instanceof WorkflowError 
-        ? error 
-        : new WorkflowError(
-            classifyError(error),
-            createErrorMessage(`${operationName} failed`, error),
-            { ...context, attempt, originalError: String(error) }
-          );
-      
+      const workflowError =
+        error instanceof WorkflowError
+          ? error
+          : new WorkflowError(
+              classifyWorkflowError(error),
+              createErrorMessage(`${operationName} failed`, error),
+              { ...context, attempt, originalError: String(error) },
+            );
+
       lastError = workflowError;
-      
+
       // Don't retry on last attempt
       if (attempt === retryConfig.maxRetries) {
         break;
       }
-      
+
       // Check if error is retryable
-      if (!retryConfig.retryOn.includes(workflowError.type)) {
+      if (!(retryConfig.retryOn as readonly WorkflowErrorType[]).includes(workflowError.type)) {
         break;
       }
-      
+
       // Calculate delay
-      const delay = workflowError.retryAfter || 
-        (ERROR_RETRY_CATEGORIES.exponentialBackoff.includes(workflowError.type)
+      const delay =
+        workflowError.retryAfter ||
+        ((ERROR_RETRY_CATEGORIES.exponentialBackoff as readonly WorkflowErrorType[]).includes(
+          workflowError.type,
+        )
           ? Math.min(retryConfig.baseDelayMs * Math.pow(2, attempt), retryConfig.maxDelayMs)
           : retryConfig.baseDelayMs);
-      
-      devLog.info(`Retrying ${operationName} in ${delay}ms (attempt ${attempt + 1}/${retryConfig.maxRetries + 1})`);
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
+
+      devLog.info(
+        `Retrying ${operationName} in ${delay}ms (attempt ${attempt + 1}/${retryConfig.maxRetries + 1})`,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-  
+
   throw lastError!;
 }

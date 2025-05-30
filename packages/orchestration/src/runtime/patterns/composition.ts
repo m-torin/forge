@@ -1,9 +1,10 @@
-import { createWorkflow } from '../core/workflow-builder';
-import { approvalGate, parallelExecute, processBatch } from './patterns';
-import { devLog } from '../../utils/observability';
 import { withWorkflowErrorHandling } from '../../utils/error-handling';
-import { createResponse, workflowError } from '../../utils/response';
 import { StateMachine } from '../../utils/helpers';
+import { devLog } from '../../utils/observability';
+import { createResponse, workflowError } from '../../utils/response';
+import { createWorkflow } from '../core/workflow-builder';
+
+import { approvalGate, parallelExecute, processBatch } from './patterns';
 
 import type { WorkflowContext } from '../../utils/types';
 
@@ -35,12 +36,11 @@ export function composeWorkflow<T = unknown>(
       }
 
       try {
-        const result = await context.run(step.name, async () => 
-          withWorkflowErrorHandling(
-            () => step.handler(context, currentData),
-            `step:${step.name}`,
-            { stepName: step.name, workflowRunId: context.workflowRunId }
-          )
+        const result = await context.run(step.name, async () =>
+          withWorkflowErrorHandling(() => step.handler(context, currentData), `step:${step.name}`, {
+            stepName: step.name,
+            workflowRunId: context.workflowRunId,
+          }),
         );
 
         results[step.name] = result;
@@ -52,8 +52,8 @@ export function composeWorkflow<T = unknown>(
             withWorkflowErrorHandling(
               () => step.errorHandler!(error as Error, context),
               `error-handler:${step.name}`,
-              { stepName: step.name, workflowRunId: context.workflowRunId }
-            )
+              { stepName: step.name, workflowRunId: context.workflowRunId },
+            ),
           );
           results[`${step.name}-error`] = errorResult;
           currentData = errorResult;
@@ -64,10 +64,14 @@ export function composeWorkflow<T = unknown>(
       }
     }
 
-    return createResponse('success', {
-      finalResult: currentData,
-      stepResults: results,
-    }, { workflowRunId: context.workflowRunId });
+    return createResponse(
+      'success',
+      {
+        finalResult: currentData,
+        stepResults: results,
+      },
+      { workflowRunId: context.workflowRunId },
+    );
   };
 }
 
@@ -91,15 +95,15 @@ export function createDataProcessingWorkflow<T, R>(config: {
     .build(async (context) => {
       try {
         // Extract phase
-        const extractedData = await context.run('extract', () => 
-          withWorkflowErrorHandling(
-            () => config.extract(context),
-            'extract-phase',
-            { workflowRunId: context.workflowRunId }
-          )
+        const extractedData = await context.run('extract', () =>
+          withWorkflowErrorHandling(() => config.extract(context), 'extract-phase', {
+            workflowRunId: context.workflowRunId,
+          }),
         );
 
-        devLog.workflow(context, 'Extract phase completed', { extractedCount: extractedData.length });
+        devLog.workflow(context, 'Extract phase completed', {
+          extractedCount: extractedData.length,
+        });
         let transformedData = extractedData;
 
         // Transform phase
@@ -111,12 +115,14 @@ export function createDataProcessingWorkflow<T, R>(config: {
           // Execute parallel transforms
           if (parallelTransforms.length > 0) {
             const parallelOps = Object.fromEntries(
-              parallelTransforms.map((t) => [t.name, () => 
-                withWorkflowErrorHandling(
-                  () => t.operation(transformedData),
-                  `transform:${t.name}`,
-                  { transformName: t.name, workflowRunId: context.workflowRunId }
-                )
+              parallelTransforms.map((t) => [
+                t.name,
+                () =>
+                  withWorkflowErrorHandling(
+                    () => t.operation(transformedData),
+                    `transform:${t.name}`,
+                    { transformName: t.name, workflowRunId: context.workflowRunId },
+                  ),
               ]),
             );
 
@@ -126,7 +132,9 @@ export function createDataProcessingWorkflow<T, R>(config: {
 
             // Merge parallel results (assuming last one wins for now)
             transformedData = Object.values(parallelResults).pop() as any[];
-            devLog.workflow(context, 'Parallel transforms completed', { resultCount: transformedData.length });
+            devLog.workflow(context, 'Parallel transforms completed', {
+              resultCount: transformedData.length,
+            });
           }
 
           // Execute sequential transforms
@@ -135,27 +143,27 @@ export function createDataProcessingWorkflow<T, R>(config: {
               withWorkflowErrorHandling(
                 () => transform.operation(transformedData),
                 `transform:${transform.name}`,
-                { transformName: transform.name, workflowRunId: context.workflowRunId }
-              )
+                { transformName: transform.name, workflowRunId: context.workflowRunId },
+              ),
             );
-            devLog.workflow(context, `Sequential transform ${transform.name} completed`, { resultCount: transformedData.length });
+            devLog.workflow(context, `Sequential transform ${transform.name} completed`, {
+              resultCount: transformedData.length,
+            });
           }
         }
 
         // Validation phase
         if (config.validate) {
-          const validation = await context.run('validate', () => 
-            withWorkflowErrorHandling(
-              () => config.validate!(transformedData),
-              'validation-phase',
-              { workflowRunId: context.workflowRunId }
-            )
+          const validation = await context.run('validate', () =>
+            withWorkflowErrorHandling(() => config.validate!(transformedData), 'validation-phase', {
+              workflowRunId: context.workflowRunId,
+            }),
           );
 
           if (!validation.valid) {
             throw workflowError.validation(
               `Validation failed: ${validation.errors?.join(', ')}`,
-              'transformedData'
+              'transformedData',
             );
           }
           devLog.workflow(context, 'Validation phase completed successfully');
@@ -181,31 +189,29 @@ export function createDataProcessingWorkflow<T, R>(config: {
           const results = await processBatch(context, {
             batchSize: config.batchSize,
             items: transformedData,
-            processor: async (batch) => withWorkflowErrorHandling(
-              () => config.load(context, [batch]),
-              'batch-load',
-              { batchSize: config.batchSize, workflowRunId: context.workflowRunId }
-            ),
+            processor: async (batch) =>
+              withWorkflowErrorHandling(() => config.load(context, [batch]), 'batch-load', {
+                batchSize: config.batchSize,
+                workflowRunId: context.workflowRunId,
+              }),
             stepPrefix: 'load',
           });
-          return createResponse('success', results, { 
-            workflowRunId: context.workflowRunId,
+          return createResponse('success', results, {
+            itemsProcessed: transformedData.length,
             processingType: 'batch',
-            itemsProcessed: transformedData.length
+            workflowRunId: context.workflowRunId,
           });
         } else {
           devLog.workflow(context, 'Starting single load operation');
-          const result = await context.run('load', () => 
-            withWorkflowErrorHandling(
-              () => config.load(context, transformedData),
-              'load-phase',
-              { workflowRunId: context.workflowRunId }
-            )
+          const result = await context.run('load', () =>
+            withWorkflowErrorHandling(() => config.load(context, transformedData), 'load-phase', {
+              workflowRunId: context.workflowRunId,
+            }),
           );
-          return createResponse('success', result, { 
-            workflowRunId: context.workflowRunId,
+          return createResponse('success', result, {
+            itemsProcessed: transformedData.length,
             processingType: 'single',
-            itemsProcessed: transformedData.length
+            workflowRunId: context.workflowRunId,
           });
         }
       } catch (error) {
@@ -237,29 +243,29 @@ export function createEventDrivenWorkflow<TState = any>(config: {
       const transitions = Object.fromEntries(
         Object.entries(config.events).map(([event, { nextEvent }]) => [
           event,
-          nextEvent ? { next: nextEvent } : {}
-        ])
+          nextEvent ? { next: nextEvent } : {},
+        ]),
       );
 
       const stateMachine = new StateMachine(
         (context.requestPayload as any).startEvent || Object.keys(config.events)[0],
         transitions,
-        config.initialState
+        config.initialState,
       );
 
       let currentEvent = stateMachine.getState();
       let state = stateMachine.getContext() || config.initialState;
 
-      devLog.workflow(context, 'Starting event-driven workflow', { 
-        initialEvent: currentEvent, 
-        initialState: state 
+      devLog.workflow(context, 'Starting event-driven workflow', {
+        initialEvent: currentEvent,
+        initialState: state,
       });
 
       while (currentEvent && config.events[currentEvent]) {
         const eventConfig = config.events[currentEvent];
 
-        devLog.workflow(context, `Waiting for event: ${currentEvent}`, { 
-          timeout: eventConfig.timeout || '1h' 
+        devLog.workflow(context, `Waiting for event: ${currentEvent}`, {
+          timeout: eventConfig.timeout || '1h',
         });
 
         // Wait for event
@@ -282,17 +288,17 @@ export function createEventDrivenWorkflow<TState = any>(config: {
           withWorkflowErrorHandling(
             () => eventConfig.handler(context, state, eventData),
             `event:${currentEvent}`,
-            { 
-              eventName: currentEvent, 
+            {
+              eventData,
+              eventName: currentEvent,
               workflowRunId: context.workflowRunId,
-              eventData 
-            }
-          )
+            },
+          ),
         );
 
-        devLog.workflow(context, `Processed event: ${currentEvent}`, { 
+        devLog.workflow(context, `Processed event: ${currentEvent}`, {
           newState: state,
-          nextEvent: eventConfig.nextEvent 
+          nextEvent: eventConfig.nextEvent,
         });
 
         // Move to next event using state machine
@@ -306,23 +312,22 @@ export function createEventDrivenWorkflow<TState = any>(config: {
       // Run finalizer if provided
       if (config.finalizer) {
         devLog.workflow(context, 'Running finalizer');
-        const result = await context.run('finalize', () => 
-          withWorkflowErrorHandling(
-            () => config.finalizer!(context, state),
-            'finalizer',
-            { workflowRunId: context.workflowRunId, finalState: state }
-          )
+        const result = await context.run('finalize', () =>
+          withWorkflowErrorHandling(() => config.finalizer!(context, state), 'finalizer', {
+            finalState: state,
+            workflowRunId: context.workflowRunId,
+          }),
         );
-        return createResponse('success', result, { 
-          workflowRunId: context.workflowRunId,
+        return createResponse('success', result, {
+          eventsProcessed: Object.keys(config.events).length,
           finalState: state,
-          eventsProcessed: Object.keys(config.events).length
+          workflowRunId: context.workflowRunId,
         });
       }
 
-      return createResponse('success', state, { 
+      return createResponse('success', state, {
+        finalState: state,
         workflowRunId: context.workflowRunId,
-        finalState: state
       });
     });
 }
@@ -341,45 +346,49 @@ export function createSagaWorkflow<T>(config: {
     const completedSteps: { step: (typeof config.steps)[0]; result: any }[] = [];
     let lastResult = context.requestPayload;
 
-    devLog.workflow(context, 'Starting saga workflow', { 
+    devLog.workflow(context, 'Starting saga workflow', {
+      stepNames: config.steps.map((s) => s.name),
       totalSteps: config.steps.length,
-      stepNames: config.steps.map(s => s.name)
     });
 
     try {
       // Execute all steps
       for (const step of config.steps) {
         devLog.workflow(context, `Executing saga step: ${step.name}`);
-        
+
         const result = await context.run(`${step.name}-execute`, () =>
           withWorkflowErrorHandling(
             () => step.execute(context, lastResult),
             `saga-execute:${step.name}`,
-            { stepName: step.name, workflowRunId: context.workflowRunId }
-          )
+            { stepName: step.name, workflowRunId: context.workflowRunId },
+          ),
         );
 
         completedSteps.push({ result, step });
         lastResult = result;
-        
-        devLog.workflow(context, `Completed saga step: ${step.name}`, { 
+
+        devLog.workflow(context, `Completed saga step: ${step.name}`, {
           completedSteps: completedSteps.length,
-          totalSteps: config.steps.length
+          totalSteps: config.steps.length,
         });
       }
 
-      return createResponse('success', {
-        completedSteps: completedSteps.map((s) => s.step.name),
-        result: lastResult,
-      }, {
-        workflowRunId: context.workflowRunId,
-        sagaType: 'success',
-        stepsCompleted: completedSteps.length
-      });
+      return createResponse(
+        'success',
+        {
+          completedSteps: completedSteps.map((s) => s.step.name),
+          result: lastResult,
+        },
+        {
+          sagaType: 'success',
+          stepsCompleted: completedSteps.length,
+          workflowRunId: context.workflowRunId,
+        },
+      );
     } catch (error) {
-      devLog.workflow(context, 'Saga workflow failed, starting compensation', { 
+      devLog.workflow(context, 'Saga workflow failed, starting compensation', {
         error: String(error),
-        stepsToCompensate: completedSteps.length
+        stepsToCompensate: completedSteps.length,
       });
 
       // Compensate in reverse order
@@ -388,15 +397,15 @@ export function createSagaWorkflow<T>(config: {
       for (const { result, step } of stepsToCompensate) {
         try {
           devLog.workflow(context, `Compensating step: ${step.name}`);
-          
+
           await context.run(`${step.name}-compensate`, () =>
             withWorkflowErrorHandling(
               () => step.compensate(context, result, error as Error),
               `saga-compensate:${step.name}`,
-              { stepName: step.name, workflowRunId: context.workflowRunId }
-            )
+              { stepName: step.name, workflowRunId: context.workflowRunId },
+            ),
           );
-          
+
           devLog.workflow(context, `Compensation completed for step: ${step.name}`);
         } catch (compensateError) {
           devLog.error(`Failed to compensate ${step.name}:`, compensateError);
@@ -430,12 +439,12 @@ export function createMonitoredWorkflow<T, R>(config: {
     try {
       // Record start metric
       if (config.metrics?.onStart) {
-        await context.run('metrics-start', () => 
+        await context.run('metrics-start', () =>
           withWorkflowErrorHandling(
             () => config.metrics!.onStart!(context),
             `metrics-start:${config.name}`,
-            { workflowName: config.name, workflowRunId: context.workflowRunId }
-          )
+            { workflowName: config.name, workflowRunId: context.workflowRunId },
+          ),
         );
         devLog.workflow(context, 'Start metrics recorded');
       }
@@ -444,51 +453,60 @@ export function createMonitoredWorkflow<T, R>(config: {
       const result = await withWorkflowErrorHandling(
         () => config.handler(context),
         `workflow:${config.name}`,
-        { workflowName: config.name, workflowRunId: context.workflowRunId }
+        { workflowName: config.name, workflowRunId: context.workflowRunId },
       );
 
       // Record completion metric
       const duration = Date.now() - startTime;
       devLog.workflow(context, `Workflow ${config.name} completed`, { duration });
-      
+
       if (config.metrics?.onComplete) {
         await context.run('metrics-complete', () =>
           withWorkflowErrorHandling(
             () => config.metrics!.onComplete!(context, result, duration),
             `metrics-complete:${config.name}`,
-            { workflowName: config.name, workflowRunId: context.workflowRunId, duration }
-          )
+            { duration, workflowName: config.name, workflowRunId: context.workflowRunId },
+          ),
         );
         devLog.workflow(context, 'Completion metrics recorded');
       }
 
-      return createResponse('success', {
-        metrics: {
-          duration,
-          status: 'completed',
-          workflowName: config.name,
+      return createResponse(
+        'success',
+        {
+          metrics: {
+            duration,
+            status: 'completed',
+            workflowName: config.name,
+          },
+          result,
         },
-        result,
-      }, {
-        workflowRunId: context.workflowRunId,
-        workflowName: config.name,
-        duration
-      });
+        {
+          duration,
+          workflowName: config.name,
+          workflowRunId: context.workflowRunId,
+        },
+      );
     } catch (error) {
       // Record error metric
       const duration = Date.now() - startTime;
-      devLog.workflow(context, `Workflow ${config.name} failed`, { 
-        error: String(error), 
-        duration 
+      devLog.workflow(context, `Workflow ${config.name} failed`, {
+        duration,
+        error: String(error),
       });
-      
+
       if (config.metrics?.onError) {
         await context.run('metrics-error', () =>
           withWorkflowErrorHandling(
             () => config.metrics!.onError!(context, error as Error, duration),
             `metrics-error:${config.name}`,
-            { workflowName: config.name, workflowRunId: context.workflowRunId, duration, error: String(error) }
-          )
+            {
+              duration,
+              error: String(error),
+              workflowName: config.name,
+              workflowRunId: context.workflowRunId,
+            },
+          ),
         );
         devLog.workflow(context, 'Error metrics recorded');
       }
@@ -513,22 +531,21 @@ export async function branch<T>(
   const branchKey = config.condition(config.data);
   const handler = config.branches[branchKey] || config.default;
 
-  devLog.workflow(context, `Branching workflow`, { 
-    branchKey, 
+  devLog.workflow(context, `Branching workflow`, {
     availableBranches: Object.keys(config.branches),
-    hasDefault: !!config.default
+    branchKey,
+    hasDefault: !!config.default,
   });
 
   if (!handler) {
     throw workflowError.notFound(`branch handler`, branchKey);
   }
 
-  return await context.run('branch-handler', () => 
-    withWorkflowErrorHandling(
-      () => handler(context, config.data),
-      `branch:${branchKey}`,
-      { branchKey, workflowRunId: context.workflowRunId }
-    )
+  return await context.run('branch-handler', () =>
+    withWorkflowErrorHandling(() => handler(context, config.data), `branch:${branchKey}`, {
+      branchKey,
+      workflowRunId: context.workflowRunId,
+    }),
   );
 }
 
@@ -546,46 +563,50 @@ export function createWorkflowChain<T>(
     let currentData: any = context.requestPayload;
     const results: Record<string, any> = {};
 
-    devLog.workflow(context, 'Starting workflow chain', { 
+    devLog.workflow(context, 'Starting workflow chain', {
       totalWorkflows: workflows.length,
-      workflowNames: workflows.map(w => w.name)
+      workflowNames: workflows.map((w) => w.name),
     });
 
-    for (const { name, transform, workflow } of workflows) {
+    for (const { name, transform, workflow: _workflow } of workflows) {
       devLog.workflow(context, `Executing chain workflow: ${name}`, { currentData });
-      
+
       // Execute workflow with transformed data
-      const result = await context.run('chain-workflow', async () => 
+      const result = await context.run('chain-workflow', async () =>
         withWorkflowErrorHandling(
           () => {
             // In a real implementation, you would use context.invoke
             // For now, we'll just return a placeholder with proper logging
             devLog.workflow(context, `Would invoke ${name} workflow with data:`, currentData);
-            return { data: currentData, success: true };
+            return Promise.resolve({ data: currentData, success: true });
           },
           `workflow-chain:${name}`,
-          { workflowName: name, workflowRunId: context.workflowRunId }
-        )
+          { workflowName: name, workflowRunId: context.workflowRunId },
+        ),
       );
 
       results[name] = result;
 
       // Transform result for next workflow
       currentData = transform ? transform(result) : result;
-      
-      devLog.workflow(context, `Completed chain workflow: ${name}`, { 
+
+      devLog.workflow(context, `Completed chain workflow: ${name}`, {
         result,
-        transformedData: currentData
+        transformedData: currentData,
       });
     }
 
-    return createResponse('success', {
-      chainResults: results,
-      finalResult: currentData,
-    }, {
-      workflowRunId: context.workflowRunId,
-      workflowsExecuted: workflows.length,
-      chainType: 'sequential'
-    });
+    return createResponse(
+      'success',
+      {
+        chainResults: results,
+        finalResult: currentData,
+      },
+      {
+        chainType: 'sequential',
+        workflowRunId: context.workflowRunId,
+        workflowsExecuted: workflows.length,
+      },
+    );
   });
 }

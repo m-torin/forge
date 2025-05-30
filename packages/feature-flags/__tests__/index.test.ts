@@ -42,40 +42,40 @@ describe('feature flags index', () => {
   it('showBetaFeature has correct metadata', async () => {
     const { showBetaFeature } = await import('../index');
 
-    expect(showBetaFeature.key).toBe('showBetaFeature');
-    expect(showBetaFeature.origin).toBe('https://app.posthog.com/my/flags');
-    expect(showBetaFeature.description).toBe('Show beta features to users');
-    expect(showBetaFeature.options).toEqual([
+    expect((showBetaFeature as any).key).toBe('showBetaFeature');
+    expect((showBetaFeature as any).origin).toBe('https://app.posthog.com/my/flags');
+    expect((showBetaFeature as any).description).toBe('Show beta features to users');
+    expect((showBetaFeature as any).options).toEqual([
       { label: 'Off', value: false },
       { label: 'On', value: true },
     ]);
   });
 
   it('showBetaFeature calls the flag function', async () => {
-    mockFlag.mockResolvedValue(true);
+    (mockFlag as any).mockResolvedValue(true);
     const { showBetaFeature } = await import('../index');
 
-    const result = await showBetaFeature();
+    const result = await (showBetaFeature as any)();
 
     expect(mockFlag).toHaveBeenCalled();
     expect(result).toBe(true);
   });
 
   it('handles flag returning false', async () => {
-    mockFlag.mockResolvedValue(false);
+    (mockFlag as any).mockResolvedValue(false);
     const { showBetaFeature } = await import('../index');
 
-    const result = await showBetaFeature();
+    const result = await (showBetaFeature as any)();
 
     expect(result).toBe(false);
   });
 
   it('propagates errors from flag function', async () => {
     const error = new Error('Flag evaluation failed');
-    mockFlag.mockRejectedValue(error);
+    (mockFlag as any).mockRejectedValue(error);
     const { showBetaFeature } = await import('../index');
 
-    await expect(showBetaFeature()).rejects.toThrow('Flag evaluation failed');
+    await expect((showBetaFeature as any)()).rejects.toThrow('Flag evaluation failed');
   });
 
   it('exports only expected flags', async () => {

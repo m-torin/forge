@@ -1,5 +1,6 @@
-import type { EnhancedContext } from '../../runtime';
 import { devLog } from '../../utils/observability';
+
+import type { EnhancedContext } from '../../runtime';
 
 /**
  * Image Processing Workflow Types
@@ -14,7 +15,7 @@ export interface ImageProcessingPayload {
     quality?: number;
   };
   userId: string;
-  
+
   // Explicit deduplication support
   dedupId?: string;
 }
@@ -65,7 +66,7 @@ export async function imageProcessingWorkflow(context: EnhancedContext<ImageProc
 
   // Step 1: Simulate fetching delay
   await context.sleep('simulate-fetch', 500);
-  
+
   // Step 2: Get the original image URL
   const originalUrl = await context.run('get-image-url', async () => {
     return imageUrl || `https://example-storage.com/images/${imageId}/original.jpg`;
@@ -75,7 +76,7 @@ export async function imageProcessingWorkflow(context: EnhancedContext<ImageProc
 
   // Step 3: Simulate image processing delays (single step for all variants)
   await context.sleep('process-image-variants', resolutions.length * filters.length * 100);
-  
+
   // Step 4: Process images
   const processedImages = await context.run('process-images', async () => {
     const results: ProcessedImage[] = [];
@@ -105,7 +106,7 @@ export async function imageProcessingWorkflow(context: EnhancedContext<ImageProc
   // Step 5: Simulate thumbnail generation delays (single step for all sizes)
   const thumbSizes = [150, 300];
   await context.sleep('generate-thumbnails-delay', thumbSizes.length * 50);
-  
+
   // Step 6: Generate thumbnails
   const thumbnails = await context.run('generate-thumbnails', async () => {
     const thumbs: ProcessedImage[] = [];
@@ -143,7 +144,7 @@ export async function imageProcessingWorkflow(context: EnhancedContext<ImageProc
 
   // Step 7: Simulate storing metadata delay
   await context.sleep('store-metadata', 200);
-  
+
   // Step 8: Store results metadata
   const storedResults = await context.run('store-results', async () => {
     const allImages = [...processedImages, ...thumbnails];
@@ -174,7 +175,7 @@ export async function imageProcessingWorkflow(context: EnhancedContext<ImageProc
 
   // Step 9: Simulate notification delay
   await context.sleep('simulate-notification', 100);
-  
+
   // Step 10: Send notification
   await context.run('notify-completion', async () => {
     devLog.workflow(context, 'Sending completion notification', {

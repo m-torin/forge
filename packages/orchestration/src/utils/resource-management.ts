@@ -2,8 +2,20 @@
  * Resource management utilities for Node.js 22 using AsyncDisposableStack
  */
 
+// Polyfill type for AsyncDisposableStack if not available
+declare global {
+  interface AsyncDisposableStack {
+    disposeAsync(): Promise<void>;
+    use<T extends AsyncDisposable>(value: T): T;
+  }
+
+  const AsyncDisposableStack: new () => AsyncDisposableStack;
+}
+
 // Check if AsyncDisposableStack is supported
-const supportsAsyncDisposable = typeof Symbol.asyncDispose === 'symbol';
+const supportsAsyncDisposable =
+  typeof Symbol.asyncDispose === 'symbol' &&
+  typeof (globalThis as any).AsyncDisposableStack === 'function';
 
 /**
  * Resource interface for cleanup operations
@@ -17,7 +29,7 @@ export interface Resource {
  * Resource manager for AsyncDisposableStack
  */
 export class ResourceManager {
-  private cleanupFunctions: Array<() => Promise<void>> = [];
+  private cleanupFunctions: (() => Promise<void>)[] = [];
   private stack?: AsyncDisposableStack;
 
   constructor() {
@@ -32,12 +44,17 @@ export class ResourceManager {
    */
   add<T extends Resource>(resource: T): T {
     if (this.stack && typeof resource[Symbol.asyncDispose] === 'function') {
-      this.stack.use(resource);
+      // Create a proper AsyncDisposable wrapper
+      const disposable = {
+        [Symbol.asyncDispose]: resource[Symbol.asyncDispose]!,
+      };
+      this.stack.use(disposable);
     } else if (typeof resource.cleanup === 'function') {
       if (this.stack) {
-        this.stack.use({
-          [Symbol.asyncDispose]: resource.cleanup.bind(resource)
-        });
+        const disposable = {
+          [Symbol.asyncDispose]: resource.cleanup.bind(resource),
+        };
+        this.stack.use(disposable);
       } else {
         this.cleanupFunctions.push(resource.cleanup.bind(resource));
       }
@@ -73,9 +90,7 @@ export class ResourceManager {
  * @param fn Function that receives a ResourceManager and returns a promise
  * @returns Promise with the function result
  */
-export async function withResources<T>(
-  fn: (resources: ResourceManager) => Promise<T>
-): Promise<T> {
+export async function withResources<T>(fn: (resources: ResourceManager) => Promise<T>): Promise<T> {
   const manager = new ResourceManager();
 
   try {
@@ -91,10 +106,13 @@ export async function withResources<T>(
  * @param cleanup Cleanup function
  * @returns Resource object
  */
-export function createResource<T>(value: T, cleanup: () => Promise<void>): T & Resource {
+export function createResource<T extends object>(
+  value: T,
+  cleanup: () => Promise<void>,
+): T & Resource {
   return Object.assign(value, {
     cleanup,
-    ...(supportsAsyncDisposable ? { [Symbol.asyncDispose]: cleanup } : {})
+    ...(supportsAsyncDisposable ? { [Symbol.asyncDispose]: cleanup } : {}),
   });
 }
 
@@ -103,7 +121,9 @@ export function createResource<T>(value: T, cleanup: () => Promise<void>): T & R
  * @param redis Redis client
  * @returns Resource-wrapped Redis client
  */
-export function createRedisResource<T>(redis: T & { disconnect: () => Promise<void> }): T & Resource {
+export function createRedisResource<T>(
+  redis: T & { disconnect: () => Promise<void> },
+): T & Resource {
   return createResource(redis, () => redis.disconnect());
 }
 
@@ -115,7 +135,7 @@ export function createRedisResource<T>(redis: T & { disconnect: () => Promise<vo
  */
 export function createTimeoutResource(
   ms: number,
-  callback: () => void
+  callback: () => void,
 ): { id: NodeJS.Timeout } & Resource {
   const id = setTimeout(callback, ms);
   return createResource({ id }, async () => clearTimeout(id));
@@ -129,7 +149,7 @@ export function createTimeoutResource(
  */
 export function createIntervalResource(
   ms: number,
-  callback: () => void
+  callback: () => void,
 ): { id: NodeJS.Timeout } & Resource {
   const id = setInterval(callback, ms);
   return createResource({ id }, async () => clearInterval(id));

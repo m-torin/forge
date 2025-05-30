@@ -1,17 +1,18 @@
 import { Client } from '@upstash/workflow';
-import { WorkflowError, WorkflowErrorType, errorHandlers } from '../../utils/error-handling';
-import { withResources, sleep, pollUntilCondition, normalizeUrl, createErrorMessage } from '../../utils';
+
+import { createErrorMessage, normalizeUrl, pollUntilCondition } from '../../utils';
+import { errorHandlers, WorkflowError, WorkflowErrorType } from '../../utils/error-handling';
 import { devLog } from '../../utils/observability';
 
 import type {
-  Waiter,
-  WorkflowRun,
+  CancelOptions,
+  LogsOptions,
+  NotifyOptions,
   NotifyResult,
   TriggerOptions,
-  LogsOptions,
-  CancelOptions,
-  NotifyOptions,
-  WaitForCompletionOptions
+  Waiter,
+  WaitForCompletionOptions,
+  WorkflowRun,
 } from '../../utils/types';
 
 /**
@@ -33,7 +34,7 @@ export class WorkflowClient {
    */
   async trigger(options: TriggerOptions): Promise<{ workflowRunId: string }> {
     try {
-      return await this.client.trigger(options);
+      return await this.client.trigger(options as any);
     } catch (error) {
       throw errorHandlers.handleApiError(error, 'QStash Workflow');
     }
@@ -47,10 +48,7 @@ export class WorkflowClient {
     cursor?: string;
   }> {
     try {
-      return await this.client.logs(options || {}) as Promise<{
-        runs: WorkflowRun[];
-        cursor?: string;
-      }>;
+      return (await this.client.logs(options || {})) as any;
     } catch (error) {
       throw errorHandlers.handleApiError(error, 'QStash Workflow Logs');
     }
@@ -136,13 +134,15 @@ export class WorkflowClient {
         },
         {
           intervalMs: pollingInterval,
-          timeoutMs: timeout,
           onPoll: (run, attempt) => {
             if (run && attempt > 0 && attempt % 5 === 0) {
-              devLog.info(`Still waiting for workflow ${workflowRunId}, state: ${run.workflowState}`);
+              devLog.info(
+                `Still waiting for workflow ${workflowRunId}, state: ${run.workflowState}`,
+              );
             }
-          }
-        }
+          },
+          timeoutMs: timeout,
+        },
       );
     } catch (error) {
       // If it's a timeout from pollUntilCondition, wrap it in WorkflowError
@@ -150,14 +150,13 @@ export class WorkflowClient {
         throw new WorkflowError(
           WorkflowErrorType.TIMEOUT,
           `Timeout waiting for workflow ${workflowRunId} to complete`,
-          { workflowRunId, timeout }
+          { timeout, workflowRunId },
         );
       }
       throw error;
     }
   }
 }
-
 
 /**
  * Factory function to create workflow client

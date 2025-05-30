@@ -1,10 +1,20 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
+const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
+// In local dev or build:local, these env vars might not be set if using .env.local
+const hasRequiredEnvVars = Boolean(process.env.BETTER_AUTH_SECRET && process.env.DATABASE_URL);
+
+// Make env vars optional in development or when they're missing (indicating .env.local usage)
+const requireInProduction = isProduction && hasRequiredEnvVars;
+
 export const keys = () =>
   createEnv({
     client: {
-      NEXT_PUBLIC_APP_URL: z.string().min(1).url(),
+      NEXT_PUBLIC_APP_URL: requireInProduction
+        ? z.string().min(1).url()
+        : z.string().min(1).url().optional(),
     },
     runtimeEnv: {
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
@@ -12,7 +22,9 @@ export const keys = () =>
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     },
     server: {
-      BETTER_AUTH_SECRET: z.string().min(1),
-      DATABASE_URL: z.string().min(1).url(),
+      BETTER_AUTH_SECRET: requireInProduction ? z.string().min(1) : z.string().min(1).optional(),
+      DATABASE_URL: requireInProduction
+        ? z.string().min(1).url()
+        : z.string().min(1).url().optional(),
     },
   });

@@ -5,10 +5,10 @@ export * from './keys';
 export type { Session, User } from 'better-auth';
 
 // Export organization types from our database
-export type { Invitation, Member, Organization, Team } from '@repo/database';
+export type { Invitation, Member, Organization, Team } from '@repo/database/prisma';
 
 // Export API key types from our database
-export type { ApiKey } from '@repo/database';
+export type { ApiKey } from '@repo/database/prisma';
 
 // Export permissions and access control
 export { ac, roles } from './permissions';

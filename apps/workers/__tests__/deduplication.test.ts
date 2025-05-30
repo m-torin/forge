@@ -59,15 +59,12 @@ describe('Deduplication System', () => {
   });
 
   it('should respect SKIP_WORKFLOW_DEDUPLICATION flag', () => {
-    const skipDeduplication = process.env.SKIP_WORKFLOW_DEDUPLICATION === 'true';
+    const _skipDeduplication = process.env.SKIP_WORKFLOW_DEDUPLICATION === 'true';
     const orderId = 'order-test-456';
     const processedOrders = new Map<string, number>();
 
     // Add to processed
     processedOrders.set(orderId, Date.now());
-
-    // Check deduplication
-    const isDuplicate = processedOrders.has(orderId) && !skipDeduplication;
 
     // With flag set, should not be considered duplicate
     process.env.SKIP_WORKFLOW_DEDUPLICATION = 'true';

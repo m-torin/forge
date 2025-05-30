@@ -1,11 +1,11 @@
 import { Suspense } from 'react';
-import { getTodos } from './actions';
+
 import TodoForm from './todo-form';
 import TodoList from './todo-list';
 
 export const metadata = {
-  title: 'Firestore Demo - React 19 Server Actions',
   description: 'A demo of using Firestore with React 19 Server Actions',
+  title: 'Firestore Demo - React 19 Server Actions',
 };
 
 export default function FirestoreDemoPage() {

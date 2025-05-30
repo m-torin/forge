@@ -20,7 +20,7 @@ export const analytics = new Proxy({} as PostHog, {
       }
 
       if (typeof prop === 'string' && ['alias', 'capture', 'identify', 'shutdown'].includes(prop)) {
-        return () => Promise.resolve();
+        return (..._args: any[]) => Promise.resolve();
       }
       return undefined;
     }

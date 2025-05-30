@@ -1,6 +1,7 @@
-import type { WorkflowContext } from '@upstash/workflow';
-import { chunkArray, formatTimestamp, sleep, createErrorMessage } from '../../utils/helpers';
+import { chunkArray, createErrorMessage, formatTimestamp, sleep } from '../../utils/helpers';
 import { devLog } from '../../utils/observability';
+
+import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Batch processing configuration
@@ -192,7 +193,7 @@ async function processSingleBatch<TInput, TOutput>(
     try {
       const result = await Promise.race([
         processor(item, itemIndex, batchIndex),
-        new Promise<never>((_, reject) =>
+        new Promise<never>((_resolve, reject) =>
           setTimeout(() => reject(new Error('Batch item timeout')), timeout),
         ),
       ]);
@@ -257,7 +258,7 @@ export async function batchHTTPRequests(
           },
           method: request.method || 'POST',
           retries: 2,
-        });
+        } as any);
 
         return {
           id: request.id,

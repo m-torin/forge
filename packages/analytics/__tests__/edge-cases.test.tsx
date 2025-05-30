@@ -32,8 +32,8 @@ describe('Analytics Edge Cases', () => {
     expect(identifyFn).toBeDefined();
     expect(typeof identifyFn).toBe('function');
 
-    // Verify it returns a promise
-    const result = await identifyFn();
+    // Verify it returns a promise when called with required parameters
+    const result = await identifyFn({ distinctId: 'test-user' });
     expect(result).toBeUndefined();
 
     // PostHog should NOT be initialized with empty keys

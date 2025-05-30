@@ -14,8 +14,8 @@
         ".react-email/**"
       ]
     },
-    "build:offline": {
-      "dependsOn": ["^build:offline"],
+    "build:local": {
+      "dependsOn": ["^build:local"],
       "outputs": [
         ".next/**",
         "!.next/cache/**",

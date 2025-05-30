@@ -38,6 +38,7 @@ export class HeroScraper implements BrowserManager {
   async launch(): Promise<void> {
     try {
       // Dynamic import to handle optional peer dependency
+      // @ts-ignore - Optional peer dependency, handled with try-catch
       const { Hero } = await import('@heroai/hero').catch(() => {
         throw new ScrapingError(
           'Hero is not installed. Run: npm install @heroai/hero',

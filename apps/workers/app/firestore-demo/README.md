@@ -1,6 +1,7 @@
 # Firestore Demo with React 19 Server Actions
 
-This demo showcases how to use Cloud Firestore with React 19 Server Actions in a Next.js application.
+This demo showcases how to use Cloud Firestore with React 19 Server Actions in a Next.js
+application.
 
 ## Features
 
@@ -15,6 +16,7 @@ This demo showcases how to use Cloud Firestore with React 19 Server Actions in a
 1. Make sure you have a Firebase project set up with Firestore enabled.
 
 2. Create a service account key in the Firebase console:
+
    - Go to Project Settings > Service accounts
    - Click "Generate new private key"
    - Save the JSON file securely
@@ -72,6 +74,8 @@ interface Todo {
 
 ## Implementation Details
 
-The demo uses the Firebase Admin SDK to interact with Firestore. The server actions are implemented in the `@repo/database` package, which provides a unified interface for both Prisma and Firestore.
+The demo uses the Firebase Admin SDK to interact with Firestore. The server actions are implemented
+in the `@repo/database` package, which provides a unified interface for both Prisma and Firestore.
 
-The database provider can be switched between Prisma and Firestore by changing the `DATABASE_PROVIDER` environment variable.
+The database provider can be switched between Prisma and Firestore by changing the
+`DATABASE_PROVIDER` environment variable.

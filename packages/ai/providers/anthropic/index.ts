@@ -113,15 +113,15 @@ export class AnthropicClient {
     messages: AnthropicMessage[],
     systemPrompt?: string,
   ): Promise<{ status: number; body: any }> {
-    const { apiKey, baseUrl = 'https://api.anthropic.com', maxTokens, model, temperature } = this.config;
+    const {
+      apiKey,
+      baseUrl = 'https://api.anthropic.com',
+      maxTokens,
+      model,
+      temperature,
+    } = this.config;
 
     const response = await fetch(`${baseUrl}/v1/messages`, {
-      method: 'POST',
-      headers: {
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-      },
       body: JSON.stringify({
         max_tokens: maxTokens || 1000,
         messages,
@@ -129,13 +129,19 @@ export class AnthropicClient {
         temperature: temperature || 0.1,
         ...(systemPrompt && { system: systemPrompt }),
       }),
+      headers: {
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      method: 'POST',
     });
 
     const body = await response.json();
 
     return {
-      status: response.status,
       body,
+      status: response.status,
     };
   }
 
@@ -185,7 +191,7 @@ Rules to check:
       const responseText = response.body.content?.[0]?.text || response.body;
       const result = typeof responseText === 'string' ? JSON.parse(responseText) : responseText;
       return result;
-    } catch (error) {
+    } catch {
       // Fallback if AI doesn't return valid JSON
       return {
         confidence: 0.5,
@@ -205,9 +211,7 @@ Rules to check:
   /**
    * Sentiment analysis using Anthropic
    */
-  async analyzeSentiment(
-    text: string,
-  ): Promise<{
+  async analyzeSentiment(text: string): Promise<{
     sentiment: 'positive' | 'negative' | 'neutral';
     confidence: number;
     reasoning: string;
@@ -370,7 +374,7 @@ Rules to check:
  */
 export function createAnthropicClient(config?: AnthropicConfig): AnthropicClient | null {
   const finalConfig = config || createAnthropicConfigFromEnv();
-  
+
   if (!finalConfig) {
     return null;
   }

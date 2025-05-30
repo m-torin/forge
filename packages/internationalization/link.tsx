@@ -16,12 +16,12 @@ export function Link({ href, locale, ...props }: LinkProps) {
 
   // If it's an external link or anchor, return as is
   if (href.startsWith('http') || href.startsWith('#')) {
-    return <NextLink href={href} {...props} />;
+    return <NextLink href={href as any} {...props} />;
   }
 
   // For default locale (English), don't add locale prefix
   if (currentLocale === 'en') {
-    return <NextLink href={href} {...props} />;
+    return <NextLink href={href as any} {...props} />;
   }
 
   // For other locales, add the locale prefix
@@ -29,5 +29,5 @@ export function Link({ href, locale, ...props }: LinkProps) {
     ? `/${currentLocale}${href}`
     : `/${currentLocale}/${href}`;
 
-  return <NextLink href={localizedHref} {...props} />;
+  return <NextLink href={localizedHref as any} {...props} />;
 }

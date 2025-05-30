@@ -29,11 +29,11 @@ export function getCurrentISO(): string {
 export function timeAgo(timestamp: number): string {
   const now = Date.now();
   const diff = now - timestamp;
-  
+
   const minute = 60 * 1000;
   const hour = minute * 60;
   const day = hour * 24;
-  
+
   if (diff < minute) {
     return 'just now';
   } else if (diff < hour) {
@@ -55,7 +55,7 @@ export function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
-  
+
   if (hours > 0) {
     return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
   } else if (minutes > 0) {
@@ -70,15 +70,15 @@ export function formatDuration(ms: number): string {
  */
 export function parseCronExpression(cron: string): string {
   const cronMap: Record<string, string> = {
-    '0 9 * * *': 'Daily at 9:00 AM',
-    '0 0 * * *': 'Daily at midnight',
     '0 */2 * * *': 'Every 2 hours',
+    '0 */6 * * *': 'Every 6 hours',
+    '0 */12 * * *': 'Every 12 hours',
+    '0 0 * * *': 'Daily at midnight',
+    '0 9 * * *': 'Daily at 9:00 AM',
     '*/5 * * * *': 'Every 5 minutes',
     '*/15 * * * *': 'Every 15 minutes',
     '*/30 * * * *': 'Every 30 minutes',
-    '0 */6 * * *': 'Every 6 hours',
-    '0 */12 * * *': 'Every 12 hours',
   };
-  
+
   return cronMap[cron] || `Custom schedule: ${cron}`;
 }

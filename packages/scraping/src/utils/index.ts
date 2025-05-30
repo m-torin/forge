@@ -10,7 +10,7 @@ export function extractFromHtml(html: string, selectors: SelectorMap): Extractio
   // This is a simplified implementation
   // In production, use a proper HTML parser like cheerio
   for (const [key, selectorOrConfig] of Object.entries(selectors)) {
-    const config: SelectorConfig =
+    const _config: SelectorConfig =
       typeof selectorOrConfig === 'string'
         ? { selector: selectorOrConfig, transform: 'text' }
         : selectorOrConfig;
@@ -45,10 +45,10 @@ export function detectCaptcha(html: string): boolean {
  * Check if URL is allowed by robots.txt rules
  * This is a simplified implementation
  */
-export async function checkRobotsTxt(url: string, userAgent = '*'): Promise<boolean> {
+export async function checkRobotsTxt(url: string, _userAgent = '*'): Promise<boolean> {
   try {
     const urlObj = new URL(url);
-    const robotsUrl = `${urlObj.protocol}//${urlObj.host}/robots.txt`;
+    const _robotsUrl = `${urlObj.protocol}//${urlObj.host}/robots.txt`;
 
     // In production, fetch and parse robots.txt
     // For now, always return true

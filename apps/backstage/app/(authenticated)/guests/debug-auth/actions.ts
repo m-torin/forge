@@ -3,7 +3,15 @@
 import { headers } from 'next/headers';
 
 import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
+import { createPrismaAdapter } from '@repo/database/prisma';
+
+const adapter = createPrismaAdapter();
+
+// Helper to get database client
+async function getDatabase() {
+  await adapter.initialize();
+  return await adapter.raw('client', {});
+}
 
 export interface PrismaResponse<T = any> {
   data: T | null;
@@ -24,6 +32,7 @@ async function checkAuth() {
 export async function getUsersFromDatabase(): Promise<PrismaResponse> {
   try {
     await checkAuth();
+    const database = await getDatabase();
 
     const users = await database.user.findMany({
       include: {
@@ -51,6 +60,7 @@ export async function getUsersFromDatabase(): Promise<PrismaResponse> {
 export async function getCurrentUserFromDatabase(): Promise<PrismaResponse> {
   try {
     const session = await checkAuth();
+    const database = await getDatabase();
 
     const user = await database.user.findUnique({
       include: {
@@ -78,6 +88,7 @@ export async function getCurrentUserFromDatabase(): Promise<PrismaResponse> {
 export async function getCurrentSessionFromDatabase(): Promise<PrismaResponse> {
   try {
     const session = await checkAuth();
+    const database = await getDatabase();
 
     const dbSession = await database.session.findUnique({
       include: {
@@ -99,6 +110,7 @@ export async function getCurrentSessionFromDatabase(): Promise<PrismaResponse> {
 export async function getSessionsFromDatabase(): Promise<PrismaResponse> {
   try {
     await checkAuth();
+    const database = await getDatabase();
 
     const sessions = await database.session.findMany({
       include: {
@@ -120,6 +132,7 @@ export async function getSessionsFromDatabase(): Promise<PrismaResponse> {
 export async function getAccountsFromDatabase(): Promise<PrismaResponse> {
   try {
     const session = await checkAuth();
+    const database = await getDatabase();
 
     const accounts = await database.account.findMany({
       where: { userId: session.user.id },
@@ -139,6 +152,7 @@ export async function getAccountsFromDatabase(): Promise<PrismaResponse> {
 export async function getOrganizationsFromDatabase(): Promise<PrismaResponse> {
   try {
     await checkAuth();
+    const database = await getDatabase();
 
     const organizations = await database.organization.findMany({
       include: {
@@ -166,6 +180,7 @@ export async function getOrganizationsFromDatabase(): Promise<PrismaResponse> {
 export async function getUserOrganizationsFromDatabase(): Promise<PrismaResponse> {
   try {
     const session = await checkAuth();
+    const database = await getDatabase();
 
     const organizations = await database.organization.findMany({
       include: {
@@ -202,6 +217,8 @@ export async function getCurrentOrganizationFromDatabase(): Promise<PrismaRespon
       return { data: null, error: 'No active organization', success: false };
     }
 
+    const database = await getDatabase();
+
     const organization = await database.organization.findUnique({
       include: {
         invitations: true,
@@ -230,6 +247,8 @@ export async function getApiKeysFromDatabase(): Promise<PrismaResponse> {
   try {
     await checkAuth();
 
+    const database = await getDatabase();
+
     const apiKeys = await database.apiKey.findMany({
       include: {
         user: true,
@@ -252,6 +271,8 @@ export async function getTwoFactorFromDatabase(): Promise<PrismaResponse> {
   try {
     const session = await checkAuth();
 
+    const database = await getDatabase();
+
     const twoFactor = await database.twoFactor.findUnique({
       where: { userId: session.user.id },
     });
@@ -271,6 +292,8 @@ export async function getPasskeysFromDatabase(): Promise<PrismaResponse> {
   try {
     const session = await checkAuth();
 
+    const database = await getDatabase();
+
     const passkeys = await database.passkey.findMany({
       where: { userId: session.user.id },
     });
@@ -289,6 +312,8 @@ export async function getPasskeysFromDatabase(): Promise<PrismaResponse> {
 export async function getDatabaseStats(): Promise<PrismaResponse> {
   try {
     await checkAuth();
+
+    const database = await getDatabase();
 
     const [userCount, sessionCount, orgCount, apiKeyCount] = await Promise.all([
       database.user.count(),

@@ -1,40 +1,54 @@
-import type { WorkflowContext } from '@upstash/workflow';
 import { Client } from '@upstash/workflow';
+
 import { isDevelopment, isProduction } from './helpers';
 
 import type { WorkflowState, WorkflowStatus } from './types';
+import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Development logging utilities
  */
+// Helper to truncate large data for logging
+const truncateData = (data: any, maxLength = 500): any => {
+  if (!data) return '';
+  if (typeof data === 'string') {
+    return data.length > maxLength ? data.substring(0, maxLength) + '...' : data;
+  }
+  if (typeof data === 'object') {
+    const str = JSON.stringify(data);
+    return str.length > maxLength ? str.substring(0, maxLength) + '...' : data;
+  }
+  return data;
+};
+
 export const devLog = {
   log: (message: string, data?: any) => {
     if (isDevelopment()) {
-      console.log(`[DEV] ${message}`, data || '');
+      console.log(`[DEV] ${message}`, truncateData(data));
     }
   },
 
   info: (message: string, data?: any) => {
     if (isDevelopment()) {
-      console.log(`[DEV] ${message}`, data || '');
+      console.log(`[DEV] ${message}`, truncateData(data));
     }
   },
 
   warn: (message: string, data?: any) => {
     if (isDevelopment()) {
-      console.warn(`[DEV] ${message}`, data || '');
+      console.warn(`[DEV] ${message}`, truncateData(data));
     }
   },
 
   error: (message: string, data?: any) => {
     if (isDevelopment()) {
-      console.error(`[DEV] ${message}`, data || '');
+      console.error(`[DEV] ${message}`, truncateData(data));
     }
   },
 
   workflow: (context: WorkflowContext<any>, message: string, data?: any) => {
     if (isDevelopment()) {
-      console.log(`[WORKFLOW:${context.workflowRunId}] ${message}`, data || '');
+      console.log(`[WORKFLOW:${context.workflowRunId}] ${message}`, truncateData(data, 300));
     }
   },
 };
@@ -46,9 +60,9 @@ export function getEnvironmentConfig() {
   return {
     isDevelopment: isDevelopment(),
     isProduction: isProduction(),
-    workflowUrl: process.env.UPSTASH_WORKFLOW_URL || process.env.QSTASH_URL || '',
     qstashToken: process.env.QSTASH_TOKEN || '',
     qstashUrl: process.env.QSTASH_URL || '',
+    workflowUrl: process.env.UPSTASH_WORKFLOW_URL || process.env.QSTASH_URL || '',
   };
 }
 

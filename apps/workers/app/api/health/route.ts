@@ -20,7 +20,7 @@ export async function GET() {
     const redis = Redis.fromEnv();
     await redis.ping();
     health.services.redis = 'connected';
-  } catch (error) {
+  } catch {
     health.services.redis = 'error';
     health.status = 'degraded';
   }
@@ -30,7 +30,7 @@ export async function GET() {
     const monitor = createWorkflowMonitor();
     await monitor.listActiveWorkflows(1);
     health.services.qstash = 'connected';
-  } catch (error) {
+  } catch {
     health.services.qstash = 'error';
     health.status = 'degraded';
   }
@@ -38,4 +38,26 @@ export async function GET() {
   return NextResponse.json(health, {
     status: health.status === 'ok' ? 200 : 503,
   });
+}
+
+export async function POST() {
+  try {
+    // Simulate a more complex health check
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    return NextResponse.json({
+      message: 'POST health check passed',
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        message: 'Health check failed',
+        status: 'error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
+  }
 }

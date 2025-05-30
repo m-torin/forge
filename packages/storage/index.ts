@@ -2,7 +2,13 @@ import { keys } from './keys';
 import { CloudflareR2Provider } from './providers/cloudflare-r2';
 import { VercelBlobProvider } from './providers/vercel-blob';
 
-import type { StorageConfig, StorageProvider } from './types';
+import type {
+  ListOptions,
+  StorageConfig,
+  StorageObject,
+  StorageProvider,
+  UploadOptions,
+} from './types';
 
 export * from './types';
 export { keys };
@@ -33,32 +39,50 @@ let hasLoggedWarning = false;
 
 // Mock storage provider for development
 class MockStorageProvider implements StorageProvider {
-  async upload(key: string, data: any): Promise<{ url: string }> {
-    return { url: `https://mock-storage.local/${key}` };
+  private storage = new Map<string, { data: any; metadata: StorageObject }>();
+
+  async upload(
+    key: string,
+    data: Buffer | Blob | File | ArrayBuffer | ReadableStream,
+    options?: UploadOptions,
+  ): Promise<StorageObject> {
+    const mockObject: StorageObject = {
+      url: `https://mock-storage.example.com/${key}`,
+      contentType: options?.contentType || 'application/octet-stream',
+      key,
+      lastModified: new Date(),
+      size: data instanceof Buffer ? data.length : 1024,
+    };
+    this.storage.set(key, { data, metadata: mockObject });
+    return mockObject;
   }
 
-  async download(key: string): Promise<Blob> {
+  async download(_key: string): Promise<Blob> {
     return new Blob(['mock data'], { type: 'text/plain' });
   }
 
-  async delete(key: string): Promise<void> {
-    // No-op
+  async delete(_key: string): Promise<void> {
+    this.storage.delete(_key);
   }
 
-  async exists(key: string): Promise<boolean> {
-    return false;
+  async exists(_key: string): Promise<boolean> {
+    return this.storage.has(_key);
   }
 
-  async getUrl(key: string): Promise<string> {
-    return `https://mock-storage.local/${key}`;
+  async getUrl(_key: string, _options?: { expiresIn?: number }): Promise<string> {
+    return `https://mock-storage.example.com/${_key}`;
   }
 
-  async list(): Promise<{ keys: string[] }> {
-    return { keys: [] };
+  async list(_options?: ListOptions): Promise<StorageObject[]> {
+    return Array.from(this.storage.values()).map((item) => item.metadata);
   }
 
-  async getMetadata(key: string): Promise<any> {
-    return { contentType: 'text/plain', key, size: 0 };
+  async getMetadata(_key: string): Promise<StorageObject> {
+    const item = this.storage.get(_key);
+    if (!item) {
+      throw new Error(`Object with key ${_key} not found`);
+    }
+    return item.metadata;
   }
 }
 

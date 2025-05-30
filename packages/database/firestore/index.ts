@@ -1,7 +1,7 @@
 import 'server-only';
-import { firestore } from './client';
+
 import { FirestoreAdapter } from './adapter';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { firestore } from './client';
 
 // Export the Firestore client for direct access
 export { firestore };

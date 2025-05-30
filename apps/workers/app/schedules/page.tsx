@@ -22,8 +22,8 @@ export default function SchedulesPage() {
       const response = await fetch('/api/schedules/kitchen-sink');
       const data = await response.json();
       setScheduleStatus(data);
-    } catch (error) {
-      console.error('Failed to check schedule status:', error);
+    } catch (_error) {
+      console.error('Failed to check schedule status:', _error);
     }
   };
 
@@ -41,7 +41,7 @@ export default function SchedulesPage() {
       const data = await response.json();
       setMessage(data.message || 'Schedule created successfully');
       await checkScheduleStatus();
-    } catch (error) {
+    } catch {
       setMessage('Failed to create schedule');
     } finally {
       setLoading(false);
@@ -60,7 +60,7 @@ export default function SchedulesPage() {
       const data = await response.json();
       setMessage(data.message || 'Schedule paused');
       await checkScheduleStatus();
-    } catch (error) {
+    } catch {
       setMessage('Failed to pause schedule');
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ export default function SchedulesPage() {
       const data = await response.json();
       setMessage(data.message || 'Schedule resumed');
       await checkScheduleStatus();
-    } catch (error) {
+    } catch {
       setMessage('Failed to resume schedule');
     } finally {
       setLoading(false);
@@ -98,7 +98,7 @@ export default function SchedulesPage() {
       const data = await response.json();
       setMessage(data.message || 'Schedule deleted');
       await checkScheduleStatus();
-    } catch (error) {
+    } catch {
       setMessage('Failed to delete schedule');
     } finally {
       setLoading(false);

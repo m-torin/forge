@@ -1,6 +1,8 @@
-import type { WorkflowContext } from '@upstash/workflow';
 import { cleanupExpiredEntries, cleanupOldestEntries } from '../utils/helpers';
 import { devLog } from '../utils/observability';
+import { ENV_CONFIGS, type Environment } from '../utils/types';
+
+import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Deduplication storage interface
@@ -29,37 +31,45 @@ export interface DeduplicablePayload {
 export interface DeduplicationOptions<T = any> {
   /** Enable debug logging */
   debug?: boolean;
+  /** Custom function to extract unique ID from payload */
+  extractId?: IdExtractor<T>;
+  /** Array of property paths to check for unique IDs (e.g., ['orderId', 'taskId', 'id']) */
+  idFields?: string[];
+  /** Maximum number of entries to keep in memory */
+  maxEntries?: number;
   /** Skip all deduplication checks */
   skip?: boolean;
   /** Custom storage implementation */
   storage?: DeduplicationStorage;
   /** TTL for deduplication entries in milliseconds */
   ttl?: number;
-  /** Maximum number of entries to keep in memory */
-  maxEntries?: number;
-  /** Custom function to extract unique ID from payload */
-  extractId?: IdExtractor<T>;
-  /** Array of property paths to check for unique IDs (e.g., ['orderId', 'taskId', 'id']) */
-  idFields?: string[];
 }
 
 /**
+ * Get environment-specific configuration - ES2022 modernized
+ */
+function getEnvConfig() {
+  const env = (process.env.NODE_ENV as Environment) ?? 'development';
+  return ENV_CONFIGS[env] ?? ENV_CONFIGS.development;
+}
+
+/**
+ * @deprecated Use getEnvConfig() instead
  * Default configuration values
  */
 export const DEDUPLICATION_CONFIG = {
-  ttl: {
-    development: 60 * 1000, // 1 minute
-    production: 30 * 60 * 1000, // 30 minutes
-  },
   maxEntries: {
-    development: 1000, // 1000 entries in development
-    production: 10000, // 10000 entries in production
-  }
+    development: 1000,
+    production: 10000,
+  },
+  ttl: {
+    development: 60 * 1000,
+    production: 30 * 60 * 1000,
+  },
 } as const;
 
 /**
- * @deprecated Use DEDUPLICATION_CONFIG.ttl instead
- * Default TTLs for different environments
+ * @deprecated Use getEnvConfig() instead
  */
 export const DEDUPLICATION_TTL = DEDUPLICATION_CONFIG.ttl;
 
@@ -69,30 +79,33 @@ export const DEDUPLICATION_TTL = DEDUPLICATION_CONFIG.ttl;
 let globalDevStorage: DeduplicationStorage | null = null;
 
 /**
- * Get or create deduplication storage
+ * Get or create deduplication storage - ES2022 modernized
  */
 export function getDeduplicationStorage(): DeduplicationStorage {
-  if (process.env.NODE_ENV === 'development' && !globalDevStorage) {
+  const env = process.env.NODE_ENV as Environment;
+
+  if (env === 'development' && !globalDevStorage) {
     globalDevStorage = {
       processedIds: new Map(),
       processedMessageIds: new Map(),
     };
 
-    // Auto-cleanup in development
-    setInterval(
+    // Auto-cleanup in development using arrow function
+    const cleanupInterval = setInterval(
       () => {
-        if (globalDevStorage) {
-          globalDevStorage.processedIds.clear();
-          globalDevStorage.processedMessageIds.clear();
-          devLog.info('Cleared development storage');
-        }
+        globalDevStorage?.processedIds.clear();
+        globalDevStorage?.processedMessageIds.clear();
+        devLog.info('Cleared development storage');
       },
       5 * 60 * 1000,
     ); // 5 minutes
+
+    // Cleanup interval on process exit
+    process.once('beforeExit', () => clearInterval(cleanupInterval));
   }
 
   return (
-    globalDevStorage || {
+    globalDevStorage ?? {
       processedIds: new Map(),
       processedMessageIds: new Map(),
     }
@@ -128,7 +141,6 @@ export function getQStashHeaders(context: WorkflowContext<any>) {
   return { messageId, retried, signature };
 }
 
-
 /**
  * Check if a workflow message is a duplicate
  */
@@ -143,8 +155,10 @@ export function isDuplicateMessage<T = any>(
 
   // Skip message-level deduplication in development when using QStash local
   // QStash local dev server reuses message IDs, causing false duplicates
-  if (process.env.NODE_ENV === 'development' && 
-      (process.env.QSTASH_URL?.includes('localhost') || process.env.QSTASH_URL?.includes('127.0.0.1'))) {
+  if (
+    process.env.NODE_ENV === 'development' &&
+    (process.env.QSTASH_URL?.includes('localhost') || process.env.QSTASH_URL?.includes('127.0.0.1'))
+  ) {
     if (options.debug) {
       devLog.info('Skipping message-level deduplication in local development');
     }
@@ -153,7 +167,7 @@ export function isDuplicateMessage<T = any>(
 
   const storage = options.storage || getDeduplicationStorage();
   const { messageId } = getQStashHeaders(context);
-  const debug = options.debug ?? process.env.NODE_ENV === 'development';
+  const debug = options.debug ?? (process.env.NODE_ENV as string) === 'development';
 
   if (!messageId) {
     if (debug) {
@@ -176,7 +190,7 @@ export function isDuplicateMessage<T = any>(
   // Cleanup old entries
   const ttl =
     options.ttl ||
-    (process.env.NODE_ENV === 'development'
+    ((process.env.NODE_ENV as string) === 'development'
       ? DEDUPLICATION_CONFIG.ttl.development
       : DEDUPLICATION_CONFIG.ttl.production);
   cleanupExpiredEntries(storage.processedMessageIds, ttl, debug);
@@ -184,7 +198,7 @@ export function isDuplicateMessage<T = any>(
   // Cleanup oldest entries if exceeding max size
   const maxEntries =
     options.maxEntries ||
-    (process.env.NODE_ENV === 'development'
+    ((process.env.NODE_ENV as string) === 'development'
       ? DEDUPLICATION_CONFIG.maxEntries.development
       : DEDUPLICATION_CONFIG.maxEntries.production);
   cleanupOldestEntries(storage.processedMessageIds, maxEntries, debug);
@@ -194,28 +208,31 @@ export function isDuplicateMessage<T = any>(
 
 /**
  * Extract unique ID from payload using various strategies
- * 
+ *
  * Priority order:
  * 1. Custom extractId function (if provided)
  * 2. dedupId field (explicit deduplication ID)
  * 3. Fields from idFields array (default: ['orderId', 'taskId', 'id', 'uuid', 'workflowId'])
- * 
+ *
  * @example
  * ```typescript
  * // Explicit dedupId (highest priority)
  * const payload1 = { dedupId: 'unique-123', orderId: 'order-456' };
  * extractUniqueId(payload1); // Returns 'unique-123'
- * 
+ *
  * // Falls back to default fields
  * const payload2 = { taskId: 'task-789', orderId: 'order-456' };
  * extractUniqueId(payload2); // Returns 'order-456' (first in default array)
- * 
+ *
  * // Custom fields
  * const payload3 = { customId: 'custom-123' };
  * extractUniqueId(payload3, { idFields: ['customId'] }); // Returns 'custom-123'
  * ```
  */
-export function extractUniqueId<T = any>(payload: T, options: DeduplicationOptions<T> = {}): string | null {
+export function extractUniqueId<T = any>(
+  payload: T,
+  options: DeduplicationOptions<T> = {},
+): string | null {
   // Use custom extractor if provided
   if (options.extractId) {
     const extracted = options.extractId(payload);
@@ -231,8 +248,16 @@ export function extractUniqueId<T = any>(payload: T, options: DeduplicationOptio
   }
 
   // Use specified ID fields (ordered by most common usage)
-  const fieldsToCheck = options.idFields || ['orderId', 'taskId', 'imageId', 'pipelineId', 'id', 'uuid', 'workflowId'];
-  
+  const fieldsToCheck = options.idFields || [
+    'orderId',
+    'taskId',
+    'imageId',
+    'pipelineId',
+    'id',
+    'uuid',
+    'workflowId',
+  ];
+
   if (payload && typeof payload === 'object') {
     for (const field of fieldsToCheck) {
       const value = (payload as any)[field];
@@ -256,7 +281,11 @@ export function isDuplicateId<T = any>(id: string, options: DeduplicationOptions
 
   // Skip payload-level deduplication in development
   // Development workflows often use auto-generated unique IDs that shouldn't be deduplicated
-  if (process.env.NODE_ENV === 'development') {
+  if (
+    (process.env.NODE_ENV as string) === 'development'
+      ? process.env.SKIP_WORKFLOW_DEDUPLICATION !== 'false'
+      : false
+  ) {
     if (options.debug) {
       devLog.info(`Skipping payload-level deduplication in development for ID: ${id}`);
     }
@@ -264,7 +293,7 @@ export function isDuplicateId<T = any>(id: string, options: DeduplicationOptions
   }
 
   const storage = options.storage || getDeduplicationStorage();
-  const debug = options.debug ?? process.env.NODE_ENV === 'development';
+  const debug = options.debug ?? (process.env.NODE_ENV as string) === 'development';
 
   // Check if we've seen this ID before
   if (storage.processedIds.has(id)) {
@@ -284,7 +313,7 @@ export function isDuplicateId<T = any>(id: string, options: DeduplicationOptions
   // Cleanup old entries
   const ttl =
     options.ttl ||
-    (process.env.NODE_ENV === 'development'
+    ((process.env.NODE_ENV as string) === 'development'
       ? DEDUPLICATION_CONFIG.ttl.development
       : DEDUPLICATION_CONFIG.ttl.production);
   cleanupExpiredEntries(storage.processedIds, ttl, debug);
@@ -292,7 +321,7 @@ export function isDuplicateId<T = any>(id: string, options: DeduplicationOptions
   // Cleanup oldest entries if exceeding max size
   const maxEntries =
     options.maxEntries ||
-    (process.env.NODE_ENV === 'development'
+    ((process.env.NODE_ENV as string) === 'development'
       ? DEDUPLICATION_CONFIG.maxEntries.development
       : DEDUPLICATION_CONFIG.maxEntries.production);
   cleanupOldestEntries(storage.processedIds, maxEntries, debug);
@@ -303,21 +332,21 @@ export function isDuplicateId<T = any>(id: string, options: DeduplicationOptions
 /**
  * Deduplication handler for workflows
  * Returns early if duplicate is detected
- * 
+ *
  * @example
  * ```typescript
  * // Using explicit dedupId (recommended approach)
  * const payload = { dedupId: 'unique-workflow-123', data: {...} };
  * await withDeduplication(context, handler);
- * 
+ *
  * // Using default field checking (orderId, taskId, id, uuid, workflowId)
  * await withDeduplication(context, handler);
- * 
+ *
  * // Using custom field names
  * await withDeduplication(context, handler, {
  *   idFields: ['customId', 'transactionId']
  * });
- * 
+ *
  * // Using custom extractor function
  * await withDeduplication(context, handler, {
  *   extractId: (payload) => payload.user?.id + '-' + payload.action
@@ -361,33 +390,29 @@ export async function withDeduplication<T = any>(
 
 /**
  * Generate a unique deduplication ID
- * 
+ *
  * @param prefix - Optional prefix for the ID
  * @param includeTimestamp - Whether to include timestamp (default: true)
  * @returns A unique deduplication ID
- * 
+ *
  * @example
  * ```typescript
  * // Basic usage
  * const dedupId = generateDedupId(); // Returns: "dedup_1648234567890_abc123"
- * 
+ *
  * // With prefix
  * const dedupId = generateDedupId('order'); // Returns: "order_1648234567890_abc123"
- * 
+ *
  * // Without timestamp (shorter, but less unique)
  * const dedupId = generateDedupId('task', false); // Returns: "task_abc123"
  * ```
  */
-export function generateDedupId(prefix?: string, includeTimestamp: boolean = true): string {
+export function generateDedupId(prefix?: string, includeTimestamp = true): string {
   const randomSuffix = Math.random().toString(36).substring(2, 8);
   const timestamp = includeTimestamp ? Date.now() : null;
-  
-  const parts = [
-    prefix || 'dedup',
-    timestamp,
-    randomSuffix
-  ].filter(Boolean);
-  
+
+  const parts = [prefix || 'dedup', timestamp, randomSuffix].filter(Boolean);
+
   return parts.join('_');
 }
 

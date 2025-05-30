@@ -4,19 +4,21 @@ import {
   type FlowControlConfig,
   runWithFlowControl,
 } from '../../runtime/features/flow-control';
-import { batchVerifySignatures, createSigningConfigFromEnv } from '../../runtime/features/request-signing';
-import { createURLGroup, fanOutToURLGroup } from '../../runtime/features/url-groups';
 import {
-  parseTimeWindow,
+  batchVerifySignatures,
+  createSigningConfigFromEnv,
+} from '../../runtime/features/request-signing';
+import { createURLGroup, fanOutToURLGroup } from '../../runtime/features/url-groups';
+import { withApiErrorHandling, withWorkflowErrorHandling } from '../../utils/error-handling';
+import {
+  aggregateByKey,
+  calculateElapsedTime,
+  calculateSuccessRate,
   convertToCSV,
   convertToXML,
-  aggregateByKey,
-  calculateSuccessRate,
-  calculateElapsedTime,
+  parseTimeWindow,
 } from '../../utils/helpers';
 import { devLog } from '../../utils/observability';
-import { withWorkflowErrorHandling, withApiErrorHandling } from '../../utils/error-handling';
-import { createResponse } from '../../utils/response';
 
 import type { WorkflowContext } from '@upstash/workflow';
 
@@ -98,18 +100,14 @@ export async function processEventBatch(
           const invalidSignatures = verificationResults.filter((r) => !r.valid);
 
           if (invalidSignatures.length > 0) {
-            devLog.warn(
-              `${invalidSignatures.length} events have invalid signatures`,
-            );
+            devLog.warn(`${invalidSignatures.length} events have invalid signatures`);
             // Remove invalid events from batch
             invalidSignatures.forEach((invalid) => {
               eventBatch.splice(invalid.index, 1);
             });
           }
 
-          devLog.info(
-            `Signature verification complete: ${eventBatch.length} valid events`,
-          );
+          devLog.info(`Signature verification complete: ${eventBatch.length} valid events`);
         }, 'signature-verification');
       });
     }
@@ -273,13 +271,13 @@ async function processEventGroup(
     const eventsByType = aggregateByKey(
       events,
       (event) => event.eventType,
-      () => 1
+      () => 1,
     );
 
     const eventsBySource = aggregateByKey(
       events,
       (event) => event.source,
-      () => 1
+      () => 1,
     );
 
     const totalEvents = events.length;
@@ -312,7 +310,6 @@ async function processEventGroup(
     outputResults: null, // Will be populated when sent to outputs
   };
 }
-
 
 /**
  * Real-time Stream Processing
@@ -394,12 +391,12 @@ export async function processEventStream(
             result = result.filter((event) => event.data.value !== null);
             break;
 
-          case 'reduce':
+          case 'reduce': {
             // Aggregation using utility function
             const aggregatedValue = aggregateByKey(
               result,
               () => 'total',
-              (event) => event.data.value || 0
+              (event) => event.data.value || 0,
             );
             result = [
               {
@@ -414,6 +411,7 @@ export async function processEventStream(
               },
             ];
             break;
+          }
         }
       }
 

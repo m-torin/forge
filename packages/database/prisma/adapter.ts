@@ -1,10 +1,12 @@
-import { PrismaClient } from '../generated/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
-import { DatabaseAdapter } from '../types';
+
+import { type DatabaseAdapter } from '../types';
+
+import { PrismaClient } from './generated/client';
 
 export class PrismaAdapter implements DatabaseAdapter {
-  private client: PrismaClient;
-  private initialized: boolean = false;
+  private client: any; // Use any to allow for extended client types
+  private initialized = false;
 
   constructor() {
     this.client = new PrismaClient();
@@ -44,8 +46,8 @@ export class PrismaAdapter implements DatabaseAdapter {
   async update<T>(collection: string, id: string, data: any): Promise<T> {
     // @ts-ignore - Dynamic access to Prisma models
     return this.client[collection].update({
-      where: { id },
       data,
+      where: { id },
     }) as Promise<T>;
   }
 

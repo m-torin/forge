@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import {
-  createWorkflowScheduler,
-  type ScheduleConfig,
-} from '@repo/orchestration';
+import { createWorkflowScheduler, type ScheduleConfig } from '@repo/orchestration';
 
 /**
  * Schedule Management API for Kitchen Sink Workflow
@@ -16,8 +13,8 @@ import {
  */
 
 const scheduler = createWorkflowScheduler({
-  token: process.env.QSTASH_TOKEN!,
   baseUrl: process.env.QSTASH_URL,
+  token: process.env.QSTASH_TOKEN!,
 });
 
 // Create or update the daily schedule for Kitchen Sink workflow
@@ -27,12 +24,13 @@ export async function POST(request: Request) {
 
     // Default configuration for daily Kitchen Sink execution
     const scheduleConfig: ScheduleConfig = {
-      cron: body.cron || '0 9 * * *', // Default: 9 AM daily
-      scheduleId: `kitchen-sink-daily-${Date.now()}`,
-      destination: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3400'}/api/workflows/kitchen-sink`,
-      retries: body.retries || 3,
       body: {
         name: 'Scheduled Daily Kitchen Sink Run',
+        metadata: {
+          environment: process.env.NODE_ENV || 'development',
+          scheduledBy: 'api',
+          workflowType: 'kitchen-sink',
+        },
         // Default payload for scheduled execution
         options: {
           deduplication: {
@@ -49,23 +47,22 @@ export async function POST(request: Request) {
         },
         priority: 5,
         taskId: `scheduled-${new Date().toISOString().split('T')[0]}`,
-        metadata: {
-          environment: process.env.NODE_ENV || 'development',
-          scheduledBy: 'api',
-          workflowType: 'kitchen-sink',
-        },
         // You can add more default payload properties here
         ...body.payload,
       },
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Schedule-Type': 'kitchen-sink',
-      },
+      cron: body.cron || '0 9 * * *', // Default: 9 AM daily
+      destination: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3400'}/api/workflows/kitchen-sink`,
       flowControl: body.flowControl || {
         key: 'kitchen-sink-scheduled',
         parallelism: 3,
         rate: 5,
       },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Schedule-Type': 'kitchen-sink',
+      },
+      retries: body.retries || 3,
+      scheduleId: `kitchen-sink-daily-${Date.now()}`,
     };
 
     const result = await scheduler.createSchedule(scheduleConfig);
@@ -95,13 +92,13 @@ export async function GET() {
     const schedules = await scheduler.listSchedules();
 
     // Filter for Kitchen Sink workflow schedules
-    const kitchenSinkSchedules = schedules.filter(
-      (schedule) => {
-        // Check if it's a kitchen sink schedule by ID pattern or destination
-        return schedule.scheduleId.includes('kitchen-sink') || 
-               schedule.destination.includes('/api/workflows/kitchen-sink');
-      }
-    );
+    const kitchenSinkSchedules = schedules.filter((schedule) => {
+      // Check if it's a kitchen sink schedule by ID pattern or destination
+      return (
+        schedule.scheduleId.includes('kitchen-sink') ||
+        schedule.destination.includes('/api/workflows/kitchen-sink')
+      );
+    });
 
     return NextResponse.json({
       count: kitchenSinkSchedules.length,

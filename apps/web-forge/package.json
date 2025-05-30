@@ -6,7 +6,7 @@
     "dev": "next dev -p 3200",
     "prebuild": "pnpm --filter=@repo/database build",
     "build": "next build",
-    "build:offline": "next build",
+    "build:local": "next build",
     "start": "next start",
     "analyze": "ANALYZE=true pnpm build",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",

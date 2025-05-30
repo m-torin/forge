@@ -35,7 +35,7 @@ describe('posthog/server', () => {
     const { analytics } = await import('../../posthog/server');
 
     // Access a property to trigger initialization
-    analytics.identify;
+    expect(analytics.identify).toBeDefined();
 
     expect(mockPostHog).toHaveBeenCalledWith('phc_test123', {
       flushAt: 1,
@@ -51,7 +51,7 @@ describe('posthog/server', () => {
     const { analytics } = await import('../../posthog/server');
 
     // Access a property to trigger initialization
-    analytics.identify;
+    expect(analytics.identify).toBeDefined();
 
     const config = mockPostHog.mock.calls[0][1];
     expect(config.flushAt).toBe(1);

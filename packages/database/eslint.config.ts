@@ -6,7 +6,14 @@ import type { Linter } from 'eslint';
 
 const config: Linter.FlatConfig[] = [
   {
-    ignores: ['src/generated/**/*', 'generated/**/*', '**/*.md', '**/__tests__/**/*'],
+    ignores: [
+      'src/generated/**/*',
+      'generated/**/*',
+      'prisma/generated/**/*',
+      '**/generated/**/*',
+      '**/*.md',
+      '**/__tests__/**/*',
+    ],
   },
   ...serverConfig,
 ];

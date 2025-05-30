@@ -20,7 +20,7 @@ export async function verifyWorkflowRequest(request: NextRequest): Promise<boole
 
   try {
     // Verify the signature from QStash
-    const handler = async (req: NextRequest) => {
+    const handler = async (_req: NextRequest) => {
       return new Response('Verified', { status: 200 });
     };
     const verifiedHandler = verifySignatureAppRouter(handler);

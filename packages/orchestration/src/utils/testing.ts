@@ -1,5 +1,6 @@
-import type { WorkflowContext } from '@upstash/workflow';
 import { devLog } from './observability';
+
+import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Testing utilities for workflows
@@ -62,41 +63,41 @@ export function createMockContext<T = any>(
 
     // Mock methods
     run:
-      mockFn().mockImplementation?.(async (name: string, fn: () => any) => {
+      (mockFn() as any).mockImplementation?.(async (name: string, fn: () => any) => {
         devLog.info(`[MOCK] Running step: ${name}`);
         return fn();
-      }) || (async () => {}),
+      }) || (async () => ({ success: true })),
 
     call:
-      mockFn().mockImplementation?.(async (name: string, options: any) => {
+      (mockFn() as any).mockImplementation?.(async (name: string, options: any) => {
         devLog.info(`[MOCK] Calling: ${name}`, options);
         return { body: { success: true } };
       }) || (async () => ({ body: { success: true } })),
 
     sleep:
-      mockFn().mockImplementation?.(async (name: string, seconds: number) => {
+      (mockFn() as any).mockImplementation?.(async (name: string, seconds: number) => {
         devLog.info(`[MOCK] Sleeping: ${name} for ${seconds}s`);
       }) || (async () => {}),
 
     sleepUntil:
-      mockFn().mockImplementation?.(async (name: string, timestamp: number) => {
+      (mockFn() as any).mockImplementation?.(async (name: string, timestamp: number) => {
         devLog.info(`[MOCK] Sleeping until: ${name} at ${new Date(timestamp).toISOString()}`);
       }) || (async () => {}),
 
     waitForEvent:
-      mockFn().mockImplementation?.(async (name: string, eventId: string) => {
+      (mockFn() as any).mockImplementation?.(async (name: string, eventId: string) => {
         devLog.info(`[MOCK] Waiting for event: ${name} with ID ${eventId}`);
         return { eventData: { approved: true }, timeout: false };
       }) || (async () => ({ eventData: { approved: true }, timeout: false })),
 
     notify:
-      mockFn().mockImplementation?.(async (options: any) => {
+      (mockFn() as any).mockImplementation?.(async (options: any) => {
         devLog.info(`[MOCK] Notifying:`, options);
         return [{ status: 'success' }];
       }) || (async () => [{ status: 'success' }]),
 
     cancel:
-      mockFn().mockImplementation?.(async (reason: string) => {
+      (mockFn() as any).mockImplementation?.(async (reason: string) => {
         devLog.info(`[MOCK] Cancelling: ${reason}`);
       }) || (async () => {}),
   } as unknown as WorkflowContext<T>;
@@ -139,8 +140,8 @@ export async function testWorkflow<TPayload, TResult>(
   };
 
   // Override mocks with custom implementations
-  if (options?.mockSteps && context.run.mockImplementation) {
-    context.run.mockImplementation(async (name: string, fn: () => any) => {
+  if (options?.mockSteps && (context.run as any).mockImplementation) {
+    (context.run as any).mockImplementation(async (name: string, fn: () => any) => {
       calls.run.push(name);
       if (options.mockSteps && name in options.mockSteps) {
         return options.mockSteps[name];
@@ -149,8 +150,8 @@ export async function testWorkflow<TPayload, TResult>(
     });
   }
 
-  if (options?.mockCalls && context.call.mockImplementation) {
-    context.call.mockImplementation(async (name: string, callOptions: any) => {
+  if (options?.mockCalls && (context.call as any).mockImplementation) {
+    (context.call as any).mockImplementation(async (name: string, _callOptions: any) => {
       calls.call.push(name);
       if (options.mockCalls && name in options.mockCalls) {
         return options.mockCalls[name];
@@ -159,8 +160,8 @@ export async function testWorkflow<TPayload, TResult>(
     });
   }
 
-  if (options?.mockEvents && context.waitForEvent.mockImplementation) {
-    context.waitForEvent.mockImplementation(async (name: string, eventId: string) => {
+  if (options?.mockEvents && (context.waitForEvent as any).mockImplementation) {
+    (context.waitForEvent as any).mockImplementation(async (name: string, eventId: string) => {
       calls.waitForEvent.push(eventId);
       if (options.mockEvents && eventId in options.mockEvents) {
         return { eventData: options.mockEvents[eventId], timeout: false };
@@ -170,14 +171,14 @@ export async function testWorkflow<TPayload, TResult>(
   }
 
   // Track other calls
-  if (context.sleep.mockImplementation) {
-    context.sleep.mockImplementation(async (name: string, seconds: number) => {
+  if ((context.sleep as any).mockImplementation) {
+    (context.sleep as any).mockImplementation(async (name: string, _seconds: number) => {
       calls.sleep.push(name);
     });
   }
 
-  if (context.notify.mockImplementation) {
-    context.notify.mockImplementation(async (notifyOptions: any) => {
+  if ((context.notify as any).mockImplementation) {
+    (context.notify as any).mockImplementation(async (notifyOptions: any) => {
       calls.notify.push(notifyOptions);
       return [{ status: 'success' }];
     });

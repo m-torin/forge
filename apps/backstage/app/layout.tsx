@@ -1,4 +1,4 @@
-import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import React, { type ReactNode } from 'react';
 import '@mantine/core/styles.css';
 
@@ -15,7 +15,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: RootLayoutProperties): React.ReactElement {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="en">
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>

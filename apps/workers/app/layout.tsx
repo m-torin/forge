@@ -1,6 +1,6 @@
 import { AppShellLayout } from '@/components/app-shell-layout';
 import { WorkflowProvider } from '@/contexts/workflow-context';
-import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
@@ -19,7 +19,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: RootLayoutProperties): React.ReactElement {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="en">
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>

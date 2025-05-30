@@ -2,19 +2,17 @@
   "name": "@repo/database",
   "private": true,
   "type": "module",
-  "main": "./index.ts",
-  "types": "./index.ts",
   "scripts": {
     "analyze": "doppler run -- prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "analyze:offline": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "analyze:local": "prisma generate --no-hints --schema=./prisma/schema.prisma",
     "build": "doppler run -- prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "build:offline": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "build:local": "prisma generate --no-hints --schema=./prisma/schema.prisma",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix",
     "seed": "doppler run -- tsx prisma/seed.ts",
-    "seed:offline": "tsx prisma/seed.ts",
+    "seed:local": "tsx prisma/seed.ts",
     "create-users": "doppler run -- tsx scripts/create-users.ts",
-    "create-users:offline": "tsx scripts/create-users.ts",
+    "create-users:local": "tsx scripts/create-users.ts",
     "doppler:secrets": "doppler secrets",
     "doppler:secrets:upload": "doppler secrets upload .env.local",
     "doppler:secrets:download": "doppler secrets download --no-file --format env",
@@ -42,5 +40,23 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "exports": {
+    "./prisma": {
+      "types": "./prisma/index.ts",
+      "import": "./prisma/index.ts"
+    },
+    "./firestore": {
+      "types": "./firestore/index.ts",
+      "import": "./firestore/index.ts"
+    },
+    "./types": {
+      "types": "./types.ts",
+      "import": "./types.ts"
+    },
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
   }
 }

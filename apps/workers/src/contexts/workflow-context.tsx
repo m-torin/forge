@@ -80,6 +80,7 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
   const [filters, setFiltersState] = useState<WorkflowFilters>({ runId: '', workflowUrl: '' });
   const uniqueId = useId();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const [optimisticWorkflows, addOptimisticWorkflow] = useOptimistic(
     triggeredWorkflows,
     (state, { endpoint, status }: { endpoint: string; status: Partial<WorkflowStatus> }) => ({
@@ -256,7 +257,7 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       eventSource.close();
       toggleSSE(false);
     };
-  }, [triggeredWorkflows, setTriggeredWorkflows, toggleSSE]);
+  }, [triggeredWorkflows, uniqueId, toggleSSE]);
 
   const triggerWorkflow = async (endpoint: string, payload: any) => {
     setLoading(endpoint, true);
@@ -323,7 +324,7 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       }
       // Add explicit dedupId for clear deduplication
       actualPayload.dedupId = `basic-${workflowUniqueId}`;
-      
+
       if (actualPayload.tasks && Array.isArray(actualPayload.tasks)) {
         actualPayload.tasks = actualPayload.tasks.map((task: any, index: number) => ({
           ...task,
@@ -346,7 +347,7 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       }
       // Add explicit dedupId for clear deduplication
       actualPayload.dedupId = `kitchen-sink-${workflowUniqueId}`;
-      
+
       // Also ensure tasks have unique IDs if present
       if (actualPayload.tasks && Array.isArray(actualPayload.tasks)) {
         actualPayload.tasks = actualPayload.tasks.map((task: any, index: number) => ({

@@ -5,10 +5,10 @@ import { NextResponse } from 'next/server';
  */
 
 export interface ApiResponse<T = any> {
-  success: boolean;
   data?: T;
   error?: string;
   message?: string;
+  success: boolean;
 }
 
 /**
@@ -16,8 +16,8 @@ export interface ApiResponse<T = any> {
  */
 export function createSuccessResponse<T>(data: T, message?: string): NextResponse<ApiResponse<T>> {
   return NextResponse.json({
-    success: true,
     data,
+    success: true,
     ...(message && { message }),
   });
 }
@@ -32,8 +32,8 @@ export function createErrorResponse(
   const errorMessage = error instanceof Error ? error.message : error;
   return NextResponse.json(
     {
-      success: false,
       error: errorMessage,
+      success: false,
     },
     { status },
   );
@@ -80,10 +80,10 @@ export function validateRequired(
   body: any,
   fields: string[],
 ): { valid: boolean; missing: string[] } {
-  const missing = fields.filter(field => 
-    body?.[field] === undefined || body?.[field] === null || body?.[field] === ''
+  const missing = fields.filter(
+    (field) => body?.[field] === undefined || body?.[field] === null || body?.[field] === '',
   );
-  
+
   return {
     valid: missing.length === 0,
     missing,
@@ -124,7 +124,7 @@ export function validateMethod(
 ): NextResponse<ApiResponse> | null {
   if (!allowedMethods.includes(request.method)) {
     return NextResponse.json(
-      { success: false, error: `Method ${request.method} not allowed` },
+      { error: `Method ${request.method} not allowed`, success: false },
       { status: 405 },
     );
   }

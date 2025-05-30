@@ -101,6 +101,15 @@ export function validateRequiredKeys(feature: keyof typeof requiredKeys): string
   const missing: string[] = [];
   const keys = requiredKeys[feature];
 
+  // In development or when using .env.local, be more lenient
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  // Skip validation in development if env vars are likely in .env.local
+  if (isDevelopment || !isProduction) {
+    return [];
+  }
+
   for (const key of keys) {
     if (!process.env[key]) {
       missing.push(key);

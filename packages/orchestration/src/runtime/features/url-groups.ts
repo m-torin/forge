@@ -1,4 +1,10 @@
+import { devLog } from '../../utils/observability';
+import { DEFAULT_RETRIES, DEFAULT_TIMEOUTS } from '../../utils/types';
+
 import type { WorkflowContext } from '@upstash/workflow';
+
+// ===== Constants =====
+const FANOUT_DELAY = DEFAULT_TIMEOUTS.fanout;
 
 /**
  * URL Group configuration for fan-out messaging
@@ -56,10 +62,10 @@ export async function fanOutToURLGroup(
   options: FanOutOptions,
 ): Promise<FanOutResult> {
   return context.run(stepName, async () => {
-    const { urlGroup, payload, timeout = 30000, waitForAll = false } = options;
-    const { endpoints, groupName, headers = {}, retries = 3 } = urlGroup;
+    const { urlGroup, payload, timeout = DEFAULT_TIMEOUTS.api, waitForAll = false } = options;
+    const { endpoints, groupName, headers = {}, retries = DEFAULT_RETRIES.api } = urlGroup;
 
-    console.log(`[URL-GROUP] Fan-out to ${endpoints.length} endpoints in group "${groupName}"`);
+    devLog.info(`[URL-GROUP] Fan-out to ${endpoints.length} endpoints in group "${groupName}"`);
 
     const results: FanOutResult['results'] = [];
     let successfulEndpoints = 0;
@@ -110,7 +116,7 @@ export async function fanOutToURLGroup(
       endpoints.forEach(callEndpoint);
 
       // Give a brief moment for calls to start
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, FANOUT_DELAY));
     }
 
     const result: FanOutResult = {
@@ -121,7 +127,7 @@ export async function fanOutToURLGroup(
       totalEndpoints: endpoints.length,
     };
 
-    console.log(
+    devLog.info(
       `[URL-GROUP] Fan-out complete: ${successfulEndpoints}/${endpoints.length} successful`,
     );
     return result;
@@ -141,7 +147,7 @@ export function createURLGroup(config: {
     endpoints: config.endpoints,
     groupName: config.groupName,
     headers: config.headers,
-    retries: config.retries || 3,
+    retries: config.retries ?? DEFAULT_RETRIES.api,
   };
 }
 
@@ -199,9 +205,9 @@ export async function fanOutWithCustomPayloads(
   },
 ): Promise<FanOutResult> {
   return context.run(stepName, async () => {
-    const { endpointPayloads, groupName, retries = 3 } = config;
+    const { endpointPayloads, groupName, retries = DEFAULT_RETRIES.api } = config;
 
-    console.log(
+    devLog.info(
       `[URL-GROUP] Custom fan-out to ${endpointPayloads.length} endpoints in group "${groupName}"`,
     );
 

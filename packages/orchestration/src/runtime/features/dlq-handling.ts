@@ -1,10 +1,10 @@
 import { Client } from '@upstash/qstash';
 
-import type { WorkflowContext } from '@upstash/workflow';
-import { formatTimestamp, calculateBackoff, isDevelopment, createErrorMessage } from '../../utils/helpers';
+import { classifyWorkflowError, WorkflowErrorType } from '../../utils/error-handling';
+import { calculateBackoff, formatTimestamp } from '../../utils/helpers';
 import { devLog } from '../../utils/observability';
-import { isNetworkError, isTimeoutError, isRateLimitError } from '../../utils/helpers';
-import { isRetryableError as isRetryableErrorType, classifyError, WorkflowErrorType } from '../../utils/error-handling';
+
+import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Enhanced Dead Letter Queue configuration with QStash integration
@@ -70,22 +70,22 @@ const globalErrorTracking = new Map<string, ErrorTracking>();
  */
 function mapErrorTypeToString(errorType: WorkflowErrorType): string {
   const mapping: Record<WorkflowErrorType, string> = {
-    [WorkflowErrorType.NETWORK]: 'network',
-    [WorkflowErrorType.RATE_LIMIT]: 'rate_limit',
     [WorkflowErrorType.AUTHENTICATION]: 'authentication',
-    [WorkflowErrorType.VALIDATION]: 'validation',
-    [WorkflowErrorType.NOT_FOUND]: 'not_found',
+    [WorkflowErrorType.CONFIGURATION]: 'unknown',
+    [WorkflowErrorType.CONFLICT]: 'validation',
+    [WorkflowErrorType.DATA_CORRUPTION]: 'unknown',
     [WorkflowErrorType.EXTERNAL_API]: 'server_error',
+    [WorkflowErrorType.INTERNAL]: 'unknown',
+    [WorkflowErrorType.NETWORK]: 'network',
+    [WorkflowErrorType.NOT_FOUND]: 'not_found',
+    [WorkflowErrorType.PERMISSION]: 'authentication',
+    [WorkflowErrorType.RATE_LIMIT]: 'rate_limit',
+    [WorkflowErrorType.RESOURCE_EXHAUSTED]: 'server_error',
     [WorkflowErrorType.TIMEOUT]: 'network',
     [WorkflowErrorType.UNAVAILABLE]: 'server_error',
-    [WorkflowErrorType.INTERNAL]: 'unknown',
-    [WorkflowErrorType.CONFLICT]: 'validation',
-    [WorkflowErrorType.PERMISSION]: 'authentication',
-    [WorkflowErrorType.RESOURCE_EXHAUSTED]: 'server_error',
-    [WorkflowErrorType.DATA_CORRUPTION]: 'unknown',
-    [WorkflowErrorType.CONFIGURATION]: 'unknown',
+    [WorkflowErrorType.VALIDATION]: 'validation',
   };
-  
+
   return mapping[errorType] || 'unknown';
 }
 
@@ -152,7 +152,7 @@ export async function sendToDLQ(
   error: Error,
   originalStepName: string,
 ): Promise<void> {
-  const tracking = getErrorTracking(context.workflowRunId, originalStepName);
+  const _tracking = getErrorTracking(context.workflowRunId, originalStepName);
   const errorCategory = config.categorizeError
     ? config.categorizeError(error)
     : categorizeError(error);
@@ -166,15 +166,15 @@ export async function sendToDLQ(
     errorCategory,
     errorMessage: error.message,
     failedStep: originalStepName,
-    firstFailedAt: tracking.firstFailedAt,
+    firstFailedAt: _tracking.firstFailedAt,
     isRetryable: isRetryableError(error, config.retryableErrors),
-    lastFailedAt: tracking.lastFailedAt,
+    lastFailedAt: _tracking.lastFailedAt,
     originalPayload: config.includeOriginalPayload ? context.requestPayload : undefined,
     originalWorkflowRunId: context.workflowRunId,
-    retryCount: tracking.retryCount,
+    retryCount: _tracking.retryCount,
   };
 
-  devLog.info(`Sending to DLQ: ${originalStepName} failed ${tracking.retryCount} times`);
+  devLog.info(`Sending to DLQ: ${originalStepName} failed ${_tracking.retryCount} times`);
 
   try {
     if (config.useNativeDLQ && config.qstashClient) {
@@ -188,18 +188,17 @@ export async function sendToDLQ(
       await context.call(stepName, {
         url: config.dlqEndpoint,
         body: dlqMessage,
-        failureCallback: config.failureCallback, // QStash failure callback
         headers: {
           'Content-Type': 'application/json',
           'X-DLQ-Message': 'true',
           'X-Error-Category': errorCategory,
           'X-Original-Step': originalStepName,
-          'X-Retry-Count': tracking.retryCount.toString(),
+          'X-Retry-Count': _tracking.retryCount.toString(),
           ...config.dlqHeaders,
         },
         method: 'POST',
         retries: 3, // Always retry DLQ sends
-      });
+      } as any);
 
       devLog.info(`Successfully sent to custom DLQ: ${config.dlqEndpoint}`);
     } else {
@@ -256,7 +255,7 @@ export async function runWithDLQ<T>(
   stepFunction: () => Promise<T>,
   config: DLQConfig,
 ): Promise<T> {
-  const tracking = getErrorTracking(context.workflowRunId, stepName);
+  const _tracking = getErrorTracking(context.workflowRunId, stepName);
 
   try {
     const result = await context.run(stepName, stepFunction);
@@ -409,7 +408,10 @@ export function createDefaultDLQProcessor(options: {
         return {
           action: 'retry',
           reason: `Auto-retry for ${message.errorCategory} error`,
-          retryDelay: calculateBackoff(message.retryCount, { baseDelayMs: 5000, maxDelayMs: 30000 }),
+          retryDelay: calculateBackoff(message.retryCount, {
+            baseDelayMs: 5000,
+            maxDelayMs: 30000,
+          }),
         };
       }
 
@@ -499,7 +501,7 @@ export async function getDLQMessages(qstashClient: Client): Promise<any[]> {
       path: ['v2', 'dlq'],
     });
 
-    return response || [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('[DLQ] Failed to retrieve DLQ messages:', error);
     return [];
@@ -565,7 +567,13 @@ export async function batchRetryDLQMessages(
     }),
   );
 
-  return { failed, successful };
+  const results = { failed, successful };
+
+  if (results.failed.length > 0) {
+    devLog.error(`${results.failed.length} items failed in DLQ processing`);
+  }
+
+  return results;
 }
 
 /**
@@ -639,14 +647,27 @@ export function serveWithDLQ<T>(
 ) {
   return {
     config: {
-      failureFunction: async ({ context, failHeaders, failResponse, failStatus }) => {
-        console.error('[DLQ] Workflow failed:', {
-          url: context.url,
-          response: failResponse?.substring(0, 200),
-          status: failStatus,
-          timestamp: new Date().toISOString(),
-          workflowRunId: context.workflowRunId,
-        });
+      failureFunction: async ({
+        context,
+        failHeaders,
+        failResponse,
+        failStatus,
+      }: {
+        context: any;
+        failHeaders: any;
+        failResponse: any;
+        failStatus: any;
+      }) => {
+        console.error(
+          '[DLQ] Workflow failed:',
+          JSON.stringify({
+            url: context.url,
+            response: failResponse?.substring(0, 200),
+            status: failStatus,
+            timestamp: new Date().toISOString(),
+            workflowRunId: context.workflowRunId,
+          }).substring(0, 300),
+        );
 
         // Categorize the error
         const errorCategory = categorizeDLQError(failStatus, failResponse, failHeaders);
@@ -675,7 +696,10 @@ export function serveWithDLQ<T>(
           try {
             const dlqStats = await monitorDLQHealth(config.dlqConfig.qstashClient, {
               alertCallback: async (stats) => {
-                console.warn('[DLQ] DLQ size threshold exceeded:', stats);
+                console.warn(
+                  '[DLQ] DLQ size threshold exceeded:',
+                  JSON.stringify(stats).substring(0, 200),
+                );
               },
               maxDLQSize: 100,
             });

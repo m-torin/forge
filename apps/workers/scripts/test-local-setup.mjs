@@ -5,7 +5,7 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { join } from 'path';
 
 const requiredEnvVars = [
@@ -73,7 +73,7 @@ console.log('\n🔧 Checking QStash CLI...');
 try {
   execSync('npx @upstash/qstash-cli --version', { stdio: 'pipe' });
   console.log('✅ QStash CLI is available');
-} catch (error) {
+} catch {
   console.log('❌ QStash CLI not found. Run: pnpm install');
   hasErrors = true;
 }

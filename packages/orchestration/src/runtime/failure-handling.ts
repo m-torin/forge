@@ -1,22 +1,10 @@
 import { type Client } from '@upstash/qstash';
-import type { WorkflowContext } from '@upstash/workflow';
 
-import { 
-  WorkflowErrorType, 
-  classifyError, 
-  createWorkflowError, 
-  errorHandlers 
-} from '../utils/error-handling';
-import { 
-  formatTimestamp, 
-  aggregateByKey, 
-  isDevelopment,
-  generateKey,
-  formatDuration,
-  cleanupExpiredEntries
-} from '../utils/helpers';
+import { createWorkflowError, WorkflowErrorType } from '../utils/error-handling';
+import { aggregateByKey, formatDuration, formatTimestamp, isDevelopment } from '../utils/helpers';
 import { devLog } from '../utils/observability';
-import { createResponse, workflowError } from '../utils/response';
+
+import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Failure context from Upstash Workflow serve function
@@ -36,12 +24,16 @@ export interface FailureHandlingConfig {
   alertFunction?: (alert: FailureAlert) => Promise<void>;
   /** Custom error categorization */
   categorizeError?: (failureContext: WorkflowFailureContext) => WorkflowErrorType;
+  /** DLQ overflow threshold */
+  dlqThreshold?: number;
   /** Enable DLQ monitoring */
   enableDLQMonitoring?: boolean;
   /** Enable Sentry error logging */
   enableSentryLogging?: boolean;
   /** Custom failure function for immediate error handling */
   failureFunction?: (failureContext: WorkflowFailureContext) => Promise<void>;
+  /** Failure threshold for alerts */
+  failureThreshold?: number;
   /** External failure URL for when the main service is unavailable */
   failureUrl?: string;
   /** QStash client for DLQ operations */
@@ -52,10 +44,6 @@ export interface FailureHandlingConfig {
     retryBackoff: 'exponential' | 'linear' | 'fixed';
     baseDelayMs: number;
   };
-  /** Failure threshold for alerts */
-  failureThreshold?: number;
-  /** DLQ overflow threshold */
-  dlqThreshold?: number;
 }
 
 /**
@@ -92,11 +80,11 @@ export interface FailureStats {
  * Enhanced failure tracking entry
  */
 interface FailureTrackingEntry {
+  errorCategories: Set<WorkflowErrorType>;
   failureCount: number;
   firstFailure: string;
-  lastFailure: string;
-  errorCategories: Set<WorkflowErrorType>;
   lastCleanup: number;
+  lastFailure: string;
 }
 
 /**
@@ -136,14 +124,14 @@ function cleanupExpiredFailureTracking(): void {
  */
 export function createFailureFunction(config: FailureHandlingConfig = {}) {
   const {
-    failureThreshold = 5,
-    dlqThreshold = 10,
-    categorizeError,
     alertFunction,
-    enableSentryLogging = false,
+    categorizeError,
+    dlqThreshold = 10,
     enableDLQMonitoring = false,
+    enableSentryLogging = false,
+    failureFunction,
+    failureThreshold = 5,
     qstashClient,
-    failureFunction
   } = config;
 
   return async (failureContext: WorkflowFailureContext) => {
@@ -160,7 +148,7 @@ export function createFailureFunction(config: FailureHandlingConfig = {}) {
 
     try {
       // 1. Categorize the error using enhanced error handling
-      const errorCategory = categorizeError 
+      const errorCategory = categorizeError
         ? categorizeError(failureContext)
         : categorizeWorkflowFailure(failStatus, failResponse, failHeaders);
 
@@ -175,20 +163,23 @@ export function createFailureFunction(config: FailureHandlingConfig = {}) {
       // 4. Check for repeated failures and alert
       const failureStats = getFailureStatsOptimized(workflowUrl);
       if (failureStats.failureCount > failureThreshold) {
-        await sendAlert({
-          type: 'repeated_failure',
-          context: { 
-            failResponse: failResponse?.substring(0, 200), 
-            failStatus,
-            duration: formatDuration(Date.now() - new Date(failureStats.firstFailure).getTime())
+        await sendAlert(
+          {
+            type: 'repeated_failure',
+            context: {
+              duration: formatDuration(Date.now() - new Date(failureStats.firstFailure).getTime()),
+              failResponse: failResponse?.substring(0, 200),
+              failStatus,
+            },
+            errorCategory,
+            failureCount: failureStats.failureCount,
+            message: `Workflow ${workflowUrl} has failed ${failureStats.failureCount} times`,
+            timestamp: formatTimestamp(Date.now()),
+            workflowRunId,
+            workflowUrl,
           },
-          errorCategory,
-          failureCount: failureStats.failureCount,
-          message: `Workflow ${workflowUrl} has failed ${failureStats.failureCount} times`,
-          timestamp: formatTimestamp(Date.now()),
-          workflowRunId,
-          workflowUrl,
-        }, alertFunction);
+          alertFunction,
+        );
       }
 
       // 5. Monitor DLQ if enabled
@@ -250,8 +241,10 @@ export function categorizeWorkflowFailure(
     return WorkflowErrorType.TIMEOUT;
   }
 
-  if (failResponse?.toLowerCase().includes('database') || 
-      failResponse?.toLowerCase().includes('connection')) {
+  if (
+    failResponse?.toLowerCase().includes('database') ||
+    failResponse?.toLowerCase().includes('connection')
+  ) {
     return WorkflowErrorType.EXTERNAL_API;
   }
 
@@ -262,9 +255,9 @@ export function categorizeWorkflowFailure(
  * Enhanced failure tracking with metrics
  */
 function trackFailureWithMetrics(
-  workflowRunId: string, 
-  workflowUrl: string, 
-  errorCategory: WorkflowErrorType
+  workflowRunId: string,
+  workflowUrl: string,
+  errorCategory: WorkflowErrorType,
 ): void {
   const key = workflowUrl;
   const now = Date.now();
@@ -280,8 +273,8 @@ function trackFailureWithMetrics(
       errorCategories: new Set([errorCategory]),
       failureCount: 1,
       firstFailure: formatTimestamp(now),
-      lastFailure: formatTimestamp(now),
       lastCleanup: now,
+      lastFailure: formatTimestamp(now),
     });
   }
 }
@@ -323,9 +316,9 @@ async function logToSentry(
 ): Promise<void> {
   try {
     const workflowError = createWorkflowError.externalApi(
-      'workflow', 
-      failureContext.failStatus, 
-      failureContext.failResponse
+      'workflow',
+      failureContext.failStatus,
+      failureContext.failResponse,
     );
 
     // Check if Sentry is available
@@ -390,14 +383,17 @@ async function monitorDLQAfterFailure(
     );
 
     if (workflowDLQMessages.length > threshold) {
-      await sendAlert({
-        type: 'dlq_overflow',
-        errorCategory: WorkflowErrorType.RESOURCE_EXHAUSTED,
-        failureCount: workflowDLQMessages.length,
-        message: `DLQ has ${workflowDLQMessages.length} messages for workflow ${workflowUrl}`,
-        timestamp: formatTimestamp(Date.now()),
-        workflowUrl,
-      }, alertFunction);
+      await sendAlert(
+        {
+          type: 'dlq_overflow',
+          errorCategory: WorkflowErrorType.RESOURCE_EXHAUSTED,
+          failureCount: workflowDLQMessages.length,
+          message: `DLQ has ${workflowDLQMessages.length} messages for workflow ${workflowUrl}`,
+          timestamp: formatTimestamp(Date.now()),
+          workflowUrl,
+        },
+        alertFunction,
+      );
     }
   } catch (error) {
     devLog.error('Failed to monitor DLQ', error);
@@ -413,7 +409,7 @@ async function getDLQMessages(qstashClient: Client): Promise<any[]> {
       method: 'GET',
       path: ['v2', 'dlq'],
     });
-    return response || [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     devLog.error('Failed to get DLQ messages', error);
     return [];
@@ -463,7 +459,7 @@ function getEnhancedDebuggingHints(
   failureContext: WorkflowFailureContext,
 ): string[] {
   const hints: string[] = [];
-  const { failHeaders, failResponse, failStatus } = failureContext;
+  const { failHeaders, failResponse, failStatus: _failStatus } = failureContext;
 
   switch (errorCategory) {
     case WorkflowErrorType.NETWORK:
@@ -533,14 +529,14 @@ function getEnhancedDebuggingHints(
  */
 export function getComprehensiveFailureStats(): FailureStats {
   const entries = Array.from(globalFailureTracking.entries());
-  
+
   // Use helper function for aggregation
   const totalFailures = entries.reduce((sum, [, stats]) => sum + stats.failureCount, 0);
-  
+
   const failuresByWorkflow = aggregateByKey(
     entries,
     ([workflowUrl]) => workflowUrl,
-    ([, stats]) => stats.failureCount
+    ([, stats]) => stats.failureCount,
   );
 
   // Aggregate by category

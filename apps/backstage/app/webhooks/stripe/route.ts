@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { analytics } from '@repo/analytics/posthog/server';
-import { database } from '@repo/database';
+import { createPrismaAdapter } from '@repo/database/prisma';
 import { parseError } from '@repo/observability/error';
 import { log } from '@repo/observability/log';
 import { stripe } from '@repo/payments';
@@ -11,8 +11,13 @@ import { env } from '../../../env';
 
 import type { Stripe } from '@repo/payments';
 
+const adapter = createPrismaAdapter();
+
 const getUserFromCustomerId = async (customerId: string) => {
-  // Using Better Auth's database directly
+  // Using the adapter to access the database
+  await adapter.initialize();
+  const database = await adapter.raw('client', {});
+
   const user = await database.user.findFirst({
     where: {
       email: {

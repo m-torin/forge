@@ -73,7 +73,7 @@ describe('Feature Flags Package Integration', () => {
       mockAnalytics.isFeatureEnabled.mockResolvedValue(true);
 
       const module = await import('../index');
-      const result = await module.showBetaFeature();
+      const result = await (module.showBetaFeature as any)();
 
       expect(result).toBe(true);
       expect(mockCurrentUser).toHaveBeenCalled();
@@ -149,7 +149,7 @@ describe('Feature Flags Package Integration', () => {
       mockCurrentUser.mockResolvedValue(null);
 
       const module = await import('../index');
-      const result = await module.showBetaFeature();
+      const result = await (module.showBetaFeature as any)();
 
       expect(result).toBe(false);
       expect(mockAnalytics.isFeatureEnabled).not.toHaveBeenCalled();
@@ -160,7 +160,7 @@ describe('Feature Flags Package Integration', () => {
       mockAnalytics.isFeatureEnabled.mockRejectedValue(new Error('Analytics error'));
 
       const module = await import('../index');
-      await expect(module.showBetaFeature()).rejects.toThrow('Analytics error');
+      await expect((module.showBetaFeature as any)()).rejects.toThrow('Analytics error');
     });
 
     it('handles verify access errors gracefully', async () => {
@@ -190,7 +190,7 @@ describe('Feature Flags Package Integration', () => {
       expect(typeof module.showBetaFeature).toBe('function');
 
       // Verify return type is Promise<boolean>
-      const result = module.showBetaFeature();
+      const result = (module.showBetaFeature as any)();
       expect(result).toBeInstanceOf(Promise);
 
       mockCurrentUser.mockResolvedValue({ id: 'user_123' });

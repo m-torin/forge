@@ -10,10 +10,9 @@
   "scripts": {
     "prebuild": "pnpm --filter=@repo/database build",
     "predev": "pnpm --filter=@repo/database build",
-    "dev": "doppler run -- turbo dev",
-    "dev:offline": "turbo dev",
-    "build": "doppler run -- turbo build --parallel",
-    "build:offline": "NODE_ENV=development NEXT_PUBLIC_APP_URL=http://localhost:3001 NEXT_PUBLIC_WEB_URL=http://localhost:3000 BETTERSTACK_API_KEY=dummy BETTERSTACK_URL=http://localhost SENTRY_ORG=dummy SENTRY_PROJECT=dummy NEXT_PUBLIC_SENTRY_DSN=http://localhost RESEND_FROM=test@example.com RESEND_TOKEN=re_dummy ARCJET_KEY=ajkey_dummy BETTER_AUTH_SECRET=dummy-secret-key DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy QSTASH_TOKEN=qstash_dummy UPSTASH_REDIS_REST_TOKEN=redis_dummy UPSTASH_REDIS_REST_URL=https://dummy.upstash.io turbo build:offline --parallel",
+    "dev": "turbo dev",
+    "build": "doppler run --project monorepo --config dev -- turbo build --parallel",
+    "build:local": "turbo build:local --parallel",
     "doppler": "pnpm exec turbo run doppler || npx turbo run doppler",
     "doppler:setup": "doppler setup",
     "doppler:login": "doppler login",

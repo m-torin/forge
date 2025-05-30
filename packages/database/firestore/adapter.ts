@@ -1,12 +1,19 @@
-import { initializeApp, cert, getApps, App } from 'firebase-admin/app';
-import { getFirestore, Firestore, DocumentData } from 'firebase-admin/firestore';
-import { DatabaseAdapter } from '../types';
+import { type App, cert, getApps, initializeApp } from 'firebase-admin/app';
+import {
+  type CollectionReference,
+  type DocumentData,
+  type Firestore,
+  getFirestore,
+  type Query,
+} from 'firebase-admin/firestore';
+
 import { keys } from '../keys';
+import { type DatabaseAdapter } from '../types';
 
 export class FirestoreAdapter implements DatabaseAdapter {
   private app: App;
   private db: Firestore;
-  private initialized: boolean = false;
+  private initialized = false;
 
   constructor() {
     // Will be initialized in the initialize method
@@ -22,9 +29,9 @@ export class FirestoreAdapter implements DatabaseAdapter {
         const env = keys();
         this.app = initializeApp({
           credential: cert({
-            projectId: env.FIREBASE_PROJECT_ID,
             clientEmail: env.FIREBASE_CLIENT_EMAIL,
             privateKey: env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            projectId: env.FIREBASE_PROJECT_ID,
           }),
         });
       } else {
@@ -67,7 +74,8 @@ export class FirestoreAdapter implements DatabaseAdapter {
     }
 
     // Handle other unique queries
-    let firestoreQuery = this.db.collection(collection);
+    let firestoreQuery: Query<DocumentData> | CollectionReference<DocumentData> =
+      this.db.collection(collection);
 
     if (query.where) {
       Object.entries(query.where).forEach(([field, value]) => {
@@ -87,7 +95,8 @@ export class FirestoreAdapter implements DatabaseAdapter {
   }
 
   async findMany<T>(collection: string, query?: any): Promise<T[]> {
-    let firestoreQuery = this.db.collection(collection);
+    let firestoreQuery: Query<DocumentData> | CollectionReference<DocumentData> =
+      this.db.collection(collection);
 
     if (query) {
       // Handle where conditions
@@ -104,7 +113,7 @@ export class FirestoreAdapter implements DatabaseAdapter {
           firestoreQuery = firestoreQuery.orderBy(
             field,
             // @ts-ignore - Dynamic direction
-            direction === 'desc' ? 'desc' : 'asc'
+            direction === 'desc' ? 'desc' : 'asc',
           );
         });
       }
@@ -127,7 +136,7 @@ export class FirestoreAdapter implements DatabaseAdapter {
     }
 
     const snapshot = await firestoreQuery.get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as T[];
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as T[];
   }
 
   async update<T>(collection: string, id: string, data: any): Promise<T> {
@@ -157,7 +166,8 @@ export class FirestoreAdapter implements DatabaseAdapter {
   }
 
   async count(collection: string, query?: any): Promise<number> {
-    let firestoreQuery = this.db.collection(collection);
+    let firestoreQuery: Query<DocumentData> | CollectionReference<DocumentData> =
+      this.db.collection(collection);
 
     if (query?.where) {
       Object.entries(query.where).forEach(([field, value]) => {
@@ -190,15 +200,13 @@ export class FirestoreAdapter implements DatabaseAdapter {
   }
 
   private async executeRawQuery(params: any): Promise<DocumentData[]> {
-    let query = this.db.collection(params.collection);
+    let query: Query<DocumentData> | CollectionReference<DocumentData> = this.db.collection(
+      params.collection,
+    );
 
     if (params.where) {
       params.where.forEach((condition: any) => {
-        query = query.where(
-          condition.field,
-          condition.operator || '==',
-          condition.value
-        );
+        query = query.where(condition.field, condition.operator || '==', condition.value);
       });
     }
 
@@ -213,7 +221,7 @@ export class FirestoreAdapter implements DatabaseAdapter {
     }
 
     const snapshot = await query.get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
 
   // Get the underlying Firestore client for direct access

@@ -17,9 +17,11 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
+    "@repo/ai": "workspace:*",
     "@upstash/workflow": "^0.2.13",
     "@upstash/qstash": "^2.8.1",
     "@upstash/redis": "^1.34.9",
+    "next": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
