@@ -164,8 +164,8 @@ async function scrapeUrl(
         `scraping ${url}`,
         {
           baseDelayMs: 1000,
-          maxDelayMs: 30000,
-          maxRetries: 3,
+          maxDelayMs: 60000,
+          maxAttempts: 2,
           retryOn: [
             WorkflowErrorType.NETWORK,
             WorkflowErrorType.TIMEOUT,

@@ -2,8 +2,15 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createFirestoreAdapter } from '@repo/database/firestore';
 
-// Create adapter instance
-const adapter = createFirestoreAdapter();
+// Lazy initialize adapter to avoid build-time errors
+let adapter: ReturnType<typeof createFirestoreAdapter> | null = null;
+
+function getAdapter() {
+  if (!adapter) {
+    adapter = createFirestoreAdapter();
+  }
+  return adapter;
+}
 
 // Define the Todo type
 export interface Todo {
@@ -21,11 +28,13 @@ export async function GET(request: NextRequest) {
 
   if (id) {
     // Get a specific todo by ID
+    const adapter = getAdapter();
     await adapter.initialize();
     const result = await adapter.findUnique<Todo>('todos', { where: { id } });
     return NextResponse.json(result);
   } else {
     // Get all todos
+    const adapter = getAdapter();
     await adapter.initialize();
     const result = await adapter.findMany<Todo>('todos', {
       orderBy: { createdAt: 'desc' },
@@ -48,6 +57,7 @@ export async function POST(request: NextRequest) {
       title: body.title.trim(),
     };
 
+    const adapter = getAdapter();
     await adapter.initialize();
     const result = await adapter.create<Todo>('todos', todoData);
     return NextResponse.json(result);
@@ -81,6 +91,7 @@ export async function PATCH(request: NextRequest) {
       updateData.completed = !!body.completed;
     }
 
+    const adapter = getAdapter();
     await adapter.initialize();
     const result = await adapter.update<Todo>('todos', body.id, updateData);
     return NextResponse.json(result);
@@ -104,6 +115,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'ID is required', success: false }, { status: 400 });
   }
 
+  const adapter = getAdapter();
   await adapter.initialize();
   const result = await adapter.delete<Todo>('todos', id);
   return NextResponse.json(result);

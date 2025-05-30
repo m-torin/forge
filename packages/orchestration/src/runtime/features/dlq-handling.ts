@@ -93,7 +93,7 @@ function mapErrorTypeToString(errorType: WorkflowErrorType): string {
  * Categorize errors for DLQ handling using centralized error classification
  */
 export function categorizeError(error: Error): string {
-  const errorType = classifyError(error);
+  const errorType = classifyWorkflowError(error);
   return mapErrorTypeToString(errorType);
 }
 

@@ -24,4 +24,22 @@ nextConfig.experimental = {
   nodeMiddleware: true,
 };
 
+// Handle the missing 'request' module from retry-request (used by Google Cloud SDK)
+const originalWebpack = nextConfig.webpack;
+nextConfig.webpack = (config, options) => {
+  // Call the original webpack config if it exists
+  if (originalWebpack) {
+    config = originalWebpack(config, options);
+  }
+
+  // Provide a fallback for the 'request' module
+  config.resolve = config.resolve || {};
+  config.resolve.fallback = {
+    ...config.resolve.fallback,
+    request: false,
+  };
+
+  return config;
+};
+
 export default nextConfig;

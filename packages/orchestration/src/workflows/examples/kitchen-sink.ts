@@ -120,6 +120,9 @@ export interface KitchenSinkPayload {
   notificationEmail?: string;
   operations?: ('sum' | 'average' | 'max' | 'min')[];
 
+  // Test/Debug options
+  simulateFailure?: boolean;
+
   // Comprehensive options
   options?: {
     batchSize?: number;
@@ -439,7 +442,7 @@ async function processETLPipeline(context: WorkflowContext<any>, payload: Kitche
 
             case 'filter':
               // In dev, don't randomly filter unless requested
-              if (options.filter?.randomFilter && Math.random() > 0.8) return null;
+              if (Math.random() > 0.8) return null;
               break;
 
             case 'enrich':
@@ -1050,7 +1053,7 @@ async function processComprehensiveWorkflow(
       async () => {
         // Simulate an operation that might fail
         // In dev, only fail if explicitly requested via payload
-        if (options.dlqHandling?.forceFail) {
+        if (payload.simulateFailure) {
           throw new Error('Forced failure for DLQ demonstration');
         }
         return { processedAt: new Date().toISOString(), success: true };
@@ -1121,7 +1124,7 @@ async function processComprehensiveWorkflow(
           const result = await (circuitBreaker as any).execute(async () => {
             // Simulate API call that might fail
             // In dev, only fail if explicitly requested
-            if (options.circuitBreaker?.forceFail && i < 2) {
+            if (payload.simulateFailure && i < 2) {
               throw new Error('External API error');
             }
             return { callNumber: i + 1, success: true, timestamp: Date.now() };
@@ -1295,7 +1298,7 @@ async function processComprehensiveWorkflow(
           action: async () => {
             devLog.workflow(context, 'Charging payment');
             // In dev, only fail if explicitly requested
-            if (options.saga?.forcePaymentFail) {
+            if (payload.simulateFailure) {
               throw new Error('Payment failed');
             }
             return { amount: 100, paymentId: 'pay-456' };
@@ -1321,7 +1324,7 @@ async function processComprehensiveWorkflow(
         context,
         async () => {
           // Main action that might fail
-          if (options.compensation?.forceFail) {
+          if (payload.simulateFailure) {
             throw new Error('Operation failed');
           }
           return { operationId: 'op-123', success: true };
@@ -1472,7 +1475,7 @@ async function processComprehensiveWorkflow(
           analyticsData: async () => {
             await new Promise((resolve) => setTimeout(resolve, 700));
             // In dev, only fail if explicitly requested
-            if (options.analytics?.forceFail) {
+            if (payload.simulateFailure) {
               throw new Error('Analytics service temporarily unavailable');
             }
             return {

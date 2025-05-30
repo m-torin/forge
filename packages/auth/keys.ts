@@ -4,7 +4,11 @@ import { z } from 'zod';
 const isProduction = process.env.NODE_ENV === 'production';
 const isDevelopment = process.env.NODE_ENV === 'development';
 // In local dev or build:local, these env vars might not be set if using .env.local
-const hasRequiredEnvVars = Boolean(process.env.BETTER_AUTH_SECRET && process.env.DATABASE_URL);
+const hasRequiredEnvVars = Boolean(
+  process.env.BETTER_AUTH_SECRET && 
+  process.env.DATABASE_URL && 
+  process.env.NEXT_PUBLIC_APP_URL
+);
 
 // Make env vars optional in development or when they're missing (indicating .env.local usage)
 const requireInProduction = isProduction && hasRequiredEnvVars;

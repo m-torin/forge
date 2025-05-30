@@ -212,8 +212,8 @@ export const errorHandlers = {
 export const RETRY_CONFIGS = {
   aggressive: {
     baseDelayMs: DEFAULT_TIMEOUTS.retry,
+    maxAttempts: DEFAULT_RETRIES.aggressive,
     maxDelayMs: 30000,
-    maxRetries: DEFAULT_RETRIES.aggressive,
     retryOn: [
       ...ERROR_RETRY_CATEGORIES.exponentialBackoff,
       ...ERROR_RETRY_CATEGORIES.constantDelay,
@@ -222,29 +222,29 @@ export const RETRY_CONFIGS = {
 
   conservative: {
     baseDelayMs: DEFAULT_TIMEOUTS.retry * 2,
+    maxAttempts: DEFAULT_RETRIES.conservative,
     maxDelayMs: 60000,
-    maxRetries: DEFAULT_RETRIES.conservative,
     retryOn: ERROR_RETRY_CATEGORIES.exponentialBackoff,
   },
 
   networkOnly: {
     baseDelayMs: DEFAULT_TIMEOUTS.retry,
+    maxAttempts: DEFAULT_RETRIES.network,
     maxDelayMs: 10000,
-    maxRetries: DEFAULT_RETRIES.network,
     retryOn: [WorkflowErrorType.NETWORK, WorkflowErrorType.TIMEOUT],
   },
 
   api: {
     baseDelayMs: DEFAULT_TIMEOUTS.retry,
+    maxAttempts: DEFAULT_RETRIES.api,
     maxDelayMs: DEFAULT_TIMEOUTS.api,
-    maxRetries: DEFAULT_RETRIES.api,
     retryOn: ERROR_RETRY_CATEGORIES.exponentialBackoff,
   },
 
   noRetry: {
     baseDelayMs: 0,
+    maxAttempts: 0,
     maxDelayMs: 0,
-    maxRetries: 0,
     retryOn: [],
   },
 } as const satisfies Record<string, RetryConfig & { retryOn: readonly WorkflowErrorType[] }>;
@@ -426,7 +426,7 @@ export async function withRetryErrorHandling<T>(
 ): Promise<T> {
   let lastError: WorkflowError | undefined;
 
-  for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
+  for (let attempt = 0; attempt <= retryConfig.maxAttempts; attempt++) {
     try {
       return await operation();
     } catch (error) {
@@ -442,7 +442,7 @@ export async function withRetryErrorHandling<T>(
       lastError = workflowError;
 
       // Don't retry on last attempt
-      if (attempt === retryConfig.maxRetries) {
+      if (attempt === retryConfig.maxAttempts) {
         break;
       }
 
@@ -461,7 +461,7 @@ export async function withRetryErrorHandling<T>(
           : retryConfig.baseDelayMs);
 
       devLog.info(
-        `Retrying ${operationName} in ${delay}ms (attempt ${attempt + 1}/${retryConfig.maxRetries + 1})`,
+        `Retrying ${operationName} in ${delay}ms (attempt ${attempt + 1}/${retryConfig.maxAttempts + 1})`,
       );
 
       await new Promise((resolve) => setTimeout(resolve, delay));

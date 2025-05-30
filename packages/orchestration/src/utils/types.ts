@@ -305,6 +305,12 @@ export const ENV_CONFIGS = {
     skipDeduplication: false,
     ttl: 30 * 60 * 1000, // 30 minutes
   },
+  test: {
+    logLevel: 'debug',
+    maxEntries: 100,
+    skipDeduplication: true,
+    ttl: 30 * 1000, // 30 seconds
+  },
 } as const;
 
 // Common CRON patterns

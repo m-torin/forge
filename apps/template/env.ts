@@ -24,10 +24,10 @@ export const env = createEnv({
     internationalization(),
   ],
   runtimeEnv: {
-    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
-    DATABASE_URL: process.env.DATABASE_URL,
-    RESEND_FROM: process.env.RESEND_FROM,
-    RESEND_TOKEN: process.env.RESEND_TOKEN,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET || undefined,
+    DATABASE_URL: process.env.DATABASE_URL || undefined,
+    RESEND_FROM: process.env.RESEND_FROM || undefined,
+    RESEND_TOKEN: process.env.RESEND_TOKEN || undefined,
   },
   server: {
     // Make these optional for the template

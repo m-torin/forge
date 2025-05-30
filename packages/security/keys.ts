@@ -1,12 +1,22 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
+const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
+// In local dev or build:local, these env vars might not be set if using .env.local
+const hasRequiredEnvVars = Boolean(process.env.ARCJET_KEY);
+
+// Make env vars optional in development or when they're missing (indicating .env.local usage)
+const requireInProduction = isProduction && hasRequiredEnvVars;
+
 export const keys = () =>
   createEnv({
     runtimeEnv: {
-      ARCJET_KEY: process.env.ARCJET_KEY,
+      ARCJET_KEY: process.env.ARCJET_KEY || undefined,
     },
     server: {
-      ARCJET_KEY: z.string().min(1).startsWith('ajkey_').optional(),
+      ARCJET_KEY: requireInProduction
+        ? z.string().min(1).startsWith('ajkey_')
+        : z.string().min(1).startsWith('ajkey_').optional(),
     },
   });

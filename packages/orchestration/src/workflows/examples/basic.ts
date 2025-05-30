@@ -130,15 +130,16 @@ async function processEnhancedBasicWorkflow(
         new Promise((resolve) =>
           setTimeout(() => {
             // Check for QStash signature header
-            const hasSignature = context.headers?.['upstash-signature'] !== undefined;
+            const hasSignature = context.headers?.get('upstash-signature') !== undefined;
 
             // Always pass in development mode
-            const secure = context.dev?.isDevelopment || hasSignature;
+            const isDevelopment = process.env.NODE_ENV === 'development';
+            const secure = isDevelopment || hasSignature;
 
             devLog.workflow(context, 'Security check', {
               hasSignature,
               headers: Object.keys(context.headers || {}),
-              isDevelopment: context.dev?.isDevelopment,
+              isDevelopment,
               secure,
             });
 
