@@ -17,6 +17,14 @@ export const metadata: Metadata = {
   title: 'Ciseco',
 };
 
-export default function Layout({ children, params }: { children: React.ReactNode; params: any }) {
-  return <ApplicationLayout>{children}</ApplicationLayout>;
+export default function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ApplicationLayout>
+      {children}
+    </ApplicationLayout>
+  );
 }

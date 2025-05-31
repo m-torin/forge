@@ -89,6 +89,15 @@ export class BatchProcessor {
   ): Promise<BatchProcessingResult<R>> {
     const startTime = Date.now();
     
+    // Provide default config if null/undefined
+    const safeConfig = config || {
+      batchSize: 10,
+      batchTimeout: 30000,
+      continueOnError: true,
+      delayBetweenBatches: 0,
+      maxConcurrentBatches: 1,
+    };
+    
     const {
       batchSize,
       batchTimeout,
@@ -97,7 +106,7 @@ export class BatchProcessor {
       delayBetweenBatches = 0,
       itemTimeout,
       maxConcurrentBatches = 1,
-    } = config;
+    } = safeConfig;
 
     if (items.length === 0) {
       return {

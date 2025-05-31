@@ -1,9 +1,9 @@
 import { BatchProcessor } from '../../utils/batch-processor';
+import { workflowError } from '../../utils/error-handling';
 import { devLog } from '../../utils/observability';
 import { executeParallel as executeParallelBase } from '../../utils/parallel';
 import { CircuitBreaker } from '../../utils/resilience';
-import { workflowError } from '../../utils/response';
-import { retryOperation } from '../../utils/retry';
+import { retryOperation } from '../../utils/resilience';
 import { DEFAULT_RETRIES, DEFAULT_TIMEOUTS } from '../../utils/types';
 
 import type { CircuitBreakerConfig, WorkflowContext } from '../../utils/types';

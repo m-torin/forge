@@ -199,10 +199,18 @@ export default function MonitoringPage() {
                     <Card key={run.workflowRunId} shadow="sm" withBorder p="sm" radius="md">
                       <LoadingOverlay visible={loading.get(run.workflowRunId) || false} />
 
-                      <Group justify="space-between" mb={isExpanded ? 'md' : 0}>
+                      <Group 
+                        justify="space-between" 
+                        mb={isExpanded ? 'md' : 0}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => toggleRunExpanded(run.workflowRunId)}
+                      >
                         <Group>
                           <ActionIcon
-                            onClick={() => toggleRunExpanded(run.workflowRunId)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleRunExpanded(run.workflowRunId);
+                            }}
                             variant="subtle"
                           >
                             {isExpanded ? (
@@ -223,7 +231,14 @@ export default function MonitoringPage() {
                                 <CopyButton value={run.workflowRunId}>
                                   {({ copied, copy }) => (
                                     <Tooltip label={copied ? 'Copied!' : 'Copy ID'}>
-                                      <ActionIcon onClick={copy} size="xs" variant="subtle">
+                                      <ActionIcon 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          copy();
+                                        }} 
+                                        size="xs" 
+                                        variant="subtle"
+                                      >
                                         <IconCopy size={12} />
                                       </ActionIcon>
                                     </Tooltip>
@@ -245,7 +260,10 @@ export default function MonitoringPage() {
                             <Tooltip label="Cancel workflow">
                               <ActionIcon
                                 color="red"
-                                onClick={() => cancelWorkflow(run.workflowRunId)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  cancelWorkflow(run.workflowRunId);
+                                }}
                                 variant="subtle"
                               >
                                 <IconPlayerStop size={16} />

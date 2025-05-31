@@ -1,5 +1,6 @@
-import { createResponse, extractPayload, validatePayload, workflowError } from '../../runtime';
+import { extractPayload, validatePayload } from '../../runtime';
 import { withDeduplication } from '../../runtime/deduplication';
+import { createResponse, workflowError } from '../../utils/error-handling';
 import { formatPercentage, isDevelopment } from '../../utils/helpers';
 import { devLog } from '../../utils/observability';
 

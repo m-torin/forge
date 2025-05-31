@@ -6,6 +6,10 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./examples": {
+      "types": "./src/workflows/examples/index.ts",
+      "import": "./src/workflows/examples/index.ts"
     }
   },
   "scripts": {

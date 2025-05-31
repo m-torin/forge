@@ -8,48 +8,76 @@ import type { WorkflowContext } from '@upstash/workflow';
 /**
  * Development logging utilities
  */
-// Helper to truncate large data for logging
-const truncateData = (data: any, maxLength = 500): any => {
+// Helper to stringify and truncate large data for logging
+const formatLogData = (data: any, maxLength = 500): string => {
   if (!data) return '';
+  
+  let formatted: string;
+  
   if (typeof data === 'string') {
-    return data.length > maxLength ? data.substring(0, maxLength) + '...' : data;
+    // If string is over 50 characters, try to parse as JSON first for better formatting
+    if (data.length > 50) {
+      try {
+        const parsed = JSON.parse(data);
+        formatted = JSON.stringify(parsed, null, 2);
+      } catch {
+        formatted = data;
+      }
+    } else {
+      formatted = data;
+    }
+  } else if (typeof data === 'object') {
+    // Always stringify objects with formatting
+    formatted = JSON.stringify(data, null, 2);
+  } else {
+    // Convert other types to string
+    formatted = String(data);
+    // If over 50 characters, try to format as JSON
+    if (formatted.length > 50) {
+      try {
+        const parsed = JSON.parse(formatted);
+        formatted = JSON.stringify(parsed, null, 2);
+      } catch {
+        // Keep as is if not JSON
+      }
+    }
   }
-  if (typeof data === 'object') {
-    const str = JSON.stringify(data);
-    return str.length > maxLength ? str.substring(0, maxLength) + '...' : data;
-  }
-  return data;
+  
+  // Truncate if too long
+  return formatted.length > maxLength ? formatted.substring(0, maxLength) + '...' : formatted;
 };
 
 export const devLog = {
   log: (message: string, data?: any) => {
-    if (isDevelopment()) {
-      console.log(`[DEV] ${message}`, truncateData(data));
-    }
+    // Disabled: only show warnings and errors
   },
 
   info: (message: string, data?: any) => {
-    if (isDevelopment()) {
-      console.log(`[DEV] ${message}`, truncateData(data));
-    }
+    // Disabled: only show warnings and errors
   },
 
   warn: (message: string, data?: any) => {
     if (isDevelopment()) {
-      console.warn(`[DEV] ${message}`, truncateData(data));
+      if (data) {
+        console.warn(`[DEV] ${message}\n${formatLogData(data)}`);
+      } else {
+        console.warn(`[DEV] ${message}`);
+      }
     }
   },
 
   error: (message: string, data?: any) => {
     if (isDevelopment()) {
-      console.error(`[DEV] ${message}`, truncateData(data));
+      if (data) {
+        console.error(`[DEV] ${message}\n${formatLogData(data)}`);
+      } else {
+        console.error(`[DEV] ${message}`);
+      }
     }
   },
 
   workflow: (context: WorkflowContext<any>, message: string, data?: any) => {
-    if (isDevelopment()) {
-      console.log(`[WORKFLOW:${context.workflowRunId}] ${message}`, truncateData(data, 300));
-    }
+    // Disabled: only show warnings and errors
   },
 };
 

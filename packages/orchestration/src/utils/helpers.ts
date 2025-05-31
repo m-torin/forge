@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { devLog } from './observability';
+import { devLog } from './monitoring';
 // Import from centralized modules
 import { sleep } from './time';
 
@@ -188,11 +188,11 @@ export function createErrorMessage(operation: string, error: unknown): string {
   return `${operation}: ${String(error)}`;
 }
 
-// Re-export from centralized error-handling module
-export { classifyError } from './error-handling';
+// Re-export from centralized monitoring module
+export { classifyError } from './monitoring';
 
-// Re-export from centralized error-handling module
-export { isNetworkError, isRateLimitError, isTimeoutError } from './error-handling';
+// Re-export from centralized monitoring module
+export { isNetworkError, isRateLimitError, isTimeoutError } from './monitoring';
 
 // ===== Type Guards and Validators =====
 // Re-export from centralized validation module

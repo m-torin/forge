@@ -4,6 +4,72 @@ import { NextResponse } from 'next/server';
  * API helper utilities for consistent error handling and response formatting
  */
 
+/**
+ * Enhanced logger that JSON stringifies data over 50 characters
+ */
+export const logger = {
+  formatData: (data: any): string => {
+    if (!data) return '';
+    
+    let formatted: string;
+    
+    if (typeof data === 'string') {
+      // If string is over 50 characters, try to parse as JSON first for better formatting
+      if (data.length > 50) {
+        try {
+          const parsed = JSON.parse(data);
+          formatted = JSON.stringify(parsed, null, 2);
+        } catch {
+          formatted = data;
+        }
+      } else {
+        formatted = data;
+      }
+    } else if (typeof data === 'object') {
+      // Always stringify objects with formatting
+      formatted = JSON.stringify(data, null, 2);
+    } else {
+      // Convert other types to string
+      formatted = String(data);
+      // If over 50 characters, try to format as JSON
+      if (formatted.length > 50) {
+        try {
+          const parsed = JSON.parse(formatted);
+          formatted = JSON.stringify(parsed, null, 2);
+        } catch {
+          // Keep as is if not JSON
+        }
+      }
+    }
+    
+    return formatted;
+  },
+
+  log: (message: string, data?: any) => {
+    if (data) {
+      console.log(`${message}\n${logger.formatData(data)}`);
+    } else {
+      console.log(message);
+    }
+  },
+
+  warn: (message: string, data?: any) => {
+    if (data) {
+      console.warn(`${message}\n${logger.formatData(data)}`);
+    } else {
+      console.warn(message);
+    }
+  },
+
+  error: (message: string, data?: any) => {
+    if (data) {
+      console.error(`${message}\n${logger.formatData(data)}`);
+    } else {
+      console.error(message);
+    }
+  },
+};
+
 export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
@@ -56,7 +122,7 @@ export function withErrorHandler<T extends any[], R>(
     try {
       return await handler(...args);
     } catch (error) {
-      console.error('API Route Error:', error);
+      logger.error('API Route Error:', error);
       return createErrorResponse(error instanceof Error ? error.message : 'Internal server error');
     }
   };

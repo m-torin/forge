@@ -12,10 +12,10 @@ import {
   waitForMultipleEvents,
 } from '../../runtime/patterns/patterns';
 import { WorkflowScheduler } from '../../runtime/scheduler';
+import { createResponse, workflowError } from '../../utils/error-handling';
 import { devLog } from '../../utils/observability';
 import { CircuitBreaker, RateLimiter } from '../../utils/resilience';
 import { ResourceManager } from '../../utils/resource-management';
-import { createResponse, workflowError } from '../../utils/response';
 
 import type { EnhancedContext } from '../../runtime';
 import type { WorkflowContext } from '../../utils/types';
@@ -850,8 +850,12 @@ async function processComprehensiveWorkflow(
     `Starting comprehensive workflow with ALL QStash features: ${name || 'Kitchen Sink'}`,
   );
 
-  // Declare variables at the beginning to fix scope issues
-  let batchConfig: any = null;
+  // Declare variables at the beginning to fix scope issues with defaults
+  let batchConfig: any = {
+    batchSize: options.batchSize || 5,
+    continueOnError: true,
+    maxConcurrentBatches: 3,
+  };
   let dlqConfig: any = null;
   let circuitBreaker: any = null;
   let rateLimiter: any = null;
@@ -925,10 +929,9 @@ async function processComprehensiveWorkflow(
       ratePerSecond: options.flowControl.ratePerSecond || 10,
     } as any;
 
-    // Initialize all configuration objects here
+    // Update batch configuration with flow control settings
     batchConfig = {
-      batchSize: options.batchSize || 5,
-      continueOnError: true,
+      ...batchConfig,
       maxConcurrentBatches: options.flowControl?.parallelism || 3,
       progressCallback: (processed: any, total: any) => {
         devLog.workflow(context, `Batch progress: ${processed}/${total}`);

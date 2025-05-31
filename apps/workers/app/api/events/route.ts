@@ -1,4 +1,5 @@
 import { type NextRequest } from 'next/server';
+import { logger } from '@/lib/api-helpers';
 
 export async function GET(request: NextRequest) {
   // Create a ReadableStream for SSE
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
           const message = `data: ${JSON.stringify(data)}\n\n`;
           controller.enqueue(new TextEncoder().encode(message));
         } catch (error) {
-          console.error('SSE: Failed to send event:', error);
+          logger.error('SSE: Failed to send event:', error);
           isControllerOpen = false;
         }
       };
@@ -33,7 +34,18 @@ export async function GET(request: NextRequest) {
 
         try {
           // Fetch latest workflow runs
-          const response = await fetch(`${request.nextUrl.origin}/api/client/logs?count=10`);
+          const response = await fetch(`${request.nextUrl.origin}/api/client/logs?count=50`);
+          
+          if (!response.ok) {
+            logger.warn(`SSE: API returned ${response.status} ${response.statusText}`);
+            sendEvent({
+              type: 'error',
+              message: `API error: ${response.status}`,
+              timestamp: Date.now(),
+            });
+            return;
+          }
+
           const data = await response.json();
 
           if (data.runs) {
@@ -44,7 +56,7 @@ export async function GET(request: NextRequest) {
             });
           }
         } catch (error) {
-          console.error('SSE: Error fetching workflow data:', error);
+          logger.error('SSE: Error fetching workflow data:', error);
           sendEvent({
             type: 'error',
             message: 'Failed to fetch workflow data',
@@ -61,7 +73,7 @@ export async function GET(request: NextRequest) {
           controller.close();
         } catch (error) {
           // Controller might already be closed
-          console.error('SSE: Error closing controller:', error);
+          logger.error('SSE: Error closing controller:', error);
         }
       });
     },

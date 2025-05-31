@@ -35,20 +35,26 @@ export {
 } from './environment';
 export * from './results';
 
-// Export specific items from retry to avoid conflicts
+// Export specific items from resilience (includes retry functionality)
 export {
+  CircuitBreaker,
+  // Retry functionality (merged from retry.ts)
   createRetryWrapper,
+  DomainRateLimiter,
+  RateLimiter,
   RETRY_PRESETS,
   retryOperation,
   retryWithRateLimit,
   type UnifiedRetryConfig,
-} from './retry';
+} from './resilience';
 
-// Export specific items from error-handling to avoid conflicts
+// Export monitoring utilities (includes error handling, observability, and response functionality)
 export {
+  // Error handling
   classifyError,
   classifyHttpStatus,
   classifyWorkflowError,
+  createErrorMessage,
   createWorkflowError,
   ERROR_RETRY_CATEGORIES,
   errorHandlers,
@@ -64,17 +70,28 @@ export {
   RETRY_CONFIGS,
   withApiErrorHandling,
   withWorkflowErrorHandling,
+  withRetryErrorHandling,
   WorkflowError,
   WorkflowErrorType,
-} from './error-handling';
+  // Response functionality
+  createResponse,
+  workflowError,
+  type WorkflowResponse,
+  workflowSuccess,
+  // Observability
+  devLog,
+  getEnvironmentConfig,
+  createWorkflowMonitor,
+  type WorkflowMonitor,
+  createWorkflowStatusHook,
+  createWorkflowStatusStream,
+} from './monitoring';
 
 // Existing utilities
-export * from './resilience';
 export * from './helpers';
 export * from './resource-management';
-export * from './observability';
-export * from './response';
 export * from './types';
 export * from './testing';
 export * from './ai-integration';
 export * from './security';
+export * from './step-naming';

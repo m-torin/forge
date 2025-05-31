@@ -94,10 +94,7 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
 
         <ButtonSecondary
           fontSize="text-xs"
-          onClick={() => {
-            setProductQuickViewHandle(handle || '');
-            openAside('product-quick-view');
-          }}
+          href={`/quickview/${handle}`}
           className="ms-1.5 bg-white shadow-lg transition-colors hover:bg-gray-100! hover:text-neutral-900"
           sizeClass="py-2 px-4"
         >

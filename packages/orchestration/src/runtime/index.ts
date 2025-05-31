@@ -31,4 +31,4 @@ export * from './patterns';
 
 // Re-export commonly used utils for convenience
 export { extractPayload, validatePayload } from '../utils/validation';
-export { createResponse, workflowError } from '../utils/response';
+// Note: createResponse and workflowError are already exported from utils
