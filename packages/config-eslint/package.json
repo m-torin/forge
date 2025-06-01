@@ -59,7 +59,7 @@
     "@types/node": "catalog:",
     "@vitejs/plugin-react": "^4.5.0",
     "eslint-import-resolver-typescript": "^4.4.2",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-n": "^14.0.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
