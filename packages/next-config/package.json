@@ -16,7 +16,7 @@
     "next": "catalog:"
   },
   "dependencies": {
-    "@next/bundle-analyzer": "15.4.0-canary.42",
+    "@next/bundle-analyzer": "15.4.0-canary.60",
     "@prisma/nextjs-monorepo-workaround-plugin": "^6.8.2",
     "@t3-oss/env-core": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
