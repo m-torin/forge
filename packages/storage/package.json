@@ -13,8 +13,8 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.817.0",
-    "@aws-sdk/s3-request-presigner": "^3.817.0",
+    "@aws-sdk/client-s3": "^3.821.0",
+    "@aws-sdk/s3-request-presigner": "^3.821.0",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/blob": "^1.1.1",
     "chalk": "^5.4.1",

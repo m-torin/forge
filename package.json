@@ -30,7 +30,7 @@
     "@auto-it/first-time-contributor": "^11.3.0",
     "@next/eslint-plugin-next": "catalog:",
     "@repo/typescript-config": "workspace:*",
-    "@turbo/gen": "^2.5.3",
+    "@turbo/gen": "^2.5.4",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-react": "^7.37.5",
@@ -40,7 +40,7 @@
     "madge": "^8.0.0",
     "prettier": "^3.5.3",
     "tsup": "^8.5.0",
-    "turbo": "^2.5.3",
+    "turbo": "^2.5.4",
     "typescript": "catalog:",
     "typescript-eslint": "^8.33.0",
     "vitest": "catalog:"

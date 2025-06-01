@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@logtail/next": "^0.2.0",
-    "@sentry/nextjs": "^9.22.0",
+    "@sentry/nextjs": "^9.24.0",
     "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
     "react": "catalog:",
