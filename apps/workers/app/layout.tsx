@@ -6,7 +6,6 @@ import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
 import React, { type ReactNode } from 'react';
 
-import { Toolbar } from '@repo/feature-flags/components/toolbar';
 
 interface RootLayoutProperties {
   readonly children: ReactNode;
@@ -31,7 +30,6 @@ export default function RootLayout({ children }: RootLayoutProperties): React.Re
             </WorkflowProvider>
           </ModalsProvider>
         </MantineProvider>
-        <Toolbar />
       </body>
     </html>
   );

@@ -23,10 +23,14 @@ export { setTestEnv, suppressConsoleErrors } from './setup/common';
 export { setupBrowserMocks } from './mocks/browser';
 export { mockNextImage, mockNextNavigation, mockNextThemes, setupNextMocks } from './mocks/next';
 export * from './mocks/auth';
+export * from './mocks/firestore';
+export * from './mocks/upstash-redis';
+export * from './mocks/upstash-vector';
 
 // Testing utilities
 export { customRender } from './utils/render';
 export { render, renderDark, renderWithLocale, TestProviders } from './render';
+export * from './utils/database';
 export * from '@testing-library/react';
 
 // Default export is a React-specific config

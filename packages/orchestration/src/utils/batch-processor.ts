@@ -88,7 +88,7 @@ export class BatchProcessor {
     callbacks?: BatchCallbacks<T, R>,
   ): Promise<BatchProcessingResult<R>> {
     const startTime = Date.now();
-    
+
     // Provide default config if null/undefined
     const safeConfig = config || {
       batchSize: 10,
@@ -97,7 +97,7 @@ export class BatchProcessor {
       delayBetweenBatches: 0,
       maxConcurrentBatches: 1,
     };
-    
+
     const {
       batchSize,
       batchTimeout,
@@ -127,8 +127,10 @@ export class BatchProcessor {
     // Split items into batches
     const batches = chunkArray(items, batchSize);
     const batchResults: BatchResult<R>[] = [];
-    
-    devLog.info(`Processing ${items.length} items in ${batches.length} batches (size: ${batchSize})`);
+
+    devLog.info(
+      `Processing ${items.length} items in ${batches.length} batches (size: ${batchSize})`,
+    );
 
     let totalSuccessful = 0;
     let totalFailed = 0;
@@ -139,11 +141,11 @@ export class BatchProcessor {
     // Process batches with concurrency control
     for (let i = 0; i < batches.length; i += maxConcurrentBatches) {
       const concurrentBatches = batches.slice(i, i + maxConcurrentBatches);
-      
+
       const batchPromises = concurrentBatches.map(async (batch, concurrentIndex) => {
         const batchIndex = i + concurrentIndex;
         const batchStartIndex = batchIndex * batchSize;
-        
+
         try {
           // Call onBatchStart callback
           if (callbacks?.onBatchStart) {
@@ -174,16 +176,18 @@ export class BatchProcessor {
           if (!continueOnError) {
             throw error;
           }
-          
+
           // Create a failed batch result
           return {
             batchIndex,
             batchSize: batch.length,
             duration: 0,
-            errors: [{
-              error: error instanceof Error ? error.message : String(error),
-              index: 0,
-            }],
+            errors: [
+              {
+                error: error instanceof Error ? error.message : String(error),
+                index: 0,
+              },
+            ],
             failed: batch.length,
             items: batch.length,
             results: [],
@@ -195,23 +199,23 @@ export class BatchProcessor {
 
       // Wait for concurrent batches to complete
       const concurrentResults = await Promise.allSettled(batchPromises);
-      
+
       for (const result of concurrentResults) {
         processedBatches++;
-        
+
         if (result.status === 'fulfilled') {
           const batchResult = result.value;
           batchResults.push(batchResult);
-          
+
           totalSuccessful += batchResult.successful;
           totalFailed += batchResult.failed;
-          
+
           if (batchResult.success) {
             successfulBatches++;
           } else {
             failedBatches++;
           }
-          
+
           // Update progress
           if (callbacks?.onProgress) {
             callbacks.onProgress(totalSuccessful + totalFailed, items.length);
@@ -219,7 +223,7 @@ export class BatchProcessor {
         } else {
           failedBatches++;
           totalFailed += concurrentBatches[0].length; // Approximate
-          
+
           if (!continueOnError) {
             throw result.reason;
           }
@@ -268,7 +272,7 @@ export class BatchProcessor {
   ): Promise<BatchResult<R>> {
     const startTime = Date.now();
     const { concurrency, continueOnError, itemTimeout, timeout } = options;
-    
+
     const results: R[] = [];
     const errors: { index: number; error: string }[] = [];
     let successful = 0;
@@ -276,38 +280,38 @@ export class BatchProcessor {
 
     // Process with concurrency control
     const chunks = concurrency < batch.length ? chunkArray(batch, concurrency) : [batch];
-    
+
     for (const chunk of chunks) {
       const chunkPromises = chunk.map(async (item, chunkIndex) => {
         const itemIndex = batchStartIndex + chunks.indexOf(chunk) * concurrency + chunkIndex;
-        
+
         try {
           let operation = processor(item, itemIndex);
-          
+
           // Apply item timeout if specified
           if (itemTimeout) {
             operation = Promise.race([
               operation,
-              new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Item timeout')), itemTimeout)
+              new Promise<never>((_resolve, reject) =>
+                setTimeout(() => reject(new Error('Item timeout')), itemTimeout),
               ),
             ]);
           }
-          
+
           const result = await operation;
           return { index: chunkIndex, result, success: true };
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
-          
+
           // Call onItemError callback
           if (callbacks?.onItemError) {
             await callbacks.onItemError(error, item, itemIndex);
           }
-          
+
           if (!continueOnError) {
             throw error;
           }
-          
+
           return { error: errorMessage, index: chunkIndex, success: false };
         }
       });
@@ -317,8 +321,8 @@ export class BatchProcessor {
       if (timeout) {
         chunkResults = await Promise.race([
           Promise.allSettled(chunkPromises),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Batch timeout')), timeout)
+          new Promise<never>((_resolve, reject) =>
+            setTimeout(() => reject(new Error('Batch timeout')), timeout),
           ),
         ]);
       } else {
@@ -334,14 +338,14 @@ export class BatchProcessor {
           failed++;
           let errorMessage = 'Unknown error';
           let errorIndex = 0;
-          
+
           if (result.status === 'rejected') {
             errorMessage = result.reason?.message || 'Unknown error';
           } else if ('error' in result.value) {
             errorMessage = result.value.error || 'Unknown error';
             errorIndex = result.value.index;
           }
-          
+
           errors.push({
             error: errorMessage,
             index: chunks.indexOf(chunk) * concurrency + errorIndex,
@@ -377,11 +381,7 @@ export class BatchProcessor {
       targetBatchDuration?: number;
     },
   ): BatchConfig {
-    const {
-      availableMemory,
-      maxMemoryPerItem,
-      targetBatchDuration = 30000,
-    } = options || {};
+    const { availableMemory, maxMemoryPerItem, targetBatchDuration = 30000 } = options || {};
 
     // Calculate batch size based on processing time
     let batchSize: number;
@@ -402,7 +402,7 @@ export class BatchProcessor {
     // Calculate concurrency based on batch size and processing time
     const concurrency = Math.min(
       batchSize,
-      Math.max(1, Math.floor(targetBatchDuration / estimatedProcessingTimePerItem))
+      Math.max(1, Math.floor(targetBatchDuration / estimatedProcessingTimePerItem)),
     );
 
     // Calculate max concurrent batches
@@ -432,18 +432,14 @@ export class BatchProcessor {
     options?: Partial<BatchConfig>,
   ): Promise<BatchProcessingResult<R>> {
     const delayMs = Math.ceil(1000 / itemsPerSecond);
-    
-    return this.process(
-      items,
-      processor,
-      {
-        batchSize: 1,
-        concurrency: 1,
-        continueOnError: true,
-        delayBetweenBatches: delayMs,
-        maxConcurrentBatches: 1,
-        ...options,
-      },
-    );
+
+    return this.process(items, processor, {
+      batchSize: 1,
+      concurrency: 1,
+      continueOnError: true,
+      delayBetweenBatches: delayMs,
+      maxConcurrentBatches: 1,
+      ...options,
+    });
   }
 }

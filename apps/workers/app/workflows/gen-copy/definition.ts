@@ -1,21 +1,21 @@
-import type { WorkflowContext } from '@upstash/workflow';
 import type { WorkflowDefinition } from '../types';
+import type { WorkflowContext } from '@upstash/workflow';
 
 export interface GenCopyPayload {
-  message?: string;
-  topic?: string;
-  tone?: 'professional' | 'casual' | 'friendly' | 'formal';
   keywords?: string[];
   length?: 'short' | 'medium' | 'long';
+  message?: string;
+  tone?: 'professional' | 'casual' | 'friendly' | 'formal';
+  topic?: string;
 }
 
 const genCopyWorkflow = async (context: WorkflowContext<GenCopyPayload>) => {
-  const { 
-    message = 'Hello World from Gen Copy!',
-    topic = 'Product Description',
-    tone = 'professional',
+  const {
     keywords = [],
-    length = 'medium'
+    length = 'medium',
+    message = 'Hello World from Gen Copy!',
+    tone = 'professional',
+    topic = 'Product Description',
   } = context.requestPayload || {};
 
   // Step 1: Prepare generation parameters
@@ -23,13 +23,13 @@ const genCopyWorkflow = async (context: WorkflowContext<GenCopyPayload>) => {
     console.log(`Preparing copy generation: ${message}`);
     console.log(`Topic: ${topic}, Tone: ${tone}, Length: ${length}`);
     console.log(`Keywords: ${keywords.join(', ')}`);
-    
+
     return {
-      topic,
-      tone,
       keywords,
       length,
       preparedAt: new Date().toISOString(),
+      tone,
+      topic,
     };
   });
 
@@ -37,13 +37,13 @@ const genCopyWorkflow = async (context: WorkflowContext<GenCopyPayload>) => {
   const result = await context.run('generate-copy', async () => {
     // In a real implementation, this would call an AI service
     const generatedCopy = `This is AI-generated ${tone} copy about ${topic}. Keywords: ${keywords.join(', ')}. Length: ${length}.`;
-    
+
     return {
+      generatedCopy,
       message,
       params,
-      generatedCopy,
-      seoScore: Math.floor(Math.random() * 100),
       readabilityScore: Math.floor(Math.random() * 100),
+      seoScore: Math.floor(Math.random() * 100),
       timestamp: new Date().toISOString(),
       workflowRunId: context.workflowRunId,
     };
@@ -55,29 +55,31 @@ const genCopyWorkflow = async (context: WorkflowContext<GenCopyPayload>) => {
     return {
       ...result,
       optimized: true,
-      seoEnhancements: ['Added meta description', 'Optimized keyword density', 'Improved readability'],
+      seoEnhancements: [
+        'Added meta description',
+        'Optimized keyword density',
+        'Improved readability',
+      ],
     };
   });
 
   return {
-    status: 'success' as const,
     data: optimized,
     metadata: {
-      workflowRunId: context.workflowRunId,
       timestamp: new Date().toISOString(),
+      workflowRunId: context.workflowRunId,
     },
+    status: 'success' as const,
   };
 };
 
 const definition: WorkflowDefinition = {
   metadata: {
     id: 'gen-copy',
-    title: 'Generate Copy',
+    color: 'pink',
     description: 'AI-powered copy generation with SEO optimization',
-    tags: ['ai', 'seo', 'etl'],
     difficulty: 'intermediate',
     estimatedTime: '10-20 seconds',
-    color: 'pink',
     features: [
       'AI content generation',
       'SEO optimization',
@@ -86,16 +88,18 @@ const definition: WorkflowDefinition = {
       'Readability scoring',
       'Length customization',
     ],
+    tags: ['ai', 'seo', 'etl'],
+    title: 'Generate Copy',
   },
-  
+
   defaultPayload: {
-    message: 'Hello World from Gen Copy!',
-    topic: 'Smart Home Device',
-    tone: 'friendly',
     keywords: ['smart', 'home', 'automation', 'IoT'],
     length: 'medium',
+    message: 'Hello World from Gen Copy!',
+    tone: 'friendly',
+    topic: 'Smart Home Device',
   },
-  
+
   workflow: genCopyWorkflow,
 };
 

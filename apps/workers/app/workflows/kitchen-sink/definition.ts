@@ -1,15 +1,16 @@
 import { kitchenSinkWorkflow } from '@repo/orchestration/examples';
+
+import { wrapWorkflow } from '../workflow-wrapper';
+
 import type { WorkflowDefinition } from '../types';
 
 const definition: WorkflowDefinition = {
   metadata: {
     id: 'kitchen-sink',
-    title: 'Kitchen Sink',
-    description: 'Comprehensive workflow showcasing all QStash features and patterns',
-    tags: ['demo', 'advanced', 'etl', 'orchestration'],
-    difficulty: 'expert',
-    estimatedTime: '2-5 minutes',
     color: 'purple',
+    description: 'Comprehensive workflow showcasing all QStash features and patterns',
+    difficulty: 'advanced',
+    estimatedTime: '2-5 minutes',
     features: [
       'ETL Pipeline with transformations',
       'Order processing with inventory',
@@ -20,8 +21,10 @@ const definition: WorkflowDefinition = {
       'Event-driven approval steps',
       'Comprehensive error recovery',
     ],
+    tags: ['demo', 'advanced', 'etl', 'orchestration'],
+    title: 'Kitchen Sink',
   },
-  
+
   defaultPayload: {
     // ETL Pipeline
     destination: { type: 'database', config: { table: 'processed_data' } },
@@ -58,8 +61,8 @@ const definition: WorkflowDefinition = {
       requiresApproval: true,
     },
   },
-  
-  workflow: kitchenSinkWorkflow,
+
+  workflow: wrapWorkflow(kitchenSinkWorkflow),
 };
 
 export default definition;

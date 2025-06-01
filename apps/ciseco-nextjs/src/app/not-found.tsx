@@ -1,7 +1,8 @@
 import I404Png from '@/images/404.png';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import NcImage from '@/shared/NcImage/NcImage';
 import { type Metadata } from 'next';
+
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { NcImage } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: "The page you were looking for doesn't exist.",

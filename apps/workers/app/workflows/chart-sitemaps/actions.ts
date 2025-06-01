@@ -21,15 +21,15 @@ export async function runChartSitemapsWorkflow(payload: ChartSitemapsPayload) {
     });
 
     return {
+      data: result,
       success: true,
       workflowRunId: result.workflowRunId,
-      data: result,
     };
   } catch (error) {
     console.error('Failed to trigger workflow:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to trigger workflow',
+      success: false,
     };
   }
 }

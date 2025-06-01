@@ -1,6 +1,6 @@
 import { renderHook, act } from '../../test-utils';
 import { describe, expect, it, beforeEach, vi, afterEach } from 'vitest';
-import { useIsMobile } from '../../hooks/use-mobile';
+import { useIsMobile } from '../../uix/hooks/use-mobile';
 
 describe('useIsMobile', () => {
   const originalMatchMedia = window.matchMedia;

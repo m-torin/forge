@@ -1,11 +1,15 @@
+import { WorkflowFirestoreService } from '@/lib/firestore-service';
+import { headers } from 'next/headers';
+
 import { createWorkflowClient } from '@repo/orchestration';
+import { devLog as logger } from '@repo/orchestration';
 
 /**
  * Workflow Client API Route
- * Demonstrates ALL client capabilities for cancellation, notification, and management
+ * Enhanced with Firestore persistence and user tracking
  *
  * Features demonstrated:
- * - trigger: Start workflows with flow control
+ * - trigger: Start workflows with flow control and persistence
  * - cancel: Cancel workflows by ID, URL pattern, or all
  * - notify: Send events to waiting workflows
  * - getWaiters: Get workflows waiting for events
@@ -59,6 +63,12 @@ async function handleTrigger(params: {
 }) {
   const { flowControl, payload = {}, workflowRunId, workflowType = 'kitchen-sink' } = params;
 
+  // Get user context from headers
+  const headersList = await headers();
+  const userId = headersList.get('x-user-id') || undefined;
+  const organizationId = headersList.get('x-organization-id') || undefined;
+  const userAgent = headersList.get('user-agent') || undefined;
+
   // Determine the workflow URL
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
@@ -70,8 +80,11 @@ async function handleTrigger(params: {
     'kitchen-sink': `${baseUrl}/api/workflows/kitchen-sink`,
   };
 
+  const workflowUrl = workflowUrls[workflowType];
+
+  // Trigger the workflow
   const result = await client.trigger({
-    url: workflowUrls[workflowType],
+    url: workflowUrl,
     body: payload,
     delay: '1s',
     flowControl,
@@ -79,9 +92,29 @@ async function handleTrigger(params: {
     workflowRunId,
   });
 
+  // Persist to Firestore
+  try {
+    await WorkflowFirestoreService.createWorkflowRun({
+      metadata: {
+        flowControl,
+        triggeredBy: 'api',
+        userAgent,
+      },
+      organizationId,
+      payload,
+      userId,
+      workflowRunId: result.workflowRunId,
+      workflowType,
+      workflowUrl,
+    });
+  } catch (error) {
+    logger.error('Failed to persist workflow run:', error);
+    // Don't fail the request if persistence fails
+  }
+
   return Response.json({
     success: true,
-    triggeredUrl: workflowUrls[workflowType],
+    triggeredUrl: workflowUrl,
     workflowRunId: result.workflowRunId,
   });
 }

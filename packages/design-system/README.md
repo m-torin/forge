@@ -40,7 +40,7 @@ function App() {
 Import components from the design system:
 
 ```tsx
-import { Button, Card, Dialog } from '@repo/design-system/components/ui';
+import { Button, Card, Dialog } from '@repo/design-system/uix';
 
 function MyComponent() {
   return (

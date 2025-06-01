@@ -1,5 +1,5 @@
-import Heading from '@/components/Heading/Heading';
-import NcImage from '@/shared/NcImage/NcImage';
+import { Heading } from '@repo/design-system/ciesco2';
+import { NcImage } from '@repo/design-system/ciesco2';
 
 export interface People {
   avatar: string;

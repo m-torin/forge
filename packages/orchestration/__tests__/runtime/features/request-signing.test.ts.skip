@@ -1,0 +1,420 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  extractQStashSignature,
+  generateSignature,
+  verifyQStashSignature,
+  withSignatureVerification,
+  createSigningConfigFromEnv,
+  signOutgoingRequest,
+  callWithSignature,
+  batchVerifySignatures,
+  generateTestSignature,
+  type RequestSigningConfig,
+  type SignatureVerificationResult,
+} from '../../../src/runtime/features/request-signing';
+import type { WorkflowContext } from '@upstash/workflow';
+
+// Mock crypto for consistent testing
+vi.mock('crypto', () => ({
+  createHmac: vi.fn(() => ({
+    digest: vi.fn(() => 'mocked-signature'),
+    update: vi.fn().mockReturnThis(),
+  })),
+  randomBytes: vi.fn(() => Buffer.from('mock-random-bytes')),
+  timingSafeEqual: vi.fn((a, b) => a.toString() === b.toString()),
+}));
+
+describe('QStash Request Signing', () => {
+  describe('extractQStashSignature', () => {
+    it('should extract signature from headers.get function', () => {
+      const context = {
+        headers: {
+          get: vi.fn((name: string) => {
+            if (name === 'upstash-signature') return 'test-signature';
+            if (name === 'upstash-timestamp') return '1234567890';
+            return null;
+          }),
+        },
+      } as unknown as WorkflowContext<any>;
+
+      const result = extractQStashSignature(context);
+      expect(result.signature).toBe('test-signature');
+      expect(result.timestamp).toBe(1234567890);
+    });
+
+    it('should extract signature from headers object', () => {
+      const context = {
+        headers: {
+          'upstash-signature': 'test-signature',
+          'upstash-timestamp': '1234567890',
+        },
+      } as unknown as WorkflowContext<any>;
+
+      const result = extractQStashSignature(context);
+      expect(result.signature).toBe('test-signature');
+      expect(result.timestamp).toBe(1234567890);
+    });
+
+    it('should return null when headers are missing', () => {
+      const context = {} as WorkflowContext<any>;
+
+      const result = extractQStashSignature(context);
+      expect(result.signature).toBeNull();
+      expect(result.timestamp).toBeNull();
+    });
+  });
+
+  describe('generateSignature', () => {
+    it('should generate signature for payload', () => {
+      const payload = JSON.stringify({ data: 'test' });
+      const timestamp = 1234567890;
+      const signingKey = 'test-key';
+      const url = 'https://example.com/webhook';
+
+      const signature = generateSignature(payload, timestamp, signingKey, url);
+      expect(signature).toBe('mocked-signature');
+    });
+
+    it('should generate signature without URL', () => {
+      const payload = JSON.stringify({ data: 'test' });
+      const timestamp = 1234567890;
+      const signingKey = 'test-key';
+
+      const signature = generateSignature(payload, timestamp, signingKey);
+      expect(signature).toBe('mocked-signature');
+    });
+
+    it('should generate signature with custom method', () => {
+      const payload = JSON.stringify({ data: 'test' });
+      const timestamp = 1234567890;
+      const signingKey = 'test-key';
+      const url = 'https://example.com/webhook';
+
+      const signature = generateSignature(payload, timestamp, signingKey, url, 'GET');
+      expect(signature).toBe('mocked-signature');
+    });
+  });
+
+  describe('verifyQStashSignature', () => {
+    let config: RequestSigningConfig;
+
+    beforeEach(() => {
+      config = {
+        signingKey: 'test-key',
+        clockTolerance: 300,
+      };
+    });
+
+    it('should verify valid signature', () => {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const context = {
+        headers: {
+          'upstash-signature': 'mocked-signature',
+          'upstash-timestamp': timestamp.toString(),
+        },
+        requestPayload: { data: 'test' },
+        url: 'https://example.com/webhook',
+      } as unknown as WorkflowContext<any>;
+
+      const result = verifyQStashSignature(context, config);
+      expect(result.valid).toBe(true);
+      expect(result.keyUsed).toBe('primary');
+    });
+
+    it('should reject missing signature', () => {
+      const context = {
+        headers: {},
+      } as unknown as WorkflowContext<any>;
+
+      const result = verifyQStashSignature(context, config);
+      expect(result.valid).toBe(false);
+      expect(result.reason).toBe('missing_signature');
+    });
+
+    it('should reject missing timestamp', () => {
+      const context = {
+        headers: {
+          'upstash-signature': 'test-signature',
+        },
+      } as unknown as WorkflowContext<any>;
+
+      const result = verifyQStashSignature(context, config);
+      expect(result.valid).toBe(false);
+      expect(result.reason).toBe('missing_timestamp');
+    });
+
+    it('should reject expired timestamp', () => {
+      const oldTimestamp = Math.floor(Date.now() / 1000) - 600; // 10 minutes ago
+      const context = {
+        headers: {
+          'upstash-signature': 'test-signature',
+          'upstash-timestamp': oldTimestamp.toString(),
+        },
+      } as unknown as WorkflowContext<any>;
+
+      const result = verifyQStashSignature(context, config);
+      expect(result.valid).toBe(false);
+      expect(result.reason).toBe('timestamp_out_of_tolerance');
+    });
+
+    it('should reject invalid signature', () => {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const context = {
+        headers: {
+          'upstash-signature': 'invalid-signature',
+          'upstash-timestamp': timestamp.toString(),
+        },
+        requestPayload: { data: 'test' },
+      } as unknown as WorkflowContext<any>;
+
+      const result = verifyQStashSignature(context, config);
+      expect(result.valid).toBe(false);
+      expect(result.reason).toBe('signature_mismatch');
+    });
+
+    it('should try multiple keys for verification', () => {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const configWithKeys: RequestSigningConfig = {
+        ...config,
+        currentSigningKey: 'current-key',
+        nextSigningKey: 'next-key',
+      };
+
+      const context = {
+        headers: {
+          'upstash-signature': 'mocked-signature',
+          'upstash-timestamp': timestamp.toString(),
+        },
+        requestPayload: { data: 'test' },
+      } as unknown as WorkflowContext<any>;
+
+      const result = verifyQStashSignature(context, configWithKeys);
+      expect(result.valid).toBe(true);
+    });
+  });
+
+  describe('withSignatureVerification', () => {
+    it('should execute handler when signature is valid', async () => {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const context = {
+        headers: {
+          'upstash-signature': 'mocked-signature',
+          'upstash-timestamp': timestamp.toString(),
+        },
+        requestPayload: { data: 'test' },
+      } as unknown as WorkflowContext<any>;
+
+      const config: RequestSigningConfig = {
+        signingKey: 'test-key',
+      };
+
+      const handler = vi.fn().mockResolvedValue('success');
+      const result = await withSignatureVerification(context, config, handler);
+
+      expect(handler).toHaveBeenCalled();
+      expect(result).toBe('success');
+    });
+
+    it('should throw error when signature is invalid', async () => {
+      const context = {
+        headers: {},
+      } as unknown as WorkflowContext<any>;
+
+      const config: RequestSigningConfig = {
+        signingKey: 'test-key',
+      };
+
+      const handler = vi.fn();
+      await expect(
+        withSignatureVerification(context, config, handler)
+      ).rejects.toThrow('Request signature verification failed: missing_signature');
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('createSigningConfigFromEnv', () => {
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      process.env = { ...originalEnv };
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    it('should create config from environment variables', () => {
+      process.env.QSTASH_SIGNING_KEY = 'env-key';
+      process.env.QSTASH_CLOCK_TOLERANCE = '600';
+      process.env.QSTASH_CURRENT_SIGNING_KEY = 'current-key';
+      process.env.QSTASH_NEXT_SIGNING_KEY = 'next-key';
+
+      const config = createSigningConfigFromEnv();
+      expect(config).toEqual({
+        signingKey: 'current-key',
+        clockTolerance: 600,
+        currentSigningKey: 'current-key',
+        nextSigningKey: 'next-key',
+      });
+    });
+
+    it('should use default clock tolerance', () => {
+      process.env.QSTASH_SIGNING_KEY = 'env-key';
+
+      const config = createSigningConfigFromEnv();
+      expect(config?.clockTolerance).toBe(300);
+    });
+
+    it('should return null when no signing key is found', () => {
+      delete process.env.QSTASH_SIGNING_KEY;
+      delete process.env.QSTASH_CURRENT_SIGNING_KEY;
+
+      const config = createSigningConfigFromEnv();
+      expect(config).toBeNull();
+    });
+  });
+
+  describe('signOutgoingRequest', () => {
+    it('should sign outgoing request', () => {
+      const payload = { data: 'test' };
+      const signingKey = 'test-key';
+      const url = 'https://example.com/webhook';
+
+      const result = signOutgoingRequest(payload, signingKey, url);
+
+      expect(result.signature).toBe('mocked-signature');
+      expect(result.timestamp).toBeDefined();
+      expect(result.headers['upstash-signature']).toBe('mocked-signature');
+      expect(result.headers['upstash-timestamp']).toBeDefined();
+    });
+
+    it('should handle string payload', () => {
+      const payload = 'test-string';
+      const signingKey = 'test-key';
+      const url = 'https://example.com/webhook';
+
+      const result = signOutgoingRequest(payload, signingKey, url, 'POST');
+
+      expect(result.signature).toBe('mocked-signature');
+    });
+  });
+
+  describe('callWithSignature', () => {
+    it('should call with signed headers', async () => {
+      const context = {
+        call: vi.fn().mockResolvedValue({ success: true }),
+      } as unknown as WorkflowContext<any>;
+
+      const stepName = 'webhook-call';
+      const options = {
+        url: 'https://example.com/webhook',
+        body: { data: 'test' },
+        headers: { 'Content-Type': 'application/json' },
+      };
+      const signingKey = 'test-key';
+
+      const result = await callWithSignature(context, stepName, options, signingKey);
+
+      expect(context.call).toHaveBeenCalledWith(stepName, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'upstash-signature': 'mocked-signature',
+          'upstash-timestamp': expect.any(String),
+        },
+      });
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should throw error when URL is missing', async () => {
+      const context = {} as WorkflowContext<any>;
+      const options = { body: { data: 'test' } };
+
+      await expect(
+        callWithSignature(context, 'step', options, 'key')
+      ).rejects.toThrow('URL is required for signed calls');
+    });
+  });
+
+  describe('batchVerifySignatures', () => {
+    it('should verify multiple signatures', () => {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const requests = [
+        {
+          signature: 'mocked-signature',
+          timestamp,
+          payload: JSON.stringify({ data: 'test1' }),
+          url: 'https://example.com/webhook1',
+        },
+        {
+          signature: 'invalid-signature',
+          timestamp,
+          payload: JSON.stringify({ data: 'test2' }),
+          url: 'https://example.com/webhook2',
+        },
+      ];
+
+      const config: RequestSigningConfig = {
+        signingKey: 'test-key',
+      };
+
+      const results = batchVerifySignatures(requests, config);
+
+      expect(results).toHaveLength(2);
+      expect(results[0]).toMatchObject({
+        valid: true,
+        index: 0,
+        keyUsed: 'primary',
+      });
+      expect(results[1]).toMatchObject({
+        valid: false,
+        index: 1,
+        reason: 'signature_mismatch',
+      });
+    });
+
+    it('should handle expired timestamps in batch', () => {
+      const requests = [
+        {
+          signature: 'mocked-signature',
+          timestamp: Math.floor(Date.now() / 1000) - 600, // 10 minutes ago
+          payload: JSON.stringify({ data: 'test' }),
+        },
+      ];
+
+      const config: RequestSigningConfig = {
+        signingKey: 'test-key',
+        clockTolerance: 300,
+      };
+
+      const results = batchVerifySignatures(requests, config);
+
+      expect(results[0]).toMatchObject({
+        valid: false,
+        index: 0,
+        reason: 'timestamp_out_of_tolerance',
+      });
+    });
+  });
+
+  describe('generateTestSignature', () => {
+    it('should generate test signature with default values', () => {
+      const payload = { data: 'test' };
+      const result = generateTestSignature(payload);
+
+      expect(result.body).toBe(JSON.stringify(payload));
+      expect(result.headers['upstash-signature']).toBe('mocked-signature');
+      expect(result.headers['upstash-timestamp']).toBeDefined();
+    });
+
+    it('should use custom signing key and URL', () => {
+      const payload = 'test-string';
+      const result = generateTestSignature(payload, 'custom-key', 'https://custom.com/webhook');
+
+      expect(result.body).toBe('test-string');
+      expect(result.headers['upstash-signature']).toBe('mocked-signature');
+    });
+  });
+});

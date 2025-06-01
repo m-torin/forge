@@ -1,5 +1,4 @@
-import crypto from 'node:crypto';
-
+import { cryptoPolyfill } from './crypto-polyfill';
 import { devLog } from './monitoring';
 // Import from centralized modules
 import { sleep } from './time';
@@ -39,7 +38,7 @@ export function getFirstElement<T>(array: T[]): T | undefined {
  * Creates a deterministic hash of a URL for deduplication
  */
 export function hashUrl(url: string): string {
-  return crypto.createHash('md5').update(url).digest('hex');
+  return cryptoPolyfill.createHash('md5').update(url).digest('hex');
 }
 
 // Re-export from centralized time module
@@ -139,7 +138,13 @@ export { sleep } from './time';
 
 // ===== Date/Time Utilities =====
 // Re-export from centralized time module
-export { calculateElapsedTime, formatDuration, formatTimestamp, getTimeFromNow, parseTimeWindow } from './time';
+export {
+  calculateElapsedTime,
+  formatDuration,
+  formatTimestamp,
+  getTimeFromNow,
+  parseTimeWindow,
+} from './time';
 
 // ===== URL/Domain Utilities =====
 
@@ -299,7 +304,7 @@ export function cleanupOldestEntries(
 
 // ===== Validation Utilities =====
 
-// Re-export from centralized validation module  
+// Re-export from centralized validation module
 export { extractPayload, validatePayload } from './validation';
 
 // ===== State Machine Utilities =====

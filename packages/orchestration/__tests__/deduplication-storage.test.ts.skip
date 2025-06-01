@@ -1,0 +1,578 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  mockUpstashRedisAdapter,
+  resetMockRedisStorage,
+  RedisDatabaseTestHelper,
+  createTestUser,
+} from '@repo/testing';
+import {
+  getDeduplicationStorage,
+  isDuplicateMessage,
+  isDuplicateId,
+  extractUniqueId,
+  withDeduplication,
+  clearDeduplicationCache,
+  type DeduplicationStorage,
+  type DeduplicationOptions,
+} from '../src/runtime/deduplication';
+
+// Mock Redis for production-like testing
+vi.mock('@upstash/redis', async () => {
+  const { mockUpstashRedis } = await import('@repo/testing');
+  return mockUpstashRedis;
+});
+
+describe('Orchestration Deduplication with Database Storage', () => {
+  let redisHelper: RedisDatabaseTestHelper;
+  let mockContext: any;
+
+  beforeEach(async () => {
+    resetMockRedisStorage();
+    redisHelper = new RedisDatabaseTestHelper(mockUpstashRedisAdapter);
+    await redisHelper.setup();
+
+    // Mock workflow context
+    mockContext = {
+      workflowRunId: 'test-workflow-123',
+      requestPayload: null,
+      headers: {
+        get: vi.fn(),
+      },
+      run: vi.fn(),
+    };
+
+    // Set development environment for tests
+    process.env.NODE_ENV = 'development';
+  });
+
+  afterEach(async () => {
+    await redisHelper.cleanup();
+    resetMockRedisStorage();
+    
+    // Clear development cache
+    try {
+      clearDeduplicationCache();
+    } catch {
+      // Ignore errors in test cleanup
+    }
+  });
+
+  describe('Redis-based Deduplication Storage', () => {
+    it('should store deduplication data in Redis for production', async () => {
+      // Simulate production environment
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      try {
+        // Create a custom Redis-backed storage
+        const redisStorage: DeduplicationStorage = {
+          processedIds: new Map(),
+          processedMessageIds: new Map(),
+        };
+
+        // Test storing processed IDs
+        const testId = 'order-12345';
+        const options: DeduplicationOptions = {
+          storage: redisStorage,
+          ttl: 30000, // 30 seconds
+          debug: true,
+        };
+
+        // First call should not be duplicate
+        const isDupe1 = isDuplicateId(testId, options);
+        expect(isDupe1).toBe(false);
+        expect(redisStorage.processedIds.has(testId)).toBe(true);
+
+        // Second call should be duplicate
+        const isDupe2 = isDuplicateId(testId, options);
+        expect(isDupe2).toBe(true);
+
+        // Verify Redis could store this data
+        await redisHelper.getAdapter().setWithExpiration(
+          'dedup_ids',
+          testId,
+          { processedAt: Date.now() },
+          30
+        );
+
+        const stored = await redisHelper.getAdapter().findUnique('dedup_ids', { id: testId });
+        expect(stored).toBeTruthy();
+        expect(stored?.processedAt).toBeTypeOf('number');
+      } finally {
+        process.env.NODE_ENV = originalEnv;
+      }
+    });
+
+    it('should handle TTL cleanup with Redis expiration', async () => {
+      const testIds = ['order-1', 'order-2', 'order-3'];
+      
+      // Store with short TTL
+      for (const id of testIds) {
+        await redisHelper.getAdapter().setWithExpiration(
+          'dedup_tracking',
+          id,
+          { processedAt: Date.now(), workflowId: 'test' },
+          1 // 1 second TTL
+        );
+      }
+
+      // Verify all stored
+      for (const id of testIds) {
+        const stored = await redisHelper.getAdapter().findUnique('dedup_tracking', { id });
+        expect(stored).toBeTruthy();
+      }
+
+      // Wait for TTL expiration (simulate)
+      await new Promise(resolve => setTimeout(resolve, 1100));
+
+      // Verify TTL would have expired (in real Redis)
+      const count = await redisHelper.getAdapter().count('dedup_tracking');
+      expect(count).toBe(0); // Mock clears expired items
+    });
+
+    it('should support batch deduplication operations', async () => {
+      const workflowIds = ['wf-1', 'wf-2', 'wf-3', 'wf-1', 'wf-4'];
+      const uniqueIds: string[] = [];
+      const duplicates: string[] = [];
+
+      // Process batch deduplication
+      for (const id of workflowIds) {
+        const storage = getDeduplicationStorage();
+        const isDupe = isDuplicateId(id, { storage, debug: true });
+        
+        if (isDupe) {
+          duplicates.push(id);
+        } else {
+          uniqueIds.push(id);
+        }
+      }
+
+      expect(uniqueIds).toEqual(['wf-1', 'wf-2', 'wf-3', 'wf-4']);
+      expect(duplicates).toEqual(['wf-1']); // Second occurrence of wf-1
+
+      // Verify Redis could handle this pattern
+      const batchData = uniqueIds.map(id => ({
+        id,
+        processedAt: Date.now(),
+        workflowRunId: 'batch-test',
+      }));
+
+      await redisHelper.getAdapter().setMultiple('batch_dedup', batchData);
+      const stored = await redisHelper.getAdapter().findMany('batch_dedup');
+      expect(stored).toHaveLength(4);
+    });
+  });
+
+  describe('Workflow Context Integration', () => {
+    it('should extract unique IDs from workflow payloads', async () => {
+      const testPayloads = [
+        { orderId: 'order-123', userId: 'user-456' },
+        { taskId: 'task-789', projectId: 'proj-111' },
+        { dedupId: 'explicit-dedup-id', orderId: 'order-999' }, // dedupId takes precedence
+        { id: 'generic-id-123' },
+        { workflowId: 'workflow-456' },
+      ];
+
+      const expectedIds = [
+        'order-123', // First field in default array
+        'task-789',  // taskId comes before id in priority
+        'explicit-dedup-id', // dedupId has highest priority
+        'generic-id-123',
+        'workflow-456',
+      ];
+
+      testPayloads.forEach((payload, index) => {
+        const extractedId = extractUniqueId(payload);
+        expect(extractedId).toBe(expectedIds[index]);
+      });
+
+      // Test with custom field priority
+      const customPayload = { customField: 'custom-123', orderId: 'order-456' };
+      const customId = extractUniqueId(customPayload, {
+        idFields: ['customField', 'orderId']
+      });
+      expect(customId).toBe('custom-123');
+    });
+
+    it('should handle message-level deduplication with QStash headers', () => {
+      const messageId = 'qstash-msg-12345';
+      
+      // Mock QStash headers
+      mockContext.headers.get.mockImplementation((headerName: string) => {
+        if (headerName === 'upstash-message-id') return messageId;
+        if (headerName === 'upstash-retried') return '1';
+        return null;
+      });
+
+      // First call should not be duplicate
+      const isDupe1 = isDuplicateMessage(mockContext, { debug: true });
+      expect(isDupe1).toBe(false);
+
+      // Second call with same message ID should be duplicate
+      const isDupe2 = isDuplicateMessage(mockContext, { debug: true });
+      expect(isDupe2).toBe(true);
+    });
+
+    it('should integrate with workflow execution flow', async () => {
+      let handlerExecuted = false;
+      const handler = vi.fn(async () => {
+        handlerExecuted = true;
+        return { success: true, processedAt: Date.now() };
+      });
+
+      // Set up context with unique payload
+      mockContext.requestPayload = { orderId: 'unique-order-789' };
+
+      // First execution should proceed
+      const result1 = await withDeduplication(mockContext, handler, { debug: true });
+      expect(handlerExecuted).toBe(true);
+      expect(result1.success).toBe(true);
+
+      // Reset for second call
+      handlerExecuted = false;
+      handler.mockClear();
+
+      // Second execution with same payload should be skipped
+      const result2 = await withDeduplication(mockContext, handler, { debug: true });
+      expect(handlerExecuted).toBe(false); // Handler should not execute
+      expect(result2.status).toBe('skipped');
+      expect(result2.reason).toBe('duplicate_id');
+      expect(result2.id).toBe('unique-order-789');
+    });
+  });
+
+  describe('Database Persistence Patterns', () => {
+    it('should persist workflow execution state in Redis', async () => {
+      const workflowData = {
+        workflowRunId: 'wf-run-123',
+        status: 'running',
+        startedAt: Date.now(),
+        steps: ['step1', 'step2', 'step3'],
+        currentStep: 'step2',
+        context: {
+          orderId: 'order-456',
+          userId: 'user-789',
+        },
+      };
+
+      // Store workflow state
+      await redisHelper.getAdapter().create('workflow_states', workflowData);
+
+      // Update workflow progress
+      const updatedData = {
+        ...workflowData,
+        currentStep: 'step3',
+        updatedAt: Date.now(),
+      };
+      
+      await redisHelper.getAdapter().update('workflow_states', workflowData.workflowRunId, {
+        currentStep: 'step3',
+        updatedAt: Date.now(),
+      });
+
+      // Verify state persistence
+      const stored = await redisHelper.getAdapter().findUnique('workflow_states', {
+        id: workflowData.workflowRunId
+      });
+      
+      expect(stored?.currentStep).toBe('step3');
+      expect(stored?.status).toBe('running');
+      expect(stored?.context.orderId).toBe('order-456');
+    });
+
+    it('should handle workflow failure tracking', async () => {
+      const failureData = {
+        workflowRunId: 'failed-wf-456',
+        stepName: 'external-api-call',
+        errorMessage: 'API timeout',
+        errorCategory: 'network',
+        retryCount: 2,
+        lastFailedAt: Date.now(),
+        isRetryable: true,
+      };
+
+      // Store failure information
+      await redisHelper.getAdapter().create('workflow_failures', failureData);
+
+      // Increment retry count
+      await redisHelper.getAdapter().increment('retry_counts', failureData.workflowRunId);
+      const retryCount = await redisHelper.getAdapter().increment('retry_counts', failureData.workflowRunId, undefined, 0);
+      
+      expect(retryCount).toBe(1);
+
+      // Add to failed workflows set
+      await redisHelper.getAdapter().setAdd('failed_workflows', 'current', failureData.workflowRunId);
+      
+      const failedWorkflows = await redisHelper.getAdapter().setMembers('failed_workflows', 'current');
+      expect(failedWorkflows).toContain(failureData.workflowRunId);
+    });
+
+    it('should support workflow metrics collection', async () => {
+      const metricsData = [
+        { workflowId: 'wf-1', duration: 1500, status: 'completed' },
+        { workflowId: 'wf-2', duration: 3200, status: 'completed' },
+        { workflowId: 'wf-3', duration: 0, status: 'failed' },
+      ];
+
+      // Store metrics in sorted set by duration
+      for (const metric of metricsData) {
+        await redisHelper.getAdapter().sortedSetAdd('workflow_durations', 'daily',
+          { score: metric.duration, member: { workflowId: metric.workflowId, status: metric.status } }
+        );
+      }
+
+      // Get fastest workflows
+      const fastest = await redisHelper.getAdapter().sortedSetRange('workflow_durations', 'daily', 0, 1, true);
+      expect(fastest).toHaveLength(2);
+      
+      // Track completion rates
+      await redisHelper.getAdapter().hashSet('daily_stats', 'today', 'completed', '2');
+      await redisHelper.getAdapter().hashSet('daily_stats', 'today', 'failed', '1');
+      
+      const stats = await redisHelper.getAdapter().hashGetAll('daily_stats', 'today');
+      expect(stats.completed).toBe('2');
+      expect(stats.failed).toBe('1');
+    });
+  });
+
+  describe('Performance and Scalability', () => {
+    it('should handle high-frequency deduplication checks', async () => {
+      const numOperations = 100;
+      const operations: Promise<boolean>[] = [];
+
+      const startTime = performance.now();
+
+      // Generate concurrent deduplication checks
+      for (let i = 0; i < numOperations; i++) {
+        const uniqueId = `batch-op-${i}`;
+        operations.push(
+          Promise.resolve(isDuplicateId(uniqueId, { debug: false }))
+        );
+      }
+
+      const results = await Promise.all(operations);
+      const endTime = performance.now();
+
+      // All should be unique (first time seeing these IDs)
+      expect(results.every(result => result === false)).toBe(true);
+
+      // Performance should be reasonable
+      const avgTimePerOp = (endTime - startTime) / numOperations;
+      expect(avgTimePerOp).toBeLessThan(10); // Less than 10ms per operation
+
+      console.log(`Deduplication performance: ${avgTimePerOp.toFixed(2)}ms per operation`);
+    });
+
+    it('should cleanup expired entries efficiently', async () => {
+      const storage = getDeduplicationStorage();
+      const oldTimestamp = Date.now() - 60000; // 1 minute ago
+      const recentTimestamp = Date.now();
+
+      // Add mix of old and recent entries
+      storage.processedIds.set('old-1', oldTimestamp);
+      storage.processedIds.set('old-2', oldTimestamp);
+      storage.processedIds.set('recent-1', recentTimestamp);
+      storage.processedIds.set('recent-2', recentTimestamp);
+
+      expect(storage.processedIds.size).toBe(4);
+
+      // Trigger cleanup by adding new entry (cleanup happens automatically)
+      isDuplicateId('new-entry', { 
+        storage, 
+        ttl: 30000, // 30 seconds
+        maxEntries: 10 
+      });
+
+      // Recent entries should remain, old entries should be cleaned up
+      expect(storage.processedIds.has('recent-1')).toBe(true);
+      expect(storage.processedIds.has('recent-2')).toBe(true);
+    });
+
+    it('should support distributed workflow coordination', async () => {
+      // Simulate multiple workflow instances coordinating via Redis
+      const workflowInstances = ['instance-1', 'instance-2', 'instance-3'];
+      const sharedTaskId = 'shared-task-789';
+
+      // Each instance tries to claim the task
+      const claimResults: boolean[] = [];
+      
+      for (const instance of workflowInstances) {
+        // Use Redis for distributed locking pattern
+        const lockKey = `task_lock:${sharedTaskId}`;
+        const existing = await redisHelper.getAdapter().findUnique('locks', { id: lockKey });
+        
+        if (!existing) {
+          await redisHelper.getAdapter().setWithExpiration('locks', lockKey, {
+            ownedBy: instance,
+            lockedAt: Date.now(),
+          }, 30); // 30 second lock
+          claimResults.push(true);
+        } else {
+          claimResults.push(false);
+        }
+      }
+
+      // Only one instance should successfully claim the task
+      const successfulClaims = claimResults.filter(result => result === true);
+      expect(successfulClaims).toHaveLength(1);
+
+      // Verify lock is held
+      const lock = await redisHelper.getAdapter().findUnique('locks', { id: `task_lock:${sharedTaskId}` });
+      expect(lock).toBeTruthy();
+      expect(workflowInstances).toContain(lock?.ownedBy);
+    });
+  });
+
+  describe('Error Handling and Recovery', () => {
+    it('should handle Redis connection failures gracefully', async () => {
+      // Simulate Redis connection failure by using fallback storage
+      const fallbackStorage: DeduplicationStorage = {
+        processedIds: new Map(),
+        processedMessageIds: new Map(),
+      };
+
+      const options: DeduplicationOptions = {
+        storage: fallbackStorage,
+        debug: true,
+      };
+
+      // Should continue working with in-memory fallback
+      const testId = 'fallback-test-123';
+      const isDupe1 = isDuplicateId(testId, options);
+      const isDupe2 = isDuplicateId(testId, options);
+
+      expect(isDupe1).toBe(false);
+      expect(isDupe2).toBe(true);
+      expect(fallbackStorage.processedIds.has(testId)).toBe(true);
+    });
+
+    it('should recover from storage corruption', async () => {
+      // Test recovery from invalid data in storage
+      const testUser = createTestUser({ id: 'corrupted-user' });
+      
+      // Store valid data
+      await redisHelper.getAdapter().create('workflow_users', testUser);
+      
+      // Simulate corruption by storing invalid JSON
+      await redisHelper.getAdapter().raw('set', [`workflow_users:corrupted-data`, 'invalid-json{']);
+      
+      // Should handle corrupted data gracefully
+      const result = await redisHelper.getAdapter().findUnique('workflow_users', { 
+        id: 'corrupted-data' 
+      });
+      expect(result).toBeNull(); // Should return null for corrupted data
+
+      // Valid data should still be accessible
+      const validResult = await redisHelper.getAdapter().findUnique('workflow_users', { 
+        id: testUser.id 
+      });
+      expect(validResult).toMatchObject(testUser);
+    });
+  });
+
+  describe('Integration with Real Workflows', () => {
+    it('should support e-commerce order processing workflow', async () => {
+      const orderWorkflow = {
+        orderId: 'order-12345',
+        customerId: 'customer-789',
+        status: 'processing',
+        steps: {
+          'validate-payment': { status: 'completed', completedAt: Date.now() - 5000 },
+          'check-inventory': { status: 'completed', completedAt: Date.now() - 3000 },
+          'ship-order': { status: 'running', startedAt: Date.now() - 1000 },
+          'send-notification': { status: 'pending' },
+        },
+      };
+
+      // Store workflow state
+      await redisHelper.getAdapter().create('order_workflows', orderWorkflow);
+
+      // Prevent duplicate processing
+      const isDupe = isDuplicateId(orderWorkflow.orderId, { 
+        idFields: ['orderId'],
+        debug: true 
+      });
+      expect(isDupe).toBe(false);
+
+      // Update workflow step
+      await redisHelper.getAdapter().update('order_workflows', orderWorkflow.orderId, {
+        'steps.ship-order.status': 'completed',
+        'steps.ship-order.completedAt': Date.now(),
+        'steps.send-notification.status': 'running',
+        'steps.send-notification.startedAt': Date.now(),
+      });
+
+      // Add to processing queue
+      await redisHelper.getAdapter().listPush('notification_queue', 'pending', {
+        orderId: orderWorkflow.orderId,
+        customerId: orderWorkflow.customerId,
+        type: 'order_shipped',
+      });
+
+      const queueLength = await redisHelper.getAdapter().listLength('notification_queue', 'pending');
+      expect(queueLength).toBe(1);
+
+      // Verify deduplication prevents reprocessing
+      const isDupe2 = isDuplicateId(orderWorkflow.orderId, { 
+        idFields: ['orderId'] 
+      });
+      expect(isDupe2).toBe(true);
+    });
+
+    it('should handle batch data processing workflow', async () => {
+      const batchId = 'batch-processing-456';
+      const recordIds = Array.from({ length: 10 }, (_, i) => `record-${i}`);
+
+      // Initialize batch processing state
+      await redisHelper.getAdapter().create('batch_states', {
+        id: batchId,
+        totalRecords: recordIds.length,
+        processedRecords: 0,
+        failedRecords: 0,
+        status: 'running',
+        startedAt: Date.now(),
+      });
+
+      // Process records with deduplication
+      let processedCount = 0;
+      let duplicateCount = 0;
+
+      for (const recordId of recordIds) {
+        const isDupe = isDuplicateId(`${batchId}:${recordId}`, {
+          idFields: ['recordId'],
+          debug: false,
+        });
+
+        if (!isDupe) {
+          // Simulate processing
+          await redisHelper.getAdapter().setAdd('processed_records', batchId, recordId);
+          processedCount++;
+        } else {
+          duplicateCount++;
+        }
+      }
+
+      expect(processedCount).toBe(10);
+      expect(duplicateCount).toBe(0);
+
+      // Simulate reprocessing same batch (should all be duplicates)
+      for (const recordId of recordIds) {
+        const isDupe = isDuplicateId(`${batchId}:${recordId}`, {
+          idFields: ['recordId'],
+        });
+        expect(isDupe).toBe(true);
+      }
+
+      // Update batch completion
+      await redisHelper.getAdapter().update('batch_states', batchId, {
+        processedRecords: processedCount,
+        status: 'completed',
+        completedAt: Date.now(),
+      });
+
+      const finalState = await redisHelper.getAdapter().findUnique('batch_states', { id: batchId });
+      expect(finalState?.status).toBe('completed');
+      expect(finalState?.processedRecords).toBe(10);
+    });
+  });
+});

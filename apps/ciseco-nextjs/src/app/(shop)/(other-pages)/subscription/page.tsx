@@ -1,6 +1,7 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
 import { CheckIcon } from '@heroicons/react/24/solid';
+
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { ButtonSecondary } from '@repo/design-system/ciesco2';
 
 export interface PricingItem {
   desc: string;

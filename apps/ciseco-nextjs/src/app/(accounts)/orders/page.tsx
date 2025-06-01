@@ -1,9 +1,10 @@
-import { Link } from '@/components/Link';
-import Prices from '@/components/Prices';
-import { getOrders, type TOrder } from '@/data/data';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
 import { type Metadata } from 'next';
 import Image from 'next/image';
+
+import { Link } from '@repo/design-system/ciesco2';
+import { Prices } from '@repo/design-system/ciesco2';
+import { getOrders, route, type TOrder } from '@repo/design-system/ciesco2';
+import { ButtonSecondary } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Orders History page',
@@ -24,14 +25,14 @@ const Order = ({ order }: { order: TOrder }) => {
         </div>
         <div className="mt-3 flex gap-x-1.5 sm:mt-0">
           <ButtonSecondary
-            href={'/collections/all' as const}
+            href={route('/collections/[handle]', { handle: 'all' }) as any}
             fontSize="text-sm font-medium"
             sizeClass="py-2.5 px-4 sm:px-6"
           >
             Buy again
           </ButtonSecondary>
           <ButtonSecondary
-            href={`/orders/${order.number}` as const}
+            href={route('/orders/[number]', { number: (order.number || 0).toString() }) as any}
             fontSize="text-sm font-medium"
             sizeClass="py-2.5 px-4 sm:px-6"
           >
@@ -41,7 +42,7 @@ const Order = ({ order }: { order: TOrder }) => {
       </div>
       <div className="divide-y-neutral-200 divide-y border-t border-neutral-200 p-2 sm:p-8 dark:divide-neutral-700 dark:border-neutral-700">
         {order?.products?.map(
-          ({ id, color, featuredImage, handle, price, quantity, size, status, title }) => (
+          ({ id, color, featuredImage, handle, price, quantity, size, title }) => (
             <div key={id} className="flex py-4 first:pt-0 last:pb-0 sm:py-7">
               <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:w-20">
                 <Image

@@ -1,9 +1,10 @@
 'use client';
 
-import Header from '@/components/Header/Header';
-import Header2 from '@/components/Header/Header2';
-import { useThemeMode } from '@/hooks/useThemeMode';
 import { usePathname } from 'next/navigation';
+
+import { Header } from '@repo/design-system/ciesco2';
+import { Header2 } from '@repo/design-system/ciesco2';
+import { useThemeMode } from '@repo/design-system/ciesco2';
 
 const SiteHeader = () => {
   useThemeMode();

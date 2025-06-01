@@ -271,8 +271,9 @@ async function processEnhancedBasicWorkflow(
 
             setTimeout(() => {
               // Enhanced success/failure logic with retries
-              if (false) {
-                // Disable random failures
+              // Random failures disabled for stability
+              const shouldFail = false;
+              if (shouldFail) {
                 reject(new Error(`Enhanced task ${task.id} encountered processing error`));
               } else {
                 resolve({

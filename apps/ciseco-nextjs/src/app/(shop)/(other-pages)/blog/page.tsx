@@ -1,11 +1,12 @@
-import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';
-import SectionAds from '@/components/blog/SectionAds';
-import SectionGridPosts from '@/components/blog/SectionGridPosts';
-import SectionMagazine5 from '@/components/blog/SectionMagazine5';
-import SectionPromo2 from '@/components/SectionPromo2';
-import { getBlogPosts } from '@/data/data';
 import { type Metadata } from 'next';
 import React from 'react';
+
+import { BgGlassmorphism } from '@repo/design-system/ciesco2';
+import { SectionAds } from '@repo/design-system/ciesco2';
+import { SectionGridPosts } from '@repo/design-system/ciesco2';
+import { SectionMagazine5 } from '@repo/design-system/ciesco2';
+import { SectionPromo2 } from '@repo/design-system/ciesco2';
+import { getBlogPosts } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Explore our blog for the latest news, articles, and insights on various topics.',

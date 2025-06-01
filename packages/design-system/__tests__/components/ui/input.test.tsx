@@ -1,7 +1,7 @@
 import { render, screen } from '../../../test-utils';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Input } from '../../../components/ui/input';
+import { Input } from '../../../uix/components/ui/input';
 
 describe('Input', () => {
   it('renders correctly', () => {

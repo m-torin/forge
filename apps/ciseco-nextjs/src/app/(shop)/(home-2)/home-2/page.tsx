@@ -1,18 +1,22 @@
-import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
-import SectionMagazine5 from '@/components/blog/SectionMagazine5';
-import { Divider } from '@/components/Divider';
-import Heading from '@/components/Heading/Heading';
-import SectionCollectionSlider from '@/components/SectionCollectionSlider';
-import SectionGridFeatureItems from '@/components/SectionGridFeatureItems';
-import SectionGridMoreExplore from '@/components/SectionGridMoreExplore/SectionGridMoreExplore';
-import SectionHero3 from '@/components/SectionHero/SectionHero3';
-import SectionHowItWork from '@/components/SectionHowItWork/SectionHowItWork';
-import SectionPromo1 from '@/components/SectionPromo1';
-import SectionPromo3 from '@/components/SectionPromo3';
-import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct';
-import SectionSliderProductCard from '@/components/SectionSliderProductCard';
-import { getBlogPosts, getCollections, getGroupCollections, getProducts } from '@/data/data';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
+import {
+  BackgroundSection,
+  ButtonSecondary,
+  getBlogPosts,
+  getCollections,
+  getGroupCollections,
+  getProducts,
+  Heading,
+  SectionCollectionSlider,
+  SectionGridFeatureItems,
+  SectionGridMoreExplore,
+  SectionHero3,
+  SectionHowItWork,
+  SectionMagazine5,
+  SectionPromo1,
+  SectionPromo3,
+  SectionSliderLargeProduct,
+  SectionSliderProductCard,
+} from '@repo/design-system/ciesco2';
 
 async function PageHome2() {
   const allCollections = await getCollections();
@@ -45,7 +49,6 @@ async function PageHome2() {
 
       <div className="relative container my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
         <SectionGridFeatureItems data={products} />
-        <Divider />
         <div>
           <Heading headingDim="From the Ciseco blog">The latest news</Heading>
           <SectionMagazine5 posts={blogPosts} />
@@ -53,7 +56,6 @@ async function PageHome2() {
             <ButtonSecondary href="/blog">Show all blog articles</ButtonSecondary>
           </div>
         </div>
-        <Divider />
         <SectionPromo1 />
       </div>
     </div>

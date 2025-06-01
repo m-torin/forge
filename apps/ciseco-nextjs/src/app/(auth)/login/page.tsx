@@ -1,11 +1,12 @@
 import facebookSvg from '@/images/socials/facebook-2.svg';
 import googleSvg from '@/images/socials/google.svg';
 import twitterSvg from '@/images/socials/twitter.svg';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import Input from '@/shared/Input/Input';
 import { type Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Login page for the application',
@@ -39,9 +40,9 @@ const PageLogin = () => {
         </h1>
         <div className="mx-auto flex max-w-md flex-col gap-y-6">
           <div className="grid gap-3">
-            {loginSocials.map((item, index) => (
+            {loginSocials.map((item) => (
               <a
-                key={index}
+                key={item.name}
                 href={item.href}
                 className="flex w-full rounded-lg bg-primary-50 px-4 py-3 transition-transform hover:-translate-y-0.5 sm:px-6 dark:bg-neutral-800"
               >
@@ -79,9 +80,7 @@ const PageLogin = () => {
               </span>
               <Input className="mt-1" type="password" />
             </label>
-            <ButtonPrimary href="/" type="submit">
-              Continue
-            </ButtonPrimary>
+            <ButtonPrimary type="submit">Continue</ButtonPrimary>
           </form>
 
           {/* ==== */}

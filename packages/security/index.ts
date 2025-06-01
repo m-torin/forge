@@ -8,6 +8,9 @@ import arcjet, {
 
 import { keys } from './keys';
 
+// Re-export rate limiting functionality
+export { createRateLimiter, slidingWindow } from './rate-limit';
+
 const arcjetKey = keys().ARCJET_KEY;
 
 export const secure = async (

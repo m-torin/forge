@@ -1,27 +1,19 @@
 import { env } from '@/env';
 
-import { config, withAnalyzer } from '@repo/next-config';
-import { withLogging, withSentry } from '@repo/observability/next-config';
+import { config, withAnalyzer } from '@repo/config/next';
+import { withLogging, withSentry } from '@repo/observability/next-wrappers';
 
-import type { NextConfig } from 'next';
-
-let nextConfig: NextConfig = withLogging(config);
+let nextConfig = withLogging(config) as any;
 
 if (env.VERCEL) {
   nextConfig = withSentry(nextConfig);
 }
 
 if (env.ANALYZE === 'true') {
-  nextConfig = withAnalyzer(nextConfig);
+  nextConfig = withAnalyzer(nextConfig) as any;
 }
 
 // Configure server external packages to prevent posthog-node from being bundled on the client side
 nextConfig.serverExternalPackages = [...(nextConfig.serverExternalPackages || []), 'posthog-node'];
-
-// Enable Node.js runtime for middleware (available in Next.js 15.2 canary)
-nextConfig.experimental = {
-  ...nextConfig.experimental,
-  nodeMiddleware: true,
-};
 
 export default nextConfig;

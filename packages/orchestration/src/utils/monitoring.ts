@@ -8,8 +8,8 @@ import { Client } from '@upstash/workflow';
 import { formatTimestamp } from './time';
 import { DEFAULT_RETRIES, DEFAULT_TIMEOUTS, type RetryConfig } from './types';
 
-import type { WorkflowContext } from '@upstash/workflow';
 import type { WorkflowState, WorkflowStatus } from './types';
+import type { WorkflowContext } from '@upstash/workflow';
 
 // ===== Development Logging =====
 

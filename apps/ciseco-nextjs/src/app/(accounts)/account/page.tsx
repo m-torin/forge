@@ -1,9 +1,4 @@
-import Label from '@/components/Label/Label';
 import avatar from '@/images/users/avatar1.jpg';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import Input from '@/shared/Input/Input';
-import Select from '@/shared/Select/Select';
-import Textarea from '@/shared/Textarea/Textarea';
 import {
   Calendar01Icon,
   ImageAdd02Icon,
@@ -14,6 +9,12 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react';
 import { type Metadata } from 'next';
 import Image from 'next/image';
+
+import { Label } from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
+import { Select } from '@repo/design-system/ciesco2';
+import { Textarea } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Account page',

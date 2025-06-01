@@ -1,15 +1,16 @@
 import { imageProcessingWorkflow } from '@repo/orchestration';
+
+import { wrapWorkflow } from '../workflow-wrapper';
+
 import type { WorkflowDefinition } from '../types';
 
 const definition: WorkflowDefinition = {
   metadata: {
     id: 'image-processing',
-    title: 'Image Processing',
+    color: 'green',
     description: 'Multi-resolution image processing with filters and optimizations',
-    tags: ['media', 'etl', 'processing'],
     difficulty: 'intermediate',
     estimatedTime: '30-60 seconds',
-    color: 'green',
     features: [
       'Multiple resolution generation',
       'Various image filters (grayscale, sepia, blur, sharpen)',
@@ -19,8 +20,10 @@ const definition: WorkflowDefinition = {
       'Progress tracking for each variant',
       'Result viewer UI',
     ],
+    tags: ['media', 'etl', 'processing'],
+    title: 'Image Processing',
   },
-  
+
   defaultPayload: {
     imageId: `img-${Date.now()}`,
     imageUrl:
@@ -33,8 +36,8 @@ const definition: WorkflowDefinition = {
     },
     userId: 'user-123',
   },
-  
-  workflow: imageProcessingWorkflow,
+
+  workflow: wrapWorkflow(imageProcessingWorkflow),
 };
 
 export default definition;

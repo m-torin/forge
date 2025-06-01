@@ -1,7 +1,8 @@
-import Aside from '@/components/aside';
-import '@/styles/tailwind.css';
 import { type Metadata } from 'next';
+import '@/styles/tailwind.css';
 import { Poppins } from 'next/font/google';
+
+import { Aside } from '@repo/design-system/ciesco2';
 
 import GlobalClient from './GlobalClient';
 

@@ -1,4 +1,4 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
 
 export const metadata = {
   description: 'Account - Payments & payouts page',

@@ -140,7 +140,7 @@ export async function processParallel<T, R>(
           if (timeout) {
             operation = Promise.race([
               operation,
-              new Promise<never>((_, reject) =>
+              new Promise<never>((_resolve, reject) =>
                 setTimeout(() => reject(new Error('Operation timeout')), timeout),
               ),
             ]);
@@ -283,7 +283,7 @@ export async function executeParallel<T extends Record<string, () => Promise<any
         if (timeout) {
           op = Promise.race([
             op,
-            new Promise<never>((_, reject) =>
+            new Promise<never>((_resolve, reject) =>
               setTimeout(() => reject(new Error(`Operation ${String(name)} timed out`)), timeout),
             ),
           ]);

@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
-import { logger } from '@/lib/api-helpers';
+
+import { devLog as logger } from '@repo/orchestration';
 
 export async function GET(request: NextRequest) {
   // Create a ReadableStream for SSE
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
         try {
           // Fetch latest workflow runs
           const response = await fetch(`${request.nextUrl.origin}/api/client/logs?count=50`);
-          
+
           if (!response.ok) {
             logger.warn(`SSE: API returned ${response.status} ${response.statusText}`);
             sendEvent({

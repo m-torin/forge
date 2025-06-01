@@ -21,9 +21,6 @@ setup:
   - path: apps/studio
     project: monorepo
     config: dev
-  - path: apps/template
-    project: next-apps
-    config: phold
   - path: apps/web
     project: next-apps
     config: webapp

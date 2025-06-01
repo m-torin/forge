@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import Image from "next/image";
 
+import { flag } from "@repo/analytics/server";
 import { Link } from "@repo/internationalization/client";
 
 interface HomePageProps {
@@ -72,7 +73,7 @@ export default async function HomePage({ params }: HomePageProps) {
           : {dictionary.common?.locale || locale}
         </Text>
 
-        <div className="flex justify-center mt-10 gap-4">
+        <div className="flex justify-center mt-10 gap-4 flex-wrap">
           <ColorSchemesSwitcher />
           <Link
             href="/about"
@@ -81,6 +82,27 @@ export default async function HomePage({ params }: HomePageProps) {
           >
             {dictionary.template?.navigation?.visitAbout || "Visit About Page"}
           </Link>
+          <Link
+            href="/demo"
+            locale={locale}
+            className="inline-flex items-center px-4 py-2 border border-orange-300 dark:border-orange-600 rounded-md shadow-sm text-sm font-medium text-orange-700 dark:text-orange-200 bg-orange-50 dark:bg-orange-800 hover:bg-orange-100 dark:hover:bg-orange-700"
+          >
+            🎨 Full Demo Page
+          </Link>
+          {(await flag("FEATURES_SEARCH_DEMO")) && (
+            <Link
+              href="/search"
+              locale={locale}
+              className="inline-flex items-center px-4 py-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-800 hover:bg-blue-100 dark:hover:bg-blue-700"
+            >
+              🔍 Search Demo
+            </Link>
+          )}
+          {(await flag("FEATURES_BETA_FEATURES")) && (
+            <div className="inline-flex items-center px-4 py-2 border border-green-300 dark:border-green-600 rounded-md shadow-sm text-sm font-medium text-green-700 dark:text-green-200 bg-green-50 dark:bg-green-800">
+              🧪 Beta Features Available
+            </div>
+          )}
         </div>
       </AppShellMain>
     </AppShell>

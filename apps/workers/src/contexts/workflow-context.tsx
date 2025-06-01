@@ -1,9 +1,11 @@
 'use client';
 
+import { platformAnalytics } from '@/lib/client-analytics';
 import { useId, useToggle } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
-import { IconAlertCircle, IconCircleCheck, IconX } from '@tabler/icons-react';
 import { createContext, useContext, useEffect, useMemo, useOptimistic, useState } from 'react';
+
+import { notify } from '@repo/notifications/mantine-notifications';
+// import { auth } from '@repo/auth/client'; // TODO: Add auth when needed
 
 interface WorkflowStep {
   completedAt?: number;
@@ -189,8 +191,14 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const eventSource = new EventSource('/api/events');
 
-    eventSource.onopen = () => toggleSSE(true);
-    eventSource.onerror = () => toggleSSE(false);
+    eventSource.onopen = () => {
+      toggleSSE(true);
+      platformAnalytics.trackSSEEvent('connected');
+    };
+    eventSource.onerror = () => {
+      toggleSSE(false);
+      platformAnalytics.trackSSEEvent('error');
+    };
 
     eventSource.onmessage = ({ data }) => {
       const { type, runs: newRuns } = JSON.parse(data);
@@ -221,21 +229,39 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
 
           const prevStatus = triggeredWorkflows[endpoint]?.status;
 
-          // Show completion notification
+          // Show completion notification and track analytics
           if (prevStatus === 'running' && status !== 'running') {
-            notifications.show({
-              color: status === 'completed' ? 'green' : status === 'failed' ? 'red' : 'orange',
-              icon:
-                status === 'completed' ? (
-                  <IconCircleCheck />
-                ) : status === 'failed' ? (
-                  <IconX />
-                ) : (
-                  <IconAlertCircle />
-                ),
-              message: `${endpoint} has ${status}`,
-              title: `Workflow ${status}`,
+            // Extract workflow type
+            const workflowType = endpoint.split('/').pop() || 'unknown';
+
+            // Track workflow completion as platform event
+            platformAnalytics.track('workflow.completed', {
+              completedSteps,
+              duration:
+                run.workflowRunCompletedAt && run.workflowRunCreatedAt
+                  ? run.workflowRunCompletedAt - run.workflowRunCreatedAt
+                  : undefined,
+              endpoint,
+              status,
+              steps: totalSteps,
+              workflowRunId: run.workflowRunId,
+              workflowType,
             });
+
+            // Use centralized notification system
+            if (status === 'completed') {
+              notify.success(`${endpoint} has completed successfully`, {
+                title: 'Workflow Completed',
+              });
+            } else if (status === 'failed') {
+              notify.error(`${endpoint} has failed`, {
+                title: 'Workflow Failed',
+              });
+            } else if (status === 'cancelled') {
+              notify.warning(`${endpoint} was cancelled`, {
+                title: 'Workflow Cancelled',
+              });
+            }
           }
 
           updates[endpoint] = {
@@ -256,11 +282,22 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     return () => {
       eventSource.close();
       toggleSSE(false);
+      platformAnalytics.trackSSEEvent('disconnected');
     };
   }, [triggeredWorkflows, uniqueId, toggleSSE]);
 
   const triggerWorkflow = async (endpoint: string, payload: any) => {
     setLoading(endpoint, true);
+
+    // Extract workflow type from endpoint
+    const workflowType = endpoint.split('/').pop() || 'unknown';
+
+    // Track workflow trigger as user action
+    platformAnalytics.trackUserAction('trigger', {
+      endpoint,
+      hasCustomPayload: !!payload,
+      workflowType,
+    });
 
     // Optimistic update
     addOptimisticWorkflow({
@@ -292,16 +329,12 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
           },
         }));
 
-        notifications.show({
-          color: 'blue',
-          message: `${endpoint.split('/').pop()} is now running`,
-          title: 'Workflow started',
+        notify.info(`${endpoint.split('/').pop()} is now running`, {
+          title: 'Workflow Started',
         });
       }
     } catch (error) {
-      notifications.show({
-        color: 'red',
-        message: error instanceof Error ? error.message : 'Unknown error',
+      notify.error(error instanceof Error ? error.message : 'Unknown error', {
         title: 'Failed to trigger workflow',
       });
     } finally {
@@ -384,16 +417,12 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (response.ok) {
-        notifications.show({
-          color: 'green',
-          message: `Successfully cancelled workflow ${workflowRunId}`,
-          title: 'Workflow cancelled',
+        notify.success(`Successfully cancelled workflow ${workflowRunId}`, {
+          title: 'Workflow Cancelled',
         });
       }
     } catch (error) {
-      notifications.show({
-        color: 'red',
-        message: error instanceof Error ? error.message : 'Unknown error',
+      notify.error(error instanceof Error ? error.message : 'Unknown error', {
         title: 'Failed to cancel workflow',
       });
     }
@@ -408,16 +437,12 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (response.ok) {
-        notifications.show({
-          color: 'green',
-          message: `Successfully notified workflows waiting for ${eventId}`,
-          title: 'Event sent',
+        notify.success(`Successfully notified workflows waiting for ${eventId}`, {
+          title: 'Event Sent',
         });
       }
     } catch (error) {
-      notifications.show({
-        color: 'red',
-        message: error instanceof Error ? error.message : 'Invalid JSON payload',
+      notify.error(error instanceof Error ? error.message : 'Invalid JSON payload', {
         title: 'Failed to send event',
       });
     }

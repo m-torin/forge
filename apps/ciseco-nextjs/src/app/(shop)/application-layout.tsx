@@ -1,10 +1,13 @@
-import AsideProductQuickView from '@/components/aside-product-quickview';
-import AsideSidebarCart from '@/components/aside-sidebar-cart';
-import AsideSidebarNavigation from '@/components/aside-sidebar-navigation';
-import Header from '@/components/Header/Header';
-import Footer from '@/shared/Footer/Footer';
-import 'rc-slider/assets/index.css';
 import React, { type ReactNode } from 'react';
+
+import { AsideProductQuickView } from '@repo/design-system/ciesco2';
+import { AsideSidebarCart } from '@repo/design-system/ciesco2';
+import { AsideSidebarNavigation } from '@repo/design-system/ciesco2';
+import { Header } from '@repo/design-system/ciesco2';
+
+import 'rc-slider/assets/index.css';
+
+import { Footer } from '@repo/design-system/ciesco2';
 
 interface ComponentProps {
   children: ReactNode;

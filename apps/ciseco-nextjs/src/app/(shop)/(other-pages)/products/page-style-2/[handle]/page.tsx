@@ -1,17 +1,22 @@
-import AccordionInfo from '@/components/AccordionInfo';
-import AddToCardButton from '@/components/AddToCardButton';
-import { Divider } from '@/components/Divider';
-import LikeSaveBtns from '@/components/LikeSaveBtns';
-import NcInputNumber from '@/components/NcInputNumber';
-import SectionSliderProductCard from '@/components/SectionSliderProductCard';
-import { getProductDetailByHandle, getProductReviews, getProducts } from '@/data/data';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import NcImage from '@/shared/NcImage/NcImage';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ShoppingBag03Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
+
+import { AccordionInfo } from '@repo/design-system/ciesco2';
+import { AddToCardButton } from '@repo/design-system/ciesco2';
+import { Divider } from '@repo/design-system/ciesco2';
+import { LikeSaveBtns } from '@repo/design-system/ciesco2';
+import { NcInputNumber } from '@repo/design-system/ciesco2';
+import { SectionSliderProductCard } from '@repo/design-system/ciesco2';
+import {
+  getProductDetailByHandle,
+  getProductReviews,
+  getProducts,
+} from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { NcImage } from '@repo/design-system/ciesco2';
 
 import Policy from '../../Policy';
 import ProductOptions from '../../ProductOptions';

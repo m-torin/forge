@@ -1,0 +1,298 @@
+import { describe, expect, it, vi } from 'vitest';
+
+import { batchProcessor, createBatchProcessor } from '../../../src/runtime/features/batch-processing';
+
+
+describe('Batch Processing', () => {
+  describe('batchProcessor', () => {
+    it('should process items in batches', async () => {
+      const items = Array.from({ length: 10 }, (_, i) => i);
+      const processor = vi.fn().mockResolvedValue('processed');
+
+      const results = await batchProcessor(items, processor, { batchSize: 3 });
+
+      expect(processor).toHaveBeenCalledTimes(10);
+      expect(results).toHaveLength(10);
+      expect(results.every(r => r === 'processed')).toBe(true);
+    });
+
+    it('should respect batch size', async () => {
+      const items = Array.from({ length: 10 }, (_, i) => i);
+      const processedBatches: number[][] = [];
+      
+      const processor = vi.fn().mockImplementation(async (item, index, batch) => {
+        if (!processedBatches[Math.floor(index / 3)]) {
+          processedBatches[Math.floor(index / 3)] = [];
+        }
+        processedBatches[Math.floor(index / 3)].push(item);
+        return `processed-${item}`;
+      });
+
+      await batchProcessor(items, processor, { batchSize: 3 });
+
+      expect(processedBatches).toHaveLength(4); // 3 batches of 3, 1 batch of 1
+      expect(processedBatches[0]).toEqual([0, 1, 2]);
+      expect(processedBatches[1]).toEqual([3, 4, 5]);
+      expect(processedBatches[2]).toEqual([6, 7, 8]);
+      expect(processedBatches[3]).toEqual([9]);
+    });
+
+    it('should handle concurrent processing', async () => {
+      const items = Array.from({ length: 20 }, (_, i) => i);
+      const activeProcessing = new Set<number>();
+      let maxConcurrent = 0;
+
+      const processor = vi.fn().mockImplementation(async (item) => {
+        activeProcessing.add(item);
+        maxConcurrent = Math.max(maxConcurrent, activeProcessing.size);
+        await new Promise(resolve => setTimeout(resolve, 10));
+        activeProcessing.delete(item);
+        return `processed-${item}`;
+      });
+
+      await batchProcessor(items, processor, { batchSize: 5, concurrency: 3 });
+
+      expect(processor).toHaveBeenCalledTimes(20);
+      expect(maxConcurrent).toBeLessThanOrEqual(3);
+    });
+
+    it('should handle errors with default strategy', async () => {
+      const items = [1, 2, 3, 4, 5];
+      const processor = vi.fn()
+        .mockResolvedValueOnce('ok-1')
+        .mockRejectedValueOnce(new Error('Failed'))
+        .mockResolvedValueOnce('ok-3')
+        .mockResolvedValueOnce('ok-4')
+        .mockResolvedValueOnce('ok-5');
+
+      await expect(
+        batchProcessor(items, processor, { batchSize: 2 })
+      ).rejects.toThrow('Failed');
+    });
+
+    it('should continue on error when configured', async () => {
+      const items = [1, 2, 3, 4, 5];
+      const processor = vi.fn()
+        .mockResolvedValueOnce('ok-1')
+        .mockRejectedValueOnce(new Error('Failed'))
+        .mockResolvedValueOnce('ok-3')
+        .mockResolvedValueOnce('ok-4')
+        .mockResolvedValueOnce('ok-5');
+
+      const results = await batchProcessor(items, processor, {
+        batchSize: 2,
+        onError: 'continue',
+      });
+
+      expect(results).toHaveLength(5);
+      expect(results[0]).toBe('ok-1');
+      expect(results[1]).toBeInstanceOf(Error);
+      expect(results[2]).toBe('ok-3');
+    });
+
+    it('should collect errors when configured', async () => {
+      const items = [1, 2, 3, 4, 5];
+      const processor = vi.fn()
+        .mockResolvedValueOnce('ok-1')
+        .mockRejectedValueOnce(new Error('Failed-2'))
+        .mockResolvedValueOnce('ok-3')
+        .mockRejectedValueOnce(new Error('Failed-4'))
+        .mockResolvedValueOnce('ok-5');
+
+      const results = await batchProcessor(items, processor, {
+        batchSize: 2,
+        onError: 'collect',
+      });
+
+      expect(results.successes).toHaveLength(3);
+      expect(results.errors).toHaveLength(2);
+      expect(results.errors[0].item).toBe(2);
+      expect(results.errors[1].item).toBe(4);
+    });
+
+    it('should call progress callback', async () => {
+      const items = Array.from({ length: 10 }, (_, i) => i);
+      const processor = vi.fn().mockResolvedValue('processed');
+      const onProgress = vi.fn();
+
+      await batchProcessor(items, processor, {
+        batchSize: 3,
+        onProgress,
+      });
+
+      expect(onProgress).toHaveBeenCalled();
+      expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({
+        percentage: expect.any(Number),
+        processed: expect.any(Number),
+        total: 10,
+      }));
+    });
+
+    it('should retry failed items', async () => {
+      const items = [1, 2, 3];
+      let attempts = 0;
+      const processor = vi.fn().mockImplementation(async (item) => {
+        if (item === 2 && attempts < 2) {
+          attempts++;
+          throw new Error('Retry me');
+        }
+        return `processed-${item}`;
+      });
+
+      const results = await batchProcessor(items, processor, {
+        batchSize: 2,
+        retries: 3,
+        retryDelay: 10,
+      });
+
+      expect(results).toEqual(['processed-1', 'processed-2', 'processed-3']);
+      expect(processor).toHaveBeenCalledTimes(5); // 3 items + 2 retries for item 2
+    });
+  });
+
+  describe('createBatchProcessor', () => {
+    it('should create a reusable batch processor', async () => {
+      const processor = createBatchProcessor<number, string>({
+        batchSize: 2,
+        concurrency: 1,
+      });
+
+      const handler = vi.fn().mockImplementation(async (n) => `num-${n}`);
+      const results = await processor([1, 2, 3, 4, 5], handler);
+
+      expect(results).toEqual(['num-1', 'num-2', 'num-3', 'num-4', 'num-5']);
+    });
+
+    it('should allow overriding config per call', async () => {
+      const processor = createBatchProcessor<number, string>({
+        batchSize: 2,
+        onError: 'stop',
+      });
+
+      const handler = vi.fn()
+        .mockResolvedValueOnce('ok')
+        .mockRejectedValueOnce(new Error('Failed'))
+        .mockResolvedValueOnce('ok2');
+
+      const results = await processor([1, 2, 3], handler, {
+        onError: 'continue',
+      });
+
+      expect(results).toHaveLength(3);
+      expect(results[1]).toBeInstanceOf(Error);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle empty array', async () => {
+      const processor = vi.fn();
+      const results = await batchProcessor([], processor, { batchSize: 5 });
+
+      expect(results).toEqual([]);
+      expect(processor).not.toHaveBeenCalled();
+    });
+
+    it('should handle batch size larger than array', async () => {
+      const items = [1, 2, 3];
+      const processor = vi.fn().mockResolvedValue('ok');
+
+      const results = await batchProcessor(items, processor, { batchSize: 10 });
+
+      expect(processor).toHaveBeenCalledTimes(3);
+      expect(results).toEqual(['ok', 'ok', 'ok']);
+    });
+
+    it('should handle batch size of 1', async () => {
+      const items = [1, 2, 3];
+      const processor = vi.fn().mockImplementation(async (n) => `num-${n}`);
+
+      const results = await batchProcessor(items, processor, { batchSize: 1 });
+
+      expect(processor).toHaveBeenCalledTimes(3);
+      expect(results).toEqual(['num-1', 'num-2', 'num-3']);
+    });
+
+    it('should validate batch size', async () => {
+      const items = [1, 2, 3];
+      const processor = vi.fn();
+
+      await expect(
+        batchProcessor(items, processor, { batchSize: 0 })
+      ).rejects.toThrow('Batch size must be greater than 0');
+
+      await expect(
+        batchProcessor(items, processor, { batchSize: -1 })
+      ).rejects.toThrow('Batch size must be greater than 0');
+    });
+
+    it('should validate concurrency', async () => {
+      const items = [1, 2, 3];
+      const processor = vi.fn();
+
+      await expect(
+        batchProcessor(items, processor, { batchSize: 2, concurrency: 0 })
+      ).rejects.toThrow('Concurrency must be greater than 0');
+    });
+  });
+
+  describe('performance', () => {
+    it('should process large batches efficiently', async () => {
+      const items = Array.from({ length: 1000 }, (_, i) => i);
+      const processor = vi.fn().mockResolvedValue('ok');
+
+      const start = Date.now();
+      await batchProcessor(items, processor, {
+        batchSize: 100,
+        concurrency: 10,
+      });
+      const duration = Date.now() - start;
+
+      expect(processor).toHaveBeenCalledTimes(1000);
+      expect(duration).toBeLessThan(1000); // Should complete in under 1 second
+    });
+
+    it('should handle mixed processing times', async () => {
+      const items = Array.from({ length: 20 }, (_, i) => i);
+      const processor = vi.fn().mockImplementation(async (item) => {
+        // Simulate varying processing times
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 50));
+        return `processed-${item}`;
+      });
+
+      const results = await batchProcessor(items, processor, {
+        batchSize: 5,
+        concurrency: 3,
+      });
+
+      expect(results).toHaveLength(20);
+      expect(results.every(r => typeof r === 'string')).toBe(true);
+    });
+  });
+
+  describe('abort handling', () => {
+    it('should support aborting batch processing', async () => {
+      const items = Array.from({ length: 100 }, (_, i) => i);
+      const abortController = new AbortController();
+      let processed = 0;
+
+      const processor = vi.fn().mockImplementation(async (item) => {
+        processed++;
+        if (processed === 20) {
+          abortController.abort();
+        }
+        await new Promise(resolve => setTimeout(resolve, 10));
+        return `processed-${item}`;
+      });
+
+      await expect(
+        batchProcessor(items, processor, {
+          batchSize: 5,
+          signal: abortController.signal,
+        })
+      ).rejects.toThrow('Aborted');
+
+      expect(processed).toBeGreaterThanOrEqual(20);
+      expect(processed).toBeLessThan(100);
+    });
+  });
+});

@@ -1,6 +1,5 @@
-import { TooltipProvider } from '@repo/design-system/components/ui/tooltip';
-import { ThemeProvider } from '@repo/design-system/providers/theme';
-import { MantineProvider } from '@repo/design-system/providers/mantine-provider';
+import { TooltipProvider } from '@repo/design-system/uix';
+import { ThemeProvider, MantineProvider } from '@repo/design-system/uix';
 import { withThemeByClassName } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/nextjs';
 import { withAuthMock } from '@repo/auth/mocks/storybook-decorator';

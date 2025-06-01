@@ -18,3 +18,28 @@ export const AnalyticsProvider = ({ children }: AnalyticsProviderProps) => (
     {NEXT_PUBLIC_GA_MEASUREMENT_ID && <GoogleAnalytics gaId={NEXT_PUBLIC_GA_MEASUREMENT_ID} />}
   </PostHogProvider>
 );
+
+// Export feature flag functions (client-safe versions)
+export { flag, flags, useFlag } from './flags-client';
+export { FLAGS } from './types/flags';
+
+// Export flag helper functions
+export {
+  getAIFlags,
+  getAnalyticsFlags,
+  getAuthFlags,
+  getPaymentFlags,
+  getUIFlags,
+} from './flag-helpers';
+
+// Re-export analytics functions
+export { analytics } from './posthog/client';
+
+// Export types separately for packages to avoid circular deps
+export type * from './types/flags';
+
+// Export Vercel Toolbar components
+export { Toolbar } from './components/toolbar';
+export { ToolbarProvider } from './toolbar-provider';
+export { withToolbar } from './lib/toolbar';
+export { getFlags } from './access';

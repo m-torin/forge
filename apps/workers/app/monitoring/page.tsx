@@ -28,7 +28,6 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { useDisclosure, useSet } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import {
   IconAlertCircle,
   IconBell,
@@ -46,6 +45,8 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+
+import { notify } from '@repo/notifications/mantine-notifications';
 
 export default function MonitoringPage() {
   const {
@@ -71,9 +72,7 @@ export default function MonitoringPage() {
       await notifyWorkflow(selectedWaiter.eventId, JSON.parse(notifyPayload));
       closeNotifyModal();
     } catch (error) {
-      notifications.show({
-        color: 'red',
-        message: error instanceof Error ? error.message : 'Invalid JSON payload',
+      notify.error(error instanceof Error ? error.message : 'Invalid JSON payload', {
         title: 'Failed to send event',
       });
     }
@@ -199,11 +198,11 @@ export default function MonitoringPage() {
                     <Card key={run.workflowRunId} shadow="sm" withBorder p="sm" radius="md">
                       <LoadingOverlay visible={loading.get(run.workflowRunId) || false} />
 
-                      <Group 
-                        justify="space-between" 
-                        mb={isExpanded ? 'md' : 0}
-                        style={{ cursor: 'pointer' }}
+                      <Group
                         onClick={() => toggleRunExpanded(run.workflowRunId)}
+                        style={{ cursor: 'pointer' }}
+                        justify="space-between"
+                        mb={isExpanded ? 'md' : 0}
                       >
                         <Group>
                           <ActionIcon
@@ -231,12 +230,12 @@ export default function MonitoringPage() {
                                 <CopyButton value={run.workflowRunId}>
                                   {({ copied, copy }) => (
                                     <Tooltip label={copied ? 'Copied!' : 'Copy ID'}>
-                                      <ActionIcon 
+                                      <ActionIcon
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           copy();
-                                        }} 
-                                        size="xs" 
+                                        }}
+                                        size="xs"
                                         variant="subtle"
                                       >
                                         <IconCopy size={12} />

@@ -1,5 +1,6 @@
 import { type NextMiddleware, NextResponse } from "next/server";
 
+import { createAuthMiddleware } from "@repo/auth/server-utils";
 import { internationalizationMiddleware } from "@repo/internationalization/middleware";
 import { parseError } from "@repo/observability/error";
 import { secure } from "@repo/security";
@@ -22,14 +23,58 @@ const securityHeaders = env.FLAGS_SECRET
   ? noseconeMiddleware(noseconeOptionsWithToolbar)
   : noseconeMiddleware(noseconeOptions);
 
+// Create auth middleware with API key support
+const authMiddleware = createAuthMiddleware({
+  apiKeyHeaders: ["x-api-key"],
+  publicApiRoutes: ["/api/auth"],
+  publicWebRoutes: [
+    "/sign-in",
+    "/sign-up",
+    "/",
+    "/_next",
+    "/favicon.ico",
+    "/.well-known",
+    "/about",
+    "/search",
+    "/shop",
+    "/apple-icon.png",
+    "/icon.png",
+    "/opengraph-image.png",
+    "/robots.txt",
+    "/sitemap.xml",
+  ],
+  redirectPath: "/sign-in",
+});
+
 const middleware: NextMiddleware = async (request) => {
-  // Handle internationalization
+  // Apply i18n middleware first to handle URL rewriting
   const i18nResponse = internationalizationMiddleware(request);
+
+  // If i18n middleware returns a response, it means it's either:
+  // 1. A redirect (e.g., / -> /en)
+  // 2. A rewrite (e.g., /about -> /en/about)
+  // We should return this response to let Next.js handle the rewrite/redirect
+  if (i18nResponse) {
+    // For rewrites, the middleware continues to process with the rewritten URL
+    // For redirects, we return immediately
+    const isRedirect = i18nResponse.status >= 300 && i18nResponse.status < 400;
+    if (isRedirect) {
+      return i18nResponse;
+    }
+  }
+
+  // Check auth after i18n processing
+  const authResponse = await authMiddleware()(request);
+  // If auth middleware redirects or blocks, return its response
+  if (authResponse.status !== 200 || authResponse.headers.get("Location")) {
+    return authResponse;
+  }
+
+  // If i18n returned a rewrite response, return it now after auth check
   if (i18nResponse) {
     return i18nResponse;
   }
 
-  // Apply security headers
   if (!env.ARCJET_KEY) {
     return securityHeaders();
   }

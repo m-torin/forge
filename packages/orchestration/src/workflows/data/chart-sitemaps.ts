@@ -4,16 +4,14 @@ import type { WorkflowContext } from '@upstash/workflow';
 
 /**
  * Chart Sitemaps Workflow
- * 
+ *
  * A workflow for processing chart sitemaps
  */
 export interface ChartSitemapsPayload {
   message?: string;
 }
 
-export async function chartSitemapsWorkflow(
-  context: WorkflowContext<ChartSitemapsPayload>
-) {
+export async function chartSitemapsWorkflow(context: WorkflowContext<ChartSitemapsPayload>) {
   const { message = 'Hello World' } = context.requestPayload || {};
 
   // Log the start of the workflow
@@ -31,11 +29,11 @@ export async function chartSitemapsWorkflow(
 
   // Return the result
   return {
-    status: 'success' as const,
     data: result,
     metadata: {
-      workflowRunId: context.workflowRunId,
       timestamp: new Date().toISOString(),
+      workflowRunId: context.workflowRunId,
     },
+    status: 'success' as const,
   };
 }

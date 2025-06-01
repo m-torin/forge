@@ -1,0 +1,31 @@
+{
+  "name": "@repo/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./typescript": "./typescript/",
+    "./typescript/*": "./typescript/*",
+    "./next": "./next/index.ts",
+    "./next/keys": "./next/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@next/bundle-analyzer": "15.4.0-canary.42",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^6.8.2",
+    "@t3-oss/env-core": "catalog:",
+    "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/eslint": "^9.6.1",
+    "eslint": "catalog:",
+    "next": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:"
+  }
+}

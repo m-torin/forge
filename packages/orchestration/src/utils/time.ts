@@ -133,7 +133,7 @@ export function createTimeoutPromise<T = never>(
   ms: number,
   message = 'Operation timed out',
 ): Promise<T> {
-  return new Promise<T>((_, reject) => {
+  return new Promise<T>((_resolve, reject) => {
     setTimeout(() => reject(new Error(message)), ms);
   });
 }

@@ -42,3 +42,4 @@ export const PostHogProvider = (properties: Omit<PostHogProviderProps, 'client'>
 };
 
 export { usePostHog as useAnalytics } from 'posthog-js/react';
+export { default as analytics } from 'posthog-js';

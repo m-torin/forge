@@ -1,6 +1,7 @@
 # Workflow Definitions
 
-This directory contains local workflow definitions for the workers app. Each workflow definition is a self-contained module that:
+This directory contains local workflow definitions for the workers app. Each workflow definition is
+a self-contained module that:
 
 1. Imports the actual workflow implementation from `@repo/orchestration`
 2. Provides local metadata and configuration
@@ -29,19 +30,19 @@ Each workflow definition exports an object with the following structure:
 export const workflowDefinition = {
   // Unique identifier
   id: string,
-  
+
   // Display name
   name: string,
-  
+
   // Description
   description: string,
-  
+
   // Version
   version: string,
-  
+
   // The actual workflow handler from @repo/orchestration
   handler: WorkflowFunction,
-  
+
   // UI/documentation metadata
   metadata: {
     category: string,
@@ -52,10 +53,10 @@ export const workflowDefinition = {
     features: string[],
     limitations?: string[]
   },
-  
+
   // Default payload for testing
   defaultPayload: WorkflowPayload,
-  
+
   // Runtime configuration
   config: {
     retries: number,
@@ -63,10 +64,10 @@ export const workflowDefinition = {
     queueConcurrency: number,
     enableDeduplication: boolean
   },
-  
+
   // Input validation schema
   inputSchema: JSONSchema,
-  
+
   // Output schema (optional)
   outputSchema?: JSONSchema
 }
@@ -75,12 +76,14 @@ export const workflowDefinition = {
 ## Available Workflows
 
 ### Basic Workflow (`basic-workflow`)
+
 - **Category**: Examples
 - **Description**: Demonstrates core Upstash Workflow patterns
 - **Features**: Sequential processing, parallel execution, priority sorting, approval gates
 - **Use Cases**: Task queues, background jobs, batch processing
 
 ### Kitchen Sink Workflow (`kitchen-sink-workflow`)
+
 - **Category**: Examples
 - **Description**: Comprehensive workflow demonstrating ALL features
 - **Features**: All workflow methods, QStash features, advanced patterns
@@ -88,6 +91,7 @@ export const workflowDefinition = {
 - **Use Cases**: Learning, testing, feature exploration
 
 ### Image Processing Workflow (`image-processing-workflow`)
+
 - **Category**: Media
 - **Description**: Process images with multiple resolutions and filters
 - **Features**: Multi-resolution, filters, format conversion, thumbnails
@@ -97,6 +101,7 @@ export const workflowDefinition = {
 ## Using Workflow Definitions
 
 ### Import a specific workflow:
+
 ```typescript
 import { basicWorkflow } from '@/workflows';
 
@@ -108,6 +113,7 @@ const payload = basicWorkflow.defaultPayload;
 ```
 
 ### Get all workflows:
+
 ```typescript
 import { workflowRegistry, listWorkflows } from '@/workflows';
 
@@ -119,6 +125,7 @@ const list = listWorkflows();
 ```
 
 ### Get workflows by category or tag:
+
 ```typescript
 import { getWorkflowsByCategory, getWorkflowsByTag } from '@/workflows';
 
@@ -140,6 +147,7 @@ To add a new workflow:
 5. Export from `workflows/index.ts`
 
 Example:
+
 ```typescript
 // workflows/your-workflow/definition.ts
 import { yourWorkflow, type YourWorkflowPayload } from '@repo/orchestration';
@@ -161,13 +169,10 @@ import { serve } from '@upstash/workflow/nextjs';
 import { withEnhancedContext } from '@repo/orchestration';
 import { workflowDefinition } from '@/workflows/your-workflow/definition';
 
-export const { POST } = serve(
-  withEnhancedContext(workflowDefinition.handler),
-  {
-    retries: workflowDefinition.config.retries,
-    // ... other config
-  }
-);
+export const { POST } = serve(withEnhancedContext(workflowDefinition.handler), {
+  retries: workflowDefinition.config.retries,
+  // ... other config
+});
 ```
 
 ## Testing Workflows
@@ -179,7 +184,7 @@ Each workflow includes a default payload for testing:
 const result = await fetch('/api/workflows/basic', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(basicWorkflow.defaultPayload)
+  body: JSON.stringify(basicWorkflow.defaultPayload),
 });
 ```
 

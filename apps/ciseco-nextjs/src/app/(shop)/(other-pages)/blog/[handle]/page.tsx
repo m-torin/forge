@@ -1,16 +1,17 @@
-import PostCard1 from '@/components/blog/PostCard1';
-import { Divider } from '@/components/Divider';
-import { getBlogPosts, getBlogPostsByHandle } from '@/data/data';
-import Avatar from '@/shared/Avatar/Avatar';
-import Badge from '@/shared/Badge/Badge';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
-import SocialsList from '@/shared/SocialsList/SocialsList';
-import Tag from '@/shared/Tag/Tag';
-import Textarea from '@/shared/Textarea/Textarea';
 import { type Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+
+import { PostCard1 } from '@repo/design-system/ciesco2';
+import { Divider } from '@repo/design-system/ciesco2';
+import { getBlogPosts, getBlogPostsByHandle } from '@repo/design-system/ciesco2';
+import { Avatar } from '@repo/design-system/ciesco2';
+import { Badge } from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { ButtonSecondary } from '@repo/design-system/ciesco2';
+import { SocialsList } from '@repo/design-system/ciesco2';
+import { Tag } from '@repo/design-system/ciesco2';
+import { Textarea } from '@repo/design-system/ciesco2';
 
 export async function generateMetadata({
   params,

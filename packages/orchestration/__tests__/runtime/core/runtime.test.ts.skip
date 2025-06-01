@@ -1,0 +1,404 @@
+import { describe, expect, it, vi } from 'vitest';
+
+import { createRuntime, WorkflowRuntime } from '../../../src/runtime/core/runtime';
+
+import type { WorkflowOptions } from '../../../src/runtime/core/workflow-builder';
+
+describe('WorkflowRuntime', () => {
+  describe('createRuntime', () => {
+    it('should create a new WorkflowRuntime instance', () => {
+      const runtime = createRuntime();
+      expect(runtime).toBeInstanceOf(WorkflowRuntime);
+    });
+
+    it('should create runtime with options', () => {
+      const runtime = createRuntime({
+        defaultRetries: 5,
+        defaultTimeout: 30000,
+        enableMetrics: true,
+      });
+      expect(runtime).toBeInstanceOf(WorkflowRuntime);
+    });
+  });
+
+  describe('WorkflowRuntime', () => {
+    let runtime: WorkflowRuntime;
+
+    beforeEach(() => {
+      runtime = new WorkflowRuntime({
+        defaultRetries: 3,
+        defaultTimeout: 10000,
+        enableMetrics: false,
+      });
+    });
+
+    describe('registerWorkflow', () => {
+      it('should register a workflow', () => {
+        const workflow = {
+          id: 'test-workflow',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        expect(runtime.getWorkflow('test-workflow')).toEqual(workflow);
+      });
+
+      it('should throw error for duplicate workflow ID', () => {
+        const workflow = {
+          id: 'test-workflow',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        expect(() => runtime.registerWorkflow(workflow)).toThrow('Workflow with ID test-workflow already registered');
+      });
+    });
+
+    describe('unregisterWorkflow', () => {
+      it('should unregister a workflow', () => {
+        const workflow = {
+          id: 'test-workflow',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        runtime.unregisterWorkflow('test-workflow');
+        expect(runtime.getWorkflow('test-workflow')).toBeUndefined();
+      });
+
+      it('should not throw when unregistering non-existent workflow', () => {
+        expect(() => runtime.unregisterWorkflow('non-existent')).not.toThrow();
+      });
+    });
+
+    describe('getWorkflow', () => {
+      it('should get a registered workflow', () => {
+        const workflow = {
+          id: 'test-workflow',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        expect(runtime.getWorkflow('test-workflow')).toEqual(workflow);
+      });
+
+      it('should return undefined for non-existent workflow', () => {
+        expect(runtime.getWorkflow('non-existent')).toBeUndefined();
+      });
+    });
+
+    describe('listWorkflows', () => {
+      it('should list all registered workflows', () => {
+        const workflow1 = {
+          id: 'workflow-1',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+        const workflow2 = {
+          id: 'workflow-2',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow1);
+        runtime.registerWorkflow(workflow2);
+
+        const workflows = runtime.listWorkflows();
+        expect(workflows).toHaveLength(2);
+        expect(workflows.map(w => w.id)).toEqual(['workflow-1', 'workflow-2']);
+      });
+
+      it('should return empty array when no workflows registered', () => {
+        expect(runtime.listWorkflows()).toEqual([]);
+      });
+    });
+
+    describe('executeWorkflow', () => {
+      it('should execute a registered workflow', async () => {
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        const result = await runtime.executeWorkflow('test-workflow', { input: 'test' });
+
+        expect(handler).toHaveBeenCalledWith(
+          expect.objectContaining({ input: 'test' })
+        );
+        expect(result).toEqual({ result: 'success' });
+      });
+
+      it('should throw error for non-existent workflow', async () => {
+        await expect(
+          runtime.executeWorkflow('non-existent', {})
+        ).rejects.toThrow('Workflow with ID non-existent not found');
+      });
+
+      it('should apply default options to workflow execution', async () => {
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        await runtime.executeWorkflow('test-workflow', {});
+
+        expect(handler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            retries: 3,
+            timeout: 10000,
+          })
+        );
+      });
+
+      it('should override default options with workflow options', async () => {
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: { retries: 5, timeout: 20000 } as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        await runtime.executeWorkflow('test-workflow', {});
+
+        expect(handler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            retries: 5,
+            timeout: 20000,
+          })
+        );
+      });
+    });
+
+    describe('middleware', () => {
+      it('should apply middleware to workflow execution', async () => {
+        const executionOrder: string[] = [];
+        
+        const middleware = vi.fn(async (context, next) => {
+          executionOrder.push('middleware-before');
+          const result = await next();
+          executionOrder.push('middleware-after');
+          return result;
+        });
+
+        const handler = vi.fn(async () => {
+          executionOrder.push('handler');
+          return { result: 'success' };
+        });
+
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.use(middleware);
+        runtime.registerWorkflow(workflow);
+        await runtime.executeWorkflow('test-workflow', {});
+
+        expect(executionOrder).toEqual([
+          'middleware-before',
+          'handler',
+          'middleware-after',
+        ]);
+      });
+
+      it('should apply multiple middleware in order', async () => {
+        const executionOrder: string[] = [];
+        
+        const middleware1 = vi.fn(async (context, next) => {
+          executionOrder.push('middleware1-before');
+          const result = await next();
+          executionOrder.push('middleware1-after');
+          return result;
+        });
+
+        const middleware2 = vi.fn(async (context, next) => {
+          executionOrder.push('middleware2-before');
+          const result = await next();
+          executionOrder.push('middleware2-after');
+          return result;
+        });
+
+        const handler = vi.fn(async () => {
+          executionOrder.push('handler');
+          return { result: 'success' };
+        });
+
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.use(middleware1);
+        runtime.use(middleware2);
+        runtime.registerWorkflow(workflow);
+        await runtime.executeWorkflow('test-workflow', {});
+
+        expect(executionOrder).toEqual([
+          'middleware1-before',
+          'middleware2-before',
+          'handler',
+          'middleware2-after',
+          'middleware1-after',
+        ]);
+      });
+    });
+
+    describe('metrics', () => {
+      it('should collect metrics when enabled', async () => {
+        const metricsRuntime = new WorkflowRuntime({
+          enableMetrics: true,
+        });
+
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        metricsRuntime.registerWorkflow(workflow);
+        await metricsRuntime.executeWorkflow('test-workflow', {});
+
+        const metrics = metricsRuntime.getMetrics();
+        expect(metrics).toBeDefined();
+        expect(metrics['test-workflow']).toBeDefined();
+        expect(metrics['test-workflow'].executions).toBe(1);
+        expect(metrics['test-workflow'].successes).toBe(1);
+        expect(metrics['test-workflow'].failures).toBe(0);
+      });
+
+      it('should track failures in metrics', async () => {
+        const metricsRuntime = new WorkflowRuntime({
+          enableMetrics: true,
+        });
+
+        const handler = vi.fn().mockRejectedValue(new Error('Test error'));
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        metricsRuntime.registerWorkflow(workflow);
+        
+        try {
+          await metricsRuntime.executeWorkflow('test-workflow', {});
+        } catch (error) {
+          // Expected error
+        }
+
+        const metrics = metricsRuntime.getMetrics();
+        expect(metrics['test-workflow'].executions).toBe(1);
+        expect(metrics['test-workflow'].successes).toBe(0);
+        expect(metrics['test-workflow'].failures).toBe(1);
+      });
+
+      it('should not collect metrics when disabled', async () => {
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        await runtime.executeWorkflow('test-workflow', {});
+
+        const metrics = runtime.getMetrics();
+        expect(Object.keys(metrics)).toHaveLength(0);
+      });
+    });
+
+    describe('error handling', () => {
+      it('should handle workflow execution errors', async () => {
+        const error = new Error('Workflow execution failed');
+        const handler = vi.fn().mockRejectedValue(error);
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow);
+        await expect(
+          runtime.executeWorkflow('test-workflow', {})
+        ).rejects.toThrow('Workflow execution failed');
+      });
+
+      it('should handle middleware errors', async () => {
+        const middleware = vi.fn(async () => {
+          throw new Error('Middleware error');
+        });
+
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.use(middleware);
+        runtime.registerWorkflow(workflow);
+        
+        await expect(
+          runtime.executeWorkflow('test-workflow', {})
+        ).rejects.toThrow('Middleware error');
+      });
+    });
+
+    describe('shutdown', () => {
+      it('should clear all workflows on shutdown', async () => {
+        const workflow1 = {
+          id: 'workflow-1',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+        const workflow2 = {
+          id: 'workflow-2',
+          handler: vi.fn(),
+          options: {} as WorkflowOptions,
+        };
+
+        runtime.registerWorkflow(workflow1);
+        runtime.registerWorkflow(workflow2);
+
+        await runtime.shutdown();
+
+        expect(runtime.listWorkflows()).toEqual([]);
+      });
+
+      it('should clear metrics on shutdown', async () => {
+        const metricsRuntime = new WorkflowRuntime({
+          enableMetrics: true,
+        });
+
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        const workflow = {
+          id: 'test-workflow',
+          handler,
+          options: {} as WorkflowOptions,
+        };
+
+        metricsRuntime.registerWorkflow(workflow);
+        await metricsRuntime.executeWorkflow('test-workflow', {});
+        await metricsRuntime.shutdown();
+
+        const metrics = metricsRuntime.getMetrics();
+        expect(Object.keys(metrics)).toHaveLength(0);
+      });
+    });
+  });
+});

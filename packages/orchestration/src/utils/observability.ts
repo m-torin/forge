@@ -11,9 +11,9 @@ import type { WorkflowContext } from '@upstash/workflow';
 // Helper to stringify and truncate large data for logging
 const formatLogData = (data: any, maxLength = 500): string => {
   if (!data) return '';
-  
+
   let formatted: string;
-  
+
   if (typeof data === 'string') {
     // If string is over 50 characters, try to parse as JSON first for better formatting
     if (data.length > 50) {
@@ -42,17 +42,17 @@ const formatLogData = (data: any, maxLength = 500): string => {
       }
     }
   }
-  
+
   // Truncate if too long
   return formatted.length > maxLength ? formatted.substring(0, maxLength) + '...' : formatted;
 };
 
 export const devLog = {
-  log: (message: string, data?: any) => {
+  log: (_message: string, _data?: any) => {
     // Disabled: only show warnings and errors
   },
 
-  info: (message: string, data?: any) => {
+  info: (_message: string, _data?: any) => {
     // Disabled: only show warnings and errors
   },
 
@@ -76,7 +76,7 @@ export const devLog = {
     }
   },
 
-  workflow: (context: WorkflowContext<any>, message: string, data?: any) => {
+  workflow: (_context: WorkflowContext<any>, _message: string, _data?: any) => {
     // Disabled: only show warnings and errors
   },
 };

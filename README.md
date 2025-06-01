@@ -24,10 +24,8 @@ Then read the [docs](https://docs.forge.com) for more information.
 
 This repository contains the following applications:
 
-- **template** (Template App) - Port **3100**
-  - Template application for creating new apps
 - **web** (Marketing Website) - Port **3200**
-  - Public marketing site with SEO optimization
+  - Public marketing site with SEO optimization and demo functionality
 - **backstage** (Admin Panel) - Port **3300**
   - Admin dashboard for user and organization management
 - **workers** (Worker Service) - Port **3400**

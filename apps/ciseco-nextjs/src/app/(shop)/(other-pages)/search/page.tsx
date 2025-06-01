@@ -1,22 +1,23 @@
-import { Divider } from '@/components/Divider';
-import HeaderFilterSection from '@/components/HeaderFilterSection';
-import ProductCard from '@/components/ProductCard';
-import SectionPromo1 from '@/components/SectionPromo1';
-import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct';
-import { getProducts } from '@/data/data';
-import ButtonCircle from '@/shared/Button/ButtonCircle';
-import Input from '@/shared/Input/Input';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { Search01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { type Metadata } from 'next';
+
+import { Divider } from '@repo/design-system/ciesco2';
+import { HeaderFilterSection } from '@repo/design-system/ciesco2';
+import { ProductCard } from '@repo/design-system/ciesco2';
+import { SectionPromo1 } from '@repo/design-system/ciesco2';
+import { SectionSliderLargeProduct } from '@repo/design-system/ciesco2';
+import { getProducts } from '@repo/design-system/ciesco2';
+import { ButtonCircle } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
 import {
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@/shared/Pagination/Pagination';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
-import { Search01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { type Metadata } from 'next';
+} from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Search page for products',
@@ -29,9 +30,7 @@ const PageSearch = async () => {
 
   return (
     <div>
-      <div
-        className="top-0 right-0 left-0 h-24 w-full bg-primary-50 2xl:h-28 dark:bg-neutral-800/20"
-      />
+      <div className="top-0 right-0 left-0 h-24 w-full bg-primary-50 2xl:h-28 dark:bg-neutral-800/20" />
       <div className="container">
         <header className="mx-auto -mt-10 flex max-w-2xl flex-col lg:-mt-7">
           <form method="post" className="relative w-full">

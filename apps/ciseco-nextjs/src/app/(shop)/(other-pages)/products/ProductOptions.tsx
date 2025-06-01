@@ -1,5 +1,6 @@
-import { type TProductItem } from '@/data/data';
 import clsx from 'clsx';
+
+import { type TProductItem } from '@repo/design-system/ciesco2';
 
 const ProductOptions = ({
   className,

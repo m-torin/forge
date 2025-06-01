@@ -1,9 +1,10 @@
-import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';
-import { Divider } from '@/components/Divider';
-import SectionClientSay from '@/components/SectionClientSay';
-import SectionPromo1 from '@/components/SectionPromo1';
 import rightImg from '@/images/hero-right1.png';
 import { type Metadata } from 'next';
+
+import { BgGlassmorphism } from '@repo/design-system/ciesco2';
+import { Divider } from '@repo/design-system/ciesco2';
+import { SectionClientSay } from '@repo/design-system/ciesco2';
+import { SectionPromo1 } from '@repo/design-system/ciesco2';
 
 import SectionFounder from './SectionFounder';
 import SectionHero from './SectionHero';

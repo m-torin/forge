@@ -1,10 +1,11 @@
-import AsideProductQuickView from '@/components/aside-product-quickview';
-import AsideSidebarCart from '@/components/aside-sidebar-cart';
-import AsideSidebarNavigation from '@/components/aside-sidebar-navigation';
-import { Divider } from '@/components/Divider';
-import Header2 from '@/components/Header/Header2';
-import Footer from '@/shared/Footer/Footer';
 import React, { type FC } from 'react';
+
+import { AsideProductQuickView } from '@repo/design-system/ciesco2';
+import { AsideSidebarCart } from '@repo/design-system/ciesco2';
+import { AsideSidebarNavigation } from '@repo/design-system/ciesco2';
+import { Divider } from '@repo/design-system/ciesco2';
+import { Header2 } from '@repo/design-system/ciesco2';
+import { Footer } from '@repo/design-system/ciesco2';
 
 import PageTab from './PageTab';
 

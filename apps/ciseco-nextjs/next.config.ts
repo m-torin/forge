@@ -1,4 +1,4 @@
-import { config } from '@repo/next-config';
+import { config } from '@repo/config/next';
 
 import type { NextConfig } from 'next';
 
@@ -27,6 +27,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Temporarily disable static exports due to Next.js 15 canary bug with parallel routes
+  output: undefined,
 };
 
 export default nextConfig;

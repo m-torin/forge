@@ -1,11 +1,12 @@
-import { Divider } from '@/components/Divider';
-import Prices from '@/components/Prices';
-import { getOrder } from '@/data/data';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
 import clsx from 'clsx';
 import { type Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+
+import { Divider } from '@repo/design-system/ciesco2';
+import { Prices } from '@repo/design-system/ciesco2';
+import { getOrder } from '@repo/design-system/ciesco2';
+import { ButtonSecondary } from '@repo/design-system/ciesco2';
 
 export async function generateMetadata({
   params,

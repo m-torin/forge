@@ -1,6 +1,6 @@
 /**
  * Workflow Definitions Registry
- * 
+ *
  * This module exports all workflow definitions available in the workers app.
  * Each workflow definition includes:
  * - The workflow handler function imported from @repo/orchestration
@@ -10,17 +10,17 @@
  */
 
 import { workflowDefinition as basicWorkflow } from './basic/definition';
-import { workflowDefinition as kitchenSinkWorkflow } from './kitchen-sink/definition';
 import { workflowDefinition as imageProcessingWorkflow } from './image-processing/definition';
+import { workflowDefinition as kitchenSinkWorkflow } from './kitchen-sink/definition';
 
 // Export individual workflow definitions
-export { basicWorkflow, kitchenSinkWorkflow, imageProcessingWorkflow };
+export { basicWorkflow, imageProcessingWorkflow, kitchenSinkWorkflow };
 
 // Export as a registry for easy iteration
 export const workflowRegistry = {
   'basic-workflow': basicWorkflow,
-  'kitchen-sink-workflow': kitchenSinkWorkflow,
   'image-processing-workflow': imageProcessingWorkflow,
+  'kitchen-sink-workflow': kitchenSinkWorkflow,
 } as const;
 
 // Export workflow IDs for type safety
@@ -33,53 +33,51 @@ export function getWorkflowDefinition(id: WorkflowId) {
 
 // Helper to list all workflows
 export function listWorkflows() {
-  return Object.values(workflowRegistry).map(workflow => ({
+  return Object.values(workflowRegistry).map((workflow) => ({
     id: workflow.id,
     name: workflow.name,
-    description: workflow.description,
     category: workflow.metadata.category,
-    tags: workflow.metadata.tags,
-    icon: workflow.metadata.icon,
     color: workflow.metadata.color,
+    description: workflow.description,
     estimatedDuration: workflow.metadata.estimatedDuration,
+    icon: workflow.metadata.icon,
+    tags: workflow.metadata.tags,
   }));
 }
 
 // Helper to get workflows by category
 export function getWorkflowsByCategory(category: string) {
   return Object.values(workflowRegistry).filter(
-    workflow => workflow.metadata.category === category
+    (workflow) => workflow.metadata.category === category,
   );
 }
 
 // Helper to get workflows by tag
 export function getWorkflowsByTag(tag: string) {
-  return Object.values(workflowRegistry).filter(
-    workflow => workflow.metadata.tags.includes(tag)
-  );
+  return Object.values(workflowRegistry).filter((workflow) => workflow.metadata.tags.includes(tag));
 }
 
 // Categories for grouping workflows in UI
 export const workflowCategories = {
-  examples: {
-    name: 'Examples',
-    description: 'Example workflows demonstrating various features',
-    icon: '📚',
-  },
-  media: {
-    name: 'Media Processing',
-    description: 'Workflows for processing images, videos, and other media',
-    icon: '🎬',
-  },
   data: {
     name: 'Data Processing',
     description: 'ETL, data transformation, and analytics workflows',
     icon: '📊',
   },
+  examples: {
+    name: 'Examples',
+    description: 'Example workflows demonstrating various features',
+    icon: '📚',
+  },
   integration: {
     name: 'Integrations',
     description: 'Workflows that integrate with external services',
     icon: '🔌',
+  },
+  media: {
+    name: 'Media Processing',
+    description: 'Workflows for processing images, videos, and other media',
+    icon: '🎬',
   },
 } as const;
 

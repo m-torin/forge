@@ -1,0 +1,545 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  createDLQHandler,
+  type DLQConfig,
+  DLQHandler,
+  type DLQMessage,
+  processDLQ,
+} from '../../../src/runtime/features/dlq-handling';
+
+describe('DLQ Handling', () => {
+  let mockStorage: Map<string, DLQMessage[]>;
+
+  beforeEach(() => {
+    mockStorage = new Map();
+  });
+
+  describe('createDLQHandler', () => {
+    it('should create a DLQ handler with default config', () => {
+      const handler = createDLQHandler();
+      expect(handler).toBeInstanceOf(DLQHandler);
+    });
+
+    it('should create a DLQ handler with custom config', () => {
+      const handler = createDLQHandler({
+        maxRetries: 5,
+        retryDelay: 1000,
+        storage: 'custom-storage',
+      });
+      expect(handler).toBeInstanceOf(DLQHandler);
+    });
+  });
+
+  describe('DLQHandler', () => {
+    let dlqHandler: DLQHandler;
+
+    beforeEach(() => {
+      dlqHandler = new DLQHandler({
+        maxRetries: 3,
+        retryDelay: 100,
+        storage: mockStorage as any,
+      });
+    });
+
+    describe('addMessage', () => {
+      it('should add a message to the DLQ', async () => {
+        const message = {
+          id: 'msg-1',
+          error: new Error('Processing failed'),
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+
+        const messages = await dlqHandler.getMessages();
+        expect(messages).toHaveLength(1);
+        expect(messages[0]).toMatchObject({
+          id: 'msg-1',
+          attempts: 0,
+          payload: { test: 'data' },
+        });
+      });
+
+      it('should add metadata to message', async () => {
+        const message = {
+          id: 'msg-1',
+          error: new Error('Processing failed'),
+          metadata: {
+            source: 'workflow-1',
+            userId: 'user-123',
+          },
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+
+        const messages = await dlqHandler.getMessages();
+        expect(messages[0].metadata).toEqual({
+          source: 'workflow-1',
+          userId: 'user-123',
+        });
+      });
+
+      it('should handle duplicate messages', async () => {
+        const message = {
+          id: 'msg-1',
+          error: new Error('Processing failed'),
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+        await dlqHandler.addMessage(message);
+
+        const messages = await dlqHandler.getMessages();
+        expect(messages).toHaveLength(1);
+      });
+    });
+
+    describe('processMessage', () => {
+      it('should process a message successfully', async () => {
+        const message = {
+          id: 'msg-1',
+          error: new Error('Initial failure'),
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+
+        const processor = vi.fn().mockResolvedValue({ success: true });
+        const result = await dlqHandler.processMessage('msg-1', processor);
+
+        expect(result).toEqual({ success: true });
+        expect(processor).toHaveBeenCalledWith({ test: 'data' });
+
+        // Message should be removed after successful processing
+        const messages = await dlqHandler.getMessages();
+        expect(messages).toHaveLength(0);
+      });
+
+      it('should retry failed messages', async () => {
+        const message = {
+          id: 'msg-1',
+          error: new Error('Initial failure'),
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+
+        const processor = vi.fn()
+          .mockRejectedValueOnce(new Error('Retry 1'))
+          .mockRejectedValueOnce(new Error('Retry 2'))
+          .mockResolvedValue({ success: true });
+
+        const result = await dlqHandler.processMessage('msg-1', processor);
+
+        expect(result).toEqual({ success: true });
+        expect(processor).toHaveBeenCalledTimes(3);
+      });
+
+      it('should move to permanent DLQ after max retries', async () => {
+        const message = {
+          id: 'msg-1',
+          error: new Error('Initial failure'),
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+
+        const processor = vi.fn().mockRejectedValue(new Error('Always fails'));
+
+        await expect(
+          dlqHandler.processMessage('msg-1', processor)
+        ).rejects.toThrow('Message msg-1 moved to permanent DLQ after 3 retries');
+
+        expect(processor).toHaveBeenCalledTimes(3);
+
+        // Check if message is in permanent DLQ
+        const permanentMessages = await dlqHandler.getPermanentDLQMessages();
+        expect(permanentMessages).toHaveLength(1);
+        expect(permanentMessages[0].id).toBe('msg-1');
+        expect(permanentMessages[0].attempts).toBe(3);
+      });
+
+      it('should handle non-existent message', async () => {
+        const processor = vi.fn();
+
+        await expect(
+          dlqHandler.processMessage('non-existent', processor)
+        ).rejects.toThrow('Message non-existent not found in DLQ');
+
+        expect(processor).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('processAll', () => {
+      it('should process all messages in DLQ', async () => {
+        const messages = [
+          {
+            id: 'msg-1',
+            error: new Error('Error 1'),
+            payload: { data: 1 },
+            timestamp: Date.now(),
+          },
+          {
+            id: 'msg-2',
+            error: new Error('Error 2'),
+            payload: { data: 2 },
+            timestamp: Date.now(),
+          },
+          {
+            id: 'msg-3',
+            error: new Error('Error 3'),
+            payload: { data: 3 },
+            timestamp: Date.now(),
+          },
+        ];
+
+        for (const msg of messages) {
+          await dlqHandler.addMessage(msg);
+        }
+
+        const processor = vi.fn().mockResolvedValue({ success: true });
+        const results = await dlqHandler.processAll(processor);
+
+        expect(results.successful).toBe(3);
+        expect(results.failed).toBe(0);
+        expect(results.details).toHaveLength(3);
+        expect(processor).toHaveBeenCalledTimes(3);
+
+        // All messages should be removed
+        const remainingMessages = await dlqHandler.getMessages();
+        expect(remainingMessages).toHaveLength(0);
+      });
+
+      it('should handle mixed success and failure', async () => {
+        const messages = [
+          {
+            id: 'msg-1',
+            error: new Error('Error 1'),
+            payload: { data: 1 },
+            timestamp: Date.now(),
+          },
+          {
+            id: 'msg-2',
+            error: new Error('Error 2'),
+            payload: { data: 2 },
+            timestamp: Date.now(),
+          },
+          {
+            id: 'msg-3',
+            error: new Error('Error 3'),
+            payload: { data: 3 },
+            timestamp: Date.now(),
+          },
+        ];
+
+        for (const msg of messages) {
+          await dlqHandler.addMessage(msg);
+        }
+
+        const processor = vi.fn()
+          .mockResolvedValueOnce({ success: true })
+          .mockRejectedValue(new Error('Always fails'));
+
+        const results = await dlqHandler.processAll(processor);
+
+        expect(results.successful).toBe(1);
+        expect(results.failed).toBe(2);
+        expect(results.details).toHaveLength(3);
+
+        // Failed messages should remain in DLQ or permanent DLQ
+        const remainingMessages = await dlqHandler.getMessages();
+        const permanentMessages = await dlqHandler.getPermanentDLQMessages();
+        expect(remainingMessages.length + permanentMessages.length).toBe(2);
+      });
+
+      it('should process with concurrency limit', async () => {
+        const messages = Array.from({ length: 10 }, (_, i) => ({
+          id: `msg-${i}`,
+          error: new Error(`Error ${i}`),
+          payload: { data: i },
+          timestamp: Date.now(),
+        }));
+
+        for (const msg of messages) {
+          await dlqHandler.addMessage(msg);
+        }
+
+        let concurrentCount = 0;
+        let maxConcurrent = 0;
+
+        const processor = vi.fn().mockImplementation(async () => {
+          concurrentCount++;
+          maxConcurrent = Math.max(maxConcurrent, concurrentCount);
+          await new Promise(resolve => setTimeout(resolve, 50));
+          concurrentCount--;
+          return { success: true };
+        });
+
+        await dlqHandler.processAll(processor, { concurrency: 3 });
+
+        expect(maxConcurrent).toBeLessThanOrEqual(3);
+        expect(processor).toHaveBeenCalledTimes(10);
+      });
+    });
+
+    describe('removeMessage', () => {
+      it('should remove a message from DLQ', async () => {
+        const message = {
+          id: 'msg-1',
+          error: new Error('Error'),
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+        await dlqHandler.removeMessage('msg-1');
+
+        const messages = await dlqHandler.getMessages();
+        expect(messages).toHaveLength(0);
+      });
+
+      it('should not throw when removing non-existent message', async () => {
+        await expect(
+          dlqHandler.removeMessage('non-existent')
+        ).resolves.not.toThrow();
+      });
+    });
+
+    describe('clearDLQ', () => {
+      it('should clear all messages from DLQ', async () => {
+        const messages = Array.from({ length: 5 }, (_, i) => ({
+          id: `msg-${i}`,
+          error: new Error(`Error ${i}`),
+          payload: { data: i },
+          timestamp: Date.now(),
+        }));
+
+        for (const msg of messages) {
+          await dlqHandler.addMessage(msg);
+        }
+
+        await dlqHandler.clearDLQ();
+
+        const remainingMessages = await dlqHandler.getMessages();
+        expect(remainingMessages).toHaveLength(0);
+      });
+
+      it('should optionally clear permanent DLQ', async () => {
+        // Add a message to permanent DLQ by failing it multiple times
+        const message = {
+          id: 'msg-1',
+          error: new Error('Error'),
+          payload: { test: 'data' },
+          timestamp: Date.now(),
+        };
+
+        await dlqHandler.addMessage(message);
+        const processor = vi.fn().mockRejectedValue(new Error('Always fails'));
+
+        try {
+          await dlqHandler.processMessage('msg-1', processor);
+        } catch {
+          // Expected to fail
+        }
+
+        // Clear including permanent DLQ
+        await dlqHandler.clearDLQ(true);
+
+        const permanentMessages = await dlqHandler.getPermanentDLQMessages();
+        expect(permanentMessages).toHaveLength(0);
+      });
+    });
+
+    describe('getStatistics', () => {
+      it('should return DLQ statistics', async () => {
+        const messages = [
+          {
+            id: 'msg-1',
+            error: new Error('Error 1'),
+            payload: { data: 1 },
+            timestamp: Date.now() - 3600000, // 1 hour ago
+          },
+          {
+            id: 'msg-2',
+            error: new Error('Error 2'),
+            payload: { data: 2 },
+            timestamp: Date.now() - 1800000, // 30 minutes ago
+          },
+          {
+            id: 'msg-3',
+            error: new Error('Error 3'),
+            payload: { data: 3 },
+            timestamp: Date.now(),
+          },
+        ];
+
+        for (const msg of messages) {
+          await dlqHandler.addMessage(msg);
+        }
+
+        const stats = await dlqHandler.getStatistics();
+
+        expect(stats.totalMessages).toBe(3);
+        expect(stats.oldestMessage).toBeDefined();
+        expect(stats.newestMessage).toBeDefined();
+        expect(stats.messagesByError).toBeDefined();
+        expect(stats.averageAge).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe('processDLQ helper', () => {
+    it('should create handler and process messages', async () => {
+      const messages = [
+        {
+          id: 'msg-1',
+          error: new Error('Error 1'),
+          payload: { data: 1 },
+          timestamp: Date.now(),
+        },
+      ];
+
+      const config: DLQConfig = {
+        maxRetries: 2,
+        retryDelay: 50,
+        storage: mockStorage as any,
+      };
+
+      const processor = vi.fn().mockResolvedValue({ success: true });
+
+      // First add messages to DLQ
+      const handler = new DLQHandler(config);
+      await handler.addMessage(messages[0]);
+
+      // Then process
+      const result = await processDLQ(processor, config);
+
+      expect(result.successful).toBe(1);
+      expect(result.failed).toBe(0);
+      expect(processor).toHaveBeenCalledWith({ data: 1 });
+    });
+  });
+
+  describe('error scenarios', () => {
+    it('should handle storage errors', async () => {
+      const errorStorage = {
+        delete: vi.fn().mockRejectedValue(new Error('Storage error')),
+        get: vi.fn().mockRejectedValue(new Error('Storage error')),
+        set: vi.fn().mockRejectedValue(new Error('Storage error')),
+      };
+
+      const handler = new DLQHandler({
+        storage: errorStorage as any,
+      });
+
+      await expect(handler.getMessages()).rejects.toThrow('Storage error');
+    });
+
+    it('should handle processor timeout', async () => {
+      const handler = new DLQHandler({
+        maxRetries: 1,
+        processorTimeout: 100,
+        retryDelay: 50,
+        storage: mockStorage as any,
+      });
+
+      const message = {
+        id: 'msg-1',
+        error: new Error('Error'),
+        payload: { test: 'data' },
+        timestamp: Date.now(),
+      };
+
+      await handler.addMessage(message);
+
+      const processor = vi.fn().mockImplementation(async () => {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return { success: true };
+      });
+
+      await expect(
+        handler.processMessage('msg-1', processor)
+      ).rejects.toThrow('Processor timeout');
+    });
+  });
+
+  describe('filtering and querying', () => {
+    it('should filter messages by age', async () => {
+      const handler = new DLQHandler({
+        storage: mockStorage as any,
+      });
+
+      const messages = [
+        {
+          id: 'old-msg',
+          error: new Error('Error'),
+          payload: { data: 1 },
+          timestamp: Date.now() - 7200000, // 2 hours ago
+        },
+        {
+          id: 'new-msg',
+          error: new Error('Error'),
+          payload: { data: 2 },
+          timestamp: Date.now() - 600000, // 10 minutes ago
+        },
+      ];
+
+      for (const msg of messages) {
+        await handler.addMessage(msg);
+      }
+
+      const oldMessages = await handler.getMessages({
+        olderThan: 3600000, // 1 hour
+      });
+
+      expect(oldMessages).toHaveLength(1);
+      expect(oldMessages[0].id).toBe('old-msg');
+    });
+
+    it('should filter messages by error type', async () => {
+      const handler = new DLQHandler({
+        storage: mockStorage as any,
+      });
+
+      const messages = [
+        {
+          id: 'msg-1',
+          error: new Error('ValidationError: Invalid input'),
+          payload: { data: 1 },
+          timestamp: Date.now(),
+        },
+        {
+          id: 'msg-2',
+          error: new Error('NetworkError: Connection failed'),
+          payload: { data: 2 },
+          timestamp: Date.now(),
+        },
+        {
+          id: 'msg-3',
+          error: new Error('ValidationError: Missing field'),
+          payload: { data: 3 },
+          timestamp: Date.now(),
+        },
+      ];
+
+      for (const msg of messages) {
+        await handler.addMessage(msg);
+      }
+
+      const validationErrors = await handler.getMessages({
+        errorPattern: /ValidationError/,
+      });
+
+      expect(validationErrors).toHaveLength(2);
+      expect(validationErrors.map(m => m.id)).toEqual(['msg-1', 'msg-3']);
+    });
+  });
+});

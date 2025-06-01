@@ -461,43 +461,6 @@ export const SignUp = () => {
 }
 ```
 
-### Collaboration/Organization Auth
-
-Handle authentication for collaborative features:
-
-```typescript title="app/api/collaboration/auth/route.ts"
-import { currentUser, getSession } from '@repo/auth/server';
-import { authenticate } from '@repo/collaboration/auth';
-
-const COLORS = [
-  'var(--color-red-500)',
-  'var(--color-orange-500)',
-  // ... more colors
-];
-
-export const POST = async () => {
-  const user = await currentUser();
-  const session = await getSession();
-
-  if (!user || !session) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
-  // Using user ID as organization ID for now
-  const orgId = user.id;
-
-  return authenticate({
-    userId: user.id,
-    orgId,
-    userInfo: {
-      name: user.name || user.email || undefined,
-      avatar: user.image || undefined,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-    },
-  });
-};
-```
-
 ### Database User Queries
 
 Access users directly from the database:
@@ -536,14 +499,14 @@ Custom user button implementation:
 'use client';
 
 import { useSession, signOut } from '../client';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from '@repo/design-system/uix';
 import { LogOut, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
+} from '@repo/design-system/uix';
 
 export const UserButton = () => {
   const session = useSession();

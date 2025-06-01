@@ -5,8 +5,8 @@ import type { WorkflowDefinition } from './types';
  */
 export async function loadWorkflow(workflowId: string): Promise<WorkflowDefinition | null> {
   try {
-    const module = await import(`./${workflowId}/definition`);
-    return module.default || null;
+    const workflowModule = await import(`./${workflowId}/definition`);
+    return workflowModule.default || null;
   } catch (error) {
     console.error(`Failed to load workflow ${workflowId}:`, error);
     return null;
@@ -23,10 +23,13 @@ export function getAvailableWorkflows(): string[] {
     try {
       // @ts-ignore - webpack magic
       const context = require.context('./', true, /^\.\/[^_][^/]*\/definition\.ts$/);
-      return context.keys().map((key: string) => {
-        const match = key.match(/^\.\/([^/]+)\/definition\.ts$/);
-        return match ? match[1] : null;
-      }).filter(Boolean) as string[];
+      return context
+        .keys()
+        .map((key: string) => {
+          const match = key.match(/^\.\/([^/]+)\/definition\.ts$/);
+          return match ? match[1] : null;
+        })
+        .filter(Boolean) as string[];
     } catch (error) {
       console.error('Failed to discover workflows:', error);
       return [];
@@ -41,7 +44,7 @@ export function getAvailableWorkflows(): string[] {
 export async function loadAllWorkflowMetadata() {
   const workflowIds = getAvailableWorkflows();
   const metadata: Record<string, any> = {};
-  
+
   for (const id of workflowIds) {
     const definition = await loadWorkflow(id);
     if (definition) {
@@ -51,6 +54,6 @@ export async function loadAllWorkflowMetadata() {
       };
     }
   }
-  
+
   return metadata;
 }

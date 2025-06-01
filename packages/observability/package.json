@@ -22,7 +22,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/config": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

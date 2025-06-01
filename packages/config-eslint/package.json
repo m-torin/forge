@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.27.0",
+    "@eslint/js": "^9.28.0",
     "@eslint/markdown": "^6.4.0",
     "@next/eslint-plugin-next": "catalog:",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
@@ -53,10 +53,10 @@
     "typescript-eslint": "^8.33.0"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@repo/config": "workspace:*",
     "@types/node": "catalog:",
     "@vitejs/plugin-react": "^4.5.0",
-    "eslint-import-resolver-typescript": "^4.4.1",
+    "eslint-import-resolver-typescript": "^4.4.2",
     "eslint-plugin-node": "^11.1.0",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -3,13 +3,13 @@ import { redirect } from 'next/navigation';
 import { type ReactNode } from 'react';
 
 import { currentUser } from '@repo/auth/server';
-import { showBetaFeature } from '@repo/feature-flags';
+import { flag, FLAGS } from '@repo/analytics/server';
 
 import { UserMenu } from './components/user-menu';
 
 export default async function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const user = await currentUser();
-  const betaFeature = await showBetaFeature();
+  const betaFeature = await flag(FLAGS.ui.betaComponents, user?.id);
 
   if (!user) {
     return redirect('/sign-in');

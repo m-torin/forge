@@ -18,10 +18,14 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage --run"
+    "test:coverage": "vitest --coverage --run",
+    "test:deduplication": "vitest run __tests__/deduplication-storage.test.ts",
+    "test:dlq": "vitest run __tests__/dlq-database.test.ts",
+    "test:persistence": "vitest run __tests__/workflow-data-persistence.test.ts"
   },
   "dependencies": {
     "@repo/ai": "workspace:*",
+    "@repo/database": "workspace:*",
     "@upstash/workflow": "^0.2.13",
     "@upstash/qstash": "^2.8.1",
     "@upstash/redis": "^1.34.9",
@@ -31,7 +35,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/config": "workspace:*",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

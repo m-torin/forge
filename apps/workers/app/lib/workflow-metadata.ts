@@ -4,29 +4,44 @@
  */
 
 export interface WorkflowMetadata {
-  id: string;
-  title: string;
+  color?: string;
   description: string;
-  tags: string[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   estimatedTime: string;
-  icon?: string;
-  color?: string;
   features: string[];
+  icon?: string;
+  id: string;
+  tags: string[];
+  title: string;
 }
 
 /**
  * Registry of all workflow metadata
  */
 export const workflowMetadata: Record<string, WorkflowMetadata> = {
+  'ai-content': {
+    id: 'ai-content',
+    color: 'violet',
+    description: 'AI-powered content generation and processing pipeline',
+    difficulty: 'intermediate',
+    estimatedTime: '30-60 seconds',
+    features: [
+      'AI model integration',
+      'Content generation and enhancement',
+      'Sentiment analysis',
+      'Auto-categorization',
+      'Multi-language support',
+    ],
+    tags: ['ai', 'content-generation', 'nlp', 'automation'],
+    title: 'AI Content Pipeline',
+  },
   basic: {
     id: 'basic',
-    title: 'Basic Workflow',
-    description: 'Enhanced task processing with parallel validation, approval workflows, and deduplication',
-    tags: ['demo', 'task-queue', 'validation', 'batch-processing'],
+    color: 'blue',
+    description:
+      'Enhanced task processing with parallel validation, approval workflows, and deduplication',
     difficulty: 'beginner',
     estimatedTime: '5-15 seconds',
-    color: 'blue',
     features: [
       'Enhanced context with utilities & deduplication',
       'Priority-based task sorting with metadata',
@@ -35,34 +50,77 @@ export const workflowMetadata: Record<string, WorkflowMetadata> = {
       'Multi-stage processing with error recovery',
       'Configurable batch processing with delays',
     ],
+    tags: ['demo', 'task-queue', 'validation', 'batch-processing'],
+    title: 'Basic Workflow',
   },
-  'kitchen-sink': {
-    id: 'kitchen-sink',
-    title: 'Kitchen Sink',
-    description: 'Comprehensive workflow demonstrating ALL features: ETL, order processing, orchestration, and patterns',
-    tags: ['demo', 'etl', 'order-processing', 'advanced', 'orchestration'],
-    difficulty: 'advanced',
-    estimatedTime: '30-90 seconds',
-    color: 'purple',
+  'chart-pdps': {
+    id: 'chart-pdps',
+    color: 'teal',
+    description: 'Process and analyze chart product detail pages',
+    difficulty: 'beginner',
+    estimatedTime: '5-10 seconds',
     features: [
-      'Complete ETL pipeline with approval gates',
-      'Order processing with fraud & inventory checks',
-      'Workflow orchestration & composition (invoke)',
-      'Enhanced context with all utilities',
-      'All context methods (run, call, sleep, waitForEvent, notify, cancel)',
-      'Multiple processing modes (etl, order, orchestration, full)',
-      'External API integrations with retries',
-      'Comprehensive error handling & notifications',
+      'Product detail page processing',
+      'Chart data extraction',
+      'Hello World demonstration',
+      'Simple workflow pattern',
     ],
+    tags: ['jollyRoger', 'etl'],
+    title: 'Chart PDPs',
+  },
+  'chart-sitemaps': {
+    id: 'chart-sitemaps',
+    color: 'cyan',
+    description: 'Process and analyze chart sitemaps for data extraction',
+    difficulty: 'beginner',
+    estimatedTime: '5-10 seconds',
+    features: [
+      'Chart sitemap processing',
+      'Data extraction',
+      'Hello World demonstration',
+      'Simple workflow pattern',
+    ],
+    tags: ['jollyRoger', 'etl'],
+    title: 'Chart Sitemaps',
+  },
+  'data-processing': {
+    id: 'data-processing',
+    color: 'indigo',
+    description: 'Large-scale data processing with streaming and batch operations',
+    difficulty: 'advanced',
+    estimatedTime: '1-5 minutes',
+    features: [
+      'Stream processing for large datasets',
+      'Parallel batch operations',
+      'Data validation and transformation',
+      'Error recovery and dead letter queue',
+      'Progress tracking and notifications',
+    ],
+    tags: ['etl', 'data-processing', 'analytics', 'batch'],
+    title: 'Data Processing',
+  },
+  'gen-copy': {
+    id: 'gen-copy',
+    color: 'pink',
+    description: 'AI-powered copy generation with SEO optimization',
+    difficulty: 'intermediate',
+    estimatedTime: '10-20 seconds',
+    features: [
+      'AI content generation',
+      'SEO optimization',
+      'Copy writing automation',
+      'Hello World demonstration',
+    ],
+    tags: ['ai', 'seo', 'etl'],
+    title: 'Generate Copy',
   },
   'image-processing': {
     id: 'image-processing',
-    title: 'Image Processing',
-    description: 'On-device image processing with Sharp: resizing, filtering, format conversion, and thumbnail generation',
-    tags: ['media', 'etl', 'image-processing', 'sharp'],
+    color: 'green',
+    description:
+      'On-device image processing with Sharp: resizing, filtering, format conversion, and thumbnail generation',
     difficulty: 'intermediate',
     estimatedTime: '10-30 seconds',
-    color: 'green',
     features: [
       'On-device processing with Sharp library',
       'Multiple resolution resizing with smart cropping',
@@ -73,47 +131,50 @@ export const workflowMetadata: Record<string, WorkflowMetadata> = {
       'Batch processing with progress tracking',
       'Metadata preservation and reporting',
     ],
+    tags: ['media', 'etl', 'image-processing', 'sharp'],
+    title: 'Image Processing',
   },
-  'data-processing': {
-    id: 'data-processing',
-    title: 'Data Processing',
-    description: 'Large-scale data processing with streaming and batch operations',
-    tags: ['etl', 'data-processing', 'analytics', 'batch'],
+  'kitchen-sink': {
+    id: 'kitchen-sink',
+    color: 'purple',
+    description:
+      'Comprehensive workflow demonstrating ALL features: ETL, order processing, orchestration, and patterns',
     difficulty: 'advanced',
-    estimatedTime: '1-5 minutes',
-    color: 'indigo',
+    estimatedTime: '30-90 seconds',
     features: [
-      'Stream processing for large datasets',
-      'Parallel batch operations',
-      'Data validation and transformation',
-      'Error recovery and dead letter queue',
-      'Progress tracking and notifications',
+      'Complete ETL pipeline with approval gates',
+      'Order processing with fraud & inventory checks',
+      'Workflow orchestration & composition (invoke)',
+      'Enhanced context with all utilities',
+      'All context methods (run, call, sleep, waitForEvent, notify, cancel)',
+      'Multiple processing modes (etl, order, orchestration, full)',
+      'External API integrations with retries',
+      'Comprehensive error handling & notifications',
     ],
+    tags: ['demo', 'etl', 'order-processing', 'advanced', 'orchestration'],
+    title: 'Kitchen Sink',
   },
-  'ai-content': {
-    id: 'ai-content',
-    title: 'AI Content Pipeline',
-    description: 'AI-powered content generation and processing pipeline',
-    tags: ['ai', 'content-generation', 'nlp', 'automation'],
-    difficulty: 'intermediate',
-    estimatedTime: '30-60 seconds',
-    color: 'violet',
+  'map-taxterm': {
+    id: 'map-taxterm',
+    color: 'lime',
+    description: 'Map and organize taxonomy terms for classification',
+    difficulty: 'beginner',
+    estimatedTime: '5-10 seconds',
     features: [
-      'AI model integration',
-      'Content generation and enhancement',
-      'Sentiment analysis',
-      'Auto-categorization',
-      'Multi-language support',
+      'Taxonomy term mapping',
+      'Classification system',
+      'Hello World demonstration',
+      'Simple workflow pattern',
     ],
+    tags: ['jollyRoger', 'etl'],
+    title: 'Map Taxonomy Terms',
   },
   'tenant-operations': {
     id: 'tenant-operations',
-    title: 'Tenant Operations',
+    color: 'orange',
     description: 'Multi-tenant SaaS operations with isolation and scaling',
-    tags: ['saas', 'multi-tenant', 'operations', 'scaling'],
     difficulty: 'advanced',
     estimatedTime: '10-30 seconds',
-    color: 'orange',
     features: [
       'Tenant isolation',
       'Resource allocation',
@@ -121,66 +182,8 @@ export const workflowMetadata: Record<string, WorkflowMetadata> = {
       'Automated scaling',
       'Billing integration',
     ],
-  },
-  'chart-sitemaps': {
-    id: 'chart-sitemaps',
-    title: 'Chart Sitemaps',
-    description: 'Process and analyze chart sitemaps for data extraction',
-    tags: ['jollyRoger', 'etl'],
-    difficulty: 'beginner',
-    estimatedTime: '5-10 seconds',
-    color: 'cyan',
-    features: [
-      'Chart sitemap processing',
-      'Data extraction',
-      'Hello World demonstration',
-      'Simple workflow pattern',
-    ],
-  },
-  'chart-pdps': {
-    id: 'chart-pdps',
-    title: 'Chart PDPs',
-    description: 'Process and analyze chart product detail pages',
-    tags: ['jollyRoger', 'etl'],
-    difficulty: 'beginner',
-    estimatedTime: '5-10 seconds',
-    color: 'teal',
-    features: [
-      'Product detail page processing',
-      'Chart data extraction',
-      'Hello World demonstration',
-      'Simple workflow pattern',
-    ],
-  },
-  'map-taxterm': {
-    id: 'map-taxterm',
-    title: 'Map Taxonomy Terms',
-    description: 'Map and organize taxonomy terms for classification',
-    tags: ['jollyRoger', 'etl'],
-    difficulty: 'beginner',
-    estimatedTime: '5-10 seconds',
-    color: 'lime',
-    features: [
-      'Taxonomy term mapping',
-      'Classification system',
-      'Hello World demonstration',
-      'Simple workflow pattern',
-    ],
-  },
-  'gen-copy': {
-    id: 'gen-copy',
-    title: 'Generate Copy',
-    description: 'AI-powered copy generation with SEO optimization',
-    tags: ['ai', 'seo', 'etl'],
-    difficulty: 'intermediate',
-    estimatedTime: '10-20 seconds',
-    color: 'pink',
-    features: [
-      'AI content generation',
-      'SEO optimization',
-      'Copy writing automation',
-      'Hello World demonstration',
-    ],
+    tags: ['saas', 'multi-tenant', 'operations', 'scaling'],
+    title: 'Tenant Operations',
   },
 };
 
@@ -189,8 +192,8 @@ export const workflowMetadata: Record<string, WorkflowMetadata> = {
  */
 export function getAllTags(): string[] {
   const tagSet = new Set<string>();
-  Object.values(workflowMetadata).forEach(workflow => {
-    workflow.tags.forEach(tag => tagSet.add(tag));
+  Object.values(workflowMetadata).forEach((workflow) => {
+    workflow.tags.forEach((tag) => tagSet.add(tag));
   });
   return Array.from(tagSet).sort();
 }
@@ -202,12 +205,12 @@ export function filterWorkflows(
   workflows: WorkflowMetadata[],
   selectedTags: string[],
 ): WorkflowMetadata[] {
-  return workflows.filter(workflow => {
+  return workflows.filter((workflow) => {
     // Tag filter (workflow must have at least one selected tag)
     if (selectedTags.length > 0) {
-      return workflow.tags.some(tag => selectedTags.includes(tag));
+      return workflow.tags.some((tag) => selectedTags.includes(tag));
     }
-    
+
     return true;
   });
 }

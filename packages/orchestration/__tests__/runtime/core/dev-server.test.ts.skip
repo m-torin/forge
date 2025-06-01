@@ -1,0 +1,400 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createDevServer, DevServer } from '../../../src/runtime/core/dev-server';
+
+
+// Mock the http module
+vi.mock('http', () => ({
+  createServer: vi.fn(() => ({
+    close: vi.fn((callback) => callback()),
+    listen: vi.fn((port, callback) => callback()),
+    on: vi.fn(),
+  })),
+}));
+
+describe('DevServer', () => {
+  let devServer: DevServer;
+  let mockHttpServer: any;
+
+  beforeEach(() => {
+    mockHttpServer = {
+      close: vi.fn((callback) => callback && callback()),
+      listen: vi.fn((port, callback) => callback()),
+      on: vi.fn(),
+    };
+    vi.mocked(require('http').createServer).mockReturnValue(mockHttpServer);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('createDevServer', () => {
+    it('should create a new DevServer instance', () => {
+      devServer = createDevServer();
+      expect(devServer).toBeInstanceOf(DevServer);
+    });
+
+    it('should create dev server with custom port', () => {
+      devServer = createDevServer({ port: 8080 });
+      expect(devServer).toBeInstanceOf(DevServer);
+    });
+
+    it('should create dev server with options', () => {
+      devServer = createDevServer({
+        enableCors: true,
+        enableLogging: true,
+        host: 'localhost',
+        port: 3001,
+      });
+      expect(devServer).toBeInstanceOf(DevServer);
+    });
+  });
+
+  describe('DevServer', () => {
+    beforeEach(() => {
+      devServer = new DevServer({ port: 3000 });
+    });
+
+    describe('start', () => {
+      it('should start the server', async () => {
+        await devServer.start();
+        expect(mockHttpServer.listen).toHaveBeenCalledWith(3000, expect.any(Function));
+      });
+
+      it('should throw error if already started', async () => {
+        await devServer.start();
+        await expect(devServer.start()).rejects.toThrow('Server is already running');
+      });
+
+      it('should emit start event', async () => {
+        const startHandler = vi.fn();
+        devServer.on('start', startHandler);
+        await devServer.start();
+        expect(startHandler).toHaveBeenCalled();
+      });
+    });
+
+    describe('stop', () => {
+      it('should stop the server', async () => {
+        await devServer.start();
+        await devServer.stop();
+        expect(mockHttpServer.close).toHaveBeenCalled();
+      });
+
+      it('should throw error if not started', async () => {
+        await expect(devServer.stop()).rejects.toThrow('Server is not running');
+      });
+
+      it('should emit stop event', async () => {
+        const stopHandler = vi.fn();
+        devServer.on('stop', stopHandler);
+        await devServer.start();
+        await devServer.stop();
+        expect(stopHandler).toHaveBeenCalled();
+      });
+    });
+
+    describe('registerWorkflow', () => {
+      it('should register a workflow endpoint', () => {
+        const handler = vi.fn();
+        devServer.registerWorkflow('/api/workflow', handler);
+        expect(devServer.getWorkflows()).toContain('/api/workflow');
+      });
+
+      it('should throw error for duplicate workflow path', () => {
+        const handler = vi.fn();
+        devServer.registerWorkflow('/api/workflow', handler);
+        expect(() => devServer.registerWorkflow('/api/workflow', handler))
+          .toThrow('Workflow already registered at path: /api/workflow');
+      });
+
+      it('should handle workflow with middleware', () => {
+        const handler = vi.fn();
+        const middleware = vi.fn();
+        devServer.registerWorkflow('/api/workflow', handler, { middleware: [middleware] });
+        expect(devServer.getWorkflows()).toContain('/api/workflow');
+      });
+    });
+
+    describe('unregisterWorkflow', () => {
+      it('should unregister a workflow', () => {
+        const handler = vi.fn();
+        devServer.registerWorkflow('/api/workflow', handler);
+        devServer.unregisterWorkflow('/api/workflow');
+        expect(devServer.getWorkflows()).not.toContain('/api/workflow');
+      });
+
+      it('should not throw when unregistering non-existent workflow', () => {
+        expect(() => devServer.unregisterWorkflow('/api/non-existent')).not.toThrow();
+      });
+    });
+
+    describe('request handling', () => {
+      it('should handle workflow requests', async () => {
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        devServer.registerWorkflow('/api/workflow', handler);
+
+        const mockReq = {
+          url: '/api/workflow',
+          headers: {},
+          method: 'POST',
+          on: vi.fn((event, callback) => {
+            if (event === 'data') callback(JSON.stringify({ test: true }));
+            if (event === 'end') callback();
+          }),
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(handler).toHaveBeenCalled();
+        expect(mockRes.writeHead).toHaveBeenCalledWith(200, expect.any(Object));
+        expect(mockRes.end).toHaveBeenCalled();
+      });
+
+      it('should return 404 for unknown routes', async () => {
+        const mockReq = {
+          url: '/api/unknown',
+          headers: {},
+          method: 'POST',
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(mockRes.writeHead).toHaveBeenCalledWith(404, expect.any(Object));
+        expect(mockRes.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Not found' }));
+      });
+
+      it('should handle OPTIONS requests for CORS', async () => {
+        devServer = new DevServer({ enableCors: true, port: 3000 });
+        
+        const mockReq = {
+          url: '/api/workflow',
+          headers: {},
+          method: 'OPTIONS',
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(mockRes.writeHead).toHaveBeenCalledWith(200, expect.objectContaining({
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Origin': '*',
+        }));
+        expect(mockRes.end).toHaveBeenCalled();
+      });
+
+      it('should handle errors in workflow handler', async () => {
+        const handler = vi.fn().mockRejectedValue(new Error('Handler error'));
+        devServer.registerWorkflow('/api/workflow', handler);
+
+        const mockReq = {
+          url: '/api/workflow',
+          headers: {},
+          method: 'POST',
+          on: vi.fn((event, callback) => {
+            if (event === 'data') callback('{}');
+            if (event === 'end') callback();
+          }),
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(mockRes.writeHead).toHaveBeenCalledWith(500, expect.any(Object));
+        expect(mockRes.end).toHaveBeenCalledWith(
+          JSON.stringify({ error: 'Internal server error', message: 'Handler error' })
+        );
+      });
+    });
+
+    describe('middleware', () => {
+      it('should apply global middleware', async () => {
+        const executionOrder: string[] = [];
+        const middleware = vi.fn(async (req, res, next) => {
+          executionOrder.push('middleware');
+          await next();
+        });
+        const handler = vi.fn(async () => {
+          executionOrder.push('handler');
+          return { result: 'success' };
+        });
+
+        devServer.use(middleware);
+        devServer.registerWorkflow('/api/workflow', handler);
+
+        const mockReq = {
+          url: '/api/workflow',
+          headers: {},
+          method: 'POST',
+          on: vi.fn((event, callback) => {
+            if (event === 'data') callback('{}');
+            if (event === 'end') callback();
+          }),
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(executionOrder).toEqual(['middleware', 'handler']);
+      });
+
+      it('should apply route-specific middleware', async () => {
+        const executionOrder: string[] = [];
+        const globalMiddleware = vi.fn(async (req, res, next) => {
+          executionOrder.push('global');
+          await next();
+        });
+        const routeMiddleware = vi.fn(async (req, res, next) => {
+          executionOrder.push('route');
+          await next();
+        });
+        const handler = vi.fn(async () => {
+          executionOrder.push('handler');
+          return { result: 'success' };
+        });
+
+        devServer.use(globalMiddleware);
+        devServer.registerWorkflow('/api/workflow', handler, {
+          middleware: [routeMiddleware],
+        });
+
+        const mockReq = {
+          url: '/api/workflow',
+          headers: {},
+          method: 'POST',
+          on: vi.fn((event, callback) => {
+            if (event === 'data') callback('{}');
+            if (event === 'end') callback();
+          }),
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(executionOrder).toEqual(['global', 'route', 'handler']);
+      });
+    });
+
+    describe('logging', () => {
+      it('should log requests when enabled', async () => {
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        devServer = new DevServer({ enableLogging: true, port: 3000 });
+
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        devServer.registerWorkflow('/api/workflow', handler);
+
+        const mockReq = {
+          url: '/api/workflow',
+          headers: {},
+          method: 'POST',
+          on: vi.fn((event, callback) => {
+            if (event === 'data') callback('{}');
+            if (event === 'end') callback();
+          }),
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('POST /api/workflow'));
+        logSpy.mockRestore();
+      });
+
+      it('should not log requests when disabled', async () => {
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        devServer = new DevServer({ enableLogging: false, port: 3000 });
+
+        const handler = vi.fn().mockResolvedValue({ result: 'success' });
+        devServer.registerWorkflow('/api/workflow', handler);
+
+        const mockReq = {
+          url: '/api/workflow',
+          headers: {},
+          method: 'POST',
+          on: vi.fn((event, callback) => {
+            if (event === 'data') callback('{}');
+            if (event === 'end') callback();
+          }),
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(logSpy).not.toHaveBeenCalled();
+        logSpy.mockRestore();
+      });
+    });
+
+    describe('health check', () => {
+      it('should respond to health check endpoint', async () => {
+        const mockReq = {
+          url: '/health',
+          headers: {},
+          method: 'GET',
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(mockRes.writeHead).toHaveBeenCalledWith(200, expect.any(Object));
+        expect(mockRes.end).toHaveBeenCalledWith(JSON.stringify({ status: 'ok' }));
+      });
+    });
+
+    describe('workflow listing', () => {
+      it('should list registered workflows', async () => {
+        devServer.registerWorkflow('/api/workflow1', vi.fn());
+        devServer.registerWorkflow('/api/workflow2', vi.fn());
+        devServer.registerWorkflow('/api/workflow3', vi.fn());
+
+        const mockReq = {
+          url: '/workflows',
+          headers: {},
+          method: 'GET',
+        };
+        const mockRes = {
+          end: vi.fn(),
+          writeHead: vi.fn(),
+        };
+
+        await devServer.handleRequest(mockReq as any, mockRes as any);
+
+        expect(mockRes.writeHead).toHaveBeenCalledWith(200, expect.any(Object));
+        expect(mockRes.end).toHaveBeenCalledWith(JSON.stringify({
+          workflows: ['/api/workflow1', '/api/workflow2', '/api/workflow3'],
+        }));
+      });
+    });
+  });
+});

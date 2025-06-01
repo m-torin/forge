@@ -40,6 +40,6 @@ import { runChartSitemapsWorkflow } from '@/workflows/chart-sitemaps/actions';
 
 const result = await runChartSitemapsWorkflow({
   message: 'Processing charts',
-  url: 'https://example.com/sitemap.xml'
+  url: 'https://example.com/sitemap.xml',
 });
 ```

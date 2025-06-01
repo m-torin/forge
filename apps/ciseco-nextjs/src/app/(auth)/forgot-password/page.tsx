@@ -1,6 +1,7 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import Input from '@/shared/Input/Input';
 import Link from 'next/link';
+
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
 
 export const metadata = {
   description: 'Forgot password page for the application',

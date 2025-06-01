@@ -61,7 +61,7 @@ export async function processBatchPattern<T, R>(
     }
 
     // Flatten all batch results
-    return result.batches.flatMap(batch => batch.results);
+    return result.batches.flatMap((batch) => batch.results);
   });
 }
 
@@ -104,25 +104,22 @@ export async function retryWithBackoffPattern<T>(
   const { stepName, ...retryOptions } = options;
 
   return context.run(stepName, async () => {
-    return retryOperation(
-      options.operation,
-      {
-        baseDelayMs: retryOptions.baseDelayMs ?? DEFAULT_TIMEOUTS.retry,
-        jitter: retryOptions.jitter,
-        maxAttempts: retryOptions.maxAttempts ?? DEFAULT_RETRIES.api,
-        maxDelayMs: retryOptions.maxDelayMs ?? 60000,
-        multiplier: retryOptions.multiplier,
-        onRetry: async (error, attempt, delay) => {
-          devLog.info(`[${stepName}] Retrying in ${delay}ms (attempt ${attempt})`);
-          // Convert ms to seconds for context.sleep
-          await context.sleep(`${stepName}-backoff-${attempt}`, delay / 1000);
-        },
-        shouldRetry: retryOptions.shouldRetry
-          ? (error: unknown, attempt: number) => retryOptions.shouldRetry!(error as Error, attempt)
-          : undefined,
-        strategy: retryOptions.strategy,
+    return retryOperation(options.operation, {
+      baseDelayMs: retryOptions.baseDelayMs ?? DEFAULT_TIMEOUTS.retry,
+      jitter: retryOptions.jitter,
+      maxAttempts: retryOptions.maxAttempts ?? DEFAULT_RETRIES.api,
+      maxDelayMs: retryOptions.maxDelayMs ?? 60000,
+      multiplier: retryOptions.multiplier,
+      onRetry: async (error, attempt, delay) => {
+        devLog.info(`[${stepName}] Retrying in ${delay}ms (attempt ${attempt})`);
+        // Convert ms to seconds for context.sleep
+        await context.sleep(`${stepName}-backoff-${attempt}`, delay / 1000);
       },
-    );
+      shouldRetry: retryOptions.shouldRetry
+        ? (error: unknown, attempt: number) => retryOptions.shouldRetry!(error as Error, attempt)
+        : undefined,
+      strategy: retryOptions.strategy,
+    });
   });
 }
 

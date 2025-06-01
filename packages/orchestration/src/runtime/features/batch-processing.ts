@@ -62,18 +62,13 @@ export async function processBatches<TInput, TOutput>(
     };
 
     // Use centralized BatchProcessor
-    const result = await BatchProcessor.process(
-      items,
-      adaptedProcessor,
-      config,
-      {
-        onProgress: (processed, total) => {
-          if (processed % 10 === 0 || processed === total) {
-            console.log(`[${stepName}] Progress: ${processed}/${total}`);
-          }
-        },
+    const result = await BatchProcessor.process(items, adaptedProcessor, config, {
+      onProgress: (processed, total) => {
+        if (processed % 10 === 0 || processed === total) {
+          console.log(`[${stepName}] Progress: ${processed}/${total}`);
+        }
       },
-    );
+    });
 
     // Transform the result to match the expected interface
     const transformedBatches: BatchResult<TOutput>[] = result.batches.map((batch) => ({
@@ -111,7 +106,7 @@ export async function processBatches<TInput, TOutput>(
 /**
  * Process a single batch
  */
-async function processSingleBatch<TInput, TOutput>(
+async function _processSingleBatch<TInput, TOutput>(
   context: WorkflowContext<any>,
   batch: TInput[],
   processor: (item: TInput, index: number, batchIndex: number) => Promise<TOutput>,

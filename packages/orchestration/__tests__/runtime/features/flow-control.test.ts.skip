@@ -1,0 +1,672 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  conditional,
+  createFlowController,
+  debounce,
+  FlowController,
+  loop,
+  parallel,
+  rateLimit,
+  retry,
+  sequential,
+  throttle,
+  timeout,
+} from '../../../src/runtime/features/flow-control';
+
+describe('Flow Control', () => {
+  describe('createFlowController', () => {
+    it('should create a flow controller', () => {
+      const controller = createFlowController();
+      expect(controller).toBeInstanceOf(FlowController);
+    });
+
+    it('should create flow controller with options', () => {
+      const controller = createFlowController({
+        defaultTimeout: 5000,
+        maxConcurrency: 5,
+      });
+      expect(controller).toBeInstanceOf(FlowController);
+    });
+  });
+
+  describe('parallel', () => {
+    it('should execute tasks in parallel', async () => {
+      const executionOrder: string[] = [];
+      const tasks = [
+        async () => {
+          executionOrder.push('task1-start');
+          await new Promise(resolve => setTimeout(resolve, 50));
+          executionOrder.push('task1-end');
+          return 'result1';
+        },
+        async () => {
+          executionOrder.push('task2-start');
+          await new Promise(resolve => setTimeout(resolve, 30));
+          executionOrder.push('task2-end');
+          return 'result2';
+        },
+        async () => {
+          executionOrder.push('task3-start');
+          await new Promise(resolve => setTimeout(resolve, 10));
+          executionOrder.push('task3-end');
+          return 'result3';
+        },
+      ];
+
+      const results = await parallel(tasks);
+
+      expect(results).toEqual(['result1', 'result2', 'result3']);
+      expect(executionOrder[0]).toBe('task1-start');
+      expect(executionOrder[1]).toBe('task2-start');
+      expect(executionOrder[2]).toBe('task3-start');
+      expect(executionOrder[3]).toBe('task3-end');
+      expect(executionOrder[4]).toBe('task2-end');
+      expect(executionOrder[5]).toBe('task1-end');
+    });
+
+    it('should limit concurrency', async () => {
+      let activeTasks = 0;
+      let maxActiveTasks = 0;
+
+      const tasks = Array.from({ length: 10 }, (_, i) => async () => {
+        activeTasks++;
+        maxActiveTasks = Math.max(maxActiveTasks, activeTasks);
+        await new Promise(resolve => setTimeout(resolve, 50));
+        activeTasks--;
+        return i;
+      });
+
+      await parallel(tasks, { concurrency: 3 });
+
+      expect(maxActiveTasks).toBeLessThanOrEqual(3);
+    });
+
+    it('should handle errors in parallel tasks', async () => {
+      const tasks = [
+        async () => 'result1',
+        async () => {
+          throw new Error('Task 2 failed');
+        },
+        async () => 'result3',
+      ];
+
+      await expect(parallel(tasks)).rejects.toThrow('Task 2 failed');
+    });
+
+    it('should continue on error when configured', async () => {
+      const tasks = [
+        async () => 'result1',
+        async () => {
+          throw new Error('Task 2 failed');
+        },
+        async () => 'result3',
+      ];
+
+      const results = await parallel(tasks, { continueOnError: true });
+
+      expect(results).toHaveLength(3);
+      expect(results[0]).toBe('result1');
+      expect(results[1]).toBeInstanceOf(Error);
+      expect(results[2]).toBe('result3');
+    });
+  });
+
+  describe('sequential', () => {
+    it('should execute tasks sequentially', async () => {
+      const executionOrder: string[] = [];
+      const tasks = [
+        async () => {
+          executionOrder.push('task1');
+          await new Promise(resolve => setTimeout(resolve, 30));
+          return 'result1';
+        },
+        async () => {
+          executionOrder.push('task2');
+          await new Promise(resolve => setTimeout(resolve, 20));
+          return 'result2';
+        },
+        async () => {
+          executionOrder.push('task3');
+          await new Promise(resolve => setTimeout(resolve, 10));
+          return 'result3';
+        },
+      ];
+
+      const results = await sequential(tasks);
+
+      expect(results).toEqual(['result1', 'result2', 'result3']);
+      expect(executionOrder).toEqual(['task1', 'task2', 'task3']);
+    });
+
+    it('should pass result from previous task', async () => {
+      const tasks = [
+        async () => 5,
+        async (prev: number) => prev * 2,
+        async (prev: number) => prev + 3,
+      ];
+
+      const results = await sequential(tasks, { passResult: true });
+
+      expect(results).toEqual([5, 10, 13]);
+    });
+
+    it('should stop on error by default', async () => {
+      const executionOrder: string[] = [];
+      const tasks = [
+        async () => {
+          executionOrder.push('task1');
+          return 'result1';
+        },
+        async () => {
+          executionOrder.push('task2');
+          throw new Error('Task 2 failed');
+        },
+        async () => {
+          executionOrder.push('task3');
+          return 'result3';
+        },
+      ];
+
+      await expect(sequential(tasks)).rejects.toThrow('Task 2 failed');
+      expect(executionOrder).toEqual(['task1', 'task2']);
+    });
+  });
+
+  describe('conditional', () => {
+    it('should execute then branch when condition is true', async () => {
+      const condition = async () => true;
+      const thenFn = vi.fn().mockResolvedValue('then result');
+      const elseFn = vi.fn().mockResolvedValue('else result');
+
+      const result = await conditional(condition, thenFn, elseFn);
+
+      expect(result).toBe('then result');
+      expect(thenFn).toHaveBeenCalled();
+      expect(elseFn).not.toHaveBeenCalled();
+    });
+
+    it('should execute else branch when condition is false', async () => {
+      const condition = async () => false;
+      const thenFn = vi.fn().mockResolvedValue('then result');
+      const elseFn = vi.fn().mockResolvedValue('else result');
+
+      const result = await conditional(condition, thenFn, elseFn);
+
+      expect(result).toBe('else result');
+      expect(thenFn).not.toHaveBeenCalled();
+      expect(elseFn).toHaveBeenCalled();
+    });
+
+    it('should handle condition with context', async () => {
+      const context = { value: 42 };
+      const condition = async (ctx: typeof context) => ctx.value > 40;
+      const thenFn = async (ctx: typeof context) => `Value is ${ctx.value}`;
+      const elseFn = async () => 'Value too low';
+
+      const result = await conditional(condition, thenFn, elseFn, context);
+
+      expect(result).toBe('Value is 42');
+    });
+
+    it('should handle errors in condition', async () => {
+      const condition = async () => {
+        throw new Error('Condition error');
+      };
+      const thenFn = vi.fn();
+      const elseFn = vi.fn();
+
+      await expect(conditional(condition, thenFn, elseFn)).rejects.toThrow('Condition error');
+      expect(thenFn).not.toHaveBeenCalled();
+      expect(elseFn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('loop', () => {
+    it('should loop specified number of times', async () => {
+      const results: number[] = [];
+      const fn = async (i: number) => {
+        results.push(i);
+        return i * 2;
+      };
+
+      const finalResults = await loop(5, fn);
+
+      expect(results).toEqual([0, 1, 2, 3, 4]);
+      expect(finalResults).toEqual([0, 2, 4, 6, 8]);
+    });
+
+    it('should loop while condition is true', async () => {
+      let counter = 0;
+      const condition = async () => counter < 3;
+      const fn = async () => {
+        counter++;
+        return counter;
+      };
+
+      const results = await loop(condition, fn);
+
+      expect(results).toEqual([1, 2, 3]);
+      expect(counter).toBe(3);
+    });
+
+    it('should break loop on error by default', async () => {
+      let counter = 0;
+      const fn = async () => {
+        counter++;
+        if (counter === 3) {
+          throw new Error('Loop error');
+        }
+        return counter;
+      };
+
+      await expect(loop(5, fn)).rejects.toThrow('Loop error');
+      expect(counter).toBe(3);
+    });
+
+    it('should continue loop on error when configured', async () => {
+      let counter = 0;
+      const fn = async () => {
+        counter++;
+        if (counter === 3) {
+          throw new Error('Loop error');
+        }
+        return counter;
+      };
+
+      const results = await loop(5, fn, { continueOnError: true });
+
+      expect(counter).toBe(5);
+      expect(results).toHaveLength(5);
+      expect(results[2]).toBeInstanceOf(Error);
+    });
+
+    it('should support early break', async () => {
+      const fn = async (i: number) => {
+        if (i === 2) {
+          return { break: true, value: i };
+        }
+        return { value: i };
+      };
+
+      const results = await loop(5, fn, { breakable: true });
+
+      expect(results).toEqual([
+        { value: 0 },
+        { value: 1 },
+        { break: true, value: 2 },
+      ]);
+    });
+  });
+
+  describe('retry', () => {
+    it('should retry on failure', async () => {
+      let attempts = 0;
+      const fn = async () => {
+        attempts++;
+        if (attempts < 3) {
+          throw new Error(`Attempt ${attempts} failed`);
+        }
+        return 'success';
+      };
+
+      const result = await retry(fn, { maxAttempts: 3 });
+
+      expect(result).toBe('success');
+      expect(attempts).toBe(3);
+    });
+
+    it('should fail after max attempts', async () => {
+      let attempts = 0;
+      const fn = async () => {
+        attempts++;
+        throw new Error(`Attempt ${attempts} failed`);
+      };
+
+      await expect(retry(fn, { maxAttempts: 3 })).rejects.toThrow('Attempt 3 failed');
+      expect(attempts).toBe(3);
+    });
+
+    it('should apply exponential backoff', async () => {
+      const timestamps: number[] = [];
+      const fn = async () => {
+        timestamps.push(Date.now());
+        if (timestamps.length < 3) {
+          throw new Error('Retry me');
+        }
+        return 'success';
+      };
+
+      await retry(fn, {
+        backoff: 'exponential',
+        delay: 100,
+        maxAttempts: 3,
+      });
+
+      expect(timestamps).toHaveLength(3);
+      const delay1 = timestamps[1] - timestamps[0];
+      const delay2 = timestamps[2] - timestamps[1];
+      expect(delay2).toBeGreaterThan(delay1);
+    });
+
+    it('should apply linear backoff', async () => {
+      const timestamps: number[] = [];
+      const fn = async () => {
+        timestamps.push(Date.now());
+        if (timestamps.length < 3) {
+          throw new Error('Retry me');
+        }
+        return 'success';
+      };
+
+      await retry(fn, {
+        backoff: 'linear',
+        delay: 50,
+        maxAttempts: 3,
+      });
+
+      expect(timestamps).toHaveLength(3);
+      const delay1 = timestamps[1] - timestamps[0];
+      const delay2 = timestamps[2] - timestamps[1];
+      expect(delay1).toBeGreaterThanOrEqual(45);
+      expect(delay2).toBeGreaterThanOrEqual(95);
+    });
+
+    it('should call onRetry callback', async () => {
+      let attempts = 0;
+      const onRetry = vi.fn();
+      const fn = async () => {
+        attempts++;
+        if (attempts < 3) {
+          throw new Error(`Attempt ${attempts}`);
+        }
+        return 'success';
+      };
+
+      await retry(fn, {
+        maxAttempts: 3,
+        onRetry,
+      });
+
+      expect(onRetry).toHaveBeenCalledTimes(2);
+      expect(onRetry).toHaveBeenCalledWith(expect.any(Error), 1);
+      expect(onRetry).toHaveBeenCalledWith(expect.any(Error), 2);
+    });
+  });
+
+  describe('timeout', () => {
+    it('should complete within timeout', async () => {
+      const fn = async () => {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        return 'success';
+      };
+
+      const result = await timeout(fn, 100);
+      expect(result).toBe('success');
+    });
+
+    it('should timeout when function takes too long', async () => {
+      const fn = async () => {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return 'success';
+      };
+
+      await expect(timeout(fn, 100)).rejects.toThrow('Operation timed out after 100ms');
+    });
+
+    it('should clean up resources on timeout', async () => {
+      const cleanup = vi.fn();
+      const fn = async () => {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          return 'success';
+        } finally {
+          cleanup();
+        }
+      };
+
+      try {
+        await timeout(fn, 100);
+      } catch {
+        // Expected timeout
+      }
+
+      // Give time for cleanup
+      await new Promise(resolve => setTimeout(resolve, 250));
+      expect(cleanup).toHaveBeenCalled();
+    });
+  });
+
+  describe('throttle', () => {
+    it('should throttle function calls', async () => {
+      const fn = vi.fn().mockResolvedValue('result');
+      const throttled = throttle(fn, 100);
+
+      // Call multiple times quickly
+      const results = await Promise.all([
+        throttled(),
+        throttled(),
+        throttled(),
+      ]);
+
+      expect(results).toEqual(['result', 'result', 'result']);
+      expect(fn).toHaveBeenCalledTimes(1);
+
+      // Wait for throttle period
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      await throttled();
+      expect(fn).toHaveBeenCalledTimes(2);
+    });
+
+    it('should maintain separate throttles for different keys', async () => {
+      const fn = vi.fn().mockImplementation(async (key: string) => `result-${key}`);
+      const throttled = throttle(fn, 100);
+
+      const results = await Promise.all([
+        throttled('key1'),
+        throttled('key1'),
+        throttled('key2'),
+        throttled('key2'),
+      ]);
+
+      expect(results).toEqual(['result-key1', 'result-key1', 'result-key2', 'result-key2']);
+      expect(fn).toHaveBeenCalledTimes(2);
+      expect(fn).toHaveBeenCalledWith('key1');
+      expect(fn).toHaveBeenCalledWith('key2');
+    });
+  });
+
+  describe('debounce', () => {
+    it('should debounce function calls', async () => {
+      const fn = vi.fn().mockResolvedValue('result');
+      const debounced = debounce(fn, 100);
+
+      // Call multiple times quickly
+      debounced();
+      debounced();
+      debounced();
+
+      // Function should not be called yet
+      expect(fn).not.toHaveBeenCalled();
+
+      // Wait for debounce period
+      await new Promise(resolve => setTimeout(resolve, 150));
+      expect(fn).toHaveBeenCalledTimes(1);
+    });
+
+    it('should reset timer on new calls', async () => {
+      const fn = vi.fn().mockResolvedValue('result');
+      const debounced = debounce(fn, 100);
+
+      debounced();
+      await new Promise(resolve => setTimeout(resolve, 50));
+      debounced();
+      await new Promise(resolve => setTimeout(resolve, 50));
+      debounced();
+
+      expect(fn).not.toHaveBeenCalled();
+
+      await new Promise(resolve => setTimeout(resolve, 150));
+      expect(fn).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle async functions', async () => {
+      let callCount = 0;
+      const fn = async () => {
+        callCount++;
+        await new Promise(resolve => setTimeout(resolve, 50));
+        return `result-${callCount}`;
+      };
+      const debounced = debounce(fn, 100);
+
+      const promise1 = debounced();
+      const promise2 = debounced();
+      const promise3 = debounced();
+
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      const result = await promise3;
+      expect(result).toBe('result-1');
+      expect(callCount).toBe(1);
+    });
+  });
+
+  describe('rateLimit', () => {
+    it('should limit rate of function calls', async () => {
+      const fn = vi.fn().mockImplementation(async (i: number) => `result-${i}`);
+      const limited = rateLimit(fn, { limit: 3, window: 1000 });
+
+      // First 3 calls should succeed
+      const results1 = await Promise.all([
+        limited(1),
+        limited(2),
+        limited(3),
+      ]);
+
+      expect(results1).toEqual(['result-1', 'result-2', 'result-3']);
+      expect(fn).toHaveBeenCalledTimes(3);
+
+      // 4th call should be rate limited
+      await expect(limited(4)).rejects.toThrow('Rate limit exceeded');
+      expect(fn).toHaveBeenCalledTimes(3);
+    });
+
+    it('should reset after time window', async () => {
+      const fn = vi.fn().mockImplementation(async (i: number) => `result-${i}`);
+      const limited = rateLimit(fn, { limit: 2, window: 100 });
+
+      // Use up the limit
+      await limited(1);
+      await limited(2);
+
+      // Should be rate limited
+      await expect(limited(3)).rejects.toThrow('Rate limit exceeded');
+
+      // Wait for window to reset
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Should work again
+      const result = await limited(4);
+      expect(result).toBe('result-4');
+    });
+
+    it('should queue requests when configured', async () => {
+      const fn = vi.fn().mockImplementation(async (i: number) => {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        return `result-${i}`;
+      });
+      const limited = rateLimit(fn, { limit: 2, queue: true, window: 200 });
+
+      // Start 4 calls
+      const promises = [
+        limited(1),
+        limited(2),
+        limited(3),
+        limited(4),
+      ];
+
+      // First 2 should start immediately
+      await new Promise(resolve => setTimeout(resolve, 10));
+      expect(fn).toHaveBeenCalledTimes(2);
+
+      // Wait for window reset and processing
+      const results = await Promise.all(promises);
+
+      expect(results).toEqual(['result-1', 'result-2', 'result-3', 'result-4']);
+      expect(fn).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  describe('FlowController', () => {
+    let controller: FlowController;
+
+    beforeEach(() => {
+      controller = new FlowController();
+    });
+
+    it('should compose multiple flow controls', async () => {
+      const fn = vi.fn().mockResolvedValue('success');
+
+      // Retry with timeout
+      const composed = controller.compose(
+        (next: any) => retry(next, { maxAttempts: 3 }),
+        (next: any) => timeout(next, 1000),
+      );
+
+      const result = await composed(fn);
+      expect(result).toBe('success');
+    });
+
+    it('should create reusable pipelines', async () => {
+      const pipeline = controller.createPipeline([
+        async (input: number) => input * 2,
+        async (input: number) => input + 10,
+        async (input: number) => `Result: ${input}`,
+      ]);
+
+      const result1 = await pipeline(5);
+      const result2 = await pipeline(10);
+
+      expect(result1).toBe('Result: 20');
+      expect(result2).toBe('Result: 30');
+    });
+
+    it('should handle complex flow scenarios', async () => {
+      const results: string[] = [];
+
+      await controller.run(async () => {
+        // Parallel execution with rate limiting
+        await parallel([
+          async () => {
+            const limited = rateLimit(
+              async (i: number) => {
+                results.push(`task1-${i}`);
+              },
+              { limit: 2, window: 100 }
+            );
+            
+            await limited(1);
+            await limited(2);
+          },
+          async () => {
+            // Sequential with retries
+            await sequential([
+              () => retry(async () => {
+                results.push('task2-1');
+              }, { maxAttempts: 2 }),
+              () => timeout(async () => {
+                results.push('task2-2');
+              }, 100),
+            ]);
+          },
+        ]);
+      });
+
+      expect(results).toContain('task1-1');
+      expect(results).toContain('task1-2');
+      expect(results).toContain('task2-1');
+      expect(results).toContain('task2-2');
+    });
+  });
+});

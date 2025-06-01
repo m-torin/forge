@@ -2,8 +2,6 @@ import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import React, { type ReactNode } from 'react';
 import '@mantine/core/styles.css';
 
-import { Toolbar } from '@repo/feature-flags/components/toolbar';
-
 interface RootLayoutProperties {
   readonly children: ReactNode;
 }
@@ -21,7 +19,6 @@ export default function RootLayout({ children }: RootLayoutProperties): React.Re
       </head>
       <body>
         <MantineProvider>{children}</MantineProvider>
-        <Toolbar />
       </body>
     </html>
   );

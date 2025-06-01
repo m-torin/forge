@@ -17,11 +17,11 @@ export const metadata: Metadata = {
   title: 'Ciseco',
 };
 
-export default function Layout({
-  children,
-}: {
+interface LayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function Layout({ children }: LayoutProps) {
   return (
     <ApplicationLayout>
       {children}

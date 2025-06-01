@@ -33,16 +33,25 @@ describe('keys', () => {
     expect(result.ARCJET_KEY).toBeUndefined();
   });
 
-  it('should validate that ARCJET_KEY starts with ajkey_', () => {
+  it('should validate that ARCJET_KEY starts with ajkey_ in production', () => {
+    process.env.NODE_ENV = 'production';
     process.env.ARCJET_KEY = 'invalid_key';
 
     expect(() => keys()).toThrow();
   });
 
-  it('should validate that ARCJET_KEY has minimum length', () => {
-    process.env.ARCJET_KEY = '';
+  it('should validate that ARCJET_KEY has minimum length in production when set', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ARCJET_KEY = 'ajkey'; // Set but missing underscore and content
 
     expect(() => keys()).toThrow();
+  });
+
+  it('should allow empty ARCJET_KEY in development', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.ARCJET_KEY = '';
+
+    expect(() => keys()).not.toThrow();
   });
 
   it('should accept valid ARCJET_KEY format', () => {

@@ -1,7 +1,8 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import Input from '@/shared/Input/Input';
 import { type Metadata } from 'next';
 import Link from 'next/link';
+
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Coming soon page for the application',

@@ -49,7 +49,7 @@ export interface DeduplicationOptions<T = any> {
 /**
  * Get environment-specific configuration - ES2022 modernized
  */
-function getEnvConfig() {
+function _getEnvConfig() {
   const env = (process.env.NODE_ENV as Environment) ?? 'development';
   return ENV_CONFIGS[env] ?? ENV_CONFIGS.development;
 }

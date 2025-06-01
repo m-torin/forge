@@ -343,7 +343,7 @@ export type {
 
 // Deprecated type alias for backward compatibility
 /** @deprecated Use BatchOperationResult instead */
-export type BatchResult<T> = import('./results').BatchOperationResult<T>;
+export type { BatchOperationResult as BatchResult } from './results';
 
 // Retry configuration
 export interface RetryConfig {

@@ -1,11 +1,12 @@
 import facebookSvg from '@/images/socials/facebook-2.svg';
 import googleSvg from '@/images/socials/google.svg';
 import twitterSvg from '@/images/socials/twitter.svg';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import Input from '@/shared/Input/Input';
 import { type Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
 
 const loginSocials = [
   {

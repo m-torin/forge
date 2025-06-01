@@ -1,8 +1,8 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": "."
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "generated/**"]
+  "exclude": ["node_modules", "generated/**", "__tests__/performance.test.ts", "__tests__/upstash-redis.test.ts", "__tests__/upstash-vector.test.ts", "redis/**"]
 }

@@ -16,6 +16,9 @@ import { IconCheck, IconPlayerPlay } from '@tabler/icons-react';
 import { useState } from 'react';
 
 interface WorkflowCardProps {
+  isRunning?: boolean;
+  onRun: (workflowId: string, payload: any) => void;
+  status?: any;
   workflow: {
     id: string;
     title: string;
@@ -27,19 +30,16 @@ interface WorkflowCardProps {
     features: string[];
     defaultPayload: Record<string, any>;
   };
-  onRun: (workflowId: string, payload: any) => void;
-  isRunning?: boolean;
-  status?: any;
 }
 
-export function WorkflowCard({ workflow, onRun, isRunning, status }: WorkflowCardProps) {
+export function WorkflowCard({ isRunning, onRun, status, workflow }: WorkflowCardProps) {
   const [payload, setPayload] = useState(JSON.stringify(workflow.defaultPayload, null, 2));
 
   const handleRun = () => {
     try {
       const parsedPayload = JSON.parse(payload);
       onRun(workflow.id, parsedPayload);
-    } catch (error) {
+    } catch {
       console.error('Invalid JSON payload');
     }
   };
@@ -65,8 +65,8 @@ export function WorkflowCard({ workflow, onRun, isRunning, status }: WorkflowCar
                 status.status === 'completed'
                   ? 'green'
                   : status.status === 'failed'
-                  ? 'red'
-                  : 'blue'
+                    ? 'red'
+                    : 'blue'
               }
               variant={isRunning ? 'dot' : 'filled'}
             >
@@ -80,7 +80,7 @@ export function WorkflowCard({ workflow, onRun, isRunning, status }: WorkflowCar
         </Text>
 
         <Group gap="xs">
-          {workflow.tags.map(tag => (
+          {workflow.tags.map((tag) => (
             <Badge key={tag} size="xs" variant="outline">
               {tag}
             </Badge>

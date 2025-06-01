@@ -3,6 +3,8 @@
  * Single source of truth for all ID generation in the orchestration package
  */
 
+import { cryptoPolyfill } from './crypto-polyfill';
+
 /**
  * Configuration options for ID generation
  */
@@ -99,9 +101,8 @@ export function generateDedupId(prefix?: string, includeTimestamp = true): strin
  * Useful for creating consistent IDs for the same input
  */
 export function generateDeterministicId(data: string | object, prefix?: string): string {
-  const crypto = require('node:crypto');
   const input = typeof data === 'string' ? data : JSON.stringify(data);
-  const hash = crypto.createHash('md5').update(input).digest('hex').substring(0, 8);
+  const hash = cryptoPolyfill.createHash('md5').update(input).digest('hex').substring(0, 8);
 
   return prefix ? `${prefix}_${hash}` : hash;
 }
@@ -129,6 +130,5 @@ export function generateShortId(prefix?: string, length = 6): string {
  * Generate a UUID v4
  */
 export function generateUUID(): string {
-  const crypto = require('node:crypto');
-  return crypto.randomUUID();
+  return cryptoPolyfill.randomUUID();
 }

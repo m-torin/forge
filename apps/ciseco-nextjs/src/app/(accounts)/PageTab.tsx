@@ -1,7 +1,8 @@
 'use client';
 
-import { Link } from '@/components/Link';
 import { usePathname } from 'next/navigation';
+
+import { Link } from '@repo/design-system/ciesco2';
 
 const pages: {
   name: string;

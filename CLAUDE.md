@@ -7,6 +7,8 @@ repository.
 
 **NEVER run `pnpm dev` or `npm dev` commands.** These commands should only be run by the user.
 
+**NEVER add Android support to the hedwig app.** The hedwig app is iOS and web only. Do not add Android configurations, dependencies, or platform-specific code for Android.
+
 ## Environment Variables & Doppler
 
 This project uses Doppler for secret management in CI/CD environments, but local development uses
@@ -63,7 +65,6 @@ This monorepo follows a modular architecture with clear separation of concerns:
    - PostgreSQL database with Prisma ORM
    - Type-safe database queries
    - API routes handle business logic
-   - Real-time updates via Liveblocks collaboration
 
 5. **Module System (Important)**
    - ESM modules only (no CommonJS)
@@ -288,138 +289,195 @@ settings.
    - Use centralized notification configuration from `@repo/notifications/mantine-notifications`
    - Consistent notification styles across all apps
 
-## Package-Specific Rules
+## Package Architecture & Hierarchy
 
-### `/apps/template` - Template Application (Port: 3100)
+The packages follow a strict layered architecture to prevent circular dependencies. Each layer can only depend on packages from lower layers, never from higher layers.
 
-- Template for creating new applications
-- Basic Next.js setup with internationalization
-- Example pages and components
-- Development starting point
+**IMPORTANT: To avoid circular dependencies, packages must only use feature flags at the application level, not within the package itself. For example, the analytics package should NOT import from feature-flags package.**
 
-### `/apps/web` - Marketing Website (Port: 3200)
+### Layer 1: Foundation Packages (Core Infrastructure)
+These packages have no dependencies on other internal packages:
 
-- Public-facing marketing site
-- Internationalization with 6 languages
-- Static generation for optimal SEO
-- Blog with MDX content
-- Contact form with server actions
-- Prefer Mantine UI for new components
+#### Configuration & Build Tools
+- `@repo/typescript-config` - Shared TypeScript configurations
+- `@repo/eslint-config` - ESLint rules and configurations
+- `@repo/next-config` - Next.js configuration wrapper
 
-### `/apps/backstage` - Admin Panel (Port: 3300)
+### Layer 2: Core Services
+Low-level services that other packages depend on:
 
-- Admin-only application
-- User management (list, ban, impersonate)
-- Organization management
-- Session management
-- API key oversight
-- Role-based access (super-admin, admin, moderator, support)
-- Full Better Auth integration
+#### Testing & Development
+- `@repo/testing` - Vitest configuration and test utilities
 
-### `/apps/workers` - Worker Service (Port: 3400)
+#### Security & Infrastructure
+- `@repo/security` - Security headers and middleware
+- `@repo/rate-limit` - API rate limiting
+- `@repo/observability` - Sentry error tracking and monitoring
 
-- Background job processing
-- Workflow orchestration
-- QStash integration for distributed tasks
-- Event-driven architecture
-- Health monitoring endpoints
+### Layer 3: Data Management
+Core data services:
 
-### `/apps/email` - Email Service (Port: 3500)
+- `@repo/database` - Prisma ORM with PostgreSQL
 
-- React Email templates
-- Preview server for development
-- Email templates: contact, invitations, notifications
-- Uses Tailwind CSS (React Email requirement)
+### Layer 4: Core Business Services
+Services that implement core functionality:
 
-### `/apps/studio` - Prisma Studio (Port: 3600)
+#### Analytics & Communication
+- `@repo/analytics` - Multi-provider analytics (Segment, PostHog, GA) + Feature Flags
+  - **Now includes feature flags**: Feature flags are part of analytics since PostHog treats them as analytics events
+  - **No circular dependencies**: Packages import only types from `@repo/analytics/types/flags`
+  - **Usage**: `import { flag, useFlag, getAuthFlags } from '@repo/analytics'`
+  - **Local dev**: Use `LOCAL_FLAGS` environment variable to override
+- `@repo/email` - Email templates with React Email and Resend
+- `@repo/notifications` - Knock (backend) and Mantine (frontend) notifications
 
-- Database management UI
-- Direct database access
-- Development tool only
+### Layer 5: Business Logic
+Higher-level services that compose core services:
 
-### `/apps/storybook` - Component Library (Port: 3700)
+#### Authentication & Payments
+- `@repo/auth` - Better Auth with organizations, teams, and API keys
+- `@repo/payments` - Stripe integration for subscriptions and credits
 
-- All design system components
-- Interactive documentation
-- Visual testing
-- Theme variations
-- Supports both Mantine and Tailwind components
+#### Content & Orchestration
+- `@repo/orchestration` - Workflow execution and job processing
+- `@repo/seo` - SEO metadata and structured data generation
+- `@repo/internationalization` - Multi-language support
 
-### `/apps/docs` - Documentation (Port: 3800)
+### Layer 5.5: Specialized Services
+Domain-specific services that may depend on multiple business logic packages:
 
-- Mintlify documentation platform
-- API reference from OpenAPI spec
-- Development guides
-- Code examples
+- `@repo/ai` - AI/LLM integrations and utilities
+- `@repo/scraping` - Web scraping utilities
+- `@repo/storage` - File storage abstraction
 
-## Key Shared Packages
+### Layer 6: UI Layer
+Frontend packages that consume all other services:
 
-### `@repo/auth` - Authentication & Authorization
+- `@repo/design-system` - Composite UI components and Gluestack UI v2 library
 
-- Full Better Auth implementation with all plugins
-- Organization/team multi-tenancy
-- API key generation and validation with rate limiting
-- Admin roles and permissions (super-admin, admin, moderator, support)
-- Middleware for route protection (edge-compatible)
-- Session management with cookie caching
-- Impersonation support
+### Layer 7: Applications
+End-user applications that consume all packages:
 
-### `@repo/database` - Data Layer
+## Dependency Rules
 
+1. **Strict Layering**: Packages can only depend on packages from lower layers
+2. **No Circular Dependencies**: A package cannot import from a package that depends on it
+3. **Feature Flag Usage**: 
+   - Feature flags should be used at the application level (Layer 7)
+   - Packages provide the functionality, apps control whether it's enabled
+   - Example: Analytics package provides tracking, apps use feature flags to enable/disable it
+4. **Provider Pattern**: Use providers at the app level to inject feature flag decisions into packages
+
+## Applications (Port Assignments)
+
+### Core Applications
+- `/apps/web` (Port: 3200) - Marketing website with blog and demo functionality
+- `/apps/backstage` (Port: 3300) - Admin panel with user management
+- `/apps/workers` (Port: 3400) - Background job processing
+
+### Development Tools
+- `/apps/email` (Port: 3500) - Email template preview
+- `/apps/studio` (Port: 3600) - Prisma Studio database UI
+- `/apps/storybook` (Port: 3700) - Component documentation
+- `/apps/docs` (Port: 3800) - Mintlify documentation
+
+### Mobile/Cross-Platform
+- `/apps/hedwig` (Port: 3900) - Expo React Native app (iOS and web only)
+
+## Detailed Package Specifications
+
+### Foundation Layer Packages
+
+#### `@repo/typescript-config`
+- Base TypeScript configurations for different contexts
+- Strict type checking enabled
+- ESM module support
+- Configurations: base, nextjs, react-library
+
+#### `@repo/eslint-config`
+- Shared ESLint rules
+- Prettier integration
+- Context-specific configs: base, next, react-internal, react-library
+
+#### `@repo/testing`
+- Vitest configuration presets
+- React Testing Library setup
+- Mock utilities and helpers
+- Coverage configuration
+
+### Core Services Layer
+
+#### `@repo/security`
+- Security headers middleware
+- CSRF protection
+- Content Security Policy
+- Edge-compatible
+
+#### `@repo/observability`
+- Sentry error tracking
+- Performance monitoring
+- Custom error boundaries
+- Health check endpoints
+
+### Data & Communication Layer
+
+#### `@repo/database`
 - Prisma ORM with PostgreSQL
 - Type-safe database client
 - Migration management
 - Shared models across apps
+- Seed data utilities
 
-### `@repo/design-system` - UI Components
-
-- Custom composite components only
-- Use Mantine UI components directly for basic components
-- Custom auth components (sign-in, user-button, organization-switcher)
-- Admin components (user-list, organization-detail)
-- Form handling with @mantine/form
-- Theme provider configuration
-
-### `@repo/notifications` - Notification Systems
-
-- Backend: Knock integration for transactional notifications
-- Frontend: Centralized Mantine notifications configuration
-- Consistent notification patterns across apps
-
-### `@repo/seo` - SEO & Structured Data
-
-- Enhanced metadata generation for Next.js
-- Comprehensive structured data support (LD+JSON)
-- Multiple schema types: WebSite, Organization, Article, Product, FAQ, etc.
-- Type-safe schema generation
-
-### `@repo/analytics` - Tracking
-
-- PostHog integration
-- Google Analytics support
+#### `@repo/analytics`
+- Universal analytics emitters
+- Multi-provider support (Segment, PostHog, Google Analytics)
+- **Integrated feature flags**: Check flags with `flag()`, `useFlag()` hook
+- Feature flag helpers: `getAuthFlags()`, `getPaymentFlags()`, etc.
+- Local development: `LOCAL_FLAGS` environment variable
 - Server and client implementations
-- GDPR-compliant tracking
+- Privacy-compliant tracking
+- PostHog automatically tracks flag usage as analytics events
 
-### `@repo/payments` - Stripe Integration
+#### `@repo/notifications`
+- Backend: Knock integration for transactional notifications
+- Frontend: Mantine notifications with consistent styling
+- Email, in-app, and push notification support
+- Template management
 
+### Business Logic Layer
+
+#### `@repo/auth`
+- Better Auth with all official plugins
+- Organization-based multi-tenancy
+- Role-based permissions (owner, admin, member)
+- API key management with rate limiting
+- Session caching and middleware
+- Impersonation support
+
+#### `@repo/payments`
+- Stripe integration
 - Subscription management
+- Usage-based billing (AI credits)
 - Webhook handling
-- AI credit system
 - Payment method management
+- Invoice generation
 
-### `@repo/email` - Email Service
+#### `@repo/orchestration`
+- Workflow execution engine
+- QStash integration for distributed processing
+- Event-driven architecture
+- Retry and error handling
+- Progress tracking
 
-- React Email templates
-- Resend integration
-- Template types: contact, invitations
-- Development preview server
+### UI Layer
 
-### `@repo/observability` - Monitoring
-
-- Sentry error tracking
-- Performance monitoring
-- Custom error boundaries
-- Health check components
+#### `@repo/design-system`
+- Composite UI components
+- Gluestack UI v2 component library
+- Custom auth components (sign-in, user-button)
+- Admin components (user-list, organization-detail)
+- Form handling utilities
+- Theme provider configuration
 
 ## Environment Variables
 

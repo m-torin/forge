@@ -1,12 +1,12 @@
-import { kitchenSinkWorkflow, type KitchenSinkPayload } from '@repo/orchestration';
+import { type KitchenSinkPayload, kitchenSinkWorkflow } from '@repo/orchestration';
 
 /**
  * Kitchen Sink Workflow Definition
- * 
+ *
  * The ultimate comprehensive workflow demonstrating EVERY Upstash Workflow & QStash feature.
  * This local definition wraps the kitchen-sink workflow from @repo/orchestration
  * and provides app-specific metadata and default payload configuration.
- * 
+ *
  * Features demonstrated:
  * - All context methods: run, call, sleep, sleepUntil, waitForEvent, notify, cancel, invoke
  * - Flow Control: Rate limiting and parallelism control
@@ -24,18 +24,15 @@ export const workflowDefinition = {
   name: 'Kitchen Sink - Complete Feature Demo',
   description: 'Comprehensive workflow demonstrating all QStash and Upstash Workflow features',
   version: '2.0.0',
-  
+
   // Import the workflow function from @repo/orchestration
   handler: kitchenSinkWorkflow,
-  
+
   // Metadata for UI/documentation
   metadata: {
     category: 'examples',
-    tags: ['comprehensive', 'all-features', 'demo', 'advanced'],
-    icon: '🚀',
     color: '#8B5CF6', // purple
     estimatedDuration: '2-5 minutes',
-    warning: 'This workflow demonstrates all features and may take longer to complete',
     features: [
       'All workflow context methods',
       'QStash flow control',
@@ -49,161 +46,172 @@ export const workflowDefinition = {
       'Resource management',
       'Workflow patterns',
       'AI integration',
-      'Multi-mode processing'
-    ]
+      'Multi-mode processing',
+    ],
+    icon: '🚀',
+    tags: ['comprehensive', 'all-features', 'demo', 'advanced'],
+    warning: 'This workflow demonstrates all features and may take longer to complete',
   },
-  
+
   // Default payload for testing/examples
   defaultPayload: {
     // Basic fields
     name: 'Kitchen Sink Demo Run',
     priority: 7,
     taskId: `demo-${Date.now()}`,
-    
+
+    destination: { type: 'database' as const, config: { table: 'processed_data' } },
     // ETL Pipeline demo
     pipelineId: `pipeline-demo-${Date.now()}`,
     source: { type: 'api' as const, url: 'https://api.example.com/data' },
     transformations: ['validate', 'sanitize', 'filter', 'enrich'],
-    destination: { type: 'database' as const, config: { table: 'processed_data' } },
-    
-    // Order processing demo
-    orderId: `order-demo-${Date.now()}`,
+
     customer: { id: 'cust-demo', email: 'demo@example.com', tier: 'premium' as const },
     items: [
-      { sku: 'WIDGET-001', quantity: 2, price: 49.99 },
-      { sku: 'GADGET-002', quantity: 1, price: 99.99 }
+      { price: 49.99, quantity: 2, sku: 'WIDGET-001' },
+      { price: 99.99, quantity: 1, sku: 'GADGET-002' },
     ],
-    
-    // Orchestration demo
-    datasetId: `dataset-demo-${Date.now()}`,
-    operations: ['sum', 'average', 'max'] as ('sum' | 'average' | 'max')[],
+    // Order processing demo
+    orderId: `order-demo-${Date.now()}`,
+
     coffeeOrders: [
       { customerName: 'Alice', style: 'cappuccino' },
-      { customerName: 'Bob', style: 'latte' }
+      { customerName: 'Bob', style: 'latte' },
     ],
+    // Orchestration demo
+    datasetId: `dataset-demo-${Date.now()}`,
     notificationEmail: 'admin@example.com',
-    
+    operations: ['sum', 'average', 'max'] as ('sum' | 'average' | 'max')[],
+
     // Comprehensive options
     options: {
-      mode: 'full' as const,
       batchSize: 5,
-      requiresApproval: false,
-      notifyOnComplete: true,
-      notifyOn: ['error', 'complete'],
       maxDuration: 300,
-      
-      // QStash features
-      flowControl: {
-        key: 'kitchen-sink-demo',
-        ratePerSecond: 10,
-        parallelism: 3
-      },
-      deduplication: {
-        enabled: true,
-        contentBased: false
-      },
+      mode: 'full' as const,
+      notifyOn: ['error', 'complete'],
+      notifyOnComplete: true,
+      requiresApproval: false,
+
       urlGroups: {
         enabled: false,
+        endpoints: [],
         groupName: 'demo-notifications',
-        endpoints: []
       },
-      requestSigning: {
+      aiIntegration: {
+        provider: 'anthropic' as const,
         enabled: false,
-        verifySignatures: false
+        maxTokens: 4000,
+        model: 'claude-3-5-sonnet-20241022',
+      },
+      deduplication: {
+        contentBased: false,
+        enabled: true,
       },
       dlqHandling: {
         enabled: false,
-        maxRetries: 3
+        maxRetries: 3,
       },
-      aiIntegration: {
+      // QStash features
+      flowControl: {
+        key: 'kitchen-sink-demo',
+        parallelism: 3,
+        ratePerSecond: 10,
+      },
+      requestSigning: {
         enabled: false,
-        provider: 'anthropic' as const,
-        model: 'claude-3-5-sonnet-20241022',
-        maxTokens: 4000
-      }
-    }
+        verifySignatures: false,
+      },
+    },
   } satisfies KitchenSinkPayload,
-  
+
   // Configuration for the workflow runtime
   config: {
+    enableDeduplication: true,
+    queueConcurrency: 20,
     retries: 3,
     timeout: 600, // 10 minutes
-    queueConcurrency: 20,
-    enableDeduplication: true,
-    verbose: true
+    verbose: true,
   },
-  
+
   // Processing modes for different demo scenarios
   modes: {
-    full: {
-      name: 'Full Demo',
-      description: 'Runs all features and patterns',
-      estimatedDuration: '3-5 minutes'
+    ai_pipeline: {
+      name: 'AI Content Pipeline',
+      description: 'AI-powered content moderation workflow',
+      estimatedDuration: '1-2 minutes',
     },
     etl: {
       name: 'ETL Pipeline',
       description: 'Data extraction, transformation, and loading',
-      estimatedDuration: '1-2 minutes'
-    },
-    order: {
-      name: 'Order Processing',
-      description: 'E-commerce order workflow with validations',
-      estimatedDuration: '30-60 seconds'
-    },
-    orchestration: {
-      name: 'Task Orchestration',
-      description: 'Parallel task coordination and data processing',
-      estimatedDuration: '30-60 seconds'
-    },
-    ai_pipeline: {
-      name: 'AI Content Pipeline',
-      description: 'AI-powered content moderation workflow',
-      estimatedDuration: '1-2 minutes'
-    },
-    saas_workflow: {
-      name: 'Multi-tenant SaaS',
-      description: 'Tenant-specific operations with rate limiting',
-      estimatedDuration: '1-2 minutes'
+      estimatedDuration: '1-2 minutes',
     },
     event_processing: {
       name: 'Event Stream Processing',
       description: 'Real-time event batch processing',
-      estimatedDuration: '30-60 seconds'
-    }
+      estimatedDuration: '30-60 seconds',
+    },
+    full: {
+      name: 'Full Demo',
+      description: 'Runs all features and patterns',
+      estimatedDuration: '3-5 minutes',
+    },
+    orchestration: {
+      name: 'Task Orchestration',
+      description: 'Parallel task coordination and data processing',
+      estimatedDuration: '30-60 seconds',
+    },
+    order: {
+      name: 'Order Processing',
+      description: 'E-commerce order workflow with validations',
+      estimatedDuration: '30-60 seconds',
+    },
+    saas_workflow: {
+      name: 'Multi-tenant SaaS',
+      description: 'Tenant-specific operations with rate limiting',
+      estimatedDuration: '1-2 minutes',
+    },
   },
-  
+
   // Input validation schema (simplified for UI)
   inputSchema: {
     type: 'object',
     properties: {
       name: {
         type: 'string',
+        default: 'Kitchen Sink Demo',
         description: 'Name for this workflow run',
-        default: 'Kitchen Sink Demo'
       },
       options: {
         type: 'object',
         properties: {
           mode: {
             type: 'string',
-            enum: ['full', 'etl', 'order', 'orchestration', 'ai_pipeline', 'saas_workflow', 'event_processing'],
+            default: 'full',
             description: 'Processing mode to run',
-            default: 'full'
+            enum: [
+              'full',
+              'etl',
+              'order',
+              'orchestration',
+              'ai_pipeline',
+              'saas_workflow',
+              'event_processing',
+            ],
           },
           requiresApproval: {
             type: 'boolean',
+            default: false,
             description: 'Enable approval gates',
-            default: false
           },
           simulateFailure: {
             type: 'boolean',
+            default: false,
             description: 'Simulate failures for testing error handling',
-            default: false
-          }
-        }
-      }
-    }
-  }
+          },
+        },
+      },
+    },
+  },
 };
 
 // Export the type for use in other parts of the app

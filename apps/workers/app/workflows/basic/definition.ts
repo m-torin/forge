@@ -1,15 +1,16 @@
 import { basicWorkflow } from '@repo/orchestration/examples';
+
+import { wrapWorkflow } from '../workflow-wrapper';
+
 import type { WorkflowDefinition } from '../types';
 
 const definition: WorkflowDefinition = {
   metadata: {
     id: 'basic',
-    title: 'Basic Workflow',
+    color: 'blue',
     description: 'Essential workflow pattern with validation, batch processing, and error handling',
-    tags: ['demo', 'batch', 'validation'],
     difficulty: 'beginner',
     estimatedTime: '5-10 seconds',
-    color: 'blue',
     features: [
       'Input validation with custom logic',
       'Batch processing with configurable size',
@@ -18,8 +19,10 @@ const definition: WorkflowDefinition = {
       'Task prioritization',
       'Optional approval steps',
     ],
+    tags: ['demo', 'batch', 'validation'],
+    title: 'Basic Workflow',
   },
-  
+
   defaultPayload: {
     requiresValidation: true,
     name: 'Enhanced Basic Processing',
@@ -32,8 +35,8 @@ const definition: WorkflowDefinition = {
       { id: '3', data: { type: 'batch' }, priority: 8 },
     ],
   },
-  
-  workflow: basicWorkflow,
+
+  workflow: wrapWorkflow(basicWorkflow),
 };
 
 export default definition;

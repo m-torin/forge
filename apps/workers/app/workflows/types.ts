@@ -16,13 +16,13 @@ export interface WorkflowDefinition {
     icon?: string;
     features: string[];
   };
-  
+
   // Default payload example
   defaultPayload: Record<string, any>;
-  
+
   // The workflow implementation
   workflow: (context: WorkflowContext<any>) => Promise<any>;
-  
+
   // Optional server action for direct execution
   action?: (payload: any) => Promise<any>;
 }

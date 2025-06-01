@@ -1,6 +1,7 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
 import Image, { type StaticImageData } from 'next/image';
 import { type FC, type ReactNode } from 'react';
+
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
 
 export interface SectionHeroProps {
   btnText?: string;

@@ -1,10 +1,3 @@
-import Label from '@/components/Label/Label';
-import NcInputNumber from '@/components/NcInputNumber';
-import Prices from '@/components/Prices';
-import { getCart, type TCardProduct } from '@/data/data';
-import Breadcrumb from '@/shared/Breadcrumb';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import Input from '@/shared/Input/Input';
 import {
   Coordinate01Icon,
   InformationCircleIcon,
@@ -14,6 +7,14 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { type Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { Label } from '@repo/design-system/ciesco2';
+import { NcInputNumber } from '@repo/design-system/ciesco2';
+import { Prices } from '@repo/design-system/ciesco2';
+import { getCart, type TCardProduct } from '@repo/design-system/ciesco2';
+import { Breadcrumb } from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
 
 import LeftSide from './LeftSide';
 
@@ -122,8 +123,8 @@ const CheckoutPage = async () => {
           <Breadcrumb
             className="mt-5"
             breadcrumbs={[
-              { id: 1, name: 'Home', href: '/' },
-              { id: 2, name: 'Cart', href: '/cart' },
+              { id: 1, name: 'Home', href: '/' as any },
+              { id: 2, name: 'Cart', href: '/cart' as any },
             ]}
             currentPage="Checkout"
           />

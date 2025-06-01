@@ -1,7 +1,8 @@
-import ReviewItem from '@/components/ReviewItem';
-import { type TReview } from '@/data/data';
 import { StarIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
+
+import { ReviewItem } from '@repo/design-system/ciesco2';
+import { type TReview } from '@repo/design-system/ciesco2';
 
 const ProductReviews = ({
   className,

@@ -1,11 +1,8 @@
 'use client';
 
 import { useWorkflow } from '@/contexts/workflow-context';
-import {
-  filterWorkflows,
-  getAllTags,
-  workflowMetadata,
-} from '@/lib/workflow-metadata';
+import { filterWorkflows, getAllTags, workflowMetadata } from '@/lib/workflow-metadata';
+// import { track } from '@repo/analytics'; // Using platformAnalytics instead
 import {
   ActionIcon,
   Affix,
@@ -62,6 +59,27 @@ const workflowExamples: Record<string, any> = {
       { id: '3', data: { type: 'batch' }, priority: 8 },
     ],
   },
+  'chart-pdps': {
+    message: 'Hello World from Chart PDPs!',
+  },
+  'chart-sitemaps': {
+    message: 'Hello World from Chart Sitemaps!',
+  },
+  'gen-copy': {
+    message: 'Hello World from Gen Copy!',
+  },
+  'image-processing': {
+    imageId: `img-${Date.now()}`,
+    imageUrl:
+      'https://unsplash.com/photos/m6tAqZvy4RM/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzQ4NDU1NTEzfA&force=true&w=2400',
+    options: {
+      filters: ['grayscale', 'sepia', 'blur', 'sharpen'],
+      outputFormat: 'webp',
+      quality: 85,
+      resolutions: [320, 640, 960, 1200], // Max 1200px
+    },
+    userId: 'user-123',
+  },
   'kitchen-sink': {
     // ETL Pipeline
     destination: { type: 'database', config: { table: 'processed_data' } },
@@ -98,44 +116,23 @@ const workflowExamples: Record<string, any> = {
       requiresApproval: true,
     },
   },
-  'image-processing': {
-    imageId: `img-${Date.now()}`,
-    imageUrl:
-      'https://unsplash.com/photos/m6tAqZvy4RM/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzQ4NDU1NTEzfA&force=true&w=2400',
-    options: {
-      filters: ['grayscale', 'sepia', 'blur', 'sharpen'],
-      outputFormat: 'webp',
-      quality: 85,
-      resolutions: [320, 640, 960, 1200], // Max 1200px
-    },
-    userId: 'user-123',
-  },
-  'chart-sitemaps': {
-    message: 'Hello World from Chart Sitemaps!',
-  },
-  'chart-pdps': {
-    message: 'Hello World from Chart PDPs!',
-  },
   'map-taxterm': {
     message: 'Hello World from Map Taxterm!',
-  },
-  'gen-copy': {
-    message: 'Hello World from Gen Copy!',
   },
 };
 
 // Icon mapping
 const iconMap: Record<string, any> = {
   blue: <IconRocket size={24} />,
-  purple: <IconDatabase size={24} />,
+  cyan: <IconDatabase size={24} />,
   green: <IconPhoto size={24} />,
   indigo: <IconDatabase size={24} />,
-  violet: <IconRocket size={24} />,
-  orange: <IconDatabase size={24} />,
-  cyan: <IconDatabase size={24} />,
-  teal: <IconDatabase size={24} />,
   lime: <IconDatabase size={24} />,
+  orange: <IconDatabase size={24} />,
   pink: <IconRocket size={24} />,
+  purple: <IconDatabase size={24} />,
+  teal: <IconDatabase size={24} />,
+  violet: <IconRocket size={24} />,
 };
 
 export default function WorkersPage() {
@@ -145,7 +142,7 @@ export default function WorkersPage() {
   const [filterExpanded, setFilterExpanded] = useState(false);
 
   // Get all workflows from metadata
-  const allWorkflows = Object.values(workflowMetadata).map(metadata => ({
+  const allWorkflows = Object.values(workflowMetadata).map((metadata) => ({
     ...metadata,
     endpoint: `/api/workflows/${metadata.id}`,
     example: workflowExamples[metadata.id] || {},
@@ -153,15 +150,14 @@ export default function WorkersPage() {
   }));
 
   // Filter workflows - pass the base metadata, then map the results
-  const filteredWorkflows = filterWorkflows(
-    Object.values(workflowMetadata), 
-    selectedTags
-  ).map(metadata => ({
-    ...metadata,
-    endpoint: `/api/workflows/${metadata.id}`,
-    example: workflowExamples[metadata.id] || {},
-    icon: iconMap[metadata.color || 'blue'],
-  }));
+  const filteredWorkflows = filterWorkflows(Object.values(workflowMetadata), selectedTags).map(
+    (metadata) => ({
+      ...metadata,
+      endpoint: `/api/workflows/${metadata.id}`,
+      example: workflowExamples[metadata.id] || {},
+      icon: iconMap[metadata.color || 'blue'],
+    }),
+  );
   const availableTags = getAllTags();
 
   // Use Mantine's useMap for payload state management
@@ -201,13 +197,11 @@ export default function WorkersPage() {
               <Badge size="sm" variant="light">
                 {filteredWorkflows.length} of {allWorkflows.length} workflows
               </Badge>
-              <Button
-                component="a"
-                href="/workflows"
-                size="xs"
-                variant="light"
-              >
+              <Button href="/workflows" component="a" size="xs" variant="light">
                 View New Dynamic Workflows →
+              </Button>
+              <Button href="/observability" component="a" size="xs" variant="outline">
+                System Observability →
               </Button>
             </Group>
             <Group>
@@ -216,10 +210,10 @@ export default function WorkersPage() {
                 onClick={() => {
                   allWorkflows.forEach((w) => triggerWorkflowWithExample(w));
                 }}
+                disabled={allWorkflows.length === 0}
+                gradient={{ deg: 90, from: 'blue', to: 'cyan' }}
                 size="sm"
                 variant="gradient"
-                gradient={{ from: 'blue', to: 'cyan', deg: 90 }}
-                disabled={allWorkflows.length === 0}
               >
                 Run All Workflows ({allWorkflows.length})
               </Button>
@@ -243,19 +237,15 @@ export default function WorkersPage() {
                     Filter by Tags
                   </Text>
                   {selectedTags.length > 0 && (
-                    <Button
-                      onClick={() => setSelectedTags([])}
-                      size="xs"
-                      variant="subtle"
-                    >
+                    <Button onClick={() => setSelectedTags([])} size="xs" variant="subtle">
                       Clear all
                     </Button>
                   )}
                 </Group>
-                <Chip.Group multiple onChange={setSelectedTags} value={selectedTags}>
+                <Chip.Group onChange={setSelectedTags} multiple value={selectedTags}>
                   <Group gap="xs">
-                    {availableTags.map(tag => (
-                      <Chip key={tag} value={tag} size="sm">
+                    {availableTags.map((tag) => (
+                      <Chip key={tag} size="sm" value={tag}>
                         {tag}
                       </Chip>
                     ))}
@@ -287,9 +277,9 @@ export default function WorkersPage() {
                     onClick={() => {
                       filteredWorkflows.forEach((w) => triggerWorkflowWithExample(w));
                     }}
+                    disabled={filteredWorkflows.length === 0}
                     size="xs"
                     variant="subtle"
-                    disabled={filteredWorkflows.length === 0}
                   >
                     Run All Visible ({filteredWorkflows.length})
                   </Button>
@@ -347,7 +337,7 @@ export default function WorkersPage() {
 
                               {/* Tags */}
                               <Group gap="xs">
-                                {workflow.tags.map(tag => (
+                                {workflow.tags.map((tag) => (
                                   <Badge key={tag} size="xs" variant="outline">
                                     {tag}
                                   </Badge>

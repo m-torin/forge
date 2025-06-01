@@ -8,6 +8,9 @@ A centralized testing package for the forge-ahead repository.
 - Common test setup utilities
 - Mocking utilities for browser and Next.js environments
 - Enhanced render utilities for React components
+- **Complete database mocking and testing utilities**
+- **Support for Firestore, Upstash Vector, and Upstash Redis**
+- **Database-specific test helpers and configurations**
 
 ## Usage
 
@@ -128,3 +131,58 @@ suppressConsoleErrors([/Warning: ReactDOM.render/]);
 
 - All React config options
 - `includeAppDir`: Whether to include the app directory in aliases (default: true)
+
+## Database Testing
+
+This package provides comprehensive mocking and testing utilities for all database adapters in the monorepo.
+
+### Quick Start
+
+```typescript
+import {
+  createUpstashRedisAdapter,
+  DatabaseTestHelper,
+  testDatabaseOperations,
+} from '@repo/testing';
+
+describe('Database Tests', () => {
+  let helper: DatabaseTestHelper;
+
+  beforeEach(async () => {
+    const adapter = createUpstashRedisAdapter();
+    helper = new DatabaseTestHelper(adapter, { provider: 'upstash-redis' });
+    await helper.setup();
+  });
+
+  afterEach(async () => {
+    await helper.cleanup();
+  });
+
+  it('should perform basic operations', async () => {
+    await testDatabaseOperations(helper, 'users');
+  });
+});
+```
+
+### Supported Database Mocks
+
+- **Firestore**: Complete mock with collections, documents, queries, transactions
+- **Upstash Vector**: Full vector database simulation with similarity search
+- **Upstash Redis**: Complete Redis operations (strings, lists, sets, hashes, sorted sets)
+
+### Database-Specific Configurations
+
+```typescript
+// vitest.config.ts
+import { redisTestConfig } from '@repo/testing/config/database';
+
+export default redisTestConfig();
+```
+
+### Test Helpers
+
+- `DatabaseTestHelper`: Generic helper for all database types
+- `VectorDatabaseTestHelper`: Specialized for vector operations
+- `RedisDatabaseTestHelper`: Specialized for Redis operations
+
+For detailed database testing documentation, see [DATABASE_TESTING.md](./DATABASE_TESTING.md).

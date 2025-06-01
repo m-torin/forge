@@ -6,7 +6,7 @@ import { IconUserCheck } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
 import { stopImpersonating } from '@repo/auth';
-import { CreateUserDialog, UserDetails, UserList } from '@repo/design-system/components/admin';
+import { CreateUserDialog, UserDetails, UserList } from '@repo/design-system/uix';
 
 interface User {
   banExpires?: string;

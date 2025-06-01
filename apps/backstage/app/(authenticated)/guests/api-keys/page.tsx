@@ -23,7 +23,7 @@ import {
   ApiKeyList,
   CreateApiKeyDialog,
   UpdateApiKeyDialog,
-} from '@repo/design-system/components/auth';
+} from '@repo/design-system/uix';
 
 interface ApiKey {
   createdAt: string;

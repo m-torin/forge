@@ -1,8 +1,3 @@
-import NcInputNumber from '@/components/NcInputNumber';
-import Prices from '@/components/Prices';
-import { getCart, type TCardProduct } from '@/data/data';
-import Breadcrumb from '@/shared/Breadcrumb';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
 import { CheckIcon } from '@heroicons/react/24/outline';
 import {
   Coordinate01Icon,
@@ -13,6 +8,12 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { type Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { NcInputNumber } from '@repo/design-system/ciesco2';
+import { Prices } from '@repo/design-system/ciesco2';
+import { getCart, type TCardProduct } from '@repo/design-system/ciesco2';
+import { Breadcrumb } from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Effective cart page for your e-commerce website',

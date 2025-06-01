@@ -1,0 +1,351 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { WorkflowClient } from '../../../src/runtime/core/workflow-client';
+
+import type { Client } from '@upstash/workflow';
+
+describe('WorkflowClient', () => {
+  let client: WorkflowClient;
+  let mockUpstashClient: Partial<Client>;
+
+  beforeEach(() => {
+    mockUpstashClient = {
+      cancel: vi.fn().mockResolvedValue(undefined),
+      getWaiters: vi.fn().mockResolvedValue([]),
+      logs: vi.fn().mockResolvedValue({ cursor: null, runs: [] }),
+      notify: vi.fn().mockResolvedValue([]),
+      trigger: vi.fn().mockResolvedValue({ workflowRunId: 'test-run-id' }),
+    };
+
+    client = new WorkflowClient({
+      baseUrl: 'https://example.com',
+      token: 'test-token',
+    });
+
+    // Override the internal client with our mock
+    (client as any).client = mockUpstashClient;
+  });
+
+  describe('constructor', () => {
+    it('should create a client with required config', () => {
+      const newClient = new WorkflowClient({
+        baseUrl: 'https://test.com',
+        token: 'my-token',
+      });
+      expect(newClient).toBeInstanceOf(WorkflowClient);
+    });
+
+    it('should create a client with optional config', () => {
+      const newClient = new WorkflowClient({
+        baseUrl: 'https://test.com',
+        retries: 5,
+        token: 'my-token',
+        verbose: true,
+      });
+      expect(newClient).toBeInstanceOf(WorkflowClient);
+    });
+
+    it('should throw error with invalid baseUrl', () => {
+      expect(() => new WorkflowClient({
+        baseUrl: '',
+        token: 'test-token',
+      })).toThrow();
+    });
+
+    it('should throw error with invalid token', () => {
+      expect(() => new WorkflowClient({
+        baseUrl: 'https://example.com',
+        token: '',
+      })).toThrow();
+    });
+  });
+
+  describe('trigger', () => {
+    it('should trigger a workflow', async () => {
+      const result = await client.trigger({
+        url: 'https://example.com/api/workflow',
+        body: { test: 'data' },
+      });
+
+      expect(result).toEqual({ workflowRunId: 'test-run-id' });
+      expect(mockUpstashClient.trigger).toHaveBeenCalledWith({
+        url: 'https://example.com/api/workflow',
+        body: { test: 'data' },
+      });
+    });
+
+    it('should trigger with headers', async () => {
+      await client.trigger({
+        url: 'https://example.com/api/workflow',
+        body: { test: 'data' },
+        headers: { 'X-Custom': 'header' },
+      });
+
+      expect(mockUpstashClient.trigger).toHaveBeenCalledWith({
+        url: 'https://example.com/api/workflow',
+        body: { test: 'data' },
+        headers: { 'X-Custom': 'header' },
+      });
+    });
+
+    it('should handle trigger errors', async () => {
+      mockUpstashClient.trigger = vi.fn().mockRejectedValue(new Error('Trigger failed'));
+
+      await expect(client.trigger({
+        url: 'https://example.com/api/workflow',
+        body: { test: 'data' },
+      })).rejects.toThrow('Trigger failed');
+    });
+  });
+
+  describe('cancel', () => {
+    it('should cancel workflows by IDs', async () => {
+      await client.cancel({ ids: ['id1', 'id2'] });
+
+      expect(mockUpstashClient.cancel).toHaveBeenCalledWith({
+        ids: ['id1', 'id2'],
+      });
+    });
+
+    it('should cancel workflows by URL', async () => {
+      await client.cancel({ url: 'https://example.com/api/workflow' });
+
+      expect(mockUpstashClient.cancel).toHaveBeenCalledWith({
+        url: 'https://example.com/api/workflow',
+      });
+    });
+
+    it('should handle cancel errors', async () => {
+      mockUpstashClient.cancel = vi.fn().mockRejectedValue(new Error('Cancel failed'));
+
+      await expect(client.cancel({ ids: ['id1'] })).rejects.toThrow('Cancel failed');
+    });
+  });
+
+  describe('logs', () => {
+    it('should get logs for a workflow run', async () => {
+      const mockLogs = {
+        cursor: 'next-cursor',
+        runs: [
+          { id: 'run1', status: 'success', timestamp: Date.now() },
+          { id: 'run2', status: 'failed', timestamp: Date.now() },
+        ],
+      };
+      mockUpstashClient.logs = vi.fn().mockResolvedValue(mockLogs);
+
+      const result = await client.logs({ workflowRunId: 'test-id' });
+
+      expect(result).toEqual(mockLogs);
+      expect(mockUpstashClient.logs).toHaveBeenCalledWith({
+        workflowRunId: 'test-id',
+      });
+    });
+
+    it('should get logs with cursor', async () => {
+      await client.logs({
+        cursor: 'previous-cursor',
+        workflowRunId: 'test-id',
+      });
+
+      expect(mockUpstashClient.logs).toHaveBeenCalledWith({
+        cursor: 'previous-cursor',
+        workflowRunId: 'test-id',
+      });
+    });
+
+    it('should handle logs errors', async () => {
+      mockUpstashClient.logs = vi.fn().mockRejectedValue(new Error('Logs failed'));
+
+      await expect(client.logs({ workflowRunId: 'test-id' })).rejects.toThrow('Logs failed');
+    });
+  });
+
+  describe('notify', () => {
+    it('should notify waiters', async () => {
+      const mockEvents = [
+        { data: { result: 'success' }, eventId: 'event1' },
+      ];
+      mockUpstashClient.notify = vi.fn().mockResolvedValue(mockEvents);
+
+      const result = await client.notify({
+        eventData: { message: 'Hello' },
+        eventId: 'test-event',
+      });
+
+      expect(result).toEqual(mockEvents);
+      expect(mockUpstashClient.notify).toHaveBeenCalledWith({
+        eventData: { message: 'Hello' },
+        eventId: 'test-event',
+      });
+    });
+
+    it('should handle notify errors', async () => {
+      mockUpstashClient.notify = vi.fn().mockRejectedValue(new Error('Notify failed'));
+
+      await expect(client.notify({
+        eventData: {},
+        eventId: 'test-event',
+      })).rejects.toThrow('Notify failed');
+    });
+  });
+
+  describe('getWaiters', () => {
+    it('should get waiters', async () => {
+      const mockWaiters = [
+        { eventId: 'event1', workflowRunId: 'run1' },
+        { eventId: 'event2', workflowRunId: 'run2' },
+      ];
+      mockUpstashClient.getWaiters = vi.fn().mockResolvedValue(mockWaiters);
+
+      const result = await client.getWaiters();
+
+      expect(result).toEqual(mockWaiters);
+      expect(mockUpstashClient.getWaiters).toHaveBeenCalled();
+    });
+
+    it('should handle getWaiters errors', async () => {
+      mockUpstashClient.getWaiters = vi.fn().mockRejectedValue(new Error('GetWaiters failed'));
+
+      await expect(client.getWaiters()).rejects.toThrow('GetWaiters failed');
+    });
+  });
+
+  describe('helper methods', () => {
+    describe('cancelEndpoint', () => {
+      it('should cancel all workflows for an endpoint', async () => {
+        await client.cancelEndpoint('/api/workflow');
+
+        expect(mockUpstashClient.cancel).toHaveBeenCalledWith({
+          url: expect.stringContaining('/api/workflow'),
+        });
+      });
+    });
+
+    describe('getActiveWorkflows', () => {
+      it('should get active workflows', async () => {
+        const mockLogs = {
+          cursor: null,
+          runs: [
+            { id: 'run1', status: 'running', timestamp: Date.now() },
+            { id: 'run2', status: 'completed', timestamp: Date.now() },
+            { id: 'run3', status: 'running', timestamp: Date.now() },
+          ],
+        };
+        mockUpstashClient.logs = vi.fn().mockResolvedValue(mockLogs);
+
+        const result = await client.getActiveWorkflows('test-id');
+
+        expect(result).toHaveLength(2);
+        expect(result.every(run => run.status === 'running')).toBe(true);
+      });
+    });
+
+    describe('waitForCompletion', () => {
+      it('should wait for workflow completion', async () => {
+        const mockLogsSequence = [
+          { cursor: null, runs: [{ id: 'test-id', status: 'running' }] },
+          { cursor: null, runs: [{ id: 'test-id', status: 'running' }] },
+          { cursor: null, runs: [{ id: 'test-id', status: 'completed' }] },
+        ];
+        let callCount = 0;
+        mockUpstashClient.logs = vi.fn().mockImplementation(() => {
+          return Promise.resolve(mockLogsSequence[callCount++]);
+        });
+
+        const result = await client.waitForCompletion('test-id', { pollingInterval: 10 });
+
+        expect(result.status).toBe('completed');
+        expect(mockUpstashClient.logs).toHaveBeenCalledTimes(3);
+      });
+
+      it('should timeout if workflow does not complete', async () => {
+        mockUpstashClient.logs = vi.fn().mockResolvedValue({
+          cursor: null,
+          runs: [{ id: 'test-id', status: 'running' }],
+        });
+
+        await expect(
+          client.waitForCompletion('test-id', {
+            pollingInterval: 10,
+            timeout: 100,
+          })
+        ).rejects.toThrow('Timeout waiting for workflow completion');
+      });
+
+      it('should handle failed workflows', async () => {
+        mockUpstashClient.logs = vi.fn().mockResolvedValue({
+          cursor: null,
+          runs: [{ id: 'test-id', error: 'Workflow failed', status: 'failed' }],
+        });
+
+        await expect(
+          client.waitForCompletion('test-id', { pollingInterval: 10 })
+        ).rejects.toThrow('Workflow failed');
+      });
+    });
+
+    describe('cancelAll', () => {
+      it('should cancel multiple workflows', async () => {
+        await client.cancelAll(['id1', 'id2', 'id3']);
+
+        expect(mockUpstashClient.cancel).toHaveBeenCalledWith({
+          ids: ['id1', 'id2', 'id3'],
+        });
+      });
+    });
+
+    describe('triggerBatch', () => {
+      it('should trigger multiple workflows', async () => {
+        const workflows = [
+          { url: 'https://example.com/api/workflow1', body: { data: 1 } },
+          { url: 'https://example.com/api/workflow2', body: { data: 2 } },
+        ];
+
+        const results = await client.triggerBatch(workflows);
+
+        expect(results).toHaveLength(2);
+        expect(mockUpstashClient.trigger).toHaveBeenCalledTimes(2);
+      });
+
+      it('should handle batch trigger errors', async () => {
+        mockUpstashClient.trigger = vi.fn()
+          .mockResolvedValueOnce({ workflowRunId: 'id1' })
+          .mockRejectedValueOnce(new Error('Failed'))
+          .mockResolvedValueOnce({ workflowRunId: 'id3' });
+
+        const workflows = [
+          { url: 'https://example.com/api/workflow1', body: {} },
+          { url: 'https://example.com/api/workflow2', body: {} },
+          { url: 'https://example.com/api/workflow3', body: {} },
+        ];
+
+        const results = await client.triggerBatch(workflows);
+
+        expect(results).toHaveLength(3);
+        expect(results[0]).toEqual({ workflowRunId: 'id1' });
+        expect(results[1]).toBeInstanceOf(Error);
+        expect(results[2]).toEqual({ workflowRunId: 'id3' });
+      });
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle network errors', async () => {
+      mockUpstashClient.trigger = vi.fn().mockRejectedValue(new Error('Network error'));
+
+      await expect(client.trigger({
+        url: 'https://example.com/api/workflow',
+        body: {},
+      })).rejects.toThrow('Network error');
+    });
+
+    it('should handle authentication errors', async () => {
+      mockUpstashClient.trigger = vi.fn().mockRejectedValue(new Error('Unauthorized'));
+
+      await expect(client.trigger({
+        url: 'https://example.com/api/workflow',
+        body: {},
+      })).rejects.toThrow('Unauthorized');
+    });
+  });
+});

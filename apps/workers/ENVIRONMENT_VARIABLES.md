@@ -79,14 +79,6 @@ monorepo, organized by package/app.
 - `NEXT_PUBLIC_KNOCK_API_KEY` - Knock.app public API key (optional)
 - `NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID` - Knock.app feed channel ID (optional)
 
-## Webhooks (@repo/webhooks)
-
-- `SVIX_TOKEN` - Svix webhook service token (required in production)
-
-## Collaboration (@repo/collaboration)
-
-- `LIVEBLOCKS_SECRET` - Liveblocks secret key (optional)
-
 ## AI (@repo/ai)
 
 - `OPENAI_API_KEY` - OpenAI API key (required in production if using AI features)

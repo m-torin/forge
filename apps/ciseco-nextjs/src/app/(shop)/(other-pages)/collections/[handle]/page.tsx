@@ -1,14 +1,14 @@
-import ProductCard from '@/components/ProductCard';
-import TabFilters from '@/components/TabFilters';
-import TabFiltersPopover from '@/components/TabFiltersPopover';
-import { getProducts } from '@/data/data';
+import { ProductCard } from '@repo/design-system/ciesco2';
+import { TabFilters } from '@repo/design-system/ciesco2';
+import { TabFiltersPopover } from '@repo/design-system/ciesco2';
+import { getProducts } from '@repo/design-system/ciesco2';
 import {
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@/shared/Pagination/Pagination';
+} from '@repo/design-system/ciesco2';
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;

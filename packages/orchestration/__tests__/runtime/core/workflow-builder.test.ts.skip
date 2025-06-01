@@ -1,0 +1,245 @@
+import { describe, expect, it, vi } from 'vitest';
+
+import { createWorkflow, WorkflowBuilder } from '../../../src/runtime/core/workflow-builder';
+
+import type { WorkflowContext } from '../../../src/runtime/core/workflow-builder';
+
+describe('WorkflowBuilder', () => {
+  describe('createWorkflow', () => {
+    it('should create a new WorkflowBuilder instance', () => {
+      const builder = createWorkflow();
+      expect(builder).toBeInstanceOf(WorkflowBuilder);
+    });
+
+    it('should create a WorkflowBuilder with options', () => {
+      const builder = createWorkflow({
+        failureUrl: 'https://example.com/failure',
+        retries: 5,
+        retryDelay: 'exponential',
+      });
+      expect(builder).toBeInstanceOf(WorkflowBuilder);
+    });
+  });
+
+  describe('WorkflowBuilder methods', () => {
+    it('should configure retries', () => {
+      const builder = createWorkflow().withRetries(3);
+      const config = (builder as any).workflowOptions;
+      expect(config.retries).toBe(3);
+    });
+
+    it('should configure batch processing', () => {
+      const builder = createWorkflow().withBatchProcessing(100, 10);
+      const config = (builder as any).workflowOptions;
+      expect(config.batchSize).toBe(100);
+      expect(config.concurrency).toBe(10);
+    });
+
+    it('should configure failure URL', () => {
+      const builder = createWorkflow().withFailureUrl('https://example.com/failure');
+      const config = (builder as any).workflowOptions;
+      expect(config.failureUrl).toBe('https://example.com/failure');
+    });
+
+    it('should configure verbose logging', () => {
+      const builder = createWorkflow().withVerboseLogging(true);
+      const config = (builder as any).workflowOptions;
+      expect(config.verbose).toBe(true);
+    });
+
+    it('should configure retry delay', () => {
+      const builder = createWorkflow().withRetryDelay('exponential');
+      const config = (builder as any).workflowOptions;
+      expect(config.retryDelay).toBe('exponential');
+    });
+
+    it('should configure timeout', () => {
+      const builder = createWorkflow().withTimeout(30000);
+      const config = (builder as any).workflowOptions;
+      expect(config.timeout).toBe(30000);
+    });
+
+    it('should configure step timeout', () => {
+      const builder = createWorkflow().withStepTimeout(5000);
+      const config = (builder as any).workflowOptions;
+      expect(config.stepTimeout).toBe(5000);
+    });
+
+    it('should enable DLQ', () => {
+      const builder = createWorkflow().withDLQ(true);
+      const config = (builder as any).workflowOptions;
+      expect(config.enableDLQ).toBe(true);
+    });
+
+    it('should configure initial data', () => {
+      const initialData = { test: 'data' };
+      const builder = createWorkflow().withInitialData(initialData);
+      const config = (builder as any).workflowOptions;
+      expect(config.initialData).toEqual(initialData);
+    });
+
+    it('should allow method chaining', () => {
+      const builder = createWorkflow()
+        .withRetries(5)
+        .withBatchProcessing(50, 5)
+        .withFailureUrl('https://example.com/fail')
+        .withVerboseLogging(true)
+        .withRetryDelay('linear')
+        .withTimeout(60000)
+        .withStepTimeout(10000)
+        .withDLQ(true)
+        .withInitialData({ init: true });
+
+      expect(builder).toBeInstanceOf(WorkflowBuilder);
+      const config = (builder as any).workflowOptions;
+      expect(config.retries).toBe(5);
+      expect(config.batchSize).toBe(50);
+      expect(config.concurrency).toBe(5);
+      expect(config.failureUrl).toBe('https://example.com/fail');
+      expect(config.verbose).toBe(true);
+      expect(config.retryDelay).toBe('linear');
+      expect(config.timeout).toBe(60000);
+      expect(config.stepTimeout).toBe(10000);
+      expect(config.enableDLQ).toBe(true);
+      expect(config.initialData).toEqual({ init: true });
+    });
+  });
+
+  describe('build method', () => {
+    it('should build a workflow handler', () => {
+      const handler = vi.fn();
+      const workflow = createWorkflow().build(handler);
+
+      expect(workflow).toBeDefined();
+      expect(typeof workflow).toBe('object');
+      expect(typeof workflow.POST).toBe('function');
+    });
+
+    it('should wrap handler with configured options', async () => {
+      const handler = vi.fn().mockResolvedValue(new Response('OK'));
+      const workflow = createWorkflow()
+        .withRetries(3)
+        .withVerboseLogging(true)
+        .build(handler);
+
+      const mockRequest = new Request('https://example.com/workflow', {
+        body: JSON.stringify({ test: true }),
+        method: 'POST',
+      });
+
+      const response = await workflow.POST(mockRequest);
+      expect(response).toBeInstanceOf(Response);
+    });
+
+    it('should throw error if handler is not a function', () => {
+      const builder = createWorkflow();
+      expect(() => builder.build(null as any)).toThrow();
+      expect(() => builder.build(undefined as any)).toThrow();
+      expect(() => builder.build('not a function' as any)).toThrow();
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle errors in workflow handler', async () => {
+      const error = new Error('Test error');
+      const handler = vi.fn().mockRejectedValue(error);
+      const workflow = createWorkflow().build(handler);
+
+      const mockRequest = new Request('https://example.com/workflow', {
+        body: JSON.stringify({ test: true }),
+        method: 'POST',
+      });
+
+      await expect(workflow.POST(mockRequest)).rejects.toThrow('Test error');
+    });
+
+    it('should retry on failure when configured', async () => {
+      const handler = vi.fn()
+        .mockRejectedValueOnce(new Error('First attempt'))
+        .mockRejectedValueOnce(new Error('Second attempt'))
+        .mockResolvedValue(new Response('Success'));
+
+      const workflow = createWorkflow()
+        .withRetries(3)
+        .build(handler);
+
+      const mockRequest = new Request('https://example.com/workflow', {
+        body: JSON.stringify({ test: true }),
+        method: 'POST',
+      });
+
+      const response = await workflow.POST(mockRequest);
+      expect(handler).toHaveBeenCalledTimes(3);
+      expect(response).toBeInstanceOf(Response);
+    });
+  });
+
+  describe('type safety', () => {
+    it('should maintain type safety in handler', () => {
+      interface WorkflowInput {
+        action: string;
+        userId: string;
+      }
+
+      interface WorkflowOutput {
+        result: string;
+        timestamp: number;
+      }
+
+      const handler = async (context: WorkflowContext<WorkflowInput>): Promise<WorkflowOutput> => {
+        const { action, userId } = context;
+        return {
+          result: `User ${userId} performed ${action}`,
+          timestamp: Date.now(),
+        };
+      };
+
+      const workflow = createWorkflow<WorkflowInput, WorkflowOutput>().build(handler);
+      expect(workflow).toBeDefined();
+    });
+  });
+
+  describe('middleware integration', () => {
+    it('should apply middleware in correct order', async () => {
+      const executionOrder: string[] = [];
+
+      const middleware1 = vi.fn(async (context: any, next: any) => {
+        executionOrder.push('middleware1-before');
+        const result = await next();
+        executionOrder.push('middleware1-after');
+        return result;
+      });
+
+      const middleware2 = vi.fn(async (context: any, next: any) => {
+        executionOrder.push('middleware2-before');
+        const result = await next();
+        executionOrder.push('middleware2-after');
+        return result;
+      });
+
+      const handler = vi.fn(async () => {
+        executionOrder.push('handler');
+        return new Response('OK');
+      });
+
+      const builder = createWorkflow();
+      (builder as any).middleware = [middleware1, middleware2];
+      const workflow = builder.build(handler);
+
+      const mockRequest = new Request('https://example.com/workflow', {
+        body: JSON.stringify({ test: true }),
+        method: 'POST',
+      });
+
+      await workflow.POST(mockRequest);
+
+      expect(executionOrder).toEqual([
+        'middleware1-before',
+        'middleware2-before',
+        'handler',
+        'middleware2-after',
+        'middleware1-after',
+      ]);
+    });
+  });
+});

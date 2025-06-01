@@ -1,14 +1,15 @@
 'use client';
 
-import { Grid, Stack, Group, Text, Button, Badge, Card, Chip, Alert } from '@mantine/core';
-import { IconFilter, IconPlayerPlay } from '@tabler/icons-react';
+import { Alert, Badge, Button, Card, Chip, Grid, Group, Stack, Text } from '@mantine/core';
+import { IconFilter } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { WorkflowCard } from './workflow-card';
 import { runWorkflow } from '../actions';
 
+import { WorkflowCard } from './workflow-card';
+
 interface WorkflowGridProps {
-  workflows: Array<{
+  workflows: {
     id: string;
     title: string;
     description: string;
@@ -18,7 +19,7 @@ interface WorkflowGridProps {
     color?: string;
     features: string[];
     defaultPayload: Record<string, any>;
-  }>;
+  }[];
 }
 
 export function WorkflowGrid({ workflows }: WorkflowGridProps) {
@@ -28,24 +29,22 @@ export function WorkflowGrid({ workflows }: WorkflowGridProps) {
   const [workflowStatus, setWorkflowStatus] = useState<Record<string, any>>({});
 
   // Get all unique tags
-  const allTags = Array.from(
-    new Set(workflows.flatMap(w => w.tags))
-  ).sort();
+  const allTags = Array.from(new Set(workflows.flatMap((w) => w.tags))).sort();
 
   // Filter workflows by tags
-  const filteredWorkflows = workflows.filter(workflow => {
+  const filteredWorkflows = workflows.filter((workflow) => {
     if (selectedTags.length === 0) return true;
-    return workflow.tags.some(tag => selectedTags.includes(tag));
+    return workflow.tags.some((tag) => selectedTags.includes(tag));
   });
 
   const handleRun = async (workflowId: string, payload: any) => {
-    setRunningWorkflows(prev => ({ ...prev, [workflowId]: true }));
-    
+    setRunningWorkflows((prev) => ({ ...prev, [workflowId]: true }));
+
     try {
       const result = await runWorkflow(workflowId, payload);
-      
+
       if (result.success) {
-        setWorkflowStatus(prev => ({
+        setWorkflowStatus((prev) => ({
           ...prev,
           [workflowId]: {
             status: 'running',
@@ -53,24 +52,24 @@ export function WorkflowGrid({ workflows }: WorkflowGridProps) {
           },
         }));
       } else {
-        setWorkflowStatus(prev => ({
+        setWorkflowStatus((prev) => ({
           ...prev,
           [workflowId]: {
-            status: 'failed',
             error: result.error,
+            status: 'failed',
           },
         }));
       }
-    } catch (error) {
-      setWorkflowStatus(prev => ({
+    } catch {
+      setWorkflowStatus((prev) => ({
         ...prev,
         [workflowId]: {
-          status: 'failed',
           error: 'Failed to trigger workflow',
+          status: 'failed',
         },
       }));
     } finally {
-      setRunningWorkflows(prev => ({ ...prev, [workflowId]: false }));
+      setRunningWorkflows((prev) => ({ ...prev, [workflowId]: false }));
     }
   };
 
@@ -100,19 +99,15 @@ export function WorkflowGrid({ workflows }: WorkflowGridProps) {
                 Filter by Tags
               </Text>
               {selectedTags.length > 0 && (
-                <Button
-                  onClick={() => setSelectedTags([])}
-                  size="xs"
-                  variant="subtle"
-                >
+                <Button onClick={() => setSelectedTags([])} size="xs" variant="subtle">
                   Clear all
                 </Button>
               )}
             </Group>
-            <Chip.Group multiple onChange={setSelectedTags} value={selectedTags}>
+            <Chip.Group onChange={setSelectedTags} multiple value={selectedTags}>
               <Group gap="xs">
-                {allTags.map(tag => (
-                  <Chip key={tag} value={tag} size="sm">
+                {allTags.map((tag) => (
+                  <Chip key={tag} size="sm" value={tag}>
                     {tag}
                   </Chip>
                 ))}
@@ -131,8 +126,8 @@ export function WorkflowGrid({ workflows }: WorkflowGridProps) {
           {filteredWorkflows.map((workflow) => (
             <Grid.Col key={workflow.id} span={{ base: 12, md: 6 }}>
               <WorkflowCard
-                workflow={workflow}
                 onRun={handleRun}
+                workflow={workflow}
                 isRunning={runningWorkflows[workflow.id]}
                 status={workflowStatus[workflow.id]}
               />

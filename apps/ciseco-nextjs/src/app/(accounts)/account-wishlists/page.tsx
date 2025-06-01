@@ -1,7 +1,8 @@
-import ProductCard from '@/components/ProductCard';
-import { getProducts } from '@/data/data';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
 import { type Metadata } from 'next';
+
+import { ProductCard } from '@repo/design-system/ciesco2';
+import { getProducts } from '@repo/design-system/ciesco2';
+import { ButtonSecondary } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Saved Products page',

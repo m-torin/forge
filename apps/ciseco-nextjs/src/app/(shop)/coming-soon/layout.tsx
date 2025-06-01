@@ -1,5 +1,6 @@
-import Header from '@/components/Header/Header';
 import { type FC } from 'react';
+
+import { Header } from '@repo/design-system/ciesco2';
 
 import { ApplicationLayout } from '../application-layout';
 

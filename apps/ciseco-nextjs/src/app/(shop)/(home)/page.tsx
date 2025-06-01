@@ -1,21 +1,27 @@
-import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
-import SectionMagazine5 from '@/components/blog/SectionMagazine5';
-import { Divider } from '@/components/Divider';
-import Heading from '@/components/Heading/Heading';
-import SectionClientSay from '@/components/SectionClientSay';
-import SectionCollectionSlider from '@/components/SectionCollectionSlider';
-import SectionCollectionSlider2 from '@/components/SectionCollectionSlider2';
-import SectionGridFeatureItems from '@/components/SectionGridFeatureItems';
-import SectionGridMoreExplore from '@/components/SectionGridMoreExplore/SectionGridMoreExplore';
-import SectionHero2 from '@/components/SectionHero/SectionHero2';
-import SectionHowItWork from '@/components/SectionHowItWork/SectionHowItWork';
-import SectionPromo1 from '@/components/SectionPromo1';
-import SectionPromo2 from '@/components/SectionPromo2';
-import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct';
-import SectionSliderProductCard from '@/components/SectionSliderProductCard';
-import { getBlogPosts, getCollections, getGroupCollections, getProducts } from '@/data/data';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
 import { type Metadata } from 'next';
+
+import {
+  BackgroundSection,
+  ButtonSecondary,
+  Divider,
+  getBlogPosts,
+  getCollections,
+  getGroupCollections,
+  getProducts,
+  Heading,
+  SectionClientSay,
+  SectionCollectionSlider,
+  SectionCollectionSlider2,
+  SectionGridFeatureItems,
+  SectionGridMoreExplore,
+  SectionHero2,
+  SectionHowItWork,
+  SectionMagazine5,
+  SectionPromo1,
+  SectionPromo2,
+  SectionSliderLargeProduct,
+  SectionSliderProductCard,
+} from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Discover the latest products and trends in our online store.',

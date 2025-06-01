@@ -1,11 +1,12 @@
-import { Divider } from '@/components/Divider';
-import Label from '@/components/Label/Label';
-import SectionPromo1 from '@/components/SectionPromo1';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import Input from '@/shared/Input/Input';
-import SocialsList from '@/shared/SocialsList/SocialsList';
-import Textarea from '@/shared/Textarea/Textarea';
 import { type Metadata } from 'next';
+
+import { Divider } from '@repo/design-system/ciesco2';
+import { Label } from '@repo/design-system/ciesco2';
+import { SectionPromo1 } from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
+import { SocialsList } from '@repo/design-system/ciesco2';
+import { Textarea } from '@repo/design-system/ciesco2';
 
 export const metadata: Metadata = {
   description: 'Contact us for any inquiries or support',

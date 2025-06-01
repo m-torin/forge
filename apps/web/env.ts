@@ -1,13 +1,12 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+import { keys as analytics } from "@repo/analytics/keys";
 import { keys as auth } from "@repo/auth/keys";
+import { keys as core } from "@repo/config/next/keys";
 import { keys as database } from "@repo/database/keys";
-import { keys as flags } from "@repo/feature-flags/keys";
-import { keys as internationalization } from "@repo/internationalization/keys";
-import { keys as core } from "@repo/next-config/keys";
+import { keys as email } from "@repo/email/keys";
 import { keys as observability } from "@repo/observability/keys";
-import { keys as rateLimit } from "@repo/rate-limit/keys";
 import { keys as security } from "@repo/security/keys";
 
 // For the template, we'll make auth, database, and email optional for demonstration
@@ -17,12 +16,11 @@ export const env = createEnv({
     core(),
     auth(),
     database(),
+    email(),
     observability(),
-    flags(),
+    analytics(),
     security(),
-    rateLimit(),
-    internationalization(),
-  ],
+  ] as any[],
   runtimeEnv: {
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,

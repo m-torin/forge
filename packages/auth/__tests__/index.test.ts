@@ -48,12 +48,9 @@ vi.mock('../keys', () => ({
 // UserButton and OrganizationSwitcher are now exported from '../client' mock
 
 // Mock design-system components
-vi.mock('@repo/design-system/components/auth/user-button', () => ({
-  UserButton: () => null,
-}));
-
-vi.mock('@repo/design-system/components/auth/organization-switcher', () => ({
+vi.mock('@repo/design-system/uix', () => ({
   OrganizationSwitcher: () => null,
+  UserButton: () => null,
 }));
 
 vi.mock('../components/sign-in', () => ({

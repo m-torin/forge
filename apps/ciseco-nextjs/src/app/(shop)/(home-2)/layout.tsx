@@ -1,5 +1,6 @@
-import Header2 from '@/components/Header/Header2';
 import { type Metadata } from 'next';
+
+import { Header2 } from '@repo/design-system/ciesco2';
 
 import { ApplicationLayout } from '../application-layout';
 

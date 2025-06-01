@@ -1,5 +1,6 @@
-import Heading from '@/components/Heading/Heading';
 import { type FC } from 'react';
+
+import { Heading } from '@repo/design-system/ciesco2';
 
 export interface Statistic {
   heading: string;

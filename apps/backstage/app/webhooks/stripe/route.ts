@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { analytics } from '@repo/analytics/posthog/server';
+import { Analytics } from '@repo/analytics/server';
 import { createPrismaAdapter } from '@repo/database/prisma';
 import { parseError } from '@repo/observability/error';
 import { log } from '@repo/observability/log';
@@ -12,6 +12,25 @@ import { env } from '../../../env';
 import type { Stripe } from '@repo/payments';
 
 const adapter = createPrismaAdapter();
+
+// Initialize analytics with environment-based providers
+const analytics = new Analytics({
+  providers: {
+    posthog: process.env.NEXT_PUBLIC_POSTHOG_KEY ? {
+      apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+      config: {
+        apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      }
+    } : undefined,
+    segment: process.env.SEGMENT_WRITE_KEY ? {
+      writeKey: process.env.SEGMENT_WRITE_KEY,
+    } : undefined,
+    googleAnalytics: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? {
+      measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+    } : undefined,
+  },
+  debug: process.env.NODE_ENV === 'development',
+});
 
 const getUserFromCustomerId = async (customerId: string) => {
   // Using the adapter to access the database
@@ -41,9 +60,11 @@ const handleCheckoutSessionCompleted = async (data: Stripe.Checkout.Session) => 
     return;
   }
 
-  analytics.capture({
-    distinctId: user.id,
-    event: 'User Subscribed',
+  await analytics.track('User Subscribed', {
+    userId: user.id,
+    customerId,
+    timestamp: new Date().toISOString(),
+    source: 'stripe-webhook',
   });
 };
 
@@ -59,9 +80,11 @@ const handleSubscriptionScheduleCanceled = async (data: Stripe.SubscriptionSched
     return;
   }
 
-  analytics.capture({
-    distinctId: user.id,
-    event: 'User Unsubscribed',
+  await analytics.track('User Unsubscribed', {
+    userId: user.id,
+    customerId,
+    timestamp: new Date().toISOString(),
+    source: 'stripe-webhook',
   });
 };
 
@@ -95,7 +118,7 @@ export const POST = async (request: Request): Promise<Response> => {
       }
     }
 
-    await analytics.shutdown();
+    await analytics.flush();
 
     return NextResponse.json({ ok: true, result: event });
   } catch (error) {

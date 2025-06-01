@@ -95,11 +95,18 @@ export default async function AboutPage({ params }: AboutPageProps) {
             </Stack>
           </div>
 
-          <Link href="/" locale={locale}>
-            <Button className="mt-4" variant="subtle">
-              {dictionary.template?.about?.backToHome || "Back to Home"}
-            </Button>
-          </Link>
+          <div className="flex gap-2 mt-4">
+            <Link href="/" locale={locale}>
+              <Button variant="subtle">
+                {dictionary.template?.about?.backToHome || "Back to Home"}
+              </Button>
+            </Link>
+            <Link href="/demo" locale={locale}>
+              <Button variant="light">
+                View Demo
+              </Button>
+            </Link>
+          </div>
         </Stack>
       </Paper>
     </Container>

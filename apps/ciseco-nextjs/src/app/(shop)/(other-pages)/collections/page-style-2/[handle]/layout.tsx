@@ -1,10 +1,11 @@
-import { Divider } from '@/components/Divider';
-import SectionPromo1 from '@/components/SectionPromo1';
-import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct';
-import { getCollectionByHandle, getProducts } from '@/data/data';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React from 'react';
+
+import { Divider } from '@repo/design-system/ciesco2';
+import { SectionPromo1 } from '@repo/design-system/ciesco2';
+import { SectionSliderLargeProduct } from '@repo/design-system/ciesco2';
+import { getCollectionByHandle, getProducts } from '@repo/design-system/ciesco2';
 
 export async function generateMetadata({
   params,

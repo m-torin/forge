@@ -1,12 +1,12 @@
-import { Container, Title, Text, Stack } from '@mantine/core';
+import { Container, Stack, Text, Title } from '@mantine/core';
 
-import { loadAllWorkflowMetadata } from './loader';
 import { WorkflowGrid } from './_components/workflow-grid';
+import { loadAllWorkflowMetadata } from './loader';
 
 export default async function WorkflowsPage() {
   // Load all workflow metadata at request time
   const workflowMetadata = await loadAllWorkflowMetadata();
-  
+
   return (
     <Container py="xl" size="lg">
       <Stack gap="xl">
@@ -18,7 +18,7 @@ export default async function WorkflowsPage() {
             Dynamically loaded workflows with auto-discovery
           </Text>
         </div>
-        
+
         <WorkflowGrid workflows={Object.values(workflowMetadata)} />
       </Stack>
     </Container>

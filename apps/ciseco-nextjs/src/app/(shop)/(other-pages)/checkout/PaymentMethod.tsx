@@ -1,11 +1,12 @@
 'use client';
 
-import Label from '@/components/Label/Label';
-import ButtonPrimary from '@/shared/Button/ButtonPrimary';
-import ButtonSecondary from '@/shared/Button/ButtonSecondary';
-import Input from '@/shared/Input/Input';
-import Radio from '@/shared/Radio/Radio';
 import { type FC, useState } from 'react';
+
+import { Label } from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { ButtonSecondary } from '@repo/design-system/ciesco2';
+import { Input } from '@repo/design-system/ciesco2';
+import { Radio } from '@repo/design-system/ciesco2';
 
 interface Props {
   isActive: boolean;

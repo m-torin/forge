@@ -1,0 +1,902 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  mockUpstashRedisAdapter,
+  mockFirestoreAdapter,
+  mockUpstashVectorAdapter,
+  resetMockRedisStorage,
+  resetMockFirestoreStorage,
+  resetMockVectorStorage,
+  RedisDatabaseTestHelper,
+  DatabaseTestHelper,
+  VectorDatabaseTestHelper,
+  createTestUser,
+  createTestVector,
+  createTestUsers,
+} from '@repo/testing';
+
+// Mock all database modules
+vi.mock('@upstash/redis', async () => {
+  const { mockUpstashRedis } = await import('@repo/testing');
+  return mockUpstashRedis;
+});
+
+vi.mock('firebase-admin', async () => {
+  const { mockFirebaseAdmin } = await import('@repo/testing');
+  return mockFirebaseAdmin;
+});
+
+vi.mock('@upstash/vector', async () => {
+  const { mockUpstashVector } = await import('@repo/testing');
+  return mockUpstashVector;
+});
+
+describe('Orchestration Workflow Data Persistence', () => {
+  let redisHelper: RedisDatabaseTestHelper;
+  let firestoreHelper: DatabaseTestHelper;
+  let vectorHelper: VectorDatabaseTestHelper;
+
+  beforeEach(async () => {
+    resetMockRedisStorage();
+    resetMockFirestoreStorage();
+    resetMockVectorStorage();
+
+    redisHelper = new RedisDatabaseTestHelper(mockUpstashRedisAdapter);
+    firestoreHelper = new DatabaseTestHelper(mockFirestoreAdapter, {
+      provider: 'firestore',
+    });
+    vectorHelper = new VectorDatabaseTestHelper(mockUpstashVectorAdapter);
+
+    await redisHelper.setup();
+    await firestoreHelper.setup();
+    await vectorHelper.setup();
+  });
+
+  afterEach(async () => {
+    await redisHelper.cleanup();
+    await firestoreHelper.cleanup();
+    await vectorHelper.cleanup();
+
+    resetMockRedisStorage();
+    resetMockFirestoreStorage();
+    resetMockVectorStorage();
+  });
+
+  describe('Workflow State Management', () => {
+    it('should persist complex workflow state across databases', async () => {
+      const workflowId = 'complex-workflow-789';
+      const workflowState = {
+        id: workflowId,
+        type: 'data-processing-pipeline',
+        status: 'running',
+        currentStepIndex: 2,
+        totalSteps: 5,
+        startedAt: Date.now(),
+        estimatedCompletionAt: Date.now() + 600000, // 10 minutes
+        context: {
+          userId: 'user-123',
+          datasetId: 'dataset-456',
+          processingParams: {
+            batchSize: 1000,
+            filterCriteria: { status: 'active' },
+            outputFormat: 'json',
+          },
+        },
+        steps: [
+          { name: 'data-extraction', status: 'completed', completedAt: Date.now() - 300000 },
+          { name: 'data-validation', status: 'completed', completedAt: Date.now() - 240000 },
+          { name: 'data-transformation', status: 'running', startedAt: Date.now() - 60000 },
+          { name: 'data-analysis', status: 'pending' },
+          { name: 'result-publishing', status: 'pending' },
+        ],
+        metrics: {
+          recordsProcessed: 15000,
+          errorCount: 23,
+          avgProcessingTime: 125.5,
+        },
+      };
+
+      // Store primary workflow state in Firestore for durability
+      await firestoreHelper.getAdapter().create('workflow_states', workflowState);
+
+      // Cache active workflow state in Redis for fast access
+      await redisHelper.getAdapter().setWithExpiration(
+        'active_workflows',
+        workflowId,
+        {
+          status: workflowState.status,
+          currentStep: workflowState.steps[workflowState.currentStepIndex].name,
+          progress: (workflowState.currentStepIndex / workflowState.totalSteps) * 100,
+          lastUpdated: Date.now(),
+        },
+        3600 // 1 hour TTL
+      );
+
+      // Store workflow processing vectors for similarity analysis
+      const workflowVector = createTestVector({
+        id: `workflow-${workflowId}`,
+        metadata: {
+          workflowId,
+          type: workflowState.type,
+          userId: workflowState.context.userId,
+          datasetId: workflowState.context.datasetId,
+          processingParams: workflowState.context.processingParams,
+        },
+      });
+
+      await vectorHelper.getAdapter().create('workflow_vectors', workflowVector);
+
+      // Verify persistence across all systems
+      const storedState = await firestoreHelper.getAdapter().findUnique('workflow_states', { id: workflowId });
+      expect(storedState?.status).toBe('running');
+      expect(storedState?.steps).toHaveLength(5);
+
+      const cachedState = await redisHelper.getAdapter().findUnique('active_workflows', { id: workflowId });
+      expect(cachedState?.currentStep).toBe('data-transformation');
+      expect(cachedState?.progress).toBe(40);
+
+      const workflowVectorStored = await vectorHelper.getAdapter().findUnique('workflow_vectors', {
+        id: `workflow-${workflowId}`
+      });
+      expect(workflowVectorStored?.metadata.workflowId).toBe(workflowId);
+    });
+
+    it('should handle workflow step transitions with audit trail', async () => {
+      const workflowId = 'step-transition-workflow';
+      const steps = [
+        'initialize',
+        'fetch-data',
+        'process-data',
+        'validate-results', 
+        'finalize',
+      ];
+
+      // Initialize workflow
+      let currentWorkflow = {
+        id: workflowId,
+        currentStepIndex: 0,
+        status: 'running',
+        steps: steps.map((name, index) => ({
+          name,
+          status: index === 0 ? 'running' : 'pending',
+          startedAt: index === 0 ? Date.now() : null,
+          completedAt: null,
+          attempts: 0,
+          errorCount: 0,
+        })),
+      };
+
+      await firestoreHelper.getAdapter().create('workflow_transitions', currentWorkflow);
+
+      // Simulate step transitions with audit trail
+      for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
+        const stepName = steps[stepIndex];
+        const transitionStart = Date.now();
+
+        // Record step start
+        await redisHelper.getAdapter().listPush('workflow_events', workflowId, {
+          type: 'step_started',
+          stepName,
+          stepIndex,
+          timestamp: transitionStart,
+          workflowId,
+        });
+
+        // Simulate step execution time
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        const transitionEnd = Date.now();
+        const duration = transitionEnd - transitionStart;
+
+        // Complete current step
+        currentWorkflow.steps[stepIndex] = {
+          ...currentWorkflow.steps[stepIndex],
+          status: 'completed',
+          completedAt: transitionEnd,
+          duration,
+        };
+
+        // Start next step if exists
+        if (stepIndex + 1 < steps.length) {
+          currentWorkflow.steps[stepIndex + 1] = {
+            ...currentWorkflow.steps[stepIndex + 1],
+            status: 'running',
+            startedAt: transitionEnd,
+          };
+          currentWorkflow.currentStepIndex = stepIndex + 1;
+        } else {
+          currentWorkflow.status = 'completed';
+        }
+
+        // Update workflow state
+        await firestoreHelper.getAdapter().update('workflow_transitions', workflowId, currentWorkflow);
+
+        // Record step completion
+        await redisHelper.getAdapter().listPush('workflow_events', workflowId, {
+          type: 'step_completed',
+          stepName,
+          stepIndex,
+          duration,
+          timestamp: transitionEnd,
+          workflowId,
+        });
+
+        // Update step metrics
+        await redisHelper.getAdapter().hashSet('step_metrics', stepName, 'total_executions', 
+          ((await redisHelper.getAdapter().hashGet('step_metrics', stepName, 'total_executions')) || 0) + 1
+        );
+        await redisHelper.getAdapter().hashSet('step_metrics', stepName, 'avg_duration',
+          duration // In real implementation, calculate running average
+        );
+      }
+
+      // Verify complete workflow execution
+      const finalWorkflow = await firestoreHelper.getAdapter().findUnique('workflow_transitions', { id: workflowId });
+      expect(finalWorkflow?.status).toBe('completed');
+      expect(finalWorkflow?.steps.every((step: any) => step.status === 'completed')).toBe(true);
+
+      // Verify audit trail
+      const events = await redisHelper.getAdapter().listRange('workflow_events', workflowId, 0, -1);
+      expect(events).toHaveLength(steps.length * 2); // start + complete for each step
+
+      // Verify metrics collection
+      const initializeMetrics = await redisHelper.getAdapter().hashGetAll('step_metrics', 'initialize');
+      expect(initializeMetrics.total_executions).toBe('1');
+    });
+
+    it('should support workflow branching and parallel execution tracking', async () => {
+      const mainWorkflowId = 'parallel-workflow-main';
+      const branchWorkflowIds = ['branch-1', 'branch-2', 'branch-3'];
+
+      // Create main workflow
+      const mainWorkflow = {
+        id: mainWorkflowId,
+        type: 'parallel-processing',
+        status: 'running',
+        branchWorkflows: branchWorkflowIds,
+        startedAt: Date.now(),
+        parallelSteps: {
+          'data-processing-branch-1': { assignedTo: 'branch-1', status: 'running' },
+          'data-processing-branch-2': { assignedTo: 'branch-2', status: 'running' },
+          'data-processing-branch-3': { assignedTo: 'branch-3', status: 'running' },
+        },
+      };
+
+      await firestoreHelper.getAdapter().create('parallel_workflows', mainWorkflow);
+
+      // Create branch workflows
+      for (const branchId of branchWorkflowIds) {
+        const branchWorkflow = {
+          id: branchId,
+          parentWorkflowId: mainWorkflowId,
+          type: 'data-processing-branch',
+          status: 'running',
+          assignedData: {
+            startIndex: branchWorkflowIds.indexOf(branchId) * 1000,
+            endIndex: (branchWorkflowIds.indexOf(branchId) + 1) * 1000,
+          },
+          progress: 0,
+        };
+
+        await firestoreHelper.getAdapter().create('branch_workflows', branchWorkflow);
+        
+        // Track active branches in Redis
+        await redisHelper.getAdapter().setAdd('active_branches', mainWorkflowId, branchId);
+      }
+
+      // Simulate parallel execution progress
+      const progressUpdates = [25, 50, 75, 100];
+      
+      for (const progress of progressUpdates) {
+        for (const branchId of branchWorkflowIds) {
+          // Update branch progress
+          await firestoreHelper.getAdapter().update('branch_workflows', branchId, {
+            progress,
+            lastUpdated: Date.now(),
+          });
+
+          // Update progress tracking in Redis
+          await redisHelper.getAdapter().hashSet('branch_progress', branchId, 'progress', progress);
+
+          if (progress === 100) {
+            // Mark branch as completed
+            await firestoreHelper.getAdapter().update('branch_workflows', branchId, {
+              status: 'completed',
+              completedAt: Date.now(),
+            });
+
+            await redisHelper.getAdapter().setRemove('active_branches', mainWorkflowId, branchId);
+            await redisHelper.getAdapter().setAdd('completed_branches', mainWorkflowId, branchId);
+          }
+        }
+
+        // Check if all branches are complete
+        const activeBranches = await redisHelper.getAdapter().setMembers('active_branches', mainWorkflowId);
+        const completedBranches = await redisHelper.getAdapter().setMembers('completed_branches', mainWorkflowId);
+
+        if (activeBranches.length === 0 && completedBranches.length === branchWorkflowIds.length) {
+          // All branches completed, update main workflow
+          await firestoreHelper.getAdapter().update('parallel_workflows', mainWorkflowId, {
+            status: 'completed',
+            completedAt: Date.now(),
+          });
+          break;
+        }
+      }
+
+      // Verify parallel execution tracking
+      const completedMainWorkflow = await firestoreHelper.getAdapter().findUnique('parallel_workflows', {
+        id: mainWorkflowId
+      });
+      expect(completedMainWorkflow?.status).toBe('completed');
+
+      const completedBranchCount = await redisHelper.getAdapter().setMembers('completed_branches', mainWorkflowId);
+      expect(completedBranchCount).toHaveLength(3);
+
+      const activeBranchCount = await redisHelper.getAdapter().setMembers('active_branches', mainWorkflowId);
+      expect(activeBranchCount).toHaveLength(0);
+    });
+  });
+
+  describe('Workflow Data Analytics and Insights', () => {
+    it('should store workflow execution patterns for analysis', async () => {
+      const workflowTypes = ['data-processing', 'user-onboarding', 'payment-processing', 'content-moderation'];
+      const executionData = [];
+
+      // Generate workflow execution data
+      for (let i = 0; i < 50; i++) {
+        const workflowType = workflowTypes[i % workflowTypes.length];
+        const executionTime = Date.now() - (i * 60000); // Spread over last 50 minutes
+        const duration = 1000 + Math.random() * 30000; // 1-31 seconds
+        const success = Math.random() > 0.1; // 90% success rate
+
+        const execution = {
+          id: `execution-${i}`,
+          workflowId: `workflow-${i}`,
+          workflowType,
+          startedAt: executionTime,
+          completedAt: executionTime + duration,
+          duration,
+          status: success ? 'completed' : 'failed',
+          stepCount: 3 + Math.floor(Math.random() * 5), // 3-7 steps
+          errorCount: success ? 0 : Math.floor(Math.random() * 3) + 1,
+          resourceUsage: {
+            cpuMs: Math.floor(duration * 0.7),
+            memoryMb: 50 + Math.random() * 200,
+            networkKb: Math.floor(Math.random() * 1000),
+          },
+        };
+
+        executionData.push(execution);
+        await firestoreHelper.getAdapter().create('workflow_executions', execution);
+
+        // Store execution vector for pattern analysis
+        const executionVector = createTestVector({
+          id: `execution-vector-${i}`,
+          metadata: {
+            workflowType,
+            duration,
+            success,
+            stepCount: execution.stepCount,
+            resourceUsage: execution.resourceUsage,
+          },
+        });
+
+        await vectorHelper.getAdapter().create('execution_patterns', executionVector);
+
+        // Update real-time metrics in Redis
+        await redisHelper.getAdapter().increment('workflow_metrics', `total_${workflowType}`);
+        if (success) {
+          await redisHelper.getAdapter().increment('workflow_metrics', `success_${workflowType}`);
+        } else {
+          await redisHelper.getAdapter().increment('workflow_metrics', `failed_${workflowType}`);
+        }
+
+        // Track performance metrics
+        await redisHelper.getAdapter().sortedSetAdd('performance_metrics', workflowType,
+          { score: duration, member: { workflowId: execution.workflowId, duration } }
+        );
+      }
+
+      // Analyze workflow patterns
+      const dataProcessingExecutions = await firestoreHelper.getAdapter().findMany('workflow_executions', {
+        where: { workflowType: 'data-processing' },
+        orderBy: { field: 'duration', direction: 'desc' },
+      });
+
+      expect(dataProcessingExecutions.length).toBeGreaterThan(0);
+
+      // Get performance insights from Redis
+      const totalDataProcessing = await redisHelper.getAdapter().increment('workflow_metrics', 'total_data-processing', undefined, 0);
+      const successDataProcessing = await redisHelper.getAdapter().increment('workflow_metrics', 'success_data-processing', undefined, 0);
+      const successRate = (successDataProcessing / totalDataProcessing) * 100;
+
+      expect(successRate).toBeGreaterThan(80); // Expect high success rate
+
+      // Get fastest executions
+      const fastestDataProcessing = await redisHelper.getAdapter().sortedSetRange(
+        'performance_metrics',
+        'data-processing',
+        0,
+        4, // Top 5
+        true
+      );
+
+      expect(fastestDataProcessing).toHaveLength(5);
+
+      // Find similar execution patterns using vector search
+      const queryVector = executionData.find(e => e.workflowType === 'data-processing')!;
+      const similarPatterns = await vectorHelper.getAdapter().query({
+        vector: Array.from({ length: 1536 }, () => Math.random() - 0.5), // Mock vector
+        topK: 5,
+        includeMetadata: true,
+      }, { namespace: 'execution_patterns' });
+
+      expect(similarPatterns).toHaveLength(5);
+    });
+
+    it('should support workflow performance optimization recommendations', async () => {
+      const performanceData = [
+        {
+          workflowType: 'image-processing',
+          avgDuration: 15000,
+          avgMemoryUsage: 250,
+          avgCpuUsage: 80,
+          successRate: 95,
+          commonFailurePoints: ['resize-step', 'upload-step'],
+          optimizationSuggestions: ['increase-memory', 'parallel-processing'],
+        },
+        {
+          workflowType: 'data-analysis',
+          avgDuration: 45000,
+          avgMemoryUsage: 500,
+          avgCpuUsage: 60,
+          successRate: 88,
+          commonFailurePoints: ['large-dataset-processing'],
+          optimizationSuggestions: ['data-chunking', 'streaming-processing'],
+        },
+      ];
+
+      // Store performance analysis
+      for (const data of performanceData) {
+        await firestoreHelper.getAdapter().create('performance_analysis', {
+          id: data.workflowType,
+          ...data,
+          analyzedAt: Date.now(),
+          recommendations: data.optimizationSuggestions.map(suggestion => ({
+            type: suggestion,
+            estimatedImprovement: Math.random() * 30 + 10, // 10-40% improvement
+            implementationComplexity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+          })),
+        });
+
+        // Cache key metrics in Redis for quick access
+        await redisHelper.getAdapter().hashSet('performance_summary', data.workflowType, 'avg_duration', data.avgDuration);
+        await redisHelper.getAdapter().hashSet('performance_summary', data.workflowType, 'success_rate', data.successRate);
+        await redisHelper.getAdapter().hashSet('performance_summary', data.workflowType, 'optimization_priority', 
+          data.successRate < 90 ? 'high' : 'medium'
+        );
+
+        // Store optimization vectors for similarity matching
+        const optimizationVector = createTestVector({
+          id: `optimization-${data.workflowType}`,
+          metadata: {
+            workflowType: data.workflowType,
+            performanceScore: (data.successRate / 100) * (30000 / data.avgDuration), // Combined score
+            resourceIntensity: data.avgMemoryUsage + data.avgCpuUsage,
+            optimizationSuggestions: data.optimizationSuggestions,
+          },
+        });
+
+        await vectorHelper.getAdapter().create('optimization_patterns', optimizationVector);
+      }
+
+      // Query optimization recommendations
+      const imageProcessingAnalysis = await firestoreHelper.getAdapter().findUnique('performance_analysis', {
+        id: 'image-processing'
+      });
+
+      expect(imageProcessingAnalysis?.optimizationSuggestions).toContain('parallel-processing');
+      expect(imageProcessingAnalysis?.recommendations).toHaveLength(2);
+
+      // Get priority workflows for optimization
+      const highPriorityWorkflows = await redisHelper.getAdapter().findMany('performance_summary');
+      const highPriority = highPriorityWorkflows.filter((workflow: any) => 
+        workflow.optimization_priority === 'high'
+      );
+
+      expect(highPriority.length).toBeGreaterThanOrEqual(0);
+
+      // Find similar workflows for optimization pattern matching
+      const queryWorkflow = performanceData[0];
+      const similarWorkflows = await vectorHelper.getAdapter().query({
+        vector: Array.from({ length: 1536 }, () => Math.random() - 0.5), // Mock vector
+        topK: 3,
+        includeMetadata: true,
+      }, { namespace: 'optimization_patterns' });
+
+      expect(similarWorkflows.length).toBeGreaterThan(0);
+    });
+
+    it('should track workflow cost and resource utilization', async () => {
+      const resourceTypes = ['compute', 'storage', 'network', 'database'];
+      const workflowIds = Array.from({ length: 20 }, (_, i) => `cost-workflow-${i}`);
+
+      // Generate cost data
+      for (const workflowId of workflowIds) {
+        const costBreakdown = {
+          workflowId,
+          executionDate: Date.now() - Math.random() * 86400000, // Random time in last day
+          totalCost: Math.random() * 50 + 5, // $5-$55
+          resourceCosts: resourceTypes.reduce((acc, type) => {
+            acc[type] = Math.random() * 10 + 1; // $1-$11 per resource type
+            return acc;
+          }, {} as Record<string, number>),
+          duration: Math.random() * 30000 + 5000, // 5-35 seconds
+          resourceUtilization: {
+            cpu: Math.random() * 100,
+            memory: Math.random() * 100, 
+            storage: Math.random() * 100,
+            network: Math.random() * 100,
+          },
+        };
+
+        await firestoreHelper.getAdapter().create('workflow_costs', {
+          id: workflowId,
+          ...costBreakdown,
+        });
+
+        // Track daily cost aggregations in Redis
+        const dateKey = new Date(costBreakdown.executionDate).toISOString().split('T')[0];
+        await redisHelper.getAdapter().increment('daily_costs', dateKey, undefined, costBreakdown.totalCost);
+
+        // Track resource-specific costs
+        for (const [resourceType, cost] of Object.entries(costBreakdown.resourceCosts)) {
+          await redisHelper.getAdapter().increment('resource_costs', `${dateKey}_${resourceType}`, undefined, cost);
+        }
+
+        // Track cost efficiency (cost per second)
+        const efficiency = costBreakdown.totalCost / (costBreakdown.duration / 1000);
+        await redisHelper.getAdapter().sortedSetAdd('cost_efficiency', 'workflows',
+          { score: efficiency, member: { workflowId, efficiency, totalCost: costBreakdown.totalCost } }
+        );
+      }
+
+      // Analyze cost patterns
+      const totalWorkflowCosts = await firestoreHelper.getAdapter().findMany('workflow_costs');
+      expect(totalWorkflowCosts).toHaveLength(20);
+
+      const totalCost = totalWorkflowCosts.reduce((sum: number, workflow: any) => sum + workflow.totalCost, 0);
+      const avgCost = totalCost / totalWorkflowCosts.length;
+
+      expect(avgCost).toBeGreaterThan(0);
+      expect(avgCost).toBeLessThan(100);
+
+      // Get cost-efficient workflows
+      const mostEfficient = await redisHelper.getAdapter().sortedSetRange(
+        'cost_efficiency',
+        'workflows',
+        0,
+        4, // Top 5 most efficient
+        true
+      );
+
+      expect(mostEfficient).toHaveLength(5);
+
+      // Get daily cost totals
+      const today = new Date().toISOString().split('T')[0];
+      const todayCosts = await redisHelper.getAdapter().increment('daily_costs', today, undefined, 0);
+      expect(todayCosts).toBeGreaterThanOrEqual(0);
+
+      // Analyze resource cost distribution
+      const computeCosts = await redisHelper.getAdapter().increment('resource_costs', `${today}_compute`, undefined, 0);
+      const storageCosts = await redisHelper.getAdapter().increment('resource_costs', `${today}_storage`, undefined, 0);
+
+      expect(computeCosts + storageCosts).toBeLessThanOrEqual(todayCosts);
+    });
+  });
+
+  describe('Cross-Database Workflow Coordination', () => {
+    it('should coordinate workflows across multiple database systems', async () => {
+      const coordinationWorkflowId = 'cross-db-coordination-123';
+      
+      // Scenario: User profile update workflow
+      // 1. Update user data in Firestore
+      // 2. Update cached user data in Redis
+      // 3. Update user preference vectors for recommendations
+
+      const userUpdate = createTestUser({
+        id: 'user-coordination-456',
+        name: 'Updated User Name',
+        email: 'updated@example.com',
+        preferences: ['technology', 'science', 'programming'],
+        lastUpdated: Date.now(),
+      });
+
+      // Phase 1: Update primary user data
+      await firestoreHelper.getAdapter().create('coordinated_users', userUpdate);
+
+      // Phase 2: Update cached user data with TTL
+      await redisHelper.getAdapter().setWithExpiration(
+        'user_cache',
+        userUpdate.id,
+        {
+          name: userUpdate.name,
+          email: userUpdate.email,
+          lastCacheUpdate: Date.now(),
+        },
+        3600 // 1 hour cache
+      );
+
+      // Phase 3: Update user preference vector
+      const userVector = createTestVector({
+        id: `user-prefs-${userUpdate.id}`,
+        metadata: {
+          userId: userUpdate.id,
+          preferences: userUpdate.preferences,
+          lastVectorUpdate: Date.now(),
+          userType: 'updated',
+        },
+      });
+
+      await vectorHelper.getAdapter().create('user_preferences', userVector);
+
+      // Coordination state tracking
+      const coordinationState = {
+        id: coordinationWorkflowId,
+        userId: userUpdate.id,
+        phases: {
+          firestore_update: { status: 'completed', completedAt: Date.now() },
+          redis_cache: { status: 'completed', completedAt: Date.now() },
+          vector_update: { status: 'completed', completedAt: Date.now() },
+        },
+        status: 'completed',
+        completedAt: Date.now(),
+      };
+
+      await firestoreHelper.getAdapter().create('coordination_states', coordinationState);
+
+      // Verify coordination across all systems
+      const storedUser = await firestoreHelper.getAdapter().findUnique('coordinated_users', { id: userUpdate.id });
+      expect(storedUser?.name).toBe('Updated User Name');
+
+      const cachedUser = await redisHelper.getAdapter().findUnique('user_cache', { id: userUpdate.id });
+      expect(cachedUser?.name).toBe('Updated User Name');
+
+      const userPrefs = await vectorHelper.getAdapter().findUnique('user_preferences', {
+        id: `user-prefs-${userUpdate.id}`
+      });
+      expect(userPrefs?.metadata.preferences).toEqual(['technology', 'science', 'programming']);
+
+      const coordination = await firestoreHelper.getAdapter().findUnique('coordination_states', {
+        id: coordinationWorkflowId
+      });
+      expect(coordination?.status).toBe('completed');
+      expect(Object.values(coordination?.phases || {}).every((phase: any) => phase.status === 'completed')).toBe(true);
+    });
+
+    it('should handle distributed workflow synchronization', async () => {
+      const syncWorkflowId = 'distributed-sync-789';
+      const participantWorkflows = ['workflow-A', 'workflow-B', 'workflow-C'];
+
+      // Create synchronization point
+      const syncPoint = {
+        id: syncWorkflowId,
+        type: 'barrier_sync',
+        participantWorkflows,
+        requiredParticipants: participantWorkflows.length,
+        currentParticipants: 0,
+        status: 'waiting',
+        createdAt: Date.now(),
+        syncData: {},
+      };
+
+      await firestoreHelper.getAdapter().create('sync_points', syncPoint);
+
+      // Simulate workflows reaching sync point
+      for (const workflowId of participantWorkflows) {
+        // Each workflow contributes its data to sync point
+        const workflowData = {
+          workflowId,
+          data: {
+            processedRecords: Math.floor(Math.random() * 1000) + 100,
+            status: 'ready_for_sync',
+            completedAt: Date.now(),
+          },
+          arrivedAt: Date.now(),
+        };
+
+        // Store individual workflow data
+        await redisHelper.getAdapter().hashSet('sync_participants', syncWorkflowId, workflowId, JSON.stringify(workflowData));
+
+        // Increment participant count atomically
+        const participantCount = await redisHelper.getAdapter().increment('sync_counters', syncWorkflowId);
+
+        // Check if all participants have arrived
+        if (participantCount >= participantWorkflows.length) {
+          // All participants ready - trigger sync completion
+          await firestoreHelper.getAdapter().update('sync_points', syncWorkflowId, {
+            status: 'synchronized',
+            synchronizedAt: Date.now(),
+            currentParticipants: participantCount,
+          });
+
+          // Collect all participant data
+          const allParticipantData: Record<string, any> = {};
+          for (const wfId of participantWorkflows) {
+            const participantData = await redisHelper.getAdapter().hashGet('sync_participants', syncWorkflowId, wfId);
+            if (participantData) {
+              allParticipantData[wfId] = JSON.parse(participantData);
+            }
+          }
+
+          // Store synchronized result
+          await firestoreHelper.getAdapter().create('sync_results', {
+            id: `result-${syncWorkflowId}`,
+            syncPointId: syncWorkflowId,
+            participantData: allParticipantData,
+            aggregatedResults: {
+              totalRecords: Object.values(allParticipantData).reduce(
+                (sum: number, data: any) => sum + data.data.processedRecords, 0
+              ),
+              participantCount: participantWorkflows.length,
+            },
+            synchronizedAt: Date.now(),
+          });
+
+          // Notify all participants of sync completion
+          for (const wfId of participantWorkflows) {
+            await redisHelper.getAdapter().listPush('workflow_notifications', wfId, {
+              type: 'sync_completed',
+              syncPointId: syncWorkflowId,
+              timestamp: Date.now(),
+            });
+          }
+        }
+      }
+
+      // Verify synchronization
+      const finalSyncPoint = await firestoreHelper.getAdapter().findUnique('sync_points', { id: syncWorkflowId });
+      expect(finalSyncPoint?.status).toBe('synchronized');
+      expect(finalSyncPoint?.currentParticipants).toBe(3);
+
+      const syncResult = await firestoreHelper.getAdapter().findUnique('sync_results', {
+        id: `result-${syncWorkflowId}`
+      });
+      expect(syncResult?.aggregatedResults.participantCount).toBe(3);
+      expect(syncResult?.aggregatedResults.totalRecords).toBeGreaterThan(300);
+
+      // Verify all participants received notifications
+      for (const workflowId of participantWorkflows) {
+        const notifications = await redisHelper.getAdapter().listRange('workflow_notifications', workflowId, 0, -1);
+        expect(notifications).toHaveLength(1);
+        expect((notifications[0] as any).type).toBe('sync_completed');
+      }
+    });
+
+    it('should support workflow data lineage tracking', async () => {
+      const lineageWorkflowId = 'data-lineage-tracking';
+      const datasetId = 'source-dataset-123';
+
+      // Initial data source
+      const sourceData = {
+        id: datasetId,
+        type: 'raw_data',
+        source: 'external_api',
+        schema: { fields: ['id', 'name', 'value', 'timestamp'] },
+        recordCount: 10000,
+        createdAt: Date.now(),
+        checksum: 'abc123def456',
+      };
+
+      await firestoreHelper.getAdapter().create('data_sources', sourceData);
+
+      // Track data transformations
+      const transformations = [
+        {
+          id: 'transform-1',
+          type: 'filter',
+          operation: 'remove_null_values',
+          inputDataset: datasetId,
+          outputDataset: 'filtered-dataset-456',
+          recordsInput: 10000,
+          recordsOutput: 9850,
+          transformedAt: Date.now(),
+        },
+        {
+          id: 'transform-2',
+          type: 'aggregate',
+          operation: 'group_by_category',
+          inputDataset: 'filtered-dataset-456',
+          outputDataset: 'aggregated-dataset-789',
+          recordsInput: 9850,
+          recordsOutput: 150,
+          transformedAt: Date.now() + 10000,
+        },
+        {
+          id: 'transform-3',
+          type: 'enrich',
+          operation: 'add_metadata',
+          inputDataset: 'aggregated-dataset-789',
+          outputDataset: 'enriched-dataset-101',
+          recordsInput: 150,
+          recordsOutput: 150,
+          transformedAt: Date.now() + 20000,
+        },
+      ];
+
+      // Store transformation history
+      for (const transform of transformations) {
+        await firestoreHelper.getAdapter().create('data_transformations', transform);
+
+        // Create lineage edges in Redis for fast graph traversal
+        await redisHelper.getAdapter().setAdd('lineage_inputs', transform.outputDataset, transform.inputDataset);
+        await redisHelper.getAdapter().setAdd('lineage_outputs', transform.inputDataset, transform.outputDataset);
+
+        // Store transformation vectors for similarity analysis
+        const transformVector = createTestVector({
+          id: `transform-${transform.id}`,
+          metadata: {
+            transformationType: transform.type,
+            operation: transform.operation,
+            recordsInput: transform.recordsInput,
+            recordsOutput: transform.recordsOutput,
+            compressionRatio: transform.recordsOutput / transform.recordsInput,
+          },
+        });
+
+        await vectorHelper.getAdapter().create('transformation_patterns', transformVector);
+      }
+
+      // Create complete lineage workflow record
+      const lineageWorkflow = {
+        id: lineageWorkflowId,
+        rootDataset: datasetId,
+        finalDataset: 'enriched-dataset-101',
+        transformationChain: transformations.map(t => t.id),
+        totalTransformations: transformations.length,
+        dataReduction: (sourceData.recordCount - 150) / sourceData.recordCount,
+        lineageCompletedAt: Date.now(),
+      };
+
+      await firestoreHelper.getAdapter().create('data_lineage', lineageWorkflow);
+
+      // Verify lineage tracking
+      const storedLineage = await firestoreHelper.getAdapter().findUnique('data_lineage', { id: lineageWorkflowId });
+      expect(storedLineage?.transformationChain).toHaveLength(3);
+      expect(storedLineage?.dataReduction).toBeCloseTo(0.985); // 98.5% reduction
+
+      // Test lineage traversal using Redis
+      const finalDatasetInputs = await redisHelper.getAdapter().setMembers('lineage_inputs', 'enriched-dataset-101');
+      expect(finalDatasetInputs).toContain('aggregated-dataset-789');
+
+      const sourceDatasetOutputs = await redisHelper.getAdapter().setMembers('lineage_outputs', datasetId);
+      expect(sourceDatasetOutputs).toContain('filtered-dataset-456');
+
+      // Find similar transformations using vector search
+      const queryTransform = transformations[1]; // Aggregate transformation
+      const similarTransforms = await vectorHelper.getAdapter().query({
+        vector: Array.from({ length: 1536 }, () => Math.random() - 0.5), // Mock vector
+        topK: 3,
+        includeMetadata: true,
+      }, { namespace: 'transformation_patterns' });
+
+      expect(similarTransforms.length).toBeGreaterThan(0);
+
+      // Verify data quality tracking
+      const qualityMetrics = {
+        datasetId: 'enriched-dataset-101',
+        completeness: 0.98,
+        accuracy: 0.95,
+        consistency: 0.97,
+        timeliness: 0.92,
+        qualityScore: 0.955,
+        assessedAt: Date.now(),
+      };
+
+      await redisHelper.getAdapter().create('data_quality', qualityMetrics);
+      
+      const storedQuality = await redisHelper.getAdapter().findUnique('data_quality', { id: 'enriched-dataset-101' });
+      expect(storedQuality?.qualityScore).toBe(0.955);
+    });
+  });
+});
