@@ -28,7 +28,7 @@
     "@repo/rate-limit": "workspace:*",
     "@repo/security": "workspace:*",
     "@repo/seo": "workspace:*",
-    "@sentry/nextjs": "^9.22.0",
+    "@sentry/nextjs": "^9.24.0",
     "@t3-oss/env-nextjs": "catalog:",
     "@tabler/icons-react": "catalog:",
     "date-fns": "^4.1.0",
