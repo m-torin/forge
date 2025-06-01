@@ -541,6 +541,11 @@ function parseCatalogEntry(line) {
   const trimmed = line.trim();
   if (!trimmed) return null;
 
+  // Skip onlyBuiltDependencies section
+  if (trimmed === 'onlyBuiltDependencies:' || line.includes('onlyBuiltDependencies:')) {
+    return null;
+  }
+
   // Match quoted or unquoted package names
   const match = trimmed.match(/^("?@?[^":\s]+(?:\/[^":\s]+)?"?):\s*(.+)$/);
   if (!match) return null;
@@ -582,6 +587,15 @@ async function updateCatalogEntries() {
     backupFile(workspaceYamlPath);
 
     let workspaceYaml = readFileSync(workspaceYamlPath, 'utf-8');
+
+    // Extract and preserve the onlyBuiltDependencies section
+    const onlyBuiltDependenciesMatch = workspaceYaml.match(/^onlyBuiltDependencies:\s*\n((?:^\s+[^\n]+\n?)*)/m);
+    const onlyBuiltDependenciesSection = onlyBuiltDependenciesMatch ? onlyBuiltDependenciesMatch[0] : '';
+
+    // Remove the onlyBuiltDependencies section temporarily
+    if (onlyBuiltDependenciesSection) {
+      workspaceYaml = workspaceYaml.replace(onlyBuiltDependenciesSection, '');
+    }
 
     // First, let's normalize the workspace YAML by ensuring proper quotes for scoped packages
     const catalogSection = parseCatalogSection(workspaceYaml);
@@ -728,6 +742,11 @@ async function updateCatalogEntries() {
       } else {
         // Add new catalog section at the end
         workspaceYaml = workspaceYaml.trimEnd() + '\n\n' + newCatalogContent + '\n';
+      }
+
+      // Restore the onlyBuiltDependencies section if it existed
+      if (onlyBuiltDependenciesSection) {
+        workspaceYaml = workspaceYaml.trimEnd() + '\n\n' + onlyBuiltDependenciesSection;
       }
 
       // Write the updated YAML back to the file
