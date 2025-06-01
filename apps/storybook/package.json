@@ -54,7 +54,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-storybook": "9.0.4",
     "eslint-plugin-testing-library": "^7.3.0",
-    "eslint-plugin-vitest": "^0.5.4",
+    "@vitest/eslint-plugin": "^1.0.1",
     "postcss": "catalog:",
     "storybook": "^9.0.4",
     "typescript": "catalog:"
