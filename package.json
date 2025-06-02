@@ -49,7 +49,7 @@
     "node": ">=22",
     "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.11.1",
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "commander": "^14.0.0",
