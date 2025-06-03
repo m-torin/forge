@@ -1,4 +1,4 @@
-import { Heading, NcImage } from "@repo/design-system/ciseco";
+import { Heading, NcImage } from "@repo/design-system/mantine-ciseco";
 
 export interface People {
   avatar: string;

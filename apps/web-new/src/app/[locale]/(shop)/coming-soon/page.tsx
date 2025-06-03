@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 import Link from "next/link";
 
-import { ButtonPrimary, Input } from "@repo/design-system/ciseco";
+import { ButtonPrimary, Input } from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Coming soon page for the application",

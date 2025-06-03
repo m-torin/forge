@@ -8,7 +8,7 @@ import {
   SectionPromo1,
   SocialsList,
   Textarea,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Contact us for any inquiries or support",

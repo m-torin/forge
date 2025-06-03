@@ -1,6 +1,6 @@
 import { type FC } from "react";
 
-import { Heading } from "@repo/design-system/ciseco";
+import { Heading } from "@repo/design-system/mantine-ciseco";
 
 export interface Statistic {
   heading: string;

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-import { type TProductItem } from "@repo/design-system/ciseco";
+import { type TProductItem } from "@repo/design-system/mantine-ciseco";
 
 const ProductOptions = ({
   className,

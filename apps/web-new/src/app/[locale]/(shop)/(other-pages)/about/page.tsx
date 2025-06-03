@@ -5,8 +5,8 @@ import {
   Divider,
   SectionClientSay,
   SectionPromo1,
-} from "@repo/design-system/ciseco";
-import rightImg from "@repo/design-system/ciseco/images/hero-right1.png";
+} from "@repo/design-system/mantine-ciseco";
+import rightImg from "@repo/design-system/mantine-ciseco/images/hero-right1.png";
 
 import SectionFounder from "./SectionFounder";
 import SectionHero from "./SectionHero";

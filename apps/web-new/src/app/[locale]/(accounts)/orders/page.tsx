@@ -7,7 +7,7 @@ import {
   Link,
   Prices,
   type TOrder,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Orders History page",

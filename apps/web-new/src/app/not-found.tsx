@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 
-import { ButtonPrimary, NcImage } from "@repo/design-system/ciseco";
-import I404Png from "@repo/design-system/ciseco/images/404.png";
+import { ButtonPrimary, NcImage } from "@repo/design-system/mantine-ciseco";
+import I404Png from "@repo/design-system/mantine-ciseco/images/404.png";
 
 export const metadata: Metadata = {
   description: "The page you were looking for doesn't exist.",

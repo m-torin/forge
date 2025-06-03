@@ -3,8 +3,9 @@
 import { Burger, Flex } from "@mantine/core";
 
 interface AppLayoutHeaderProps {
+  _dict?: any;
+  _locale?: string;
   dict?: any;
-  locale?: string;
   mobileNavbarOpened: boolean;
   navbarOpened: boolean;
   toggleMobileNavbar: () => void;
@@ -12,8 +13,9 @@ interface AppLayoutHeaderProps {
 }
 
 export function AppLayoutHeader({
+  _dict,
+  _locale,
   dict,
-  locale,
   mobileNavbarOpened,
   navbarOpened,
   toggleMobileNavbar,

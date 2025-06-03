@@ -21,7 +21,7 @@ import {
   SectionPromo2,
   SectionSliderLargeProduct,
   SectionSliderProductCard,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Discover the latest products and trends in our online store.",

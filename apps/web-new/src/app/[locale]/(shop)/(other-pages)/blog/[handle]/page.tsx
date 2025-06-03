@@ -14,7 +14,7 @@ import {
   SocialsList,
   Tag,
   Textarea,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export async function generateMetadata({
   params,

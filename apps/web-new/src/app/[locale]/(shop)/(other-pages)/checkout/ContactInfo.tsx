@@ -6,7 +6,7 @@ import {
   Checkbox,
   Input,
   Label,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 interface Props {
   isActive: boolean;

@@ -2,10 +2,10 @@ import { type Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { ButtonPrimary, Input } from "@repo/design-system/ciseco";
-import facebookSvg from "@repo/design-system/ciseco/images/socials/facebook-2.svg";
-import googleSvg from "@repo/design-system/ciseco/images/socials/google.svg";
-import twitterSvg from "@repo/design-system/ciseco/images/socials/twitter.svg";
+import { ButtonPrimary, Input } from "@repo/design-system/mantine-ciseco";
+import facebookSvg from "@repo/design-system/mantine-ciseco/images/socials/facebook-2.svg";
+import googleSvg from "@repo/design-system/mantine-ciseco/images/socials/google.svg";
+import twitterSvg from "@repo/design-system/mantine-ciseco/images/socials/twitter.svg";
 
 const loginSocials = [
   {

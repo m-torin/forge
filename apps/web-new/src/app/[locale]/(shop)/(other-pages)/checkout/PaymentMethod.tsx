@@ -8,7 +8,7 @@ import {
   Input,
   Label,
   Radio,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 interface Props {
   isActive: boolean;

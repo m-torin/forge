@@ -202,6 +202,30 @@ export function AppLayoutControls({
             <Button onClick={closeAll} size="xs" variant="outline">
               Close All
             </Button>
+            <Button
+              onClick={toggleAside}
+              disabled={!asideEnabled}
+              size="xs"
+              variant="light"
+            >
+              Toggle Aside
+            </Button>
+            <Button
+              onClick={toggleNavbar}
+              disabled={!navbarEnabled}
+              size="xs"
+              variant="light"
+            >
+              Toggle Navbar
+            </Button>
+            <Button
+              onClick={toggleMobileNavbar}
+              disabled={!navbarEnabled}
+              size="xs"
+              variant="light"
+            >
+              Toggle Mobile Nav
+            </Button>
           </Group>
         </Box>
 

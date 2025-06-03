@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 
-import { Header2 } from "@repo/design-system/ciseco";
+import { Header2 } from "@repo/design-system/mantine-ciseco";
 
 import { ApplicationLayout } from "../application-layout";
 

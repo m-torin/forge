@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-import { Link } from "@repo/design-system/ciseco";
+import { Link } from "@repo/design-system/mantine-ciseco";
 
 const pages: {
   name: string;

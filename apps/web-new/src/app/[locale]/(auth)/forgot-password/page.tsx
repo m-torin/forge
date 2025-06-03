@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ButtonPrimary, Input } from "@repo/design-system/ciseco";
+import { ButtonPrimary, Input } from "@repo/design-system/mantine-ciseco";
 
 export const metadata = {
   description: "Forgot password page for the application",

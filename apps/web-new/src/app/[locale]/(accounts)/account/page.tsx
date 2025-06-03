@@ -15,8 +15,8 @@ import {
   Label,
   Select,
   Textarea,
-} from "@repo/design-system/ciseco";
-import avatarImage from "@repo/design-system/ciseco/images/users/avatar1.jpg";
+} from "@repo/design-system/mantine-ciseco";
+import avatarImage from "@repo/design-system/mantine-ciseco/images/users/avatar1.jpg";
 
 export const metadata: Metadata = {
   description: "Account page",

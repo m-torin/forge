@@ -7,7 +7,7 @@ import {
   AsideSidebarNavigation,
   Footer,
   Header,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 interface ComponentProps {
   children: ReactNode;

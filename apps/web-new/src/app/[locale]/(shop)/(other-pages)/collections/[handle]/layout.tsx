@@ -8,7 +8,7 @@ import {
   getProducts,
   SectionPromo1,
   SectionSliderLargeProduct,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export async function generateMetadata({
   params,

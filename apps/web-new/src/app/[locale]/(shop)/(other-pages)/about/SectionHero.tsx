@@ -1,7 +1,7 @@
 import Image, { type StaticImageData } from "next/image";
 import { type FC, type ReactNode } from "react";
 
-import { ButtonPrimary } from "@repo/design-system/ciseco";
+import { ButtonPrimary } from "@repo/design-system/mantine-ciseco";
 
 export interface SectionHeroProps {
   btnText?: string;

@@ -17,7 +17,7 @@ import {
   SectionPromo3,
   SectionSliderLargeProduct,
   SectionSliderProductCard,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 async function PageHome2() {
   const allCollections = await getCollections();

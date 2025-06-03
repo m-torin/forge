@@ -96,7 +96,7 @@ export function AppLayout({
       {headerEnabled && (
         <AppShell.Header className={classes.header}>
           <AppLayoutHeader
-            locale={locale}
+            _locale={locale}
             mobileNavbarOpened={mobileNavbarOpened}
             toggleMobileNavbar={toggleMobileNavbar}
             toggleNavbar={toggleNavbar}

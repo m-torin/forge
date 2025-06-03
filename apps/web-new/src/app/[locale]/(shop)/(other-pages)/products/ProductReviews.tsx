@@ -1,7 +1,7 @@
 import { StarIcon } from "@heroicons/react/24/solid";
 import clsx from "clsx";
 
-import { ReviewItem, type TReview } from "@repo/design-system/ciseco";
+import { ReviewItem, type TReview } from "@repo/design-system/mantine-ciseco";
 
 const ProductReviews = ({
   className,

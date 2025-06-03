@@ -4,7 +4,7 @@ import ProductQuickViewWrapper from "@/components/ProductQuickViewWrapper";
 import { getDictionary } from "@/i18n";
 import { Portal } from "@mantine/core";
 
-import { Aside } from "@repo/design-system/ciseco";
+import { Aside } from "@repo/design-system/mantine-ciseco";
 
 import type { Metadata } from "next";
 

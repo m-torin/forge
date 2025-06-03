@@ -17,7 +17,7 @@ import {
   ProductCard,
   SectionPromo1,
   SectionSliderLargeProduct,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Search page for products",

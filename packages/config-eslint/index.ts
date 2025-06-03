@@ -316,7 +316,10 @@ const config: Linter.FlatConfig[] = [
       '@typescript-eslint/no-empty-function': ['warn', { allow: ['arrowFunctions'] }],
       // TypeScript-specific rules (that aren't already in the recommended/stylistic presets)
       '@typescript-eslint/no-explicit-any': 'off', // Override from recommended which has it as 'error'
-      '@typescript-eslint/no-unused-vars': 'off', // Explicitly disable as we use unused-imports instead
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/await-thenable': 'off', // Disable rule that requires type checking
 
       // Security rules

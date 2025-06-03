@@ -16,7 +16,7 @@ import {
   NcInputNumber,
   Prices,
   type TCardProduct,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Effective cart page for your e-commerce website",

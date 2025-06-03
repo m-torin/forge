@@ -8,7 +8,7 @@ import {
   googleSvg,
   Input,
   twitterSvg,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Login page for the application",

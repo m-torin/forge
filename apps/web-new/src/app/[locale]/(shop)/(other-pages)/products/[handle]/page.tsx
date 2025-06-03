@@ -20,7 +20,7 @@ import {
   Prices,
   SectionPromo2,
   SectionSliderProductCard,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 import Policy from "../Policy";
 import ProductOptions from "../ProductOptions";

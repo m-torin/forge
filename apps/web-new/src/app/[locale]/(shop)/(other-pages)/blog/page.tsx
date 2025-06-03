@@ -8,7 +8,7 @@ import {
   SectionGridPosts,
   SectionMagazine5,
   SectionPromo2,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description:

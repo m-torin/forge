@@ -16,11 +16,11 @@ import {
   Label,
   NcInputNumber,
   Prices,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 import LeftSide from "./LeftSide";
 
-import type { TCardProduct } from "@repo/design-system/ciseco";
+import type { TCardProduct } from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Effective checkout page for your e-commerce website",

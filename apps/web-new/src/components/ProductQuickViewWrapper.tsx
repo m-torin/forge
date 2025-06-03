@@ -4,8 +4,8 @@ import { useAppLayout } from "@/components/AppLayout";
 import { Portal } from "@mantine/core";
 import { useEffect } from "react";
 
-import { useAside } from "@repo/design-system/ciseco/components/aside";
-import ProductQuickView from "@repo/design-system/ciseco/components/ProductQuickView";
+import { useAside } from "@repo/design-system/mantine-ciseco/components/aside";
+import ProductQuickView from "@repo/design-system/mantine-ciseco/components/ProductQuickView";
 
 const ProductQuickViewWrapper = () => {
   const {

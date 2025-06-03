@@ -1,4 +1,8 @@
-import { ButtonPrimary, Input, Label } from "@repo/design-system/ciseco";
+import {
+  ButtonPrimary,
+  Input,
+  Label,
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata = {
   description: "Account - Password page",

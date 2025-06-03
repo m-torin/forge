@@ -9,7 +9,7 @@ import {
   ProductCard,
   SidebarFilters,
   TabFiltersPopover,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export default async function Page({
   params,

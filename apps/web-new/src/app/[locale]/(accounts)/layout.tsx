@@ -7,7 +7,7 @@ import {
   Divider,
   Footer,
   Header2,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 import PageTab from "./PageTab";
 

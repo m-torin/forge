@@ -1,6 +1,9 @@
 import { CheckIcon } from "@heroicons/react/24/solid";
 
-import { ButtonPrimary, ButtonSecondary } from "@repo/design-system/ciseco";
+import {
+  ButtonPrimary,
+  ButtonSecondary,
+} from "@repo/design-system/mantine-ciseco";
 
 export interface PricingItem {
   desc: string;

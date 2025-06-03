@@ -4,7 +4,7 @@ import {
   ButtonSecondary,
   getProducts,
   ProductCard,
-} from "@repo/design-system/ciseco";
+} from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Saved Products page",

@@ -7,5 +7,5 @@
 @import "tailwind-preset-mantine";
 @import "./theme.css";
 
-@import "@repo/design-system/ciseco/styles.css";
-@import "@repo/design-system/ciseco/components/listing-image-gallery/styles/index.css";
+@import "@repo/design-system/mantine-ciseco/styles.css";
+@import "@repo/design-system/mantine-ciseco/components/listing-image-gallery/styles/index.css";
