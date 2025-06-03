@@ -511,31 +511,31 @@ size_limit: 100MB`}
                               toggleRunExpanded(run.workflowRunId);
                             }
                           }}
+                          role="button"
                           style={{
-                            cursor: 'pointer',
+                            width: '100%',
                             background: 'transparent',
                             border: 'none',
-                            width: '100%',
-                            textAlign: 'left',
+                            cursor: 'pointer',
                             padding: 0,
+                            textAlign: 'left',
                           }}
+                          aria-expanded={isExpanded}
+                          aria-label={`Toggle details for workflow ${run.workflowUrl.split('/').pop()}`}
                           justify="space-between"
                           mb={isExpanded ? 'md' : 0}
                           tabIndex={0}
-                          role="button"
-                          aria-expanded={isExpanded}
-                          aria-label={`Toggle details for workflow ${run.workflowUrl.split('/').pop()}`}
                         >
                           <Group>
                             <ActionIcon
+                              aria-hidden="true"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleRunExpanded(run.workflowRunId);
                               }}
                               size="sm"
-                              variant="subtle"
-                              aria-hidden="true"
                               tabIndex={-1}
+                              variant="subtle"
                             >
                               {isExpanded ? (
                                 <IconChevronDown size={16} />

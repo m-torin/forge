@@ -1,64 +1,75 @@
 "use client";
 
+import { ColorSchemesSwitcher } from "@/components/color-schemes-switcher";
+import LocaleSwitcher from "@/components/locale-switcher";
 import {
+  Box,
   Button,
+  Divider,
+  Grid,
   Group,
   NumberInput,
   Paper,
   Stack,
-  Text,
   Switch,
-  Grid,
-  Divider,
-  Box,
+  Text,
 } from "@mantine/core";
+import Image from "next/image";
 
 import { useAppLayout } from "./AppLayoutContext";
 
-export function AppLayoutControls() {
+interface AppLayoutControlsProps {
+  dict?: any;
+  locale?: string;
+}
+
+export function AppLayoutControls({
+  dict,
+  locale,
+}: AppLayoutControlsProps = {}) {
   const {
     // Visibility states
     asideOpened,
-    navbarOpened,
     mobileNavbarOpened,
+    navbarOpened,
 
+    asideEnabled,
+    footerEnabled,
     // Enabled states
     headerEnabled,
     navbarEnabled,
-    asideEnabled,
-    footerEnabled,
 
     // Dimensions
     asideWidth,
     navbarWidth,
-    headerHeight,
     footerHeight,
+    headerHeight,
 
     // Visibility controls
     setAside,
-    setNavbar,
-    setMobileNavbar,
     toggleAside,
-    toggleNavbar,
-    toggleMobileNavbar,
     closeAll,
     openAll,
+    setMobileNavbar,
+    setNavbar,
+    toggleMobileNavbar,
+    toggleNavbar,
 
+    setAsideEnabled,
+    toggleAsideEnabled,
+    setFooterEnabled,
     // Enable/disable controls
     setHeaderEnabled,
     setNavbarEnabled,
-    setAsideEnabled,
-    setFooterEnabled,
+    toggleFooterEnabled,
     toggleHeaderEnabled,
     toggleNavbarEnabled,
-    toggleAsideEnabled,
-    toggleFooterEnabled,
 
     // Dimension controls
     setAsideWidth,
     setNavbarWidth,
-    setHeaderHeight,
     setFooterHeight,
+    setHeaderHeight,
   } = useAppLayout();
 
   return (
@@ -68,40 +79,78 @@ export function AppLayoutControls() {
           Layout Controls
         </Text>
 
+        {/* Header Settings Section */}
+        <Box>
+          <Text c="dimmed" fw={500} mb="xs" size="xs">
+            Header Settings
+          </Text>
+          <Group justify="space-between" mb="xs">
+            <Group>
+              <Image
+                width={100}
+                className="dark:invert"
+                alt={dict?.app?.logoAlt || "logo"}
+                height={100}
+                src="https://nextjs.org/icons/next.svg"
+              />
+            </Group>
+            <Group>
+              {locale && dict && (
+                <LocaleSwitcher
+                  currentLocale={locale}
+                  selectLanguagePlaceholder={
+                    dict.app?.selectLanguage || "Select language"
+                  }
+                  languages={{
+                    de: dict.app?.l?.de || "German",
+                    en: dict.app?.l?.en || "English",
+                    esMX: dict.app?.l?.esMX || "Spanish (Mexico)",
+                    frCA: dict.app?.l?.frCA || "Français (Canada)",
+                    ptBR: dict.app?.l?.ptBR || "Portuguese (Brazil)",
+                  }}
+                />
+              )}
+              <ColorSchemesSwitcher />
+            </Group>
+          </Group>
+        </Box>
+
+        <Divider />
+
         {/* Enable/Disable Section */}
         <Box>
-          <Text fw={500} size="xs" mb="xs" c="dimmed">
+          <Text c="dimmed" fw={500} mb="xs" size="xs">
             Enable/Disable Components
           </Text>
           <Grid gutter="xs">
             <Grid.Col span={6}>
               <Switch
-                checked={headerEnabled}
                 onChange={(e) => setHeaderEnabled(e.currentTarget.checked)}
+                checked={headerEnabled}
                 label="Header"
                 size="sm"
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <Switch
-                checked={navbarEnabled}
                 onChange={(e) => setNavbarEnabled(e.currentTarget.checked)}
+                checked={navbarEnabled}
                 label="Navbar"
                 size="sm"
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <Switch
-                checked={asideEnabled}
                 onChange={(e) => setAsideEnabled(e.currentTarget.checked)}
+                checked={asideEnabled}
                 label="Aside"
                 size="sm"
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <Switch
-                checked={footerEnabled}
                 onChange={(e) => setFooterEnabled(e.currentTarget.checked)}
+                checked={footerEnabled}
                 label="Footer"
                 size="sm"
               />
@@ -113,35 +162,35 @@ export function AppLayoutControls() {
 
         {/* Show/Hide Section */}
         <Box>
-          <Text fw={500} size="xs" mb="xs" c="dimmed">
+          <Text c="dimmed" fw={500} mb="xs" size="xs">
             Show/Hide Components
           </Text>
           <Grid gutter="xs">
             <Grid.Col span={4}>
               <Switch
-                checked={navbarOpened}
                 onChange={(e) => setNavbar(e.currentTarget.checked)}
+                checked={navbarOpened}
+                disabled={!navbarEnabled}
                 label="Navbar"
                 size="sm"
-                disabled={!navbarEnabled}
               />
             </Grid.Col>
             <Grid.Col span={4}>
               <Switch
-                checked={asideOpened}
                 onChange={(e) => setAside(e.currentTarget.checked)}
+                checked={asideOpened}
+                disabled={!asideEnabled}
                 label="Aside"
                 size="sm"
-                disabled={!asideEnabled}
               />
             </Grid.Col>
             <Grid.Col span={4}>
               <Switch
-                checked={mobileNavbarOpened}
                 onChange={(e) => setMobileNavbar(e.currentTarget.checked)}
+                checked={mobileNavbarOpened}
+                disabled={!navbarEnabled}
                 label="Mobile Nav"
                 size="sm"
-                disabled={!navbarEnabled}
               />
             </Grid.Col>
           </Grid>
@@ -160,56 +209,56 @@ export function AppLayoutControls() {
 
         {/* Dimensions Section */}
         <Box>
-          <Text fw={500} size="xs" mb="xs" c="dimmed">
+          <Text c="dimmed" fw={500} mb="xs" size="xs">
             Dimensions
           </Text>
           <Grid gutter="xs">
             <Grid.Col span={6}>
               <NumberInput
                 onChange={(value) => setHeaderHeight(Number(value) || 60)}
+                disabled={!headerEnabled}
                 label="Header Height"
                 max={120}
                 min={40}
+                size="xs"
                 step={10}
                 value={typeof headerHeight === "number" ? headerHeight : 60}
-                size="xs"
-                disabled={!headerEnabled}
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <NumberInput
                 onChange={(value) => setFooterHeight(Number(value) || 60)}
+                disabled={!footerEnabled}
                 label="Footer Height"
                 max={120}
                 min={40}
+                size="xs"
                 step={10}
                 value={typeof footerHeight === "number" ? footerHeight : 60}
-                size="xs"
-                disabled={!footerEnabled}
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <NumberInput
                 onChange={(value) => setNavbarWidth(Number(value) || 300)}
+                disabled={!navbarEnabled}
                 label="Navbar Width"
                 max={500}
                 min={200}
+                size="xs"
                 step={50}
                 value={typeof navbarWidth === "number" ? navbarWidth : 300}
-                size="xs"
-                disabled={!navbarEnabled}
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <NumberInput
                 onChange={(value) => setAsideWidth(Number(value) || 300)}
+                disabled={!asideEnabled}
                 label="Aside Width"
                 max={500}
                 min={200}
+                size="xs"
                 step={50}
                 value={typeof asideWidth === "number" ? asideWidth : 300}
-                size="xs"
-                disabled={!asideEnabled}
               />
             </Grid.Col>
           </Grid>

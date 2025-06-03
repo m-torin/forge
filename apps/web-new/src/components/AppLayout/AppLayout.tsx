@@ -41,17 +41,17 @@ export function AppLayout({
 }: AppLayoutProps) {
   const pathname = usePathname();
   const {
+    asideEnabled,
     asideOpened,
     asideWidth,
     navbarWidth,
     toggleAside,
-    headerEnabled,
-    navbarEnabled,
-    asideEnabled,
     footerEnabled,
     footerHeight,
+    headerEnabled,
     headerHeight,
     mobileNavbarOpened,
+    navbarEnabled,
     navbarOpened,
     toggleMobileNavbar,
     toggleNavbar,

@@ -1,5 +1,8 @@
 import { AppLayout, AppLayoutProvider } from "@/components/AppLayout";
 import { getDictionary } from "@/i18n";
+import { Portal } from '@mantine/core';
+
+import { Aside, Header2 } from '@repo/design-system/ciseco';
 
 import type { Metadata } from "next";
 
@@ -28,10 +31,17 @@ export default async function LocaleLayout({
   const dict = await getDictionary(locale);
 
   return (
-    <AppLayoutProvider>
-      <AppLayout locale={locale} dict={dict}>
-        {children}
-      </AppLayout>
-    </AppLayoutProvider>
+    <Aside.Provider>
+      <AppLayoutProvider>
+        <AppLayout locale={locale} dict={dict}>
+          {children}
+        </AppLayout>
+        
+        {/* Portal Header2 to the header target */}
+        <Portal target="#header-portal-target">
+          <Header2 />
+        </Portal>
+      </AppLayoutProvider>
+    </Aside.Provider>
   );
 }

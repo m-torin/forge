@@ -1,13 +1,12 @@
 "use client";
 
-import { createContext, type ReactNode, useCallback, useContext } from "react";
 import {
-  useLocalStorage,
-  useSessionStorage,
   useDisclosure,
-  useSetState,
   useMediaQuery,
+  useSessionStorage,
+  useSetState,
 } from "@mantine/hooks";
+import { createContext, type ReactNode, useCallback, useContext } from "react";
 
 export type AppShellSize = string | number;
 export type AppShellResponsiveSize =
@@ -26,29 +25,29 @@ export interface AppLayoutState {
   mobileNavbarOpened: boolean;
   navbarOpened: boolean;
 
+  asideEnabled: boolean;
+  footerEnabled: boolean;
   // Section enabled states (completely disabled, no space reserved)
   headerEnabled: boolean;
   navbarEnabled: boolean;
-  asideEnabled: boolean;
-  footerEnabled: boolean;
 
+  asideWidth: AppShellResponsiveSize;
+  footerHeight: AppShellResponsiveSize;
   // Section dimensions
   headerHeight: AppShellResponsiveSize;
   navbarWidth: AppShellResponsiveSize;
-  asideWidth: AppShellResponsiveSize;
-  footerHeight: AppShellResponsiveSize;
 }
 
 export interface AppLayoutContextType extends AppLayoutState {
   // Visibility controls (collapsed/hidden but space reserved)
   closeAll: () => void;
+  closeAside: () => void;
+  closeMobileNavbar: () => void;
+  closeNavbar: () => void;
   openAll: () => void;
   openAside: () => void;
-  closeAside: () => void;
   openMobileNavbar: () => void;
-  closeMobileNavbar: () => void;
   openNavbar: () => void;
-  closeNavbar: () => void;
   setAside: (opened: boolean) => void;
   setMobileNavbar: (opened: boolean) => void;
   setNavbar: (opened: boolean) => void;
@@ -56,26 +55,26 @@ export interface AppLayoutContextType extends AppLayoutState {
   toggleMobileNavbar: () => void;
   toggleNavbar: () => void;
 
+  setAsideEnabled: (enabled: boolean) => void;
+  setFooterEnabled: (enabled: boolean) => void;
   // Enable/disable controls (completely remove from layout)
   setHeaderEnabled: (enabled: boolean) => void;
   setNavbarEnabled: (enabled: boolean) => void;
-  setAsideEnabled: (enabled: boolean) => void;
-  setFooterEnabled: (enabled: boolean) => void;
-  toggleHeaderEnabled: () => void;
-  toggleNavbarEnabled: () => void;
   toggleAsideEnabled: () => void;
   toggleFooterEnabled: () => void;
+  toggleHeaderEnabled: () => void;
+  toggleNavbarEnabled: () => void;
 
+  setAsideWidth: (width: AppShellResponsiveSize) => void;
+  setFooterHeight: (height: AppShellResponsiveSize) => void;
   // Dimension controls
   setHeaderHeight: (height: AppShellResponsiveSize) => void;
   setNavbarWidth: (width: AppShellResponsiveSize) => void;
-  setAsideWidth: (width: AppShellResponsiveSize) => void;
-  setFooterHeight: (height: AppShellResponsiveSize) => void;
 
+  isDesktop: boolean;
   // Responsive state
   isMobile: boolean;
   isTablet: boolean;
-  isDesktop: boolean;
 }
 
 const AppLayoutContext = createContext<AppLayoutContextType | null>(null);
@@ -96,17 +95,17 @@ export interface AppLayoutProviderProps {
   defaultMobileNavbarOpened?: boolean;
   defaultNavbarOpened?: boolean;
 
+  defaultAsideEnabled?: boolean;
+  defaultFooterEnabled?: boolean;
   // Default enabled states (completely disabled, no space reserved)
   defaultHeaderEnabled?: boolean;
   defaultNavbarEnabled?: boolean;
-  defaultAsideEnabled?: boolean;
-  defaultFooterEnabled?: boolean;
 
+  defaultAsideWidth?: AppShellResponsiveSize;
+  defaultFooterHeight?: AppShellResponsiveSize;
   // Default dimensions
   defaultHeaderHeight?: AppShellResponsiveSize;
   defaultNavbarWidth?: AppShellResponsiveSize;
-  defaultAsideWidth?: AppShellResponsiveSize;
-  defaultFooterHeight?: AppShellResponsiveSize;
 }
 
 export function AppLayoutProvider({
@@ -117,17 +116,17 @@ export function AppLayoutProvider({
   defaultMobileNavbarOpened = false,
   defaultNavbarOpened = true,
 
+  defaultAsideEnabled = true,
+  defaultFooterEnabled = true,
   // Default enabled states
   defaultHeaderEnabled = true,
   defaultNavbarEnabled = true,
-  defaultAsideEnabled = true,
-  defaultFooterEnabled = true,
 
+  defaultAsideWidth = 300,
+  defaultNavbarWidth = 300,
+  defaultFooterHeight = 60,
   // Default dimensions
   defaultHeaderHeight = 90,
-  defaultNavbarWidth = 300,
-  defaultAsideWidth = 300,
-  defaultFooterHeight = 60,
 }: AppLayoutProviderProps) {
   // Responsive breakpoints
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -137,49 +136,49 @@ export function AppLayoutProvider({
   // Visibility states using useDisclosure for better toggle API
   const [
     navbarOpened,
-    { open: openNavbar, close: closeNavbar, toggle: toggleNavbar },
+    { close: closeNavbar, open: openNavbar, toggle: toggleNavbar },
   ] = useDisclosure(isMobile ? false : defaultNavbarOpened);
   const [
     asideOpened,
-    { open: openAside, close: closeAside, toggle: toggleAside },
+    { close: closeAside, open: openAside, toggle: toggleAside },
   ] = useDisclosure(defaultAsideOpened);
   const [
     mobileNavbarOpened,
     {
-      open: openMobileNavbar,
       close: closeMobileNavbar,
+      open: openMobileNavbar,
       toggle: toggleMobileNavbar,
     },
   ] = useDisclosure(defaultMobileNavbarOpened);
 
   // Enabled states using useLocalStorage for persistence
   const [enabledStates, setEnabledStates] = useSetState({
-    headerEnabled: defaultHeaderEnabled,
-    navbarEnabled: defaultNavbarEnabled,
     asideEnabled: defaultAsideEnabled,
     footerEnabled: defaultFooterEnabled,
+    headerEnabled: defaultHeaderEnabled,
+    navbarEnabled: defaultNavbarEnabled,
   });
 
   // Dimension states using useSessionStorage for session persistence
   const [headerHeight, setHeaderHeightState] = useSessionStorage({
-    key: "app-layout-header-height-v2",
     defaultValue: defaultHeaderHeight,
+    key: "app-layout-header-height-v2",
   });
   const [navbarWidth, setNavbarWidthState] = useSessionStorage({
-    key: "app-layout-navbar-width-v2",
     defaultValue: defaultNavbarWidth,
+    key: "app-layout-navbar-width-v2",
   });
   const [asideWidth, setAsideWidthState] = useSessionStorage({
-    key: "app-layout-aside-width-v2",
     defaultValue: defaultAsideWidth,
+    key: "app-layout-aside-width-v2",
   });
   const [footerHeight, setFooterHeightState] = useSessionStorage({
-    key: "app-layout-footer-height-v2",
     defaultValue: defaultFooterHeight,
+    key: "app-layout-footer-height-v2",
   });
 
   // Extract enabled states for easier access
-  const { headerEnabled, navbarEnabled, asideEnabled, footerEnabled } =
+  const { asideEnabled, footerEnabled, headerEnabled, navbarEnabled } =
     enabledStates;
 
   // Manual setters for compatibility (wrapping useDisclosure functions)
@@ -310,54 +309,54 @@ export function AppLayoutProvider({
     mobileNavbarOpened,
     navbarOpened,
 
+    asideEnabled,
+    footerEnabled,
     // Enabled states
     headerEnabled,
     navbarEnabled,
-    asideEnabled,
-    footerEnabled,
 
+    asideWidth,
+    navbarWidth,
+    footerHeight,
     // Dimensions
     headerHeight,
-    navbarWidth,
-    asideWidth,
-    footerHeight,
 
+    isDesktop: isDesktop ?? true,
     // Responsive states
     isMobile: isMobile ?? false,
     isTablet: isTablet ?? false,
-    isDesktop: isDesktop ?? true,
 
+    closeAside,
+    openAside,
+    setAside,
+    toggleAside,
     // Visibility controls - useDisclosure functions
     closeAll,
-    openAll,
-    openAside,
-    closeAside,
-    openMobileNavbar,
     closeMobileNavbar,
-    openNavbar,
     closeNavbar,
-    setAside,
+    openAll,
+    openMobileNavbar,
+    openNavbar,
     setMobileNavbar,
     setNavbar,
-    toggleAside,
     toggleMobileNavbar,
     toggleNavbar,
 
+    setAsideEnabled,
+    toggleAsideEnabled,
+    setFooterEnabled,
     // Enable/disable controls - useSetState functions
     setHeaderEnabled,
     setNavbarEnabled,
-    setAsideEnabled,
-    setFooterEnabled,
+    toggleFooterEnabled,
     toggleHeaderEnabled,
     toggleNavbarEnabled,
-    toggleAsideEnabled,
-    toggleFooterEnabled,
 
+    setAsideWidth,
+    setNavbarWidth,
+    setFooterHeight,
     // Dimension controls - useSessionStorage functions
     setHeaderHeight,
-    setNavbarWidth,
-    setAsideWidth,
-    setFooterHeight,
   };
 
   return (

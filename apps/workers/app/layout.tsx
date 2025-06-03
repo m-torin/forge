@@ -11,12 +11,12 @@ interface RootLayoutProperties {
 
 export const metadata = {
   description: 'Workflow orchestration and management',
-  title: 'Workers',
   metadataBase: new URL(
     process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : 'http://localhost:3400',
   ),
+  title: 'Workers',
 };
 
 export default function RootLayout({ children }: RootLayoutProperties): React.ReactElement {

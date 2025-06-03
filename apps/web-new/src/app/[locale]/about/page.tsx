@@ -1,10 +1,6 @@
 import { getDictionary } from "@/i18n";
 import {
-  Badge,
-  Card,
   Container,
-  Grid,
-  Group,
   Paper,
   Stack,
   Text,

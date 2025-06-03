@@ -68,7 +68,7 @@ export default async function Home({
           </Text>
         </div>
 
-        <AppLayoutControls />
+        <AppLayoutControls locale={locale} dict={dict} />
       </Stack>
     </Container>
   );

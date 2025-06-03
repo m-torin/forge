@@ -1,9 +1,8 @@
+import { env } from '@/env';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { type Metadata } from 'next';
-import React, { type ReactNode } from 'react';
 import '@mantine/core/styles.css';
-
-import { env } from '@/env';
+import React, { type ReactNode } from 'react';
 
 interface RootLayoutProperties {
   readonly children: ReactNode;
@@ -11,8 +10,8 @@ interface RootLayoutProperties {
 
 export const metadata: Metadata = {
   description: 'Backstage application',
-  title: 'Backstage',
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL || 'http://localhost:3300'),
+  title: 'Backstage',
 };
 
 export default function RootLayout({ children }: RootLayoutProperties): React.ReactElement {
