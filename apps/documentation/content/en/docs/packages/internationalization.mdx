@@ -373,7 +373,7 @@ Translations are locked to ensure consistency:
 
 Apps can extend the base dictionary with custom translations:
 
-```typescript
+```json
 // app/i18n/dictionaries/en.json
 {
   "app": {
@@ -382,6 +382,11 @@ Apps can extend the base dictionary with custom translations:
       "widgets": {
         "sales": "Sales Overview"
       }
+    },
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español"
     }
   }
 }
@@ -491,6 +496,23 @@ export default async function NotFound({
 - **Use consistent naming**: Follow a clear hierarchy
 - **Avoid deep nesting**: Maximum 3-4 levels deep
 - **Array for lists**: Use arrays for repeated content
+- **Use concise keys**: Prefer `l` for language names instead of `languages`
+
+Example of recommended structure:
+
+```json
+{
+  "app": {
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  }
+}
+```
 
 ### 2. Performance
 

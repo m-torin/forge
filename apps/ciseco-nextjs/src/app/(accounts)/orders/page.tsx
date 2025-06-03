@@ -12,7 +12,11 @@ const Order = ({ order }: { order: TOrder }) => {
     <div className="z-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
       <div className="flex flex-col bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:bg-neutral-500/5">
         <div>
-          <Link href={{ pathname: '/orders/[number]', query: { number: order.number } } as any} as={'/orders/' + order.number} className="text-lg font-semibold">
+          <Link
+            href={{ pathname: '/orders/[number]', query: { number: order.number } } as any}
+            as={'/orders/' + order.number}
+            className="text-lg font-semibold"
+          >
             #{order.number}
           </Link>
           <p className="mt-1.5 text-sm text-neutral-500 sm:mt-2 dark:text-neutral-400">{order.status}</p>
@@ -65,7 +69,11 @@ const Order = ({ order }: { order: TOrder }) => {
                 </p>
 
                 <div className="flex">
-                  <Link href={{ pathname: '/products/[handle]', query: { handle } } as any} as={'/products/' + handle} className="text-primary-600 dark:text-primary-500 font-medium">
+                  <Link
+                    href={{ pathname: '/products/[handle]', query: { handle } } as any}
+                    as={'/products/' + handle}
+                    className="text-primary-600 dark:text-primary-500 font-medium"
+                  >
                     Leave review
                   </Link>
                 </div>

@@ -15,7 +15,7 @@ export const metadata = {
   metadataBase: new URL(
     process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : 'http://localhost:3400'
+      : 'http://localhost:3400',
   ),
 };
 

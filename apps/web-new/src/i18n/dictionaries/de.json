@@ -1,0 +1,26 @@
+{
+  "app": {
+    "welcome": "Willkommen bei",
+    "description": "Dieses Next.js-Starterprojekt enthält eine minimale Konfiguration für Mantine mit TailwindCSS. Um zu beginnen, bearbeiten Sie die Datei page.tsx.",
+    "currentLanguage": "Aktuelle Sprache",
+    "brand": "Neue Web-Anwendung",
+    "appDescription": "Eine moderne Webanwendung mit Internationalisierungsunterstützung",
+    "mantine": "Mantine",
+    "tailwindcss": "TailwindCSS",
+    "l": {
+      "en": "Englisch",
+      "fr": "Französisch",
+      "frCA": "Französisch (Kanada)",
+      "es": "Spanisch",
+      "esMX": "Spanisch (Mexiko)",
+      "ptBR": "Portugiesisch (Brasilien)",
+      "de": "Deutsch"
+    },
+    "selectLanguage": "Sprache auswählen",
+    "logoAlt": "Logo",
+    "allRightsReserved": "Alle Rechte vorbehalten",
+    "madeWith": "Erstellt mit",
+    "by": "von",
+    "team": "Team"
+  }
+}

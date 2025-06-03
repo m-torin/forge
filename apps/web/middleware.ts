@@ -4,10 +4,7 @@ import { authMiddleware as betterAuthMiddleware } from "@repo/auth/middleware";
 import { internationalizationMiddleware } from "@repo/internationalization/middleware";
 import { parseError } from "@repo/observability/error";
 import { secure } from "@repo/security";
-import {
-  noseconeMiddleware,
-  noseconeOptions,
-} from "@repo/security/middleware";
+import { noseconeMiddleware, noseconeOptions } from "@repo/security/middleware";
 
 import { env } from "./env";
 
@@ -35,7 +32,7 @@ const middleware: NextMiddleware = async (request) => {
     if (isRedirect) {
       return i18nResponse;
     }
-    
+
     // For rewrites, we need to continue processing but with the rewritten request
     // The i18n middleware has already set up the rewrite, so we can continue
   }

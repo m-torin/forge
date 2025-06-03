@@ -511,7 +511,14 @@ size_limit: 100MB`}
                               toggleRunExpanded(run.workflowRunId);
                             }
                           }}
-                          style={{ cursor: 'pointer', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: 0 }}
+                          style={{
+                            cursor: 'pointer',
+                            background: 'transparent',
+                            border: 'none',
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: 0,
+                          }}
                           justify="space-between"
                           mb={isExpanded ? 'md' : 0}
                           tabIndex={0}

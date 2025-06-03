@@ -3,10 +3,7 @@ import { type NextMiddleware, NextResponse } from 'next/server';
 import { authMiddleware as betterAuthMiddleware } from '@repo/auth/middleware';
 import { parseError } from '@repo/observability/error';
 import { secure } from '@repo/security';
-import {
-  noseconeMiddleware,
-  noseconeOptions,
-} from '@repo/security/middleware';
+import { noseconeMiddleware, noseconeOptions } from '@repo/security/middleware';
 
 import { env } from './env';
 

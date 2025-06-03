@@ -501,9 +501,18 @@ importers:
 
   apps/storybook:
     dependencies:
+      '@heroicons/react':
+        specifier: ^2.1.1
+        version: 2.2.0(react@19.1.0)
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.57.0(react@19.1.0))
+      '@hugeicons/core-free-icons':
+        specifier: ^1.0.0
+        version: 1.0.14
+      '@hugeicons/react':
+        specifier: ^1.0.0
+        version: 1.0.5(react@19.1.0)
       '@mantine/core':
         specifier: 'catalog:'
         version: 8.0.2(@mantine/hooks@8.0.2(react@19.1.0))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -832,6 +841,106 @@ importers:
         version: 5.8.3
 
   apps/web-new:
+    dependencies:
+      '@mantine/core':
+        specifier: 'catalog:'
+        version: 8.0.2(@mantine/hooks@8.0.2(react@19.1.0))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@mantine/hooks':
+        specifier: 'catalog:'
+        version: 8.0.2(react@19.1.0)
+      '@repo/analytics':
+        specifier: workspace:*
+        version: link:../../packages/analytics
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@repo/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@repo/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
+      '@repo/email':
+        specifier: workspace:*
+        version: link:../../packages/email
+      '@repo/internationalization':
+        specifier: workspace:*
+        version: link:../../packages/internationalization
+      '@repo/notifications':
+        specifier: workspace:*
+        version: link:../../packages/notifications
+      '@repo/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@repo/orchestration':
+        specifier: workspace:*
+        version: link:../../packages/orchestration
+      '@repo/payments':
+        specifier: workspace:*
+        version: link:../../packages/payments
+      '@repo/security':
+        specifier: workspace:*
+        version: link:../../packages/security
+      '@repo/seo':
+        specifier: workspace:*
+        version: link:../../packages/seo
+      '@t3-oss/env-nextjs':
+        specifier: 'catalog:'
+        version: 0.13.6(typescript@5.8.3)(zod@3.25.49)
+      next:
+        specifier: 'catalog:'
+        version: 15.4.0-canary.62(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.89.1)
+      react:
+        specifier: 'catalog:'
+        version: 19.1.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.1.0(react@19.1.0)
+      tailwind-preset-mantine:
+        specifier: 'catalog:'
+        version: 2.1.0(@mantine/core@8.0.2(@mantine/hooks@8.0.2(react@19.1.0))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(tailwindcss@4.1.8)
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.49
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/config-eslint
+      '@repo/testing':
+        specifier: workspace:*
+        version: link:../../packages/testing
+      '@tailwindcss/postcss':
+        specifier: 'catalog:'
+        version: 4.1.8
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.15.29
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.1.6
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.1.5(@types/react@19.1.6)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.28.0(jiti@2.4.2)
+      postcss:
+        specifier: 'catalog:'
+        version: 8.5.4
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 4.1.8
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.0(@types/debug@4.1.12)(@types/node@22.15.29)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(sass@1.89.1)(sugarss@4.0.1(postcss@8.5.4))(terser@5.40.0)(tsx@4.19.4)(yaml@2.8.0)
+
+  apps/web-template:
     dependencies:
       '@mantine/core':
         specifier: 'catalog:'
@@ -19830,7 +19939,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 18.19.110
+      '@types/node': 22.15.29
       form-data: 4.0.2
 
   '@types/node@18.19.110':

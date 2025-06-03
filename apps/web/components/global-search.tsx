@@ -64,24 +64,24 @@ export function GlobalSearch() {
         component="button"
         onClick={open}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             open();
           }
         }}
+        role="button"
         style={{
+          minWidth: "200px",
+          width: "auto",
           background: "transparent",
           border: "1px solid var(--mantine-color-gray-3)",
           borderRadius: "var(--mantine-radius-sm)",
           cursor: "pointer",
-          minWidth: "200px",
           padding: "0.5rem 1rem",
-          width: "auto",
         }}
-        gap="xs"
-        role="button"
-        tabIndex={0}
         aria-label="Open search"
+        gap="xs"
+        tabIndex={0}
       >
         <IconSearch size={16} />
         <Text c="dimmed" size="sm">

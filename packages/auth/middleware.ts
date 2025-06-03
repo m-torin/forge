@@ -3,22 +3,16 @@ import { NextResponse } from 'next/server';
 
 import type { NextRequest } from 'next/server';
 
-const protectedRoutes = [
-  '/account',
-  '/dashboard',
-  '/favorites',
-  '/shop',
-  '/registries/create',
-];
+const protectedRoutes = ['/account', '/dashboard', '/favorites', '/shop', '/registries/create'];
 
 const isProtectedRoute = (pathname: string) => {
   // Remove locale prefix if present (e.g., /en/account -> /account)
   const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(-[A-Z]{2})?/, '');
-  
+
   // Check if the pathname starts with any protected route
   // This handles both the route itself and any sub-routes
-  return protectedRoutes.some((route) => 
-    pathname.startsWith(route) || pathWithoutLocale.startsWith(route)
+  return protectedRoutes.some(
+    (route) => pathname.startsWith(route) || pathWithoutLocale.startsWith(route),
   );
 };
 

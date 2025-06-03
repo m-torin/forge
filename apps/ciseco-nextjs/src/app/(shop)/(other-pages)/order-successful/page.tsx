@@ -27,8 +27,8 @@ export default async function Page() {
             <Heading className="mt-4">Payment successful!</Heading>
 
             <p className="mt-2.5 max-w-2xl text-neutral-500">
-              We appreciate your order, we&apos;re currently processing it. So hang tight and we&apos;ll send you confirmation
-              very soon!
+              We appreciate your order, we&apos;re currently processing it. So hang tight and we&apos;ll send you
+              confirmation very soon!
             </p>
 
             <dl className="mt-16 text-sm">

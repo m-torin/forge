@@ -296,6 +296,45 @@ settings.
    - Use centralized notification configuration from `@repo/notifications/mantine-notifications`
    - Consistent notification styles across all apps
 
+## Internationalization Guidelines
+
+When implementing internationalization in apps:
+
+1. **Dictionary Structure**
+
+   - Use concise property names for better readability
+   - **Preferred**: Use `l` for language translations instead of `languages`
+   - Example:
+     ```json
+     {
+       "app": {
+         "l": {
+           "en": "English",
+           "fr": "Français",
+           "es": "Español"
+         }
+       }
+     }
+     ```
+
+2. **Extending Base Dictionaries**
+
+   - Apps should extend the base internationalization package
+   - Create app-specific dictionaries in `/src/i18n/dictionaries/`
+   - Use `createDictionary` from `@repo/internationalization/extend`
+
+3. **Locale Codes**
+
+   - Use standard locale codes: `en`, `fr`, `es`, `pt`, `de`
+   - For regional variants: `fr-CA`, `es-MX`, `pt-BR`
+   - The package normalizes locales (e.g., `fr-CA` → `fr`)
+
+4. **Best Practices**
+   - All user-facing strings should be in dictionaries
+   - Pass dictionary strings as props to client components
+   - Use the locale-aware Link component for navigation
+   - Implement locale switchers for user control
+
 ## Package Architecture & Hierarchy
 
 The packages follow a strict layered architecture to prevent circular dependencies. Each layer can

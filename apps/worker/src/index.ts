@@ -30,7 +30,6 @@ async function main() {
 
     // Your worker logic here
     console.log('Worker started with auth and security setup');
-
   } catch (error) {
     const message = parseError(error);
     console.error('Worker error:', message);

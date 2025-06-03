@@ -41,7 +41,7 @@ const config: StorybookConfig = {
         // Mock geist fonts for Storybook
         'geist/font/mono': require.resolve('../../../packages/design-system/uix/mocks/geist-mono'),
         'geist/font/sans': require.resolve('../../../packages/design-system/uix/mocks/geist-sans'),
-        'geist': require.resolve('../../../packages/design-system/uix/mocks/geist'),
+        geist: require.resolve('../../../packages/design-system/uix/mocks/geist'),
       };
 
       // Add fallbacks for Node.js modules
