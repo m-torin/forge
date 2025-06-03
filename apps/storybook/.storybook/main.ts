@@ -19,6 +19,12 @@ const config: StorybookConfig = {
     getAbsolutePath('@storybook/addon-docs'),
   ],
   core: {
+    builder: {
+      name: '@storybook/builder-webpack5',
+      options: {
+        lazyCompilation: true,
+      },
+    },
     disableTelemetry: true,
   },
   framework: {
@@ -38,7 +44,6 @@ const config: StorybookConfig = {
         ...config.resolve.alias,
         // Alias @repo/auth/client to our mock implementation
         '@repo/auth/client': require.resolve('../../../packages/auth/mocks/storybook-client'),
-        geist: require.resolve('../../../packages/design-system/uix/mocks/geist'),
         // Mock geist fonts for Storybook
         'geist/font/mono': require.resolve('../../../packages/design-system/uix/mocks/geist-mono'),
         'geist/font/sans': require.resolve('../../../packages/design-system/uix/mocks/geist-sans'),
@@ -145,12 +150,14 @@ const config: StorybookConfig = {
 
     // Enable debugging of stories to find errors
     if (config.infrastructureLogging) {
-      config.infrastructureLogging.level = 'verbose';
+      config.infrastructureLogging.level = 'error';
     }
 
     // Suppress import warnings for missing exports - we'll fix them incrementally
     config.stats = {
       ...(config.stats || {}),
+      logging: 'error',
+      loggingDebug: false,
       warningsFilter: [/export .* was not found/, /Critical dependency/],
     };
 

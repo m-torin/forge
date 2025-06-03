@@ -14,5 +14,5 @@
       "@repo/*": ["../../packages/*"]
     }
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next", "**/.next", "dist", "build"]
 }

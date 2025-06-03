@@ -220,15 +220,9 @@ import { UnifiedSignUp } from '@repo/design-system/uix';
 ```typescript
 // middleware.ts
 import { createAuthMiddleware } from '@repo/auth/server-utils';
-import {
-  noseconeMiddleware,
-  noseconeOptions,
-  noseconeOptionsWithToolbar,
-} from '@repo/security/middleware';
+import { noseconeMiddleware, noseconeOptions } from '@repo/security/middleware';
 
-const securityHeaders = env.FLAGS_SECRET
-  ? noseconeMiddleware(noseconeOptionsWithToolbar)
-  : noseconeMiddleware(noseconeOptions);
+const securityHeaders = noseconeMiddleware(noseconeOptions);
 
 // Create auth middleware with API key support
 const authMiddleware = createAuthMiddleware({

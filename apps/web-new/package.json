@@ -12,6 +12,10 @@
     "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
+    "@hugeicons/core-free-icons": "^1.0.14",
+    "@hugeicons/react": "^1.0.5",
     "@mantine/core": "catalog:",
     "@mantine/hooks": "catalog:",
     "@repo/analytics": "workspace:*",
@@ -28,9 +32,15 @@
     "@repo/security": "workspace:*",
     "@repo/seo": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
+    "clsx": "catalog:",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
+    "framer-motion": "catalog:",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-hot-toast": "^2.5.2",
+    "react-use": "^17.6.0",
     "tailwind-preset-mantine": "catalog:",
     "zod": "catalog:"
   },

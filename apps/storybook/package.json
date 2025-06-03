@@ -2,7 +2,7 @@
   "name": "storybook",
   "private": true,
   "scripts": {
-    "dev": "storybook dev -p 3700 --quiet --loglevel warn --no-open",
+    "dev": "storybook dev -p 3700 --quiet --loglevel error --no-open",
     "build": "doppler run -- storybook build --quiet --loglevel warn",
     "build:local": "storybook build --quiet --loglevel warn",
     "chromatic": "doppler run -- chromatic --exit-zero-on-changes",

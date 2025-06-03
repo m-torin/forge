@@ -8,7 +8,7 @@ security headers, with **Upstash Redis** rate limiting.
 The security package provides enterprise-grade security features:
 
 - **Arcjet Bot Protection**: AI-powered bot detection with Shield protection
-- **Nosecone Security Headers**: Configurable security headers with Vercel Toolbar support
+- **Nosecone Security Headers**: Configurable security headers
 - **Upstash Rate Limiting**: Distributed rate limiting with sliding windows
 - **Production Environment Handling**: Graceful degradation in development
 - **TypeScript Environment Validation**: Type-safe configuration with Zod
@@ -153,20 +153,13 @@ await secure(['GOOGLEBOT', 'CRAWLER', 'PREVIEW']);
 
 ### Nosecone Security Headers
 
-Production-ready security headers with Vercel Toolbar compatibility:
+Production-ready security headers:
 
 ```typescript
-import {
-  noseconeMiddleware,
-  noseconeOptions,
-  noseconeOptionsWithToolbar,
-} from '@repo/security/middleware';
+import { noseconeMiddleware, noseconeOptions } from '@repo/security/middleware';
 
 // Basic middleware setup
 export const middleware = noseconeMiddleware(noseconeOptions);
-
-// For development with Vercel Toolbar
-export const devMiddleware = noseconeMiddleware(noseconeOptionsWithToolbar);
 ```
 
 #### Default Security Headers
@@ -770,3 +763,13 @@ export async function requireAuth(request: Request) {
 3. **Monitoring**: Track service vs user requests separately
 4. **Rate Limiting**: Apply different limits for service accounts
 5. **Bot Protection**: Skip bot detection for trusted service accounts
+
+## Summary
+
+The security package provides:
+
+- **Arcjet Bot Protection** with AI-powered detection
+- **Nosecone Security Headers** with secure defaults
+- **Upstash Rate Limiting** with distributed storage
+- **Production Environment Handling** with graceful degradation
+- **TypeScript Environment Validation** with Zod schemas

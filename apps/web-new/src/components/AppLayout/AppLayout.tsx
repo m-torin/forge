@@ -32,7 +32,7 @@ export function AppLayout({
   layout = "default",
   locale,
   offsetScrollbars,
-  padding = "md",
+  padding = 0,
   transitionDuration = 200,
   transitionTimingFunction = "ease",
   withBorder = true,
@@ -134,10 +134,6 @@ export function AppLayout({
 
       {asideEnabled && (
         <AppShell.Aside className={classes.aside} p="md">
-          <Text fw={500} mb="md" size="sm">
-            {dict?.app?.contextualInfo || "Contextual Information"}
-          </Text>
-
           <div id="aside-portal-target" className={classes.asidePortalTarget} />
         </AppShell.Aside>
       )}

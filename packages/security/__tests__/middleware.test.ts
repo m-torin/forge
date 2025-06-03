@@ -1,8 +1,8 @@
-import { createMiddleware, withVercelToolbar } from '@nosecone/next';
+import { createMiddleware } from '@nosecone/next';
 import { describe, expect, it, vi } from 'vitest';
 
 // Import after mocks
-import { noseconeMiddleware, noseconeOptions, noseconeOptionsWithToolbar } from '../middleware';
+import { noseconeMiddleware, noseconeOptions } from '../middleware';
 
 // Mock dependencies before imports
 const _mockDefaults = {
@@ -12,11 +12,6 @@ const _mockDefaults = {
     },
   },
 };
-
-const _mockWithVercelToolbar = vi.fn((options) => ({
-  ...options,
-  withToolbar: true,
-}));
 
 const _mockCreateMiddleware = vi.fn();
 
@@ -29,10 +24,6 @@ vi.mock('@nosecone/next', () => ({
       },
     },
   },
-  withVercelToolbar: vi.fn((options) => ({
-    ...options,
-    withToolbar: true,
-  })),
 }));
 
 describe('middleware', () => {
@@ -46,19 +37,6 @@ describe('middleware', () => {
       expect(noseconeOptions).toMatchObject({
         contentSecurityPolicy: false,
       });
-    });
-  });
-
-  describe('noseconeOptionsWithToolbar', () => {
-    it('should include toolbar configuration', () => {
-      // The toolbar options are created at module load time
-      expect(noseconeOptionsWithToolbar).toBeDefined();
-      expect(noseconeOptionsWithToolbar.contentSecurityPolicy).toBe(false);
-    });
-
-    it('should call withVercelToolbar with base options', () => {
-      // The call happens at module load time
-      expect(withVercelToolbar).toHaveBeenCalledWith(noseconeOptions);
     });
   });
 

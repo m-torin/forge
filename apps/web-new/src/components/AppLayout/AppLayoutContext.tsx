@@ -114,10 +114,10 @@ export function AppLayoutProvider({
   // Default visibility states
   defaultAsideOpened = false,
   defaultMobileNavbarOpened = false,
-  defaultNavbarOpened = true,
+  defaultNavbarOpened = false,
 
   defaultAsideEnabled = true,
-  defaultFooterEnabled = true,
+  defaultFooterEnabled = false,
   // Default enabled states
   defaultHeaderEnabled = true,
   defaultNavbarEnabled = true,

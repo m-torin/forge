@@ -1,8 +1,10 @@
 import { AppLayout, AppLayoutProvider } from "@/components/AppLayout";
+import LocalizedHeader2 from "@/components/LocalizedHeader2";
+import ProductQuickViewWrapper from "@/components/ProductQuickViewWrapper";
 import { getDictionary } from "@/i18n";
-import { Portal } from '@mantine/core';
+import { Portal } from "@mantine/core";
 
-import { Aside, Header2 } from '@repo/design-system/ciseco';
+import { Aside } from "@repo/design-system/ciseco";
 
 import type { Metadata } from "next";
 
@@ -36,11 +38,14 @@ export default async function LocaleLayout({
         <AppLayout locale={locale} dict={dict}>
           {children}
         </AppLayout>
-        
-        {/* Portal Header2 to the header target */}
+
+        {/* Portal LocalizedHeader2 to the header target */}
         <Portal target="#header-portal-target">
-          <Header2 />
+          <LocalizedHeader2 locale={locale} />
         </Portal>
+
+        {/* Product Quick View Integration */}
+        <ProductQuickViewWrapper />
       </AppLayoutProvider>
     </Aside.Provider>
   );
