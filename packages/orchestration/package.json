@@ -37,7 +37,7 @@
     "@upstash/qstash": "^2.8.1",
     "@upstash/redis": "^1.35.0",
     "@upstash/workflow": "^0.2.13",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

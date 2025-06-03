@@ -22,7 +22,6 @@ export {
 export { Analytics } from './emitters/analytics';
 
 // Server-only exports
-export { withToolbar } from './lib/toolbar';
 export { getFlags } from './access';
 
 // Re-export types

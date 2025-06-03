@@ -27,7 +27,6 @@ const config: StorybookConfig = {
   },
   staticDirs: ['../public'],
   stories: [
-    '../stories/**/*.mdx',
     '../../../packages/design-system/uix/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../../../packages/design-system/ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../../../packages/design-system/algolia/**/*.stories.@(js|jsx|mjs|ts|tsx)',
@@ -39,6 +38,10 @@ const config: StorybookConfig = {
         ...config.resolve.alias,
         // Alias @repo/auth/client to our mock implementation
         '@repo/auth/client': require.resolve('../../../packages/auth/mocks/storybook-client'),
+        // Mock geist fonts for Storybook
+        'geist/font/mono': require.resolve('../../../packages/design-system/uix/mocks/geist-mono'),
+        'geist/font/sans': require.resolve('../../../packages/design-system/uix/mocks/geist-sans'),
+        'geist': require.resolve('../../../packages/design-system/uix/mocks/geist'),
       };
 
       // Add fallbacks for Node.js modules
@@ -153,7 +156,6 @@ const config: StorybookConfig = {
 
     // Log resolved stories
     console.log('Loading stories from:', [
-      '../stories/**/*.mdx',
       '../../../packages/design-system/uix/**/*.stories.@(js|jsx|mjs|ts|tsx)',
       '../../../packages/design-system/ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
       '../../../packages/design-system/algolia/**/*.stories.@(js|jsx|mjs|ts|tsx)',

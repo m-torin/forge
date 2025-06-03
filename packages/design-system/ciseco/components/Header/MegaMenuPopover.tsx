@@ -21,7 +21,7 @@ export default function MegaMenuPopover({
     return (
       <li key={item.id} className={`${item.isNew ? 'menuIsNew' : ''}`}>
         <Link
-          href={item.href || '#'}
+          href={`${item.href || '#'}` as any}
           className="font-normal text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
         >
           {item.name}

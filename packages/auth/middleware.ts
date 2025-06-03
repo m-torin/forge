@@ -3,21 +3,23 @@ import { NextResponse } from 'next/server';
 
 import type { NextRequest } from 'next/server';
 
-const publicRoutes = [
-  '/sign-in',
-  '/sign-up',
-  '/api/auth',
-  '/_next',
-  '/favicon.ico',
-  '/.well-known',
+const protectedRoutes = [
+  '/account',
+  '/dashboard',
+  '/favorites',
+  '/shop',
+  '/registries/create',
 ];
 
-const isPublicRoute = (pathname: string) => {
-  // Special case for home page
-  if (pathname === '/') {
-    return true;
-  }
-  return publicRoutes.some((route) => pathname.startsWith(route));
+const isProtectedRoute = (pathname: string) => {
+  // Remove locale prefix if present (e.g., /en/account -> /account)
+  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(-[A-Z]{2})?/, '');
+  
+  // Check if the pathname starts with any protected route
+  // This handles both the route itself and any sub-routes
+  return protectedRoutes.some((route) => 
+    pathname.startsWith(route) || pathWithoutLocale.startsWith(route)
+  );
 };
 
 const isApiRoute = (pathname: string) => {
@@ -29,12 +31,7 @@ export const authMiddleware = (next?: () => NextResponse) => {
   return async (request: NextRequest) => {
     const { pathname } = request.nextUrl;
 
-    // Skip authentication for public routes
-    if (isPublicRoute(pathname)) {
-      return next ? next() : NextResponse.next();
-    }
-
-    // For API routes, check both API key and session
+    // For API routes (except auth), check both API key and session
     if (isApiRoute(pathname)) {
       // Check for API key in headers
       const apiKey = request.headers.get('x-api-key');
@@ -58,17 +55,19 @@ export const authMiddleware = (next?: () => NextResponse) => {
       return next ? next() : NextResponse.next();
     }
 
-    // Regular routes (non-API) - check for session cookie only
-    const sessionCookie = getSessionCookie(request);
+    // For protected routes, check for session
+    if (isProtectedRoute(pathname)) {
+      const sessionCookie = getSessionCookie(request);
 
-    if (!sessionCookie) {
-      // No session, redirect to sign-in
-      const signInUrl = new URL('/sign-in', request.url);
-      signInUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(signInUrl);
+      if (!sessionCookie) {
+        // No session, redirect to sign-in
+        const signInUrl = new URL('/sign-in', request.url);
+        signInUrl.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(signInUrl);
+      }
     }
 
-    // Session exists, continue
+    // All other routes are public - allow access
     return next ? next() : NextResponse.next();
   };
 };

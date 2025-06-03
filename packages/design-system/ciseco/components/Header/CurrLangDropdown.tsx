@@ -25,7 +25,7 @@ const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getC
       {currencies.map((item, index) => (
         <Link
           key={index}
-          href={item.href}
+          href={`${item.href}` as any}
           className={clsx(
             '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-hidden dark:hover:bg-gray-700',
             item.active ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-80',
@@ -45,7 +45,7 @@ const Languages = ({ languages }: { languages: Awaited<ReturnType<typeof getLang
       {languages.map((item, index) => (
         <Link
           key={index}
-          href={item.href}
+          href={`${item.href}` as any}
           className={clsx(
             '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-hidden dark:hover:bg-gray-700',
             item.active ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-80',

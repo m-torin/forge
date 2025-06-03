@@ -111,10 +111,10 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
 
   return (
     <div className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}>
-      <Link href={'/products/' + handle} className="absolute inset-0" />
+      <Link href={`/products/${handle}`} className="absolute inset-0" />
 
       <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
-        <Link href={'/products/' + handle} className="block">
+        <Link href={`/products/${handle}`} className="block">
           {featuredImage?.src && (
             <NcImage
               containerClassName="flex aspect-[11/12] w-full relative"

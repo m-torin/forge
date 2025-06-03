@@ -24,7 +24,7 @@ const CheckoutPage = async () => {
           {image?.src && (
             <Image fill src={image} alt={image.alt || ''} sizes="300px" className="object-contain object-center" />
           )}
-          <Link href={'/products/' + handle} className="absolute inset-0"></Link>
+          <Link href={`/products/${handle}`} className="absolute inset-0"></Link>
         </div>
 
         <div className="ml-3 flex flex-1 flex-col sm:ml-6">
@@ -32,7 +32,7 @@ const CheckoutPage = async () => {
             <div className="flex justify-between">
               <div className="flex-[1.5]">
                 <h3 className="text-base font-semibold">
-                  <Link href={'/products/' + handle}>{name}</Link>
+                  <Link href={`/products/${handle}`}>{name}</Link>
                 </h3>
                 <div className="mt-1.5 flex text-sm text-neutral-600 sm:mt-2.5 dark:text-neutral-300">
                   <div className="flex items-center gap-x-2">

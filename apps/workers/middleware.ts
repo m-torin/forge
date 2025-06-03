@@ -6,7 +6,6 @@ import { secure } from '@repo/security';
 import {
   noseconeMiddleware,
   noseconeOptions,
-  noseconeOptionsWithToolbar,
 } from '@repo/security/middleware';
 
 import { env } from './env';
@@ -18,9 +17,7 @@ export const config = {
   runtime: 'nodejs',
 };
 
-const securityHeaders = env.FLAGS_SECRET
-  ? noseconeMiddleware(noseconeOptionsWithToolbar)
-  : noseconeMiddleware(noseconeOptions);
+const securityHeaders = noseconeMiddleware(noseconeOptions);
 
 // Create auth middleware with API key support
 const authMiddleware = createAuthMiddleware({

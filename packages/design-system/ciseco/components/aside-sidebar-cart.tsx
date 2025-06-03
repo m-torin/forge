@@ -58,7 +58,7 @@ const AsideSidebarCart = async ({ className = '' }: Props) => {
             <div className="mt-6 flex justify-center text-center text-sm text-neutral-500 dark:text-neutral-400">
               <p className="text-xs">
                 or{' '}
-                <Link href="/collections/all" className="text-xs font-medium uppercase">
+                <Link href={`/collections/all` as any} className="text-xs font-medium uppercase">
                   Continue Shopping<span aria-hidden="true"> →</span>
                 </Link>
               </p>
@@ -84,7 +84,7 @@ const CartProduct = ({ product }: { product: TCardProduct }) => {
             src={image}
           />
         )}
-        <Link href={'/products/' + handle} className="absolute inset-0" />
+        <Link href={`/products/${handle}` as any} className="absolute inset-0" />
       </div>
 
       <div className="ml-4 flex flex-1 flex-col">
@@ -92,7 +92,7 @@ const CartProduct = ({ product }: { product: TCardProduct }) => {
           <div className="flex justify-between">
             <div>
               <h3 className="text-base font-medium">
-                <Link href="/product-detail">{name}</Link>
+                <Link href={`/product-detail` as any}>{name}</Link>
               </h3>
               <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
                 <span>{color}</span>

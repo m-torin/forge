@@ -27,7 +27,7 @@
     "@types/react-dom": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "vitest": "catalog:"
   }
 }

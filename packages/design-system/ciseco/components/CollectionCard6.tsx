@@ -47,7 +47,7 @@ const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', c
           </div>
 
           <Link
-            href={'/collections/' + collection.handle}
+            href={`/collections/${collection.handle}`}
             className="flex items-center text-sm font-medium transition-colors group-hover:text-primary-500"
           >
             <span>See Collection</span>

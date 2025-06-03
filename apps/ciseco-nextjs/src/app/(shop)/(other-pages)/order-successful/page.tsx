@@ -27,7 +27,7 @@ export default async function Page() {
             <Heading className="mt-4">Payment successful!</Heading>
 
             <p className="mt-2.5 max-w-2xl text-neutral-500">
-              We appreciate your order, we’re currently processing it. So hang tight and we’ll send you confirmation
+              We appreciate your order, we&apos;re currently processing it. So hang tight and we&apos;ll send you confirmation
               very soon!
             </p>
 
@@ -60,7 +60,7 @@ export default async function Page() {
                   </div>
                   <div className="flex flex-auto flex-col gap-y-1.5">
                     <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                      <Link href={'/products/' + product.handle}>{product.title}</Link>
+                      <Link href={`/products/${product.handle}`}>{product.title}</Link>
                     </h3>
                     <div className="flex items-center gap-x-2 text-neutral-500 dark:text-neutral-300">
                       <p className="text-sm text-neutral-500 dark:text-neutral-300">{product.color}</p>

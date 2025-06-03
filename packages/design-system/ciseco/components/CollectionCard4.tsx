@@ -69,7 +69,7 @@ const CollectionCard4: FC<CollectionCard4Props> = ({ bgSvgUrl, className, collec
           {collection.count} products
         </p>
 
-        <Link href={'/collections/' + collection.handle} className="absolute inset-0" />
+        <Link href={`/collections/${collection.handle}`} className="absolute inset-0" />
       </div>
     </div>
   );

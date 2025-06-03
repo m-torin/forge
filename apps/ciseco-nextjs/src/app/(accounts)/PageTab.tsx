@@ -44,7 +44,7 @@ const PageTab = () => {
           return (
             <Link
               key={item.link}
-              href={item.link}
+              href={item.link as any}
               className={`block shrink-0 border-b-2 py-5 text-sm sm:text-base md:py-8 ${
                 isActive
                   ? 'border-primary-500 font-medium text-neutral-950 dark:text-neutral-100'

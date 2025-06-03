@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -19,7 +20,7 @@
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "catalog:",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "rc-slider": "^11.1.8",
     "react": "catalog:",
     "react-dom": "catalog:",

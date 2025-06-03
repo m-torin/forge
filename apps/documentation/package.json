@@ -11,11 +11,11 @@
     "dev": "next --turbopack -p 3800",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "start": "next start -p 3800",
-    "types:check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
     "markdown-to-jsx": "^7.7.6",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "nextra": "latest",
     "nextra-theme-docs": "latest",
     "react": "catalog:",
@@ -23,6 +23,8 @@
     "react-intersection-observer": "^9.16.0"
   },
   "devDependencies": {
+    "@mdx-js/loader": "^3.1.0",
+    "@mdx-js/react": "^3.1.0",
     "@next/bundle-analyzer": "^15.3.3",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "catalog:",

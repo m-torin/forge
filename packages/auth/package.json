@@ -15,7 +15,7 @@
     "@t3-oss/env-nextjs": "catalog:",
     "better-auth": "^1.2.8",
     "chalk": "^5.4.1",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",
     "server-only": "catalog:",

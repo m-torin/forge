@@ -14,7 +14,6 @@ and universal analytics emitters for enterprise-grade observability.
 - **Multi-Provider Analytics**: PostHog, Vercel Analytics, Google Analytics, Segment
 - **Complete Feature Flag System**: Client/server flags with React hooks and typed helpers
 - **Universal Analytics Emitters**: Segment-compatible multi-provider analytics system
-- **Vercel Development Toolbar**: Visual feature flag management in development
 - **Local Development Overrides**: `LOCAL_FLAGS` environment variable support
 - **Type-Safe Flag Helpers**: Domain-specific flag functions (auth, payments, AI, etc.)
 - **Privacy-Compliant Tracking**: Configurable consent management
@@ -39,9 +38,8 @@ VERCEL_ANALYTICS_ID=...
 # Google Analytics (Optional)
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-...
 
-# Feature Flags
-FLAGS_SECRET=...
-VERCEL_API_TOKEN=...
+# Feature Flags (configured via PostHog)
+# No additional environment variables needed
 
 # Local Development Overrides
 LOCAL_FLAGS="ai.enabled=true,auth.organizations=false"

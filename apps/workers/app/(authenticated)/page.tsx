@@ -503,10 +503,21 @@ size_limit: 100MB`}
                         <LoadingOverlay visible={loading.get(run.workflowRunId) || false} />
 
                         <Group
+                          component="button"
                           onClick={() => toggleRunExpanded(run.workflowRunId)}
-                          style={{ cursor: 'pointer' }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              toggleRunExpanded(run.workflowRunId);
+                            }
+                          }}
+                          style={{ cursor: 'pointer', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: 0 }}
                           justify="space-between"
                           mb={isExpanded ? 'md' : 0}
+                          tabIndex={0}
+                          role="button"
+                          aria-expanded={isExpanded}
+                          aria-label={`Toggle details for workflow ${run.workflowUrl.split('/').pop()}`}
                         >
                           <Group>
                             <ActionIcon
@@ -516,6 +527,8 @@ size_limit: 100MB`}
                               }}
                               size="sm"
                               variant="subtle"
+                              aria-hidden="true"
+                              tabIndex={-1}
                             >
                               {isExpanded ? (
                                 <IconChevronDown size={16} />

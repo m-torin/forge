@@ -83,7 +83,7 @@ const ProductCardLarge: FC<Props> = ({ className, product }) => {
         </div>
         <Prices className="mt-0.5" price={price || 1} />
       </div>
-      <Link href={'/products/' + handle} className="absolute inset-0" />
+      <Link href={`/products/${handle}`} className="absolute inset-0" />
     </div>
   );
 };

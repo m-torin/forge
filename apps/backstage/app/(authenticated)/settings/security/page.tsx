@@ -131,7 +131,15 @@ export default function SecuritySettingsPage() {
       {/* Backdrop */}
       {setupOpened && (
         <div
+          role="button"
+          tabIndex={0}
           onClick={closeSetup}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              closeSetup();
+            }
+          }}
+          aria-label="Close two-factor authentication setup"
           style={{
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             bottom: 0,
@@ -140,6 +148,7 @@ export default function SecuritySettingsPage() {
             right: 0,
             top: 0,
             zIndex: 999,
+            cursor: 'pointer',
           }}
         />
       )}

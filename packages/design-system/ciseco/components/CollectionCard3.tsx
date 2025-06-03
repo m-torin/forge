@@ -17,7 +17,7 @@ const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
   }
 
   return (
-    <Link href={'/collections/' + collection.handle} className={`block ${className}`}>
+    <Link href={`/collections/${collection.handle}` as any} className={`block ${className}`}>
       <div
         className={`group aspect-[16/11] sm:aspect-[16/9] relative w-full overflow-hidden rounded-2xl ${collection.color}`}
       >

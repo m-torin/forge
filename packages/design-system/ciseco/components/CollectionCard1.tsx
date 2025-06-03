@@ -17,7 +17,7 @@ const CollectionCard1: FC<Props> = ({ className = '', collection, size = 'normal
     return null;
   }
   return (
-    <Link href={'/collections/' + collection.handle} className={`flex items-center ${className}`}>
+    <Link href={`/collections/${collection.handle}` as any} className={`flex items-center ${className}`}>
       {collection.image?.src && (
         <NcImage
           containerClassName={clsx(

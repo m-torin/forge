@@ -1,4 +1,4 @@
-import { defaults, type NoseconeOptions, withVercelToolbar } from '@nosecone/next';
+import { defaults, type NoseconeOptions } from '@nosecone/next';
 export { createMiddleware as noseconeMiddleware } from '@nosecone/next';
 
 // Nosecone security headers configuration
@@ -11,5 +11,3 @@ export const noseconeOptions: NoseconeOptions = {
   // to configure it.
   contentSecurityPolicy: false,
 };
-
-export const noseconeOptionsWithToolbar: NoseconeOptions = withVercelToolbar(noseconeOptions);

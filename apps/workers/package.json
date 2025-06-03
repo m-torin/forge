@@ -48,7 +48,7 @@
     "@upstash/redis": "^1.35.0",
     "@upstash/workflow": "^0.2.13",
     "crypto-browserify": "^3.12.1",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "vitest": "catalog:",

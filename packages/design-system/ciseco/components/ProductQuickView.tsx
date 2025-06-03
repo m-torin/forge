@@ -201,7 +201,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
             />
             <div className="h-6 border-s border-neutral-300 dark:border-neutral-700" />
             <div className="flex items-center">
-              <Link href={'/products/' + handle} className="flex items-center text-sm font-medium">
+              <Link href={`/products/${handle}`} className="flex items-center text-sm font-medium">
                 <StarIcon className="h-5 w-5 pb-px text-yellow-400" />
                 <div className="ms-1.5 flex">
                   <span>{rating}</span>
@@ -292,7 +292,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           <p className="text-xs">
             or{' '}
             <Link
-              href={'/products/' + handle}
+              href={`/products/${handle}`}
               className="text-xs font-medium text-neutral-900 uppercase"
             >
               Go to product detail page <span aria-hidden="true"> →</span>

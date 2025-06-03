@@ -27,7 +27,7 @@ const PostCard1: FC<Props> = ({ className = 'h-full', post, size = 'md' }) => {
   return (
     <div className={clsx(className, 'flex flex-col gap-y-10')}>
       <Link
-        href={'/blog/' + handle}
+        href={`/blog/${handle}`}
         className="relative block aspect-4/3 overflow-hidden rounded-3xl"
         title={title}
       >
@@ -50,7 +50,7 @@ const PostCard1: FC<Props> = ({ className = 'h-full', post, size = 'md' }) => {
             size === 'md' && 'text-lg sm:text-2xl',
           )}
         >
-          <Link href={'/blog/' + handle} className="line-clamp-1">
+          <Link href={`/blog/${handle}`} className="line-clamp-1">
             {title}
           </Link>
         </h2>

@@ -25,7 +25,7 @@ nextConfig.serverExternalPackages = [
   "posthog-node",
 ];
 
-// Configure webpack to handle fsevents
+// Configure webpack to handle fsevents and suppress warnings
 nextConfig.webpack = (
   config: any,
   { isServer }: { isServer: boolean },
@@ -41,6 +41,12 @@ nextConfig.webpack = (
 
   // Ignore fsevents which is macOS only
   config.externals = [...(config.externals || []), { fsevents: "fsevents" }];
+
+  // Suppress OpenTelemetry instrumentation warnings
+  config.module = {
+    ...config.module,
+    exprContextCritical: false,
+  };
 
   return config;
 };

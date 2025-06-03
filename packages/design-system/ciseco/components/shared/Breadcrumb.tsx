@@ -26,7 +26,7 @@ const Breadcrumb = ({
         {breadcrumbs.map((breadcrumb) => (
           <li key={breadcrumb.id}>
             <div className="flex items-center gap-x-2">
-              <Link href={breadcrumb.href}>{breadcrumb.name}</Link>
+              <Link href={`${breadcrumb.href}` as any}>{breadcrumb.name}</Link>
               <svg
                 aria-hidden="true"
                 viewBox="0 0 6 20"

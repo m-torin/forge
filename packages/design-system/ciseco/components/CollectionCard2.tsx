@@ -17,7 +17,7 @@ const CollectionCard2: FC<Props> = ({ className, collection, ratioClass = 'aspec
     return null;
   }
   return (
-    <Link href={'/collections/' + collection.handle} className={clsx(className, 'block')}>
+    <Link href={`/collections/${collection.handle}` as any} className={clsx(className, 'block')}>
       <div
         className={clsx(
           'group relative w-full overflow-hidden rounded-2xl',

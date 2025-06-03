@@ -44,7 +44,7 @@
     "@sentry/nextjs": "^9.25.1",
     "@t3-oss/env-nextjs": "catalog:",
     "@tabler/icons-react": "catalog:",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "svix": "^1.66.0",

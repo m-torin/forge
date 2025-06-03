@@ -4,7 +4,7 @@
   "scripts": {
     "build": "doppler run -- email build",
     "build:local": "email build",
-    "dev": "email dev --port 3500 --no-open",
+    "dev": "email dev --port 3500",
     "export": "doppler run -- email export",
     "export:local": "email export",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -19,7 +19,7 @@
     "@react-email/components": "0.0.41",
     "@repo/email": "workspace:*",
     "react": "catalog:",
-    "react-email": "4.0.15"
+    "react-email": "4.0.16"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
@@ -28,7 +28,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "eslint": "catalog:",
-    "next": "15.4.0-canary.62",
+    "next": "catalog:",
     "typescript": "catalog:"
   }
 }

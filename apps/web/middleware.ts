@@ -7,7 +7,6 @@ import { secure } from "@repo/security";
 import {
   noseconeMiddleware,
   noseconeOptions,
-  noseconeOptionsWithToolbar,
 } from "@repo/security/middleware";
 
 import { env } from "./env";
@@ -19,9 +18,7 @@ export const config = {
   runtime: "nodejs",
 };
 
-const securityHeaders = env.FLAGS_SECRET
-  ? noseconeMiddleware(noseconeOptionsWithToolbar)
-  : noseconeMiddleware(noseconeOptions);
+const securityHeaders = noseconeMiddleware(noseconeOptions);
 
 // Use auth middleware from auth package
 
@@ -32,14 +29,15 @@ const middleware: NextMiddleware = async (request) => {
   // If i18n middleware returns a response, it means it's either:
   // 1. A redirect (e.g., / -> /en)
   // 2. A rewrite (e.g., /about -> /en/about)
-  // We should return this response to let Next.js handle the rewrite/redirect
   if (i18nResponse) {
-    // For rewrites, the middleware continues to process with the rewritten URL
     // For redirects, we return immediately
     const isRedirect = i18nResponse.status >= 300 && i18nResponse.status < 400;
     if (isRedirect) {
       return i18nResponse;
     }
+    
+    // For rewrites, we need to continue processing but with the rewritten request
+    // The i18n middleware has already set up the rewrite, so we can continue
   }
 
   // Check auth after i18n processing
