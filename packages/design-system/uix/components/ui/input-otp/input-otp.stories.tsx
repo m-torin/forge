@@ -1,26 +1,23 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@repo/design-system/uix';
 
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from '@repo/design-system/uix';
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Accessible one-time password component with copy paste functionality.
  */
 const meta = {
-  title: 'uix/ui/InputOTP',
+  args: {
+    children: null,
+    length: 6,
+  },
+  argTypes: {},
   component: InputOTP,
   tags: ['autodocs'],
-  argTypes: {},
-  args: {
-    length: 6,
-    children: null,
-  },
+  title: 'uix/ui/InputOTP',
 
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <InputOTP {...args} render={undefined}>
       <InputOTPGroup>
@@ -33,9 +30,6 @@ const meta = {
       </InputOTPGroup>
     </InputOTP>
   ),
-  parameters: {
-    layout: 'centered',
-  },
 } satisfies Meta<typeof InputOTP>;
 
 export default meta;

@@ -1,23 +1,25 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { createAutocomplete } from '@algolia/autocomplete-core';
 import { getAlgoliaResults } from '@algolia/autocomplete-preset-algolia';
+import { useEffect, useRef, useState } from 'react';
 import { useInstantSearch } from 'react-instantsearch';
-import type { AutocompleteProps, SearchHit, SearchConfig } from '../types';
+
 import { createSearchClient } from '../utils/searchClient';
+
+import type { AutocompleteProps, SearchConfig, SearchHit } from '../types';
 
 interface AutocompleteComponentProps extends AutocompleteProps {
   config?: SearchConfig;
 }
 
 export default function Autocomplete({
-  config,
-  placeholder = 'Search...',
   className = '',
-  maxSuggestions = 5,
+  config,
   detachedMediaQuery = '(max-width: 680px)',
+  maxSuggestions = 5,
   onSelect,
+  placeholder = 'Search...',
 }: AutocompleteComponentProps) {
   const [autocompleteState, setAutocompleteState] = useState<any>({});
   const autocompleteRef = useRef<any>(null);
@@ -42,7 +44,9 @@ export default function Autocomplete({
   } catch (error) {
     // Not inside InstantSearch context and no config provided
     if (!config) {
-      throw new Error('Autocomplete component must either be used inside SearchProvider or provided with a config prop');
+      throw new Error(
+        'Autocomplete component must either be used inside SearchProvider or provided with a config prop',
+      );
     }
     searchClient = createSearchClient(config);
     indexName = config.indexName;
@@ -52,32 +56,32 @@ export default function Autocomplete({
     if (!searchClient) return;
 
     const autocomplete = createAutocomplete({
-      onStateChange({ state }: { state: any }) {
-        setAutocompleteState(state);
-      },
       getSources() {
         return [
           {
-            sourceId: 'products',
             getItems({ query }: { query: string }) {
               return getAlgoliaResults({
-                searchClient: searchClient as any,
                 queries: [
                   {
                     indexName: indexName,
                     params: {
-                      query,
                       hitsPerPage: maxSuggestions,
+                      query,
                     },
                   },
                 ],
+                searchClient: searchClient as any,
               });
             },
             onSelect({ item }: { item: any }) {
               onSelect?.(item as SearchHit);
             },
+            sourceId: 'products',
           },
         ];
+      },
+      onStateChange({ state }: { state: any }) {
+        setAutocompleteState(state);
       },
     });
 
@@ -120,8 +124,8 @@ export default function Autocomplete({
           className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700"
         >
           {autocompleteState.collections.map((collection: any, index: number) => {
-            const { source, items } = collection;
-            
+            const { items, source } = collection;
+
             return (
               <div key={`source-${index}`}>
                 {items.length > 0 && (
@@ -129,19 +133,19 @@ export default function Autocomplete({
                     {items.map((item: SearchHit, itemIndex: number) => (
                       <div
                         key={item.objectID}
-                        className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
                         onClick={() => {
                           autocompleteRef.current?.setQuery(item.title);
                           autocompleteRef.current?.refresh();
                           onSelect?.(item);
                         }}
+                        className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
                       >
                         <div className="flex items-center space-x-3">
                           {item.image && (
                             <img
-                              src={item.image}
-                              alt={item.title}
                               className="w-10 h-10 rounded-lg object-cover"
+                              alt={item.title}
+                              src={item.image}
                             />
                           )}
                           <div className="flex-1 min-w-0">
@@ -167,11 +171,11 @@ export default function Autocomplete({
               </div>
             );
           })}
-          
-          {autocompleteState.collections.every((collection: any) => collection.items.length === 0) && (
-            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-              No results found
-            </div>
+
+          {autocompleteState.collections.every(
+            (collection: any) => collection.items.length === 0,
+          ) && (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400">No results found</div>
           )}
         </div>
       )}

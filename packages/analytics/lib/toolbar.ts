@@ -9,16 +9,11 @@ import type { NextConfig } from 'next';
  * Only applies when FLAGS_SECRET is configured
  */
 export function withToolbar(nextConfig: NextConfig): NextConfig {
-  try {
-    const { FLAGS_SECRET } = keys();
-    
-    // Only apply toolbar in development when FLAGS_SECRET is set
-    if (process.env.NODE_ENV === 'development' && FLAGS_SECRET) {
-      return withVercelToolbar()(nextConfig);
-    }
-  } catch (error) {
-    // Re-throw the error from keys function for testing
-    throw error;
+  const { FLAGS_SECRET } = keys();
+
+  // Only apply toolbar in development when FLAGS_SECRET is set
+  if (process.env.NODE_ENV === 'development' && FLAGS_SECRET) {
+    return withVercelToolbar()(nextConfig);
   }
 
   // Return config unchanged if toolbar not needed

@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Separator } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Visually or semantically separates content.
  */
 const meta = {
-  title: 'uix/ui/Separator',
+  argTypes: {},
   component: Separator,
   tags: ['autodocs'],
-  argTypes: {},
+  title: 'uix/ui/Separator',
 } satisfies Meta<typeof Separator>;
 
 export default meta;

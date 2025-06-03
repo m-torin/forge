@@ -2,7 +2,7 @@ import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const isDevelopment = process.env.NODE_ENV === 'development';
+const _isDevelopment = process.env.NODE_ENV === 'development';
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasRequiredEnvVars = Boolean(
   process.env.NEXT_PUBLIC_POSTHOG_HOST && process.env.NEXT_PUBLIC_POSTHOG_KEY,
@@ -31,7 +31,8 @@ export const keys = () =>
     },
     runtimeEnv: {
       FLAGS_SECRET: process.env.FLAGS_SECRET || undefined,
-      NEXT_PUBLIC_ENABLE_POSTHOG_TOOLBAR: process.env.NEXT_PUBLIC_ENABLE_POSTHOG_TOOLBAR || undefined,
+      NEXT_PUBLIC_ENABLE_POSTHOG_TOOLBAR:
+        process.env.NEXT_PUBLIC_ENABLE_POSTHOG_TOOLBAR || undefined,
       NEXT_PUBLIC_ENABLE_VERCEL_TOOLBAR: process.env.NEXT_PUBLIC_ENABLE_VERCEL_TOOLBAR || undefined,
       NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || undefined,
       NEXT_PUBLIC_LOCAL_FLAGS: process.env.NEXT_PUBLIC_LOCAL_FLAGS || undefined,

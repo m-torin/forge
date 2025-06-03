@@ -1,43 +1,43 @@
 import type { SearchResponse } from 'algoliasearch';
 
 export interface SearchHit {
-  objectID: string;
-  title: string;
+  [key: string]: unknown;
+  category?: string;
   description?: string;
   image?: string;
-  url?: string;
-  category?: string;
+  objectID: string;
   price?: number;
-  [key: string]: unknown;
+  title: string;
+  url?: string;
 }
 
 export interface SearchConfig {
-  appId: string;
   apiKey: string;
+  appId: string;
   indexName: string;
 }
 
 export interface SearchBoxProps {
-  placeholder?: string;
-  className?: string;
   autoFocus?: boolean;
+  className?: string;
   maxLength?: number;
-  onSubmit?: (query: string) => void;
   onReset?: () => void;
+  onSubmit?: (query: string) => void;
+  placeholder?: string;
 }
 
 export interface AutocompleteProps {
-  placeholder?: string;
   className?: string;
-  maxSuggestions?: number;
   detachedMediaQuery?: string;
+  maxSuggestions?: number;
   onSelect?: (item: SearchHit) => void;
+  placeholder?: string;
 }
 
 export interface SearchResultsProps {
   className?: string;
-  hitComponent?: React.ComponentType<{ hit: SearchHit }>;
   emptyComponent?: React.ComponentType;
+  hitComponent?: React.ComponentType<{ hit: SearchHit }>;
   loadingComponent?: React.ComponentType;
 }
 
@@ -48,14 +48,14 @@ export interface SearchStatsProps {
 }
 
 export interface UseInstantSearchProps {
-  searchClient: any;
   indexName: string;
   routing?: boolean;
+  searchClient: any;
 }
 
 export interface SearchState {
+  error?: Error | null;
+  isLoading: boolean;
   query: string;
   results?: SearchResponse<SearchHit>;
-  isLoading: boolean;
-  error?: Error | null;
 }

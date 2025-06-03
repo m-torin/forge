@@ -1,0 +1,23 @@
+# ⚡ Workflows & Orchestration
+
+Forge includes a powerful workflow system for background job processing using QStash.
+
+## Features
+
+- **QStash Integration** - Reliable message queuing
+- **Workflow Definitions** - Type-safe workflow configurations
+- **Progress Tracking** - Real-time workflow monitoring
+- **Error Handling** - Automatic retries and dead letter queues
+
+## Usage
+
+```typescript
+import { executeWorkflow } from '@repo/orchestration';
+
+await executeWorkflow('product-classification', {
+  productId: 'prod-123',
+  imageUrl: 'https://example.com/image.jpg',
+});
+```
+
+Available workflows include product classification, chart generation, and batch processing.

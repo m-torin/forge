@@ -3,56 +3,75 @@ import path from 'path';
 
 import type { WorkflowDefinition } from './types';
 
-/**
- * Auto-discover all workflows in the workflows directory
- * This runs at build time to generate the workflow registry
- */
-export async function discoverWorkflows(): Promise<Record<string, WorkflowDefinition>> {
-  const workflows: Record<string, WorkflowDefinition> = {};
-  const workflowsDir = path.join(process.cwd(), 'app', 'workflows');
+export interface WorkflowMetadata {
+  color?: string;
+  defaultPayload?: any;
+  description: string;
+  difficulty: string;
+  estimatedTime: string;
+  features: string[];
+  icon?: string;
+  id: string;
+  tags: string[];
+  title: string;
+}
 
+export async function discoverWorkflows(
+  baseDir?: string,
+): Promise<Record<string, WorkflowDefinition>> {
   try {
+    const workflowsDir = baseDir || path.join(__dirname);
     const entries = await fs.readdir(workflowsDir, { withFileTypes: true });
+    const workflows: Record<string, WorkflowDefinition> = {};
 
     for (const entry of entries) {
       if (entry.isDirectory() && !entry.name.startsWith('_')) {
-        const workflowPath = path.join(workflowsDir, entry.name);
-        const definitionPath = path.join(workflowPath, 'definition.ts');
-
         try {
-          // Check if definition.ts exists
+          const definitionPath = path.join(workflowsDir, entry.name, 'definition.ts');
           await fs.access(definitionPath);
 
-          // Import the workflow definition
+          // Try to import the workflow definition
           const workflowModule = await import(`./${entry.name}/definition`);
-          if (workflowModule.default && workflowModule.default.metadata) {
-            workflows[entry.name] = workflowModule.default;
+          const definition = workflowModule.default || workflowModule;
+
+          if (definition && definition.metadata) {
+            workflows[entry.name] = definition;
+          } else {
+            console.warn(`Skipping ${entry.name}: no valid definition found`);
           }
         } catch {
-          // Skip directories without definition.ts
           console.warn(`Skipping ${entry.name}: no definition.ts found`);
         }
       }
     }
+
+    return workflows;
   } catch (error) {
     console.error('Error discovering workflows:', error);
+    return {};
   }
-
-  return workflows;
 }
 
-/**
- * Get all workflow metadata for the UI
- * This is a client-safe function that doesn't include the workflow implementation
- */
-export function getWorkflowMetadata(workflows: Record<string, WorkflowDefinition>) {
-  const metadata: Record<string, any> = {};
+export function getWorkflowMetadata(
+  workflows: Record<string, WorkflowDefinition>,
+): Record<string, WorkflowMetadata> {
+  const metadata: Record<string, WorkflowMetadata> = {};
 
-  for (const [id, definition] of Object.entries(workflows)) {
-    metadata[id] = {
-      ...definition.metadata,
-      defaultPayload: definition.defaultPayload,
-    };
+  for (const [name, workflow] of Object.entries(workflows)) {
+    if (workflow.metadata) {
+      metadata[name] = {
+        id: workflow.metadata.id,
+        color: workflow.metadata.color,
+        defaultPayload: workflow.defaultPayload,
+        description: workflow.metadata.description,
+        difficulty: workflow.metadata.difficulty || '',
+        estimatedTime: workflow.metadata.estimatedTime || '',
+        features: workflow.metadata.features || [],
+        tags: workflow.metadata.tags || [],
+        title: workflow.metadata.title,
+        ...(workflow.metadata.color && { color: workflow.metadata.color }),
+      };
+    }
   }
 
   return metadata;

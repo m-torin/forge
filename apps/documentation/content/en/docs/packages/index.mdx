@@ -1,0 +1,28 @@
+# 📦 Packages Overview
+
+Forge's packages follow a strict layered architecture to ensure clean dependencies and modularity.
+
+## Foundation Layer (Layer 1)
+
+- `@repo/typescript-config` - Shared TypeScript configurations
+- `@repo/eslint-config` - ESLint rules and configurations
+- `@repo/next-config` - Next.js configuration wrapper
+
+## Core Services (Layer 2-4)
+
+- `@repo/testing` - Vitest configuration and test utilities
+- `@repo/security` - Security headers and middleware
+- `@repo/database` - Prisma ORM with PostgreSQL
+- `@repo/analytics` - Multi-provider analytics + Feature Flags
+
+## Business Logic (Layer 5)
+
+- `@repo/auth` - Better Auth with organizations and API keys
+- `@repo/email` - React Email templates with Resend
+- `@repo/orchestration` - Workflow execution with QStash
+
+## UI Layer (Layer 6)
+
+- `@repo/design-system` - Mantine UI components and patterns
+
+Each package is ESM-only and can be imported directly without build steps.

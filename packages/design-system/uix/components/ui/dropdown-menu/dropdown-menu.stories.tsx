@@ -1,17 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { IconMail, IconPlus, IconCirclePlus, IconSearch, IconUserPlus } from '@tabler/icons-react';
 import { Menu } from '@mantine/core';
+import { IconCirclePlus, IconMail, IconPlus, IconSearch, IconUserPlus } from '@tabler/icons-react';
 
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
@@ -20,15 +15,18 @@ import {
   DropdownMenuTrigger,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * Displays a menu to the user — such as a set of actions or functions —
  * triggered by a button.
  */
 const meta = {
-  title: 'uix/ui/DropdownMenu',
-  component: DropdownMenu,
-  tags: ['autodocs'],
   argTypes: {},
+  component: DropdownMenu,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <DropdownMenu {...args}>
       <DropdownMenuTrigger>Open</DropdownMenuTrigger>
@@ -42,9 +40,8 @@ const meta = {
       </Menu.Dropdown>
     </DropdownMenu>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/DropdownMenu',
 } satisfies Meta<typeof DropdownMenu>;
 
 export default meta;

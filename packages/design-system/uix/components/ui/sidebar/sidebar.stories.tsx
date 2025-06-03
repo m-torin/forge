@@ -1,50 +1,50 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import {
-  IconWaveSquare,
-  IconRosetteDiscountCheck,
+  ActionIcon,
+  Anchor,
+  AppShell,
+  Avatar,
+  Box,
+  Breadcrumbs,
+  Burger,
+  Collapse,
+  Divider,
+  Group,
+  Menu,
+  NavLink,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  UnstyledButton,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import {
   IconBell,
   IconBook,
-  IconRobot,
+  IconChartPie,
   IconChevronRight,
-  IconSelector,
   IconCommand,
   IconCreditCard,
+  IconDots,
   IconFolder,
-  IconPlayerTrackNext,
   IconFrame,
   IconLayoutRows,
   IconLogout,
   IconMap,
-  IconDots,
-  IconChartPie,
+  IconPlayerTrackNext,
   IconPlus,
+  IconRobot,
+  IconRosetteDiscountCheck,
+  IconSelector,
   IconSettings2,
   IconSparkles,
   IconTerminal,
   IconTrash,
+  IconWaveSquare,
 } from '@tabler/icons-react';
-import {
-  AppShell,
-  NavLink,
-  ScrollArea,
-  Group,
-  ActionIcon,
-  Menu,
-  Avatar,
-  Text,
-  Box,
-  Divider,
-  Badge,
-  Breadcrumbs,
-  Anchor,
-  Burger,
-  Stack,
-  UnstyledButton,
-  Collapse,
-  Paper,
-} from '@mantine/core';
 import { useState } from 'react';
-import { useDisclosure } from '@mantine/hooks';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 // Mock sidebar component for Storybook
 const MockSidebar = () => {
@@ -66,7 +66,7 @@ const MockSidebar = () => {
     >
       <AppShell.Header>
         <Group h="100%" px="md">
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+          <Burger hiddenFrom="sm" onClick={toggle} opened={opened} size="sm" />
           <Breadcrumbs separator="›">
             <Anchor href="#" size="sm">
               Building Your Application
@@ -78,36 +78,36 @@ const MockSidebar = () => {
 
       <AppShell.Navbar p="md">
         <AppShell.Section>
-          <Menu shadow="md" width={200}>
+          <Menu width={200} shadow="md">
             <Menu.Target>
               <UnstyledButton
-                p="sm"
                 style={{
-                  borderRadius: 'var(--mantine-radius-md)',
                   '&:hover': { backgroundColor: 'var(--mantine-color-gray-1)' },
+                  borderRadius: 'var(--mantine-radius-md)',
                 }}
+                p="sm"
               >
                 <Group justify="space-between">
                   <Group>
                     <Box
-                      bg="blue"
-                      c="white"
                       style={{
                         width: 32,
-                        height: 32,
+                        alignItems: 'center',
                         borderRadius: 'var(--mantine-radius-md)',
                         display: 'flex',
-                        alignItems: 'center',
+                        height: 32,
                         justifyContent: 'center',
                       }}
+                      bg="blue"
+                      c="white"
                     >
                       <activeTeam.logo size={16} />
                     </Box>
                     <Box>
-                      <Text size="sm" fw={600}>
+                      <Text fw={600} size="sm">
                         {activeTeam.name}
                       </Text>
-                      <Text size="xs" c="dimmed">
+                      <Text c="dimmed" size="xs">
                         {activeTeam.plan}
                       </Text>
                     </Box>
@@ -123,12 +123,12 @@ const MockSidebar = () => {
                 <Menu.Item
                   key={team.name}
                   leftSection={<team.logo size={16} />}
+                  onClick={() => setActiveTeam(team)}
                   rightSection={
-                    <Text size="xs" c="dimmed">
+                    <Text c="dimmed" size="xs">
                       ⌘{index + 1}
                     </Text>
                   }
-                  onClick={() => setActiveTeam(team)}
                 >
                   {team.name}
                 </Menu.Item>
@@ -139,32 +139,32 @@ const MockSidebar = () => {
           </Menu>
         </AppShell.Section>
 
-        <AppShell.Section grow component={ScrollArea} mt="md">
+        <AppShell.Section component={ScrollArea} grow mt="md">
           <Stack gap="xs">
-            <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb="xs">
+            <Text c="dimmed" fw={600} mb="xs" size="xs" tt="uppercase">
               Platform
             </Text>
             {data.navMain.map((item) => (
               <Box key={item.title}>
                 <NavLink
-                  label={item.title}
                   leftSection={<item.icon size={18} />}
+                  onClick={() => toggleExpanded(item.title)}
                   rightSection={
                     <IconChevronRight
-                      size={14}
                       style={{
                         transform: expandedItems.includes(item.title) ? 'rotate(90deg)' : 'none',
                         transition: 'transform 200ms ease',
                       }}
+                      size={14}
                     />
                   }
-                  onClick={() => toggleExpanded(item.title)}
                   active={item.isActive}
+                  label={item.title}
                 />
                 <Collapse in={expandedItems.includes(item.title)}>
                   <Stack gap={0} ml="lg">
                     {item.items?.map((subItem) => (
-                      <NavLink key={subItem.title} label={subItem.title} href={subItem.url} />
+                      <NavLink key={subItem.title} href={subItem.url} label={subItem.title} />
                     ))}
                   </Stack>
                 </Collapse>
@@ -173,20 +173,20 @@ const MockSidebar = () => {
 
             <Divider my="md" />
 
-            <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb="xs">
+            <Text c="dimmed" fw={600} mb="xs" size="xs" tt="uppercase">
               Projects
             </Text>
             {data.projects.map((item) => (
               <Group key={item.name} wrap="nowrap">
                 <NavLink
+                  href={item.url}
+                  leftSection={<item.icon size={18} />}
                   style={{ flex: 1 }}
                   label={item.name}
-                  leftSection={<item.icon size={18} />}
-                  href={item.url}
                 />
-                <Menu shadow="md" width={200}>
+                <Menu width={200} shadow="md">
                   <Menu.Target>
-                    <ActionIcon variant="subtle" size="sm">
+                    <ActionIcon size="sm" variant="subtle">
                       <IconDots size={16} />
                     </ActionIcon>
                   </Menu.Target>
@@ -203,32 +203,32 @@ const MockSidebar = () => {
                 </Menu>
               </Group>
             ))}
-            <NavLink label="More" leftSection={<IconDots size={18} />} c="dimmed" />
+            <NavLink leftSection={<IconDots size={18} />} c="dimmed" label="More" />
           </Stack>
         </AppShell.Section>
 
         <AppShell.Section>
           <Divider my="md" />
-          <Menu shadow="md" width={250}>
+          <Menu width={250} shadow="md">
             <Menu.Target>
               <UnstyledButton
-                p="sm"
                 style={{
-                  borderRadius: 'var(--mantine-radius-md)',
                   width: '100%',
                   '&:hover': { backgroundColor: 'var(--mantine-color-gray-1)' },
+                  borderRadius: 'var(--mantine-radius-md)',
                 }}
+                p="sm"
               >
                 <Group justify="space-between">
                   <Group>
-                    <Avatar size="sm" radius="md" src={data.user.avatar}>
+                    <Avatar radius="md" size="sm" src={data.user.avatar}>
                       CN
                     </Avatar>
                     <Box>
-                      <Text size="sm" fw={600}>
+                      <Text fw={600} size="sm">
                         {data.user.name}
                       </Text>
-                      <Text size="xs" c="dimmed">
+                      <Text c="dimmed" size="xs">
                         {data.user.email}
                       </Text>
                     </Box>
@@ -241,14 +241,14 @@ const MockSidebar = () => {
             <Menu.Dropdown>
               <Box p="xs">
                 <Group>
-                  <Avatar size="md" radius="md" src={data.user.avatar}>
+                  <Avatar radius="md" size="md" src={data.user.avatar}>
                     CN
                   </Avatar>
                   <Box>
-                    <Text size="sm" fw={600}>
+                    <Text fw={600} size="sm">
                       {data.user.name}
                     </Text>
-                    <Text size="xs" c="dimmed">
+                    <Text c="dimmed" size="xs">
                       {data.user.email}
                     </Text>
                   </Box>
@@ -272,11 +272,11 @@ const MockSidebar = () => {
       <AppShell.Main>
         <Stack gap="md">
           <Group grow>
-            <Paper shadow="xs" p="md" radius="md" withBorder style={{ aspectRatio: '16/9' }} />
-            <Paper shadow="xs" p="md" radius="md" withBorder style={{ aspectRatio: '16/9' }} />
-            <Paper shadow="xs" p="md" radius="md" withBorder style={{ aspectRatio: '16/9' }} />
+            <Paper shadow="xs" withBorder style={{ aspectRatio: '16/9' }} p="md" radius="md" />
+            <Paper shadow="xs" withBorder style={{ aspectRatio: '16/9' }} p="md" radius="md" />
+            <Paper shadow="xs" withBorder style={{ aspectRatio: '16/9' }} p="md" radius="md" />
           </Group>
-          <Paper shadow="xs" p="md" radius="md" withBorder style={{ minHeight: '60vh' }} />
+          <Paper shadow="xs" withBorder style={{ minHeight: '60vh' }} p="md" radius="md" />
         </Stack>
       </AppShell.Main>
     </AppShell>
@@ -284,113 +284,91 @@ const MockSidebar = () => {
 };
 
 const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  teams: [
-    {
-      name: 'Acme Inc',
-      logo: IconLayoutRows,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: IconWaveSquare,
-      plan: 'Startup',
-    },
-    {
-      name: 'Evil Corp.',
-      logo: IconCommand,
-      plan: 'Free',
-    },
-  ],
   navMain: [
     {
-      title: 'Playground',
       url: '#',
       icon: IconTerminal,
       isActive: true,
       items: [
         {
+          url: '#',
           title: 'History',
-          url: '#',
         },
         {
+          url: '#',
           title: 'Starred',
-          url: '#',
         },
         {
-          title: 'Settings',
           url: '#',
+          title: 'Settings',
         },
       ],
+      title: 'Playground',
     },
     {
-      title: 'Models',
       url: '#',
       icon: IconRobot,
       items: [
         {
+          url: '#',
           title: 'Genesis',
-          url: '#',
         },
         {
+          url: '#',
           title: 'Explorer',
-          url: '#',
         },
         {
-          title: 'Quantum',
           url: '#',
+          title: 'Quantum',
         },
       ],
+      title: 'Models',
     },
     {
-      title: 'Documentation',
       url: '#',
       icon: IconBook,
       items: [
         {
+          url: '#',
           title: 'Introduction',
-          url: '#',
         },
         {
+          url: '#',
           title: 'Get Started',
-          url: '#',
         },
         {
+          url: '#',
           title: 'Tutorials',
-          url: '#',
         },
         {
-          title: 'Changelog',
           url: '#',
+          title: 'Changelog',
         },
       ],
+      title: 'Documentation',
     },
     {
-      title: 'Settings',
       url: '#',
       icon: IconSettings2,
       items: [
         {
+          url: '#',
           title: 'General',
-          url: '#',
         },
         {
+          url: '#',
           title: 'Team',
-          url: '#',
         },
         {
+          url: '#',
           title: 'Billing',
-          url: '#',
         },
         {
-          title: 'Limits',
           url: '#',
+          title: 'Limits',
         },
       ],
+      title: 'Settings',
     },
   ],
   projects: [
@@ -410,19 +388,41 @@ const data = {
       icon: IconMap,
     },
   ],
+  teams: [
+    {
+      name: 'Acme Inc',
+      logo: IconLayoutRows,
+      plan: 'Enterprise',
+    },
+    {
+      name: 'Acme Corp.',
+      logo: IconWaveSquare,
+      plan: 'Startup',
+    },
+    {
+      name: 'Evil Corp.',
+      logo: IconCommand,
+      plan: 'Free',
+    },
+  ],
+  user: {
+    name: 'shadcn',
+    avatar: '/avatars/shadcn.jpg',
+    email: 'm@example.com',
+  },
 };
 
 /**
  * Displays a sidebar navigation with Mantine components.
  */
 const meta: Meta<typeof MockSidebar> = {
-  title: 'uix/ui/Sidebar',
-  component: MockSidebar,
-  tags: ['autodocs'],
   argTypes: {},
+  component: MockSidebar,
   parameters: {
     layout: 'fullscreen',
   },
+  tags: ['autodocs'],
+  title: 'uix/ui/Sidebar',
 };
 
 export default meta;
@@ -433,6 +433,6 @@ type Story = StoryObj<typeof MockSidebar>;
  * The default form of the sidebar using Mantine's AppShell.
  */
 export const Base: Story = {
-  render: () => <MockSidebar />,
   args: {},
+  render: () => <MockSidebar />,
 };

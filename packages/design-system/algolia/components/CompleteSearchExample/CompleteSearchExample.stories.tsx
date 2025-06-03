@@ -1,19 +1,20 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { 
-  SearchProvider, 
-  SearchBox, 
-  SearchResults, 
-  SearchStats, 
-  Autocomplete 
+import {
+  Autocomplete,
+  SearchBox,
+  SearchProvider,
+  SearchResults,
+  SearchStats,
 } from '@repo/design-system/algolia';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 // This is a comprehensive example showing all Algolia components working together
 const meta: Meta = {
-  title: 'algolia/CompleteSearchExample',
   parameters: {
     layout: 'fullscreen',
   },
   tags: ['autodocs'],
+  title: 'algolia/CompleteSearchExample',
 };
 
 export default meta;
@@ -21,8 +22,8 @@ type Story = StoryObj;
 
 // Mock Algolia configuration
 const mockConfig = {
-  appId: 'latency',
   apiKey: '6be0576ff61c053d5f9a3225e2a90f76',
+  appId: 'latency',
   indexName: 'instant_search',
 };
 
@@ -35,18 +36,16 @@ export const FullECommerceSearch: Story = {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
-                <h1 className="text-xl font-bold text-gray-900">
-                  ShopSearch
-                </h1>
+                <h1 className="text-xl font-bold text-gray-900">ShopSearch</h1>
               </div>
-              
+
               <div className="flex-1 max-w-2xl mx-8">
-                <SearchBox 
-                  placeholder="Search for products, brands, categories..." 
+                <SearchBox
+                  placeholder="Search for products, brands, categories..."
                   className="w-full"
                 />
               </div>
-              
+
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">Account</span>
                 <span className="text-sm text-gray-600">Cart (0)</span>
@@ -61,43 +60,44 @@ export const FullECommerceSearch: Story = {
             <aside className="space-y-6">
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">Quick Search</h3>
-                <Autocomplete 
-                  placeholder="Type for suggestions..." 
-                  className="w-full"
-                />
+                <Autocomplete placeholder="Type for suggestions..." className="w-full" />
               </div>
 
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">Filters</h3>
-                
+
                 <div className="space-y-6">
                   <div>
                     <h4 className="font-medium mb-3">Category</h4>
                     <div className="space-y-2">
-                      {['Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books'].map((category) => (
-                        <label key={category} className="flex items-center">
-                          <input 
-                            type="checkbox" 
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2" 
-                          />
-                          <span className="text-sm text-gray-700">{category}</span>
-                        </label>
-                      ))}
+                      {['Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books'].map(
+                        (category) => (
+                          <label key={category} className="flex items-center">
+                            <input
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                              type="checkbox"
+                            />
+                            <span className="text-sm text-gray-700">{category}</span>
+                          </label>
+                        ),
+                      )}
                     </div>
                   </div>
 
                   <div>
                     <h4 className="font-medium mb-3">Price Range</h4>
                     <div className="space-y-2">
-                      {['Under $25', '$25 - $50', '$50 - $100', '$100 - $200', 'Over $200'].map((range) => (
-                        <label key={range} className="flex items-center">
-                          <input 
-                            type="checkbox" 
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2" 
-                          />
-                          <span className="text-sm text-gray-700">{range}</span>
-                        </label>
-                      ))}
+                      {['Under $25', '$25 - $50', '$50 - $100', '$100 - $200', 'Over $200'].map(
+                        (range) => (
+                          <label key={range} className="flex items-center">
+                            <input
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                              type="checkbox"
+                            />
+                            <span className="text-sm text-gray-700">{range}</span>
+                          </label>
+                        ),
+                      )}
                     </div>
                   </div>
 
@@ -106,9 +106,9 @@ export const FullECommerceSearch: Story = {
                     <div className="space-y-2">
                       {['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony'].map((brand) => (
                         <label key={brand} className="flex items-center">
-                          <input 
-                            type="checkbox" 
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2" 
+                          <input
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                            type="checkbox"
                           />
                           <span className="text-sm text-gray-700">{brand}</span>
                         </label>
@@ -121,16 +121,20 @@ export const FullECommerceSearch: Story = {
                     <div className="space-y-2">
                       {[5, 4, 3, 2, 1].map((stars) => (
                         <label key={stars} className="flex items-center">
-                          <input 
-                            type="checkbox" 
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2" 
+                          <input
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                            type="checkbox"
                           />
                           <div className="flex items-center">
                             {[...Array(stars)].map((_, i) => (
-                              <span key={i} className="text-yellow-400">★</span>
+                              <span key={i} className="text-yellow-400">
+                                ★
+                              </span>
                             ))}
                             {[...Array(5 - stars)].map((_, i) => (
-                              <span key={i} className="text-gray-300">★</span>
+                              <span key={i} className="text-gray-300">
+                                ★
+                              </span>
                             ))}
                             <span className="text-sm text-gray-600 ml-1">& Up</span>
                           </div>
@@ -185,11 +189,7 @@ export const DocumentationSearch: Story = {
                 <h1 className="text-xl font-bold">Documentation</h1>
               </div>
               <div className="flex-1 max-w-md ml-8">
-                <SearchBox 
-                  placeholder="Search docs..." 
-                  className="w-full"
-                  autoFocus
-                />
+                <SearchBox autoFocus placeholder="Search docs..." className="w-full" />
               </div>
             </div>
           </div>
@@ -202,28 +202,68 @@ export const DocumentationSearch: Story = {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Getting Started</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="text-blue-600 hover:text-blue-800">Installation</a></li>
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">Quick Start</a></li>
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">Configuration</a></li>
+                  <li>
+                    <a href="#" className="text-blue-600 hover:text-blue-800">
+                      Installation
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      Quick Start
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      Configuration
+                    </a>
+                  </li>
                 </ul>
               </div>
-              
+
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Components</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">SearchProvider</a></li>
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">SearchBox</a></li>
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">SearchResults</a></li>
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">Autocomplete</a></li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      SearchProvider
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      SearchBox
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      SearchResults
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      Autocomplete
+                    </a>
+                  </li>
                 </ul>
               </div>
 
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Advanced</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">Custom Styling</a></li>
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">Server-Side Rendering</a></li>
-                  <li><a href="#" className="text-gray-600 hover:text-gray-800">Performance</a></li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      Custom Styling
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      Server-Side Rendering
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                      Performance
+                    </a>
+                  </li>
                 </ul>
               </div>
             </nav>
@@ -245,17 +285,10 @@ export const MinimalBlogSearch: Story = {
     <SearchProvider config={mockConfig}>
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Search Our Blog
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Find articles, tutorials, and insights
-          </p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Search Our Blog</h1>
+          <p className="text-lg text-gray-600 mb-8">Find articles, tutorials, and insights</p>
           <div className="max-w-2xl mx-auto">
-            <SearchBox 
-              placeholder="Search articles..." 
-              className="text-lg py-4"
-            />
+            <SearchBox placeholder="Search articles..." className="text-lg py-4" />
           </div>
         </div>
 

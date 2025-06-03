@@ -9,7 +9,7 @@ export default defineConfig({
     hookTimeout: 30000,
     root: __dirname,
     testTimeout: 30000,
-    
+
     env: {
       // Mock database URLs for testing
       DATABASE_PROVIDER: 'prisma',
@@ -42,9 +42,7 @@ export default defineConfig({
     ],
 
     // Setup files
-    setupFiles: [
-      resolve(__dirname, '__tests__/setup.ts'),
-    ],
+    setupFiles: [resolve(__dirname, '__tests__/setup.ts')],
 
     // Reporters
     reporters: ['verbose'],
@@ -90,7 +88,7 @@ export default defineConfig({
 
     // Retry configuration
     retry: 2,
-    
+
     // Concurrent settings
     sequence: {
       concurrent: false,
@@ -98,12 +96,7 @@ export default defineConfig({
 
     // Mock options
     deps: {
-      external: [
-        '@upstash/vector',
-        '@upstash/redis',
-        'firebase-admin',
-        '@prisma/client',
-      ],
+      external: ['@upstash/vector', '@upstash/redis', 'firebase-admin', '@prisma/client'],
     },
   },
 

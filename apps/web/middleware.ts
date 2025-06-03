@@ -1,6 +1,6 @@
 import { type NextMiddleware, NextResponse } from "next/server";
 
-import { createAuthMiddleware } from "@repo/auth/server-utils";
+import { authMiddleware as betterAuthMiddleware } from "@repo/auth/middleware";
 import { internationalizationMiddleware } from "@repo/internationalization/middleware";
 import { parseError } from "@repo/observability/error";
 import { secure } from "@repo/security";
@@ -23,28 +23,7 @@ const securityHeaders = env.FLAGS_SECRET
   ? noseconeMiddleware(noseconeOptionsWithToolbar)
   : noseconeMiddleware(noseconeOptions);
 
-// Create auth middleware with API key support
-const authMiddleware = createAuthMiddleware({
-  apiKeyHeaders: ["x-api-key"],
-  publicApiRoutes: ["/api/auth"],
-  publicWebRoutes: [
-    "/sign-in",
-    "/sign-up",
-    "/",
-    "/_next",
-    "/favicon.ico",
-    "/.well-known",
-    "/about",
-    "/search",
-    "/shop",
-    "/apple-icon.png",
-    "/icon.png",
-    "/opengraph-image.png",
-    "/robots.txt",
-    "/sitemap.xml",
-  ],
-  redirectPath: "/sign-in",
-});
+// Use auth middleware from auth package
 
 const middleware: NextMiddleware = async (request) => {
   // Apply i18n middleware first to handle URL rewriting
@@ -64,9 +43,10 @@ const middleware: NextMiddleware = async (request) => {
   }
 
   // Check auth after i18n processing
-  const authResponse = await authMiddleware()(request);
-  // If auth middleware redirects or blocks, return its response
-  if (authResponse.status !== 200 || authResponse.headers.get("Location")) {
+  const authHandler = betterAuthMiddleware();
+  const authResponse = await authHandler(request);
+  // If auth middleware returns a response, use it
+  if (authResponse) {
     return authResponse;
   }
 
@@ -76,7 +56,7 @@ const middleware: NextMiddleware = async (request) => {
   }
 
   if (!env.ARCJET_KEY) {
-    return securityHeaders();
+    return NextResponse.next();
   }
 
   try {
@@ -90,7 +70,7 @@ const middleware: NextMiddleware = async (request) => {
       request,
     );
 
-    return securityHeaders();
+    return NextResponse.next();
   } catch (error) {
     const message = parseError(error);
 

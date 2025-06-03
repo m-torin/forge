@@ -1,0 +1,109 @@
+name: E2E Tests - Workers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/workers/**"
+      - "packages/orchestration/**"
+      - "packages/ai/**"
+      - "packages/database/**"
+      - ".github/workflows/e2e-workers.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/workers/**"
+      - "packages/orchestration/**"
+      - "packages/ai/**"
+      - "packages/database/**"
+      - ".github/workflows/e2e-workers.yml"
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  e2e-tests:
+    name: Workers E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: |
+          cd apps/workers
+          pnpm exec playwright install --with-deps chromium firefox
+
+      - name: Build dependencies
+        run: pnpm build:local --filter=workers...
+
+      - name: Run unit tests
+        run: pnpm test --filter=workers
+
+      - name: Run E2E tests
+        run: |
+          cd apps/workers
+          pnpm test:e2e
+        env:
+          # Test environment variables
+          NODE_ENV: test
+          QSTASH_URL: http://localhost:8080
+          QSTASH_TOKEN: test_token
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          UPSTASH_VECTOR_REST_URL: ${{ secrets.UPSTASH_VECTOR_REST_URL }}
+          UPSTASH_VECTOR_REST_TOKEN: ${{ secrets.UPSTASH_VECTOR_REST_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          NEXT_PUBLIC_APP_URL: http://localhost:3400
+          # Mock AI for consistent tests
+          MOCK_AI: true
+          # Skip integration tests in CI by default
+          SKIP_INTEGRATION_TESTS: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/workers/playwright-report/
+          retention-days: 30
+
+      - name: Upload test videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos
+          path: apps/workers/test-results/
+          retention-days: 7

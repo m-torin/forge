@@ -1,43 +1,36 @@
-import type { WorkflowDefinition } from '../types';
-import type { WorkflowContext } from '@upstash/workflow';
-
 export interface ChartSitemapsPayload {
   message?: string;
+  options?: {
+    includeImages?: boolean;
+    followRedirects?: boolean;
+  };
   url?: string;
 }
 
-const chartSitemapsWorkflow = async (context: WorkflowContext<ChartSitemapsPayload>) => {
-  const { url, message = 'Hello World from Chart Sitemaps!' } = context.requestPayload || {};
-
-  // Step 1: Log the start
-  await context.run('log-start', async () => {
-    console.log(`Starting chart sitemaps workflow: ${message}`);
-    return { started: true };
-  });
-
-  // Step 2: Process (placeholder)
-  const result = await context.run('process-sitemap', async () => {
-    console.log(`Processing sitemap: ${url || 'no URL provided'}`);
-    return {
-      url,
-      message,
-      timestamp: new Date().toISOString(),
-      workflowRunId: context.workflowRunId,
-    };
-  });
-
-  // Return the result
-  return {
-    data: result,
-    metadata: {
-      timestamp: new Date().toISOString(),
-      workflowRunId: context.workflowRunId,
-    },
-    status: 'success' as const,
+interface WorkflowDefinition {
+  defaultPayload: ChartSitemapsPayload;
+  metadata: {
+    id: string;
+    title: string;
+    description: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    estimatedTime: string;
+    features: string[];
+    tags: string[];
+    color: string;
   };
-};
+  workflow: (context: any) => Promise<any>;
+}
 
-const definition: WorkflowDefinition = {
+const chartSitemapsDefinition: WorkflowDefinition = {
+  defaultPayload: {
+    url: 'https://example.com/sitemap.xml',
+    message: 'Hello World from Chart Sitemaps!',
+    options: {
+      followRedirects: false,
+      includeImages: true,
+    },
+  },
   metadata: {
     id: 'chart-sitemaps',
     color: 'cyan',
@@ -53,13 +46,46 @@ const definition: WorkflowDefinition = {
     tags: ['jollyRoger', 'etl'],
     title: 'Chart Sitemaps',
   },
+  workflow: async (context: any) => {
+    const payload = context.requestPayload;
 
-  defaultPayload: {
-    url: 'https://example.com/sitemap.xml',
-    message: 'Hello World from Chart Sitemaps!',
+    // Log start step
+    await context.run('log-start', async () => {
+      console.log(
+        `Starting chart sitemaps workflow: ${payload?.message || chartSitemapsDefinition.defaultPayload.message}`,
+      );
+      return { started: true };
+    });
+
+    // Process sitemap step
+    await context.run('process-sitemap', async () => {
+      if (!payload) {
+        console.log('Processing sitemap: no URL provided');
+      } else {
+        console.log(`Processing sitemap: ${payload.url || 'no URL provided'}`);
+      }
+      return {
+        url: payload?.url,
+        message: payload?.message || chartSitemapsDefinition.defaultPayload.message,
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      };
+    });
+
+    return {
+      data: {
+        url: payload?.url,
+        message: payload?.message || chartSitemapsDefinition.defaultPayload.message,
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      },
+      metadata: {
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      },
+      status: 'success',
+    };
   },
-
-  workflow: chartSitemapsWorkflow,
 };
 
-export default definition;
+export default chartSitemapsDefinition;

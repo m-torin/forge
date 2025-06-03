@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { Analytics } from '@repo/analytics/server';
+import { analytics } from '@repo/analytics';
 import { createPrismaAdapter } from '@repo/database/prisma';
 import { parseError } from '@repo/observability/error';
 import { log } from '@repo/observability/log';
@@ -12,25 +12,6 @@ import { env } from '../../../env';
 import type { Stripe } from '@repo/payments';
 
 const adapter = createPrismaAdapter();
-
-// Initialize analytics with environment-based providers
-const analytics = new Analytics({
-  providers: {
-    posthog: process.env.NEXT_PUBLIC_POSTHOG_KEY ? {
-      apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      config: {
-        apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      }
-    } : undefined,
-    segment: process.env.SEGMENT_WRITE_KEY ? {
-      writeKey: process.env.SEGMENT_WRITE_KEY,
-    } : undefined,
-    googleAnalytics: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? {
-      measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-    } : undefined,
-  },
-  debug: process.env.NODE_ENV === 'development',
-});
 
 const getUserFromCustomerId = async (customerId: string) => {
   // Using the adapter to access the database
@@ -60,11 +41,11 @@ const handleCheckoutSessionCompleted = async (data: Stripe.Checkout.Session) => 
     return;
   }
 
-  await analytics.track('User Subscribed', {
-    userId: user.id,
+  await analytics.capture('User Subscribed', {
     customerId,
-    timestamp: new Date().toISOString(),
     source: 'stripe-webhook',
+    timestamp: new Date().toISOString(),
+    userId: user.id,
   });
 };
 
@@ -80,11 +61,11 @@ const handleSubscriptionScheduleCanceled = async (data: Stripe.SubscriptionSched
     return;
   }
 
-  await analytics.track('User Unsubscribed', {
-    userId: user.id,
+  await analytics.capture('User Unsubscribed', {
     customerId,
-    timestamp: new Date().toISOString(),
     source: 'stripe-webhook',
+    timestamp: new Date().toISOString(),
+    userId: user.id,
   });
 };
 
@@ -118,7 +99,7 @@ export const POST = async (request: Request): Promise<Response> => {
       }
     }
 
-    await analytics.flush();
+    // PostHog JS SDK auto-flushes, no manual flush needed
 
     return NextResponse.json({ ok: true, result: event });
   } catch (error) {

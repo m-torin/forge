@@ -1,9 +1,9 @@
-import { CheckIcon, ClockIcon, NoSymbolIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import { PercentCircleIcon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import clsx from 'clsx';
+import { CheckIcon, ClockIcon, NoSymbolIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { PercentCircleIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import clsx from 'clsx'
 
-const ProductStatus = ({ className, status }: { status: string; className?: string }) => {
+const ProductStatus = ({ status, className }: { status: string; className?: string }) => {
   const renderStatus = () => {
     if (status === 'In Stock') {
       return (
@@ -11,7 +11,7 @@ const ProductStatus = ({ className, status }: { status: string; className?: stri
           <CheckIcon className="size-5" />
           <span className="ml-1 leading-none">{status}</span>
         </>
-      );
+      )
     }
     if (status === 'New in') {
       return (
@@ -19,20 +19,15 @@ const ProductStatus = ({ className, status }: { status: string; className?: stri
           <SparklesIcon className="size-5" />
           <span className="ml-1 leading-none">{status}</span>
         </>
-      );
+      )
     }
     if (status === '50% Discount') {
       return (
         <>
-          <HugeiconsIcon
-            strokeWidth={1.5}
-            color="currentColor"
-            icon={PercentCircleIcon}
-            size={14}
-          />
+          <HugeiconsIcon icon={PercentCircleIcon} size={14} color="currentColor" strokeWidth={1.5} />
           <span className="ml-1 leading-none">{status}</span>
         </>
-      );
+      )
     }
     if (status === 'Sold Out') {
       return (
@@ -40,7 +35,7 @@ const ProductStatus = ({ className, status }: { status: string; className?: stri
           <NoSymbolIcon className="size-5" />
           <span className="ml-1 leading-none">{status}</span>
         </>
-      );
+      )
     }
     if (status === 'limited edition') {
       return (
@@ -48,21 +43,21 @@ const ProductStatus = ({ className, status }: { status: string; className?: stri
           <ClockIcon className="size-5" />
           <span className="ml-1 leading-none">{status}</span>
         </>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   return (
     <div
       className={clsx(
         className,
-        'flex items-center justify-center text-sm/normal text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200',
+        'flex items-center justify-center text-sm/normal text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200'
       )}
     >
       {renderStatus()}
     </div>
-  );
-};
+  )
+}
 
-export default ProductStatus;
+export default ProductStatus

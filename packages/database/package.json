@@ -31,7 +31,7 @@
     "@prisma/client": "catalog:",
     "@prisma/extension-accelerate": "^2.0.1",
     "@t3-oss/env-nextjs": "catalog:",
-    "@upstash/redis": "^1.34.9",
+    "@upstash/redis": "^1.35.0",
     "@upstash/vector": "^1.2.1",
     "chalk": "^5.4.1",
     "firebase-admin": "^13.4.0",

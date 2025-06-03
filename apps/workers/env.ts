@@ -3,20 +3,23 @@ import { z } from 'zod';
 
 import { keys as analytics } from '@repo/analytics/keys';
 import { keys as auth } from '@repo/auth/keys';
+import { keys as core } from '@repo/config/next/keys';
 import { keys as database } from '@repo/database/keys';
 import { keys as email } from '@repo/email/keys';
-import { keys as core } from '@repo/config/next/keys';
 import { keys as observability } from '@repo/observability/keys';
+import { keys as security } from '@repo/security/keys';
 
 export const env = createEnv({
   client: {},
-  extends: [auth(), analytics(), core(), database(), email(), observability()],
+  extends: [auth(), analytics(), core(), database(), email(), observability(), security()],
   runtimeEnv: {
     // QStash Core
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     QSTASH_TOKEN: process.env.QSTASH_TOKEN,
     QSTASH_URL: process.env.QSTASH_URL,
+    // Service API Key for service-to-service authentication
+    SERVICE_API_KEY: process.env.SERVICE_API_KEY,
 
     // Upstash Redis
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -53,6 +56,9 @@ export const env = createEnv({
     WORKFLOW_DEV_MODE: process.env.WORKFLOW_DEV_MODE,
   },
   server: {
+    // Service API Key - can be rotated via Doppler
+    SERVICE_API_KEY: z.string().min(32).optional(),
+
     // QStash Core
     QSTASH_CURRENT_SIGNING_KEY: z.string().optional(),
     QSTASH_NEXT_SIGNING_KEY: z.string().optional(),

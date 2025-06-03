@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
+import { type NextMiddleware, NextResponse } from 'next/server';
 
-import { createAuthMiddleware } from '@repo/auth/server-utils';
+import { authMiddleware as betterAuthMiddleware } from '@repo/auth/middleware';
+import { parseError } from '@repo/observability/error';
+import { secure } from '@repo/security';
 import {
   noseconeMiddleware,
   noseconeOptions,
@@ -9,38 +11,48 @@ import {
 
 import { env } from './env';
 
-import type { NextMiddleware } from 'next/server';
+export const config = {
+  // matcher tells Next.js which routes to run the middleware on. This runs the
+  // middleware on all routes except for static assets
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  runtime: 'nodejs',
+};
 
 const securityHeaders = env.FLAGS_SECRET
   ? noseconeMiddleware(noseconeOptionsWithToolbar)
   : noseconeMiddleware(noseconeOptions);
 
-const authMiddleware = createAuthMiddleware({
-  apiKeyHeaders: ['x-api-key'],
-  publicApiRoutes: ['/api/public/health', '/api/webhooks', '/api/auth'],
-  publicWebRoutes: [
-    '/sign-in',
-    '/sign-up',
-    '/forgot-password',
-    '/reset-password',
-    '/_next',
-    '/favicon.ico',
-    '/.well-known',
-  ],
-  redirectPath: '/sign-in',
-});
+// Use auth middleware from auth package
 
-export default authMiddleware(() => {
-  securityHeaders();
-  return NextResponse.next();
-}) as unknown as NextMiddleware;
+const middleware: NextMiddleware = async (request) => {
+  // Check auth first for admin app
+  const authHandler = betterAuthMiddleware();
+  const authResponse = await authHandler(request);
+  // If auth middleware redirects or blocks, return its response
+  if (authResponse.status !== 200 || authResponse.headers.get('Location')) {
+    return authResponse;
+  }
 
-export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
-  ],
-  runtime: 'nodejs', // Use Node.js runtime instead of Edge
+  if (!env.ARCJET_KEY) {
+    return securityHeaders();
+  }
+
+  try {
+    await secure(
+      [
+        // Admin-specific security allowlist
+        'CATEGORY:SEARCH_ENGINE', // Allow search engines
+        'CATEGORY:MONITOR', // Allow uptime monitoring services
+      ],
+      request,
+    );
+
+    return securityHeaders();
+  } catch (error) {
+    const message = parseError(error);
+
+    return NextResponse.json({ error: message }, { status: 403 });
+  }
 };
+
+export default middleware;

@@ -3,7 +3,7 @@ import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const isDevelopment = process.env.NODE_ENV === 'development';
+const _isDevelopment = process.env.NODE_ENV === 'development';
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasRequiredEnvVars = Boolean(
   process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_WEB_URL,

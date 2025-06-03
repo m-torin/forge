@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { IconSquareArrowRight } from '@tabler/icons-react';
 
 import {
@@ -10,15 +9,18 @@ import {
   BreadcrumbSeparator,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * Displays the path to the current resource using a hierarchy of links.
  */
 const meta = {
-  title: 'uix/ui/Breadcrumb',
-  component: Breadcrumb,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {},
+  argTypes: {},
+  component: Breadcrumb,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <Breadcrumb {...args}>
       <BreadcrumbList>
@@ -36,9 +38,8 @@ const meta = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Breadcrumb',
 } satisfies Meta<typeof Breadcrumb>;
 
 export default meta;

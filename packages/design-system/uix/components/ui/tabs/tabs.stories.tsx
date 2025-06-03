@@ -1,19 +1,20 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * A set of layered sections of content—known as tab panels—that are displayed
  * one at a time.
  */
 const meta = {
-  title: 'uix/ui/Tabs',
-  component: Tabs,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
-    defaultValue: 'account',
     className: 'w-96',
+    defaultValue: 'account',
+  },
+  argTypes: {},
+  component: Tabs,
+  parameters: {
+    layout: 'centered',
   },
   render: (args: any) => (
     <Tabs {...args}>
@@ -25,9 +26,8 @@ const meta = {
       <TabsContent value="password">Change your password here.</TabsContent>
     </Tabs>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Tabs',
 } satisfies Meta<typeof Tabs>;
 
 export default meta;

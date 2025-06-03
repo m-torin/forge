@@ -28,8 +28,10 @@ export {
   getAIFlags,
   getAnalyticsFlags,
   getAuthFlags,
+  getEmailFlags,
   getPaymentFlags,
   getUIFlags,
+  getWorkflowFlags,
 } from './flag-helpers';
 
 // Re-export analytics functions
@@ -38,8 +40,6 @@ export { analytics } from './posthog/client';
 // Export types separately for packages to avoid circular deps
 export type * from './types/flags';
 
-// Export Vercel Toolbar components
+// Export Vercel Toolbar components (client-safe only)
 export { Toolbar } from './components/toolbar';
 export { ToolbarProvider } from './toolbar-provider';
-export { withToolbar } from './lib/toolbar';
-export { getFlags } from './access';

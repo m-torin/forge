@@ -1,5 +1,7 @@
 // @ts-ignore - eslint-plugin-node doesn't have type definitions
 import nodePlugin from 'eslint-plugin-node';
+// @ts-ignore - eslint-plugin-security doesn't have type definitions
+import securityPlugin from 'eslint-plugin-security';
 import globals from 'globals';
 
 // server.ts
@@ -20,10 +22,11 @@ import type { Linter } from 'eslint';
 const config: Linter.FlatConfig[] = [
   ...baseConfig,
   {
-    // Server-specific configuration with Node.js plugin
+    // Server-specific configuration with Node.js and security plugins
     files: ['**/*.js', '**/*.ts', '**/*.mjs', '**/*.cjs', '**/*.mts', '**/*.cts'],
     plugins: {
       node: nodePlugin,
+      security: securityPlugin,
     },
   },
   {

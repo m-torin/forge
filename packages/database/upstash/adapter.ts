@@ -4,7 +4,7 @@ import { upstashVectorClientSingleton } from './client';
 
 import type { VectorDatabaseAdapter } from '../types';
 // Import only the types that exist in @upstash/vector
-import type { Vector } from '@upstash/vector';
+import type { Index, Vector } from '@upstash/vector';
 
 /**
  * Upstash Vector adapter implementing the common DatabaseAdapter interface
@@ -23,7 +23,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
     // Upstash Vector is stateless and doesn't require explicit disconnection
   }
 
-  getClient() {
+  getClient(): Index {
     return this.client;
   }
 
@@ -33,7 +33,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
    * @param data - Vector data with id, values, and optional metadata
    */
   async create<T>(collection: string, data: Vector): Promise<T> {
-    const result = await this.client.upsert(data, { namespace: collection });
+    const result = await this.client.upsert(data as any, { namespace: collection });
     return result as T;
   }
 
@@ -48,8 +48,8 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
       id,
       ...data,
     } as Vector;
-    
-    const result = await this.client.upsert(vectorData, { namespace: collection });
+
+    const result = await this.client.upsert(vectorData as any, { namespace: collection });
     return result as T;
   }
 
@@ -69,11 +69,11 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
    * @param query - Object with id property
    */
   async findUnique<T>(collection: string, query: { id: string }): Promise<T | null> {
-    const result = await this.client.fetch([query.id], { 
+    const result = await this.client.fetch([query.id], {
       namespace: collection,
-      includeMetadata: true 
+      includeMetadata: true,
     });
-    
+
     return result.length > 0 ? (result[0] as T) : null;
   }
 
@@ -83,22 +83,28 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
    * @param collection - Used as namespace
    * @param query - Query parameters including vector values and optional filters
    */
-  async findMany<T>(collection: string, query?: {
-    vector?: number[];
-    topK?: number;
-    filter?: string;
-    includeMetadata?: boolean;
-  }): Promise<T[]> {
+  async findMany<T>(
+    collection: string,
+    query?: {
+      vector?: number[];
+      topK?: number;
+      filter?: string;
+      includeMetadata?: boolean;
+    },
+  ): Promise<T[]> {
     if (!query?.vector) {
       throw new Error('Vector query requires a vector for similarity search');
     }
 
-    const result = await this.client.query({
-      filter: query.filter,
-      includeMetadata: query.includeMetadata ?? true,
-      topK: query.topK || 10,
-      vector: query.vector,
-    }, { namespace: collection });
+    const result = await this.client.query(
+      {
+        filter: query.filter,
+        includeMetadata: query.includeMetadata ?? true,
+        topK: query.topK || 10,
+        vector: query.vector,
+      },
+      { namespace: collection },
+    );
 
     return result as T[];
   }
@@ -113,7 +119,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
       // Upstash Vector doesn't have a native count operation
       // We'll use info() to get index statistics
       const info = await this.client.info();
-      
+
       // Note: This returns total vectors across all namespaces
       // For namespace-specific counts, you'd need to track this separately
       return info.vectorCount || 0;
@@ -129,11 +135,11 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
    */
   async raw<T = any>(operation: string, params: any): Promise<T> {
     const client = this.client as any;
-    
+
     if (typeof client[operation] === 'function') {
       return await client[operation](params);
     }
-    
+
     throw new Error(`Operation '${operation}' not supported on Upstash Vector client`);
   }
 
@@ -142,7 +148,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Perform a similarity search with full options support
    */
-  async query<T = VectorScore>(
+  async query<T = any>(
     options: {
       vector?: number[];
       data?: string;
@@ -156,9 +162,9 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
       includeVectors?: boolean;
       includeData?: boolean;
     },
-    queryOptions?: QueryOptions
+    queryOptions?: any,
   ): Promise<T[]> {
-    const result = await this.client.query(options as QueryData, queryOptions);
+    const result = await this.client.query(options as any, queryOptions);
     return result as T[];
   }
 
@@ -172,9 +178,9 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
       includeMetadata?: boolean;
       includeVectors?: boolean;
       includeData?: boolean;
-    }
+    },
   ): Promise<T[]> {
-    const result = await this.client.fetch(ids, options);
+    const result = await this.client.fetch(ids as any, options);
     return result as T[];
   }
 
@@ -185,7 +191,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
     data: any | any[],
     options?: {
       namespace?: string;
-    }
+    },
   ): Promise<T> {
     const result = await this.client.upsert(data, options);
     return result as T;
@@ -194,40 +200,37 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Upsert multiple vectors (alias for backward compatibility)
    */
-  async upsertMany<T = any>(
-    vectors: Vector[] | any[],
-    namespace?: string
-  ): Promise<T> {
-    const result = await this.client.upsert(vectors, namespace ? { namespace } : undefined);
+  async upsertMany<T = any>(vectors: Vector[] | any[], namespace?: string): Promise<T> {
+    const result = await this.client.upsert(vectors as any, namespace ? { namespace } : undefined);
     return result as T;
   }
 
   /**
    * Update vector metadata
    */
-  async updateMetadata<T = UpsertResult>(
+  async updateMetadata<T = any>(
     id: string,
     metadata: Record<string, any>,
     options?: {
       namespace?: string;
-    }
+    },
   ): Promise<T> {
     const updateData = {
       id,
       metadata,
     };
-    const result = await this.client.upsert(updateData, options);
+    const result = await this.client.upsert(updateData as any, options);
     return result as T;
   }
 
   /**
    * Delete multiple vectors by IDs
    */
-  async deleteMany<T = DeleteResult>(
+  async deleteMany<T = any>(
     ids: string | string[],
     options?: {
       namespace?: string;
-    }
+    },
   ): Promise<T> {
     const result = await this.client.delete(ids, options);
     return result as T;
@@ -236,21 +239,21 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Get index information and statistics
    */
-  async getInfo(): Promise<InfoResult> {
+  async getInfo(): Promise<any> {
     return await this.client.info();
   }
 
   /**
    * Reset the entire index (use with caution!)
    */
-  async reset(): Promise<ResetResult> {
+  async reset(): Promise<any> {
     return await this.client.reset();
   }
 
   /**
    * Query with text data (uses built-in embedding)
    */
-  async queryByText<T = VectorScore>(
+  async queryByText<T = any>(
     text: string,
     options?: {
       topK?: number;
@@ -259,15 +262,16 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
       includeVectors?: boolean;
       includeData?: boolean;
       namespace?: string;
-    }
+    },
   ): Promise<T[]> {
     const { namespace, ...queryOptions } = options || {};
     const result = await this.client.query(
       {
         data: text,
+        topK: 10,
         ...queryOptions,
-      },
-      namespace ? { namespace } : undefined
+      } as any,
+      namespace ? { namespace } : undefined,
     );
     return result as T[];
   }
@@ -275,7 +279,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Upsert data with automatic embedding generation
    */
-  async upsertText<T = UpsertResult>(
+  async upsertText<T = any>(
     data: {
       id: string;
       data: string;
@@ -283,7 +287,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
     }[],
     options?: {
       namespace?: string;
-    }
+    },
   ): Promise<T> {
     const result = await this.client.upsert(data, options);
     return result as T;
@@ -292,7 +296,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Upsert dense vectors
    */
-  async upsertDense<T = UpsertResult>(
+  async upsertDense<T = any>(
     vectors: {
       id: string;
       vector: number[];
@@ -300,7 +304,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
     }[],
     options?: {
       namespace?: string;
-    }
+    },
   ): Promise<T> {
     const result = await this.client.upsert(vectors, options);
     return result as T;
@@ -309,7 +313,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Upsert sparse vectors
    */
-  async upsertSparse<T = UpsertResult>(
+  async upsertSparse<T = any>(
     vectors: {
       id: string;
       sparseVector: {
@@ -320,7 +324,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
     }[],
     options?: {
       namespace?: string;
-    }
+    },
   ): Promise<T> {
     const result = await this.client.upsert(vectors, options);
     return result as T;
@@ -329,7 +333,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Upsert hybrid vectors (both dense and sparse)
    */
-  async upsertHybrid<T = UpsertResult>(
+  async upsertHybrid<T = any>(
     vectors: {
       id: string;
       vector: number[];
@@ -341,7 +345,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
     }[],
     options?: {
       namespace?: string;
-    }
+    },
   ): Promise<T> {
     const result = await this.client.upsert(vectors, options);
     return result as T;
@@ -350,7 +354,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Query with sparse vector
    */
-  async querySparse<T = VectorScore>(
+  async querySparse<T = any>(
     sparseVector: {
       indices: number[];
       values: number[];
@@ -361,15 +365,16 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
       includeMetadata?: boolean;
       includeVectors?: boolean;
       namespace?: string;
-    }
+    },
   ): Promise<T[]> {
     const { namespace, ...queryOptions } = options || {};
     const result = await this.client.query(
       {
         sparseVector,
+        topK: 10,
         ...queryOptions,
-      },
-      namespace ? { namespace } : undefined
+      } as any,
+      namespace ? { namespace } : undefined,
     );
     return result as T[];
   }
@@ -377,7 +382,7 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
   /**
    * Query with hybrid vector (both dense and sparse)
    */
-  async queryHybrid<T = VectorScore>(
+  async queryHybrid<T = any>(
     vector: number[],
     sparseVector: {
       indices: number[];
@@ -389,16 +394,17 @@ export class UpstashVectorAdapter implements VectorDatabaseAdapter {
       includeMetadata?: boolean;
       includeVectors?: boolean;
       namespace?: string;
-    }
+    },
   ): Promise<T[]> {
     const { namespace, ...queryOptions } = options || {};
     const result = await this.client.query(
       {
         sparseVector,
+        topK: 10,
         vector,
         ...queryOptions,
-      },
-      namespace ? { namespace } : undefined
+      } as any,
+      namespace ? { namespace } : undefined,
     );
     return result as T[];
   }

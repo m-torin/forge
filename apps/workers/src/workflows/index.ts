@@ -11,15 +11,17 @@
 
 import { workflowDefinition as basicWorkflow } from './basic/definition';
 import { workflowDefinition as imageProcessingWorkflow } from './image-processing/definition';
+import { workflowDefinition as importExternalMediaWorkflow } from './import-external-media/definition';
 import { workflowDefinition as kitchenSinkWorkflow } from './kitchen-sink/definition';
 
 // Export individual workflow definitions
-export { basicWorkflow, imageProcessingWorkflow, kitchenSinkWorkflow };
+export { basicWorkflow, imageProcessingWorkflow, importExternalMediaWorkflow, kitchenSinkWorkflow };
 
 // Export as a registry for easy iteration
 export const workflowRegistry = {
   'basic-workflow': basicWorkflow,
   'image-processing-workflow': imageProcessingWorkflow,
+  'import-external-media-workflow': importExternalMediaWorkflow,
   'kitchen-sink-workflow': kitchenSinkWorkflow,
 } as const;
 

@@ -54,7 +54,7 @@ afterEach(() => {
 afterAll(() => {
   // Restore all mocks
   vi.restoreAllMocks();
-  
+
   // Clean up environment
   delete process.env.DATABASE_PROVIDER;
   delete process.env.DATABASE_URL;

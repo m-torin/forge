@@ -1,18 +1,25 @@
+import {
+  Autocomplete,
+  SearchBox,
+  SearchProvider,
+  SearchResults,
+  SearchStats,
+} from '@repo/design-system/algolia';
+
 import type { Meta, StoryObj } from '@storybook/react';
-import { SearchProvider, SearchBox, SearchResults, SearchStats, Autocomplete } from '@repo/design-system/algolia';
 
 const meta: Meta<typeof SearchProvider> = {
-  title: 'algolia/SearchProvider',
-  component: SearchProvider,
-  parameters: {
-    layout: 'padded',
-  },
-  tags: ['autodocs'],
   argTypes: {
     config: {
       description: 'Algolia configuration object',
     },
   },
+  component: SearchProvider,
+  parameters: {
+    layout: 'padded',
+  },
+  tags: ['autodocs'],
+  title: 'algolia/SearchProvider',
 };
 
 export default meta;
@@ -20,14 +27,14 @@ type Story = StoryObj<typeof meta>;
 
 // Mock Algolia configurations
 const mockConfig = {
-  appId: 'latency',
   apiKey: '6be0576ff61c053d5f9a3225e2a90f76',
+  appId: 'latency',
   indexName: 'instant_search',
 };
 
 const ecommerceConfig = {
-  appId: 'latency',
   apiKey: '6be0576ff61c053d5f9a3225e2a90f76',
+  appId: 'latency',
   indexName: 'instant_search_demo_query_suggestions',
 };
 
@@ -97,16 +104,14 @@ export const ECommerceDemo: Story = {
           {/* Header */}
           <header className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold text-gray-900">
-                E-Commerce Store
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-900">E-Commerce Store</h1>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">Sign In</span>
                 <span className="text-sm text-gray-600">Cart (0)</span>
               </div>
             </div>
-            <SearchBox 
-              placeholder="Search for products, brands, categories..." 
+            <SearchBox
+              placeholder="Search for products, brands, categories..."
               className="w-full max-w-2xl mx-auto"
             />
           </header>
@@ -121,15 +126,15 @@ export const ECommerceDemo: Story = {
                   <h4 className="font-medium mb-2">Category</h4>
                   <div className="space-y-1 text-sm">
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
+                      <input className="rounded" type="checkbox" />
                       Electronics
                     </label>
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
+                      <input className="rounded" type="checkbox" />
                       Clothing
                     </label>
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
+                      <input className="rounded" type="checkbox" />
                       Home & Garden
                     </label>
                   </div>
@@ -138,15 +143,15 @@ export const ECommerceDemo: Story = {
                   <h4 className="font-medium mb-2">Price Range</h4>
                   <div className="space-y-1 text-sm">
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
+                      <input className="rounded" type="checkbox" />
                       Under $25
                     </label>
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
+                      <input className="rounded" type="checkbox" />
                       $25 - $100
                     </label>
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
+                      <input className="rounded" type="checkbox" />
                       Over $100
                     </label>
                   </div>
@@ -175,13 +180,9 @@ export const DocumentationSearch: Story = {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Documentation</h1>
-          <SearchBox 
-            placeholder="Search documentation..." 
-            className="max-w-lg mx-auto"
-            autoFocus
-          />
+          <SearchBox autoFocus placeholder="Search documentation..." className="max-w-lg mx-auto" />
         </div>
-        
+
         <div className="grid md:grid-cols-[200px_1fr] gap-6">
           <nav className="space-y-2 text-sm">
             <div className="font-semibold">Getting Started</div>
@@ -197,7 +198,7 @@ export const DocumentationSearch: Story = {
               <div>Autocomplete</div>
             </div>
           </nav>
-          
+
           <div>
             <SearchStats className="mb-4" />
             <SearchResults />

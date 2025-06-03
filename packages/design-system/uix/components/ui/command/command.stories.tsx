@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { CommandSeparator } from 'cmdk';
 
 import {
@@ -10,16 +9,19 @@ import {
   CommandList,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * Fast, composable, unstyled command menu for React.
  */
 const meta = {
-  title: 'uix/ui/Command',
-  component: Command,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     className: 'rounded-lg w-96 border shadow-md',
+  },
+  argTypes: {},
+  component: Command,
+  parameters: {
+    layout: 'centered',
   },
   render: (args: any) => (
     <Command {...args}>
@@ -40,9 +42,8 @@ const meta = {
       </CommandList>
     </Command>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Command',
 } satisfies Meta<typeof Command>;
 
 export default meta;

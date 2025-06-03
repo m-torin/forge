@@ -3,22 +3,22 @@
 import { useSearchBox as useSearchBoxCore } from 'react-instantsearch';
 
 export function useSearchBox() {
-  const { query, refine, clear, isSearchStalled } = useSearchBoxCore();
+  const { clear, isSearchStalled, query, refine } = useSearchBoxCore();
 
   return {
-    query,
-    setQuery: refine,
     clearQuery: clear,
     isSearchStalled,
-    onSubmit: (event: React.FormEvent) => {
-      event.preventDefault();
-      // Form submission is handled automatically by InstantSearch
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+      refine(event.target.value);
     },
     onReset: () => {
       clear();
     },
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-      refine(event.target.value);
+    onSubmit: (event: React.FormEvent) => {
+      event.preventDefault();
+      // Form submission is handled automatically by InstantSearch
     },
+    query,
+    setQuery: refine,
   };
 }

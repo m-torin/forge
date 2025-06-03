@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, Group, Menu, Text, UnstyledButton } from '@mantine/core';
-import { IconLogout, IconUser } from '@tabler/icons-react';
+import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 
 import { signOut } from '@repo/auth/client';
@@ -42,7 +42,18 @@ export function UserMenu({ user }: UserMenuProps) {
 
       <Menu.Dropdown>
         <Menu.Label>Account</Menu.Label>
-        <Menu.Item leftSection={<IconUser size={14} />}>Profile</Menu.Item>
+        <Menu.Item
+          leftSection={<IconUser size={14} />}
+          onClick={() => router.push('/settings' as any)}
+        >
+          Profile
+        </Menu.Item>
+        <Menu.Item
+          leftSection={<IconSettings size={14} />}
+          onClick={() => router.push('/settings/security' as any)}
+        >
+          Security Settings
+        </Menu.Item>
         <Menu.Divider />
         <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={handleSignOut}>
           Sign out

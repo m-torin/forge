@@ -26,6 +26,7 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     RESEND_FROM: process.env.RESEND_FROM,
     RESEND_TOKEN: process.env.RESEND_TOKEN,
+    SERVICE_API_KEY: process.env.SERVICE_API_KEY,
   },
   server: {
     // Make these optional for the template
@@ -36,5 +37,7 @@ export const env = createEnv({
       .default("postgresql://localhost:5432/template"),
     RESEND_FROM: z.string().email().optional().default("noreply@example.com"),
     RESEND_TOKEN: z.string().optional().default("re_template_token"),
+    // Service API Key - can be rotated via Doppler
+    SERVICE_API_KEY: z.string().min(32).optional(),
   },
 });

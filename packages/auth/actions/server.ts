@@ -306,7 +306,7 @@ export async function listAllOrganizations(): Promise<BetterAuthResponse> {
   try {
     // Use the organization helper to get all organizations via database
     const { prisma: database } = await import('@repo/database/prisma');
-    const organizations = await database.organization.findMany({
+    const organizations = await (database as any).organization.findMany({
       include: {
         members: {
           include: {

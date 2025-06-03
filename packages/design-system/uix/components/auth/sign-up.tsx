@@ -1,8 +1,9 @@
 'use client';
 
-import { Button, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
+import { Alert, Button, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useState } from 'react';
 
+import { analytics } from '@repo/analytics';
 import { signUp } from '@repo/auth/client';
 
 export const SignUp = () => {
@@ -10,15 +11,43 @@ export const SignUp = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
+
+    // Track sign-up attempt
+    analytics.capture('sign_up_attempted', {
+      method: 'email',
+    });
+
     try {
       await signUp.email({
         name,
         email,
         password,
+      });
+
+      // Track successful sign-up
+      analytics.capture('sign_up_completed', {
+        method: 'email',
+      });
+
+      // Identify new user
+      analytics.identify(email, {
+        name,
+        created_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign up';
+      setError(errorMessage);
+
+      // Track sign-up failure
+      analytics.capture('sign_up_failed', {
+        error: errorMessage,
+        method: 'email',
       });
     } finally {
       setIsLoading(false);
@@ -29,6 +58,11 @@ export const SignUp = () => {
     <Paper withBorder p="xl" radius="md">
       <form onSubmit={handleSubmit}>
         <Stack>
+          {error && (
+            <Alert color="red" title="Sign up failed">
+              {error}
+            </Alert>
+          )}
           <TextInput
             onChange={(e) => setName(e.currentTarget.value)}
             placeholder="Your name"

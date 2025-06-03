@@ -1,6 +1,7 @@
 # Universal Analytics Emitters
 
-A universal analytics library based on Segment's specification that works seamlessly across frontend and backend environments.
+A universal analytics library based on Segment's specification that works seamlessly across frontend
+and backend environments.
 
 ## Features
 
@@ -185,48 +186,6 @@ function App() {
 }
 ```
 
-### Mobile App Usage (React Native)
-
-```typescript
-import { useEffect } from 'react';
-import { Analytics } from '@repo/analytics/emitters';
-
-const analytics = new Analytics({
-  providers: {
-    segment: {
-      writeKey: 'your-segment-key',
-    },
-    posthog: {
-      apiKey: 'phc_xxxxxxxxxx',
-    },
-  },
-});
-
-function ProductScreen() {
-  useEffect(() => {
-    // Track screen view on mount
-    analytics.screen('Products', 'Product Detail', {
-      productId: 'prod-123',
-      category: 'Electronics',
-    });
-  }, []);
-
-  const handlePurchase = () => {
-    analytics.track('Product Purchased', {
-      productId: 'prod-123',
-      price: 99.99,
-      currency: 'USD',
-    });
-  };
-
-  return (
-    <View>
-      <Button onPress={handlePurchase} title="Buy Now" />
-    </View>
-  );
-}
-```
-
 ### Using Individual Emitters
 
 You can also use emitters directly:
@@ -371,11 +330,13 @@ await analytics.track('Order Completed', {
   orderId: 'order-456',
   revenue: 99.99,
   currency: 'USD',
-  products: [{
-    productId: 'prod-123',
-    quantity: 2,
-    price: 29.99,
-  }],
+  products: [
+    {
+      productId: 'prod-123',
+      quantity: 2,
+      price: 29.99,
+    },
+  ],
 });
 
 // User Engagement

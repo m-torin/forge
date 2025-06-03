@@ -1,10 +1,14 @@
 'use client';
 
-import * as React from 'react';
 import { Tooltip as MantineTooltip, type TooltipProps as MantineTooltipProps } from '@mantine/core';
+import * as React from 'react';
 
 // Wrapper component that provides shadcn/ui-like API
-export const Tooltip = ({ children, label, ...props }: { children: React.ReactNode; label?: string } & MantineTooltipProps) => {
+export const Tooltip = ({
+  children,
+  label,
+  ...props
+}: { children: React.ReactNode; label?: string } & MantineTooltipProps) => {
   if (label) {
     return (
       <MantineTooltip label={label} {...props}>

@@ -3,11 +3,13 @@ import { resolve } from 'path';
 import { defineConfig } from 'vitest/config';
 
 // Database-specific Vitest configuration
-export const createDatabaseTestConfig = (options: {
-  provider?: 'prisma' | 'firestore' | 'upstash-vector' | 'upstash-redis' | 'all';
-  testDir?: string;
-  timeout?: number;
-} = {}) => {
+export const createDatabaseTestConfig = (
+  options: {
+    provider?: 'prisma' | 'firestore' | 'upstash-vector' | 'upstash-redis' | 'all';
+    testDir?: string;
+    timeout?: number;
+  } = {},
+) => {
   const {
     provider = 'all',
     testDir = '__tests__',
@@ -21,7 +23,7 @@ export const createDatabaseTestConfig = (options: {
       root: process.cwd(),
       teardownTimeout: timeout,
       testTimeout: timeout,
-      
+
       // Environment setup
       env: {
         // Mock database URLs for testing
@@ -53,16 +55,13 @@ export const createDatabaseTestConfig = (options: {
       ],
 
       // Setup files
-      setupFiles: [
-        resolve(__dirname, '../setup/database.ts'),
-      ],
+      setupFiles: [resolve(__dirname, '../setup/database.ts')],
 
       // Global setup/teardown
-      globalSetup: provider !== 'all' ? [
-        resolve(__dirname, `../setup/global-${provider}.ts`),
-      ] : [
-        resolve(__dirname, '../setup/global-database.ts'),
-      ],
+      globalSetup:
+        provider !== 'all'
+          ? [resolve(__dirname, `../setup/global-${provider}.ts`)]
+          : [resolve(__dirname, '../setup/global-database.ts')],
 
       // Reporters
       reporters: ['verbose'],
@@ -78,11 +77,7 @@ export const createDatabaseTestConfig = (options: {
           '**/*.d.ts',
           'coverage/**',
         ],
-        include: [
-          'src/**/*.{js,ts}',
-          'lib/**/*.{js,ts}',
-          '**/*.{js,ts}',
-        ],
+        include: ['src/**/*.{js,ts}', 'lib/**/*.{js,ts}', '**/*.{js,ts}'],
         reporter: ['text', 'json', 'html'],
         thresholds: {
           global: {
@@ -104,7 +99,7 @@ export const createDatabaseTestConfig = (options: {
 
       // Retry configuration
       retry: 2,
-      
+
       // Concurrent settings
       sequence: {
         concurrent: false, // Database tests should run sequentially
@@ -112,11 +107,7 @@ export const createDatabaseTestConfig = (options: {
 
       // Mock options
       deps: {
-        external: [
-          '@upstash/vector',
-          '@upstash/redis',
-          'firebase-admin',
-        ],
+        external: ['@upstash/vector', '@upstash/redis', 'firebase-admin'],
       },
     },
 
@@ -138,32 +129,37 @@ export const createDatabaseTestConfig = (options: {
 };
 
 // Provider-specific configurations
-export const prismaTestConfig = () => createDatabaseTestConfig({
-  provider: 'prisma',
-  testDir: '__tests__/prisma',
-});
+export const prismaTestConfig = () =>
+  createDatabaseTestConfig({
+    provider: 'prisma',
+    testDir: '__tests__/prisma',
+  });
 
-export const firestoreTestConfig = () => createDatabaseTestConfig({
-  provider: 'firestore',
-  testDir: '__tests__/firestore',
-});
+export const firestoreTestConfig = () =>
+  createDatabaseTestConfig({
+    provider: 'firestore',
+    testDir: '__tests__/firestore',
+  });
 
-export const vectorTestConfig = () => createDatabaseTestConfig({
-  provider: 'upstash-vector',
-  testDir: '__tests__/vector',
-});
+export const vectorTestConfig = () =>
+  createDatabaseTestConfig({
+    provider: 'upstash-vector',
+    testDir: '__tests__/vector',
+  });
 
-export const redisTestConfig = () => createDatabaseTestConfig({
-  provider: 'upstash-redis',
-  testDir: '__tests__/redis',
-});
+export const redisTestConfig = () =>
+  createDatabaseTestConfig({
+    provider: 'upstash-redis',
+    testDir: '__tests__/redis',
+  });
 
 // Integration test configuration for all providers
-export const integrationTestConfig = () => createDatabaseTestConfig({
-  provider: 'all',
-  testDir: '__tests__/integration',
-  timeout: 60000, // Longer timeout for integration tests
-});
+export const integrationTestConfig = () =>
+  createDatabaseTestConfig({
+    provider: 'all',
+    testDir: '__tests__/integration',
+    timeout: 60000, // Longer timeout for integration tests
+  });
 
 // Default export
 export default createDatabaseTestConfig();

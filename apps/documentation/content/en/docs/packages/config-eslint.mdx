@@ -1,0 +1,358 @@
+# ESLint Config Package
+
+Modern ESLint 9 flat config system with comprehensive rules for TypeScript, React, Next.js, and
+Node.js applications.
+
+## Overview
+
+The `@repo/eslint-config` package provides opinionated ESLint configurations using the latest flat
+config system. Includes advanced code organization, security scanning, accessibility rules, and
+framework-specific optimizations for consistent code quality across the monorepo.
+
+## Key Features
+
+- **ESLint 9 Flat Config**: Modern configuration system with better performance
+- **Advanced Code Organization**: Auto-sorting imports, objects, interfaces, and JSX props
+- **Security Scanning**: Built-in vulnerability detection with eslint-plugin-security
+- **TypeScript-First**: Comprehensive TypeScript rules with type checking
+- **Framework Support**: Specialized configs for Next.js, React, Remix, and Node.js
+- **Accessibility**: JSX accessibility rules for inclusive applications
+- **Testing Integration**: Rules for Testing Library, Jest DOM, and Cypress
+- **Markdown Linting**: Code block validation in markdown files
+
+## Installation
+
+```bash
+pnpm add @repo/eslint-config
+```
+
+## Available Configurations
+
+### Base Configuration (Default)
+
+For TypeScript packages and general Node.js applications:
+
+```javascript
+import config from '@repo/eslint-config';
+
+export default [...config];
+```
+
+**Features:**
+
+- TypeScript ESLint with type checking
+- Import organization and unused import removal
+- Object/interface property sorting
+- Security vulnerability scanning
+- Promise error handling
+- Markdown file linting
+
+### Next.js Applications
+
+```javascript
+import nextConfig from '@repo/eslint-config/next';
+
+export default [...nextConfig];
+```
+
+**Features:**
+
+- Extends React package config
+- Next.js official plugin rules
+- App Router and Pages Router support
+- Server Component vs Client Component rules
+- React 19 integration with Server Actions
+- Image and font optimization enforcement
+
+### React Packages
+
+```javascript
+import reactConfig from '@repo/eslint-config/react-package';
+
+export default [...reactConfig];
+```
+
+**Features:**
+
+- React and React Hooks rules
+- JSX accessibility (jsx-a11y)
+- Testing Library rules for test files
+- Jest DOM rules for test files
+- Cypress rules for `.cy.js` files
+- React 17+ JSX transform support
+
+### Server Applications
+
+```javascript
+import serverConfig from '@repo/eslint-config/server';
+
+export default [...serverConfig];
+```
+
+**Features:**
+
+- Node.js environment and globals
+- Enhanced TypeScript rules for server code
+- Node.js specific security rules
+- Stricter promise handling
+- Server-side best practices
+
+### Remix Applications
+
+```javascript
+import remixConfig from '@repo/eslint-config/remix';
+
+export default [...remixConfig];
+```
+
+**Features:**
+
+- Fullstack environment (browser + node globals)
+- Remix file conventions
+- Route patterns with default exports
+- Combined server and React rules
+
+### Generic Packages
+
+```javascript
+import packageConfig from '@repo/eslint-config/package';
+
+export default [...packageConfig];
+```
+
+**Features:**
+
+- Base configuration without framework-specific rules
+- Perfect for utility packages and libraries
+
+## Configuration Hierarchy
+
+```
+Base Config
+├── Server Config
+├── React Package Config
+│   └── Next.js Config
+├── Package Config
+└── Remix Config (Server + React Package)
+```
+
+## Key Rules & Features
+
+### Import Organization
+
+```typescript
+// Automatically sorts imports with custom grouping
+import React from 'react'; // External libraries
+import { NextRequest } from 'next'; // Framework imports
+
+import { Button } from '@repo/ui'; // Internal packages
+import { auth } from '@repo/auth';
+
+import { utils } from '../utils'; // Relative imports
+import './styles.css'; // Style imports
+```
+
+### Object & Interface Sorting
+
+```typescript
+// Objects are automatically sorted
+const user = {
+  email: 'user@example.com',
+  id: '123',
+  name: 'John Doe',
+};
+
+// Interface properties are sorted
+interface User {
+  email: string;
+  id: string;
+  name: string;
+}
+```
+
+### JSX Props Ordering
+
+```tsx
+// JSX props are automatically ordered: key, id, ref → callbacks → styling
+<Button
+  key="submit"
+  id="submit-btn"
+  ref={buttonRef}
+  onClick={handleSubmit}
+  onFocus={handleFocus}
+  className="primary"
+  style={{ margin: 10 }}
+>
+  Submit
+</Button>
+```
+
+### TypeScript Type Imports
+
+```typescript
+// Enforces type-only imports where possible
+import type { User } from './types';
+import { validateUser } from './utils';
+```
+
+### Security Scanning
+
+```typescript
+// Detects potential security vulnerabilities
+eval('dangerous code'); // ❌ Flagged by security rules
+new Function('return true'); // ❌ Flagged by security rules
+```
+
+## Plugin Ecosystem
+
+**Included Plugins:**
+
+- `@typescript-eslint` - TypeScript rules and parser
+- `eslint-plugin-perfectionist` - Advanced code organization
+- `eslint-plugin-import` - Import validation and ordering
+- `eslint-plugin-unused-imports` - Auto-remove unused imports
+- `eslint-plugin-react` & `eslint-plugin-react-hooks` - React best practices
+- `eslint-plugin-jsx-a11y` - JSX accessibility rules
+- `eslint-plugin-testing-library` - Testing Library patterns
+- `eslint-plugin-jest-dom` - Jest DOM assertions
+- `eslint-plugin-cypress` - Cypress testing rules
+- `eslint-plugin-security` - Security vulnerability detection
+- `eslint-plugin-promise` - Promise error handling
+- `eslint-plugin-node` - Node.js best practices
+- `@eslint/markdown` - Markdown and code block linting
+
+## Framework-Specific Rules
+
+### Next.js Rules
+
+```typescript
+// Enforced by Next.js config
+export default function Page() {     // ✅ Default export required for pages
+  return (
+    <div>
+      <img src="/logo.png" />         // ❌ Use next/image instead
+      <Image src="/logo.png" />      // ✅ Optimized images
+    </div>
+  );
+}
+```
+
+### React Rules
+
+```tsx
+// Enforced by React config
+function Component() {
+  return (
+    <>
+      {' '}
+      // ✅ Fragment syntax
+      <div /> // ✅ Self-closing tags
+    </>
+  );
+}
+```
+
+### Accessibility Rules
+
+```tsx
+// Enforced by jsx-a11y
+<img src="photo.jpg" alt="Description" />  // ✅ Alt text required
+<button onClick={handler}>Click me</button> // ✅ Accessible button
+<div role="button" tabIndex={0}>Click</div> // ✅ Proper ARIA attributes
+```
+
+## Custom Configuration
+
+### Extending Configurations
+
+```javascript
+import nextConfig from '@repo/eslint-config/next';
+
+export default [
+  ...nextConfig,
+  {
+    // Your custom rules
+    rules: {
+      'no-console': 'warn',
+      '@typescript-eslint/no-unused-vars': 'error',
+    },
+  },
+];
+```
+
+### File-Specific Overrides
+
+```javascript
+import config from '@repo/eslint-config';
+
+export default [
+  ...config,
+  {
+    files: ['**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+];
+```
+
+## Integration with IDEs
+
+### VS Code Settings
+
+```json
+{
+  "eslint.experimental.useFlatConfig": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  },
+  "editor.formatOnSave": true
+}
+```
+
+### Prettier Integration
+
+The configs are designed to work seamlessly with Prettier. All formatting rules are disabled in
+favor of Prettier, focusing ESLint on code quality and best practices.
+
+## Performance Optimizations
+
+- **Flat Config**: Faster parsing and resolution
+- **Plugin Caching**: Shared plugin instances across configs
+- **Selective Rules**: Only includes relevant rules for each context
+- **Type Checking**: Optimized TypeScript parser settings
+
+## Migration from Legacy ESLint
+
+```javascript
+// Old (.eslintrc.js)
+module.exports = {
+  extends: ['@repo/eslint-config/next'],
+};
+
+// New (eslint.config.js)
+import nextConfig from '@repo/eslint-config/next';
+export default [...nextConfig];
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Type checking errors**: Ensure `tsconfig.json` is properly configured
+2. **Import resolution**: Check that `baseUrl` and `paths` are set correctly
+3. **Performance**: Large projects may need `ESLINT_USE_FLAT_CONFIG=true`
+
+### Debug Mode
+
+```bash
+# Debug ESLint configuration
+npx eslint --print-config src/index.ts
+
+# Check which rules are applied
+npx eslint --debug src/index.ts
+```
+
+The ESLint config package provides a robust foundation for maintaining code quality across all
+applications and packages in the monorepo, with specialized rules for each development context.

@@ -37,7 +37,7 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
     if (!data.id) {
       throw new Error('Data must have an "id" field for Redis storage');
     }
-    
+
     const key = `${collection}:${data.id}`;
     await this.client.set(key, JSON.stringify(data));
     return data as T;
@@ -51,17 +51,17 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
    */
   async update<T>(collection: string, id: string, data: any): Promise<T> {
     const key = `${collection}:${id}`;
-    
+
     // Get existing data and merge with updates
     const existing = await this.client.get(key);
     let existingData = {};
-    
+
     if (existing && typeof existing === 'string') {
       existingData = JSON.parse(existing);
     } else if (existing && typeof existing === 'object') {
       existingData = existing;
     }
-    
+
     const updatedData = { ...existingData, ...data, id };
     await this.client.set(key, JSON.stringify(updatedData));
     return updatedData as T;
@@ -74,17 +74,17 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
    */
   async delete<T>(collection: string, id: string): Promise<T> {
     const key = `${collection}:${id}`;
-    
+
     // Get the data before deletion
     const existing = await this.client.get(key);
     let existingData = null;
-    
+
     if (existing && typeof existing === 'string') {
       existingData = JSON.parse(existing);
     } else if (existing && typeof existing === 'object') {
       existingData = existing;
     }
-    
+
     await this.client.del(key);
     return existingData as T;
   }
@@ -97,13 +97,13 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
   async findUnique<T>(collection: string, query: { id: string }): Promise<T | null> {
     const key = `${collection}:${query.id}`;
     const result = await this.client.get(key);
-    
+
     if (!result) return null;
-    
+
     if (typeof result === 'string') {
       return JSON.parse(result) as T;
     }
-    
+
     return result as T;
   }
 
@@ -112,25 +112,28 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
    * @param collection - Used as key prefix
    * @param query - Query parameters (supports pattern matching)
    */
-  async findMany<T>(collection: string, query?: {
-    pattern?: string;
-    limit?: number;
-    cursor?: string;
-  }): Promise<T[]> {
+  async findMany<T>(
+    collection: string,
+    query?: {
+      pattern?: string;
+      limit?: number;
+      cursor?: string;
+    },
+  ): Promise<T[]> {
     const pattern = query?.pattern || `${collection}:*`;
     const limit = query?.limit || 100;
-    
+
     // Use SCAN to find keys matching pattern
     const keys = await this.scanKeys(pattern, limit);
-    
+
     if (keys.length === 0) return [];
-    
+
     // Get all values for found keys
     const values = await this.client.mget(...keys);
-    
+
     return values
-      .filter(value => value !== null)
-      .map(value => {
+      .filter((value) => value !== null)
+      .map((value) => {
         if (typeof value === 'string') {
           return JSON.parse(value);
         }
@@ -156,11 +159,11 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
    */
   async raw<T = any>(operation: string, params: any): Promise<T> {
     const client = this.client as any;
-    
+
     if (typeof client[operation] === 'function') {
       return await client[operation](...(Array.isArray(params) ? params : [params]));
     }
-    
+
     throw new Error(`Operation '${operation}' not supported on Upstash Redis client`);
   }
 
@@ -168,19 +171,19 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
   private async scanKeys(pattern: string, limit = 1000): Promise<string[]> {
     const keys: string[] = [];
     let cursor = 0;
-    
+
     do {
       const result = await this.client.scan(cursor, {
         count: Math.min(limit, 100), // Redis SCAN count hint
-        match: pattern
+        match: pattern,
       });
-      
+
       cursor = Number(result[0]);
       keys.push(...result[1]);
-      
+
       if (keys.length >= limit) break;
     } while (cursor !== 0);
-    
+
     return keys.slice(0, limit);
   }
 
@@ -193,7 +196,7 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
     collection: string,
     id: string,
     data: any,
-    expirationSeconds: number
+    expirationSeconds: number,
   ): Promise<T> {
     const key = `${collection}:${id}`;
     await this.client.set(key, JSON.stringify(data), { ex: expirationSeconds });
@@ -204,10 +207,10 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
    * Get multiple records by IDs
    */
   async getMultiple<T>(collection: string, ids: string[]): Promise<(T | null)[]> {
-    const keys = ids.map(id => `${collection}:${id}`);
+    const keys = ids.map((id) => `${collection}:${id}`);
     const values = await this.client.mget(...keys);
-    
-    return values.map(value => {
+
+    return values.map((value) => {
       if (!value) return null;
       if (typeof value === 'string') {
         return JSON.parse(value);
@@ -219,14 +222,17 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
   /**
    * Set multiple key-value pairs
    */
-  async setMultiple<T>(collection: string, records: { id: string; [key: string]: any }[]): Promise<T[]> {
+  async setMultiple<T>(
+    collection: string,
+    records: { id: string; [key: string]: any }[],
+  ): Promise<T[]> {
     const pipeline = this.client.pipeline();
-    
-    records.forEach(record => {
+
+    records.forEach((record) => {
       const key = `${collection}:${record.id}`;
       pipeline.set(key, JSON.stringify(record));
     });
-    
+
     await pipeline.exec();
     return records as T[];
   }
@@ -235,19 +241,19 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
    * Delete multiple records by IDs
    */
   async deleteMultiple<T>(collection: string, ids: string[]): Promise<T[]> {
-    const keys = ids.map(id => `${collection}:${id}`);
-    
+    const keys = ids.map((id) => `${collection}:${id}`);
+
     // Get existing data before deletion
     const existingValues = await this.client.mget(...keys);
-    
+
     // Delete the keys
     if (keys.length > 0) {
       await this.client.del(...keys);
     }
-    
+
     return existingValues
-      .filter(value => value !== null)
-      .map(value => {
+      .filter((value) => value !== null)
+      .map((value) => {
         if (typeof value === 'string') {
           return JSON.parse(value);
         }
@@ -300,28 +306,28 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
   // List operations
   async listPush<T>(collection: string, id: string, ...values: T[]): Promise<number> {
     const key = `${collection}:${id}`;
-    const stringValues = values.map(v => JSON.stringify(v));
+    const stringValues = values.map((v) => JSON.stringify(v));
     return await this.client.lpush(key, ...stringValues);
   }
 
   async listPop<T>(collection: string, id: string): Promise<T | null> {
     const key = `${collection}:${id}`;
     const result = await this.client.lpop(key);
-    
+
     if (!result) return null;
-    
+
     if (typeof result === 'string') {
       return JSON.parse(result);
     }
-    
+
     return result as T;
   }
 
   async listRange<T>(collection: string, id: string, start = 0, end = -1): Promise<T[]> {
     const key = `${collection}:${id}`;
     const values = await this.client.lrange(key, start, end);
-    
-    return values.map(value => {
+
+    return values.map((value) => {
       if (typeof value === 'string') {
         return JSON.parse(value);
       }
@@ -337,21 +343,21 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
   // Set operations
   async setAdd<T>(collection: string, id: string, ...members: T[]): Promise<number> {
     const key = `${collection}:${id}`;
-    const stringMembers = members.map(m => JSON.stringify(m));
+    const stringMembers = members.map((m) => JSON.stringify(m));
     return await this.client.sadd(key, stringMembers);
   }
 
   async setRemove<T>(collection: string, id: string, ...members: T[]): Promise<number> {
     const key = `${collection}:${id}`;
-    const stringMembers = members.map(m => JSON.stringify(m));
+    const stringMembers = members.map((m) => JSON.stringify(m));
     return await this.client.srem(key, stringMembers);
   }
 
   async setMembers<T>(collection: string, id: string): Promise<T[]> {
     const key = `${collection}:${id}`;
     const values = await this.client.smembers(key);
-    
-    return values.map(value => {
+
+    return values.map((value) => {
       if (typeof value === 'string') {
         return JSON.parse(value);
       }
@@ -374,22 +380,22 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
   async hashGet<T>(collection: string, id: string, field: string): Promise<T | null> {
     const key = `${collection}:${id}`;
     const result = await this.client.hget(key, field);
-    
+
     if (!result) return null;
-    
+
     if (typeof result === 'string') {
       return JSON.parse(result);
     }
-    
+
     return result as T;
   }
 
   async hashGetAll<T>(collection: string, id: string): Promise<Record<string, T>> {
     const key = `${collection}:${id}`;
     const result = await this.client.hgetall(key);
-    
+
     const parsed: Record<string, T> = {};
-    
+
     for (const [field, value] of Object.entries(result || {})) {
       if (typeof value === 'string') {
         parsed[field] = JSON.parse(value);
@@ -397,7 +403,7 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
         parsed[field] = value as T;
       }
     }
-    
+
     return parsed;
   }
 
@@ -413,11 +419,25 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
     ...members: { score: number; member: any }[]
   ): Promise<number> {
     const key = `${collection}:${id}`;
-    const formattedMembers = members.map(m => ({
-      member: JSON.stringify(m.member),
-      score: m.score
-    }));
-    return await this.client.zadd(key, formattedMembers) as number;
+    if (members.length === 0) return 0;
+
+    // Use the first member to call zadd with the correct signature
+    const first = members[0];
+    const rest = members.slice(1);
+
+    if (rest.length === 0) {
+      return (await this.client.zadd(key, {
+        score: first.score,
+        member: JSON.stringify(first.member),
+      })) as number;
+    }
+
+    // For multiple members, use the array approach
+    return (await this.client.zadd(
+      key,
+      { score: first.score, member: JSON.stringify(first.member) },
+      ...rest.map((m) => ({ score: m.score, member: JSON.stringify(m.member) })),
+    )) as number;
   }
 
   async sortedSetRange<T>(
@@ -425,20 +445,25 @@ export class UpstashRedisAdapter implements RedisDatabaseAdapter {
     id: string,
     start: number,
     end: number,
-    withScores = false
+    withScores?: boolean,
   ): Promise<T[] | { member: T; score: number }[]> {
     const key = `${collection}:${id}`;
-    const result = await this.client.zrange(key, start, end, withScores ? { withScores: true } : undefined);
-    
-    if (withScores) {
+    const result = await this.client.zrange(
+      key,
+      start,
+      end,
+      withScores ? { withScores: true } : undefined,
+    );
+
+    if (withScores === true) {
       const pairs = result as { member: string; score: number }[];
-      return pairs.map(pair => ({
+      return pairs.map((pair) => ({
         member: JSON.parse(pair.member) as T,
-        score: pair.score
+        score: pair.score,
       }));
     } else {
       const members = result as string[];
-      return members.map(member => JSON.parse(member)) as T[];
+      return members.map((member) => JSON.parse(member) as T);
     }
   }
 

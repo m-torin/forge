@@ -102,9 +102,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
               </Button>
             </Link>
             <Link href="/demo" locale={locale}>
-              <Button variant="light">
-                View Demo
-              </Button>
+              <Button variant="light">View Demo</Button>
             </Link>
           </div>
         </Stack>

@@ -66,14 +66,14 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
 
       // Create a queue to hold events until analytics.js loads
       const analytics = ((window as any).analytics = (window as any).analytics || []);
-      
+
       if (!analytics.initialize) {
         if (analytics.invoked) {
           console.error('[Segment] Analytics.js snippet included twice.');
           resolve();
           return;
         }
-        
+
         analytics.invoked = true;
         analytics.methods = [
           'trackSubmit',
@@ -98,7 +98,7 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
           'setAnonymousId',
           'addDestinationMiddleware',
         ];
-        
+
         analytics.factory = function (method: string) {
           return function (...args: any[]) {
             args.unshift(method);
@@ -127,7 +127,7 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
 
         analytics.SNIPPET_VERSION = '4.13.1';
         analytics.load((this.config as SegmentConfig).writeKey);
-        
+
         this.analytics = analytics;
         resolve();
       }
@@ -136,7 +136,7 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
 
   async identify(message: IdentifyMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[Segment] Identify:', enrichedMessage);
     }
@@ -144,22 +144,18 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
     if (this.isNode && this.analytics) {
       this.analytics.identify(enrichedMessage);
     } else if (!this.isNode && this.analytics) {
-      this.analytics.identify(
-        enrichedMessage.userId,
-        enrichedMessage.traits,
-        {
-          context: enrichedMessage.context,
-          integrations: enrichedMessage.integrations,
-          timestamp: enrichedMessage.timestamp,
-        }
-      );
+      this.analytics.identify(enrichedMessage.userId, enrichedMessage.traits, {
+        context: enrichedMessage.context,
+        integrations: enrichedMessage.integrations,
+        timestamp: enrichedMessage.timestamp,
+      });
     }
   }
 
   async track(message: TrackMessage): Promise<void> {
     this.validateUserIdentity(message);
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[Segment] Track:', enrichedMessage);
     }
@@ -167,21 +163,17 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
     if (this.isNode && this.analytics) {
       this.analytics.track(enrichedMessage);
     } else if (!this.isNode && this.analytics) {
-      this.analytics.track(
-        enrichedMessage.event,
-        enrichedMessage.properties,
-        {
-          context: enrichedMessage.context,
-          integrations: enrichedMessage.integrations,
-          timestamp: enrichedMessage.timestamp,
-        }
-      );
+      this.analytics.track(enrichedMessage.event, enrichedMessage.properties, {
+        context: enrichedMessage.context,
+        integrations: enrichedMessage.integrations,
+        timestamp: enrichedMessage.timestamp,
+      });
     }
   }
 
   async page(message: PageMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[Segment] Page:', enrichedMessage);
     }
@@ -197,14 +189,14 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
           context: enrichedMessage.context,
           integrations: enrichedMessage.integrations,
           timestamp: enrichedMessage.timestamp,
-        }
+        },
       );
     }
   }
 
   async screen(message: ScreenMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[Segment] Screen:', enrichedMessage);
     }
@@ -220,7 +212,7 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
           context: enrichedMessage.context,
           integrations: enrichedMessage.integrations,
           timestamp: enrichedMessage.timestamp,
-        }
+        },
       );
     }
   }
@@ -228,7 +220,7 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
   async group(message: GroupMessage): Promise<void> {
     this.validateUserIdentity(message);
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[Segment] Group:', enrichedMessage);
     }
@@ -236,21 +228,17 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
     if (this.isNode && this.analytics) {
       this.analytics.group(enrichedMessage);
     } else if (!this.isNode && this.analytics) {
-      this.analytics.group(
-        enrichedMessage.groupId,
-        enrichedMessage.traits,
-        {
-          context: enrichedMessage.context,
-          integrations: enrichedMessage.integrations,
-          timestamp: enrichedMessage.timestamp,
-        }
-      );
+      this.analytics.group(enrichedMessage.groupId, enrichedMessage.traits, {
+        context: enrichedMessage.context,
+        integrations: enrichedMessage.integrations,
+        timestamp: enrichedMessage.timestamp,
+      });
     }
   }
 
   async alias(message: AliasMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[Segment] Alias:', enrichedMessage);
     }
@@ -258,15 +246,11 @@ export class SegmentEmitter extends BaseAnalyticsEmitter {
     if (this.isNode && this.analytics) {
       this.analytics.alias(enrichedMessage);
     } else if (!this.isNode && this.analytics) {
-      this.analytics.alias(
-        enrichedMessage.userId,
-        enrichedMessage.previousId,
-        {
-          context: enrichedMessage.context,
-          integrations: enrichedMessage.integrations,
-          timestamp: enrichedMessage.timestamp,
-        }
-      );
+      this.analytics.alias(enrichedMessage.userId, enrichedMessage.previousId, {
+        context: enrichedMessage.context,
+        integrations: enrichedMessage.integrations,
+        timestamp: enrichedMessage.timestamp,
+      });
     }
   }
 

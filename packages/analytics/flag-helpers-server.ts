@@ -1,13 +1,7 @@
 import { flags } from './flags-server';
 import { FLAGS } from './types/flags';
 
-import type { 
-  AIFlags, 
-  AnalyticsFlags, 
-  AuthFlags, 
-  PaymentFlags, 
-  UIFlags 
-} from './types/flags';
+import type { AIFlags, AnalyticsFlags, AuthFlags, PaymentFlags, UIFlags } from './types/flags';
 
 /**
  * Server-safe helper functions to get typed flag groups
@@ -15,29 +9,38 @@ import type {
  */
 
 export async function getAnalyticsFlags(userId?: string): Promise<AnalyticsFlags> {
-  const [enabled, segmentEnabled, posthogEnabled, googleEnabled, debug, productionOnly, consentRequired] = await Promise.all([
-    flags([FLAGS.analytics.enabled], userId).then(r => r[FLAGS.analytics.enabled]),
-    flags([FLAGS.analytics.segment], userId).then(r => r[FLAGS.analytics.segment]),
-    flags([FLAGS.analytics.posthog], userId).then(r => r[FLAGS.analytics.posthog]),
-    flags([FLAGS.analytics.google], userId).then(r => r[FLAGS.analytics.google]),
-    flags([FLAGS.analytics.debug], userId).then(r => r[FLAGS.analytics.debug]),
-    flags(['analytics.production-only'], userId).then(r => r['analytics.production-only']),
-    flags(['analytics.consent-required'], userId).then(r => r['analytics.consent-required']),
+  const [
+    enabled,
+    segmentEnabled,
+    posthogEnabled,
+    googleEnabled,
+    debug,
+    productionOnly,
+    consentRequired,
+  ] = await Promise.all([
+    flags([FLAGS.analytics.enabled], userId).then((r) => r[FLAGS.analytics.enabled]),
+    flags([FLAGS.analytics.segment], userId).then((r) => r[FLAGS.analytics.segment]),
+    flags([FLAGS.analytics.posthog], userId).then((r) => r[FLAGS.analytics.posthog]),
+    flags([FLAGS.analytics.google], userId).then((r) => r[FLAGS.analytics.google]),
+    flags([FLAGS.analytics.debug], userId).then((r) => r[FLAGS.analytics.debug]),
+    flags(['analytics.production-only'], userId).then((r) => r['analytics.production-only']),
+    flags(['analytics.consent-required'], userId).then((r) => r['analytics.consent-required']),
   ]);
-  
-  return { 
-    consentRequired, 
-    debug, 
-    enabled, 
-    googleEnabled, 
-    posthogEnabled, 
-    productionOnly, 
-    segmentEnabled 
+
+  return {
+    consentRequired,
+    debug,
+    enabled,
+    googleEnabled,
+    posthogEnabled,
+    productionOnly,
+    segmentEnabled,
   };
 }
 
 export async function getAuthFlags(userId?: string): Promise<AuthFlags> {
   const flagKeys = [
+    FLAGS.auth.emailPassword,
     FLAGS.auth.magicLink,
     'auth.passkey.enabled',
     FLAGS.auth.oauth.google,
@@ -52,10 +55,11 @@ export async function getAuthFlags(userId?: string): Promise<AuthFlags> {
   ];
 
   const results = await flags(flagKeys, userId);
-  
+
   return {
     apiKeysEnabled: results[FLAGS.auth.apiKeys] ?? false,
     discordOAuthEnabled: results[FLAGS.auth.oauth.discord] ?? false,
+    emailPasswordEnabled: results[FLAGS.auth.emailPassword] ?? false,
     githubOAuthEnabled: results[FLAGS.auth.oauth.github] ?? false,
     googleOAuthEnabled: results[FLAGS.auth.oauth.google] ?? false,
     impersonationEnabled: results['auth.impersonation.enabled'] ?? false,
@@ -81,7 +85,7 @@ export async function getPaymentFlags(userId?: string): Promise<PaymentFlags> {
   ];
 
   const results = await flags(flagKeys, userId);
-  
+
   return {
     creditsEnabled: results['payments.credits.enabled'] ?? false,
     invoicesEnabled: results['payments.invoices.enabled'] ?? false,
@@ -107,7 +111,7 @@ export async function getAIFlags(userId?: string): Promise<AIFlags> {
   ];
 
   const results = await flags(flagKeys, userId);
-  
+
   return {
     anthropicEnabled: results[FLAGS.ai.anthropic] ?? false,
     chatEnabled: results[FLAGS.ai.chat] ?? false,
@@ -132,7 +136,7 @@ export async function getUIFlags(userId?: string): Promise<UIFlags> {
   ];
 
   const results = await flags(flagKeys, userId);
-  
+
   return {
     advancedTables: results['ui.advanced-tables'] ?? false,
     animationsEnabled: results[FLAGS.ui.animations] ?? false,

@@ -5,7 +5,7 @@ import { prisma as database } from '@repo/database/prisma';
 export const getCurrentOrganization = async (userId: string) => {
   // Better Auth stores active organization differently
   // We need to find the active member for the user
-  const activeMember = await database.member.findFirst({
+  const activeMember = await (database as any).member.findFirst({
     include: {
       organization: true,
     },

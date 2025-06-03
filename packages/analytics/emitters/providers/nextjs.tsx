@@ -55,17 +55,17 @@ export function AnalyticsProvider({
 
   // Initialize analytics instance once all scripts are loaded
   useEffect(() => {
-    const allScriptsLoaded = Object.values(scriptsLoadedRef.current).every(loaded => loaded);
-    
+    const allScriptsLoaded = Object.values(scriptsLoadedRef.current).every((loaded) => loaded);
+
     if (allScriptsLoaded && !analyticsRef.current) {
       const providers: AnalyticsProviders = {};
-      
+
       if (segment) {
         providers.segment = {
           writeKey: segment.writeKey,
         };
       }
-      
+
       if (posthog) {
         providers.posthog = {
           apiKey: posthog.apiKey,
@@ -74,28 +74,28 @@ export function AnalyticsProvider({
           },
         };
       }
-      
+
       if (googleAnalytics) {
         providers.googleAnalytics = {
           measurementId: googleAnalytics.measurementId,
         };
       }
-      
+
       analyticsRef.current = new Analytics({
         providers,
         debug,
         disabled,
       });
-      
+
       setIsLoaded(true);
     }
   }, [segment, posthog, googleAnalytics, debug, disabled]);
 
   const handleScriptLoad = (provider: keyof typeof scriptsLoadedRef.current) => {
     scriptsLoadedRef.current[provider] = true;
-    
+
     // Check if all scripts are loaded
-    const allLoaded = Object.values(scriptsLoadedRef.current).every(loaded => loaded);
+    const allLoaded = Object.values(scriptsLoadedRef.current).every((loaded) => loaded);
     if (allLoaded) {
       // Re-run the effect to initialize analytics
       setIsLoaded(false);
@@ -161,10 +161,10 @@ export function AnalyticsProvider({
         </>
       )}
 
-      <AnalyticsContext.Provider 
-        value={{ 
-          analytics: analyticsRef.current, 
-          isLoaded 
+      <AnalyticsContext.Provider
+        value={{
+          analytics: analyticsRef.current,
+          isLoaded,
         }}
       >
         {children}
@@ -188,16 +188,16 @@ export function useAnalytics() {
  * Higher-order component for pages that need analytics
  */
 export function withAnalytics<P extends object>(
-  Component: React.ComponentType<P & { analytics: Analytics }>
+  Component: React.ComponentType<P & { analytics: Analytics }>,
 ) {
   return function WithAnalyticsComponent(props: P) {
     const { analytics } = useAnalytics();
-    
+
     if (!analytics) {
       // Return component without analytics while loading
       return <Component {...props} analytics={null as any} />;
     }
-    
+
     return <Component {...props} analytics={analytics} />;
   };
 }

@@ -1,0 +1,470 @@
+# Database Package
+
+Multi-provider database abstraction layer with Prisma ORM, Redis, Firestore, and vector database
+support.
+
+## Overview
+
+The database package provides a comprehensive database infrastructure with multiple provider
+support. Features Prisma ORM with PostgreSQL as the primary database, plus adapter patterns for
+Redis, Firestore, and Upstash Vector databases for specialized use cases.
+
+## Key Features
+
+- **Prisma ORM with PostgreSQL**: Primary database with comprehensive schema for auth, PIM, and
+  workflows
+- **Better Auth Integration**: Complete user management, organizations, API keys, and sessions
+- **Product Information Management**: Barcode scanning, product catalogs, and asset management
+- **Workflow Orchestration**: Workflow configuration, execution tracking, and scheduling
+- **Vector Database**: Upstash Vector for AI/ML similarity search and embeddings
+- **Redis Cache**: Upstash Redis for caching, rate limiting, and real-time data
+- **Firestore Support**: NoSQL document database adapter for flexible data models
+- **Type Safety**: Full TypeScript integration across all providers
+- **Environment Management**: Doppler integration with local development fallbacks
+
+## Installation
+
+```bash
+pnpm add @repo/database
+```
+
+## Environment Variables
+
+```bash
+# Primary Database (Prisma + PostgreSQL)
+DATABASE_URL=postgresql://username:password@host:port/database
+
+# Upstash Redis
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+
+# Upstash Vector Database
+UPSTASH_VECTOR_REST_URL=https://...
+UPSTASH_VECTOR_REST_TOKEN=...
+
+# Firebase/Firestore (Optional)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account@project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+## Database Providers
+
+### Prisma (PostgreSQL) - Primary Database
+
+```typescript
+import { prisma } from '@repo/database/prisma';
+
+// User management with Better Auth integration
+const users = await prisma.user.findMany({
+  include: {
+    organizations: true,
+    apiKeys: true,
+    sessions: true,
+  },
+});
+
+// Organization and member management
+const org = await prisma.organization.create({
+  data: {
+    name: 'Acme Corp',
+    slug: 'acme-corp',
+    members: {
+      create: {
+        userId: userId,
+        role: 'owner',
+      },
+    },
+  },
+});
+
+// Product Information Management
+const product = await prisma.product.create({
+  data: {
+    title: 'iPhone 15 Pro',
+    description: 'Latest smartphone',
+    price: 999.99,
+    barcodes: {
+      create: {
+        barcode: '1234567890123',
+        format: 'UPC_A',
+      },
+    },
+    assets: {
+      create: {
+        url: 'https://example.com/image.jpg',
+        type: 'image',
+      },
+    },
+  },
+});
+```
+
+### Schema Highlights
+
+**Auth & Organizations:**
+
+- User accounts with Better Auth integration
+- Multi-tenant organizations with teams
+- API key management with permissions
+- Session management and 2FA support
+- Password reset and email verification
+
+**Product Information Management:**
+
+- Product catalog with variants and pricing
+- Barcode scanning and management (UPC, EAN, etc.)
+- Product assets (images, documents, videos)
+- Scan history and analytics
+- Inventory tracking
+
+**Workflow Management:**
+
+- Workflow configuration and templates
+- Execution tracking with status and results
+- Scheduled workflow runs
+- Error handling and retry logic
+
+### Redis (Upstash) - Caching & Real-time
+
+```typescript
+import { redis } from '@repo/database/redis';
+
+// Basic key-value operations
+await redis.set('user:123', { name: 'John', email: 'john@example.com' });
+const user = await redis.get('user:123');
+
+// Lists and queues
+await redis.lpush('notifications', 'New message');
+const notification = await redis.rpop('notifications');
+
+// Sets for unique collections
+await redis.sadd('active_users', 'user:123');
+const activeUsers = await redis.smembers('active_users');
+
+// Sorted sets for rankings/leaderboards
+await redis.zadd('leaderboard', 100, 'user:123');
+const topUsers = await redis.zrange('leaderboard', 0, 9, 'WITHSCORES');
+
+// Hash operations for complex objects
+await redis.hset('session:abc', {
+  userId: '123',
+  expires: Date.now() + 3600000,
+  data: JSON.stringify({ preferences: {} }),
+});
+
+// Expiration and TTL
+await redis.expire('temp:data', 3600); // 1 hour
+const ttl = await redis.ttl('temp:data');
+
+// Atomic operations
+await redis.incr('page_views');
+await redis.decr('inventory:item123');
+```
+
+### Vector Database (Upstash) - AI/ML
+
+```typescript
+import { upstash } from '@repo/database/upstash';
+
+// Dense vector operations for similarity search
+const vector = [0.1, 0.2, 0.3, ...]; // 1536 dimensions for OpenAI embeddings
+
+await upstash.upsert({
+  id: 'product-123',
+  vector: vector,
+  metadata: {
+    title: 'iPhone 15 Pro',
+    category: 'electronics',
+    price: 999.99,
+  },
+});
+
+// Similarity search
+const results = await upstash.query({
+  vector: queryVector,
+  topK: 10,
+  includeMetadata: true,
+  filter: {
+    category: { $eq: 'electronics' },
+    price: { $lte: 1000 },
+  },
+});
+
+// Text embedding with built-in models
+const embedding = await upstash.embed('Search for smartphones under $1000');
+
+// Hybrid vector operations (dense + sparse)
+await upstash.upsert({
+  id: 'doc-456',
+  vector: denseVector,
+  sparseVector: {
+    indices: [1, 5, 10],
+    values: [0.8, 0.6, 0.9],
+  },
+  metadata: { type: 'document' },
+});
+
+// Namespace support for data partitioning
+await upstash.upsert({
+  id: 'user-embedding',
+  vector: userVector,
+  namespace: 'user-profiles',
+});
+
+// Batch operations
+await upstash.upsertMany([
+  { id: 'item1', vector: vector1, metadata: meta1 },
+  { id: 'item2', vector: vector2, metadata: meta2 },
+]);
+
+// Index statistics
+const stats = await upstash.describe();
+console.log(`Index has ${stats.vectorCount} vectors`);
+```
+
+### Firestore - NoSQL Documents
+
+```typescript
+import { firestore } from '@repo/database/firestore';
+
+// Document operations
+await firestore.create('users', 'user123', {
+  name: 'John Doe',
+  email: 'john@example.com',
+  preferences: {
+    theme: 'dark',
+    notifications: true,
+  },
+});
+
+const user = await firestore.findById('users', 'user123');
+
+// Query operations
+const activeUsers = await firestore.findMany('users', {
+  where: { active: true },
+  orderBy: [{ field: 'createdAt', direction: 'desc' }],
+  limit: 50,
+});
+
+// Transactions
+await firestore.transaction(async (tx) => {
+  const user = await tx.findById('users', 'user123');
+  await tx.update('users', 'user123', {
+    loginCount: (user.loginCount || 0) + 1,
+    lastLogin: new Date(),
+  });
+});
+
+// Batch operations
+const batch = firestore.batch();
+batch.create('posts', 'post1', postData1);
+batch.create('posts', 'post2', postData2);
+await batch.commit();
+```
+
+## Database Management
+
+### Prisma Operations
+
+```bash
+# Run migrations (with Doppler)
+pnpm migrate
+
+# Run migrations (local development)
+pnpm migrate:local
+
+# Generate Prisma client
+pnpm --filter @repo/database generate
+
+# Push schema changes (development only)
+pnpm --filter @repo/database db:push
+
+# Open Prisma Studio
+pnpm studio
+```
+
+### Database Seeding
+
+```bash
+# Seed with sample data (uses Doppler)
+pnpm --filter @repo/database seed
+
+# Seed with local environment
+pnpm --filter @repo/database seed:local
+
+# Create admin users
+pnpm --filter @repo/database create-users
+```
+
+### Development Scripts
+
+```typescript
+// Create organizations and admin users
+import { prisma } from '@repo/database/prisma';
+
+// Seed script creates:
+// - Default organization with admin user
+// - Sample products with barcodes
+// - Workflow configurations
+// - Test data for development
+
+async function seed() {
+  // Create admin organization
+  const org = await prisma.organization.create({
+    data: {
+      name: 'Admin Organization',
+      slug: 'admin-org',
+      members: {
+        create: {
+          user: {
+            create: {
+              email: 'admin@example.com',
+              name: 'Admin User',
+              emailVerified: new Date(),
+            },
+          },
+          role: 'owner',
+        },
+      },
+    },
+  });
+
+  // Create sample products
+  await prisma.product.createMany({
+    data: products.map((p) => ({
+      title: p.title,
+      description: p.description,
+      price: p.price,
+      organizationId: org.id,
+    })),
+  });
+}
+```
+
+## Adapter Pattern Usage
+
+Each database provider implements a common adapter interface:
+
+```typescript
+// Database adapters for consistent interfaces
+import { createPrismaAdapter } from '@repo/database/prisma';
+import { createRedisAdapter } from '@repo/database/redis';
+import { createFirestoreAdapter } from '@repo/database/firestore';
+import { createUpstashAdapter } from '@repo/database/upstash';
+
+// Use adapters for provider abstraction
+const adapter = createPrismaAdapter();
+const items = await adapter.findMany('user', { where: { active: true } });
+```
+
+## Advanced Features
+
+### Prisma Accelerate Integration
+
+```typescript
+// Global caching and connection pooling
+const users = await prisma.user.findMany({
+  cacheStrategy: {
+    ttl: 60, // Cache for 60 seconds
+    tags: ['users'],
+  },
+});
+
+// Invalidate cache
+await prisma.$accelerate.invalidate({ tags: ['users'] });
+```
+
+### Better Auth Database Integration
+
+```typescript
+// The database schema is designed for Better Auth
+// Automatic user and session management
+import { auth } from '@repo/auth/server';
+
+const session = await auth.api.getSession();
+// Automatically uses the Prisma database for:
+// - User accounts and profiles
+// - Session management
+// - Organization membership
+// - API key validation
+```
+
+### Workflow Database Integration
+
+```typescript
+// Workflow execution tracking
+const workflow = await prisma.workflowExecution.create({
+  data: {
+    configId: 'workflow-config-id',
+    status: 'running',
+    input: { productId: '123' },
+    organizationId: org.id,
+  },
+});
+
+// Update execution status
+await prisma.workflowExecution.update({
+  where: { id: workflow.id },
+  data: {
+    status: 'completed',
+    output: { result: 'success' },
+    endedAt: new Date(),
+  },
+});
+```
+
+## Type Safety
+
+All database operations are fully type-safe:
+
+```typescript
+// Generated Prisma types
+import type { User, Organization, Product } from '@prisma/client';
+
+// Type-safe queries with IntelliSense
+const userWithOrgs: User & {
+  organizations: Organization[];
+} = await prisma.user.findFirst({
+  include: {
+    organizations: true,
+  },
+});
+
+// Custom types for database adapters
+import type {
+  DatabaseAdapter,
+  VectorDatabaseAdapter,
+  RedisDatabaseAdapter,
+} from '@repo/database/types';
+```
+
+## Error Handling
+
+```typescript
+import { Prisma } from '@prisma/client';
+
+try {
+  await prisma.user.create({ data: userData });
+} catch (error) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2002') {
+      // Unique constraint violation
+      throw new Error('User with this email already exists');
+    }
+  }
+  throw error;
+}
+```
+
+## Performance Optimization
+
+- **Connection Pooling**: Prisma connection pool optimization
+- **Query Optimization**: Proper indexing and relation loading
+- **Caching**: Redis for frequently accessed data
+- **Vector Search**: Optimized similarity queries with metadata filtering
+- **Batch Operations**: Bulk inserts and updates for better performance
+
+The database package provides a robust, multi-provider foundation for all data storage needs in the
+Forge platform, with specialized support for authentication, product management, AI/ML workloads,
+and real-time applications.

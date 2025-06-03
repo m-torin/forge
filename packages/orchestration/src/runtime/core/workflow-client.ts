@@ -23,9 +23,16 @@ export class WorkflowClient {
 
   constructor(options: { token?: string; baseUrl?: string } = {}) {
     const baseUrl = options.baseUrl || process.env.QSTASH_URL;
+    const token = options.token || process.env.QSTASH_TOKEN;
+
+    // Handle missing environment variables gracefully during build
+    if (!token) {
+      console.warn('QSTASH_TOKEN not provided - workflow client will not function properly');
+    }
+
     this.client = new Client({
       baseUrl: baseUrl ? normalizeUrl(baseUrl) : undefined,
-      token: options.token || process.env.QSTASH_TOKEN!,
+      token: token || 'missing-token',
     });
   }
 

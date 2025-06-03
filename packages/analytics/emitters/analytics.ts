@@ -50,7 +50,7 @@ export class Analytics {
   constructor(options: AnalyticsOptions = {}) {
     this.options = options;
     this.emitter = this.createEmitter();
-    
+
     // Set default user IDs if provided
     if (options.defaultUserId) {
       this.user.userId = options.defaultUserId;
@@ -87,7 +87,7 @@ export class Analytics {
           ...providers.segment.config,
           debug,
           writeKey: providers.segment.writeKey,
-        })
+        }),
       );
     }
 
@@ -97,7 +97,7 @@ export class Analytics {
           ...providers.posthog.config,
           apiKey: providers.posthog.apiKey,
           debug,
-        })
+        }),
       );
     }
 
@@ -107,7 +107,7 @@ export class Analytics {
           ...providers.googleAnalytics.config,
           debug,
           measurementId: providers.googleAnalytics.measurementId,
-        })
+        }),
       );
     }
 
@@ -159,7 +159,7 @@ export class Analytics {
   async identify(
     userId?: string,
     traits?: Record<string, any>,
-    options?: Omit<IdentifyMessage, 'userId' | 'traits'>
+    options?: Omit<IdentifyMessage, 'userId' | 'traits'>,
   ): Promise<void> {
     const message: IdentifyMessage = {
       anonymousId: this.user.anonymousId,
@@ -185,7 +185,7 @@ export class Analytics {
   async track(
     event: string,
     properties?: Record<string, any>,
-    options?: Omit<TrackMessage, 'event' | 'properties'>
+    options?: Omit<TrackMessage, 'event' | 'properties'>,
   ): Promise<void> {
     const message: TrackMessage = {
       anonymousId: this.user.anonymousId,
@@ -205,7 +205,7 @@ export class Analytics {
     category?: string,
     name?: string,
     properties?: Record<string, any>,
-    options?: Omit<PageMessage, 'category' | 'name' | 'properties'>
+    options?: Omit<PageMessage, 'category' | 'name' | 'properties'>,
   ): Promise<void> {
     const message: PageMessage = {
       name,
@@ -226,7 +226,7 @@ export class Analytics {
     category?: string,
     name?: string,
     properties?: Record<string, any>,
-    options?: Omit<ScreenMessage, 'category' | 'name' | 'properties'>
+    options?: Omit<ScreenMessage, 'category' | 'name' | 'properties'>,
   ): Promise<void> {
     const message: ScreenMessage = {
       name,
@@ -246,7 +246,7 @@ export class Analytics {
   async group(
     groupId: string,
     traits?: Record<string, any>,
-    options?: Omit<GroupMessage, 'groupId' | 'traits'>
+    options?: Omit<GroupMessage, 'groupId' | 'traits'>,
   ): Promise<void> {
     const message: GroupMessage = {
       anonymousId: this.user.anonymousId,
@@ -265,7 +265,7 @@ export class Analytics {
   async alias(
     userId: string,
     previousId?: string,
-    options?: Omit<AliasMessage, 'userId' | 'previousId'>
+    options?: Omit<AliasMessage, 'userId' | 'previousId'>,
   ): Promise<void> {
     const message: AliasMessage = {
       previousId: previousId || this.user.userId || this.user.anonymousId || 'unknown',
@@ -293,7 +293,7 @@ export class Analytics {
    */
   async reset(): Promise<void> {
     this.user = {};
-    
+
     if (this.emitter.reset) {
       await this.emitter.reset();
     }

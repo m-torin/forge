@@ -1,5 +1,7 @@
+import { AuthNavigation } from "@/components/auth/auth-navigation";
 import { getDictionary } from "@/lib/dictionary";
 
+import { HeaderSearch } from "@repo/design-system/components/search";
 import { Link } from "@repo/internationalization/client";
 
 import type { ReactNode } from "react";
@@ -26,7 +28,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProperties) => {
               {dictionary.common?.locale || locale}
             </p>
           </div>
-          <nav className="flex gap-4">
+          <nav className="flex gap-4 items-center">
             <Link
               href="/"
               locale={locale}
@@ -35,12 +37,35 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProperties) => {
               {dictionary.template?.navigation?.home || "Home"}
             </Link>
             <Link
-              href="/about"
+              href="/showcase"
               locale={locale}
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              {dictionary.template?.navigation?.about || "About"}
+              Showcase
             </Link>
+            <Link
+              href="/registries"
+              locale={locale}
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Registries
+            </Link>
+            <Link
+              href="/favorites"
+              locale={locale}
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Favorites
+            </Link>
+            <HeaderSearch
+              onSelect={(item) => {
+                if (item.url) {
+                  window.location.href = item.url;
+                }
+              }}
+              placeholder="Search products, users, pages..."
+            />
+            <AuthNavigation />
           </nav>
         </div>
       </header>

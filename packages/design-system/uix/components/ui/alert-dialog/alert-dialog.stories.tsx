@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from '@mantine/core';
 
 import {
@@ -13,18 +12,20 @@ import {
   AlertDialogTrigger,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * A modal dialog that interrupts the user with important content and expects
  * a response.
  */
 const meta = {
-  title: 'uix/ui/AlertDialog',
-  component: AlertDialog,
-  tags: ['autodocs'],
   argTypes: {},
+  component: AlertDialog,
   parameters: {
     layout: 'centered',
   },
+  tags: ['autodocs'],
+  title: 'uix/ui/AlertDialog',
 } satisfies Meta<typeof AlertDialog>;
 
 export default meta;
@@ -45,8 +46,8 @@ export const Default: Story = {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your account and remove your
-              data from our servers.
+              This action cannot be undone. This will permanently delete your account and remove
+              your data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,10 +1,12 @@
 # Upstash Vector Integration
 
-This module provides integration with Upstash Vector, a serverless vector database designed for AI applications and semantic search.
+This module provides integration with Upstash Vector, a serverless vector database designed for AI
+applications and semantic search.
 
 ## Overview
 
 Upstash Vector is optimized for:
+
 - High-performance vector similarity search
 - Serverless architecture with pay-per-use pricing
 - AI/ML applications with embedding storage and retrieval
@@ -21,7 +23,8 @@ UPSTASH_VECTOR_REST_URL=your_upstash_vector_url
 UPSTASH_VECTOR_REST_TOKEN=your_upstash_vector_token
 ```
 
-You can get these from your Upstash Vector dashboard at [console.upstash.com](https://console.upstash.com).
+You can get these from your Upstash Vector dashboard at
+[console.upstash.com](https://console.upstash.com).
 
 ### Installation
 
@@ -88,19 +91,25 @@ const vectors = await adapter.fetch(['doc-1', 'doc-2'], {
 
 ```typescript
 // Basic similarity search
-const results = await adapter.query({
-  vector: embedding, // Your query vector
-  topK: 10, // Number of results
-  includeMetadata: true
-}, 'my-namespace');
+const results = await adapter.query(
+  {
+    vector: embedding, // Your query vector
+    topK: 10, // Number of results
+    includeMetadata: true,
+  },
+  'my-namespace'
+);
 
 // With metadata filtering (if supported by your plan)
-const filteredResults = await adapter.query({
-  vector: embedding,
-  topK: 10,
-  filter: 'category = "technology"',
-  includeMetadata: true
-}, 'my-namespace');
+const filteredResults = await adapter.query(
+  {
+    vector: embedding,
+    topK: 10,
+    filter: 'category = "technology"',
+    includeMetadata: true,
+  },
+  'my-namespace'
+);
 ```
 
 ### Batch Operations
@@ -177,8 +186,8 @@ const vectorWithMetadata = {
   metadata: {
     title: 'My Document',
     category: 'tech',
-    timestamp: Date.now()
-  } as DocumentMetadata
+    timestamp: Date.now(),
+  } as DocumentMetadata,
 };
 ```
 
@@ -186,10 +195,13 @@ const vectorWithMetadata = {
 
 ```typescript
 try {
-  const results = await adapter.query({
-    vector: embedding,
-    topK: 10
-  }, 'documents');
+  const results = await adapter.query(
+    {
+      vector: embedding,
+      topK: 10,
+    },
+    'documents'
+  );
 } catch (error) {
   console.error('Vector query failed:', error);
   // Handle error appropriately
@@ -219,16 +231,16 @@ async function storeDocument(text: string, metadata: any) {
   // Generate embedding
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
-    input: text
+    input: text,
   });
-  
+
   const embedding = response.data[0].embedding;
-  
+
   // Store in Upstash Vector
   await adapter.create('documents', {
     id: `doc-${Date.now()}`,
     vector: embedding,
-    metadata
+    metadata,
   });
 }
 ```
@@ -240,22 +252,25 @@ async function semanticSearch(query: string, limit = 5) {
   // Generate query embedding
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
-    input: query
+    input: query,
   });
-  
+
   const queryEmbedding = response.data[0].embedding;
-  
+
   // Search similar documents
-  const results = await adapter.query({
-    vector: queryEmbedding,
-    topK: limit,
-    includeMetadata: true
-  }, 'documents');
-  
-  return results.map(result => ({
+  const results = await adapter.query(
+    {
+      vector: queryEmbedding,
+      topK: limit,
+      includeMetadata: true,
+    },
+    'documents'
+  );
+
+  return results.map((result) => ({
     score: result.score,
     metadata: result.metadata,
-    id: result.id
+    id: result.id,
   }));
 }
 ```
@@ -265,15 +280,19 @@ async function semanticSearch(query: string, limit = 5) {
 ### Common Issues
 
 1. **Missing Environment Variables**
+
    ```
    Error: Missing Upstash Vector environment variables
    ```
+
    Solution: Ensure `UPSTASH_VECTOR_REST_URL` and `UPSTASH_VECTOR_REST_TOKEN` are set.
 
 2. **Dimension Mismatch**
+
    ```
    Error: Vector dimension mismatch
    ```
+
    Solution: Ensure all vectors have the same dimension as your index.
 
 3. **Quota Exceeded**

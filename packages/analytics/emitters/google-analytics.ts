@@ -50,27 +50,27 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
     return new Promise((resolve) => {
       // Initialize dataLayer
       (window as any).dataLayer = (window as any).dataLayer || [];
-      
+
       // Define gtag function
-      (window as any).gtag = function() {
-        (window as any).dataLayer.push(arguments);
+      (window as any).gtag = function (...args: any[]) {
+        (window as any).dataLayer.push(args);
       };
-      
+
       this.gtag = (window as any).gtag;
-      
+
       // Set default consent (adjust based on your requirements)
       this.gtag('consent', 'default', {
-        'ad_storage': 'denied',
-        'analytics_storage': 'granted',
+        ad_storage: 'denied',
+        analytics_storage: 'granted',
       });
-      
+
       // Configure GA4
       this.gtag('js', new Date());
       this.gtag('config', this.measurementId, {
         debug_mode: this.config.debug,
         send_page_view: false, // We'll handle page views manually
       });
-      
+
       // Load the GA4 script
       const script = document.createElement('script');
       script.async = true;
@@ -89,7 +89,7 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
     if (!this.gtag) return;
 
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[GoogleAnalytics] Identify:', enrichedMessage);
     }
@@ -107,7 +107,7 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
         ...this.userProperties,
         ...message.traits,
       };
-      
+
       // Set user properties in GA4
       this.gtag('set', {
         user_properties: this.userProperties,
@@ -120,14 +120,14 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
 
     this.validateUserIdentity(message);
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[GoogleAnalytics] Track:', enrichedMessage);
     }
 
     // Map to GA4 event name format (snake_case)
     const eventName = this.formatEventName(message.event);
-    
+
     // Prepare event parameters
     const eventParams: Record<string, any> = {
       ...message.properties,
@@ -152,7 +152,7 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
     if (!this.gtag) return;
 
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[GoogleAnalytics] Page:', enrichedMessage);
     }
@@ -182,7 +182,7 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
     if (!this.gtag) return;
 
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[GoogleAnalytics] Screen:', enrichedMessage);
     }
@@ -207,7 +207,7 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
 
     this.validateUserIdentity(message);
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[GoogleAnalytics] Group:', enrichedMessage);
     }
@@ -215,10 +215,13 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
     // GA4 doesn't have native group support, so we track it as user properties
     const groupProperties = {
       group_id: message.groupId,
-      ...Object.entries(message.traits || {}).reduce((acc, [key, value]) => {
-        acc[`group_${key}`] = value;
-        return acc;
-      }, {} as Record<string, any>),
+      ...Object.entries(message.traits || {}).reduce(
+        (acc, [key, value]) => {
+          acc[`group_${key}`] = value;
+          return acc;
+        },
+        {} as Record<string, any>,
+      ),
     };
 
     this.userProperties = {
@@ -241,7 +244,7 @@ export class GoogleAnalyticsEmitter extends BaseAnalyticsEmitter {
     if (!this.gtag) return;
 
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[GoogleAnalytics] Alias:', enrichedMessage);
     }

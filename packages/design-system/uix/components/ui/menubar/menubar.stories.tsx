@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   Menubar,
   MenubarCheckboxItem,
@@ -18,16 +16,21 @@ import {
   MenubarTrigger,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * A visually persistent menu common in desktop applications that provides
  * quick access to a consistent set of commands.
  */
 const meta = {
-  title: 'uix/ui/Menubar',
+  argTypes: {},
   component: Menubar,
   tags: ['autodocs'],
-  argTypes: {},
+  title: 'uix/ui/Menubar',
 
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <Menubar {...args}>
       <MenubarMenu>
@@ -45,9 +48,6 @@ const meta = {
       </MenubarMenu>
     </Menubar>
   ),
-  parameters: {
-    layout: 'centered',
-  },
 } satisfies Meta<typeof Menubar>;
 
 export default meta;

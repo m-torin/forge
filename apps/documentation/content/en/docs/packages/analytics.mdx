@@ -1,0 +1,347 @@
+# Analytics Package
+
+Universal analytics system with multi-provider support, integrated feature flags, and development
+tools.
+
+## Overview
+
+The analytics package provides a comprehensive solution combining multi-provider analytics tracking
+with a complete feature flag management system. It includes development tools, typed flag helpers,
+and universal analytics emitters for enterprise-grade observability.
+
+## Key Features
+
+- **Multi-Provider Analytics**: PostHog, Vercel Analytics, Google Analytics, Segment
+- **Complete Feature Flag System**: Client/server flags with React hooks and typed helpers
+- **Universal Analytics Emitters**: Segment-compatible multi-provider analytics system
+- **Vercel Development Toolbar**: Visual feature flag management in development
+- **Local Development Overrides**: `LOCAL_FLAGS` environment variable support
+- **Type-Safe Flag Helpers**: Domain-specific flag functions (auth, payments, AI, etc.)
+- **Privacy-Compliant Tracking**: Configurable consent management
+- **Server and Client Implementations**: Full SSR and client-side support
+
+## Installation
+
+```bash
+pnpm add @repo/analytics
+```
+
+## Environment Variables
+
+```bash
+# PostHog (Primary)
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+
+# Vercel Analytics
+VERCEL_ANALYTICS_ID=...
+
+# Google Analytics (Optional)
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-...
+
+# Feature Flags
+FLAGS_SECRET=...
+VERCEL_API_TOKEN=...
+
+# Local Development Overrides
+LOCAL_FLAGS="ai.enabled=true,auth.organizations=false"
+```
+
+## Analytics Provider Setup
+
+```tsx
+import { AnalyticsProvider } from '@repo/analytics';
+
+function App({ children }) {
+  return <AnalyticsProvider>{children}</AnalyticsProvider>;
+}
+```
+
+This automatically configures:
+
+- PostHog client and server analytics
+- Vercel Analytics for web vitals
+- Google Analytics (if configured)
+- Feature flag providers
+
+## Feature Flags
+
+### Client-Side Flags
+
+```typescript
+import { flag, useFlag, flags } from '@repo/analytics';
+
+// Async flag check
+const isEnabled = await flag('ai.enabled', userId);
+
+// React hook for flags
+function MyComponent() {
+  const aiEnabled = useFlag('ai.enabled');
+  const darkMode = useFlag('ui.darkMode');
+
+  return (
+    <div>
+      {aiEnabled && <AIFeature />}
+      <div className={darkMode ? 'dark' : 'light'}>
+        Content
+      </div>
+    </div>
+  );
+}
+
+// Access all flags
+const allFlags = await flags();
+```
+
+### Server-Side Flags
+
+```typescript
+import { flag, flags } from '@repo/analytics/server';
+
+// API route or server component
+export async function GET(request: Request) {
+  const userId = getUserId(request);
+  const hasOrganizations = await flag('auth.organizations', userId);
+
+  if (hasOrganizations) {
+    // Feature-specific logic
+  }
+}
+
+// Get all flags for user
+const userFlags = await flags(userId);
+```
+
+### Typed Flag Helpers
+
+```typescript
+import { getAuthFlags, getPaymentFlags, getAIFlags } from '@repo/analytics';
+
+// Domain-specific flag helpers with TypeScript interfaces
+const authFlags = await getAuthFlags(userId);
+// Returns: { organizations: boolean, apiKeys: boolean, impersonation: boolean }
+
+const paymentFlags = await getPaymentFlags(userId);
+// Returns: { subscriptions: boolean, credits: boolean, invoices: boolean }
+
+const aiFlags = await getAIFlags(userId);
+// Returns: { enabled: boolean, models: string[], maxTokens: number }
+```
+
+## Analytics Tracking
+
+### Event Tracking
+
+```typescript
+import { track, identify, page } from '@repo/analytics';
+
+// Track custom events
+track('button_clicked', {
+  button: 'signup',
+  page: 'homepage',
+  user_plan: 'free',
+});
+
+// Identify users
+identify(userId, {
+  email: 'user@example.com',
+  plan: 'pro',
+  created_at: new Date(),
+});
+
+// Page tracking
+page('Dashboard', {
+  section: 'analytics',
+  feature_flags: await flags(userId),
+});
+```
+
+### Universal Analytics Emitters
+
+```typescript
+import { Analytics } from '@repo/analytics/emitters';
+
+// Configure multiple providers
+const analytics = new Analytics({
+  providers: {
+    segment: {
+      writeKey: process.env.SEGMENT_WRITE_KEY,
+    },
+    posthog: {
+      apiKey: process.env.POSTHOG_API_KEY,
+      host: process.env.POSTHOG_HOST,
+    },
+    googleAnalytics: {
+      measurementId: process.env.GA_MEASUREMENT_ID,
+    },
+  },
+});
+
+// Universal tracking API
+await analytics.track('purchase_completed', {
+  revenue: 99.99,
+  currency: 'USD',
+  items: ['pro_plan'],
+});
+```
+
+## Development Tools
+
+### Vercel Toolbar Integration
+
+```tsx
+import { ToolbarProvider } from '@repo/analytics/toolbar-provider';
+
+function DevelopmentApp({ children }) {
+  return <ToolbarProvider>{children}</ToolbarProvider>;
+}
+```
+
+Provides visual feature flag management in development with:
+
+- Toggle flags in real-time
+- See flag values for current user
+- Test different flag combinations
+- Override flags locally
+
+### Local Flag Overrides
+
+```bash
+# Override flags for local development
+LOCAL_FLAGS="ai.enabled=true,auth.organizations=false,ui.darkMode=true"
+pnpm dev
+```
+
+## Flag Constants & Types
+
+```typescript
+import { AI_FLAGS, AUTH_FLAGS, PAYMENT_FLAGS } from '@repo/analytics/types/flags';
+
+// Predefined flag constants
+const aiEnabled = await flag(AI_FLAGS.ENABLED, userId);
+const hasOrganizations = await flag(AUTH_FLAGS.ORGANIZATIONS, userId);
+const creditsEnabled = await flag(PAYMENT_FLAGS.CREDITS, userId);
+
+// TypeScript interfaces for flag groups
+interface AuthFlags {
+  organizations: boolean;
+  apiKeys: boolean;
+  impersonation: boolean;
+  socialLogin: boolean;
+}
+```
+
+## Access Control Integration
+
+```typescript
+import { withAnalyticsAccess } from '@repo/analytics/access';
+
+// Protect analytics endpoints
+export default withAnalyticsAccess(async (req, res) => {
+  // Only users with analytics access can reach this endpoint
+  const insights = await getAnalyticsData();
+  res.json(insights);
+});
+```
+
+## Error Handling & Debugging
+
+```typescript
+import { enableAnalyticsDebug } from '@repo/analytics';
+
+// Enable debug logging in development
+if (process.env.NODE_ENV === 'development') {
+  enableAnalyticsDebug();
+}
+```
+
+## Multi-Provider Configuration
+
+### Provider-Specific Setup
+
+```typescript
+// PostHog with custom configuration
+import { PostHogProvider } from '@repo/analytics/posthog/client';
+
+<PostHogProvider
+  apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY}
+  options={{
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    capture_pageview: false, // Disable auto pageview
+    capture_pageleave: true
+  }}
+>
+  <App />
+</PostHogProvider>
+
+// Google Analytics with enhanced ecommerce
+import { GoogleAnalytics } from '@repo/analytics/emitters/google-analytics';
+
+const ga = new GoogleAnalytics({
+  measurementId: 'G-XXXXXXXXXX',
+  config: {
+    send_page_view: false,
+    custom_map: { 'custom_parameter_1': 'user_plan' }
+  }
+});
+```
+
+## Integration Patterns
+
+### Next.js App Router
+
+```typescript
+// app/providers.tsx
+import { AnalyticsProvider } from '@repo/analytics';
+
+export function Providers({ children }) {
+  return (
+    <AnalyticsProvider>
+      {children}
+    </AnalyticsProvider>
+  );
+}
+
+// app/api/analytics/route.ts
+import { flag } from '@repo/analytics/server';
+
+export async function POST(request: Request) {
+  const { event, properties } = await request.json();
+  const userId = await getUserId(request);
+
+  // Check if analytics is enabled for user
+  const analyticsEnabled = await flag('analytics.enabled', userId);
+
+  if (!analyticsEnabled) {
+    return new Response('Analytics disabled', { status: 204 });
+  }
+
+  await track(event, properties, { userId });
+  return new Response('OK');
+}
+```
+
+### Advanced Flag Usage
+
+```typescript
+// Feature rollouts with percentage flags
+const rolloutPercentage = await flag('ai.rollout_percentage', userId); // Returns 0-100
+const isInRollout = Math.random() * 100 < rolloutPercentage;
+
+// Time-based flags
+const isBusinessHours = await flag('support.business_hours_only', userId);
+const currentHour = new Date().getHours();
+const shouldShowSupport = !isBusinessHours || (currentHour >= 9 && currentHour <= 17);
+
+// User segment flags
+const userSegment = await flag('user.segment', userId); // Returns 'free', 'pro', 'enterprise'
+const features = getFeaturesBySegment(userSegment);
+```
+
+## Performance & Optimization
+
+- **Lazy loading**: Providers are loaded only when needed
+- **Request batching**: Multiple flag checks are batched for efficiency
+- **Caching**: Flag values are cached with configurable TTL
+- **Edge compatibility**: Server functions work on Vercel Edge Runtime
+- **Bundle optimization**: Client and server code is properly split

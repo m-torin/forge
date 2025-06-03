@@ -24,7 +24,7 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 
 import * as betterAuthActions from '@repo/auth/actions';
 
@@ -46,7 +46,7 @@ interface TestResult {
   timestamp: string;
 }
 
-export default function DebugAuthPage() {
+function DebugAuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<string>('session');
@@ -567,5 +567,13 @@ export default function DebugAuthPage() {
         </Grid>
       </Stack>
     </>
+  );
+}
+
+export default function DebugAuthPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DebugAuthContent />
+    </Suspense>
   );
 }

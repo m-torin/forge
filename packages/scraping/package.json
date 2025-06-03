@@ -14,6 +14,10 @@
     "./playwright": {
       "types": "./src/playwright/index.ts",
       "default": "./src/playwright/index.ts"
+    },
+    "./playwright/enhanced": {
+      "types": "./src/playwright/enhanced.ts",
+      "default": "./src/playwright/enhanced.ts"
     }
   },
   "scripts": {

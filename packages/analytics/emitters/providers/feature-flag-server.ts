@@ -23,7 +23,7 @@ export async function createFeatureFlaggedAnalytics(options?: {
 }) {
   // Check if analytics is enabled at all
   const isEnabled = await analyticsEnabled();
-  
+
   if (!isEnabled) {
     // Return a no-op analytics instance
     return new Analytics({
@@ -49,12 +49,7 @@ export async function createFeatureFlaggedAnalytics(options?: {
   }
 
   // Check which services are enabled
-  const [
-    segmentEnabled,
-    posthogEnabled,
-    googleEnabled,
-    debugMode,
-  ] = await Promise.all([
+  const [segmentEnabled, posthogEnabled, googleEnabled, debugMode] = await Promise.all([
     segmentAnalyticsEnabled(),
     posthogAnalyticsEnabled(),
     googleAnalyticsEnabled(),
@@ -105,10 +100,10 @@ export async function trackFeatureFlaggedEvent(
     posthog?: { apiKey: string; apiHost?: string };
     userId?: string;
     anonymousId?: string;
-  }
+  },
 ) {
   const analytics = await createFeatureFlaggedAnalytics(options);
-  
+
   await analytics.track(event, properties);
   await analytics.flush();
 }
@@ -122,13 +117,13 @@ export async function identifyFeatureFlaggedUser(
   options?: {
     segment?: { writeKey: string };
     posthog?: { apiKey: string; apiHost?: string };
-  }
+  },
 ) {
   const analytics = await createFeatureFlaggedAnalytics({
     ...options,
     userId,
   });
-  
+
   await analytics.identify(userId, traits);
   await analytics.flush();
 }
@@ -142,13 +137,13 @@ export function withFeatureFlaggedAnalytics<T extends (...args: any[]) => any>(
   options?: {
     segment?: { writeKey: string };
     posthog?: { apiKey: string; apiHost?: string };
-  }
+  },
 ): T {
   return (async (...args: Parameters<T>) => {
     const startTime = Date.now();
     let success = false;
     let error: Error | undefined;
-    
+
     try {
       const result = await action(...args);
       success = true;
@@ -164,7 +159,7 @@ export function withFeatureFlaggedAnalytics<T extends (...args: any[]) => any>(
           error: error?.message,
           success,
         },
-        options
+        options,
       );
     }
   }) as T;

@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+
+@source "../app/**/*.{js,ts,jsx,tsx}";
+@source "../components/**/*.{js,ts,jsx,tsx}";
+@source "../**/*.{js,ts,jsx,tsx}";
+
+@import '@repo/design-system/ciseco/styles.css';
+@import '@repo/design-system/ciseco/components/listing-image-gallery/styles/index.css';

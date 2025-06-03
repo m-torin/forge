@@ -28,9 +28,9 @@ const SegmentContext = createContext<SegmentContextValue>({
  * Next.js 15 compatible Segment Provider
  * Uses Next.js Script component for proper loading
  */
-export function SegmentProvider({ 
-  children, 
-  debug = false, 
+export function SegmentProvider({
+  children,
+  debug = false,
   loadOptions = {},
   writeKey,
 }: SegmentProviderProps) {
@@ -44,13 +44,13 @@ export function SegmentProvider({
 
     // Initialize the global analytics queue
     const analytics = ((window as any).analytics = (window as any).analytics || []);
-    
+
     if (!analytics.initialize) {
       if (analytics.invoked) {
         console.error('[Segment] Analytics.js snippet included twice.');
         return;
       }
-      
+
       analytics.invoked = true;
       analytics.methods = [
         'trackSubmit',
@@ -74,7 +74,7 @@ export function SegmentProvider({
         'setAnonymousId',
         'addDestinationMiddleware',
       ];
-      
+
       analytics.factory = function (method: string) {
         return function (...args: any[]) {
           args.unshift(method);
@@ -91,7 +91,7 @@ export function SegmentProvider({
         analytics._writeKey = key;
         analytics._loadOptions = options;
       };
-      
+
       analytics.SNIPPET_VERSION = '4.13.1';
       analytics.load(writeKey, loadOptions);
     }
@@ -101,13 +101,13 @@ export function SegmentProvider({
     if (debug) {
       console.log('[Segment] Script loaded successfully');
     }
-    
+
     // Create the emitter instance
     const emitter = new SegmentEmitter({
       debug,
       writeKey,
     });
-    
+
     setAnalytics(emitter);
     setIsLoaded(true);
   };
@@ -126,9 +126,7 @@ export function SegmentProvider({
         src={`https://cdn.segment.com/analytics.js/v1/${writeKey}/analytics.min.js`}
         strategy="lazyOnload"
       />
-      <SegmentContext.Provider value={{ analytics, isLoaded }}>
-        {children}
-      </SegmentContext.Provider>
+      <SegmentContext.Provider value={{ analytics, isLoaded }}>{children}</SegmentContext.Provider>
     </>
   );
 }

@@ -1,61 +1,56 @@
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
-import { Search01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { type Metadata } from 'next';
-
-import { Divider } from '@repo/design-system/ciesco2';
-import { HeaderFilterSection } from '@repo/design-system/ciesco2';
-import { ProductCard } from '@repo/design-system/ciesco2';
-import { SectionPromo1 } from '@repo/design-system/ciesco2';
-import { SectionSliderLargeProduct } from '@repo/design-system/ciesco2';
-import { getProducts } from '@repo/design-system/ciesco2';
-import { ButtonCircle } from '@repo/design-system/ciesco2';
-import { Input } from '@repo/design-system/ciesco2';
+import { ArrowRightIcon } from '@heroicons/react/24/outline'
+import { Search01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
+  ButtonCircle,
+  Divider,
+  HeaderFilterSection,
+  Input,
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@repo/design-system/ciesco2';
+  ProductCard,
+  SectionPromo1,
+  SectionSliderLargeProduct,
+  getProducts,
+} from '@repo/design-system/ciseco'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  description: 'Search page for products',
   title: 'Search',
-};
+  description: 'Search page for products',
+}
 
 const PageSearch = async () => {
-  const products = await getProducts();
-  const featuredProducts = products.slice(0, 4);
+  const products = await getProducts()
+  const featuredProducts = products.slice(0, 4)
 
   return (
     <div>
-      <div className="top-0 right-0 left-0 h-24 w-full bg-primary-50 2xl:h-28 dark:bg-neutral-800/20" />
+      <div className={'bg-primary-50 left-0 right-0 top-0 h-24 w-full 2xl:h-28 dark:bg-neutral-800/20'} />
       <div className="container">
         <header className="mx-auto -mt-10 flex max-w-2xl flex-col lg:-mt-7">
-          <form method="post" className="relative w-full">
+          <form className="relative w-full" method="post">
             <label htmlFor="search-input" className="text-neutral-500 dark:text-neutral-300">
               <span className="sr-only">Search all icons</span>
               <HugeiconsIcon
-                strokeWidth={1.5}
-                color="currentColor"
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl md:left-6"
                 icon={Search01Icon}
-                className="absolute top-1/2 left-5 -translate-y-1/2 transform text-2xl md:left-6"
                 size={24}
+                color="currentColor"
+                strokeWidth={1.5}
               />
               <Input
-                id="search-input"
-                placeholder="Type your keywords"
-                rounded="rounded-full"
                 className="border-0 shadow-lg dark:border"
-                sizeClass="pl-14 py-5 pr-5 md:pl-16"
+                id="search-input"
                 type="search"
+                placeholder="Type your keywords"
+                sizeClass="pl-14 py-5 pr-5 md:pl-16"
+                rounded="rounded-full"
               />
-              <ButtonCircle
-                className="absolute top-1/2 right-2.5 -translate-y-1/2"
-                size="size-11"
-                type="submit"
-              >
+              <ButtonCircle className="absolute right-2.5 top-1/2 -translate-y-1/2" size="size-11" type="submit">
                 <ArrowRightIcon className="size-5 text-white" />
               </ButtonCircle>
             </label>
@@ -63,7 +58,7 @@ const PageSearch = async () => {
         </header>
       </div>
 
-      <div className="container flex flex-col gap-y-16 py-16 lg:gap-y-28 lg:pt-20 lg:pb-28">
+      <div className="container flex flex-col gap-y-16 py-16 lg:gap-y-28 lg:pb-28 lg:pt-20">
         <main>
           {/* FILTER */}
           <HeaderFilterSection />
@@ -71,7 +66,7 @@ const PageSearch = async () => {
           {/* LOOP ITEMS */}
           <div className="mt-8 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((item) => (
-              <ProductCard key={item.id} data={item} />
+              <ProductCard data={item} key={item.id} />
             ))}
           </div>
 
@@ -98,7 +93,7 @@ const PageSearch = async () => {
         <SectionPromo1 />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PageSearch;
+export default PageSearch

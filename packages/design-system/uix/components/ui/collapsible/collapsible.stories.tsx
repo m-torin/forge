@@ -1,23 +1,21 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { IconInfoCircle } from '@tabler/icons-react';
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@repo/design-system/uix';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * An interactive component which expands/collapses a panel.
  */
 const meta = {
-  title: 'uix/ui/Collapsible',
-  component: Collapsible,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     className: 'w-96',
     disabled: false,
+  },
+  argTypes: {},
+  component: Collapsible,
+  parameters: {
+    layout: 'centered',
   },
   render: (args: any) => (
     <Collapsible {...args}>
@@ -30,9 +28,8 @@ const meta = {
       </CollapsibleContent>
     </Collapsible>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Collapsible',
 } satisfies Meta<typeof Collapsible>;
 
 export default meta;

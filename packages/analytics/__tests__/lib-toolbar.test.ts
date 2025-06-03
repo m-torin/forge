@@ -15,7 +15,7 @@ describe('withToolbar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
-    process.env.NODE_ENV = 'development';
+    (process.env as any).NODE_ENV = 'development';
     mockKeys.mockReturnValue({ FLAGS_SECRET: 'secret_123' });
     mockWithVercelToolbar.mockImplementation((config) => ({ ...config, toolbar: true }));
   });

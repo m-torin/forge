@@ -1,19 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Progress } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Displays an indicator showing the completion progress of a task, typically
  * displayed as a progress bar.
  */
 const meta = {
-  title: 'uix/ui/Progress',
-  component: Progress,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     value: 30,
   },
+  argTypes: {},
+  component: Progress,
+  tags: ['autodocs'],
+  title: 'uix/ui/Progress',
 } satisfies Meta<typeof Progress>;
 
 export default meta;
@@ -30,8 +30,8 @@ export const Default: Story = {};
  */
 export const Sizes: Story = {
   args: {
-    value: 60,
     size: 'lg',
+    value: 60,
   },
 };
 
@@ -40,8 +40,8 @@ export const Sizes: Story = {
  */
 export const Striped: Story = {
   args: {
-    value: 75,
-    striped: true,
     animated: true,
+    striped: true,
+    value: 75,
   },
 };

@@ -3,7 +3,14 @@
  * Only logs events, actual tracking happens server-side
  */
 
-import { devLog as logger } from '@repo/orchestration';
+// Simple client-safe logger
+const logger = {
+  info: (message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.info(message, data);
+    }
+  },
+};
 
 export type PlatformEventType =
   // Workflow lifecycle events

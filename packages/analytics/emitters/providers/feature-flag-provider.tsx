@@ -2,18 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { 
+import {
   analyticsDebugMode,
   analyticsDevelopmentMode,
   analyticsEnabled,
   analyticsProductionOnly,
   googleAnalyticsEnabled,
   posthogAnalyticsEnabled,
-  segmentAnalyticsEnabled
+  segmentAnalyticsEnabled,
 } from '../../flags-server';
 
 import { AnalyticsProvider } from './nextjs';
-
 
 interface FeatureFlagAnalyticsProviderProps {
   children: React.ReactNode;
@@ -159,11 +158,7 @@ export function FeatureFlagAnalyticsProvider({
     segment: flags.segment && segment ? segment : undefined,
   };
 
-  return (
-    <AnalyticsProvider {...providerConfig}>
-      {children}
-    </AnalyticsProvider>
-  );
+  return <AnalyticsProvider {...providerConfig}>{children}</AnalyticsProvider>;
 }
 
 /**
@@ -174,19 +169,15 @@ export function useAnalyticsFlags() {
 
   useEffect(() => {
     async function loadFlags() {
-      const [
-        enabled,
-        segmentEnabled,
-        posthogEnabled,
-        googleEnabled,
-        debugMode,
-      ] = await Promise.all([
-        analyticsEnabled(),
-        segmentAnalyticsEnabled(),
-        posthogAnalyticsEnabled(),
-        googleAnalyticsEnabled(),
-        analyticsDebugMode(),
-      ]);
+      const [enabled, segmentEnabled, posthogEnabled, googleEnabled, debugMode] = await Promise.all(
+        [
+          analyticsEnabled(),
+          segmentAnalyticsEnabled(),
+          posthogAnalyticsEnabled(),
+          googleAnalyticsEnabled(),
+          analyticsDebugMode(),
+        ],
+      );
 
       setFlags({
         debug: debugMode,

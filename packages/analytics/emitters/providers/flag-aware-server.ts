@@ -15,7 +15,7 @@ export function createFlagAwareAnalytics(
     googleAnalytics?: { measurementId: string };
     userId?: string;
     anonymousId?: string;
-  }
+  },
 ) {
   // Check if analytics is enabled at all
   if (!flags.enabled) {
@@ -26,7 +26,7 @@ export function createFlagAwareAnalytics(
   }
 
   // Check environment restrictions
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const _isDevelopment = process.env.NODE_ENV === 'development';
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (flags.productionOnly && !isProduction) {
@@ -78,10 +78,10 @@ export async function trackFlagAwareEvent(
     posthog?: { apiKey: string; apiHost?: string };
     userId?: string;
     anonymousId?: string;
-  }
+  },
 ) {
   const analytics = createFlagAwareAnalytics(flags, options);
-  
+
   await analytics.track(event, properties);
   await analytics.flush();
 }
@@ -96,13 +96,13 @@ export async function identifyFlagAwareUser(
   options?: {
     segment?: { writeKey: string };
     posthog?: { apiKey: string; apiHost?: string };
-  }
+  },
 ) {
   const analytics = createFlagAwareAnalytics(flags, {
     ...options,
     userId,
   });
-  
+
   await analytics.identify(userId, traits);
   await analytics.flush();
 }
@@ -117,13 +117,13 @@ export function withFlagAwareAnalytics<T extends (...args: any[]) => any>(
   options?: {
     segment?: { writeKey: string };
     posthog?: { apiKey: string; apiHost?: string };
-  }
+  },
 ): T {
   return (async (...args: Parameters<T>) => {
     const startTime = Date.now();
     let success = false;
     let error: Error | undefined;
-    
+
     try {
       const result = await action(...args);
       success = true;
@@ -140,7 +140,7 @@ export function withFlagAwareAnalytics<T extends (...args: any[]) => any>(
           error: error?.message,
           success,
         },
-        options
+        options,
       );
     }
   }) as T;

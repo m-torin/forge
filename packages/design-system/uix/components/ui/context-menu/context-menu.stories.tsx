@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -16,16 +14,19 @@ import {
   ContextMenuTrigger,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * Displays a menu to the user — such as a set of actions or functions —
  * triggered by a button.
  */
 const meta = {
-  title: 'uix/ui/ContextMenu',
-  component: ContextMenu,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {},
+  argTypes: {},
+  component: ContextMenu,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <ContextMenu {...args}>
       <ContextMenuTrigger>
@@ -41,9 +42,8 @@ const meta = {
       </ContextMenuContent>
     </ContextMenu>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/ContextMenu',
 } satisfies Meta<typeof ContextMenu>;
 
 export default meta;
@@ -157,10 +157,10 @@ export const WithRadioGroup: Story = {
         <ContextMenuLabel>Theme</ContextMenuLabel>
         <ContextMenuRadioGroup value="light">
           <ContextMenuItem>
-            <ContextMenuRadioItem value="light" label="Light" />
+            <ContextMenuRadioItem label="Light" value="light" />
           </ContextMenuItem>
           <ContextMenuItem>
-            <ContextMenuRadioItem value="dark" label="Dark" />
+            <ContextMenuRadioItem label="Dark" value="dark" />
           </ContextMenuItem>
         </ContextMenuRadioGroup>
       </ContextMenuContent>

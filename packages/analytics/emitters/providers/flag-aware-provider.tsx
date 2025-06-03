@@ -34,7 +34,7 @@ export function FlagAwareAnalyticsProvider({
   segment,
 }: FlagAwareAnalyticsProviderProps) {
   // Check environment restrictions
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const _isDevelopment = process.env.NODE_ENV === 'development';
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (flags.productionOnly && !isProduction) {
@@ -55,9 +55,5 @@ export function FlagAwareAnalyticsProvider({
     segment: flags.segmentEnabled && segment ? segment : undefined,
   };
 
-  return (
-    <AnalyticsProvider {...providerConfig}>
-      {children}
-    </AnalyticsProvider>
-  );
+  return <AnalyticsProvider {...providerConfig}>{children}</AnalyticsProvider>;
 }

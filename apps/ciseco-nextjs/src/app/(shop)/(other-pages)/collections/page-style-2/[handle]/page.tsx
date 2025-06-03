@@ -1,18 +1,18 @@
-import { ProductCard } from '@repo/design-system/ciesco2';
-import { SidebarFilters } from '@repo/design-system/ciesco2';
-import { TabFiltersPopover } from '@repo/design-system/ciesco2';
-import { getProducts } from '@repo/design-system/ciesco2';
+import { getProducts } from '@/data/data'
 import {
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@repo/design-system/ciesco2';
+  ProductCard,
+  SidebarFilters,
+  TabFiltersPopover,
+} from '@repo/design-system/ciseco'
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
-  const { handle } = await params;
-  const products = await getProducts();
+  const { handle } = await params
+  const products = await getProducts()
 
   return (
     <main>
@@ -23,12 +23,12 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
           <TabFiltersPopover className="block lg:hidden" />
         </div>
 
-        <div className="mb-10 shrink-0 lg:mx-8 lg:mb-0" />
+        <div className="mb-10 shrink-0 lg:mx-8 lg:mb-0"></div>
 
         <div className="flex-1">
           <div className="grid flex-1 gap-x-8 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((item) => (
-              <ProductCard key={item.id} data={item} />
+              <ProductCard data={item} key={item.id} />
             ))}
           </div>
 
@@ -49,5 +49,5 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         </div>
       </div>
     </main>
-  );
+  )
 }

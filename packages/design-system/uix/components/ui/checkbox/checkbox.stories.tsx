@@ -1,18 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Checkbox } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * A control that allows the user to toggle between checked and not checked.
  */
 const meta: Meta<typeof Checkbox> = {
-  title: 'uix/ui/Checkbox',
-  component: Checkbox,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     id: 'terms',
     disabled: false,
+  },
+  argTypes: {},
+  component: Checkbox,
+  parameters: {
+    layout: 'centered',
   },
   render: (args: any) => (
     <div className="flex space-x-2">
@@ -25,9 +26,8 @@ const meta: Meta<typeof Checkbox> = {
       </label>
     </div>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Checkbox',
 } satisfies Meta<typeof Checkbox>;
 
 export default meta;

@@ -13,12 +13,7 @@ export default defineConfig({
     name: 'orchestration',
     clearMocks: true,
     coverage: {
-      exclude: [
-        'src/**/*.test.ts',
-        'src/**/*.spec.ts',
-        'src/**/types.ts',
-        'src/**/index.ts',
-      ],
+      exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/types.ts', 'src/**/index.ts'],
       include: ['src/**/*.ts'],
       reporter: ['text', 'json', 'html'],
       thresholds: {

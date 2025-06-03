@@ -10,7 +10,7 @@
     "paths": {
       "@repo/*": ["../*"],
       "@repo/design-system/*": ["./*"],
-      "@/*": ["./ciesco2/*"]
+      "@/*": ["./ciseco/*"]
     },
     "types": ["vitest/globals"],
     "declaration": false,

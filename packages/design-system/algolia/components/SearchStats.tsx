@@ -1,7 +1,9 @@
 'use client';
 
 import { useStats } from 'react-instantsearch';
+
 import { useInstantSearch } from '../hooks/useInstantSearch';
+
 import type { SearchStatsProps } from '../types';
 
 export default function SearchStats({
@@ -22,17 +24,11 @@ export default function SearchStats({
         {nbHits.toLocaleString()} result{nbHits !== 1 ? 's' : ''}
         {showQuery && query && (
           <>
-            {' '}for{' '}
-            <span className="font-medium text-gray-900 dark:text-white">
-              "{String(query)}"
-            </span>
+            {' '}
+            for <span className="font-medium text-gray-900 dark:text-white">"{String(query)}"</span>
           </>
         )}
-        {showTime && (
-          <>
-            {' '}in {processingTimeMS}ms
-          </>
-        )}
+        {showTime && <> in {processingTimeMS}ms</>}
       </span>
     </div>
   );

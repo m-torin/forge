@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   Table,
   TableBody,
@@ -10,30 +8,32 @@ import {
   TableRow,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 const invoices = [
   {
     invoice: 'INV001',
+    paymentMethod: 'Credit Card',
     paymentStatus: 'Paid',
     totalAmount: '$250.00',
-    paymentMethod: 'Credit Card',
   },
   {
     invoice: 'INV002',
+    paymentMethod: 'PayPal',
     paymentStatus: 'Pending',
     totalAmount: '$150.00',
-    paymentMethod: 'PayPal',
   },
   {
     invoice: 'INV003',
+    paymentMethod: 'Bank Transfer',
     paymentStatus: 'Unpaid',
     totalAmount: '$350.00',
-    paymentMethod: 'Bank Transfer',
   },
   {
     invoice: 'INV004',
+    paymentMethod: 'Credit Card',
     paymentStatus: 'Paid',
     totalAmount: '$450.00',
-    paymentMethod: 'Credit Card',
   },
 ];
 
@@ -41,10 +41,8 @@ const invoices = [
  * Powerful table and datagrids built using TanStack Table.
  */
 const meta = {
-  title: 'uix/ui/Table',
-  component: Table,
-  tags: ['autodocs'],
   argTypes: {},
+  component: Table,
   render: (args: any) => (
     <Table {...args}>
       <TableCaption>A list of your recent invoices.</TableCaption>
@@ -68,6 +66,8 @@ const meta = {
       </TableBody>
     </Table>
   ),
+  tags: ['autodocs'],
+  title: 'uix/ui/Table',
 } satisfies Meta<typeof Table>;
 
 export default meta;

@@ -1,14 +1,46 @@
-import { TooltipProvider } from '@repo/design-system/uix';
-import { ThemeProvider, MantineProvider } from '@repo/design-system/uix';
 import { withThemeByClassName } from '@storybook/addon-themes';
-import type { Preview } from '@storybook/nextjs';
+
 import { withAuthMock } from '@repo/auth/mocks/storybook-decorator';
+import { MantineProvider, TooltipProvider } from '@repo/design-system/uix';
+
+import type { Preview } from '@storybook/nextjs';
 
 // Import global styles
 import '../styles/globals.css';
 
 const preview: Preview = {
+  decorators: [
+    withThemeByClassName({
+      defaultTheme: 'light',
+      themes: {
+        dark: 'dark',
+        light: 'light',
+      },
+    }),
+    withAuthMock,
+    (Story) => {
+      return (
+        <MantineProvider>
+          <TooltipProvider>
+            <Story />
+          </TooltipProvider>
+        </MantineProvider>
+      );
+    },
+  ],
   parameters: {
+    chromatic: {
+      modes: {
+        dark: {
+          className: 'dark',
+          theme: 'dark',
+        },
+        light: {
+          className: 'light',
+          theme: 'light',
+        },
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -22,40 +54,7 @@ const preview: Preview = {
         { name: 'dark', class: 'dark', color: '#000000' },
       ],
     },
-    chromatic: {
-      modes: {
-        light: {
-          theme: 'light',
-          className: 'light',
-        },
-        dark: {
-          theme: 'dark',
-          className: 'dark',
-        },
-      },
-    },
   },
-  decorators: [
-    withThemeByClassName({
-      themes: {
-        light: 'light',
-        dark: 'dark',
-      },
-      defaultTheme: 'light',
-    }),
-    withAuthMock,
-    (Story) => {
-      return (
-        <MantineProvider>
-          <ThemeProvider>
-            <TooltipProvider>
-              <Story />
-            </TooltipProvider>
-          </ThemeProvider>
-        </MantineProvider>
-      );
-    },
-  ],
 };
 
 export default preview;

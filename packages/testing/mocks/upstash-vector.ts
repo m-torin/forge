@@ -24,14 +24,14 @@ interface MockDeleteResult {
   deleted: number;
 }
 
-interface MockQueryResult {
+interface _MockQueryResult {
   matches: MockVectorScore[];
   usage?: {
     readUnits: number;
   };
 }
 
-interface MockFetchResult {
+interface _MockFetchResult {
   vectors: MockVector[];
 }
 
@@ -54,7 +54,7 @@ class MockVectorStorage {
 
   getNamespace(namespace?: string): Map<string, MockVector> {
     if (!namespace) return this.vectors;
-    
+
     if (!this.namespaces.has(namespace)) {
       this.namespaces.set(namespace, new Map());
     }
@@ -64,11 +64,11 @@ class MockVectorStorage {
   upsert(data: MockVector | MockVector[], namespace?: string): MockUpsertResult {
     const vectors = Array.isArray(data) ? data : [data];
     const storage = this.getNamespace(namespace);
-    
-    vectors.forEach(vector => {
+
+    vectors.forEach((vector) => {
       storage.set(vector.id, { ...vector });
     });
-    
+
     return { upserted: vectors.length };
   }
 
@@ -81,28 +81,28 @@ class MockVectorStorage {
       includeVectors?: boolean;
       includeData?: boolean;
     } = {},
-    namespace?: string
+    namespace?: string,
   ): MockVectorScore[] {
     const storage = this.getNamespace(namespace);
     const vectors = Array.from(storage.values());
-    
+
     if (vectors.length === 0) return [];
-    
+
     // Simple similarity calculation (cosine similarity approximation)
     const results = vectors
-      .map(vector => {
+      .map((vector) => {
         let score = 0.8 + Math.random() * 0.2; // Mock score between 0.8-1.0
-        
+
         // If vector has text data and query is string, boost score
         if (typeof queryVector === 'string' && vector.data?.includes(queryVector)) {
           score = Math.min(score + 0.1, 1.0);
         }
-        
+
         const result: MockVectorScore = {
           ...vector,
           score,
         };
-        
+
         // Apply include options
         if (!options.includeVectors) {
           delete result.vector;
@@ -114,42 +114,43 @@ class MockVectorStorage {
         if (!options.includeData) {
           delete result.data;
         }
-        
+
         return result;
       })
       .sort((a, b) => b.score - a.score)
       .slice(0, options.topK || 10);
-    
+
     return results;
   }
 
   fetch(ids: string | string[], namespace?: string): MockVector[] {
     const storage = this.getNamespace(namespace);
     const idArray = Array.isArray(ids) ? ids : [ids];
-    
+
     return idArray
-      .map(id => storage.get(id))
+      .map((id) => storage.get(id))
       .filter((vector): vector is MockVector => vector !== undefined);
   }
 
   delete(ids: string | string[], namespace?: string): MockDeleteResult {
     const storage = this.getNamespace(namespace);
     const idArray = Array.isArray(ids) ? ids : [ids];
-    
+
     let deleted = 0;
-    idArray.forEach(id => {
+    idArray.forEach((id) => {
       if (storage.delete(id)) {
         deleted++;
       }
     });
-    
+
     return { deleted };
   }
 
   info(): MockInfoResult {
-    const totalVectors = this.vectors.size + 
+    const totalVectors =
+      this.vectors.size +
       Array.from(this.namespaces.values()).reduce((sum, ns) => sum + ns.size, 0);
-    
+
     return {
       dimension: 1536, // Mock OpenAI embedding dimension
       indexSize: totalVectors * 1024, // Mock size
@@ -195,7 +196,7 @@ export class MockUpstashVectorIndex {
 
   async upsert(
     data: MockVector | MockVector[],
-    options?: { namespace?: string }
+    options?: { namespace?: string },
   ): Promise<MockUpsertResult> {
     return this.storage.upsert(data, options?.namespace);
   }
@@ -211,7 +212,7 @@ export class MockUpstashVectorIndex {
       includeVectors?: boolean;
       includeData?: boolean;
     },
-    queryOptions?: { namespace?: string }
+    queryOptions?: { namespace?: string },
   ): Promise<MockVectorScore[]> {
     const queryVector = options.vector || options.data || [0.1, 0.2, 0.3];
     return this.storage.query(queryVector, options, queryOptions?.namespace);
@@ -224,14 +225,14 @@ export class MockUpstashVectorIndex {
       includeMetadata?: boolean;
       includeVectors?: boolean;
       includeData?: boolean;
-    }
+    },
   ): Promise<MockVector[]> {
     return this.storage.fetch(ids, options?.namespace);
   }
 
   async delete(
     ids: string | string[],
-    options?: { namespace?: string }
+    options?: { namespace?: string },
   ): Promise<MockDeleteResult> {
     return this.storage.delete(ids, options?.namespace);
   }
@@ -251,7 +252,7 @@ export const mockUpstashVectorClient = new MockUpstashVectorIndex();
 // Mock Upstash Vector adapter
 export const mockUpstashVectorAdapter = {
   client: mockUpstashVectorClient,
-  
+
   async initialize(): Promise<void> {
     // Mock initialization
   },
@@ -283,24 +284,30 @@ export const mockUpstashVectorAdapter = {
 
   async findUnique<T>(collection: string, query: { id: string }): Promise<T | null> {
     const results = await mockUpstashVectorClient.fetch(query.id, { namespace: collection });
-    return results[0] as T || null;
+    return (results[0] as T) || null;
   },
 
-  async findMany<T>(collection: string, query?: { vector?: number[]; topK?: number }): Promise<T[]> {
+  async findMany<T>(
+    collection: string,
+    query?: { vector?: number[]; topK?: number },
+  ): Promise<T[]> {
     if (!query?.vector) {
       throw new Error('Vector query requires a vector for similarity search');
     }
-    
-    const results = await mockUpstashVectorClient.query({
-      includeMetadata: true,
-      topK: query.topK || 10,
-      vector: query.vector,
-    }, { namespace: collection });
-    
+
+    const results = await mockUpstashVectorClient.query(
+      {
+        includeMetadata: true,
+        topK: query.topK || 10,
+        vector: query.vector,
+      },
+      { namespace: collection },
+    );
+
     return results as T[];
   },
 
-  async count(collection: string): Promise<number> {
+  async count(_collection: string): Promise<number> {
     const info = await mockUpstashVectorClient.info();
     return info.vectorCount;
   },
@@ -322,7 +329,7 @@ export const mockUpstashVectorAdapter = {
       filter?: string;
       includeMetadata?: boolean;
     },
-    queryOptions?: { namespace?: string }
+    queryOptions?: { namespace?: string },
   ): Promise<T[]> {
     const results = await mockUpstashVectorClient.query(options, queryOptions);
     return results as T[];
@@ -330,24 +337,18 @@ export const mockUpstashVectorAdapter = {
 
   async fetch<T = MockVector>(
     ids: string | string[],
-    options?: { namespace?: string; includeMetadata?: boolean }
+    options?: { namespace?: string; includeMetadata?: boolean },
   ): Promise<T[]> {
     const results = await mockUpstashVectorClient.fetch(ids, options);
     return results as T[];
   },
 
-  async upsertMany<T = MockUpsertResult>(
-    vectors: MockVector[],
-    namespace?: string
-  ): Promise<T> {
+  async upsertMany<T = MockUpsertResult>(vectors: MockVector[], namespace?: string): Promise<T> {
     const result = await mockUpstashVectorClient.upsert(vectors, { namespace });
     return result as T;
   },
 
-  async deleteMany<T = MockDeleteResult>(
-    ids: string[],
-    namespace?: string
-  ): Promise<T> {
+  async deleteMany<T = MockDeleteResult>(ids: string[], namespace?: string): Promise<T> {
     const result = await mockUpstashVectorClient.delete(ids, { namespace });
     return result as T;
   },
@@ -363,21 +364,24 @@ export const mockUpstashVectorAdapter = {
   // Text-based methods
   async queryByText<T = MockVectorScore>(
     text: string,
-    options?: { topK?: number; namespace?: string }
+    options?: { topK?: number; namespace?: string },
   ): Promise<T[]> {
-    const results = await mockUpstashVectorClient.query({
-      data: text,
-      includeMetadata: true,
-      topK: options?.topK,
-    }, { namespace: options?.namespace });
+    const results = await mockUpstashVectorClient.query(
+      {
+        data: text,
+        includeMetadata: true,
+        topK: options?.topK,
+      },
+      { namespace: options?.namespace },
+    );
     return results as T[];
   },
 
   async upsertText<T = MockUpsertResult>(
     data: { id: string; data: string; metadata?: Record<string, any> }[],
-    options?: { namespace?: string }
+    options?: { namespace?: string },
   ): Promise<T> {
-    const vectors = data.map(item => ({ ...item, vector: undefined }));
+    const vectors = data.map((item) => ({ ...item, vector: undefined }));
     const result = await mockUpstashVectorClient.upsert(vectors, options);
     return result as T;
   },

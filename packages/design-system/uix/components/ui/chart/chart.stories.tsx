@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { useMemo } from 'react';
 import {
   Area,
@@ -14,54 +13,51 @@ import {
   XAxis,
 } from 'recharts';
 
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@repo/design-system/uix';
+import { type ChartConfig, ChartContainer } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 const multiSeriesData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 },
+  { desktop: 186, mobile: 80, month: 'January' },
+  { desktop: 305, mobile: 200, month: 'February' },
+  { desktop: 237, mobile: 120, month: 'March' },
+  { desktop: 73, mobile: 190, month: 'April' },
+  { desktop: 209, mobile: 130, month: 'May' },
+  { desktop: 214, mobile: 140, month: 'June' },
 ];
 
 const multiSeriesConfig = {
   desktop: {
-    label: 'Desktop',
     color: 'hsl(var(--chart-1))',
+    label: 'Desktop',
   },
   mobile: {
-    label: 'Mobile',
     color: 'hsl(var(--chart-2))',
+    label: 'Mobile',
   },
 } satisfies ChartConfig;
 
 const singleSeriesData = [
-  { browser: 'chrome', visitors: 275, fill: 'var(--color-chrome)' },
-  { browser: 'safari', visitors: 200, fill: 'var(--color-safari)' },
-  { browser: 'other', visitors: 190, fill: 'var(--color-other)' },
+  { browser: 'chrome', fill: 'var(--color-chrome)', visitors: 275 },
+  { browser: 'safari', fill: 'var(--color-safari)', visitors: 200 },
+  { browser: 'other', fill: 'var(--color-other)', visitors: 190 },
 ];
 
 const singleSeriesConfig = {
-  visitors: {
-    label: 'Visitors',
-  },
   chrome: {
-    label: 'Chrome',
     color: 'hsl(var(--chart-1))',
-  },
-  safari: {
-    label: 'Safari',
-    color: 'hsl(var(--chart-2))',
+    label: 'Chrome',
   },
   other: {
-    label: 'Other',
     color: 'hsl(var(--chart-5))',
+    label: 'Other',
+  },
+  safari: {
+    color: 'hsl(var(--chart-2))',
+    label: 'Safari',
+  },
+  visitors: {
+    label: 'Visitors',
   },
 } satisfies ChartConfig;
 
@@ -69,13 +65,13 @@ const singleSeriesConfig = {
  * Beautiful charts. Built using Recharts. Copy and paste into your apps.
  */
 const meta = {
-  title: 'uix/ui/Chart',
-  component: ChartContainer,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     children: <div />,
   },
+  argTypes: {},
+  component: ChartContainer,
+  tags: ['autodocs'],
+  title: 'uix/ui/Chart',
 } satisfies Meta<typeof ChartContainer>;
 
 export default meta;
@@ -101,27 +97,27 @@ export const StackedAreaChart: Story = {
       >
         <CartesianGrid vertical={false} />
         <XAxis
+          tickFormatter={(value) => value.slice(0, 3)}
+          axisLine={false}
           dataKey="month"
           tickLine={false}
-          axisLine={false}
           tickMargin={8}
-          tickFormatter={(value) => value.slice(0, 3)}
         />
         <Area
+          stroke="var(--color-mobile)"
           dataKey="mobile"
-          type="natural"
           fill="var(--color-mobile)"
           fillOpacity={0.4}
-          stroke="var(--color-mobile)"
           stackId="a"
+          type="natural"
         />
         <Area
+          stroke="var(--color-desktop)"
           dataKey="desktop"
-          type="natural"
           fill="var(--color-desktop)"
           fillOpacity={0.4}
-          stroke="var(--color-desktop)"
           stackId="a"
+          type="natural"
         />
       </AreaChart>
     </ChartContainer>
@@ -140,11 +136,11 @@ export const StackedBarChart: Story = {
       <BarChart accessibilityLayer data={multiSeriesData}>
         <CartesianGrid vertical={false} />
         <XAxis
+          tickFormatter={(value) => value.slice(0, 3)}
+          axisLine={false}
           dataKey="month"
           tickLine={false}
           tickMargin={10}
-          axisLine={false}
-          tickFormatter={(value) => value.slice(0, 3)}
         />
         <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
         <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
@@ -172,25 +168,25 @@ export const MultiLineChart: Story = {
       >
         <CartesianGrid vertical={false} />
         <XAxis
+          tickFormatter={(value) => value.slice(0, 3)}
+          axisLine={false}
           dataKey="month"
           tickLine={false}
-          axisLine={false}
           tickMargin={8}
-          tickFormatter={(value) => value.slice(0, 3)}
         />
         <Line
+          strokeWidth={2}
+          dot={false}
+          stroke="var(--color-desktop)"
           dataKey="desktop"
           type="natural"
-          stroke="var(--color-desktop)"
-          strokeWidth={2}
-          dot={false}
         />
         <Line
-          dataKey="mobile"
-          type="natural"
-          stroke="var(--color-mobile)"
           strokeWidth={2}
           dot={false}
+          stroke="var(--color-mobile)"
+          dataKey="mobile"
+          type="natural"
         />
       </LineChart>
     </ChartContainer>
@@ -211,34 +207,34 @@ export const DoughnutChart: Story = {
     return (
       <ChartContainer {...args}>
         <PieChart>
-            <Pie
+          <Pie
+            strokeWidth={5}
             data={singleSeriesData}
             dataKey="visitors"
-            nameKey="browser"
             innerRadius={48}
-            strokeWidth={5}
+            nameKey="browser"
           >
             <Label
               content={({ viewBox }) => {
                 if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
                   return (
                     <text
+                      dominantBaseline="middle"
+                      textAnchor="middle"
                       x={viewBox.cx}
                       y={viewBox.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
                     >
                       <tspan
+                        className="fill-foreground font-bold text-3xl"
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        className="fill-foreground font-bold text-3xl"
                       >
                         {totalVisitors.toLocaleString()}
                       </tspan>
                       <tspan
+                        className="fill-muted-foreground"
                         x={viewBox.cx}
                         y={(viewBox.cy || 0) + 24}
-                        className="fill-muted-foreground"
                       >
                         Visitors
                       </tspan>

@@ -6,7 +6,7 @@ interface MockRedisValue {
   value: string;
 }
 
-interface MockScanResult {
+interface _MockScanResult {
   cursor: number;
   keys: string[];
 }
@@ -26,12 +26,12 @@ class MockRedisStorage {
 
   // String operations
   set(key: string, value: string, options?: { ex?: number; px?: number }): string {
-    const expiration = options?.ex 
-      ? Date.now() + options.ex * 1000 
-      : options?.px 
-      ? Date.now() + options.px 
-      : undefined;
-    
+    const expiration = options?.ex
+      ? Date.now() + options.ex * 1000
+      : options?.px
+        ? Date.now() + options.px
+        : undefined;
+
     this.data.set(key, { expiration, value });
     return 'OK';
   }
@@ -39,18 +39,18 @@ class MockRedisStorage {
   get(key: string): string | null {
     const item = this.data.get(key);
     if (!item) return null;
-    
+
     if (item.expiration && Date.now() > item.expiration) {
       this.data.delete(key);
       return null;
     }
-    
+
     return item.value;
   }
 
   del(...keys: string[]): number {
     let deleted = 0;
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (this.data.delete(key)) deleted++;
       if (this.lists.delete(key)) deleted++;
       if (this.sets.delete(key)) deleted++;
@@ -61,19 +61,20 @@ class MockRedisStorage {
   }
 
   exists(...keys: string[]): number {
-    return keys.filter(key => 
-      this.data.has(key) || 
-      this.lists.has(key) || 
-      this.sets.has(key) || 
-      this.hashes.has(key) || 
-      this.sortedSets.has(key)
+    return keys.filter(
+      (key) =>
+        this.data.has(key) ||
+        this.lists.has(key) ||
+        this.sets.has(key) ||
+        this.hashes.has(key) ||
+        this.sortedSets.has(key),
     ).length;
   }
 
   expire(key: string, seconds: number): number {
     const item = this.data.get(key);
     if (!item) return 0;
-    
+
     item.expiration = Date.now() + seconds * 1000;
     return 1;
   }
@@ -82,7 +83,7 @@ class MockRedisStorage {
     const item = this.data.get(key);
     if (!item) return -2;
     if (!item.expiration) return -1;
-    
+
     const remaining = Math.ceil((item.expiration - Date.now()) / 1000);
     return remaining > 0 ? remaining : -2;
   }
@@ -107,7 +108,7 @@ class MockRedisStorage {
   }
 
   mget(...keys: string[]): (string | null)[] {
-    return keys.map(key => this.get(key));
+    return keys.map((key) => this.get(key));
   }
 
   mset(...keyValues: string[]): string {
@@ -151,10 +152,10 @@ class MockRedisStorage {
   lrange(key: string, start: number, stop: number): string[] {
     const list = this.lists.get(key);
     if (!list) return [];
-    
+
     const normalizedStart = start < 0 ? Math.max(0, list.length + start) : start;
     const normalizedStop = stop < 0 ? list.length + stop + 1 : stop + 1;
-    
+
     return list.slice(normalizedStart, normalizedStop);
   }
 
@@ -170,16 +171,16 @@ class MockRedisStorage {
     }
     const set = this.sets.get(key)!;
     const initialSize = set.size;
-    members.forEach(member => set.add(member));
+    members.forEach((member) => set.add(member));
     return set.size - initialSize;
   }
 
   srem(key: string, ...members: string[]): number {
     const set = this.sets.get(key);
     if (!set) return 0;
-    
+
     let removed = 0;
-    members.forEach(member => {
+    members.forEach((member) => {
       if (set.delete(member)) removed++;
     });
     return removed;
@@ -198,17 +199,17 @@ class MockRedisStorage {
   spop(key: string, count = 1): string | string[] | null {
     const set = this.sets.get(key);
     if (!set || set.size === 0) return null;
-    
+
     const members = Array.from(set);
     const popped: string[] = [];
-    
+
     for (let i = 0; i < Math.min(count, members.length); i++) {
       const randomIndex = Math.floor(Math.random() * members.length);
       const member = members.splice(randomIndex, 1)[0];
       set.delete(member);
       popped.push(member);
     }
-    
+
     return count === 1 ? popped[0] || null : popped;
   }
 
@@ -225,7 +226,7 @@ class MockRedisStorage {
       this.hashes.set(key, new Map());
     }
     const hash = this.hashes.get(key)!;
-    
+
     if (typeof fieldOrObject === 'string' && value !== undefined) {
       const existed = hash.has(fieldOrObject);
       hash.set(fieldOrObject, value);
@@ -238,7 +239,7 @@ class MockRedisStorage {
       });
       return newFields;
     }
-    
+
     return 0;
   }
 
@@ -249,13 +250,13 @@ class MockRedisStorage {
 
   hmget(key: string, ...fields: string[]): (string | null)[] {
     const hash = this.hashes.get(key);
-    return fields.map(field => hash ? hash.get(field) || null : null);
+    return fields.map((field) => (hash ? hash.get(field) || null : null));
   }
 
   hgetall(key: string): Record<string, string> {
     const hash = this.hashes.get(key);
     if (!hash) return {};
-    
+
     const result: Record<string, string> = {};
     hash.forEach((value, field) => {
       result[field] = value;
@@ -266,9 +267,9 @@ class MockRedisStorage {
   hdel(key: string, ...fields: string[]): number {
     const hash = this.hashes.get(key);
     if (!hash) return 0;
-    
+
     let deleted = 0;
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (hash.delete(field)) deleted++;
     });
     return deleted;
@@ -280,7 +281,7 @@ class MockRedisStorage {
       this.sortedSets.set(key, new Map());
     }
     const zset = this.sortedSets.get(key)!;
-    
+
     let added = 0;
     scoreMembers.forEach(({ member, score }) => {
       if (!zset.has(member)) added++;
@@ -289,19 +290,24 @@ class MockRedisStorage {
     return added;
   }
 
-  zrange(key: string, start: number, stop: number, options?: { withScores?: boolean }): string[] | { member: string; score: number }[] {
+  zrange(
+    key: string,
+    start: number,
+    stop: number,
+    options?: { withScores?: boolean },
+  ): string[] | { member: string; score: number }[] {
     const zset = this.sortedSets.get(key);
     if (!zset) return [];
-    
+
     const sortedMembers = Array.from(zset.entries())
       .sort(([, a], [, b]) => a - b)
       .map(([member, score]) => ({ member, score }));
-    
+
     const normalizedStart = start < 0 ? Math.max(0, sortedMembers.length + start) : start;
     const normalizedStop = stop < 0 ? sortedMembers.length + stop + 1 : stop + 1;
-    
+
     const slice = sortedMembers.slice(normalizedStart, normalizedStop);
-    
+
     if (options?.withScores) {
       return slice;
     } else {
@@ -328,22 +334,22 @@ class MockRedisStorage {
       ...this.hashes.keys(),
       ...this.sortedSets.keys(),
     ];
-    
+
     const match = options?.match;
     const count = options?.count || 10;
-    
+
     let filteredKeys = allKeys;
     if (match) {
       const pattern = match.replace(/\*/g, '.*');
       const regex = new RegExp(`^${pattern}$`);
-      filteredKeys = allKeys.filter(key => regex.test(key));
+      filteredKeys = allKeys.filter((key) => regex.test(key));
     }
-    
+
     const start = cursor;
     const end = Math.min(start + count, filteredKeys.length);
     const keys = filteredKeys.slice(start, end);
     const nextCursor = end >= filteredKeys.length ? 0 : end;
-    
+
     return [nextCursor, keys];
   }
 
@@ -408,7 +414,7 @@ class MockPipeline {
 
   async exec(): Promise<any[]> {
     const results = [];
-    
+
     for (const { args, command } of this.commands) {
       try {
         const method = (mockStorage as any)[command];
@@ -422,7 +428,7 @@ class MockPipeline {
         results.push(error);
       }
     }
-    
+
     this.commands = []; // Clear commands after execution
     return results;
   }
@@ -534,7 +540,11 @@ export class MockUpstashRedis {
   // Hash operations
   async hset(key: string, field: string, value: string): Promise<number>;
   async hset(key: string, fieldValues: Record<string, string>): Promise<number>;
-  async hset(key: string, fieldOrObject: string | Record<string, string>, value?: string): Promise<number> {
+  async hset(
+    key: string,
+    fieldOrObject: string | Record<string, string>,
+    value?: string,
+  ): Promise<number> {
     return this.storage.hset(key, fieldOrObject as any, value as any);
   }
 
@@ -559,7 +569,12 @@ export class MockUpstashRedis {
     return this.storage.zadd(key, ...scoreMembers);
   }
 
-  async zrange(key: string, start: number, stop: number, options?: { withScores?: boolean }): Promise<string[] | { member: string; score: number }[]> {
+  async zrange(
+    key: string,
+    start: number,
+    stop: number,
+    options?: { withScores?: boolean },
+  ): Promise<string[] | { member: string; score: number }[]> {
     return this.storage.zrange(key, start, stop, options);
   }
 
@@ -572,7 +587,10 @@ export class MockUpstashRedis {
   }
 
   // Utility operations
-  async scan(cursor: number, options?: { match?: string; count?: number }): Promise<[number, string[]]> {
+  async scan(
+    cursor: number,
+    options?: { match?: string; count?: number },
+  ): Promise<[number, string[]]> {
     return this.storage.scan(cursor, options);
   }
 
@@ -622,7 +640,7 @@ export const mockUpstashRedisAdapter = {
     if (!data.id) {
       throw new Error('Data must have an "id" field for Redis storage');
     }
-    
+
     const key = `${collection}:${data.id}`;
     await mockUpstashRedisClient.set(key, JSON.stringify(data));
     return data as T;
@@ -633,7 +651,7 @@ export const mockUpstashRedisAdapter = {
     const existing = await mockUpstashRedisClient.get(key);
     const existingData = existing ? JSON.parse(existing) : {};
     const updatedData = { ...existingData, ...data, id };
-    
+
     await mockUpstashRedisClient.set(key, JSON.stringify(updatedData));
     return updatedData as T;
   },
@@ -642,7 +660,7 @@ export const mockUpstashRedisAdapter = {
     const key = `${collection}:${id}`;
     const existing = await mockUpstashRedisClient.get(key);
     const existingData = existing ? JSON.parse(existing) : null;
-    
+
     await mockUpstashRedisClient.del(key);
     return existingData as T;
   },
@@ -653,49 +671,50 @@ export const mockUpstashRedisAdapter = {
     return result ? JSON.parse(result) : null;
   },
 
-  async findMany<T>(collection: string, query?: { pattern?: string; limit?: number }): Promise<T[]> {
+  async findMany<T>(
+    collection: string,
+    query?: { pattern?: string; limit?: number },
+  ): Promise<T[]> {
     const pattern = query?.pattern || `${collection}:*`;
     const limit = query?.limit || 100;
-    
+
     let cursor = 0;
     const keys: string[] = [];
-    
+
     do {
       const [nextCursor, foundKeys] = await mockUpstashRedisClient.scan(cursor, {
         count: Math.min(limit, 100),
-        match: pattern
+        match: pattern,
       });
-      
+
       cursor = nextCursor;
       keys.push(...foundKeys);
-      
+
       if (keys.length >= limit) break;
     } while (cursor !== 0);
-    
+
     if (keys.length === 0) return [];
-    
+
     const values = await mockUpstashRedisClient.mget(...keys.slice(0, limit));
-    return values
-      .filter(value => value !== null)
-      .map(value => JSON.parse(value!)) as T[];
+    return values.filter((value) => value !== null).map((value) => JSON.parse(value!)) as T[];
   },
 
   async count(collection: string, query?: { pattern?: string }): Promise<number> {
     const pattern = query?.pattern || `${collection}:*`;
-    
+
     let cursor = 0;
     let count = 0;
-    
+
     do {
       const [nextCursor, keys] = await mockUpstashRedisClient.scan(cursor, {
         count: 100,
-        match: pattern
+        match: pattern,
       });
-      
+
       cursor = nextCursor;
       count += keys.length;
     } while (cursor !== 0);
-    
+
     return count;
   },
 
@@ -709,7 +728,12 @@ export const mockUpstashRedisAdapter = {
   },
 
   // Redis-specific methods would be here...
-  async setWithExpiration<T>(collection: string, id: string, data: any, expirationSeconds: number): Promise<T> {
+  async setWithExpiration<T>(
+    collection: string,
+    id: string,
+    data: any,
+    expirationSeconds: number,
+  ): Promise<T> {
     const key = `${collection}:${id}`;
     await mockUpstashRedisClient.set(key, JSON.stringify(data), { ex: expirationSeconds });
     return { ...data, id } as T;
@@ -743,16 +767,16 @@ export const seedMockRedisData = (data: Record<string, any>): void => {
 
 export const getMockRedisState = (): Record<string, string> => {
   const state: Record<string, string> = {};
-  
+
   // Get all keys and their values
   const [, keys] = mockStorage.scan(0, { count: 1000 });
-  keys.forEach(key => {
+  keys.forEach((key) => {
     const value = mockStorage.get(key);
     if (value !== null) {
       state[key] = value;
     }
   });
-  
+
   return state;
 };
 

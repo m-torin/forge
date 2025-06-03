@@ -13,7 +13,11 @@ const localFlagsEnv = process.env.LOCAL_FLAGS || process.env.NEXT_PUBLIC_LOCAL_F
 if (localFlagsEnv) {
   try {
     localFlags = JSON.parse(localFlagsEnv);
-    console.log('[Analytics] Using local feature flags:', Object.keys(localFlags || {}).length, 'flags');
+    console.log(
+      '[Analytics] Using local feature flags:',
+      Object.keys(localFlags || {}).length,
+      'flags',
+    );
   } catch (error) {
     console.error('[Analytics] Failed to parse LOCAL_FLAGS:', error);
   }
@@ -21,7 +25,7 @@ if (localFlagsEnv) {
 
 /**
  * Server-side feature flag evaluation
- * 
+ *
  * @param key - The feature flag key
  * @param userId - User ID for flag evaluation
  * @returns Promise<boolean> - Whether the flag is enabled
@@ -43,7 +47,7 @@ export async function flag(key: string, userId?: string): Promise<boolean> {
   // 3. Server-side: Use PostHog server client
   if (userId) {
     try {
-      return await analytics.isFeatureEnabled(key, userId) ?? false;
+      return (await analytics.isFeatureEnabled(key, userId)) ?? false;
     } catch (error) {
       console.error('[Analytics] Failed to check server flag:', error);
       return false;
@@ -57,23 +61,21 @@ export async function flag(key: string, userId?: string): Promise<boolean> {
 
 /**
  * Server-side bulk feature flag evaluation
- * 
+ *
  * @param keys - Array of feature flag keys
  * @param userId - User ID for flag evaluation
  * @returns Promise<Record<string, boolean>> - Map of flags to their enabled state
  */
 export async function flags(keys: string[], userId?: string): Promise<Record<string, boolean>> {
   const results: Record<string, boolean> = {};
-  
+
   // Use Promise.all for parallel flag evaluation
-  const values = await Promise.all(
-    keys.map(key => flag(key, userId))
-  );
-  
+  const values = await Promise.all(keys.map((key) => flag(key, userId)));
+
   keys.forEach((key, index) => {
     results[key] = values[index];
   });
-  
+
   return results;
 }
 

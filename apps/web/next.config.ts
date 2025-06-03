@@ -8,8 +8,10 @@ import type { NextConfig } from "next";
 let nextConfig: NextConfig = withLogging({
   ...config,
   experimental: {
+    ...config.experimental,
     typedRoutes: true,
     optimizePackageImports: [
+      ...(config.experimental?.optimizePackageImports || []),
       "@mantine/core",
       "@mantine/hooks",
       "@mantine/form",
@@ -24,7 +26,10 @@ nextConfig.serverExternalPackages = [
 ];
 
 // Configure webpack to handle fsevents
-nextConfig.webpack = (config, { isServer }) => {
+nextConfig.webpack = (
+  config: any,
+  { isServer }: { isServer: boolean },
+): any => {
   if (!isServer) {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -33,10 +38,10 @@ nextConfig.webpack = (config, { isServer }) => {
       tls: false,
     };
   }
-  
+
   // Ignore fsevents which is macOS only
   config.externals = [...(config.externals || []), { fsevents: "fsevents" }];
-  
+
   return config;
 };
 

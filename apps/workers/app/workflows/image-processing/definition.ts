@@ -1,10 +1,42 @@
-import { imageProcessingWorkflow } from '@repo/orchestration';
+export interface ImageProcessingPayload {
+  imageId: string;
+  imageUrl: string;
+  options: {
+    filters: string[];
+    outputFormat: 'jpeg' | 'png' | 'webp';
+    quality: number;
+    resolutions: number[];
+  };
+  userId: string;
+}
 
-import { wrapWorkflow } from '../workflow-wrapper';
+interface WorkflowDefinition {
+  defaultPayload: ImageProcessingPayload;
+  metadata: {
+    id: string;
+    title: string;
+    description: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    estimatedTime: string;
+    features: string[];
+    tags: string[];
+    color: string;
+  };
+  workflow: (context: any) => Promise<any>;
+}
 
-import type { WorkflowDefinition } from '../types';
-
-const definition: WorkflowDefinition = {
+const imageProcessingDefinition: WorkflowDefinition = {
+  defaultPayload: {
+    imageId: `img-${Date.now()}`,
+    imageUrl: 'https://images.unsplash.com/photo-sample.jpg',
+    options: {
+      filters: ['grayscale', 'sepia', 'blur', 'sharpen'],
+      outputFormat: 'webp',
+      quality: 85,
+      resolutions: [320, 640, 960, 1200],
+    },
+    userId: 'user-123',
+  },
   metadata: {
     id: 'image-processing',
     color: 'green',
@@ -23,21 +55,11 @@ const definition: WorkflowDefinition = {
     tags: ['media', 'etl', 'processing'],
     title: 'Image Processing',
   },
-
-  defaultPayload: {
-    imageId: `img-${Date.now()}`,
-    imageUrl:
-      'https://unsplash.com/photos/m6tAqZvy4RM/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzQ4NDU1NTEzfA&force=true&w=2400',
-    options: {
-      filters: ['grayscale', 'sepia', 'blur', 'sharpen'],
-      outputFormat: 'webp',
-      quality: 85,
-      resolutions: [320, 640, 960, 1200], // Max 1200px
-    },
-    userId: 'user-123',
+  workflow: async (context: any) => {
+    // Import the actual workflow function and delegate to it
+    const { imageProcessingWorkflow } = await import('@repo/orchestration');
+    return imageProcessingWorkflow(context);
   },
-
-  workflow: wrapWorkflow(imageProcessingWorkflow),
 };
 
-export default definition;
+export default imageProcessingDefinition;

@@ -1,13 +1,7 @@
-import { type Metadata } from 'next';
-
 import {
   BackgroundSection,
   ButtonSecondary,
   Divider,
-  getBlogPosts,
-  getCollections,
-  getGroupCollections,
-  getProducts,
   Heading,
   SectionClientSay,
   SectionCollectionSlider,
@@ -21,37 +15,42 @@ import {
   SectionPromo2,
   SectionSliderLargeProduct,
   SectionSliderProductCard,
-} from '@repo/design-system/ciesco2';
+  getBlogPosts,
+  getCollections,
+  getGroupCollections,
+  getProducts,
+} from '@repo/design-system/ciseco'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  description: 'Discover the latest products and trends in our online store.',
   title: 'Home',
-};
+  description: 'Discover the latest products and trends in our online store.',
+}
 
 async function PageHome() {
-  const allCollections = await getCollections();
-  const departmentCollections = allCollections.slice(11, 15);
-  const featuredCollections = allCollections.slice(7, 11);
-  const groupCollections = await getGroupCollections();
-  const products = await getProducts();
-  const carouselProducts1 = products.slice(0, 5);
-  const carouselProducts2 = products.slice(3, 10);
-  const carouselProducts3 = products.slice(1, 5);
-  const blogPosts = await getBlogPosts();
+  const allCollections = await getCollections()
+  const departmentCollections = allCollections.slice(11, 15)
+  const featuredCollections = allCollections.slice(7, 11)
+  const groupCollections = await getGroupCollections()
+  const products = await getProducts()
+  const carouselProducts1 = products.slice(0, 5)
+  const carouselProducts2 = products.slice(3, 10)
+  const carouselProducts3 = products.slice(1, 5)
+  const blogPosts = await getBlogPosts()
 
   return (
     <div className="nc-PageHome relative overflow-hidden">
       <SectionHero2 />
-      <SectionCollectionSlider collections={featuredCollections} className="mt-24 lg:mt-32" />
+      <SectionCollectionSlider className="mt-24 lg:mt-32" collections={featuredCollections} />
 
-      <div className="relative container my-24 flex flex-col gap-y-24 lg:my-32 lg:gap-y-32">
+      <div className="container relative my-24 flex flex-col gap-y-24 lg:my-32 lg:gap-y-32">
         <SectionSliderProductCard data={carouselProducts1} />
         <Divider />
         <div className="pb-16">
           <SectionHowItWork />
         </div>
         <SectionPromo1 />
-        <div className="relative pt-24 pb-20 lg:pt-28">
+        <div className="relative pb-20 pt-24 lg:pt-28">
           <BackgroundSection />
           <SectionGridMoreExplore groupCollections={groupCollections} />
         </div>
@@ -78,7 +77,7 @@ async function PageHome() {
         <SectionClientSay />
       </div>
     </div>
-  );
+  )
 }
 
-export default PageHome;
+export default PageHome

@@ -2,14 +2,18 @@
   "name": "@repo/design-system",
   "private": true,
   "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
   "exports": {
     "./uix": "./uix/index.tsx",
-    "./ciesco2": "./ciesco2/index.ts",
-    "./ciesco2/*": "./ciesco2/*",
-    "./gluestack": "./gluestack/index.ts",
-    "./gluestack/*": "./gluestack/*",
+    "./ciseco": "./ciseco/index.ts",
+    "./ciseco/*": "./ciseco/*",
     "./algolia": "./algolia/index.ts",
-    "./algolia/*": "./algolia/*"
+    "./algolia/*": "./algolia/*",
+    "./components": "./components/index.ts",
+    "./components/*": "./components/*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -76,6 +80,7 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
     "@storybook/nextjs": "^9.0.4",
     "@storybook/react": "^9.0.4",
     "@testing-library/dom": "^10.4.0",
@@ -86,12 +91,13 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.5.0",
+    "@vitejs/plugin-react": "^4.5.1",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "jsdom": "catalog:",
-    "next": "catalog:",
+    "next": "15.4.0-canary.62",
     "postcss": "catalog:",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "^6.3.5",
     "vitest": "catalog:"

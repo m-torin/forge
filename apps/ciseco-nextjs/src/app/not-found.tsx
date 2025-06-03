@@ -1,20 +1,18 @@
-import I404Png from '@/images/404.png';
-import { type Metadata } from 'next';
-
-import { ButtonPrimary } from '@repo/design-system/ciesco2';
-import { NcImage } from '@repo/design-system/ciesco2';
+import { ButtonPrimary, NcImage } from '@repo/design-system/ciseco'
+import I404Png from '@repo/design-system/ciseco/images/404.png'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  description: "The page you were looking for doesn't exist.",
   title: 'Page Not Found',
-};
+  description: "The page you were looking for doesn't exist.",
+}
 
 const Page404 = () => (
   <div className="nc-Page404">
-    <div className="relative container pt-5 pb-16 lg:pt-5 lg:pb-20">
+    <div className="container relative pb-16 pt-5 lg:pb-20 lg:pt-5">
       {/* HEADER */}
       <header className="mx-auto max-w-2xl space-y-2 text-center">
-        <NcImage alt="not-found" src={I404Png} />
+        <NcImage src={I404Png} alt="not-found" />
         <span className="block text-sm font-medium tracking-wider text-neutral-800 sm:text-base dark:text-neutral-200">
           {`THE PAGE YOU WERE LOOKING FOR DOESN'T EXIST.`}{' '}
         </span>
@@ -24,6 +22,6 @@ const Page404 = () => (
       </header>
     </div>
   </div>
-);
+)
 
-export default Page404;
+export default Page404

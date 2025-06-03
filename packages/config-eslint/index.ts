@@ -55,11 +55,12 @@ const perfectionistSortConfig = {
 } as const;
 
 // File patterns
-const MARKDOWN_FILES = ['**/*.md'];
+const MARKDOWN_FILES = ['**/*.md', '**/*.mdx'];
 const MARKDOWN_CODE_BLOCKS = [
-  '**/*.md/*.{js,jsx,ts,tsx}',
-  '**/README.md/*.{js,jsx,ts,tsx}',
-  '**/README.md/[0-9]*_[0-9]*.ts',
+  '**/*.md/*.{js,jsx,ts,tsx,mjs,cjs}',
+  '**/*.mdx/*.{js,jsx,ts,tsx,mjs,cjs}',
+  '**/README.md/*.{js,jsx,ts,tsx,mjs,cjs}',
+  '**/README.md/[0-9]*_[0-9]*.{js,jsx,ts,tsx}',
 ];
 
 const config: Linter.FlatConfig[] = [
@@ -81,17 +82,74 @@ const config: Linter.FlatConfig[] = [
   {
     files: MARKDOWN_CODE_BLOCKS,
     languageOptions: {
+      ecmaVersion: 2024,
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+      parser: tseslint.parser,
       parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
         project: null, // Disable TypeScript project configuration for markdown files
       },
+      sourceType: 'module',
+    },
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+      'unused-imports': unusedImportsPlugin,
     },
     rules: {
+      // Disable TypeScript rules that require type checking
+      '@typescript-eslint/await-thenable': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/restrict-plus-operands': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+
+      // Import and module resolution
       'import/no-unresolved': 'off',
-      // Relax rules for documentation examples
+      'import/no-duplicates': 'off',
+      'import/order': 'off',
+
+      // Perfectionist rules - disable sorting in markdown examples
+      'perfectionist/sort-array-includes': 'off',
+      'perfectionist/sort-enums': 'off',
+      'perfectionist/sort-imports': 'off',
+      'perfectionist/sort-interfaces': 'off',
+      'perfectionist/sort-jsx-props': 'off',
+      'perfectionist/sort-named-exports': 'off',
+      'perfectionist/sort-named-imports': 'off',
+      'perfectionist/sort-objects': 'off',
+
+      // General rules - relax for documentation examples
       'no-console': 'off',
+      'no-undef': 'off',
       'no-unused-vars': 'off',
+      'prefer-const': 'off',
+
+      // Promise rules
+      'promise/catch-or-return': 'off',
+      'promise/no-nesting': 'off',
+
+      // Security rules
+      'security/detect-buffer-noassert': 'off',
+      'security/detect-child-process': 'off',
+      'security/detect-eval-with-expression': 'off',
+      'security/detect-object-injection': 'off',
+      'security/detect-unsafe-regex': 'off',
+
+      // Unused imports - allow unused in examples
       'unused-imports/no-unused-imports': 'off',
       'unused-imports/no-unused-vars': 'off',
     },

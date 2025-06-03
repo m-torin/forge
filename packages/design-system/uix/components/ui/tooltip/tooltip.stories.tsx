@@ -1,31 +1,30 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { IconPlus } from '@tabler/icons-react';
 
 import { Tooltip } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * A popup that displays information related to an element when the element
  * receives keyboard focus or the mouse hovers over it.
  */
 const meta: Meta<typeof Tooltip> = {
-  title: 'uix/ui/Tooltip',
-  component: Tooltip,
-  tags: ['autodocs'],
+  args: {
+    label: 'Add to library',
+    position: 'top',
+  },
   argTypes: {
-    position: {
-      options: ['top', 'bottom', 'left', 'right'],
-      control: {
-        type: 'radio',
-      },
-    },
     label: {
       control: 'text',
     },
+    position: {
+      control: {
+        type: 'radio',
+      },
+      options: ['top', 'bottom', 'left', 'right'],
+    },
   },
-  args: {
-    position: 'top',
-    label: 'Add to library',
-  },
+  component: Tooltip,
   parameters: {
     layout: 'centered',
   },
@@ -37,6 +36,8 @@ const meta: Meta<typeof Tooltip> = {
       </button>
     </Tooltip>
   ),
+  tags: ['autodocs'],
+  title: 'uix/ui/Tooltip',
 } satisfies Meta<typeof Tooltip>;
 
 export default meta;
@@ -53,8 +54,8 @@ export const Default: Story = {};
  */
 export const Bottom: Story = {
   args: {
-    position: 'bottom',
     label: 'Add to library',
+    position: 'bottom',
   },
 };
 
@@ -63,8 +64,8 @@ export const Bottom: Story = {
  */
 export const Left: Story = {
   args: {
-    position: 'left',
     label: 'Add to library',
+    position: 'left',
   },
 };
 
@@ -73,7 +74,7 @@ export const Left: Story = {
  */
 export const Right: Story = {
   args: {
-    position: 'right',
     label: 'Add to library',
+    position: 'right',
   },
 };

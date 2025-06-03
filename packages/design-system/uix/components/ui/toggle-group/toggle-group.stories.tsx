@@ -1,25 +1,11 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { IconBold, IconItalic, IconUnderline } from '@tabler/icons-react';
+import { ToggleGroup } from '@repo/design-system/uix';
 
-import { ToggleGroup, ToggleGroupItem } from '@repo/design-system/uix';
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * A set of two-state buttons that can be toggled on or off.
  */
 const meta = {
-  title: 'uix/ui/ToggleGroup',
-  component: ToggleGroup,
-  tags: ['autodocs'],
-  argTypes: {
-    data: {
-      control: 'object',
-      description: 'Array of items with label and value',
-    },
-    size: {
-      options: ['xs', 'sm', 'md', 'lg', 'xl'],
-      control: { type: 'select' },
-    },
-  },
   args: {
     data: [
       { label: 'Bold', value: 'bold' },
@@ -28,10 +14,23 @@ const meta = {
     ],
     disabled: false,
   },
-  render: (args: any) => <ToggleGroup {...args} />,
+  argTypes: {
+    data: {
+      control: 'object',
+      description: 'Array of items with label and value',
+    },
+    size: {
+      control: { type: 'select' },
+      options: ['xs', 'sm', 'md', 'lg', 'xl'],
+    },
+  },
+  component: ToggleGroup,
   parameters: {
     layout: 'centered',
   },
+  render: (args: any) => <ToggleGroup {...args} />,
+  tags: ['autodocs'],
+  title: 'uix/ui/ToggleGroup',
 } satisfies Meta<typeof ToggleGroup>;
 
 export default meta;

@@ -20,18 +20,18 @@
     "server-only": "catalog:"
   },
   "devDependencies": {
+    "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@repo/config": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/negotiator": "^0.6.3",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.5.0",
+    "@vitejs/plugin-react": "^4.5.1",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "next": "catalog:",
+    "next": "15.4.0-canary.62",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

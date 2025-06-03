@@ -1,10 +1,12 @@
 # Upstash Redis Integration
 
-This module provides integration with Upstash Redis, a serverless Redis-compatible database designed for modern applications.
+This module provides integration with Upstash Redis, a serverless Redis-compatible database designed
+for modern applications.
 
 ## Overview
 
 Upstash Redis is optimized for:
+
 - Serverless and edge functions
 - Pay-per-request pricing with zero cost when idle
 - Global replication for low latency
@@ -22,7 +24,8 @@ UPSTASH_REDIS_REST_URL=your_upstash_redis_url
 UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
 ```
 
-You can get these from your Upstash Redis dashboard at [console.upstash.com](https://console.upstash.com).
+You can get these from your Upstash Redis dashboard at
+[console.upstash.com](https://console.upstash.com).
 
 ### Installation
 
@@ -61,7 +64,7 @@ await adapter.initialize();
 await adapter.create('users', {
   id: 'user-1',
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 });
 
 // Find unique record
@@ -110,7 +113,9 @@ await adapter.decrement('counters', 'credits', undefined, 2); // -2
 
 ```typescript
 // Push items to list
-await adapter.listPush('queues', 'emails', 
+await adapter.listPush(
+  'queues',
+  'emails',
   { to: 'user1@example.com', subject: 'Welcome' },
   { to: 'user2@example.com', subject: 'Newsletter' }
 );
@@ -162,7 +167,9 @@ await adapter.hashDelete('profiles', 'user-1', 'age');
 
 ```typescript
 // Add scored members
-await adapter.sortedSetAdd('leaderboard', 'game-1',
+await adapter.sortedSetAdd(
+  'leaderboard',
+  'game-1',
   { score: 1000, member: { userId: 'user-1', name: 'Alice' } },
   { score: 950, member: { userId: 'user-2', name: 'Bob' } }
 );
@@ -174,9 +181,10 @@ const topPlayers = await adapter.sortedSetRange('leaderboard', 'game-1', 0, 9);
 const topWithScores = await adapter.sortedSetRange('leaderboard', 'game-1', 0, 9, true);
 
 // Get player score
-const playerScore = await adapter.sortedSetScore('leaderboard', 'game-1', 
-  { userId: 'user-1', name: 'Alice' }
-);
+const playerScore = await adapter.sortedSetScore('leaderboard', 'game-1', {
+  userId: 'user-1',
+  name: 'Alice',
+});
 ```
 
 ## Batch Operations
@@ -188,7 +196,7 @@ const playerScore = await adapter.sortedSetScore('leaderboard', 'game-1',
 await adapter.setMultiple('users', [
   { id: 'user-1', name: 'Alice', role: 'admin' },
   { id: 'user-2', name: 'Bob', role: 'user' },
-  { id: 'user-3', name: 'Charlie', role: 'user' }
+  { id: 'user-3', name: 'Charlie', role: 'user' },
 ]);
 
 // Get multiple records
@@ -211,7 +219,7 @@ pipeline.incr('counter');
 
 const results = await pipeline.exec();
 // results[0] => "OK"
-// results[1] => "OK" 
+// results[1] => "OK"
 // results[2] => 1
 ```
 
@@ -223,7 +231,7 @@ const results = await pipeline.exec();
 // Find records with pattern matching
 const allUsers = await adapter.findMany('users', {
   pattern: 'users:*',
-  limit: 100
+  limit: 100,
 });
 
 // Count records matching pattern
@@ -245,7 +253,7 @@ const result = await adapter.raw('info', ['server']);
 ```typescript
 // Clear all data (use with caution!)
 await adapter.flushAll(); // clears all databases
-await adapter.flushDb();  // clears current database
+await adapter.flushDb(); // clears current database
 ```
 
 ## Use Cases
@@ -254,16 +262,26 @@ await adapter.flushDb();  // clears current database
 
 ```typescript
 // Session cache
-await adapter.setWithExpiration('sessions', 'sess_123', {
-  userId: 'user-1',
-  data: { theme: 'dark', language: 'en' }
-}, 3600); // 1 hour expiration
+await adapter.setWithExpiration(
+  'sessions',
+  'sess_123',
+  {
+    userId: 'user-1',
+    data: { theme: 'dark', language: 'en' },
+  },
+  3600
+); // 1 hour expiration
 
 // API response cache
-await adapter.setWithExpiration('api-cache', 'users-list', {
-  data: users,
-  timestamp: Date.now()
-}, 300); // 5 minutes
+await adapter.setWithExpiration(
+  'api-cache',
+  'users-list',
+  {
+    data: users,
+    timestamp: Date.now(),
+  },
+  300
+); // 5 minutes
 ```
 
 ### Rate Limiting
@@ -291,9 +309,7 @@ await adapter.increment('live', 'active-users');
 await adapter.setAdd('online', 'users', userId);
 
 // Leaderboards
-await adapter.sortedSetAdd('leaderboard', 'daily',
-  { score: points, member: { userId, name } }
-);
+await adapter.sortedSetAdd('leaderboard', 'daily', { score: points, member: { userId, name } });
 ```
 
 ### Queue Management
@@ -303,7 +319,7 @@ await adapter.sortedSetAdd('leaderboard', 'daily',
 await adapter.listPush('jobs', 'email-queue', {
   type: 'welcome-email',
   userId: 'user-1',
-  priority: 'high'
+  priority: 'high',
 });
 
 // Process jobs
@@ -371,15 +387,19 @@ await adapter.setWithExpiration('large-cache', 'data', largeObject, 1800);
 ### Common Issues
 
 1. **Missing Environment Variables**
+
    ```
    Error: Missing Upstash Redis environment variables
    ```
+
    Solution: Ensure `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set.
 
 2. **Connection Timeout**
+
    ```
    Error: Request timeout
    ```
+
    Solution: Check your network connection and Upstash service status.
 
 3. **JSON Parsing Errors**

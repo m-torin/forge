@@ -1,9 +1,15 @@
+import { requireAuth } from '@/lib/auth';
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 
 import { createWorkflowMonitor } from '@repo/orchestration';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Validate authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
   const health = {
     environment: process.env.NODE_ENV,
     services: {
@@ -40,7 +46,12 @@ export async function GET() {
   });
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  // Validate authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
   try {
     // Simulate a more complex health check
     await new Promise((resolve) => setTimeout(resolve, 100));

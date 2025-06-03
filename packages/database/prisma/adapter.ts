@@ -1,8 +1,7 @@
 import { withAccelerate } from '@prisma/extension-accelerate';
 
+import { PrismaClient } from '../generated/client';
 import { type DatabaseAdapter } from '../types';
-
-import { PrismaClient } from './generated/client';
 
 export class PrismaAdapter implements DatabaseAdapter {
   private client: any; // Use any to allow for extended client types

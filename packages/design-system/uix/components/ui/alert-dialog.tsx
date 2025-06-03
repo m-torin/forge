@@ -1,7 +1,15 @@
 'use client';
 
 // Use Mantine Modal for AlertDialog functionality
-import { Button, Group, Modal, Text, type ButtonProps, type ModalProps, type ModalTitleProps } from '@mantine/core';
+import {
+  Button,
+  type ButtonProps,
+  Group,
+  Modal,
+  type ModalProps,
+  type ModalTitleProps,
+  Text,
+} from '@mantine/core';
 import * as React from 'react';
 
 interface AlertDialogProps extends Omit<ModalProps, 'opened' | 'onClose'> {
@@ -52,4 +60,6 @@ export const AlertDialogFooter = ({ children }: { children: React.ReactNode }) =
   </Group>
 );
 export const AlertDialogAction: React.FC<ButtonProps> = Button;
-export const AlertDialogCancel: React.FC<ButtonProps> = (props) => <Button variant="subtle" {...props} />;
+export const AlertDialogCancel: React.FC<ButtonProps> = (props) => (
+  <Button variant="subtle" {...props} />
+);

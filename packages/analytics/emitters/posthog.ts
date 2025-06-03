@@ -55,7 +55,7 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
           api_host: this.config.apiHost,
           debug: this.config.debug,
           disable_session_recording: true,
-          loaded: (posthog: any) => {
+          loaded: (_posthog: any) => {
             if (this.config.debug) {
               console.log('[PostHog] Loaded successfully');
             }
@@ -69,7 +69,7 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
 
   async identify(message: IdentifyMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[PostHog] Identify:', enrichedMessage);
     }
@@ -85,17 +85,14 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
         },
       });
     } else {
-      this.posthog.identify(
-        message.userId || message.anonymousId,
-        message.traits
-      );
+      this.posthog.identify(message.userId || message.anonymousId, message.traits);
     }
   }
 
   async track(message: TrackMessage): Promise<void> {
     this.validateUserIdentity(message);
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[PostHog] Track:', enrichedMessage);
     }
@@ -121,7 +118,7 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
 
   async page(message: PageMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[PostHog] Page:', enrichedMessage);
     }
@@ -133,7 +130,9 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
       $pathname: enrichedMessage.context?.page?.path,
       name: message.name,
       $current_url: enrichedMessage.context?.page?.url,
-      $host: enrichedMessage.context?.page?.url ? new URL(enrichedMessage.context.page.url).host : undefined,
+      $host: enrichedMessage.context?.page?.url
+        ? new URL(enrichedMessage.context.page.url).host
+        : undefined,
       $referrer: enrichedMessage.context?.page?.referrer,
       category: message.category,
     };
@@ -152,7 +151,7 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
 
   async screen(message: ScreenMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[PostHog] Screen:', enrichedMessage);
     }
@@ -182,7 +181,7 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
   async group(message: GroupMessage): Promise<void> {
     this.validateUserIdentity(message);
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[PostHog] Group:', enrichedMessage);
     }
@@ -195,7 +194,7 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
         groupType: 'company',
         properties: message.traits,
       });
-      
+
       // Associate user with group
       this.posthog.capture({
         distinctId: message.userId || message.anonymousId!,
@@ -213,7 +212,7 @@ export class PostHogEmitter extends BaseAnalyticsEmitter {
 
   async alias(message: AliasMessage): Promise<void> {
     const enrichedMessage = this.mergeContext(message);
-    
+
     if (this.config.debug) {
       console.log('[PostHog] Alias:', enrichedMessage);
     }

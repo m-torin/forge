@@ -15,13 +15,13 @@ export function createServerAnalytics(options?: {
   debug?: boolean;
 }) {
   const providers: AnalyticsProviders = {};
-  
+
   if (options?.segment) {
     providers.segment = {
       writeKey: options.segment.writeKey,
     };
   }
-  
+
   if (options?.posthog) {
     providers.posthog = {
       apiKey: options.posthog.apiKey,
@@ -30,7 +30,7 @@ export function createServerAnalytics(options?: {
       },
     };
   }
-  
+
   return new Analytics({
     providers,
     debug: options?.debug,
@@ -43,18 +43,16 @@ export function createServerAnalytics(options?: {
 export async function getAnalyticsContext() {
   const headersList = await headers();
   const cookieStore = await cookies();
-  
+
   // Extract user information from cookies or headers
   const userId = cookieStore.get('userId')?.value;
   const anonymousId = cookieStore.get('anonymousId')?.value;
-  
+
   // Extract additional context
   const userAgent = headersList.get('user-agent') || undefined;
-  const ip = headersList.get('x-forwarded-for') || 
-             headersList.get('x-real-ip') || 
-             undefined;
+  const ip = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || undefined;
   const referer = headersList.get('referer') || undefined;
-  
+
   return {
     anonymousId,
     context: {
@@ -78,17 +76,17 @@ export async function trackServerEvent(
     segment?: { writeKey: string };
     posthog?: { apiKey: string; apiHost?: string };
     debug?: boolean;
-  }
+  },
 ) {
   const analytics = createServerAnalytics(options);
   const { anonymousId, context, userId } = await getAnalyticsContext();
-  
+
   await analytics.track(event, properties, {
     anonymousId,
     context,
     userId,
   });
-  
+
   // Always flush server-side events
   await analytics.flush();
 }
@@ -103,13 +101,13 @@ export function withServerAnalytics<T extends (...args: any[]) => any>(
     segment?: { writeKey: string };
     posthog?: { apiKey: string; apiHost?: string };
     debug?: boolean;
-  }
+  },
 ): T {
   return (async (...args: Parameters<T>) => {
     const startTime = Date.now();
     let success = false;
     let error: Error | undefined;
-    
+
     try {
       const result = await action(...args);
       success = true;
@@ -127,7 +125,7 @@ export function withServerAnalytics<T extends (...args: any[]) => any>(
           error: error?.message,
           success,
         },
-        options
+        options,
       );
     }
   }) as T;

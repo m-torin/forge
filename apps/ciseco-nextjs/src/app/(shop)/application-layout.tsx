@@ -1,21 +1,20 @@
-import React, { type ReactNode } from 'react';
-
-import { AsideProductQuickView } from '@repo/design-system/ciesco2';
-import { AsideSidebarCart } from '@repo/design-system/ciesco2';
-import { AsideSidebarNavigation } from '@repo/design-system/ciesco2';
-import { Header } from '@repo/design-system/ciesco2';
-
-import 'rc-slider/assets/index.css';
-
-import { Footer } from '@repo/design-system/ciesco2';
+import {
+  AsideProductQuickview,
+  AsideSidebarCart,
+  AsideSidebarNavigation,
+  Footer,
+  Header,
+} from '@repo/design-system/ciseco'
+import 'rc-slider/assets/index.css'
+import React, { ReactNode } from 'react'
 
 interface ComponentProps {
-  children: ReactNode;
-  footer?: ReactNode;
-  header?: ReactNode;
+  children: ReactNode
+  header?: ReactNode
+  footer?: ReactNode
 }
 
-const ApplicationLayout: React.FC<ComponentProps> = ({ children, footer, header }) => {
+const ApplicationLayout: React.FC<ComponentProps> = ({ children, header, footer }) => {
   return (
     <div>
       {header ? header : <Header hasBorderBottom />}
@@ -25,9 +24,9 @@ const ApplicationLayout: React.FC<ComponentProps> = ({ children, footer, header 
       {/* ASIDES */}
       <AsideSidebarNavigation />
       <AsideSidebarCart />
-      <AsideProductQuickView />
+      <AsideProductQuickview />
     </div>
-  );
-};
+  )
+}
 
-export { ApplicationLayout };
+export { ApplicationLayout }

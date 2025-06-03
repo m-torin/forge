@@ -11,28 +11,28 @@ export {
   type BatchProcessingResult as UtilsBatchProcessingResult,
   type BatchResult as UtilsBatchResult,
 } from './batch-processor';
-// Export environment including ENV_CONFIGS
-export {
-  env,
-  ENV_CONFIGS,
-  envLog,
-  getApiBaseUrl,
-  getBooleanEnvVar,
-  getDefaultMaxRetries,
-  getDefaultTimeout,
-  getEnvConfig,
-  getEnvironment,
-  getEnvVar,
-  getNumericEnvVar,
-  getRequiredEnvVar,
-  isCacheEnabled,
-  isDevelopment,
-  isFeatureEnabled,
-  isLocalQStash,
-  isProduction,
-  isStrictMode,
-  isTest,
-} from './environment';
+// Note: environment utils excluded from client export as they use process.env
+// export {
+//   env,
+//   ENV_CONFIGS,
+//   envLog,
+//   getApiBaseUrl,
+//   getBooleanEnvVar,
+//   getDefaultMaxRetries,
+//   getDefaultTimeout,
+//   getEnvConfig,
+//   getEnvironment,
+//   getEnvVar,
+//   getNumericEnvVar,
+//   getRequiredEnvVar,
+//   isCacheEnabled,
+//   isDevelopment,
+//   isFeatureEnabled,
+//   isLocalQStash,
+//   isProduction,
+//   isStrictMode,
+//   isTest,
+// } from './environment';
 export * from './results';
 
 // Export specific items from resilience (includes retry functionality)
@@ -92,6 +92,9 @@ export * from './helpers';
 export * from './resource-management';
 export * from './types';
 export * from './testing';
-export * from './ai-integration';
+// Note: ai-integration excluded due to potential server dependencies
+// export * from './ai-integration';
 export * from './security';
 export * from './step-naming';
+// Note: product-classification is excluded from main export as it requires server-only database access
+// export * from './product-classification';

@@ -1,26 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import Image from 'next/image';
 
 import { AspectRatio } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Displays content within a desired ratio.
  */
 const meta: Meta<typeof AspectRatio> = {
-  title: 'uix/ui/AspectRatio',
-  component: AspectRatio,
-  tags: ['autodocs'],
   argTypes: {},
-  render: (args: any) => (
-    <AspectRatio {...args} className="bg-slate-50 dark:bg-slate-800">
-      <Image
-        src="https://images.unsplash.com/photo-1576075796033-848c2a5f3696?w=800&dpr=2&q=80"
-        alt="Photo by Alvaro Pinot"
-        fill
-        className="rounded-md object-cover"
-      />
-    </AspectRatio>
-  ),
+  component: AspectRatio,
   decorators: [
     (Story: any) => (
       <div className="w-1/2">
@@ -28,6 +17,19 @@ const meta: Meta<typeof AspectRatio> = {
       </div>
     ),
   ],
+  render: (args: any) => (
+    <AspectRatio {...args} className="bg-slate-50 dark:bg-slate-800">
+      <Image
+        className="rounded-md object-cover"
+        alt="Photo by Alvaro Pinot"
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        src="https://images.unsplash.com/photo-1576075796033-848c2a5f3696?w=800&dpr=2&q=80"
+      />
+    </AspectRatio>
+  ),
+  tags: ['autodocs'],
+  title: 'uix/ui/AspectRatio',
 } satisfies Meta<typeof AspectRatio>;
 
 export default meta;

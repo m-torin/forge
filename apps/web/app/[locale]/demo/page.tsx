@@ -22,7 +22,7 @@ interface DemoPageProps {
 export default async function DemoPage({ params }: DemoPageProps) {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
-  
+
   return (
     <AppShell header={{ height: 60 }} padding="md">
       <AppShellHeader>

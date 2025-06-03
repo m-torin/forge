@@ -21,12 +21,7 @@ if (env.ANALYZE === 'true') {
 // Configure server external packages to prevent certain packages from being bundled on the client side
 nextConfig.serverExternalPackages = [...(nextConfig.serverExternalPackages || []), 'posthog-node'];
 
-// Enable Node.js runtime for middleware (available in Next.js 15.2 canary)
-// Temporarily disabled until we update to the latest canary
-// nextConfig.experimental = {
-//   ...nextConfig.experimental,
-//   nodeMiddleware: true,
-// };
+// Node.js runtime for middleware is now enabled in the shared config
 
 // Handle the missing 'request' module from retry-request (used by Google Cloud SDK)
 const originalWebpack = nextConfig.webpack;

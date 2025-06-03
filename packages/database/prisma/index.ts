@@ -3,7 +3,7 @@ import 'server-only';
 import { PrismaAdapter } from './adapter';
 
 // Re-export everything from the generated client
-export * from './generated/client';
+export * from '../generated/client';
 
 // Export our custom adapter and client
 export { PrismaAdapter } from './adapter';

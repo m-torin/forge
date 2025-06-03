@@ -22,6 +22,7 @@ export const FLAGS = {
   },
   auth: {
     apiKeys: 'auth.api-keys',
+    emailPassword: 'auth.email-password',
     magicLink: 'auth.magic-link',
     oauth: {
       discord: 'auth.oauth.discord',
@@ -29,7 +30,17 @@ export const FLAGS = {
       google: 'auth.oauth.google',
     },
     organizations: 'auth.organizations',
+    passkey: 'auth.passkey',
     twoFactor: 'auth.two-factor',
+  },
+  email: {
+    apiKeyNotifications: 'email.api-key-notifications',
+    enabled: 'email.enabled',
+    magicLink: 'email.magic-link',
+    organizationInvites: 'email.organization-invites',
+    passwordReset: 'email.password-reset',
+    verification: 'email.verification',
+    welcome: 'email.welcome',
   },
   payments: {
     refunds: 'payments.refunds',
@@ -42,6 +53,14 @@ export const FLAGS = {
     betaComponents: 'ui.beta-components',
     darkMode: 'ui.dark-mode',
     newNavigation: 'ui.new-navigation',
+  },
+  workflows: {
+    batchProcessing: 'workflows.batch-processing',
+    configuration: 'workflows.configuration',
+    integrations: 'workflows.integrations',
+    monitoring: 'workflows.monitoring',
+    productClassification: 'workflows.product-classification',
+    schedules: 'workflows.schedules',
   },
 } as const;
 
@@ -58,6 +77,7 @@ export interface AnalyticsFlags {
 export interface AuthFlags {
   apiKeysEnabled: boolean;
   discordOAuthEnabled: boolean;
+  emailPasswordEnabled: boolean;
   githubOAuthEnabled: boolean;
   googleOAuthEnabled: boolean;
   impersonationEnabled: boolean;
@@ -99,4 +119,25 @@ export interface UIFlags {
   darkModeEnabled: boolean;
   mobileOptimized: boolean;
   newNavigation: boolean;
+}
+
+export interface WorkflowFlags {
+  advancedFeatures: boolean;
+  batchProcessingEnabled: boolean;
+  configurationEnabled: boolean;
+  experimentalWorkflows: boolean;
+  integrationsEnabled: boolean;
+  monitoringEnabled: boolean;
+  productClassificationEnabled: boolean;
+  schedulesEnabled: boolean;
+}
+
+export interface EmailFlags {
+  apiKeyNotificationsEnabled: boolean;
+  enabled: boolean;
+  magicLinkEnabled: boolean;
+  organizationInvitesEnabled: boolean;
+  passwordResetEnabled: boolean;
+  verificationEnabled: boolean;
+  welcomeEmailEnabled: boolean;
 }

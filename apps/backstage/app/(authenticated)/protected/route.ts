@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@repo/auth/server-utils';
+import { auth } from '@repo/auth/server';
 
 export async function GET(request: NextRequest) {
   // Better Auth automatically checks for API keys in the x-api-key header

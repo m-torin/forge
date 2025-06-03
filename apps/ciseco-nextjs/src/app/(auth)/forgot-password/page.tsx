@@ -1,18 +1,16 @@
-import Link from 'next/link';
-
-import { ButtonPrimary } from '@repo/design-system/ciesco2';
-import { Input } from '@repo/design-system/ciesco2';
+import { ButtonPrimary, Input } from '@repo/design-system/ciseco'
+import Link from 'next/link'
 
 export const metadata = {
-  description: 'Forgot password page for the application',
   title: 'Forgot Password',
-};
+  description: 'Forgot password page for the application',
+}
 
 const PageForgotPass = () => {
   return (
     <div className="container mb-24 lg:mb-32">
       <header className="mx-auto mb-14 max-w-2xl text-center sm:mb-16 lg:mb-20">
-        <h1 className="mt-20 flex items-center justify-center text-3xl leading-[1.15] font-semibold text-neutral-900 md:text-5xl md:leading-[1.15] dark:text-neutral-100">
+        <h1 className="mt-20 flex items-center justify-center text-3xl font-semibold leading-[1.15] text-neutral-900 md:text-5xl md:leading-[1.15] dark:text-neutral-100">
           Forgot password
         </h1>
         <span className="mt-4 block text-sm text-neutral-700 sm:text-base dark:text-neutral-200">
@@ -22,10 +20,10 @@ const PageForgotPass = () => {
 
       <div className="mx-auto max-w-md space-y-6">
         {/* FORM */}
-        <form action="#" method="post" className="grid grid-cols-1 gap-6">
+        <form className="grid grid-cols-1 gap-6" action="#" method="post">
           <label className="block">
             <span className="text-neutral-800 dark:text-neutral-200">Email address</span>
-            <Input placeholder="example@example.com" className="mt-1" type="email" />
+            <Input type="email" placeholder="example@example.com" className="mt-1" />
           </label>
           <ButtonPrimary type="submit">Continue</ButtonPrimary>
         </form>
@@ -43,7 +41,7 @@ const PageForgotPass = () => {
         </span>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PageForgotPass;
+export default PageForgotPass

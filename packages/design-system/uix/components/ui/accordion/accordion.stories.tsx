@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   Accordion,
   AccordionContent,
@@ -7,24 +5,24 @@ import {
   AccordionTrigger,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * A vertically stacked set of interactive headings that each reveal a section
  * of content.
  */
 const meta = {
-  title: 'uix/ui/Accordion',
-  component: Accordion,
-  tags: ['autodocs'],
+  args: {
+    defaultValue: 'item-1',
+    multiple: false,
+  },
   argTypes: {
     multiple: {
       control: 'boolean',
       description: 'Allow multiple items to be open',
     },
   },
-  args: {
-    multiple: false,
-    defaultValue: 'item-1',
-  },
+  component: Accordion,
   render: (args: any) => (
     <Accordion {...args}>
       <AccordionItem value="item-1">
@@ -45,6 +43,8 @@ const meta = {
       </AccordionItem>
     </Accordion>
   ),
+  tags: ['autodocs'],
+  title: 'uix/ui/Accordion',
 } satisfies Meta<typeof Accordion>;
 
 export default meta;

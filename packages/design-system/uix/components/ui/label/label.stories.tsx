@@ -1,24 +1,24 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Label } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Renders an accessible label associated with controls.
  */
 const meta = {
-  title: 'uix/ui/Label',
-  component: Label,
-  tags: ['autodocs'],
+  args: {
+    htmlFor: 'email',
+  },
   argTypes: {
     htmlFor: {
       control: { type: 'text' },
       description: 'The ID of the form element the label is associated with',
     },
   },
-  args: {
-    htmlFor: 'email',
-  },
+  component: Label,
   render: (args: any) => <Label {...args}>Your email address</Label>,
+  tags: ['autodocs'],
+  title: 'uix/ui/Label',
 } satisfies Meta<typeof Label>;
 
 export default meta;

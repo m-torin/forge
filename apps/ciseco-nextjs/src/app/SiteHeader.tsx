@@ -1,17 +1,14 @@
-'use client';
+'use client'
 
-import { usePathname } from 'next/navigation';
-
-import { Header } from '@repo/design-system/ciesco2';
-import { Header2 } from '@repo/design-system/ciesco2';
-import { useThemeMode } from '@repo/design-system/ciesco2';
+import { Header, Header2, useThemeMode } from '@repo/design-system/ciseco'
+import { usePathname } from 'next/navigation'
 
 const SiteHeader = () => {
-  useThemeMode();
+  useThemeMode()
 
-  const pathname = usePathname();
+  let pathname = usePathname()
 
-  return pathname === '/home-2' ? <Header /> : <Header2 />;
-};
+  return pathname === '/home-2' ? <Header /> : <Header2 />
+}
 
-export default SiteHeader;
+export default SiteHeader

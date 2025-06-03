@@ -72,73 +72,81 @@ describe('Database Integration Tests', () => {
       const firestoreUser = await firestoreHelper.getAdapter().create('users', user);
 
       // Store user session in Redis
-      const sessionData = { 
-        userId: user.id, 
+      const sessionData = {
+        userId: user.id,
         loginTime: Date.now(),
-        isActive: true 
+        isActive: true,
       };
       await redisHelper.getAdapter().setWithExpiration('sessions', user.id, sessionData, 3600);
 
       // Store user preferences as vector embeddings
       const preferencesVector = createTestVector({
         id: `preferences-${user.id}`,
-        metadata: { 
+        metadata: {
           userId: user.id,
-          preferences: ['tech', 'programming', 'javascript']
-        }
+          preferences: ['tech', 'programming', 'javascript'],
+        },
       });
       await vectorHelper.getAdapter().create('preferences', preferencesVector);
 
       // Verify data consistency across databases
       expect(firestoreUser).toMatchObject(user);
-      
+
       const redisSession = await redisHelper.getAdapter().findUnique('sessions', { id: user.id });
       expect(redisSession).toMatchObject(sessionData);
-      
-      const vectorPrefs = await vectorHelper.getAdapter().findUnique('preferences', { 
-        id: `preferences-${user.id}` 
+
+      const vectorPrefs = await vectorHelper.getAdapter().findUnique('preferences', {
+        id: `preferences-${user.id}`,
       });
       expect((vectorPrefs as any)?.metadata.userId).toBe(user.id);
     });
 
     it('should handle complex workflow across databases', async () => {
       // Scenario: E-commerce user journey
-      
+
       // 1. User registers (Firestore)
-      const user = createTestUser({ 
-        name: 'Alice Smith', 
+      const user = createTestUser({
+        name: 'Alice Smith',
         email: 'alice@example.com',
-        preferences: ['electronics', 'books']
+        preferences: ['electronics', 'books'],
       });
       await firestoreHelper.getAdapter().create('users', user);
 
       // 2. Cache user session (Redis)
-      await redisHelper.getAdapter().setWithExpiration('sessions', user.id, 
-        { userId: user.id, cart: [] }, 1800);
+      await redisHelper
+        .getAdapter()
+        .setWithExpiration('sessions', user.id, { userId: user.id, cart: [] }, 1800);
 
       // 3. Store user behavior vector (Vector DB)
       const behaviorVector = createTestVector({
         id: `behavior-${user.id}`,
-        metadata: { 
+        metadata: {
           userId: user.id,
           categories: ['electronics', 'books'],
-          lastActivity: Date.now()
-        }
+          lastActivity: Date.now(),
+        },
       });
       await vectorHelper.getAdapter().create('behaviors', behaviorVector);
 
       // 4. Add items to cart (Redis)
-      await redisHelper.getAdapter().listPush('cart', user.id, 
-        { productId: 'prod-1', name: 'Laptop', price: 999 },
-        { productId: 'prod-2', name: 'Book', price: 25 }
-      );
+      await redisHelper
+        .getAdapter()
+        .listPush(
+          'cart',
+          user.id,
+          { productId: 'prod-1', name: 'Laptop', price: 999 },
+          { productId: 'prod-2', name: 'Book', price: 25 },
+        );
 
       // 5. Get personalized recommendations (Vector similarity search)
-      const similarBehaviors = await vectorHelper.getAdapter().query({
-        vector: behaviorVector.vector,
-        topK: 5,
-        includeMetadata: true
-      }, { namespace: 'behaviors' });
+      const similarBehaviors = await vectorHelper.getAdapter().query(
+        {
+          vector: behaviorVector.vector,
+          topK: 5,
+          includeMetadata: true,
+        },
+        { namespace: 'behaviors' },
+      );
 
       // 6. Update user activity count (Redis counter)
       await redisHelper.getAdapter().increment('activity', user.id);
@@ -147,7 +155,9 @@ describe('Database Integration Tests', () => {
       const cartItems = await redisHelper.getAdapter().listRange('cart', user.id, 0, -1);
       expect(cartItems).toHaveLength(2);
 
-      const activityCount = await redisHelper.getAdapter().increment('activity', user.id, undefined, 0);
+      const activityCount = await redisHelper
+        .getAdapter()
+        .increment('activity', user.id, undefined, 0);
       expect(activityCount).toBe(1);
 
       expect(similarBehaviors).toHaveLength(1); // Only one behavior vector stored
@@ -157,22 +167,22 @@ describe('Database Integration Tests', () => {
   describe('Cross-Database Data Consistency', () => {
     it('should maintain referential integrity across databases', async () => {
       const userId = 'user-123';
-      
+
       // Create related records with same user ID across databases
       const user = createTestUser({ id: userId, name: 'Test User' });
-      const userVector = createTestVector({ 
+      const userVector = createTestVector({
         id: `profile-${userId}`,
-        metadata: { userId, type: 'profile' }
+        metadata: { userId, type: 'profile' },
       });
-      
+
       await firestoreHelper.getAdapter().create('users', user);
       await vectorHelper.getAdapter().create('profiles', userVector);
       await redisHelper.getAdapter().create('cache', { id: userId, lastSeen: Date.now() });
 
       // Verify all records exist with same user ID
       const firestoreUser = await firestoreHelper.getAdapter().findUnique('users', { id: userId });
-      const vectorProfile = await vectorHelper.getAdapter().findUnique('profiles', { 
-        id: `profile-${userId}` 
+      const vectorProfile = await vectorHelper.getAdapter().findUnique('profiles', {
+        id: `profile-${userId}`,
       });
       const redisCache = await redisHelper.getAdapter().findUnique('cache', { id: userId });
 
@@ -187,14 +197,10 @@ describe('Database Integration Tests', () => {
       const operationCount = 50;
 
       // Test Firestore performance
-      const firestorePerf = await testDatabasePerformance(
-        firestoreHelper, 'users', operationCount
-      );
+      const firestorePerf = await testDatabasePerformance(firestoreHelper, 'users', operationCount);
 
       // Test Redis performance
-      const redisPerf = await testDatabasePerformance(
-        redisHelper, 'users', operationCount
-      );
+      const redisPerf = await testDatabasePerformance(redisHelper, 'users', operationCount);
 
       // Redis should generally be faster for simple operations
       expect(redisPerf.avgCreateTime).toBeLessThan(firestorePerf.avgCreateTime * 2);
@@ -208,7 +214,7 @@ describe('Database Integration Tests', () => {
         redis: {
           avgCreate: redisPerf.avgCreateTime,
           avgRead: redisPerf.avgReadTime,
-        }
+        },
       });
     });
   });
@@ -219,7 +225,7 @@ describe('Database Integration Tests', () => {
       const users = createTestUsers(5).map((user, index) => ({
         ...user,
         age: 20 + index * 5,
-        active: index % 2 === 0
+        active: index % 2 === 0,
       }));
 
       for (const user of users) {
@@ -229,7 +235,7 @@ describe('Database Integration Tests', () => {
       const activeUsers = await mockFirestoreAdapter.findMany('users', {
         where: { active: true },
         orderBy: { field: 'age', direction: 'desc' },
-        limit: 2
+        limit: 2,
       });
 
       expect(activeUsers).toHaveLength(2);
@@ -237,52 +243,61 @@ describe('Database Integration Tests', () => {
 
       // Redis: Multiple data structures
       const postId = 'post-123';
-      
+
       // Use Redis sets for tags
       await redisHelper.getAdapter().setAdd('tags', postId, 'javascript', 'tutorial', 'beginner');
-      
+
       // Use Redis sorted set for comments (with timestamps as scores)
-      await redisHelper.getAdapter().sortedSetAdd('comments', postId,
-        { score: Date.now() - 1000, member: { text: 'Great post!', author: 'user1' } },
-        { score: Date.now(), member: { text: 'Very helpful', author: 'user2' } }
-      );
-      
+      await redisHelper
+        .getAdapter()
+        .sortedSetAdd(
+          'comments',
+          postId,
+          { score: Date.now() - 1000, member: { text: 'Great post!', author: 'user1' } },
+          { score: Date.now(), member: { text: 'Very helpful', author: 'user2' } },
+        );
+
       // Use Redis hash for post metadata
       await redisHelper.getAdapter().hashSet('posts', postId, 'title', 'JS Tutorial');
       await redisHelper.getAdapter().hashSet('posts', postId, 'views', '100');
 
       const tags = await redisHelper.getAdapter().setMembers('tags', postId);
       expect(tags).toContain('javascript');
-      
-      const comments = await redisHelper.getAdapter().sortedSetRange('comments', postId, 0, -1, true);
+
+      const comments = await redisHelper
+        .getAdapter()
+        .sortedSetRange('comments', postId, 0, -1, true);
       expect(comments).toHaveLength(2);
-      
+
       const title = await redisHelper.getAdapter().hashGet('posts', postId, 'title');
       expect(title).toBe('JS Tutorial');
 
       // Vector DB: Similarity search with metadata filtering
       const techVectors = [
-        createTestVector({ 
+        createTestVector({
           id: 'article-1',
-          metadata: { category: 'tech', language: 'javascript' }
+          metadata: { category: 'tech', language: 'javascript' },
         }),
-        createTestVector({ 
+        createTestVector({
           id: 'article-2',
-          metadata: { category: 'tech', language: 'python' }
+          metadata: { category: 'tech', language: 'python' },
         }),
-        createTestVector({ 
+        createTestVector({
           id: 'article-3',
-          metadata: { category: 'science', language: 'english' }
+          metadata: { category: 'science', language: 'english' },
         }),
       ];
 
       await vectorHelper.seedVectorData('articles', techVectors);
-      
-      const similarArticles = await vectorHelper.getAdapter().query({
-        vector: techVectors[0].vector,
-        topK: 3,
-        includeMetadata: true
-      }, { namespace: 'articles' });
+
+      const similarArticles = await vectorHelper.getAdapter().query(
+        {
+          vector: techVectors[0].vector,
+          topK: 3,
+          includeMetadata: true,
+        },
+        { namespace: 'articles' },
+      );
 
       expect(similarArticles).toHaveLength(3);
       expect((similarArticles[0] as any).metadata.category).toBeDefined();
@@ -292,14 +307,14 @@ describe('Database Integration Tests', () => {
   describe('Error Handling Across Databases', () => {
     it('should handle errors consistently across database types', async () => {
       // Test non-existent record queries
-      const firestoreResult = await firestoreHelper.getAdapter().findUnique('users', { 
-        id: 'non-existent' 
+      const firestoreResult = await firestoreHelper.getAdapter().findUnique('users', {
+        id: 'non-existent',
       });
-      const redisResult = await redisHelper.getAdapter().findUnique('users', { 
-        id: 'non-existent' 
+      const redisResult = await redisHelper.getAdapter().findUnique('users', {
+        id: 'non-existent',
       });
-      const vectorResult = await vectorHelper.getAdapter().findUnique('users', { 
-        id: 'non-existent' 
+      const vectorResult = await vectorHelper.getAdapter().findUnique('users', {
+        id: 'non-existent',
       });
 
       expect(firestoreResult).toBeNull();
@@ -319,13 +334,9 @@ describe('Database Integration Tests', () => {
 
   describe('Adapter Interface Consistency', () => {
     it('should implement consistent interfaces across all adapters', () => {
-      const adapters = [
-        mockFirestoreAdapter,
-        mockUpstashVectorAdapter,
-        mockUpstashRedisAdapter,
-      ];
+      const adapters = [mockFirestoreAdapter, mockUpstashVectorAdapter, mockUpstashRedisAdapter];
 
-      adapters.forEach(adapter => {
+      adapters.forEach((adapter) => {
         // All adapters should implement base DatabaseAdapter interface
         expect(typeof adapter.initialize).toBe('function');
         expect(typeof adapter.disconnect).toBe('function');
@@ -341,11 +352,7 @@ describe('Database Integration Tests', () => {
     });
 
     it('should handle initialization and cleanup consistently', async () => {
-      const adapters = [
-        mockFirestoreAdapter,
-        mockUpstashVectorAdapter,
-        mockUpstashRedisAdapter,
-      ];
+      const adapters = [mockFirestoreAdapter, mockUpstashVectorAdapter, mockUpstashRedisAdapter];
 
       // All adapters should initialize without errors
       for (const adapter of adapters) {
@@ -362,9 +369,9 @@ describe('Database Integration Tests', () => {
   describe('Real-World Scenarios', () => {
     it('should handle user authentication and session management', async () => {
       // 1. User signs up
-      const user = createTestUser({ 
+      const user = createTestUser({
         email: 'user@example.com',
-        hashedPassword: 'hashed-password-123'
+        hashedPassword: 'hashed-password-123',
       });
       await firestoreHelper.getAdapter().create('users', user);
 
@@ -373,18 +380,18 @@ describe('Database Integration Tests', () => {
       const sessionData = {
         id: sessionId,
         userId: user.id,
-        expiresAt: Date.now() + 3600000 // 1 hour
+        expiresAt: Date.now() + 3600000, // 1 hour
       };
       await redisHelper.getAdapter().setWithExpiration('sessions', sessionId, sessionData, 3600);
 
       // 3. Store user activity vector
       const activityVector = createTestVector({
         id: `activity-${user.id}`,
-        metadata: { 
+        metadata: {
           userId: user.id,
           sessionId,
-          actions: ['login', 'view_dashboard']
-        }
+          actions: ['login', 'view_dashboard'],
+        },
       });
       await vectorHelper.getAdapter().create('activities', activityVector);
 
@@ -395,39 +402,43 @@ describe('Database Integration Tests', () => {
       const session = await redisHelper.getAdapter().findUnique('sessions', { id: sessionId });
       expect((session as any)?.userId).toBe(user.id);
 
-      const activity = await vectorHelper.getAdapter().findUnique('activities', { 
-        id: `activity-${user.id}` 
+      const activity = await vectorHelper.getAdapter().findUnique('activities', {
+        id: `activity-${user.id}`,
       });
       expect((activity as any)?.metadata.sessionId).toBe(sessionId);
     });
 
     it('should handle content recommendation system', async () => {
       // 1. Store user preferences in Firestore
-      const user = createTestUser({ 
+      const user = createTestUser({
         preferences: ['technology', 'programming', 'javascript'],
-        topics: ['web-development', 'databases']
+        topics: ['web-development', 'databases'],
       });
       await firestoreHelper.getAdapter().create('users', user);
 
       // 2. Cache recent views in Redis
-      await redisHelper.getAdapter().listPush('recent_views', user.id,
-        { contentId: 'article-1', viewedAt: Date.now() - 1000 },
-        { contentId: 'article-2', viewedAt: Date.now() }
-      );
+      await redisHelper
+        .getAdapter()
+        .listPush(
+          'recent_views',
+          user.id,
+          { contentId: 'article-1', viewedAt: Date.now() - 1000 },
+          { contentId: 'article-2', viewedAt: Date.now() },
+        );
 
       // 3. Store content embeddings in Vector DB
       const contentVectors = [
-        createTestVector({ 
+        createTestVector({
           id: 'article-1',
-          metadata: { title: 'JavaScript Fundamentals', tags: ['javascript', 'programming'] }
+          metadata: { title: 'JavaScript Fundamentals', tags: ['javascript', 'programming'] },
         }),
-        createTestVector({ 
+        createTestVector({
           id: 'article-2',
-          metadata: { title: 'Database Design', tags: ['database', 'sql'] }
+          metadata: { title: 'Database Design', tags: ['database', 'sql'] },
         }),
-        createTestVector({ 
+        createTestVector({
           id: 'article-3',
-          metadata: { title: 'React Tutorial', tags: ['react', 'javascript'] }
+          metadata: { title: 'React Tutorial', tags: ['react', 'javascript'] },
         }),
       ];
 
@@ -438,29 +449,33 @@ describe('Database Integration Tests', () => {
       // 4. Generate user profile vector based on preferences
       const userProfileVector = createTestVector({
         id: `profile-${user.id}`,
-        metadata: { 
+        metadata: {
           userId: user.id,
-          preferences: (user as any).preferences 
-        }
+          preferences: (user as any).preferences,
+        },
       });
       await vectorHelper.getAdapter().create('profiles', userProfileVector);
 
       // 5. Find similar content
-      const recommendations = await vectorHelper.getAdapter().query({
-        vector: userProfileVector.vector,
-        topK: 3,
-        includeMetadata: true
-      }, { namespace: 'content' });
+      const recommendations = await vectorHelper.getAdapter().query(
+        {
+          vector: userProfileVector.vector,
+          topK: 3,
+          includeMetadata: true,
+        },
+        { namespace: 'content' },
+      );
 
       // 6. Update recommendation cache
-      await redisHelper.getAdapter().setWithExpiration('recommendations', user.id, 
-        recommendations, 1800);
+      await redisHelper
+        .getAdapter()
+        .setWithExpiration('recommendations', user.id, recommendations, 1800);
 
       // Verify recommendation system
       expect(recommendations).toHaveLength(3);
-      
-      const cachedRecs = await redisHelper.getAdapter().findUnique('recommendations', { 
-        id: user.id 
+
+      const cachedRecs = await redisHelper.getAdapter().findUnique('recommendations', {
+        id: user.id,
       });
       expect(cachedRecs).toHaveLength(3);
 

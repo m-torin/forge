@@ -1,5 +1,16 @@
 // Export Mantine Table components
-import { Table as MantineTable, type TableProps as MantineTableProps, type TableTheadProps, type TableTbodyProps, type TableTfootProps, type TableTrProps, type TableThProps, type TableTdProps, type TableCaptionProps } from '@mantine/core';
+import {
+  Table as MantineTable,
+  type TableProps as MantineTableProps,
+  type TableCaptionProps,
+  type TableTbodyProps,
+  type TableTdProps,
+  type TableTfootProps,
+  type TableTheadProps,
+  type TableThProps,
+  type TableTrProps,
+} from '@mantine/core';
+
 import type React from 'react';
 
 export const Table: React.FC<MantineTableProps> = MantineTable;

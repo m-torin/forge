@@ -18,7 +18,6 @@ import { useDisclosure } from '@mantine/hooks';
 import { Notifications } from '@mantine/notifications';
 import {
   IconBrandGithub,
-  IconChartLine,
   IconCpu,
   IconExternalLink,
   IconHome,
@@ -27,22 +26,19 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { HeaderSearch } from '@repo/design-system/components/search';
+import { UserButton } from '@repo/design-system/uix';
+
 interface AppShellLayoutProps {
   children: React.ReactNode;
 }
 
 const navigation = [
   {
-    description: 'Examples & triggers',
+    description: 'Trigger workflows and monitor execution',
     href: '/',
     icon: IconHome,
-    label: 'Home',
-  },
-  {
-    description: 'Execution logs',
-    href: '/monitoring',
-    icon: IconChartLine,
-    label: 'Monitoring',
+    label: 'Dashboard',
   },
 ];
 
@@ -88,25 +84,24 @@ export function AppShellLayout({ children }: AppShellLayoutProps) {
                 <ThemeIcon gradient={{ from: 'blue', to: 'cyan' }} size="lg" variant="gradient">
                   <IconCpu size={20} />
                 </ThemeIcon>
-                <Title order={3}>Upstash Workflows</Title>
+                <Title order={3}>Workers</Title>
                 <Badge color="blue" size="sm" variant="light">
-                  Demo
+                  Workflow Engine
                 </Badge>
               </Group>
             </Group>
 
-            <Group gap="xs">
-              <Tooltip label="View on GitHub">
-                <ActionIcon
-                  href="https://github.com/upstash/workflow-js"
-                  color="gray"
-                  component="a"
-                  target="_blank"
-                  variant="subtle"
-                >
-                  <IconBrandGithub size={18} />
-                </ActionIcon>
-              </Tooltip>
+            <Group gap="md">
+              <HeaderSearch
+                onSelect={(item) => {
+                  // Handle navigation based on search result
+                  if (item.url) {
+                    window.location.href = item.url;
+                  }
+                }}
+                placeholder="Search workflows, jobs..."
+                size="sm"
+              />
               <Tooltip label="QStash Console">
                 <ActionIcon
                   href="https://console.upstash.com/qstash"
@@ -118,6 +113,7 @@ export function AppShellLayout({ children }: AppShellLayoutProps) {
                   <IconSettings size={18} />
                 </ActionIcon>
               </Tooltip>
+              <UserButton />
             </Group>
           </Group>
         </AppShell.Header>
@@ -162,7 +158,7 @@ export function AppShellLayout({ children }: AppShellLayoutProps) {
             <Divider my="md" />
 
             <Text c="dimmed" size="xs">
-              Production-ready workflow patterns using Upstash QStash.
+              Background workflow execution engine
             </Text>
           </Stack>
         </AppShell.Navbar>

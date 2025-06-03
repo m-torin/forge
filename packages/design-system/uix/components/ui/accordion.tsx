@@ -1,7 +1,13 @@
 'use client';
 
 // For compatibility, re-export Accordion sub-components
-import { Accordion, type AccordionProps, type AccordionItemProps, type AccordionControlProps, type AccordionPanelProps } from '@mantine/core';
+import {
+  Accordion,
+  type AccordionControlProps,
+  type AccordionItemProps,
+  type AccordionPanelProps,
+} from '@mantine/core';
+
 import type React from 'react';
 
 // Export Mantine Accordion components

@@ -1,45 +1,46 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import type { SearchState, SearchHit } from '../types';
+import { useCallback, useState } from 'react';
+
+import type { SearchState } from '../types';
 
 export function useSearchState(initialQuery = '') {
   const [state, setState] = useState<SearchState>({
-    query: initialQuery,
-    isLoading: false,
     error: null,
+    isLoading: false,
+    query: initialQuery,
   });
 
   const setQuery = useCallback((query: string) => {
-    setState(prev => ({ ...prev, query }));
+    setState((prev) => ({ ...prev, query }));
   }, []);
 
   const setLoading = useCallback((isLoading: boolean) => {
-    setState(prev => ({ ...prev, isLoading }));
+    setState((prev) => ({ ...prev, isLoading }));
   }, []);
 
   const setResults = useCallback((results: any) => {
-    setState(prev => ({ ...prev, results, isLoading: false, error: null }));
+    setState((prev) => ({ ...prev, error: null, isLoading: false, results }));
   }, []);
 
   const setError = useCallback((error: Error) => {
-    setState(prev => ({ ...prev, error, isLoading: false }));
+    setState((prev) => ({ ...prev, error, isLoading: false }));
   }, []);
 
   const clearState = useCallback(() => {
     setState({
-      query: '',
-      isLoading: false,
       error: null,
+      isLoading: false,
+      query: '',
     });
   }, []);
 
   return {
     ...state,
-    setQuery,
-    setLoading,
-    setResults,
-    setError,
     clearState,
+    setError,
+    setLoading,
+    setQuery,
+    setResults,
   };
 }

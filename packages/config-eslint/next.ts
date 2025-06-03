@@ -242,7 +242,7 @@ const nextConfigRules: Linter.FlatConfig = {
 
 // Ignore patterns
 const ignorePatterns: Linter.FlatConfig = {
-  ignores: [...IGNORE_PATTERNS, '**/*.md'],
+  ignores: IGNORE_PATTERNS,
 };
 
 // =========================================

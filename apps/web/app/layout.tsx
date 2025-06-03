@@ -3,6 +3,8 @@ import "./globals.css";
 import "@mantine/core/styles.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 
+import { AnalyticsProvider } from "@repo/analytics";
+import { AuthProvider } from "@repo/auth/provider";
 import { createMetadata } from "@repo/seo/metadata";
 
 import theme from "./theme";
@@ -25,7 +27,11 @@ const RootLayout = ({ children }: RootLayoutProperties) => {
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body className="antialiased">
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProvider theme={theme}>
+          <AnalyticsProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </AnalyticsProvider>
+        </MantineProvider>
       </body>
     </html>
   );

@@ -47,23 +47,28 @@ class MockFirestoreStorage {
     return this.collections.get(path)!;
   }
 
-  setDocument(collectionPath: string, docId: string, data: MockDocumentData, merge = false): MockWriteResult {
+  setDocument(
+    collectionPath: string,
+    docId: string,
+    data: MockDocumentData,
+    merge = false,
+  ): MockWriteResult {
     const collection = this.getCollection(collectionPath);
-    
+
     if (merge && collection.has(docId)) {
       const existing = collection.get(docId)!;
       collection.set(docId, { ...existing, ...data });
     } else {
       collection.set(docId, { ...data });
     }
-    
+
     return { writeTime: new Date() };
   }
 
   getDocument(collectionPath: string, docId: string): MockDocumentSnapshot {
     const collection = this.getCollection(collectionPath);
     const data = collection.get(docId);
-    
+
     return {
       id: docId,
       data: () => data,
@@ -82,7 +87,7 @@ class MockFirestoreStorage {
     collectionPath: string,
     whereClauses: MockWhereClause[] = [],
     orderBy: MockOrderByClause[] = [],
-    limit?: number
+    limit?: number,
   ): MockQuerySnapshot {
     const collection = this.getCollection(collectionPath);
     let docs = Array.from(collection.entries()).map(([id, data]) => ({
@@ -93,10 +98,10 @@ class MockFirestoreStorage {
     }));
 
     // Apply where clauses
-    docs = docs.filter(doc => {
-      return whereClauses.every(clause => {
+    docs = docs.filter((doc) => {
+      return whereClauses.every((clause) => {
         const fieldValue = doc.get(clause.field);
-        
+
         switch (clause.operator) {
           case '==':
             return fieldValue === clause.value;
@@ -116,7 +121,9 @@ class MockFirestoreStorage {
             return Array.isArray(clause.value) && clause.value.includes(fieldValue);
           case 'array-contains-any':
             if (!Array.isArray(fieldValue)) return false;
-            return Array.isArray(clause.value) && clause.value.some(val => fieldValue.includes(val));
+            return (
+              Array.isArray(clause.value) && clause.value.some((val) => fieldValue.includes(val))
+            );
           default:
             return true;
         }
@@ -129,11 +136,11 @@ class MockFirestoreStorage {
         for (const order of orderBy) {
           const aVal = a.get(order.field);
           const bVal = b.get(order.field);
-          
+
           let comparison = 0;
           if (aVal < bVal) comparison = -1;
           else if (aVal > bVal) comparison = 1;
-          
+
           if (comparison !== 0) {
             return order.direction === 'desc' ? -comparison : comparison;
           }
@@ -167,7 +174,7 @@ const mockStorage = new MockFirestoreStorage();
 class MockDocumentReference {
   constructor(
     private collectionPath: string,
-    private docId: string
+    private docId: string,
   ) {}
 
   async get(): Promise<MockDocumentSnapshot> {
@@ -236,7 +243,7 @@ class MockQuery {
       this.collectionPath,
       this.whereClauses,
       this.orderByClauses,
-      this.limitCount
+      this.limitCount,
     );
   }
 }
@@ -279,7 +286,7 @@ class MockWriteBatch {
   set(
     documentRef: MockDocumentReference,
     data: MockDocumentData,
-    options?: { merge?: boolean }
+    options?: { merge?: boolean },
   ): MockWriteBatch {
     this.operations.push(() => documentRef.set(data, options));
     return this;
@@ -296,9 +303,9 @@ class MockWriteBatch {
   }
 
   async commit(): Promise<MockBatchResult[]> {
-    const results = await Promise.all(this.operations.map(op => op()));
+    const results = await Promise.all(this.operations.map((op) => op()));
     this.operations = []; // Clear operations after commit
-    return results.map(result => ({ writeTime: result.writeTime }));
+    return results.map((result) => ({ writeTime: result.writeTime }));
   }
 }
 
@@ -316,7 +323,7 @@ class MockTransaction {
   set(
     documentRef: MockDocumentReference,
     data: MockDocumentData,
-    options?: { merge?: boolean }
+    options?: { merge?: boolean },
   ): MockTransaction {
     this.writes.push(() => documentRef.set(data, options));
     return this;
@@ -333,7 +340,7 @@ class MockTransaction {
   }
 
   async commit(): Promise<void> {
-    await Promise.all(this.writes.map(write => write()));
+    await Promise.all(this.writes.map((write) => write()));
     this.reads.clear();
     this.writes = [];
   }
@@ -350,7 +357,7 @@ class MockFirestore {
     if (segments.length % 2 === 0) {
       throw new Error('Document path must have an odd number of segments');
     }
-    
+
     const docId = segments.pop()!;
     const collectionPath = segments.join('/');
     return new MockDocumentReference(collectionPath, docId);
@@ -361,7 +368,7 @@ class MockFirestore {
   }
 
   async runTransaction<T>(
-    updateFunction: (transaction: MockTransaction) => Promise<T>
+    updateFunction: (transaction: MockTransaction) => Promise<T>,
   ): Promise<T> {
     const transaction = new MockTransaction();
     const result = await updateFunction(transaction);
@@ -417,9 +424,9 @@ export const mockFirestoreAdapter = {
     if (query.id) {
       const docRef = mockFirestore.collection(collection).doc(query.id);
       const snapshot = await docRef.get();
-      return snapshot.exists ? { id: snapshot.id, ...snapshot.data() } as T : null;
+      return snapshot.exists ? ({ id: snapshot.id, ...snapshot.data() } as T) : null;
     }
-    
+
     // Handle where clauses
     let queryRef = mockFirestore.collection(collection) as any;
     if (query.where) {
@@ -427,35 +434,38 @@ export const mockFirestoreAdapter = {
         queryRef = queryRef.where(field, '==', value);
       });
     }
-    
+
     const querySnapshot = await queryRef.limit(1).get();
     if (querySnapshot.empty) return null;
-    
+
     const doc = querySnapshot.docs[0];
     return { id: doc.id, ...doc.data() } as T;
   },
 
-  async findMany<T>(collection: string, query?: {
-    where?: any;
-    orderBy?: { field: string; direction?: 'asc' | 'desc' };
-    limit?: number;
-  }): Promise<T[]> {
+  async findMany<T>(
+    collection: string,
+    query?: {
+      where?: any;
+      orderBy?: { field: string; direction?: 'asc' | 'desc' };
+      limit?: number;
+    },
+  ): Promise<T[]> {
     let queryRef = mockFirestore.collection(collection) as any;
-    
+
     if (query?.where) {
       Object.entries(query.where).forEach(([field, value]) => {
         queryRef = queryRef.where(field, '==', value);
       });
     }
-    
+
     if (query?.orderBy) {
       queryRef = queryRef.orderBy(query.orderBy.field, query.orderBy.direction || 'asc');
     }
-    
+
     if (query?.limit) {
       queryRef = queryRef.limit(query.limit);
     }
-    
+
     const querySnapshot = await queryRef.get();
     return querySnapshot.docs.map((doc: MockDocumentSnapshot) => ({
       id: doc.id,
@@ -465,13 +475,13 @@ export const mockFirestoreAdapter = {
 
   async count(collection: string, query?: { where?: any }): Promise<number> {
     let queryRef = mockFirestore.collection(collection) as any;
-    
+
     if (query?.where) {
       Object.entries(query.where).forEach(([field, value]) => {
         queryRef = queryRef.where(field, '==', value);
       });
     }
-    
+
     const querySnapshot = await queryRef.get();
     return querySnapshot.size;
   },
@@ -489,7 +499,9 @@ export const mockFirestoreAdapter = {
 };
 
 // Mock factory functions
-export const createMockDocumentData = (overrides?: Partial<MockDocumentData>): MockDocumentData => ({
+export const createMockDocumentData = (
+  overrides?: Partial<MockDocumentData>,
+): MockDocumentData => ({
   name: 'Test Document',
   active: true,
   createdAt: new Date(),
@@ -500,17 +512,15 @@ export const createMockDocumentData = (overrides?: Partial<MockDocumentData>): M
 export const createMockDocumentSnapshot = (
   id: string,
   data?: MockDocumentData,
-  exists = true
+  exists = true,
 ): MockDocumentSnapshot => ({
   id,
-  data: () => exists ? data || createMockDocumentData() : undefined,
+  data: () => (exists ? data || createMockDocumentData() : undefined),
   exists,
-  get: (field: string) => exists ? (data || createMockDocumentData())[field] : undefined,
+  get: (field: string) => (exists ? (data || createMockDocumentData())[field] : undefined),
 });
 
-export const createMockQuerySnapshot = (
-  docs: MockDocumentSnapshot[] = []
-): MockQuerySnapshot => ({
+export const createMockQuerySnapshot = (docs: MockDocumentSnapshot[] = []): MockQuerySnapshot => ({
   docs,
   empty: docs.length === 0,
   forEach: (callback) => docs.forEach(callback),
@@ -533,7 +543,7 @@ export const resetMockFirestoreStorage = (): void => {
 
 export const seedMockFirestoreData = (
   collectionPath: string,
-  documents: { id: string; data: MockDocumentData }[]
+  documents: { id: string; data: MockDocumentData }[],
 ): void => {
   documents.forEach(({ id, data }) => {
     mockStorage.setDocument(collectionPath, id, data);
@@ -543,11 +553,11 @@ export const seedMockFirestoreData = (
 export const getMockFirestoreState = (collectionPath: string): Record<string, MockDocumentData> => {
   const collection = mockStorage.getCollection(collectionPath);
   const state: Record<string, MockDocumentData> = {};
-  
+
   collection.forEach((data, id) => {
     state[id] = data;
   });
-  
+
   return state;
 };
 

@@ -1,29 +1,25 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@repo/design-system/uix';
 
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@repo/design-system/uix';
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * For sighted users to preview content available behind a link.
  */
 const meta = {
-  title: 'uix/ui/HoverCard',
-  component: HoverCard,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {},
+  argTypes: {},
+  component: HoverCard,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <HoverCard {...args}>
       <HoverCardTrigger>Hover</HoverCardTrigger>
       <HoverCardContent>The React Framework - created and maintained by @vercel.</HoverCardContent>
     </HoverCard>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/HoverCard',
 } satisfies Meta<typeof HoverCard>;
 
 export default meta;
@@ -41,7 +37,7 @@ export const Default: Story = {};
  */
 export const Instant: Story = {
   args: {
-    openDelay: 0,
     closeDelay: 0,
+    openDelay: 0,
   },
 };

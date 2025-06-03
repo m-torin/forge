@@ -27,7 +27,7 @@ beforeAll(async () => {
   vi.spyOn(console, 'log').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
-  
+
   // Mock Date.now for consistent timestamps in tests
   const mockNow = new Date('2024-01-01T00:00:00.000Z').getTime();
   vi.spyOn(Date, 'now').mockReturnValue(mockNow);
@@ -46,7 +46,7 @@ afterEach(async () => {
   resetMockFirestoreStorage();
   resetMockVectorStorage();
   resetMockRedisStorage();
-  
+
   // Clear all mocks
   vi.clearAllMocks();
 });
@@ -56,7 +56,7 @@ afterAll(async () => {
   cleanupMockFirestoreEnvironment();
   cleanupMockVectorEnvironment();
   cleanupMockRedisEnvironment();
-  
+
   // Restore all mocks
   vi.restoreAllMocks();
 });

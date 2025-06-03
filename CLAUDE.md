@@ -7,8 +7,6 @@ repository.
 
 **NEVER run `pnpm dev` or `npm dev` commands.** These commands should only be run by the user.
 
-**NEVER add Android support to the hedwig app.** The hedwig app is iOS and web only. Do not add Android configurations, dependencies, or platform-specific code for Android.
-
 ## Environment Variables & Doppler
 
 This project uses Doppler for secret management in CI/CD environments, but local development uses
@@ -32,7 +30,7 @@ This is a Next.js monorepo using Turborepo, based on the forge template. Key tec
 - **Node Version**: 22+ (ESM modules only)
 - **UI Framework**: Mantine UI v8 (preferred) + Tailwind CSS v4 (legacy/allowed)
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Better Auth with organizations and API keys
+- **Authentication**: Better Auth
 
 ## High-Level Architecture
 
@@ -44,35 +42,24 @@ This monorepo follows a modular architecture with clear separation of concerns:
    - Apps consume shared packages via `@repo/*` imports
    - No direct dependencies between apps
 
-2. **Packages Layer** (`/packages/`) - Shared functionality
+2. **Packages Layer** (`/packages/`) - Shared functionality organized in layers (see Package
+   Architecture section for details)
 
-   - **Core Services**: auth, database, payments, email
-   - **UI/UX**: design-system, internationalization
-   - **Infrastructure**: analytics, observability, security, rate-limit
-   - **Utilities**: testing, typescript-config, next-config
-   - **Notifications**: Backend (Knock) and frontend (Mantine) notifications
+3. **Authentication Flow** - Better Auth with organizations, teams, and API keys (see @repo/auth in
+   Package Architecture)
 
-3. **Authentication Flow**
-
-   - Better Auth handles user sessions and API keys
-   - Organization-based multi-tenancy with teams
-   - Role-based permissions (owner, admin, member)
-   - Admin panel with user management, impersonation, and API key oversight
-   - API keys support with rate limiting and custom validation
-
-4. **Data Flow**
-
-   - PostgreSQL database with Prisma ORM
-   - Type-safe database queries
-   - API routes handle business logic
+4. **Data Flow** - PostgreSQL with Prisma ORM (see @repo/database in Package Architecture)
 
 5. **Module System (Important)**
    - ESM modules only (no CommonJS)
+   - **NO file extensions**: Never add `.js` extensions to imports - ESLint config handles this
    - **Packages** (`/packages/*`) MUST have `"type": "module"` in package.json
    - **Apps** (`/apps/*`) should NOT have `"type": "module"` - Next.js handles ESM automatically
    - Packages are consumed directly from source (no build step required)
    - All internal imports use `@repo/*` namespace
    - DO NOT build packages - they are used as ESM modules directly
+   - **Dynamic imports**: Use `import('./path')` without extensions (TypeScript/ESLint handle
+     resolution)
 
 ## Directory Structure
 
@@ -93,7 +80,7 @@ searching file contents.
 # Install dependencies
 pnpm install
 
-# Development (No Doppler - uses .env.local files)
+# Development
 pnpm dev                # Run all apps in development mode
 pnpm dev --filter=app   # Run specific app
 
@@ -117,9 +104,9 @@ pnpm typecheck         # Run TypeScript type checking
 # - TypeScript: Use `tsc --noEmit --emitDeclarationOnly false` for type checking
 # - Prettier: Run at repo root only with `pnpm prettier`
 
-# Building
-pnpm build             # Build all apps in parallel (uses Doppler for CI/CD)
-pnpm build:local       # Build all apps locally (uses .env.local files)
+# Building (see Environment Variables section for Doppler details)
+pnpm build             # Production build with Doppler
+pnpm build:local       # Local build using .env.local files
 pnpm build --filter=app # Build specific app
 
 # Database operations
@@ -190,6 +177,14 @@ number (check root package.json or other apps for the version to use).
 Always select the most specific configuration that matches your package/app type for optimal
 settings.
 
+## Task Management
+
+**IMPORTANT**: Use the TodoWrite and TodoRead tools to track your work:
+
+- Create a todo list at the start of any multi-step task
+- Update task status as you progress (pending → in_progress → completed)
+- This helps maintain context and ensures all steps are completed
+
 ## Code Style Guidelines
 
 1. **TypeScript Usage**
@@ -198,6 +193,16 @@ settings.
    - Define proper types/interfaces (no `any` except when absolutely necessary)
    - Use `_` prefix for unused variables (per ESLint config)
    - Environment variables: Use `@t3-oss/env-nextjs` without explicit ReturnType
+   - **IMPORTANT**: When creating new files or updating existing code, ensure all code is
+     type-accurate:
+     - **Prefer types from dependency packages** (e.g.,
+       `import type { User } from '@prisma/client'`,
+       `import type { NotificationData } from '@mantine/notifications'`)
+     - Import and use existing types from the codebase when dependency types aren't available
+     - Create proper interfaces/types for new data structures only when necessary
+     - Avoid type assertions unless absolutely necessary
+     - Leverage TypeScript's type inference where appropriate
+     - Run `pnpm typecheck` to verify type accuracy before committing
 
 2. **React/Next.js**
 
@@ -207,6 +212,8 @@ settings.
    - Always optimize images using Next.js `Image` component
    - Server actions for form handling
    - Parallel routes and intercepting routes where appropriate
+   - **Use typed routes**: Enable `typedRoutes: true` in `next.config.ts` and use
+     `import { Link } from 'next/link'` for type-safe navigation
 
 3. **Imports**
 
@@ -291,59 +298,91 @@ settings.
 
 ## Package Architecture & Hierarchy
 
-The packages follow a strict layered architecture to prevent circular dependencies. Each layer can only depend on packages from lower layers, never from higher layers.
+The packages follow a strict layered architecture to prevent circular dependencies. Each layer can
+only depend on packages from lower layers, never from higher layers.
 
-**IMPORTANT: To avoid circular dependencies, packages must only use feature flags at the application level, not within the package itself. For example, the analytics package should NOT import from feature-flags package.**
+**IMPORTANT: To avoid circular dependencies, packages must only use feature flags at the application
+level, not within the package itself. For example, the analytics package should NOT import from
+feature-flags package.**
 
 ### Layer 1: Foundation Packages (Core Infrastructure)
+
 These packages have no dependencies on other internal packages:
 
 #### Configuration & Build Tools
+
 - `@repo/typescript-config` - Shared TypeScript configurations
 - `@repo/eslint-config` - ESLint rules and configurations
 - `@repo/next-config` - Next.js configuration wrapper
 
 ### Layer 2: Core Services
+
 Low-level services that other packages depend on:
 
 #### Testing & Development
+
 - `@repo/testing` - Vitest configuration and test utilities
 
 #### Security & Infrastructure
-- `@repo/security` - Security headers and middleware
-- `@repo/rate-limit` - API rate limiting
+
+- `@repo/security` - Security headers, middleware, and Upstash rate limiting
+  - **Rate limiting**: Implemented via `createRateLimiter()` using Upstash Redis
+  - **Usage**: `import { createRateLimiter } from '@repo/security/rate-limit'`
+  - **Default**: 10 requests per 10 seconds sliding window
+  - **No-op fallback**: Works without Redis configuration (returns unlimited limiter)
 - `@repo/observability` - Sentry error tracking and monitoring
 
 ### Layer 3: Data Management
+
 Core data services:
 
 - `@repo/database` - Prisma ORM with PostgreSQL
+  - Type-safe database client
+  - Migration management
+  - Shared models across apps
+  - Seed data utilities
 
 ### Layer 4: Core Business Services
+
 Services that implement core functionality:
 
 #### Analytics & Communication
+
 - `@repo/analytics` - Multi-provider analytics (Segment, PostHog, GA) + Feature Flags
-  - **Now includes feature flags**: Feature flags are part of analytics since PostHog treats them as analytics events
+  - **Now includes feature flags**: Feature flags are part of analytics since PostHog treats them as
+    analytics events
   - **No circular dependencies**: Packages import only types from `@repo/analytics/types/flags`
   - **Usage**: `import { flag, useFlag, getAuthFlags } from '@repo/analytics'`
   - **Local dev**: Use `LOCAL_FLAGS` environment variable to override
 - `@repo/email` - Email templates with React Email and Resend
 - `@repo/notifications` - Knock (backend) and Mantine (frontend) notifications
+  - Backend: Knock integration for transactional notifications
+  - Frontend: Mantine notifications with consistent styling
+  - Email, in-app, and push notification support
+  - Template management
 
 ### Layer 5: Business Logic
+
 Higher-level services that compose core services:
 
 #### Authentication & Payments
+
 - `@repo/auth` - Better Auth with organizations, teams, and API keys
+  - Organization-based multi-tenancy
+  - Role-based permissions (owner, admin, member)
+  - API key management
+  - Session caching and middleware
+  - Impersonation support
 - `@repo/payments` - Stripe integration for subscriptions and credits
 
 #### Content & Orchestration
+
 - `@repo/orchestration` - Workflow execution and job processing
 - `@repo/seo` - SEO metadata and structured data generation
 - `@repo/internationalization` - Multi-language support
 
 ### Layer 5.5: Specialized Services
+
 Domain-specific services that may depend on multiple business logic packages:
 
 - `@repo/ai` - AI/LLM integrations and utilities
@@ -351,55 +390,60 @@ Domain-specific services that may depend on multiple business logic packages:
 - `@repo/storage` - File storage abstraction
 
 ### Layer 6: UI Layer
+
 Frontend packages that consume all other services:
 
-- `@repo/design-system` - Composite UI components and Gluestack UI v2 library
+- `@repo/design-system` - Composite UI components
 
 ### Layer 7: Applications
+
 End-user applications that consume all packages:
 
 ## Dependency Rules
 
 1. **Strict Layering**: Packages can only depend on packages from lower layers
 2. **No Circular Dependencies**: A package cannot import from a package that depends on it
-3. **Feature Flag Usage**: 
+3. **Feature Flag Usage**:
    - Feature flags should be used at the application level (Layer 7)
    - Packages provide the functionality, apps control whether it's enabled
    - Example: Analytics package provides tracking, apps use feature flags to enable/disable it
-4. **Provider Pattern**: Use providers at the app level to inject feature flag decisions into packages
+4. **Provider Pattern**: Use providers at the app level to inject feature flag decisions into
+   packages
 
 ## Applications (Port Assignments)
 
 ### Core Applications
+
 - `/apps/web` (Port: 3200) - Marketing website with blog and demo functionality
 - `/apps/backstage` (Port: 3300) - Admin panel with user management
 - `/apps/workers` (Port: 3400) - Background job processing
 
 ### Development Tools
+
 - `/apps/email` (Port: 3500) - Email template preview
 - `/apps/studio` (Port: 3600) - Prisma Studio database UI
 - `/apps/storybook` (Port: 3700) - Component documentation
-- `/apps/docs` (Port: 3800) - Mintlify documentation
-
-### Mobile/Cross-Platform
-- `/apps/hedwig` (Port: 3900) - Expo React Native app (iOS and web only)
+- `/apps/documentation` (Port: 3800) - Nextra documentation
 
 ## Detailed Package Specifications
 
 ### Foundation Layer Packages
 
 #### `@repo/typescript-config`
+
 - Base TypeScript configurations for different contexts
 - Strict type checking enabled
 - ESM module support
 - Configurations: base, nextjs, react-library
 
 #### `@repo/eslint-config`
+
 - Shared ESLint rules
 - Prettier integration
 - Context-specific configs: base, next, react-internal, react-library
 
 #### `@repo/testing`
+
 - Vitest configuration presets
 - React Testing Library setup
 - Mock utilities and helpers
@@ -408,12 +452,18 @@ End-user applications that consume all packages:
 ### Core Services Layer
 
 #### `@repo/security`
+
 - Security headers middleware
 - CSRF protection
 - Content Security Policy
 - Edge-compatible
+- **Upstash rate limiting** via `rate-limit.ts`
+  - `createRateLimiter()` function with Redis backend
+  - Configurable limits and time windows
+  - Graceful fallback when Redis not configured
 
 #### `@repo/observability`
+
 - Sentry error tracking
 - Performance monitoring
 - Custom error boundaries
@@ -422,39 +472,25 @@ End-user applications that consume all packages:
 ### Data & Communication Layer
 
 #### `@repo/database`
-- Prisma ORM with PostgreSQL
-- Type-safe database client
-- Migration management
-- Shared models across apps
-- Seed data utilities
+
+See Layer 3 section above for database package details.
 
 #### `@repo/analytics`
-- Universal analytics emitters
-- Multi-provider support (Segment, PostHog, Google Analytics)
-- **Integrated feature flags**: Check flags with `flag()`, `useFlag()` hook
-- Feature flag helpers: `getAuthFlags()`, `getPaymentFlags()`, etc.
-- Local development: `LOCAL_FLAGS` environment variable
-- Server and client implementations
-- Privacy-compliant tracking
-- PostHog automatically tracks flag usage as analytics events
+
+See Layer 4 section above for analytics package details.
 
 #### `@repo/notifications`
-- Backend: Knock integration for transactional notifications
-- Frontend: Mantine notifications with consistent styling
-- Email, in-app, and push notification support
-- Template management
+
+See Layer 4 section above for notifications package details.
 
 ### Business Logic Layer
 
 #### `@repo/auth`
-- Better Auth with all official plugins
-- Organization-based multi-tenancy
-- Role-based permissions (owner, admin, member)
-- API key management with rate limiting
-- Session caching and middleware
-- Impersonation support
+
+See Layer 5 section above for auth package details.
 
 #### `@repo/payments`
+
 - Stripe integration
 - Subscription management
 - Usage-based billing (AI credits)
@@ -463,6 +499,7 @@ End-user applications that consume all packages:
 - Invoice generation
 
 #### `@repo/orchestration`
+
 - Workflow execution engine
 - QStash integration for distributed processing
 - Event-driven architecture
@@ -472,8 +509,8 @@ End-user applications that consume all packages:
 ### UI Layer
 
 #### `@repo/design-system`
+
 - Composite UI components
-- Gluestack UI v2 component library
 - Custom auth components (sign-in, user-button)
 - Admin components (user-list, organization-detail)
 - Form handling utilities
@@ -494,8 +531,7 @@ End-user applications that consume all packages:
 1. Always validate user input
 2. Use CSRF protection
 3. Implement proper authentication/authorization
-4. Rate limiting via `@repo/rate-limit`
-5. Security headers via `@repo/security`
+4. Security headers via `@repo/security`
 
 ## Performance
 
@@ -562,3 +598,82 @@ notify.error('Something went wrong', { title: 'Error' });
 4. **Build failures**: Check for circular dependencies with `pnpm madge --circular`
 5. **Test failures**: Ensure test setup files are imported and mocks are configured
 6. **Dark mode issues**: Remove `dark` prop, use Mantine's color scheme system
+
+## Documentation References
+
+The monorepo documentation is located in `/apps/documentation`. Here are direct links to all
+documentation files:
+
+### Getting Started
+
+- **Overview**: `/apps/documentation/content/en/docs/get-started/index.mdx`
+- **Architecture**: `/apps/documentation/content/en/docs/architecture/index.mdx`
+- **Concepts**: `/apps/documentation/content/en/docs/concepts/index.mdx` - Common patterns, files
+  (keys.ts, env.ts), conventions
+- **Design System**: `/apps/documentation/content/en/docs/design-system/index.mdx`
+- **Authentication**: `/apps/documentation/content/en/docs/auth/index.mdx`
+- **Email**: `/apps/documentation/content/en/docs/email/index.mdx`
+- **Workflows**: `/apps/documentation/content/en/docs/workflows/index.mdx`
+- **Deployment**: `/apps/documentation/content/en/docs/deployment/index.mdx`
+
+### Applications Documentation
+
+- **Web App**: `/apps/documentation/content/en/docs/apps/web.mdx`
+- **Backstage Admin**: `/apps/documentation/content/en/docs/apps/backstage.mdx`
+- **Workers**: `/apps/documentation/content/en/docs/apps/workers.mdx`
+- **Email Preview**: `/apps/documentation/content/en/docs/apps/email.mdx`
+- **Prisma Studio**: `/apps/documentation/content/en/docs/apps/studio.mdx`
+- **Storybook**: `/apps/documentation/content/en/docs/apps/storybook.mdx`
+- **Documentation**: `/apps/documentation/content/en/docs/apps/documentation.mdx`
+
+### Package Documentation
+
+#### Core Infrastructure
+
+- **TypeScript Config**: `/apps/documentation/content/en/docs/packages/typescript-config.mdx`
+- **ESLint Config**: `/apps/documentation/content/en/docs/packages/config-eslint.mdx`
+- **Next.js Config**: `/apps/documentation/content/en/docs/packages/next-config.mdx`
+- **Config**: `/apps/documentation/content/en/docs/packages/config.mdx`
+- **Testing**: `/apps/documentation/content/en/docs/packages/testing.mdx`
+
+#### Data & Storage
+
+- **Database**: `/apps/documentation/content/en/docs/packages/database.mdx`
+- **Storage**: `/apps/documentation/content/en/docs/packages/storage.mdx`
+
+#### Authentication & Security
+
+- **Auth**: `/apps/documentation/content/en/docs/packages/auth.mdx`
+- **Security**: `/apps/documentation/content/en/docs/packages/security.mdx`
+
+#### Analytics & Monitoring
+
+- **Analytics**: `/apps/documentation/content/en/docs/packages/analytics.mdx`
+- **Observability**: `/apps/documentation/content/en/docs/packages/observability.mdx`
+
+#### Communication
+
+- **Email**: `/apps/documentation/content/en/docs/packages/email.mdx`
+- **Notifications**: `/apps/documentation/content/en/docs/packages/notifications.mdx`
+
+#### Business Logic
+
+- **Payments**: `/apps/documentation/content/en/docs/packages/payments.mdx`
+- **Orchestration**: `/apps/documentation/content/en/docs/packages/orchestration.mdx`
+- **AI**: `/apps/documentation/content/en/docs/packages/ai.mdx`
+- **Scraping**: `/apps/documentation/content/en/docs/packages/scraping.mdx`
+
+#### UI & Content
+
+- **Design System**: `/apps/documentation/content/en/docs/packages/design-system.mdx`
+- **Internationalization**: `/apps/documentation/content/en/docs/packages/internationalization.mdx`
+- **SEO**: `/apps/documentation/content/en/docs/packages/seo.mdx`
+
+### Advanced Topics
+
+- **Code Highlighting**: `/apps/documentation/content/en/docs/advanced/code-highlighting.mdx`
+- **Advanced Features**: `/apps/documentation/content/en/docs/advanced/index.mdx`
+
+### Reference Example
+
+- **Nextra Example**: `/apps/documentation/content/en/docs/nextra-complete-example.mdx`

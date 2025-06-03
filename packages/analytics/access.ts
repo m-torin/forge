@@ -14,18 +14,21 @@ export const getFlags = async (request: NextRequest) => {
   }
 
   // Convert our FLAGS constant to the format expected by Vercel Toolbar
-  const definitions = Object.entries(FLAGS).reduce((acc, [category, flags]) => {
-    Object.entries(flags).forEach(([key, value]) => {
-      if (typeof value === 'string') {
-        acc[value] = {
-          description: `${category}.${key} feature flag`,
-          options: [{ value: true }, { value: false }],
-          origin: 'LOCAL_FLAGS environment variable (dev only)',
-        };
-      }
-    });
-    return acc;
-  }, {} as Record<string, any>);
+  const definitions = Object.entries(FLAGS).reduce(
+    (acc, [category, flags]) => {
+      Object.entries(flags).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          acc[value] = {
+            description: `${category}.${key} feature flag`,
+            options: [{ value: true }, { value: false }],
+            origin: 'LOCAL_FLAGS environment variable (dev only)',
+          };
+        }
+      });
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
 
   return NextResponse.json({
     definitions,

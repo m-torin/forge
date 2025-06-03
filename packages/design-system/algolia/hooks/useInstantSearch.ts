@@ -1,31 +1,30 @@
 'use client';
 
 import { useInstantSearch as useInstantSearchCore } from 'react-instantsearch';
-import type { UseInstantSearchProps } from '../types';
 
 interface ExtendedInstantSearchResult {
-  query: string;
-  isSearchStalled: boolean;
+  addMiddlewares: (...middlewares: any[]) => () => void;
+  error?: Error;
   hasResults: boolean;
+  isSearchStalled: boolean;
   nbHits: number;
   processingTimeMS: number;
+  query: string;
+  refresh: () => void;
+  results: any;
   status: string;
   uiState: any;
-  results: any;
-  refresh: () => void;
-  error?: Error;
-  addMiddlewares: (...middlewares: any[]) => () => void;
 }
 
 export function useInstantSearch(): ExtendedInstantSearchResult {
   const instantSearch = useInstantSearchCore();
-  
+
   return {
     ...instantSearch,
-    query: (instantSearch.uiState as any)?.query || '',
-    isSearchStalled: instantSearch.status === 'stalled',
     hasResults: instantSearch.results && instantSearch.results.nbHits > 0,
+    isSearchStalled: instantSearch.status === 'stalled',
     nbHits: instantSearch.results?.nbHits || 0,
     processingTimeMS: instantSearch.results?.processingTimeMS || 0,
+    query: (instantSearch.uiState as any)?.query || '',
   };
 }

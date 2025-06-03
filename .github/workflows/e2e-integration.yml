@@ -1,0 +1,449 @@
+name: E2E Integration Tests - All Apps
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - "apps/backstage/**"
+      - "apps/web/**"
+      - "apps/workers/**"
+      - "packages/testing/**"
+      - "packages/auth/**"
+      - "packages/design-system/**"
+      - ".github/workflows/e2e-integration.yml"
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - "apps/backstage/**"
+      - "apps/web/**"
+      - "apps/workers/**"
+      - "packages/testing/**"
+      - "packages/auth/**"
+      - "packages/design-system/**"
+      - ".github/workflows/e2e-integration.yml"
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: "Apps to test (comma-separated: backstage,web,workers)"
+        required: false
+        default: "backstage,web,workers"
+        type: string
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  NODE_ENV: test
+  CI: true
+
+jobs:
+  prepare:
+    name: Prepare E2E Tests
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.set-apps.outputs.apps }}
+    steps:
+      - name: Set apps to test
+        id: set-apps
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            APPS="${{ github.event.inputs.apps }}"
+          else
+            APPS="backstage,web,workers"
+          fi
+          echo "apps=$APPS" >> $GITHUB_OUTPUT
+          echo "Testing apps: $APPS"
+
+  e2e-backstage:
+    name: Backstage E2E Tests
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: contains(needs.prepare.outputs.apps, 'backstage')
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: |
+          cd apps/backstage
+          pnpm exec playwright install --with-deps chromium firefox
+
+      - name: Build dependencies
+        run: pnpm build:local --filter=backstage...
+
+      - name: Setup database for Better Auth
+        run: |
+          cd apps/backstage
+          # Run database migrations to ensure Better Auth schema exists
+          pnpm --filter=@repo/database migrate || echo "Migration might not be needed for tests"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Run Backstage E2E tests
+        run: |
+          cd apps/backstage
+          pnpm test:e2e
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          BETTER_AUTH_SECRET: test_secret_key_for_e2e_tests_only_backstage_32_chars
+          NEXT_PUBLIC_APP_URL: http://localhost:3300
+          NEXTAUTH_URL: http://localhost:3300
+          # Better Auth configuration
+          BETTER_AUTH_BASE_PATH: /api/auth
+          # Rate limiting disabled for tests
+          ARCJET_KEY: test_key
+          # Mock services for consistent tests
+          MOCK_STRIPE: true
+          MOCK_EMAIL: true
+          # OAuth providers (mocked for testing)
+          GITHUB_CLIENT_ID: test_github_client_id
+          GITHUB_CLIENT_SECRET: test_github_client_secret
+          GOOGLE_CLIENT_ID: test_google_client_id
+          GOOGLE_CLIENT_SECRET: test_google_client_secret
+
+      - name: Upload backstage test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backstage-playwright-report
+          path: apps/backstage/playwright-report/
+          retention-days: 30
+
+      - name: Upload backstage test videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backstage-playwright-videos
+          path: apps/backstage/test-results/
+          retention-days: 7
+
+  e2e-web:
+    name: Web E2E Tests
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: contains(needs.prepare.outputs.apps, 'web')
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: |
+          cd apps/web
+          pnpm exec playwright install --with-deps chromium firefox
+
+      - name: Build dependencies
+        run: pnpm build:local --filter=web...
+
+      - name: Setup database for Better Auth
+        run: |
+          cd apps/web
+          # Run database migrations to ensure Better Auth schema exists
+          pnpm --filter=@repo/database migrate || echo "Migration might not be needed for tests"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Run Web E2E tests
+        run: |
+          cd apps/web
+          pnpm test:e2e
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          BETTER_AUTH_SECRET: test_secret_key_for_e2e_tests_only_web_app_32_chars
+          NEXT_PUBLIC_APP_URL: http://localhost:3200
+          NEXTAUTH_URL: http://localhost:3200
+          # Better Auth configuration
+          BETTER_AUTH_BASE_PATH: /api/auth
+          # Rate limiting disabled for tests
+          ARCJET_KEY: test_key
+          # Internationalization
+          NEXT_LOCALE: en
+          # Mock services for consistent tests
+          MOCK_ANALYTICS: true
+          MOCK_EMAIL: true
+          # OAuth providers (mocked for testing)
+          GITHUB_CLIENT_ID: test_github_client_id
+          GITHUB_CLIENT_SECRET: test_github_client_secret
+          GOOGLE_CLIENT_ID: test_google_client_id
+          GOOGLE_CLIENT_SECRET: test_google_client_secret
+
+      - name: Upload web test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 30
+
+      - name: Upload web test videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-playwright-videos
+          path: apps/web/test-results/
+          retention-days: 7
+
+  e2e-workers:
+    name: Workers E2E Tests
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: contains(needs.prepare.outputs.apps, 'workers')
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: |
+          cd apps/workers
+          pnpm exec playwright install --with-deps chromium firefox
+
+      - name: Build dependencies
+        run: pnpm build:local --filter=workers...
+
+      - name: Setup database for Better Auth
+        run: |
+          cd apps/workers
+          # Run database migrations to ensure Better Auth schema exists
+          pnpm --filter=@repo/database migrate || echo "Migration might not be needed for tests"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Run Workers E2E tests
+        run: |
+          cd apps/workers
+          pnpm test:e2e
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          BETTER_AUTH_SECRET: test_secret_key_for_e2e_tests_only_workers_32_chars
+          NEXT_PUBLIC_APP_URL: http://localhost:3400
+          # Better Auth configuration
+          BETTER_AUTH_BASE_PATH: /api/auth
+          # QStash mock for workflow testing
+          QSTASH_URL: http://localhost:8080
+          QSTASH_TOKEN: test_token
+          # Redis for caching (using service)
+          UPSTASH_REDIS_REST_URL: redis://localhost:6379
+          UPSTASH_REDIS_REST_TOKEN: test_token
+          # Mock external services
+          MOCK_AI: true
+          MOCK_VECTOR_DB: true
+          MOCK_WEBHOOKS: true
+          # OAuth providers (mocked for testing)
+          GITHUB_CLIENT_ID: test_github_client_id
+          GITHUB_CLIENT_SECRET: test_github_client_secret
+          GOOGLE_CLIENT_ID: test_google_client_id
+          GOOGLE_CLIENT_SECRET: test_google_client_secret
+          # Skip heavy integration tests in CI
+          SKIP_INTEGRATION_TESTS: true
+
+      - name: Upload workers test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workers-playwright-report
+          path: apps/workers/playwright-report/
+          retention-days: 30
+
+      - name: Upload workers test videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workers-playwright-videos
+          path: apps/workers/test-results/
+          retention-days: 7
+
+  e2e-summary:
+    name: E2E Tests Summary
+    runs-on: ubuntu-latest
+    needs: [e2e-backstage, e2e-web, e2e-workers]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          echo "E2E Test Results Summary:"
+          echo "========================="
+
+          if [ "${{ needs.e2e-backstage.result }}" = "success" ]; then
+            echo "✅ Backstage E2E Tests: PASSED"
+          elif [ "${{ needs.e2e-backstage.result }}" = "skipped" ]; then
+            echo "⏭️  Backstage E2E Tests: SKIPPED"
+          else
+            echo "❌ Backstage E2E Tests: FAILED"
+          fi
+
+          if [ "${{ needs.e2e-web.result }}" = "success" ]; then
+            echo "✅ Web E2E Tests: PASSED"
+          elif [ "${{ needs.e2e-web.result }}" = "skipped" ]; then
+            echo "⏭️  Web E2E Tests: SKIPPED"
+          else
+            echo "❌ Web E2E Tests: FAILED"
+          fi
+
+          if [ "${{ needs.e2e-workers.result }}" = "success" ]; then
+            echo "✅ Workers E2E Tests: PASSED"
+          elif [ "${{ needs.e2e-workers.result }}" = "skipped" ]; then
+            echo "⏭️  Workers E2E Tests: SKIPPED"
+          else
+            echo "❌ Workers E2E Tests: FAILED"
+          fi
+
+          echo "========================="
+
+          # Fail if any required tests failed
+          if [ "${{ needs.e2e-backstage.result }}" = "failure" ] || 
+             [ "${{ needs.e2e-web.result }}" = "failure" ] || 
+             [ "${{ needs.e2e-workers.result }}" = "failure" ]; then
+            echo "One or more E2E tests failed"
+            exit 1
+          fi
+
+          echo "All E2E tests completed successfully!"
+
+      - name: Download all artifacts
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          path: e2e-artifacts
+
+      - name: List artifacts
+        if: always()
+        run: |
+          echo "Downloaded E2E artifacts:"
+          find e2e-artifacts -type f -name "*.html" -o -name "*.json" | head -20

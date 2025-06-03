@@ -1,28 +1,34 @@
-import type { WorkflowContext } from '@upstash/workflow';
-
-/**
- * Workflow definition for self-contained workflows
- */
+// Workflow type definitions
 export interface WorkflowDefinition {
-  // Metadata
+  defaultPayload: any;
   metadata: {
     id: string;
     title: string;
     description: string;
-    tags: string[];
-    difficulty: 'beginner' | 'intermediate' | 'advanced';
-    estimatedTime: string;
+    difficulty?: string;
+    estimatedTime?: string;
+    features?: string[];
+    tags?: string[];
     color?: string;
-    icon?: string;
-    features: string[];
   };
+  workflow: (context: any) => Promise<any>;
+}
 
-  // Default payload example
-  defaultPayload: Record<string, any>;
+export interface WorkflowStep {
+  config: Record<string, any>;
+  id: string;
+  name: string;
+  type: 'action' | 'condition' | 'parallel' | 'loop';
+}
 
-  // The workflow implementation
-  workflow: (context: WorkflowContext<any>) => Promise<any>;
+export interface WorkflowContext<T = any> {
+  env: Record<string, string>;
+  requestPayload: T;
+  workflowRunId: string;
+}
 
-  // Optional server action for direct execution
-  action?: (payload: any) => Promise<any>;
+export interface WorkflowResult {
+  data?: any;
+  error?: string;
+  success: boolean;
 }

@@ -1,0 +1,663 @@
+# 🔐 Authentication System
+
+Forge uses **Better Auth** to provide a comprehensive authentication system with organizations, API
+keys, social providers, and advanced security features.
+
+import { Callout } from 'nextra/components';
+
+<Callout type="info">
+  The auth system is built on `@repo/auth` package and integrated with analytics for complete
+  tracking and feature flag support.
+</Callout>
+
+## Core Features
+
+- **Multiple Sign-in Methods**: Email/password, magic links, social providers (Google, GitHub,
+  Discord)
+- **Organizations & Teams**: Multi-tenant architecture with role-based permissions
+- **API Key Management**: Generate and manage API keys with rate limiting
+- **Two-Factor Authentication**: Optional or required 2FA with TOTP
+- **Passkey Support**: WebAuthn for passwordless authentication
+- **Magic Links**: Secure email-based authentication
+- **Impersonation**: Admin ability to impersonate users
+- **Session Management**: Secure session handling with middleware
+
+## Package Structure
+
+```typescript
+@repo/auth/
+├── server.ts          # Server-side auth configuration
+├── client.ts          # Client-side auth methods
+├── middleware.ts      # Route protection middleware
+├── types.ts           # TypeScript definitions
+└── plugins/           # Better Auth plugins
+    ├── magic-link.ts
+    ├── organizations.ts
+    └── api-keys.ts
+```
+
+## Configuration
+
+### Server Configuration
+
+```typescript
+// packages/auth/server.ts
+import { betterAuth } from 'better-auth';
+import { magicLink, organization, twoFactor } from 'better-auth/plugins';
+
+export const auth = betterAuth({
+  database: {
+    provider: 'postgresql',
+    url: process.env.DATABASE_URL,
+  },
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: true,
+  },
+  plugins: [
+    magicLink({
+      sendMagicLink: async ({ url, token, user }) => {
+        await sendMagicLinkEmail({ url, token, user });
+      },
+    }),
+    organization({
+      allowUserToCreateOrganization: true,
+      organizationLimit: 5,
+    }),
+    twoFactor({
+      totp: {
+        period: 30,
+        window: 1,
+      },
+    }),
+  ],
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    },
+  },
+});
+```
+
+### Client Methods
+
+```typescript
+// Available client methods
+import {
+  signIn,
+  signUp,
+  signOut,
+  signInWithGoogle,
+  signInWithGitHub,
+  sendMagicLink,
+  useSession,
+  createOrganization,
+  switchOrganization,
+} from '@repo/auth/client';
+
+// Example usage
+const handleSignIn = async () => {
+  await signIn.email({
+    email: 'user@example.com',
+    password: 'password123',
+  });
+};
+
+const handleGoogleSignIn = async () => {
+  await signInWithGoogle();
+};
+```
+
+## Feature Flag Integration
+
+Authentication methods are controlled by feature flags for dynamic enabling/disabling:
+
+```typescript
+// Feature flags for auth methods
+const FLAGS = {
+  auth: {
+    emailPassword: 'auth.email-password',
+    magicLink: 'auth.magic-link',
+    passkey: 'auth.passkey',
+    oauth: {
+      google: 'auth.oauth.google',
+      github: 'auth.oauth.github',
+      discord: 'auth.oauth.discord',
+    },
+    twoFactor: 'auth.two-factor',
+    organizations: 'auth.organizations',
+    apiKeys: 'auth.api-keys',
+  },
+};
+
+// Usage in components
+import { useFlag, FLAGS } from '@repo/analytics';
+
+const SignInForm = () => {
+  const googleEnabled = useFlag(FLAGS.auth.oauth.google);
+  const magicLinkEnabled = useFlag(FLAGS.auth.magicLink);
+
+  return (
+    <div>
+      {googleEnabled && <GoogleSignInButton />}
+      {magicLinkEnabled && <MagicLinkButton />}
+    </div>
+  );
+};
+```
+
+## Analytics Integration
+
+All authentication events are automatically tracked with comprehensive context:
+
+```typescript
+// Automatic tracking examples
+analytics.capture('sign_in_attempted', {
+  method: 'email',
+  authMethodsAvailable: {
+    google: googleOAuthEnabled,
+    github: githubOAuthEnabled,
+    magicLink: magicLinkEnabled,
+  },
+  featureFlagsLoaded: true,
+  source: 'unified_sign_in',
+});
+
+analytics.capture('sign_in_completed', {
+  method: 'google',
+  userId: user.id,
+  organizationId: user.activeOrganizationId,
+  authMethodsAvailable: availableAuthMethods,
+});
+
+// User identification
+analytics.identify(user.email, {
+  name: user.name,
+  created_at: user.createdAt,
+  signup_method: 'email',
+  organization_role: user.role,
+});
+```
+
+## UI Components
+
+The design system provides unified auth components:
+
+```typescript
+// Unified sign-in component
+import { UnifiedSignIn } from '@repo/design-system/uix';
+
+<UnifiedSignIn
+  redirectTo="/dashboard"
+  showMagicLink={true}
+  showSocialOptions={true}
+  onSuccess={(user) => {
+    analytics.capture('sign_in_success', { userId: user.id });
+  }}
+/>
+
+// Unified sign-up component
+import { UnifiedSignUp } from '@repo/design-system/uix';
+
+<UnifiedSignUp
+  requireTermsAcceptance={true}
+  redirectTo="/onboarding"
+  onSuccess={(user) => {
+    analytics.capture('sign_up_success', { userId: user.id });
+  }}
+/>
+```
+
+## Route Protection
+
+### Middleware Protection
+
+```typescript
+// middleware.ts
+import { createAuthMiddleware } from '@repo/auth/server-utils';
+import {
+  noseconeMiddleware,
+  noseconeOptions,
+  noseconeOptionsWithToolbar,
+} from '@repo/security/middleware';
+
+const securityHeaders = env.FLAGS_SECRET
+  ? noseconeMiddleware(noseconeOptionsWithToolbar)
+  : noseconeMiddleware(noseconeOptions);
+
+// Create auth middleware with API key support
+const authMiddleware = createAuthMiddleware({
+  apiKeyHeaders: ['x-api-key'],
+  publicApiRoutes: ['/api/auth'], // Only auth endpoints are public
+  publicWebRoutes: [
+    '/sign-in',
+    '/sign-up',
+    '/forgot-password',
+    '/reset-password',
+    '/_next',
+    '/favicon.ico',
+    '/.well-known',
+  ],
+  redirectPath: '/sign-in',
+});
+
+export default authMiddleware(() => {
+  securityHeaders();
+  return NextResponse.next();
+}) as unknown as NextMiddleware;
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  runtime: 'nodejs',
+};
+```
+
+### API Route Protection
+
+```typescript
+// app/api/protected/route.ts
+import { auth } from '@repo/auth/server';
+
+export async function GET(request: Request) {
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
+  if (!session) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Protected logic here
+  return Response.json({ user: session.user });
+}
+```
+
+### Component Protection
+
+```typescript
+// components/ProtectedRoute.tsx
+import { useSession } from '@repo/auth/client';
+import { redirect } from 'next/navigation';
+
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { session, isLoading } = useSession();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (!session) {
+    redirect('/sign-in');
+  }
+
+  return <>{children}</>;
+}
+```
+
+## Organizations & Teams
+
+### Organization Management
+
+```typescript
+// Create organization
+const organization = await createOrganization({
+  name: 'Acme Corp',
+  slug: 'acme-corp',
+});
+
+// Switch active organization
+await switchOrganization({
+  organizationId: 'org-123',
+});
+
+// Invite team member
+await inviteToOrganization({
+  organizationId: 'org-123',
+  email: 'member@example.com',
+  role: 'member', // 'owner' | 'admin' | 'member'
+});
+```
+
+### Role-Based Access Control
+
+```typescript
+// Check user role
+const { session } = useSession();
+const userRole = session?.user?.role; // 'owner' | 'admin' | 'member'
+
+// Role-based component rendering
+{userRole === 'owner' && <AdminPanel />}
+{['owner', 'admin'].includes(userRole) && <ManageUsers />}
+
+// API route role checking
+if (!['owner', 'admin'].includes(session.user.role)) {
+  return Response.json({ error: 'Forbidden' }, { status: 403 });
+}
+```
+
+## API Keys
+
+### Two Types of API Keys
+
+Forge supports two types of API keys for different use cases:
+
+1. **User API Keys** - Generated through Better Auth for individual users
+2. **Service API Keys** - Hardcoded keys for service-to-service authentication
+
+### User API Keys
+
+```typescript
+import { generateApiKey } from '@repo/auth/server';
+
+const apiKey = await generateApiKey({
+  userId: 'user-123',
+  name: 'Production API Key',
+  scopes: ['read:users', 'write:posts'],
+  expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+});
+```
+
+### Service API Keys
+
+Service API keys are configured via environment variables and can be rotated through Doppler:
+
+```bash
+# .env.local
+SERVICE_API_KEY=your-32-character-minimum-secure-key
+
+# Generate a secure key:
+openssl rand -base64 32
+```
+
+### API Key Authentication
+
+All API routes in Forge apps require authentication. The unified auth helper checks both service and
+user API keys:
+
+```typescript
+// app/lib/auth.ts
+import { NextResponse } from 'next/server';
+import { auth } from '@repo/auth/server';
+import { env } from '../../env';
+
+export async function requireAuth(request: Request) {
+  // Check for service API key first (for service-to-service auth)
+  const providedApiKey = request.headers.get('x-api-key');
+
+  if (providedApiKey && env.SERVICE_API_KEY) {
+    if (providedApiKey === env.SERVICE_API_KEY) {
+      return {
+        user: {
+          id: 'service',
+          email: 'service@system',
+          name: 'Service Account',
+        },
+        session: {
+          id: 'service-session',
+          userId: 'service',
+          activeOrganizationId: 'system',
+        },
+      };
+    }
+  }
+
+  // Otherwise, check for user session or user API key
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
+  if (!session) {
+    return NextResponse.json(
+      {
+        error: 'Unauthorized',
+        message: 'Please provide a valid API key via x-api-key header or authenticate via session',
+      },
+      {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Bearer realm="api", charset="UTF-8"',
+        },
+      }
+    );
+  }
+
+  return session;
+}
+```
+
+### Using API Keys in Routes
+
+```typescript
+// app/api/protected/route.ts
+import { requireAuth } from '@/lib/auth';
+
+export async function GET(request: Request) {
+  const authResult = await requireAuth(request);
+
+  if (authResult instanceof NextResponse) {
+    return authResult; // 401 response
+  }
+
+  // Access authenticated user/service info
+  const { user, session } = authResult;
+
+  // Protected logic here
+  return Response.json({
+    message: 'Success',
+    userId: user.id,
+    isServiceAccount: user.id === 'service',
+  });
+}
+```
+
+### API Key Usage Examples
+
+```bash
+# Using user API key
+curl -H "x-api-key: YOUR_USER_API_KEY" https://app.com/api/protected
+
+# Using service API key
+curl -H "x-api-key: YOUR_SERVICE_API_KEY" https://app.com/api/protected
+
+# Using session cookie (after sign-in)
+curl -H "Cookie: session=..." https://app.com/api/protected
+```
+
+## Magic Links
+
+### Email Template Integration
+
+```typescript
+// packages/email/templates/magic-link.tsx
+import { MagicLinkEmail } from '@repo/email/templates';
+
+export async function sendMagicLinkEmail({ url, token, user }) {
+  await sendEmail({
+    to: user.email,
+    subject: 'Sign in to your account',
+    react: <MagicLinkEmail url={url} user={user} />,
+  });
+}
+```
+
+### Magic Link Flow
+
+```typescript
+// Request magic link
+await sendMagicLink({
+  email: 'user@example.com',
+  redirectTo: '/dashboard',
+});
+
+// The email contains a secure link that automatically signs in the user
+// Link format: https://app.com/auth/magic-link/verify?token=secure-token
+```
+
+## Security Features
+
+### Rate Limiting
+
+```typescript
+// Integrated with @repo/rate-limit
+const rateLimitResult = await rateLimit({
+  identifier: `auth:${email}`,
+  limit: 5,
+  window: '15m',
+});
+
+if (!rateLimitResult.success) {
+  return { error: 'Too many attempts. Try again later.' };
+}
+```
+
+### Session Security
+
+```typescript
+// Session configuration
+{
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // 1 day
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 5 minutes
+    },
+  },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: '.yourdomain.com',
+    },
+    useSecureCookies: process.env.NODE_ENV === 'production',
+  },
+}
+```
+
+## Testing
+
+### Auth Test Utilities
+
+```typescript
+// packages/testing/auth-helpers.ts
+export async function createTestUser() {
+  return await signUp.email({
+    name: 'Test User',
+    email: 'test@example.com',
+    password: 'password123',
+  });
+}
+
+export async function signInTestUser() {
+  return await signIn.email({
+    email: 'test@example.com',
+    password: 'password123',
+  });
+}
+
+// Component testing
+import { render, screen } from '@testing-library/react';
+import { AuthProvider } from '@repo/auth/client';
+
+test('protected component', () => {
+  render(
+    <AuthProvider>
+      <ProtectedComponent />
+    </AuthProvider>
+  );
+
+  expect(screen.getByText('Protected content')).toBeInTheDocument();
+});
+```
+
+## Environment Variables
+
+```bash
+# Required auth environment variables
+DATABASE_URL="postgresql://..."
+BETTER_AUTH_SECRET="your-secret-key"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# Service API Key (optional - for service-to-service auth)
+SERVICE_API_KEY="your-32-character-minimum-secure-key"
+
+# Social providers (optional)
+GITHUB_CLIENT_ID="github-client-id"
+GITHUB_CLIENT_SECRET="github-client-secret"
+GOOGLE_CLIENT_ID="google-client-id"
+GOOGLE_CLIENT_SECRET="google-client-secret"
+
+# Email (for magic links)
+RESEND_API_KEY="resend-api-key"
+FROM_EMAIL="noreply@yourdomain.com"
+
+# Security (optional)
+ARCJET_KEY="ajkey_..."
+UPSTASH_REDIS_REST_URL="https://..."
+UPSTASH_REDIS_REST_TOKEN="..."
+
+# Feature flags (optional - defaults provided)
+LOCAL_FLAGS="auth.magic-link:true,auth.oauth.google:true"
+```
+
+## Common Patterns
+
+### Protected Page Component
+
+```typescript
+// app/dashboard/page.tsx
+import { auth } from '@repo/auth/server';
+import { redirect } from 'next/navigation';
+
+export default async function DashboardPage() {
+  const session = await auth.api.getSession();
+
+  if (!session) {
+    redirect('/sign-in');
+  }
+
+  return (
+    <div>
+      <h1>Welcome, {session.user.name}!</h1>
+      <p>Organization: {session.user.activeOrganization?.name}</p>
+    </div>
+  );
+}
+```
+
+### Auth State Management
+
+```typescript
+// hooks/useAuthState.ts
+import { useSession } from '@repo/auth/client';
+import { analytics } from '@repo/analytics';
+
+export function useAuthState() {
+  const { session, isLoading } = useSession();
+
+  const trackAuthEvent = (event: string, data?: object) => {
+    analytics.capture(event, {
+      userId: session?.user?.id,
+      organizationId: session?.user?.activeOrganizationId,
+      ...data,
+    });
+  };
+
+  return {
+    user: session?.user,
+    organization: session?.user?.activeOrganization,
+    isAuthenticated: !!session,
+    isLoading,
+    trackAuthEvent,
+  };
+}
+```
+
+## Next Steps
+
+- [Analytics](/analytics) - Learn about feature flags and tracking
+- [Design System](/design-system) - Explore auth UI components
+- [Email](/email) - Configure email templates
+- [Deployment](/deployment) - Deploy with authentication

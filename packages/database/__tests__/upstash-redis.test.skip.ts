@@ -79,22 +79,22 @@ describe('Upstash Redis Adapter', () => {
 
     it('should find many records with pattern matching', async () => {
       const users = createTestUsers(3);
-      
+
       for (const user of users) {
         await mockUpstashRedisAdapter.create('users', user);
       }
 
       const found = await mockUpstashRedisAdapter.findMany('users');
       expect(found).toHaveLength(3);
-      
+
       const foundIds = found.map((u: any) => u.id);
-      const expectedIds = users.map(u => u.id);
+      const expectedIds = users.map((u) => u.id);
       expect(foundIds).toEqual(expect.arrayContaining(expectedIds));
     });
 
     it('should count records with pattern matching', async () => {
       const users = createTestUsers(5);
-      
+
       for (const user of users) {
         await mockUpstashRedisAdapter.create('users', user);
       }
@@ -114,10 +114,10 @@ describe('Upstash Redis Adapter', () => {
     it('should set values with expiration', async () => {
       const testData = createTestUser();
       const result = await mockUpstashRedisAdapter.setWithExpiration(
-        'sessions', 
-        testData.id, 
-        testData, 
-        3600
+        'sessions',
+        testData.id,
+        testData,
+        3600,
       );
 
       expect(result).toMatchObject(testData);
@@ -134,7 +134,7 @@ describe('Upstash Redis Adapter', () => {
     it('should handle TTL operations', async () => {
       await mockUpstashRedisClient.set('temp-key', 'value', { ex: 1800 });
       const ttl = await mockUpstashRedisClient.ttl('temp-key');
-      
+
       expect(ttl).toBeGreaterThan(1700);
       expect(ttl).toBeLessThanOrEqual(1800);
     });
@@ -145,14 +145,19 @@ describe('Upstash Redis Adapter', () => {
       const result1 = await mockUpstashRedisAdapter.increment('counters', 'page-views');
       expect(result1).toBe(1);
 
-      const result2 = await mockUpstashRedisAdapter.increment('counters', 'page-views', undefined, 5);
+      const result2 = await mockUpstashRedisAdapter.increment(
+        'counters',
+        'page-views',
+        undefined,
+        5,
+      );
       expect(result2).toBe(6);
     });
 
     it('should decrement counters', async () => {
       // Set initial value
       await mockUpstashRedisAdapter.increment('counters', 'credits', undefined, 10);
-      
+
       const result = await mockUpstashRedisAdapter.decrement('counters', 'credits', undefined, 3);
       expect(result).toBe(7);
     });
@@ -161,7 +166,7 @@ describe('Upstash Redis Adapter', () => {
   describe('Redis List Operations', () => {
     it('should push and pop items from lists', async () => {
       const items = ['item1', 'item2', 'item3'];
-      
+
       // Push items
       const length = await mockUpstashRedisAdapter.listPush('queue', 'tasks', ...items);
       expect(length).toBe(3);
@@ -184,7 +189,7 @@ describe('Upstash Redis Adapter', () => {
 
       await mockUpstashRedisAdapter.listPush('queue', 'emails', ...emails);
       const range = await mockUpstashRedisAdapter.listRange('queue', 'emails', 0, -1);
-      
+
       expect(range).toHaveLength(3);
       expect(range[0]).toEqual(emails[2]); // Last pushed is first
     });
@@ -199,7 +204,7 @@ describe('Upstash Redis Adapter', () => {
   describe('Redis Set Operations', () => {
     it('should add and remove set members', async () => {
       const tags = ['javascript', 'redis', 'database'];
-      
+
       const added = await mockUpstashRedisAdapter.setAdd('tags', 'post1', ...tags);
       expect(added).toBe(3);
 
@@ -217,11 +222,15 @@ describe('Upstash Redis Adapter', () => {
 
     it('should check set membership', async () => {
       await mockUpstashRedisAdapter.setAdd('categories', 'article1', 'tech', 'programming');
-      
+
       const isMember = await mockUpstashRedisAdapter.setIsMember('categories', 'article1', 'tech');
       expect(isMember).toBe(true);
 
-      const isNotMember = await mockUpstashRedisAdapter.setIsMember('categories', 'article1', 'cooking');
+      const isNotMember = await mockUpstashRedisAdapter.setIsMember(
+        'categories',
+        'article1',
+        'cooking',
+      );
       expect(isNotMember).toBe(false);
     });
   });
@@ -237,7 +246,7 @@ describe('Upstash Redis Adapter', () => {
 
     it('should get all hash fields', async () => {
       const userData = { name: 'Jane Doe', age: 30, city: 'New York' };
-      
+
       for (const [field, value] of Object.entries(userData)) {
         await mockUpstashRedisAdapter.hashSet('profiles', 'user2', field, value);
       }
@@ -285,9 +294,15 @@ describe('Upstash Redis Adapter', () => {
       await mockUpstashRedisAdapter.sortedSetAdd('scores', 'daily', ...players);
 
       // Get top 2 players (highest scores)
-      const topPlayers = await mockUpstashRedisAdapter.sortedSetRange('scores', 'daily', 0, 1, true);
+      const topPlayers = await mockUpstashRedisAdapter.sortedSetRange(
+        'scores',
+        'daily',
+        0,
+        1,
+        true,
+      );
       expect(topPlayers).toHaveLength(2);
-      
+
       if (Array.isArray(topPlayers) && topPlayers.length > 0 && 'score' in topPlayers[0]) {
         expect((topPlayers[0] as any).score).toBe(100); // Lowest score first in ascending order
       }
@@ -295,9 +310,10 @@ describe('Upstash Redis Adapter', () => {
 
     it('should get member score', async () => {
       const player = { name: 'TestPlayer', id: 'player1' };
-      await mockUpstashRedisAdapter.sortedSetAdd('rankings', 'weekly', 
-        { score: 750, member: player }
-      );
+      await mockUpstashRedisAdapter.sortedSetAdd('rankings', 'weekly', {
+        score: 750,
+        member: player,
+      });
 
       await helper.assertSortedSetScore('rankings', 'weekly', player, 750);
     });
@@ -307,9 +323,9 @@ describe('Upstash Redis Adapter', () => {
     it('should set multiple records', async () => {
       const users = createTestUsers(3);
       const result = await mockUpstashRedisAdapter.setMultiple('users', users);
-      
+
       expect(result).toHaveLength(3);
-      
+
       // Verify all users were stored
       for (const user of users) {
         const found = await mockUpstashRedisAdapter.findUnique('users', { id: user.id });
@@ -320,10 +336,10 @@ describe('Upstash Redis Adapter', () => {
     it('should get multiple records', async () => {
       const users = createTestUsers(3);
       await mockUpstashRedisAdapter.setMultiple('users', users);
-      
-      const ids = users.map(u => u.id);
+
+      const ids = users.map((u) => u.id);
       const results = await mockUpstashRedisAdapter.getMultiple('users', ids);
-      
+
       expect(results).toHaveLength(3);
       results.forEach((result: any, index: number) => {
         if (result) {
@@ -335,12 +351,12 @@ describe('Upstash Redis Adapter', () => {
     it('should delete multiple records', async () => {
       const users = createTestUsers(3);
       await mockUpstashRedisAdapter.setMultiple('users', users);
-      
-      const ids = users.map(u => u.id);
+
+      const ids = users.map((u) => u.id);
       const deleted = await mockUpstashRedisAdapter.deleteMultiple('users', ids);
-      
+
       expect(deleted).toHaveLength(3);
-      
+
       // Verify all users were deleted
       for (const id of ids) {
         const found = await mockUpstashRedisAdapter.findUnique('users', { id });
@@ -352,13 +368,13 @@ describe('Upstash Redis Adapter', () => {
   describe('Pipeline Operations', () => {
     it('should execute pipeline operations', async () => {
       const pipeline = mockUpstashRedisClient.pipeline();
-      
+
       pipeline.set('key1', 'value1');
       pipeline.set('key2', 'value2');
       pipeline.incr('counter');
-      
+
       const results = await pipeline.exec();
-      
+
       expect(results).toHaveLength(3);
       expect(results[0]).toBe('OK');
       expect(results[1]).toBe('OK');
@@ -372,14 +388,14 @@ describe('Upstash Redis Adapter', () => {
     });
 
     it('should handle missing data field for create', async () => {
-      await expect(
-        mockUpstashRedisAdapter.create('users', { name: 'No ID' })
-      ).rejects.toThrow('must have an "id" field');
+      await expect(mockUpstashRedisAdapter.create('users', { name: 'No ID' })).rejects.toThrow(
+        'must have an "id" field',
+      );
     });
 
     it('should handle non-existent keys', async () => {
-      const found = await mockUpstashRedisAdapter.findUnique('users', { 
-        id: 'non-existent' 
+      const found = await mockUpstashRedisAdapter.findUnique('users', {
+        id: 'non-existent',
       });
       expect(found).toBeNull();
     });
@@ -387,7 +403,7 @@ describe('Upstash Redis Adapter', () => {
     it('should handle empty collections', async () => {
       const results = await mockUpstashRedisAdapter.findMany('empty-collection');
       expect(results).toEqual([]);
-      
+
       const count = await mockUpstashRedisAdapter.count('empty-collection');
       expect(count).toBe(0);
     });
@@ -397,23 +413,26 @@ describe('Upstash Redis Adapter', () => {
     it('should execute raw Redis commands', async () => {
       const result = await mockUpstashRedisAdapter.raw('set', ['raw-key', 'raw-value']);
       expect(result).toBe('OK');
-      
+
       const value = await mockUpstashRedisAdapter.raw('get', 'raw-key');
       expect(value).toBe('raw-value');
     });
 
     it('should handle raw operations with array params', async () => {
-      const result = await mockUpstashRedisAdapter.raw('mset', ['key1', 'value1', 'key2', 'value2']);
+      const result = await mockUpstashRedisAdapter.raw('mset', [
+        'key1',
+        'value1',
+        'key2',
+        'value2',
+      ]);
       expect(result).toBe('OK');
-      
+
       const values = await mockUpstashRedisAdapter.raw('mget', ['key1', 'key2']);
       expect(values).toEqual(['value1', 'value2']);
     });
 
     it('should throw error for unsupported raw operation', async () => {
-      await expect(
-        mockUpstashRedisAdapter.raw('unsupported', {})
-      ).rejects.toThrow('not supported');
+      await expect(mockUpstashRedisAdapter.raw('unsupported', {})).rejects.toThrow('not supported');
     });
   });
 
@@ -427,14 +446,14 @@ describe('Upstash Redis Adapter', () => {
       // Add some data first
       await mockUpstashRedisAdapter.create('users', createTestUser());
       await mockUpstashRedisClient.set('test-key', 'test-value');
-      
+
       const result = await mockUpstashRedisAdapter.flushAll();
       expect(result).toBe('OK');
-      
+
       // Verify data is gone
       const count = await mockUpstashRedisAdapter.count('users');
       expect(count).toBe(0);
-      
+
       const value = await mockUpstashRedisClient.get('test-key');
       expect(value).toBeNull();
     });
@@ -443,7 +462,7 @@ describe('Upstash Redis Adapter', () => {
   describe('Adapter Interface Compliance', () => {
     it('should implement all required RedisDatabaseAdapter methods', () => {
       const adapter = mockUpstashRedisAdapter;
-      
+
       // Base adapter methods
       expect(typeof adapter.initialize).toBe('function');
       expect(typeof adapter.disconnect).toBe('function');

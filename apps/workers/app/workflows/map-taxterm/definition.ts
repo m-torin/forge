@@ -1,50 +1,36 @@
-import type { WorkflowDefinition } from '../types';
-import type { WorkflowContext } from '@upstash/workflow';
-
 export interface MapTaxtermPayload {
   message?: string;
-  terms?: { id: string; name: string; category?: string }[];
+  terms?: {
+    id: string;
+    name: string;
+    category?: string;
+  }[];
 }
 
-const mapTaxtermWorkflow = async (context: WorkflowContext<MapTaxtermPayload>) => {
-  const { message = 'Hello World from Map Taxterm!', terms = [] } = context.requestPayload || {};
-
-  // Step 1: Validate input
-  await context.run('validate-terms', async () => {
-    console.log(`Starting taxonomy mapping: ${message}`);
-    console.log(`Mapping ${terms.length} terms`);
-    return { validated: true, termCount: terms.length };
-  });
-
-  // Step 2: Map terms (placeholder)
-  const result = await context.run('map-terms', async () => {
-    const mappedTerms = terms.map((term) => ({
-      ...term,
-      mapped: true,
-      mappedAt: new Date().toISOString(),
-    }));
-
-    console.log(`Mapped ${mappedTerms.length} taxonomy terms`);
-    return {
-      mappedTerms,
-      message,
-      originalTerms: terms,
-      timestamp: new Date().toISOString(),
-      workflowRunId: context.workflowRunId,
-    };
-  });
-
-  return {
-    data: result,
-    metadata: {
-      timestamp: new Date().toISOString(),
-      workflowRunId: context.workflowRunId,
-    },
-    status: 'success' as const,
+interface WorkflowDefinition {
+  defaultPayload: MapTaxtermPayload;
+  metadata: {
+    id: string;
+    title: string;
+    description: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    estimatedTime: string;
+    features: string[];
+    tags: string[];
+    color: string;
   };
-};
+  workflow: (context: any) => Promise<any>;
+}
 
-const definition: WorkflowDefinition = {
+const mapTaxtermDefinition: WorkflowDefinition = {
+  defaultPayload: {
+    message: 'Hello World from Map Taxterm!',
+    terms: [
+      { id: 'term-1', name: 'Electronics', category: 'root' },
+      { id: 'term-2', name: 'Smartphones', category: 'electronics' },
+      { id: 'term-3', name: 'Laptops', category: 'electronics' },
+    ],
+  },
   metadata: {
     id: 'map-taxterm',
     color: 'lime',
@@ -60,17 +46,57 @@ const definition: WorkflowDefinition = {
     tags: ['jollyRoger', 'etl'],
     title: 'Map Taxonomy Terms',
   },
+  workflow: async (context: any) => {
+    const payload = context.requestPayload || {};
+    const message = payload.message || mapTaxtermDefinition.defaultPayload.message;
+    const terms = payload.terms || [];
 
-  defaultPayload: {
-    message: 'Hello World from Map Taxterm!',
-    terms: [
-      { id: 'term-1', name: 'Electronics', category: 'root' },
-      { id: 'term-2', name: 'Smartphones', category: 'electronics' },
-      { id: 'term-3', name: 'Laptops', category: 'electronics' },
-    ],
+    // Validate terms step
+    await context.run('validate-terms', async () => {
+      console.log(`Starting taxonomy mapping: ${message}`);
+      console.log(`Mapping ${terms.length} terms`);
+      return { validated: true, termCount: terms.length };
+    });
+
+    // Map terms step
+    await context.run('map-terms', async () => {
+      console.log(`Mapped ${terms.length} taxonomy terms`);
+
+      const mappedTerms = terms.map((term: any) => ({
+        ...term,
+        mapped: true,
+        mappedAt: new Date().toISOString(),
+      }));
+
+      return {
+        mappedTerms,
+        originalTerms: terms,
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      };
+    });
+
+    const mappedTerms = terms.map((term: any) => ({
+      ...term,
+      mapped: true,
+      mappedAt: new Date().toISOString(),
+    }));
+
+    return {
+      data: {
+        mappedTerms,
+        message,
+        originalTerms: terms,
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      },
+      metadata: {
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      },
+      status: 'success',
+    };
   },
-
-  workflow: mapTaxtermWorkflow,
 };
 
-export default definition;
+export default mapTaxtermDefinition;

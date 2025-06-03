@@ -1,15 +1,17 @@
-import type { WorkflowContext } from '@upstash/workflow';
+import type { WorkflowContext } from './types';
 
-/**
- * Wrapper to adapt enhanced workflows to standard WorkflowContext
- * This allows us to use workflows from @repo/orchestration/examples
- */
+export type WrappedWorkflowFunction<T = any> = (context: WorkflowContext<T>) => Promise<any>;
+
 export function wrapWorkflow<T = any>(
-  enhancedWorkflow: (context: any) => Promise<any>,
-): (context: WorkflowContext<T>) => Promise<any> {
-  return async (context: WorkflowContext<T>) => {
-    // The enhanced workflows expect additional properties that aren't in WorkflowContext
-    // We'll pass the context as-is and let the workflow handle it
-    return enhancedWorkflow(context as any);
+  workflowFn: (context: WorkflowContext<T>) => Promise<any>,
+): WrappedWorkflowFunction<T> {
+  return async (context: WorkflowContext<T>): Promise<any> => {
+    try {
+      const result = await workflowFn(context);
+      return result;
+    } catch (error) {
+      console.error(`Workflow ${context.workflowRunId} failed:`, error);
+      throw error;
+    }
   };
 }

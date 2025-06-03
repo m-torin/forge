@@ -21,5 +21,9 @@ export {
 // Re-export Analytics class for server use
 export { Analytics } from './emitters/analytics';
 
+// Server-only exports
+export { withToolbar } from './lib/toolbar';
+export { getFlags } from './access';
+
 // Re-export types
 export type * from './types/flags';

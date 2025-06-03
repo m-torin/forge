@@ -13,6 +13,7 @@ const config: Linter.FlatConfig[] = [
       '**/generated/**/*',
       '**/*.md',
       '**/__tests__/**/*',
+      'redis/**/*',
     ],
   },
   ...serverConfig,

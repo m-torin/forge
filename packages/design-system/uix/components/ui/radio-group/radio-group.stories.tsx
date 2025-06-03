@@ -1,26 +1,26 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { RadioGroup, RadioGroupItem } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * A set of checkable buttons—known as radio buttons—where no more than one of
  * the buttons can be checked at a time.
  */
 const meta = {
-  title: 'uix/ui/RadioGroup',
-  component: RadioGroup,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     defaultValue: 'comfortable',
   },
+  argTypes: {},
+  component: RadioGroup,
   render: (args: any) => (
     <RadioGroup {...args}>
-      <RadioGroupItem value="default" label="Default" />
-      <RadioGroupItem value="comfortable" label="Comfortable" />
-      <RadioGroupItem value="compact" label="Compact" />
+      <RadioGroupItem label="Default" value="default" />
+      <RadioGroupItem label="Comfortable" value="comfortable" />
+      <RadioGroupItem label="Compact" value="compact" />
     </RadioGroup>
   ),
+  tags: ['autodocs'],
+  title: 'uix/ui/RadioGroup',
 } satisfies Meta<typeof RadioGroup>;
 
 export default meta;
@@ -34,9 +34,9 @@ export const Default: Story = {
   args: {
     children: (
       <>
-        <RadioGroupItem value="default" label="Default" />
-        <RadioGroupItem value="comfortable" label="Comfortable" />
-        <RadioGroupItem value="compact" label="Compact" />
+        <RadioGroupItem label="Default" value="default" />
+        <RadioGroupItem label="Comfortable" value="comfortable" />
+        <RadioGroupItem label="Compact" value="compact" />
       </>
     ),
   },
@@ -47,13 +47,13 @@ export const Default: Story = {
  */
 export const WithDescription: Story = {
   args: {
-    defaultValue: 'comfortable',
     children: (
       <>
-        <RadioGroupItem value="default" label="Default" description="The default option" />
-        <RadioGroupItem value="comfortable" label="Comfortable" description="More spacing" />
-        <RadioGroupItem value="compact" label="Compact" description="Less spacing" />
+        <RadioGroupItem description="The default option" label="Default" value="default" />
+        <RadioGroupItem description="More spacing" label="Comfortable" value="comfortable" />
+        <RadioGroupItem description="Less spacing" label="Compact" value="compact" />
       </>
     ),
+    defaultValue: 'comfortable',
   },
 };

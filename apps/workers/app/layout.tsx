@@ -1,11 +1,9 @@
-import { AppShellLayout } from '@/components/app-shell-layout';
 import { WorkflowProvider } from '@/contexts/workflow-context';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
 import React, { type ReactNode } from 'react';
-
 
 interface RootLayoutProperties {
   readonly children: ReactNode;
@@ -25,9 +23,7 @@ export default function RootLayout({ children }: RootLayoutProperties): React.Re
       <body>
         <MantineProvider>
           <ModalsProvider>
-            <WorkflowProvider>
-              <AppShellLayout>{children}</AppShellLayout>
-            </WorkflowProvider>
+            <WorkflowProvider>{children}</WorkflowProvider>
           </ModalsProvider>
         </MantineProvider>
       </body>

@@ -1,20 +1,20 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Slider } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * An input where the user selects a value from within a given range.
  */
 const meta = {
-  title: 'uix/ui/Slider',
-  component: Slider,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     defaultValue: 33,
     max: 100,
     step: 1,
   },
+  argTypes: {},
+  component: Slider,
+  tags: ['autodocs'],
+  title: 'uix/ui/Slider',
 } satisfies Meta<typeof Slider>;
 
 export default meta;
@@ -32,9 +32,9 @@ export const Default: Story = {};
 export const WithMarks: Story = {
   args: {
     marks: [
-      { value: 20, label: '20%' },
-      { value: 50, label: '50%' },
-      { value: 80, label: '80%' },
+      { label: '20%', value: 20 },
+      { label: '50%', value: 50 },
+      { label: '80%', value: 80 },
     ],
   },
 };

@@ -1,26 +1,27 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { IconBold, IconItalic } from '@tabler/icons-react';
 
 import { Toggle } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * A two-state button that can be either on or off.
  */
 const meta: Meta<typeof Toggle> = {
-  title: 'uix/ui/Toggle',
-  component: Toggle,
-  tags: ['autodocs'],
+  args: {
+    children: <IconBold className="h-4 w-4" />,
+  },
   argTypes: {
     children: {
       control: { disable: true },
     },
   },
-  args: {
-    children: <IconBold className="h-4 w-4" />,
-  },
+  component: Toggle,
   parameters: {
     layout: 'centered',
   },
+  tags: ['autodocs'],
+  title: 'uix/ui/Toggle',
 };
 export default meta;
 
@@ -39,8 +40,8 @@ export const Default: Story = {
  */
 export const Outline: Story = {
   args: {
-    variant: 'outline',
     children: <IconItalic className="h-4 w-4" />,
+    variant: 'outline',
   },
   render: (args: any) => <Toggle {...args} aria-label="Toggle italic" />,
 };
@@ -49,15 +50,15 @@ export const Outline: Story = {
  * Use the text element to add a label to the toggle.
  */
 export const WithText: Story = {
+  args: {
+    variant: 'outline',
+  },
   render: (args: any) => (
     <Toggle {...args} aria-label="Toggle italic">
       <IconItalic className="mr-2 h-4 w-4" />
       Italic
     </Toggle>
   ),
-  args: {
-    variant: 'outline',
-  },
 };
 
 /**

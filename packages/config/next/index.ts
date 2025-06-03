@@ -24,6 +24,8 @@ export const config: NextConfig = {
     forceSwcTransforms: true,
     // Tree shaking optimization for commonly used packages
     optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
+    // Enable Node.js runtime for middleware (Next.js 15.2+ canary)
+    nodeMiddleware: true,
   },
 
   // Configure SWC compiler options

@@ -60,7 +60,7 @@ describe('Firestore Adapter', () => {
       await mockFirestoreAdapter.create('users', testData);
 
       const found = await mockFirestoreAdapter.findUnique('users', {
-        where: { email: 'unique@example.com' }
+        where: { email: 'unique@example.com' },
       });
       expect(found).toMatchObject(testData);
     });
@@ -88,23 +88,23 @@ describe('Firestore Adapter', () => {
 
     it('should find many documents', async () => {
       const users = createTestUsers(3);
-      
+
       for (const user of users) {
         await mockFirestoreAdapter.create('users', user);
       }
 
       const found = await mockFirestoreAdapter.findMany('users');
       expect(found).toHaveLength(3);
-      
+
       // Check that all users are found
       const foundIds = found.map((u: any) => u.id);
-      const expectedIds = users.map(u => u.id);
+      const expectedIds = users.map((u) => u.id);
       expect(foundIds).toEqual(expect.arrayContaining(expectedIds));
     });
 
     it('should count documents', async () => {
       const users = createTestUsers(5);
-      
+
       for (const user of users) {
         await mockFirestoreAdapter.create('users', user);
       }
@@ -130,7 +130,7 @@ describe('Firestore Adapter', () => {
 
     it('should find documents with where clause', async () => {
       const activeUsers = await mockFirestoreAdapter.findMany('users', {
-        where: { active: true }
+        where: { active: true },
       });
 
       expect(activeUsers).toHaveLength(2);
@@ -141,7 +141,7 @@ describe('Firestore Adapter', () => {
 
     it('should find documents with ordering', async () => {
       const orderedUsers = await mockFirestoreAdapter.findMany('users', {
-        orderBy: { field: 'age', direction: 'asc' }
+        orderBy: { field: 'age', direction: 'asc' },
       });
 
       expect(orderedUsers).toHaveLength(3);
@@ -152,7 +152,7 @@ describe('Firestore Adapter', () => {
 
     it('should find documents with limit', async () => {
       const limitedUsers = await mockFirestoreAdapter.findMany('users', {
-        limit: 2
+        limit: 2,
       });
 
       expect(limitedUsers).toHaveLength(2);
@@ -162,7 +162,7 @@ describe('Firestore Adapter', () => {
       const results = await mockFirestoreAdapter.findMany('users', {
         where: { active: true },
         orderBy: { field: 'age', direction: 'desc' },
-        limit: 1
+        limit: 1,
       });
 
       expect(results).toHaveLength(1);
@@ -172,7 +172,7 @@ describe('Firestore Adapter', () => {
 
     it('should count documents with where clause', async () => {
       const activeCount = await mockFirestoreAdapter.count('users', {
-        where: { active: true }
+        where: { active: true },
       });
 
       expect(activeCount).toBe(2);
@@ -182,7 +182,7 @@ describe('Firestore Adapter', () => {
   describe('Direct Firestore Client Operations', () => {
     it('should create document using direct client', async () => {
       const testData = createTestUser();
-      
+
       const docRef = await mockFirestore.collection('users').add(testData);
       expect(docRef.id).toBeDefined();
 
@@ -193,7 +193,7 @@ describe('Firestore Adapter', () => {
 
     it('should query collection using direct client', async () => {
       const users = createTestUsers(3, { active: true });
-      
+
       for (const user of users) {
         await mockFirestore.collection('users').add(user);
       }
@@ -207,12 +207,12 @@ describe('Firestore Adapter', () => {
       expect(querySnapshot.empty).toBe(false);
 
       const docs: any[] = [];
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach((doc) => {
         docs.push({ id: doc.id, ...doc.data() });
       });
-      
+
       expect(docs).toHaveLength(3);
-      docs.forEach(doc => {
+      docs.forEach((doc) => {
         expect(doc.active).toBe(true);
       });
     });
@@ -222,7 +222,7 @@ describe('Firestore Adapter', () => {
       const users = createTestUsers(3);
 
       // Add batch operations
-      users.forEach(user => {
+      users.forEach((user) => {
         const docRef = mockFirestore.collection('users').doc(user.id);
         batch.set(docRef, user);
       });
@@ -230,7 +230,7 @@ describe('Firestore Adapter', () => {
       // Commit batch
       const results = await batch.commit();
       expect(results).toHaveLength(3);
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.writeTime).toBeInstanceOf(Date);
       });
 
@@ -266,8 +266,8 @@ describe('Firestore Adapter', () => {
     });
 
     it('should return null for non-existent document', async () => {
-      const found = await mockFirestoreAdapter.findUnique('users', { 
-        id: 'non-existent' 
+      const found = await mockFirestoreAdapter.findUnique('users', {
+        id: 'non-existent',
       });
       expect(found).toBeNull();
     });
@@ -293,7 +293,7 @@ describe('Firestore Adapter', () => {
 
     it('should execute raw transaction', async () => {
       const user = createTestUser();
-      
+
       const result = await mockFirestoreAdapter.raw('runTransaction', async (transaction: any) => {
         const docRef = mockFirestore.collection('users').doc(user.id);
         transaction.set(docRef, user);
@@ -304,16 +304,14 @@ describe('Firestore Adapter', () => {
     });
 
     it('should throw error for unsupported raw operation', async () => {
-      await expect(
-        mockFirestoreAdapter.raw('unsupported', null)
-      ).rejects.toThrow('not supported');
+      await expect(mockFirestoreAdapter.raw('unsupported', null)).rejects.toThrow('not supported');
     });
   });
 
   describe('Adapter Interface Compliance', () => {
     it('should implement all required DatabaseAdapter methods', () => {
       const adapter = mockFirestoreAdapter;
-      
+
       expect(typeof adapter.initialize).toBe('function');
       expect(typeof adapter.disconnect).toBe('function');
       expect(typeof adapter.getClient).toBe('function');

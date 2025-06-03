@@ -10,5 +10,7 @@ export const PaginationPrevious = ({ children }: { children: React.ReactNode }) 
 export const PaginationEllipsis = () => <span>...</span>;
 
 // Additional pagination components
-export const PaginationFirst = ({ children }: { children?: React.ReactNode }) => children || '« First';
-export const PaginationLast = ({ children }: { children?: React.ReactNode }) => children || 'Last »';
+export const PaginationFirst = ({ children }: { children?: React.ReactNode }) =>
+  children || '« First';
+export const PaginationLast = ({ children }: { children?: React.ReactNode }) =>
+  children || 'Last »';

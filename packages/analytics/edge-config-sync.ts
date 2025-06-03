@@ -20,7 +20,7 @@ interface PostHogFlag {
 export async function syncPostHogToEdgeConfig() {
   const apiKey = process.env.POSTHOG_API_KEY;
   const projectId = process.env.POSTHOG_PROJECT_ID;
-  
+
   if (!apiKey || !projectId) {
     throw new Error('Missing PostHog credentials');
   }
@@ -31,23 +31,26 @@ export async function syncPostHogToEdgeConfig() {
       `https://app.posthog.com/api/projects/${projectId}/feature_flags/`,
       {
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
-      }
+      },
     );
 
     const data = await response.json();
     const flags = data.results as PostHogFlag[];
 
     // Transform to Edge Config format
-    const edgeConfigData = flags.reduce((acc, flag) => {
-      acc[flag.key] = {
-        enabled: flag.active,
-        filters: flag.filters || [],
-        rollout: flag.rollout_percentage || 100,
-      };
-      return acc;
-    }, {} as Record<string, any>);
+    const edgeConfigData = flags.reduce(
+      (acc, flag) => {
+        acc[flag.key] = {
+          enabled: flag.active,
+          filters: flag.filters || [],
+          rollout: flag.rollout_percentage || 100,
+        };
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
     // Update Edge Config
     const edgeConfigResponse = await fetch(
@@ -61,11 +64,11 @@ export async function syncPostHogToEdgeConfig() {
           })),
         }),
         headers: {
-          'Authorization': `Bearer ${process.env.VERCEL_API_TOKEN}`,
+          Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
           'Content-Type': 'application/json',
         },
         method: 'PATCH',
-      }
+      },
     );
 
     if (!edgeConfigResponse.ok) {
@@ -100,10 +103,7 @@ export async function POST() {
   try {
     await syncPostHogToEdgeConfig();
     return Response.json({ success: true });
-  } catch (error) {
-    return Response.json(
-      { error: 'Sync failed' },
-      { status: 500 }
-    );
+  } catch {
+    return Response.json({ error: 'Sync failed' }, { status: 500 });
   }
 }

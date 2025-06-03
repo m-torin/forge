@@ -88,11 +88,13 @@ async function ecommerceExample() {
   await analytics.track('Checkout Started', {
     cartId: 'cart-789',
     currency: 'USD',
-    products: [{
-      price: 99.99,
-      productId: 'SKU-123',
-      quantity: 1,
-    }],
+    products: [
+      {
+        price: 99.99,
+        productId: 'SKU-123',
+        quantity: 1,
+      },
+    ],
     revenue: 99.99,
   });
 
@@ -101,15 +103,17 @@ async function ecommerceExample() {
     coupon: 'SAVE10',
     currency: 'USD',
     orderId: 'order-012',
-    products: [{
-      name: 'Wireless Headphones',
-      category: 'Electronics/Audio',
-      price: 99.99,
-      productId: 'SKU-123',
-      quantity: 1,
-    }],
+    products: [
+      {
+        name: 'Wireless Headphones',
+        category: 'Electronics/Audio',
+        price: 99.99,
+        productId: 'SKU-123',
+        quantity: 1,
+      },
+    ],
     revenue: 99.99,
-    shipping: 5.00,
+    shipping: 5.0,
     tax: 8.99,
   });
 }

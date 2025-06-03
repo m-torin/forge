@@ -1,6 +1,7 @@
 # @repo/database
 
-A database abstraction layer that supports Prisma (PostgreSQL), Cloud Firestore, Upstash Vector (serverless vector database), and Upstash Redis (serverless Redis).
+A database abstraction layer that supports Prisma (PostgreSQL), Cloud Firestore, Upstash Vector
+(serverless vector database), and Upstash Redis (serverless Redis).
 
 ## Features
 
@@ -159,13 +160,12 @@ const adapter = createUpstashRedisAdapter();
 await adapter.create('users', { id: '123', name: 'John', email: 'john@example.com' });
 
 // Redis-specific operations
-await adapter.listPush('notifications', 'user-123', 
-  { type: 'email', message: 'Welcome!' }
-);
+await adapter.listPush('notifications', 'user-123', { type: 'email', message: 'Welcome!' });
 
-await adapter.sortedSetAdd('leaderboard', 'game-1',
-  { score: 1000, member: { userId: '123', name: 'John' } }
-);
+await adapter.sortedSetAdd('leaderboard', 'game-1', {
+  score: 1000,
+  member: { userId: '123', name: 'John' },
+});
 ```
 
 ### Server Actions

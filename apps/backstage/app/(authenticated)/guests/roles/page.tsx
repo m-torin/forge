@@ -110,7 +110,7 @@ export default function RolesPage() {
               <Title order={4} mb="sm">
                 Role Hierarchy
               </Title>
-              <List size="sm" spacing="xs">
+              <List size="sm">
                 <List.Item>
                   <Text fw={600} span>
                     Super Admin:
@@ -148,7 +148,7 @@ export default function RolesPage() {
               <Title order={4} mb="sm">
                 Common Permissions
               </Title>
-              <List size="sm" spacing="xs">
+              <List size="sm">
                 <List.Item>
                   <Text fw={600} span>
                     create:

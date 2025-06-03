@@ -1,9 +1,9 @@
-import { ButtonPrimary } from '@repo/design-system/ciesco2';
+import { ButtonPrimary } from '@repo/design-system/ciseco'
 
 export const metadata = {
-  description: 'Account - Payments & payouts page',
   title: 'Account - Payments & payouts',
-};
+  description: 'Account - Payments & payouts page',
+}
 
 const Page = () => {
   return (
@@ -16,16 +16,15 @@ const Page = () => {
         </p>
       </div>
       {/* CONTENT */}
-      <div className="prose max-w-2xl prose-slate dark:prose-invert">
+      <div className="prose prose-slate dark:prose-invert max-w-2xl">
         <span className="">
           {`When you receive a payment for a order, we call that payment to you a
           "payout." Our secure payment system supports several payout methods,
           which can be set up below. Go to FAQ.`}
           <br />
           <br />
-          To get paid, you need to set up a payout method releases payouts about 24 hours after a
-          guest’s scheduled time. The time it takes for the funds to appear in your account depends
-          on your payout method.{` `}
+          To get paid, you need to set up a payout method releases payouts about 24 hours after a guest’s scheduled
+          time. The time it takes for the funds to appear in your account depends on your payout method.{` `}
           <a href="##">Learn more</a>
         </span>
         <div className="pt-10">
@@ -33,7 +32,7 @@ const Page = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page

@@ -1,55 +1,59 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
 import { Button } from '@mantine/core';
+import { useState } from 'react';
 
 import { Sheet } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Extends the Dialog component to display content that complements the main
  * content of the screen.
  */
 const meta = {
-  title: 'uix/ui/Sheet',
-  component: Sheet,
-  tags: ['autodocs'],
+  args: {
+    position: 'right',
+  },
   argTypes: {
     position: {
-      options: ['top', 'bottom', 'left', 'right'],
       control: {
         type: 'radio',
       },
+      options: ['top', 'bottom', 'left', 'right'],
     },
   },
-  args: {
-    position: 'right',
+  component: Sheet,
+  parameters: {
+    layout: 'centered',
   },
   render: function Render(args: any) {
     const [opened, setOpened] = useState(false);
     return (
       <>
         <Button onClick={() => setOpened(true)}>Open drawer</Button>
-        <Sheet {...args} opened={opened} onClose={() => setOpened(false)} title="Are you absolutely sure?">
+        <Sheet
+          {...args}
+          onClose={() => setOpened(false)}
+          opened={opened}
+          title="Are you absolutely sure?"
+        >
           <div>
-            <p style={{ marginBottom: '1rem', color: 'var(--mantine-color-dimmed)' }}>
-              This action cannot be undone. This will permanently delete your account and remove your
-              data from our servers.
+            <p style={{ color: 'var(--mantine-color-dimmed)', marginBottom: '1rem' }}>
+              This action cannot be undone. This will permanently delete your account and remove
+              your data from our servers.
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <Button variant="subtle" onClick={() => setOpened(false)}>
+              <Button onClick={() => setOpened(false)} variant="subtle">
                 Cancel
               </Button>
-              <Button onClick={() => setOpened(false)}>
-                Submit
-              </Button>
+              <Button onClick={() => setOpened(false)}>Submit</Button>
             </div>
           </div>
         </Sheet>
       </>
     );
   },
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Sheet',
 } satisfies Meta<typeof Sheet>;
 
 export default meta;
@@ -61,8 +65,8 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
   args: {
-    opened: false,
     onClose: () => {},
+    opened: false,
   },
 };
 
@@ -71,27 +75,30 @@ export const Default: Story = {
  */
 export const Top: Story = {
   args: {
-    opened: false,
     onClose: () => {},
+    opened: false,
   },
   render: function Render(args: any) {
     const [opened, setOpened] = useState(false);
     return (
       <>
         <Button onClick={() => setOpened(true)}>Open top drawer</Button>
-        <Sheet opened={opened} onClose={() => setOpened(false)} title="Are you absolutely sure?" position="top">
+        <Sheet
+          onClose={() => setOpened(false)}
+          opened={opened}
+          position="top"
+          title="Are you absolutely sure?"
+        >
           <div>
-            <p style={{ marginBottom: '1rem', color: 'var(--mantine-color-dimmed)' }}>
-              This action cannot be undone. This will permanently delete your account and remove your
-              data from our servers.
+            <p style={{ color: 'var(--mantine-color-dimmed)', marginBottom: '1rem' }}>
+              This action cannot be undone. This will permanently delete your account and remove
+              your data from our servers.
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <Button variant="subtle" onClick={() => setOpened(false)}>
+              <Button onClick={() => setOpened(false)} variant="subtle">
                 Cancel
               </Button>
-              <Button onClick={() => setOpened(false)}>
-                Submit
-              </Button>
+              <Button onClick={() => setOpened(false)}>Submit</Button>
             </div>
           </div>
         </Sheet>
@@ -105,27 +112,30 @@ export const Top: Story = {
  */
 export const Bottom: Story = {
   args: {
-    opened: false,
     onClose: () => {},
+    opened: false,
   },
   render: function Render(args: any) {
     const [opened, setOpened] = useState(false);
     return (
       <>
         <Button onClick={() => setOpened(true)}>Open bottom drawer</Button>
-        <Sheet opened={opened} onClose={() => setOpened(false)} title="Are you absolutely sure?" position="bottom">
+        <Sheet
+          onClose={() => setOpened(false)}
+          opened={opened}
+          position="bottom"
+          title="Are you absolutely sure?"
+        >
           <div>
-            <p style={{ marginBottom: '1rem', color: 'var(--mantine-color-dimmed)' }}>
-              This action cannot be undone. This will permanently delete your account and remove your
-              data from our servers.
+            <p style={{ color: 'var(--mantine-color-dimmed)', marginBottom: '1rem' }}>
+              This action cannot be undone. This will permanently delete your account and remove
+              your data from our servers.
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <Button variant="subtle" onClick={() => setOpened(false)}>
+              <Button onClick={() => setOpened(false)} variant="subtle">
                 Cancel
               </Button>
-              <Button onClick={() => setOpened(false)}>
-                Submit
-              </Button>
+              <Button onClick={() => setOpened(false)}>Submit</Button>
             </div>
           </div>
         </Sheet>
@@ -139,27 +149,30 @@ export const Bottom: Story = {
  */
 export const Left: Story = {
   args: {
-    opened: false,
     onClose: () => {},
+    opened: false,
   },
   render: function Render(args: any) {
     const [opened, setOpened] = useState(false);
     return (
       <>
         <Button onClick={() => setOpened(true)}>Open left drawer</Button>
-        <Sheet opened={opened} onClose={() => setOpened(false)} title="Are you absolutely sure?" position="left">
+        <Sheet
+          onClose={() => setOpened(false)}
+          opened={opened}
+          position="left"
+          title="Are you absolutely sure?"
+        >
           <div>
-            <p style={{ marginBottom: '1rem', color: 'var(--mantine-color-dimmed)' }}>
-              This action cannot be undone. This will permanently delete your account and remove your
-              data from our servers.
+            <p style={{ color: 'var(--mantine-color-dimmed)', marginBottom: '1rem' }}>
+              This action cannot be undone. This will permanently delete your account and remove
+              your data from our servers.
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <Button variant="subtle" onClick={() => setOpened(false)}>
+              <Button onClick={() => setOpened(false)} variant="subtle">
                 Cancel
               </Button>
-              <Button onClick={() => setOpened(false)}>
-                Submit
-              </Button>
+              <Button onClick={() => setOpened(false)}>Submit</Button>
             </div>
           </div>
         </Sheet>

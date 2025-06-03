@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,14 +8,17 @@ import {
   navigationMenuTriggerStyle,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * A collection of links for navigating websites.
  */
 const meta = {
-  title: 'uix/ui/NavigationMenu',
-  component: NavigationMenu,
-  tags: ['autodocs'],
   argTypes: {},
+  component: NavigationMenu,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <NavigationMenu {...args}>
       <NavigationMenuList>
@@ -52,8 +53,8 @@ const meta = {
         </NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuLink
-            className={navigationMenuTriggerStyle()}
             href="https:www.google.com"
+            className={navigationMenuTriggerStyle()}
             target="_blank"
           >
             External
@@ -62,9 +63,8 @@ const meta = {
       </NavigationMenuList>
     </NavigationMenu>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/NavigationMenu',
 } satisfies Meta<typeof NavigationMenu>;
 
 export default meta;

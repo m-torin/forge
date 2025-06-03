@@ -27,6 +27,17 @@
     "test": {
       "dependsOn": ["^test"]
     },
+    "test:e2e": {
+      "dependsOn": ["build:local"],
+      "cache": false,
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "test:e2e:ui": {
+      "cache": false
+    },
+    "test:e2e:headed": {
+      "cache": false
+    },
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },

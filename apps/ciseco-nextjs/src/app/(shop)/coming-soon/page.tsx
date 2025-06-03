@@ -1,18 +1,16 @@
-import { type Metadata } from 'next';
-import Link from 'next/link';
-
-import { ButtonPrimary } from '@repo/design-system/ciesco2';
-import { Input } from '@repo/design-system/ciesco2';
+import { ButtonPrimary, Input } from '@repo/design-system/ciseco'
+import { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
-  description: 'Coming soon page for the application',
   title: 'Coming Soon',
-};
+  description: 'Coming soon page for the application',
+}
 
 const Page = () => {
   return (
     <div className="container mb-24 lg:mb-32">
-      <header className="mx-auto mt-20 mb-14 text-center sm:mt-28 sm:mb-16 lg:mb-20">
+      <header className="mx-auto mb-14 mt-20 text-center sm:mb-16 sm:mt-28 lg:mb-20">
         <h1 className="leading flex items-center justify-center text-6xl/none font-bold tracking-wide text-neutral-900 md:text-8xl/none dark:text-neutral-100">
           Coming Soon.
         </h1>
@@ -24,14 +22,14 @@ const Page = () => {
 
       <div className="mx-auto flex max-w-md flex-col gap-y-6">
         {/* FORM */}
-        <form action="#" method="post" className="grid grid-cols-1 gap-5">
+        <form className="grid grid-cols-1 gap-5" action="#" method="post">
           <label className="block">
             <Input
-              fontClass="text-base font-normal"
+              type="email"
               placeholder="Your email address"
               className="mt-1"
               sizeClass="h-[52px] px-5 py-3"
-              type="email"
+              fontClass="text-base font-normal"
             />
           </label>
           <ButtonPrimary type="submit">Notify Me</ButtonPrimary>
@@ -47,7 +45,7 @@ const Page = () => {
         </span>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page

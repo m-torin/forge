@@ -1,45 +1,38 @@
-import type { WorkflowDefinition } from '../types';
-import type { WorkflowContext } from '@upstash/workflow';
-
 export interface ChartPDPsPayload {
   message?: string;
+  options?: {
+    batchSize?: number;
+    maxConcurrency?: number;
+    timeout?: number;
+  };
   productIds?: string[];
 }
 
-const chartPDPsWorkflow = async (context: WorkflowContext<ChartPDPsPayload>) => {
-  const { message = 'Hello World from Chart PDPs!', productIds = [] } =
-    context.requestPayload || {};
-
-  // Step 1: Log the start
-  await context.run('log-start', async () => {
-    console.log(`Starting chart PDPs workflow: ${message}`);
-    console.log(`Processing ${productIds.length} products`);
-    return { started: true };
-  });
-
-  // Step 2: Process products (placeholder)
-  const result = await context.run('process-pdps', async () => {
-    console.log(`Processing PDPs for products: ${productIds.join(', ')}`);
-    return {
-      message,
-      processedCount: productIds.length,
-      productIds,
-      timestamp: new Date().toISOString(),
-      workflowRunId: context.workflowRunId,
-    };
-  });
-
-  return {
-    data: result,
-    metadata: {
-      timestamp: new Date().toISOString(),
-      workflowRunId: context.workflowRunId,
-    },
-    status: 'success' as const,
+interface WorkflowDefinition {
+  defaultPayload: ChartPDPsPayload;
+  metadata: {
+    id: string;
+    title: string;
+    description: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    estimatedTime: string;
+    features: string[];
+    tags: string[];
+    color: string;
   };
-};
+  workflow: (context: any) => Promise<any>;
+}
 
-const definition: WorkflowDefinition = {
+const chartPDPsDefinition: WorkflowDefinition = {
+  defaultPayload: {
+    message: 'Hello World from Chart PDPs!',
+    options: {
+      batchSize: 10,
+      maxConcurrency: 3,
+      timeout: 30000,
+    },
+    productIds: ['PROD-001', 'PROD-002', 'PROD-003'],
+  },
   metadata: {
     id: 'chart-pdps',
     color: 'teal',
@@ -55,13 +48,45 @@ const definition: WorkflowDefinition = {
     tags: ['jollyRoger', 'etl'],
     title: 'Chart PDPs',
   },
+  workflow: async (context: any) => {
+    const payload = context.requestPayload || {};
+    const message = payload.message || chartPDPsDefinition.defaultPayload.message;
+    const productIds = payload.productIds || [];
 
-  defaultPayload: {
-    message: 'Hello World from Chart PDPs!',
-    productIds: ['PROD-001', 'PROD-002', 'PROD-003'],
+    // Log start step
+    await context.run('log-start', async () => {
+      console.log(`Starting chart PDPs workflow: ${message}`);
+      console.log(`Processing ${productIds.length} products`);
+      console.log(`Processing PDPs for products: ${productIds.join(', ')}`);
+      return { started: true };
+    });
+
+    // Process PDPs step
+    await context.run('process-pdps', async () => {
+      return {
+        message,
+        processedCount: productIds.length,
+        productIds,
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      };
+    });
+
+    return {
+      data: {
+        message,
+        processedCount: productIds.length,
+        productIds,
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      },
+      metadata: {
+        timestamp: new Date().toISOString(),
+        workflowRunId: context.workflowRunId,
+      },
+      status: 'success',
+    };
   },
-
-  workflow: chartPDPsWorkflow,
 };
 
-export default definition;
+export default chartPDPsDefinition;

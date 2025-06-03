@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   Drawer,
   DrawerClose,
@@ -11,14 +9,17 @@ import {
   DrawerTrigger,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * A drawer component for React.
  */
 const meta: Meta<typeof Drawer> = {
-  title: 'uix/ui/Drawer',
-  component: Drawer,
-  tags: ['autodocs'],
   argTypes: {},
+  component: Drawer,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <Drawer {...args}>
       <DrawerTrigger>Open</DrawerTrigger>
@@ -28,11 +29,11 @@ const meta: Meta<typeof Drawer> = {
           <DrawerDescription>This action cannot be undone.</DrawerDescription>
         </DrawerHeader>
         <DrawerFooter>
-          <button type="button" className="rounded bg-primary px-4 py-2 text-primary-foreground">
+          <button className="rounded bg-primary px-4 py-2 text-primary-foreground" type="button">
             Submit
           </button>
           <DrawerClose>
-            <button type="button" className="hover:underline">
+            <button className="hover:underline" type="button">
               Cancel
             </button>
           </DrawerClose>
@@ -40,9 +41,8 @@ const meta: Meta<typeof Drawer> = {
       </DrawerContent>
     </Drawer>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Drawer',
 };
 
 export default meta;

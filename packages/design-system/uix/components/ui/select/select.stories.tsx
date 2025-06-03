@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   Select,
   SelectContent,
@@ -11,14 +9,17 @@ import {
   SelectValue,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * Displays a list of options for the user to pick from—triggered by a button.
  */
 const meta: Meta<typeof Select> = {
-  title: 'uix/ui/Select',
-  component: Select,
-  tags: ['autodocs'],
   argTypes: {},
+  component: Select,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <Select {...args}>
       <SelectTrigger className="w-96">
@@ -38,7 +39,7 @@ const meta: Meta<typeof Select> = {
           <SelectLabel>Vegetables</SelectLabel>
           <SelectItem value="aubergine">Aubergine</SelectItem>
           <SelectItem value="broccoli">Broccoli</SelectItem>
-          <SelectItem value="carrot" disabled>
+          <SelectItem disabled value="carrot">
             Carrot
           </SelectItem>
           <SelectItem value="courgette">Courgette</SelectItem>
@@ -55,9 +56,8 @@ const meta: Meta<typeof Select> = {
       </SelectContent>
     </Select>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Select',
 } satisfies Meta<typeof Select>;
 
 export default meta;

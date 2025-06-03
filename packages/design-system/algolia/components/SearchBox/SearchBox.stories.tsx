@@ -1,31 +1,32 @@
+import { SearchBox, SearchProvider, SearchResults, SearchStats } from '@repo/design-system/algolia';
+
 import type { Meta, StoryObj } from '@storybook/react';
-import { SearchProvider, SearchBox, SearchResults, SearchStats } from '@repo/design-system/algolia';
 
 const meta: Meta<typeof SearchBox> = {
-  title: 'algolia/SearchBox',
-  component: SearchBox,
-  parameters: {
-    layout: 'padded',
-  },
-  tags: ['autodocs'],
   argTypes: {
-    placeholder: {
-      control: 'text',
-      description: 'Placeholder text for the search input',
-    },
     autoFocus: {
       control: 'boolean',
       description: 'Auto focus the search input on mount',
-    },
-    maxLength: {
-      control: 'number',
-      description: 'Maximum length of search query',
     },
     className: {
       control: 'text',
       description: 'Additional CSS classes',
     },
+    maxLength: {
+      control: 'number',
+      description: 'Maximum length of search query',
+    },
+    placeholder: {
+      control: 'text',
+      description: 'Placeholder text for the search input',
+    },
   },
+  component: SearchBox,
+  parameters: {
+    layout: 'padded',
+  },
+  tags: ['autodocs'],
+  title: 'algolia/SearchBox',
 };
 
 export default meta;
@@ -33,15 +34,15 @@ type Story = StoryObj<typeof meta>;
 
 // Mock Algolia configuration for demo purposes
 const mockConfig = {
-  appId: 'latency',
   apiKey: '6be0576ff61c053d5f9a3225e2a90f76',
+  appId: 'latency',
   indexName: 'instant_search',
 };
 
 export const Default: Story = {
   args: {
-    placeholder: 'Search products...',
     autoFocus: false,
+    placeholder: 'Search products...',
   },
   render: (args: any) => (
     <SearchProvider config={mockConfig}>
@@ -56,8 +57,8 @@ export const Default: Story = {
 
 export const WithAutoFocus: Story = {
   args: {
-    placeholder: 'Search with auto focus...',
     autoFocus: true,
+    placeholder: 'Search with auto focus...',
   },
   render: (args: any) => (
     <SearchProvider config={mockConfig}>
@@ -71,8 +72,8 @@ export const WithAutoFocus: Story = {
 
 export const WithMaxLength: Story = {
   args: {
-    placeholder: 'Search (max 50 chars)...',
     maxLength: 50,
+    placeholder: 'Search (max 50 chars)...',
   },
   render: (args: any) => (
     <SearchProvider config={mockConfig}>
@@ -87,8 +88,8 @@ export const WithMaxLength: Story = {
 
 export const CustomStyling: Story = {
   args: {
-    placeholder: 'Custom styled search...',
     className: 'max-w-lg mx-auto border-2 border-blue-300 rounded-lg',
+    placeholder: 'Custom styled search...',
   },
   render: (args: any) => (
     <SearchProvider config={mockConfig}>
@@ -103,20 +104,15 @@ export const CustomStyling: Story = {
 
 export const ECommercSearch: Story = {
   args: {
-    placeholder: 'Search for products, brands, categories...',
     autoFocus: false,
+    placeholder: 'Search for products, brands, categories...',
   },
   render: (args: any) => (
     <SearchProvider config={mockConfig}>
       <div className="bg-gray-50 p-6 rounded-lg">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-6">
-            Product Search
-          </h2>
-          <SearchBox 
-            {...args} 
-            className="shadow-lg border-gray-300"
-          />
+          <h2 className="text-2xl font-bold text-center mb-6">Product Search</h2>
+          <SearchBox {...args} className="shadow-lg border-gray-300" />
           <SearchStats className="mt-4 text-center text-gray-600" />
           <div className="mt-6">
             <SearchResults className="bg-white rounded-lg shadow-sm" />
@@ -134,8 +130,8 @@ export const MinimalSearch: Story = {
   render: (args: any) => (
     <SearchProvider config={mockConfig}>
       <div className="max-w-md mx-auto">
-        <SearchBox 
-          {...args} 
+        <SearchBox
+          {...args}
           className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500"
         />
       </div>

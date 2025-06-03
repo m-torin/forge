@@ -1,7 +1,13 @@
 'use client';
 
 // For compatibility
-import { Drawer, type DrawerProps, type DrawerRootProps, type DrawerHeaderProps, type DrawerTitleProps } from '@mantine/core';
+import {
+  Drawer,
+  type DrawerHeaderProps,
+  type DrawerRootProps,
+  type DrawerTitleProps,
+} from '@mantine/core';
+
 import type React from 'react';
 
 // Export Mantine Drawer directly
@@ -17,5 +23,9 @@ export const DrawerFooter: React.FC<{ children: React.ReactNode }> = ({ children
     {children}
   </div>
 );
-export const DrawerTrigger: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>;
-export const DrawerClose: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>;
+export const DrawerTrigger: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <>{children}</>
+);
+export const DrawerClose: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <>{children}</>
+);

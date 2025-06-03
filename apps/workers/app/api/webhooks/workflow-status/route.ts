@@ -1,4 +1,5 @@
 import { WorkflowFirestoreService } from '@/lib/firestore-service';
+import { verifyQStashWebhook } from '@/lib/webhook-auth';
 import { WorkflowConfigService } from '@/lib/workflow-config-service';
 import { WorkflowNotificationService } from '@/lib/workflow-notifications';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -24,6 +25,12 @@ interface WorkflowStatusUpdate {
 }
 
 export async function POST(request: NextRequest) {
+  // Verify QStash webhook signature
+  const verifyResult = await verifyQStashWebhook(request);
+  if (verifyResult instanceof NextResponse) {
+    return verifyResult;
+  }
+
   try {
     const update: WorkflowStatusUpdate = await request.json();
     const { duration, error, result, status, step, workflowRunId } = update;

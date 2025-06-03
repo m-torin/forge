@@ -1,24 +1,27 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Calendar } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 // Simple action function for Storybook
-const action = (name: string) => (...args: any[]) => console.log(name, ...args);
+const action =
+  (name: string) =>
+  (...args: any[]) =>
+    console.log(name, ...args);
 
 /**
  * A date picker component that allows users to select dates.
  */
 const meta = {
-  title: 'uix/ui/Calendar',
-  component: Calendar,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     onChange: action('onChange'),
   },
+  argTypes: {},
+  component: Calendar,
   parameters: {
     layout: 'centered',
   },
+  tags: ['autodocs'],
+  title: 'uix/ui/Calendar',
 } satisfies Meta<typeof Calendar>;
 
 export default meta;
@@ -35,9 +38,7 @@ export const Default: Story = {};
  */
 export const Multiple: Story = {
   args: {},
-  render: (args) => (
-    <Calendar {...args} />
-  ),
+  render: (args) => <Calendar {...args} />,
 };
 
 /**
@@ -45,9 +46,7 @@ export const Multiple: Story = {
  */
 export const Range: Story = {
   args: {},
-  render: (args) => (
-    <Calendar {...args} />
-  ),
+  render: (args) => <Calendar {...args} />,
 };
 
 /**

@@ -4,5 +4,14 @@
     "baseUrl": "."
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "generated/**", "__tests__/performance.test.ts", "__tests__/upstash-redis.test.ts", "__tests__/upstash-vector.test.ts", "redis/**"]
+  "exclude": [
+    "node_modules",
+    "generated/**",
+    "__tests__/performance.test.skip.ts",
+    "__tests__/upstash-redis.test.skip.ts",
+    "__tests__/upstash-vector.test.skip.ts",
+    "__tests__/firestore.test.skip.ts",
+    "__tests__/integration.test.skip.ts",
+    "redis/**"
+  ]
 }

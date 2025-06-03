@@ -8,22 +8,21 @@ import {
   Code,
   Grid,
   Group,
+  Title as MantineTitle,
   Paper,
   Stack,
   Tabs,
   Text,
-  Title,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconAlertCircle, IconKey } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
 import { listApiKeys } from '@repo/auth';
-import {
-  ApiKeyList,
-  CreateApiKeyDialog,
-  UpdateApiKeyDialog,
-} from '@repo/design-system/uix';
+import { ApiKeyList, CreateApiKeyDialog, UpdateApiKeyDialog } from '@repo/design-system/uix';
+
+// Type assertion to break deep type instantiation chain caused by Next.js typed routes
+const Title = MantineTitle as any;
 
 interface ApiKey {
   createdAt: string;

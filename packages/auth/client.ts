@@ -5,6 +5,7 @@ import { createAuthClient } from 'better-auth/client';
 import {
   adminClient,
   apiKeyClient,
+  // magicLinkClient, // Not available in current better-auth version
   organizationClient,
   // passkeyClient, // Not available in current better-auth version
   // twoFactorClient, // Not available in current better-auth version
@@ -33,6 +34,7 @@ export const authClient: BetterAuthClient = createAuthClient({
       ac: adminAccessController,
       roles: adminRoles,
     }),
+    // magicLinkClient(), // Not available in current better-auth version
     // passkeyClient(),
     // twoFactorClient(),
   ],
@@ -46,6 +48,14 @@ export const forgetPassword = authClient.forgetPassword;
 export const resetPassword = authClient.resetPassword;
 export const sendVerificationEmail = authClient.sendVerificationEmail;
 export const verifyEmail = authClient.verifyEmail;
+
+// Magic Link methods
+export const sendMagicLink = authClient.magicLink?.sendMagicLink;
+export const verifyMagicLink = authClient.magicLink?.verifyMagicLink;
+
+// Social Sign-In methods
+export const signInWithGoogle = authClient.signIn.social;
+export const signInWithGitHub = authClient.signIn.social;
 
 // Use try/catch to attempt to use the original hook, with a fallback if it fails
 // This preserves the original functionality while providing compatibility with React 19

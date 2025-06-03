@@ -23,7 +23,7 @@ export abstract class BaseAnalyticsEmitter implements AnalyticsEmitter {
   constructor(config: AnalyticsConfig = {}) {
     this.config = config;
     this.context = this.getDefaultContext();
-    
+
     if (config.flushInterval && config.flushInterval > 0) {
       this.startFlushTimer();
     }
@@ -45,7 +45,7 @@ export abstract class BaseAnalyticsEmitter implements AnalyticsEmitter {
       context.userAgent = window.navigator.userAgent;
       context.locale = window.navigator.language;
       context.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      
+
       if (window.location) {
         context.page = {
           url: window.location.href,
@@ -55,7 +55,7 @@ export abstract class BaseAnalyticsEmitter implements AnalyticsEmitter {
           title: document.title,
         };
       }
-      
+
       if (window.screen) {
         context.screen = {
           width: window.screen.width,
@@ -63,7 +63,7 @@ export abstract class BaseAnalyticsEmitter implements AnalyticsEmitter {
         };
       }
     }
-    
+
     // Node.js environment
     if (typeof process !== 'undefined' && process.versions?.node) {
       context.os = {
@@ -177,7 +177,7 @@ export abstract class BaseAnalyticsEmitter implements AnalyticsEmitter {
     this.queue = [];
 
     try {
-      await Promise.all(batch.map(fn => fn()));
+      await Promise.all(batch.map((fn) => fn()));
     } catch (error) {
       if (this.config.debug) {
         console.error('[Analytics] Error flushing events:', error);

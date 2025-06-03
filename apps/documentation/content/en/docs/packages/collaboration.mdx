@@ -1,0 +1,50 @@
+# Collaboration Package
+
+Real-time collaboration features and utilities.
+
+## Overview
+
+Provides real-time collaboration capabilities for multi-user features including document editing,
+live cursors, and presence indicators.
+
+## Key Features
+
+- Real-time collaboration
+- Presence awareness
+- Live cursors
+- Document synchronization
+- Conflict resolution
+
+## Installation
+
+```bash
+pnpm add @repo/collaboration
+```
+
+## Basic Usage
+
+```typescript
+import { useCollaboration, usePresence } from '@repo/collaboration';
+
+const { connect, disconnect } = useCollaboration('document-id');
+const { users } = usePresence();
+```
+
+## Features
+
+- **Real-time sync**: Live document synchronization
+- **Presence**: See who's online and active
+- **Cursors**: Live cursor positions
+- **Conflict resolution**: Automatic merge conflict handling
+
+## Use Cases
+
+- Collaborative document editing
+- Real-time comments
+- Live design collaboration
+- Multi-user forms
+
+## Integration
+
+Designed to work with WebSocket connections and real-time databases for seamless collaboration
+experiences.

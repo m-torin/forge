@@ -1,57 +1,49 @@
 import type { WorkflowDefinition } from './types';
 
-/**
- * Dynamically load a workflow definition
- */
-export async function loadWorkflow(workflowId: string): Promise<WorkflowDefinition | null> {
+// Workflow loader functions
+export async function loadWorkflow(name: string): Promise<WorkflowDefinition | null> {
   try {
-    const workflowModule = await import(`./${workflowId}/definition`);
-    return workflowModule.default || null;
+    // Dynamic import based on workflow name
+    const workflowModule = await import(`./${name}/definition`);
+    return workflowModule.default || workflowModule;
   } catch (error) {
-    console.error(`Failed to load workflow ${workflowId}:`, error);
+    console.error(`Failed to load workflow ${name}:`, error);
     return null;
   }
 }
 
-/**
- * Get all available workflow IDs
- * This uses Webpack's require.context for dynamic discovery
- */
 export function getAvailableWorkflows(): string[] {
-  if (typeof window === 'undefined') {
-    // Server-side: use require.context
-    try {
-      // @ts-ignore - webpack magic
-      const context = require.context('./', true, /^\.\/[^_][^/]*\/definition\.ts$/);
-      return context
-        .keys()
-        .map((key: string) => {
-          const match = key.match(/^\.\/([^/]+)\/definition\.ts$/);
-          return match ? match[1] : null;
-        })
-        .filter(Boolean) as string[];
-    } catch (error) {
-      console.error('Failed to discover workflows:', error);
-      return [];
-    }
+  // Return empty array on client side
+  if (typeof window !== 'undefined') {
+    return [];
   }
-  return [];
+
+  // For now, return a static list of workflows
+  // This avoids the dynamic require warning
+  return [
+    'basic',
+    'chart-pdps',
+    'chart-sitemaps',
+    'gen-copy',
+    'image-processing',
+    'kitchen-sink',
+    'map-taxterm',
+    'import-external-media',
+  ];
 }
 
-/**
- * Load all workflow metadata for the UI
- */
-export async function loadAllWorkflowMetadata() {
-  const workflowIds = getAvailableWorkflows();
+export async function loadAllWorkflowMetadata(): Promise<Record<string, any>> {
+  const workflows = getAvailableWorkflows();
   const metadata: Record<string, any> = {};
 
-  for (const id of workflowIds) {
-    const definition = await loadWorkflow(id);
-    if (definition) {
-      metadata[id] = {
-        ...definition.metadata,
-        defaultPayload: definition.defaultPayload,
-      };
+  for (const workflowName of workflows) {
+    try {
+      const workflow = await loadWorkflow(workflowName);
+      if (workflow && workflow.metadata) {
+        metadata[workflowName] = workflow.metadata;
+      }
+    } catch (error) {
+      console.error(`Failed to load metadata for ${workflowName}:`, error);
     }
   }
 

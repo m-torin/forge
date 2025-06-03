@@ -243,3 +243,6 @@ export async function scrapePlaywright(
     await scraper.close();
   }
 }
+
+// Export enhanced utilities
+export * from './enhanced';

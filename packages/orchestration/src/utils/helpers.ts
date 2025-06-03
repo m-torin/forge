@@ -243,9 +243,19 @@ export async function pollUntilCondition<T>(
 }
 
 // ===== Environment Detection =====
+// Note: Environment detection functions excluded from client build as they use process.env
+// Use client-safe alternatives or import from @repo/orchestration/server for server environments
 
-// Re-export from centralized environment module
-export { isDevelopment, isProduction } from './environment';
+// Client-safe fallback functions
+export function isDevelopment(): boolean {
+  // Client-safe fallback - always return false in client environment
+  return false;
+}
+
+export function isProduction(): boolean {
+  // Client-safe fallback - always return true in client environment
+  return true;
+}
 
 // ===== Result Type Guards =====
 

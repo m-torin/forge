@@ -1,11 +1,10 @@
-import { type FC } from 'react';
-
-import { Heading } from '@repo/design-system/ciesco2';
+import { Heading } from '@repo/design-system/ciseco'
+import { FC } from 'react'
 
 export interface Statistic {
-  heading: string;
-  id: string;
-  subHeading: string;
+  id: string
+  heading: string
+  subHeading: string
 }
 
 const FOUNDER_DEMO: Statistic[] = [
@@ -24,10 +23,10 @@ const FOUNDER_DEMO: Statistic[] = [
     heading: '220+',
     subHeading: 'Countries and regions have our presence (as of Sept. 30, 2025)',
   },
-];
+]
 
 export interface SectionStatisticProps {
-  className?: string;
+  className?: string
 }
 
 const SectionStatistic: FC<SectionStatisticProps> = ({ className = '' }) => {
@@ -41,11 +40,8 @@ const SectionStatistic: FC<SectionStatisticProps> = ({ className = '' }) => {
       </Heading>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
         {FOUNDER_DEMO.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-2xl bg-neutral-50 p-8 dark:border-neutral-800 dark:bg-neutral-800"
-          >
-            <h3 className="text-2xl leading-none font-semibold text-neutral-900 md:text-3xl dark:text-neutral-200">
+          <div key={item.id} className="rounded-2xl bg-neutral-50 p-8 dark:border-neutral-800 dark:bg-neutral-800">
+            <h3 className="text-2xl font-semibold leading-none text-neutral-900 md:text-3xl dark:text-neutral-200">
               {item.heading}
             </h3>
             <span className="mt-10 block max-w-sm text-sm text-neutral-500 sm:text-base dark:text-neutral-400">
@@ -55,7 +51,7 @@ const SectionStatistic: FC<SectionStatisticProps> = ({ className = '' }) => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionStatistic;
+export default SectionStatistic

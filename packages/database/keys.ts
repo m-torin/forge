@@ -15,7 +15,9 @@ export const keys = () =>
       UPSTASH_VECTOR_REST_URL: process.env.UPSTASH_VECTOR_REST_URL,
     },
     server: {
-      DATABASE_PROVIDER: z.enum(['prisma', 'firestore', 'upstash-vector', 'upstash-redis']).default('prisma'),
+      DATABASE_PROVIDER: z
+        .enum(['prisma', 'firestore', 'upstash-vector', 'upstash-redis'])
+        .default('prisma'),
       DATABASE_URL: z.string().url().optional(),
       FIREBASE_CLIENT_EMAIL: z.string().email().optional(),
       FIREBASE_PRIVATE_KEY: z.string().optional(),

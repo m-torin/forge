@@ -11,7 +11,7 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
-    "@knocklabs/node": "^1.4.1",
+    "@knocklabs/node": "^1.5.0",
     "@knocklabs/react": "^0.7.12",
     "@mantine/notifications": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
@@ -21,9 +21,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@repo/config": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

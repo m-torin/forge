@@ -7,9 +7,17 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts"
     },
+    "./server": {
+      "types": "./src/server.ts",
+      "import": "./src/server.ts"
+    },
     "./examples": {
       "types": "./src/workflows/examples/index.ts",
       "import": "./src/workflows/examples/index.ts"
+    },
+    "./workflows/ai/product-classification": {
+      "types": "./src/workflows/ai/product-classification.ts",
+      "import": "./src/workflows/ai/product-classification.ts"
     }
   },
   "scripts": {
@@ -26,16 +34,16 @@
   "dependencies": {
     "@repo/ai": "workspace:*",
     "@repo/database": "workspace:*",
-    "@upstash/workflow": "^0.2.13",
     "@upstash/qstash": "^2.8.1",
-    "@upstash/redis": "^1.34.9",
-    "next": "catalog:",
+    "@upstash/redis": "^1.35.0",
+    "@upstash/workflow": "^0.2.13",
+    "next": "15.4.0-canary.62",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@repo/config": "workspace:*",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

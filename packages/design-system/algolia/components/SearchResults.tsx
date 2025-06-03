@@ -1,22 +1,17 @@
 'use client';
 
 import { useHits } from 'react-instantsearch';
-import type { SearchResultsProps, SearchHit } from '../types';
+
+import type { SearchHit, SearchResultsProps } from '../types';
 
 const DefaultHitComponent = ({ hit }: { hit: SearchHit }) => (
   <div className="p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
     <div className="flex items-start space-x-3">
       {hit.image && (
-        <img
-          src={hit.image}
-          alt={hit.title}
-          className="w-12 h-12 rounded-lg object-cover"
-        />
+        <img className="w-12 h-12 rounded-lg object-cover" alt={hit.title} src={hit.image} />
       )}
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-          {hit.title}
-        </h3>
+        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">{hit.title}</h3>
         {hit.description && (
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
             {hit.description}
@@ -29,9 +24,7 @@ const DefaultHitComponent = ({ hit }: { hit: SearchHit }) => (
         )}
       </div>
       {hit.price && (
-        <div className="text-sm font-medium text-gray-900 dark:text-white">
-          ${hit.price}
-        </div>
+        <div className="text-sm font-medium text-gray-900 dark:text-white">${hit.price}</div>
       )}
     </div>
   </div>
@@ -48,29 +41,33 @@ const DefaultEmptyComponent = () => (
 
 const DefaultLoadingComponent = () => (
   <div className="p-8 text-center">
-    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
     <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">Searching...</div>
   </div>
 );
 
 export default function SearchResults({
   className = '',
-  hitComponent: HitComponent = DefaultHitComponent,
   emptyComponent: EmptyComponent = DefaultEmptyComponent,
+  hitComponent: HitComponent = DefaultHitComponent,
   loadingComponent: LoadingComponent = DefaultLoadingComponent,
 }: SearchResultsProps) {
   const { hits, sendEvent } = useHits<SearchHit>();
 
   if (!hits.length) {
     return (
-      <div className={`bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${className}`}>
+      <div
+        className={`bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${className}`}
+      >
         <EmptyComponent />
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${className}`}>
+    <div
+      className={`bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${className}`}
+    >
       <div className="max-h-96 overflow-y-auto">
         {hits.map((hit: any) => (
           <div

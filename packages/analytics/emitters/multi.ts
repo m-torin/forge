@@ -32,7 +32,7 @@ export class MultiEmitter implements AnalyticsEmitter {
    * Remove an emitter from the multi-emitter
    */
   removeEmitter(emitter: AnalyticsEmitter): void {
-    this.emitters = this.emitters.filter(e => e !== emitter);
+    this.emitters = this.emitters.filter((e) => e !== emitter);
   }
 
   /**
@@ -46,13 +46,13 @@ export class MultiEmitter implements AnalyticsEmitter {
       try {
         const method = emitter[methodName];
         if (typeof method === 'function') {
-          await (method as Function).apply(emitter, args);
+          await (method as (...args: any[]) => Promise<void>).apply(emitter, args);
         }
       } catch (error) {
         if (this.debug) {
           console.error(
             `[MultiEmitter] Error in ${String(methodName)} for ${emitter.constructor.name}:`,
-            error
+            error,
           );
         }
       }

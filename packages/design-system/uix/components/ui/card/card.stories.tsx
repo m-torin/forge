@@ -1,19 +1,20 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import { Box, Button, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { IconBellRinging } from '@tabler/icons-react';
-import { Card, Title, Text, Button, Group, Stack, Box } from '@mantine/core';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 const notifications = [
   {
+    description: '1 hour ago',
     title: 'Your call has been confirmed.',
-    description: '1 hour ago',
   },
   {
+    description: '1 hour ago',
     title: 'You have a new message!',
-    description: '1 hour ago',
   },
   {
-    title: 'Your subscription is expiring soon!',
     description: '2 hours ago',
+    title: 'Your subscription is expiring soon!',
   },
 ];
 
@@ -21,15 +22,19 @@ const notifications = [
  * Displays a card with header, content, and footer using Mantine.
  */
 const meta = {
-  title: 'uix/ui/Card',
-  component: Card,
-  tags: ['autodocs'],
+  args: {
+    p: 'lg',
+    radius: 'md',
+    shadow: 'sm',
+    w: 384,
+    withBorder: true,
+  },
   argTypes: {
-    shadow: {
+    radius: {
       control: 'select',
       options: ['xs', 'sm', 'md', 'lg', 'xl'],
     },
-    radius: {
+    shadow: {
       control: 'select',
       options: ['xs', 'sm', 'md', 'lg', 'xl'],
     },
@@ -37,18 +42,15 @@ const meta = {
       control: 'boolean',
     },
   },
-  args: {
-    shadow: 'sm',
-    radius: 'md',
-    withBorder: true,
-    p: 'lg',
-    w: 384,
+  component: Card,
+  parameters: {
+    layout: 'centered',
   },
   render: (args: any) => (
     <Card {...args}>
       <Card.Section p="lg" pb="md">
         <Title order={3}>Notifications</Title>
-        <Text size="sm" c="dimmed">
+        <Text c="dimmed" size="sm">
           You have 3 unread messages.
         </Text>
       </Card.Section>
@@ -60,10 +62,10 @@ const meta = {
               <IconBellRinging size={24} />
             </Box>
             <Box style={{ flex: 1 }}>
-              <Text size="sm" fw={500}>
+              <Text fw={500} size="sm">
                 {notification.title}
               </Text>
-              <Text size="xs" c="dimmed">
+              <Text c="dimmed" size="xs">
                 {notification.description}
               </Text>
             </Box>
@@ -72,15 +74,14 @@ const meta = {
       </Stack>
 
       <Card.Section p="lg" pt="md">
-        <Button variant="subtle" fullWidth>
+        <Button fullWidth variant="subtle">
           Close
         </Button>
       </Card.Section>
     </Card>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Card',
 } satisfies Meta<typeof Card>;
 
 export default meta;

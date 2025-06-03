@@ -1,18 +1,18 @@
-import { ProductCard } from '@repo/design-system/ciesco2';
-import { TabFilters } from '@repo/design-system/ciesco2';
-import { TabFiltersPopover } from '@repo/design-system/ciesco2';
-import { getProducts } from '@repo/design-system/ciesco2';
 import {
+  getProducts,
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '@repo/design-system/ciesco2';
+  ProductCard,
+  TabFilters,
+  TabFiltersPopover,
+} from '@repo/design-system/ciseco'
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
-  const { handle } = await params;
-  const products = await getProducts();
+  const { handle } = await params
+  const products = await getProducts()
 
   return (
     <main>
@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
 
       {/* LOOP ITEMS */}
       <div className="mt-8 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 xl:grid-cols-4">
-        {products?.map((produc) => <ProductCard key={produc.id} data={produc} />)}
+        {products?.map((produc) => <ProductCard data={produc} key={produc.id} />)}
       </div>
 
       {/* PAGINATION */}
@@ -41,5 +41,5 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         </Pagination>
       </div>
     </main>
-  );
+  )
 }

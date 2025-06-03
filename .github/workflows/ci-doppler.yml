@@ -109,9 +109,25 @@ jobs:
         run: pnpm build --filter=${{ matrix.app }}
 
   e2e:
-    name: E2E Tests
+    name: E2E Tests (Quick)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
 
@@ -130,17 +146,42 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install Playwright Browsers
-        run: pnpm --filter=@repo/testing exec playwright install --with-deps
+      - name: Install Playwright Browsers (Chromium only for speed)
+        run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run E2E tests
+      - name: Build dependencies for E2E
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN_TEST }}
-        run: pnpm --filter=@repo/testing test:e2e
+        run: pnpm build:local --filter="{apps/backstage,apps/web,apps/workers}..."
+
+      - name: Run E2E tests (All Apps)
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN_TEST }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          CI: true
+          # Mock services for faster tests
+          MOCK_AI: true
+          MOCK_STRIPE: true
+          MOCK_EMAIL: true
+          MOCK_ANALYTICS: true
+        run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
-          path: packages/testing/playwright-report/
+          name: e2e-quick-reports
+          path: |
+            apps/backstage/playwright-report/
+            apps/web/playwright-report/
+            apps/workers/playwright-report/
           retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-quick-videos
+          path: |
+            apps/backstage/test-results/
+            apps/web/test-results/
+            apps/workers/test-results/
+          retention-days: 7

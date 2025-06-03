@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   Dialog,
   DialogClose,
@@ -11,18 +9,21 @@ import {
   DialogTrigger,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * A window overlaid on either the primary window or another dialog window,
  * rendering the content underneath inert.
  */
 const meta = {
-  title: 'uix/ui/Dialog',
-  component: Dialog,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
-    opened: true,
     onClose: () => {},
+    opened: true,
+  },
+  argTypes: {},
+  component: Dialog,
+  parameters: {
+    layout: 'centered',
   },
   render: (args: any) => (
     <Dialog {...args}>
@@ -36,11 +37,11 @@ const meta = {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <button type="button" className="hover:underline">
+          <button className="hover:underline" type="button">
             Cancel
           </button>
           <DialogClose>
-            <button type="button" className="rounded bg-primary px-4 py-2 text-primary-foreground">
+            <button className="rounded bg-primary px-4 py-2 text-primary-foreground" type="button">
               Continue
             </button>
           </DialogClose>
@@ -48,9 +49,8 @@ const meta = {
       </DialogContent>
     </Dialog>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Dialog',
 } satisfies Meta<typeof Dialog>;
 
 export default meta;

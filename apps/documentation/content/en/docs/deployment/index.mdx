@@ -1,0 +1,202 @@
+# 🚀 Deployment
+
+Forge is designed for modern deployment with Vercel, Docker, or any Node.js hosting platform.
+
+## Deployment Platforms
+
+### Vercel (Recommended)
+
+Vercel provides the best experience for Next.js applications with automatic optimizations:
+
+```bash
+# Install Vercel CLI
+pnpm add -g vercel
+
+# Deploy an app
+cd apps/web
+vercel
+
+# Deploy with production settings
+vercel --prod
+```
+
+### Docker
+
+Each app includes Docker support for containerized deployments:
+
+```dockerfile
+# Example Dockerfile for Next.js apps
+FROM node:22-alpine AS base
+RUN corepack enable
+
+FROM base AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm build
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV production
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+### Node.js Hosting
+
+Deploy to any Node.js platform (Railway, Render, Fly.io):
+
+```bash
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+```
+
+## Doppler Setup for Deployment
+
+For centralized secret management across all environments, see the
+[Architecture documentation](/architecture#secret-management-with-doppler) for Doppler
+configuration.
+
+### Quick Setup
+
+1. **Install Doppler CLI**:
+
+   ```bash
+   # macOS
+   brew install dopplerhq/cli/doppler
+
+   # Linux
+   curl -Ls https://cli.doppler.com/install.sh | sh
+   ```
+
+2. **Authenticate**:
+
+   ```bash
+   doppler login
+   ```
+
+3. **Setup Project**:
+   ```bash
+   pnpm doppler:setup
+   pnpm doppler:pull:all
+   ```
+
+### CI/CD Integration
+
+#### GitHub Actions
+
+```yaml
+name: Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: dopplerhq/cli-action@v3
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
+        run: pnpm build
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel --prod --token=$VERCEL_TOKEN
+```
+
+#### Vercel Integration
+
+1. Remove all environment variables from Vercel dashboard
+2. Add `DOPPLER_TOKEN` environment variable
+3. Doppler automatically injects all secrets during build
+
+## Environment Setup
+
+### Required Variables
+
+```bash
+# Core services
+DATABASE_URL="postgresql://..."
+BETTER_AUTH_SECRET="your-secret"
+
+# Service Authentication (for CI/CD and automation)
+SERVICE_API_KEY="your-32-character-minimum-secure-key"
+
+# Email
+RESEND_API_KEY="re_..."
+FROM_EMAIL="noreply@yourdomain.com"
+```
+
+### Optional Variables
+
+```bash
+# Analytics
+NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+SEGMENT_WRITE_KEY="..."
+
+# Security
+ARCJET_KEY="ajkey_..."
+UPSTASH_REDIS_REST_URL="https://..."
+UPSTASH_REDIS_REST_TOKEN="..."
+
+# Feature flags
+LOCAL_FLAGS="auth.oauth.google:true"
+
+# Social Auth
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+GITHUB_CLIENT_ID="..."
+GITHUB_CLIENT_SECRET="..."
+```
+
+### App-Specific Variables
+
+#### Workers App
+
+```bash
+# QStash for workflow execution
+QSTASH_TOKEN="..."
+QSTASH_URL="https://qstash.upstash.io"
+QSTASH_CURRENT_SIGNING_KEY="..."
+```
+
+#### Backstage App
+
+```bash
+# Stripe webhook
+STRIPE_WEBHOOK_SECRET="whsec_..."
+```
+
+## Build Commands
+
+```bash
+pnpm build          # Production build with Doppler
+pnpm build:local    # Local build with .env.local files
+```
+
+## Deployment Targets
+
+- **Vercel** - Optimized for Next.js applications
+- **Docker** - Container-ready with multi-stage builds
+- **Node.js** - Any hosting platform supporting Node.js 22+

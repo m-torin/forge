@@ -1,25 +1,25 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Popover, PopoverContent, PopoverTrigger } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Displays rich content in a portal, triggered by a button.
  */
 const meta = {
-  title: 'uix/ui/Popover',
+  argTypes: {},
   component: Popover,
   tags: ['autodocs'],
-  argTypes: {},
+  title: 'uix/ui/Popover',
 
+  parameters: {
+    layout: 'centered',
+  },
   render: () => (
     <Popover>
       <PopoverTrigger>Open</PopoverTrigger>
       <PopoverContent>Place content for the popover here.</PopoverContent>
     </Popover>
   ),
-  parameters: {
-    layout: 'centered',
-  },
 } satisfies Meta<typeof Popover>;
 
 export default meta;

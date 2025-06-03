@@ -134,7 +134,8 @@ suppressConsoleErrors([/Warning: ReactDOM.render/]);
 
 ## Database Testing
 
-This package provides comprehensive mocking and testing utilities for all database adapters in the monorepo.
+This package provides comprehensive mocking and testing utilities for all database adapters in the
+monorepo.
 
 ### Quick Start
 

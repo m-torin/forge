@@ -6,7 +6,7 @@
  * Make sure backstage app is running first!
  */
 
-import { PrismaClient } from '../generated/client';
+import { PrismaClient } from '../../generated/client';
 
 const prisma = new PrismaClient();
 

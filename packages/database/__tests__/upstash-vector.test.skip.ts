@@ -34,7 +34,7 @@ describe('Upstash Vector Adapter', () => {
   describe('Basic CRUD Operations', () => {
     it('should perform complete CRUD operations', async () => {
       const vector = createTestVector();
-      
+
       // Create
       const created = await mockUpstashVectorAdapter.create('documents', vector);
       expect(created).toMatchObject(vector);
@@ -59,11 +59,11 @@ describe('Upstash Vector Adapter', () => {
 
     it('should create a vector with metadata', async () => {
       const vector = createTestVector({
-        metadata: { 
+        metadata: {
           title: 'Test Document',
           category: 'technology',
-          timestamp: Date.now()
-        }
+          timestamp: Date.now(),
+        },
       });
 
       const result = await mockUpstashVectorAdapter.create('documents', vector);
@@ -74,7 +74,7 @@ describe('Upstash Vector Adapter', () => {
     it('should upsert multiple vectors', async () => {
       const vectors = createTestVectors(3);
       const result = await mockUpstashVectorAdapter.upsertMany(vectors, 'documents');
-      
+
       expect(result.upserted).toBe(3);
 
       // Verify all vectors were stored
@@ -97,17 +97,17 @@ describe('Upstash Vector Adapter', () => {
     beforeEach(async () => {
       // Seed test vectors
       const vectors = [
-        createTestVector({ 
+        createTestVector({
           id: 'tech-1',
-          metadata: { category: 'technology', title: 'JavaScript Guide' }
+          metadata: { category: 'technology', title: 'JavaScript Guide' },
         }),
-        createTestVector({ 
+        createTestVector({
           id: 'tech-2',
-          metadata: { category: 'technology', title: 'Python Tutorial' }
+          metadata: { category: 'technology', title: 'Python Tutorial' },
         }),
-        createTestVector({ 
+        createTestVector({
           id: 'science-1',
-          metadata: { category: 'science', title: 'Physics Basics' }
+          metadata: { category: 'science', title: 'Physics Basics' },
         }),
       ];
 
@@ -116,12 +116,15 @@ describe('Upstash Vector Adapter', () => {
 
     it('should perform similarity search', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
-      
-      const results = await mockUpstashVectorAdapter.query({
-        vector: queryVector,
-        topK: 3,
-        includeMetadata: true,
-      }, { namespace: 'documents' });
+
+      const results = await mockUpstashVectorAdapter.query(
+        {
+          vector: queryVector,
+          topK: 3,
+          includeMetadata: true,
+        },
+        { namespace: 'documents' },
+      );
 
       expect(results).toHaveLength(3);
       results.forEach((result: any) => {
@@ -135,34 +138,40 @@ describe('Upstash Vector Adapter', () => {
 
     it('should perform similarity search with helper assertions', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
-      
+
       await helper.assertSimilaritySearch(
         'documents',
         queryVector,
         ['tech-1', 'tech-2', 'science-1'],
-        0.7
+        0.7,
       );
     });
 
     it('should limit search results with topK', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
-      
-      const results = await mockUpstashVectorAdapter.query({
-        vector: queryVector,
-        topK: 2,
-        includeMetadata: true,
-      }, { namespace: 'documents' });
+
+      const results = await mockUpstashVectorAdapter.query(
+        {
+          vector: queryVector,
+          topK: 2,
+          includeMetadata: true,
+        },
+        { namespace: 'documents' },
+      );
 
       expect(results).toHaveLength(2);
     });
 
     it('should handle empty search results', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
-      
-      const results = await mockUpstashVectorAdapter.query({
-        vector: queryVector,
-        topK: 5,
-      }, { namespace: 'empty-collection' });
+
+      const results = await mockUpstashVectorAdapter.query(
+        {
+          vector: queryVector,
+          topK: 5,
+        },
+        { namespace: 'empty-collection' },
+      );
 
       expect(results).toHaveLength(0);
     });
@@ -171,15 +180,15 @@ describe('Upstash Vector Adapter', () => {
   describe('Text-Based Operations', () => {
     it('should upsert text data', async () => {
       const textData = [
-        { 
-          id: 'article-1', 
+        {
+          id: 'article-1',
           data: 'This is an article about JavaScript programming',
-          metadata: { type: 'article', language: 'en' }
+          metadata: { type: 'article', language: 'en' },
         },
-        { 
-          id: 'article-2', 
+        {
+          id: 'article-2',
           data: 'This is a tutorial about Python development',
-          metadata: { type: 'tutorial', language: 'en' }
+          metadata: { type: 'tutorial', language: 'en' },
         },
       ];
 
@@ -189,15 +198,15 @@ describe('Upstash Vector Adapter', () => {
 
     it('should perform text-based search', async () => {
       const textData = [
-        { 
-          id: 'article-1', 
+        {
+          id: 'article-1',
           data: 'Learn JavaScript programming fundamentals',
-          metadata: { type: 'article' }
+          metadata: { type: 'article' },
         },
-        { 
-          id: 'article-2', 
+        {
+          id: 'article-2',
           data: 'Python for beginners tutorial',
-          metadata: { type: 'tutorial' }
+          metadata: { type: 'tutorial' },
         },
       ];
 
@@ -210,7 +219,7 @@ describe('Upstash Vector Adapter', () => {
       });
 
       expect(results.length).toBeGreaterThan(0);
-      
+
       // The JavaScript article should have a higher score
       const jsArticle = results.find((r: any) => r.id === 'article-1');
       expect(jsArticle).toBeDefined();
@@ -218,10 +227,10 @@ describe('Upstash Vector Adapter', () => {
 
     it('should assert text search with helper', async () => {
       const textData = [
-        { 
-          id: 'doc-1', 
+        {
+          id: 'doc-1',
           data: 'Machine learning with TensorFlow',
-          metadata: { category: 'ai' }
+          metadata: { category: 'ai' },
         },
       ];
 
@@ -236,14 +245,14 @@ describe('Upstash Vector Adapter', () => {
         {
           id: 'dense-1',
           vector: Array.from({ length: 1536 }, () => Math.random()),
-          metadata: { type: 'dense' }
-        }
+          metadata: { type: 'dense' },
+        },
       ];
 
       const result = await mockUpstashVectorAdapter.upsertDense(denseVectors, {
-        namespace: 'vectors'
+        namespace: 'vectors',
       });
-      
+
       expect(result.upserted).toBe(1);
     });
 
@@ -253,16 +262,16 @@ describe('Upstash Vector Adapter', () => {
           id: 'sparse-1',
           sparseVector: {
             indices: [0, 10, 100],
-            values: [0.5, 0.8, 0.3]
+            values: [0.5, 0.8, 0.3],
           },
-          metadata: { type: 'sparse' }
-        }
+          metadata: { type: 'sparse' },
+        },
       ];
 
       const result = await mockUpstashVectorAdapter.upsertSparse(sparseVectors, {
-        namespace: 'vectors'
+        namespace: 'vectors',
       });
-      
+
       expect(result.upserted).toBe(1);
     });
 
@@ -273,36 +282,39 @@ describe('Upstash Vector Adapter', () => {
           vector: Array.from({ length: 1536 }, () => Math.random()),
           sparseVector: {
             indices: [0, 50, 100],
-            values: [0.7, 0.9, 0.4]
+            values: [0.7, 0.9, 0.4],
           },
-          metadata: { type: 'hybrid' }
-        }
+          metadata: { type: 'hybrid' },
+        },
       ];
 
       const result = await mockUpstashVectorAdapter.upsertHybrid(hybridVectors, {
-        namespace: 'vectors'
+        namespace: 'vectors',
       });
-      
+
       expect(result.upserted).toBe(1);
     });
 
     it('should query with sparse vectors', async () => {
       // First upsert some sparse vectors
-      await mockUpstashVectorAdapter.upsertSparse([
-        {
-          id: 'sparse-1',
-          sparseVector: { indices: [0, 10], values: [0.5, 0.8] },
-          metadata: { type: 'sparse' }
-        }
-      ], { namespace: 'sparse-vectors' });
+      await mockUpstashVectorAdapter.upsertSparse(
+        [
+          {
+            id: 'sparse-1',
+            sparseVector: { indices: [0, 10], values: [0.5, 0.8] },
+            metadata: { type: 'sparse' },
+          },
+        ],
+        { namespace: 'sparse-vectors' },
+      );
 
       const results = await mockUpstashVectorAdapter.querySparse(
         { indices: [0, 10], values: [0.6, 0.7] },
         {
           topK: 5,
           namespace: 'sparse-vectors',
-          includeMetadata: true
-        }
+          includeMetadata: true,
+        },
       );
 
       expect(results.length).toBeGreaterThan(0);
@@ -310,14 +322,17 @@ describe('Upstash Vector Adapter', () => {
 
     it('should query with hybrid vectors', async () => {
       // First upsert some hybrid vectors
-      await mockUpstashVectorAdapter.upsertHybrid([
-        {
-          id: 'hybrid-1',
-          vector: Array.from({ length: 1536 }, () => Math.random()),
-          sparseVector: { indices: [0, 10], values: [0.5, 0.8] },
-          metadata: { type: 'hybrid' }
-        }
-      ], { namespace: 'hybrid-vectors' });
+      await mockUpstashVectorAdapter.upsertHybrid(
+        [
+          {
+            id: 'hybrid-1',
+            vector: Array.from({ length: 1536 }, () => Math.random()),
+            sparseVector: { indices: [0, 10], values: [0.5, 0.8] },
+            metadata: { type: 'hybrid' },
+          },
+        ],
+        { namespace: 'hybrid-vectors' },
+      );
 
       const results = await mockUpstashVectorAdapter.queryHybrid(
         Array.from({ length: 1536 }, () => Math.random()),
@@ -325,8 +340,8 @@ describe('Upstash Vector Adapter', () => {
         {
           topK: 5,
           namespace: 'hybrid-vectors',
-          includeMetadata: true
-        }
+          includeMetadata: true,
+        },
       );
 
       expect(results.length).toBeGreaterThan(0);
@@ -338,10 +353,10 @@ describe('Upstash Vector Adapter', () => {
       const vectors = createTestVectors(3);
       await mockUpstashVectorAdapter.upsertMany(vectors, 'documents');
 
-      const ids = vectors.map(v => v.id);
+      const ids = vectors.map((v) => v.id);
       const results = await mockUpstashVectorAdapter.fetch(ids, {
         namespace: 'documents',
-        includeMetadata: true
+        includeMetadata: true,
       });
 
       expect(results).toHaveLength(3);
@@ -354,7 +369,7 @@ describe('Upstash Vector Adapter', () => {
       const vectors = createTestVectors(3);
       await mockUpstashVectorAdapter.upsertMany(vectors, 'documents');
 
-      const ids = vectors.map(v => v.id);
+      const ids = vectors.map((v) => v.id);
       const result = await mockUpstashVectorAdapter.deleteMany(ids, 'documents');
 
       expect(result.deleted).toBe(3);
@@ -374,7 +389,7 @@ describe('Upstash Vector Adapter', () => {
       await mockUpstashVectorAdapter.upsertMany(vectors, 'documents');
 
       const info = await mockUpstashVectorAdapter.getInfo();
-      
+
       expect(info).toHaveProperty('vectorCount');
       expect(info).toHaveProperty('dimension');
       expect(info).toHaveProperty('similarityFunction');
@@ -408,16 +423,16 @@ describe('Upstash Vector Adapter', () => {
       // Verify they're in separate namespaces
       const docs = await mockUpstashVectorAdapter.findMany('documents', {
         vector: vector1.vector,
-        topK: 10
+        topK: 10,
       });
       const articles = await mockUpstashVectorAdapter.findMany('articles', {
         vector: vector2.vector,
-        topK: 10
+        topK: 10,
       });
 
       expect(docs.some((d: any) => d.id === 'doc-1')).toBe(true);
       expect(docs.some((d: any) => d.id === 'doc-2')).toBe(false);
-      
+
       expect(articles.some((a: any) => a.id === 'doc-2')).toBe(true);
       expect(articles.some((a: any) => a.id === 'doc-1')).toBe(false);
     });
@@ -435,14 +450,14 @@ describe('Upstash Vector Adapter', () => {
   describe('Error Handling', () => {
     it('should handle common error scenarios', async () => {
       // Test with non-vector query (should throw)
-      await expect(
-        mockUpstashVectorAdapter.findMany('documents', {})
-      ).rejects.toThrow('Vector query requires a vector');
+      await expect(mockUpstashVectorAdapter.findMany('documents', {})).rejects.toThrow(
+        'Vector query requires a vector',
+      );
     });
 
     it('should handle non-existent vectors', async () => {
-      const found = await mockUpstashVectorAdapter.findUnique('documents', { 
-        id: 'non-existent' 
+      const found = await mockUpstashVectorAdapter.findUnique('documents', {
+        id: 'non-existent',
       });
       expect(found).toBeNull();
     });
@@ -467,7 +482,7 @@ describe('Upstash Vector Adapter', () => {
       const result = await mockUpstashVectorAdapter.raw('query', {
         vector: vectors[0].vector,
         topK: 5,
-        includeMetadata: true
+        includeMetadata: true,
       });
 
       expect(Array.isArray(result)).toBe(true);
@@ -475,16 +490,16 @@ describe('Upstash Vector Adapter', () => {
     });
 
     it('should throw error for unsupported raw operation', async () => {
-      await expect(
-        mockUpstashVectorAdapter.raw('unsupported', {})
-      ).rejects.toThrow('not supported');
+      await expect(mockUpstashVectorAdapter.raw('unsupported', {})).rejects.toThrow(
+        'not supported',
+      );
     });
   });
 
   describe('Adapter Interface Compliance', () => {
     it('should implement all required VectorDatabaseAdapter methods', () => {
       const adapter = mockUpstashVectorAdapter;
-      
+
       // Base adapter methods
       expect(typeof adapter.initialize).toBe('function');
       expect(typeof adapter.disconnect).toBe('function');

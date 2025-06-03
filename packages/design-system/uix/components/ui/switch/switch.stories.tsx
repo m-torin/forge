@@ -1,15 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Switch } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * A control that allows the user to toggle between checked and not checked.
  */
 const meta = {
-  title: 'uix/ui/Switch',
-  component: Switch,
-  tags: ['autodocs'],
   argTypes: {},
+  component: Switch,
   parameters: {
     layout: 'centered',
   },
@@ -21,6 +19,8 @@ const meta = {
       </label>
     </div>
   ),
+  tags: ['autodocs'],
+  title: 'uix/ui/Switch',
 } satisfies Meta<typeof Switch>;
 
 export default meta;

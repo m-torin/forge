@@ -14,3 +14,12 @@ node_modules/
 pnpm-lock.yaml
 .env*
 .vscode/
+
+# iOS dependencies
+**/ios/Pods/
+**/Pods/
+
+# Non-existent files that prettier tries to format
+apps/swr-site/app/[lang]/graphql-eslint/
+apps/swr-site/app/[lang]/remote/
+apps/swr-site/nextra-remote-filepaths/

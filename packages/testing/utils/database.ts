@@ -32,8 +32,18 @@ interface RedisDatabaseAdapter extends DatabaseAdapter {
   setIsMember<T>(collection: string, id: string, member: T): Promise<boolean>;
   setMembers<T>(collection: string, id: string): Promise<T[]>;
   setWithExpiration<T>(collection: string, id: string, data: T, ttl: number): Promise<void>;
-  sortedSetAdd(collection: string, id: string, ...members: { score: number; member: any }[]): Promise<number>;
-  sortedSetRange<T>(collection: string, id: string, start: number, end: number, withScores?: boolean): Promise<T[] | { member: T; score: number }[]>;
+  sortedSetAdd(
+    collection: string,
+    id: string,
+    ...members: { score: number; member: any }[]
+  ): Promise<number>;
+  sortedSetRange<T>(
+    collection: string,
+    id: string,
+    start: number,
+    end: number,
+    withScores?: boolean,
+  ): Promise<T[] | { member: T; score: number }[]>;
   sortedSetScore(collection: string, id: string, member: any): Promise<number | null>;
   ttl(collection: string, id: string): Promise<number>;
 }
@@ -50,12 +60,12 @@ export interface DatabaseTestConfig {
 export class DatabaseTestHelper<T extends DatabaseAdapter = DatabaseAdapter> {
   constructor(
     protected adapter: T,
-    protected config: DatabaseTestConfig = { provider: 'prisma' }
+    protected config: DatabaseTestConfig = { provider: 'prisma' },
   ) {}
 
   async setup(): Promise<void> {
     await this.adapter.initialize();
-    
+
     if (this.config.seed && this.config.mockData) {
       await this.seedData(this.config.mockData);
     }
@@ -68,7 +78,7 @@ export class DatabaseTestHelper<T extends DatabaseAdapter = DatabaseAdapter> {
     } else if ('reset' in this.adapter) {
       await (this.adapter as any).reset();
     }
-    
+
     await this.adapter.disconnect();
   }
 
@@ -109,7 +119,7 @@ export class VectorDatabaseTestHelper extends DatabaseTestHelper<VectorDatabaseA
       vector?: number[];
       data?: string;
       metadata?: Record<string, any>;
-    }[]
+    }[],
   ): Promise<void> {
     await this.adapter.upsertMany(vectors, collection);
   }
@@ -118,30 +128,29 @@ export class VectorDatabaseTestHelper extends DatabaseTestHelper<VectorDatabaseA
     collection: string,
     queryVector: number[],
     expectedIds: string[],
-    threshold = 0.8
+    threshold = 0.8,
   ): Promise<void> {
-    const results = await this.adapter.query({
-      includeMetadata: true,
-      topK: expectedIds.length,
-      vector: queryVector,
-    }, { namespace: collection });
+    const results = await this.adapter.query(
+      {
+        includeMetadata: true,
+        topK: expectedIds.length,
+        vector: queryVector,
+      },
+      { namespace: collection },
+    );
 
     expect(results).toHaveLength(expectedIds.length);
-    
+
     const resultIds = results.map((r: any) => r.id);
     expect(resultIds).toEqual(expect.arrayContaining(expectedIds));
-    
+
     // Check that all scores are above threshold
     results.forEach((result: any) => {
       expect(result.score).toBeGreaterThan(threshold);
     });
   }
 
-  async assertTextSearch(
-    collection: string,
-    query: string,
-    expectedCount: number
-  ): Promise<void> {
+  async assertTextSearch(collection: string, query: string, expectedCount: number): Promise<void> {
     const results = await this.adapter.queryByText(query, {
       namespace: collection,
       topK: 10,
@@ -171,7 +180,7 @@ export class RedisDatabaseTestHelper extends DatabaseTestHelper<RedisDatabaseAda
     const collection = key.split(':')[0];
     const id = key.split(':')[1];
     const ttl = await this.adapter.ttl(collection, id);
-    
+
     expect(ttl).toBeGreaterThan(expectedSeconds - tolerance);
     expect(ttl).toBeLessThan(expectedSeconds + tolerance);
   }
@@ -190,17 +199,17 @@ export class RedisDatabaseTestHelper extends DatabaseTestHelper<RedisDatabaseAda
     collection: string,
     id: string,
     field: string,
-    expectedValue: T
+    expectedValue: T,
   ): Promise<void> {
     const value = await this.adapter.hashGet(collection, id, field);
-    expect(value).toEqual(expectedValue);
+    expect(value).toEqual(expectedValue as any);
   }
 
   async assertSortedSetScore<T>(
     collection: string,
     id: string,
     member: T,
-    expectedScore: number
+    expectedScore: number,
   ): Promise<void> {
     const score = await this.adapter.sortedSetScore(collection, id, member);
     expect(score).toBe(expectedScore);
@@ -241,23 +250,23 @@ export const createTestVector = (overrides?: Partial<any>) => ({
 // Batch test data creation
 export const createTestUsers = (count: number, overrides?: Partial<any>) =>
   Array.from({ length: count }, (_, i) =>
-    createTestUser({ name: `Test User ${i + 1}`, ...overrides })
+    createTestUser({ name: `Test User ${i + 1}`, ...overrides }),
   );
 
 export const createTestProducts = (count: number, overrides?: Partial<any>) =>
   Array.from({ length: count }, (_, i) =>
-    createTestProduct({ name: `Test Product ${i + 1}`, ...overrides })
+    createTestProduct({ name: `Test Product ${i + 1}`, ...overrides }),
   );
 
 export const createTestVectors = (count: number, overrides?: Partial<any>) =>
   Array.from({ length: count }, (_, i) =>
-    createTestVector({ metadata: { index: i }, ...overrides })
+    createTestVector({ metadata: { index: i }, ...overrides }),
   );
 
 // Database operation testing utilities
 export const testDatabaseOperations = async <T extends DatabaseAdapter>(
   helper: DatabaseTestHelper<T>,
-  collection: string
+  collection: string,
 ) => {
   const testData = createTestUser();
 
@@ -306,10 +315,10 @@ export const testDatabaseOperations = async <T extends DatabaseAdapter>(
 export const testDatabasePerformance = async <T extends DatabaseAdapter>(
   helper: DatabaseTestHelper<T>,
   collection: string,
-  operations = 100
+  operations = 100,
 ) => {
   const testData = Array.from({ length: operations }, (_, i) =>
-    createTestUser({ name: `Perf User ${i}` })
+    createTestUser({ name: `Perf User ${i}` }),
   );
 
   // Test bulk create performance
@@ -322,7 +331,7 @@ export const testDatabasePerformance = async <T extends DatabaseAdapter>(
 
   // Test bulk read performance
   const readStart = performance.now();
-  const results = await helper.getAdapter().findMany(collection);
+  const _results = await helper.getAdapter().findMany(collection);
   const readEnd = performance.now();
   const readTime = readEnd - readStart;
 
@@ -348,7 +357,7 @@ export const testDatabasePerformance = async <T extends DatabaseAdapter>(
 // Error testing utilities
 export const testDatabaseErrors = async <T extends DatabaseAdapter>(
   helper: DatabaseTestHelper<T>,
-  collection: string
+  collection: string,
 ) => {
   // Test finding non-existent record
   const notFound = await helper.getAdapter().findUnique(collection, { id: 'non-existent' });

@@ -1,22 +1,22 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Pagination } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * Pagination with page navigation, next and previous links.
  */
 const meta = {
-  title: 'uix/ui/Pagination',
-  component: Pagination,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
-    total: 10,
     defaultValue: 1,
+    total: 10,
   },
+  argTypes: {},
+  component: Pagination,
   parameters: {
     layout: 'centered',
   },
+  tags: ['autodocs'],
+  title: 'uix/ui/Pagination',
 } satisfies Meta<typeof Pagination>;
 
 export default meta;

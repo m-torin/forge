@@ -4,6 +4,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { createAuthMiddleware } from 'better-auth/api';
 import { nextCookies } from 'better-auth/next-js';
 import { admin, apiKey, organization } from 'better-auth/plugins';
+import { magicLink } from 'better-auth/plugins/magic-link';
 import { passkey } from 'better-auth/plugins/passkey';
 import { twoFactor } from 'better-auth/plugins/two-factor';
 import { headers } from 'next/headers';
@@ -13,6 +14,7 @@ import { prisma as database } from '@repo/database/prisma';
 
 import { adminAccessController, adminRoles } from './admin-permissions';
 import {
+  sendMagicLinkEmailAuth,
   sendOrganizationInvitation,
   sendPasswordResetEmail,
   sendVerificationEmail,
@@ -23,6 +25,18 @@ import { ac, roles } from './permissions';
 
 // Add explicit type annotation to fix TypeScript error
 export const auth: any = betterAuth({
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+      enabled: process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? true : false,
+    },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      enabled: process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? true : false,
+    },
+  },
   database: prismaAdapter(database, {
     provider: 'postgresql',
   }),
@@ -31,7 +45,7 @@ export const auth: any = betterAuth({
       create: {
         before: async (session) => {
           // Set initial active organization when session is created
-          const firstMember = await database.member.findFirst({
+          const firstMember = await (database as any).member.findFirst({
             orderBy: { createdAt: 'asc' },
             where: { userId: session.userId },
           });
@@ -279,6 +293,17 @@ export const auth: any = betterAuth({
         ? new URL(process.env.NEXT_PUBLIC_APP_URL).hostname
         : 'localhost',
       rpName: 'Forge Ahead',
+    }),
+    magicLink({
+      expiresIn: 60 * 20, // 20 minutes
+      sendMagicLink: async ({ url, email, token }, _request) => {
+        // Send magic link email using the email package
+        await sendMagicLinkEmailAuth({
+          url,
+          token,
+          user: { email },
+        });
+      },
     }),
   ],
   secret: keys().BETTER_AUTH_SECRET,

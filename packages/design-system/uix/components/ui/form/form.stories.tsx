@@ -1,15 +1,16 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { TextInput, Button, Box, Text, Stack } from '@mantine/core';
+import { Box, Button, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 // Mock form component for Storybook
 const MockForm = () => {
   const form = useForm({
-    initialValues: {
-      username: 'test-user',
-    },
     validate: {
       username: (value) => (value.length < 3 ? 'Username must be at least 3 characters' : null),
+    },
+    initialValues: {
+      username: 'test-user',
     },
   });
 
@@ -17,12 +18,12 @@ const MockForm = () => {
     <Box component="form" onSubmit={form.onSubmit(() => {})} w={400}>
       <Stack>
         <TextInput
-          label="Username"
-          placeholder="Enter your username"
           description="This is your public display name."
+          placeholder="Enter your username"
+          label="Username"
           {...form.getInputProps('username')}
         />
-        <Button type="submit" fullWidth>
+        <Button fullWidth type="submit">
           Submit
         </Button>
       </Stack>
@@ -35,12 +36,12 @@ const MockForm = () => {
  * This demonstrates a simple form with validation.
  */
 const meta = {
-  title: 'uix/ui/Form',
   component: MockForm,
-  tags: ['autodocs'],
   parameters: {
     layout: 'centered',
   },
+  tags: ['autodocs'],
+  title: 'uix/ui/Form',
 } satisfies Meta<typeof MockForm>;
 
 export default meta;
@@ -62,11 +63,11 @@ export const WithError: Story = {
   render: () => {
     const FormWithError = () => {
       const form = useForm({
-        initialValues: {
-          username: 'ab', // Too short to trigger error
-        },
         validate: {
           username: (value) => (value.length < 3 ? 'Username must be at least 3 characters' : null),
+        },
+        initialValues: {
+          username: 'ab', // Too short to trigger error
         },
       });
 
@@ -77,12 +78,12 @@ export const WithError: Story = {
         <Box component="form" onSubmit={form.onSubmit(() => {})} w={400}>
           <Stack>
             <TextInput
-              label="Username"
-              placeholder="Enter your username"
               description="This is your public display name."
+              placeholder="Enter your username"
+              label="Username"
               {...form.getInputProps('username')}
             />
-            <Button type="submit" fullWidth>
+            <Button fullWidth type="submit">
               Submit
             </Button>
           </Stack>
@@ -101,15 +102,15 @@ export const MultipleFields: Story = {
   render: () => {
     const MultiFieldForm = () => {
       const form = useForm({
-        initialValues: {
-          username: '',
-          email: '',
-          password: '',
-        },
         validate: {
           username: (value) => (value.length < 3 ? 'Username must be at least 3 characters' : null),
           email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
           password: (value) => (value.length < 6 ? 'Password must be at least 6 characters' : null),
+        },
+        initialValues: {
+          username: '',
+          email: '',
+          password: '',
         },
       });
 
@@ -117,26 +118,26 @@ export const MultipleFields: Story = {
         <Box component="form" onSubmit={form.onSubmit(() => {})} w={400}>
           <Stack>
             <TextInput
-              label="Username"
-              placeholder="Enter your username"
               description="This is your public display name."
+              placeholder="Enter your username"
+              label="Username"
               {...form.getInputProps('username')}
             />
             <TextInput
+              description="We'll never share your email."
+              placeholder="your@email.com"
               label="Email"
               type="email"
-              placeholder="your@email.com"
-              description="We'll never share your email."
               {...form.getInputProps('email')}
             />
             <TextInput
+              description="Must be at least 6 characters."
+              placeholder="••••••••"
               label="Password"
               type="password"
-              placeholder="••••••••"
-              description="Must be at least 6 characters."
               {...form.getInputProps('password')}
             />
-            <Button type="submit" fullWidth mt="md">
+            <Button fullWidth mt="md" type="submit">
               Create Account
             </Button>
           </Stack>

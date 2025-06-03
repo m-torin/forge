@@ -21,13 +21,13 @@
     "@nosecone/next": "1.0.0-beta.8",
     "@t3-oss/env-nextjs": "catalog:",
     "@upstash/ratelimit": "^2.0.5",
-    "@upstash/redis": "^1.34.9",
+    "@upstash/redis": "^1.35.0",
     "chalk": "^5.4.1",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",

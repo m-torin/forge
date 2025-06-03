@@ -1,0 +1,306 @@
+# 🌐 Web Application
+
+The main marketing website with user authentication, internationalization, and comprehensive feature
+showcase.
+
+import { Callout } from 'nextra/components';
+
+<Callout type="info">
+  Web runs on port **3200** and serves as the primary user-facing application with full e-commerce
+  capabilities.
+</Callout>
+
+## Core Features
+
+- **Complete Auth Flow** - Sign-in, sign-up, magic links, social providers
+- **Internationalization** - Multi-language support with locale routing
+- **E-commerce** - Product catalog, cart, checkout, and order management
+- **User Dashboard** - Account settings, order history, favorites
+- **Advanced Routing** - Parallel and intercepting routes
+- **Search Integration** - Full-text search with filters
+- **Analytics Tracking** - Comprehensive event tracking with feature flags
+- **SEO Optimized** - Server-side rendering with metadata
+
+## Authentication
+
+Web app uses the unified auth system with feature flag controls:
+
+### Available Auth Methods
+
+- Email/password authentication
+- Magic link sign-in
+- Social providers (Google, GitHub)
+- Two-factor authentication
+- API key support for integrations
+
+### API Authentication
+
+```bash
+# Using user API key
+curl -H "x-api-key: YOUR_API_KEY" \
+  https://app.com/api/protected
+
+# Using service API key (for integrations)
+curl -H "x-api-key: YOUR_SERVICE_API_KEY" \
+  https://app.com/api/protected
+```
+
+## Internationalization
+
+### Supported Locales
+
+- English (en) - Default
+- Spanish (es)
+- French (fr)
+- German (de)
+- Japanese (ja)
+
+### Locale Routing
+
+```typescript
+// All routes are prefixed with locale
+/en/products
+/es/productos
+/fr/produits
+
+// Middleware handles redirects
+/ → /en (based on browser preference)
+```
+
+### Translation Integration
+
+```typescript
+import { getDictionary } from '@/dictionaries';
+
+export default async function Page({ params }) {
+  const dict = await getDictionary(params.locale);
+
+  return <h1>{dict.products.title}</h1>;
+}
+```
+
+## API Endpoints
+
+### Protected Routes
+
+All API routes require authentication except `/api/auth`:
+
+```typescript
+// Protected user data
+GET /api/protected
+{
+  "user": {
+    "id": "user-123",
+    "email": "user@example.com",
+    "locale": "en"
+  }
+}
+
+// Secure signup with bot protection
+POST /api/auth/secure-signup
+{
+  "email": "new@example.com",
+  "password": "secure-password",
+  "name": "New User"
+}
+```
+
+### Rate Limiting
+
+| Endpoint      | Limit        | Window   |
+| ------------- | ------------ | -------- |
+| Auth          | 10 requests  | 1 minute |
+| Secure Signup | 3 requests   | 1 hour   |
+| Protected     | 100 requests | 1 minute |
+
+## Security Features
+
+### Middleware Stack
+
+```typescript
+// middleware.ts
+const middleware = async (request) => {
+  // 1. Internationalization
+  const i18nResponse = internationalizationMiddleware(request);
+
+  // 2. Authentication check
+  const authResponse = await authMiddleware()(request);
+
+  // 3. Arcjet bot protection
+  await secure(['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW', 'CATEGORY:MONITOR'], request);
+
+  // 4. Security headers
+  return securityHeaders();
+};
+```
+
+### Bot Protection
+
+Arcjet integration for advanced bot detection:
+
+```typescript
+// Secure signup endpoint
+const decision = await aj.protect(request);
+
+if (decision.isDenied()) {
+  return NextResponse.json({ error: 'Bot detected' }, { status: 403 });
+}
+```
+
+## User Features
+
+### Account Dashboard
+
+- Profile management
+- Order history
+- Address book
+- Payment methods
+- Email preferences
+
+### Shopping Features
+
+- Product browsing with filters
+- Add to cart
+- Wishlist/favorites
+- Quick checkout
+- Order tracking
+
+### Social Features
+
+- Product reviews
+- Share products
+- Referral program
+- User recommendations
+
+## Environment Configuration
+
+```bash
+# .env.local
+SERVICE_API_KEY=your-32-character-service-key
+
+# Internationalization
+DEFAULT_LOCALE=en
+SUPPORTED_LOCALES=en,es,fr,de,ja
+
+# E-commerce
+STRIPE_PUBLISHABLE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...
+
+# Search
+ALGOLIA_APP_ID=...
+ALGOLIA_API_KEY=...
+
+# Analytics
+POSTHOG_KEY=...
+SEGMENT_WRITE_KEY=...
+```
+
+## Common Integrations
+
+### 1. Product Search
+
+```typescript
+// Instant search with Algolia
+import { InstantSearch, SearchBox, Hits } from 'react-instantsearch';
+
+<InstantSearch searchClient={searchClient} indexName="products">
+  <SearchBox />
+  <Hits hitComponent={ProductHit} />
+</InstantSearch>
+```
+
+### 2. Analytics Tracking
+
+```typescript
+// Automatic event tracking
+analytics.capture('product_viewed', {
+  productId: product.id,
+  category: product.category,
+  price: product.price,
+  locale: locale,
+});
+
+// User identification
+analytics.identify(user.email, {
+  locale: user.locale,
+  created_at: user.createdAt,
+  total_orders: user.orderCount,
+});
+```
+
+### 3. Feature Flags
+
+```typescript
+// Check feature availability
+const checkoutV2Enabled = useFlag('checkout.v2');
+const expressCheckoutEnabled = useFlag('checkout.express');
+
+if (expressCheckoutEnabled) {
+  return <ExpressCheckout />;
+}
+```
+
+## SEO & Performance
+
+### Metadata Generation
+
+```typescript
+export async function generateMetadata({ params }) {
+  const product = await getProduct(params.id);
+
+  return {
+    title: product.name,
+    description: product.description,
+    openGraph: {
+      images: [product.image],
+    },
+  };
+}
+```
+
+### Performance Optimizations
+
+- Server-side rendering
+- Image optimization with Next.js Image
+- Dynamic imports for code splitting
+- Edge runtime for API routes
+- CDN caching for static assets
+
+## Deployment
+
+### Required Environment Variables
+
+```bash
+# Authentication
+SERVICE_API_KEY=...
+BETTER_AUTH_SECRET=...
+DATABASE_URL=...
+
+# Email
+RESEND_API_KEY=...
+FROM_EMAIL=...
+
+# Security
+ARCJET_KEY=...
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+
+# Analytics (optional)
+POSTHOG_KEY=...
+SEGMENT_WRITE_KEY=...
+LOCAL_FLAGS=...
+```
+
+### Health Check
+
+```bash
+# Requires authentication
+curl -H "x-api-key: YOUR_API_KEY" https://app.com/api/health
+```
+
+## Next Steps
+
+- [Authentication](/auth) - Configure auth providers
+- [Internationalization](/packages/internationalization) - Add languages
+- [Analytics](/packages/analytics) - Set up tracking
+- [SEO](/packages/seo) - Optimize for search

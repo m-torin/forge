@@ -5,6 +5,13 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["next-env.d.ts", "next.config.ts", ".next/types/**/*.ts"],
-  "exclude": ["stories/**/*"]
+  "include": [
+    "next-env.d.ts",
+    "next.config.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".storybook/**/*"
+  ],
+  "exclude": ["node_modules", "storybook-static"]
 }

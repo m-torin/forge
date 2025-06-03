@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@logtail/next": "^0.2.0",
-    "@sentry/nextjs": "^9.24.0",
+    "@sentry/nextjs": "^9.25.1",
     "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
     "react": "catalog:",
@@ -20,9 +20,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@repo/config": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

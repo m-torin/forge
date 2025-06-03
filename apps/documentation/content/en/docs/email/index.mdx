@@ -1,0 +1,24 @@
+# 📧 Email System
+
+Forge includes React Email templates with Resend for transactional emails.
+
+## Templates
+
+- **Magic Link** - Secure authentication links
+- **Welcome Email** - User onboarding
+- **Password Reset** - Account recovery
+- **Organization Invites** - Team invitations
+
+## Usage
+
+```typescript
+import { sendMagicLinkEmail } from '@repo/email';
+
+await sendMagicLinkEmail({
+  to: 'user@example.com',
+  url: 'https://app.com/auth/verify?token=xyz',
+  user: { name: 'John Doe' },
+});
+```
+
+All templates are responsive, accessible, and integrate with the auth system.

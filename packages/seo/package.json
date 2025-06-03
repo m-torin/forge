@@ -16,9 +16,9 @@
     "schema-dts": "^1.1.5"
   },
   "devDependencies": {
+    "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@repo/config": "workspace:*",
     "@testing-library/react": "catalog:",
     "@types/eslint": "^9.6.1",
     "@types/lodash.merge": "^4.6.9",
@@ -27,7 +27,7 @@
     "@types/react-dom": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "next": "catalog:",
+    "next": "15.4.0-canary.62",
     "vitest": "catalog:"
   }
 }

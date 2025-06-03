@@ -1,24 +1,24 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system/uix';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 /**
  * An image element with a fallback for representing the user.
  */
 const meta = {
-  title: 'uix/ui/Avatar',
-  component: Avatar,
-  tags: ['autodocs'],
   argTypes: {},
+  component: Avatar,
+  parameters: {
+    layout: 'centered',
+  },
   render: (args: any) => (
     <Avatar {...args}>
       <AvatarImage src="https://github.com/shadcn.png" />
       <AvatarFallback>CN</AvatarFallback>
     </Avatar>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Avatar',
 } satisfies Meta<typeof Avatar>;
 
 export default meta;

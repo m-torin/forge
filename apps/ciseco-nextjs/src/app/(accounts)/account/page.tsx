@@ -1,25 +1,20 @@
-import avatar from '@/images/users/avatar1.jpg';
 import {
   Calendar01Icon,
   ImageAdd02Icon,
   Mail01Icon,
   MapsLocation01Icon,
   SmartPhone01Icon,
-} from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { type Metadata } from 'next';
-import Image from 'next/image';
-
-import { Label } from '@repo/design-system/ciesco2';
-import { ButtonPrimary } from '@repo/design-system/ciesco2';
-import { Input } from '@repo/design-system/ciesco2';
-import { Select } from '@repo/design-system/ciesco2';
-import { Textarea } from '@repo/design-system/ciesco2';
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ButtonPrimary, Input, Label, Select, Textarea } from '@repo/design-system/ciseco'
+import avatarImage from '@repo/design-system/ciseco/images/users/avatar1.jpg'
+import { Metadata } from 'next'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
-  description: 'Account page',
   title: 'Account',
-};
+  description: 'Account page',
+}
 
 const Page = () => {
   return (
@@ -31,24 +26,19 @@ const Page = () => {
           {/* AVATAR */}
           <div className="relative flex overflow-hidden rounded-full">
             <Image
-              width={avatar.width}
+              src={avatarImage}
+              alt={'avatar'}
+              width={avatarImage.width}
+              height={avatarImage.height}
+              sizes="132px"
               priority
               className="z-0 size-32 rounded-full object-cover"
-              alt="avatar"
-              height={avatar.height}
-              sizes="132px"
-              src={avatar}
             />
             <div className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 text-neutral-50">
-              <HugeiconsIcon
-                strokeWidth={1.5}
-                color="currentColor"
-                icon={ImageAdd02Icon}
-                size={30}
-              />
+              <HugeiconsIcon icon={ImageAdd02Icon} size={30} color="currentColor" strokeWidth={1.5} />
               <span className="mt-1 text-xs">Change Image</span>
             </div>
-            <input className="absolute inset-0 cursor-pointer opacity-0" type="file" />
+            <input type="file" className="absolute inset-0 cursor-pointer opacity-0" />
           </div>
         </div>
         <div className="mt-10 max-w-3xl grow space-y-6 md:mt-0 md:pl-16">
@@ -62,9 +52,9 @@ const Page = () => {
             <Label>Email</Label>
             <div className="mt-1.5 flex">
               <span className="inline-flex items-center rounded-l-2xl border border-r-0 border-neutral-200 bg-neutral-50 px-2.5 text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-                <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Mail01Icon} size={16} />
+                <HugeiconsIcon icon={Mail01Icon} size={16} color="currentColor" strokeWidth={1.5} />
               </span>
-              <Input placeholder="example@email.com" className="rounded-l-none!" />
+              <Input className="rounded-l-none!" placeholder="example@email.com" />
             </div>
           </div>
 
@@ -73,14 +63,9 @@ const Page = () => {
             <Label>Date of birth</Label>
             <div className="mt-1.5 flex">
               <span className="inline-flex items-center rounded-l-2xl border border-r-0 border-neutral-200 bg-neutral-50 px-2.5 text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-                <HugeiconsIcon
-                  strokeWidth={1.5}
-                  color="currentColor"
-                  icon={Calendar01Icon}
-                  size={16}
-                />
+                <HugeiconsIcon icon={Calendar01Icon} size={16} color="currentColor" strokeWidth={1.5} />
               </span>
-              <Input className="rounded-l-none!" defaultValue="1990-07-22" type="date" />
+              <Input className="rounded-l-none!" type="date" defaultValue="1990-07-22" />
             </div>
           </div>
           {/* ---- */}
@@ -88,12 +73,7 @@ const Page = () => {
             <Label>Addess</Label>
             <div className="mt-1.5 flex">
               <span className="inline-flex items-center rounded-l-2xl border border-r-0 border-neutral-200 bg-neutral-50 px-2.5 text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-                <HugeiconsIcon
-                  strokeWidth={1.5}
-                  color="currentColor"
-                  icon={MapsLocation01Icon}
-                  size={16}
-                />
+                <HugeiconsIcon icon={MapsLocation01Icon} size={16} color="currentColor" strokeWidth={1.5} />
               </span>
               <Input className="rounded-l-none!" defaultValue="New york, USA" />
             </div>
@@ -114,12 +94,7 @@ const Page = () => {
             <Label>Phone number</Label>
             <div className="mt-1.5 flex">
               <span className="inline-flex items-center rounded-l-2xl border border-r-0 border-neutral-200 bg-neutral-50 px-2.5 text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-                <HugeiconsIcon
-                  strokeWidth={1.5}
-                  color="currentColor"
-                  icon={SmartPhone01Icon}
-                  size={16}
-                />
+                <HugeiconsIcon icon={SmartPhone01Icon} size={16} color="currentColor" strokeWidth={1.5} />
               </span>
               <Input className="rounded-l-none!" defaultValue="003 888 232" />
             </div>
@@ -135,7 +110,7 @@ const Page = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page

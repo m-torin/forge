@@ -178,19 +178,19 @@ export interface CommonEventProperties {
   // E-commerce
   revenue?: number;
   value?: number;
-  
+
   content_id?: string;
   content_type?: string;
   // Content
   title?: string;
-  
+
   // Search
   search_term?: string;
-  
+
   // Errors
   error_code?: string;
   error_message?: string;
-  
+
   // Custom properties
   [key: string]: any;
 }

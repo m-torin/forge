@@ -1,0 +1,51 @@
+# 🚀 Advanced Features
+
+Explore advanced Nextra capabilities and development patterns in Forge.
+
+## Nextra Advanced Features
+
+### Syntax Highlighting
+
+```typescript
+// TypeScript with full syntax highlighting
+import { useFlag, FLAGS } from '@repo/analytics';
+
+export function FeatureComponent() {
+  const isEnabled = useFlag(FLAGS.ui.betaComponents);
+  return isEnabled ? <NewComponent /> : <OldComponent />;
+}
+```
+
+### Callouts and Alerts
+
+import { Callout } from 'nextra/components';
+
+<Callout type="warning">
+  Always test feature flags in development before enabling in production.
+</Callout>
+
+### Code Groups and Tabs
+
+Organize code examples with tabs for different scenarios or languages.
+
+### Search Integration
+
+Built-in search functionality indexes all documentation content automatically.
+
+## Development Patterns
+
+### Feature Flag Patterns
+
+- **Progressive Rollout** - Enable features for percentage of users
+- **A/B Testing** - Compare different implementations
+- **Kill Switches** - Quickly disable problematic features
+
+### Analytics Patterns
+
+- **Event Tracking** - Consistent event naming conventions
+- **User Journey** - Track complete user workflows
+- **Performance Monitoring** - Real-time performance metrics
+
+### Component Documentation
+
+Live component examples with Storybook integration for interactive documentation.

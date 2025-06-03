@@ -1,5 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react';
-
 import {
   Carousel,
   CarouselContent,
@@ -8,16 +6,19 @@ import {
   CarouselPrevious,
 } from '@repo/design-system/uix';
 
+import type { Meta, StoryObj } from '@storybook/react';
+
 /**
  * A carousel with motion and swipe built using Embla.
  */
 const meta: Meta<typeof Carousel> = {
-  title: 'uix/ui/Carousel',
-  component: Carousel,
-  tags: ['autodocs'],
-  argTypes: {},
   args: {
     className: 'w-full max-w-xs',
+  },
+  argTypes: {},
+  component: Carousel,
+  parameters: {
+    layout: 'centered',
   },
   render: (args: any) => (
     <Carousel {...args}>
@@ -34,9 +35,8 @@ const meta: Meta<typeof Carousel> = {
       <CarouselNext />
     </Carousel>
   ),
-  parameters: {
-    layout: 'centered',
-  },
+  tags: ['autodocs'],
+  title: 'uix/ui/Carousel',
 } satisfies Meta<typeof Carousel>;
 
 export default meta;
@@ -52,6 +52,9 @@ export const Default: Story = {};
  * Use the `basis` utility class to change the size of the carousel.
  */
 export const Size: Story = {
+  args: {
+    className: 'mx-12 w-full max-w-xs',
+  },
   render: (args: any) => (
     <Carousel {...args} className="mx-12 w-full max-w-xs">
       <CarouselContent>
@@ -67,7 +70,4 @@ export const Size: Story = {
       <CarouselNext />
     </Carousel>
   ),
-  args: {
-    className: 'mx-12 w-full max-w-xs',
-  },
 };

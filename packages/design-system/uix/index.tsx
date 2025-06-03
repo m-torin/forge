@@ -31,6 +31,7 @@ export const DesignSystemProvider = ({
 // Export auth components
 export { SignIn } from './components/auth/sign-in';
 export { SignUp } from './components/auth/sign-up';
+export { UserButton } from './components/auth/user-button';
 export { OrganizationSwitcher } from './components/auth/organization-switcher';
 export { OrganizationDetail } from './components/auth/organization-detail';
 export { AcceptInvitation } from './components/auth/accept-invitation';
@@ -38,6 +39,29 @@ export { InvitationPreview } from './components/auth/invitation-preview';
 export { ApiKeyList } from './components/auth/api-key-list';
 export { CreateApiKeyDialog } from './components/auth/create-api-key-dialog';
 export { UpdateApiKeyDialog } from './components/auth/update-api-key-dialog';
+export { AuthLayout } from './components/auth/auth-layout';
+export { UnifiedSignIn } from './components/auth/unified-sign-in';
+export { UnifiedSignUp } from './components/auth/unified-sign-up';
+export { ForgotPasswordForm } from './components/auth/forgot-password-form';
+export { ResetPasswordForm } from './components/auth/reset-password-form';
+export { AuthForm } from './components/auth/auth-form';
+export {
+  TwoFactorManage,
+  TwoFactorSetup,
+  TwoFactorStatus,
+} from './components/auth/two-factor-setup';
+export {
+  PasskeyList,
+  PasskeyManager,
+  PasskeySetup,
+  PasskeySignInButton,
+} from './components/auth/passkey-setup';
+export {
+  EmailVerificationBanner,
+  EmailVerificationPage,
+  EmailVerificationPrompt,
+} from './components/auth/email-verification';
+export { SessionManagement, UserProfile } from './components/auth/user-profile';
 
 // Export admin components
 export { CreateUserDialog } from './components/admin/create-user-dialog';
@@ -62,8 +86,8 @@ export * from '@mantine/code-highlight';
 export {
   Accordion,
   AccordionContent,
-  AccordionItem as UIAccordionItem,
   AccordionTrigger,
+  AccordionItem as UIAccordionItem,
 } from './components/ui/accordion';
 
 export {
@@ -78,19 +102,11 @@ export {
   AlertDialogTrigger,
 } from './components/ui/alert-dialog';
 
-export {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from './components/ui/alert';
+export { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 
 export { AspectRatio } from './components/ui/aspect-ratio';
 
-export {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from './components/ui/avatar';
+export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 
 export { Badge } from './components/ui/badge';
 
@@ -127,18 +143,14 @@ export {
 
 export {
   ChartContainer,
-  ChartTooltip as UIChartTooltip,
   ChartTooltipContent,
+  ChartTooltip as UIChartTooltip,
 } from './components/ui/chart';
 export type { ChartConfig } from './components/ui/chart';
 
 export { Checkbox as UICheckbox } from './components/ui/checkbox';
 
-export {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from './components/ui/collapsible';
+export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './components/ui/collapsible';
 
 export {
   Command,
@@ -167,7 +179,6 @@ export {
 } from './components/ui/context-menu';
 
 export {
-  Dialog as UIDialog,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -175,17 +186,18 @@ export {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Dialog as UIDialog,
 } from './components/ui/dialog';
 
 export {
-  Drawer as UIDrawer,
   DrawerClose,
-  DrawerContent as UIDrawerContent,
   DrawerDescription,
   DrawerFooter,
+  DrawerTrigger,
+  Drawer as UIDrawer,
+  DrawerContent as UIDrawerContent,
   DrawerHeader as UIDrawerHeader,
   DrawerTitle as UIDrawerTitle,
-  DrawerTrigger,
 } from './components/ui/drawer';
 
 export {
@@ -207,20 +219,16 @@ export {
 } from './components/ui/dropdown-menu';
 
 export {
-  Form as UIForm,
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  Form as UIForm,
 } from './components/ui/form';
 
-export {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from './components/ui/hover-card';
+export { HoverCard, HoverCardContent, HoverCardTrigger } from './components/ui/hover-card';
 
 export { Input as UIInput } from './components/ui/input';
 
@@ -259,40 +267,29 @@ export {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  NavigationMenuViewport,
   navigationMenuTriggerStyle,
+  NavigationMenuViewport,
 } from './components/ui/navigation-menu';
 
 export {
-  Pagination as UIPagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationFirst,
   PaginationItem,
   PaginationLast,
   PaginationLink,
+  Pagination as UIPagination,
   PaginationNext as UIPaginationNext,
   PaginationPrevious as UIPaginationPrevious,
 } from './components/ui/pagination';
 
-export {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from './components/ui/popover';
+export { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover';
 
 export { Progress } from './components/ui/progress';
 
-export {
-  RadioGroup as UIRadioGroup,
-  RadioGroupItem,
-} from './components/ui/radio-group';
+export { RadioGroupItem, RadioGroup as UIRadioGroup } from './components/ui/radio-group';
 
-export {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from './components/ui/resizable';
+export { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './components/ui/resizable';
 
 export { ScrollArea } from './components/ui/scroll-area';
 
@@ -352,40 +349,31 @@ export { Slider } from './components/ui/slider';
 export { Switch } from './components/ui/switch';
 
 export {
-  Table as UITable,
   TableBody,
-  TableCaption as UITableCaption,
   TableCell,
   TableFooter,
   TableHead,
   TableHeader,
   TableRow,
+  Table as UITable,
+  TableCaption as UITableCaption,
 } from './components/ui/table';
 
-export {
-  Tabs,
-  TabsContent,
-  TabsList as UITabsList,
-  TabsTrigger,
-} from './components/ui/tabs';
+export { Tabs, TabsContent, TabsTrigger, TabsList as UITabsList } from './components/ui/tabs';
 
 export { Textarea } from './components/ui/textarea';
 
-export {
-  Toggle,
-} from './components/ui/toggle';
+export { Toggle } from './components/ui/toggle';
 
-export {
-  ToggleGroup,
-  ToggleGroupItem,
-} from './components/ui/toggle-group';
+export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
 
-export {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './components/ui/tooltip';
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip';
+
+// Export UI components
+export { BackButton } from './components/ui/back-button';
+
+// Export hooks
+export { useAsyncAuth, usePageTracking, useRequireAuth } from './hooks/auth';
 
 // Export our theme
 export { mantineTheme, theme } from './lib/mantine-theme';

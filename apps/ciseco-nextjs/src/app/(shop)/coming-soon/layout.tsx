@@ -1,19 +1,17 @@
-import { type FC } from 'react';
-
-import { Header } from '@repo/design-system/ciesco2';
-
-import { ApplicationLayout } from '../application-layout';
+import { Header } from '@repo/design-system/ciseco'
+import { FC } from 'react'
+import { ApplicationLayout } from '../application-layout'
 
 interface Props {
-  children?: React.ReactNode;
+  children?: React.ReactNode
 }
 
 const Layout: FC<Props> = ({ children }) => {
   return (
-    <ApplicationLayout footer={<div />} header={<Header hasBorderBottom />}>
+    <ApplicationLayout header={<Header hasBorderBottom />} footer={<div />}>
       {children}
     </ApplicationLayout>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout
