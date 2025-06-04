@@ -4,6 +4,8 @@ export { default as AddToCardButton } from './components/AddToCardButton';
 export { default as ArchiveFilterListBox } from './components/ArchiveFilterListBox';
 export { default as BagIcon } from './components/BagIcon';
 export { default as ButtonDropdown } from './components/ButtonDropdown';
+export { ProgressiveImage, ProgressiveImageGallery } from './components/ProgressiveImage';
+export { ViewportAwareProductGrid, useProgressiveProducts } from './components/ViewportAwareProductGrid';
 export { default as CollectionCard1 } from './components/CollectionCard1';
 export { default as CollectionCard2 } from './components/CollectionCard2';
 export { default as CollectionCard3 } from './components/CollectionCard3';

@@ -17,7 +17,7 @@ import Prices from './Prices';
 import ProductStatus from './ProductStatus';
 import ButtonPrimary from './shared/Button/ButtonPrimary';
 import ButtonSecondary from './shared/Button/ButtonSecondary';
-import NcImage from './shared/NcImage/NcImage';
+import { ProgressiveImage } from './ProgressiveImage';
 
 export interface ProductCardProps {
   className?: string;
@@ -38,6 +38,7 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
     selectedOptions,
     status,
     title,
+    id,
   } = data;
   const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
 
@@ -120,13 +121,14 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
       <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
         <Link href={productUrl as any} className="block">
           {featuredImage?.src && (
-            <NcImage
-              containerClassName="flex aspect-[11/12] w-full relative"
-              className="object-cover"
+            <ProgressiveImage
+              className="flex aspect-[11/12] w-full relative"
               alt={handle}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
-              src={featuredImage}
+              src={featuredImage.src}
+              placeholder={featuredImage.blurDataURL}
+              priority={false}
             />
           )}
         </Link>

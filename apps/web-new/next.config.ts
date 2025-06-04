@@ -13,10 +13,15 @@ const nextConfig: NextConfig = {
   experimental: {
     ...config.experimental,
     optimizePackageImports: ["@mantine/core", "@mantine/hooks"],
+    // Enable PPR for select routes
+    ppr: true,
   },
   images: {
     ...config.images,
-    minimumCacheTTL: 2678400 * 12, // 6 months
+    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year for images
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       ...(config.images?.remotePatterns || []),
       {
@@ -31,7 +36,45 @@ const nextConfig: NextConfig = {
         port: "",
         protocol: "https",
       },
+      {
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+        port: "",
+        protocol: "https",
+      },
     ],
+  },
+  // Cache headers for static assets
+  async headers() {
+    return [
+      {
+        source: '/:all*(svg|jpg|jpeg|png|gif|ico|webp|avif)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=300',
+          },
+        ],
+      },
+    ];
   },
   serverExternalPackages: ["@repo/database"],
   transpilePackages: [

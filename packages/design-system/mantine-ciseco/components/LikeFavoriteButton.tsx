@@ -2,13 +2,17 @@
 
 import React from 'react';
 
-export interface LikeButtonProps {
+export interface LikeFavoriteButtonProps {
   className?: string;
   liked?: boolean;
   onClick?: () => void;
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false, onClick }) => {
+const LikeFavoriteButton: React.FC<LikeFavoriteButtonProps> = ({ 
+  className = '', 
+  liked = false,
+  onClick 
+}) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,4 +39,4 @@ const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false, 
   );
 };
 
-export default LikeButton;
+export default LikeFavoriteButton;

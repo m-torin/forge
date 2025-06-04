@@ -5,34 +5,27 @@ import {
   getProducts,
   ProductCard,
 } from "@repo/design-system/mantine-ciseco";
+import { FavoritesClient } from './FavoritesClient';
 
 export const metadata: Metadata = {
-  description: "Saved Products page",
-  title: "Saved Products",
+  description: "Your favorite products and wishlists",
+  title: "My Favorites",
 };
 
 const Page = async () => {
-  const products = (await getProducts()).slice(0, 6);
+  // Get all products to filter by favorites on client side
+  const allProducts = await getProducts();
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
       <div>
-        <h1 className="text-2xl font-semibold sm:text-3xl">Wishlists</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl">My Favorites</h1>
         <p className="mt-2.5 text-neutral-500 dark:text-neutral-400">
-          Check out your wishlists. You can add or remove items from your
-          wishlists.
+          Products you've saved for later. Click the heart icon on any product to add it here.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        {products.map((product) => (
-          <ProductCard key={product.id} data={product} />
-        ))}
-      </div>
-
-      <div className="flex items-center justify-center pt-10">
-        <ButtonSecondary loading>Show me more</ButtonSecondary>
-      </div>
+      <FavoritesClient allProducts={allProducts} />
     </div>
   );
 };

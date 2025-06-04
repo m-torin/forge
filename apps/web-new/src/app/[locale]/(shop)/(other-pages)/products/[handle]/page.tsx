@@ -15,12 +15,12 @@ import {
   AddToCardButton,
   ButtonPrimary,
   Divider,
-  LikeButton,
   NcInputNumber,
   Prices,
   SectionPromo2,
   SectionSliderProductCard,
 } from "@repo/design-system/mantine-ciseco";
+import { ProductDetailFavoriteButton } from "@/components/ProductDetailFavoriteButton";
 
 import Policy from "../Policy";
 import ProductOptions from "../ProductOptions";
@@ -28,10 +28,28 @@ import ProductReviews from "../ProductReviews";
 import ProductSizeOption from "../ProductSizeOption";
 import ProductStatus from "../ProductStatus";
 
+// Enable Partial Pre-rendering for this page
+export const experimental_ppr = true;
+
+// ISR Configuration - Revalidate every 4 hours for product pages
+export const revalidate = 14400; // 4 hours in seconds
+
+// Generate static params for popular products (first 1000)
+// In production, this would come from your database
+export async function generateStaticParams() {
+  // For now, return empty array since we have mock data
+  // In production: 
+  // const popularProducts = await getPopularProducts({ limit: 1000 });
+  // return popularProducts.map((product) => ({
+  //   handle: product.handle,
+  // }));
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ handle: string }>;
+  params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
   const { handle } = await params;
   const product = await getProductDetailByHandle(handle);
@@ -206,7 +224,12 @@ export default async function Page({
             )}
           </div>
 
-          <LikeButton className="absolute right-3 top-3" />
+          <ProductDetailFavoriteButton 
+            productId={product.id}
+            productName={title}
+            price={price}
+            className="absolute right-3 top-3"
+          />
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6">
           {images?.map((image, index) => {

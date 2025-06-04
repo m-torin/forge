@@ -1,4 +1,5 @@
 import { type Metadata } from "next";
+import { Suspense } from "react";
 
 import {
   BackgroundSection,
@@ -21,7 +22,11 @@ import {
   SectionPromo2,
   SectionSliderLargeProduct,
   SectionSliderProductCard,
+  ViewportAwareProductGrid,
 } from "@repo/design-system/mantine-ciseco";
+
+// Enable Partial Pre-rendering for optimal performance
+export const experimental_ppr = true;
 
 export const metadata: Metadata = {
   description: "Discover the latest products and trends in our online store.",

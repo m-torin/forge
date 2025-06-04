@@ -6,10 +6,10 @@ import {
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-  ProductCard,
   SidebarFilters,
   TabFiltersPopover,
 } from "@repo/design-system/mantine-ciseco";
+import { CollectionStyle2Client } from './CollectionStyle2Client';
 
 export default async function Page({
   params,
@@ -31,11 +31,7 @@ export default async function Page({
         <div className="mb-10 shrink-0 lg:mx-8 lg:mb-0" />
 
         <div className="flex-1">
-          <div className="grid flex-1 gap-x-8 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
-            {products.map((item) => (
-              <ProductCard key={item.id} data={item} />
-            ))}
-          </div>
+          <CollectionStyle2Client products={products} />
 
           <div className="mt-20 flex justify-start lg:mt-24">
             <Pagination className="">

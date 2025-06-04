@@ -18,6 +18,7 @@ import {
   SectionPromo1,
   SectionSliderLargeProduct,
 } from "@repo/design-system/mantine-ciseco";
+import { SearchClient } from './SearchClient';
 
 export const metadata: Metadata = {
   description: "Search page for products",
@@ -72,11 +73,7 @@ const PageSearch = async () => {
           <HeaderFilterSection />
 
           {/* LOOP ITEMS */}
-          <div className="mt-8 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((item) => (
-              <ProductCard key={item.id} data={item} />
-            ))}
-          </div>
+          <SearchClient products={products} />
 
           {/* PAGINATION */}
           <div className="mt-20 flex justify-center lg:mt-24">
