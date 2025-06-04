@@ -1,6 +1,6 @@
 'use client';
 
-import { Switch } from '@headlessui/react';
+import { Switch } from '@mantine/core';
 import clsx from 'clsx';
 import React from 'react';
 
@@ -14,18 +14,18 @@ const SwitchDarkMode2: React.FC<SwitchDarkMode2Props> = ({ className }) => {
 
   return (
     <div className={clsx('inline-flex', className)}>
-      <span className="sr-only">Enable dark mode</span>
       <Switch
-        onChange={_toogleDarkMode}
-        className={`${isDarkMode ? 'bg-teal-900' : 'bg-teal-600'} relative inline-flex h-[22px] w-[42px] shrink-0 cursor-pointer rounded-full border-4 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/75`}
+        color={isDarkMode ? 'teal.9' : 'teal.6'}
+        onChange={(event) => _toogleDarkMode()}
+        classNames={{
+          root: 'w-[42px]',
+          thumb: 'h-[14px] w-[14px]',
+          track: 'cursor-pointer h-[22px] w-[42px] border-4 border-transparent',
+        }}
+        aria-label="Enable dark mode"
         checked={isDarkMode}
-      >
-        <span className="sr-only">Enable dark mode</span>
-        <span
-          aria-hidden="true"
-          className={`${isDarkMode ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-[14px] w-[14px] rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
-        />
-      </Switch>
+        size="sm"
+      />
     </div>
   );
 };

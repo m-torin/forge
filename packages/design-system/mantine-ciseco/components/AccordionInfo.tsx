@@ -1,8 +1,8 @@
 'use client';
 
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { type FC } from 'react';
+import { Accordion } from '@mantine/core';
+import React, { type FC } from 'react';
 
 const DEMO_DATA = [
   {
@@ -59,33 +59,31 @@ const AccordionInfo: FC<Props> = ({
   data = DEMO_DATA,
   panelClassName = 'p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6',
 }) => {
-  return (
-    <div className="w-full space-y-2.5 rounded-2xl">
-      {/* ============ */}
-      {data.map((item, index) => {
-        return (
-          <Disclosure key={index} defaultOpen={index < 2}>
-            {({ open }) => (
-              <div>
-                <DisclosureButton className="flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-neutral-500/75 dark:bg-neutral-800 dark:hover:bg-neutral-700">
-                  <span>{item.name}</span>
-                  {!open ? (
-                    <PlusIcon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                  ) : (
-                    <MinusIcon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                  )}
-                </DisclosureButton>
-                <DisclosurePanel className={panelClassName} as="div">
-                  <div dangerouslySetInnerHTML={{ __html: item.content }} />
-                </DisclosurePanel>
-              </div>
-            )}
-          </Disclosure>
-        );
-      })}
+  const defaultValue = data.slice(0, 2).map((_, index) => String(index));
 
-      {/* ============ */}
-    </div>
+  return (
+    <Accordion
+      chevron={<PlusIcon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />}
+      classNames={{
+        chevron: 'ml-auto',
+        content: panelClassName,
+        control:
+          'flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-neutral-500/75 dark:bg-neutral-800 dark:hover:bg-neutral-700',
+        item: 'border-0',
+        root: 'w-full space-y-2.5 rounded-2xl',
+      }}
+      defaultValue={defaultValue}
+      multiple
+    >
+      {data.map((item, index) => (
+        <Accordion.Item key={index} value={String(index)}>
+          <Accordion.Control>{item.name}</Accordion.Control>
+          <Accordion.Panel>
+            <div dangerouslySetInnerHTML={{ __html: item.content }} />
+          </Accordion.Panel>
+        </Accordion.Item>
+      ))}
+    </Accordion>
   );
 };
 

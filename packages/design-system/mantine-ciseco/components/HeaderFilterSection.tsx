@@ -1,9 +1,9 @@
 'use client';
 
-import { Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { FilterIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { Collapse } from '@mantine/core';
 import { type FC, useState } from 'react';
 
 import { Divider } from './Divider';
@@ -52,27 +52,20 @@ const HeaderFilterSection: FC<HeaderFilterSectionProps> = ({ className = 'mb-12'
             <span className="absolute top-1/2 right-5 -translate-y-1/2">
               <ChevronDownIcon
                 aria-hidden="true"
-                className={`size-5 ${isOpen ? 'rotate-180' : ''}`}
+                className={`size-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
               />
             </span>
           </ButtonPrimary>
         </span>
       </div>
 
-      <Transition
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-        show={isOpen}
-        as="div"
-        enter="transition-opacity duration-150"
-        leave="transition-opacity duration-150"
-      >
-        <Divider className="my-8" />
-        <TabFilters className="hidden lg:block" />
-        <TabFiltersPopover className="block lg:hidden" />
-      </Transition>
+      <Collapse transitionDuration={150} in={isOpen}>
+        <div>
+          <Divider className="my-8" />
+          <TabFilters className="hidden lg:block" />
+          <TabFiltersPopover className="block lg:hidden" />
+        </div>
+      </Collapse>
     </div>
   );
 };

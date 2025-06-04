@@ -2,12 +2,12 @@
 
 import './styles/index.css';
 
-import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { ArrowSmallLeftIcon } from '@heroicons/react/24/outline';
+import { Modal as MantineModal } from '@mantine/core';
 import { type Route } from 'next';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { type FC, Fragment, useEffect, useRef } from 'react';
+import { type FC, useEffect, useRef } from 'react';
 
 import LikeSaveBtns from '../LikeSaveBtns';
 
@@ -100,47 +100,40 @@ const ListingImageGallery: FC<Props> = ({ images, onClose }) => {
   };
 
   return (
-    <Transition show={!!isShowModal} appear as={Fragment}>
-      <Dialog onClose={handleClose} className="relative z-40" as="div">
-        <TransitionChild
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-          enter="ease-out duration-300"
-          leave="ease-in duration-200"
-        >
-          <div className="fixed inset-0 bg-white" />
-        </TransitionChild>
+    <MantineModal
+      onClose={handleClose}
+      opened={!!isShowModal}
+      transitionProps={{
+        duration: 300,
+        transition: 'fade',
+      }}
+      withCloseButton={false}
+      classNames={{
+        body: 'p-0',
+        content: 'bg-white',
+        inner: 'p-0',
+        root: 'z-40',
+      }}
+      fullScreen
+    >
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="sticky z-10 top-0 p-4 xl:px-10 flex items-center justify-between bg-white">
+          <button
+            onClick={handleClose}
+            className="focus:outline-hidden focus:ring-0 w-10 h-10 rounded-full flex items-center justify-center hover:bg-neutral-100"
+          >
+            <ArrowSmallLeftIcon className="w-6 h-6" />
+          </button>
+          <LikeSaveBtns />
+        </div>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="sticky z-10 top-0 p-4 xl:px-10 flex items-center justify-between bg-white">
-            <button
-              onClick={handleClose}
-              className="focus:outline-hidden focus:ring-0 w-10 h-10 rounded-full flex items-center justify-center hover:bg-neutral-100"
-            >
-              <ArrowSmallLeftIcon className="w-6 h-6" />
-            </button>
-            <LikeSaveBtns />
-          </div>
-
-          <div className="flex min-h-full items-center justify-center sm:p-4 pt-0 text-center">
-            <TransitionChild
-              enterFrom="opacity-0 translate-y-5"
-              enterTo="opacity-100 translate-y-0"
-              leaveFrom="opacity-100 translate-y-0"
-              leaveTo="opacity-0 translate-y-5"
-              enter="ease-out duration-300"
-              leave="ease-in duration-200"
-            >
-              <DialogPanel className="w-full max-w-(--breakpoint-lg) mx-auto transform p-4 pt-0 text-left transition-all ">
-                {renderContent()}
-              </DialogPanel>
-            </TransitionChild>
+        <div className="flex min-h-full items-center justify-center sm:p-4 pt-0 text-center">
+          <div className="w-full max-w-(--breakpoint-lg) mx-auto p-4 pt-0 text-left">
+            {renderContent()}
           </div>
         </div>
-      </Dialog>
-    </Transition>
+      </div>
+    </MantineModal>
   );
 };
 

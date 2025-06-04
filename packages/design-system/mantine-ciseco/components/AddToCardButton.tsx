@@ -1,6 +1,5 @@
 'use client';
 
-import { Transition } from '@headlessui/react';
 import Image from 'next/image';
 import React, { type ComponentType, type ElementType, type FC } from 'react';
 
@@ -9,8 +8,13 @@ import { notify } from '@repo/notifications/mantine-notifications';
 import { Divider } from './Divider';
 import Prices from './Prices';
 
-interface NotifyAddToCartProps extends AddToCardButtonProps {
-  show: boolean;
+interface NotifyAddToCartProps extends Omit<AddToCardButtonProps, 'as' | 'children' | 'className'> {
+  color?: string;
+  imageUrl: string;
+  price: number;
+  quantity: number;
+  size?: string;
+  title: string;
 }
 
 export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
@@ -18,23 +22,11 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
   imageUrl,
   price,
   quantity,
-  show,
   size,
   title,
 }) => {
   return (
-    <Transition
-      enterFrom="opacity-0 translate-x-20"
-      enterTo="opacity-100 translate-x-0"
-      leaveFrom="opacity-100 translate-x-0"
-      leaveTo="opacity-0 translate-x-20"
-      show={show}
-      className="pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10"
-      appear
-      as="div"
-      enter="transition-all duration-150"
-      leave="transition-all duration-150"
-    >
+    <div className="pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10">
       <p className="block text-base leading-none font-semibold">Added to cart!</p>
 
       <Divider className="my-4" />
@@ -75,7 +67,7 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
           </div>
         </div>
       </div>
-    </Transition>
+    </div>
   );
 };
 
@@ -111,7 +103,6 @@ const AddToCardButton = ({
       message: (
         <NotifyAddToCart
           color={color}
-          show={true}
           imageUrl={imageUrl}
           price={price}
           quantity={quantity}
