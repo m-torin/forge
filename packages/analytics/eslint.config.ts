@@ -1,14 +1,3 @@
-// eslint.config.ts
-import packageConfig from '@repo/eslint-config/package';
+import baseConfig from '@repo/eslint-config/react-internal'
 
-// @ts-ignore - eslint doesn't have type definitions
-import type { Linter } from 'eslint';
-
-const config: Linter.FlatConfig[] = [
-  {
-    ignores: ['README.md', '**/*.md'],
-  },
-  ...packageConfig,
-];
-
-export default config;
+export default [...baseConfig]

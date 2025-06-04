@@ -20,7 +20,7 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 import {
   Autocomplete,
   SearchBox,

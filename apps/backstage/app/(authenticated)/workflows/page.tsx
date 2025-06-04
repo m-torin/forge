@@ -12,7 +12,7 @@ import {
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-import { FLAGS, useFlag } from '@repo/analytics';
+import { FLAGS, useFlag } from '@repo/analytics-legacy';
 import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
 
 const workflowCategories = [

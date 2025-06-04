@@ -5,7 +5,7 @@ import { useForm } from '@mantine/form';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { analytics, FLAGS, getAuthFlags, useFlag } from '@repo/analytics';
+import { analytics, FLAGS, getAuthFlags, useFlag } from '@repo/analytics-legacy';
 import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth/client';
 
 import { AuthForm } from './auth-form';

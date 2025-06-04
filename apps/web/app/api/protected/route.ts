@@ -1,4 +1,4 @@
-import { getAuthFlags } from "@repo/analytics";
+import { getAuthFlags } from "@repo/analytics-legacy";
 import { auth } from "@repo/auth/server";
 import { createRateLimiter, slidingWindow } from "@repo/security";
 

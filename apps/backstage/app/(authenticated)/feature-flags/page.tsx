@@ -42,7 +42,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { FLAGS } from '@repo/analytics';
+import { FLAGS } from '@repo/analytics-legacy';
 import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
 
 // Mock feature flag data structure

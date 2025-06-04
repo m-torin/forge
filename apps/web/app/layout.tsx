@@ -3,7 +3,7 @@ import "./globals.css";
 import "@mantine/core/styles.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 
-import { AnalyticsProvider } from "@repo/analytics";
+import { AnalyticsProvider } from "@repo/analytics-legacy";
 import { AuthProvider } from "@repo/auth/provider";
 import { createMetadata } from "@repo/seo/metadata";
 

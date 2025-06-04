@@ -9,7 +9,7 @@ import { passkey } from 'better-auth/plugins/passkey';
 import { twoFactor } from 'better-auth/plugins/two-factor';
 import { headers } from 'next/headers';
 
-import { analytics } from '@repo/analytics/posthog/server';
+import { analytics } from '@repo/analytics-legacy/posthog/server';
 import { prisma as database } from '@repo/database/prisma';
 
 import { adminAccessController, adminRoles } from './admin-permissions';

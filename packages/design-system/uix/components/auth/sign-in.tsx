@@ -4,7 +4,7 @@ import { Alert, Button, Divider, Paper, PasswordInput, Stack, TextInput } from '
 import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { analytics } from '@repo/analytics';
+import { analytics } from '@repo/analytics-legacy';
 import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth/client';
 
 export const SignIn = () => {

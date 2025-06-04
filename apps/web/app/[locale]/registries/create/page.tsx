@@ -22,7 +22,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 
 const registryTypes = [
   { label: "Wedding Registry", value: "wedding" },

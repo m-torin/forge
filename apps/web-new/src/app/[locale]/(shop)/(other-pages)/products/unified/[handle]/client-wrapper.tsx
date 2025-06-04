@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { analytics } from '@repo/analytics'
+import { analytics } from '@repo/analytics-legacy'
 import { type LayoutType } from './types'
 import { LayoutSwitcher } from './layout-switcher'
 import { StandardLayout } from './layouts/standard'

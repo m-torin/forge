@@ -1,4 +1,4 @@
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 import { auth } from "@repo/auth/server";
 import { createRateLimiter, secure, slidingWindow } from "@repo/security";
 

@@ -6,7 +6,7 @@ import { IconSearch } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 import { Autocomplete } from "@repo/design-system/algolia";
 
 // Mock Algolia configuration - replace with real config

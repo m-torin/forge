@@ -3,7 +3,6 @@
 import { createAutocomplete } from '@algolia/autocomplete-core';
 import { getAlgoliaResults } from '@algolia/autocomplete-preset-algolia';
 import {
-  ActionIcon,
   Avatar,
   Group,
   Modal,
@@ -256,9 +255,19 @@ export function HeaderSearch({
             {placeholder}
           </Text>
           <Group gap={4} ml="auto">
-            <ActionIcon color="gray" size="xs" variant="light">
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 18,
+                height: 18,
+                borderRadius: 4,
+                backgroundColor: 'var(--mantine-color-gray-1)',
+              }}
+            >
               <IconCommand size={10} />
-            </ActionIcon>
+            </div>
             <Text c="dimmed" size="xs">
               K
             </Text>

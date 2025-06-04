@@ -30,7 +30,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 import { Autocomplete } from "@repo/design-system/algolia";
 
 interface RegistryProduct {

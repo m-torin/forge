@@ -82,7 +82,7 @@ vi.mock('better-auth/plugins', () => ({
 }));
 
 // Mock analytics
-vi.mock('@repo/analytics/posthog/server', () => ({
+vi.mock('@repo/analytics-legacy/posthog/server', () => ({
   analytics: {
     identify: vi.fn(),
     capture: vi.fn(),

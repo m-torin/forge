@@ -1,9 +1,9 @@
-import { Analytics } from "@repo/analytics/emitters";
+import { BrowserAnalytics } from "@repo/analytics-legacy/emitters/analytics-browser";
 
-import type { CommonEventProperties } from "@repo/analytics/emitters/types";
+import type { CommonEventProperties } from "@repo/analytics-legacy/emitters/types";
 
-// Initialize analytics with all 6 Segment-style emitters
-export const analytics = new Analytics({
+// Initialize analytics with browser-safe emitters
+export const analytics = new BrowserAnalytics({
   providers: {
     googleAnalytics: {
       measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!,

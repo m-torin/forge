@@ -5,7 +5,7 @@ import { IconCircleCheck, IconCircleX, IconMail, IconRefresh } from '@tabler/ico
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { analytics } from '@repo/analytics';
+import { analytics } from '@repo/analytics-legacy';
 import { sendVerificationEmail, useSession, verifyEmail } from '@repo/auth/client';
 
 interface EmailVerificationBannerProps {

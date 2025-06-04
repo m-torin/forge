@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { analytics } from '@repo/analytics';
+import { analytics } from '@repo/analytics-legacy';
 import { createPrismaAdapter } from '@repo/database/prisma';
 import { parseError } from '@repo/observability/error';
 import { log } from '@repo/observability/log';

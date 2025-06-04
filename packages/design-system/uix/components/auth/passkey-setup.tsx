@@ -24,7 +24,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { analytics } from '@repo/analytics';
+import { analytics } from '@repo/analytics-legacy';
 import { addPasskey, deletePasskey, listPasskeys, signInWithPasskey } from '@repo/auth/client';
 
 interface Passkey {

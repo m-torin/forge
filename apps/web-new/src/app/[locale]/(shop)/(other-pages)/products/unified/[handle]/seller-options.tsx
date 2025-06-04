@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ShoppingBag03Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { AddToCardButton, ButtonPrimary, NcInputNumber } from '@repo/design-system/mantine-ciseco'
-import { analytics } from '@repo/analytics'
+import { analytics } from '@repo/analytics-legacy'
 import { type Seller, type SellerOptionsProps } from './types'
 import { useTrackAffiliateClick } from './use-track-affiliate'
 

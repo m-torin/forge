@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 /**
  * Analytics tracking utilities for workflow and user interactions
- * This integrates with @repo/analytics for PostHog, GA, and Segment tracking
+ * This integrates with @repo/analytics-legacy for PostHog, GA, and Segment tracking
  */
 
 export interface AnalyticsEvent {

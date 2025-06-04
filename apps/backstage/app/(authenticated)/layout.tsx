@@ -2,7 +2,7 @@ import { AppShell, Badge, Box, Group, Title } from '@mantine/core';
 import { redirect } from 'next/navigation';
 import { type ReactNode } from 'react';
 
-import { flag } from '@repo/analytics/server';
+import { flag } from '@repo/analytics-legacy/server';
 import { currentUser } from '@repo/auth/server';
 import { HeaderSearch } from '@repo/design-system/components/search';
 

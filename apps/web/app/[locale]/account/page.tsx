@@ -20,7 +20,7 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getAuthFlags, getUIFlags } from "@repo/analytics";
+import { getAuthFlags, getUIFlags } from "@repo/analytics-legacy";
 import { getSession } from "@repo/auth/server";
 import { OrganizationSwitcher, UserButton } from "@repo/design-system/uix";
 

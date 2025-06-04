@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 import { AuthLayout, UnifiedSignUp } from "@repo/design-system/uix";
 
 export default function SignUpPage() {

@@ -20,7 +20,7 @@ import React, {
   useTransition,
 } from "react";
 
-import { Analytics } from "@repo/analytics/emitters";
+import { clientAnalytics } from "@/lib/analytics-client";
 
 // Types
 export type ListType =
@@ -117,29 +117,8 @@ const GuestActionsContext = createContext<GuestActionsContextValue | undefined>(
   undefined,
 );
 
-// Initialize analytics
-const analytics = new Analytics({
-  providers: {
-    googleAnalytics: {
-      measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!,
-    },
-    posthog: {
-      apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!,
-      config: {
-        apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      },
-    },
-    segment: {
-      config: {
-        flushAt: 20,
-        flushInterval: 10000,
-      },
-      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!,
-    },
-  },
-  debug: process.env.NODE_ENV === "development",
-  disabled: process.env.NODE_ENV === "test",
-});
+// Use client-safe analytics instance
+const analytics = clientAnalytics;
 
 const DEFAULT_PREFERENCES = {
   currency: "USD",

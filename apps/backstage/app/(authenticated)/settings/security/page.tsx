@@ -5,7 +5,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconShield } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { analytics } from '@repo/analytics';
+import { analytics } from '@repo/analytics-legacy';
 import { getTwoFactorStatus } from '@repo/auth/client';
 import {
   BackButton,

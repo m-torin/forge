@@ -1,6 +1,6 @@
 'use client'
 
-import { analytics } from '@repo/analytics'
+import { analytics } from '@repo/analytics-legacy'
 import { useCallback } from 'react'
 
 interface TrackAffiliateClickParams {

@@ -21,7 +21,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconCheck, IconGift, IconShoppingCart } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 
 // Mock registry data for public view
 const mockPublicRegistry = {

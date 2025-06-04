@@ -28,7 +28,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 
 // Mock user registries
 const mockUserRegistries = [

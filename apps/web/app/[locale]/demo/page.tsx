@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import Image from "next/image";
 
-import { flag } from "@repo/analytics/server";
+import { flag } from "@repo/analytics-legacy/server";
 import { Link } from "@repo/internationalization/client";
 
 interface DemoPageProps {

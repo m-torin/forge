@@ -1,6 +1,6 @@
 "use server";
 
-import { Analytics } from "@repo/analytics/emitters";
+import { Analytics } from "@repo/analytics-legacy/emitters";
 
 // Initialize server-side analytics
 const serverAnalytics = new Analytics({

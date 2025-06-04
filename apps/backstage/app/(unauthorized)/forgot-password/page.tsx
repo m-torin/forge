@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { analytics } from '@repo/analytics';
+import { analytics } from '@repo/analytics-legacy';
 import { AuthLayout, ForgotPasswordForm } from '@repo/design-system/uix';
 
 export default function ForgotPasswordPage() {

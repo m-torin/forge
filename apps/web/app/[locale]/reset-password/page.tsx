@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
-import { analytics } from "@repo/analytics";
+import { analytics } from "@repo/analytics-legacy";
 import { AuthLayout, ResetPasswordForm } from "@repo/design-system/uix";
 
 function ResetPasswordContent() {
