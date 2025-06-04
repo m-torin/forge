@@ -258,18 +258,62 @@ settings.
 ## Git Workflow
 
 1. Create feature branches from `master`
-2. Use conventional commit messages:
-
-   - `feat:` for features
-   - `fix:` for bug fixes
-   - `docs:` for documentation
-   - `style:` for formatting
-   - `refactor:` for code refactoring
-   - `test:` for tests
-   - `chore:` for maintenance
-
+2. Use conventional commit messages with detailed descriptions
 3. Never commit sensitive data (API keys, secrets)
 4. Always run `pnpm lint` and `pnpm typecheck` before committing
+
+### Commit Message Format
+
+Follow this standardized format for all commits:
+
+```
+<type>: <brief description>
+
+<detailed description with bullet points>
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Types:**
+- `feat:` for new features
+- `fix:` for bug fixes
+- `docs:` for documentation
+- `style:` for formatting changes
+- `refactor:` for code refactoring
+- `test:` for adding tests
+- `chore:` for maintenance tasks
+
+**Example:**
+```
+feat: complete Headless UI to Mantine migration in mantine-ciseco
+
+Replace all remaining Headless UI components with Mantine equivalents:
+
+- **Transition components** → **Mantine transitions/animations**:
+  - AddToCardButton: Remove Transition wrapper, use notification animations
+  - HeaderFilterSection: Transition → Collapse component
+
+- **Switch components** → **Mantine Switch**:
+  - MySwitch: Headless UI Switch → Mantine Switch with proper sizing
+  - SwitchDarkMode2: Switch → Mantine Switch with dark mode integration
+
+All components maintain original styling and UX patterns while leveraging 
+Mantine's component system for better maintainability.
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Guidelines:**
+- Use descriptive subject lines (50-72 characters)
+- Include bullet points for multiple changes
+- Use **bold formatting** for component categories
+- Use → arrows to show transformations
+- Explain the "why" not just the "what"
+- Always include the Claude Code footer
 
 ## Mantine UI Guidelines
 
