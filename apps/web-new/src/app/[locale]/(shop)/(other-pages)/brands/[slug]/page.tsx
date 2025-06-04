@@ -54,11 +54,7 @@ async function getBrandBySlug(slug: string) {
   return brands[slug as keyof typeof brands];
 }
 
-async function getBrandProducts(
-  brandSlug: string,
-  page = 1,
-  limit = 20,
-) {
+async function getBrandProducts(brandSlug: string, page = 1, limit = 20) {
   // Mock implementation - replace with real API
   const { getProducts } = await import("@repo/design-system/mantine-ciseco");
   const allProducts = await getProducts();

@@ -7,12 +7,7 @@ interface Props {
 
 const AsideProductQuickView = async ({ className }: Props) => {
   return (
-    <Aside
-      contentMaxWidthClassName="max-w-6xl"
-      openFrom="right"
-      showHeading={false}
-      type="product-quick-view"
-    >
+    <Aside showHeading={false} size="xl" type="product-quick-view" variant="modal">
       <div className="flex h-full flex-col">
         <div className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-8">
           <ProductQuickView />

@@ -71,11 +71,7 @@ async function getEventBySlug(slug: string) {
   return events[slug as keyof typeof events];
 }
 
-async function getEventProducts(
-  eventSlug: string,
-  page = 1,
-  limit = 20,
-) {
+async function getEventProducts(eventSlug: string, page = 1, limit = 20) {
   // Mock implementation - replace with real API
   const { getProducts } = await import("@repo/design-system/mantine-ciseco");
   const allProducts = await getProducts();

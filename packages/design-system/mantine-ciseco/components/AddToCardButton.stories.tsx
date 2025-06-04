@@ -1,4 +1,4 @@
-import { Toaster } from 'react-hot-toast';
+import { NotificationsProvider } from '@repo/notifications/mantine-notifications';
 
 import AddToCardButton from './AddToCardButton';
 
@@ -47,17 +47,16 @@ const meta: Meta<typeof AddToCardButton> = {
   component: AddToCardButton,
   decorators: [
     (Story) => (
-      <div>
+      <NotificationsProvider>
         <Story />
-        <Toaster />
-      </div>
+      </NotificationsProvider>
     ),
   ],
   parameters: {
     docs: {
       description: {
         component:
-          'A button component that shows a toast notification when adding items to cart. Supports custom styling and polymorphic rendering.',
+          'A button component that shows a notification when adding items to cart. Supports custom styling and polymorphic rendering.',
       },
     },
     layout: 'centered',

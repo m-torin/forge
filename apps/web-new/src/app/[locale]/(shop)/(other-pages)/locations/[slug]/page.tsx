@@ -95,11 +95,7 @@ async function getLocationBySlug(slug: string) {
   return locations[slug as keyof typeof locations];
 }
 
-async function getLocationProducts(
-  locationSlug: string,
-  page = 1,
-  limit = 20,
-) {
+async function getLocationProducts(locationSlug: string, page = 1, limit = 20) {
   // Mock implementation - replace with real API
   const { getProducts } = await import("@repo/design-system/mantine-ciseco");
   const allProducts = await getProducts();

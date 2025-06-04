@@ -1,126 +1,134 @@
 'use client';
 
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { Cancel01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import clsx from 'clsx';
+import { Drawer, Modal, ScrollArea } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { createContext, type ReactNode, useContext, useState } from 'react';
 
 import Logo from '../shared/Logo/Logo';
 
 /**
- * Drawer component that opens on user click.
- * @param heading - string. Shown at the top of the drawer.
- * @param open - boolean state. if true opens the drawer.
- * @param onClose - function should set the open state.
- * @param openFrom - right, left
+ * Flexible component that can render as either a Drawer or Modal.
+ * @param heading - string. Shown at the top of the component.
+ * @param openFrom - for Drawer: 'right' | 'left' | 'top' | 'bottom'
  * @param children - react children node.
+ * @param type - the aside type identifier
+ * @param variant - 'drawer' or 'modal' to determine which component to use
  */
 export function Aside({
-  contentMaxWidthClassName = 'max-w-lg',
   type,
   children,
   heading,
   logoOnHeading = false,
   openFrom = 'right',
   showHeading = true,
+  size = 'lg',
+  variant = 'drawer',
 }: {
   heading?: string;
   logoOnHeading?: boolean;
-  openFrom: 'right' | 'left';
+  openFrom?: 'right' | 'left' | 'top' | 'bottom';
   children: React.ReactNode;
   type: AsideType;
-  contentMaxWidthClassName?: string;
   showHeading?: boolean;
+  variant?: 'drawer' | 'modal';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full' | string | number;
 }) {
   const { type: activeType, close } = useAside();
-  const open = type === activeType;
-
-  const onClose = close;
+  const opened = type === activeType;
 
   const hasHeading = !!heading || logoOnHeading;
 
-  return (
-    <Dialog onClose={onClose} open={open} className="relative z-50" as="div">
-      <DialogBackdrop
-        transition
-        className="fixed inset-0 bg-neutral-900/50 duration-300 ease-out data-closed:opacity-0"
+  const headerContent = showHeading && hasHeading && (
+    <>
+      {!!heading && !logoOnHeading && <span className="text-2xl font-medium">{heading}</span>}
+      {logoOnHeading && <Logo />}
+    </>
+  );
+
+  const closeButton = showHeading && (
+    <button
+      onClick={close}
+      className="group -m-2 cursor-pointer p-2"
+      aria-label="Close"
+      type="button"
+    >
+      <HugeiconsIcon
+        strokeWidth={1}
+        icon={Cancel01Icon}
+        className="transition-transform duration-200 group-hover:rotate-90"
+        size={24}
       />
+    </button>
+  );
 
-      <div className="fixed inset-0">
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className={clsx('fixed inset-y-0 flex max-w-full', openFrom === 'right' && 'right-0')}
-          >
-            <DialogPanel
-              transition
-              className={clsx(
-                contentMaxWidthClassName,
-                'h-screen w-screen translate-x-0 overflow-hidden bg-white text-start align-middle shadow-xl transition duration-200 ease-in-out dark:bg-neutral-800',
-                openFrom === 'left' && 'data-closed:-translate-x-20 data-closed:opacity-0',
-                openFrom === 'right' && 'data-closed:translate-x-20 data-closed:opacity-0',
-              )}
-            >
-              <div className="flex h-full flex-col px-4 md:px-8">
-                {showHeading ? (
-                  <header
-                    className={`flex h-16 flex-shrink-0 items-center border-b border-neutral-900/10 md:h-20 ${
-                      hasHeading ? 'justify-between' : 'justify-end'
-                    }`}
-                  >
-                    {hasHeading && (
-                      <>
-                        {!!heading && !logoOnHeading && (
-                          <DialogTitle>
-                            <span className="text-2xl font-medium">{heading}</span>
-                          </DialogTitle>
-                        )}
-                        {logoOnHeading && <Logo />}
-                      </>
-                    )}
+  // Common props for both Drawer and Modal
+  const commonProps = {
+    classNames: {
+      body: 'p-0 h-full',
+      content: 'bg-white dark:bg-neutral-800',
+    },
+    onClose: close,
+    opened,
+    padding: 0,
+    size,
+  };
 
-                    <button
-                      onClick={onClose}
-                      className="group -m-4 cursor-pointer p-4"
-                      type="button"
-                    >
-                      <HugeiconsIcon
-                        strokeWidth={1}
-                        icon={Cancel01Icon}
-                        className="transition-transform duration-200 group-hover:rotate-90"
-                        size={24}
-                      />
-                    </button>
-                  </header>
-                ) : null}
-                <div className="flex-1 overflow-hidden">{children}</div>
-              </div>
-            </DialogPanel>
+  if (variant === 'modal') {
+    return (
+      <Modal {...commonProps} withCloseButton={false} centered title={headerContent}>
+        <div className="flex h-full flex-col">
+          {showHeading && (
+            <div className="flex items-center justify-between border-b border-neutral-900/10 px-4 py-4 md:px-8">
+              {headerContent}
+              {closeButton}
+            </div>
+          )}
+          <ScrollArea className="flex-1 px-4 py-4 md:px-8">{children}</ScrollArea>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Default to Drawer
+  return (
+    <Drawer
+      {...commonProps}
+      position={openFrom}
+      withCloseButton={false}
+      styles={{
+        content: {
+          height: '100vh',
+        },
+      }}
+      title={headerContent}
+    >
+      <div className="flex h-full flex-col">
+        {showHeading && (
+          <div className="flex items-center justify-between border-b border-neutral-900/10 px-4 py-4 md:px-8 md:py-5">
+            {headerContent}
+            {closeButton}
           </div>
+        )}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full px-4 py-4 md:px-8">{children}</ScrollArea>
         </div>
       </div>
-    </Dialog>
+    </Drawer>
   );
 }
 
-/* Use for associating arialabelledby with the title*/
-Aside.Title = DialogTitle;
+/* For backward compatibility */
+Aside.Title = ({ children }: { children: ReactNode }) => <>{children}</>;
 
 export function useDrawer(openDefault = false) {
-  const [isOpen, setIsOpen] = useState(openDefault);
-
-  function openDrawer() {
-    setIsOpen(true);
-  }
-
-  function closeDrawer() {
-    setIsOpen(false);
-  }
+  const [opened, { close, open }] = useDisclosure(openDefault);
 
   return {
-    closeDrawer,
-    isOpen,
-    openDrawer,
+    closeDrawer: close,
+    isOpen: opened,
+    openDrawer: open,
   };
 }
 

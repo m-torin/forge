@@ -3,7 +3,8 @@
 import { Transition } from '@headlessui/react';
 import Image from 'next/image';
 import React, { type ComponentType, type ElementType, type FC } from 'react';
-import toast from 'react-hot-toast';
+
+import { notify } from '@repo/notifications/mantine-notifications';
 
 import { Divider } from './Divider';
 import Prices from './Prices';
@@ -104,11 +105,13 @@ const AddToCardButton = ({
   ...props
 }: AddToCardButtonProps) => {
   const notifyAddTocart = () => {
-    toast.custom(
-      (t) => (
+    notify.custom({
+      id: 'nc-product-notify',
+      autoClose: 4000,
+      message: (
         <NotifyAddToCart
           color={color}
-          show={t.visible}
+          show={true}
           imageUrl={imageUrl}
           price={price}
           quantity={quantity}
@@ -116,8 +119,17 @@ const AddToCardButton = ({
           title={title}
         />
       ),
-      { id: 'nc-product-notify', duration: 4000, position: 'top-right' },
-    );
+      position: 'top-right',
+      styles: {
+        root: {
+          backgroundColor: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
+          padding: 0,
+        },
+      },
+      withCloseButton: false,
+    });
   };
 
   const Component = as || 'button';

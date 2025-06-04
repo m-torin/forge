@@ -1,10 +1,9 @@
 'use client';
 
-import { Dialog } from '@headlessui/react';
-import { motion } from 'framer-motion';
+import { Modal } from '@mantine/core';
 import { type Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getNewParam } from '../ListingImageGallery';
 
@@ -12,14 +11,13 @@ import SharedModal from './SharedModal';
 
 import type { ListingGalleryImage } from '../utils/types';
 
-export default function Modal({
+export default function ImageGalleryModal({
   images,
   onClose,
 }: {
   images: ListingGalleryImage[];
   onClose?: () => void;
 }) {
-  const overlayRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const thisPathname = usePathname();
@@ -54,24 +52,34 @@ export default function Modal({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [index, images.length, changePhotoId]);
+  }, [index, images.length]);
 
   return (
-    <Dialog
-      initialFocus={overlayRef}
+    <Modal
       onClose={handleClose}
-      open={true}
-      className="fixed inset-0 z-50 flex items-center justify-center "
-      static
+      opened={true}
+      withCloseButton={false}
+      classNames={{
+        body: 'bg-black p-0',
+        content: 'bg-black',
+        header: 'bg-black',
+        root: 'bg-black',
+      }}
+      styles={{
+        body: {
+          alignItems: 'center',
+          backgroundColor: 'black',
+          display: 'flex',
+          height: '100vh',
+          justifyContent: 'center',
+        },
+        content: {
+          backgroundColor: 'black',
+        },
+      }}
+      fullScreen
+      padding={0}
     >
-      <motion.div
-        key="backdrop"
-        ref={overlayRef}
-        onClick={handleClose}
-        className="fixed inset-0 z-30 bg-black"
-        animate={{ opacity: 1 }}
-        initial={{ opacity: 0 }}
-      />
       <SharedModal
         changePhotoId={changePhotoId}
         closeModal={handleClose}
@@ -80,6 +88,6 @@ export default function Modal({
         images={images}
         index={curIndex}
       />
-    </Dialog>
+    </Modal>
   );
 }

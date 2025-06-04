@@ -1,8 +1,6 @@
 import { Analytics } from "@repo/analytics/emitters";
 
-import type {
-  CommonEventProperties,
-} from "@repo/analytics/emitters/types";
+import type { CommonEventProperties } from "@repo/analytics/emitters/types";
 
 // Initialize analytics with all 6 Segment-style emitters
 export const analytics = new Analytics({

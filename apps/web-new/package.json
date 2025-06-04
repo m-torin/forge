@@ -39,7 +39,6 @@
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-hot-toast": "^2.5.2",
     "react-use": "^17.6.0",
     "tailwind-preset-mantine": "catalog:",
     "zod": "catalog:"

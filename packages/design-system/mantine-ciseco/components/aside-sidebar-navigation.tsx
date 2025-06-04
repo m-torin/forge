@@ -11,12 +11,7 @@ const AsideSidebarNavigation = async ({ className }: Props) => {
   const navigationMenu = await getNavigation();
 
   return (
-    <Aside
-      contentMaxWidthClassName="max-w-md"
-      logoOnHeading
-      openFrom="right"
-      type="sidebar-navigation"
-    >
+    <Aside logoOnHeading openFrom="right" size="md" type="sidebar-navigation">
       <div className="flex h-full flex-col">
         <div className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6">
           <SidebarNavigation data={navigationMenu} />

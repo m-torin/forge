@@ -58,12 +58,7 @@ interface Props {
 
 const AsideCategoryFilters = ({ className = '' }: Props) => {
   return (
-    <Aside
-      contentMaxWidthClassName="max-w-sm"
-      openFrom="right"
-      heading="Filters"
-      type="category-filters"
-    >
+    <Aside openFrom="right" heading="Filters" size="sm" type="category-filters">
       <div className={clsx('flex h-full flex-col', className)}>
         {/* CONTENT */}
 

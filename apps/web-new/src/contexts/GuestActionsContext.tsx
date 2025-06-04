@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  pageViewAction,
-  trackEventAction,
-} from "@/app/actions/analytics";
+import { pageViewAction, trackEventAction } from "@/app/actions/analytics";
 import {
   useDebouncedValue,
   useListState,

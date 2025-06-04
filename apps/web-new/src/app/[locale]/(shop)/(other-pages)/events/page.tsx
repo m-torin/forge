@@ -1,9 +1,7 @@
 import { type Metadata } from "next";
 import Link from "next/link";
 
-import {
-  Breadcrumb,
-} from "@repo/design-system/mantine-ciseco";
+import { Breadcrumb } from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
   description: "Discover upcoming events and special occasions",
