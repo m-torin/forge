@@ -35,5 +35,33 @@
     "madeWith": "Made with",
     "by": "by",
     "team": "the team"
+  },
+  "product": {
+    "addToCart": "Add to cart",
+    "alsoAvailableAt": "Also available at:",
+    "comparePrices": "Compare prices",
+    "shopNow": "Shop now",
+    "from": "From",
+    "lowest": "Lowest",
+    "seller": "Seller",
+    "price": "Price",
+    "availability": "Availability",
+    "shipping": "Shipping",
+    "action": "Action",
+    "priceRange": "Price range",
+    "pricesVary": "Prices may vary. Click to see latest prices.",
+    "reviews": "reviews",
+    "sellers": "sellers",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "limitedStock": "Limited Stock",
+    "freeShipping": "Free shipping",
+    "directFromUs": "Direct from Us",
+    "productDetails": "Product Details",
+    "customersAlsoPurchased": "Customers also purchased",
+    "quantity": "Quantity",
+    "viewProduct": "View Product",
+    "productNotFound": "Product Not Found",
+    "productNotFoundDesc": "The requested product could not be found."
   }
 }
