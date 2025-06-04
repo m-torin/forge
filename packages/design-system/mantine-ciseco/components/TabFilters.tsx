@@ -1,6 +1,5 @@
 'use client';
 
-import { Popover, PopoverButton, PopoverPanel, type PopoverPanelProps } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import {
   Cancel01Icon,
@@ -12,6 +11,8 @@ import {
   SortingAZ02Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
+import { Popover } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import Slider from 'rc-slider';
 import { useState } from 'react';
 
@@ -93,7 +94,7 @@ const TabFilters = ({ className }: { className?: string }) => {
   const renderTabsCategories = () => {
     return (
       <FieldPopover
-        anchor="bottom start"
+        anchor="bottom-start"
         buttonIcon={Note01Icon}
         buttonText="Categories"
         onClickClear={() => setCategoriesState([])}
@@ -126,7 +127,7 @@ const TabFilters = ({ className }: { className?: string }) => {
   const renderTabsSortOrder = () => {
     return (
       <FieldPopover
-        anchor="bottom end"
+        anchor="bottom-end"
         buttonIcon={SortingAZ02Icon}
         buttonText="Sort Order"
         onClickClear={() => setSortOrderStates('')}
@@ -152,7 +153,7 @@ const TabFilters = ({ className }: { className?: string }) => {
   const renderTabsColor = () => {
     return (
       <FieldPopover
-        anchor="bottom start"
+        anchor="bottom-start"
         buttonIcon={PaintBucketIcon}
         buttonText="Colors"
         onClickClear={() => setColorsState([])}
@@ -178,7 +179,7 @@ const TabFilters = ({ className }: { className?: string }) => {
   const renderTabsSize = () => {
     return (
       <FieldPopover
-        anchor="bottom start"
+        anchor="bottom-start"
         buttonIcon={ResizeFieldRectangleIcon}
         buttonText="Sizes"
         onClickClear={() => setSizesState([])}
@@ -204,7 +205,7 @@ const TabFilters = ({ className }: { className?: string }) => {
   const renderTabsPriceRage = () => {
     return (
       <FieldPopover
-        anchor="bottom start"
+        anchor="bottom-start"
         buttonIcon={DollarCircleIcon}
         buttonText={`${rangePrices?.[0] ?? 0}$ - ${rangePrices?.[1] ?? 0}$`}
         onClickClear={() => setRangePrices(PRICE_RANGE)}
@@ -309,7 +310,7 @@ const TabFilters = ({ className }: { className?: string }) => {
 };
 
 const FieldPopover = ({
-  anchor = 'bottom start',
+  anchor = 'bottom-start',
   buttonIcon: ButtonIcon = Note01Icon,
   buttonText,
   children,
@@ -319,59 +320,75 @@ const FieldPopover = ({
   fieldState: any[] | string | undefined;
   onClickClear: () => void;
   children?: React.ReactNode;
-  anchor?: PopoverPanelProps['anchor'];
+  anchor?: 'bottom-start' | 'bottom-end';
   buttonText: string;
   buttonIcon: IconSvgElement;
 }) => {
-  return (
-    <Popover className="group relative">
-      <PopoverButton
-        className={`flex items-center justify-center rounded-full border px-4 py-2 text-sm select-none group-data-open:border-primary-500 focus:outline-hidden ${
-          fieldState?.length
-            ? 'border-primary-500 bg-primary-50 text-primary-900'
-            : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500'
-        } `}
-      >
-        <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={ButtonIcon} size={16} />
-        <span className="ms-2">{buttonText}</span>
-        {!fieldState?.length ? (
-          <ChevronDownIcon className="ms-3 h-4 w-4" />
-        ) : (
-          <span
-            onClick={onClickClear}
-            className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white"
-          >
-            <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Cancel01Icon} size={10} />
-          </span>
-        )}
-      </PopoverButton>
+  const [opened, { close, open, toggle }] = useDisclosure(false);
 
-      <PopoverPanel
-        anchor={anchor}
-        transition
-        className="z-10 mt-3 w-96 rounded-2xl border border-neutral-200 bg-white px-4 shadow-xl transition duration-200 ease-out data-closed:translate-y-1 data-closed:opacity-0 sm:px-0 dark:border-neutral-700 dark:bg-neutral-900"
-      >
-        {({ close }) => (
-          <>
-            {children}
-            <div className="flex items-center justify-between bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900">
-              <ButtonThird
-                onClick={() => {
-                  onClickClear();
-                  close();
-                  console.log('clear');
-                }}
-                sizeClass="px-4 py-2 sm:px-5"
-              >
-                Clear
-              </ButtonThird>
-              <ButtonPrimary onClick={close} sizeClass="px-4 py-2 sm:px-5">
-                Apply
-              </ButtonPrimary>
-            </div>
-          </>
-        )}
-      </PopoverPanel>
+  return (
+    <Popover
+      width={384}
+      offset={12}
+      onChange={(opened) => {
+        if (!opened) close();
+      }}
+      opened={opened}
+      position={anchor}
+      shadow="xl"
+      transitionProps={{ duration: 200, transition: 'pop' }}
+      classNames={{
+        dropdown: 'rounded-2xl border border-neutral-200 dark:border-neutral-700 px-0',
+      }}
+    >
+      <Popover.Target>
+        <button
+          onClick={toggle}
+          className={`flex items-center justify-center rounded-full border px-4 py-2 text-sm select-none focus:outline-hidden ${
+            opened ? 'border-primary-500' : ''
+          } ${
+            fieldState?.length
+              ? 'border-primary-500 bg-primary-50 text-primary-900'
+              : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500'
+          } `}
+        >
+          <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={ButtonIcon} size={16} />
+          <span className="ms-2">{buttonText}</span>
+          {!fieldState?.length ? (
+            <ChevronDownIcon className="ms-3 h-4 w-4" />
+          ) : (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                onClickClear();
+              }}
+              className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white"
+            >
+              <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Cancel01Icon} size={10} />
+            </span>
+          )}
+        </button>
+      </Popover.Target>
+
+      <Popover.Dropdown className="p-0">
+        <>
+          {children}
+          <div className="flex items-center justify-between bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900 rounded-b-2xl">
+            <ButtonThird
+              onClick={() => {
+                onClickClear();
+                close();
+              }}
+              sizeClass="px-4 py-2 sm:px-5"
+            >
+              Clear
+            </ButtonThird>
+            <ButtonPrimary onClick={close} sizeClass="px-4 py-2 sm:px-5">
+              Apply
+            </ButtonPrimary>
+          </div>
+        </>
+      </Popover.Dropdown>
     </Popover>
   );
 };

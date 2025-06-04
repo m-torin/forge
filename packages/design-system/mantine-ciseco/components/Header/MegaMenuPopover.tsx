@@ -1,5 +1,5 @@
-import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import { HoverCard } from '@mantine/core';
 
 import { type TCollection } from '../../data/data';
 import { type TNavigationItem } from '../../data/navigation';
@@ -32,44 +32,58 @@ export default function MegaMenuPopover({
 
   return (
     <div className="hidden lg:block">
-      <Popover className="group">
-        <PopoverButton className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 focus:outline-hidden dark:text-neutral-300">
-          {megamenu.name}
-          <ChevronDownIcon aria-hidden="true" className="ms-1 size-4 group-data-open:rotate-180" />
-        </PopoverButton>
-        <Transition
-          enterFrom="opacity-0 translate-y-1"
-          enterTo="opacity-100 translate-y-0"
-          leaveFrom="opacity-100 translate-y-0"
-          leaveTo="opacity-0 translate-y-1"
-          enter="transition ease-out duration-200"
-          leave="transition ease-in duration-150"
-        >
-          <PopoverPanel className="header-popover-full-panel absolute inset-x-0 top-full z-10 w-full">
+      <HoverCard
+        width="100vw"
+        closeDelay={100}
+        openDelay={100}
+        position="bottom"
+        shadow="lg"
+        transitionProps={{ duration: 200, transition: 'pop' }}
+        classNames={{
+          dropdown: 'left-0 right-0 p-0 rounded-none border-0',
+        }}
+        styles={{
+          dropdown: {
+            maxWidth: '100vw',
+            left: 0,
+            right: 0,
+          },
+        }}
+      >
+        <HoverCard.Target>
+          <button className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 focus:outline-hidden dark:text-neutral-300">
+            {megamenu.name}
+            <ChevronDownIcon
+              aria-hidden="true"
+              className="ms-1 size-4 transition-transform group-hover:rotate-180"
+            />
+          </button>
+        </HoverCard.Target>
+
+        <HoverCard.Dropdown>
+          <div className="w-full">
             <div className="bg-white shadow-lg dark:bg-neutral-900">
               <div className="container">
-                <div className="flex py-12 text-sm">
-                  <div className="grid flex-1 grid-cols-4 gap-6 pr-6 xl:gap-8 xl:pr-20">
-                    {megamenu.children?.map((menuChild, index) => (
-                      <div key={index}>
-                        <p className="font-medium text-neutral-900 dark:text-neutral-200">
-                          {menuChild.name}
+                <div className="flex justify-between py-8">
+                  <div className="grid gap-4 xl:grid-cols-4 lg:grid-cols-3">
+                    {megamenu.children?.map((item, index) => (
+                      <div key={index} className="relative">
+                        <p className="mb-4 text-sm font-medium text-neutral-900 dark:text-neutral-200">
+                          {item.name}
                         </p>
-                        <ul className="mt-4 grid space-y-4">
-                          {menuChild.children?.map(renderNavlink)}
-                        </ul>
+                        <ul className="space-y-2 text-sm">{item.children?.map(renderNavlink)}</ul>
                       </div>
                     ))}
                   </div>
-                  <div className="w-2/5 xl:w-5/14">
-                    <CollectionCard3 collection={featuredCollection} />
+                  <div className="ms-8 hidden w-80 shrink-0 xl:block">
+                    <CollectionCard3 collection={featuredCollection} className="w-full" />
                   </div>
                 </div>
               </div>
             </div>
-          </PopoverPanel>
-        </Transition>
-      </Popover>
+          </div>
+        </HoverCard.Dropdown>
+      </HoverCard>
     </div>
   );
 }

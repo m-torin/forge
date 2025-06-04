@@ -1,18 +1,8 @@
 'use client';
 
-import {
-  Popover,
-  PopoverButton,
-  PopoverPanel,
-  type PopoverPanelProps,
-  Tab,
-  TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-} from '@headlessui/react';
 import { GlobeAltIcon } from '@heroicons/react/24/outline';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import { Menu, Tabs } from '@mantine/core';
 import clsx from 'clsx';
 import { type FC } from 'react';
 
@@ -62,8 +52,8 @@ const Languages = ({ languages }: { languages: Awaited<ReturnType<typeof getLang
 };
 
 interface Props {
-  panelAnchor?: PopoverPanelProps['anchor'];
-  panelClassName?: PopoverPanelProps['className'];
+  panelClassName?: string;
+  panelPosition?: 'bottom-end' | 'bottom-start';
 
   className?: string;
   currencies: Awaited<ReturnType<typeof getCurrencies>>;
@@ -74,55 +64,64 @@ const CurrLangDropdown: FC<Props> = ({
   className,
   currencies,
   languages,
-  panelAnchor = 'bottom end',
-  panelClassName = 'mt-4 w-80',
+  panelClassName = 'w-80',
+  panelPosition = 'bottom-end',
 }) => {
   return (
     <div className={className}>
-      <Popover>
-        <PopoverButton className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 focus:outline-hidden focus-visible:outline-hidden dark:text-neutral-200">
-          <GlobeAltIcon className="size-[18px] opacity-80" />
-          <span className="ms-2">Language</span>
-          <ChevronDownIcon aria-hidden="true" className="ms-1 size-4 group-data-open:rotate-180" />
-        </PopoverButton>
-
-        <PopoverPanel
-          anchor={panelAnchor}
-          transition
-          className={clsx(
-            'z-10 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-black/5 transition duration-200 ease-in-out data-closed:translate-y-1 data-closed:opacity-0 dark:bg-neutral-800',
+      <Menu
+        width={320}
+        offset={16}
+        position={panelPosition}
+        shadow="lg"
+        transitionProps={{ duration: 200, transition: 'pop-top-right' }}
+        classNames={{
+          dropdown: clsx(
+            'rounded-2xl border-0 ring-1 ring-black/5 dark:ring-white/10 p-6',
             panelClassName,
-          )}
-        >
-          <TabGroup>
-            <TabList className="flex space-x-1 rounded-full bg-gray-100 p-1 dark:bg-neutral-700">
-              {['Language', 'Currency'].map((category) => (
-                <Tab
-                  key={category}
-                  className={({ selected }) =>
-                    clsx(
-                      'w-full rounded-full py-2 text-sm leading-5 font-medium text-gray-700 focus:ring-0 focus:outline-hidden',
-                      selected
-                        ? 'bg-white shadow-sm'
-                        : 'text-gray-700 hover:bg-white/70 dark:text-neutral-300 dark:hover:bg-neutral-900/40',
-                    )
-                  }
-                >
-                  {category}
-                </Tab>
-              ))}
-            </TabList>
-            <TabPanels className="mt-5">
-              <TabPanel className="rounded-xl p-3 focus:ring-0 focus:outline-hidden">
-                <Languages languages={languages} />
-              </TabPanel>
-              <TabPanel className="rounded-xl p-3 focus:ring-0 focus:outline-hidden">
-                <Currencies currencies={currencies} />
-              </TabPanel>
-            </TabPanels>
-          </TabGroup>
-        </PopoverPanel>
-      </Popover>
+          ),
+        }}
+      >
+        <Menu.Target>
+          <button className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 focus:outline-hidden focus-visible:outline-hidden dark:text-neutral-200 group">
+            <GlobeAltIcon className="size-[18px] opacity-80" />
+            <span className="ms-2">Language</span>
+            <ChevronDownIcon
+              aria-hidden="true"
+              className="ms-1 size-4 transition-transform group-data-[expanded]:rotate-180"
+            />
+          </button>
+        </Menu.Target>
+
+        <Menu.Dropdown>
+          <Tabs
+            classNames={{
+              list: 'bg-gray-100 dark:bg-neutral-700 p-1 rounded-full gap-1',
+              panel: 'mt-5 p-3',
+              root: 'w-full',
+              tab: 'rounded-full py-2 text-sm leading-5 font-medium text-gray-700 dark:text-neutral-300 data-[active]:bg-white data-[active]:shadow-sm hover:bg-white/70 dark:hover:bg-neutral-900/40',
+            }}
+            defaultValue="language"
+            variant="pills"
+          >
+            <Tabs.List>
+              <Tabs.Tab className="flex-1" value="language">
+                Language
+              </Tabs.Tab>
+              <Tabs.Tab className="flex-1" value="currency">
+                Currency
+              </Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="language">
+              <Languages languages={languages} />
+            </Tabs.Panel>
+            <Tabs.Panel value="currency">
+              <Currencies currencies={currencies} />
+            </Tabs.Panel>
+          </Tabs>
+        </Menu.Dropdown>
+      </Menu>
     </div>
   );
 };
