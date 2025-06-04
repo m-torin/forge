@@ -99,6 +99,9 @@ function generateSessionId(): string {
 }
 
 function getDeviceFingerprint(): string {
+  if (typeof window === 'undefined') {
+    return 'server';
+  }
   // Simple fingerprint - in production, use a proper library
   const screen = `${window.screen.width}x${window.screen.height}`;
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -293,7 +296,7 @@ interface GuestActionsContextValue {
   lists: {
     add: (listType: ListType, itemId: string, metadata?: any) => Promise<void>;
     remove: (listType: ListType, itemId: string) => Promise<void>;
-    toggle: (listType: ListType, itemId: string) => Promise<boolean>;
+    toggle: (listType: ListType, itemId: string, metadata?: any) => Promise<boolean>;
     clear: (listType: ListType) => Promise<void>;
     has: (listType: ListType, itemId: string) => boolean;
     count: (listType: ListType) => number;
@@ -354,15 +357,28 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
         }
 
         if (prefsData) {
-          storageState.preferences = JSON.parse(prefsData);
+          const parsed = JSON.parse(prefsData);
+          storageState.preferences = {
+            ...parsed,
+            filterPresets: new Map(parsed.filterPresets || []),
+          };
         }
 
         if (activityData) {
           const parsed = JSON.parse(activityData);
           storageState.activity = {
-            recentlyViewed: parsed.recentlyViewed || [],
-            searchHistory: parsed.searchHistory || [],
-            interactions: new Map(parsed.interactions || []),
+            recentlyViewed: (parsed.recentlyViewed || []).map((item: any) => ({
+              ...item,
+              viewedAt: new Date(item.viewedAt),
+            })),
+            searchHistory: (parsed.searchHistory || []).map((item: any) => ({
+              ...item,
+              timestamp: new Date(item.timestamp),
+            })),
+            interactions: new Map((parsed.interactions || []).map(([key, value]: [string, any]) => [
+              key,
+              { ...value, timestamp: new Date(value.timestamp) },
+            ])),
           };
         }
 
@@ -392,8 +408,12 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
         };
         localStorage.setItem(STORAGE_KEYS.lists, JSON.stringify(listsData));
 
-        // Save preferences
-        localStorage.setItem(STORAGE_KEYS.preferences, JSON.stringify(state.preferences));
+        // Save preferences (with Map serialization)
+        const preferencesData = {
+          ...state.preferences,
+          filterPresets: Array.from(state.preferences.filterPresets.entries()),
+        };
+        localStorage.setItem(STORAGE_KEYS.preferences, JSON.stringify(preferencesData));
 
         // Save activity (limited)
         const activityData = {
@@ -458,7 +478,7 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
         }
       },
       
-      toggle: async (listType: ListType, itemId: string) => {
+      toggle: async (listType: ListType, itemId: string, metadata?: any) => {
         const has = state.lists[listType].has(itemId);
         dispatch({ type: 'TOGGLE_LIST_ITEM', listType, itemId });
         
@@ -466,11 +486,13 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
         if (listType === 'favorites') {
           analytics.track(has ? 'Product Removed from Wishlist' : 'Product Added to Wishlist', {
             productId: itemId,
+            ...(has ? {} : metadata), // Only include metadata when adding
           }).catch(() => {});
         } else {
           analytics.track(has ? `item_removed_from_${listType}` : `item_added_to_${listType}`, {
             itemId,
             listType,
+            ...(has ? {} : metadata), // Only include metadata when adding
           }).catch(() => {});
         }
         

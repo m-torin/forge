@@ -11,7 +11,8 @@ interface FavoriteButtonProps {
 }
 
 export function FavoriteButton({ productId, productName, price, className }: FavoriteButtonProps) {
-  const { isFavorite, toggleFavorite } = useProductFavorite(productId);
+  const metadata = productName || price ? { productName, price } : undefined;
+  const { isFavorite, toggleFavorite } = useProductFavorite(productId, metadata);
 
   const handleToggleFavorite = async () => {
     await toggleFavorite();
