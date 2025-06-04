@@ -4,10 +4,10 @@ import { GlobeAltIcon } from '@heroicons/react/24/outline';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Menu, Tabs } from '@mantine/core';
 import clsx from 'clsx';
+import { usePathname, useRouter } from 'next/navigation';
 import { type FC } from 'react';
 
 import { type getCurrencies, type getLanguages } from '../../data/navigation';
-import { Link } from '../Link';
 
 const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getCurrencies>> }) => {
   return (
@@ -29,24 +29,49 @@ const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getC
   );
 };
 
-const Languages = ({ languages }: { languages: Awaited<ReturnType<typeof getLanguages>> }) => {
+const Languages = ({
+  currentLocale,
+  languages,
+}: {
+  languages: Awaited<ReturnType<typeof getLanguages>>;
+  currentLocale?: string;
+}) => {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLocaleClick = (locale: string) => {
+    if (!pathname) return;
+
+    // Get the current path without the locale
+    const segments = pathname.split('/');
+    segments[1] = locale; // Replace the locale segment
+    const newPath = segments.join('/') || `/${locale}`;
+
+    router.push(newPath as any);
+  };
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {languages.map((item, index) => (
-        <Link
-          key={index}
-          href={`${item.href}` as any}
-          className={clsx(
-            '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-hidden dark:hover:bg-gray-700',
-            item.active ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-80',
-          )}
-        >
-          <div>
-            <p className="text-sm font-medium">{item.name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{item.description}</p>
-          </div>
-        </Link>
-      ))}
+      {languages.map((item, index) => {
+        const locale = item.locale || item.id?.toLowerCase() || 'en';
+        const isActive = currentLocale === locale;
+
+        return (
+          <button
+            key={index}
+            onClick={() => handleLocaleClick(locale)}
+            className={clsx(
+              '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-hidden dark:hover:bg-gray-700 w-full text-left',
+              isActive ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-80',
+            )}
+          >
+            <div>
+              <p className="text-sm font-medium">{item.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{item.description}</p>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 };
@@ -57,12 +82,14 @@ interface Props {
 
   className?: string;
   currencies: Awaited<ReturnType<typeof getCurrencies>>;
+  currentLocale?: string;
   languages: Awaited<ReturnType<typeof getLanguages>>;
 }
 
 const CurrLangDropdown: FC<Props> = ({
   className,
   currencies,
+  currentLocale,
   languages,
   panelClassName = 'w-80',
   panelPosition = 'bottom-end',
@@ -114,7 +141,7 @@ const CurrLangDropdown: FC<Props> = ({
             </Tabs.List>
 
             <Tabs.Panel value="language">
-              <Languages languages={languages} />
+              <Languages currentLocale={currentLocale} languages={languages} />
             </Tabs.Panel>
             <Tabs.Panel value="currency">
               <Currencies currencies={currencies} />

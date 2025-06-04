@@ -18,10 +18,11 @@ import HamburgerBtnMenu from './HamburgerBtnMenu';
 import MegaMenuPopover from './MegaMenuPopover';
 import SearchBtnPopover from './SearchBtnPopover';
 export interface HeaderProps {
+  currentLocale?: string;
   hasBorderBottom?: boolean;
 }
 
-const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
+const Header: FC<HeaderProps> = async ({ currentLocale, hasBorderBottom = true }) => {
   const megamenu = await getNavMegaMenu();
   const dropdownCategories = await getHeaderDropdownCategories();
   const currencies = await getCurrencies();
@@ -50,6 +51,7 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
             </div>
             <MegaMenuPopover featuredCollection={featuredCollections[0]} megamenu={megamenu} />
             <CurrLangDropdown
+              currentLocale={currentLocale}
               className="hidden md:block"
               currencies={currencies}
               languages={languages}
