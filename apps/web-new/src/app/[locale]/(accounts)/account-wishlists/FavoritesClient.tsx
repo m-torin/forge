@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ProductCard, type TProductItem } from '@repo/design-system/mantine-ciseco';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useGuestFavorites } from '@/hooks/useGuestFavorites';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { analytics } from '@/lib/analytics-setup';
 
@@ -11,37 +11,22 @@ interface FavoritesClientProps {
 }
 
 export function FavoritesClient({ allProducts }: FavoritesClientProps) {
-  const { favorites, isLoading } = useFavorites();
+  const { favorites } = useGuestFavorites();
   const [favoriteProducts, setFavoriteProducts] = useState<TProductItem[]>([]);
 
   useEffect(() => {
     // Filter products that are in favorites
-    const filtered = allProducts.filter(product => favorites.includes(product.id));
+    const favoriteIds = Array.from(favorites);
+    const filtered = allProducts.filter(product => product.id && favoriteIds.includes(product.id));
     setFavoriteProducts(filtered);
   }, [favorites, allProducts]);
 
   // Track page view with analytics
   useEffect(() => {
     analytics.page('account', 'wishlists', {
-      favoriteCount: favorites.length,
+      favoriteCount: favorites.size,
     }).catch(() => {});
-  }, [favorites.length]);
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="animate-pulse">
-            <div className="aspect-[11/12] rounded-3xl bg-neutral-200 dark:bg-neutral-700" />
-            <div className="mt-4 space-y-2">
-              <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
-              <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-700" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  }, [favorites.size]);
 
   if (favoriteProducts.length === 0) {
     return (
@@ -76,7 +61,7 @@ export function FavoritesClient({ allProducts }: FavoritesClientProps) {
           <ProductCard data={product} isLiked={true} />
           {/* Override the built-in like button with our functional one */}
           <FavoriteButton
-            productId={product.id}
+            productId={product.id || ''}
             productName={product.title}
             price={product.price}
             className="absolute end-3 top-3 z-20"

@@ -2,6 +2,7 @@
 
 import { ProductCard, type TProductItem } from '@repo/design-system/mantine-ciseco';
 import { FavoriteButton } from './FavoriteButton';
+import { useProductFavorite } from '@/hooks/useGuestFavorites';
 
 interface ProductCardWithFavoriteProps {
   data: TProductItem;
@@ -16,18 +17,18 @@ export function ProductCardWithFavorite({
   listId,
   position 
 }: ProductCardWithFavoriteProps) {
+  const { isFavorite } = useProductFavorite(data.id || '');
+  
   return (
     <div className="relative">
       <ProductCard
         data={data}
         className={className}
-        isLiked={false} // We'll control this with our own button
-        listId={listId}
-        position={position}
+        isLiked={isFavorite}
       />
       {/* Override the built-in like button with our functional one */}
       <FavoriteButton
-        productId={data.id}
+        productId={data.id || ''}
         productName={data.title}
         price={data.price}
         className="absolute end-3 top-3 z-20"

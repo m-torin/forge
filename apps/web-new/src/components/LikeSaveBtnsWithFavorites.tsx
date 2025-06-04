@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useProductFavorite } from '@/hooks/useFavorites';
+import { useProductFavorite } from '@/hooks/useGuestFavorites';
 import { analytics } from '@/lib/analytics-setup';
 
 interface LikeSaveBtnsWithFavoritesProps {
@@ -17,23 +17,8 @@ export function LikeSaveBtnsWithFavorites({
 }: LikeSaveBtnsWithFavoritesProps) {
   const { isFavorite, toggleFavorite } = useProductFavorite(productId);
 
-  const handleToggleFavorite = () => {
-    toggleFavorite();
-    
-    // Track analytics
-    if (!isFavorite) {
-      analytics.track('Product Added to Wishlist', {
-        productId,
-        productName,
-        source: 'save_button',
-      }).catch(() => {});
-    } else {
-      analytics.track('Product Removed from Wishlist', {
-        productId,
-        productName,
-        source: 'save_button',
-      }).catch(() => {});
-    }
+  const handleToggleFavorite = async () => {
+    await toggleFavorite();
   };
 
   const handleShare = () => {
