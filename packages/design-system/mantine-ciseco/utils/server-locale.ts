@@ -13,10 +13,10 @@ export function localizeHref(path: string, locale: string): string {
   if (!path || path === '#' || path === '/#') {
     return path;
   }
-  
+
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  
+
   // Return localized path
   return `/${locale}/${cleanPath}`;
 }
@@ -29,14 +29,14 @@ export function localizeHref(path: string, locale: string): string {
 export function extractLocaleFromPathname(pathname: string): string {
   const segments = pathname.split('/').filter(Boolean);
   const firstSegment = segments[0];
-  
+
   // Check if first segment is a valid locale (you can extend this list)
   const validLocales = ['en', 'fr', 'es', 'pt', 'de'];
-  
+
   if (validLocales.includes(firstSegment)) {
     return firstSegment;
   }
-  
+
   return 'en'; // default locale
 }
 

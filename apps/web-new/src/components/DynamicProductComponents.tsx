@@ -1,5 +1,9 @@
-import { Suspense } from 'react';
-import { getProductInventory, getProductPricing, trackProductView } from '@/actions/products';
+import {
+  getProductInventory,
+  getProductPricing,
+  trackProductView,
+} from "@/actions/products";
+import { Suspense } from "react";
 
 // Loading skeletons
 export function PriceSkeleton() {
@@ -19,17 +23,17 @@ export function InventorySkeleton() {
 }
 
 // Dynamic pricing component - streams in after static shell
-export async function DynamicProductPrice({ 
-  productId,
+export async function DynamicProductPrice({
   basePrice,
   customerGroup,
+  productId,
 }: {
   productId: string;
   basePrice: number;
   customerGroup?: string;
 }) {
   const pricing = await getProductPricing(productId, { customerGroup });
-  
+
   return (
     <div className="flex items-baseline gap-2">
       <span className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
@@ -50,25 +54,41 @@ export async function DynamicProductPrice({
 }
 
 // Dynamic inventory component
-export async function DynamicProductInventory({ productId }: { productId: string }) {
+export async function DynamicProductInventory({
+  productId,
+}: {
+  productId: string;
+}) {
   const inventory = await getProductInventory(productId);
-  
+
   const isLowStock = inventory.available < 10;
   const isOutOfStock = inventory.available === 0;
-  
+
   return (
     <div className="flex items-center gap-2">
-      <div className={`h-2 w-2 rounded-full ${
-        isOutOfStock ? 'bg-red-500' : isLowStock ? 'bg-yellow-500' : 'bg-green-500'
-      }`} />
-      <span className={`text-sm font-medium ${
-        isOutOfStock ? 'text-red-600 dark:text-red-400' : 
-        isLowStock ? 'text-yellow-600 dark:text-yellow-400' : 
-        'text-green-600 dark:text-green-400'
-      }`}>
-        {isOutOfStock ? 'Out of stock' : 
-         isLowStock ? `Only ${inventory.available} left` : 
-         'In stock'}
+      <div
+        className={`h-2 w-2 rounded-full ${
+          isOutOfStock
+            ? "bg-red-500"
+            : isLowStock
+              ? "bg-yellow-500"
+              : "bg-green-500"
+        }`}
+      />
+      <span
+        className={`text-sm font-medium ${
+          isOutOfStock
+            ? "text-red-600 dark:text-red-400"
+            : isLowStock
+              ? "text-yellow-600 dark:text-yellow-400"
+              : "text-green-600 dark:text-green-400"
+        }`}
+      >
+        {isOutOfStock
+          ? "Out of stock"
+          : isLowStock
+            ? `Only ${inventory.available} left`
+            : "In stock"}
       </span>
     </div>
   );
@@ -82,7 +102,13 @@ export async function ProductViewTracker({ productId }: { productId: string }) {
 }
 
 // Wrapper component for PPR
-export function ProductPriceSection({ productId, basePrice }: { productId: string; basePrice: number }) {
+export function ProductPriceSection({
+  basePrice,
+  productId,
+}: {
+  productId: string;
+  basePrice: number;
+}) {
   return (
     <Suspense fallback={<PriceSkeleton />}>
       <DynamicProductPrice productId={productId} basePrice={basePrice} />

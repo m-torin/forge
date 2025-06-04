@@ -12,10 +12,10 @@ export function useLocale(): string {
   // Try to get locale from params first (for pages)
   const params = useParams();
   const urlLocale = params?.locale as string;
-  
+
   // If no URL locale, try context (for components wrapped in LocaleProvider)
   const { locale: contextLocale } = useLocaleContext();
-  
+
   return urlLocale || contextLocale || 'en';
 }
 

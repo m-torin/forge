@@ -1,11 +1,10 @@
 import { type Metadata } from "next";
 
 import {
-  ButtonSecondary,
   getProducts,
-  ProductCard,
 } from "@repo/design-system/mantine-ciseco";
-import { FavoritesClient } from './FavoritesClient';
+
+import { FavoritesClient } from "./FavoritesClient";
 
 export const metadata: Metadata = {
   description: "Your favorite products and wishlists",
@@ -21,7 +20,8 @@ const Page = async () => {
       <div>
         <h1 className="text-2xl font-semibold sm:text-3xl">My Favorites</h1>
         <p className="mt-2.5 text-neutral-500 dark:text-neutral-400">
-          Products you've saved for later. Click the heart icon on any product to add it here.
+          Products you've saved for later. Click the heart icon on any product
+          to add it here.
         </p>
       </div>
 

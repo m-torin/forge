@@ -16,12 +16,44 @@ const nextConfig: NextConfig = {
     // Enable PPR for select routes
     ppr: true,
   },
+  // Cache headers for static assets
+  async headers() {
+    return [
+      {
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+        source: "/:all*(svg|jpg|jpeg|png|gif|ico|webp|avif)",
+      },
+      {
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+        source: "/_next/static/:path*",
+      },
+      {
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300",
+          },
+        ],
+        source: "/api/:path*",
+      },
+    ];
+  },
   images: {
     ...config.images,
-    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year for images
-    formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    formats: ["image/avif", "image/webp"],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year for images
     remotePatterns: [
       ...(config.images?.remotePatterns || []),
       {
@@ -43,38 +75,6 @@ const nextConfig: NextConfig = {
         protocol: "https",
       },
     ],
-  },
-  // Cache headers for static assets
-  async headers() {
-    return [
-      {
-        source: '/:all*(svg|jpg|jpeg|png|gif|ico|webp|avif)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=60, stale-while-revalidate=300',
-          },
-        ],
-      },
-    ];
   },
   serverExternalPackages: ["@repo/database"],
   transpilePackages: [

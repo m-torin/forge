@@ -1,20 +1,14 @@
-import { Analytics } from '@repo/analytics/emitters';
-import type { 
-  TrackMessage, 
-  IdentifyMessage, 
-  PageMessage,
-  CommonEventProperties 
-} from '@repo/analytics/emitters/types';
+import { Analytics } from "@repo/analytics/emitters";
+
+import type {
+  CommonEventProperties,
+} from "@repo/analytics/emitters/types";
 
 // Initialize analytics with all 6 Segment-style emitters
 export const analytics = new Analytics({
   providers: {
-    segment: {
-      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!,
-      config: {
-        flushAt: 20,
-        flushInterval: 10000,
-      },
+    googleAnalytics: {
+      measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!,
     },
     posthog: {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!,
@@ -22,27 +16,31 @@ export const analytics = new Analytics({
         apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       },
     },
-    googleAnalytics: {
-      measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!,
+    segment: {
+      config: {
+        flushAt: 20,
+        flushInterval: 10000,
+      },
+      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!,
     },
   },
-  debug: process.env.NODE_ENV === 'development',
-  disabled: process.env.NODE_ENV === 'test',
+  debug: process.env.NODE_ENV === "development",
+  disabled: process.env.NODE_ENV === "test",
 });
 
 // E-commerce specific event types
 export interface ProductViewedEvent extends CommonEventProperties {
+  brand?: string;
+  category?: string;
+  currency: string;
+  imageUrl?: string;
+  position?: number;
+  price: number;
   productId: string;
   productName: string;
-  price: number;
-  currency: string;
-  category?: string;
-  brand?: string;
-  variant?: string;
   quantity?: number;
-  position?: number;
   url?: string;
-  imageUrl?: string;
+  variant?: string;
 }
 
 export interface ProductAddedEvent extends ProductViewedEvent {
@@ -52,42 +50,46 @@ export interface ProductAddedEvent extends ProductViewedEvent {
 
 export interface CheckoutEvent extends CommonEventProperties {
   checkoutId: string;
-  orderId?: string;
-  step: number;
-  shippingMethod?: string;
-  paymentMethod?: string;
-  revenue?: number;
   currency?: string;
+  orderId?: string;
+  paymentMethod?: string;
   products?: ProductViewedEvent[];
+  revenue?: number;
+  shippingMethod?: string;
+  step: number;
 }
 
 export interface OrderCompletedEvent extends CommonEventProperties {
-  orderId: string;
-  revenue: number;
-  currency: string;
-  tax?: number;
-  shipping?: number;
-  discount?: number;
   coupon?: string;
+  currency: string;
+  discount?: number;
+  orderId: string;
   products: ProductViewedEvent[];
+  revenue: number;
+  shipping?: number;
+  tax?: number;
 }
 
 // Analytics helper functions
 export const analyticsHelpers = {
-  // User identification
-  async identifyUser(userId: string, traits: Record<string, any>) {
-    await analytics.identify(userId, {
+  // Guest identification
+  async identifyGuest(guestId: string, traits: Record<string, any>) {
+    await analytics.identify(guestId, {
       ...traits,
       lastSeen: new Date().toISOString(),
     });
   },
 
   // Page tracking
-  async trackPageView(pageName: string, category?: string, properties?: Record<string, any>) {
+  async trackPageView(
+    pageName: string,
+    category?: string,
+    properties?: Record<string, any>,
+  ) {
     await analytics.page(category, pageName, {
       ...properties,
-      locale: document.documentElement.lang || 'en',
       url: window.location.href,
+      locale: document.documentElement.lang || "en",
       path: window.location.pathname,
       referrer: document.referrer,
       title: document.title,
@@ -96,16 +98,20 @@ export const analyticsHelpers = {
 
   // E-commerce events
   async trackProductViewed(product: ProductViewedEvent) {
-    await analytics.track('Product Viewed', {
+    await analytics.track("Product Viewed", {
       ...product,
       url: window.location.href,
     });
   },
 
-  async trackProductListViewed(listId: string, category: string, products: ProductViewedEvent[]) {
-    await analytics.track('Product List Viewed', {
-      listId,
+  async trackProductListViewed(
+    listId: string,
+    category: string,
+    products: ProductViewedEvent[],
+  ) {
+    await analytics.track("Product List Viewed", {
       category,
+      listId,
       products: products.map((p, index) => ({
         ...p,
         position: index + 1,
@@ -114,89 +120,107 @@ export const analyticsHelpers = {
   },
 
   async trackProductClicked(product: ProductViewedEvent) {
-    await analytics.track('Product Clicked', product);
+    await analytics.track("Product Clicked", product);
   },
 
   async trackProductAdded(product: ProductAddedEvent) {
-    await analytics.track('Product Added', product);
+    await analytics.track("Product Added", product);
   },
 
   async trackProductRemoved(product: ProductViewedEvent) {
-    await analytics.track('Product Removed', product);
+    await analytics.track("Product Removed", product);
   },
 
-  async trackCartViewed(cartId: string, products: ProductViewedEvent[], revenue: number) {
-    await analytics.track('Cart Viewed', {
+  async trackCartViewed(
+    cartId: string,
+    products: ProductViewedEvent[],
+    revenue: number,
+  ) {
+    await analytics.track("Cart Viewed", {
       cartId,
+      currency: "USD",
       products,
       revenue,
-      currency: 'USD',
     });
   },
 
   async trackCheckoutStarted(checkout: CheckoutEvent) {
-    await analytics.track('Checkout Started', checkout);
+    await analytics.track("Checkout Started", checkout);
   },
 
   async trackCheckoutStepViewed(checkout: CheckoutEvent) {
-    await analytics.track('Checkout Step Viewed', checkout);
+    await analytics.track("Checkout Step Viewed", checkout);
   },
 
   async trackCheckoutStepCompleted(checkout: CheckoutEvent) {
-    await analytics.track('Checkout Step Completed', checkout);
+    await analytics.track("Checkout Step Completed", checkout);
   },
 
   async trackOrderCompleted(order: OrderCompletedEvent) {
-    await analytics.track('Order Completed', order);
+    await analytics.track("Order Completed", order);
   },
 
   // Search events
   async trackProductsSearched(query: string, results: number) {
-    await analytics.track('Products Searched', {
+    await analytics.track("Products Searched", {
       query,
       results,
     });
   },
 
   // Promotion events
-  async trackPromotionViewed(promotionId: string, promotionName: string, creative?: string, position?: string) {
-    await analytics.track('Promotion Viewed', {
-      promotionId,
-      promotionName,
+  async trackPromotionViewed(
+    promotionId: string,
+    promotionName: string,
+    creative?: string,
+    position?: string,
+  ) {
+    await analytics.track("Promotion Viewed", {
       creative,
       position,
+      promotionId,
+      promotionName,
     });
   },
 
-  async trackPromotionClicked(promotionId: string, promotionName: string, creative?: string, position?: string) {
-    await analytics.track('Promotion Clicked', {
-      promotionId,
-      promotionName,
+  async trackPromotionClicked(
+    promotionId: string,
+    promotionName: string,
+    creative?: string,
+    position?: string,
+  ) {
+    await analytics.track("Promotion Clicked", {
       creative,
       position,
+      promotionId,
+      promotionName,
     });
   },
 
   // Wishlist events
   async trackProductAddedToWishlist(product: ProductViewedEvent) {
-    await analytics.track('Product Added to Wishlist', product);
+    await analytics.track("Product Added to Wishlist", product);
   },
 
   async trackProductRemovedFromWishlist(product: ProductViewedEvent) {
-    await analytics.track('Product Removed from Wishlist', product);
+    await analytics.track("Product Removed from Wishlist", product);
   },
 
   // Share events
   async trackProductShared(product: ProductViewedEvent, method: string) {
-    await analytics.track('Product Shared', {
+    await analytics.track("Product Shared", {
       ...product,
       shareMethod: method,
     });
   },
 
   // Review events
-  async trackReviewSubmitted(productId: string, rating: number, reviewId: string) {
-    await analytics.track('Product Review Submitted', {
+  async trackReviewSubmitted(
+    productId: string,
+    rating: number,
+    reviewId: string,
+  ) {
+    await analytics.track("Product Review Submitted", {
       productId,
       rating,
       reviewId,
@@ -205,7 +229,7 @@ export const analyticsHelpers = {
 
   // Filter events
   async trackProductsFiltered(filters: Record<string, any>, results: number) {
-    await analytics.track('Products Filtered', {
+    await analytics.track("Products Filtered", {
       filters,
       results,
     });
@@ -213,36 +237,37 @@ export const analyticsHelpers = {
 
   // Sort events
   async trackProductsSorted(sortOrder: string, results: number) {
-    await analytics.track('Products Sorted', {
-      sortOrder,
+    await analytics.track("Products Sorted", {
       results,
+      sortOrder,
     });
   },
 
-  // Authentication events
-  async trackSignedUp(method: string, userId?: string) {
-    await analytics.track('Signed Up', {
+  // Authentication events - Better Auth only tracks to PostHog
+  // We need these to ensure events go to all providers (Segment, GA, etc.)
+  async trackSignedUp(method: string, guestId?: string) {
+    await analytics.track("Signed Up", {
+      guestId,
       method,
-      userId,
     });
   },
 
-  async trackSignedIn(method: string, userId?: string) {
-    await analytics.track('Signed In', {
+  async trackSignedIn(method: string, guestId?: string) {
+    await analytics.track("Signed In", {
+      guestId,
       method,
-      userId,
     });
   },
 
-  async trackSignedOut(userId?: string) {
-    await analytics.track('Signed Out', {
-      userId,
+  async trackSignedOut(guestId?: string) {
+    await analytics.track("Signed Out", {
+      guestId,
     });
   },
 
   // Email events
   async trackEmailSignup(listId: string, location: string) {
-    await analytics.track('Email List Signup', {
+    await analytics.track("Email List Signup", {
       listId,
       location,
     });
@@ -250,22 +275,30 @@ export const analyticsHelpers = {
 
   // Coupon events
   async trackCouponEntered(couponId: string, couponName: string) {
-    await analytics.track('Coupon Entered', {
+    await analytics.track("Coupon Entered", {
       couponId,
       couponName,
     });
   },
 
-  async trackCouponApplied(couponId: string, couponName: string, discount: number) {
-    await analytics.track('Coupon Applied', {
+  async trackCouponApplied(
+    couponId: string,
+    couponName: string,
+    discount: number,
+  ) {
+    await analytics.track("Coupon Applied", {
       couponId,
       couponName,
       discount,
     });
   },
 
-  async trackCouponDenied(couponId: string, couponName: string, reason: string) {
-    await analytics.track('Coupon Denied', {
+  async trackCouponDenied(
+    couponId: string,
+    couponName: string,
+    reason: string,
+  ) {
+    await analytics.track("Coupon Denied", {
       couponId,
       couponName,
       reason,

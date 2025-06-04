@@ -1,28 +1,37 @@
-'use client';
+"use client";
 
-import { LikeButton } from '@repo/design-system/mantine-ciseco';
-import { useProductFavorite } from '@/hooks/useGuestFavorites';
+import { useProductFavorite } from "@/hooks/useGuestFavorites";
+
+import { LikeButton } from "@repo/design-system/mantine-ciseco";
 
 interface FavoriteButtonProps {
+  className?: string;
+  price?: number;
   productId: string;
   productName?: string;
-  price?: number;
-  className?: string;
 }
 
-export function FavoriteButton({ productId, productName, price, className }: FavoriteButtonProps) {
-  const metadata = productName || price ? { productName, price } : undefined;
-  const { isFavorite, toggleFavorite } = useProductFavorite(productId, metadata);
+export function FavoriteButton({
+  className,
+  price,
+  productId,
+  productName,
+}: FavoriteButtonProps) {
+  const metadata = productName || price ? { price, productName } : undefined;
+  const { isFavorite, toggleFavorite } = useProductFavorite(
+    productId,
+    metadata,
+  );
 
   const handleToggleFavorite = async () => {
     await toggleFavorite();
   };
 
   return (
-    <LikeButton 
-      liked={isFavorite} 
+    <LikeButton
       onClick={handleToggleFavorite}
       className={className}
+      liked={isFavorite}
     />
   );
 }

@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { FavoriteButton } from './FavoriteButton';
+import { FavoriteButton } from "./FavoriteButton";
 
 interface ProductDetailFavoriteButtonProps {
+  className?: string;
+  price?: number;
   productId: string;
   productName?: string;
-  price?: number;
-  className?: string;
 }
 
-export function ProductDetailFavoriteButton({ 
-  productId, 
-  productName, 
-  price, 
-  className 
+export function ProductDetailFavoriteButton({
+  className,
+  price,
+  productId,
+  productName,
 }: ProductDetailFavoriteButtonProps) {
   return (
     <FavoriteButton
       productId={productId}
       productName={productName}
-      price={price}
       className={className}
+      price={price}
     />
   );
 }

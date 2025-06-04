@@ -3,25 +3,22 @@ import Link from "next/link";
 
 import {
   Breadcrumb,
-  ButtonSecondary,
-  Heading,
-  SectionGridMoreExplore,
 } from "@repo/design-system/mantine-ciseco";
 
 export const metadata: Metadata = {
-  title: "Brands",
   description: "Explore all our brands",
+  title: "Brands",
 };
 
 // Mock data - replace with real API calls
 async function getBrands() {
   return [
-    { id: "1", name: "Nike", slug: "nike", productCount: 1250 },
-    { id: "2", name: "Adidas", slug: "adidas", productCount: 980 },
-    { id: "3", name: "Puma", slug: "puma", productCount: 650 },
-    { id: "4", name: "New Balance", slug: "new-balance", productCount: 450 },
-    { id: "5", name: "Under Armour", slug: "under-armour", productCount: 380 },
-    { id: "6", name: "Reebok", slug: "reebok", productCount: 320 },
+    { id: "1", name: "Nike", productCount: 1250, slug: "nike" },
+    { id: "2", name: "Adidas", productCount: 980, slug: "adidas" },
+    { id: "3", name: "Puma", productCount: 650, slug: "puma" },
+    { id: "4", name: "New Balance", productCount: 450, slug: "new-balance" },
+    { id: "5", name: "Under Armour", productCount: 380, slug: "under-armour" },
+    { id: "6", name: "Reebok", productCount: 320, slug: "reebok" },
   ];
 }
 
@@ -38,10 +35,7 @@ export default async function BrandsPage({
       <div className="space-y-10 lg:space-y-14">
         <div className="max-w-screen-sm">
           <Breadcrumb
-            items={[
-              { name: "Home", href: `/${locale}` },
-              { name: "Brands" },
-            ]}
+            items={[{ name: "Home", href: `/${locale}` }, { name: "Brands" }]}
           />
           <h1 className="mt-4 text-3xl font-semibold md:text-4xl">
             Shop by Brand

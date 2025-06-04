@@ -1,3 +1,4 @@
+import { ProductDetailFavoriteButton } from "@/components/ProductDetailFavoriteButton";
 import {
   getProductDetailByHandle,
   getProductReviews,
@@ -20,7 +21,6 @@ import {
   SectionPromo2,
   SectionSliderProductCard,
 } from "@repo/design-system/mantine-ciseco";
-import { ProductDetailFavoriteButton } from "@/components/ProductDetailFavoriteButton";
 
 import Policy from "../Policy";
 import ProductOptions from "../ProductOptions";
@@ -38,7 +38,7 @@ export const revalidate = 14400; // 4 hours in seconds
 // In production, this would come from your database
 export async function generateStaticParams() {
   // For now, return empty array since we have mock data
-  // In production: 
+  // In production:
   // const popularProducts = await getPopularProducts({ limit: 1000 });
   // return popularProducts.map((product) => ({
   //   handle: product.handle,
@@ -224,11 +224,11 @@ export default async function Page({
             )}
           </div>
 
-          <ProductDetailFavoriteButton 
+          <ProductDetailFavoriteButton
             productId={product.id}
             productName={title}
-            price={price}
             className="absolute right-3 top-3"
+            price={price}
           />
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6">

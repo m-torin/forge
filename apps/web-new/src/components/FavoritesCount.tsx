@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useGuestFavorites } from '@/hooks/useGuestFavorites';
-import Link from 'next/link';
-import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import { useGuestFavorites } from "@/hooks/useGuestFavorites";
+import { HeartIcon } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
 
 interface FavoritesCountProps {
   locale: string;
@@ -25,7 +25,7 @@ export function FavoritesCount({ locale }: FavoritesCountProps) {
       )}
       {favoriteCount > 0 && (
         <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-primary-500 text-white text-xs font-medium">
-          {favoriteCount > 9 ? '9+' : favoriteCount}
+          {favoriteCount > 9 ? "9+" : favoriteCount}
         </span>
       )}
     </Link>

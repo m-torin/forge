@@ -1,5 +1,4 @@
 import { type Metadata } from "next";
-import { notFound } from "next/navigation";
 
 import {
   getProducts,
@@ -11,7 +10,8 @@ import {
   TabFilters,
   TabFiltersPopover,
 } from "@repo/design-system/mantine-ciseco";
-import { CollectionClient } from './CollectionClient';
+
+import { CollectionClient } from "./CollectionClient";
 
 // ISR Configuration - Revalidate every 4 hours for collection pages
 export const revalidate = 14400; // 4 hours in seconds
@@ -29,11 +29,25 @@ export async function generateStaticParams() {
 // Mock collection data - replace with real API
 async function getCollectionByHandle(handle: string) {
   const collections = {
-    "all": { name: "All Products", handle: "all", productCount: 1250 },
-    "new-arrivals": { name: "New Arrivals", handle: "new-arrivals", productCount: 450 },
-    "best-sellers": { name: "Best Sellers", handle: "best-sellers", productCount: 320 },
+    all: { name: "All Products", handle: "all", productCount: 1250 },
+    "best-sellers": {
+      name: "Best Sellers",
+      handle: "best-sellers",
+      productCount: 320,
+    },
+    "new-arrivals": {
+      name: "New Arrivals",
+      handle: "new-arrivals",
+      productCount: 450,
+    },
   };
-  return collections[handle as keyof typeof collections] || { name: handle, handle, productCount: 0 };
+  return (
+    collections[handle as keyof typeof collections] || {
+      name: handle,
+      handle,
+      productCount: 0,
+    }
+  );
 }
 
 export async function generateMetadata({
@@ -43,10 +57,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle } = await params;
   const collection = await getCollectionByHandle(handle);
-  
+
   return {
-    title: `${collection.name} | Collections`,
     description: `Browse our ${collection.name} collection with ${collection.productCount} products`,
+    title: `${collection.name} | Collections`,
   };
 }
 

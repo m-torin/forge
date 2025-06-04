@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useProductFavorite } from '@/hooks/useGuestFavorites';
-import { analytics } from '@/lib/analytics-setup';
+import { useProductFavorite } from "@/hooks/useGuestFavorites";
+import { analytics } from "@/lib/analytics-setup";
+import React from "react";
 
 interface LikeSaveBtnsWithFavoritesProps {
+  onShare?: () => void;
   productId: string;
   productName?: string;
-  onShare?: () => void;
 }
 
-export function LikeSaveBtnsWithFavorites({ 
-  productId, 
+export function LikeSaveBtnsWithFavorites({
+  onShare,
+  productId,
   productName,
-  onShare 
 }: LikeSaveBtnsWithFavoritesProps) {
   const { isFavorite, toggleFavorite } = useProductFavorite(productId);
 
@@ -25,11 +25,13 @@ export function LikeSaveBtnsWithFavorites({
     if (onShare) {
       onShare();
     }
-    analytics.track('Product Shared', {
-      productId,
-      productName,
-      method: 'button',
-    }).catch(() => {});
+    analytics
+      .track("Product Shared", {
+        method: "button",
+        productId,
+        productName,
+      })
+      .catch(() => {});
   };
 
   return (
@@ -62,8 +64,8 @@ export function LikeSaveBtnsWithFavorites({
           <svg
             stroke="currentColor"
             viewBox="0 0 24 24"
-            className={`h-5 w-5 ${isFavorite ? 'text-red-500' : ''}`}
-            fill={isFavorite ? 'currentColor' : 'none'}
+            className={`h-5 w-5 ${isFavorite ? "text-red-500" : ""}`}
+            fill={isFavorite ? "currentColor" : "none"}
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
@@ -74,7 +76,7 @@ export function LikeSaveBtnsWithFavorites({
             />
           </svg>
           <span className="hidden sm:block ml-2">
-            {isFavorite ? 'Saved' : 'Save'}
+            {isFavorite ? "Saved" : "Save"}
           </span>
         </button>
       </div>

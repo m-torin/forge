@@ -5,7 +5,10 @@ export { default as ArchiveFilterListBox } from './components/ArchiveFilterListB
 export { default as BagIcon } from './components/BagIcon';
 export { default as ButtonDropdown } from './components/ButtonDropdown';
 export { ProgressiveImage, ProgressiveImageGallery } from './components/ProgressiveImage';
-export { ViewportAwareProductGrid, useProgressiveProducts } from './components/ViewportAwareProductGrid';
+export {
+  useProgressiveProducts,
+  ViewportAwareProductGrid,
+} from './components/ViewportAwareProductGrid';
 export { default as CollectionCard1 } from './components/CollectionCard1';
 export { default as CollectionCard2 } from './components/CollectionCard2';
 export { default as CollectionCard3 } from './components/CollectionCard3';
@@ -155,7 +158,11 @@ export { LocaleProvider } from './contexts/LocaleContext';
 export { LocaleWrapper, withLocale } from './wrappers/withLocale';
 
 // Server utilities
-export { createLocalizedHrefFunction, extractLocaleFromPathname, localizeHref as serverLocalizeHref } from './utils/server-locale';
+export {
+  createLocalizedHrefFunction,
+  extractLocaleFromPathname,
+  localizeHref as serverLocalizeHref,
+} from './utils/server-locale';
 
 // Router types
 export * from './routers/types';

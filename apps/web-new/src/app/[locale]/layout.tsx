@@ -1,7 +1,6 @@
 import { AppLayout, AppLayoutProvider } from "@/components/AppLayout";
 import LocalizedHeader2 from "@/components/LocalizedHeader2";
 import ProductQuickViewWrapper from "@/components/ProductQuickViewWrapper";
-import { PageViewTracker } from "@/components/PageViewTracker";
 import { GuestActionsProvider } from "@/contexts/GuestActionsContext";
 import { getDictionary } from "@/i18n";
 import { Portal } from "@mantine/core";
@@ -39,8 +38,6 @@ export default async function LocaleLayout({
       <Aside.Provider>
         <AppLayoutProvider>
           <AppLayout locale={locale} dict={dict}>
-            {/* Page view tracking using the page emitter */}
-            <PageViewTracker locale={locale} />
             {children}
           </AppLayout>
 

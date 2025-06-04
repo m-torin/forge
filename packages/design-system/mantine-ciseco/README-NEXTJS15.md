@@ -1,6 +1,8 @@
 # Mantine Ciseco for Next.js 15
 
-This package provides a flexible approach for using Ciseco components in Next.js 15 applications with internationalization support. Components can work as both server and client components depending on your needs.
+This package provides a flexible approach for using Ciseco components in Next.js 15 applications
+with internationalization support. Components can work as both server and client components
+depending on your needs.
 
 ## Key Features
 
@@ -14,7 +16,8 @@ This package provides a flexible approach for using Ciseco components in Next.js
 
 ### Pattern 1: Server Layout with Client Components (Recommended)
 
-This is the recommended approach for most applications. Use the `LocaleWrapper` to provide locale context to client components:
+This is the recommended approach for most applications. Use the `LocaleWrapper` to provide locale
+context to client components:
 
 ```tsx
 // app/[locale]/layout.tsx
@@ -64,17 +67,13 @@ export default function ServerFooter({ locale }: { locale: string }) {
 
 ```tsx
 // app/[locale]/page.tsx
-import { 
-  SectionPromo1, 
+import {
+  SectionPromo1,
   SectionGridFeatureItems,
-  LocaleWrapper 
+  LocaleWrapper,
 } from '@repo/design-system/mantine-ciseco';
 
-export default async function HomePage({ 
-  params 
-}: { 
-  params: Promise<{ locale: string }> 
-}) {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const products = await getProducts(); // Server-side data fetching
 
@@ -97,7 +96,7 @@ import { useLocalizeHref, useLocale } from '@repo/design-system/mantine-ciseco';
 function MyComponent() {
   const locale = useLocale(); // Gets current locale
   const localizeHref = useLocalizeHref(); // Returns localization function
-  
+
   return <a href={localizeHref('/products')}>Products</a>;
 }
 ```
@@ -105,10 +104,7 @@ function MyComponent() {
 ### Server-Side Utilities
 
 ```tsx
-import { 
-  serverLocalizeHref, 
-  extractLocaleFromPathname 
-} from '@repo/design-system/mantine-ciseco';
+import { serverLocalizeHref, extractLocaleFromPathname } from '@repo/design-system/mantine-ciseco';
 
 // In server components or middleware
 const localizedPath = serverLocalizeHref('/products', 'en'); // '/en/products'
@@ -118,14 +114,18 @@ const locale = extractLocaleFromPathname('/en/products'); // 'en'
 ## Component Behavior
 
 ### Client Components (with 'use client')
+
 These components use `useLocalizeHref()` hook and must be wrapped in `LocaleWrapper`:
+
 - Navigation
 - Header, Header2
 - Footer
 - Most interactive components
 
 ### Server-Compatible Components
+
 These components can be used without LocaleWrapper:
+
 - Static display components
 - Components without navigation links
 - Pure presentational components
@@ -137,18 +137,19 @@ If you were using separate client/server components, you can now use the origina
 ```tsx
 // Before
 import { ServerHeader2 } from '@repo/design-system/mantine-ciseco/server';
-<ServerHeader2 locale={locale} />
+<ServerHeader2 locale={locale} />;
 
 // After
 import { Header2, LocaleWrapper } from '@repo/design-system/mantine-ciseco';
 <LocaleWrapper locale={locale}>
   <Header2 />
-</LocaleWrapper>
+</LocaleWrapper>;
 ```
 
 ## Best Practices
 
-1. **Wrap at the highest level**: Place `LocaleWrapper` in your layout to provide locale to all child components
+1. **Wrap at the highest level**: Place `LocaleWrapper` in your layout to provide locale to all
+   child components
 2. **Server-first approach**: Use server components where possible for better performance
 3. **Explicit locale passing**: For server-only components, consider passing locale as a prop
 4. **Type safety**: All utilities are fully typed with TypeScript
@@ -159,11 +160,7 @@ import { Header2, LocaleWrapper } from '@repo/design-system/mantine-ciseco';
 
 ```tsx
 // app/[locale]/layout.tsx
-import { 
-  LocaleWrapper, 
-  Header2, 
-  Footer 
-} from '@repo/design-system/mantine-ciseco';
+import { LocaleWrapper, Header2, Footer } from '@repo/design-system/mantine-ciseco';
 import { getDictionary } from '@/i18n';
 
 export default async function LocaleLayout({
@@ -180,9 +177,7 @@ export default async function LocaleLayout({
     <LocaleWrapper locale={locale}>
       <div className="min-h-screen">
         <Header2 />
-        <main className="container mx-auto">
-          {children}
-        </main>
+        <main className="container mx-auto">{children}</main>
         <Footer />
       </div>
     </LocaleWrapper>
@@ -194,10 +189,7 @@ export default async function LocaleLayout({
 
 ```tsx
 // app/[locale]/products/[id]/page.tsx
-import { 
-  ProductQuickView,
-  LocaleWrapper 
-} from '@repo/design-system/mantine-ciseco';
+import { ProductQuickView, LocaleWrapper } from '@repo/design-system/mantine-ciseco';
 
 export default async function ProductPage({
   params,
@@ -218,7 +210,9 @@ export default async function ProductPage({
 ## Troubleshooting
 
 ### "useLocalizeHref is not a function" error
+
 Make sure the component is wrapped in `LocaleWrapper`:
+
 ```tsx
 <LocaleWrapper locale={locale}>
   <YourComponent />
@@ -226,7 +220,10 @@ Make sure the component is wrapped in `LocaleWrapper`:
 ```
 
 ### Hydration mismatches
+
 Ensure locale is consistent between server and client by using the same source (URL params).
 
 ### Components not using correct locale
-Check that `LocaleWrapper` is placed high enough in the component tree to cover all components that need locale access.
+
+Check that `LocaleWrapper` is placed high enough in the component tree to cover all components that
+need locale access.

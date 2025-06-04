@@ -8,10 +8,10 @@ export interface LikeFavoriteButtonProps {
   onClick?: () => void;
 }
 
-const LikeFavoriteButton: React.FC<LikeFavoriteButtonProps> = ({ 
-  className = '', 
+const LikeFavoriteButton: React.FC<LikeFavoriteButtonProps> = ({
+  className = '',
   liked = false,
-  onClick 
+  onClick,
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();

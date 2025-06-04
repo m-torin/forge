@@ -15,9 +15,9 @@ import { useAside } from './aside';
 import LikeButton from './LikeButton';
 import Prices from './Prices';
 import ProductStatus from './ProductStatus';
+import { ProgressiveImage } from './ProgressiveImage';
 import ButtonPrimary from './shared/Button/ButtonPrimary';
 import ButtonSecondary from './shared/Button/ButtonSecondary';
-import { ProgressiveImage } from './ProgressiveImage';
 
 export interface ProductCardProps {
   className?: string;
@@ -28,6 +28,7 @@ export interface ProductCardProps {
 const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) => {
   const localizeHref = useLocalizeHref();
   const {
+    id,
     featuredImage,
     handle,
     images,
@@ -38,7 +39,6 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
     selectedOptions,
     status,
     title,
-    id,
   } = data;
   const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
 
@@ -122,13 +122,13 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
         <Link href={productUrl as any} className="block">
           {featuredImage?.src && (
             <ProgressiveImage
+              placeholder={featuredImage.blurDataURL}
+              priority={false}
               className="flex aspect-[11/12] w-full relative"
               alt={handle}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
               src={featuredImage.src}
-              placeholder={featuredImage.blurDataURL}
-              priority={false}
             />
           )}
         </Link>

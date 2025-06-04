@@ -14,11 +14,11 @@ import {
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-  ProductCard,
   SectionPromo1,
   SectionSliderLargeProduct,
 } from "@repo/design-system/mantine-ciseco";
-import { SearchClient } from './SearchClient';
+
+import { SearchClient } from "./SearchClient";
 
 export const metadata: Metadata = {
   description: "Search page for products",

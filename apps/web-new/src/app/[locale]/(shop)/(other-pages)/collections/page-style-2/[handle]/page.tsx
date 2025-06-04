@@ -9,7 +9,8 @@ import {
   SidebarFilters,
   TabFiltersPopover,
 } from "@repo/design-system/mantine-ciseco";
-import { CollectionStyle2Client } from './CollectionStyle2Client';
+
+import { CollectionStyle2Client } from "./CollectionStyle2Client";
 
 export default async function Page({
   params,
