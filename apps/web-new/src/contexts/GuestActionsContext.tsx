@@ -1,6 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useReducer, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from 'react';
+import { 
+  useLocalStorage, 
+  useSetState, 
+  useListState, 
+  useMap,
+  useDebouncedValue,
+  useQueue,
+  useDisclosure
+} from '@mantine/hooks';
 import { analytics } from '@/lib/analytics-setup';
 
 // Types
@@ -28,66 +37,12 @@ interface Interaction {
   metadata?: any;
 }
 
-interface GuestIdentity {
-  guestId: string;
-  userId?: string;
-  sessionId: string;
-  isAuthenticated: boolean;
-}
-
-interface GuestLists {
-  favorites: Set<string>;
-  registry: Set<string>;
-  shopping: Set<string>;
-  comparison: Set<string>;
-  later: Set<string>;
-  cart: Set<string>;
-}
-
-interface GuestActivity {
-  recentlyViewed: ViewedItem[];
-  searchHistory: SearchQuery[];
-  interactions: Map<string, Interaction>;
-}
-
 interface GuestPreferences {
   currency: string;
   locale: string;
   viewMode: 'grid' | 'list';
   sortPreference: string;
-  filterPresets: Map<string, any>;
 }
-
-interface GuestSession {
-  startedAt: Date;
-  lastActiveAt: Date;
-  deviceFingerprint: string;
-  referrer?: string;
-}
-
-interface GuestActionsState {
-  identity: GuestIdentity;
-  lists: GuestLists;
-  activity: GuestActivity;
-  preferences: GuestPreferences;
-  session: GuestSession;
-}
-
-// Action Types
-type GuestAction =
-  | { type: 'ADD_TO_LIST'; listType: ListType; itemId: string; metadata?: any }
-  | { type: 'REMOVE_FROM_LIST'; listType: ListType; itemId: string }
-  | { type: 'TOGGLE_LIST_ITEM'; listType: ListType; itemId: string }
-  | { type: 'CLEAR_LIST'; listType: ListType }
-  | { type: 'TRACK_VIEW'; item: ViewedItem }
-  | { type: 'TRACK_SEARCH'; query: string; resultsCount?: number }
-  | { type: 'TRACK_INTERACTION'; interaction: Interaction }
-  | { type: 'SET_PREFERENCE'; key: string; value: any }
-  | { type: 'BECOME_USER'; userId: string }
-  | { type: 'SYNC_FROM_STORAGE'; state: Partial<GuestActionsState> }
-  | { type: 'CLEAR_ALL_DATA' }
-  | { type: 'CLEAR_ACTIVITY_HISTORY' }
-  | { type: 'RESET_PREFERENCES' };
 
 // Helper functions
 function generateGuestId(): string {
@@ -98,193 +53,8 @@ function generateSessionId(): string {
   return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-function getDeviceFingerprint(): string {
-  if (typeof window === 'undefined') {
-    return 'server';
-  }
-  // Simple fingerprint - in production, use a proper library
-  const screen = `${window.screen.width}x${window.screen.height}`;
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return `${navigator.userAgent}_${screen}_${timezone}`;
-}
-
-// Initial state
-function getInitialState(): GuestActionsState {
-  const savedGuestId = typeof window !== 'undefined' ? localStorage.getItem('guestId') : null;
-  const guestId = savedGuestId || generateGuestId();
-  
-  if (!savedGuestId && typeof window !== 'undefined') {
-    localStorage.setItem('guestId', guestId);
-  }
-
-  return {
-    identity: {
-      guestId,
-      sessionId: generateSessionId(),
-      isAuthenticated: false,
-    },
-    lists: {
-      favorites: new Set(),
-      registry: new Set(),
-      shopping: new Set(),
-      comparison: new Set(),
-      later: new Set(),
-      cart: new Set(),
-    },
-    activity: {
-      recentlyViewed: [],
-      searchHistory: [],
-      interactions: new Map(),
-    },
-    preferences: {
-      currency: 'USD',
-      locale: 'en',
-      viewMode: 'grid',
-      sortPreference: 'featured',
-      filterPresets: new Map(),
-    },
-    session: {
-      startedAt: new Date(),
-      lastActiveAt: new Date(),
-      deviceFingerprint: typeof window !== 'undefined' ? getDeviceFingerprint() : '',
-      referrer: typeof document !== 'undefined' ? document.referrer : undefined,
-    },
-  };
-}
-
-// Reducer
-function guestActionsReducer(state: GuestActionsState, action: GuestAction): GuestActionsState {
-  switch (action.type) {
-    case 'ADD_TO_LIST': {
-      const newLists = { ...state.lists };
-      newLists[action.listType] = new Set(newLists[action.listType]).add(action.itemId);
-      return { ...state, lists: newLists };
-    }
-
-    case 'REMOVE_FROM_LIST': {
-      const newLists = { ...state.lists };
-      const newSet = new Set(newLists[action.listType]);
-      newSet.delete(action.itemId);
-      newLists[action.listType] = newSet;
-      return { ...state, lists: newLists };
-    }
-
-    case 'TOGGLE_LIST_ITEM': {
-      const newLists = { ...state.lists };
-      const newSet = new Set(newLists[action.listType]);
-      if (newSet.has(action.itemId)) {
-        newSet.delete(action.itemId);
-      } else {
-        newSet.add(action.itemId);
-      }
-      newLists[action.listType] = newSet;
-      return { ...state, lists: newLists };
-    }
-
-    case 'CLEAR_LIST': {
-      const newLists = { ...state.lists };
-      newLists[action.listType] = new Set();
-      return { ...state, lists: newLists };
-    }
-
-    case 'TRACK_VIEW': {
-      const newActivity = { ...state.activity };
-      // Keep only last 50 items
-      newActivity.recentlyViewed = [
-        action.item,
-        ...state.activity.recentlyViewed.filter(item => item.id !== action.item.id)
-      ].slice(0, 50);
-      return { ...state, activity: newActivity };
-    }
-
-    case 'TRACK_SEARCH': {
-      const newActivity = { ...state.activity };
-      newActivity.searchHistory = [
-        { query: action.query, timestamp: new Date(), resultsCount: action.resultsCount },
-        ...state.activity.searchHistory
-      ].slice(0, 20); // Keep last 20 searches
-      return { ...state, activity: newActivity };
-    }
-
-    case 'TRACK_INTERACTION': {
-      const newActivity = { ...state.activity };
-      newActivity.interactions.set(action.interaction.itemId, action.interaction);
-      return { ...state, activity: newActivity };
-    }
-
-    case 'SET_PREFERENCE': {
-      const newPreferences = { ...state.preferences };
-      if (action.key === 'filterPresets') {
-        newPreferences.filterPresets = new Map(newPreferences.filterPresets).set(action.value.name, action.value.filters);
-      } else {
-        (newPreferences as any)[action.key] = action.value;
-      }
-      return { ...state, preferences: newPreferences };
-    }
-
-    case 'BECOME_USER': {
-      return {
-        ...state,
-        identity: {
-          ...state.identity,
-          userId: action.userId,
-          isAuthenticated: true,
-        },
-      };
-    }
-
-    case 'SYNC_FROM_STORAGE': {
-      // Merge storage state with current state
-      const merged: GuestActionsState = {
-        ...state,
-        ...action.state,
-        lists: {
-          ...state.lists,
-          ...(action.state.lists ? {
-            favorites: new Set(action.state.lists.favorites),
-            registry: new Set(action.state.lists.registry),
-            shopping: new Set(action.state.lists.shopping),
-            comparison: new Set(action.state.lists.comparison),
-            later: new Set(action.state.lists.later),
-            cart: new Set(action.state.lists.cart),
-          } : {}),
-        },
-      };
-      return merged;
-    }
-
-    case 'CLEAR_ALL_DATA': {
-      return getInitialState();
-    }
-
-    case 'CLEAR_ACTIVITY_HISTORY': {
-      return {
-        ...state,
-        activity: {
-          recentlyViewed: [],
-          searchHistory: [],
-          interactions: new Map(),
-        },
-      };
-    }
-
-    case 'RESET_PREFERENCES': {
-      const initial = getInitialState();
-      return {
-        ...state,
-        preferences: initial.preferences,
-      };
-    }
-
-    default:
-      return state;
-  }
-}
-
 // Context value interface
 interface GuestActionsContextValue {
-  state: GuestActionsState;
-  
   // Guest identity
   guest: {
     id: string;
@@ -323,131 +93,129 @@ interface GuestActionsContextValue {
 // Create context
 const GuestActionsContext = createContext<GuestActionsContextValue | undefined>(undefined);
 
-// Storage keys
-const STORAGE_KEYS = {
-  lists: 'guest_lists',
-  preferences: 'guest_preferences',
-  activity: 'guest_activity',
-};
-
 // Provider component
 export function GuestActionsProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(guestActionsReducer, getInitialState());
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const loadFromStorage = () => {
-      try {
-        const listsData = localStorage.getItem(STORAGE_KEYS.lists);
-        const prefsData = localStorage.getItem(STORAGE_KEYS.preferences);
-        const activityData = localStorage.getItem(STORAGE_KEYS.activity);
-
-        const storageState: Partial<GuestActionsState> = {};
-
-        if (listsData) {
-          const parsed = JSON.parse(listsData);
-          storageState.lists = {
-            favorites: new Set(parsed.favorites || []),
-            registry: new Set(parsed.registry || []),
-            shopping: new Set(parsed.shopping || []),
-            comparison: new Set(parsed.comparison || []),
-            later: new Set(parsed.later || []),
-            cart: new Set(parsed.cart || []),
-          };
-        }
-
-        if (prefsData) {
-          const parsed = JSON.parse(prefsData);
-          storageState.preferences = {
-            ...parsed,
-            filterPresets: new Map(parsed.filterPresets || []),
-          };
-        }
-
-        if (activityData) {
-          const parsed = JSON.parse(activityData);
-          storageState.activity = {
-            recentlyViewed: (parsed.recentlyViewed || []).map((item: any) => ({
-              ...item,
-              viewedAt: new Date(item.viewedAt),
-            })),
-            searchHistory: (parsed.searchHistory || []).map((item: any) => ({
-              ...item,
-              timestamp: new Date(item.timestamp),
-            })),
-            interactions: new Map((parsed.interactions || []).map(([key, value]: [string, any]) => [
-              key,
-              { ...value, timestamp: new Date(value.timestamp) },
-            ])),
-          };
-        }
-
-        if (Object.keys(storageState).length > 0) {
-          dispatch({ type: 'SYNC_FROM_STORAGE', state: storageState });
-        }
-      } catch (error) {
-        console.error('Failed to load guest data from storage:', error);
-      }
-    };
-
-    loadFromStorage();
-  }, []);
-
-  // Save to localStorage on state changes
-  useEffect(() => {
-    const saveToStorage = () => {
-      try {
-        // Save lists
-        const listsData = {
-          favorites: Array.from(state.lists.favorites),
-          registry: Array.from(state.lists.registry),
-          shopping: Array.from(state.lists.shopping),
-          comparison: Array.from(state.lists.comparison),
-          later: Array.from(state.lists.later),
-          cart: Array.from(state.lists.cart),
-        };
-        localStorage.setItem(STORAGE_KEYS.lists, JSON.stringify(listsData));
-
-        // Save preferences (with Map serialization)
-        const preferencesData = {
-          ...state.preferences,
-          filterPresets: Array.from(state.preferences.filterPresets.entries()),
-        };
-        localStorage.setItem(STORAGE_KEYS.preferences, JSON.stringify(preferencesData));
-
-        // Save activity (limited)
-        const activityData = {
-          recentlyViewed: state.activity.recentlyViewed.slice(0, 20),
-          searchHistory: state.activity.searchHistory.slice(0, 10),
-          interactions: Array.from(state.activity.interactions.entries()).slice(0, 50),
-        };
-        localStorage.setItem(STORAGE_KEYS.activity, JSON.stringify(activityData));
-      } catch (error) {
-        console.error('Failed to save guest data to storage:', error);
-      }
-    };
-
-    saveToStorage();
-  }, [state.lists, state.preferences, state.activity]);
-
-  // Context value
-  const value = useMemo<GuestActionsContextValue>(() => ({
-    state,
-
-    guest: {
-      id: state.identity.guestId,
-      isAuthenticated: state.identity.isAuthenticated,
-      becomeUser: async (userId: string) => {
-        dispatch({ type: 'BECOME_USER', userId });
-        // Here you would sync to server
-      },
+  // Guest identity
+  const [guestId] = useLocalStorage<string>({
+    key: 'guestId',
+    defaultValue: generateGuestId(),
+  });
+  
+  const [userId, setUserId] = useLocalStorage<string | null>({
+    key: 'userId',
+    defaultValue: null,
+  });
+  
+  const sessionId = useMemo(() => generateSessionId(), []);
+  
+  // Lists with localStorage
+  const [favorites, setFavorites] = useLocalStorage<string[]>({
+    key: 'guest_favorites',
+    defaultValue: [],
+  });
+  
+  const [registry, setRegistry] = useLocalStorage<string[]>({
+    key: 'guest_registry',
+    defaultValue: [],
+  });
+  
+  const [shopping, setShopping] = useLocalStorage<string[]>({
+    key: 'guest_shopping',
+    defaultValue: [],
+  });
+  
+  const [comparison, setComparison] = useLocalStorage<string[]>({
+    key: 'guest_comparison',
+    defaultValue: [],
+  });
+  
+  const [later, setLater] = useLocalStorage<string[]>({
+    key: 'guest_later',
+    defaultValue: [],
+  });
+  
+  const [cart, setCart] = useLocalStorage<string[]>({
+    key: 'guest_cart',
+    defaultValue: [],
+  });
+  
+  // Map all lists for easy access
+  const lists = useMemo(() => ({
+    favorites: { items: favorites, setter: setFavorites },
+    registry: { items: registry, setter: setRegistry },
+    shopping: { items: shopping, setter: setShopping },
+    comparison: { items: comparison, setter: setComparison },
+    later: { items: later, setter: setLater },
+    cart: { items: cart, setter: setCart },
+  }), [favorites, registry, shopping, comparison, later, cart]);
+  
+  // Activity tracking
+  const [recentlyViewed, viewHandlers] = useListState<ViewedItem>([]);
+  const [searchHistory, searchHandlers] = useListState<SearchQuery>([]);
+  const interactions = useMap<string, Interaction>();
+  
+  // Preferences
+  const [preferences, setPreferences] = useLocalStorage<GuestPreferences>({
+    key: 'guest_preferences',
+    defaultValue: {
+      currency: 'USD',
+      locale: 'en',
+      viewMode: 'grid',
+      sortPreference: 'featured',
     },
-
-    lists: {
-      add: async (listType: ListType, itemId: string, metadata?: any) => {
-        dispatch({ type: 'ADD_TO_LIST', listType, itemId, metadata });
+  });
+  
+  // Save activity to localStorage (debounced)
+  const [debouncedActivity] = useDebouncedValue(
+    { recentlyViewed, searchHistory, interactions: Array.from(interactions) },
+    1000
+  );
+  
+  useEffect(() => {
+    localStorage.setItem('guest_activity', JSON.stringify({
+      recentlyViewed: debouncedActivity.recentlyViewed.slice(0, 20),
+      searchHistory: debouncedActivity.searchHistory.slice(0, 10),
+      interactions: debouncedActivity.interactions.slice(0, 50),
+    }));
+  }, [debouncedActivity]);
+  
+  // Load activity from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedActivity = localStorage.getItem('guest_activity');
+      if (savedActivity) {
+        const parsed = JSON.parse(savedActivity);
+        if (parsed.recentlyViewed) {
+          viewHandlers.setState(parsed.recentlyViewed.map((item: any) => ({
+            ...item,
+            viewedAt: new Date(item.viewedAt),
+          })));
+        }
+        if (parsed.searchHistory) {
+          searchHandlers.setState(parsed.searchHistory.map((item: any) => ({
+            ...item,
+            timestamp: new Date(item.timestamp),
+          })));
+        }
+        if (parsed.interactions) {
+          parsed.interactions.forEach(([key, value]: [string, any]) => {
+            interactions.set(key, { ...value, timestamp: new Date(value.timestamp) });
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load activity from storage:', error);
+    }
+  }, []);
+  
+  // List operations
+  const listOperations = useMemo(() => ({
+    add: async (listType: ListType, itemId: string, metadata?: any) => {
+      const list = lists[listType];
+      if (!list.items.includes(itemId)) {
+        list.setter([...list.items, itemId]);
         
-        // Analytics - use standard event names for favorites/wishlist
+        // Analytics
         if (listType === 'favorites') {
           analytics.track('Product Added to Wishlist', {
             productId: itemId,
@@ -460,102 +228,144 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
             ...metadata,
           }).catch(() => {});
         }
-      },
+      }
+    },
+    
+    remove: async (listType: ListType, itemId: string) => {
+      const list = lists[listType];
+      list.setter(list.items.filter(id => id !== itemId));
       
-      remove: async (listType: ListType, itemId: string) => {
-        dispatch({ type: 'REMOVE_FROM_LIST', listType, itemId });
-        
-        // Analytics - use standard event names for favorites/wishlist
-        if (listType === 'favorites') {
-          analytics.track('Product Removed from Wishlist', {
-            productId: itemId,
-          }).catch(() => {});
-        } else {
-          analytics.track(`item_removed_from_${listType}`, {
-            itemId,
-            listType,
-          }).catch(() => {});
-        }
-      },
+      // Analytics
+      if (listType === 'favorites') {
+        analytics.track('Product Removed from Wishlist', {
+          productId: itemId,
+        }).catch(() => {});
+      } else {
+        analytics.track(`item_removed_from_${listType}`, {
+          itemId,
+          listType,
+        }).catch(() => {});
+      }
+    },
+    
+    toggle: async (listType: ListType, itemId: string, metadata?: any) => {
+      const list = lists[listType];
+      const has = list.items.includes(itemId);
       
-      toggle: async (listType: ListType, itemId: string, metadata?: any) => {
-        const has = state.lists[listType].has(itemId);
-        dispatch({ type: 'TOGGLE_LIST_ITEM', listType, itemId });
-        
-        // Analytics - use standard event names for favorites/wishlist
-        if (listType === 'favorites') {
-          analytics.track(has ? 'Product Removed from Wishlist' : 'Product Added to Wishlist', {
-            productId: itemId,
-            ...(has ? {} : metadata), // Only include metadata when adding
-          }).catch(() => {});
-        } else {
-          analytics.track(has ? `item_removed_from_${listType}` : `item_added_to_${listType}`, {
-            itemId,
-            listType,
-            ...(has ? {} : metadata), // Only include metadata when adding
-          }).catch(() => {});
-        }
-        
-        return !has;
-      },
+      if (has) {
+        list.setter(list.items.filter(id => id !== itemId));
+      } else {
+        list.setter([...list.items, itemId]);
+      }
       
-      clear: async (listType: ListType) => {
-        dispatch({ type: 'CLEAR_LIST', listType });
-      },
+      // Analytics
+      if (listType === 'favorites') {
+        analytics.track(has ? 'Product Removed from Wishlist' : 'Product Added to Wishlist', {
+          productId: itemId,
+          ...(has ? {} : metadata),
+        }).catch(() => {});
+      } else {
+        analytics.track(has ? `item_removed_from_${listType}` : `item_added_to_${listType}`, {
+          itemId,
+          listType,
+          ...(has ? {} : metadata),
+        }).catch(() => {});
+      }
       
-      has: (listType: ListType, itemId: string) => {
-        return state.lists[listType].has(itemId);
-      },
-      
-      count: (listType: ListType) => {
-        return state.lists[listType].size;
-      },
-      
-      items: (listType: ListType) => {
-        return Array.from(state.lists[listType]);
+      return !has;
+    },
+    
+    clear: async (listType: ListType) => {
+      const list = lists[listType];
+      list.setter([]);
+    },
+    
+    has: (listType: ListType, itemId: string) => {
+      return lists[listType].items.includes(itemId);
+    },
+    
+    count: (listType: ListType) => {
+      return lists[listType].items.length;
+    },
+    
+    items: (listType: ListType) => {
+      return lists[listType].items;
+    },
+  }), [lists]);
+  
+  // Activity operations
+  const activityOperations = useMemo(() => ({
+    trackView: (item: ViewedItem) => {
+      // Remove if already viewed and add to front
+      const filtered = recentlyViewed.filter(v => v.id !== item.id);
+      viewHandlers.setState([item, ...filtered].slice(0, 50));
+    },
+    
+    trackSearch: (query: string, resultsCount?: number) => {
+      searchHandlers.prepend({
+        query,
+        timestamp: new Date(),
+        resultsCount,
+      });
+      // Keep only last 20 searches
+      if (searchHistory.length > 20) {
+        searchHandlers.setState(searchHistory.slice(0, 20));
+      }
+    },
+    
+    trackInteraction: (interaction: Omit<Interaction, 'timestamp'>) => {
+      interactions.set(interaction.itemId, {
+        ...interaction,
+        timestamp: new Date(),
+      });
+    },
+    
+    getRecentlyViewed: (limit?: number) => {
+      return limit ? recentlyViewed.slice(0, limit) : recentlyViewed;
+    },
+    
+    clearHistory: () => {
+      viewHandlers.setState([]);
+      searchHandlers.setState([]);
+      interactions.clear();
+    },
+  }), [recentlyViewed, searchHistory, viewHandlers, searchHandlers, interactions]);
+  
+  // Preferences operations
+  const preferencesOperations = useMemo(() => ({
+    set: (key: string, value: any) => {
+      setPreferences(prev => ({ ...prev, [key]: value }));
+    },
+    
+    get: (key: string) => {
+      return (preferences as any)[key];
+    },
+    
+    reset: () => {
+      setPreferences({
+        currency: 'USD',
+        locale: 'en',
+        viewMode: 'grid',
+        sortPreference: 'featured',
+      });
+    },
+  }), [preferences, setPreferences]);
+  
+  // Context value
+  const value = useMemo<GuestActionsContextValue>(() => ({
+    guest: {
+      id: guestId,
+      isAuthenticated: !!userId,
+      becomeUser: async (newUserId: string) => {
+        setUserId(newUserId);
+        // Here you would sync to server
       },
     },
-
-    activity: {
-      trackView: (item: ViewedItem) => {
-        dispatch({ type: 'TRACK_VIEW', item });
-      },
-      
-      trackSearch: (query: string, resultsCount?: number) => {
-        dispatch({ type: 'TRACK_SEARCH', query, resultsCount });
-      },
-      
-      trackInteraction: (interaction: Omit<Interaction, 'timestamp'>) => {
-        dispatch({ 
-          type: 'TRACK_INTERACTION', 
-          interaction: { ...interaction, timestamp: new Date() } 
-        });
-      },
-      
-      getRecentlyViewed: (limit?: number) => {
-        return limit ? state.activity.recentlyViewed.slice(0, limit) : state.activity.recentlyViewed;
-      },
-      
-      clearHistory: () => {
-        dispatch({ type: 'CLEAR_ACTIVITY_HISTORY' });
-      },
-    },
-
-    preferences: {
-      set: (key: string, value: any) => {
-        dispatch({ type: 'SET_PREFERENCE', key, value });
-      },
-      
-      get: (key: string) => {
-        return (state.preferences as any)[key];
-      },
-      
-      reset: () => {
-        dispatch({ type: 'RESET_PREFERENCES' });
-      },
-    },
-  }), [state]);
-
+    lists: listOperations,
+    activity: activityOperations,
+    preferences: preferencesOperations,
+  }), [guestId, userId, listOperations, activityOperations, preferencesOperations]);
+  
   return (
     <GuestActionsContext.Provider value={value}>
       {children}
