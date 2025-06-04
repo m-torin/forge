@@ -85,7 +85,9 @@ type GuestAction =
   | { type: 'SET_PREFERENCE'; key: string; value: any }
   | { type: 'BECOME_USER'; userId: string }
   | { type: 'SYNC_FROM_STORAGE'; state: Partial<GuestActionsState> }
-  | { type: 'CLEAR_ALL_DATA' };
+  | { type: 'CLEAR_ALL_DATA' }
+  | { type: 'CLEAR_ACTIVITY_HISTORY' }
+  | { type: 'RESET_PREFERENCES' };
 
 // Helper functions
 function generateGuestId(): string {
@@ -252,6 +254,25 @@ function guestActionsReducer(state: GuestActionsState, action: GuestAction): Gue
       return getInitialState();
     }
 
+    case 'CLEAR_ACTIVITY_HISTORY': {
+      return {
+        ...state,
+        activity: {
+          recentlyViewed: [],
+          searchHistory: [],
+          interactions: new Map(),
+        },
+      };
+    }
+
+    case 'RESET_PREFERENCES': {
+      const initial = getInitialState();
+      return {
+        ...state,
+        preferences: initial.preferences,
+      };
+    }
+
     default:
       return state;
   }
@@ -406,33 +427,52 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
       add: async (listType: ListType, itemId: string, metadata?: any) => {
         dispatch({ type: 'ADD_TO_LIST', listType, itemId, metadata });
         
-        // Analytics
-        analytics.track(`item_added_to_${listType}`, {
-          itemId,
-          listType,
-          ...metadata,
-        }).catch(() => {});
+        // Analytics - use standard event names for favorites/wishlist
+        if (listType === 'favorites') {
+          analytics.track('Product Added to Wishlist', {
+            productId: itemId,
+            ...metadata,
+          }).catch(() => {});
+        } else {
+          analytics.track(`item_added_to_${listType}`, {
+            itemId,
+            listType,
+            ...metadata,
+          }).catch(() => {});
+        }
       },
       
       remove: async (listType: ListType, itemId: string) => {
         dispatch({ type: 'REMOVE_FROM_LIST', listType, itemId });
         
-        // Analytics
-        analytics.track(`item_removed_from_${listType}`, {
-          itemId,
-          listType,
-        }).catch(() => {});
+        // Analytics - use standard event names for favorites/wishlist
+        if (listType === 'favorites') {
+          analytics.track('Product Removed from Wishlist', {
+            productId: itemId,
+          }).catch(() => {});
+        } else {
+          analytics.track(`item_removed_from_${listType}`, {
+            itemId,
+            listType,
+          }).catch(() => {});
+        }
       },
       
       toggle: async (listType: ListType, itemId: string) => {
         const has = state.lists[listType].has(itemId);
         dispatch({ type: 'TOGGLE_LIST_ITEM', listType, itemId });
         
-        // Analytics
-        analytics.track(has ? `item_removed_from_${listType}` : `item_added_to_${listType}`, {
-          itemId,
-          listType,
-        }).catch(() => {});
+        // Analytics - use standard event names for favorites/wishlist
+        if (listType === 'favorites') {
+          analytics.track(has ? 'Product Removed from Wishlist' : 'Product Added to Wishlist', {
+            productId: itemId,
+          }).catch(() => {});
+        } else {
+          analytics.track(has ? `item_removed_from_${listType}` : `item_added_to_${listType}`, {
+            itemId,
+            listType,
+          }).catch(() => {});
+        }
         
         return !has;
       },
@@ -475,7 +515,7 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
       },
       
       clearHistory: () => {
-        // Would need to add this action type
+        dispatch({ type: 'CLEAR_ACTIVITY_HISTORY' });
       },
     },
 
@@ -489,7 +529,7 @@ export function GuestActionsProvider({ children }: { children: React.ReactNode }
       },
       
       reset: () => {
-        // Would need to add this action type
+        dispatch({ type: 'RESET_PREFERENCES' });
       },
     },
   }), [state]);
