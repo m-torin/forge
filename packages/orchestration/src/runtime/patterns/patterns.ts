@@ -18,7 +18,7 @@ import type { CircuitBreakerConfig, WorkflowContext } from '../../utils/types';
  * Delegates to centralized BatchProcessor for consistency
  */
 export async function processBatchPattern<T, R>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     items: T[];
     batchSize: number;
@@ -68,8 +68,8 @@ export async function processBatchPattern<T, R>(
 /**
  * Parallel processing pattern - uses centralized parallel execution
  */
-export async function parallelExecute<T extends Record<string, () => Promise<any>>>(
-  context: WorkflowContext<any>,
+export async function parallelExecute<T extends Record<string, () => Promise<unknown>>>(
+  context: WorkflowContext<unknown>,
   operations: T,
   options: {
     stepPrefix?: string;
@@ -88,7 +88,7 @@ export async function parallelExecute<T extends Record<string, () => Promise<any
  * Delegates to centralized retry module
  */
 export async function retryWithBackoffPattern<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     operation: () => Promise<T>;
     maxAttempts?: number;
@@ -128,7 +128,7 @@ export async function retryWithBackoffPattern<T>(
  * Waits for an event with optional timeout and default handling
  */
 export async function waitForEventWithDefault<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     eventId: string;
     timeout: string;
@@ -140,7 +140,7 @@ export async function waitForEventWithDefault<T>(
   const { defaultValue, eventId, onTimeout, stepName, timeout } = options;
 
   const { eventData, timeout: didTimeout } = await context.waitForEvent(stepName, eventId, {
-    timeout: timeout as any,
+    timeout,
   });
 
   if (didTimeout) {
@@ -161,10 +161,10 @@ export async function waitForEventWithDefault<T>(
  * Implements an approval workflow with notifications
  */
 export async function approvalGate<T extends { approved: boolean }>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     approvalId: string;
-    notificationData: any;
+    notificationData: unknown;
     timeout?: string;
     onApproved?: (data: T) => Promise<void>;
     onRejected?: (data: T) => Promise<void>;
@@ -212,7 +212,7 @@ export async function approvalGate<T extends { approved: boolean }>(
  * Prevents cascading failures by monitoring error rates
  */
 export async function circuitBreaker<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     operation: () => Promise<T>;
     stepName: string;
@@ -231,7 +231,7 @@ export async function circuitBreaker<T>(
  * Processes items in parallel and reduces results
  */
 export async function mapReduce<T, M, R>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     items: T[];
     mapper: (item: T, index: number) => Promise<M>;
@@ -271,17 +271,17 @@ export async function mapReduce<T, M, R>(
  * Chains operations together with optional transformation
  */
 export async function pipeline<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     input: T;
     stages: {
       name: string;
-      transform: (data: any) => Promise<any>;
-      onError?: (error: Error, data: any) => Promise<any>;
+      transform: (data: unknown) => Promise<unknown>;
+      onError?: (error: Error, data: unknown) => Promise<unknown>;
     }[];
     stepPrefix?: string;
   },
-): Promise<any> {
+): Promise<unknown> {
   const { input, stages, stepPrefix = 'pipeline' } = options;
 
   let currentData = input;
@@ -310,7 +310,7 @@ export async function pipeline<T>(
  * Delays execution until a specific time
  */
 export async function scheduledExecution<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     scheduleAt: Date | string;
     operation: () => Promise<T>;
@@ -331,7 +331,7 @@ export async function scheduledExecution<T>(
  * Distributes work across multiple handlers and collects results
  */
 export async function fanOutFanIn<T, R>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   options: {
     items: T[];
     distributor: (item: T) => string; // Returns handler key
@@ -372,14 +372,14 @@ export async function fanOutFanIn<T, R>(
  * Waits for multiple events with configurable strategy
  */
 export async function waitForMultipleEvents(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   events: { eventId: string; timeout: string; required?: boolean }[],
   options: {
     waitStrategy: 'all' | 'any' | 'threshold';
     threshold?: number;
     stepPrefix?: string;
   },
-): Promise<{ results: any[]; completed: number; timeouts: number }> {
+): Promise<{ results: unknown[]; completed: number; timeouts: number }> {
   const {
     stepPrefix = 'multi-event',
     threshold: _threshold = 1,
@@ -391,7 +391,7 @@ export async function waitForMultipleEvents(
       const { eventData, timeout } = await context.waitForEvent(
         `${stepPrefix}-${index}`,
         event.eventId,
-        { timeout: event.timeout as any },
+        { timeout: event.timeout },
       );
       return { eventData, eventId: event.eventId, index, timeout };
     } catch (error) {
@@ -423,7 +423,7 @@ export async function waitForMultipleEvents(
  * Executes operations in parallel and returns the first to complete
  */
 export async function parallelRacePattern<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   operations: (() => Promise<T>)[],
   options: { timeout?: number; stepPrefix?: string } = {},
 ): Promise<{ winner: T; index: number; duration: number }> {
@@ -456,17 +456,17 @@ export async function parallelRacePattern<T>(
  * Executes a series of operations with compensation if any fails
  */
 export async function sagaPattern(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   steps: {
     name: string;
-    action: () => Promise<any>;
+    action: () => Promise<unknown>;
     compensate: () => Promise<void>;
   }[],
   options: { stepPrefix?: string } = {},
-): Promise<{ success: boolean; results: any[]; compensations: string[] }> {
+): Promise<{ success: boolean; results: unknown[]; compensations: string[] }> {
   const { stepPrefix = 'saga' } = options;
 
-  const results: any[] = [];
+  const results: unknown[] = [];
   const compensations: string[] = [];
 
   try {
@@ -498,11 +498,11 @@ export async function sagaPattern(
  * Executes an operation with automatic compensation on failure
  */
 export async function compensateOnFailure<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   operation: () => Promise<T>,
-  compensate: (error: Error) => Promise<any>,
+  compensate: (error: Error) => Promise<unknown>,
   options: { stepPrefix?: string } = {},
-): Promise<{ success: boolean; result?: T; compensationResult?: any; error?: string }> {
+): Promise<{ success: boolean; result?: T; compensationResult?: unknown; error?: string }> {
   const { stepPrefix = 'compensate' } = options;
 
   try {

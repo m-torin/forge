@@ -1,7 +1,6 @@
 import { devLog as logger } from '@repo/orchestration';
 
 import { WorkflowEmailService } from './email-notifications';
-import { platformAnalytics } from './platform-analytics';
 
 import type { WorkflowRunDoc } from './firestore-service';
 
@@ -167,17 +166,9 @@ export class WorkflowNotificationService {
         workflowRun,
       });
 
-      platformAnalytics.trackIntegrationEvent('email', 'sent', {
-        type: 'workflow_started',
-        workflowRunId: workflowRun.workflowRunId,
-        workflowType: workflowRun.workflowType,
-      });
+      // Email sent tracking removed
     } catch (error) {
-      platformAnalytics.trackIntegrationEvent('email', 'failed', {
-        type: 'workflow_started',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        workflowType: workflowRun.workflowType,
-      });
+      logger.error('Failed to send workflow started email', error);
     }
   }
 
@@ -214,17 +205,9 @@ export class WorkflowNotificationService {
         workflowRun,
       });
 
-      platformAnalytics.trackIntegrationEvent('email', 'sent', {
-        type: 'workflow_completed',
-        workflowRunId: workflowRun.workflowRunId,
-        workflowType: workflowRun.workflowType,
-      });
+      // Email sent tracking removed
     } catch (error) {
-      platformAnalytics.trackIntegrationEvent('email', 'failed', {
-        type: 'workflow_completed',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        workflowType: workflowRun.workflowType,
-      });
+      logger.error('Failed to send workflow completed email', error);
     }
   }
 
@@ -261,17 +244,9 @@ export class WorkflowNotificationService {
         workflowRun,
       });
 
-      platformAnalytics.trackIntegrationEvent('email', 'sent', {
-        type: 'workflow_failed',
-        workflowRunId: workflowRun.workflowRunId,
-        workflowType: workflowRun.workflowType,
-      });
+      // Email sent tracking removed
     } catch (error) {
-      platformAnalytics.trackIntegrationEvent('email', 'failed', {
-        type: 'workflow_failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        workflowType: workflowRun.workflowType,
-      });
+      logger.error('Failed to send workflow failed email', error);
     }
   }
 
@@ -310,18 +285,9 @@ export class WorkflowNotificationService {
         workflowRun,
       });
 
-      platformAnalytics.trackIntegrationEvent('email', 'sent', {
-        type: 'approval_required',
-        eventId,
-        workflowRunId: workflowRun.workflowRunId,
-        workflowType: workflowRun.workflowType,
-      });
+      // Email sent tracking removed
     } catch (error) {
-      platformAnalytics.trackIntegrationEvent('email', 'failed', {
-        type: 'approval_required',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        workflowType: workflowRun.workflowType,
-      });
+      logger.error('Failed to send approval required email', error);
     }
   }
 

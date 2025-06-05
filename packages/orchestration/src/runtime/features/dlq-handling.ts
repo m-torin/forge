@@ -36,7 +36,7 @@ export interface DLQConfig {
 export interface DLQMessage {
   context: {
     url?: string;
-    headers?: Record<string, any>;
+    headers?: Record<string, unknown>;
     environment: string;
   };
   errorCategory: string;
@@ -45,7 +45,7 @@ export interface DLQMessage {
   firstFailedAt: string;
   isRetryable: boolean;
   lastFailedAt: string;
-  originalPayload: any;
+  originalPayload: unknown;
   originalWorkflowRunId: string;
   retryCount: number;
 }
@@ -146,7 +146,7 @@ function updateErrorTracking(workflowRunId: string, stepName: string, error: Err
  * Send message to Dead Letter Queue (supports both QStash native DLQ and custom endpoints)
  */
 export async function sendToDLQ(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   stepName: string,
   config: DLQConfig,
   error: Error,
@@ -198,7 +198,7 @@ export async function sendToDLQ(
         },
         method: 'POST',
         retries: 3, // Always retry DLQ sends
-      } as any);
+      });
 
       devLog.info(`Successfully sent to custom DLQ: ${config.dlqEndpoint}`);
     } else {
@@ -250,7 +250,7 @@ async function logDLQMessage(dlqMessage: DLQMessage, config: DLQConfig): Promise
  * Wrapper for context.run with DLQ handling
  */
 export async function runWithDLQ<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   stepName: string,
   stepFunction: () => Promise<T>,
   config: DLQConfig,
@@ -296,12 +296,12 @@ export async function runWithDLQ<T>(
 /**
  * Wrapper for context.call with DLQ handling
  */
-export async function callWithDLQ(
-  context: WorkflowContext<any>,
+export async function callWithDLQ<TResult = unknown>(
+  context: WorkflowContext<unknown>,
   stepName: string,
-  options: any,
+  options: Parameters<WorkflowContext<unknown>['call']>[1],
   config: DLQConfig,
-): Promise<any> {
+): Promise<TResult> {
   return runWithDLQ(
     context,
     stepName,
@@ -493,7 +493,7 @@ export function getDLQStats(): {
 /**
  * Retrieve messages from QStash DLQ
  */
-export async function getDLQMessages(qstashClient: Client): Promise<any[]> {
+export async function getDLQMessages(qstashClient: Client): Promise<unknown[]> {
   try {
     // QStash DLQ API endpoint - this might need to be updated based on actual QStash API
     const response = await qstashClient.http.request({
@@ -593,15 +593,15 @@ export function createQStashDLQClient(): Client | null {
 /**
  * Enhanced context.call with failure callback support
  */
-export async function callWithFailureCallback(
-  context: WorkflowContext<any>,
+export async function callWithFailureCallback<TResult = unknown>(
+  context: WorkflowContext<unknown>,
   stepName: string,
-  options: any,
+  options: Parameters<WorkflowContext<unknown>['call']>[1],
   config: {
     failureCallback?: string;
     dlqConfig?: DLQConfig;
   },
-): Promise<any> {
+): Promise<TResult> {
   const enhancedOptions = {
     ...options,
     failureCallback: config.failureCallback,
@@ -623,7 +623,7 @@ export async function callWithFailureCallback(
  * Handle failures with DLQ wrapper
  */
 export async function handleFailuresWithDLQ<T>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   stepName: string,
   stepFunction: () => Promise<T>,
   config: DLQConfig,
@@ -634,8 +634,8 @@ export async function handleFailuresWithDLQ<T>(
 /**
  * Wrapper for workflow serve with DLQ and comprehensive failure handling
  */
-export function serveWithDLQ<T>(
-  handler: (context: WorkflowContext<T>) => Promise<any>,
+export function serveWithDLQ<T, TResult = unknown>(
+  handler: (context: WorkflowContext<T>) => Promise<TResult>,
   config: {
     failureCallback?: string;
     dlqConfig?: DLQConfig;
@@ -653,10 +653,10 @@ export function serveWithDLQ<T>(
         failResponse,
         failStatus,
       }: {
-        context: any;
-        failHeaders: any;
-        failResponse: any;
-        failStatus: any;
+        context: WorkflowContext<T>;
+        failHeaders: Record<string, string>;
+        failResponse: string;
+        failStatus: number;
       }) => {
         console.error(
           '[DLQ] Workflow failed:',
@@ -764,11 +764,16 @@ export async function monitorDLQHealth(
   qstashClient: Client,
   config: {
     maxDLQSize?: number;
-    alertCallback?: (stats: any) => Promise<void>;
+    alertCallback?: (stats: {
+      dlqSize: number;
+      maxSize: number;
+      oldestMessage?: unknown;
+      timestamp: string;
+    }) => Promise<void>;
   } = {},
 ): Promise<{
   dlqSize: number;
-  oldestMessage?: any;
+  oldestMessage?: unknown;
   alertTriggered: boolean;
 }> {
   try {

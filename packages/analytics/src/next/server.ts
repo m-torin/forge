@@ -1,0 +1,269 @@
+/**
+ * Next.js server-side analytics implementation
+ * For use in server components and API routes
+ */
+
+import { AnalyticsManager } from '../shared/utils/manager';
+import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
+import type { BootstrapData, FeatureFlags, FeatureFlagPayload } from '../shared/types/posthog-types';
+import { 
+  getCompleteBootstrapData, 
+  isFeatureEnabled as serverIsFeatureEnabled,
+  getFeatureFlag as serverGetFeatureFlag,
+  getAllFeatureFlags as serverGetAllFeatureFlags,
+  createPostHogConfig
+} from '../shared/utils/posthog-next-utils';
+
+export interface NextJSServerAnalyticsConfig extends AnalyticsConfig {
+  nextjs?: {
+    // Enable debug mode
+    debug?: boolean;
+    
+    // PostHog specific options
+    posthog?: {
+      // Cookies for distinct ID extraction
+      cookies?: any;
+      
+      // API key for server-side operations
+      apiKey?: string;
+      
+      // Host override
+      host?: string;
+      
+      // Request timeout for server calls
+      timeout?: number;
+    };
+  };
+}
+
+export class NextJSServerAnalyticsManager {
+  private manager: AnalyticsManager | null = null;
+  private config: NextJSServerAnalyticsConfig;
+  private isInitialized = false;
+
+  constructor(config: NextJSServerAnalyticsConfig) {
+    this.config = config;
+  }
+
+  /**
+   * Initialize analytics for server-side usage
+   */
+  async initialize(): Promise<void> {
+    if (this.isInitialized) return;
+
+    try {
+      // Dynamically import server providers
+      const { createAnalyticsManager } = await import('../shared/utils/manager');
+      const { SegmentServerProvider } = await import('../server/providers/segment-server');
+      const { PostHogServerProvider } = await import('../server/providers/posthog-server');
+      const { VercelServerProvider } = await import('../server/providers/vercel-server');
+      const { ConsoleProvider } = await import('../shared/providers/console-provider');
+
+      const SERVER_PROVIDERS = {
+        segment: (config: any) => new SegmentServerProvider(config),
+        posthog: (config: any) => new PostHogServerProvider(config),
+        vercel: (config: any) => new VercelServerProvider(config),
+        console: (config: any) => new ConsoleProvider(config)
+      };
+
+      this.manager = createAnalyticsManager(this.config, SERVER_PROVIDERS);
+      await this.manager.initialize();
+      this.isInitialized = true;
+
+      // Server analytics initialized successfully
+    } catch (error) {
+      // Failed to initialize server analytics
+    }
+  }
+
+  /**
+   * Track an event
+   */
+  async track(event: string, properties?: any, options?: TrackingOptions): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+    
+    if (this.manager) {
+      await this.manager.track(event, properties, options);
+    }
+  }
+
+  /**
+   * Identify a user
+   */
+  async identify(userId: string, traits?: any, options?: TrackingOptions): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+    
+    if (this.manager) {
+      await this.manager.identify(userId, traits, options);
+    }
+  }
+
+  /**
+   * Track a page view
+   */
+  async page(name?: string, properties?: any, options?: TrackingOptions): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+    
+    if (this.manager) {
+      await this.manager.page(name, properties, options);
+    }
+  }
+
+  /**
+   * Track a group
+   */
+  async group(groupId: string, traits?: any, options?: TrackingOptions): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+    
+    if (this.manager) {
+      await this.manager.group(groupId, traits, options);
+    }
+  }
+
+  /**
+   * Alias a user
+   */
+  async alias(userId: string, previousId: string, options?: TrackingOptions): Promise<void> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+    
+    if (this.manager) {
+      await this.manager.alias(userId, previousId, options);
+    }
+  }
+
+  /**
+   * Get initialization status
+   */
+  getStatus() {
+    return {
+      isInitialized: this.isInitialized,
+      activeProviders: this.manager?.getActiveProviders() || []
+    };
+  }
+}
+
+/**
+ * Create a Next.js optimized analytics instance for server
+ */
+export function createNextJSServerAnalytics(config: NextJSServerAnalyticsConfig): NextJSServerAnalyticsManager {
+  return new NextJSServerAnalyticsManager(config);
+}
+
+// Server-side Feature Flag Functions (for Server Components)
+
+/**
+ * Check if a feature flag is enabled on the server
+ */
+export async function isFeatureEnabledOnServer(
+  flag: string,
+  cookies: any,
+  apiKey: string,
+  options?: {
+    host?: string;
+    timeout?: number;
+    defaultValue?: boolean;
+  }
+): Promise<boolean> {
+  return await serverIsFeatureEnabled(flag, cookies, apiKey, options);
+}
+
+/**
+ * Get feature flag value on the server
+ */
+export async function getFeatureFlagOnServer(
+  flag: string,
+  cookies: any,
+  apiKey: string,
+  options?: {
+    host?: string;
+    timeout?: number;
+    defaultValue?: any;
+  }
+): Promise<any> {
+  return await serverGetFeatureFlag(flag, cookies, apiKey, options);
+}
+
+/**
+ * Get all feature flags on the server
+ */
+export async function getAllFeatureFlagsOnServer(
+  cookies: any,
+  apiKey: string,
+  options?: {
+    host?: string;
+    timeout?: number;
+  }
+): Promise<FeatureFlags> {
+  return await serverGetAllFeatureFlags(cookies, apiKey, options);
+}
+
+/**
+ * Get PostHog bootstrap data for server-side rendering
+ */
+export async function getPostHogBootstrapDataOnServer(
+  cookies: any,
+  apiKey: string,
+  options?: {
+    host?: string;
+    timeout?: number;
+  }
+): Promise<BootstrapData> {
+  return await getCompleteBootstrapData(cookies, apiKey, options);
+}
+
+/**
+ * Enhanced analytics manager with PostHog bootstrap for SSR
+ */
+export async function createNextJSServerAnalyticsWithBootstrap(
+  cookies: any,
+  apiKey: string,
+  options?: {
+    host?: string;
+    timeout?: number;
+    providers?: Record<string, any>;
+    nextjs?: Omit<NextJSServerAnalyticsConfig['nextjs'], 'posthog'>;
+  }
+): Promise<{
+  analytics: NextJSServerAnalyticsManager;
+  bootstrapData: BootstrapData;
+}> {
+  // Get bootstrap data
+  const bootstrapData = await getCompleteBootstrapData(cookies, apiKey, {
+    host: options?.host,
+    timeout: options?.timeout
+  });
+
+  // Create config with server-side settings
+  const config: NextJSServerAnalyticsConfig = {
+    providers: {
+      posthog: createPostHogConfig(apiKey, {
+        host: options?.host
+      }),
+      ...options?.providers
+    },
+    nextjs: {
+      ...options?.nextjs,
+      posthog: {
+        cookies,
+        apiKey,
+        host: options?.host,
+        timeout: options?.timeout
+      }
+    }
+  };
+
+  const analytics = new NextJSServerAnalyticsManager(config);
+  await analytics.initialize();
+
+  return { analytics, bootstrapData };
+}

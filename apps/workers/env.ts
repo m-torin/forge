@@ -1,7 +1,6 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
-import { keys as analytics } from '@repo/analytics/keys';
 import { keys as auth } from '@repo/auth/keys';
 import { keys as core } from '@repo/config/next/keys';
 import { keys as database } from '@repo/database/keys';
@@ -11,7 +10,7 @@ import { keys as security } from '@repo/security/keys';
 
 export const env = createEnv({
   client: {},
-  extends: [auth(), analytics(), core(), database(), email(), observability(), security()],
+  extends: [auth(), core(), database(), email(), observability(), security()],
   runtimeEnv: {
     // QStash Core
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,

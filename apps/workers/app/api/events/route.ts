@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { devLog as logger } from '@repo/orchestration';
+import { env } from '../../../env';
 
 export async function GET(request: NextRequest) {
   // Create a ReadableStream for SSE
@@ -35,13 +36,23 @@ export async function GET(request: NextRequest) {
 
         try {
           // Fetch latest workflow runs
-          const response = await fetch(`${request.nextUrl.origin}/api/client/logs?count=50`);
+          const logsUrl = `${request.nextUrl.origin}/api/client/logs?count=50`;
+          logger.info(`SSE: Fetching from ${logsUrl}`);
+          
+          // Use service API key for internal authentication
+          const headers: Record<string, string> = {};
+          if (env.SERVICE_API_KEY) {
+            headers['x-api-key'] = env.SERVICE_API_KEY;
+          }
+          
+          const response = await fetch(logsUrl, { headers });
 
           if (!response.ok) {
-            logger.warn(`SSE: API returned ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            logger.warn(`SSE: API returned ${response.status} ${response.statusText}: ${errorText}`);
             sendEvent({
               type: 'error',
-              message: `API error: ${response.status}`,
+              message: `API error: ${response.status} - ${errorText}`,
               timestamp: Date.now(),
             });
             return;

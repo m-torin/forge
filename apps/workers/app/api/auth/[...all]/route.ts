@@ -28,7 +28,7 @@ const rateLimitedAuth = async (request: Request) => {
   }
 
   // Pass through to auth handler
-  return auth(request);
+  return auth.handler(request);
 };
 
 export { rateLimitedAuth as GET, rateLimitedAuth as POST };

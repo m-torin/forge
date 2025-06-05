@@ -2,21 +2,9 @@
 
 import { Button, Container, Stack, Text, Title } from '@mantine/core';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-import { analytics } from '@repo/analytics';
 
 export default function UnauthorizedPage() {
   const router = useRouter();
-
-  useEffect(() => {
-    // Track page view
-    analytics.capture('page_viewed', {
-      app: 'workers',
-      page: 'workers-unauthorized',
-      title: 'Workers Unauthorized',
-    });
-  }, []);
 
   return (
     <Container py={100} size="sm">

@@ -47,7 +47,7 @@ export interface BatchProcessingResult<T> extends BaseOperationResult {
  * Delegates to the centralized BatchProcessor with workflow context
  */
 export async function processBatches<TInput, TOutput>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   stepName: string,
   items: TInput[],
   processor: (item: TInput, index: number, batchIndex: number) => Promise<TOutput>,
@@ -107,7 +107,7 @@ export async function processBatches<TInput, TOutput>(
  * Process a single batch
  */
 async function _processSingleBatch<TInput, TOutput>(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   batch: TInput[],
   processor: (item: TInput, index: number, batchIndex: number) => Promise<TOutput>,
   batchIndex: number,
@@ -165,18 +165,18 @@ async function _processSingleBatch<TInput, TOutput>(
 /**
  * Batch HTTP requests with QStash
  */
-export async function batchHTTPRequests(
-  context: WorkflowContext<any>,
+export async function batchHTTPRequests<TResponse = unknown>(
+  context: WorkflowContext<unknown>,
   stepName: string,
   requests: {
     id: string;
     url: string;
     method?: string;
-    body?: any;
+    body?: unknown;
     headers?: Record<string, string>;
   }[],
   config: BatchConfig,
-): Promise<BatchProcessingResult<{ id: string; response?: any; error?: string }>> {
+): Promise<BatchProcessingResult<{ id: string; response?: TResponse; error?: string }>> {
   return processBatches(
     context,
     stepName,
@@ -192,7 +192,7 @@ export async function batchHTTPRequests(
           },
           method: request.method || 'POST',
           retries: 2,
-        } as any);
+        });
 
         return {
           id: request.id,
@@ -212,18 +212,18 @@ export async function batchHTTPRequests(
 /**
  * Batch webhook notifications
  */
-export async function batchWebhookNotifications(
-  context: WorkflowContext<any>,
+export async function batchWebhookNotifications<TResponse = unknown>(
+  context: WorkflowContext<unknown>,
   stepName: string,
   notifications: {
     id: string;
     url: string;
-    payload: any;
+    payload: unknown;
     headers?: Record<string, string>;
   }[],
   config: BatchConfig,
 ): Promise<
-  BatchProcessingResult<{ id: string; success: boolean; response?: any; error?: string }>
+  BatchProcessingResult<{ id: string; success: boolean; response?: TResponse; error?: string }>
 > {
   return processBatches(
     context,

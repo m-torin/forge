@@ -1,0 +1,498 @@
+/**
+ * Enhanced Scheduling Capabilities
+ * Advanced cron scheduling with timezone handling and schedule management
+ */
+
+import type { WorkflowDefinition, WorkflowProvider } from '../types/index.js';
+
+export interface ScheduleConfig {
+  /** Cron expression */
+  cron: string;
+  /** Timezone for schedule execution (IANA timezone) */
+  timezone?: string;
+  /** Maximum number of executions (undefined for unlimited) */
+  maxExecutions?: number;
+  /** Start time for schedule (ISO string) */
+  startTime?: string;
+  /** End time for schedule (ISO string) */
+  endTime?: string;
+  /** Whether to catch up on missed executions */
+  catchUp?: boolean;
+  /** Schedule metadata */
+  metadata?: Record<string, unknown>;
+}
+
+export interface ScheduleStatus {
+  /** Unique schedule identifier */
+  id: string;
+  /** Associated workflow ID */
+  workflowId: string;
+  /** Schedule configuration */
+  config: ScheduleConfig;
+  /** Current status */
+  status: 'active' | 'paused' | 'completed' | 'error';
+  /** Next execution time */
+  nextExecution?: Date;
+  /** Last execution time */
+  lastExecution?: Date;
+  /** Number of executions completed */
+  executionCount: number;
+  /** Creation timestamp */
+  createdAt: Date;
+  /** Last update timestamp */
+  updatedAt: Date;
+  /** Error message if status is 'error' */
+  error?: string;
+}
+
+export interface ScheduleExecution {
+  /** Unique execution identifier */
+  id: string;
+  /** Schedule ID */
+  scheduleId: string;
+  /** Workflow execution ID */
+  workflowExecutionId: string;
+  /** Scheduled execution time */
+  scheduledAt: Date;
+  /** Actual execution start time */
+  executedAt: Date;
+  /** Execution completion time */
+  completedAt?: Date;
+  /** Execution status */
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  /** Execution result or error */
+  result?: unknown;
+  /** Error details if failed */
+  error?: string;
+}
+
+export interface ScheduleHealthCheck {
+  /** Schedule ID */
+  scheduleId: string;
+  /** Health status */
+  status: 'healthy' | 'warning' | 'critical';
+  /** Last check timestamp */
+  lastCheck: Date;
+  /** Issues found during health check */
+  issues: string[];
+  /** Performance metrics */
+  metrics: {
+    avgExecutionTime: number;
+    successRate: number;
+    lastExecutionGap: number;
+  };
+}
+
+export class AdvancedScheduler {
+  private provider: WorkflowProvider;
+  private schedules = new Map<string, ScheduleStatus>();
+  private timers = new Map<string, NodeJS.Timeout>();
+
+  constructor(provider: WorkflowProvider) {
+    this.provider = provider;
+  }
+
+  /**
+   * Create a new schedule for a workflow
+   */
+  async createSchedule(
+    workflowId: string,
+    config: ScheduleConfig,
+    scheduleId?: string
+  ): Promise<string> {
+    const id = scheduleId || this.generateScheduleId();
+    
+    // Validate cron expression
+    this.validateCronExpression(config.cron);
+    
+    // Validate timezone if provided
+    if (config.timezone) {
+      this.validateTimezone(config.timezone);
+    }
+
+    const schedule: ScheduleStatus = {
+      id,
+      workflowId,
+      config,
+      status: 'active',
+      nextExecution: this.calculateNextExecution(config),
+      executionCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.schedules.set(id, schedule);
+    await this.scheduleNext(id);
+
+    return id;
+  }
+
+  /**
+   * Update an existing schedule
+   */
+  async updateSchedule(scheduleId: string, config: Partial<ScheduleConfig>): Promise<void> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      throw new Error(`Schedule ${scheduleId} not found`);
+    }
+
+    // Validate new cron expression if provided
+    if (config.cron) {
+      this.validateCronExpression(config.cron);
+    }
+
+    // Validate timezone if provided
+    if (config.timezone) {
+      this.validateTimezone(config.timezone);
+    }
+
+    // Update schedule configuration
+    schedule.config = { ...schedule.config, ...config };
+    schedule.updatedAt = new Date();
+    
+    // Recalculate next execution
+    schedule.nextExecution = this.calculateNextExecution(schedule.config);
+
+    // Reschedule
+    this.clearTimer(scheduleId);
+    if (schedule.status === 'active') {
+      await this.scheduleNext(scheduleId);
+    }
+  }
+
+  /**
+   * Pause a schedule
+   */
+  async pauseSchedule(scheduleId: string): Promise<void> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      throw new Error(`Schedule ${scheduleId} not found`);
+    }
+
+    schedule.status = 'paused';
+    schedule.updatedAt = new Date();
+    this.clearTimer(scheduleId);
+  }
+
+  /**
+   * Resume a paused schedule
+   */
+  async resumeSchedule(scheduleId: string): Promise<void> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      throw new Error(`Schedule ${scheduleId} not found`);
+    }
+
+    if (schedule.status !== 'paused') {
+      throw new Error(`Schedule ${scheduleId} is not paused`);
+    }
+
+    schedule.status = 'active';
+    schedule.nextExecution = this.calculateNextExecution(schedule.config);
+    schedule.updatedAt = new Date();
+    
+    await this.scheduleNext(scheduleId);
+  }
+
+  /**
+   * Delete a schedule
+   */
+  async deleteSchedule(scheduleId: string): Promise<void> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      throw new Error(`Schedule ${scheduleId} not found`);
+    }
+
+    this.clearTimer(scheduleId);
+    this.schedules.delete(scheduleId);
+  }
+
+  /**
+   * Get schedule status
+   */
+  getSchedule(scheduleId: string): ScheduleStatus | undefined {
+    return this.schedules.get(scheduleId);
+  }
+
+  /**
+   * List all schedules
+   */
+  listSchedules(filter?: {
+    workflowId?: string;
+    status?: ScheduleStatus['status'];
+  }): ScheduleStatus[] {
+    const schedules = Array.from(this.schedules.values());
+    
+    if (!filter) {
+      return schedules;
+    }
+
+    return schedules.filter(schedule => {
+      if (filter.workflowId && schedule.workflowId !== filter.workflowId) {
+        return false;
+      }
+      if (filter.status && schedule.status !== filter.status) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+   * Perform health check on schedules
+   */
+  async performHealthCheck(scheduleIds?: string[]): Promise<ScheduleHealthCheck[]> {
+    const schedulesToCheck = scheduleIds 
+      ? scheduleIds.map(id => this.schedules.get(id)).filter(Boolean) as ScheduleStatus[]
+      : Array.from(this.schedules.values());
+
+    const healthChecks: ScheduleHealthCheck[] = [];
+
+    for (const schedule of schedulesToCheck) {
+      const issues: string[] = [];
+      
+      // Check if schedule is overdue
+      if (schedule.nextExecution && schedule.nextExecution < new Date()) {
+        const overdue = Date.now() - schedule.nextExecution.getTime();
+        if (overdue > 300000) { // 5 minutes
+          issues.push(`Schedule is overdue by ${Math.round(overdue / 1000)}s`);
+        }
+      }
+
+      // Check execution frequency
+      if (schedule.lastExecution) {
+        const gap = Date.now() - schedule.lastExecution.getTime();
+        const expectedGap = this.getExpectedExecutionGap(schedule.config.cron);
+        if (gap > expectedGap * 2) {
+          issues.push('Execution frequency is lower than expected');
+        }
+      }
+
+      // Determine health status
+      let status: ScheduleHealthCheck['status'] = 'healthy';
+      if (issues.length > 0) {
+        status = issues.some(issue => issue.includes('overdue')) ? 'critical' : 'warning';
+      }
+
+      healthChecks.push({
+        scheduleId: schedule.id,
+        status,
+        lastCheck: new Date(),
+        issues,
+        metrics: {
+          avgExecutionTime: 0, // Would be calculated from execution history
+          successRate: 1, // Would be calculated from execution history
+          lastExecutionGap: schedule.lastExecution 
+            ? Date.now() - schedule.lastExecution.getTime()
+            : 0,
+        },
+      });
+    }
+
+    return healthChecks;
+  }
+
+  /**
+   * Handle catch-up executions for missed schedules
+   */
+  async catchUpMissedExecutions(scheduleId: string): Promise<string[]> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule || !schedule.config.catchUp) {
+      return [];
+    }
+
+    const missedExecutions = this.calculateMissedExecutions(schedule);
+    const executionIds: string[] = [];
+
+    for (const executionTime of missedExecutions) {
+      try {
+        const executionId = await this.executeScheduledWorkflow(schedule, executionTime);
+        executionIds.push(executionId);
+      } catch (error) {
+        console.error(`Failed to catch up execution for schedule ${scheduleId}:`, error);
+      }
+    }
+
+    return executionIds;
+  }
+
+  // Private methods
+
+  private async scheduleNext(scheduleId: string): Promise<void> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule || schedule.status !== 'active') {
+      return;
+    }
+
+    const nextExecution = schedule.nextExecution;
+    if (!nextExecution) {
+      return;
+    }
+
+    const delay = nextExecution.getTime() - Date.now();
+    
+    if (delay <= 0) {
+      // Execute immediately if overdue
+      await this.executeSchedule(scheduleId);
+    } else {
+      // Schedule for future execution
+      const timer = setTimeout(() => {
+        this.executeSchedule(scheduleId);
+      }, delay);
+      
+      this.timers.set(scheduleId, timer);
+    }
+  }
+
+  private async executeSchedule(scheduleId: string): Promise<void> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      return;
+    }
+
+    try {
+      const executionTime = schedule.nextExecution || new Date();
+      await this.executeScheduledWorkflow(schedule, executionTime);
+      
+      // Update schedule
+      schedule.lastExecution = executionTime;
+      schedule.executionCount++;
+      schedule.updatedAt = new Date();
+
+      // Check if max executions reached
+      if (schedule.config.maxExecutions && schedule.executionCount >= schedule.config.maxExecutions) {
+        schedule.status = 'completed';
+        return;
+      }
+
+      // Calculate next execution
+      schedule.nextExecution = this.calculateNextExecution(schedule.config, executionTime);
+      
+      // Schedule next execution
+      await this.scheduleNext(scheduleId);
+      
+    } catch (error) {
+      schedule.status = 'error';
+      schedule.error = error instanceof Error ? error.message : String(error);
+      schedule.updatedAt = new Date();
+    }
+  }
+
+  private async executeScheduledWorkflow(
+    schedule: ScheduleStatus, 
+    scheduledTime: Date
+  ): Promise<string> {
+    // Execute workflow through provider
+    const executionId = await this.provider.executeWorkflow(schedule.workflowId, {
+      scheduledExecution: true,
+      scheduledTime: scheduledTime.toISOString(),
+      scheduleId: schedule.id,
+    });
+
+    return executionId;
+  }
+
+  private calculateNextExecution(config: ScheduleConfig, fromTime?: Date): Date | undefined {
+    const baseTime = fromTime || new Date();
+    
+    // This is a simplified implementation
+    // In a real implementation, you'd use a proper cron parser like 'node-cron'
+    return new Date(baseTime.getTime() + 60000); // Next minute for now
+  }
+
+  private calculateMissedExecutions(schedule: ScheduleStatus): Date[] {
+    // Implementation would calculate all missed executions since last execution
+    // This is a placeholder
+    return [];
+  }
+
+  private getExpectedExecutionGap(cron: string): number {
+    // Parse cron expression to determine expected gap between executions
+    // This is a simplified implementation
+    return 60000; // 1 minute
+  }
+
+  private validateCronExpression(cron: string): void {
+    // Basic validation - in production, use a proper cron validator
+    if (!cron || typeof cron !== 'string') {
+      throw new Error('Invalid cron expression');
+    }
+  }
+
+  private validateTimezone(timezone: string): void {
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: timezone });
+    } catch {
+      throw new Error(`Invalid timezone: ${timezone}`);
+    }
+  }
+
+  private clearTimer(scheduleId: string): void {
+    const timer = this.timers.get(scheduleId);
+    if (timer) {
+      clearTimeout(timer);
+      this.timers.delete(scheduleId);
+    }
+  }
+
+  private generateScheduleId(): string {
+    return `schedule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+/**
+ * Create a new advanced scheduler instance
+ */
+export function createAdvancedScheduler(provider: WorkflowProvider): AdvancedScheduler {
+  return new AdvancedScheduler(provider);
+}
+
+/**
+ * Utility functions for working with schedules
+ */
+export const ScheduleUtils = {
+  /**
+   * Validate a cron expression
+   */
+  validateCron(cron: string): boolean {
+    try {
+      // Basic validation - should use proper cron parser in production
+      const parts = cron.split(' ');
+      return parts.length === 5 || parts.length === 6;
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * Parse a cron expression to human-readable format
+   */
+  cronToHuman(cron: string): string {
+    // Simplified implementation - use a proper cron parser in production
+    return `Schedule: ${cron}`;
+  },
+
+  /**
+   * Get next N execution times for a cron expression
+   */
+  getNextExecutions(cron: string, count: number, timezone?: string): Date[] {
+    // Implementation would use proper cron parser
+    const executions: Date[] = [];
+    let current = new Date();
+    
+    for (let i = 0; i < count; i++) {
+      current = new Date(current.getTime() + 60000 * (i + 1));
+      executions.push(current);
+    }
+    
+    return executions;
+  },
+
+  /**
+   * Check if a time matches a cron expression
+   */
+  cronMatches(cron: string, time: Date, timezone?: string): boolean {
+    // Implementation would use proper cron parser
+    return true; // Placeholder
+  },
+};

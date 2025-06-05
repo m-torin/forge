@@ -1,8 +1,7 @@
 'use client';
 
-import { platformAnalytics } from '@/lib/client-analytics';
-import { useId, useToggle } from '@mantine/hooks';
-import { createContext, useContext, useEffect, useMemo, useOptimistic, useState } from 'react';
+import { useId, useToggle, usePrevious, useShallowEffect, useDebouncedValue } from '@mantine/hooks';
+import { createContext, useContext, useEffect, useMemo, useOptimistic, useState, startTransition, useRef } from 'react';
 
 import { notify } from '@repo/notifications/mantine-notifications';
 // import { auth } from '@repo/auth/client'; // TODO: Add auth when needed
@@ -187,21 +186,33 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     return mockWaiters;
   }, [filteredRuns]);
 
+  // Use Mantine's usePrevious to track previous runs
+  const previousRuns = usePrevious(runs);
+  
+  // Debounce runs for logging to avoid spam
+  const [debouncedRuns] = useDebouncedValue(runs, 1000);
+  const previousDebouncedRuns = usePrevious(debouncedRuns);
+  
+  // Track last empty state log time
+  const lastEmptyLogRef = useRef<number>(0);
+
   // SSE Connection
   useEffect(() => {
+    console.log('Setting up SSE connection to /api/events');
     const eventSource = new EventSource('/api/events');
 
     eventSource.onopen = () => {
+      console.log('SSE connection opened');
       toggleSSE(true);
-      platformAnalytics.trackSSEEvent('connected');
     };
-    eventSource.onerror = () => {
+    eventSource.onerror = (error) => {
+      console.error('SSE connection error:', error);
       toggleSSE(false);
-      platformAnalytics.trackSSEEvent('error');
     };
 
     eventSource.onmessage = ({ data }) => {
-      const { type, runs: newRuns } = JSON.parse(data);
+      const parsed = JSON.parse(data);
+      const { type, runs: newRuns } = parsed;
 
       if (type === 'workflow-update' && newRuns) {
         setRuns(newRuns);
@@ -211,10 +222,14 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
 
         newRuns.forEach((run: WorkflowRun) => {
           const endpoint = extractEndpointFromUrl(run.workflowUrl);
-          if (!endpoint || !triggeredWorkflows[endpoint]) return;
+          if (!endpoint) return;
 
           const allSteps = run.steps.flatMap((g) => g.steps);
-          const completedSteps = allSteps.filter((s) => s.status === 'completed').length;
+          const completedSteps = allSteps.filter((s) => 
+            s.status === 'completed' || 
+            s.state === 'STEP_SUCCESS' || 
+            s.completedAt
+          ).length;
           const totalSteps = allSteps.length;
           const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
@@ -227,43 +242,6 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
                   ? 'cancelled'
                   : 'running';
 
-          const prevStatus = triggeredWorkflows[endpoint]?.status;
-
-          // Show completion notification and track analytics
-          if (prevStatus === 'running' && status !== 'running') {
-            // Extract workflow type
-            const workflowType = endpoint.split('/').pop() || 'unknown';
-
-            // Track workflow completion as platform event
-            platformAnalytics.track('workflow.completed', {
-              completedSteps,
-              duration:
-                run.workflowRunCompletedAt && run.workflowRunCreatedAt
-                  ? run.workflowRunCompletedAt - run.workflowRunCreatedAt
-                  : undefined,
-              endpoint,
-              status,
-              steps: totalSteps,
-              workflowRunId: run.workflowRunId,
-              workflowType,
-            });
-
-            // Use centralized notification system
-            if (status === 'completed') {
-              notify.success(`${endpoint} has completed successfully`, {
-                title: 'Workflow Completed',
-              });
-            } else if (status === 'failed') {
-              notify.error(`${endpoint} has failed`, {
-                title: 'Workflow Failed',
-              });
-            } else if (status === 'cancelled') {
-              notify.warning(`${endpoint} was cancelled`, {
-                title: 'Workflow Cancelled',
-              });
-            }
-          }
-
           updates[endpoint] = {
             completedSteps,
             progress,
@@ -274,7 +252,34 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (Object.keys(updates).length > 0) {
-          setTriggeredWorkflows((prev) => ({ ...prev, ...updates }));
+          setTriggeredWorkflows((prev) => {
+            const newState = { ...prev };
+            
+            Object.entries(updates).forEach(([endpoint, newStatus]) => {
+              const prevStatus = prev[endpoint]?.status;
+              
+              // Show completion notification
+              if (prevStatus === 'running' && newStatus.status !== 'running') {
+                if (newStatus.status === 'completed') {
+                  notify.success(`${endpoint.split('/').pop()} has completed successfully`, {
+                    title: 'Workflow Completed',
+                  });
+                } else if (newStatus.status === 'failed') {
+                  notify.error(`${endpoint.split('/').pop()} has failed`, {
+                    title: 'Workflow Failed',
+                  });
+                } else if (newStatus.status === 'cancelled') {
+                  notify.warning(`${endpoint.split('/').pop()} was cancelled`, {
+                    title: 'Workflow Cancelled',
+                  });
+                }
+              }
+              
+              newState[endpoint] = newStatus;
+            });
+            
+            return newState;
+          });
         }
       }
     };
@@ -282,9 +287,52 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     return () => {
       eventSource.close();
       toggleSSE(false);
-      platformAnalytics.trackSSEEvent('disconnected');
     };
-  }, [triggeredWorkflows, uniqueId, toggleSSE]);
+  }, [uniqueId, toggleSSE]);
+
+  // Use Mantine's useShallowEffect to log changes only when runs actually change
+  useShallowEffect(() => {
+    if (!previousDebouncedRuns) return; // Skip initial render
+    
+    const hasChanged = debouncedRuns.length !== previousDebouncedRuns.length ||
+      debouncedRuns.some((run, index) => {
+        const prevRun = previousDebouncedRuns[index];
+        return !prevRun || 
+          run.workflowRunId !== prevRun.workflowRunId ||
+          run.workflowState !== prevRun.workflowState ||
+          run.steps.length !== prevRun.steps.length;
+      });
+
+    if (hasChanged) {
+      console.log('SSE: Workflow update detected', {
+        previousCount: previousDebouncedRuns.length,
+        newCount: debouncedRuns.length,
+        changes: {
+          added: debouncedRuns.filter(r => !previousDebouncedRuns.find(pr => pr.workflowRunId === r.workflowRunId)),
+          removed: previousDebouncedRuns.filter(pr => !debouncedRuns.find(r => r.workflowRunId === pr.workflowRunId)),
+          updated: debouncedRuns.filter(r => {
+            const prev = previousDebouncedRuns.find(pr => pr.workflowRunId === r.workflowRunId);
+            return prev && prev.workflowState !== r.workflowState;
+          })
+        }
+      });
+      
+      if (debouncedRuns.length > 0) {
+        console.log('Active workflows:', debouncedRuns.map(r => ({
+          id: r.workflowRunId,
+          state: r.workflowState,
+          url: r.workflowUrl.split('/').pop()
+        })));
+      }
+    } else if (debouncedRuns.length === 0) {
+      // Only log empty state every 30 seconds
+      const now = Date.now();
+      if (now - lastEmptyLogRef.current > 30000) {
+        console.log('SSE: No active workflows');
+        lastEmptyLogRef.current = now;
+      }
+    }
+  }, [debouncedRuns]);
 
   const triggerWorkflow = async (endpoint: string, payload: any) => {
     setLoading(endpoint, true);
@@ -292,17 +340,14 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     // Extract workflow type from endpoint
     const workflowType = endpoint.split('/').pop() || 'unknown';
 
-    // Track workflow trigger as user action
-    platformAnalytics.trackUserAction('trigger', {
-      endpoint,
-      hasCustomPayload: !!payload,
-      workflowType,
-    });
+    // Workflow trigger tracking removed
 
-    // Optimistic update
-    addOptimisticWorkflow({
-      endpoint,
-      status: { completedSteps: 0, progress: 0, status: 'running', totalSteps: 0 },
+    // Optimistic update wrapped in startTransition
+    startTransition(() => {
+      addOptimisticWorkflow({
+        endpoint,
+        status: { completedSteps: 0, progress: 0, status: 'running', totalSteps: 0 },
+      });
     });
 
     try {

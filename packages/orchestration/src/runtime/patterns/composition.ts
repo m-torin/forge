@@ -19,17 +19,17 @@ import type { WorkflowContext } from '../../utils/types';
 /**
  * Compose multiple workflow steps into a single workflow
  */
-export function composeWorkflow<T = unknown>(
+export function composeWorkflow<T = unknown, TData = unknown>(
   steps: {
     name: string;
-    handler: (context: WorkflowContext<T>, data: any) => Promise<any>;
-    condition?: (data: any) => boolean;
-    errorHandler?: (error: Error, context: WorkflowContext<T>) => Promise<any>;
+    handler: (context: WorkflowContext<T>, data: TData) => Promise<TData>;
+    condition?: (data: TData) => boolean;
+    errorHandler?: (error: Error, context: WorkflowContext<T>) => Promise<TData>;
   }[],
 ) {
   return async (context: WorkflowContext<T>) => {
-    let currentData = context.requestPayload;
-    const results: Record<string, any> = {};
+    let currentData = (context.requestPayload as unknown) as TData;
+    const results: Record<string, TData> = {};
 
     for (const step of steps) {
       // Check condition if provided
@@ -81,16 +81,16 @@ export function composeWorkflow<T = unknown>(
 /**
  * Create a data processing workflow with common patterns
  */
-export function createDataProcessingWorkflow<T, R>(config: {
-  extract: (context: WorkflowContext<T>) => Promise<any[]>;
+export function createDataProcessingWorkflow<T, R, TExtracted = unknown>(config: {
+  extract: (context: WorkflowContext<T>) => Promise<TExtracted[]>;
   transform?: {
     name: string;
-    operation: (data: any[]) => Promise<any[]>;
+    operation: (data: TExtracted[]) => Promise<TExtracted[]>;
     parallel?: boolean;
   }[];
-  load: (context: WorkflowContext<T>, data: any[]) => Promise<R>;
-  validate?: (data: any[]) => Promise<{ valid: boolean; errors?: string[] }>;
-  requiresApproval?: (data: any[]) => boolean;
+  load: (context: WorkflowContext<T>, data: TExtracted[]) => Promise<R>;
+  validate?: (data: TExtracted[]) => Promise<{ valid: boolean; errors?: string[] }>;
+  requiresApproval?: (data: TExtracted[]) => boolean;
   batchSize?: number;
 }) {
   return createWorkflow<T>()
@@ -134,7 +134,7 @@ export function createDataProcessingWorkflow<T, R>(config: {
             });
 
             // Merge parallel results (assuming last one wins for now)
-            transformedData = Object.values(parallelResults).pop() as any[];
+            transformedData = Object.values(parallelResults).pop() as TExtracted[];
             devLog.workflow(context, 'Parallel transforms completed', {
               resultCount: transformedData.length,
             });
@@ -192,7 +192,7 @@ export function createDataProcessingWorkflow<T, R>(config: {
           const results = await processBatchPattern(context, {
             batchSize: config.batchSize,
             items: transformedData,
-            processor: async (batch: any) =>
+            processor: async (batch: TExtracted) =>
               withWorkflowErrorHandling(() => config.load(context, [batch]), 'batch-load', {
                 batchSize: config.batchSize,
                 workflowRunId: context.workflowRunId,
@@ -227,17 +227,17 @@ export function createDataProcessingWorkflow<T, R>(config: {
 /**
  * Create an event-driven workflow with state management
  */
-export function createEventDrivenWorkflow<TState = any>(config: {
+export function createEventDrivenWorkflow<TState = unknown, TEventData = unknown, TResult = unknown>(config: {
   initialState: TState;
   events: Record<
     string,
     {
-      handler: (context: WorkflowContext<any>, state: TState, eventData: any) => Promise<TState>;
+      handler: (context: WorkflowContext<unknown>, state: TState, eventData: TEventData) => Promise<TState>;
       timeout?: string;
       nextEvent?: string;
     }
   >;
-  finalizer?: (context: WorkflowContext<any>, state: TState) => Promise<any>;
+  finalizer?: (context: WorkflowContext<unknown>, state: TState) => Promise<TResult>;
 }) {
   return createWorkflow()
     .withRetries(1) // Event-driven workflows typically shouldn't retry
@@ -251,7 +251,7 @@ export function createEventDrivenWorkflow<TState = any>(config: {
       );
 
       const stateMachine = new StateMachine(
-        (context.requestPayload as any).startEvent || Object.keys(config.events)[0],
+        ((context.requestPayload as Record<string, unknown>)?.startEvent as string) || Object.keys(config.events)[0],
         transitions,
         config.initialState,
       );
@@ -275,7 +275,7 @@ export function createEventDrivenWorkflow<TState = any>(config: {
         const { eventData, timeout } = await context.waitForEvent(
           `wait-${currentEvent}`,
           currentEvent,
-          { timeout: (eventConfig.timeout || '1h') as any },
+          { timeout: (eventConfig.timeout || '1h') as Parameters<typeof context.waitForEvent>[2]['timeout'] },
         );
 
         if (timeout) {
@@ -289,7 +289,7 @@ export function createEventDrivenWorkflow<TState = any>(config: {
         // Process event
         state = await context.run(`process-${currentEvent}`, () =>
           withWorkflowErrorHandling(
-            () => eventConfig.handler(context, state, eventData),
+            () => eventConfig.handler(context, state, eventData as TEventData),
             `event:${currentEvent}`,
             {
               eventData,
@@ -338,15 +338,15 @@ export function createEventDrivenWorkflow<TState = any>(config: {
 /**
  * Create a saga pattern workflow for distributed transactions
  */
-export function createSagaWorkflow<T>(config: {
+export function createSagaWorkflow<T, TStepData = unknown>(config: {
   steps: {
     name: string;
-    execute: (context: WorkflowContext<T>, data: any) => Promise<any>;
-    compensate: (context: WorkflowContext<T>, data: any, error: Error) => Promise<void>;
+    execute: (context: WorkflowContext<T>, data: TStepData) => Promise<TStepData>;
+    compensate: (context: WorkflowContext<T>, data: TStepData, error: Error) => Promise<void>;
   }[];
 }) {
   return createWorkflow<T>().build(async (context) => {
-    const completedSteps: { step: (typeof config.steps)[0]; result: any }[] = [];
+    const completedSteps: { step: (typeof config.steps)[0]; result: TStepData }[] = [];
     let lastResult = context.requestPayload;
 
     devLog.workflow(context, 'Starting saga workflow', {
@@ -361,14 +361,14 @@ export function createSagaWorkflow<T>(config: {
 
         const result = await context.run(`${step.name}-execute`, () =>
           withWorkflowErrorHandling(
-            () => step.execute(context, lastResult),
+            () => step.execute(context, lastResult as TStepData),
             `saga-execute:${step.name}`,
             { stepName: step.name, workflowRunId: context.workflowRunId },
           ),
         );
 
         completedSteps.push({ result, step });
-        lastResult = result;
+        lastResult = result as T;
 
         devLog.workflow(context, `Completed saga step: ${step.name}`, {
           completedSteps: completedSteps.length,
@@ -522,12 +522,12 @@ export function createMonitoredWorkflow<T, R>(config: {
 /**
  * Workflow branching utility
  */
-export async function branch<T>(
-  context: WorkflowContext<any>,
+export async function branch<T, TResult = unknown>(
+  context: WorkflowContext<unknown>,
   config: {
     condition: (data: T) => string;
-    branches: Record<string, (context: WorkflowContext<any>, data: T) => Promise<any>>;
-    default?: (context: WorkflowContext<any>, data: T) => Promise<any>;
+    branches: Record<string, (context: WorkflowContext<unknown>, data: T) => Promise<TResult>>;
+    default?: (context: WorkflowContext<unknown>, data: T) => Promise<TResult>;
     data: T;
   },
 ) {
@@ -555,16 +555,16 @@ export async function branch<T>(
 /**
  * Create a workflow chain that passes results between workflows
  */
-export function createWorkflowChain<T>(
+export function createWorkflowChain<T, TIntermediate = unknown>(
   workflows: {
     name: string;
-    workflow: (context: WorkflowContext<any>) => Promise<any>;
-    transform?: (result: any) => any;
+    workflow: (context: WorkflowContext<TIntermediate>) => Promise<TIntermediate>;
+    transform?: (result: TIntermediate) => TIntermediate;
   }[],
 ) {
   return createWorkflow<T>().build(async (context) => {
-    let currentData: any = context.requestPayload;
-    const results: Record<string, any> = {};
+    let currentData: TIntermediate = (context.requestPayload as unknown) as TIntermediate;
+    const results: Record<string, TIntermediate> = {};
 
     devLog.workflow(context, 'Starting workflow chain', {
       totalWorkflows: workflows.length,
@@ -575,13 +575,13 @@ export function createWorkflowChain<T>(
       devLog.workflow(context, `Executing chain workflow: ${name}`, { currentData });
 
       // Execute workflow with transformed data
-      const result = await context.run('chain-workflow', async () =>
+      const result = await context.run(`chain-workflow-${name}`, async () =>
         withWorkflowErrorHandling(
           () => {
             // In a real implementation, you would use context.invoke
             // For now, we'll just return a placeholder with proper logging
             devLog.workflow(context, `Would invoke ${name} workflow with data:`, currentData);
-            return Promise.resolve({ data: currentData, success: true });
+            return Promise.resolve({ data: currentData, success: true } as TIntermediate);
           },
           `workflow-chain:${name}`,
           { workflowName: name, workflowRunId: context.workflowRunId },
@@ -591,7 +591,7 @@ export function createWorkflowChain<T>(
       results[name] = result;
 
       // Transform result for next workflow
-      currentData = transform ? transform(result) : result;
+      currentData = transform ? transform(result as TIntermediate) : (result as TIntermediate);
 
       devLog.workflow(context, `Completed chain workflow: ${name}`, {
         result,

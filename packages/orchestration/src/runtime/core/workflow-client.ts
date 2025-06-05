@@ -22,17 +22,21 @@ export class WorkflowClient {
   private client: Client;
 
   constructor(options: { token?: string; baseUrl?: string } = {}) {
-    const baseUrl = options.baseUrl || process.env.QSTASH_URL;
+    // Use local QStash in development
+    const isDev = process.env.NODE_ENV === 'development';
+    const defaultBaseUrl = isDev ? 'http://localhost:8080' : process.env.QSTASH_URL;
+    
+    const baseUrl = options.baseUrl || defaultBaseUrl;
     const token = options.token || process.env.QSTASH_TOKEN;
 
     // Handle missing environment variables gracefully during build
-    if (!token) {
+    if (!token && !isDev) {
       console.warn('QSTASH_TOKEN not provided - workflow client will not function properly');
     }
 
     this.client = new Client({
       baseUrl: baseUrl ? normalizeUrl(baseUrl) : undefined,
-      token: token || 'missing-token',
+      token: token || (isDev ? 'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=' : 'missing-token'),
     });
   }
 

@@ -93,7 +93,7 @@ export class WorkflowScheduler {
     const schedule = await this.client.schedules.create({
       body: config.body ? JSON.stringify(config.body) : undefined,
       cron: config.cron,
-      delay: config.delay as any,
+      delay: config.delay,
       destination: config.destination,
       headers: {
         'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export class WorkflowScheduler {
       },
       retries: config.retries,
       scheduleId: config.scheduleId,
-      timeout: config.timeout as any,
+      timeout: config.timeout,
     });
 
     return { scheduleId: schedule.scheduleId };
@@ -163,14 +163,16 @@ export class WorkflowScheduler {
    * Pause a schedule
    */
   async pauseSchedule(scheduleId: string): Promise<void> {
-    await (this.client.schedules.pause as any)(scheduleId);
+    // @ts-expect-error - QStash types may not include pause method
+    await this.client.schedules.pause(scheduleId);
   }
 
   /**
    * Resume a paused schedule
    */
   async resumeSchedule(scheduleId: string): Promise<void> {
-    await (this.client.schedules.resume as any)(scheduleId);
+    // @ts-expect-error - QStash types may not include resume method
+    await this.client.schedules.resume(scheduleId);
   }
 
   /**
@@ -191,12 +193,12 @@ export class WorkflowScheduler {
       createdAt: schedule.createdAt,
       cron: schedule.cron,
       destination: schedule.destination,
-      headers: (schedule as any).header || (schedule as any).headers || {},
+      headers: (schedule as Record<string, unknown>).header as Record<string, string> || (schedule as Record<string, unknown>).headers as Record<string, string> || {},
       isPaused: schedule.isPaused,
-      nextRun: (schedule as any).nextDelivery || (schedule as any).nextRun || null,
+      nextRun: ((schedule as Record<string, unknown>).nextDelivery as number) || ((schedule as Record<string, unknown>).nextRun as number) || 0,
       retries: schedule.retries || 0,
       scheduleId: schedule.scheduleId,
-      timeout: (schedule as any).timeoutInSeconds || (schedule as any).timeout || 30,
+      timeout: ((schedule as Record<string, unknown>).timeoutInSeconds as string) || ((schedule as Record<string, unknown>).timeout as string) || '30',
     };
   }
 
@@ -211,12 +213,12 @@ export class WorkflowScheduler {
       createdAt: schedule.createdAt,
       cron: schedule.cron,
       destination: schedule.destination,
-      headers: (schedule as any).header || (schedule as any).headers || {},
+      headers: (schedule as Record<string, unknown>).header as Record<string, string> || (schedule as Record<string, unknown>).headers as Record<string, string> || {},
       isPaused: schedule.isPaused,
-      nextRun: (schedule as any).nextDelivery || (schedule as any).nextRun || null,
+      nextRun: ((schedule as Record<string, unknown>).nextDelivery as number) || ((schedule as Record<string, unknown>).nextRun as number) || 0,
       retries: schedule.retries || 0,
       scheduleId: schedule.scheduleId,
-      timeout: (schedule as any).timeoutInSeconds || (schedule as any).timeout || 30,
+      timeout: ((schedule as Record<string, unknown>).timeoutInSeconds as string) || ((schedule as Record<string, unknown>).timeout as string) || '30',
     }));
   }
 
@@ -240,13 +242,14 @@ export class WorkflowScheduler {
   }> {
     // QStash API may not have logs method - use type assertion as fallback
     try {
-      const response = await (this.client.schedules as any).logs?.(scheduleId, { cursor });
+      // @ts-expect-error - QStash types may not include logs method
+      const response = await this.client.schedules.logs?.(scheduleId, { cursor });
       if (!response) {
         return { cursor: undefined, logs: [] };
       }
       return {
         cursor: response.cursor,
-        logs: response.logs.map((log: any) => ({
+        logs: response.logs.map((log: Record<string, unknown>) => ({
           url: log.url,
           body: log.body,
           createdAt: log.createdAt,
@@ -375,7 +378,7 @@ export interface ScheduleLog {
  * Context helper for workflow scheduling
  */
 export async function scheduleWorkflow(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   stepName: string,
   config: ScheduleConfig,
 ): Promise<{ scheduleId: string }> {
@@ -389,7 +392,7 @@ export async function scheduleWorkflow(
  * Context helper for per-user scheduling
  */
 export async function schedulePerUserWorkflow(
-  context: WorkflowContext<any>,
+  context: WorkflowContext<unknown>,
   stepName: string,
   config: PerUserScheduleConfig,
 ): Promise<{ scheduleId: string }> {
@@ -462,7 +465,7 @@ export function createScheduledWorkflow<T = unknown>(
         const { data } = payload;
         devLog.workflow(context, 'Processing scheduled workflow data', { dataType: typeof data });
 
-        const result = await handler(context as any, data as T);
+        const result = await handler(context as WorkflowContext<T>, data as T);
 
         devLog.workflow(context, 'Scheduled workflow completed successfully');
         return result;

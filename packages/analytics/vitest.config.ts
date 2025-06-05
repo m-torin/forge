@@ -1,10 +1,9 @@
 import { defineConfig } from 'vitest/config'
-import baseConfig from '@repo/testing/config/react'
 
 export default defineConfig({
-  ...baseConfig,
   test: {
-    ...baseConfig.test,
     environment: 'jsdom',
+    globals: true,
+    setupFiles: [],
   },
 })

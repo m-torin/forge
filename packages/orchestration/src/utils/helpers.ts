@@ -105,8 +105,14 @@ export function extractWithSelectors(
     const result: Record<string, unknown> = {};
 
     for (const [key, selector] of Object.entries(selectors)) {
-      // Simple dot notation path extraction
-      const value = selector.split('.').reduce((obj: any, key) => obj?.[key], content);
+      // Simple dot notation path extraction with proper typing
+      const value = selector.split('.').reduce<unknown>((obj, key) => {
+        if (obj && typeof obj === 'object' && key in obj) {
+          return (obj as Record<string, unknown>)[key];
+        }
+        return undefined;
+      }, content);
+      
       if (value !== undefined) {
         result[key] = value;
       }
@@ -322,10 +328,10 @@ export { extractPayload, validatePayload } from './validation';
 /**
  * Generic state machine for consistent state transitions
  */
-export class StateMachine<TState extends string, TContext = any> {
+export class StateMachine<TState extends string, TContext = unknown> {
   constructor(
     private state: TState,
-    private transitions: Record<TState, Partial<Record<string, TState>>>,
+    private readonly transitions: Record<TState, Partial<Record<string, TState>>>,
     private context?: TContext,
   ) {}
 
@@ -348,7 +354,12 @@ export class StateMachine<TState extends string, TContext = any> {
       throw new Error(`Invalid transition: ${event} from state ${this.state}`);
     }
 
-    this.state = stateTransitions[event]!;
+    const nextState = stateTransitions[event];
+    if (!nextState) {
+      throw new Error(`Invalid transition: ${event} from state ${this.state}`);
+    }
+
+    this.state = nextState;
     if (newContext !== undefined) {
       this.context = newContext;
     }
@@ -382,7 +393,7 @@ export function buildWorkflowUrl(url: string, baseUrl?: string): string {
 /**
  * Convert data to CSV format
  */
-export function convertToCSV(data: any[]): string {
+export function convertToCSV<T extends Record<string, unknown>>(data: T[]): string {
   if (!data.length) return '';
 
   const headers = Object.keys(data[0]);
@@ -394,7 +405,7 @@ export function convertToCSV(data: any[]): string {
           const value = row[header];
           return typeof value === 'string' && value.includes(',')
             ? `"${value.replace(/"/g, '""')}"`
-            : value;
+            : String(value ?? '');
         })
         .join(','),
     ),
@@ -406,17 +417,17 @@ export function convertToCSV(data: any[]): string {
 /**
  * Convert data to XML format
  */
-export function convertToXML(data: any[], rootElement = 'data'): string {
-  const toXML = (obj: any, indent = ''): string => {
+export function convertToXML<T extends Record<string, unknown>>(data: T[], rootElement = 'data'): string {
+  const toXML = (obj: Record<string, unknown>, indent = ''): string => {
     return Object.entries(obj)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
           return value
-            .map((item) => `${indent}<${key}>${toXML(item, indent + '  ')}</${key}>`)
+            .map((item) => `${indent}<${key}>${toXML(item as Record<string, unknown>, indent + '  ')}</${key}>`)
             .join('\n');
         }
         if (typeof value === 'object' && value !== null) {
-          return `${indent}<${key}>\n${toXML(value, indent + '  ')}\n${indent}</${key}>`;
+          return `${indent}<${key}>\n${toXML(value as Record<string, unknown>, indent + '  ')}\n${indent}</${key}>`;
         }
         return `${indent}<${key}>${String(value)}</${key}>`;
       })
@@ -483,7 +494,7 @@ export function aggregateByKey<T>(
 export function safeJsonParseWithValidation<T>(
   str: string | null | undefined,
   fallback: T,
-  validator?: (data: any) => data is T,
+  validator?: (data: unknown) => data is T,
 ): T {
   if (!str) return fallback;
 

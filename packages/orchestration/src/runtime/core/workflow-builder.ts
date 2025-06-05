@@ -1,4 +1,4 @@
-import { type Client, Receiver } from '@upstash/qstash';
+import { Client, Receiver } from '@upstash/qstash';
 import { serve } from '@upstash/workflow/nextjs';
 
 import { WorkflowError, WorkflowErrorType } from '../../utils/error-handling';
@@ -71,8 +71,8 @@ export class WorkflowBuilder<TPayload = unknown> {
    * Set custom payload parser
    */
   withPayloadParser<T>(parser: (payload: unknown) => T): WorkflowBuilder<T> {
-    // Use any to bypass the complex type constraint issue
-    (this.config as any).initialPayloadParser = parser;
+    // Type assertion for the complex type constraint
+    this.config.initialPayloadParser = parser as WorkflowConfig['initialPayloadParser'];
     return this as unknown as WorkflowBuilder<T>;
   }
 
@@ -162,7 +162,7 @@ export class WorkflowBuilder<TPayload = unknown> {
       verbose: this.config.verbose ? true : undefined,
     };
 
-    return serve<TPayload>(wrappedHandler, serveOptions as any);
+    return serve<TPayload>(wrappedHandler, serveOptions);
   }
 }
 
@@ -183,13 +183,20 @@ export const workflows = {
    * Create a workflow with production-ready defaults
    */
   production<T = unknown>() {
+    const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
+    const nextSigningKey = process.env.QSTASH_NEXT_SIGNING_KEY;
+    
+    if (!currentSigningKey || !nextSigningKey) {
+      throw new Error('Missing QSTASH signing keys for production workflow');
+    }
+    
     return createWorkflow<T>()
       .withRetries(3)
       .withVerboseLogging(false)
       .withReceiver(
         new Receiver({
-          currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
-          nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
+          currentSigningKey,
+          nextSigningKey,
         }),
       );
   },
@@ -198,7 +205,18 @@ export const workflows = {
    * Create a workflow for local development
    */
   development<T = unknown>() {
-    return createWorkflow<T>().withRetries(1).withVerboseLogging(true).withReceiver(undefined); // Skip verification in dev
+    // Create local QStash client for development
+    const localClient = new Client({
+      baseUrl: process.env.QSTASH_URL ?? 'http://localhost:8080',
+      token: process.env.QSTASH_TOKEN ?? 'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=',
+    });
+    
+    return createWorkflow<T>()
+      .withRetries(1)
+      .withVerboseLogging(true)
+      .withReceiver(undefined) // Skip verification in dev
+      .withQStashClient(localClient)
+      .withBaseUrl(process.env.UPSTASH_WORKFLOW_URL ?? 'http://localhost:3400');
   },
 
   /**

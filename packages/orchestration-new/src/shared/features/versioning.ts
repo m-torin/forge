@@ -1,0 +1,720 @@
+/**
+ * Workflow Versioning & Composition
+ * Advanced workflow management with versioning and composition utilities
+ */
+
+import type { WorkflowDefinition, WorkflowProvider } from '../types/index.js';
+
+export interface WorkflowVersion {
+  /** Version identifier (semantic version) */
+  version: string;
+  /** Workflow definition for this version */
+  definition: WorkflowDefinition;
+  /** Version status */
+  status: 'draft' | 'active' | 'deprecated' | 'archived';
+  /** Version description/changelog */
+  description?: string;
+  /** Creation timestamp */
+  createdAt: Date;
+  /** User who created this version */
+  createdBy?: string;
+  /** Migration instructions from previous version */
+  migration?: {
+    fromVersion: string;
+    instructions: string;
+    automaticMigration?: boolean;
+    migrationScript?: (oldData: unknown) => unknown;
+  };
+  /** Compatibility information */
+  compatibility?: {
+    /** Minimum compatible version */
+    minVersion?: string;
+    /** Maximum compatible version */
+    maxVersion?: string;
+    /** Breaking changes */
+    breakingChanges?: string[];
+  };
+  /** Version metadata */
+  metadata?: Record<string, unknown>;
+}
+
+export interface WorkflowComposition {
+  /** Composition identifier */
+  id: string;
+  /** Composition name */
+  name: string;
+  /** Description */
+  description?: string;
+  /** Child workflows */
+  workflows: Array<{
+    /** Workflow ID */
+    workflowId: string;
+    /** Workflow version (optional, uses latest if not specified) */
+    version?: string;
+    /** Alias for this workflow in the composition */
+    alias?: string;
+    /** Input mapping from composition input */
+    inputMapping?: Record<string, string>;
+    /** Output mapping to composition output */
+    outputMapping?: Record<string, string>;
+    /** Execution order/priority */
+    order?: number;
+    /** Parallel execution group */
+    group?: string;
+    /** Conditional execution */
+    condition?: (context: CompositionContext) => boolean;
+  }>;
+  /** Composition execution strategy */
+  strategy: 'sequential' | 'parallel' | 'conditional' | 'custom';
+  /** Error handling strategy */
+  errorHandling: 'fail-fast' | 'continue' | 'retry';
+  /** Retry configuration */
+  retry?: {
+    maxAttempts: number;
+    delay: number;
+    strategy: 'linear' | 'exponential';
+  };
+  /** Composition metadata */
+  metadata?: Record<string, unknown>;
+}
+
+export interface CompositionContext {
+  /** Composition execution ID */
+  compositionId: string;
+  /** Execution ID */
+  executionId: string;
+  /** Input data */
+  input: unknown;
+  /** Results from completed workflows */
+  results: Record<string, unknown>;
+  /** Current workflow being executed */
+  currentWorkflow?: string;
+  /** Set result for a workflow */
+  setResult: (alias: string, result: unknown) => void;
+  /** Get result from a workflow */
+  getResult: (alias: string) => unknown;
+}
+
+export interface BulkOperation {
+  /** Operation ID */
+  id: string;
+  /** Operation type */
+  type: 'execute' | 'cancel' | 'retry' | 'schedule' | 'delete';
+  /** Target workflows */
+  targets: Array<{
+    workflowId: string;
+    version?: string;
+    input?: unknown;
+    options?: Record<string, unknown>;
+  }>;
+  /** Operation configuration */
+  config: {
+    /** Maximum concurrent operations */
+    concurrency?: number;
+    /** Batch size */
+    batchSize?: number;
+    /** Delay between batches */
+    batchDelay?: number;
+    /** Timeout for entire operation */
+    timeout?: number;
+    /** Error handling */
+    errorHandling: 'fail-fast' | 'continue' | 'retry';
+  };
+  /** Operation status */
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  /** Start timestamp */
+  startedAt?: Date;
+  /** Completion timestamp */
+  completedAt?: Date;
+  /** Results from individual operations */
+  results: Array<{
+    workflowId: string;
+    status: 'success' | 'failed' | 'cancelled';
+    result?: unknown;
+    error?: string;
+    duration?: number;
+  }>;
+  /** Overall progress */
+  progress: {
+    total: number;
+    completed: number;
+    failed: number;
+    cancelled: number;
+  };
+}
+
+export class WorkflowVersionManager {
+  private provider: WorkflowProvider;
+  private versions = new Map<string, WorkflowVersion[]>();
+
+  constructor(provider: WorkflowProvider) {
+    this.provider = provider;
+  }
+
+  /**
+   * Create a new workflow version
+   */
+  async createVersion(
+    workflowId: string,
+    definition: WorkflowDefinition,
+    version: string,
+    options?: {
+      description?: string;
+      createdBy?: string;
+      migration?: WorkflowVersion['migration'];
+      compatibility?: WorkflowVersion['compatibility'];
+      metadata?: Record<string, unknown>;
+    }
+  ): Promise<void> {
+    // Validate version format
+    if (!this.isValidVersion(version)) {
+      throw new Error(`Invalid version format: ${version}`);
+    }
+
+    const versions = this.versions.get(workflowId) || [];
+    
+    // Check if version already exists
+    if (versions.some(v => v.version === version)) {
+      throw new Error(`Version ${version} already exists for workflow ${workflowId}`);
+    }
+
+    const workflowVersion: WorkflowVersion = {
+      version,
+      definition,
+      status: 'draft',
+      createdAt: new Date(),
+      ...options,
+    };
+
+    versions.push(workflowVersion);
+    versions.sort((a, b) => this.compareVersions(a.version, b.version));
+    
+    this.versions.set(workflowId, versions);
+  }
+
+  /**
+   * Get workflow version
+   */
+  getVersion(workflowId: string, version?: string): WorkflowVersion | undefined {
+    const versions = this.versions.get(workflowId);
+    if (!versions || versions.length === 0) {
+      return undefined;
+    }
+
+    if (!version) {
+      // Return latest active version
+      return versions
+        .filter(v => v.status === 'active')
+        .sort((a, b) => this.compareVersions(b.version, a.version))[0] ||
+        versions[versions.length - 1];
+    }
+
+    return versions.find(v => v.version === version);
+  }
+
+  /**
+   * List all versions for a workflow
+   */
+  listVersions(workflowId: string): WorkflowVersion[] {
+    return this.versions.get(workflowId) || [];
+  }
+
+  /**
+   * Activate a version
+   */
+  async activateVersion(workflowId: string, version: string): Promise<void> {
+    const versions = this.versions.get(workflowId);
+    if (!versions) {
+      throw new Error(`No versions found for workflow ${workflowId}`);
+    }
+
+    const targetVersion = versions.find(v => v.version === version);
+    if (!targetVersion) {
+      throw new Error(`Version ${version} not found for workflow ${workflowId}`);
+    }
+
+    // Deactivate current active versions
+    versions.forEach(v => {
+      if (v.status === 'active') {
+        v.status = 'deprecated';
+      }
+    });
+
+    // Activate target version
+    targetVersion.status = 'active';
+  }
+
+  /**
+   * Deprecate a version
+   */
+  async deprecateVersion(workflowId: string, version: string): Promise<void> {
+    const workflowVersion = this.getVersion(workflowId, version);
+    if (!workflowVersion) {
+      throw new Error(`Version ${version} not found for workflow ${workflowId}`);
+    }
+
+    workflowVersion.status = 'deprecated';
+  }
+
+  /**
+   * Archive a version
+   */
+  async archiveVersion(workflowId: string, version: string): Promise<void> {
+    const workflowVersion = this.getVersion(workflowId, version);
+    if (!workflowVersion) {
+      throw new Error(`Version ${version} not found for workflow ${workflowId}`);
+    }
+
+    if (workflowVersion.status === 'active') {
+      throw new Error('Cannot archive active version');
+    }
+
+    workflowVersion.status = 'archived';
+  }
+
+  /**
+   * Get migration path between versions
+   */
+  getMigrationPath(workflowId: string, fromVersion: string, toVersion: string): WorkflowVersion[] {
+    const versions = this.versions.get(workflowId);
+    if (!versions) {
+      return [];
+    }
+
+    const fromIndex = versions.findIndex(v => v.version === fromVersion);
+    const toIndex = versions.findIndex(v => v.version === toVersion);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      return [];
+    }
+
+    if (fromIndex < toIndex) {
+      // Forward migration
+      return versions.slice(fromIndex + 1, toIndex + 1);
+    } else {
+      // Backward migration (not typically supported)
+      return [];
+    }
+  }
+
+  /**
+   * Check version compatibility
+   */
+  isCompatible(workflowId: string, version1: string, version2: string): boolean {
+    const v1 = this.getVersion(workflowId, version1);
+    const v2 = this.getVersion(workflowId, version2);
+
+    if (!v1 || !v2) {
+      return false;
+    }
+
+    const compat1 = v1.compatibility;
+    const compat2 = v2.compatibility;
+
+    if (compat1?.minVersion && this.compareVersions(version2, compat1.minVersion) < 0) {
+      return false;
+    }
+
+    if (compat1?.maxVersion && this.compareVersions(version2, compat1.maxVersion) > 0) {
+      return false;
+    }
+
+    if (compat2?.minVersion && this.compareVersions(version1, compat2.minVersion) < 0) {
+      return false;
+    }
+
+    if (compat2?.maxVersion && this.compareVersions(version1, compat2.maxVersion) > 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Private methods
+
+  private isValidVersion(version: string): boolean {
+    // Simple semantic version validation (major.minor.patch)
+    return /^\d+\.\d+\.\d+$/.test(version);
+  }
+
+  private compareVersions(version1: string, version2: string): number {
+    const v1Parts = version1.split('.').map(Number);
+    const v2Parts = version2.split('.').map(Number);
+
+    for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+      const v1Part = v1Parts[i] || 0;
+      const v2Part = v2Parts[i] || 0;
+
+      if (v1Part > v2Part) return 1;
+      if (v1Part < v2Part) return -1;
+    }
+
+    return 0;
+  }
+}
+
+export class WorkflowComposer {
+  private provider: WorkflowProvider;
+  private versionManager: WorkflowVersionManager;
+  private compositions = new Map<string, WorkflowComposition>();
+
+  constructor(provider: WorkflowProvider, versionManager: WorkflowVersionManager) {
+    this.provider = provider;
+    this.versionManager = versionManager;
+  }
+
+  /**
+   * Create a workflow composition
+   */
+  createComposition(composition: WorkflowComposition): void {
+    this.compositions.set(composition.id, composition);
+  }
+
+  /**
+   * Execute a workflow composition
+   */
+  async executeComposition(
+    compositionId: string,
+    input: unknown,
+    metadata?: Record<string, unknown>
+  ): Promise<string> {
+    const composition = this.compositions.get(compositionId);
+    if (!composition) {
+      throw new Error(`Composition ${compositionId} not found`);
+    }
+
+    const executionId = this.generateExecutionId();
+    
+    const context: CompositionContext = {
+      compositionId,
+      executionId,
+      input,
+      results: {},
+      setResult: (alias: string, result: unknown) => {
+        context.results[alias] = result;
+      },
+      getResult: (alias: string) => {
+        return context.results[alias];
+      },
+    };
+
+    // Execute composition asynchronously
+    this.runComposition(composition, context);
+
+    return executionId;
+  }
+
+  // Private methods
+
+  private async runComposition(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
+    try {
+      switch (composition.strategy) {
+        case 'sequential':
+          await this.executeSequential(composition, context);
+          break;
+        case 'parallel':
+          await this.executeParallel(composition, context);
+          break;
+        case 'conditional':
+          await this.executeConditional(composition, context);
+          break;
+        case 'custom':
+          // Custom execution logic would be implemented here
+          break;
+      }
+    } catch (error) {
+      if (composition.errorHandling === 'fail-fast') {
+        throw error;
+      }
+      // Handle other error strategies
+    }
+  }
+
+  private async executeSequential(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
+    const orderedWorkflows = composition.workflows
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    for (const workflow of orderedWorkflows) {
+      if (workflow.condition && !workflow.condition(context)) {
+        continue;
+      }
+
+      context.currentWorkflow = workflow.alias || workflow.workflowId;
+      
+      const input = this.mapInput(workflow.inputMapping, context.input);
+      const executionId = await this.provider.executeWorkflow(workflow.workflowId, input);
+      
+      // Wait for completion and get result
+      const result = await this.waitForCompletion(executionId);
+      const mappedResult = this.mapOutput(workflow.outputMapping, result);
+      
+      context.setResult(workflow.alias || workflow.workflowId, mappedResult);
+    }
+  }
+
+  private async executeParallel(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
+    const eligibleWorkflows = composition.workflows
+      .filter(w => !w.condition || w.condition(context));
+
+    const executionPromises = eligibleWorkflows.map(async (workflow) => {
+      context.currentWorkflow = workflow.alias || workflow.workflowId;
+      
+      const input = this.mapInput(workflow.inputMapping, context.input);
+      const executionId = await this.provider.executeWorkflow(workflow.workflowId, input);
+      
+      const result = await this.waitForCompletion(executionId);
+      const mappedResult = this.mapOutput(workflow.outputMapping, result);
+      
+      return {
+        alias: workflow.alias || workflow.workflowId,
+        result: mappedResult,
+      };
+    });
+
+    const results = await Promise.all(executionPromises);
+    
+    for (const { alias, result } of results) {
+      context.setResult(alias, result);
+    }
+  }
+
+  private async executeConditional(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
+    for (const workflow of composition.workflows) {
+      if (workflow.condition && workflow.condition(context)) {
+        context.currentWorkflow = workflow.alias || workflow.workflowId;
+        
+        const input = this.mapInput(workflow.inputMapping, context.input);
+        const executionId = await this.provider.executeWorkflow(workflow.workflowId, input);
+        
+        const result = await this.waitForCompletion(executionId);
+        const mappedResult = this.mapOutput(workflow.outputMapping, result);
+        
+        context.setResult(workflow.alias || workflow.workflowId, mappedResult);
+        
+        // Execute only the first matching condition
+        break;
+      }
+    }
+  }
+
+  private mapInput(mapping: Record<string, string> | undefined, input: unknown): unknown {
+    if (!mapping || typeof input !== 'object' || input === null) {
+      return input;
+    }
+
+    const mapped: Record<string, unknown> = {};
+    const inputObj = input as Record<string, unknown>;
+
+    for (const [targetKey, sourceKey] of Object.entries(mapping)) {
+      mapped[targetKey] = inputObj[sourceKey];
+    }
+
+    return mapped;
+  }
+
+  private mapOutput(mapping: Record<string, string> | undefined, output: unknown): unknown {
+    if (!mapping || typeof output !== 'object' || output === null) {
+      return output;
+    }
+
+    const mapped: Record<string, unknown> = {};
+    const outputObj = output as Record<string, unknown>;
+
+    for (const [targetKey, sourceKey] of Object.entries(mapping)) {
+      mapped[targetKey] = outputObj[sourceKey];
+    }
+
+    return mapped;
+  }
+
+  private async waitForCompletion(executionId: string): Promise<unknown> {
+    // Poll for execution completion
+    // This would be implemented based on the provider's capabilities
+    return {}; // Placeholder
+  }
+
+  private generateExecutionId(): string {
+    return `composition_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+export class BulkOperationManager {
+  private provider: WorkflowProvider;
+  private operations = new Map<string, BulkOperation>();
+
+  constructor(provider: WorkflowProvider) {
+    this.provider = provider;
+  }
+
+  /**
+   * Execute bulk operation
+   */
+  async executeBulkOperation(operation: Omit<BulkOperation, 'id' | 'status' | 'results' | 'progress'>): Promise<string> {
+    const operationId = this.generateOperationId();
+    
+    const bulkOp: BulkOperation = {
+      ...operation,
+      id: operationId,
+      status: 'pending',
+      results: [],
+      progress: {
+        total: operation.targets.length,
+        completed: 0,
+        failed: 0,
+        cancelled: 0,
+      },
+    };
+
+    this.operations.set(operationId, bulkOp);
+
+    // Start operation asynchronously
+    this.runBulkOperation(bulkOp);
+
+    return operationId;
+  }
+
+  /**
+   * Get bulk operation status
+   */
+  getBulkOperation(operationId: string): BulkOperation | undefined {
+    return this.operations.get(operationId);
+  }
+
+  /**
+   * Cancel bulk operation
+   */
+  async cancelBulkOperation(operationId: string): Promise<void> {
+    const operation = this.operations.get(operationId);
+    if (!operation) {
+      throw new Error(`Bulk operation ${operationId} not found`);
+    }
+
+    operation.status = 'cancelled';
+  }
+
+  // Private methods
+
+  private async runBulkOperation(operation: BulkOperation): Promise<void> {
+    operation.status = 'running';
+    operation.startedAt = new Date();
+
+    const { concurrency = 5, batchSize = 10, batchDelay = 0 } = operation.config;
+
+    try {
+      // Process targets in batches
+      for (let i = 0; i < operation.targets.length; i += batchSize) {
+        if (operation.status === 'cancelled') {
+          break;
+        }
+
+        const batch = operation.targets.slice(i, i + batchSize);
+        
+        // Process batch with concurrency limit
+        const batchPromises = batch.map(async (target, index) => {
+          if (operation.status === 'cancelled') {
+            return;
+          }
+
+          const startTime = Date.now();
+          
+          try {
+            let result: unknown;
+            
+            switch (operation.type) {
+              case 'execute':
+                result = await this.provider.executeWorkflow(target.workflowId, target.input);
+                break;
+              case 'cancel':
+                if (target.options?.executionId) {
+                  await this.provider.cancelExecution(target.options.executionId as string);
+                }
+                break;
+              default:
+                throw new Error(`Unsupported operation type: ${operation.type}`);
+            }
+
+            const duration = Date.now() - startTime;
+
+            operation.results.push({
+              workflowId: target.workflowId,
+              status: 'success',
+              result,
+              duration,
+            });
+
+            operation.progress.completed++;
+            
+          } catch (error) {
+            const duration = Date.now() - startTime;
+
+            operation.results.push({
+              workflowId: target.workflowId,
+              status: 'failed',
+              error: error instanceof Error ? error.message : String(error),
+              duration,
+            });
+
+            operation.progress.failed++;
+
+            if (operation.config.errorHandling === 'fail-fast') {
+              operation.status = 'failed';
+              return;
+            }
+          }
+        });
+
+        // Limit concurrency
+        const concurrentBatches = [];
+        for (let j = 0; j < batchPromises.length; j += concurrency) {
+          concurrentBatches.push(
+            Promise.all(batchPromises.slice(j, j + concurrency))
+          );
+        }
+
+        await Promise.all(concurrentBatches);
+
+        // Delay between batches if configured
+        if (batchDelay > 0 && i + batchSize < operation.targets.length) {
+          await new Promise(resolve => setTimeout(resolve, batchDelay));
+        }
+      }
+
+      if (operation.status === 'running') {
+        operation.status = 'completed';
+      }
+      
+    } catch (error) {
+      operation.status = 'failed';
+    } finally {
+      operation.completedAt = new Date();
+    }
+  }
+
+  private generateOperationId(): string {
+    return `bulk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+/**
+ * Create workflow version manager
+ */
+export function createWorkflowVersionManager(provider: WorkflowProvider): WorkflowVersionManager {
+  return new WorkflowVersionManager(provider);
+}
+
+/**
+ * Create workflow composer
+ */
+export function createWorkflowComposer(
+  provider: WorkflowProvider,
+  versionManager: WorkflowVersionManager
+): WorkflowComposer {
+  return new WorkflowComposer(provider, versionManager);
+}
+
+/**
+ * Create bulk operation manager
+ */
+export function createBulkOperationManager(provider: WorkflowProvider): BulkOperationManager {
+  return new BulkOperationManager(provider);
+}

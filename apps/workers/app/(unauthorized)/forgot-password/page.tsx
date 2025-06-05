@@ -1,20 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-
-import { analytics } from '@repo/analytics';
 import { AuthLayout, ForgotPasswordForm } from '@repo/design-system/uix';
 
 export default function ForgotPasswordPage() {
-  useEffect(() => {
-    // Track page view
-    analytics.capture('page_viewed', {
-      app: 'workers',
-      page: 'workers-forgot-password',
-      title: 'Workers Forgot Password',
-    });
-  }, []);
-
   return (
     <AuthLayout
       alternativeAction={{

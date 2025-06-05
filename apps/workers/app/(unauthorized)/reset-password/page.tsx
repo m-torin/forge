@@ -1,24 +1,13 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 
-import { analytics } from '@repo/analytics';
 import { AuthLayout, ResetPasswordForm } from '@repo/design-system/uix';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-
-  useEffect(() => {
-    // Track page view
-    analytics.capture('page_viewed', {
-      app: 'workers',
-      hasToken: !!token,
-      page: 'workers-reset-password',
-      title: 'Workers Reset Password',
-    });
-  }, [token]);
 
   return <ResetPasswordForm token={token} />;
 }

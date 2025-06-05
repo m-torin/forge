@@ -1,0 +1,87 @@
+{
+  "name": "@repo/observability-new",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage --run",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "next": "catalog:"
+  },
+  "peerDependencies": {
+    "@sentry/node": "^8.0.0",
+    "@sentry/react": "^8.0.0",
+    "@sentry/nextjs": "^8.0.0",
+    "@logtail/node": "^0.5.0",
+    "@logtail/next": "^0.2.0",
+    "@opentelemetry/api": "^1.7.0",
+    "@opentelemetry/sdk-node": "^0.45.0",
+    "pino": "^8.0.0",
+    "winston": "^3.11.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/node": {
+      "optional": true
+    },
+    "@sentry/react": {
+      "optional": true
+    },
+    "@sentry/nextjs": {
+      "optional": true
+    },
+    "@opentelemetry/api": {
+      "optional": true
+    },
+    "@logtail/node": {
+      "optional": true
+    },
+    "@logtail/next": {
+      "optional": true
+    },
+    "@opentelemetry/sdk-node": {
+      "optional": true
+    },
+    "pino": {
+      "optional": true
+    },
+    "winston": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/eslint": "^9.6.1",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^4.5.1",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@sentry/node": "^8.0.0",
+    "@sentry/react": "^8.0.0",
+    "@sentry/nextjs": "^8.0.0",
+    "@logtail/node": "^0.5.0",
+    "@logtail/next": "^0.2.0",
+    "@opentelemetry/api": "^1.7.0",
+    "@opentelemetry/sdk-node": "^0.45.0",
+    "pino": "^8.0.0",
+    "winston": "^3.11.0"
+  },
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts"
+  }
+}

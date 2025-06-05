@@ -1,0 +1,982 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  ContextBuilder,
+  PayloadBuilder,
+  EventBatch,
+  createUserSession,
+  createAnonymousSession,
+  isTrackPayload,
+  isIdentifyPayload,
+  isPagePayload,
+  isGroupPayload,
+  isAliasPayload,
+  withMetadata,
+  withUTM,
+} from '../../shared/emitters/helpers';
+import type {
+  EmitterContext,
+  EmitterTrackPayload,
+  EmitterIdentifyPayload,
+  EmitterPagePayload,
+  EmitterGroupPayload,
+  EmitterAliasPayload,
+  EmitterPayload,
+} from '../../shared/emitters/emitter-types';
+
+// Mock the core emitters
+vi.mock('../../shared/emitters/emitters', () => ({
+  track: vi.fn((event, properties, options) => ({
+    type: 'track',
+    event,
+    properties: properties || {},
+    context: options?.context || {},
+    timestamp: options?.timestamp,
+    anonymousId: options?.anonymousId,
+    integrations: options?.integrations,
+  })),
+  identify: vi.fn((userId, traits, options) => ({
+    type: 'identify',
+    userId,
+    traits: traits || {},
+    context: options?.context || {},
+    timestamp: options?.timestamp,
+    anonymousId: options?.anonymousId,
+    integrations: options?.integrations,
+  })),
+  page: vi.fn((category, name, properties, options) => ({
+    type: 'page',
+    category,
+    name,
+    properties: properties || {},
+    context: options?.context || {},
+    timestamp: options?.timestamp,
+    anonymousId: options?.anonymousId,
+    integrations: options?.integrations,
+  })),
+  group: vi.fn((groupId, traits, options) => ({
+    type: 'group',
+    groupId,
+    traits: traits || {},
+    context: options?.context || {},
+    timestamp: options?.timestamp,
+    anonymousId: options?.anonymousId,
+    integrations: options?.integrations,
+  })),
+  alias: vi.fn((userId, previousId, options) => ({
+    type: 'alias',
+    userId,
+    previousId,
+    context: options?.context || {},
+    timestamp: options?.timestamp,
+    anonymousId: options?.anonymousId,
+    integrations: options?.integrations,
+  })),
+}));
+
+describe('Emitter Helpers', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('ContextBuilder', () => {
+    it('should create empty context by default', () => {
+      const builder = new ContextBuilder();
+      const context = builder.build();
+
+      expect(context).toEqual({});
+    });
+
+    it('should accept initial context', () => {
+      const initialContext: Partial<EmitterContext> = {
+        app: { name: 'Test App', version: '1.0.0' },
+      };
+
+      const builder = new ContextBuilder(initialContext);
+      const context = builder.build();
+
+      expect(context).toEqual({
+        app: { name: 'Test App', version: '1.0.0' },
+      });
+    });
+
+    it('should set user information', () => {
+      const builder = new ContextBuilder();
+      const context = builder
+        .setUser('user123', { name: 'John Doe', email: 'john@example.com' })
+        .build();
+
+      expect(context).toEqual({
+        traits: { name: 'John Doe', email: 'john@example.com' },
+      });
+    });
+
+    it('should set organization information', () => {
+      const builder = new ContextBuilder();
+      const context = builder
+        .setOrganization('org456')
+        .build();
+
+      expect(context).toEqual({
+        groupId: 'org456',
+      });
+    });
+
+    it('should set page information', () => {
+      const pageInfo = {
+        path: '/products',
+        url: 'https://example.com/products',
+        title: 'Products Page',
+        referrer: 'https://google.com',
+      };
+
+      const builder = new ContextBuilder();
+      const context = builder
+        .setPage(pageInfo)
+        .build();
+
+      expect(context).toEqual({
+        page: pageInfo,
+      });
+    });
+
+    it('should set campaign information', () => {
+      const utmParams = {
+        utm_source: 'google',
+        utm_medium: 'cpc',
+        utm_campaign: 'summer_sale',
+        utm_term: 'running shoes',
+        utm_content: 'ad_variant_a',
+      };
+
+      const builder = new ContextBuilder();
+      const context = builder
+        .setCampaign(utmParams)
+        .build();
+
+      expect(context).toEqual({
+        campaign: utmParams,
+      });
+    });
+
+    it('should set device information', () => {
+      const deviceInfo = {
+        type: 'mobile',
+        brand: 'Apple',
+        model: 'iPhone 12',
+        os: 'iOS',
+        osVersion: '14.7',
+      };
+
+      const builder = new ContextBuilder();
+      const context = builder
+        .setDevice(deviceInfo)
+        .build();
+
+      expect(context).toEqual({
+        device: deviceInfo,
+      });
+    });
+
+    it('should chain methods and merge contexts', () => {
+      const builder = new ContextBuilder();
+      const context = builder
+        .setUser('user123', { name: 'Jane Doe' })
+        .setOrganization('org456')
+        .setPage({ path: '/dashboard', title: 'Dashboard' })
+        .setCampaign({ utm_source: 'email' })
+        .setDevice({ type: 'desktop' })
+        .build();
+
+      expect(context).toEqual({
+        traits: { name: 'Jane Doe' },
+        groupId: 'org456',
+        page: { path: '/dashboard', title: 'Dashboard' },
+        campaign: { utm_source: 'email' },
+        device: { type: 'desktop' },
+      });
+    });
+
+    it('should merge with existing context properties', () => {
+      const initialContext: Partial<EmitterContext> = {
+        traits: { email: 'initial@example.com' },
+        page: { url: 'https://initial.com' },
+      };
+
+      const builder = new ContextBuilder(initialContext);
+      const context = builder
+        .setUser('user123', { name: 'Updated Name' })
+        .setPage({ title: 'Updated Title' })
+        .build();
+
+      expect(context).toEqual({
+        traits: { email: 'initial@example.com', name: 'Updated Name' },
+        page: { url: 'https://initial.com', title: 'Updated Title' },
+      });
+    });
+
+    it('should return new instance on build', () => {
+      const builder = new ContextBuilder();
+      builder.setUser('user1');
+      const context1 = builder.build();
+      
+      builder.setUser('user2');
+      const context2 = builder.build();
+
+      // Should not affect previously built contexts (but they will be different due to mutation)
+      // This test shows that build() returns independent snapshots
+      expect(context1.traits).not.toBe(context2.traits); // Different object references
+    });
+  });
+
+  describe('PayloadBuilder', () => {
+    it('should create payload builder without context', () => {
+      const builder = new PayloadBuilder();
+      const trackPayload = builder.track('test_event', { prop: 'value' });
+
+      expect(trackPayload.type).toBe('track');
+      expect(trackPayload.event).toBe('test_event');
+      expect(trackPayload.properties).toEqual({ prop: 'value' });
+    });
+
+    it('should create payload builder with context', () => {
+      const context: EmitterContext = {
+        app: { name: 'Test App' },
+      };
+
+      const builder = new PayloadBuilder(context);
+      const trackPayload = builder.track('test_event');
+
+      expect(trackPayload.context).toEqual(context);
+    });
+
+    it('should set timestamp', () => {
+      const timestamp = new Date('2024-01-01T00:00:00Z');
+      const builder = new PayloadBuilder();
+      const trackPayload = builder
+        .withTimestamp(timestamp)
+        .track('test_event');
+
+      expect(trackPayload.timestamp).toBe(timestamp);
+    });
+
+    it('should set anonymous ID', () => {
+      const anonymousId = 'anon_123';
+      const builder = new PayloadBuilder();
+      const trackPayload = builder
+        .withAnonymousId(anonymousId)
+        .track('test_event');
+
+      expect(trackPayload.anonymousId).toBe(anonymousId);
+    });
+
+    it('should set integrations', () => {
+      const integrations = {
+        'Google Analytics': true,
+        'Segment': { apiKey: 'test_key' },
+        'Facebook Pixel': false,
+      };
+
+      const builder = new PayloadBuilder();
+      const trackPayload = builder
+        .withIntegrations(integrations)
+        .track('test_event');
+
+      expect(trackPayload.integrations).toEqual(integrations);
+    });
+
+    it('should chain options and create track payload', () => {
+      const context: EmitterContext = { app: { name: 'Test' } };
+      const timestamp = new Date();
+      const anonymousId = 'anon_456';
+      const integrations = { 'Test Provider': true };
+
+      const builder = new PayloadBuilder(context);
+      const trackPayload = builder
+        .withTimestamp(timestamp)
+        .withAnonymousId(anonymousId)
+        .withIntegrations(integrations)
+        .track('chained_event', { test: true });
+
+      expect(trackPayload).toMatchObject({
+        type: 'track',
+        event: 'chained_event',
+        properties: { test: true },
+        context,
+        timestamp,
+        anonymousId,
+        integrations,
+      });
+    });
+
+    it('should create identify payload', () => {
+      const builder = new PayloadBuilder();
+      const identifyPayload = builder
+        .withTimestamp(new Date())
+        .identify('user123', { name: 'Test User' });
+
+      expect(identifyPayload).toMatchObject({
+        type: 'identify',
+        userId: 'user123',
+        traits: { name: 'Test User' },
+      });
+    });
+
+    it('should create page payload', () => {
+      const builder = new PayloadBuilder();
+      const pagePayload = builder
+        .page('Product Page', { category: 'ecommerce' });
+
+      expect(pagePayload).toMatchObject({
+        type: 'page',
+        name: 'Product Page',
+        properties: { category: 'ecommerce' },
+      });
+    });
+
+    it('should create group payload', () => {
+      const builder = new PayloadBuilder();
+      const groupPayload = builder
+        .group('group123', { name: 'Test Organization' });
+
+      expect(groupPayload).toMatchObject({
+        type: 'group',
+        groupId: 'group123',
+        traits: { name: 'Test Organization' },
+      });
+    });
+
+    it('should create alias payload', () => {
+      const builder = new PayloadBuilder();
+      const aliasPayload = builder
+        .alias('user123', 'anon_456');
+
+      expect(aliasPayload).toMatchObject({
+        type: 'alias',
+        userId: 'user123',
+        previousId: 'anon_456',
+      });
+    });
+  });
+
+  describe('EventBatch', () => {
+    it('should create empty batch', () => {
+      const batch = new EventBatch();
+      const events = batch.getEvents();
+
+      expect(events).toEqual([]);
+    });
+
+    it('should create batch with shared context', () => {
+      const sharedContext: EmitterContext = {
+        app: { name: 'Batch App' },
+      };
+
+      const batch = new EventBatch(sharedContext);
+      batch.addTrack('test_event', { prop: 'value' });
+
+      const events = batch.getEvents();
+      expect(events[0].context).toMatchObject(sharedContext);
+    });
+
+    it('should add custom payload to batch', () => {
+      const batch = new EventBatch();
+      const customPayload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'custom_event',
+        properties: { custom: true },
+        context: {},
+      };
+
+      batch.add(customPayload);
+      const events = batch.getEvents();
+
+      expect(events).toHaveLength(1);
+      expect(events[0]).toEqual(customPayload);
+    });
+
+    it('should add track event to batch', () => {
+      const batch = new EventBatch();
+      batch.addTrack('batch_track', { value: 100 });
+
+      const events = batch.getEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].type).toBe('track');
+      expect(events[0].event).toBe('batch_track');
+    });
+
+    it('should add identify event to batch', () => {
+      const batch = new EventBatch();
+      batch.addIdentify('user123', { name: 'Batch User' });
+
+      const events = batch.getEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].type).toBe('identify');
+    });
+
+    it('should add page event to batch', () => {
+      const batch = new EventBatch();
+      batch.addPage('Batch Page', { section: 'products' });
+
+      const events = batch.getEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].type).toBe('page');
+    });
+
+    it('should add group event to batch', () => {
+      const batch = new EventBatch();
+      batch.addGroup('group123', { plan: 'enterprise' });
+
+      const events = batch.getEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].type).toBe('group');
+    });
+
+    it('should merge shared context with event context', () => {
+      const sharedContext: EmitterContext = {
+        app: { name: 'Shared App' },
+        device: { type: 'mobile' },
+      };
+
+      const eventContext: EmitterContext = {
+        app: { version: '2.0.0' }, // Should merge with shared
+        page: { path: '/test' }, // Should add to shared
+      };
+
+      const batch = new EventBatch(sharedContext);
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: eventContext,
+      };
+
+      batch.add(payload);
+      const events = batch.getEvents();
+
+      // The EventBatch merges contexts, but shallow merge means event context overrides shared
+      expect(events[0].context).toEqual({
+        app: { version: '2.0.0' }, // Event context app replaces shared app
+        device: { type: 'mobile' }, // Shared device is preserved
+        page: { path: '/test' }, // Event context page is added
+      });
+    });
+
+    it('should clear batch events', () => {
+      const batch = new EventBatch();
+      batch.addTrack('event1');
+      batch.addTrack('event2');
+
+      expect(batch.getEvents()).toHaveLength(2);
+
+      batch.clear();
+      expect(batch.getEvents()).toHaveLength(0);
+    });
+
+    it('should chain batch operations', () => {
+      const batch = new EventBatch();
+      batch
+        .addTrack('event1')
+        .addIdentify('user1')
+        .addPage('page1')
+        .addGroup('group1');
+
+      const events = batch.getEvents();
+      expect(events).toHaveLength(4);
+      expect(events.map(e => e.type)).toEqual(['track', 'identify', 'page', 'group']);
+    });
+
+    it('should return copy of events array', () => {
+      const batch = new EventBatch();
+      batch.addTrack('test_event');
+
+      const events1 = batch.getEvents();
+      const events2 = batch.getEvents();
+
+      // Should be different array instances
+      expect(events1).not.toBe(events2);
+      // But should have same content
+      expect(events1).toEqual(events2);
+    });
+  });
+
+  describe('createUserSession', () => {
+    it('should create user session with basic identify', () => {
+      const session = createUserSession('user123', 'session456');
+      const identifyPayload = session.identify({ email: 'user@example.com' });
+
+      expect(identifyPayload.type).toBe('identify');
+      expect(identifyPayload.userId).toBe('user123');
+      expect(identifyPayload.traits).toEqual({
+        email: 'user@example.com',
+        sessionId: 'session456',
+      });
+    });
+
+    it('should create user session track event', () => {
+      const session = createUserSession('user123', 'session456');
+      const trackPayload = session.track('button_clicked', { button: 'signup' });
+
+      expect(trackPayload.type).toBe('track');
+      expect(trackPayload.event).toBe('button_clicked');
+      expect(trackPayload.properties).toEqual({
+        button: 'signup',
+        sessionId: 'session456',
+      });
+    });
+
+    it('should create user session page event', () => {
+      const session = createUserSession('user123', 'session456');
+      const pagePayload = session.page('Product Page', { product_id: 'p123' });
+
+      expect(pagePayload.type).toBe('page');
+      expect(pagePayload.name).toBe('Product Page');
+      expect(pagePayload.properties).toEqual({
+        product_id: 'p123',
+        sessionId: 'session456',
+      });
+    });
+
+    it('should create user session group event', () => {
+      const session = createUserSession('user123', 'session456');
+      const groupPayload = session.group('org123', { plan: 'pro' });
+
+      expect(groupPayload.type).toBe('group');
+      expect(groupPayload.groupId).toBe('org123');
+      expect(groupPayload.traits).toEqual({
+        plan: 'pro',
+        sessionId: 'session456',
+      });
+    });
+
+    it('should include user context in all events', () => {
+      const session = createUserSession('user123', 'session456');
+      const trackPayload = session.track('test_event');
+
+      expect(trackPayload.context.traits).toBeDefined();
+    });
+  });
+
+  describe('createAnonymousSession', () => {
+    it('should create anonymous track event', () => {
+      const session = createAnonymousSession('anon_123');
+      const trackPayload = session.track('page_viewed', { page: 'home' });
+
+      expect(trackPayload.type).toBe('track');
+      expect(trackPayload.event).toBe('page_viewed');
+      expect(trackPayload.anonymousId).toBe('anon_123');
+      expect(trackPayload.properties).toEqual({ page: 'home' });
+    });
+
+    it('should create anonymous page event', () => {
+      const session = createAnonymousSession('anon_123');
+      const pagePayload = session.page('Home Page', { section: 'hero' });
+
+      expect(pagePayload.type).toBe('page');
+      expect(pagePayload.name).toBe('Home Page');
+      expect(pagePayload.anonymousId).toBe('anon_123');
+    });
+
+    it('should convert anonymous to identified user', () => {
+      const session = createAnonymousSession('anon_123');
+      const identifyPayload = session.identify('user456', { email: 'new@example.com' });
+
+      expect(identifyPayload.type).toBe('identify');
+      expect(identifyPayload.userId).toBe('user456');
+      expect(identifyPayload.anonymousId).toBe('anon_123');
+      expect(identifyPayload.traits).toEqual({ email: 'new@example.com' });
+    });
+
+    it('should create alias for user signup', () => {
+      const session = createAnonymousSession('anon_123');
+      const aliasPayload = session.alias('user456');
+
+      expect(aliasPayload.type).toBe('alias');
+      expect(aliasPayload.userId).toBe('user456');
+      expect(aliasPayload.previousId).toBe('anon_123');
+      expect(aliasPayload.anonymousId).toBe('anon_123');
+    });
+  });
+
+  describe('Type Guards', () => {
+    const samplePayloads: EmitterPayload[] = [
+      { type: 'track', event: 'test', properties: {}, context: {} },
+      { type: 'identify', userId: 'user1', traits: {}, context: {} },
+      { type: 'page', name: 'test', properties: {}, context: {} },
+      { type: 'group', groupId: 'group1', traits: {}, context: {} },
+      { type: 'alias', userId: 'user1', previousId: 'anon1', context: {} },
+    ];
+
+    it('should identify track payloads', () => {
+      const trackPayload = samplePayloads[0];
+      const nonTrackPayloads = samplePayloads.slice(1);
+
+      expect(isTrackPayload(trackPayload)).toBe(true);
+      nonTrackPayloads.forEach(payload => {
+        expect(isTrackPayload(payload)).toBe(false);
+      });
+    });
+
+    it('should identify identify payloads', () => {
+      const identifyPayload = samplePayloads[1];
+      const nonIdentifyPayloads = samplePayloads.filter((_, i) => i !== 1);
+
+      expect(isIdentifyPayload(identifyPayload)).toBe(true);
+      nonIdentifyPayloads.forEach(payload => {
+        expect(isIdentifyPayload(payload)).toBe(false);
+      });
+    });
+
+    it('should identify page payloads', () => {
+      const pagePayload = samplePayloads[2];
+      const nonPagePayloads = samplePayloads.filter((_, i) => i !== 2);
+
+      expect(isPagePayload(pagePayload)).toBe(true);
+      nonPagePayloads.forEach(payload => {
+        expect(isPagePayload(payload)).toBe(false);
+      });
+    });
+
+    it('should identify group payloads', () => {
+      const groupPayload = samplePayloads[3];
+      const nonGroupPayloads = samplePayloads.filter((_, i) => i !== 3);
+
+      expect(isGroupPayload(groupPayload)).toBe(true);
+      nonGroupPayloads.forEach(payload => {
+        expect(isGroupPayload(payload)).toBe(false);
+      });
+    });
+
+    it('should identify alias payloads', () => {
+      const aliasPayload = samplePayloads[4];
+      const nonAliasPayloads = samplePayloads.filter((_, i) => i !== 4);
+
+      expect(isAliasPayload(aliasPayload)).toBe(true);
+      nonAliasPayloads.forEach(payload => {
+        expect(isAliasPayload(payload)).toBe(false);
+      });
+    });
+  });
+
+  describe('withMetadata', () => {
+    it('should add metadata to payload app context', () => {
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {},
+      };
+
+      const metadata = {
+        version: '1.2.3',
+        source: 'mobile_app',
+        build: 'production',
+      };
+
+      const result = withMetadata(payload, metadata);
+
+      expect(result.context.app).toEqual(metadata);
+    });
+
+    it('should merge with existing app context', () => {
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {
+          app: {
+            name: 'Existing App',
+            platform: 'ios',
+          },
+        },
+      };
+
+      const metadata = {
+        version: '2.0.0',
+        source: 'app_store',
+      };
+
+      const result = withMetadata(payload, metadata);
+
+      expect(result.context.app).toEqual({
+        name: 'Existing App',
+        platform: 'ios',
+        version: '2.0.0',
+        source: 'app_store',
+      });
+    });
+
+    it('should preserve other context properties', () => {
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {
+          device: { type: 'mobile' },
+          page: { url: 'https://example.com' },
+        },
+      };
+
+      const metadata = { version: '1.0.0' };
+      const result = withMetadata(payload, metadata);
+
+      expect(result.context.device).toEqual({ type: 'mobile' });
+      expect(result.context.page).toEqual({ url: 'https://example.com' });
+      expect(result.context.app).toEqual({ version: '1.0.0' });
+    });
+
+    it('should work with different payload types', () => {
+      const identifyPayload: EmitterIdentifyPayload = {
+        type: 'identify',
+        userId: 'user1',
+        traits: {},
+        context: {},
+      };
+
+      const metadata = { version: '3.0.0' };
+      const result = withMetadata(identifyPayload, metadata);
+
+      expect(result.type).toBe('identify');
+      expect(result.context.app).toEqual(metadata);
+    });
+  });
+
+  describe('withUTM', () => {
+    it('should add UTM parameters to payload campaign context', () => {
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {},
+      };
+
+      const utm = {
+        source: 'google',
+        medium: 'cpc',
+        campaign: 'summer_sale',
+        term: 'running shoes',
+        content: 'ad_variant_a',
+      };
+
+      const result = withUTM(payload, utm);
+
+      expect(result.context.campaign).toEqual(utm);
+    });
+
+    it('should merge with existing campaign context', () => {
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {
+          campaign: {
+            name: 'Existing Campaign',
+            id: 'camp_123',
+          },
+        },
+      };
+
+      const utm = {
+        source: 'facebook',
+        medium: 'social',
+      };
+
+      const result = withUTM(payload, utm);
+
+      expect(result.context.campaign).toEqual({
+        name: 'Existing Campaign',
+        id: 'camp_123',
+        source: 'facebook',
+        medium: 'social',
+      });
+    });
+
+    it('should handle partial UTM parameters', () => {
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {},
+      };
+
+      const utm = {
+        source: 'email',
+        campaign: 'newsletter',
+      };
+
+      const result = withUTM(payload, utm);
+
+      expect(result.context.campaign).toEqual({
+        source: 'email',
+        campaign: 'newsletter',
+      });
+    });
+
+    it('should preserve other context properties', () => {
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {
+          app: { name: 'Test App' },
+          device: { type: 'desktop' },
+        },
+      };
+
+      const utm = { source: 'twitter' };
+      const result = withUTM(payload, utm);
+
+      expect(result.context.app).toEqual({ name: 'Test App' });
+      expect(result.context.device).toEqual({ type: 'desktop' });
+      expect(result.context.campaign).toEqual({ source: 'twitter' });
+    });
+
+    it('should work with different payload types', () => {
+      const pagePayload: EmitterPagePayload = {
+        type: 'page',
+        name: 'Landing Page',
+        properties: {},
+        context: {},
+      };
+
+      const utm = {
+        source: 'google',
+        medium: 'organic',
+      };
+
+      const result = withUTM(pagePayload, utm);
+
+      expect(result.type).toBe('page');
+      expect(result.context.campaign).toEqual(utm);
+    });
+  });
+
+  // Integration and performance tests
+  describe('Integration and Performance', () => {
+    it('should handle complex workflow with all helpers', () => {
+      // 1. Build complex context
+      const context = new ContextBuilder()
+        .setUser('user123', { name: 'John Doe', plan: 'premium' })
+        .setOrganization('org456')
+        .setPage({ path: '/dashboard', title: 'Dashboard' })
+        .setCampaign({ utm_source: 'email', utm_campaign: 'onboarding' })
+        .setDevice({ type: 'desktop', os: 'macOS' })
+        .build();
+
+      // 2. Create payload builder with context
+      const builder = new PayloadBuilder(context);
+
+      // 3. Create events with metadata and UTM
+      const trackPayload = withUTM(
+        withMetadata(
+          builder
+            .withTimestamp(new Date('2024-01-01'))
+            .withAnonymousId('anon_123')
+            .track('feature_used', { feature: 'dashboard_export' }),
+          { version: '2.1.0', build: 'production' }
+        ),
+        { content: 'email_link' }
+      );
+
+      // 4. Create batch with shared context
+      const batch = new EventBatch(context);
+      batch.add(trackPayload);
+      batch.addIdentify('user123', { last_active: '2024-01-01' });
+
+      const events = batch.getEvents();
+
+      // Verify complex integration
+      expect(events).toHaveLength(2);
+      expect(events[0].context.app.version).toBe('2.1.0');
+      expect(events[0].context.campaign.utm_source).toBe('email');
+      expect(events[0].context.campaign.content).toBe('email_link');
+      expect(events[1].context.traits.name).toBe('John Doe');
+    });
+
+    it('should handle performance with large batches', () => {
+      const batch = new EventBatch();
+      const startTime = performance.now();
+
+      // Add 1000 events
+      for (let i = 0; i < 1000; i++) {
+        batch.addTrack(`event_${i}`, { index: i });
+      }
+
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+
+      expect(batch.getEvents()).toHaveLength(1000);
+      expect(duration).toBeLessThan(100); // Should complete in under 100ms
+    });
+
+    it('should handle memory efficiency with context builders', () => {
+      const contexts = [];
+      
+      // Create 100 context builders
+      for (let i = 0; i < 100; i++) {
+        const builder = new ContextBuilder()
+          .setUser(`user_${i}`)
+          .setOrganization(`org_${i}`)
+          .setPage({ path: `/page_${i}` });
+        
+        contexts.push(builder.build());
+      }
+
+      // Each context should be independent
+      expect(contexts[0]).not.toBe(contexts[1]); // Different object references
+      expect(contexts[99].page.path).toBe('/page_99');
+      expect(contexts[0].groupId).toBe('org_0');
+      expect(contexts[99].groupId).toBe('org_99');
+    });
+
+    it('should maintain type safety across all helpers', () => {
+      // This test ensures TypeScript types work correctly
+      const context = new ContextBuilder().build();
+      const builder = new PayloadBuilder(context);
+      const batch = new EventBatch();
+
+      // All these should compile without type errors
+      const trackPayload = builder.track('test');
+      const identifyPayload = builder.identify('user1');
+      const pagePayload = builder.page('test');
+      const groupPayload = builder.group('group1');
+      const aliasPayload = builder.alias('user1', 'anon1');
+
+      // Type guards should work
+      expect(isTrackPayload(trackPayload)).toBe(true);
+      expect(isIdentifyPayload(identifyPayload)).toBe(true);
+      expect(isPagePayload(pagePayload)).toBe(true);
+      expect(isGroupPayload(groupPayload)).toBe(true);
+      expect(isAliasPayload(aliasPayload)).toBe(true);
+
+      // Batch operations should work
+      batch.add(trackPayload);
+      batch.addTrack('test2');
+      
+      expect(batch.getEvents()).toHaveLength(2);
+    });
+
+    it('should handle edge cases gracefully', () => {
+      // Empty context builder
+      const emptyContext = new ContextBuilder().build();
+      expect(emptyContext).toEqual({});
+
+      // Empty batch
+      const emptyBatch = new EventBatch();
+      expect(emptyBatch.getEvents()).toEqual([]);
+
+      // Metadata with empty object
+      const payload: EmitterTrackPayload = {
+        type: 'track',
+        event: 'test',
+        properties: {},
+        context: {},
+      };
+      const withEmptyMetadata = withMetadata(payload, {});
+      expect(withEmptyMetadata.context.app).toEqual({});
+
+      // UTM with empty object
+      const withEmptyUTM = withUTM(payload, {});
+      expect(withEmptyUTM.context.campaign).toEqual({});
+    });
+  });
+});

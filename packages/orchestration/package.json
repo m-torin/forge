@@ -11,6 +11,10 @@
       "types": "./src/server.ts",
       "import": "./src/server.ts"
     },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    },
     "./examples": {
       "types": "./src/workflows/examples/index.ts",
       "import": "./src/workflows/examples/index.ts"
@@ -37,7 +41,12 @@
     "@upstash/qstash": "^2.8.1",
     "@upstash/redis": "^1.35.0",
     "@upstash/workflow": "^0.2.13",
+    "date-fns": "catalog:",
+    "nanoid": "catalog:",
     "next": "catalog:",
+    "opossum": "^8.1.4",
+    "p-queue": "^8.0.1",
+    "p-retry": "^6.2.0",
     "zod": "catalog:"
   },
   "devDependencies": {

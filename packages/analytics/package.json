@@ -14,25 +14,49 @@
     "react": "catalog:",
     "next": "catalog:"
   },
+  "peerDependencies": {
+    "@segment/analytics-next": "^1.70.0",
+    "posthog-js": "^1.100.0", 
+    "posthog-node": "^4.0.0",
+    "@vercel/analytics": "^1.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@segment/analytics-next": {
+      "optional": true
+    },
+    "posthog-js": {
+      "optional": true
+    },
+    "posthog-node": {
+      "optional": true
+    },
+    "@vercel/analytics": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
-    "@testing-library/user-event": "catalog:",
-    "@types/eslint": "catalog:",
+    "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "catalog:",
+    "@vitejs/plugin-react": "^4.5.1",
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@segment/analytics-next": "^1.70.0",
+    "posthog-js": "^1.100.0", 
+    "posthog-node": "^4.0.0",
+    "@vercel/analytics": "^1.1.0"
   },
   "exports": {
-    ".": "./src/client.ts",
-    "./server": "./src/server.ts"
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts"
   }
 }

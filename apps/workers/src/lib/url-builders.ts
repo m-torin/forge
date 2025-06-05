@@ -43,9 +43,17 @@ export function buildScheduleUrls() {
   const baseUrl = getBaseUrl();
 
   return {
-    kitchenSink: `${baseUrl}/api/schedules/kitchen-sink`,
+    list: `${baseUrl}/api/schedules`,
     manage: `${baseUrl}/api/schedules`,
   };
+}
+
+/**
+ * Build a specific schedule URL for a workflow
+ */
+export function buildScheduleUrl(workflowSlug: string): string {
+  const baseUrl = getBaseUrl();
+  return `${baseUrl}/api/schedules/${workflowSlug}`;
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   Divider,
   Group,
   NavLink,
+  ScrollArea,
   Stack,
   Text,
   ThemeIcon,
@@ -22,12 +23,18 @@ import {
   IconExternalLink,
   IconHome,
   IconSettings,
+  IconStack2,
+  IconPhoto,
+  IconRobot,
+  IconUpload,
+  IconCircleCheck,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { HeaderSearch } from '@repo/design-system/components/search';
 import { UserButton } from '@repo/design-system/uix';
+import { useWorkflow } from '@/contexts/workflow-context';
 
 interface AppShellLayoutProps {
   children: React.ReactNode;
@@ -35,10 +42,74 @@ interface AppShellLayoutProps {
 
 const navigation = [
   {
-    description: 'Trigger workflows and monitor execution',
+    description: 'Overview of all workflows and system status',
     href: '/',
     icon: IconHome,
     label: 'Dashboard',
+  },
+];
+
+// Static workflow navigation items based on your existing workflow definitions
+const workflowNavItems = [
+  {
+    description: 'Minimal test workflow to verify the system is working',
+    href: '/workflows/test-simple',
+    icon: IconCircleCheck,
+    label: 'Test Simple',
+  },
+  {
+    description: 'Essential workflow pattern with validation and batch processing',
+    href: '/workflows/basic',
+    icon: IconStack2,
+    label: 'Basic Workflow',
+  },
+  {
+    description: 'Comprehensive feature demonstration',
+    href: '/workflows/kitchen-sink',
+    icon: IconSettings,
+    label: 'Kitchen Sink',
+  },
+  {
+    description: 'Image processing and optimization',
+    href: '/workflows/image-processing',
+    icon: IconPhoto,
+    label: 'Image Processing',
+  },
+  {
+    description: 'AI-powered product classification',
+    href: '/workflows/product-classification',
+    icon: IconRobot,
+    label: 'Product Classification',
+  },
+  {
+    description: 'Import and process external media',
+    href: '/workflows/import-external-media',
+    icon: IconUpload,
+    label: 'Import Media',
+  },
+  {
+    description: 'Generate product description pages',
+    href: '/workflows/chart-pdps',
+    icon: IconPhoto,
+    label: 'Chart PDPs',
+  },
+  {
+    description: 'Generate site map charts',
+    href: '/workflows/chart-sitemaps',
+    icon: IconSettings,
+    label: 'Chart Sitemaps',
+  },
+  {
+    description: 'Generate marketing copy',
+    href: '/workflows/gen-copy',
+    icon: IconSettings,
+    label: 'Generate Copy',
+  },
+  {
+    description: 'Map taxonomy terms',
+    href: '/workflows/map-taxterm',
+    icon: IconSettings,
+    label: 'Map Tax Terms',
   },
 ];
 
@@ -63,6 +134,7 @@ const externalLinks = [
 export function AppShellLayout({ children }: AppShellLayoutProps) {
   const [opened, { toggle }] = useDisclosure();
   const pathname = usePathname();
+  const { sseConnected } = useWorkflow();
 
   return (
     <>
@@ -102,6 +174,15 @@ export function AppShellLayout({ children }: AppShellLayoutProps) {
                 placeholder="Search workflows, jobs..."
                 size="sm"
               />
+              <Tooltip label={sseConnected ? 'SSE Connected' : 'SSE Disconnected'}>
+                <Badge 
+                  color={sseConnected ? 'green' : 'red'} 
+                  variant="dot"
+                  size="sm"
+                >
+                  SSE
+                </Badge>
+              </Tooltip>
               <Tooltip label="QStash Console">
                 <ActionIcon
                   href="https://console.upstash.com/qstash"
@@ -113,54 +194,75 @@ export function AppShellLayout({ children }: AppShellLayoutProps) {
                   <IconSettings size={18} />
                 </ActionIcon>
               </Tooltip>
-              <UserButton />
+              {/* <UserButton /> */}
             </Group>
           </Group>
         </AppShell.Header>
 
-        <AppShell.Navbar p="md">
-          <Stack gap="xs">
-            <Text c="dimmed" fw={700} mb="xs" size="xs" tt="uppercase">
-              Navigation
-            </Text>
+        <AppShell.Navbar>
+          <ScrollArea h="100%" p="md">
+            <Stack gap="xs">
+              <Text c="dimmed" fw={700} mb="xs" size="xs" tt="uppercase">
+                Navigation
+              </Text>
 
-            {navigation.map((item) => (
-              <NavLink
-                key={item.href}
-                href={item.href as any}
-                component={Link}
-                description={item.description}
-                leftSection={<item.icon size={18} />}
-                onClick={() => opened && toggle()}
-                active={pathname === item.href}
-                label={item.label}
-              />
-            ))}
+              {navigation.map((item) => (
+                <NavLink
+                  key={item.href}
+                  href={item.href as any}
+                  component={Link}
+                  description={item.description}
+                  leftSection={<item.icon size={18} />}
+                  onClick={() => opened && toggle()}
+                  active={pathname === item.href}
+                  label={item.label}
+                />
+              ))}
 
-            <Divider my="md" />
+              <Divider my="md" />
 
-            <Text c="dimmed" fw={700} mb="xs" size="xs" tt="uppercase">
-              Resources
-            </Text>
+              <Text c="dimmed" fw={700} mb="xs" size="xs" tt="uppercase">
+                Workflows
+              </Text>
 
-            {externalLinks.map((link) => (
-              <NavLink
-                key={link.href}
-                href={link.href}
-                component="a"
-                leftSection={<link.icon size={18} />}
-                rightSection={<IconExternalLink size={14} />}
-                label={link.label}
-                target="_blank"
-              />
-            ))}
+              {workflowNavItems.map((workflow) => (
+                <NavLink
+                  key={workflow.href}
+                  href={workflow.href as any}
+                  component={Link}
+                  description={workflow.description}
+                  leftSection={<workflow.icon size={18} />}
+                  onClick={() => opened && toggle()}
+                  active={pathname === workflow.href}
+                  label={workflow.label}
+                />
+              ))}
 
-            <Divider my="md" />
+              <Divider my="md" />
 
-            <Text c="dimmed" size="xs">
-              Background workflow execution engine
-            </Text>
-          </Stack>
+              <Text c="dimmed" fw={700} mb="xs" size="xs" tt="uppercase">
+                Resources
+              </Text>
+
+              {externalLinks.map((link) => (
+                <NavLink
+                  key={link.href}
+                  href={link.href}
+                  component="a"
+                  leftSection={<link.icon size={18} />}
+                  rightSection={<IconExternalLink size={14} />}
+                  label={link.label}
+                  target="_blank"
+                />
+              ))}
+
+              <Divider my="md" />
+
+              <Text c="dimmed" size="xs">
+                Background workflow execution engine
+              </Text>
+            </Stack>
+          </ScrollArea>
         </AppShell.Navbar>
 
         <AppShell.Main>{children}</AppShell.Main>

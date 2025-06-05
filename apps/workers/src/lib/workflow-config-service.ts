@@ -1,7 +1,6 @@
 // import { database } from '@repo/database'; // TODO: Enable when database is migrated
 import { devLog as logger } from '@repo/orchestration';
 
-import { platformAnalytics } from './platform-analytics';
 // import type { Prisma } from '@repo/database';
 
 // Temporary mock database object
@@ -143,12 +142,7 @@ export class WorkflowConfigService {
         workflowSlug,
       });
 
-      platformAnalytics.track('workflow.config.enabled', {
-        hasCustomSettings: Object.keys(config).length > 0,
-        organizationId,
-        userId,
-        workflowSlug,
-      });
+      // Workflow config tracking removed
 
       return result;
     } catch (error) {
@@ -178,11 +172,7 @@ export class WorkflowConfigService {
         workflowSlug,
       });
 
-      platformAnalytics.track('workflow.config.disabled', {
-        organizationId: options.organizationId,
-        userId: options.userId,
-        workflowSlug,
-      });
+      // Workflow config tracking removed
 
       return true;
     } catch (error) {
@@ -329,11 +319,7 @@ export class WorkflowConfigService {
         workflowSlug: data.workflowSlug,
       });
 
-      platformAnalytics.track('workflow.schedule.created', {
-        cronExpression: data.cronExpression,
-        scheduleId: schedule.id,
-        workflowSlug: data.workflowSlug,
-      });
+      // Workflow schedule tracking removed
 
       return schedule;
     } catch (error) {
@@ -500,16 +486,7 @@ export class WorkflowConfigService {
         where: { workflowRunId: data.workflowRunId },
       });
 
-      // Track execution
-      platformAnalytics.track('workflow.execution.recorded', {
-        duration: data.duration,
-        organizationId: data.organizationId,
-        status: data.status,
-        triggeredBy: data.triggeredBy,
-        userId: data.userId,
-        workflowRunId: data.workflowRunId,
-        workflowSlug: data.workflowSlug,
-      });
+      // Workflow execution tracking removed
 
       return execution;
     } catch (error) {

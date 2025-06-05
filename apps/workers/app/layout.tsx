@@ -21,12 +21,12 @@ export const metadata = {
 
 export default function RootLayout({ children }: RootLayoutProperties): React.ReactElement {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
-      <body>
-        <MantineProvider>
+      <body suppressHydrationWarning>
+        <MantineProvider defaultColorScheme="auto">
           <ModalsProvider>
             <WorkflowProvider>{children}</WorkflowProvider>
           </ModalsProvider>
