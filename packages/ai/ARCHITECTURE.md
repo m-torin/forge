@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `@repo/ai-new` package implements a modern AI integration system built on top of **Vercel AI SDK
+The `@repo/ai` package implements a modern AI integration system built on top of **Vercel AI SDK
 as the primary framework**, with support for custom providers when needed. It follows the
 established pattern from `@repo/analytics-new` while leveraging the power and maintenance benefits
 of Vercel's AI SDK.
@@ -60,7 +60,7 @@ interface CustomProvider {
 ### Client-Side Usage
 
 ```typescript
-import { createClientAI } from '@repo/ai-new/client';
+import { createClientAI } from '@repo/ai/client';
 
 const ai = await createClientAI({
   // AI SDK providers configuration
@@ -92,7 +92,7 @@ const response = await ai.generateText({
 ### Server-Side Usage
 
 ```typescript
-import { createServerAI } from '@repo/ai-new/server';
+import { createServerAI } from '@repo/ai/server';
 import { z } from 'zod';
 
 const ai = await createServerAI({
@@ -133,7 +133,7 @@ const moderation = await ai.moderate('user input');
 ```typescript
 // Client Component - Enhanced AI SDK hooks
 'use client';
-import { useChat } from '@repo/ai-new/client/next';
+import { useChat } from '@repo/ai/client/next';
 
 export function ChatComponent() {
   const {
@@ -160,7 +160,7 @@ export function ChatComponent() {
 }
 
 // API Route - Using AI SDK's streamText
-import { streamText } from '@repo/ai-new/server/next';
+import { streamText } from '@repo/ai/server/next';
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
@@ -272,7 +272,7 @@ const config: AIConfig = {
 
 ## Migration Path
 
-1. Install new package: `pnpm add @repo/ai-new`
+1. Install new package: `pnpm add @repo/ai`
 2. Update imports to use environment-specific paths
 3. Update configuration to new format
 4. Gradually migrate features using compatibility layer

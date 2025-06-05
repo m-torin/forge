@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `@repo/ai-new` package provides a **framework-agnostic** AI integration system that supports
+The `@repo/ai` package provides a **framework-agnostic** AI integration system that supports
 multiple implementation paths:
 
 - **Vercel AI SDK** for ~90% of standard use cases
@@ -39,7 +39,7 @@ features).
 ### 1. Standard Configuration
 
 ```typescript
-import { createAI } from '@repo/ai-new';
+import { createAI } from '@repo/ai';
 
 const ai = createAI({
   providers: [
@@ -225,7 +225,7 @@ import { openai } from '@ai-sdk/openai';
 const result = await generateText({ model: openai('gpt-4'), prompt });
 
 // New code (flexible and extensible)
-import { createAI } from '@repo/ai-new';
+import { createAI } from '@repo/ai';
 const ai = createAI(config);
 const result = await ai.complete({ prompt, provider: 'openai' });
 

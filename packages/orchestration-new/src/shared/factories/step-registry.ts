@@ -375,9 +375,19 @@ export class StepRegistry {
     const visited = new Set<string>();
 
     for (const stepId of stepIds) {
-      if (!this.get(stepId)) {
+      const step = this.get(stepId);
+      if (!step) {
         errors.push(`Step ${stepId} not found`);
         continue;
+      }
+
+      // Check dependencies
+      if (step.dependencies) {
+        for (const depId of step.dependencies) {
+          if (!this.get(depId)) {
+            errors.push(`Step ${depId} not found`);
+          }
+        }
       }
 
       // Check for circular dependencies

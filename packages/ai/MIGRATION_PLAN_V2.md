@@ -3,7 +3,7 @@
 ## Overview
 
 This document outlines the revised plan to migrate the existing `@repo/ai` package to the new
-`@repo/ai-new` package. The key change is that **Vercel AI SDK is our primary framework**, with the
+`@repo/ai` package. The key change is that **Vercel AI SDK is our primary framework**, with the
 ability to add custom providers alongside it.
 
 ## Core Architecture Principle

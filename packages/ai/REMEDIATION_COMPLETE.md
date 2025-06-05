@@ -46,7 +46,7 @@ All critical issues have been successfully remediated. The package is now ready 
 
 ## 🎯 Summary
 
-The `@repo/ai-new` package has been successfully remediated:
+The `@repo/ai` package has been successfully remediated:
 
 1. **Fixed 2 critical production-breaking issues**
 2. **Improved type safety** across all methods

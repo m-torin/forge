@@ -1,4 +1,4 @@
-# @repo/ai-new
+# @repo/ai
 
 AI/LLM integration package - Placeholder for future migration.
 

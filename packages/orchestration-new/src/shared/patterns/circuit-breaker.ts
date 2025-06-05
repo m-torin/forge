@@ -166,7 +166,7 @@ export class CircuitBreakerManager {
 
     return {
       name,
-      options: breaker.options,
+      options: (breaker as any).options,
       state: breaker.closed ? 'closed' : breaker.opened ? 'open' : 'half-open',
       stats: breaker.stats,
     };
@@ -210,7 +210,7 @@ export class CircuitBreakerManager {
       return false;
     }
 
-    breaker.destroy();
+    breaker.shutdown();
     this.breakers.delete(name);
     return true;
   }
@@ -220,7 +220,7 @@ export class CircuitBreakerManager {
    */
   clear(): void {
     for (const [name, breaker] of this.breakers) {
-      breaker.destroy();
+      breaker.shutdown();
     }
     this.breakers.clear();
   }

@@ -502,10 +502,12 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
    * Get step definition (deep clone for immutability)
    */
   getDefinition(): WorkflowStepDefinition<TInput, TOutput> {
-    // Use structuredClone if available (ES2022+), otherwise JSON fallback
-    return (
-      globalThis.structuredClone?.(this.#definition) ?? JSON.parse(JSON.stringify(this.#definition))
-    );
+    // Create a deep copy of the definition without the execute function
+    const definitionCopy = {
+      ...this.#definition,
+      execute: this.#definition.execute, // Keep the original function reference
+    };
+    return definitionCopy;
   }
 
   /**
@@ -563,6 +565,49 @@ export class StepFactory {
       enableDetailedLogging: false,
       ...config,
     };
+    this.#steps = new Map();
+    this.registerBuiltInSteps();
+  }
+
+  /**
+   * Register built-in steps
+   */
+  private registerBuiltInSteps(): void {
+    // Register HTTP request step
+    this.registerStep(
+      createWorkflowStep(
+        {
+          name: 'HTTP Request',
+          description: 'Make an HTTP request',
+          version: '1.0.0',
+          category: 'http',
+          tags: ['http', 'api'],
+        },
+        async (context) => ({
+          success: true,
+          output: {},
+          performance: context.performance,
+        }),
+      ),
+    );
+
+    // Register database query step
+    this.registerStep(
+      createWorkflowStep(
+        {
+          name: 'Database Query',
+          description: 'Execute a database query',
+          version: '1.0.0',
+          category: 'database',
+          tags: ['database', 'sql'],
+        },
+        async (context) => ({
+          success: true,
+          output: {},
+          performance: context.performance,
+        }),
+      ),
+    );
   }
 
   /**
@@ -624,6 +669,13 @@ export class StepFactory {
           validationErrors: validation.errors,
         },
       );
+    }
+
+    if (this.#steps.has(definition.id)) {
+      throw createOrchestrationError(`Step with ID ${definition.id} is already registered`, {
+        code: OrchestrationErrorCodes.DUPLICATE_STEP,
+        retryable: false,
+      });
     }
 
     this.#steps.set(definition.id, definition);

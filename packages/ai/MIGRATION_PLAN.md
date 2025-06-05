@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the plan to migrate the existing `@repo/ai` package to the new `@repo/ai-new`
+This document outlines the plan to migrate the existing `@repo/ai` package to the new `@repo/ai`
 package using the modern multi-provider architecture pattern established in `@repo/analytics-new`.
 
 ## Goals
@@ -258,7 +258,7 @@ class AIManager {
 
 ## Breaking Changes
 
-1. **Import Paths**: Change from `@repo/ai` to `@repo/ai-new/client` or `@repo/ai-new/server`
+1. **Import Paths**: Change from `@repo/ai` to `@repo/ai/client` or `@repo/ai/server`
 2. **Configuration**: New provider-based configuration structure
 3. **API Methods**: Some method signatures will change for consistency
 4. **Streaming**: New async iterator-based streaming API
@@ -268,7 +268,7 @@ class AIManager {
 A compatibility layer will be provided:
 
 ```typescript
-// @repo/ai-new/compat
+// @repo/ai/compat
 export * from './legacy-exports';
 ```
 

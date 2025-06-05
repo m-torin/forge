@@ -69,7 +69,7 @@ These can be resolved by:
 
 ```typescript
 // Server-side
-import { createServerAI } from '@repo/ai-new/server';
+import { createServerAI } from '@repo/ai/server';
 
 const ai = await createServerAI({
   providers: [
@@ -95,7 +95,7 @@ const moderation = await ai.moderate('content to check');
 
 ```typescript
 // In a React component
-import { useChat } from '@repo/ai-new/client/next';
+import { useChat } from '@repo/ai/client/next';
 
 function ChatComponent() {
   const { messages, input, handleSubmit } = useChat({
@@ -109,16 +109,16 @@ function ChatComponent() {
 
 ## 🔄 Migration Path
 
-1. **Install new package**: Add `@repo/ai-new` to dependencies
+1. **Install new package**: Add `@repo/ai` to dependencies
 2. **Update imports**:
-   - `@repo/ai` → `@repo/ai-new/server` or `@repo/ai-new/client`
+   - `@repo/ai` → `@repo/ai/server` or `@repo/ai/client`
 3. **Update configuration**: Use new provider-based config
 4. **Gradual migration**: Both packages can coexist during transition
 
 ## 📁 File Structure
 
 ```
-packages/ai-new/
+packages/ai/
 ├── src/
 │   ├── client/          # Browser implementations
 │   ├── server/          # Node.js implementations
