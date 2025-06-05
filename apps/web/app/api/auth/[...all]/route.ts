@@ -1,4 +1,4 @@
-import { auth } from "@repo/auth/server";
+import { auth } from "@repo/auth-new/server";
 import { createRateLimiter, slidingWindow } from "@repo/security";
 
 // Create a rate limiter for auth endpoints

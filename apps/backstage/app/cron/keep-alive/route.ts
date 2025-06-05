@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { requireAuth } from '@repo/auth/api-key-helpers';
+import { requireAuth } from '../../../lib/auth';
 import { createPrismaAdapter } from '@repo/database/prisma';
 
 const adapter = createPrismaAdapter();

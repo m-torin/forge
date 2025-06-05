@@ -2,7 +2,7 @@
 
 import { headers } from 'next/headers';
 
-import { auth } from '@repo/auth/server';
+import { auth } from '@repo/auth-new/server';
 import { createPrismaAdapter } from '@repo/database/prisma';
 
 const adapter = createPrismaAdapter();

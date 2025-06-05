@@ -18,7 +18,7 @@ import { notifications } from '@mantine/notifications';
 import { IconEdit } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
-import { updateApiKey } from '@repo/auth/client';
+import { updateApiKey } from '@repo/auth-new/client';
 
 interface UpdateApiKeyDialogProps {
   allowServerOptions?: boolean;

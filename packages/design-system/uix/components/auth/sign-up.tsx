@@ -4,7 +4,7 @@ import { Alert, Button, Paper, PasswordInput, Stack, TextInput } from '@mantine/
 import { useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { signUp } from '@repo/auth/client';
+import { signUp } from '@repo/auth-new/client';
 
 export const SignUp = () => {
   const [email, setEmail] = useState('');

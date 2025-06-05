@@ -1,5 +1,5 @@
 import { analytics } from "@repo/analytics-legacy";
-import { auth } from "@repo/auth/server";
+import { auth } from "@repo/auth-new/server";
 import { createRateLimiter, secure, slidingWindow } from "@repo/security";
 
 // Stricter rate limiting for sign-up to prevent abuse

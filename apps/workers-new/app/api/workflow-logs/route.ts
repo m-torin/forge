@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from '@upstash/qstash'
-import { getWorkflowConfig } from '@/lib/workflow-config'
+import { 
+  createWorkflowEngine, 
+  UpstashWorkflowProvider 
+} from '@repo/orchestration-new'
+import { getWorkflowConfig, getOrchestrationConfig } from '@/lib/workflow-config'
 
 interface WorkflowRun {
   workflowRunId: string
@@ -15,24 +18,35 @@ export async function GET(_request: NextRequest) {
   try {
     const config = getWorkflowConfig()
     
-    // Create QStash client for querying logs
-    const qstashClient = new Client({
-      baseUrl: config.qstashUrl,
-      token: config.qstashToken
-    })
-
     console.log('[WORKFLOW-LOGS] Fetching logs with config:', {
       mode: config.mode,
       qstashUrl: config.qstashUrl,
       hasToken: !!config.qstashToken
     })
 
-    // Fetch recent workflow runs
-    const _logs = await qstashClient.logs()
+    // Create orchestration provider
+    const orchestrationConfig = getOrchestrationConfig()
+    const provider = new UpstashWorkflowProvider(orchestrationConfig)
 
-    console.log('[WORKFLOW-LOGS] Retrieved logs response')
+    // Create workflow engine
+    const engine = createWorkflowEngine({
+      providers: [{
+        name: 'upstash-workflow',
+        type: 'upstash-workflow',
+        config: orchestrationConfig
+      }],
+      defaultProvider: 'upstash-workflow'
+    })
 
-    // For now, return empty workflow runs - this API needs proper implementation
+    await engine.initialize()
+
+    console.log('[WORKFLOW-LOGS] Retrieved orchestration status')
+
+    // Get execution status from orchestration engine
+    const status = engine.getStatus()
+    
+    // For now, transform orchestration status to legacy format
+    // In a real implementation, we'd query the orchestration provider for executions
     const workflowRuns: WorkflowRun[] = []
 
     return NextResponse.json({
@@ -42,7 +56,8 @@ export async function GET(_request: NextRequest) {
       config: {
         mode: config.mode,
         environment: config.mode === 'local' ? 'QStash CLI' : 'Upstash Cloud'
-      }
+      },
+      orchestrationStatus: status
     })
 
   } catch (error) {

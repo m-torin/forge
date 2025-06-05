@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { requireAuth } from '@repo/auth/api-key-helpers';
+import { requireAuth } from '@repo/auth-new/api-key-helpers';
 
 export async function GET(request: NextRequest) {
   // The middleware already checked for authentication

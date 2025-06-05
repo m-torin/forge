@@ -36,7 +36,7 @@
     "@mantine/nprogress": "^8.0.2",
     "@mantine/spotlight": "^8.0.2",
     "@repo/analytics": "workspace:*",
-    "@repo/auth": "workspace:*",
+    "@repo/auth-new": "workspace:*",
     "@repo/config": "workspace:*",
     "@repo/design-system": "workspace:*",
     "@repo/email": "workspace:*",

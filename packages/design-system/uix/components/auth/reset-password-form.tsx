@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { resetPassword } from '@repo/auth/client';
+import { resetPassword } from '@repo/auth-new/client';
 
 import { AuthForm } from './auth-form';
 

@@ -15,7 +15,7 @@
     "@mantine/core": "catalog:",
     "@mantine/hooks": "catalog:",
     "@repo/analytics": "workspace:*",
-    "@repo/auth": "workspace:*",
+    "@repo/auth-new": "workspace:*",
     "@repo/config": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/design-system": "workspace:*",

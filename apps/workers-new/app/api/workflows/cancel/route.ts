@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from '@upstash/qstash'
-import { getWorkflowConfig } from '@/lib/workflow-config'
+import { 
+  createWorkflowEngine, 
+  UpstashWorkflowProvider 
+} from '@repo/orchestration-new'
+import { getWorkflowConfig, getOrchestrationConfig } from '@/lib/workflow-config'
 
 interface CancelRequest {
   workflowRunId?: string
@@ -26,51 +29,63 @@ export async function POST(request: NextRequest) {
     }
 
     const config = getWorkflowConfig()
-    const _qstashClient = new Client({
-      baseUrl: config.qstashUrl,
-      token: config.qstashToken
+    
+    // Create orchestration provider
+    const orchestrationConfig = getOrchestrationConfig()
+    const provider = new UpstashWorkflowProvider(orchestrationConfig)
+
+    // Create workflow engine
+    const engine = createWorkflowEngine({
+      providers: [{
+        name: 'upstash-workflow',
+        type: 'upstash-workflow',
+        config: orchestrationConfig
+      }],
+      defaultProvider: 'upstash-workflow'
     })
+
+    await engine.initialize()
 
     console.log('[CANCEL] Cancelling workflow(s):', workflowRunId ?? workflowRunIds)
 
     const results: CancelResult[] = []
+    const executionIds = workflowRunId ? [workflowRunId] : (workflowRunIds || [])
 
-    if (workflowRunId) {
-      // Cancel single workflow
+    // Cancel workflows using orchestration engine
+    for (const executionId of executionIds) {
       try {
-        // Note: QStash cancel method needs proper implementation
-        console.log('[CANCEL] Would cancel workflow:', workflowRunId)
-        results.push({
-          workflowRunId,
-          success: true,
-          message: 'Workflow cancellation simulated (QStash cancel API needs implementation)'
-        })
+        // Get execution to check if it exists
+        const execution = await engine.getExecution(executionId)
+        if (!execution) {
+          results.push({
+            workflowRunId: executionId,
+            success: false,
+            error: 'Execution not found'
+          })
+          continue
+        }
+
+        // Use provider's cancelExecution method if available
+        if (provider.cancelExecution) {
+          await provider.cancelExecution(executionId)
+          results.push({
+            workflowRunId: executionId,
+            success: true,
+            message: 'Workflow cancelled successfully'
+          })
+        } else {
+          results.push({
+            workflowRunId: executionId,
+            success: false,
+            error: 'Cancel operation not supported by provider'
+          })
+        }
       } catch (error) {
         results.push({
-          workflowRunId,
+          workflowRunId: executionId,
           success: false,
           error: error instanceof Error ? error.message : 'Failed to cancel workflow'
         })
-      }
-    }
-
-    if (workflowRunIds && Array.isArray(workflowRunIds)) {
-      // Cancel multiple workflows using modern for...of loop
-      for (const id of workflowRunIds) {
-        try {
-          console.log('[CANCEL] Would cancel workflow:', id)
-          results.push({
-            workflowRunId: id,
-            success: true,
-            message: 'Workflow cancellation simulated (QStash cancel API needs implementation)'
-          })
-        } catch (error) {
-          results.push({
-            workflowRunId: id,
-            success: false,
-            error: error instanceof Error ? error.message : 'Failed to cancel workflow'
-          })
-        }
       }
     }
 

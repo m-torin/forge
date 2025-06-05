@@ -3,13 +3,13 @@ import { redirect } from 'next/navigation';
 import { type ReactNode } from 'react';
 
 import { flag } from '@repo/analytics-legacy/server';
-import { currentUser } from '@repo/auth/server';
+import { getCurrentUser } from '@repo/auth-new/server';
 import { HeaderSearch } from '@repo/design-system/components/search';
 
 import { UserMenu } from './components/user-menu';
 
 export default async function AuthenticatedLayout({ children }: { children: ReactNode }) {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const betaFeature = await flag('ui.betaComponents', user?.id);
 
   if (!user) {

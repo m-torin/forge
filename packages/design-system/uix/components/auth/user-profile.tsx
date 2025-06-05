@@ -40,7 +40,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { updateUser } from '@repo/auth/actions';
+import { updateUser } from '@repo/auth-new/actions';
 import {
   listUserSessions,
   revokeUserSession,
@@ -48,7 +48,7 @@ import {
   signInWithGoogle,
   signOut,
   useSession,
-} from '@repo/auth/client';
+} from '@repo/auth-new/client';
 
 interface UserSession {
   createdAt: string;

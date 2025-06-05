@@ -6,7 +6,7 @@ import { IconShield } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { getTwoFactorStatus } from '@repo/auth/client';
+import { getTwoFactorStatus } from '@repo/auth-new/client';
 import {
   BackButton,
   PasskeyManager,

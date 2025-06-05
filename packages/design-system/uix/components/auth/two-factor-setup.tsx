@@ -30,7 +30,7 @@ import {
   getTwoFactorStatus,
   regenerateTwoFactorBackupCodes,
   verifyTwoFactor,
-} from '@repo/auth/client';
+} from '@repo/auth-new/client';
 
 interface TwoFactorSetupProps {
   onCancel?: () => void;

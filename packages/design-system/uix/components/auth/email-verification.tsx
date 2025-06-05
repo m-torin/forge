@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { sendVerificationEmail, useSession, verifyEmail } from '@repo/auth/client';
+import { sendVerificationEmail, useSession, verifyEmail } from '@repo/auth-new/client';
 
 interface EmailVerificationBannerProps {
   onVerified?: () => void;

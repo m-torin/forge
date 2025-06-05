@@ -33,7 +33,7 @@
     "@mantine/modals": "catalog:",
     "@mantine/notifications": "catalog:",
     "@repo/analytics": "workspace:*",
-    "@repo/auth": "workspace:*",
+    "@repo/auth-new": "workspace:*",
     "@repo/config": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/design-system": "workspace:*",

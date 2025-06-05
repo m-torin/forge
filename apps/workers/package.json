@@ -34,7 +34,7 @@
     "@mantine/hooks": "catalog:",
     "@mantine/modals": "catalog:",
     "@mantine/notifications": "catalog:",
-    "@repo/auth": "workspace:*",
+    "@repo/auth-new": "workspace:*",
     "@repo/config": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/design-system": "workspace:*",

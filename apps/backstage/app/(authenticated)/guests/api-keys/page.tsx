@@ -18,7 +18,7 @@ import { notifications } from '@mantine/notifications';
 import { IconAlertCircle, IconKey } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
-import { listApiKeys } from '@repo/auth';
+import { listApiKeys } from '@repo/auth-new';
 import { ApiKeyList, CreateApiKeyDialog, UpdateApiKeyDialog } from '@repo/design-system/uix';
 
 // Type assertion to break deep type instantiation chain caused by Next.js typed routes

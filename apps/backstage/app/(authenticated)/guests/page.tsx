@@ -5,7 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { IconUserCheck } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
-import { stopImpersonating } from '@repo/auth';
+import { stopImpersonating } from '@repo/auth-new';
 import { CreateUserDialog, UserDetails, UserList } from '@repo/design-system/uix';
 
 interface User {

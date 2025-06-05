@@ -4,16 +4,29 @@ import { useState, useMemo } from 'react'
 import { Card, Title, Text, Badge, Group, Stack, Alert, ScrollArea } from '@mantine/core'
 import { IconClock, IconCheck, IconX, IconPlayerPlay, IconWifi, IconWifiOff } from '@tabler/icons-react'
 import { useWorkflows } from '../contexts/WorkflowsContext'
+import { useWorkflowMetrics, useExecutionHistory } from '@repo/orchestration-new'
 import { WorkflowFilters, type WorkflowFilterState } from './WorkflowFilters'
 
 export function WorkflowMonitor() {
-  const { workflowRuns, sseConnected, config } = useWorkflows()
+  const { workflowRuns, sseConnected, config, orchestrationProvider } = useWorkflows()
   const [filters, setFilters] = useState<WorkflowFilterState>({
     search: '',
     status: '',
     timeRange: '',
     workflowType: ''
   })
+
+  // Use orchestration hooks if provider is available
+  const orchestrationMetrics = orchestrationProvider ? useWorkflowMetrics('all', {
+    provider: orchestrationProvider,
+    refreshInterval: 5000
+  }) : null
+
+  const orchestrationHistory = orchestrationProvider ? useExecutionHistory('all', {
+    provider: orchestrationProvider,
+    refreshInterval: 5000,
+    pagination: { limit: 50, offset: 0 }
+  }) : null
 
   // Apply filters to workflow runs
   const filteredRuns = useMemo(() => {
@@ -125,6 +138,11 @@ export function WorkflowMonitor() {
             >
               {sseConnected ? 'Connected' : 'Disconnected'}
             </Badge>
+            {orchestrationProvider && (
+              <Badge variant="outline" color="violet">
+                Orchestration
+              </Badge>
+            )}
             {config && (
               <Badge variant="outline" color="blue">
                 {config.environment}

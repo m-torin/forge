@@ -26,7 +26,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect, useState } from 'react';
 
-import * as betterAuthActions from '@repo/auth/actions';
+import * as betterAuthActions from '@repo/auth-new/actions';
 
 import * as prismaActions from './actions';
 

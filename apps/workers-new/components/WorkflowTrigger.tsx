@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Button, Textarea, Stack, Alert, Text } from '@mantine/core'
+import { Button, Textarea, Stack, Alert, Text, Badge, Group } from '@mantine/core'
 import { IconCode, IconPlayerPlay } from '@tabler/icons-react'
 import { useWorkflows } from '../contexts/WorkflowsContext'
+import { useWorkflow } from '@repo/orchestration-new'
 import type { WorkflowInfo } from '../lib/workflows'
 
 interface WorkflowTriggerProps {
@@ -24,7 +25,14 @@ interface WorkflowResponse {
 export function WorkflowTrigger({ workflow, defaultPayload }: WorkflowTriggerProps) {
   const [payload, setPayload] = useState(() => JSON.stringify(defaultPayload, null, 2))
   const [response, setResponse] = useState<WorkflowResponse | null>(null)
-  const { executeWorkflow, isExecuting } = useWorkflows()
+  const { executeWorkflow, isExecuting, orchestrationProvider } = useWorkflows()
+
+  // Use orchestration hook if provider is available
+  const orchestrationWorkflow = orchestrationProvider ? useWorkflow(workflow.slug, {
+    provider: orchestrationProvider,
+    autoRefresh: true,
+    pollInterval: 2000
+  }) : null
 
   const handleTrigger = useCallback(async () => {
     try {
@@ -47,6 +55,28 @@ export function WorkflowTrigger({ workflow, defaultPayload }: WorkflowTriggerPro
 
   return (
     <Stack gap="md">
+      {/* System Status */}
+      <Group gap="xs">
+        <Badge 
+          variant="light" 
+          color={orchestrationProvider ? 'violet' : 'blue'}
+        >
+          {orchestrationProvider ? 'Orchestration System' : 'Legacy System'}
+        </Badge>
+        {orchestrationWorkflow?.execution && (
+          <Badge 
+            variant="outline" 
+            color={
+              orchestrationWorkflow.execution.status === 'completed' ? 'green' :
+              orchestrationWorkflow.execution.status === 'failed' ? 'red' :
+              orchestrationWorkflow.execution.status === 'running' ? 'blue' : 'gray'
+            }
+          >
+            {orchestrationWorkflow.execution.status}
+          </Badge>
+        )}
+      </Group>
+
       <Textarea
         label="Request Payload"
         description="JSON payload to send to the workflow"

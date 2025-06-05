@@ -4,7 +4,7 @@ import { Center, Loader, Text } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { useSession } from "@repo/auth/client";
+import { useSession } from "@repo/auth-new/client";
 
 import type React from "react";
 

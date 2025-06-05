@@ -4,6 +4,14 @@ import { createContext, useContext, useOptimistic, useTransition, useActionState
 import { useSetState, useDebouncedValue, useToggle, useQueue, useId } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
 import { IconCheck, IconX, IconAlertCircle } from '@tabler/icons-react'
+import { 
+  useWorkflow, 
+  useWorkflowList, 
+  createReactWorkflowClient,
+  type WorkflowDefinition,
+  type WorkflowExecution as OrchestrationWorkflowExecution,
+  UpstashWorkflowProvider
+} from '@repo/orchestration-new'
 import type { WorkflowInfo } from '../lib/workflows'
 
 const cachedFetchConfig = cache(async (): Promise<WorkflowConfig> => {
@@ -92,6 +100,9 @@ interface WorkflowsContextType {
     readonly isPending: boolean
   }
   readonly refreshConfig: () => Promise<void>
+  // New orchestration-new integration
+  readonly orchestrationProvider: UpstashWorkflowProvider | null
+  readonly workflowClient: ReturnType<typeof createReactWorkflowClient> | null
 }
 
 const WorkflowsContext = createContext<WorkflowsContextType | null>(null)
@@ -120,7 +131,9 @@ export function WorkflowsProvider({ children, workflows }: WorkflowsProviderProp
       qstashPublish: false,
       config: false,
       polling: false
-    } as LoadingStates
+    } as LoadingStates,
+    orchestrationProvider: null as UpstashWorkflowProvider | null,
+    workflowClient: null as ReturnType<typeof createReactWorkflowClient> | null
   })
 
   const [debouncedWorkflowRuns] = useDebouncedValue(state.workflowRuns, 300)
@@ -144,6 +157,24 @@ export function WorkflowsProvider({ children, workflows }: WorkflowsProviderProp
       setState({ configLoading: true })
       const data = await cachedFetchConfig()
       setState({ config: data, configPromise: Promise.resolve(data) })
+      
+      // Initialize orchestration provider with config
+      try {
+        const { getOrchestrationConfig } = await import('../lib/workflow-config')
+        const orchestrationConfig = getOrchestrationConfig()
+        
+        const provider = new UpstashWorkflowProvider(orchestrationConfig)
+        
+        const client = createReactWorkflowClient(provider)
+        
+        setState(prev => ({
+          ...prev,
+          orchestrationProvider: provider,
+          workflowClient: client
+        }))
+      } catch (providerError) {
+        console.error('Failed to initialize orchestration provider:', providerError)
+      }
     } catch (error) {
       console.error('Failed to fetch config:', error)
       setState({ config: null, configPromise: null })
@@ -616,7 +647,10 @@ export function WorkflowsProvider({ children, workflows }: WorkflowsProviderProp
     testPlainAPI,
     testQStashConnection,
     testQStashPublish,
-    refreshConfig: fetchConfig
+    refreshConfig: fetchConfig,
+    // New orchestration-new integration
+    orchestrationProvider: state.orchestrationProvider,
+    workflowClient: state.workflowClient
   } satisfies WorkflowsContextType
 
   return (

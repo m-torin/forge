@@ -63,6 +63,27 @@ export function getWorkflowConfig(): WorkflowConfig {
   }
 }
 
+/**
+ * Get configuration for orchestration provider
+ */
+export function getOrchestrationConfig() {
+  const workflowConfig = getWorkflowConfig()
+  
+  return {
+    baseUrl: workflowConfig.workflowUrl,
+    debug: workflowConfig.mode === 'local',
+    env: workflowConfig.mode,
+    qstash: {
+      token: workflowConfig.qstashToken,
+      baseUrl: workflowConfig.qstashUrl,
+    },
+    redis: {
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    }
+  }
+}
+
 export const isLocalMode = (): boolean => getWorkflowConfig().mode === 'local'
 
 export const isCloudMode = (): boolean => getWorkflowConfig().mode === 'cloud'

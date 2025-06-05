@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 import { analytics } from "@repo/analytics-legacy";
 import { FLAGS, getAuthFlags, useFlag } from "@repo/analytics-legacy";
-import { sendMagicLink } from "@repo/auth/client";
+import { sendMagicLink } from "@repo/auth-new/client";
 import { AuthForm, AuthLayout } from "@repo/design-system/uix";
 
 export default function MagicLinkPage() {

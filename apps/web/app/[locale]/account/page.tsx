@@ -21,7 +21,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getAuthFlags, getUIFlags } from "@repo/analytics-legacy";
-import { getSession } from "@repo/auth/server";
+import { getSession } from "@repo/auth-new/server";
 import { OrganizationSwitcher, UserButton } from "@repo/design-system/uix";
 
 export default async function DashboardPage() {

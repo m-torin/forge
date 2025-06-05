@@ -3,7 +3,7 @@
 import { Button, Group } from "@mantine/core";
 import Link from "next/link";
 
-import { useSession } from "@repo/auth/client";
+import { useSession } from "@repo/auth-new/client";
 import { UserButton } from "@repo/design-system/uix";
 
 export const AuthNavigation = () => {

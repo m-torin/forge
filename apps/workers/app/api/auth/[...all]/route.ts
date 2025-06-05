@@ -1,4 +1,4 @@
-import { auth } from '@repo/auth/server';
+import { auth } from '@repo/auth-new/server';
 import { createRateLimiter, slidingWindow } from '@repo/security';
 
 // Create a rate limiter for auth endpoints
@@ -28,7 +28,7 @@ const rateLimitedAuth = async (request: Request) => {
   }
 
   // Pass through to auth handler
-  return auth.handler(request);
+  return auth(request);
 };
 
 export { rateLimitedAuth as GET, rateLimitedAuth as POST };

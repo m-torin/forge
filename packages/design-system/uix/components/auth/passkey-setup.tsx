@@ -25,7 +25,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { addPasskey, deletePasskey, listPasskeys, signInWithPasskey } from '@repo/auth/client';
+import { addPasskey, deletePasskey, listPasskeys, signInWithPasskey } from '@repo/auth-new/client';
 
 interface Passkey {
   createdAt: string;

@@ -3,7 +3,7 @@
 import { Button, Card, Code, Container, Stack, Title } from '@mantine/core';
 import { useState } from 'react';
 
-import { listOrganizations } from '@repo/auth/client';
+import { listOrganizations } from '@repo/auth-new/client';
 
 export default function DebugOrgsPage() {
   const [loading, setLoading] = useState(false);

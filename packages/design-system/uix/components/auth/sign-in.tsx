@@ -5,7 +5,7 @@ import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth/client';
+import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth-new/client';
 
 export const SignIn = () => {
   const [email, setEmail] = useState('');

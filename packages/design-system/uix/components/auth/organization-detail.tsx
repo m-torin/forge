@@ -17,7 +17,7 @@ import { IconBuilding, IconCalendar, IconCrown, IconUsers } from '@tabler/icons-
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
-import { getOrganization, useSession } from '@repo/auth/client';
+import { getOrganization, useSession } from '@repo/auth-new/client';
 
 interface OrganizationDetailProps {
   className?: string;

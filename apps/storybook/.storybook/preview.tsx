@@ -1,6 +1,6 @@
 import { withThemeByClassName } from '@storybook/addon-themes';
 
-import { withAuthMock } from '@repo/auth/mocks/storybook-decorator';
+import { withAuthMock } from '@repo/auth-new/mocks/storybook-decorator';
 import { MantineProvider, TooltipProvider } from '@repo/design-system/uix';
 
 import type { Preview } from '@storybook/nextjs';

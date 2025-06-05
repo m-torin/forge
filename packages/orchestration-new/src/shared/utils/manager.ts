@@ -3,6 +3,8 @@
  */
 
 import { OrchestrationError, ProviderError } from './errors.js';
+import { StepRegistry, defaultStepRegistry } from '../factories/step-registry.js';
+import { StepFactory, defaultStepFactory } from '../factories/step-factory.js';
 
 import type {
   ListExecutionsOptions,
@@ -11,6 +13,13 @@ import type {
   WorkflowExecution,
   WorkflowProvider,
 } from '../types/index.js';
+import type {
+  WorkflowStepDefinition,
+  StepSearchFilters,
+  StepExecutionPlan,
+  StepCompositionConfig,
+  ValidationResult,
+} from '../factories/index.js';
 
 export interface OrchestrationManagerConfig {
   /** Whether to auto-retry failed operations */
@@ -33,6 +42,12 @@ export interface OrchestrationManagerConfig {
   healthCheckInterval?: number;
   /** Maximum concurrent executions */
   maxConcurrentExecutions?: number;
+  /** Step registry instance to use */
+  stepRegistry?: StepRegistry;
+  /** Step factory instance to use */
+  stepFactory?: StepFactory;
+  /** Whether to enable step factory features */
+  enableStepFactory?: boolean;
 }
 
 export class OrchestrationManager {
@@ -40,6 +55,8 @@ export class OrchestrationManager {
   private config: OrchestrationManagerConfig;
   private healthCheckTimer?: NodeJS.Timeout;
   private isInitialized = false;
+  private stepRegistry: StepRegistry;
+  private stepFactory: StepFactory;
 
   constructor(config: OrchestrationManagerConfig = {}) {
     this.config = {
@@ -51,11 +68,16 @@ export class OrchestrationManager {
       },
       enableHealthChecks: true,
       enableMetrics: true,
+      enableStepFactory: true,
       globalTimeout: 300000, // 5 minutes
       healthCheckInterval: 60000, // 1 minute
       maxConcurrentExecutions: 100,
       ...config,
     };
+
+    // Initialize step factory components
+    this.stepRegistry = config.stepRegistry || defaultStepRegistry;
+    this.stepFactory = config.stepFactory || defaultStepFactory;
   }
 
   /**
@@ -371,13 +393,207 @@ export class OrchestrationManager {
    * Get manager status
    */
   getStatus() {
+    const stepRegistryStats = this.config.enableStepFactory ? this.stepRegistry.getStats() : null;
+    
     return {
       defaultProvider: this.config.defaultProvider,
       providerCount: this.providers.size,
       healthChecksEnabled: this.config.enableHealthChecks,
       initialized: this.isInitialized,
       metricsEnabled: this.config.enableMetrics,
+      stepFactoryEnabled: this.config.enableStepFactory,
+      stepRegistry: stepRegistryStats,
     };
+  }
+
+  // ===== STEP FACTORY METHODS =====
+
+  /**
+   * Register a step definition in the step registry
+   */
+  registerStep<TInput = any, TOutput = any>(
+    definition: WorkflowStepDefinition<TInput, TOutput>,
+    registeredBy?: string
+  ): void {
+    if (!this.config.enableStepFactory) {
+      throw new OrchestrationError(
+        'Step factory is not enabled',
+        'STEP_FACTORY_DISABLED',
+        false
+      );
+    }
+
+    this.stepRegistry.register(definition, registeredBy);
+  }
+
+  /**
+   * Get a registered step definition
+   */
+  getStep(stepId: string): WorkflowStepDefinition | undefined {
+    if (!this.config.enableStepFactory) {
+      return undefined;
+    }
+
+    return this.stepRegistry.get(stepId);
+  }
+
+  /**
+   * Search for steps based on filters
+   */
+  searchSteps(filters: StepSearchFilters = {}): WorkflowStepDefinition[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.search(filters);
+  }
+
+  /**
+   * List all registered steps
+   */
+  listSteps(activeOnly = true): WorkflowStepDefinition[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.list(activeOnly);
+  }
+
+  /**
+   * Create execution plan for a set of steps
+   */
+  createStepExecutionPlan(
+    stepIds: string[],
+    config: StepCompositionConfig = {}
+  ): StepExecutionPlan {
+    if (!this.config.enableStepFactory) {
+      throw new OrchestrationError(
+        'Step factory is not enabled',
+        'STEP_FACTORY_DISABLED',
+        false
+      );
+    }
+
+    return this.stepRegistry.createExecutionPlan(stepIds, config);
+  }
+
+  /**
+   * Validate step dependencies
+   */
+  validateStepDependencies(stepIds: string[]): ValidationResult {
+    if (!this.config.enableStepFactory) {
+      return { valid: false, errors: ['Step factory is not enabled'] };
+    }
+
+    return this.stepRegistry.validateDependencies(stepIds);
+  }
+
+  /**
+   * Execute a single step by ID
+   */
+  async executeStep<TInput = any, TOutput = any>(
+    stepId: string,
+    input: TInput,
+    workflowExecutionId: string,
+    previousStepsContext: Record<string, any> = {},
+    metadata: Record<string, any> = {},
+    abortSignal?: AbortSignal
+  ) {
+    if (!this.config.enableStepFactory) {
+      throw new OrchestrationError(
+        'Step factory is not enabled',
+        'STEP_FACTORY_DISABLED',
+        false
+      );
+    }
+
+    const executableStep = this.stepRegistry.createExecutableStep<TInput, TOutput>(stepId);
+    return await executableStep.execute(
+      input,
+      workflowExecutionId,
+      previousStepsContext,
+      metadata,
+      abortSignal
+    );
+  }
+
+  /**
+   * Get step registry instance
+   */
+  getStepRegistry(): StepRegistry {
+    return this.stepRegistry;
+  }
+
+  /**
+   * Get step factory instance
+   */
+  getStepFactory(): StepFactory {
+    return this.stepFactory;
+  }
+
+  /**
+   * Get available step categories
+   */
+  getStepCategories(): string[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.getCategories();
+  }
+
+  /**
+   * Get available step tags
+   */
+  getStepTags(): string[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.getTags();
+  }
+
+  /**
+   * Get step usage statistics
+   */
+  getStepUsageStatistics() {
+    if (!this.config.enableStepFactory) {
+      return null;
+    }
+
+    return this.stepRegistry.getUsageStatistics();
+  }
+
+  /**
+   * Export step definitions
+   */
+  exportSteps() {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.export();
+  }
+
+  /**
+   * Import step definitions
+   */
+  importSteps(
+    data: Array<{
+      definition: WorkflowStepDefinition;
+      metadata?: any;
+    }>,
+    overwrite = false
+  ) {
+    if (!this.config.enableStepFactory) {
+      throw new OrchestrationError(
+        'Step factory is not enabled',
+        'STEP_FACTORY_DISABLED',
+        false
+      );
+    }
+
+    return this.stepRegistry.import(data, overwrite);
   }
 
   /**

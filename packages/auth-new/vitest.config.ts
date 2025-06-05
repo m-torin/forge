@@ -1,11 +1,6 @@
 import { defineConfig } from 'vitest/config';
-import baseConfig from '@repo/testing/config/react';
+import { createReactConfig } from '@repo/testing/config/react';
 
-export default defineConfig({
-  ...baseConfig,
-  test: {
-    ...baseConfig.test,
-    environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts'],
-  },
-});
+export default defineConfig(createReactConfig({
+  setupFiles: ['./src/__tests__/setup.ts'],
+}));

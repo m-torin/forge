@@ -4,7 +4,7 @@ import "@mantine/core/styles.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 
 import { AnalyticsProvider } from "@repo/analytics-legacy";
-import { AuthProvider } from "@repo/auth/provider";
+import { AuthProvider } from "@repo/auth-new/provider";
 import { createMetadata } from "@repo/seo/metadata";
 
 import theme from "./theme";

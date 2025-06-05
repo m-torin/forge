@@ -45,7 +45,7 @@ import {
   updateOrganizationById,
   updateOrganizationMemberRole,
   updateOrganizationTeam,
-} from '@repo/auth/actions';
+} from '@repo/auth-new/actions';
 
 // Declare unused variables with underscore prefix
 const _IconUsers = IconUsers;

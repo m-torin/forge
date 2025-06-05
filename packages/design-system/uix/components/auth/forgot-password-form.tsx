@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { analytics } from '@repo/analytics-legacy';
-import { forgetPassword } from '@repo/auth/client';
+import { forgetPassword } from '@repo/auth-new/client';
 
 import { AuthForm } from './auth-form';
 

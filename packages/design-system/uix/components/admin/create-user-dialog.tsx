@@ -16,7 +16,7 @@ import { notifications } from '@mantine/notifications';
 import { IconUserPlus, IconX } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
-import { createUser } from '@repo/auth/client';
+import { createUser } from '@repo/auth-new/client';
 
 interface CreateUserDialogProps {
   onSuccess?: () => void;

@@ -3,7 +3,7 @@
 import { Badge, Box, Card, Group, List, Stack, Table, Text, Title } from '@mantine/core';
 import React from 'react';
 
-import { adminRoles } from '@repo/auth/admin-permissions';
+import { adminRoles } from '@repo/auth-new/admin-permissions';
 
 export default function RolesPage() {
   const roles = Object.entries(adminRoles);

@@ -13,3 +13,7 @@ export * from './patterns/index.js';
 
 // Feature exports
 export * from './features/index.js';
+
+// Factory exports
+export * from './factories/index.js';
+export { StepRegistry, defaultStepRegistry } from './factories/step-registry.js';

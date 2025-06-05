@@ -1,4 +1,4 @@
-import { authMiddleware } from "@repo/auth/middleware";
+import { authMiddleware } from "@repo/auth-new/middleware";
 import { internationalizationMiddleware } from "@repo/internationalization/middleware";
 
 import type { NextRequest } from "next/server";

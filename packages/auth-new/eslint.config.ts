@@ -1,3 +1,3 @@
-import baseConfig from '@repo/eslint-config/base';
+import baseConfig from '@repo/eslint-config/react-library';
 
 export default [...baseConfig];

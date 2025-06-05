@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { useSession as useBetterAuthSession } from "@repo/auth/client";
+import { useSession as useBetterAuthSession } from "@repo/auth-new/client";
 
 import type { ReactNode } from "react";
 

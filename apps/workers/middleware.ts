@@ -1,6 +1,6 @@
 import { type NextMiddleware, NextResponse } from 'next/server';
 
-import { createAuthMiddleware } from '@repo/auth/middleware-api';
+import { createAuthMiddleware } from '@repo/auth-new/server';
 import { parseError } from '@repo/observability/error';
 import { secure } from '@repo/security';
 import { noseconeMiddleware, noseconeOptions } from '@repo/security/middleware';

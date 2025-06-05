@@ -4,7 +4,7 @@ import { Avatar, Group, Menu, Text, UnstyledButton } from '@mantine/core';
 import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 
-import { signOut } from '@repo/auth/client';
+import { signOut } from '@repo/auth-new/client';
 
 import type { User } from '@repo/database/prisma';
 

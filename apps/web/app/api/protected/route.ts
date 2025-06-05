@@ -1,5 +1,5 @@
 import { getAuthFlags } from "@repo/analytics-legacy";
-import { auth } from "@repo/auth/server";
+import { auth } from "@repo/auth-new/server";
 import { createRateLimiter, slidingWindow } from "@repo/security";
 
 // Create rate limiter for protected endpoints

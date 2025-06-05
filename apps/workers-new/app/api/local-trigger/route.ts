@@ -1,6 +1,10 @@
-import { Client as WorkflowClient } from '@upstash/workflow'
 import { NextRequest, NextResponse } from 'next/server'
-import { getWorkflowConfig } from '@/lib/workflow-config'
+import { 
+  createWorkflowEngine, 
+  UpstashWorkflowProvider,
+  type WorkflowDefinition 
+} from '@repo/orchestration-new'
+import { getWorkflowConfig, getOrchestrationConfig } from '@/lib/workflow-config'
 
 interface TriggerRequest {
   route: string
@@ -25,35 +29,59 @@ export async function POST(request: NextRequest) {
       hasSigningKeys: !!config.signingKeys?.current,
     })
 
-    // Create client with mode-specific configuration
-    const client = new WorkflowClient({
-      baseUrl: config.qstashUrl,
-      token: config.qstashToken,
+    // Create orchestration provider
+    const orchestrationConfig = getOrchestrationConfig()
+    const provider = new UpstashWorkflowProvider(orchestrationConfig)
+
+    // Create workflow engine with the provider
+    const engine = createWorkflowEngine({
+      providers: [{
+        name: 'upstash-workflow',
+        type: 'upstash-workflow',
+        config: orchestrationConfig
+      }],
+      defaultProvider: 'upstash-workflow'
     })
 
-    const workflowUrl = `${config.workflowUrl}/${route}`
-    console.log(`[WORKFLOW-TRIGGER] Triggering workflow at: ${workflowUrl}`)
+    await engine.initialize()
 
-    // Prepare headers with modern object spread
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(config.mode === 'local' && { 'Local-Development': 'true' }),
+    // Create a simple workflow definition for the route
+    const workflowDefinition: WorkflowDefinition = {
+      id: route,
+      name: route,
+      description: `Workflow for ${route}`,
+      version: '1.0.0',
+      steps: [
+        {
+          id: 'execute',
+          name: 'Execute Workflow',
+          type: 'http',
+          config: {
+            url: `${config.workflowUrl}/${route}`,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(config.mode === 'local' && { 'Local-Development': 'true' }),
+            },
+            body: payload
+          }
+        }
+      ]
     }
 
-    const { workflowRunId } = await client.trigger({
-      url: workflowUrl,
-      body: payload,
-      headers,
-    })
+    console.log(`[WORKFLOW-TRIGGER] Triggering workflow: ${route}`)
 
-    console.log(`[WORKFLOW-TRIGGER] Workflow triggered successfully: ${workflowRunId}`)
+    const executionId = await engine.executeWorkflow(workflowDefinition, payload)
+
+    console.log(`[WORKFLOW-TRIGGER] Workflow triggered successfully: ${executionId}`)
 
     return NextResponse.json({ 
       success: true,
-      workflowRunId,
+      workflowRunId: executionId,
+      executionId,
       mode: config.mode,
       message: `${config.mode === 'local' ? 'Local' : 'Cloud'} workflow triggered successfully`,
-      workflowUrl,
+      workflowUrl: `${config.workflowUrl}/${route}`,
       environment: config.mode === 'local' ? 'QStash CLI' : 'Upstash Cloud'
     })
   } catch (error) {

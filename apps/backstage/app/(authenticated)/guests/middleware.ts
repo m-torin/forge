@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { validateApiKey } from '@repo/auth/api-key-helpers';
-import { auth } from '@repo/auth/server';
+import { validateApiKey } from '@repo/auth-new/api-key-helpers';
+import { auth } from '@repo/auth-new/server';
 
 export async function middleware(request: NextRequest) {
   // First check for API key authentication

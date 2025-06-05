@@ -35,7 +35,7 @@ import {
   removeUser,
   setUserRole,
   unbanUser,
-} from '@repo/auth/client';
+} from '@repo/auth-new/client';
 
 interface User {
   banExpires?: string;

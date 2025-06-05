@@ -30,7 +30,7 @@ import {
   createOrganization,
   deleteOrganizationById,
   listAllOrganizations,
-} from '@repo/auth/actions';
+} from '@repo/auth-new/actions';
 
 // Declare unused variable with underscore prefix
 const _BuildingIcon = IconBuilding;

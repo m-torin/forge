@@ -1,6 +1,6 @@
 import { type NextMiddleware, NextResponse } from "next/server";
 
-import { authMiddleware as betterAuthMiddleware } from "@repo/auth/middleware";
+import { authMiddleware as betterAuthMiddleware } from "@repo/auth-new/middleware";
 import { internationalizationMiddleware } from "@repo/internationalization/middleware";
 import { parseError } from "@repo/observability/error";
 import { secure } from "@repo/security";

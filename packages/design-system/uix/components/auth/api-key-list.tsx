@@ -20,7 +20,7 @@ import { notifications } from '@mantine/notifications';
 import { IconCopy, IconEye, IconEyeOff, IconRefresh, IconTrash } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 
-import { deleteApiKey, listApiKeys } from '@repo/auth/client';
+import { deleteApiKey, listApiKeys } from '@repo/auth-new/client';
 
 interface ApiKey {
   createdAt: string;

@@ -18,3 +18,6 @@ export { adminAccessController, adminRoles } from './shared/admin-permissions';
 
 // Components
 export * from './components';
+
+// Environment keys
+export { keys } from './keys';

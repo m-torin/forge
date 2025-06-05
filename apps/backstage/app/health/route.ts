@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { requireAuth } from '@repo/auth/api-key-helpers';
+import { requireAuth } from '../lib/auth';
 
 export const runtime = 'nodejs'; // Changed from edge to support auth
 
