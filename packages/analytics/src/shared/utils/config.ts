@@ -4,15 +4,13 @@
 
 import type { AnalyticsConfig, ProviderConfig } from '../types/types';
 
-export interface ConfigRequirements {
-  [providerName: string]: string[];
-}
+export type ConfigRequirements = Record<string, string[]>;
 
 export const PROVIDER_REQUIREMENTS: ConfigRequirements = {
-  segment: ['writeKey'],
+  console: [], // No required fields
   posthog: ['apiKey'],
+  segment: ['writeKey'],
   vercel: [], // No required fields
-  console: [] // No required fields
 };
 
 /**
@@ -33,12 +31,12 @@ export function validateConfig(config: AnalyticsConfig): void {
  */
 export function validateProviderConfig(providerName: string, config: ProviderConfig): void {
   const requiredFields = PROVIDER_REQUIREMENTS[providerName] || [];
-  
+
   for (const field of requiredFields) {
     if (!config[field as keyof ProviderConfig]) {
       throw new Error(
         `Provider '${providerName}' missing required field '${field}'. ` +
-        `Remove the provider from config or provide the required field.`
+          `Remove the provider from config or provide the required field.`,
       );
     }
   }
@@ -48,13 +46,13 @@ export function validateProviderConfig(providerName: string, config: ProviderCon
  * Environment-based configuration builder
  */
 export interface ConfigBuilder {
-  providers: Record<string, ProviderConfig>;
+  addConsole(options?: any): ConfigBuilder;
+  addPostHog(apiKey: string, options?: any): ConfigBuilder;
   addProvider(name: string, config: ProviderConfig): ConfigBuilder;
   addSegment(writeKey: string, options?: any): ConfigBuilder;
-  addPostHog(apiKey: string, options?: any): ConfigBuilder;
   addVercel(options?: any): ConfigBuilder;
-  addConsole(options?: any): ConfigBuilder;
   build(): AnalyticsConfig;
+  providers: Record<string, ProviderConfig>;
 }
 
 export function createConfigBuilder(): ConfigBuilder {
@@ -67,7 +65,7 @@ export function createConfigBuilder(): ConfigBuilder {
     },
 
     addSegment(writeKey: string, options?: any): ConfigBuilder {
-      return this.addProvider('segment', { writeKey, options });
+      return this.addProvider('segment', { options, writeKey });
     },
 
     addPostHog(apiKey: string, options?: any): ConfigBuilder {
@@ -86,7 +84,7 @@ export function createConfigBuilder(): ConfigBuilder {
       const config = { providers: { ...this.providers } };
       validateConfig(config);
       return config;
-    }
+    },
   };
 
   return builder;
@@ -97,69 +95,71 @@ export function createConfigBuilder(): ConfigBuilder {
  */
 export function getAnalyticsConfig(): AnalyticsConfig {
   const builder = createConfigBuilder();
-  
+
   // Development - minimal providers
   if (process.env.NODE_ENV === 'development') {
-    builder.addConsole({ 
+    builder.addConsole({
       prefix: '[Dev Analytics]',
-      pretty: true 
+      pretty: true,
     });
     return builder.build();
   }
-  
+
   // Staging - selective providers (check custom env var)
   if (process.env.APP_ENV === 'staging') {
     if (process.env.POSTHOG_API_KEY) {
       builder.addPostHog(process.env.POSTHOG_API_KEY);
     }
-    
-    builder.addConsole({ 
+
+    builder.addConsole({
       prefix: '[Staging Analytics]',
-      pretty: true 
+      pretty: true,
     });
-    
+
     return builder.build();
   }
-  
+
   // Production - multiple providers
   if (process.env.SEGMENT_WRITE_KEY) {
     builder.addSegment(process.env.SEGMENT_WRITE_KEY);
   }
-  
+
   if (process.env.POSTHOG_API_KEY) {
     builder.addPostHog(process.env.POSTHOG_API_KEY);
   }
-  
+
   // Add Vercel Analytics in production
   builder.addVercel();
-  
+
   return builder.build();
 }
 
 /**
  * Conditional provider inclusion based on feature flags
  */
-export async function buildAnalyticsConfig(getFeatureFlag: (flag: string) => Promise<boolean>): Promise<AnalyticsConfig> {
+export async function buildAnalyticsConfig(
+  getFeatureFlag: (flag: string) => Promise<boolean>,
+): Promise<AnalyticsConfig> {
   const builder = createConfigBuilder();
-  
+
   // Always include core provider if available
   if (process.env.SEGMENT_WRITE_KEY) {
     builder.addSegment(process.env.SEGMENT_WRITE_KEY);
   }
-  
+
   // Conditionally include based on feature flags
-  if (await getFeatureFlag('enable_posthog') && process.env.POSTHOG_API_KEY) {
+  if ((await getFeatureFlag('enable_posthog')) && process.env.POSTHOG_API_KEY) {
     builder.addPostHog(process.env.POSTHOG_API_KEY);
   }
-  
+
   if (await getFeatureFlag('enable_vercel_analytics')) {
     builder.addVercel();
   }
-  
+
   // Include console in development
   if (process.env.NODE_ENV === 'development') {
     builder.addConsole();
   }
-  
+
   return builder.build();
 }

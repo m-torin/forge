@@ -3,19 +3,20 @@
  * Vendor-agnostic feature flag management with multi-provider support
  */
 
+import { FeatureFlagError } from './types';
+
 import type {
+  CacheConfig,
   FeatureFlagManager,
   FeatureFlagProvider,
+  FlagCache,
   FlagConfig,
   FlagContext,
-  FlagEvaluationResult,
   FlagEvaluationOptions,
+  FlagEvaluationResult,
+  FlagMetrics,
   FlagValue,
-  FlagCache,
-  CacheConfig,
-  FlagMetrics
 } from './types';
-import { FeatureFlagError } from './types';
 
 export class StandardFeatureFlagManager implements FeatureFlagManager {
   private providers = new Map<string, FeatureFlagProvider>();
@@ -26,11 +27,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
   private isInitialized = false;
   private debug = false;
 
-  constructor(options?: {
-    cache?: FlagCache;
-    debug?: boolean;
-    primaryProvider?: string;
-  }) {
+  constructor(options?: { cache?: FlagCache; debug?: boolean; primaryProvider?: string }) {
     this.cache = options?.cache;
     this.debug = options?.debug || false;
     this.primaryProvider = options?.primaryProvider;
@@ -44,7 +41,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
     try {
       const provider = await this.createProvider(config);
       this.providers.set(config.provider, provider);
-      
+
       // Set as primary if first provider or explicitly marked
       if (!this.primaryProvider || config.options?.primary) {
         this.primaryProvider = config.provider;
@@ -53,11 +50,11 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
       // Initialize metrics
       this.metrics.set(config.provider, {
         provider: config.provider,
-        evaluations: 0,
-        errors: 0,
+        avgResponseTime: 0,
         cacheHits: 0,
         cacheMisses: 0,
-        avgResponseTime: 0
+        errors: 0,
+        evaluations: 0,
       });
 
       this.log(`Provider ${config.provider} added successfully`);
@@ -67,7 +64,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
         'INVALID_CONFIGURATION',
         config.provider,
         undefined,
-        error instanceof Error ? error : new Error(String(error))
+        error instanceof Error ? error : new Error(String(error)),
       );
     }
   }
@@ -78,11 +75,11 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
       provider.close();
       this.providers.delete(name);
       this.metrics.delete(name);
-      
+
       if (this.primaryProvider === name) {
         this.primaryProvider = this.providers.keys().next().value;
       }
-      
+
       this.log(`Provider ${name} removed`);
     }
   }
@@ -98,7 +95,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
   async getFlag<T = FlagValue>(
     key: string,
     defaultValue: T,
-    options?: FlagEvaluationOptions
+    options?: FlagEvaluationOptions,
   ): Promise<FlagEvaluationResult<T>> {
     const startTime = performance.now();
     const providerName = options?.provider || this.primaryProvider;
@@ -109,7 +106,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
         'No provider available for flag evaluation',
         'PROVIDER_NOT_FOUND',
         undefined,
-        key
+        key,
       );
     }
 
@@ -119,7 +116,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
         `Provider ${providerName} not found`,
         'PROVIDER_NOT_FOUND',
         providerName,
-        key
+        key,
       );
     }
 
@@ -135,7 +132,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
 
     try {
       const result = await provider.getFlag(key, defaultValue, context);
-      
+
       // Cache the result
       if (this.cache) {
         this.cache.set(`${providerName}:${key}`, result as FlagEvaluationResult);
@@ -148,25 +145,24 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
 
       this.updateMetrics(providerName, startTime, false);
       this.log(`Flag ${key} evaluated:`, result);
-      
+
       return result as FlagEvaluationResult<T>;
     } catch (error) {
       this.handleError(providerName, error, key);
-      
+
       // Try fallback strategies
       return this.getFallbackValue(key, defaultValue, options, providerName);
     }
   }
 
-  async getAllFlags(options?: FlagEvaluationOptions): Promise<Record<string, FlagEvaluationResult>> {
+  async getAllFlags(
+    options?: FlagEvaluationOptions,
+  ): Promise<Record<string, FlagEvaluationResult>> {
     const providerName = options?.provider || this.primaryProvider;
     const context = { ...this.globalContext, ...options?.context };
 
     if (!providerName) {
-      throw new FeatureFlagError(
-        'No provider available for flag evaluation',
-        'PROVIDER_NOT_FOUND'
-      );
+      throw new FeatureFlagError('No provider available for flag evaluation', 'PROVIDER_NOT_FOUND');
     }
 
     const provider = this.providers.get(providerName);
@@ -174,13 +170,13 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
       throw new FeatureFlagError(
         `Provider ${providerName} not found`,
         'PROVIDER_NOT_FOUND',
-        providerName
+        providerName,
       );
     }
 
     try {
       const flags = await provider.getAllFlags(context);
-      
+
       // Cache all flags
       if (this.cache) {
         Object.entries(flags).forEach(([key, result]) => {
@@ -208,17 +204,17 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
 
   async getVariant(
     key: string,
-    options?: FlagEvaluationOptions
+    options?: FlagEvaluationOptions,
   ): Promise<{ variant: string; payload?: any } | null> {
     const providerName = options?.provider || this.primaryProvider;
     const provider = this.providers.get(providerName || '');
-    
+
     if (!provider || !provider.getVariant) {
       return null;
     }
 
     const context = { ...this.globalContext, ...options?.context };
-    
+
     try {
       return await provider.getVariant(key, context);
     } catch (error) {
@@ -233,33 +229,33 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
 
   setContext(context: FlagContext): void {
     this.globalContext = { ...context };
-    
+
     // Update all providers
-    this.providers.forEach(provider => {
+    this.providers.forEach((provider) => {
       provider.setContext(this.globalContext);
     });
-    
+
     // Clear cache when context changes
     if (this.cache) {
       this.cache.clear();
     }
-    
+
     this.log('Global context updated:', this.globalContext);
   }
 
   updateContext(updates: Partial<FlagContext>): void {
     this.globalContext = { ...this.globalContext, ...updates };
-    
+
     // Update all providers
-    this.providers.forEach(provider => {
+    this.providers.forEach((provider) => {
       provider.updateContext(updates);
     });
-    
+
     // Clear cache when context changes
     if (this.cache) {
       this.cache.clear();
     }
-    
+
     this.log('Global context updated with:', updates);
   }
 
@@ -274,8 +270,8 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    const initPromises = Array.from(this.providers.values()).map(provider =>
-      provider.initialize(this.globalContext)
+    const initPromises = Array.from(this.providers.values()).map((provider) =>
+      provider.initialize(this.globalContext),
     );
 
     await Promise.allSettled(initPromises);
@@ -284,9 +280,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
   }
 
   async close(): Promise<void> {
-    const closePromises = Array.from(this.providers.values()).map(provider =>
-      provider.close()
-    );
+    const closePromises = Array.from(this.providers.values()).map((provider) => provider.close());
 
     await Promise.allSettled(closePromises);
     this.providers.clear();
@@ -323,24 +317,24 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
       case 'posthog':
         const { PostHogFlagProvider } = await import('../providers/posthog-flags');
         return new PostHogFlagProvider(config);
-      
+
       // Additional providers can be added here when implemented
       // case 'launchdarkly':
       //   const { LaunchDarklyFlagProvider } = await import('../providers/launchdarkly-flags');
       //   return new LaunchDarklyFlagProvider(config);
-      //   
+      //
       // case 'flagsmith':
       //   const { FlagsmithFlagProvider } = await import('../providers/flagsmith-flags');
       //   return new FlagsmithFlagProvider(config);
-      //   
+      //
       // case 'split':
       //   const { SplitFlagProvider } = await import('../providers/split-flags');
       //   return new SplitFlagProvider(config);
-        
+
       case 'local':
         const { LocalFlagProvider } = await import('../providers/local-flags');
         return new LocalFlagProvider(config);
-        
+
       default:
         throw new Error(`Unknown provider: ${config.provider}`);
     }
@@ -350,10 +344,10 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
     key: string,
     defaultValue: T,
     options?: FlagEvaluationOptions,
-    providerName?: string
+    providerName?: string,
   ): FlagEvaluationResult<T> {
     const strategy = options?.fallbackStrategy || 'default';
-    
+
     switch (strategy) {
       case 'cache': {
         if (this.cache) {
@@ -365,7 +359,7 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
         }
         break;
       }
-      
+
       case 'last_known': {
         // Could implement persistent storage lookup
         break;
@@ -375,17 +369,17 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
     // Default fallback
     return {
       key,
-      value: defaultValue,
+      reason: 'error',
       source: 'fallback',
       timestamp: Date.now(),
-      reason: 'error'
+      value: defaultValue,
     };
   }
 
   private isCacheValid(cached: FlagEvaluationResult): boolean {
     // Simple TTL check - could be enhanced with more sophisticated logic
     const TTL = 5 * 60 * 1000; // 5 minutes
-    return (Date.now() - cached.timestamp) < TTL;
+    return Date.now() - cached.timestamp < TTL;
   }
 
   private updateMetrics(provider: string, startTime: number, cacheHit: boolean): void {
@@ -393,11 +387,11 @@ export class StandardFeatureFlagManager implements FeatureFlagManager {
     if (!metrics) return;
 
     const responseTime = performance.now() - startTime;
-    
+
     metrics.evaluations++;
     metrics.avgResponseTime = (metrics.avgResponseTime + responseTime) / 2;
     metrics.lastEvaluation = Date.now();
-    
+
     if (cacheHit) {
       metrics.cacheHits++;
     } else {

@@ -19,6 +19,7 @@ import {
   NcInputNumber,
   SectionSliderProductCard,
 } from "@repo/design-system/mantine-ciseco";
+import { getDictionary } from "@/i18n";
 
 import Policy from "../../Policy";
 import ProductOptions from "../../ProductOptions";
@@ -29,12 +30,14 @@ import ProductStatus from "../../ProductStatus";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ handle: string }>;
+  params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
-  const { handle } = await params;
+  const { handle, locale } = await params;
+  const dict = await getDictionary(locale);
   const product = await getProductDetailByHandle(handle);
-  const title = product?.title || "product detail";
-  const description = product?.description || "product detail page";
+  const title = product?.title || dict.product.productDetail;
+  const description =
+    product?.description || dict.product.productDetailDescription;
   return {
     description,
     title,
@@ -44,9 +47,10 @@ export async function generateMetadata({
 export default async function Page({
   params,
 }: {
-  params: Promise<{ handle: string }>;
+  params: Promise<{ handle: string; locale: string }>;
 }) {
-  const { handle } = await params;
+  const { handle, locale } = await params;
+  const dict = await getDictionary(locale);
   const product = await getProductDetailByHandle(handle);
   const relatedProducts = (await getProducts()).slice(2, 8);
   const reviews = await getProductReviews(handle);

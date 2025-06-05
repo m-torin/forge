@@ -193,12 +193,21 @@ export class WorkflowScheduler {
       createdAt: schedule.createdAt,
       cron: schedule.cron,
       destination: schedule.destination,
-      headers: (schedule as Record<string, unknown>).header as Record<string, string> || (schedule as Record<string, unknown>).headers as Record<string, string> || {},
+      headers:
+        ((schedule as Record<string, unknown>).header as Record<string, string>) ||
+        ((schedule as Record<string, unknown>).headers as Record<string, string>) ||
+        {},
       isPaused: schedule.isPaused,
-      nextRun: ((schedule as Record<string, unknown>).nextDelivery as number) || ((schedule as Record<string, unknown>).nextRun as number) || 0,
+      nextRun:
+        ((schedule as Record<string, unknown>).nextDelivery as number) ||
+        ((schedule as Record<string, unknown>).nextRun as number) ||
+        0,
       retries: schedule.retries || 0,
       scheduleId: schedule.scheduleId,
-      timeout: ((schedule as Record<string, unknown>).timeoutInSeconds as string) || ((schedule as Record<string, unknown>).timeout as string) || '30',
+      timeout:
+        ((schedule as Record<string, unknown>).timeoutInSeconds as string) ||
+        ((schedule as Record<string, unknown>).timeout as string) ||
+        '30',
     };
   }
 
@@ -213,12 +222,21 @@ export class WorkflowScheduler {
       createdAt: schedule.createdAt,
       cron: schedule.cron,
       destination: schedule.destination,
-      headers: (schedule as Record<string, unknown>).header as Record<string, string> || (schedule as Record<string, unknown>).headers as Record<string, string> || {},
+      headers:
+        ((schedule as Record<string, unknown>).header as Record<string, string>) ||
+        ((schedule as Record<string, unknown>).headers as Record<string, string>) ||
+        {},
       isPaused: schedule.isPaused,
-      nextRun: ((schedule as Record<string, unknown>).nextDelivery as number) || ((schedule as Record<string, unknown>).nextRun as number) || 0,
+      nextRun:
+        ((schedule as Record<string, unknown>).nextDelivery as number) ||
+        ((schedule as Record<string, unknown>).nextRun as number) ||
+        0,
       retries: schedule.retries || 0,
       scheduleId: schedule.scheduleId,
-      timeout: ((schedule as Record<string, unknown>).timeoutInSeconds as string) || ((schedule as Record<string, unknown>).timeout as string) || '30',
+      timeout:
+        ((schedule as Record<string, unknown>).timeoutInSeconds as string) ||
+        ((schedule as Record<string, unknown>).timeout as string) ||
+        '30',
     }));
   }
 

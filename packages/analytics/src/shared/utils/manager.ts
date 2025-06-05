@@ -2,21 +2,21 @@
  * Analytics Manager - Core orchestration for multi-provider analytics
  */
 
-import type { 
-  AnalyticsProvider, 
-  AnalyticsConfig, 
-  ProviderRegistry, 
-  TrackingOptions,
-  AnalyticsContext 
-} from '../types/types';
-import type { 
-  EmitterPayload,
-  EmitterTrackPayload,
+import type {
+  EmitterAliasPayload,
+  EmitterGroupPayload,
   EmitterIdentifyPayload,
   EmitterPagePayload,
-  EmitterGroupPayload,
-  EmitterAliasPayload
+  EmitterPayload,
+  EmitterTrackPayload,
 } from '../emitters/emitter-types';
+import type {
+  AnalyticsConfig,
+  AnalyticsContext,
+  AnalyticsProvider,
+  ProviderRegistry,
+  TrackingOptions,
+} from '../types/types';
 
 export class AnalyticsManager {
   private providers = new Map<string, AnalyticsProvider>();
@@ -25,7 +25,7 @@ export class AnalyticsManager {
 
   constructor(
     private config: AnalyticsConfig,
-    private availableProviders: ProviderRegistry
+    private availableProviders: ProviderRegistry,
   ) {}
 
   async initialize(): Promise<void> {
@@ -35,22 +35,22 @@ export class AnalyticsManager {
 
     for (const [providerName, providerConfig] of Object.entries(this.config.providers)) {
       const providerFactory = this.availableProviders[providerName];
-      
+
       if (providerFactory) {
         try {
           const provider = providerFactory(providerConfig);
           this.providers.set(providerName, provider);
-          
+
           // Initialize provider with error boundary
           initPromises.push(
-            provider.initialize(providerConfig).catch(error => {
+            provider.initialize(providerConfig).catch((error) => {
               if (this.config.onError) {
                 this.config.onError(error, { provider: providerName, method: 'initialize' });
               }
               // Remove failed provider to ensure it doesn't affect others
               this.providers.delete(providerName);
               // Continue with other providers
-            })
+            }),
           );
         } catch (error) {
           if (this.config.onError) {
@@ -68,16 +68,18 @@ export class AnalyticsManager {
 
     // Wait for all providers to initialize
     await Promise.allSettled(initPromises);
-    
+
     this.isInitialized = true;
     if (this.config.debug && this.config.onInfo) {
-      this.config.onInfo(`Analytics initialized with providers: ${Array.from(this.providers.keys()).join(', ')}`);
+      this.config.onInfo(
+        `Analytics initialized with providers: ${Array.from(this.providers.keys()).join(', ')}`,
+      );
     }
   }
 
   setContext(context: AnalyticsContext): void {
     this.context = { ...this.context, ...context };
-    
+
     // Update context on providers that support it
     for (const provider of this.providers.values()) {
       if (provider.setContext) {
@@ -94,9 +96,9 @@ export class AnalyticsManager {
   async track(payload: EmitterTrackPayload): Promise<void>;
   async track(event: string, properties?: any, options?: TrackingOptions): Promise<void>;
   async track(
-    eventOrPayload: string | EmitterTrackPayload, 
-    properties?: any, 
-    options?: TrackingOptions
+    eventOrPayload: string | EmitterTrackPayload,
+    properties?: any,
+    options?: TrackingOptions,
   ): Promise<void> {
     // If first argument is an emitter payload, use it
     if (typeof eventOrPayload === 'object' && eventOrPayload.type === 'track') {
@@ -104,16 +106,20 @@ export class AnalyticsManager {
       return this.track(payload.event, payload.properties, {
         ...options,
         // Merge context from payload
-        context: { ...this.context, ...payload.context }
+        context: { ...this.context, ...payload.context },
       });
     }
 
     // Traditional track call
     const event = eventOrPayload as string;
-    
+
     if (!this.isInitialized) {
       if (this.config.onError) {
-        this.config.onError(new Error('Analytics not initialized'), { provider: 'analytics', method: 'track', event });
+        this.config.onError(new Error('Analytics not initialized'), {
+          provider: 'analytics',
+          event,
+          method: 'track',
+        });
       }
       return;
     }
@@ -128,7 +134,7 @@ export class AnalyticsManager {
         // Error boundary: report error but don't let it affect other providers
         // Optionally report to error tracking service
         if (this.config.onError) {
-          this.config.onError(error, { provider: name, method: 'track', event });
+          this.config.onError(error, { provider: name, event, method: 'track' });
         }
       }
     });
@@ -141,9 +147,9 @@ export class AnalyticsManager {
   async identify(payload: EmitterIdentifyPayload): Promise<void>;
   async identify(userId: string, traits?: any, options?: TrackingOptions): Promise<void>;
   async identify(
-    userIdOrPayload: string | EmitterIdentifyPayload, 
-    traits?: any, 
-    options?: TrackingOptions
+    userIdOrPayload: string | EmitterIdentifyPayload,
+    traits?: any,
+    options?: TrackingOptions,
   ): Promise<void> {
     // If first argument is an emitter payload, use it
     if (typeof userIdOrPayload === 'object' && userIdOrPayload.type === 'identify') {
@@ -151,16 +157,20 @@ export class AnalyticsManager {
       return this.identify(payload.userId, payload.traits, {
         ...options,
         // Merge context from payload
-        context: { ...this.context, ...payload.context }
+        context: { ...this.context, ...payload.context },
       });
     }
 
     // Traditional identify call
     const userId = userIdOrPayload as string;
-    
+
     if (!this.isInitialized) {
       if (this.config.onError) {
-        this.config.onError(new Error('Analytics not initialized'), { provider: 'analytics', method: 'identify', userId });
+        this.config.onError(new Error('Analytics not initialized'), {
+          provider: 'analytics',
+          method: 'identify',
+          userId,
+        });
       }
       return;
     }
@@ -191,9 +201,9 @@ export class AnalyticsManager {
   async page(payload: EmitterPagePayload): Promise<void>;
   async page(name?: string, properties?: any, options?: TrackingOptions): Promise<void>;
   async page(
-    nameOrPayload?: string | EmitterPagePayload, 
-    properties?: any, 
-    options?: TrackingOptions
+    nameOrPayload?: string | EmitterPagePayload,
+    properties?: any,
+    options?: TrackingOptions,
   ): Promise<void> {
     // If first argument is an emitter payload, use it
     if (typeof nameOrPayload === 'object' && nameOrPayload.type === 'page') {
@@ -201,16 +211,20 @@ export class AnalyticsManager {
       return this.page(payload.name, payload.properties, {
         ...options,
         // Merge context from payload
-        context: { ...this.context, ...payload.context }
+        context: { ...this.context, ...payload.context },
       });
     }
 
     // Traditional page call
     const name = nameOrPayload as string | undefined;
-    
+
     if (!this.isInitialized) {
       if (this.config.onError) {
-        this.config.onError(new Error('Analytics not initialized'), { provider: 'analytics', method: 'page', name });
+        this.config.onError(new Error('Analytics not initialized'), {
+          provider: 'analytics',
+          name,
+          method: 'page',
+        });
       }
       return;
     }
@@ -225,7 +239,11 @@ export class AnalyticsManager {
         } catch (error) {
           // Error boundary: report error but don't let it affect other providers
           if (this.config.onError) {
-            this.config.onError(error, { provider: providerName, method: 'page', name: name || '' });
+            this.config.onError(error, {
+              provider: providerName,
+              name: name || '',
+              method: 'page',
+            });
           }
         }
       }
@@ -238,9 +256,9 @@ export class AnalyticsManager {
   async group(payload: EmitterGroupPayload): Promise<void>;
   async group(groupId: string, traits?: any, options?: TrackingOptions): Promise<void>;
   async group(
-    groupIdOrPayload: string | EmitterGroupPayload, 
-    traits?: any, 
-    options?: TrackingOptions
+    groupIdOrPayload: string | EmitterGroupPayload,
+    traits?: any,
+    options?: TrackingOptions,
   ): Promise<void> {
     // If first argument is an emitter payload, use it
     if (typeof groupIdOrPayload === 'object' && groupIdOrPayload.type === 'group') {
@@ -248,16 +266,20 @@ export class AnalyticsManager {
       return this.group(payload.groupId, payload.traits, {
         ...options,
         // Merge context from payload
-        context: { ...this.context, ...payload.context }
+        context: { ...this.context, ...payload.context },
       });
     }
 
     // Traditional group call
     const groupId = groupIdOrPayload as string;
-    
+
     if (!this.isInitialized) {
       if (this.config.onError) {
-        this.config.onError(new Error('Analytics not initialized'), { provider: 'analytics', method: 'group', groupId });
+        this.config.onError(new Error('Analytics not initialized'), {
+          provider: 'analytics',
+          groupId,
+          method: 'group',
+        });
       }
       return;
     }
@@ -275,7 +297,7 @@ export class AnalyticsManager {
         } catch (error) {
           // Error boundary: report error but don't let it affect other providers
           if (this.config.onError) {
-            this.config.onError(error, { provider: providerName, method: 'group', groupId });
+            this.config.onError(error, { provider: providerName, groupId, method: 'group' });
           }
         }
       }
@@ -288,9 +310,9 @@ export class AnalyticsManager {
   async alias(payload: EmitterAliasPayload): Promise<void>;
   async alias(userId: string, previousId: string, options?: TrackingOptions): Promise<void>;
   async alias(
-    userIdOrPayload: string | EmitterAliasPayload, 
-    previousId?: string, 
-    options?: TrackingOptions
+    userIdOrPayload: string | EmitterAliasPayload,
+    previousId?: string,
+    options?: TrackingOptions,
   ): Promise<void> {
     // If first argument is an emitter payload, use it
     if (typeof userIdOrPayload === 'object' && userIdOrPayload.type === 'alias') {
@@ -298,17 +320,22 @@ export class AnalyticsManager {
       return this.alias(payload.userId, payload.previousId, {
         ...options,
         // Merge context from payload
-        context: { ...this.context, ...payload.context }
+        context: { ...this.context, ...payload.context },
       });
     }
 
     // Traditional alias call
     const userId = userIdOrPayload as string;
     const prevId = previousId as string;
-    
+
     if (!this.isInitialized) {
       if (this.config.onError) {
-        this.config.onError(new Error('Analytics not initialized'), { provider: 'analytics', method: 'alias', userId, previousId: prevId });
+        this.config.onError(new Error('Analytics not initialized'), {
+          provider: 'analytics',
+          method: 'alias',
+          previousId: prevId,
+          userId,
+        });
       }
       return;
     }
@@ -322,7 +349,12 @@ export class AnalyticsManager {
         } catch (error) {
           // Error boundary: report error but don't let it affect other providers
           if (this.config.onError) {
-            this.config.onError(error, { provider: providerName, method: 'alias', userId, previousId: prevId });
+            this.config.onError(error, {
+              provider: providerName,
+              method: 'alias',
+              previousId: prevId,
+              userId,
+            });
           }
         }
       }
@@ -373,7 +405,7 @@ export class AnalyticsManager {
    * Useful for processing multiple events at once
    */
   async emitBatch(payloads: EmitterPayload[]): Promise<void> {
-    await Promise.all(payloads.map(payload => this.emit(payload)));
+    await Promise.all(payloads.map((payload) => this.emit(payload)));
   }
 
   /**
@@ -438,7 +470,7 @@ export class AnalyticsManager {
 // Factory function to create analytics manager
 export function createAnalyticsManager(
   config: AnalyticsConfig,
-  availableProviders: ProviderRegistry
+  availableProviders: ProviderRegistry,
 ): AnalyticsManager {
   return new AnalyticsManager(config, availableProviders);
 }

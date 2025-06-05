@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { StandardLayout } from './standard'
+import { StandardLayout } from "./standard";
 
 interface GalleryLayoutProps {
-  product: any
-  relatedProducts: any[]
-  reviews: any[]
-  dict: any
-  locale: string
+  product: any;
+  relatedProducts: any[];
+  reviews: any[];
+  dict: any;
+  locale: string;
 }
 
 export function GalleryLayout(props: GalleryLayoutProps) {
   // For now, using StandardLayout as a placeholder
   // TODO: Implement gallery-specific layout
-  return <StandardLayout {...props} />
+  return <StandardLayout {...props} />;
 }

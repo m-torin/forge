@@ -19,9 +19,9 @@ export const { POST } = serve(
     // Step 1: Simple log
     const step1Result = await context.run('simple-log', async () => {
       console.log('[TEST-BASIC] Running simple-log step');
-      return { 
-        message: 'Step 1 completed', 
-        timestamp: new Date().toISOString() 
+      return {
+        message: 'Step 1 completed',
+        timestamp: new Date().toISOString(),
       };
     });
 
@@ -30,10 +30,10 @@ export const { POST } = serve(
     // Step 2: Another simple step
     const step2Result = await context.run('another-step', async () => {
       console.log('[TEST-BASIC] Running another-step');
-      return { 
-        message: 'Step 2 completed', 
+      return {
+        message: 'Step 2 completed',
         timestamp: new Date().toISOString(),
-        previousStep: step1Result 
+        previousStep: step1Result,
       };
     });
 
@@ -50,10 +50,12 @@ export const { POST } = serve(
     receiver: undefined, // Skip signature verification
     qstashClient: new Client({
       baseUrl: process.env.QSTASH_URL || 'http://localhost:8080',
-      token: process.env.QSTASH_TOKEN || 'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=',
+      token:
+        process.env.QSTASH_TOKEN ||
+        'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=',
     }),
     verbose: true,
-  }
+  },
 );
 
 // GET endpoint for testing

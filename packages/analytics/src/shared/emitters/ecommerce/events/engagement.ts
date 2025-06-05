@@ -3,18 +3,20 @@
  * Track user interactions that indicate interest but aren't direct purchases
  */
 
-import { ECOMMERCE_EVENTS, type EngagementProperties, type BaseProductProperties, type EcommerceEventSpec } from '../types';
-import { normalizeProductProperties, cleanProperties, validateRequiredProperties } from '../utils';
+import { type BaseProductProperties, ECOMMERCE_EVENTS, type EcommerceEventSpec } from '../types';
+import { cleanProperties, normalizeProductProperties, validateRequiredProperties } from '../utils';
 
 /**
  * Track when a user sets a price alert for a product
  */
-export function priceAlertSet(properties: BaseProductProperties & {
-  threshold_price: number;
-  notification_method?: 'email' | 'sms' | 'push';
-  currency?: string;
-}): EcommerceEventSpec {
-  const { threshold_price, notification_method, currency, ...productProps } = properties;
+export function priceAlertSet(
+  properties: BaseProductProperties & {
+    threshold_price: number;
+    notification_method?: 'email' | 'sms' | 'push';
+    currency?: string;
+  },
+): EcommerceEventSpec {
+  const { currency, notification_method, threshold_price, ...productProps } = properties;
   const normalizedProduct = normalizeProductProperties(productProps);
   validateRequiredProperties(normalizedProduct, ['product_id']);
   validateRequiredProperties({ threshold_price }, ['threshold_price']);
@@ -22,23 +24,25 @@ export function priceAlertSet(properties: BaseProductProperties & {
   return {
     name: ECOMMERCE_EVENTS.PRICE_ALERT_SET,
     category: 'ecommerce',
-    requiredProperties: ['product_id', 'threshold_price'],
     properties: cleanProperties({
       ...normalizedProduct,
       action_type: 'price_alert',
-      threshold_price,
-      notification_method,
       currency,
+      notification_method,
+      threshold_price,
     }),
+    requiredProperties: ['product_id', 'threshold_price'],
   };
 }
 
 /**
  * Track when a user requests notification for out-of-stock items
  */
-export function backInStockRequested(properties: BaseProductProperties & {
-  notification_method?: 'email' | 'sms' | 'push';
-}): EcommerceEventSpec {
+export function backInStockRequested(
+  properties: BaseProductProperties & {
+    notification_method?: 'email' | 'sms' | 'push';
+  },
+): EcommerceEventSpec {
   const { notification_method, ...productProps } = properties;
   const normalizedProduct = normalizeProductProperties(productProps);
   validateRequiredProperties(normalizedProduct, ['product_id']);
@@ -46,11 +50,11 @@ export function backInStockRequested(properties: BaseProductProperties & {
   return {
     name: ECOMMERCE_EVENTS.BACK_IN_STOCK_REQUESTED,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties({
       ...normalizedProduct,
       action_type: 'back_in_stock',
       notification_method,
     }),
+    requiredProperties: ['product_id'],
   };
 }

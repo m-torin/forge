@@ -11,8 +11,6 @@ export interface ConsoleConfig {
   };
 }
 
-export interface ConsoleOptions {
-  [key: string]: any;
-}
+export type ConsoleOptions = Record<string, any>;
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';

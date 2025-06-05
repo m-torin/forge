@@ -1,26 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
+  cartAbandoned,
   cartUpdated,
   cartViewed,
-  cartAbandoned,
   checkoutProgressed,
 } from '../../shared/emitters/ecommerce/events/cart-checkout';
 import { ECOMMERCE_EVENTS } from '../../shared/emitters/ecommerce/types';
+
 import type {
+  BaseProductProperties,
+  CartAbandonmentProperties,
   CartProperties,
   CartUpdateProperties,
-  CartAbandonmentProperties,
   CheckoutProgressProperties,
-  BaseProductProperties,
 } from '../../shared/emitters/ecommerce/types';
 
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   trackEcommerce: vi.fn((eventSpec, options) => ({
-    event: eventSpec.name,
-    properties: eventSpec.properties,
     context: { category: 'ecommerce' },
+    event: eventSpec.name,
     options,
+    properties: eventSpec.properties,
   })),
 }));
 
@@ -39,66 +41,66 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should create a valid cart update event for adding a product', () => {
       const properties: CartUpdateProperties = {
+        cart_id: 'cart123',
         action: 'added',
+        cart_total: 199.98,
         product: baseProduct,
         quantity_change: 2,
-        cart_total: 199.98,
-        cart_id: 'cart123',
       };
 
       const result = cartUpdated(properties);
 
       expect(result).toEqual({
+        context: { category: 'ecommerce' },
         event: ECOMMERCE_EVENTS.CART_UPDATED,
+        options: undefined,
         properties: {
-          action: 'added',
+          cart_id: 'cart123',
           product_id: 'p123',
           name: 'Test Product',
+          action: 'added',
+          cart_total: 199.98,
           price: 99.99,
           quantity: 2,
           quantity_change: 2,
-          cart_total: 199.98,
-          cart_id: 'cart123',
         },
-        context: { category: 'ecommerce' },
-        options: undefined,
       });
     });
 
     it('should create a valid cart update event for removing a product', () => {
       const properties: CartUpdateProperties = {
+        cart_id: 'cart123',
         action: 'removed',
+        cart_total: 99.99,
         product: baseProduct,
         quantity_change: -1,
-        cart_total: 99.99,
-        cart_id: 'cart123',
       };
 
       const result = cartUpdated(properties);
 
       expect(result.properties).toMatchObject({
-        action: 'removed',
         product_id: 'p123',
-        quantity_change: -1,
+        action: 'removed',
         cart_total: 99.99,
+        quantity_change: -1,
       });
     });
 
     it('should create a valid cart update event for updating a product', () => {
       const properties: CartUpdateProperties = {
         action: 'updated',
+        cart_total: 299.97,
         product: baseProduct,
         quantity_change: 1,
-        cart_total: 299.97,
       };
 
       const result = cartUpdated(properties);
 
       expect(result.properties).toMatchObject({
-        action: 'updated',
         product_id: 'p123',
-        quantity_change: 1,
+        action: 'updated',
         cart_total: 299.97,
+        quantity_change: 1,
       });
     });
 
@@ -107,7 +109,7 @@ describe('Cart and Checkout Emitters', () => {
         action: 'added',
         product: baseProduct,
       };
-      const options = { userId: 'user123', timestamp: new Date() };
+      const options = { timestamp: new Date(), userId: 'user123' };
 
       const result = cartUpdated(properties, options);
 
@@ -116,10 +118,10 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should normalize product properties', () => {
       const rawProduct = {
+        manufacturer: 'Brand X', // Should normalize to brand
+        price: '149.99', // Should normalize to number
         productId: 'p456', // Should normalize to product_id
         title: 'Raw Product', // Should normalize to name
-        price: '149.99', // Should normalize to number
-        manufacturer: 'Brand X', // Should normalize to brand
       };
 
       const properties: CartUpdateProperties = {
@@ -130,11 +132,11 @@ describe('Cart and Checkout Emitters', () => {
       const result = cartUpdated(properties);
 
       expect(result.properties).toMatchObject({
-        action: 'added',
         product_id: 'p456',
         name: 'Raw Product',
-        price: 149.99,
+        action: 'added',
         brand: 'Brand X',
+        price: 149.99,
       });
     });
 
@@ -147,18 +149,18 @@ describe('Cart and Checkout Emitters', () => {
       const result = cartUpdated(properties);
 
       expect(result.properties).toEqual({
-        action: 'added',
         product_id: 'p1',
+        action: 'added',
       });
     });
 
     it('should clean undefined properties', () => {
       const properties: CartUpdateProperties = {
+        cart_id: undefined,
         action: 'added',
+        cart_total: undefined,
         product: baseProduct,
         quantity_change: undefined,
-        cart_total: undefined,
-        cart_id: undefined,
       };
 
       const result = cartUpdated(properties);
@@ -200,8 +202,8 @@ describe('Cart and Checkout Emitters', () => {
     it('should handle zero cart total', () => {
       const properties: CartUpdateProperties = {
         action: 'removed',
-        product: baseProduct,
         cart_total: 0,
+        product: baseProduct,
       };
 
       const result = cartUpdated(properties);
@@ -229,8 +231,8 @@ describe('Cart and Checkout Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.CART_VIEWED,
         category: 'ecommerce',
-        requiredProperties: [],
         properties: {},
+        requiredProperties: [],
       });
     });
 
@@ -244,10 +246,10 @@ describe('Cart and Checkout Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.CART_VIEWED,
         category: 'ecommerce',
-        requiredProperties: [],
         properties: {
           cart_id: 'cart123',
         },
+        requiredProperties: [],
       });
     });
 
@@ -272,7 +274,7 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should normalize products when provided', () => {
       const rawProducts = [
-        { productId: 'p1', title: 'Product 1', price: '99.99' },
+        { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
       ];
 
@@ -344,9 +346,9 @@ describe('Cart and Checkout Emitters', () => {
     it('should create a valid cart abandoned event', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart123',
+        abandonment_reason: 'timeout',
         cart_value: 349.97,
         products: baseProducts,
-        abandonment_reason: 'timeout',
         time_in_cart: 1800, // 30 minutes
       };
 
@@ -355,14 +357,14 @@ describe('Cart and Checkout Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.CART_ABANDONED,
         category: 'ecommerce',
-        requiredProperties: ['cart_id', 'cart_value'],
         properties: {
           cart_id: 'cart123',
+          abandonment_reason: 'timeout',
           cart_value: 349.97,
           products: baseProducts,
-          abandonment_reason: 'timeout',
           time_in_cart: 1800,
         },
+        requiredProperties: ['cart_id', 'cart_value'],
       });
     });
 
@@ -388,9 +390,9 @@ describe('Cart and Checkout Emitters', () => {
       reasons.forEach((reason) => {
         const properties: CartAbandonmentProperties = {
           cart_id: 'cart123',
+          abandonment_reason: reason,
           cart_value: 100,
           products: baseProducts,
-          abandonment_reason: reason,
         };
 
         const result = cartAbandoned(properties);
@@ -400,7 +402,7 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should normalize products', () => {
       const rawProducts = [
-        { productId: 'p1', title: 'Product 1', price: '99.99' },
+        { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
       ];
 
@@ -481,9 +483,9 @@ describe('Cart and Checkout Emitters', () => {
     it('should clean undefined properties', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart123',
+        abandonment_reason: undefined,
         cart_value: 100,
         products: baseProducts,
-        abandonment_reason: undefined,
         time_in_cart: undefined,
       };
 
@@ -505,13 +507,13 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should create a valid checkout progress event', () => {
       const properties: CheckoutProgressProperties = {
-        step: 1,
+        checkout_id: 'checkout123',
         step_name: 'Shipping Information',
         action: 'viewed',
-        products: baseProducts,
-        checkout_id: 'checkout123',
         payment_method: 'credit_card',
+        products: baseProducts,
         shipping_method: 'standard',
+        step: 1,
       };
 
       const result = checkoutProgressed(properties);
@@ -519,32 +521,32 @@ describe('Cart and Checkout Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.CHECKOUT_PROGRESSED,
         category: 'ecommerce',
-        requiredProperties: ['step', 'step_name', 'action'],
         properties: {
-          step: 1,
+          checkout_id: 'checkout123',
           step_name: 'Shipping Information',
           action: 'viewed',
-          products: baseProducts,
-          checkout_id: 'checkout123',
           payment_method: 'credit_card',
+          products: baseProducts,
           shipping_method: 'standard',
+          step: 1,
         },
+        requiredProperties: ['step', 'step_name', 'action'],
       });
     });
 
     it('should create a valid checkout progress event with minimal properties', () => {
       const properties: CheckoutProgressProperties = {
-        step: 2,
         step_name: 'Payment Information',
         action: 'completed',
+        step: 2,
       };
 
       const result = checkoutProgressed(properties);
 
       expect(result.properties).toEqual({
-        step: 2,
         step_name: 'Payment Information',
         action: 'completed',
+        step: 2,
       });
     });
 
@@ -553,9 +555,9 @@ describe('Cart and Checkout Emitters', () => {
 
       actions.forEach((action, index) => {
         const properties: CheckoutProgressProperties = {
-          step: index + 1,
           step_name: `Step ${index + 1}`,
           action,
+          step: index + 1,
         };
 
         const result = checkoutProgressed(properties);
@@ -565,35 +567,35 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should handle checkout error with error message', () => {
       const properties: CheckoutProgressProperties = {
-        step: 3,
+        checkout_id: 'checkout123',
         step_name: 'Payment Processing',
         action: 'error',
         error_message: 'Credit card declined',
-        checkout_id: 'checkout123',
+        step: 3,
       };
 
       const result = checkoutProgressed(properties);
 
       expect(result.properties).toMatchObject({
-        step: 3,
+        checkout_id: 'checkout123',
         step_name: 'Payment Processing',
         action: 'error',
         error_message: 'Credit card declined',
-        checkout_id: 'checkout123',
+        step: 3,
       });
     });
 
     it('should normalize products when provided', () => {
       const rawProducts = [
-        { productId: 'p1', title: 'Product 1', price: '99.99' },
+        { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
       ];
 
       const properties: CheckoutProgressProperties = {
-        step: 1,
         step_name: 'Review Order',
         action: 'viewed',
         products: rawProducts as any,
+        step: 1,
       };
 
       const result = checkoutProgressed(properties);
@@ -609,10 +611,10 @@ describe('Cart and Checkout Emitters', () => {
 
       paymentMethods.forEach((method) => {
         const properties: CheckoutProgressProperties = {
-          step: 2,
           step_name: 'Payment',
           action: 'viewed',
           payment_method: method,
+          step: 2,
         };
 
         const result = checkoutProgressed(properties);
@@ -625,10 +627,10 @@ describe('Cart and Checkout Emitters', () => {
 
       shippingMethods.forEach((method) => {
         const properties: CheckoutProgressProperties = {
-          step: 1,
           step_name: 'Shipping',
           action: 'viewed',
           shipping_method: method,
+          step: 1,
         };
 
         const result = checkoutProgressed(properties);
@@ -648,8 +650,8 @@ describe('Cart and Checkout Emitters', () => {
     it('should throw error when step_name is missing', () => {
       expect(() => {
         checkoutProgressed({
-          step: 1,
           action: 'viewed',
+          step: 1,
         } as any);
       }).toThrow('Missing required properties: step_name');
     });
@@ -657,8 +659,8 @@ describe('Cart and Checkout Emitters', () => {
     it('should throw error when action is missing', () => {
       expect(() => {
         checkoutProgressed({
-          step: 1,
           step_name: 'Step Name',
+          step: 1,
         } as any);
       }).toThrow('Missing required properties: action');
     });
@@ -671,9 +673,9 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should handle step 0', () => {
       const properties: CheckoutProgressProperties = {
-        step: 0,
         step_name: 'Cart Review',
         action: 'viewed',
+        step: 0,
       };
 
       const result = checkoutProgressed(properties);
@@ -682,10 +684,10 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should handle empty products array', () => {
       const properties: CheckoutProgressProperties = {
-        step: 1,
         step_name: 'Empty Cart',
         action: 'viewed',
         products: [],
+        step: 1,
       };
 
       const result = checkoutProgressed(properties);
@@ -694,35 +696,40 @@ describe('Cart and Checkout Emitters', () => {
 
     it('should clean undefined properties', () => {
       const properties: CheckoutProgressProperties = {
-        step: 1,
+        checkout_id: undefined,
         step_name: 'Shipping',
         action: 'viewed',
         error_message: undefined,
-        products: undefined,
-        checkout_id: undefined,
         payment_method: undefined,
+        products: undefined,
         shipping_method: undefined,
+        step: 1,
       };
 
       const result = checkoutProgressed(properties);
 
       expect(result.properties).toEqual({
-        step: 1,
         step_name: 'Shipping',
         action: 'viewed',
+        step: 1,
       });
     });
 
     it('should handle complex checkout flow scenario', () => {
       const checkoutSteps = [
-        { step: 1, step_name: 'Shipping Info', action: 'viewed' as const },
-        { step: 1, step_name: 'Shipping Info', action: 'completed' as const },
-        { step: 2, step_name: 'Payment Info', action: 'viewed' as const },
-        { step: 2, step_name: 'Payment Info', action: 'error' as const, error_message: 'Invalid card' },
-        { step: 2, step_name: 'Payment Info', action: 'viewed' as const },
-        { step: 2, step_name: 'Payment Info', action: 'completed' as const },
-        { step: 3, step_name: 'Review Order', action: 'viewed' as const },
-        { step: 3, step_name: 'Review Order', action: 'completed' as const },
+        { step_name: 'Shipping Info', action: 'viewed' as const, step: 1 },
+        { step_name: 'Shipping Info', action: 'completed' as const, step: 1 },
+        { step_name: 'Payment Info', action: 'viewed' as const, step: 2 },
+        {
+          step_name: 'Payment Info',
+          action: 'error' as const,
+          error_message: 'Invalid card',
+          step: 2,
+        },
+        { step_name: 'Payment Info', action: 'viewed' as const, step: 2 },
+        { step_name: 'Payment Info', action: 'completed' as const, step: 2 },
+        { step_name: 'Review Order', action: 'viewed' as const, step: 3 },
+        { step_name: 'Review Order', action: 'completed' as const, step: 3 },
       ];
 
       checkoutSteps.forEach((stepData) => {
@@ -756,8 +763,9 @@ describe('Cart and Checkout Emitters', () => {
         quantity: Math.floor(Math.random() * 10) + 1,
       }));
 
-      const cartValue = largeProductList.reduce((sum, product) => 
-        sum + (product.price * product.quantity), 0
+      const cartValue = largeProductList.reduce(
+        (sum, product) => sum + product.price * product.quantity,
+        0,
       );
 
       const properties: CartAbandonmentProperties = {
@@ -780,11 +788,11 @@ describe('Cart and Checkout Emitters', () => {
 
       // 1. Add to cart
       const addResult = cartUpdated({
+        cart_id: 'lifecycle_cart',
         action: 'added',
+        cart_total: 99.99,
         product,
         quantity_change: 1,
-        cart_total: 99.99,
-        cart_id: 'lifecycle_cart',
       });
 
       // 2. View cart
@@ -795,20 +803,20 @@ describe('Cart and Checkout Emitters', () => {
 
       // 3. Update cart
       const updateResult = cartUpdated({
+        cart_id: 'lifecycle_cart',
         action: 'updated',
+        cart_total: 199.98,
         product: { ...product, quantity: 2 },
         quantity_change: 1,
-        cart_total: 199.98,
-        cart_id: 'lifecycle_cart',
       });
 
       // 4. Start checkout
       const checkoutResult = checkoutProgressed({
-        step: 1,
+        checkout_id: 'checkout_lifecycle',
         step_name: 'Shipping',
         action: 'viewed',
         products: [{ ...product, quantity: 2 }],
-        checkout_id: 'checkout_lifecycle',
+        step: 1,
       });
 
       // All operations should maintain consistent cart_id
@@ -829,7 +837,7 @@ describe('Cart and Checkout Emitters', () => {
         cartUpdated({ action: 'added', product: { product_id: 'p1' } }).event,
         cartViewed({}).name,
         cartAbandoned({ cart_id: 'c1', cart_value: 100, products: [] }).name,
-        checkoutProgressed({ step: 1, step_name: 'test', action: 'viewed' }).name,
+        checkoutProgressed({ step_name: 'test', action: 'viewed', step: 1 }).name,
       ];
 
       // All event names should be valid ECOMMERCE_EVENTS
@@ -862,9 +870,9 @@ describe('Cart and Checkout Emitters', () => {
 
       // Test with negative step in checkout
       const result = checkoutProgressed({
-        step: -1,
         step_name: 'Invalid Step',
         action: 'viewed',
+        step: -1,
       });
       expect(result.properties.step).toBe(-1); // Should preserve the value, validation is up to the application
     });
@@ -881,8 +889,8 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartUpdated({
         action: 'updated',
-        product,
         cart_total: expectedTotal,
+        product,
       });
 
       expect(result.properties.cart_total).toBe(expectedTotal);
@@ -913,9 +921,9 @@ describe('Cart and Checkout Emitters', () => {
 
       // checkoutProgressed requires specific properties
       const checkoutProps: CheckoutProgressProperties = {
-        step: 1,
         step_name: 'test',
         action: 'viewed',
+        step: 1,
       };
       expect(() => checkoutProgressed(checkoutProps)).not.toThrow();
     });

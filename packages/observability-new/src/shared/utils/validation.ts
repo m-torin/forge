@@ -5,14 +5,14 @@
 import type { ObservabilityConfig, ObservabilityProviderConfig } from '../types/types';
 
 export interface ValidationError {
-  provider?: string;
   field?: string;
   message: string;
+  provider?: string;
 }
 
 export interface ValidationResult {
-  valid: boolean;
   errors: ValidationError[];
+  valid: boolean;
 }
 
 /**
@@ -39,14 +39,17 @@ export function validateConfig(config: ObservabilityConfig): ValidationResult {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
 /**
  * Validate individual provider configuration
  */
-export function validateProvider(name: string, config: ObservabilityProviderConfig): ValidationError[] {
+export function validateProvider(
+  name: string,
+  config: ObservabilityProviderConfig,
+): ValidationError[] {
   const errors: ValidationError[] = [];
 
   switch (name) {
@@ -55,7 +58,7 @@ export function validateProvider(name: string, config: ObservabilityProviderConf
         errors.push({
           provider: name,
           field: 'dsn',
-          message: 'Sentry DSN is required'
+          message: 'Sentry DSN is required',
         });
       }
       break;
@@ -65,7 +68,7 @@ export function validateProvider(name: string, config: ObservabilityProviderConf
         errors.push({
           provider: name,
           field: 'serviceName',
-          message: 'Service name is required for OpenTelemetry'
+          message: 'Service name is required for OpenTelemetry',
         });
       }
       break;
@@ -92,13 +95,13 @@ export function validateProvider(name: string, config: ObservabilityProviderConf
  */
 export function debugConfig(config: ObservabilityConfig): void {
   const result = validateConfig(config);
-  
+
   if (result.valid) {
     console.log('[Observability] Configuration is valid');
     console.log('[Observability] Providers:', Object.keys(config.providers).join(', '));
   } else {
     console.error('[Observability] Configuration errors:');
-    result.errors.forEach(error => {
+    result.errors.forEach((error) => {
       const prefix = error.provider ? `[${error.provider}]` : '';
       const field = error.field ? ` ${error.field}:` : '';
       console.error(`  ${prefix}${field} ${error.message}`);

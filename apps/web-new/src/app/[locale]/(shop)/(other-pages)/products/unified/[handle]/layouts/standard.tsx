@@ -1,22 +1,34 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import { LikeButton, AccordionInfo, Divider, SectionSliderProductCard, SectionPromo2 } from '@repo/design-system/mantine-ciseco'
-import { ProductInfo } from '../product-info'
-import { ProductDetails } from '../product-details'
-import ProductReviews from '../../../ProductReviews'
-import Policy from '../../../Policy'
+import Image from "next/image";
+import {
+  LikeButton,
+  AccordionInfo,
+  Divider,
+  SectionSliderProductCard,
+  SectionPromo2,
+} from "@repo/design-system/mantine-ciseco";
+import { ProductInfo } from "../product-info";
+import { ProductDetails } from "../product-details";
+import ProductReviews from "../../../ProductReviews";
+import Policy from "../../../Policy";
 
 interface StandardLayoutProps {
-  product: any
-  relatedProducts: any[]
-  reviews: any[]
-  dict: any
-  locale: string
+  product: any;
+  relatedProducts: any[];
+  reviews: any[];
+  dict: any;
+  locale: string;
 }
 
-export function StandardLayout({ product, relatedProducts, reviews, dict, locale }: StandardLayoutProps) {
-  const { featuredImage, images, reviewNumber, rating } = product
+export function StandardLayout({
+  product,
+  relatedProducts,
+  reviews,
+  dict,
+  locale,
+}: StandardLayoutProps) {
+  const { featuredImage, images, reviewNumber, rating } = product;
 
   return (
     <main className="container mt-5 lg:mt-11">
@@ -32,7 +44,7 @@ export function StandardLayout({ product, relatedProducts, reviews, dict, locale
                   sizes="(max-width: 640px) 100vw, 33vw"
                   src={featuredImage}
                   className="rounded-2xl object-cover"
-                  alt={featuredImage.alt || 'product detail'}
+                  alt={featuredImage.alt || "product detail"}
                 />
               )}
             </div>
@@ -40,7 +52,7 @@ export function StandardLayout({ product, relatedProducts, reviews, dict, locale
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6">
             {images?.map((image: any, index: number) => {
-              if (!image?.src) return null
+              if (!image?.src) return null;
               return (
                 <div key={index} className="relative aspect-[3/4] w-full">
                   <Image
@@ -48,10 +60,10 @@ export function StandardLayout({ product, relatedProducts, reviews, dict, locale
                     fill
                     src={image}
                     className="rounded-2xl object-cover"
-                    alt={image.alt || 'product detail'}
+                    alt={image.alt || "product detail"}
                   />
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -80,7 +92,11 @@ export function StandardLayout({ product, relatedProducts, reviews, dict, locale
         </div>
         <ProductDetails dict={dict} />
         <Divider />
-        <ProductReviews reviewNumber={reviewNumber || 0} rating={rating || 1} reviews={reviews} />
+        <ProductReviews
+          reviewNumber={reviewNumber || 0}
+          rating={rating || 1}
+          reviews={reviews}
+        />
         <Divider />
         {/* OTHER SECTION */}
         <SectionSliderProductCard
@@ -96,5 +112,5 @@ export function StandardLayout({ product, relatedProducts, reviews, dict, locale
         </div>
       </div>
     </main>
-  )
+  );
 }

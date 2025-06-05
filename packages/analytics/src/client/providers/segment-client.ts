@@ -2,8 +2,8 @@
  * Segment client-side (browser) provider implementation using @segment/analytics-next
  */
 
-import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
 import type { SegmentConfig } from '../../shared/types/segment-types';
+import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
 
 export class SegmentClientProvider implements AnalyticsProvider {
   readonly name = 'segment';
@@ -15,10 +15,10 @@ export class SegmentClientProvider implements AnalyticsProvider {
     if (!config.writeKey) {
       throw new Error('Segment writeKey is required');
     }
-    
+
     this.config = {
+      options: config.options,
       writeKey: config.writeKey,
-      options: config.options
     };
   }
 
@@ -28,16 +28,18 @@ export class SegmentClientProvider implements AnalyticsProvider {
     try {
       // Dynamically import Segment Analytics Next
       const { AnalyticsBrowser } = await import('@segment/analytics-next');
-      
+
       // Initialize Analytics Browser
       this.analytics = AnalyticsBrowser.load({
         writeKey: this.config.writeKey,
-        ...this.config.options
+        ...this.config.options,
       });
-      
+
       this.isInitialized = true;
     } catch (error) {
-      throw new Error('Segment Analytics Next not available. Install with: npm install @segment/analytics-next');
+      throw new Error(
+        'Segment Analytics Next not available. Install with: npm install @segment/analytics-next',
+      );
     }
   }
 

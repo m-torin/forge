@@ -4,9 +4,9 @@
 
 import OpossumCircuitBreaker from 'opossum';
 
-import { CircuitBreakerError } from '../utils/errors.js';
+import { CircuitBreakerError } from '../utils/errors';
 
-import type { CircuitBreakerPattern, PatternContext, PatternResult } from '../types/patterns.js';
+import type { CircuitBreakerPattern, PatternContext, PatternResult } from '../types/patterns';
 
 export interface CircuitBreakerOptions extends Partial<CircuitBreakerPattern> {
   /** Context for the operation */
@@ -27,7 +27,7 @@ export class CircuitBreakerManager {
   getCircuitBreaker<T extends any[], R>(
     name: string,
     fn: (...args: T) => Promise<R>,
-    options: CircuitBreakerOptions = {}
+    options: CircuitBreakerOptions = {},
   ): OpossumCircuitBreaker<T, R> {
     if (this.breakers.has(name)) {
       return this.breakers.get(name) as OpossumCircuitBreaker<T, R>;
@@ -46,7 +46,8 @@ export class CircuitBreakerManager {
       name,
       capacity: 10,
       errorFilter: options.errorFilter,
-      errorThresholdPercentage: (pattern.failureThreshold / (pattern.minimumCallsToTrip || 10)) * 100,
+      errorThresholdPercentage:
+        (pattern.failureThreshold / (pattern.minimumCallsToTrip || 10)) * 100,
       group: 'orchestration',
       resetTimeout: pattern.resetTimeout,
       rollingCountBuckets: 10,
@@ -93,14 +94,14 @@ export class CircuitBreakerManager {
     name: string,
     fn: (...args: T) => Promise<R>,
     args: T,
-    options: CircuitBreakerOptions = {}
+    options: CircuitBreakerOptions = {},
   ): Promise<PatternResult<R>> {
     const startTime = Date.now();
     const breaker = this.getCircuitBreaker(name, fn, options);
 
     try {
       const result = await breaker.fire(...args);
-      
+
       return {
         attempts: 1,
         data: result,
@@ -115,15 +116,15 @@ export class CircuitBreakerManager {
       };
     } catch (error) {
       const err = error as Error;
-      
+
       // Check if this is a circuit breaker error
       if (err.message?.includes('Circuit breaker is open')) {
         const cbError = new CircuitBreakerError(
           `Circuit breaker '${name}' is open`,
           name,
-          breaker.opened ? 'open' : 'half-open'
+          breaker.opened ? 'open' : 'half-open',
         );
-        
+
         return {
           attempts: 1,
           duration: Date.now() - startTime,
@@ -175,7 +176,7 @@ export class CircuitBreakerManager {
    * Get all circuit breaker statistics
    */
   getAllStats(): any[] {
-    return Array.from(this.breakers.keys()).map(name => this.getStats(name));
+    return Array.from(this.breakers.keys()).map((name) => this.getStats(name));
   }
 
   /**
@@ -242,7 +243,7 @@ export async function withCircuitBreaker<T extends any[], R>(
   name: string,
   fn: (...args: T) => Promise<R>,
   args: T,
-  options: CircuitBreakerOptions = {}
+  options: CircuitBreakerOptions = {},
 ): Promise<PatternResult<R>> {
   return globalManager.withCircuitBreaker(name, fn, args, options);
 }
@@ -254,7 +255,7 @@ export function CircuitBreaker(name?: string, options: CircuitBreakerOptions = {
   return function <T extends (...args: any[]) => Promise<any>>(
     target: any,
     propertyName: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const method = descriptor.value;
     const breakerName = name || `${target.constructor.name}.${propertyName}`;
@@ -264,9 +265,9 @@ export function CircuitBreaker(name?: string, options: CircuitBreakerOptions = {
         breakerName,
         method.bind(this),
         args,
-        options
+        options,
       );
-      
+
       if (result.success) {
         return result.data;
       } else {
@@ -366,10 +367,10 @@ export const CircuitBreakerConfigs = {
  */
 export function createCircuitBreakerFn<T extends any[], R>(
   name: string,
-  config: keyof typeof CircuitBreakerConfigs
+  config: keyof typeof CircuitBreakerConfigs,
 ) {
   const options = CircuitBreakerConfigs[config];
-  
+
   return (fn: (...args: T) => Promise<R>, args: T) => {
     return withCircuitBreaker(name, fn, args, options);
   };

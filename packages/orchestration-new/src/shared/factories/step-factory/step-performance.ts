@@ -1,0 +1,156 @@
+/**
+ * Step Factory Performance Monitoring Module
+ *
+ * Handles performance tracking, metrics collection, and progress reporting
+ * for workflow step execution.
+ */
+
+import type { StepPerformanceData, ProgressState } from './step-types';
+
+/**
+ * Initialize performance monitoring data
+ */
+export function initializePerformanceData(enableMonitoring: boolean = true): StepPerformanceData {
+  const startTime = Date.now();
+
+  return {
+    startTime,
+    memoryUsage: enableMonitoring ? { before: process.memoryUsage() } : undefined,
+    cpuUsage: enableMonitoring ? { before: process.cpuUsage() } : undefined,
+    customMetrics: new Map(),
+    progress: {
+      current: 0,
+      total: 100,
+      state: 'pending' as ProgressState,
+    },
+  };
+}
+
+/**
+ * Update performance monitoring data with end metrics
+ */
+export function updatePerformanceData(
+  performance: StepPerformanceData,
+  enableMonitoring: boolean = true,
+): void {
+  if (!enableMonitoring) return;
+
+  performance.endTime = Date.now();
+  performance.duration = performance.endTime - performance.startTime;
+
+  // Update memory usage metrics
+  if (performance.memoryUsage?.before) {
+    performance.memoryUsage.after = process.memoryUsage();
+    performance.memoryUsage.peak = Math.max(
+      performance.memoryUsage.before.heapUsed,
+      performance.memoryUsage.after.heapUsed,
+    );
+  }
+
+  // Update CPU usage metrics
+  if (performance.cpuUsage?.before) {
+    performance.cpuUsage.after = process.cpuUsage(performance.cpuUsage.before);
+  }
+
+  // Update progress to completed
+  if (performance.progress) {
+    performance.progress.state = 'completed';
+    performance.progress.current = performance.progress.total;
+  }
+}
+
+/**
+ * Create a progress reporter function
+ */
+export function createProgressReporter(
+  performance: StepPerformanceData,
+  stepId: string,
+  enableDetailedLogging: boolean = false,
+): (current: number, total: number, details?: string) => Promise<void> {
+  return async (current: number, total: number, details?: string) => {
+    if (performance.progress) {
+      performance.progress = {
+        current,
+        total,
+        state: 'in_progress' as ProgressState,
+        details,
+      };
+    }
+
+    if (enableDetailedLogging) {
+      console.log(`[${stepId}] Progress: ${current}/${total} ${details ?? ''}`);
+    }
+  };
+}
+
+/**
+ * Add a custom metric to performance data
+ */
+export function addCustomMetric(
+  performance: StepPerformanceData,
+  name: string,
+  value: number,
+): void {
+  if (performance.customMetrics instanceof Map) {
+    (performance.customMetrics as Map<string, number>).set(name, value);
+  }
+}
+
+/**
+ * Calculate performance statistics from performance data
+ */
+export function calculatePerformanceStats(performance: StepPerformanceData): {
+  duration: number;
+  memoryDelta?: number;
+  cpuUserDelta?: number;
+  cpuSystemDelta?: number;
+} {
+  const stats: any = {
+    duration: performance.duration || 0,
+  };
+
+  // Memory statistics
+  if (performance.memoryUsage?.before && performance.memoryUsage.after) {
+    stats.memoryDelta =
+      performance.memoryUsage.after.heapUsed - performance.memoryUsage.before.heapUsed;
+  }
+
+  // CPU statistics
+  if (performance.cpuUsage?.after) {
+    stats.cpuUserDelta = performance.cpuUsage.after.user;
+    stats.cpuSystemDelta = performance.cpuUsage.after.system;
+  }
+
+  return stats;
+}
+
+/**
+ * Format performance data for logging
+ */
+export function formatPerformanceData(
+  performance: StepPerformanceData,
+  includeDetails: boolean = false,
+): string {
+  const stats = calculatePerformanceStats(performance);
+  let result = `Duration: ${stats.duration}ms`;
+
+  if (includeDetails) {
+    if (stats.memoryDelta !== undefined) {
+      const memoryMB = (stats.memoryDelta / 1024 / 1024).toFixed(2);
+      result += `, Memory: ${stats.memoryDelta > 0 ? '+' : ''}${memoryMB}MB`;
+    }
+
+    if (stats.cpuUserDelta !== undefined && stats.cpuSystemDelta !== undefined) {
+      result += `, CPU: ${(stats.cpuUserDelta / 1000).toFixed(1)}ms user, ${(stats.cpuSystemDelta / 1000).toFixed(1)}ms system`;
+    }
+
+    if (performance.customMetrics && performance.customMetrics.size > 0) {
+      const metrics = Array.from(performance.customMetrics.entries())
+        .map(([name, value]) => `${name}: ${value}`)
+        .join(', ');
+      result += `, Metrics: {${metrics}}`;
+    }
+  }
+
+  return result;
+}

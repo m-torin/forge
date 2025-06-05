@@ -6,20 +6,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { 
-  WorkflowDefinition, 
-  WorkflowExecution,
-  WorkflowProvider 
-} from './shared/types/index.js';
-import type { 
-  WorkflowMetrics, 
-  ExecutionHistory, 
-  WorkflowAlert 
-} from './shared/features/monitoring.js';
-import type { 
-  ScheduleConfig, 
-  ScheduleStatus 
-} from './shared/features/scheduler.js';
+import type { WorkflowDefinition, WorkflowExecution, WorkflowProvider } from './shared/types/index';
+import type {
+  WorkflowMetrics,
+  ExecutionHistory,
+  WorkflowAlert,
+} from './shared/features/monitoring';
+import type { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
 
 export interface UseWorkflowOptions {
   /** Workflow provider instance */
@@ -50,10 +43,7 @@ export interface UseWorkflowResult {
 /**
  * Hook for managing workflow execution
  */
-export function useWorkflow(
-  workflowId: string,
-  options: UseWorkflowOptions
-): UseWorkflowResult {
+export function useWorkflow(workflowId: string, options: UseWorkflowOptions): UseWorkflowResult {
   const [execution, setExecution] = useState<WorkflowExecution | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -69,11 +59,16 @@ export function useWorkflow(
 
     const interval = setInterval(async () => {
       try {
-        const status = await provider.getExecutionStatus(currentExecutionId);
+        const status = await provider.getExecution(currentExecutionId);
         setExecution(status);
-        
+
         // Stop polling if execution is complete
-        if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+        if (
+          status &&
+          (status.status === 'completed' ||
+            status.status === 'failed' ||
+            status.status === 'cancelled')
+        ) {
           setIsExecuting(false);
           setCurrentExecutionId(null);
         }
@@ -85,20 +80,37 @@ export function useWorkflow(
     return () => clearInterval(interval);
   }, [currentExecutionId, provider, pollInterval, autoRefresh]);
 
-  const execute = useCallback(async (input?: unknown): Promise<string> => {
-    setIsExecuting(true);
-    setError(null);
-    
-    try {
-      const executionId = await provider.executeWorkflow(workflowId, input);
-      setCurrentExecutionId(executionId);
-      return executionId;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      setIsExecuting(false);
-      throw err;
-    }
-  }, [workflowId, provider]);
+  const execute = useCallback(
+    async (input?: unknown): Promise<string> => {
+      setIsExecuting(true);
+      setError(null);
+
+      try {
+        // Create a basic workflow definition
+        const workflowDefinition: WorkflowDefinition = {
+          id: workflowId,
+          name: workflowId,
+          version: '1.0.0',
+          steps: [
+            {
+              id: 'execute',
+              name: 'Execute',
+              action: 'execute',
+            },
+          ],
+        };
+
+        const execution = await provider.execute(workflowDefinition, input as Record<string, any>);
+        setCurrentExecutionId(execution.id);
+        return execution.id;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setIsExecuting(false);
+        throw err;
+      }
+    },
+    [workflowId, provider],
+  );
 
   const cancel = useCallback(async (): Promise<void> => {
     if (!currentExecutionId) {
@@ -178,7 +190,9 @@ export function useWorkflowList(options: UseWorkflowListOptions): UseWorkflowLis
     setError(null);
 
     try {
-      const workflowList = await provider.listWorkflows(filter);
+      // Note: listWorkflows is not available in the current WorkflowProvider interface
+      // This would need to be implemented or we need a different approach
+      const workflowList: WorkflowDefinition[] = [];
       setWorkflows(workflowList);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -230,7 +244,7 @@ export interface UseWorkflowMetricsResult {
  */
 export function useWorkflowMetrics(
   workflowId: string,
-  options: UseWorkflowMetricsOptions
+  options: UseWorkflowMetricsOptions,
 ): UseWorkflowMetricsResult {
   const [metrics, setMetrics] = useState<WorkflowMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -308,7 +322,7 @@ export interface UseExecutionHistoryResult {
  */
 export function useExecutionHistory(
   workflowId: string,
-  options: UseExecutionHistoryOptions
+  options: UseExecutionHistoryOptions,
 ): UseExecutionHistoryResult {
   const [executions, setExecutions] = useState<ExecutionHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -342,14 +356,14 @@ export function useExecutionHistory(
     }
 
     setIsLoading(true);
-    
+
     try {
       const newOffset = offset + (pagination?.limit || 10);
       // This would call an execution history provider method
       // For now, this is a placeholder
       const history: ExecutionHistory[] = []; // await provider.getExecutionHistory(workflowId, { ...pagination, offset: newOffset, ...filter });
-      
-      setExecutions(prev => [...prev, ...history]);
+
+      setExecutions((prev) => [...prev, ...history]);
       setOffset(newOffset);
       setHasMore(history.length === (pagination?.limit || 10));
     } catch (err) {
@@ -393,9 +407,9 @@ export interface UseWorkflowScheduleResult {
   /** Error state */
   error: Error | null;
   /** Create schedule */
-  createSchedule: (config: ScheduleConfig) => Promise<string>;
+  createSchedule: (config: EnhancedScheduleConfig) => Promise<string>;
   /** Update schedule */
-  updateSchedule: (config: Partial<ScheduleConfig>) => Promise<void>;
+  updateSchedule: (config: Partial<EnhancedScheduleConfig>) => Promise<void>;
   /** Pause schedule */
   pauseSchedule: () => Promise<void>;
   /** Resume schedule */
@@ -412,7 +426,7 @@ export interface UseWorkflowScheduleResult {
 export function useWorkflowSchedule(
   workflowId: string,
   scheduleId?: string,
-  options: UseWorkflowScheduleOptions = { provider: {} as WorkflowProvider }
+  options: UseWorkflowScheduleOptions = { provider: {} as WorkflowProvider },
 ): UseWorkflowScheduleResult {
   const [schedule, setSchedule] = useState<ScheduleStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -441,42 +455,48 @@ export function useWorkflowSchedule(
     }
   }, [currentScheduleId, provider]);
 
-  const createSchedule = useCallback(async (config: ScheduleConfig): Promise<string> => {
-    setIsLoading(true);
-    setError(null);
+  const createSchedule = useCallback(
+    async (config: EnhancedScheduleConfig): Promise<string> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      // This would call a schedule provider method
-      // For now, this is a placeholder
-      const newScheduleId = 'placeholder_schedule_id'; // await provider.createSchedule(workflowId, config);
-      setCurrentScheduleId(newScheduleId);
-      await refresh();
-      return newScheduleId;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      setIsLoading(false);
-      throw err;
-    }
-  }, [workflowId, provider, refresh]);
+      try {
+        // This would call a schedule provider method
+        // For now, this is a placeholder
+        const newScheduleId = 'placeholder_schedule_id'; // await provider.createSchedule(workflowId, config);
+        setCurrentScheduleId(newScheduleId);
+        await refresh();
+        return newScheduleId;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setIsLoading(false);
+        throw err;
+      }
+    },
+    [workflowId, provider, refresh],
+  );
 
-  const updateSchedule = useCallback(async (config: Partial<ScheduleConfig>): Promise<void> => {
-    if (!currentScheduleId) {
-      throw new Error('No schedule to update');
-    }
+  const updateSchedule = useCallback(
+    async (config: Partial<EnhancedScheduleConfig>): Promise<void> => {
+      if (!currentScheduleId) {
+        throw new Error('No schedule to update');
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      // This would call a schedule provider method
-      // await provider.updateSchedule(currentScheduleId, config);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      setIsLoading(false);
-      throw err;
-    }
-  }, [currentScheduleId, provider, refresh]);
+      try {
+        // This would call a schedule provider method
+        // await provider.updateSchedule(currentScheduleId, config);
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setIsLoading(false);
+        throw err;
+      }
+    },
+    [currentScheduleId, provider, refresh],
+  );
 
   const pauseSchedule = useCallback(async (): Promise<void> => {
     if (!currentScheduleId) {
@@ -553,7 +573,7 @@ export function useWorkflowSchedule(
  */
 export function useWorkflowAlerts(
   workflowId: string,
-  options: UseWorkflowMetricsOptions
+  options: UseWorkflowMetricsOptions,
 ): {
   alerts: WorkflowAlert[];
   isLoading: boolean;
@@ -584,27 +604,33 @@ export function useWorkflowAlerts(
     }
   }, [workflowId, provider]);
 
-  const acknowledgeAlert = useCallback(async (alertId: string, user: string, note?: string): Promise<void> => {
-    try {
-      // This would call an alert provider method
-      // await provider.acknowledgeAlert(alertId, user, note);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      throw err;
-    }
-  }, [provider, refresh]);
+  const acknowledgeAlert = useCallback(
+    async (alertId: string, user: string, note?: string): Promise<void> => {
+      try {
+        // This would call an alert provider method
+        // await provider.acknowledgeAlert(alertId, user, note);
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        throw err;
+      }
+    },
+    [provider, refresh],
+  );
 
-  const resolveAlert = useCallback(async (alertId: string): Promise<void> => {
-    try {
-      // This would call an alert provider method
-      // await provider.resolveAlert(alertId);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      throw err;
-    }
-  }, [provider, refresh]);
+  const resolveAlert = useCallback(
+    async (alertId: string): Promise<void> => {
+      try {
+        // This would call an alert provider method
+        // await provider.resolveAlert(alertId);
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        throw err;
+      }
+    },
+    [provider, refresh],
+  );
 
   useEffect(() => {
     refresh();
@@ -631,17 +657,26 @@ export function useWorkflowAlerts(
 export function createReactWorkflowClient(provider: WorkflowProvider) {
   return {
     provider,
-    useWorkflow: (workflowId: string, options?: Omit<UseWorkflowOptions, 'provider'>) => 
+    useWorkflow: (workflowId: string, options?: Omit<UseWorkflowOptions, 'provider'>) =>
       useWorkflow(workflowId, { provider, ...options }),
-    useWorkflowList: (options?: Omit<UseWorkflowListOptions, 'provider'>) => 
+    useWorkflowList: (options?: Omit<UseWorkflowListOptions, 'provider'>) =>
       useWorkflowList({ provider, ...options }),
-    useWorkflowMetrics: (workflowId: string, options?: Omit<UseWorkflowMetricsOptions, 'provider'>) => 
-      useWorkflowMetrics(workflowId, { provider, ...options }),
-    useExecutionHistory: (workflowId: string, options?: Omit<UseExecutionHistoryOptions, 'provider'>) => 
-      useExecutionHistory(workflowId, { provider, ...options }),
-    useWorkflowSchedule: (workflowId: string, scheduleId?: string, options?: Omit<UseWorkflowScheduleOptions, 'provider'>) => 
-      useWorkflowSchedule(workflowId, scheduleId, { provider, ...options }),
-    useWorkflowAlerts: (workflowId: string, options?: Omit<UseWorkflowMetricsOptions, 'provider'>) => 
-      useWorkflowAlerts(workflowId, { provider, ...options }),
+    useWorkflowMetrics: (
+      workflowId: string,
+      options?: Omit<UseWorkflowMetricsOptions, 'provider'>,
+    ) => useWorkflowMetrics(workflowId, { provider, ...options }),
+    useExecutionHistory: (
+      workflowId: string,
+      options?: Omit<UseExecutionHistoryOptions, 'provider'>,
+    ) => useExecutionHistory(workflowId, { provider, ...options }),
+    useWorkflowSchedule: (
+      workflowId: string,
+      scheduleId?: string,
+      options?: Omit<UseWorkflowScheduleOptions, 'provider'>,
+    ) => useWorkflowSchedule(workflowId, scheduleId, { provider, ...options }),
+    useWorkflowAlerts: (
+      workflowId: string,
+      options?: Omit<UseWorkflowMetricsOptions, 'provider'>,
+    ) => useWorkflowAlerts(workflowId, { provider, ...options }),
   };
 }

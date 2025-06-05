@@ -3,7 +3,17 @@
  * Provides seamless server-side rendering and client hydration
  */
 
+import {
+  createBootstrapData,
+  createMinimalBootstrapData,
+  generateDistinctId,
+  getCachedBootstrapData,
+  getDistinctIdFromCookies,
+  setCachedBootstrapData,
+} from './posthog-bootstrap';
+
 // Dynamic import of React cache for Next.js compatibility
+import type { BootstrapData, FeatureFlags } from '../types/posthog-types';
 let cache: any;
 try {
   cache = require('react').cache;
@@ -11,15 +21,6 @@ try {
   // Fallback for non-React environments
   cache = <T extends (...args: any[]) => any>(fn: T): T => fn;
 }
-import type { BootstrapData, FeatureFlags } from '../types/posthog-types';
-import { 
-  generateDistinctId, 
-  getDistinctIdFromCookies, 
-  createBootstrapData,
-  getCachedBootstrapData,
-  setCachedBootstrapData,
-  createMinimalBootstrapData
-} from './posthog-bootstrap';
 
 /**
  * Create a PostHog client for server-side operations
@@ -27,12 +28,12 @@ import {
 export async function createPostHogServerClient(apiKey: string, options?: any) {
   try {
     const { PostHog } = await import('posthog-node');
-    
+
     return new PostHog(apiKey, {
-      host: 'https://app.posthog.com',
       flushAt: 1,
       flushInterval: 0,
-      ...options
+      host: 'https://app.posthog.com',
+      ...options,
     });
   } catch (error) {
     throw new Error('PostHog Node.js SDK not available. Install with: npm install posthog-node');
@@ -50,10 +51,10 @@ export const getOrGenerateDistinctId = cache(
     if (existingId) {
       return existingId;
     }
-    
+
     // Generate new ID
     return generateDistinctId();
-  }
+  },
 );
 
 /**
@@ -62,30 +63,30 @@ export const getOrGenerateDistinctId = cache(
  */
 export const getPostHogBootstrapData = cache(
   async (
-    apiKey: string, 
-    distinctId: string, 
+    apiKey: string,
+    distinctId: string,
     options?: {
       host?: string;
       timeout?: number;
-    }
+    },
   ): Promise<BootstrapData> => {
     // Check cache first
     const cached = getCachedBootstrapData(distinctId);
     if (cached) {
       return cached;
     }
-    
+
     try {
       const client = await createPostHogServerClient(apiKey, {
         host: options?.host,
         // Add timeout for server-side requests
-        timeout: options?.timeout || 5000
+        timeout: options?.timeout || 5000,
       });
-      
+
       // Fetch flags and payloads
       const featureFlags = await client.getAllFlags(distinctId);
       const featureFlagPayloads: Record<string, any> = {};
-      
+
       // Get payloads for enabled flags
       if (featureFlags) {
         const payloadPromises = Object.entries(featureFlags)
@@ -100,18 +101,18 @@ export const getPostHogBootstrapData = cache(
               // Continue if individual payload fetch fails - silently ignore
             }
           });
-        
+
         await Promise.allSettled(payloadPromises);
       }
-      
+
       // Cleanup
       await client.shutdown();
-      
+
       const bootstrapData = createBootstrapData(distinctId, featureFlags, featureFlagPayloads);
-      
+
       // Cache the result
       setCachedBootstrapData(distinctId, bootstrapData);
-      
+
       return bootstrapData;
     } catch (error) {
       // Return minimal data on error
@@ -119,7 +120,7 @@ export const getPostHogBootstrapData = cache(
       setCachedBootstrapData(distinctId, minimalData);
       return minimalData;
     }
-  }
+  },
 );
 
 /**
@@ -134,12 +135,12 @@ export const getCompleteBootstrapData = cache(
       host?: string;
       timeout?: number;
       fallbackToGenerated?: boolean;
-    }
+    },
   ): Promise<BootstrapData> => {
     try {
       // Get or generate distinct ID
       const distinctId = await getOrGenerateDistinctId(cookies, apiKey);
-      
+
       // Fetch bootstrap data
       return await getPostHogBootstrapData(apiKey, distinctId, options);
     } catch (error) {
@@ -148,10 +149,10 @@ export const getCompleteBootstrapData = cache(
         const fallbackId = generateDistinctId();
         return createMinimalBootstrapData(fallbackId);
       }
-      
+
       throw error;
     }
-  }
+  },
 );
 
 /**
@@ -163,24 +164,23 @@ export function createPostHogSuspenseData(
   options?: {
     host?: string;
     timeout?: number;
-  }
+  },
 ) {
   let status = 'pending';
   let result: BootstrapData;
   let error: any;
-  
-  const suspender = getCompleteBootstrapData(cookies, apiKey, options)
-    .then(
-      (data: any) => {
-        status = 'fulfilled';
-        result = data;
-      },
-      (err: any) => {
-        status = 'rejected';
-        error = err;
-      }
-    );
-  
+
+  const suspender = getCompleteBootstrapData(cookies, apiKey, options).then(
+    (data: any) => {
+      status = 'fulfilled';
+      result = data;
+    },
+    (err: any) => {
+      status = 'rejected';
+      error = err;
+    },
+  );
+
   return {
     read() {
       if (status === 'pending') {
@@ -189,7 +189,7 @@ export function createPostHogSuspenseData(
         throw error;
       }
       return result;
-    }
+    },
   };
 }
 
@@ -204,16 +204,16 @@ export async function isFeatureEnabled(
     host?: string;
     timeout?: number;
     defaultValue?: boolean;
-  }
+  },
 ): Promise<boolean> {
   try {
     const bootstrapData = await getCompleteBootstrapData(cookies, apiKey, options);
     const flagValue = bootstrapData.featureFlags?.[flagKey];
-    
+
     if (flagValue === undefined || flagValue === null) {
       return options?.defaultValue ?? false;
     }
-    
+
     return Boolean(flagValue);
   } catch (error) {
     return options?.defaultValue ?? false;
@@ -231,16 +231,16 @@ export async function getFeatureFlag(
     host?: string;
     timeout?: number;
     defaultValue?: any;
-  }
+  },
 ): Promise<any> {
   try {
     const bootstrapData = await getCompleteBootstrapData(cookies, apiKey, options);
     const flagValue = bootstrapData.featureFlags?.[flagKey];
-    
+
     if (flagValue === undefined || flagValue === null) {
       return options?.defaultValue ?? false;
     }
-    
+
     return flagValue;
   } catch (error) {
     return options?.defaultValue ?? false;
@@ -256,7 +256,7 @@ export async function getAllFeatureFlags(
   options?: {
     host?: string;
     timeout?: number;
-  }
+  },
 ): Promise<FeatureFlags> {
   try {
     const bootstrapData = await getCompleteBootstrapData(cookies, apiKey, options);
@@ -278,40 +278,40 @@ export function createPostHogConfig(
     session_recording?: boolean;
     bootstrap?: BootstrapData;
     debug?: boolean;
-  }
+  },
 ) {
   return {
     apiKey,
     options: {
       api_host: options?.host || 'https://app.posthog.com',
       autocapture: options?.autocapture ?? true,
+      bootstrap: options?.bootstrap,
       capture_pageview: options?.capture_pageview ?? false, // We handle manually
       disable_session_recording: !(options?.session_recording ?? true),
-      bootstrap: options?.bootstrap,
-      loaded: options?.debug ? (posthog: any) => {
-        // Only enable debug in development
-        if (options.debug) {
-          posthog.debug();
-        }
-      } : undefined,
-      ...options
-    }
+      loaded: options?.debug
+        ? (posthog: any) => {
+            // Only enable debug in development
+            if (options.debug) {
+              posthog.debug();
+            }
+          }
+        : undefined,
+      ...options,
+    },
   };
 }
 
 /**
  * Type-safe feature flag hook factory
  */
-export function createFeatureFlagHooks<T extends Record<string, any>>(
-  flagKeys: T
-) {
+export function createFeatureFlagHooks<T extends Record<string, any>>(flagKeys: T) {
   return {
+    flagKeys,
     useFeatureFlag: (key: keyof T) => {
       // This would be implemented with actual React hooks in the client
       // For now, this is a type-safe factory
       return key;
     },
-    flagKeys
   };
 }
 
@@ -325,20 +325,20 @@ export function createPostHogMiddleware(apiKey: string) {
       const userAgent = request.headers?.get?.('user-agent') || request.headers?.['user-agent'];
       const referer = request.headers?.get?.('referer') || request.headers?.['referer'];
       const ip = request.ip || request.headers?.get?.('x-forwarded-for') || 'unknown';
-      
+
       // Get distinct ID from cookies
       const cookies = request.cookies;
       const distinctId = getDistinctIdFromCookies(cookies, apiKey) || generateDistinctId();
-      
+
       // Create tracking context
       const trackingContext = {
         distinctId,
-        userAgent,
-        referer,
         ip,
-        timestamp: new Date().toISOString()
+        referer,
+        timestamp: new Date().toISOString(),
+        userAgent,
       };
-      
+
       return trackingContext;
     } catch (error) {
       return null;
@@ -350,10 +350,10 @@ export function createPostHogMiddleware(apiKey: string) {
  * Export commonly used utilities
  */
 export {
+  createBootstrapData,
+  createMinimalBootstrapData,
   generateDistinctId,
   getDistinctIdFromCookies,
-  createBootstrapData,
-  createMinimalBootstrapData
 } from './posthog-bootstrap';
 
 // ============================================================================
@@ -378,31 +378,34 @@ export async function getFeatureFlagWithFallback(
     defaultValue?: any;
     fallbackStrategy?: 'default' | 'cache' | 'previous';
     cacheKey?: string;
-  }
+  },
 ): Promise<any> {
   const cacheKey = options?.cacheKey || `${flagKey}_${extractDistinctId(cookies)}`;
-  
+
   try {
     // Primary attempt
     const result = await getFeatureFlag(flagKey, cookies, apiKey, options);
     if (result !== false && result !== null && result !== undefined) {
       // Cache successful result
       flagCache.set(cacheKey, {
-        value: result,
+        distinctId: extractDistinctId(cookies) || 'anonymous',
         timestamp: Date.now(),
-        distinctId: extractDistinctId(cookies) || 'anonymous'
+        value: result,
       });
       return result;
     }
   } catch (error) {
-    console.warn(`Feature flag ${flagKey} evaluation failed:`, error instanceof Error ? error.message : 'Unknown error');
+    console.warn(
+      `Feature flag ${flagKey} evaluation failed:`,
+      error instanceof Error ? error.message : 'Unknown error',
+    );
   }
 
   // Fallback strategies
   switch (options?.fallbackStrategy) {
     case 'cache': {
       const cached = flagCache.get(cacheKey);
-      if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
         console.log(`Using cached value for feature flag ${flagKey}`);
         return cached.value;
       }
@@ -433,7 +436,7 @@ export async function getFeatureFlagVariant(
   options?: {
     host?: string;
     timeout?: number;
-  }
+  },
 ): Promise<{
   variant: string | boolean;
   payload?: any;
@@ -443,11 +446,11 @@ export async function getFeatureFlagVariant(
     const bootstrapData = await getCompleteBootstrapData(cookies, apiKey, options);
     const flagValue = bootstrapData.featureFlags?.[flagKey];
     const payload = bootstrapData.featureFlagPayloads?.[flagKey];
-    
+
     return {
-      variant: flagValue ?? false,
+      isExperiment: payload && typeof payload === 'object' && 'experiment_id' in payload,
       payload,
-      isExperiment: payload && typeof payload === 'object' && 'experiment_id' in payload
+      variant: flagValue ?? false,
     };
   } catch (error) {
     console.warn(`Feature flag variant evaluation failed for ${flagKey}:`, error);
@@ -463,14 +466,14 @@ export function trackFeatureFlagExposure(
   flagKey: string,
   variant: string | boolean,
   analyticsManager: any,
-  properties?: any
+  properties?: any,
 ) {
   try {
     analyticsManager.track('$feature_flag_called', {
       $feature_flag: flagKey,
-      $feature_flag_response: variant,
       $feature_flag_exposure: true,
-      ...properties
+      $feature_flag_response: variant,
+      ...properties,
     });
   } catch (error) {
     console.warn('Failed to track feature flag exposure:', error);
@@ -489,22 +492,21 @@ export async function getMultipleFeatureFlags(
     host?: string;
     timeout?: number;
     fallbackValues?: Record<string, any>;
-  }
+  },
 ): Promise<Record<string, any>> {
   try {
     const bootstrapData = await getCompleteBootstrapData(cookies, apiKey, options);
     const results: Record<string, any> = {};
-    
+
     for (const flagKey of flagKeys) {
-      results[flagKey] = bootstrapData.featureFlags?.[flagKey] ?? 
-                        options?.fallbackValues?.[flagKey] ?? 
-                        false;
+      results[flagKey] =
+        bootstrapData.featureFlags?.[flagKey] ?? options?.fallbackValues?.[flagKey] ?? false;
     }
-    
+
     return results;
   } catch (error) {
     console.warn('Batch feature flag evaluation failed:', error);
-    
+
     // Return fallback values
     const fallbacks: Record<string, any> = {};
     for (const flagKey of flagKeys) {
@@ -525,9 +527,9 @@ function extractDistinctId(cookies: any): string | null {
       const possibleCookieNames = [
         'ph_phc_posthog',
         `ph_${process.env.NEXT_PUBLIC_POSTHOG_KEY}_posthog`,
-        'posthog_distinct_id'
+        'posthog_distinct_id',
       ];
-      
+
       for (const cookieName of possibleCookieNames) {
         const phCookie = cookies.get(cookieName);
         if (phCookie?.value) {

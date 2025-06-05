@@ -5,11 +5,13 @@
 
 'use client';
 
-import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
-import { usePathname, useSearchParams, useParams, useRouter } from 'next/navigation';
-import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
-import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { createNextJSClientAnalytics, type NextJSClientAnalyticsManager } from './client';
+
+import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 // Global analytics instance
 let globalAnalytics: NextJSClientAnalyticsManager | null = null;
@@ -19,7 +21,7 @@ let globalAnalytics: NextJSClientAnalyticsManager | null = null;
  */
 export function useAnalytics(config?: AnalyticsConfig): NextJSClientAnalyticsManager | null {
   const [analytics, setAnalytics] = useState<NextJSClientAnalyticsManager | null>(null);
-  
+
   useEffect(() => {
     if (!globalAnalytics && config) {
       globalAnalytics = createNextJSClientAnalytics(config);
@@ -27,7 +29,7 @@ export function useAnalytics(config?: AnalyticsConfig): NextJSClientAnalyticsMan
     }
     setAnalytics(globalAnalytics);
   }, [config]);
-  
+
   return analytics;
 }
 
@@ -44,36 +46,36 @@ export function usePageTracking(options?: {
   const searchParams = useSearchParams();
   const params = useParams();
   const tracked = useRef<string>('');
-  
+
   useEffect(() => {
     if (options?.skip || !globalAnalytics) return;
-    
+
     // Create unique key for this page view
     const searchString = options?.trackSearch ? searchParams.toString() : '';
     const pageKey = `${pathname}${searchString}`;
-    
+
     // Avoid duplicate tracking
     if (tracked.current === pageKey) return;
     tracked.current = pageKey;
-    
+
     // Build properties
     const properties: Record<string, any> = {
       ...options?.properties,
-      path: pathname,
       url: window.location.href,
-      title: document.title,
+      path: pathname,
       referrer: document.referrer,
+      title: document.title,
     };
-    
+
     if (options?.trackSearch) {
       properties.search = searchString;
       properties.search_params = Object.fromEntries(searchParams.entries());
     }
-    
+
     if (options?.trackParams && params) {
       properties.route_params = params;
     }
-    
+
     // Track page view
     globalAnalytics.page(pathname, properties);
   }, [pathname, searchParams, params, options]);
@@ -83,11 +85,7 @@ export function usePageTracking(options?: {
  * Hook for tracking events
  */
 export function useTrackEvent() {
-  return useCallback((
-    event: string,
-    properties?: any,
-    options?: TrackingOptions
-  ) => {
+  return useCallback((event: string, properties?: any, options?: TrackingOptions) => {
     if (!globalAnalytics) return;
     globalAnalytics.track(event, properties, options);
   }, []);
@@ -97,11 +95,7 @@ export function useTrackEvent() {
  * Hook for user identification
  */
 export function useIdentifyUser() {
-  return useCallback((
-    userId: string,
-    traits?: any,
-    options?: TrackingOptions
-  ) => {
+  return useCallback((userId: string, traits?: any, options?: TrackingOptions) => {
     if (!globalAnalytics) return;
     globalAnalytics.identify(userId, traits, options);
   }, []);
@@ -112,15 +106,15 @@ export function useIdentifyUser() {
  */
 export function useFeatureFlag(flag: string, defaultValue = false): boolean {
   const [value, setValue] = useState(defaultValue);
-  
+
   useEffect(() => {
     if (!globalAnalytics) return;
-    
-    globalAnalytics.isFeatureEnabled(flag).then(enabled => {
+
+    globalAnalytics.isFeatureEnabled(flag).then((enabled) => {
       setValue(enabled);
     });
   }, [flag]);
-  
+
   return value;
 }
 
@@ -129,15 +123,15 @@ export function useFeatureFlag(flag: string, defaultValue = false): boolean {
  */
 export function useFeatureFlags(): FeatureFlags {
   const [flags, setFlags] = useState<FeatureFlags>({});
-  
+
   useEffect(() => {
     if (!globalAnalytics) return;
-    
-    globalAnalytics.getAllFeatureFlags().then(allFlags => {
+
+    globalAnalytics.getAllFeatureFlags().then((allFlags) => {
       setFlags(allFlags);
     });
   }, []);
-  
+
   return flags;
 }
 
@@ -147,10 +141,10 @@ export function useFeatureFlags(): FeatureFlags {
 export function useAnalyticsConsent() {
   const [consentGiven, setConsentGiven] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const grantConsent = useCallback(async () => {
     if (!globalAnalytics) return;
-    
+
     setIsLoading(true);
     try {
       await globalAnalytics.grantConsent();
@@ -159,26 +153,26 @@ export function useAnalyticsConsent() {
       setIsLoading(false);
     }
   }, []);
-  
+
   const revokeConsent = useCallback(() => {
     if (!globalAnalytics) return;
-    
+
     globalAnalytics.revokeConsent();
     setConsentGiven(false);
   }, []);
-  
+
   useEffect(() => {
     if (!globalAnalytics) return;
-    
+
     const status = globalAnalytics.getStatus();
     setConsentGiven(status.consentGiven);
   }, []);
-  
+
   return {
     consentGiven,
-    isLoading,
     grantConsent,
-    revokeConsent
+    isLoading,
+    revokeConsent,
   };
 }
 
@@ -186,11 +180,11 @@ export function useAnalyticsConsent() {
  * Analytics provider component for App Router
  */
 export function AnalyticsProvider({
+  autoPageTracking = true,
+  bootstrapData,
   children,
   config,
-  bootstrapData,
-  autoPageTracking = true,
-  pageTrackingOptions
+  pageTrackingOptions,
 }: {
   children: React.ReactNode;
   config: AnalyticsConfig;
@@ -202,28 +196,28 @@ export function AnalyticsProvider({
   useEffect(() => {
     if (!globalAnalytics) {
       const analyticsConfig = { ...config };
-      
+
       // Add bootstrap data if provided
       if (bootstrapData && config.providers.posthog) {
         analyticsConfig.nextjs = {
           ...analyticsConfig.nextjs,
           posthog: {
             ...analyticsConfig.nextjs?.posthog,
-            bootstrap: bootstrapData
-          }
+            bootstrap: bootstrapData,
+          },
         };
       }
-      
+
       globalAnalytics = createNextJSClientAnalytics(analyticsConfig);
       globalAnalytics.initialize();
     }
   }, [config, bootstrapData]);
-  
+
   // Auto page tracking
   if (autoPageTracking) {
     usePageTracking(pageTrackingOptions);
   }
-  
+
   return <>{children}</>;
 }
 
@@ -233,12 +227,12 @@ export function AnalyticsProvider({
 export function withViewTracking<P extends object>(
   Component: React.ComponentType<P>,
   eventName: string,
-  getProperties?: (props: P) => Record<string, any>
+  getProperties?: (props: P) => Record<string, any>,
 ) {
   return function TrackedComponent(props: P) {
     const track = useTrackEvent();
     const tracked = useRef(false);
-    
+
     useEffect(() => {
       if (!tracked.current) {
         tracked.current = true;
@@ -246,7 +240,7 @@ export function withViewTracking<P extends object>(
         track(eventName, properties);
       }
     }, [track, props]);
-    
+
     return <Component {...props} />;
   };
 }
@@ -257,20 +251,23 @@ export function withViewTracking<P extends object>(
 export function TrackedButton({
   children,
   eventName,
-  properties,
   onClick,
+  properties,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   eventName: string;
   properties?: Record<string, any>;
 }) {
   const track = useTrackEvent();
-  
-  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    track(eventName, properties);
-    onClick?.(e);
-  }, [track, eventName, properties, onClick]);
-  
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      track(eventName, properties);
+      onClick?.(e);
+    },
+    [track, eventName, properties, onClick],
+  );
+
   return (
     <button {...props} onClick={handleClick}>
       {children}
@@ -284,9 +281,9 @@ export function TrackedButton({
 export function TrackedLink({
   children,
   eventName,
-  properties,
-  onClick,
   href,
+  onClick,
+  properties,
   ...props
 }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   eventName: string;
@@ -294,26 +291,29 @@ export function TrackedLink({
 }) {
   const track = useTrackEvent();
   const router = useRouter();
-  
-  const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Track the event
-    const enhancedProperties = {
-      ...properties,
-      href,
-      link_text: typeof children === 'string' ? children : undefined
-    };
-    track(eventName, enhancedProperties);
-    
-    // Handle navigation
-    if (onClick) {
-      onClick(e);
-    } else if (href && !props.target && href.startsWith('/')) {
-      // Internal navigation
-      e.preventDefault();
-      router.push(href);
-    }
-  }, [track, eventName, properties, href, onClick, router, children]);
-  
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // Track the event
+      const enhancedProperties = {
+        ...properties,
+        href,
+        link_text: typeof children === 'string' ? children : undefined,
+      };
+      track(eventName, enhancedProperties);
+
+      // Handle navigation
+      if (onClick) {
+        onClick(e);
+      } else if (href && !props.target && href.startsWith('/')) {
+        // Internal navigation
+        e.preventDefault();
+        router.push(href);
+      }
+    },
+    [track, eventName, properties, href, onClick, router, children],
+  );
+
   return (
     <a {...props} href={href} onClick={handleClick}>
       {children}
@@ -326,37 +326,46 @@ export function TrackedLink({
  */
 export function useFormTracking(formName: string) {
   const track = useTrackEvent();
-  
+
   const trackFormStart = useCallback(() => {
     track('Form Started', { form_name: formName });
   }, [track, formName]);
-  
-  const trackFormSubmit = useCallback((data?: any) => {
-    track('Form Submitted', { 
-      form_name: formName,
-      field_count: data ? Object.keys(data).length : undefined
-    });
-  }, [track, formName]);
-  
-  const trackFormError = useCallback((error: any) => {
-    track('Form Error', { 
-      form_name: formName,
-      error_message: error?.message || String(error)
-    });
-  }, [track, formName]);
-  
-  const trackFieldInteraction = useCallback((fieldName: string) => {
-    track('Form Field Interacted', { 
-      form_name: formName,
-      field_name: fieldName
-    });
-  }, [track, formName]);
-  
+
+  const trackFormSubmit = useCallback(
+    (data?: any) => {
+      track('Form Submitted', {
+        form_name: formName,
+        field_count: data ? Object.keys(data).length : undefined,
+      });
+    },
+    [track, formName],
+  );
+
+  const trackFormError = useCallback(
+    (error: any) => {
+      track('Form Error', {
+        form_name: formName,
+        error_message: error?.message || String(error),
+      });
+    },
+    [track, formName],
+  );
+
+  const trackFieldInteraction = useCallback(
+    (fieldName: string) => {
+      track('Form Field Interacted', {
+        field_name: fieldName,
+        form_name: formName,
+      });
+    },
+    [track, formName],
+  );
+
   return {
+    trackFieldInteraction,
+    trackFormError,
     trackFormStart,
     trackFormSubmit,
-    trackFormError,
-    trackFieldInteraction
   };
 }
 
@@ -365,72 +374,75 @@ export function useFormTracking(formName: string) {
  */
 export function useEcommerceTracking() {
   const track = useTrackEvent();
-  
-  const trackProductView = useCallback((product: {
-    id: string;
-    name: string;
-    price?: number;
-    category?: string;
-    [key: string]: any;
-  }) => {
-    track('Product Viewed', {
-      product_id: product.id,
-      product_name: product.name,
-      price: product.price,
-      category: product.category,
-      ...product
-    });
-  }, [track]);
-  
-  const trackAddToCart = useCallback((product: {
-    id: string;
-    name: string;
-    price?: number;
-    quantity?: number;
-    [key: string]: any;
-  }) => {
-    track('Product Added to Cart', {
-      product_id: product.id,
-      product_name: product.name,
-      price: product.price,
-      quantity: product.quantity || 1,
-      ...product
-    });
-  }, [track]);
-  
-  const trackCheckout = useCallback((cart: {
-    total: number;
-    items: any[];
-    [key: string]: any;
-  }) => {
-    const { total, items, ...otherProps } = cart;
-    track('Checkout Started', {
-      total,
-      item_count: items.length,
-      ...otherProps
-    });
-  }, [track]);
-  
-  const trackPurchase = useCallback((order: {
-    orderId: string;
-    total: number;
-    items: any[];
-    [key: string]: any;
-  }) => {
-    const { orderId, total, items, ...otherProps } = order;
-    track('Order Completed', {
-      order_id: orderId,
-      total,
-      item_count: items.length,
-      ...otherProps
-    });
-  }, [track]);
-  
+
+  const trackProductView = useCallback(
+    (product: {
+      id: string;
+      name: string;
+      price?: number;
+      category?: string;
+      [key: string]: any;
+    }) => {
+      track('Product Viewed', {
+        product_id: product.id,
+        product_name: product.name,
+        category: product.category,
+        price: product.price,
+        ...product,
+      });
+    },
+    [track],
+  );
+
+  const trackAddToCart = useCallback(
+    (product: {
+      id: string;
+      name: string;
+      price?: number;
+      quantity?: number;
+      [key: string]: any;
+    }) => {
+      track('Product Added to Cart', {
+        product_id: product.id,
+        product_name: product.name,
+        price: product.price,
+        quantity: product.quantity || 1,
+        ...product,
+      });
+    },
+    [track],
+  );
+
+  const trackCheckout = useCallback(
+    (cart: { total: number; items: any[]; [key: string]: any }) => {
+      const { items, total, ...otherProps } = cart;
+      track('Checkout Started', {
+        item_count: items.length,
+        total,
+        ...otherProps,
+      });
+    },
+    [track],
+  );
+
+  const trackPurchase = useCallback(
+    (order: { orderId: string; total: number; items: any[]; [key: string]: any }) => {
+      const { items, orderId, total, ...otherProps } = order;
+      track('Order Completed', {
+        order_id: orderId,
+        item_count: items.length,
+        total,
+        ...otherProps,
+      });
+    },
+    [track],
+  );
+
   return {
-    trackProductView,
     trackAddToCart,
     trackCheckout,
-    trackPurchase
+    trackProductView,
+    trackPurchase,
   };
 }
 
@@ -440,4 +452,3 @@ export function useEcommerceTracking() {
 export function resetAnalytics() {
   globalAnalytics = null;
 }
-

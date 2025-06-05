@@ -4,8 +4,10 @@
 
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, type ReactNode, useContext } from 'react';
+
 import { useAuth } from '../client/hooks';
+
 import type { AuthContextType } from '../shared/types';
 
 // Create auth context
@@ -36,11 +38,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useAuth();
 
-  return (
-    <AuthContext.Provider value={auth}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }
 
 /**

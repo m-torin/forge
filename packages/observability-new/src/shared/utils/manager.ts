@@ -2,13 +2,13 @@
  * Observability Manager - Core orchestration for multi-provider observability
  */
 
-import type { 
-  ObservabilityProvider, 
-  ObservabilityConfig, 
-  ProviderRegistry,
-  ObservabilityContext,
+import type {
+  Breadcrumb,
   ObservabilityManager as IObservabilityManager,
-  Breadcrumb
+  ObservabilityConfig,
+  ObservabilityContext,
+  ObservabilityProvider,
+  ProviderRegistry,
 } from '../types/types';
 
 export class ObservabilityManager implements IObservabilityManager {
@@ -22,7 +22,7 @@ export class ObservabilityManager implements IObservabilityManager {
 
   constructor(
     private config: ObservabilityConfig,
-    private availableProviders: ProviderRegistry
+    private availableProviders: ProviderRegistry,
   ) {}
 
   async initialize(): Promise<void> {
@@ -32,22 +32,22 @@ export class ObservabilityManager implements IObservabilityManager {
 
     for (const [providerName, providerConfig] of Object.entries(this.config.providers)) {
       const providerFactory = this.availableProviders[providerName];
-      
+
       if (providerFactory) {
         try {
           const provider = providerFactory(providerConfig);
           this.providers.set(providerName, provider);
-          
+
           // Initialize provider with error boundary
           initPromises.push(
-            provider.initialize(providerConfig).catch(error => {
+            provider.initialize(providerConfig).catch((error) => {
               if (this.config.onError) {
                 this.config.onError(error, { provider: providerName, method: 'initialize' });
               }
               // Remove failed provider to ensure it doesn't affect others
               this.providers.delete(providerName);
               // Continue with other providers
-            })
+            }),
           );
         } catch (error) {
           if (this.config.onError) {
@@ -65,13 +65,15 @@ export class ObservabilityManager implements IObservabilityManager {
 
     // Wait for all providers to initialize
     await Promise.allSettled(initPromises);
-    
+
     // Set initial context on providers
     this.syncContextToProviders();
-    
+
     this.isInitialized = true;
     if (this.config.debug && this.config.onInfo) {
-      this.config.onInfo(`Observability initialized with providers: ${Array.from(this.providers.keys()).join(', ')}`);
+      this.config.onInfo(
+        `Observability initialized with providers: ${Array.from(this.providers.keys()).join(', ')}`,
+      );
     }
   }
 
@@ -115,27 +117,40 @@ export class ObservabilityManager implements IObservabilityManager {
 
   async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
     const mergedContext = { ...this.context, ...context };
-    
-    const promises = Array.from(this.providers.values()).map(provider =>
-      provider.captureException(error, mergedContext).catch(err => {
+
+    const promises = Array.from(this.providers.values()).map((provider) =>
+      provider.captureException(error, mergedContext).catch((err) => {
         if (this.config.onError) {
-          this.config.onError(err, { provider: provider.name, method: 'captureException', originalError: error });
+          this.config.onError(err, {
+            provider: provider.name,
+            method: 'captureException',
+            originalError: error,
+          });
         }
-      })
+      }),
     );
 
     await Promise.allSettled(promises);
   }
 
-  async captureMessage(message: string, level: 'info' | 'warning' | 'error', context?: ObservabilityContext): Promise<void> {
+  async captureMessage(
+    message: string,
+    level: 'info' | 'warning' | 'error',
+    context?: ObservabilityContext,
+  ): Promise<void> {
     const mergedContext = { ...this.context, ...context };
-    
-    const promises = Array.from(this.providers.values()).map(provider =>
-      provider.captureMessage(message, level, mergedContext).catch(err => {
+
+    const promises = Array.from(this.providers.values()).map((provider) =>
+      provider.captureMessage(message, level, mergedContext).catch((err) => {
         if (this.config.onError) {
-          this.config.onError(err, { provider: provider.name, method: 'captureMessage', message, level });
+          this.config.onError(err, {
+            provider: provider.name,
+            level,
+            message,
+            method: 'captureMessage',
+          });
         }
-      })
+      }),
     );
 
     await Promise.allSettled(promises);
@@ -143,13 +158,13 @@ export class ObservabilityManager implements IObservabilityManager {
 
   async log(level: string, message: string, metadata?: any): Promise<void> {
     const promises = Array.from(this.providers.values())
-      .filter(provider => provider.log)
-      .map(provider =>
-        provider.log!(level, message, metadata).catch(err => {
+      .filter((provider) => provider.log)
+      .map((provider) =>
+        provider.log!(level, message, metadata).catch((err) => {
           if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'log', level, message });
+            this.config.onError(err, { provider: provider.name, level, message, method: 'log' });
           }
-        })
+        }),
       );
 
     await Promise.allSettled(promises);
@@ -168,7 +183,7 @@ export class ObservabilityManager implements IObservabilityManager {
           }
         } catch (err) {
           if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'startTransaction', name });
+            this.config.onError(err, { provider: provider.name, name, method: 'startTransaction' });
           }
         }
       }
@@ -190,7 +205,7 @@ export class ObservabilityManager implements IObservabilityManager {
           }
         } catch (err) {
           if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'startSpan', name });
+            this.config.onError(err, { provider: provider.name, name, method: 'startSpan' });
           }
         }
       }
@@ -202,7 +217,7 @@ export class ObservabilityManager implements IObservabilityManager {
 
   setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
     this.user = user;
-    
+
     for (const provider of this.providers.values()) {
       if (provider.setUser) {
         try {
@@ -218,14 +233,14 @@ export class ObservabilityManager implements IObservabilityManager {
 
   setTag(key: string, value: string | number | boolean): void {
     this.tags[key] = value;
-    
+
     for (const provider of this.providers.values()) {
       if (provider.setTag) {
         try {
           provider.setTag(key, value);
         } catch (err) {
           if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'setTag', key, value });
+            this.config.onError(err, { provider: provider.name, key, method: 'setTag', value });
           }
         }
       }
@@ -234,14 +249,14 @@ export class ObservabilityManager implements IObservabilityManager {
 
   setExtra(key: string, value: any): void {
     this.extras[key] = value;
-    
+
     for (const provider of this.providers.values()) {
       if (provider.setExtra) {
         try {
           provider.setExtra(key, value);
         } catch (err) {
           if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'setExtra', key });
+            this.config.onError(err, { provider: provider.name, key, method: 'setExtra' });
           }
         }
       }
@@ -250,14 +265,14 @@ export class ObservabilityManager implements IObservabilityManager {
 
   setContext(key: string, context: Record<string, any>): void {
     this.contexts[key] = context;
-    
+
     for (const provider of this.providers.values()) {
       if (provider.setContext) {
         try {
           provider.setContext(key, context);
         } catch (err) {
           if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'setContext', key });
+            this.config.onError(err, { provider: provider.name, key, method: 'setContext' });
           }
         }
       }
@@ -267,9 +282,9 @@ export class ObservabilityManager implements IObservabilityManager {
   addBreadcrumb(breadcrumb: Breadcrumb): void {
     const breadcrumbWithTimestamp = {
       ...breadcrumb,
-      timestamp: breadcrumb.timestamp || Date.now()
+      timestamp: breadcrumb.timestamp || Date.now(),
     };
-    
+
     for (const provider of this.providers.values()) {
       if (provider.addBreadcrumb) {
         try {
@@ -310,12 +325,11 @@ export class ObservabilityManager implements IObservabilityManager {
       }
     }
   }
-
 }
 
 export function createObservabilityManager(
-  config: ObservabilityConfig, 
-  providers: ProviderRegistry
+  config: ObservabilityConfig,
+  providers: ProviderRegistry,
 ): ObservabilityManager {
   return new ObservabilityManager(config, providers);
 }

@@ -45,38 +45,31 @@ const middleware: NextMiddleware = async (request) => {
   try {
     console.log(`[WORKERS] Middleware: ${request.method} ${request.nextUrl.pathname}`);
     console.log(`[WORKERS] Headers:`, Object.fromEntries(request.headers.entries()));
-    
+
     // Skip ALL auth and security for API routes during development
     if (request.nextUrl.pathname.startsWith('/api/')) {
       console.log(`[WORKERS] Bypassing ALL middleware for API route: ${request.nextUrl.pathname}`);
-      
+
       // Add response logging for API routes
       const response = NextResponse.next();
-      
+
       // Log response details for debugging
       console.log(`[WORKERS] Middleware response for ${request.nextUrl.pathname}:`, {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
       });
-      
+
       return response;
     }
-    
+
     // Only apply security headers for non-API routes
     if (!env.ARCJET_KEY) {
       return securityHeaders();
     }
 
     // Apply Arcjet security only for web routes
-    await secure(
-      [
-        'CATEGORY:SEARCH_ENGINE',
-        'CATEGORY:MONITOR', 
-        'CATEGORY:WEBHOOK',
-      ],
-      request,
-    );
+    await secure(['CATEGORY:SEARCH_ENGINE', 'CATEGORY:MONITOR', 'CATEGORY:WEBHOOK'], request);
 
     return securityHeaders();
   } catch (error) {

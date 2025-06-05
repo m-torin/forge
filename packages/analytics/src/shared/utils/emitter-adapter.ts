@@ -3,22 +3,22 @@
  * This bridges the gap between the Segment.io spec emitters and the analytics manager
  */
 
-import type { AnalyticsManager } from '../types/types';
 import type {
-  EmitterPayload,
-  EmitterIdentifyPayload,
-  EmitterTrackPayload,
-  EmitterPagePayload,
+  EmitterAliasPayload,
   EmitterGroupPayload,
-  EmitterAliasPayload
+  EmitterIdentifyPayload,
+  EmitterPagePayload,
+  EmitterPayload,
+  EmitterTrackPayload,
 } from '../emitters/emitter-types';
+import type { AnalyticsManager } from '../types/types';
 
 /**
  * Process an emitter payload through the analytics manager
  */
 export async function processEmitterPayload(
   analytics: AnalyticsManager,
-  payload: EmitterPayload
+  payload: EmitterPayload,
 ): Promise<void> {
   switch (payload.type) {
     case 'identify':
@@ -41,16 +41,16 @@ export async function processEmitterPayload(
  */
 export async function processIdentifyPayload(
   analytics: AnalyticsManager,
-  payload: EmitterIdentifyPayload
+  payload: EmitterIdentifyPayload,
 ): Promise<void> {
-  const { userId, traits, ...options } = payload;
-  
+  const { traits, userId, ...options } = payload;
+
   // Convert emitter options to tracking options
   const trackingOptions = {
     context: options.context,
     // Add other options as needed
   };
-  
+
   await analytics.identify(userId, traits, trackingOptions);
 }
 
@@ -59,14 +59,14 @@ export async function processIdentifyPayload(
  */
 export async function processTrackPayload(
   analytics: AnalyticsManager,
-  payload: EmitterTrackPayload
+  payload: EmitterTrackPayload,
 ): Promise<void> {
   const { event, properties, ...options } = payload;
-  
+
   const trackingOptions = {
     context: options.context,
   };
-  
+
   await analytics.track(event, properties, trackingOptions);
 }
 
@@ -75,14 +75,14 @@ export async function processTrackPayload(
  */
 export async function processPagePayload(
   analytics: AnalyticsManager,
-  payload: EmitterPagePayload
+  payload: EmitterPagePayload,
 ): Promise<void> {
   const { name, properties, ...options } = payload;
-  
+
   const trackingOptions = {
     context: options.context,
   };
-  
+
   await analytics.page(name, properties, trackingOptions);
 }
 
@@ -91,14 +91,14 @@ export async function processPagePayload(
  */
 export async function processGroupPayload(
   analytics: AnalyticsManager,
-  payload: EmitterGroupPayload
+  payload: EmitterGroupPayload,
 ): Promise<void> {
   const { groupId, traits, ...options } = payload;
-  
+
   const trackingOptions = {
     context: options.context,
   };
-  
+
   await analytics.group(groupId, traits, trackingOptions);
 }
 
@@ -107,14 +107,14 @@ export async function processGroupPayload(
  */
 export async function processAliasPayload(
   analytics: AnalyticsManager,
-  payload: EmitterAliasPayload
+  payload: EmitterAliasPayload,
 ): Promise<void> {
-  const { userId, previousId, ...options } = payload;
-  
+  const { previousId, userId, ...options } = payload;
+
   const trackingOptions = {
     context: options.context,
   };
-  
+
   await analytics.alias(userId, previousId || '', trackingOptions);
 }
 
@@ -130,7 +130,7 @@ export function createEmitterProcessor(analytics: AnalyticsManager) {
  */
 export async function trackEcommerceEvent(
   analytics: AnalyticsManager,
-  eventSpec: { name: string; properties: any }
+  eventSpec: { name: string; properties: any },
 ): Promise<void> {
   await analytics.track(eventSpec.name, eventSpec.properties);
 }

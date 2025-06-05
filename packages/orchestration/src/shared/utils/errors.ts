@@ -10,20 +10,20 @@ export class OrchestrationError extends Error {
   public readonly code: string;
   public readonly details?: any;
   public readonly timestamp: Date;
-  
+
   constructor(message: string, code: string, details?: any) {
     super(message);
     this.name = 'OrchestrationError';
     this.code = code;
     this.details = details;
     this.timestamp = new Date();
-    
+
     // Maintain proper stack trace
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }
   }
-  
+
   toJSON() {
     return {
       name: this.name,
@@ -41,7 +41,7 @@ export class OrchestrationError extends Error {
  */
 export class ProviderError extends OrchestrationError {
   public readonly provider: string;
-  
+
   constructor(provider: string, message: string, code: string, details?: any) {
     super(message, code, details);
     this.name = 'ProviderError';
@@ -68,7 +68,7 @@ export class ProviderInitializationError extends ProviderError {
       provider,
       `Failed to initialize provider "${provider}": ${reason}`,
       'PROVIDER_INIT_FAILED',
-      details
+      details,
     );
     this.name = 'ProviderInitializationError';
   }
@@ -82,7 +82,7 @@ export class ProviderNotAvailableError extends ProviderError {
     super(
       provider,
       `Provider "${provider}" is not available${reason ? `: ${reason}` : ''}`,
-      'PROVIDER_NOT_AVAILABLE'
+      'PROVIDER_NOT_AVAILABLE',
     );
     this.name = 'ProviderNotAvailableError';
   }
@@ -94,14 +94,8 @@ export class ProviderNotAvailableError extends ProviderError {
 export class WorkflowError extends OrchestrationError {
   public readonly workflowId: string;
   public readonly runId?: string;
-  
-  constructor(
-    workflowId: string,
-    message: string,
-    code: string,
-    details?: any,
-    runId?: string
-  ) {
+
+  constructor(workflowId: string, message: string, code: string, details?: any, runId?: string) {
     super(message, code, details);
     this.name = 'WorkflowError';
     this.workflowId = workflowId;
@@ -117,16 +111,13 @@ export class WorkflowValidationError extends WorkflowError {
     path: string;
     message: string;
   }>;
-  
-  constructor(
-    workflowId: string,
-    validationErrors: Array<{ path: string; message: string }>
-  ) {
+
+  constructor(workflowId: string, validationErrors: Array<{ path: string; message: string }>) {
     super(
       workflowId,
-      `Workflow validation failed: ${validationErrors.map(e => e.message).join(', ')}`,
+      `Workflow validation failed: ${validationErrors.map((e) => e.message).join(', ')}`,
       'WORKFLOW_VALIDATION_FAILED',
-      { validationErrors }
+      { validationErrors },
     );
     this.name = 'WorkflowValidationError';
     this.validationErrors = validationErrors;
@@ -139,21 +130,21 @@ export class WorkflowValidationError extends WorkflowError {
 export class WorkflowExecutionError extends WorkflowError {
   public readonly stepName?: string;
   public readonly attemptNumber?: number;
-  
+
   constructor(
     workflowId: string,
     runId: string,
     message: string,
     details?: any,
     stepName?: string,
-    attemptNumber?: number
+    attemptNumber?: number,
   ) {
     super(
       workflowId,
       message,
       'WORKFLOW_EXECUTION_FAILED',
       { ...details, stepName, attemptNumber },
-      runId
+      runId,
     );
     this.name = 'WorkflowExecutionError';
     this.stepName = stepName;
@@ -166,14 +157,14 @@ export class WorkflowExecutionError extends WorkflowError {
  */
 export class WorkflowTimeoutError extends WorkflowError {
   public readonly timeoutMs: number;
-  
+
   constructor(workflowId: string, runId: string, timeoutMs: number) {
     super(
       workflowId,
       `Workflow execution timed out after ${timeoutMs}ms`,
       'WORKFLOW_TIMEOUT',
       { timeoutMs },
-      runId
+      runId,
     );
     this.name = 'WorkflowTimeoutError';
     this.timeoutMs = timeoutMs;
@@ -185,11 +176,7 @@ export class WorkflowTimeoutError extends WorkflowError {
  */
 export class WorkflowNotFoundError extends WorkflowError {
   constructor(workflowId: string) {
-    super(
-      workflowId,
-      `Workflow "${workflowId}" not found`,
-      'WORKFLOW_NOT_FOUND'
-    );
+    super(workflowId, `Workflow "${workflowId}" not found`, 'WORKFLOW_NOT_FOUND');
     this.name = 'WorkflowNotFoundError';
   }
 }
@@ -201,14 +188,14 @@ export class StepError extends OrchestrationError {
   public readonly stepName: string;
   public readonly workflowId?: string;
   public readonly runId?: string;
-  
+
   constructor(
     stepName: string,
     message: string,
     code: string,
     details?: any,
     workflowId?: string,
-    runId?: string
+    runId?: string,
   ) {
     super(message, code, details);
     this.name = 'StepError';
@@ -223,18 +210,18 @@ export class StepError extends OrchestrationError {
  */
 export class StepValidationError extends StepError {
   public readonly validationType: 'input' | 'output';
-  
+
   constructor(
     stepName: string,
     validationType: 'input' | 'output',
     message: string,
-    details?: any
+    details?: any,
   ) {
     super(
       stepName,
       `Step ${validationType} validation failed: ${message}`,
       'STEP_VALIDATION_FAILED',
-      { ...details, validationType }
+      { ...details, validationType },
     );
     this.name = 'StepValidationError';
     this.validationType = validationType;
@@ -246,13 +233,13 @@ export class StepValidationError extends StepError {
  */
 export class StepExecutionError extends StepError {
   public readonly originalError?: Error;
-  
+
   constructor(
     stepName: string,
     message: string,
     originalError?: Error,
     workflowId?: string,
-    runId?: string
+    runId?: string,
   ) {
     super(
       stepName,
@@ -260,7 +247,7 @@ export class StepExecutionError extends StepError {
       'STEP_EXECUTION_FAILED',
       { originalError: originalError?.message },
       workflowId,
-      runId
+      runId,
     );
     this.name = 'StepExecutionError';
     this.originalError = originalError;
@@ -272,20 +259,15 @@ export class StepExecutionError extends StepError {
  */
 export class StepTimeoutError extends StepError {
   public readonly timeoutMs: number;
-  
-  constructor(
-    stepName: string,
-    timeoutMs: number,
-    workflowId?: string,
-    runId?: string
-  ) {
+
+  constructor(stepName: string, timeoutMs: number, workflowId?: string, runId?: string) {
     super(
       stepName,
       `Step execution timed out after ${timeoutMs}ms`,
       'STEP_TIMEOUT',
       { timeoutMs },
       workflowId,
-      runId
+      runId,
     );
     this.name = 'StepTimeoutError';
     this.timeoutMs = timeoutMs;
@@ -299,13 +281,13 @@ export class RateLimitError extends OrchestrationError {
   public readonly limit: number;
   public readonly window: number;
   public readonly retryAfter?: number;
-  
+
   constructor(limit: number, window: number, retryAfter?: number) {
-    super(
-      `Rate limit exceeded: ${limit} requests per ${window}ms`,
-      'RATE_LIMIT_EXCEEDED',
-      { limit, window, retryAfter }
-    );
+    super(`Rate limit exceeded: ${limit} requests per ${window}ms`, 'RATE_LIMIT_EXCEEDED', {
+      limit,
+      window,
+      retryAfter,
+    });
     this.name = 'RateLimitError';
     this.limit = limit;
     this.window = window;
@@ -319,13 +301,9 @@ export class RateLimitError extends OrchestrationError {
 export class CircuitBreakerError extends OrchestrationError {
   public readonly state: 'open' | 'half-open';
   public readonly resetTimeout: number;
-  
+
   constructor(state: 'open' | 'half-open', resetTimeout: number) {
-    super(
-      `Circuit breaker is ${state}`,
-      'CIRCUIT_BREAKER_OPEN',
-      { state, resetTimeout }
-    );
+    super(`Circuit breaker is ${state}`, 'CIRCUIT_BREAKER_OPEN', { state, resetTimeout });
     this.name = 'CircuitBreakerError';
     this.state = state;
     this.resetTimeout = resetTimeout;
@@ -338,13 +316,12 @@ export class CircuitBreakerError extends OrchestrationError {
 export class DeduplicationError extends OrchestrationError {
   public readonly duplicateKey: string;
   public readonly originalRunId?: string;
-  
+
   constructor(duplicateKey: string, originalRunId?: string) {
-    super(
-      `Duplicate execution detected for key: ${duplicateKey}`,
-      'DUPLICATE_EXECUTION',
-      { duplicateKey, originalRunId }
-    );
+    super(`Duplicate execution detected for key: ${duplicateKey}`, 'DUPLICATE_EXECUTION', {
+      duplicateKey,
+      originalRunId,
+    });
     this.name = 'DeduplicationError';
     this.duplicateKey = duplicateKey;
     this.originalRunId = originalRunId;
@@ -356,13 +333,9 @@ export class DeduplicationError extends OrchestrationError {
  */
 export class ConfigurationError extends OrchestrationError {
   public readonly configKey: string;
-  
+
   constructor(configKey: string, message: string, details?: any) {
-    super(
-      `Configuration error for "${configKey}": ${message}`,
-      'CONFIGURATION_ERROR',
-      details
-    );
+    super(`Configuration error for "${configKey}": ${message}`, 'CONFIGURATION_ERROR', details);
     this.name = 'ConfigurationError';
     this.configKey = configKey;
   }
@@ -383,13 +356,9 @@ export class AuthenticationError extends OrchestrationError {
  */
 export class AuthorizationError extends OrchestrationError {
   public readonly requiredPermissions?: string[];
-  
+
   constructor(message: string, requiredPermissions?: string[]) {
-    super(
-      message,
-      'AUTHORIZATION_FAILED',
-      { requiredPermissions }
-    );
+    super(message, 'AUTHORIZATION_FAILED', { requiredPermissions });
     this.name = 'AuthorizationError';
     this.requiredPermissions = requiredPermissions;
   }
@@ -411,15 +380,15 @@ export const ErrorUtils = {
     if (error instanceof StepValidationError) return false;
     if (error instanceof DeduplicationError) return false;
     if (error instanceof ConfigurationError) return false;
-    
+
     // Network errors are usually retryable
     if (error.message.includes('ECONNREFUSED')) return true;
     if (error.message.includes('ETIMEDOUT')) return true;
     if (error.message.includes('ENOTFOUND')) return true;
-    
+
     return false;
   },
-  
+
   /**
    * Extract error code
    */
@@ -429,7 +398,7 @@ export const ErrorUtils = {
     }
     return 'UNKNOWN_ERROR';
   },
-  
+
   /**
    * Create user-friendly error message
    */
@@ -452,44 +421,40 @@ export const ErrorUtils = {
     if (error instanceof WorkflowTimeoutError) {
       return 'The operation took too long to complete.';
     }
-    
+
     return 'An error occurred while processing your request.';
   },
-  
+
   /**
    * Wrap error with context
    */
   wrapError(
     error: Error,
-    context: { workflowId?: string; stepName?: string; runId?: string }
+    context: { workflowId?: string; stepName?: string; runId?: string },
   ): Error {
     if (error instanceof OrchestrationError) {
       return error;
     }
-    
+
     if (context.stepName) {
       return new StepExecutionError(
         context.stepName,
         error.message,
         error,
         context.workflowId,
-        context.runId
+        context.runId,
       );
     }
-    
+
     if (context.workflowId) {
       return new WorkflowExecutionError(
         context.workflowId,
         context.runId || 'unknown',
         error.message,
-        { originalError: error.message }
+        { originalError: error.message },
       );
     }
-    
-    return new OrchestrationError(
-      error.message,
-      'UNKNOWN_ERROR',
-      { originalError: error.message }
-    );
-  }
+
+    return new OrchestrationError(error.message, 'UNKNOWN_ERROR', { originalError: error.message });
+  },
 };

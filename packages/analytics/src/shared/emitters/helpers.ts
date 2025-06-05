@@ -3,17 +3,18 @@
  * These utilities make it easier to use the emitter-first approach
  */
 
-import type { 
-  EmitterPayload,
-  EmitterTrackPayload,
-  EmitterIdentifyPayload,
-  EmitterPagePayload,
-  EmitterGroupPayload,
+import { alias, group, identify, page, track } from './emitters';
+
+import type {
   EmitterAliasPayload,
   EmitterContext,
-  EmitterOptions
+  EmitterGroupPayload,
+  EmitterIdentifyPayload,
+  EmitterOptions,
+  EmitterPagePayload,
+  EmitterPayload,
+  EmitterTrackPayload,
 } from './emitter-types';
-import { track, identify, page, group, alias } from './emitters';
 
 /**
  * Create a context builder for consistent context across events
@@ -120,7 +121,7 @@ export class EventBatch {
     // Merge shared context with payload context
     const enrichedPayload = {
       ...payload,
-      context: { ...this.sharedContext, ...payload.context }
+      context: { ...this.sharedContext, ...payload.context },
     };
     this.events.push(enrichedPayload);
     return this;
@@ -155,26 +156,24 @@ export class EventBatch {
  * Helper to create a user session tracking flow
  */
 export function createUserSession(userId: string, sessionId: string) {
-  const context = new ContextBuilder()
-    .setUser(userId)
-    .build();
+  const context = new ContextBuilder().setUser(userId).build();
 
   return {
     // Identify the user
-    identify: (traits?: Record<string, any>) => 
+    identify: (traits?: Record<string, any>) =>
       identify(userId, { ...traits, sessionId }, { context }),
-    
+
     // Track an event in this session
     track: (event: string, properties?: Record<string, any>) =>
       track(event, { ...properties, sessionId }, { context }),
-    
+
     // Track a page view in this session
     page: (name?: string, properties?: Record<string, any>) =>
       page(undefined, name, { ...properties, sessionId }, { context }),
-    
+
     // Associate with a group
     group: (groupId: string, traits?: Record<string, any>) =>
-      group(groupId, { ...traits, sessionId }, { context })
+      group(groupId, { ...traits, sessionId }, { context }),
   };
 }
 
@@ -186,20 +185,17 @@ export function createAnonymousSession(anonymousId: string) {
 
   return {
     // Track an event
-    track: (event: string, properties?: Record<string, any>) =>
-      track(event, properties, options),
-    
+    track: (event: string, properties?: Record<string, any>) => track(event, properties, options),
+
     // Track a page view
     page: (name?: string, properties?: Record<string, any>) =>
       page(undefined, name, properties, options),
-    
+
     // Convert to identified user
-    identify: (userId: string, traits?: Record<string, any>) =>
-      identify(userId, traits, options),
-    
+    identify: (userId: string, traits?: Record<string, any>) => identify(userId, traits, options),
+
     // Alias when user signs up
-    alias: (userId: string) =>
-      alias(userId, anonymousId, options)
+    alias: (userId: string) => alias(userId, anonymousId, options),
   };
 }
 
@@ -225,8 +221,8 @@ export const isAliasPayload = (payload: EmitterPayload): payload is EmitterAlias
  * Helper to add consistent metadata to events
  */
 export function withMetadata<T extends EmitterPayload>(
-  payload: T, 
-  metadata: { version?: string; source?: string; [key: string]: any }
+  payload: T,
+  metadata: { version?: string; source?: string; [key: string]: any },
 ): T {
   return {
     ...payload,
@@ -234,9 +230,9 @@ export function withMetadata<T extends EmitterPayload>(
       ...payload.context,
       app: {
         ...payload.context?.app,
-        ...metadata
-      }
-    }
+        ...metadata,
+      },
+    },
   };
 }
 
@@ -245,7 +241,7 @@ export function withMetadata<T extends EmitterPayload>(
  */
 export function withUTM<T extends EmitterPayload>(
   payload: T,
-  utm: { source?: string; medium?: string; campaign?: string; term?: string; content?: string }
+  utm: { source?: string; medium?: string; campaign?: string; term?: string; content?: string },
 ): T {
   return {
     ...payload,
@@ -253,8 +249,8 @@ export function withUTM<T extends EmitterPayload>(
       ...payload.context,
       campaign: {
         ...payload.context?.campaign,
-        ...utm
-      }
-    }
+        ...utm,
+      },
+    },
   };
 }

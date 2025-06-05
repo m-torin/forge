@@ -1,21 +1,21 @@
 /**
  * Step Registry System
- * 
+ *
  * Centralized registry for workflow step definitions, templates, and discovery.
  * Provides step validation, composition utilities, and lifecycle management.
  */
 
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
-import { OrchestrationError } from '../utils/errors.js';
-import { 
-  type WorkflowStepDefinition, 
-  type StepMetadata, 
+import { OrchestrationError } from '../utils/errors';
+import {
+  type WorkflowStepDefinition,
+  type StepMetadata,
   type ValidationResult,
   StandardWorkflowStep,
-  StepFactory
-} from './step-factory.js';
-import { StepTemplates, type StepTemplateType } from './step-templates.js';
+  StepFactory,
+} from './step-factory';
+import { StepTemplates, type StepTemplateType } from './step-templates';
 
 /**
  * Step registry entry with additional metadata
@@ -125,17 +125,17 @@ export class StepRegistry {
    */
   register<TInput = any, TOutput = any>(
     definition: WorkflowStepDefinition<TInput, TOutput>,
-    registeredBy?: string
+    registeredBy?: string,
   ): void {
     // Validate step definition
     const validationResult = StandardWorkflowStep.validateDefinition(definition);
-    
+
     if (!validationResult.valid) {
       throw new OrchestrationError(
         `Cannot register invalid step: ${validationResult.errors?.join(', ')}`,
         'INVALID_STEP_REGISTRATION',
         false,
-        { stepId: definition.id, validationErrors: validationResult.errors }
+        { stepId: definition.id, validationErrors: validationResult.errors },
       );
     }
 
@@ -145,7 +145,7 @@ export class StepRegistry {
         `Step with ID ${definition.id} is already registered`,
         'DUPLICATE_STEP_ID',
         false,
-        { stepId: definition.id }
+        { stepId: definition.id },
       );
     }
 
@@ -162,13 +162,13 @@ export class StepRegistry {
 
     // Update collections
     this.steps.set(definition.id, entry);
-    
+
     if (definition.metadata.category) {
       this.categories.add(definition.metadata.category);
     }
-    
+
     if (definition.metadata.tags) {
-      definition.metadata.tags.forEach(tag => this.tags.add(tag));
+      definition.metadata.tags.forEach((tag) => this.tags.add(tag));
     }
 
     // Register with factory as well
@@ -183,11 +183,41 @@ export class StepRegistry {
     name: string,
     description?: string,
     customConfig?: any,
-    registeredBy?: string
+    registeredBy?: string,
   ): WorkflowStepDefinition<TInput, TOutput> {
     const template = StepTemplates[templateType];
-    const definition = template(name, description, customConfig) as WorkflowStepDefinition<TInput, TOutput>;
-    
+
+    // Only allow template creation functions, not utility functions
+    const allowedTemplates = [
+      'http',
+      'database',
+      'file',
+      'notification',
+      'transformation',
+      'conditional',
+      'delay',
+      'batch',
+      'mapReduce',
+    ];
+    if (!allowedTemplates.includes(templateType)) {
+      throw new OrchestrationError(
+        'INVALID_TEMPLATE_TYPE',
+        `Template ${templateType} is not a step creation template`,
+      );
+    }
+
+    if (typeof template !== 'function') {
+      throw new OrchestrationError(
+        'TEMPLATE_NOT_CALLABLE',
+        `Template ${templateType} is not a function`,
+      );
+    }
+
+    const definition = (template as any)(name, description, customConfig) as WorkflowStepDefinition<
+      TInput,
+      TOutput
+    >;
+
     this.register(definition, registeredBy);
     return definition;
   }
@@ -253,7 +283,7 @@ export class StepRegistry {
       // Filter by tags (all must match)
       if (filters.tags && filters.tags.length > 0) {
         const stepTags = metadata.tags || [];
-        if (!filters.tags.every(tag => stepTags.includes(tag))) {
+        if (!filters.tags.every((tag) => stepTags.includes(tag))) {
           continue;
         }
       }
@@ -315,7 +345,7 @@ export class StepRegistry {
    * Create executable step instance
    */
   createExecutableStep<TInput = any, TOutput = any>(
-    stepId: string
+    stepId: string,
   ): StandardWorkflowStep<TInput, TOutput> {
     const definition = this.get(stepId);
     if (!definition) {
@@ -323,7 +353,7 @@ export class StepRegistry {
         `Step with ID ${stepId} not found or inactive`,
         'STEP_NOT_FOUND',
         false,
-        { stepId }
+        { stepId },
       );
     }
 
@@ -365,10 +395,7 @@ export class StepRegistry {
   /**
    * Create execution plan for a set of steps
    */
-  createExecutionPlan(
-    stepIds: string[],
-    config: StepCompositionConfig = {}
-  ): StepExecutionPlan {
+  createExecutionPlan(stepIds: string[], config: StepCompositionConfig = {}): StepExecutionPlan {
     const {
       validateDependencies = true,
       optimizeOrder = true,
@@ -421,8 +448,11 @@ export class StepRegistry {
     }
 
     // Calculate execution order (topological sort)
-    const executionOrder = this.topologicalSort(Array.from(dependencyGraph.keys()), dependencyGraph);
-    
+    const executionOrder = this.topologicalSort(
+      Array.from(dependencyGraph.keys()),
+      dependencyGraph,
+    );
+
     // Create parallel execution groups
     const parallelGroups = this.createParallelGroups(executionOrder, dependencyGraph);
 
@@ -458,7 +488,7 @@ export class StepRegistry {
     for (const [stepId, entry] of allEntries) {
       if (entry.active) {
         stats.activeSteps++;
-        
+
         const category = entry.definition.metadata.category || 'uncategorized';
         stats.categories[category] = (stats.categories[category] || 0) + 1;
       }
@@ -488,7 +518,7 @@ export class StepRegistry {
     definition: WorkflowStepDefinition;
     metadata: Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>;
   }> {
-    return Array.from(this.steps.values()).map(entry => ({
+    return Array.from(this.steps.values()).map((entry) => ({
       definition: entry.definition,
       metadata: {
         registeredAt: entry.registeredAt,
@@ -506,7 +536,7 @@ export class StepRegistry {
       definition: WorkflowStepDefinition;
       metadata?: Partial<Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>>;
     }>,
-    overwrite = false
+    overwrite = false,
   ): { imported: number; skipped: number; errors: string[] } {
     const result = { imported: 0, skipped: 0, errors: [] as string[] };
 
@@ -523,7 +553,7 @@ export class StepRegistry {
         }
 
         this.register(item.definition, item.metadata?.registeredBy);
-        
+
         // Update usage statistics if provided
         if (item.metadata) {
           const entry = this.steps.get(item.definition.id);
@@ -539,9 +569,11 @@ export class StepRegistry {
 
         result.imported++;
       } catch (error) {
-        result.errors.push(`Failed to import step ${item.definition.id}: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`);
+        result.errors.push(
+          `Failed to import step ${item.definition.id}: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        );
       }
     }
 
@@ -554,7 +586,7 @@ export class StepRegistry {
   private hasCyclicDependencies(
     stepId: string,
     visited: Set<string>,
-    recursionStack: Set<string>
+    recursionStack: Set<string>,
   ): boolean {
     if (recursionStack.has(stepId)) {
       return true; // Cycle detected
@@ -585,7 +617,7 @@ export class StepRegistry {
    */
   private topologicalSort(
     stepIds: string[],
-    dependencyGraph: Map<string, StepDependencyNode>
+    dependencyGraph: Map<string, StepDependencyNode>,
   ): string[] {
     const visited = new Set<string>();
     const result: string[] = [];
@@ -597,7 +629,7 @@ export class StepRegistry {
 
       visited.add(stepId);
       const node = dependencyGraph.get(stepId);
-      
+
       if (node) {
         // Visit dependencies first
         for (const depId of node.dependencies) {
@@ -622,7 +654,7 @@ export class StepRegistry {
    */
   private createParallelGroups(
     executionOrder: string[],
-    dependencyGraph: Map<string, StepDependencyNode>
+    dependencyGraph: Map<string, StepDependencyNode>,
   ): string[][] {
     const groups: string[][] = [];
     const completed = new Set<string>();
@@ -632,15 +664,15 @@ export class StepRegistry {
       if (!node) continue;
 
       // Check if all dependencies are completed
-      const canExecute = node.dependencies.every(depId => completed.has(depId));
-      
+      const canExecute = node.dependencies.every((depId) => completed.has(depId));
+
       if (canExecute) {
         // Find or create a group for this step
-        let groupIndex = groups.findIndex(group => 
-          group.every(groupStepId => {
+        let groupIndex = groups.findIndex((group) =>
+          group.every((groupStepId) => {
             const groupNode = dependencyGraph.get(groupStepId);
             return groupNode && !groupNode.dependents.includes(stepId);
-          })
+          }),
         );
 
         if (groupIndex === -1) {
@@ -675,8 +707,8 @@ export class StepRegistry {
     categories: number;
     tags: number;
   } {
-    const activeSteps = Array.from(this.steps.values()).filter(entry => entry.active).length;
-    
+    const activeSteps = Array.from(this.steps.values()).filter((entry) => entry.active).length;
+
     return {
       totalSteps: this.steps.size,
       activeSteps,

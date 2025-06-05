@@ -5,7 +5,6 @@
 /// <reference types="react" />
 /// <reference types="next" />
 
-import type { NextRequest, NextResponse } from 'next/server';
 import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 
 declare module 'next/server' {
@@ -28,20 +27,20 @@ declare module 'next/headers' {
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      NEXT_PUBLIC_POSTHOG_KEY?: string;
       NEXT_PUBLIC_POSTHOG_HOST?: string;
+      NEXT_PUBLIC_POSTHOG_KEY?: string;
       NEXT_PUBLIC_SEGMENT_WRITE_KEY?: string;
       NEXT_PUBLIC_VERCEL_ANALYTICS_ID?: string;
     }
   }
-  
+
   interface Window {
     // PostHog types
     posthog?: any;
-    
+
     // Segment types
     analytics?: any;
-    
+
     // Custom analytics events
     analyticsReady?: boolean;
     onAnalyticsReady?: (callback: () => void) => void;
@@ -62,10 +61,10 @@ export type TypedFeatureFlags<T extends Record<string, boolean>> = {
 
 // Analytics event types
 export interface AnalyticsEvent {
+  context?: Record<string, any>;
   name: string;
   properties?: Record<string, any>;
   timestamp?: string;
-  context?: Record<string, any>;
 }
 
 // Page view event
@@ -150,16 +149,16 @@ export interface FormErrorEvent extends AnalyticsEvent {
 
 // Middleware types
 export interface AnalyticsMiddlewareContext {
-  pathname: string;
-  method: string;
-  searchParams: URLSearchParams;
-  headers: Headers;
   cookies: ReadonlyRequestCookies;
   geo?: {
     country?: string;
     region?: string;
     city?: string;
   };
+  headers: Headers;
+  method: string;
+  pathname: string;
+  searchParams: URLSearchParams;
 }
 
 // React component props types
@@ -170,41 +169,43 @@ export interface TrackedComponentProps {
 
 // Hook return types
 export interface UseAnalyticsReturn {
-  track: (event: string, properties?: any) => void;
   identify: (userId: string, traits?: any) => void;
   page: (name?: string, properties?: any) => void;
   ready: boolean;
+  track: (event: string, properties?: any) => void;
 }
 
 export interface UseFeatureFlagsReturn<T extends Record<string, boolean>> {
+  error?: Error;
   flags: Partial<T>;
   isLoading: boolean;
-  error?: Error;
   refetch: () => Promise<void>;
 }
 
 // Provider props types
 export interface AnalyticsProviderProps {
+  autoPageTracking?: boolean;
+  bootstrapData?: import('../shared/types/posthog-types').BootstrapData;
   children: React.ReactNode;
   config: import('../shared/types/types').AnalyticsConfig;
-  bootstrapData?: import('../shared/types/posthog-types').BootstrapData;
-  autoPageTracking?: boolean;
+  consentRequired?: boolean;
+  onReady?: () => void;
   pageTrackingOptions?: {
     trackSearch?: boolean;
     trackParams?: boolean;
     properties?: Record<string, any>;
     skip?: boolean;
   };
-  consentRequired?: boolean;
-  onReady?: () => void;
 }
 
 // Utility types for type-safe event tracking
-export type EventProperties<T extends AnalyticsEvent> = T extends { properties: infer P } ? P : never;
+export type EventProperties<T extends AnalyticsEvent> = T extends { properties: infer P }
+  ? P
+  : never;
 
 export type EventName<T extends AnalyticsEvent> = T extends { name: infer N } ? N : never;
 
 // Helper type for creating typed track functions
 export type TypedTrackFunction<T extends AnalyticsEvent> = (
-  properties: EventProperties<T>
+  properties: EventProperties<T>,
 ) => void | Promise<void>;

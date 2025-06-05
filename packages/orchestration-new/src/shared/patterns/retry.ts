@@ -4,9 +4,9 @@
 
 import pRetry from 'p-retry';
 
-import { isRetryableError } from '../utils/errors.js';
+import { isRetryableError } from '../utils/errors';
 
-import type { PatternContext, PatternResult, RetryPattern } from '../types/patterns.js';
+import type { PatternContext, PatternResult, RetryPattern } from '../types/patterns';
 
 export interface RetryOptions extends Partial<RetryPattern> {
   /** Context for the operation */
@@ -20,7 +20,7 @@ export interface RetryOptions extends Partial<RetryPattern> {
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<PatternResult<T>> {
   const pattern: RetryPattern = {
     baseDelay: 1000,
@@ -46,7 +46,7 @@ export async function withRetry<T>(
     const result = await pRetry(
       async (attemptNumber) => {
         context.attempt = attemptNumber;
-        
+
         try {
           const data = await fn();
           return data;
@@ -80,7 +80,7 @@ export async function withRetry<T>(
         },
         randomize: pattern.jitter,
         retries: pattern.maxAttempts - 1,
-      }
+      },
     );
 
     return {
@@ -96,8 +96,8 @@ export async function withRetry<T>(
       success: true,
     };
   } catch (error) {
-    const err = (error as any)?.originalError || error as Error;
-    
+    const err = (error as any)?.originalError || (error as Error);
+
     return {
       attempts: context.attempt,
       duration: Date.now() - startTime,
@@ -121,13 +121,13 @@ export function Retry(options: RetryOptions = {}) {
   return function <T extends (...args: any[]) => Promise<any>>(
     target: any,
     propertyName: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const method = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
       const result = await withRetry(() => method.apply(this, args), options);
-      
+
       if (result.success) {
         return result.data;
       } else {
@@ -144,7 +144,7 @@ export function Retry(options: RetryOptions = {}) {
  */
 export function calculateDelay(
   attempt: number,
-  pattern: Pick<RetryPattern, 'strategy' | 'baseDelay' | 'maxDelay' | 'jitter'>
+  pattern: Pick<RetryPattern, 'strategy' | 'baseDelay' | 'maxDelay' | 'jitter'>,
 ): number {
   let delay: number;
 
@@ -152,11 +152,11 @@ export function calculateDelay(
     case 'fixed':
       delay = pattern.baseDelay;
       break;
-    
+
     case 'linear':
       delay = pattern.baseDelay * attempt;
       break;
-    
+
     case 'exponential':
     default:
       delay = pattern.baseDelay * Math.pow(2, attempt - 1);
@@ -262,7 +262,7 @@ export const RetryStrategies = {
  */
 export function createRetryFn<T>(strategy: keyof typeof RetryStrategies) {
   const options = RetryStrategies[strategy];
-  
+
   return (fn: () => Promise<T>, overrides?: Partial<RetryOptions>) => {
     return withRetry(fn, { ...options, ...overrides });
   };

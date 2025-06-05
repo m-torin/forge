@@ -38,18 +38,20 @@ export async function GET(request: NextRequest) {
           // Fetch latest workflow runs
           const logsUrl = `${request.nextUrl.origin}/api/client/logs?count=50`;
           logger.info(`SSE: Fetching from ${logsUrl}`);
-          
+
           // Use service API key for internal authentication
           const headers: Record<string, string> = {};
           if (env.SERVICE_API_KEY) {
             headers['x-api-key'] = env.SERVICE_API_KEY;
           }
-          
+
           const response = await fetch(logsUrl, { headers });
 
           if (!response.ok) {
             const errorText = await response.text();
-            logger.warn(`SSE: API returned ${response.status} ${response.statusText}: ${errorText}`);
+            logger.warn(
+              `SSE: API returned ${response.status} ${response.statusText}: ${errorText}`,
+            );
             sendEvent({
               type: 'error',
               message: `API error: ${response.status} - ${errorText}`,

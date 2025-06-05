@@ -1,23 +1,23 @@
 /**
  * Server-side Next.js analytics exports
  * Complete Next.js 15 integration for server components, API routes, and middleware
- * 
+ *
  * @example
  * ```typescript
- * import { 
+ * import {
  *   createNextJSServerAnalytics,
  *   trackServerEvent,
  *   getServerFeatureFlag,
  *   createAnalyticsMiddleware
  * } from '@repo/analytics/server/next';
- * 
+ *
  * // Server component
  * export default async function Page() {
  *   await trackServerEvent('Page Viewed', { path: '/home' });
  *   const showFeature = await getServerFeatureFlag('new-feature', cookies());
  *   return <div>{showFeature && <NewFeature />}</div>;
  * }
- * 
+ *
  * // Middleware
  * export const middleware = createAnalyticsMiddleware({
  *   providers: { segment: { writeKey: process.env.SEGMENT_WRITE_KEY } }
@@ -37,25 +37,24 @@ export * from './index';
 // ============================================================================
 
 export {
-  // Server component tracking functions
-  trackServerEvent,
-  identifyServerUser,
-  trackServerPageView,
-  
-  // Server Actions support
-  trackEventAction,
-  identifyUserAction,
-  
-  // Context management for RSCs
-  ServerAnalyticsProvider,
-  withServerPageTracking,
   createServerFeatureFlags,
-  
+  getAllServerFeatureFlags,
+  getServerBootstrapData,
+
   // Server-side feature flag functions
   getServerFeatureFlag,
+  identifyServerUser,
+  identifyUserAction,
   isServerFeatureEnabled,
-  getAllServerFeatureFlags,
-  getServerBootstrapData
+  // Context management for RSCs
+  ServerAnalyticsProvider,
+
+  // Server Actions support
+  trackEventAction,
+  // Server component tracking functions
+  trackServerEvent,
+  trackServerPageView,
+  withServerPageTracking,
 } from '../next/rsc';
 
 // ============================================================================
@@ -63,38 +62,36 @@ export {
 // ============================================================================
 
 export {
+  createNextJSServerAnalytics,
+  createNextJSServerAnalyticsWithBootstrap,
   // Next.js server analytics manager
   NextJSServerAnalyticsManager,
-  createNextJSServerAnalytics,
-  createNextJSServerAnalyticsWithBootstrap
 } from '../next/server';
 
-export type {
-  NextJSServerAnalyticsConfig
-} from '../next/server';
+export type { NextJSServerAnalyticsConfig } from '../next/server';
 
 // ============================================================================
 // POSTHOG SERVER-SIDE FEATURE FLAGS
 // ============================================================================
 
 export {
-  // Server-side feature flag functions  
-  isFeatureEnabledOnServer,
-  getFeatureFlagOnServer,
   getAllFeatureFlagsOnServer,
-  getPostHogBootstrapDataOnServer
+  getFeatureFlagOnServer,
+  getPostHogBootstrapDataOnServer,
+  // Server-side feature flag functions
+  isFeatureEnabledOnServer,
 } from '../next/server';
 
 // Additional PostHog utilities
 export {
   // PostHog Next.js utilities
   createPostHogConfig,
-  createPostHogSuspenseData,
   createPostHogMiddleware,
   createPostHogServerClient,
+  createPostHogSuspenseData,
+  getCompleteBootstrapData,
   getOrGenerateDistinctId,
   getPostHogBootstrapData,
-  getCompleteBootstrapData
 } from '../shared/utils/posthog-next-utils';
 
 // ============================================================================
@@ -103,12 +100,12 @@ export {
 
 export {
   // Analytics middleware for edge runtime
-  createAnalyticsMiddleware
+  createAnalyticsMiddleware,
 } from '../next/middleware';
 
 export type {
   // Middleware types
-  AnalyticsMiddlewareConfig
+  AnalyticsMiddlewareConfig,
 } from '../next/middleware';
 
 // ============================================================================
@@ -116,24 +113,24 @@ export type {
 // ============================================================================
 
 export type {
+  AddToCartEvent,
   // Next.js specific types that actually exist
   AnalyticsEvent,
-  PageViewEvent,
-  ProductViewEvent,
-  AddToCartEvent,
+  AnalyticsMiddlewareContext,
+  AnalyticsProviderProps,
   CheckoutEvent,
-  PurchaseEvent,
+  EventName,
+  EventProperties,
+  FormErrorEvent,
   FormStartEvent,
   FormSubmitEvent,
-  FormErrorEvent,
-  AnalyticsMiddlewareContext,
+  PageViewEvent,
+  ProductViewEvent,
+  PurchaseEvent,
   TrackedComponentProps,
+  TypedTrackFunction,
   UseAnalyticsReturn,
   UseFeatureFlagsReturn,
-  AnalyticsProviderProps,
-  EventProperties,
-  EventName,
-  TypedTrackFunction
 } from '../next/types.d';
 
 // ============================================================================
@@ -142,22 +139,22 @@ export type {
 
 /**
  * Example usage patterns for server-side Next.js analytics
- * 
+ *
  * @example Server component tracking
  * ```typescript
  * import { trackServerEvent, getServerFeatureFlag } from '@repo/analytics/server/next';
  * import { cookies } from 'next/headers';
- * 
+ *
  * export default async function HomePage() {
  *   // Track page view
  *   await trackServerEvent('Page Viewed', {
  *     path: '/home',
  *     title: 'Home Page'
  *   });
- *   
+ *
  *   // Check feature flag
  *   const showBeta = await getServerFeatureFlag('beta-feature', cookies());
- *   
+ *
  *   return (
  *     <div>
  *       <h1>Welcome</h1>
@@ -166,47 +163,47 @@ export type {
  *   );
  * }
  * ```
- * 
+ *
  * @example API route tracking
  * ```typescript
  * import { createServerAnalytics, track } from '@repo/analytics/server/next';
- * 
+ *
  * const analytics = await createServerAnalytics({
  *   providers: {
  *     segment: { writeKey: process.env.SEGMENT_WRITE_KEY }
  *   }
  * });
- * 
+ *
  * export async function POST(request: Request) {
  *   await analytics.emit(track('API Called', {
  *     endpoint: '/api/users',
  *     method: 'POST'
  *   }));
- *   
+ *
  *   // Handle request...
  * }
  * ```
- * 
+ *
  * @example Server Actions
  * ```typescript
  * 'use server';
  * import { trackServerAction } from '@repo/analytics/server/next';
- * 
+ *
  * export async function submitForm(formData: FormData) {
  *   await trackServerAction('Form Submitted', {
  *     form_id: 'contact',
  *     email: formData.get('email')
  *   });
- *   
+ *
  *   // Process form...
  * }
  * ```
- * 
+ *
  * @example Middleware setup
  * ```typescript
  * // middleware.ts
  * import { createAnalyticsMiddleware } from '@repo/analytics/server/next';
- * 
+ *
  * export const middleware = createAnalyticsMiddleware({
  *   providers: {
  *     segment: { writeKey: process.env.SEGMENT_WRITE_KEY }
@@ -219,7 +216,7 @@ export type {
  *     country: request.geo?.country
  *   })
  * });
- * 
+ *
  * export const config = {
  *   matcher: ['/((?!_next/static|favicon.ico).*)']
  * };

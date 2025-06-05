@@ -3,44 +3,40 @@
  */
 
 export interface SegmentConfig {
-  writeKey: string;
   options?: {
     integrations?: Record<string, any>;
     context?: Record<string, any>;
     anonymousId?: string;
   };
+  writeKey: string;
 }
 
-export interface SegmentTrackProperties {
-  [key: string]: any;
-}
+export type SegmentTrackProperties = Record<string, any>;
 
 export interface SegmentUserTraits {
   [key: string]: any;
+  createdAt?: Date | string;
   email?: string;
-  name?: string;
   firstName?: string;
   lastName?: string;
-  createdAt?: Date | string;
+  name?: string;
 }
 
 export interface SegmentGroupTraits {
   [key: string]: any;
-  name?: string;
   employees?: number;
-  plan?: string;
   industry?: string;
+  name?: string;
+  plan?: string;
 }
 
 export interface SegmentPageProperties {
   [key: string]: any;
-  title?: string;
-  url?: string;
   path?: string;
   referrer?: string;
   search?: string;
+  title?: string;
+  url?: string;
 }
 
-export interface SegmentOptions {
-  [key: string]: any;
-}
+export type SegmentOptions = Record<string, any>;

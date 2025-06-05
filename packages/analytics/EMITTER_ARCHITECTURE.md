@@ -19,6 +19,7 @@ Emitter Functions → Emitter Payloads → AnalyticsManager → Providers → Ex
 ```
 
 ### 1. Emitter Functions
+
 Located in `/src/shared/emitters/`, these create standardized event payloads:
 
 ```typescript
@@ -29,6 +30,7 @@ const trackPayload = track('User Signed Up', { plan: 'premium' });
 ```
 
 ### 2. Analytics Manager Processing
+
 The `AnalyticsManager` has multiple ways to handle emitter payloads:
 
 ```typescript
@@ -43,6 +45,7 @@ await analytics.emitBatch([trackPayload, identifyPayload]);
 ```
 
 ### 3. Provider Distribution
+
 The manager extracts the event data and distributes to all configured providers:
 
 ```typescript
@@ -53,6 +56,7 @@ provider.track(payload.event, payload.properties, context);
 ## Emitter Types
 
 ### Core Emitters
+
 - `track()` - Custom events
 - `identify()` - User identification
 - `page()` - Page views
@@ -60,32 +64,37 @@ provider.track(payload.event, payload.properties, context);
 - `alias()` - User identity merging
 
 ### Specialized Emitters
+
 - `ecommerce.*` - E-commerce events (productViewed, orderCompleted, etc.)
 - Context builders and helpers
 
 ## Usage Patterns
 
 ### Pattern 1: Direct Emission (Recommended)
+
 ```typescript
 import { track } from '@repo/analytics/emitters';
 await analytics.emit(track('Event', { data: 'value' }));
 ```
 
 ### Pattern 2: Overloaded Methods
+
 ```typescript
 import { track } from '@repo/analytics/emitters';
 await analytics.track(track('Event', { data: 'value' }));
 ```
 
 ### Pattern 3: Event Factories
+
 ```typescript
 const events = {
-  userSignedUp: (plan: string) => track('User Signed Up', { plan })
+  userSignedUp: (plan: string) => track('User Signed Up', { plan }),
 };
 await analytics.emit(events.userSignedUp('premium'));
 ```
 
 ### Pattern 4: Context Building
+
 ```typescript
 const context = new ContextBuilder().setUser('123').build();
 const pb = new PayloadBuilder(context);
@@ -95,9 +104,11 @@ await analytics.emit(pb.track('Event', { data: 'value' }));
 ## Benefits Over Direct Tracking
 
 ### ❌ Direct Tracking (Not Recommended)
+
 ```typescript
 analytics.track('User Signed Up', { plan: 'premium' });
 ```
+
 - No type safety
 - Inconsistent event structure
 - Manual validation required
@@ -105,9 +116,11 @@ analytics.track('User Signed Up', { plan: 'premium' });
 - Provider-specific quirks
 
 ### ✅ Emitter-Based Tracking (Recommended)
+
 ```typescript
 analytics.emit(track('User Signed Up', { plan: 'premium' }));
 ```
+
 - Full TypeScript support
 - Consistent Segment.io specification
 - Automatic validation
@@ -132,12 +145,12 @@ const payload = track('User Signed Up', { plan: 'premium' });
 expect(payload).toEqual({
   type: 'track',
   event: 'User Signed Up',
-  properties: { plan: 'premium' }
+  properties: { plan: 'premium' },
 });
 
 // Test analytics integration
 const mockAnalytics = {
-  emit: jest.fn()
+  emit: jest.fn(),
 };
 await mockAnalytics.emit(payload);
 expect(mockAnalytics.emit).toHaveBeenCalledWith(payload);
@@ -145,7 +158,8 @@ expect(mockAnalytics.emit).toHaveBeenCalledWith(payload);
 
 ## Provider Compatibility
 
-All providers automatically work with emitter payloads because the `AnalyticsManager` handles the conversion:
+All providers automatically work with emitter payloads because the `AnalyticsManager` handles the
+conversion:
 
 - **Segment**: `analytics.track(event, properties)`
 - **PostHog**: `posthog.capture(event, properties)`

@@ -2,13 +2,13 @@
  * Sentry client-side provider
  */
 
-import type { 
-  ObservabilityProvider, 
-  ObservabilityProviderConfig, 
-  ObservabilityContext,
-  Breadcrumb
-} from '../../shared/types/types';
 import type { SentryConfig } from '../../shared/types/sentry-types';
+import type {
+  Breadcrumb,
+  ObservabilityContext,
+  ObservabilityProvider,
+  ObservabilityProviderConfig,
+} from '../../shared/types/types';
 
 export class SentryClientProvider implements ObservabilityProvider {
   readonly name = 'sentry-client';
@@ -17,7 +17,7 @@ export class SentryClientProvider implements ObservabilityProvider {
 
   async initialize(config: ObservabilityProviderConfig): Promise<void> {
     const sentryConfig = config as SentryConfig;
-    
+
     if (!sentryConfig.dsn) {
       throw new Error('Sentry DSN is required');
     }
@@ -25,36 +25,36 @@ export class SentryClientProvider implements ObservabilityProvider {
     try {
       // Dynamically import Sentry to avoid bundling if not used
       const Sentry = await import('@sentry/react');
-      
+
       // Initialize with configuration similar to original
       Sentry.init({
         dsn: sentryConfig.dsn,
         environment: sentryConfig.environment || 'production',
         release: sentryConfig.release,
-        
+
+        replaysOnErrorSampleRate: 1,
+        replaysSessionSampleRate: sentryConfig.profilesSampleRate ?? 0.1,
         // Sampling rates from original config
         tracesSampleRate: sentryConfig.tracesSampleRate ?? 1,
-        replaysSessionSampleRate: sentryConfig.profilesSampleRate ?? 0.1,
-        replaysOnErrorSampleRate: 1,
-        
+
         // Debug mode
         debug: sentryConfig.debug ?? false,
-        
+
         // Integrations including replay from original
         integrations: [
           Sentry.replayIntegration({
-            maskAllText: true,
             blockAllMedia: true,
+            maskAllText: true,
           }),
-          ...(sentryConfig.integrations || [])
+          ...(sentryConfig.integrations || []),
         ],
-        
+
         // Callbacks
         beforeSend: sentryConfig.beforeSend,
         beforeSendTransaction: sentryConfig.beforeSendTransaction,
-        
+
         // Additional options from config
-        ...(sentryConfig.options || {})
+        ...(sentryConfig.options || {}),
       });
 
       this.client = Sentry;
@@ -102,7 +102,11 @@ export class SentryClientProvider implements ObservabilityProvider {
     });
   }
 
-  async captureMessage(message: string, level: 'info' | 'warning' | 'error', context?: ObservabilityContext): Promise<void> {
+  async captureMessage(
+    message: string,
+    level: 'info' | 'warning' | 'error',
+    context?: ObservabilityContext,
+  ): Promise<void> {
     if (!this.isInitialized || !this.client) return;
 
     const sentryLevel = level === 'info' ? 'info' : level === 'warning' ? 'warning' : 'error';
@@ -137,22 +141,21 @@ export class SentryClientProvider implements ObservabilityProvider {
 
     const transaction = this.client.startTransaction({
       name,
+      data: context?.extra,
       op: context?.operation || 'navigation',
       tags: context?.tags,
-      data: context?.extra,
-      ...(context?.traceId && { traceId: context.traceId })
+      ...(context?.traceId && { traceId: context.traceId }),
     });
 
     // Set transaction on scope for child spans
     this.client.getCurrentScope().setSpan(transaction);
-    
+
     return {
       finish: () => transaction.finish(),
-      setTag: (key: string, value: string) => transaction.setTag(key, value),
       setData: (key: string, value: any) => transaction.setData(key, value),
       setStatus: (status: string) => transaction.setStatus(status),
-      startChild: (op: string, description?: string) => 
-        transaction.startChild({ op, description })
+      setTag: (key: string, value: string) => transaction.setTag(key, value),
+      startChild: (op: string, description?: string) => transaction.startChild({ description, op }),
     };
   }
 
@@ -161,8 +164,8 @@ export class SentryClientProvider implements ObservabilityProvider {
 
     if (parentSpan?.startChild) {
       return parentSpan.startChild({
+        description: name,
         op: name,
-        description: name
       });
     }
 
@@ -172,13 +175,13 @@ export class SentryClientProvider implements ObservabilityProvider {
 
   setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
     if (!this.isInitialized || !this.client) return;
-    
-    const { id, email, username, ...rest } = user;
+
+    const { id, username, email, ...rest } = user;
     this.client.setUser({
       id,
-      email,
       username,
-      ...rest
+      email,
+      ...rest,
     });
   }
 
@@ -199,14 +202,14 @@ export class SentryClientProvider implements ObservabilityProvider {
 
   addBreadcrumb(breadcrumb: Breadcrumb): void {
     if (!this.isInitialized || !this.client) return;
-    
+
     this.client.addBreadcrumb({
-      timestamp: breadcrumb.timestamp ? breadcrumb.timestamp / 1000 : undefined,
       type: breadcrumb.type || 'default',
       category: breadcrumb.category,
-      message: breadcrumb.message,
       data: breadcrumb.data,
-      level: breadcrumb.level || 'info'
+      level: breadcrumb.level || 'info',
+      message: breadcrumb.message,
+      timestamp: breadcrumb.timestamp ? breadcrumb.timestamp / 1000 : undefined,
     });
   }
 

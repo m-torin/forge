@@ -1,6 +1,7 @@
 # @repo/observability-new
 
-Multi-provider observability package for error tracking, logging, monitoring, and distributed tracing.
+Multi-provider observability package for error tracking, logging, monitoring, and distributed
+tracing.
 
 ## Overview
 
@@ -19,7 +20,7 @@ The package follows a provider registry pattern similar to the analytics package
 ```
 /src
   /client          - Client-side providers and exports
-  /server          - Server-side providers and exports  
+  /server          - Server-side providers and exports
   /shared          - Shared types and utilities
   /next            - Next.js specific integrations
   /hooks           - React hooks for observability
@@ -46,8 +47,8 @@ import { createClientObservability } from '@repo/observability-new/client';
 const observability = await createClientObservability({
   providers: {
     sentry: { dsn: 'your-sentry-dsn' },
-    console: { enabled: true }
-  }
+    console: { enabled: true },
+  },
 });
 
 // Use observability
@@ -64,8 +65,8 @@ const observability = await createServerObservability({
   providers: {
     sentry: { dsn: process.env.SENTRY_DSN },
     pino: { level: 'info' },
-    opentelemetry: { serviceName: 'api' }
-  }
+    opentelemetry: { serviceName: 'api' },
+  },
 });
 
 // Use observability
@@ -126,21 +127,25 @@ import { createNextJSServerObservability } from '@repo/observability-new/server/
 ### ✅ Completed
 
 1. **Core Architecture**
+
    - Multi-provider system with registry pattern
    - Dynamic provider loading
    - Type-safe configuration
 
 2. **Providers**
+
    - Sentry (client & server) - Full implementation with replay integration
    - Logtail - Production logging with development fallback
    - Console - Complete implementation for development
 
 3. **Utilities**
+
    - Error parsing and handling (`parseError`, `parseAndCaptureError`)
    - Error boundary handlers
    - Safe function wrappers
 
 4. **React Integration**
+
    - `useObservability` hook
    - `useWorkflowObservability` hook
    - `usePerformanceTimer` hook
@@ -155,11 +160,13 @@ import { createNextJSServerObservability } from '@repo/observability-new/server/
 ### 🚧 TODO
 
 1. **Providers**
+
    - Pino - Implement full logging capabilities
    - Winston - Implement full logging capabilities
    - OpenTelemetry - Implement tracing capabilities
 
 2. **Components**
+
    - Status component - Server-only component for system status
    - Error boundary component - Enhanced React error boundary
 

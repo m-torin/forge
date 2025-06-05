@@ -3,39 +3,44 @@
  * For use in client components and browser environments
  */
 
-import { AnalyticsManager } from '../shared/utils/manager';
-import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
-import type { BootstrapData, FeatureFlags, FeatureFlagPayload } from '../shared/types/posthog-types';
+import { type AnalyticsManager } from '../shared/utils/manager';
 import { createPostHogConfig } from '../shared/utils/posthog-next-utils';
+
+import type {
+  BootstrapData,
+  FeatureFlagPayload,
+  FeatureFlags,
+} from '../shared/types/posthog-types';
+import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 export interface NextJSClientAnalyticsConfig extends AnalyticsConfig {
   nextjs?: {
     // Next.js Script loading strategy
     strategy?: 'afterInteractive' | 'beforeInteractive' | 'lazyOnload' | 'worker';
-    
+
     // Defer initialization until user consent
     deferUntilConsent?: boolean;
-    
+
     // Buffer events before initialization
     bufferEvents?: boolean;
-    
+
     // Maximum events to buffer
     maxBufferSize?: number;
-    
+
     // Custom consent check function
     checkConsent?: () => boolean | Promise<boolean>;
-    
+
     // Enable debug mode
     debug?: boolean;
-    
+
     // PostHog specific options
     posthog?: {
       // Server-side bootstrap data
       bootstrap?: BootstrapData;
-      
+
       // API key for client operations
       apiKey?: string;
-      
+
       // Host override
       host?: string;
     };
@@ -43,8 +48,8 @@ export interface NextJSClientAnalyticsConfig extends AnalyticsConfig {
 }
 
 interface BufferedEvent {
-  method: 'track' | 'identify' | 'page' | 'group' | 'alias';
   args: any[];
+  method: 'track' | 'identify' | 'page' | 'group' | 'alias';
   timestamp: number;
 }
 
@@ -58,12 +63,12 @@ export class NextJSClientAnalyticsManager {
 
   constructor(config: NextJSClientAnalyticsConfig) {
     this.config = config;
-    
+
     // Check if we should buffer events
     if (config.nextjs?.bufferEvents !== false) {
       this.setupEventBuffering();
     }
-    
+
     // Auto-initialize if no consent required
     if (!config.nextjs?.deferUntilConsent) {
       this.initializeWhenReady();
@@ -75,14 +80,14 @@ export class NextJSClientAnalyticsManager {
    */
   private async initializeWhenReady(): Promise<void> {
     if (typeof window === 'undefined') return;
-    
+
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         document.addEventListener('DOMContentLoaded', resolve, { once: true });
       });
     }
-    
+
     await this.initialize();
   }
 
@@ -112,10 +117,10 @@ export class NextJSClientAnalyticsManager {
       const { ConsoleProvider } = await import('../shared/providers/console-provider');
 
       const CLIENT_PROVIDERS = {
-        segment: (config: any) => new SegmentClientProvider(config),
+        console: (config: any) => new ConsoleProvider(config),
         posthog: (config: any) => new PostHogClientProvider(config),
+        segment: (config: any) => new SegmentClientProvider(config),
         vercel: (config: any) => new VercelClientProvider(config),
-        console: (config: any) => new ConsoleProvider(config)
       };
 
       this.manager = createAnalyticsManager(this.config, CLIENT_PROVIDERS);
@@ -150,7 +155,7 @@ export class NextJSClientAnalyticsManager {
     this.isInitialized = false;
     this.manager = null;
     this.eventBuffer = [];
-    
+
     // Analytics consent revoked
   }
 
@@ -159,11 +164,11 @@ export class NextJSClientAnalyticsManager {
    */
   private async checkConsent(): Promise<boolean> {
     if (this.consentGiven) return true;
-    
+
     if (this.config.nextjs?.checkConsent) {
       return await this.config.nextjs.checkConsent();
     }
-    
+
     return !this.config.nextjs?.deferUntilConsent;
   }
 
@@ -172,7 +177,7 @@ export class NextJSClientAnalyticsManager {
    */
   private setupEventBuffering(): void {
     const maxSize = this.config.nextjs?.maxBufferSize || 50;
-    
+
     // Ensure buffer doesn't grow too large
     setInterval(() => {
       if (this.eventBuffer.length > maxSize) {
@@ -187,11 +192,11 @@ export class NextJSClientAnalyticsManager {
    */
   private bufferEvent(method: BufferedEvent['method'], args: any[]): void {
     if (!this.config.nextjs?.bufferEvents) return;
-    
+
     this.eventBuffer.push({
-      method,
       args,
-      timestamp: Date.now()
+      method,
+      timestamp: Date.now(),
     });
 
     // Event buffered
@@ -293,16 +298,16 @@ export class NextJSClientAnalyticsManager {
    */
   getStatus() {
     return {
+      activeProviders: this.manager?.getActiveProviders() || [],
+      bufferedEvents: this.eventBuffer.length,
+      consentGiven: this.consentGiven,
       isInitialized: this.isInitialized,
       isLoading: this.isLoading,
-      consentGiven: this.consentGiven,
-      bufferedEvents: this.eventBuffer.length,
-      activeProviders: this.manager?.getActiveProviders() || []
     };
   }
 
   // Feature Flag Methods (Client-side PostHog Support)
-  
+
   /**
    * Check if a feature flag is enabled
    */
@@ -314,13 +319,13 @@ export class NextJSClientAnalyticsManager {
         return await (posthogProvider as any).isFeatureEnabled(flag, userId);
       }
     }
-    
+
     // Fallback to bootstrap data if available
     if (this.config.nextjs?.posthog?.bootstrap?.featureFlags) {
       const flagValue = this.config.nextjs.posthog.bootstrap.featureFlags[flag];
       return Boolean(flagValue);
     }
-    
+
     return false;
   }
 
@@ -334,12 +339,12 @@ export class NextJSClientAnalyticsManager {
         return await (posthogProvider as any).getFeatureFlag(flag, userId);
       }
     }
-    
+
     // Fallback to bootstrap data
     if (this.config.nextjs?.posthog?.bootstrap?.featureFlags) {
       return this.config.nextjs.posthog.bootstrap.featureFlags[flag] || false;
     }
-    
+
     return false;
   }
 
@@ -353,7 +358,7 @@ export class NextJSClientAnalyticsManager {
         return await (posthogProvider as any).getAllFlags(userId);
       }
     }
-    
+
     // Fallback to bootstrap data
     return this.config.nextjs?.posthog?.bootstrap?.featureFlags || {};
   }
@@ -368,12 +373,12 @@ export class NextJSClientAnalyticsManager {
         return await (posthogProvider as any).getFeatureFlagPayload(flag, userId);
       }
     }
-    
+
     // Fallback to bootstrap data
     if (this.config.nextjs?.posthog?.bootstrap?.featureFlagPayloads) {
       return this.config.nextjs.posthog.bootstrap.featureFlagPayloads[flag] || null;
     }
-    
+
     return null;
   }
 
@@ -382,7 +387,7 @@ export class NextJSClientAnalyticsManager {
    */
   private getPostHogProvider(): any {
     if (!this.manager) return null;
-    
+
     return this.manager.getProvider('posthog');
   }
 }
@@ -390,22 +395,26 @@ export class NextJSClientAnalyticsManager {
 /**
  * Create a Next.js optimized analytics instance for client
  */
-export function createNextJSClientAnalytics(config: NextJSClientAnalyticsConfig): NextJSClientAnalyticsManager {
+export function createNextJSClientAnalytics(
+  config: NextJSClientAnalyticsConfig,
+): NextJSClientAnalyticsManager {
   return new NextJSClientAnalyticsManager(config);
 }
 
 /**
  * Next.js Script component integration helper
  */
-export function getAnalyticsScriptProps(strategy: 'afterInteractive' | 'beforeInteractive' | 'lazyOnload' = 'afterInteractive') {
+export function getAnalyticsScriptProps(
+  strategy: 'afterInteractive' | 'beforeInteractive' | 'lazyOnload' = 'afterInteractive',
+) {
   return {
-    strategy,
     onLoad: () => {
       if (typeof window !== 'undefined') {
         // Analytics scripts have loaded, can now initialize
         window.dispatchEvent(new CustomEvent('analytics:scripts-loaded'));
       }
-    }
+    },
+    strategy,
   };
 }
 
@@ -421,23 +430,23 @@ export function createPostHogConfigWithBootstrap(
     capture_pageview?: boolean;
     session_recording?: boolean;
     debug?: boolean;
-  }
+  },
 ): NextJSClientAnalyticsConfig {
   const posthogConfig = createPostHogConfig(apiKey, {
     ...options,
-    bootstrap: bootstrapData
+    bootstrap: bootstrapData,
   });
 
   return {
     providers: {
-      posthog: posthogConfig
+      posthog: posthogConfig,
     },
     nextjs: {
       posthog: {
-        bootstrap: bootstrapData,
         apiKey,
-        host: options?.host
-      }
-    }
+        bootstrap: bootstrapData,
+        host: options?.host,
+      },
+    },
   };
 }

@@ -11,15 +11,7 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
-    "@repo/database": "workspace:*",
-    "@t3-oss/env-nextjs": "catalog:",
-    "better-auth": "^1.2.8",
-    "chalk": "^5.4.1",
-    "next": "catalog:",
-    "next-themes": "catalog:",
-    "react": "catalog:",
-    "server-only": "catalog:",
-    "zod": "catalog:"
+    "react": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",

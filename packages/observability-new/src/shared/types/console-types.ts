@@ -3,21 +3,21 @@
  */
 
 export interface ConsoleConfig {
+  colors?: boolean;
   enabled?: boolean;
   prefix?: string;
   timestamp?: boolean;
-  colors?: boolean;
-  
+
   // Log levels to display
   levels?: ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal')[];
-  
+
+  depth?: number;
   // Formatting options
   pretty?: boolean;
-  depth?: number;
-  
+
+  exclude?: string[];
   // Filtering
   include?: string[];
-  exclude?: string[];
 }
 
 export interface ConsoleOptions {
@@ -32,15 +32,15 @@ export interface ConsoleOptions {
     timestamp?: string;
     prefix?: string;
   };
-  
+
+  stderr?: NodeJS.WritableStream;
   // Output streams
   stdout?: NodeJS.WritableStream;
-  stderr?: NodeJS.WritableStream;
-  
+
   // Grouping
   groupCollapsed?: boolean;
-  
+
+  showHidden?: boolean;
   // Stack trace
   stackDepth?: number;
-  showHidden?: boolean;
 }

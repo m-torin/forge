@@ -25,7 +25,7 @@ export class WorkflowClient {
     // Use local QStash in development
     const isDev = process.env.NODE_ENV === 'development';
     const defaultBaseUrl = isDev ? 'http://localhost:8080' : process.env.QSTASH_URL;
-    
+
     const baseUrl = options.baseUrl || defaultBaseUrl;
     const token = options.token || process.env.QSTASH_TOKEN;
 
@@ -36,7 +36,11 @@ export class WorkflowClient {
 
     this.client = new Client({
       baseUrl: baseUrl ? normalizeUrl(baseUrl) : undefined,
-      token: token || (isDev ? 'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=' : 'missing-token'),
+      token:
+        token ||
+        (isDev
+          ? 'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0='
+          : 'missing-token'),
     });
   }
 

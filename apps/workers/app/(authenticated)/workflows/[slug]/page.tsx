@@ -8,7 +8,7 @@ interface WorkflowSlugPageProps {
 
 export default async function WorkflowSlugPage({ params }: WorkflowSlugPageProps) {
   const { slug } = await params;
-  
+
   // Load the workflow definition
   const definition = await loadWorkflow(slug);
 

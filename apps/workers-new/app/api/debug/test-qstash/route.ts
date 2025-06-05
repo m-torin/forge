@@ -1,42 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from '@upstash/qstash'
-import { getWorkflowConfig } from '@/lib/workflow-config'
+import { UpstashWorkflowProvider } from '@repo/orchestration-new'
+import { getOrchestrationConfig } from '@/lib/workflow-config'
 
 export async function GET(_request: NextRequest) {
   try {
-    const config = getWorkflowConfig()
+    const config = getOrchestrationConfig()
     
-    console.log('[DEBUG] Testing QStash connection with config:', {
-      mode: config.mode,
-      qstashUrl: config.qstashUrl,
-      hasToken: !!config.qstashToken
+    console.log('[DEBUG] Testing orchestration provider with config:', {
+      env: config.env,
+      baseUrl: config.baseUrl,
+      hasQstashToken: !!config.qstash.token
     })
 
-    const qstashClient = new Client({
-      baseUrl: config.qstashUrl,
-      token: config.qstashToken
-    })
+    const provider = new UpstashWorkflowProvider(config)
 
-    // Test basic connection by fetching logs
-    const _logs = await qstashClient.logs()
+    // Test basic connection by performing health check
+    const health = await provider.healthCheck()
     
     return NextResponse.json({
       success: true,
-      message: 'QStash connection test successful',
+      message: 'Orchestration provider connection test successful',
       config: {
-        mode: config.mode,
-        qstashUrl: config.qstashUrl,
-        hasToken: !!config.qstashToken
+        env: config.env,
+        baseUrl: config.baseUrl,
+        hasQstashToken: !!config.qstash.token
       },
-      logsCount: 0, // Simple connection test
+      health,
       timestamp: Date.now()
     })
   } catch (error) {
-    console.error('[DEBUG] QStash connection test failed:', error)
+    console.error('[DEBUG] Orchestration provider connection test failed:', error)
     
     return NextResponse.json({
       success: false,
-      error: 'QStash connection test failed',
+      error: 'Orchestration provider connection test failed',
       message: error instanceof Error ? error.message : 'Unknown error',
       timestamp: Date.now()
     }, { status: 500 })
@@ -45,39 +42,55 @@ export async function GET(_request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const config = getWorkflowConfig()
+    const config = getOrchestrationConfig()
     const body = await request.json()
     
-    console.log('[DEBUG] Testing QStash publish with payload:', body)
+    console.log('[DEBUG] Testing workflow execution with payload:', body)
 
-    const qstashClient = new Client({
-      baseUrl: config.qstashUrl,
-      token: config.qstashToken
-    })
+    const provider = new UpstashWorkflowProvider(config)
 
-    // Test publishing a message to our sleep endpoint with default payload
+    // Create a simple test workflow definition
+    const testWorkflow = {
+      id: 'test-workflow',
+      name: 'Test Workflow',
+      description: 'Simple test workflow for debugging',
+      version: '1.0.0',
+      steps: [
+        {
+          id: 'test-step',
+          name: 'Test Step',
+          action: 'test',
+          config: {}
+        }
+      ]
+    }
+
+    // Test workflow execution with default payload
     const defaultPayload = { test: true, timestamp: Date.now() }
-    const result = await qstashClient.publishJSON({
-      url: `${config.workflowUrl}/sleep`,
-      body: body.payload ?? defaultPayload
-    })
+    const execution = await provider.execute(testWorkflow, body.payload ?? defaultPayload)
     
     return NextResponse.json({
       success: true,
-      message: 'QStash publish test successful',
-      messageId: result.messageId,
+      message: 'Workflow execution test successful',
+      executionId: execution.id,
+      execution: {
+        id: execution.id,
+        status: execution.status,
+        workflowId: execution.workflowId,
+        startedAt: execution.startedAt
+      },
       config: {
-        mode: config.mode,
-        publishedTo: `${config.workflowUrl}/sleep`
+        env: config.env,
+        baseUrl: config.baseUrl
       },
       timestamp: Date.now()
     })
   } catch (error) {
-    console.error('[DEBUG] QStash publish test failed:', error)
+    console.error('[DEBUG] Workflow execution test failed:', error)
     
     return NextResponse.json({
       success: false,
-      error: 'QStash publish test failed',
+      error: 'Workflow execution test failed',
       message: error instanceof Error ? error.message : 'Unknown error',
       timestamp: Date.now()
     }, { status: 500 })

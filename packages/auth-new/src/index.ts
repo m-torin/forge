@@ -1,6 +1,6 @@
 /**
  * Main authentication package exports
- * 
+ *
  * This is the primary entry point for the auth package.
  * Use specific imports for better tree-shaking:
  * - '@repo/auth-new/client' for client-side

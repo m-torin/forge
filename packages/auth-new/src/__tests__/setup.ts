@@ -14,13 +14,13 @@ vi.mock('next/headers', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
+  usePathname: vi.fn(() => '/'),
   useRouter: vi.fn(() => ({
+    back: vi.fn(),
     push: vi.fn(),
     replace: vi.fn(),
-    back: vi.fn(),
   })),
   useSearchParams: vi.fn(() => new URLSearchParams()),
-  usePathname: vi.fn(() => '/'),
 }));
 
 // Mock Better Auth
@@ -34,17 +34,17 @@ vi.mock('better-auth', () => ({
 
 vi.mock('better-auth/client', () => ({
   createAuthClient: vi.fn(() => ({
+    forgetPassword: vi.fn(),
+    getSession: vi.fn(() => Promise.resolve(null)),
+    resetPassword: vi.fn(),
     signIn: {
       email: vi.fn(),
       social: vi.fn(),
     },
+    signOut: vi.fn(),
     signUp: {
       email: vi.fn(),
     },
-    signOut: vi.fn(),
-    getSession: vi.fn(() => Promise.resolve(null)),
-    forgetPassword: vi.fn(),
-    resetPassword: vi.fn(),
     verifyEmail: vi.fn(),
   })),
 }));

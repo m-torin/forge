@@ -16,17 +16,17 @@ export interface UpstashWorkflowContext {
    * QStash client for advanced operations
    */
   qstash?: QStashClient;
-  
+
   /**
    * Redis client for persistence
    */
   redis?: Redis;
-  
+
   /**
    * Custom metadata
    */
   metadata?: Record<string, any>;
-  
+
   /**
    * Workflow context from Upstash
    */
@@ -41,12 +41,12 @@ export interface UpstashStepConfig {
    * Step timeout in milliseconds
    */
   timeout?: number;
-  
+
   /**
    * Number of retries
    */
   retries?: number;
-  
+
   /**
    * Retry backoff configuration
    */
@@ -56,7 +56,7 @@ export interface UpstashStepConfig {
     exponent?: number;
     maxAttempts?: number;
   };
-  
+
   /**
    * Rate limiting
    */
@@ -64,12 +64,12 @@ export interface UpstashStepConfig {
     limit: number;
     window: string; // e.g., "1m", "1h", "1d"
   };
-  
+
   /**
    * Step dependencies
    */
   dependsOn?: string[];
-  
+
   /**
    * Parallel execution group
    */
@@ -84,12 +84,12 @@ export interface UpstashWorkflowConfig {
    * Workflow timeout
    */
   timeout?: number;
-  
+
   /**
    * Default step configuration
    */
   defaultStepConfig?: UpstashStepConfig;
-  
+
   /**
    * Deduplication configuration
    */
@@ -98,7 +98,7 @@ export interface UpstashWorkflowConfig {
     key?: string | ((params: any) => string);
     ttl?: number;
   };
-  
+
   /**
    * Event configuration
    */
@@ -109,7 +109,7 @@ export interface UpstashWorkflowConfig {
     onStepComplete?: boolean;
     webhookUrl?: string;
   };
-  
+
   /**
    * Scheduling configuration
    */
@@ -118,7 +118,7 @@ export interface UpstashWorkflowConfig {
     delay?: number | string;
     timezone?: string;
   };
-  
+
   /**
    * Persistence configuration
    */
@@ -137,27 +137,27 @@ export interface UpstashRuntimeInfo {
    * Workflow run ID
    */
   runId: string;
-  
+
   /**
    * QStash message ID
    */
   messageId?: string;
-  
+
   /**
    * Current attempt number
    */
   attempt: number;
-  
+
   /**
    * Execution environment
    */
   environment: 'production' | 'development' | 'staging';
-  
+
   /**
    * Region where workflow is executing
    */
   region?: string;
-  
+
   /**
    * Execution start time
    */
@@ -172,17 +172,17 @@ export interface UpstashStepResult<T = any> {
    * Step name
    */
   name: string;
-  
+
   /**
    * Execution status
    */
   status: 'success' | 'failure' | 'skipped';
-  
+
   /**
    * Step output
    */
   data?: T;
-  
+
   /**
    * Error information
    */
@@ -191,17 +191,17 @@ export interface UpstashStepResult<T = any> {
     code?: string;
     stack?: string;
   };
-  
+
   /**
    * Execution duration in milliseconds
    */
   duration: number;
-  
+
   /**
    * Number of retries
    */
   retryCount: number;
-  
+
   /**
    * Timestamp
    */
@@ -216,32 +216,32 @@ export interface UpstashWorkflowState<T = any> {
    * Current workflow status
    */
   status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
-  
+
   /**
    * Workflow input parameters
    */
   input: T;
-  
+
   /**
    * Current step index
    */
   currentStep: number;
-  
+
   /**
    * Completed steps
    */
   completedSteps: string[];
-  
+
   /**
    * Step results
    */
   stepResults: Record<string, UpstashStepResult>;
-  
+
   /**
    * Global workflow state
    */
   state: Record<string, any>;
-  
+
   /**
    * Error information
    */
@@ -251,7 +251,7 @@ export interface UpstashWorkflowState<T = any> {
     stepName?: string;
     timestamp: Date;
   };
-  
+
   /**
    * Runtime information
    */
@@ -261,7 +261,7 @@ export interface UpstashWorkflowState<T = any> {
 /**
  * Upstash event types
  */
-export type UpstashEventType = 
+export type UpstashEventType =
   | 'workflow.started'
   | 'workflow.completed'
   | 'workflow.failed'
@@ -279,22 +279,22 @@ export interface UpstashEvent {
    * Event type
    */
   type: UpstashEventType;
-  
+
   /**
    * Workflow ID
    */
   workflowId: string;
-  
+
   /**
    * Run ID
    */
   runId: string;
-  
+
   /**
    * Event timestamp
    */
   timestamp: Date;
-  
+
   /**
    * Event data
    */
@@ -305,7 +305,7 @@ export interface UpstashEvent {
     duration?: number;
     attempt?: number;
   };
-  
+
   /**
    * Workflow state snapshot
    */
@@ -320,17 +320,17 @@ export interface UpstashPersistenceAdapter {
    * Save workflow state
    */
   save(runId: string, state: UpstashWorkflowState): Promise<void>;
-  
+
   /**
    * Load workflow state
    */
   load(runId: string): Promise<UpstashWorkflowState | null>;
-  
+
   /**
    * Delete workflow state
    */
   delete(runId: string): Promise<void>;
-  
+
   /**
    * List workflow states
    */
@@ -353,37 +353,37 @@ export interface UpstashMetrics {
    * Total executions
    */
   totalExecutions: number;
-  
+
   /**
    * Successful executions
    */
   successfulExecutions: number;
-  
+
   /**
    * Failed executions
    */
   failedExecutions: number;
-  
+
   /**
    * Average duration
    */
   averageDuration: number;
-  
+
   /**
    * P95 duration
    */
   p95Duration: number;
-  
+
   /**
    * Active executions
    */
   activeExecutions: number;
-  
+
   /**
    * Retry rate
    */
   retryRate: number;
-  
+
   /**
    * Error rate
    */
@@ -398,7 +398,7 @@ export interface UpstashHealthCheck {
    * Overall health status
    */
   status: 'healthy' | 'degraded' | 'unhealthy';
-  
+
   /**
    * Component health
    */
@@ -414,7 +414,7 @@ export interface UpstashHealthCheck {
       error?: string;
     };
   };
-  
+
   /**
    * Check timestamp
    */
@@ -429,24 +429,24 @@ export interface UpstashStepBuilder<TInput = any, TOutput = any> {
    * Set step configuration
    */
   withConfig(config: UpstashStepConfig): UpstashStepBuilder<TInput, TOutput>;
-  
+
   /**
    * Add input validation
    */
   withInputSchema(schema: z.ZodSchema<TInput>): UpstashStepBuilder<TInput, TOutput>;
-  
+
   /**
    * Add output validation
    */
   withOutputSchema(schema: z.ZodSchema<TOutput>): UpstashStepBuilder<TInput, TOutput>;
-  
+
   /**
    * Add step middleware
    */
   withMiddleware(
-    middleware: (next: (input: TInput) => Promise<TOutput>) => (input: TInput) => Promise<TOutput>
+    middleware: (next: (input: TInput) => Promise<TOutput>) => (input: TInput) => Promise<TOutput>,
   ): UpstashStepBuilder<TInput, TOutput>;
-  
+
   /**
    * Build the step
    */
@@ -471,9 +471,9 @@ export interface UpstashWorkflowBuilder<TParams = any, TResult = any> {
   step<TInput = any, TOutput = any>(
     name: string,
     handler: (input: TInput, context: UpstashWorkflowContext) => Promise<TOutput>,
-    config?: UpstashStepConfig
+    config?: UpstashStepConfig,
   ): UpstashWorkflowBuilder<TParams, TResult>;
-  
+
   /**
    * Add parallel steps
    */
@@ -482,9 +482,9 @@ export interface UpstashWorkflowBuilder<TParams = any, TResult = any> {
       name: string;
       handler: (input: any, context: UpstashWorkflowContext) => Promise<T>;
       config?: UpstashStepConfig;
-    }>
+    }>,
   ): UpstashWorkflowBuilder<TParams, TResult>;
-  
+
   /**
    * Add conditional step
    */
@@ -497,14 +497,14 @@ export interface UpstashWorkflowBuilder<TParams = any, TResult = any> {
     ifFalse?: {
       name: string;
       handler: (input: TInput, context: UpstashWorkflowContext) => Promise<TOutput>;
-    }
+    },
   ): UpstashWorkflowBuilder<TParams, TResult>;
-  
+
   /**
    * Set workflow configuration
    */
   withConfig(config: UpstashWorkflowConfig): UpstashWorkflowBuilder<TParams, TResult>;
-  
+
   /**
    * Add workflow hooks
    */
@@ -513,7 +513,7 @@ export interface UpstashWorkflowBuilder<TParams = any, TResult = any> {
     afterComplete?: (result: TResult, context: UpstashWorkflowContext) => Promise<void>;
     onError?: (error: Error, context: UpstashWorkflowContext) => Promise<void>;
   }): UpstashWorkflowBuilder<TParams, TResult>;
-  
+
   /**
    * Build the workflow
    */

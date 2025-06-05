@@ -6,88 +6,88 @@
 // Client-side exports
 export {
   createNextJSClientAnalytics,
-  NextJSClientAnalyticsManager,
-  type NextJSClientAnalyticsConfig,
+  createPostHogConfigWithBootstrap,
   getAnalyticsScriptProps,
-  createPostHogConfigWithBootstrap
+  type NextJSClientAnalyticsConfig,
+  NextJSClientAnalyticsManager,
 } from './client';
 
 // Server-side exports
 export {
   createNextJSServerAnalytics,
-  NextJSServerAnalyticsManager,
-  type NextJSServerAnalyticsConfig,
-  isFeatureEnabledOnServer,
-  getFeatureFlagOnServer,
+  createNextJSServerAnalyticsWithBootstrap,
   getAllFeatureFlagsOnServer,
+  getFeatureFlagOnServer,
   getPostHogBootstrapDataOnServer,
-  createNextJSServerAnalyticsWithBootstrap
+  isFeatureEnabledOnServer,
+  type NextJSServerAnalyticsConfig,
+  NextJSServerAnalyticsManager,
 } from './server';
 
 // React Server Component exports
 export {
-  trackServerEvent,
-  identifyServerUser,
-  trackServerPageView,
-  getServerFeatureFlag,
-  isServerFeatureEnabled,
+  createServerFeatureFlags,
   getAllServerFeatureFlags,
   getServerBootstrapData,
+  getServerFeatureFlag,
+  identifyServerUser,
+  identifyUserAction,
+  isServerFeatureEnabled,
   ServerAnalyticsProvider,
-  withServerPageTracking,
-  createServerFeatureFlags,
   trackEventAction,
-  identifyUserAction
+  trackServerEvent,
+  trackServerPageView,
+  withServerPageTracking,
 } from './rsc';
 
 // App Router specific exports
 export {
-  useAnalytics,
-  usePageTracking,
-  useTrackEvent,
-  useIdentifyUser,
-  useFeatureFlag,
-  useFeatureFlags,
-  useAnalyticsConsent,
   AnalyticsProvider as ClientAnalyticsProvider,
-  withViewTracking,
+  resetAnalytics,
   TrackedButton,
   TrackedLink,
-  useFormTracking,
+  useAnalytics,
+  useAnalyticsConsent,
   useEcommerceTracking,
-  resetAnalytics
+  useFeatureFlag,
+  useFeatureFlags,
+  useFormTracking,
+  useIdentifyUser,
+  usePageTracking,
+  useTrackEvent,
+  withViewTracking,
 } from './app-router';
 
 // Middleware exports
 export {
+  type AnalyticsMiddlewareConfig,
+  composeMiddleware,
+  conditionalAnalyticsMiddleware,
   createAnalyticsMiddleware,
   createAnalyticsMiddlewareConfig,
   getAnalyticsContextFromHeaders,
   getDistinctIdFromHeaders,
-  conditionalAnalyticsMiddleware,
-  composeMiddleware,
-  type AnalyticsMiddlewareConfig
 } from './middleware';
 
 // Re-export types
 export type {
   AnalyticsConfig,
+  AnalyticsContext,
   AnalyticsProvider,
-  TrackingOptions,
   ProviderConfig,
-  AnalyticsContext
+  TrackingOptions,
 } from '../shared/types/types';
 
 export type {
   BootstrapData,
-  FeatureFlags,
   FeatureFlagPayload,
-  PostHogConfig
+  FeatureFlags,
+  PostHogConfig,
 } from '../shared/types/posthog-types';
 
 // Export utilities
 export {
+  createBootstrapData,
   generateDistinctId,
   getDistinctIdFromCookies,
-  createBootstrapData
 } from '../shared/utils/posthog-bootstrap';

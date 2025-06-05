@@ -30,7 +30,7 @@ export interface EnhancedContext<T = unknown> extends WorkflowContext<T> {
 export function enhanceContext<T>(context: WorkflowContext<T>): EnhancedContext<T> {
   // Create enhanced context by extending the original context
   const enhanced = Object.create(context) as EnhancedContext<T>;
-  
+
   // Copy all properties from original context
   Object.assign(enhanced, context);
 
@@ -38,14 +38,14 @@ export function enhanceContext<T>(context: WorkflowContext<T>): EnhancedContext<
   Object.defineProperty(enhanced, 'qstash', {
     value: getQStashHeaders(context),
     writable: false,
-    enumerable: true
+    enumerable: true,
   });
 
   // Add environment config
   Object.defineProperty(enhanced, 'envConfig', {
     value: getEnvironmentConfig(),
     writable: false,
-    enumerable: true
+    enumerable: true,
   });
 
   // Add development helpers
@@ -55,7 +55,7 @@ export function enhanceContext<T>(context: WorkflowContext<T>): EnhancedContext<
       log: devLog.log,
     },
     writable: false,
-    enumerable: true
+    enumerable: true,
   });
 
   // Add deduplication helpers
@@ -65,7 +65,7 @@ export function enhanceContext<T>(context: WorkflowContext<T>): EnhancedContext<
       isDuplicateMessage: () => isDuplicateMessage(context),
     },
     writable: false,
-    enumerable: true
+    enumerable: true,
   });
 
   return enhanced;

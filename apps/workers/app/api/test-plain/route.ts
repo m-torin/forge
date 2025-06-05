@@ -7,12 +7,12 @@ export async function POST(request: NextRequest) {
   console.log('[TEST-PLAIN] Request method:', request.method);
   console.log('[TEST-PLAIN] Request URL:', request.url);
   console.log('[TEST-PLAIN] Headers:', Object.fromEntries(request.headers.entries()));
-  
+
   try {
     const body = await request.text();
     console.log('[TEST-PLAIN] Request body length:', body.length);
     console.log('[TEST-PLAIN] Request body preview:', body.substring(0, 200));
-    
+
     // Just return a simple response
     return NextResponse.json({
       success: true,
@@ -22,10 +22,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[TEST-PLAIN] Error:', error);
-    return NextResponse.json({
-      error: 'Plain test failed',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Plain test failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }
 

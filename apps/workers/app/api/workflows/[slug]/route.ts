@@ -21,7 +21,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Load workflow definition using your existing loader
     const definition = await loadWorkflow(slug);
-    
+
     if (!definition || !definition.workflow) {
       console.error(`Workflow not found for slug: ${slug}`);
       notFound();
@@ -34,43 +34,45 @@ export async function POST(request: NextRequest, context: RouteContext) {
       NODE_ENV: process.env.NODE_ENV,
       UPSTASH_WORKFLOW_URL: process.env.UPSTASH_WORKFLOW_URL,
     });
-    
+
     // Use serve directly with minimal config - no orchestration package
     const handler = serve(definition.workflow, {
       // Minimal configuration for testing
       receiver: undefined,
       verbose: true,
     });
-    
+
     console.log(`[WORKFLOW-${slug}] Handler created, executing...`);
     return handler.POST(request);
   } catch (error) {
     console.error('Workflow execution error:', error);
-    
+
     // Add more detailed error information in development
     if (isDevelopment()) {
       return NextResponse.json(
-        { 
+        {
           error: 'Workflow execution failed',
           message: error instanceof Error ? error.message : 'Unknown error',
           details: {
             slug,
             isDevelopment: true,
             qstashUrl: process.env.QSTASH_URL || 'Not set - should use http://localhost:8080',
-            hasSigningKeys: !!(process.env.QSTASH_CURRENT_SIGNING_KEY || process.env.QSTASH_NEXT_SIGNING_KEY),
+            hasSigningKeys: !!(
+              process.env.QSTASH_CURRENT_SIGNING_KEY || process.env.QSTASH_NEXT_SIGNING_KEY
+            ),
             stack: error instanceof Error ? error.stack : undefined,
-          }
+          },
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Workflow execution failed',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

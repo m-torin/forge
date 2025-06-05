@@ -2,16 +2,7 @@
 
 import { createAutocomplete } from '@algolia/autocomplete-core';
 import { getAlgoliaResults } from '@algolia/autocomplete-preset-algolia';
-import {
-  Avatar,
-  Group,
-  Modal,
-  Paper,
-  Stack,
-  Text,
-  TextInput,
-  UnstyledButton,
-} from '@mantine/core';
+import { Avatar, Group, Modal, Paper, Stack, Text, TextInput, UnstyledButton } from '@mantine/core';
 import { useDisclosure, useHotkeys } from '@mantine/hooks';
 import { IconCommand, IconSearch } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';

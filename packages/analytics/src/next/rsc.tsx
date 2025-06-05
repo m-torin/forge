@@ -3,17 +3,20 @@
  * Provides server-side analytics tracking with proper caching and data flow
  */
 
-import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
-import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
-import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
-import { createNextJSServerAnalytics } from './server';
-import { 
+import { cache } from 'react';
+
+import {
+  getAllFeatureFlags,
   getCompleteBootstrapData,
-  isFeatureEnabled,
   getFeatureFlag,
-  getAllFeatureFlags
+  isFeatureEnabled,
 } from '../shared/utils/posthog-next-utils';
+
+import { createNextJSServerAnalytics } from './server';
+
+import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 /**
  * Cached analytics instance for RSC
@@ -32,24 +35,24 @@ const getAnalyticsInstance = cache(async (config: AnalyticsConfig) => {
 export async function trackServerEvent(
   event: string,
   properties?: any,
-  options?: TrackingOptions & { config?: AnalyticsConfig }
+  options?: TrackingOptions & { config?: AnalyticsConfig },
 ): Promise<void> {
   const config = options?.config || getDefaultConfig();
   const analytics = await getAnalyticsInstance(config);
-  
+
   // Extract request context
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get('user-agent') || undefined;
   const referer = requestHeaders.get('referer') || undefined;
-  
+
   const enhancedProperties = {
     ...properties,
     server_side: true,
-    user_agent: userAgent,
     referer: referer,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    user_agent: userAgent,
   };
-  
+
   await analytics.track(event, enhancedProperties, options);
 }
 
@@ -59,17 +62,17 @@ export async function trackServerEvent(
 export async function identifyServerUser(
   userId: string,
   traits?: any,
-  options?: TrackingOptions & { config?: AnalyticsConfig }
+  options?: TrackingOptions & { config?: AnalyticsConfig },
 ): Promise<void> {
   const config = options?.config || getDefaultConfig();
   const analytics = await getAnalyticsInstance(config);
-  
+
   const enhancedTraits = {
     ...traits,
     identified_at: new Date().toISOString(),
-    identified_from: 'server'
+    identified_from: 'server',
   };
-  
+
   await analytics.identify(userId, enhancedTraits, options);
 }
 
@@ -79,24 +82,24 @@ export async function identifyServerUser(
 export async function trackServerPageView(
   pathname: string,
   properties?: any,
-  options?: TrackingOptions & { config?: AnalyticsConfig }
+  options?: TrackingOptions & { config?: AnalyticsConfig },
 ): Promise<void> {
   const config = options?.config || getDefaultConfig();
   const analytics = await getAnalyticsInstance(config);
-  
+
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get('user-agent') || undefined;
   const referer = requestHeaders.get('referer') || undefined;
-  
+
   const enhancedProperties = {
     ...properties,
     path: pathname,
-    user_agent: userAgent,
     referer: referer,
     server_rendered: true,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    user_agent: userAgent,
   };
-  
+
   await analytics.page(pathname, enhancedProperties, options);
 }
 
@@ -104,65 +107,73 @@ export async function trackServerPageView(
  * Get feature flag value in React Server Components
  * Cached per request for consistency
  */
-export const getServerFeatureFlag = cache(async (
-  flag: string,
-  apiKey: string,
-  options?: {
-    host?: string;
-    timeout?: number;
-    defaultValue?: any;
-  }
-): Promise<any> => {
-  const cookieStore = cookies();
-  return await getFeatureFlag(flag, cookieStore, apiKey, options);
-});
+export const getServerFeatureFlag = cache(
+  async (
+    flag: string,
+    apiKey: string,
+    options?: {
+      host?: string;
+      timeout?: number;
+      defaultValue?: any;
+    },
+  ): Promise<any> => {
+    const cookieStore = cookies();
+    return await getFeatureFlag(flag, cookieStore, apiKey, options);
+  },
+);
 
 /**
  * Check if feature is enabled in React Server Components
  * Cached per request for consistency
  */
-export const isServerFeatureEnabled = cache(async (
-  flag: string,
-  apiKey: string,
-  options?: {
-    host?: string;
-    timeout?: number;
-    defaultValue?: boolean;
-  }
-): Promise<boolean> => {
-  const cookieStore = cookies();
-  return await isFeatureEnabled(flag, cookieStore, apiKey, options);
-});
+export const isServerFeatureEnabled = cache(
+  async (
+    flag: string,
+    apiKey: string,
+    options?: {
+      host?: string;
+      timeout?: number;
+      defaultValue?: boolean;
+    },
+  ): Promise<boolean> => {
+    const cookieStore = cookies();
+    return await isFeatureEnabled(flag, cookieStore, apiKey, options);
+  },
+);
 
 /**
  * Get all feature flags in React Server Components
  * Cached per request for consistency
  */
-export const getAllServerFeatureFlags = cache(async (
-  apiKey: string,
-  options?: {
-    host?: string;
-    timeout?: number;
-  }
-): Promise<FeatureFlags> => {
-  const cookieStore = cookies();
-  return await getAllFeatureFlags(cookieStore, apiKey, options);
-});
+export const getAllServerFeatureFlags = cache(
+  async (
+    apiKey: string,
+    options?: {
+      host?: string;
+      timeout?: number;
+    },
+  ): Promise<FeatureFlags> => {
+    const cookieStore = cookies();
+    return await getAllFeatureFlags(cookieStore, apiKey, options);
+  },
+);
 
 /**
  * Get PostHog bootstrap data for server components
  * Includes distinct ID extraction and feature flag fetching
  */
-export const getServerBootstrapData = cache(async (
-  apiKey: string,
-  options?: {
-    host?: string;
-    timeout?: number;
-  }
-): Promise<BootstrapData> => {
-  const cookieStore = cookies();
-  return await getCompleteBootstrapData(cookieStore, apiKey, options);
-});
+export const getServerBootstrapData = cache(
+  async (
+    apiKey: string,
+    options?: {
+      host?: string;
+      timeout?: number;
+    },
+  ): Promise<BootstrapData> => {
+    const cookieStore = cookies();
+    return await getCompleteBootstrapData(cookieStore, apiKey, options);
+  },
+);
 
 /**
  * Analytics provider for React Server Components
@@ -171,7 +182,7 @@ export const getServerBootstrapData = cache(async (
 export async function ServerAnalyticsProvider({
   children,
   config,
-  posthogApiKey
+  posthogApiKey,
 }: {
   children: React.ReactNode;
   config?: AnalyticsConfig;
@@ -181,13 +192,13 @@ export async function ServerAnalyticsProvider({
   if (config) {
     await getAnalyticsInstance(config);
   }
-  
+
   // Get bootstrap data if PostHog is configured
   let bootstrapData: BootstrapData | undefined;
   if (posthogApiKey) {
     bootstrapData = await getServerBootstrapData(posthogApiKey);
   }
-  
+
   // Return children with any necessary context
   // Note: In RSC, we can't use React context, but we can pass data via props
   return <>{children}</>;
@@ -198,18 +209,18 @@ export async function ServerAnalyticsProvider({
  */
 export function withServerPageTracking<P extends object>(
   Component: React.ComponentType<P>,
-  pageName?: string
+  pageName?: string,
 ) {
   return async function TrackedServerComponent(props: P) {
     // Get pathname from props or use provided name
     const pathname = pageName || (props as any).params?.pathname || 'unknown';
-    
+
     // Track page view
     await trackServerPageView(pathname, {
       component: Component.name,
-      props: Object.keys(props as any)
+      props: Object.keys(props as any),
     });
-    
+
     return <Component {...props} />;
   };
 }
@@ -219,30 +230,30 @@ export function withServerPageTracking<P extends object>(
  */
 export function createServerFeatureFlags<T extends Record<string, boolean>>(
   apiKey: string,
-  flags: T
+  flags: T,
 ) {
   return {
     async isEnabled(flag: keyof T): Promise<boolean> {
       return await isServerFeatureEnabled(flag as string, apiKey);
     },
-    
+
     async getAll(): Promise<Partial<T>> {
       const allFlags = await getAllServerFeatureFlags(apiKey);
       const typedFlags: Partial<T> = {};
-      
+
       for (const key in flags) {
         if (key in allFlags) {
           typedFlags[key] = Boolean(allFlags[key]) as T[typeof key];
         }
       }
-      
+
       return typedFlags;
     },
-    
+
     async getValue<K extends keyof T>(flag: K): Promise<T[K] | undefined> {
       const value = await getServerFeatureFlag(flag as string, apiKey);
       return value as T[K] | undefined;
-    }
+    },
   };
 }
 
@@ -252,35 +263,35 @@ export function createServerFeatureFlags<T extends Record<string, boolean>>(
  */
 function getDefaultConfig(): AnalyticsConfig {
   const config: AnalyticsConfig = {
-    providers: {}
+    providers: {},
   };
-  
+
   // Add providers based on environment variables
   if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
     config.providers.posthog = {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
       options: {
-        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST
-      }
+        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      },
     };
   }
-  
+
   if (process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY) {
     config.providers.segment = {
-      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
+      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY,
     };
   }
-  
+
   // Add console provider in development
   if (process.env.NODE_ENV === 'development') {
     config.providers.console = {
       options: {
         prefix: '[RSC Analytics]',
-        pretty: true
-      }
+        pretty: true,
+      },
     };
   }
-  
+
   return config;
 }
 
@@ -290,10 +301,10 @@ function getDefaultConfig(): AnalyticsConfig {
  */
 export async function trackEventAction(
   event: string,
-  properties?: any
+  properties?: any,
 ): Promise<{ success: boolean }> {
   'use server';
-  
+
   try {
     await trackServerEvent(event, properties);
     return { success: true };
@@ -308,10 +319,10 @@ export async function trackEventAction(
  */
 export async function identifyUserAction(
   userId: string,
-  traits?: any
+  traits?: any,
 ): Promise<{ success: boolean }> {
   'use server';
-  
+
   try {
     await identifyServerUser(userId, traits);
     return { success: true };

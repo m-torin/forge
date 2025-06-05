@@ -2,8 +2,9 @@
  * Next.js server-side observability integration
  */
 
-import type { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
 import { createServerObservability } from '../server';
+
+import type { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
 
 export interface NextJSServerObservabilityConfig extends ObservabilityConfig {
   nextjs?: ObservabilityConfig['nextjs'];
@@ -27,14 +28,14 @@ export class NextJSServerObservabilityManager {
  * Create Next.js optimized server observability
  */
 export async function createNextJSServerObservability(
-  config: NextJSServerObservabilityConfig
+  config: NextJSServerObservabilityConfig,
 ): Promise<ObservabilityManager> {
   // Apply Next.js specific defaults
   const nextConfig: NextJSServerObservabilityConfig = {
     ...config,
     nextjs: {
-      ...config.nextjs
-    }
+      ...config.nextjs,
+    },
   };
 
   return createServerObservability(nextConfig);

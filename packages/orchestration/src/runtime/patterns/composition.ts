@@ -28,7 +28,7 @@ export function composeWorkflow<T = unknown, TData = unknown>(
   }[],
 ) {
   return async (context: WorkflowContext<T>) => {
-    let currentData = (context.requestPayload as unknown) as TData;
+    let currentData = context.requestPayload as unknown as TData;
     const results: Record<string, TData> = {};
 
     for (const step of steps) {
@@ -227,12 +227,20 @@ export function createDataProcessingWorkflow<T, R, TExtracted = unknown>(config:
 /**
  * Create an event-driven workflow with state management
  */
-export function createEventDrivenWorkflow<TState = unknown, TEventData = unknown, TResult = unknown>(config: {
+export function createEventDrivenWorkflow<
+  TState = unknown,
+  TEventData = unknown,
+  TResult = unknown,
+>(config: {
   initialState: TState;
   events: Record<
     string,
     {
-      handler: (context: WorkflowContext<unknown>, state: TState, eventData: TEventData) => Promise<TState>;
+      handler: (
+        context: WorkflowContext<unknown>,
+        state: TState,
+        eventData: TEventData,
+      ) => Promise<TState>;
       timeout?: string;
       nextEvent?: string;
     }
@@ -251,7 +259,8 @@ export function createEventDrivenWorkflow<TState = unknown, TEventData = unknown
       );
 
       const stateMachine = new StateMachine(
-        ((context.requestPayload as Record<string, unknown>)?.startEvent as string) || Object.keys(config.events)[0],
+        ((context.requestPayload as Record<string, unknown>)?.startEvent as string) ||
+          Object.keys(config.events)[0],
         transitions,
         config.initialState,
       );
@@ -275,7 +284,11 @@ export function createEventDrivenWorkflow<TState = unknown, TEventData = unknown
         const { eventData, timeout } = await context.waitForEvent(
           `wait-${currentEvent}`,
           currentEvent,
-          { timeout: (eventConfig.timeout || '1h') as Parameters<typeof context.waitForEvent>[2]['timeout'] },
+          {
+            timeout: (eventConfig.timeout || '1h') as Parameters<
+              typeof context.waitForEvent
+            >[2]['timeout'],
+          },
         );
 
         if (timeout) {
@@ -563,7 +576,7 @@ export function createWorkflowChain<T, TIntermediate = unknown>(
   }[],
 ) {
   return createWorkflow<T>().build(async (context) => {
-    let currentData: TIntermediate = (context.requestPayload as unknown) as TIntermediate;
+    let currentData: TIntermediate = context.requestPayload as unknown as TIntermediate;
     const results: Record<string, TIntermediate> = {};
 
     devLog.workflow(context, 'Starting workflow chain', {

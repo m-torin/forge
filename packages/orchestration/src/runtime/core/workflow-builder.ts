@@ -185,20 +185,17 @@ export const workflows = {
   production<T = unknown>() {
     const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
     const nextSigningKey = process.env.QSTASH_NEXT_SIGNING_KEY;
-    
+
     if (!currentSigningKey || !nextSigningKey) {
       throw new Error('Missing QSTASH signing keys for production workflow');
     }
-    
-    return createWorkflow<T>()
-      .withRetries(3)
-      .withVerboseLogging(false)
-      .withReceiver(
-        new Receiver({
-          currentSigningKey,
-          nextSigningKey,
-        }),
-      );
+
+    return createWorkflow<T>().withRetries(3).withVerboseLogging(false).withReceiver(
+      new Receiver({
+        currentSigningKey,
+        nextSigningKey,
+      }),
+    );
   },
 
   /**
@@ -208,9 +205,11 @@ export const workflows = {
     // Create local QStash client for development
     const localClient = new Client({
       baseUrl: process.env.QSTASH_URL ?? 'http://localhost:8080',
-      token: process.env.QSTASH_TOKEN ?? 'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=',
+      token:
+        process.env.QSTASH_TOKEN ??
+        'eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=',
     });
-    
+
     return createWorkflow<T>()
       .withRetries(1)
       .withVerboseLogging(true)

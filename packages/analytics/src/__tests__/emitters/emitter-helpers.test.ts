@@ -1,75 +1,75 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   ContextBuilder,
-  PayloadBuilder,
-  EventBatch,
-  createUserSession,
   createAnonymousSession,
-  isTrackPayload,
+  createUserSession,
+  EventBatch,
+  isAliasPayload,
+  isGroupPayload,
   isIdentifyPayload,
   isPagePayload,
-  isGroupPayload,
-  isAliasPayload,
+  isTrackPayload,
+  PayloadBuilder,
   withMetadata,
   withUTM,
 } from '../../shared/emitters/helpers';
+
 import type {
   EmitterContext,
-  EmitterTrackPayload,
   EmitterIdentifyPayload,
   EmitterPagePayload,
-  EmitterGroupPayload,
-  EmitterAliasPayload,
   EmitterPayload,
+  EmitterTrackPayload,
 } from '../../shared/emitters/emitter-types';
 
 // Mock the core emitters
 vi.mock('../../shared/emitters/emitters', () => ({
-  track: vi.fn((event, properties, options) => ({
-    type: 'track',
-    event,
-    properties: properties || {},
-    context: options?.context || {},
-    timestamp: options?.timestamp,
-    anonymousId: options?.anonymousId,
-    integrations: options?.integrations,
-  })),
   identify: vi.fn((userId, traits, options) => ({
     type: 'identify',
+    anonymousId: options?.anonymousId,
+    context: options?.context || {},
+    integrations: options?.integrations,
+    timestamp: options?.timestamp,
+    traits: traits || {},
     userId,
-    traits: traits || {},
-    context: options?.context || {},
-    timestamp: options?.timestamp,
-    anonymousId: options?.anonymousId,
-    integrations: options?.integrations,
-  })),
-  page: vi.fn((category, name, properties, options) => ({
-    type: 'page',
-    category,
-    name,
-    properties: properties || {},
-    context: options?.context || {},
-    timestamp: options?.timestamp,
-    anonymousId: options?.anonymousId,
-    integrations: options?.integrations,
-  })),
-  group: vi.fn((groupId, traits, options) => ({
-    type: 'group',
-    groupId,
-    traits: traits || {},
-    context: options?.context || {},
-    timestamp: options?.timestamp,
-    anonymousId: options?.anonymousId,
-    integrations: options?.integrations,
   })),
   alias: vi.fn((userId, previousId, options) => ({
     type: 'alias',
-    userId,
-    previousId,
-    context: options?.context || {},
-    timestamp: options?.timestamp,
     anonymousId: options?.anonymousId,
+    context: options?.context || {},
     integrations: options?.integrations,
+    previousId,
+    timestamp: options?.timestamp,
+    userId,
+  })),
+  group: vi.fn((groupId, traits, options) => ({
+    type: 'group',
+    anonymousId: options?.anonymousId,
+    context: options?.context || {},
+    groupId,
+    integrations: options?.integrations,
+    timestamp: options?.timestamp,
+    traits: traits || {},
+  })),
+  page: vi.fn((category, name, properties, options) => ({
+    name,
+    type: 'page',
+    anonymousId: options?.anonymousId,
+    category,
+    context: options?.context || {},
+    integrations: options?.integrations,
+    properties: properties || {},
+    timestamp: options?.timestamp,
+  })),
+  track: vi.fn((event, properties, options) => ({
+    type: 'track',
+    anonymousId: options?.anonymousId,
+    context: options?.context || {},
+    event,
+    integrations: options?.integrations,
+    properties: properties || {},
+    timestamp: options?.timestamp,
   })),
 }));
 
@@ -112,9 +112,7 @@ describe('Emitter Helpers', () => {
 
     it('should set organization information', () => {
       const builder = new ContextBuilder();
-      const context = builder
-        .setOrganization('org456')
-        .build();
+      const context = builder.setOrganization('org456').build();
 
       expect(context).toEqual({
         groupId: 'org456',
@@ -123,16 +121,14 @@ describe('Emitter Helpers', () => {
 
     it('should set page information', () => {
       const pageInfo = {
-        path: '/products',
         url: 'https://example.com/products',
-        title: 'Products Page',
+        path: '/products',
         referrer: 'https://google.com',
+        title: 'Products Page',
       };
 
       const builder = new ContextBuilder();
-      const context = builder
-        .setPage(pageInfo)
-        .build();
+      const context = builder.setPage(pageInfo).build();
 
       expect(context).toEqual({
         page: pageInfo,
@@ -141,17 +137,15 @@ describe('Emitter Helpers', () => {
 
     it('should set campaign information', () => {
       const utmParams = {
-        utm_source: 'google',
-        utm_medium: 'cpc',
         utm_campaign: 'summer_sale',
-        utm_term: 'running shoes',
         utm_content: 'ad_variant_a',
+        utm_medium: 'cpc',
+        utm_source: 'google',
+        utm_term: 'running shoes',
       };
 
       const builder = new ContextBuilder();
-      const context = builder
-        .setCampaign(utmParams)
-        .build();
+      const context = builder.setCampaign(utmParams).build();
 
       expect(context).toEqual({
         campaign: utmParams,
@@ -168,9 +162,7 @@ describe('Emitter Helpers', () => {
       };
 
       const builder = new ContextBuilder();
-      const context = builder
-        .setDevice(deviceInfo)
-        .build();
+      const context = builder.setDevice(deviceInfo).build();
 
       expect(context).toEqual({
         device: deviceInfo,
@@ -188,18 +180,18 @@ describe('Emitter Helpers', () => {
         .build();
 
       expect(context).toEqual({
-        traits: { name: 'Jane Doe' },
-        groupId: 'org456',
-        page: { path: '/dashboard', title: 'Dashboard' },
         campaign: { utm_source: 'email' },
         device: { type: 'desktop' },
+        groupId: 'org456',
+        page: { path: '/dashboard', title: 'Dashboard' },
+        traits: { name: 'Jane Doe' },
       });
     });
 
     it('should merge with existing context properties', () => {
       const initialContext: Partial<EmitterContext> = {
-        traits: { email: 'initial@example.com' },
         page: { url: 'https://initial.com' },
+        traits: { email: 'initial@example.com' },
       };
 
       const builder = new ContextBuilder(initialContext);
@@ -209,8 +201,8 @@ describe('Emitter Helpers', () => {
         .build();
 
       expect(context).toEqual({
-        traits: { email: 'initial@example.com', name: 'Updated Name' },
         page: { url: 'https://initial.com', title: 'Updated Title' },
+        traits: { name: 'Updated Name', email: 'initial@example.com' },
       });
     });
 
@@ -218,7 +210,7 @@ describe('Emitter Helpers', () => {
       const builder = new ContextBuilder();
       builder.setUser('user1');
       const context1 = builder.build();
-      
+
       builder.setUser('user2');
       const context2 = builder.build();
 
@@ -252,9 +244,7 @@ describe('Emitter Helpers', () => {
     it('should set timestamp', () => {
       const timestamp = new Date('2024-01-01T00:00:00Z');
       const builder = new PayloadBuilder();
-      const trackPayload = builder
-        .withTimestamp(timestamp)
-        .track('test_event');
+      const trackPayload = builder.withTimestamp(timestamp).track('test_event');
 
       expect(trackPayload.timestamp).toBe(timestamp);
     });
@@ -262,24 +252,20 @@ describe('Emitter Helpers', () => {
     it('should set anonymous ID', () => {
       const anonymousId = 'anon_123';
       const builder = new PayloadBuilder();
-      const trackPayload = builder
-        .withAnonymousId(anonymousId)
-        .track('test_event');
+      const trackPayload = builder.withAnonymousId(anonymousId).track('test_event');
 
       expect(trackPayload.anonymousId).toBe(anonymousId);
     });
 
     it('should set integrations', () => {
       const integrations = {
-        'Google Analytics': true,
-        'Segment': { apiKey: 'test_key' },
         'Facebook Pixel': false,
+        'Google Analytics': true,
+        Segment: { apiKey: 'test_key' },
       };
 
       const builder = new PayloadBuilder();
-      const trackPayload = builder
-        .withIntegrations(integrations)
-        .track('test_event');
+      const trackPayload = builder.withIntegrations(integrations).track('test_event');
 
       expect(trackPayload.integrations).toEqual(integrations);
     });
@@ -299,12 +285,12 @@ describe('Emitter Helpers', () => {
 
       expect(trackPayload).toMatchObject({
         type: 'track',
-        event: 'chained_event',
-        properties: { test: true },
-        context,
-        timestamp,
         anonymousId,
+        context,
+        event: 'chained_event',
         integrations,
+        properties: { test: true },
+        timestamp,
       });
     });
 
@@ -316,27 +302,25 @@ describe('Emitter Helpers', () => {
 
       expect(identifyPayload).toMatchObject({
         type: 'identify',
-        userId: 'user123',
         traits: { name: 'Test User' },
+        userId: 'user123',
       });
     });
 
     it('should create page payload', () => {
       const builder = new PayloadBuilder();
-      const pagePayload = builder
-        .page('Product Page', { category: 'ecommerce' });
+      const pagePayload = builder.page('Product Page', { category: 'ecommerce' });
 
       expect(pagePayload).toMatchObject({
-        type: 'page',
         name: 'Product Page',
+        type: 'page',
         properties: { category: 'ecommerce' },
       });
     });
 
     it('should create group payload', () => {
       const builder = new PayloadBuilder();
-      const groupPayload = builder
-        .group('group123', { name: 'Test Organization' });
+      const groupPayload = builder.group('group123', { name: 'Test Organization' });
 
       expect(groupPayload).toMatchObject({
         type: 'group',
@@ -347,13 +331,12 @@ describe('Emitter Helpers', () => {
 
     it('should create alias payload', () => {
       const builder = new PayloadBuilder();
-      const aliasPayload = builder
-        .alias('user123', 'anon_456');
+      const aliasPayload = builder.alias('user123', 'anon_456');
 
       expect(aliasPayload).toMatchObject({
         type: 'alias',
-        userId: 'user123',
         previousId: 'anon_456',
+        userId: 'user123',
       });
     });
   });
@@ -382,9 +365,9 @@ describe('Emitter Helpers', () => {
       const batch = new EventBatch();
       const customPayload: EmitterTrackPayload = {
         type: 'track',
+        context: {},
         event: 'custom_event',
         properties: { custom: true },
-        context: {},
       };
 
       batch.add(customPayload);
@@ -445,9 +428,9 @@ describe('Emitter Helpers', () => {
       const batch = new EventBatch(sharedContext);
       const payload: EmitterTrackPayload = {
         type: 'track',
+        context: eventContext,
         event: 'test',
         properties: {},
-        context: eventContext,
       };
 
       batch.add(payload);
@@ -474,15 +457,11 @@ describe('Emitter Helpers', () => {
 
     it('should chain batch operations', () => {
       const batch = new EventBatch();
-      batch
-        .addTrack('event1')
-        .addIdentify('user1')
-        .addPage('page1')
-        .addGroup('group1');
+      batch.addTrack('event1').addIdentify('user1').addPage('page1').addGroup('group1');
 
       const events = batch.getEvents();
       expect(events).toHaveLength(4);
-      expect(events.map(e => e.type)).toEqual(['track', 'identify', 'page', 'group']);
+      expect(events.map((e) => e.type)).toEqual(['track', 'identify', 'page', 'group']);
     });
 
     it('should return copy of events array', () => {
@@ -599,11 +578,11 @@ describe('Emitter Helpers', () => {
 
   describe('Type Guards', () => {
     const samplePayloads: EmitterPayload[] = [
-      { type: 'track', event: 'test', properties: {}, context: {} },
-      { type: 'identify', userId: 'user1', traits: {}, context: {} },
-      { type: 'page', name: 'test', properties: {}, context: {} },
-      { type: 'group', groupId: 'group1', traits: {}, context: {} },
-      { type: 'alias', userId: 'user1', previousId: 'anon1', context: {} },
+      { type: 'track', context: {}, event: 'test', properties: {} },
+      { type: 'identify', context: {}, traits: {}, userId: 'user1' },
+      { name: 'test', type: 'page', context: {}, properties: {} },
+      { type: 'group', context: {}, groupId: 'group1', traits: {} },
+      { type: 'alias', context: {}, previousId: 'anon1', userId: 'user1' },
     ];
 
     it('should identify track payloads', () => {
@@ -611,7 +590,7 @@ describe('Emitter Helpers', () => {
       const nonTrackPayloads = samplePayloads.slice(1);
 
       expect(isTrackPayload(trackPayload)).toBe(true);
-      nonTrackPayloads.forEach(payload => {
+      nonTrackPayloads.forEach((payload) => {
         expect(isTrackPayload(payload)).toBe(false);
       });
     });
@@ -621,7 +600,7 @@ describe('Emitter Helpers', () => {
       const nonIdentifyPayloads = samplePayloads.filter((_, i) => i !== 1);
 
       expect(isIdentifyPayload(identifyPayload)).toBe(true);
-      nonIdentifyPayloads.forEach(payload => {
+      nonIdentifyPayloads.forEach((payload) => {
         expect(isIdentifyPayload(payload)).toBe(false);
       });
     });
@@ -631,7 +610,7 @@ describe('Emitter Helpers', () => {
       const nonPagePayloads = samplePayloads.filter((_, i) => i !== 2);
 
       expect(isPagePayload(pagePayload)).toBe(true);
-      nonPagePayloads.forEach(payload => {
+      nonPagePayloads.forEach((payload) => {
         expect(isPagePayload(payload)).toBe(false);
       });
     });
@@ -641,7 +620,7 @@ describe('Emitter Helpers', () => {
       const nonGroupPayloads = samplePayloads.filter((_, i) => i !== 3);
 
       expect(isGroupPayload(groupPayload)).toBe(true);
-      nonGroupPayloads.forEach(payload => {
+      nonGroupPayloads.forEach((payload) => {
         expect(isGroupPayload(payload)).toBe(false);
       });
     });
@@ -651,7 +630,7 @@ describe('Emitter Helpers', () => {
       const nonAliasPayloads = samplePayloads.filter((_, i) => i !== 4);
 
       expect(isAliasPayload(aliasPayload)).toBe(true);
-      nonAliasPayloads.forEach(payload => {
+      nonAliasPayloads.forEach((payload) => {
         expect(isAliasPayload(payload)).toBe(false);
       });
     });
@@ -661,15 +640,15 @@ describe('Emitter Helpers', () => {
     it('should add metadata to payload app context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
+        context: {},
         event: 'test',
         properties: {},
-        context: {},
       };
 
       const metadata = {
-        version: '1.2.3',
-        source: 'mobile_app',
         build: 'production',
+        source: 'mobile_app',
+        version: '1.2.3',
       };
 
       const result = withMetadata(payload, metadata);
@@ -680,19 +659,19 @@ describe('Emitter Helpers', () => {
     it('should merge with existing app context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
-        event: 'test',
-        properties: {},
         context: {
           app: {
             name: 'Existing App',
             platform: 'ios',
           },
         },
+        event: 'test',
+        properties: {},
       };
 
       const metadata = {
-        version: '2.0.0',
         source: 'app_store',
+        version: '2.0.0',
       };
 
       const result = withMetadata(payload, metadata);
@@ -700,20 +679,20 @@ describe('Emitter Helpers', () => {
       expect(result.context.app).toEqual({
         name: 'Existing App',
         platform: 'ios',
-        version: '2.0.0',
         source: 'app_store',
+        version: '2.0.0',
       });
     });
 
     it('should preserve other context properties', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
-        event: 'test',
-        properties: {},
         context: {
           device: { type: 'mobile' },
           page: { url: 'https://example.com' },
         },
+        event: 'test',
+        properties: {},
       };
 
       const metadata = { version: '1.0.0' };
@@ -727,9 +706,9 @@ describe('Emitter Helpers', () => {
     it('should work with different payload types', () => {
       const identifyPayload: EmitterIdentifyPayload = {
         type: 'identify',
-        userId: 'user1',
-        traits: {},
         context: {},
+        traits: {},
+        userId: 'user1',
       };
 
       const metadata = { version: '3.0.0' };
@@ -744,17 +723,17 @@ describe('Emitter Helpers', () => {
     it('should add UTM parameters to payload campaign context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
+        context: {},
         event: 'test',
         properties: {},
-        context: {},
       };
 
       const utm = {
-        source: 'google',
-        medium: 'cpc',
         campaign: 'summer_sale',
-        term: 'running shoes',
         content: 'ad_variant_a',
+        medium: 'cpc',
+        source: 'google',
+        term: 'running shoes',
       };
 
       const result = withUTM(payload, utm);
@@ -765,61 +744,61 @@ describe('Emitter Helpers', () => {
     it('should merge with existing campaign context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
-        event: 'test',
-        properties: {},
         context: {
           campaign: {
-            name: 'Existing Campaign',
             id: 'camp_123',
+            name: 'Existing Campaign',
           },
         },
+        event: 'test',
+        properties: {},
       };
 
       const utm = {
-        source: 'facebook',
         medium: 'social',
+        source: 'facebook',
       };
 
       const result = withUTM(payload, utm);
 
       expect(result.context.campaign).toEqual({
-        name: 'Existing Campaign',
         id: 'camp_123',
-        source: 'facebook',
+        name: 'Existing Campaign',
         medium: 'social',
+        source: 'facebook',
       });
     });
 
     it('should handle partial UTM parameters', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
+        context: {},
         event: 'test',
         properties: {},
-        context: {},
       };
 
       const utm = {
-        source: 'email',
         campaign: 'newsletter',
+        source: 'email',
       };
 
       const result = withUTM(payload, utm);
 
       expect(result.context.campaign).toEqual({
-        source: 'email',
         campaign: 'newsletter',
+        source: 'email',
       });
     });
 
     it('should preserve other context properties', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
-        event: 'test',
-        properties: {},
         context: {
           app: { name: 'Test App' },
           device: { type: 'desktop' },
         },
+        event: 'test',
+        properties: {},
       };
 
       const utm = { source: 'twitter' };
@@ -832,15 +811,15 @@ describe('Emitter Helpers', () => {
 
     it('should work with different payload types', () => {
       const pagePayload: EmitterPagePayload = {
-        type: 'page',
         name: 'Landing Page',
-        properties: {},
+        type: 'page',
         context: {},
+        properties: {},
       };
 
       const utm = {
-        source: 'google',
         medium: 'organic',
+        source: 'google',
       };
 
       const result = withUTM(pagePayload, utm);
@@ -858,7 +837,7 @@ describe('Emitter Helpers', () => {
         .setUser('user123', { name: 'John Doe', plan: 'premium' })
         .setOrganization('org456')
         .setPage({ path: '/dashboard', title: 'Dashboard' })
-        .setCampaign({ utm_source: 'email', utm_campaign: 'onboarding' })
+        .setCampaign({ utm_campaign: 'onboarding', utm_source: 'email' })
         .setDevice({ type: 'desktop', os: 'macOS' })
         .build();
 
@@ -872,9 +851,9 @@ describe('Emitter Helpers', () => {
             .withTimestamp(new Date('2024-01-01'))
             .withAnonymousId('anon_123')
             .track('feature_used', { feature: 'dashboard_export' }),
-          { version: '2.1.0', build: 'production' }
+          { build: 'production', version: '2.1.0' },
         ),
-        { content: 'email_link' }
+        { content: 'email_link' },
       );
 
       // 4. Create batch with shared context
@@ -910,14 +889,14 @@ describe('Emitter Helpers', () => {
 
     it('should handle memory efficiency with context builders', () => {
       const contexts = [];
-      
+
       // Create 100 context builders
       for (let i = 0; i < 100; i++) {
         const builder = new ContextBuilder()
           .setUser(`user_${i}`)
           .setOrganization(`org_${i}`)
           .setPage({ path: `/page_${i}` });
-        
+
         contexts.push(builder.build());
       }
 
@@ -951,7 +930,7 @@ describe('Emitter Helpers', () => {
       // Batch operations should work
       batch.add(trackPayload);
       batch.addTrack('test2');
-      
+
       expect(batch.getEvents()).toHaveLength(2);
     });
 
@@ -967,9 +946,9 @@ describe('Emitter Helpers', () => {
       // Metadata with empty object
       const payload: EmitterTrackPayload = {
         type: 'track',
+        context: {},
         event: 'test',
         properties: {},
-        context: {},
       };
       const withEmptyMetadata = withMetadata(payload, {});
       expect(withEmptyMetadata.context.app).toEqual({});

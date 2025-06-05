@@ -3,21 +3,13 @@
  * Lightweight utilities and types for client-side workflow interaction
  */
 
-import {
-  RetryStrategies,
-  withRetry,
-} from './shared/patterns/retry.js';
+import { RetryStrategies, withRetry } from './shared/patterns/retry';
 // Import for internal use
-import {
-  validateWorkflowDefinition,
-} from './shared/utils/index.js';
+import { validateWorkflowDefinition } from './shared/utils/index';
 
 // Core types (re-export for client usage)
 // Import types for internal use
-import type {
-  ListExecutionsOptions,
-  WorkflowExecution,
-} from './shared/types/index.js';
+import type { ListExecutionsOptions, WorkflowExecution } from './shared/types/index';
 
 export type {
   ListExecutionsOptions,
@@ -29,7 +21,7 @@ export type {
   WorkflowExecutionStatus,
   WorkflowStep,
   WorkflowStepExecution,
-} from './shared/types/index.js';
+} from './shared/types/index';
 
 // Client-specific utilities
 export {
@@ -38,9 +30,9 @@ export {
   validateWorkflowDefinition,
   WorkflowExecutionError,
   WorkflowValidationError,
-} from './shared/utils/index.js';
+} from './shared/utils/index';
 
-export type { ValidationError } from './shared/utils/index.js';
+export type { ValidationError } from './shared/utils/index';
 
 // Client-side patterns (safe for browser usage)
 export {
@@ -49,9 +41,9 @@ export {
   retryStandard,
   RetryStrategies,
   withRetry,
-} from './shared/patterns/retry.js';
+} from './shared/patterns/retry';
 
-export type { RetryOptions } from './shared/patterns/retry.js';
+export type { RetryOptions } from './shared/patterns/retry';
 
 /**
  * Client configuration
@@ -90,7 +82,7 @@ export class WorkflowClient {
    */
   async submitWorkflow(
     definition: any,
-    input?: Record<string, any>
+    input?: Record<string, any>,
   ): Promise<{ executionId: string; status: string }> {
     // Validate the workflow definition
     const validatedDefinition = validateWorkflowDefinition(definition);
@@ -134,14 +126,17 @@ export class WorkflowClient {
    */
   async getExecutionStatus(executionId: string): Promise<WorkflowExecution | null> {
     const requestFn = async () => {
-      const response = await fetch(`${this.config.baseUrl}/api/workflows/executions/${executionId}`, {
-        headers: {
-          ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
-          ...this.config.headers,
+      const response = await fetch(
+        `${this.config.baseUrl}/api/workflows/executions/${executionId}`,
+        {
+          headers: {
+            ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
+            ...this.config.headers,
+          },
+          method: 'GET',
+          signal: AbortSignal.timeout(this.config.timeout),
         },
-        method: 'GET',
-        signal: AbortSignal.timeout(this.config.timeout),
-      });
+      );
 
       if (response.status === 404) {
         return null;
@@ -171,14 +166,17 @@ export class WorkflowClient {
    */
   async cancelExecution(executionId: string): Promise<boolean> {
     const requestFn = async () => {
-      const response = await fetch(`${this.config.baseUrl}/api/workflows/executions/${executionId}/cancel`, {
-        headers: {
-          ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
-          ...this.config.headers,
+      const response = await fetch(
+        `${this.config.baseUrl}/api/workflows/executions/${executionId}/cancel`,
+        {
+          headers: {
+            ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
+            ...this.config.headers,
+          },
+          method: 'POST',
+          signal: AbortSignal.timeout(this.config.timeout),
         },
-        method: 'POST',
-        signal: AbortSignal.timeout(this.config.timeout),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -205,7 +203,7 @@ export class WorkflowClient {
    */
   async listExecutions(
     workflowId: string,
-    options?: ListExecutionsOptions
+    options?: ListExecutionsOptions,
   ): Promise<WorkflowExecution[]> {
     const searchParams = new URLSearchParams();
     if (options?.limit) searchParams.set('limit', options.limit.toString());

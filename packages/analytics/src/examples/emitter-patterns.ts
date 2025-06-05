@@ -1,26 +1,24 @@
 /**
  * Emitter Usage Patterns - Examples and Best Practices
- * 
+ *
  * This file demonstrates various patterns for using the emitter-first
  * approach in the analytics package.
  */
 
-import { 
+import {
+  type AnalyticsManager,
+  ContextBuilder,
+  createAnonymousSession,
   createClientAnalytics,
-  track,
+  createUserSession,
+  ecommerce,
+  EventBatch,
   identify,
   page,
-  group,
-  alias,
-  ContextBuilder,
   PayloadBuilder,
-  EventBatch,
-  createUserSession,
-  createAnonymousSession,
+  track,
   withMetadata,
   withUTM,
-  ecommerce,
-  type AnalyticsManager
 } from '../client';
 
 // ====================================
@@ -32,9 +30,9 @@ async function basicEmitterUsage(analytics: AnalyticsManager) {
   await analytics.emit(
     track('Button Clicked', {
       button_id: 'cta-hero',
+      text: 'Get Started',
       variant: 'primary',
-      text: 'Get Started'
-    })
+    }),
   );
 
   // 2. Using overloaded methods
@@ -42,15 +40,15 @@ async function basicEmitterUsage(analytics: AnalyticsManager) {
     track('Form Submitted', {
       form_id: 'contact',
       fields_filled: 5,
-      time_to_complete: 45000
-    })
+      time_to_complete: 45000,
+    }),
   );
 
   // 3. Batch multiple events
   await analytics.emitBatch([
     identify('user_123', { email: 'user@example.com' }),
     track('Signup Completed', { method: 'email' }),
-    page(undefined, 'Welcome', { first_visit: true })
+    page(undefined, 'Welcome', { first_visit: true }),
   ]);
 }
 
@@ -61,45 +59,45 @@ async function basicEmitterUsage(analytics: AnalyticsManager) {
 async function contextManagement(analytics: AnalyticsManager) {
   // Build rich context for all events
   const context = new ContextBuilder()
-    .setUser('user_123', { 
+    .setUser('user_123', {
+      created_at: '2024-01-15',
       email: 'user@example.com',
       plan: 'premium',
-      created_at: '2024-01-15'
     })
     .setOrganization('org_456')
-    .setPage({ 
+    .setPage({
       path: '/dashboard',
+      referrer: 'https://google.com',
       title: 'Analytics Dashboard',
-      referrer: 'https://google.com'
     })
     .setCampaign({
-      source: 'google',
-      medium: 'cpc',
       campaign: 'summer-sale',
-      content: 'banner-a'
+      content: 'banner-a',
+      medium: 'cpc',
+      source: 'google',
     })
     .setDevice({
       type: 'desktop',
       browser: 'chrome',
-      os: 'macos'
+      os: 'macos',
     })
     .build();
 
   // Use context with PayloadBuilder
   const builder = new PayloadBuilder(context);
-  
+
   await analytics.emit(
     builder.track('Dashboard Viewed', {
       widgets_count: 5,
-      time_range: '30d'
-    })
+      time_range: '30d',
+    }),
   );
 
   await analytics.emit(
     builder.track('Export Generated', {
       format: 'csv',
-      rows: 1500
-    })
+      rows: 1500,
+    }),
   );
 }
 
@@ -115,32 +113,32 @@ async function sessionTracking(analytics: AnalyticsManager) {
   await analytics.emit(
     session.identify({
       name: 'John Doe',
+      company: 'Acme Corp',
       email: 'john@example.com',
-      company: 'Acme Corp'
-    })
+    }),
   );
 
   await analytics.emit(
     session.track('Feature Used', {
       feature_name: 'advanced-search',
       query_length: 25,
-      results_count: 142
-    })
+      results_count: 142,
+    }),
   );
 
   await analytics.emit(
     session.page('Search Results', {
+      filters_applied: ['price', 'rating'],
       query: 'analytics tools',
-      filters_applied: ['price', 'rating']
-    })
+    }),
   );
 
   await analytics.emit(
     session.group('org_456', {
       name: 'Acme Corp',
       plan: 'enterprise',
-      seats: 50
-    })
+      seats: 50,
+    }),
   );
 }
 
@@ -156,29 +154,27 @@ async function anonymousTracking(analytics: AnalyticsManager) {
   await analytics.emit(
     anonSession.track('Product Viewed', {
       product_id: 'PROD-123',
+      category: 'Electronics',
       price: 99.99,
-      category: 'Electronics'
-    })
+    }),
   );
 
   await analytics.emit(
     anonSession.page('Product Detail', {
-      product_id: 'PROD-123'
-    })
+      product_id: 'PROD-123',
+    }),
   );
 
   // When user signs up, alias and identify
   const userId = 'user_123';
-  
-  await analytics.emit(
-    anonSession.alias(userId)
-  );
+
+  await analytics.emit(anonSession.alias(userId));
 
   await analytics.emit(
     anonSession.identify(userId, {
       email: 'newuser@example.com',
-      source: 'organic'
-    })
+      source: 'organic',
+    }),
   );
 }
 
@@ -192,62 +188,64 @@ async function ecommerceTracking(analytics: AnalyticsManager) {
     ecommerce.productViewed({
       product_id: 'SKU-123',
       name: 'Wireless Headphones',
-      price: 129.99,
-      category: 'Electronics/Audio',
-      brand: 'AudioTech',
-      variant: 'Black',
-      position: 1,
+      image_url: 'https://shop.com/images/headphones-black.jpg',
       url: 'https://shop.com/products/wireless-headphones',
-      image_url: 'https://shop.com/images/headphones-black.jpg'
-    })
+      brand: 'AudioTech',
+      category: 'Electronics/Audio',
+      position: 1,
+      price: 129.99,
+      variant: 'Black',
+    }),
   );
 
   // Add to cart
   await analytics.emit(
     ecommerce.cartUpdated({
       action: 'added',
+      cart_total: 129.99,
       product: {
         product_id: 'SKU-123',
         name: 'Wireless Headphones',
+        category: 'Electronics/Audio',
         price: 129.99,
         quantity: 1,
-        category: 'Electronics/Audio'
       },
-      cart_total: 129.99
-    })
+    }),
   );
 
   // Checkout flow
   const checkoutBatch = new EventBatch();
-  
+
   checkoutBatch
     .addTrack('Checkout Step Viewed', {
-      step: 1,
       step_name: 'shipping_info',
-      shipping_method: 'standard'
+      shipping_method: 'standard',
+      step: 1,
     })
     .addTrack('Checkout Step Viewed', {
+      step_name: 'payment_info',
+      payment_method: 'credit_card',
       step: 2,
-      step_name: 'payment_info', 
-      payment_method: 'credit_card'
     })
     .addTrack('Order Completed', {
       order_id: 'ORD-12345',
-      total: 142.48,
-      revenue: 129.99,
-      tax: 12.49,
-      shipping: 0,
-      discount: 0,
       coupon: '',
       currency: 'USD',
-      products: [{
-        product_id: 'SKU-123',
-        name: 'Wireless Headphones',
-        price: 129.99,
-        quantity: 1,
-        category: 'Electronics/Audio',
-        brand: 'AudioTech'
-      }]
+      discount: 0,
+      products: [
+        {
+          product_id: 'SKU-123',
+          name: 'Wireless Headphones',
+          brand: 'AudioTech',
+          category: 'Electronics/Audio',
+          price: 129.99,
+          quantity: 1,
+        },
+      ],
+      revenue: 129.99,
+      shipping: 0,
+      tax: 12.49,
+      total: 142.48,
     });
 
   await analytics.emitBatch(checkoutBatch.getEvents());
@@ -261,23 +259,23 @@ async function metadataEnrichment(analytics: AnalyticsManager) {
   // Base event
   const event = track('Feature Launched', {
     feature: 'ai-assistant',
-    trigger: 'keyboard-shortcut'
+    trigger: 'keyboard-shortcut',
   });
 
   // Add application metadata
   const enrichedEvent = withMetadata(event, {
-    version: '2.1.0',
+    experiment_id: 'exp_123',
     build: 'production',
     source: 'web-app',
-    experiment_id: 'exp_123'
+    version: '2.1.0',
   });
 
   // Add UTM parameters
   const campaignEvent = withUTM(enrichedEvent, {
-    source: 'email',
-    medium: 'newsletter',
     campaign: 'feature-announcement',
-    content: 'variant-a'
+    content: 'variant-a',
+    medium: 'newsletter',
+    source: 'email',
   });
 
   await analytics.emit(campaignEvent);
@@ -293,13 +291,13 @@ async function formTracking(analytics: AnalyticsManager) {
 
   // Track form interactions
   formSession
-    .addTrack('Form Viewed', { 
+    .addTrack('Form Viewed', {
       form_id: formId,
-      fields_count: 5 
+      fields_count: 5,
     })
-    .addTrack('Form Started', { 
+    .addTrack('Form Started', {
       form_id: formId,
-      first_field: 'email' 
+      first_field: 'email',
     });
 
   // Track field completions
@@ -309,15 +307,15 @@ async function formTracking(analytics: AnalyticsManager) {
       form_id: formId,
       field_name: field,
       field_index: index,
-      time_to_complete: Math.random() * 5000
+      time_to_complete: Math.random() * 5000,
     });
   });
 
   // Track form submission
   formSession.addTrack('Form Submitted', {
     form_id: formId,
+    validation_errors: 0,
     total_time: 45000,
-    validation_errors: 0
   });
 
   await analytics.emitBatch(formSession.getEvents());
@@ -335,13 +333,13 @@ async function errorTracking(analytics: AnalyticsManager) {
     await analytics.emit(
       track('Error Occurred', {
         error_type: 'network',
+        component: 'data-fetcher',
         error_message: error instanceof Error ? error.message : String(error),
         error_stack: error instanceof Error ? error.stack : undefined,
-        component: 'data-fetcher',
+        recovery_action: 'retry',
         severity: 'high',
         user_impact: 'data-not-loaded',
-        recovery_action: 'retry'
-      })
+      }),
     );
   }
 }
@@ -352,9 +350,9 @@ async function errorTracking(analytics: AnalyticsManager) {
 
 async function abTestTracking(analytics: AnalyticsManager) {
   const experiments = {
-    'homepage-hero': 'variant-b',
     'cta-color': 'green',
-    'pricing-layout': 'cards'
+    'homepage-hero': 'variant-b',
+    'pricing-layout': 'cards',
   };
 
   // Track experiment exposure
@@ -363,19 +361,19 @@ async function abTestTracking(analytics: AnalyticsManager) {
       track('Experiment Viewed', {
         experiment_id: experiment,
         variant_id: variant,
-        timestamp: new Date().toISOString()
-      })
+        timestamp: new Date().toISOString(),
+      }),
     );
   }
 
   // Track conversion with experiment context
   const conversionEvent = track('Trial Started', {
+    billing_cycle: 'monthly',
     plan: 'premium',
-    billing_cycle: 'monthly'
   });
 
   const enrichedConversion = withMetadata(conversionEvent, {
-    experiments
+    experiments,
   });
 
   await analytics.emit(enrichedConversion);
@@ -388,14 +386,12 @@ async function abTestTracking(analytics: AnalyticsManager) {
 async function funnelTracking(analytics: AnalyticsManager) {
   const funnelId = 'onboarding';
   const userId = 'user_123';
-  
+
   // Create a context for the entire funnel
-  const funnelContext = new ContextBuilder()
-    .setUser(userId)
-    .build();
+  const funnelContext = new ContextBuilder().setUser(userId).build();
 
   const funnelBuilder = new PayloadBuilder(funnelContext);
-  
+
   // Track funnel steps
   const steps = [
     { name: 'Signup Started', properties: { method: 'email' } },
@@ -403,7 +399,7 @@ async function funnelTracking(analytics: AnalyticsManager) {
     { name: 'Profile Created', properties: { fields_filled: 7 } },
     { name: 'Team Invited', properties: { invites_sent: 3 } },
     { name: 'First Project Created', properties: { template_used: 'blank' } },
-    { name: 'Onboarding Completed', properties: { total_time: 600000 } }
+    { name: 'Onboarding Completed', properties: { total_time: 600000 } },
   ];
 
   for (const [index, step] of steps.entries()) {
@@ -411,9 +407,9 @@ async function funnelTracking(analytics: AnalyticsManager) {
       funnelBuilder.track(step.name, {
         ...step.properties,
         funnel_id: funnelId,
+        funnel_step_name: step.name.toLowerCase().replace(/\s+/g, '_'),
         funnel_step: index + 1,
-        funnel_step_name: step.name.toLowerCase().replace(/\s+/g, '_')
-      })
+      }),
     );
   }
 }
@@ -428,7 +424,7 @@ export async function runAllExamples() {
     providers: {
       console: { options: { prefix: '[Example]' } },
       // Add other providers as needed
-    }
+    },
   });
 
   console.log('🚀 Running Emitter Pattern Examples...\n');

@@ -3,7 +3,7 @@
  * Enables consistent feature flag delivery from server to client
  */
 
-import type { BootstrapData, PostHogCookie, FeatureFlags } from '../types/posthog-types';
+import type { BootstrapData, FeatureFlags, PostHogCookie } from '../types/posthog-types';
 
 /**
  * Generate a unique distinct ID (compatible with PostHog format)
@@ -18,15 +18,18 @@ export function generateDistinctId(): string {
 /**
  * Parse PostHog cookie to extract distinct ID
  */
-export function parsePostHogCookie(cookieValue: string, projectApiKey: string): PostHogCookie | null {
+export function parsePostHogCookie(
+  cookieValue: string,
+  projectApiKey: string,
+): PostHogCookie | null {
   try {
     const parsed = JSON.parse(cookieValue);
-    
+
     // Validate the cookie structure
     if (parsed && typeof parsed.distinct_id === 'string') {
       return parsed as PostHogCookie;
     }
-    
+
     return null;
   } catch (error) {
     // Silently fail - cookies may be malformed
@@ -46,11 +49,11 @@ export function getPostHogCookieName(projectApiKey: string): string {
  */
 export function getDistinctIdFromCookies(
   cookies: any, // Next.js cookies object or cookie string
-  projectApiKey: string
+  projectApiKey: string,
 ): string | null {
   try {
     const cookieName = getPostHogCookieName(projectApiKey);
-    
+
     // Handle Next.js cookies() object
     if (cookies && typeof cookies.get === 'function') {
       const cookie = cookies.get(cookieName);
@@ -59,7 +62,7 @@ export function getDistinctIdFromCookies(
         return parsed?.distinct_id || null;
       }
     }
-    
+
     // Handle raw cookie string
     if (typeof cookies === 'string') {
       const cookieMatch = cookies.match(new RegExp(`${cookieName}=([^;]+)`));
@@ -68,7 +71,7 @@ export function getDistinctIdFromCookies(
         return parsed?.distinct_id || null;
       }
     }
-    
+
     return null;
   } catch (error) {
     // Silently fail - cookies may be malformed or missing
@@ -82,42 +85,42 @@ export function getDistinctIdFromCookies(
 export function createBootstrapData(
   distinctId: string,
   featureFlags?: FeatureFlags,
-  featureFlagPayloads?: Record<string, any>
+  featureFlagPayloads?: Record<string, any>,
 ): BootstrapData {
   return {
     distinctID: distinctId,
+    featureFlagPayloads: featureFlagPayloads || {},
     featureFlags: featureFlags || {},
-    featureFlagPayloads: featureFlagPayloads || {}
   };
 }
 
 /**
  * Cached bootstrap data fetcher (React cache compatible)
  */
-let bootstrapCache = new Map<string, { data: BootstrapData; timestamp: number }>();
+const bootstrapCache = new Map<string, { data: BootstrapData; timestamp: number }>();
 const CACHE_TTL = 30000; // 30 seconds
 
 export function getCachedBootstrapData(distinctId: string): BootstrapData | null {
   const cached = bootstrapCache.get(distinctId);
-  
+
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.data;
   }
-  
+
   // Clean up expired entries
   for (const [key, value] of bootstrapCache.entries()) {
     if (Date.now() - value.timestamp >= CACHE_TTL) {
       bootstrapCache.delete(key);
     }
   }
-  
+
   return null;
 }
 
 export function setCachedBootstrapData(distinctId: string, data: BootstrapData): void {
   bootstrapCache.set(distinctId, {
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 }
 
@@ -127,27 +130,27 @@ export function setCachedBootstrapData(distinctId: string, data: BootstrapData):
 export function mergeBootstrapData(...bootstrapData: BootstrapData[]): BootstrapData {
   const merged: BootstrapData = {
     distinctID: '',
+    featureFlagPayloads: {},
     featureFlags: {},
-    featureFlagPayloads: {}
   };
-  
+
   for (const data of bootstrapData) {
     // Use the first non-empty distinct ID
     if (!merged.distinctID && data.distinctID) {
       merged.distinctID = data.distinctID;
     }
-    
+
     // Merge feature flags
     if (data.featureFlags) {
       Object.assign(merged.featureFlags || {}, data.featureFlags);
     }
-    
+
     // Merge feature flag payloads
     if (data.featureFlagPayloads) {
       Object.assign(merged.featureFlagPayloads || {}, data.featureFlagPayloads);
     }
   }
-  
+
   return merged;
 }
 
@@ -195,7 +198,7 @@ export function deserializeBootstrapData(serialized: string): BootstrapData | nu
 export function createMinimalBootstrapData(distinctId?: string): BootstrapData {
   return {
     distinctID: distinctId || generateDistinctId(),
+    featureFlagPayloads: {},
     featureFlags: {},
-    featureFlagPayloads: {}
   };
 }

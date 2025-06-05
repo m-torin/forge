@@ -2,11 +2,10 @@
  * Winston logging provider skeleton
  */
 
-import type { 
-  ObservabilityProvider, 
-  ObservabilityProviderConfig, 
+import type {
   ObservabilityContext,
-  Breadcrumb
+  ObservabilityProvider,
+  ObservabilityProviderConfig,
 } from '../../shared/types/types';
 
 export class WinstonProvider implements ObservabilityProvider {
@@ -26,10 +25,14 @@ export class WinstonProvider implements ObservabilityProvider {
     console.error('[Winston] Logging exception:', error, context);
   }
 
-  async captureMessage(message: string, level: 'info' | 'warning' | 'error', context?: ObservabilityContext): Promise<void> {
+  async captureMessage(
+    message: string,
+    level: 'info' | 'warning' | 'error',
+    context?: ObservabilityContext,
+  ): Promise<void> {
     if (!this.isInitialized) return;
     // TODO: Implement message logging
-    console.log('[Winston] Logging message:', { message, level, context });
+    console.log('[Winston] Logging message:', { context, level, message });
   }
 
   async log(level: string, message: string, metadata?: any): Promise<void> {

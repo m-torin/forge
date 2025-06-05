@@ -1,12 +1,14 @@
 # Migration Guide: @repo/observability → @repo/observability-new
 
-This guide helps you migrate from the original observability package to the new multi-provider architecture.
+This guide helps you migrate from the original observability package to the new multi-provider
+architecture.
 
 ## Key Changes
 
 ### 1. Provider-Based Architecture
 
 **Old:**
+
 ```typescript
 import { initializeSentry } from '@repo/observability/client';
 import { log } from '@repo/observability';
@@ -16,14 +18,15 @@ log.info('Hello');
 ```
 
 **New:**
+
 ```typescript
 import { createClientObservability } from '@repo/observability-new/client';
 
 const observability = await createClientObservability({
   providers: {
     sentry: { dsn: process.env.NEXT_PUBLIC_SENTRY_DSN },
-    logtail: { sourceToken: process.env.LOGTAIL_TOKEN }
-  }
+    logtail: { sourceToken: process.env.LOGTAIL_TOKEN },
+  },
 });
 
 observability.log('info', 'Hello');
@@ -32,30 +35,33 @@ observability.log('info', 'Hello');
 ### 2. Configuration
 
 **Old (env-based):**
+
 ```typescript
 // keys.ts handles environment variables
 // Providers are always initialized if env vars exist
 ```
 
 **New (config-based):**
+
 ```typescript
 const config = {
   providers: {
     // Only configure what you want to use
-    sentry: { 
+    sentry: {
       dsn: process.env.SENTRY_DSN,
-      tracesSampleRate: 0.1
+      tracesSampleRate: 0.1,
     },
     logtail: {
-      sourceToken: process.env.LOGTAIL_TOKEN
-    }
-  }
+      sourceToken: process.env.LOGTAIL_TOKEN,
+    },
+  },
 };
 ```
 
 ### 3. Error Handling
 
 **Old:**
+
 ```typescript
 import { parseError } from '@repo/observability';
 
@@ -63,17 +69,19 @@ const message = parseError(error); // Automatically sends to Sentry
 ```
 
 **New:**
+
 ```typescript
 import { parseAndCaptureError } from '@repo/observability-new/client';
 
 const message = await parseAndCaptureError(error, observability, {
-  component: 'MyComponent'
+  component: 'MyComponent',
 });
 ```
 
 ### 4. React Hooks
 
 **Old:**
+
 ```typescript
 import { useObservability } from '@repo/observability';
 
@@ -81,6 +89,7 @@ const { trackEvent, trackError } = useObservability();
 ```
 
 **New:**
+
 ```typescript
 import { ObservabilityProvider, useObservability } from '@repo/observability-new/client';
 
@@ -96,6 +105,7 @@ const { trackEvent, trackError, manager } = useObservability();
 ### 5. Next.js Configuration
 
 **Old:**
+
 ```typescript
 // next.config.js
 import { withSentry, withLogging } from '@repo/observability';
@@ -104,6 +114,7 @@ export default withLogging(withSentry(nextConfig));
 ```
 
 **New:**
+
 ```typescript
 // next.config.js
 import { withObservability } from '@repo/observability-new/next/config';
@@ -111,9 +122,9 @@ import { withObservability } from '@repo/observability-new/next/config';
 export default withObservability(nextConfig, {
   sentry: {
     org: 'my-org',
-    project: 'my-project'
+    project: 'my-project',
   },
-  logtail: true
+  logtail: true,
 });
 ```
 
@@ -143,8 +154,8 @@ export async function getClientObservability() {
   return createClientObservability({
     providers: {
       sentry: { dsn: process.env.NEXT_PUBLIC_SENTRY_DSN },
-      logtail: { sourceToken: process.env.NEXT_PUBLIC_LOGTAIL_TOKEN }
-    }
+      logtail: { sourceToken: process.env.NEXT_PUBLIC_LOGTAIL_TOKEN },
+    },
   });
 }
 
@@ -153,8 +164,8 @@ export async function getServerObservability() {
     providers: {
       sentry: { dsn: process.env.SENTRY_DSN },
       logtail: { sourceToken: process.env.LOGTAIL_TOKEN },
-      pino: { level: 'info' }
-    }
+      pino: { level: 'info' },
+    },
   });
 }
 ```
@@ -183,7 +194,7 @@ import { getServerObservability } from '@/lib/observability';
 
 export async function GET(request: Request) {
   const observability = await getServerObservability();
-  
+
   try {
     // Your logic
   } catch (error) {
@@ -195,12 +206,12 @@ export async function GET(request: Request) {
 
 ## Environment Variables Mapping
 
-| Old Variable | New Usage |
-|--------------|-----------|
-| `NEXT_PUBLIC_SENTRY_DSN` | `config.providers.sentry.dsn` |
-| `SENTRY_ORG` | `withSentry` options |
-| `SENTRY_PROJECT` | `withSentry` options |
-| `BETTERSTACK_API_KEY` | `config.providers.logtail.sourceToken` |
+| Old Variable             | New Usage                              |
+| ------------------------ | -------------------------------------- |
+| `NEXT_PUBLIC_SENTRY_DSN` | `config.providers.sentry.dsn`          |
+| `SENTRY_ORG`             | `withSentry` options                   |
+| `SENTRY_PROJECT`         | `withSentry` options                   |
+| `BETTERSTACK_API_KEY`    | `config.providers.logtail.sourceToken` |
 
 ## Breaking Changes
 

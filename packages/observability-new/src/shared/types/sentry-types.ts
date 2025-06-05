@@ -3,23 +3,23 @@
  */
 
 export interface SentryConfig {
-  dsn: string;
-  environment?: string;
-  release?: string;
-  tracesSampleRate?: number;
-  profilesSampleRate?: number;
-  debug?: boolean;
-  integrations?: any[];
   beforeSend?: (event: any, hint: any) => any;
   beforeSendTransaction?: (event: any, hint: any) => any;
-  
+  debug?: boolean;
+  dsn: string;
+  environment?: string;
+  integrations?: any[];
+  profilesSampleRate?: number;
+  release?: string;
+  tracesSampleRate?: number;
+
+  automaticVercelMonitors?: boolean;
+  disableLogger?: boolean;
+  hideSourceMaps?: boolean;
   // Next.js specific
   tunnelRoute?: string;
-  hideSourceMaps?: boolean;
-  disableLogger?: boolean;
-  automaticVercelMonitors?: boolean;
   widenClientFileUpload?: boolean;
-  
+
   // Additional options to spread into Sentry.init()
   options?: Record<string, any>;
 }
@@ -36,9 +36,9 @@ export interface SentryOptions {
 }
 
 export interface SentryUser {
-  id: string;
   email?: string;
-  username?: string;
+  id: string;
   ip_address?: string;
   segment?: string;
+  username?: string;
 }

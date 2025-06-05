@@ -1,14 +1,14 @@
 /**
  * Server-side Next.js observability exports
  * Complete Next.js 15 integration for server components and API routes
- * 
+ *
  * @example
  * ```typescript
  * import { createNextJSServerObservability } from '@repo/observability-new/server/next';
- * 
+ *
  * // Create Next.js server observability
  * const observability = createNextJSServerObservability({
- *   providers: { 
+ *   providers: {
  *     sentry: { dsn: process.env.SENTRY_DSN },
  *     pino: { level: 'info' }
  *   }
@@ -28,24 +28,22 @@ export * from './server';
 // ============================================================================
 
 export {
+  createNextJSServerObservability,
   // Next.js server observability manager
   NextJSServerObservabilityManager,
-  createNextJSServerObservability
 } from './next/server';
 
 export {
-  // Next.js config wrappers (same for client and server)
-  withSentry,
+  createObservabilityConfig,
+  type SentryBuildOptions,
   withLogging,
   withObservability,
-  createObservabilityConfig,
-  type SentryBuildOptions
+  // Next.js config wrappers (same for client and server)
+  withSentry,
 } from './next/config-wrappers';
 
 // ============================================================================
 // NEXT.JS TYPES
 // ============================================================================
 
-export type {
-  NextJSServerObservabilityConfig
-} from './next/server';
+export type { NextJSServerObservabilityConfig } from './next/server';

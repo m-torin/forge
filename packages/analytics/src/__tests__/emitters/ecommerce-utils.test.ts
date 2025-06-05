@@ -1,57 +1,53 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import {
+  cleanProperties,
+  createEcommerceContext,
+  mergeEventProperties,
   normalizeProductProperties,
   normalizeProducts,
-  validateRequiredProperties,
-  cleanProperties,
-  mergeEventProperties,
   validateCurrency,
-  createEcommerceContext,
+  validateRequiredProperties,
 } from '../../shared/emitters/ecommerce/utils';
-import type { BaseProductProperties, EcommerceEventProperties } from '../../shared/emitters/ecommerce/types';
 
 describe('Ecommerce Utils', () => {
   describe('normalizeProductProperties', () => {
     it('should normalize product with all standard properties', () => {
       const input = {
         product_id: 'p123',
-        sku: 'SKU-123',
-        category: 'Electronics',
         name: 'Wireless Headphones',
+        image_url: 'https://example.com/headphones.jpg',
+        url: 'https://example.com/headphones',
         brand: 'AudioTech',
-        variant: 'Noise Cancelling',
-        price: 199.99,
-        quantity: 2,
+        category: 'Electronics',
         coupon: 'SAVE10',
         position: 3,
-        url: 'https://example.com/headphones',
-        image_url: 'https://example.com/headphones.jpg',
+        price: 199.99,
+        quantity: 2,
+        sku: 'SKU-123',
+        variant: 'Noise Cancelling',
       };
 
       const result = normalizeProductProperties(input);
 
       expect(result).toEqual({
         product_id: 'p123',
-        sku: 'SKU-123',
-        category: 'Electronics',
         name: 'Wireless Headphones',
+        image_url: 'https://example.com/headphones.jpg',
+        url: 'https://example.com/headphones',
         brand: 'AudioTech',
-        variant: 'Noise Cancelling',
-        price: 199.99,
-        quantity: 2,
+        category: 'Electronics',
         coupon: 'SAVE10',
         position: 3,
-        url: 'https://example.com/headphones',
-        image_url: 'https://example.com/headphones.jpg',
+        price: 199.99,
+        quantity: 2,
+        sku: 'SKU-123',
+        variant: 'Noise Cancelling',
       });
     });
 
     it('should normalize product ID field variations', () => {
-      const testCases = [
-        { product_id: 'p1' },
-        { productId: 'p2' },
-        { id: 'p3' },
-      ];
+      const testCases = [{ product_id: 'p1' }, { productId: 'p2' }, { id: 'p3' }];
 
       testCases.forEach((input, index) => {
         const result = normalizeProductProperties(input);
@@ -71,9 +67,15 @@ describe('Ecommerce Utils', () => {
         expect(result.name).toBeTruthy();
       });
 
-      expect(normalizeProductProperties({ id: 'p1', name: 'Product Name' }).name).toBe('Product Name');
-      expect(normalizeProductProperties({ id: 'p2', title: 'Product Title' }).name).toBe('Product Title');
-      expect(normalizeProductProperties({ id: 'p3', productName: 'Product ProductName' }).name).toBe('Product ProductName');
+      expect(normalizeProductProperties({ id: 'p1', name: 'Product Name' }).name).toBe(
+        'Product Name',
+      );
+      expect(normalizeProductProperties({ id: 'p2', title: 'Product Title' }).name).toBe(
+        'Product Title',
+      );
+      expect(
+        normalizeProductProperties({ id: 'p3', productName: 'Product ProductName' }).name,
+      ).toBe('Product ProductName');
     });
 
     it('should normalize brand field variations', () => {
@@ -195,21 +197,35 @@ describe('Ecommerce Utils', () => {
         { id: 'p3', image: 'https://example.com/image_field.jpg' },
       ];
 
-      expect(normalizeProductProperties(imageCases[0]).image_url).toBe('https://example.com/image.jpg');
-      expect(normalizeProductProperties(imageCases[1]).image_url).toBe('https://example.com/imageUrl.jpg');
-      expect(normalizeProductProperties(imageCases[2]).image_url).toBe('https://example.com/image_field.jpg');
+      expect(normalizeProductProperties(imageCases[0]).image_url).toBe(
+        'https://example.com/image.jpg',
+      );
+      expect(normalizeProductProperties(imageCases[1]).image_url).toBe(
+        'https://example.com/imageUrl.jpg',
+      );
+      expect(normalizeProductProperties(imageCases[2]).image_url).toBe(
+        'https://example.com/image_field.jpg',
+      );
     });
 
     it('should throw error when product is null or undefined', () => {
       expect(() => normalizeProductProperties(null)).toThrow('Product properties are required');
-      expect(() => normalizeProductProperties(undefined)).toThrow('Product properties are required');
+      expect(() => normalizeProductProperties(undefined)).toThrow(
+        'Product properties are required',
+      );
     });
 
     it('should throw error when product ID is missing', () => {
       expect(() => normalizeProductProperties({})).toThrow('Product must have an id');
-      expect(() => normalizeProductProperties({ name: 'Product' })).toThrow('Product must have an id');
-      expect(() => normalizeProductProperties({ product_id: '' })).toThrow('Product must have an id');
-      expect(() => normalizeProductProperties({ productId: null })).toThrow('Product must have an id');
+      expect(() => normalizeProductProperties({ name: 'Product' })).toThrow(
+        'Product must have an id',
+      );
+      expect(() => normalizeProductProperties({ product_id: '' })).toThrow(
+        'Product must have an id',
+      );
+      expect(() => normalizeProductProperties({ productId: null })).toThrow(
+        'Product must have an id',
+      );
     });
 
     it('should handle minimal valid product', () => {
@@ -343,8 +359,8 @@ describe('Ecommerce Utils', () => {
     it('should handle falsy values correctly', () => {
       const properties = {
         product_id: 'p1',
-        count: 0,
         active: false,
+        count: 0,
         description: '',
       };
 
@@ -394,19 +410,19 @@ describe('Ecommerce Utils', () => {
     it('should preserve falsy values that are not undefined', () => {
       const input = {
         product_id: 'p1',
-        count: 0,
         active: false,
+        count: 0,
         description: '',
-        optional: null,
         missing: undefined,
+        optional: null,
       };
 
       const result = cleanProperties(input);
 
       expect(result).toEqual({
         product_id: 'p1',
-        count: 0,
         active: false,
+        count: 0,
         description: '',
         optional: null,
       });
@@ -457,16 +473,16 @@ describe('Ecommerce Utils', () => {
       };
 
       const common = {
-        user_id: 'user123',
         session_id: 'session456',
+        user_id: 'user123',
       };
 
       const result = mergeEventProperties(specific, common);
 
       expect(result).toEqual({
-        user_id: 'user123',
-        session_id: 'session456',
         product_id: 'p1',
+        session_id: 'session456',
+        user_id: 'user123',
         name: 'Product',
       });
     });
@@ -479,16 +495,16 @@ describe('Ecommerce Utils', () => {
 
       const common = {
         product_id: 'p2', // Should be overridden
-        category: 'Common Category', // Should be overridden
         user_id: 'user123',
+        category: 'Common Category', // Should be overridden
       };
 
       const result = mergeEventProperties(specific, common);
 
       expect(result).toEqual({
         product_id: 'p1',
-        category: 'Specific Category',
         user_id: 'user123',
+        category: 'Specific Category',
       });
     });
 
@@ -569,16 +585,16 @@ describe('Ecommerce Utils', () => {
 
     it('should merge additional context', () => {
       const additionalContext = {
-        source: 'product_page',
         experiment_id: 'exp123',
+        source: 'product_page',
       };
 
       const result = createEcommerceContext(additionalContext);
 
       expect(result).toEqual({
+        experiment_id: 'exp123',
         category: 'ecommerce',
         source: 'product_page',
-        experiment_id: 'exp123',
       });
     });
 
@@ -610,17 +626,17 @@ describe('Ecommerce Utils', () => {
 
     it('should handle complex additional context', () => {
       const complexContext = {
-        user: {
-          id: 'user123',
-          segment: 'premium',
-        },
-        page: {
-          title: 'Product Page',
-          url: 'https://example.com/product',
-        },
         experiment: {
           id: 'exp123',
           variant: 'control',
+        },
+        page: {
+          url: 'https://example.com/product',
+          title: 'Product Page',
+        },
+        user: {
+          id: 'user123',
+          segment: 'premium',
         },
       };
 
@@ -628,17 +644,17 @@ describe('Ecommerce Utils', () => {
 
       expect(result).toEqual({
         category: 'ecommerce',
-        user: {
-          id: 'user123',
-          segment: 'premium',
-        },
-        page: {
-          title: 'Product Page',
-          url: 'https://example.com/product',
-        },
         experiment: {
           id: 'exp123',
           variant: 'control',
+        },
+        page: {
+          url: 'https://example.com/product',
+          title: 'Product Page',
+        },
+        user: {
+          id: 'user123',
+          segment: 'premium',
         },
       });
     });
@@ -648,14 +664,14 @@ describe('Ecommerce Utils', () => {
   describe('Integration Tests', () => {
     it('should work together in a typical product normalization flow', () => {
       const rawProduct = {
-        productId: 'p123',
-        title: 'Wireless Headphones',
+        couponCode: 'SAVE10',
+        extraField: undefined,
+        imageUrl: 'https://example.com/headphones.jpg',
         manufacturer: 'AudioTech',
         price: '199.99',
+        productId: 'p123',
         quantity: '2',
-        couponCode: 'SAVE10',
-        imageUrl: 'https://example.com/headphones.jpg',
-        extraField: undefined,
+        title: 'Wireless Headphones',
       };
 
       // Step 1: Normalize the product
@@ -670,7 +686,7 @@ describe('Ecommerce Utils', () => {
       const cleaned = cleanProperties(normalized);
 
       // Step 4: Merge with common properties
-      const common = { user_id: 'user123', session_id: 'session456' };
+      const common = { session_id: 'session456', user_id: 'user123' };
       const merged = mergeEventProperties(cleaned, common);
 
       // Step 5: Create context
@@ -686,9 +702,9 @@ describe('Ecommerce Utils', () => {
       expect(cleaned).not.toHaveProperty('extraField');
 
       expect(merged).toMatchObject({
-        user_id: 'user123',
-        session_id: 'session456',
         product_id: 'p123',
+        session_id: 'session456',
+        user_id: 'user123',
         name: 'Wireless Headphones',
       });
 
@@ -700,18 +716,18 @@ describe('Ecommerce Utils', () => {
 
     it('should handle batch processing efficiently', () => {
       const rawProducts = Array.from({ length: 1000 }, (_, i) => ({
-        productId: `p${i}`,
-        title: `Product ${i}`,
         price: `${Math.random() * 1000}`,
+        productId: `p${i}`,
         quantity: `${Math.floor(Math.random() * 10)}`,
+        title: `Product ${i}`,
       }));
 
       const startTime = performance.now();
 
       const normalized = normalizeProducts(rawProducts);
       const cleaned = normalized.map(cleanProperties);
-      const withCommon = cleaned.map(product => 
-        mergeEventProperties(product, { user_id: 'user123' })
+      const withCommon = cleaned.map((product) =>
+        mergeEventProperties(product, { user_id: 'user123' }),
       );
 
       const endTime = performance.now();
@@ -724,18 +740,17 @@ describe('Ecommerce Utils', () => {
 
     it('should maintain data integrity through the entire flow', () => {
       const originalData = {
+        url: 'https://example.com/product?id=123&ref=homepage',
+        category: 'Electronics & Gadgets',
+        price: '99.99',
         productId: 'special-chars-123',
         title: 'Product with "quotes" & symbols',
-        price: '99.99',
-        category: 'Electronics & Gadgets',
-        url: 'https://example.com/product?id=123&ref=homepage',
       };
 
       const result = cleanProperties(
-        mergeEventProperties(
-          normalizeProductProperties(originalData),
-          { timestamp: new Date().toISOString() }
-        )
+        mergeEventProperties(normalizeProductProperties(originalData), {
+          timestamp: new Date().toISOString(),
+        }),
       );
 
       expect(result.product_id).toBe('special-chars-123');

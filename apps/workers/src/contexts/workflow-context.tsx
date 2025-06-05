@@ -1,7 +1,16 @@
 'use client';
 
 import { useId, useToggle, usePrevious, useShallowEffect, useDebouncedValue } from '@mantine/hooks';
-import { createContext, useContext, useEffect, useMemo, useOptimistic, useState, startTransition, useRef } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useState,
+  startTransition,
+  useRef,
+} from 'react';
 
 import { notify } from '@repo/notifications/mantine-notifications';
 // import { auth } from '@repo/auth/client'; // TODO: Add auth when needed
@@ -188,11 +197,11 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
 
   // Use Mantine's usePrevious to track previous runs
   const previousRuns = usePrevious(runs);
-  
+
   // Debounce runs for logging to avoid spam
   const [debouncedRuns] = useDebouncedValue(runs, 1000);
   const previousDebouncedRuns = usePrevious(debouncedRuns);
-  
+
   // Track last empty state log time
   const lastEmptyLogRef = useRef<number>(0);
 
@@ -225,10 +234,8 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
           if (!endpoint) return;
 
           const allSteps = run.steps.flatMap((g) => g.steps);
-          const completedSteps = allSteps.filter((s) => 
-            s.status === 'completed' || 
-            s.state === 'STEP_SUCCESS' || 
-            s.completedAt
+          const completedSteps = allSteps.filter(
+            (s) => s.status === 'completed' || s.state === 'STEP_SUCCESS' || s.completedAt,
           ).length;
           const totalSteps = allSteps.length;
           const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
@@ -254,10 +261,10 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
         if (Object.keys(updates).length > 0) {
           setTriggeredWorkflows((prev) => {
             const newState = { ...prev };
-            
+
             Object.entries(updates).forEach(([endpoint, newStatus]) => {
               const prevStatus = prev[endpoint]?.status;
-              
+
               // Show completion notification
               if (prevStatus === 'running' && newStatus.status !== 'running') {
                 if (newStatus.status === 'completed') {
@@ -274,10 +281,10 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
                   });
                 }
               }
-              
+
               newState[endpoint] = newStatus;
             });
-            
+
             return newState;
           });
         }
@@ -293,14 +300,17 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
   // Use Mantine's useShallowEffect to log changes only when runs actually change
   useShallowEffect(() => {
     if (!previousDebouncedRuns) return; // Skip initial render
-    
-    const hasChanged = debouncedRuns.length !== previousDebouncedRuns.length ||
+
+    const hasChanged =
+      debouncedRuns.length !== previousDebouncedRuns.length ||
       debouncedRuns.some((run, index) => {
         const prevRun = previousDebouncedRuns[index];
-        return !prevRun || 
+        return (
+          !prevRun ||
           run.workflowRunId !== prevRun.workflowRunId ||
           run.workflowState !== prevRun.workflowState ||
-          run.steps.length !== prevRun.steps.length;
+          run.steps.length !== prevRun.steps.length
+        );
       });
 
     if (hasChanged) {
@@ -308,21 +318,28 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
         previousCount: previousDebouncedRuns.length,
         newCount: debouncedRuns.length,
         changes: {
-          added: debouncedRuns.filter(r => !previousDebouncedRuns.find(pr => pr.workflowRunId === r.workflowRunId)),
-          removed: previousDebouncedRuns.filter(pr => !debouncedRuns.find(r => r.workflowRunId === pr.workflowRunId)),
-          updated: debouncedRuns.filter(r => {
-            const prev = previousDebouncedRuns.find(pr => pr.workflowRunId === r.workflowRunId);
+          added: debouncedRuns.filter(
+            (r) => !previousDebouncedRuns.find((pr) => pr.workflowRunId === r.workflowRunId),
+          ),
+          removed: previousDebouncedRuns.filter(
+            (pr) => !debouncedRuns.find((r) => r.workflowRunId === pr.workflowRunId),
+          ),
+          updated: debouncedRuns.filter((r) => {
+            const prev = previousDebouncedRuns.find((pr) => pr.workflowRunId === r.workflowRunId);
             return prev && prev.workflowState !== r.workflowState;
-          })
-        }
+          }),
+        },
       });
-      
+
       if (debouncedRuns.length > 0) {
-        console.log('Active workflows:', debouncedRuns.map(r => ({
-          id: r.workflowRunId,
-          state: r.workflowState,
-          url: r.workflowUrl.split('/').pop()
-        })));
+        console.log(
+          'Active workflows:',
+          debouncedRuns.map((r) => ({
+            id: r.workflowRunId,
+            state: r.workflowState,
+            url: r.workflowUrl.split('/').pop(),
+          })),
+        );
       }
     } else if (debouncedRuns.length === 0) {
       // Only log empty state every 30 seconds

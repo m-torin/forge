@@ -69,19 +69,25 @@ export function getWorkflowConfig(): WorkflowConfig {
 export function getOrchestrationConfig() {
   const workflowConfig = getWorkflowConfig()
   
-  return {
+  const config: any = {
     baseUrl: workflowConfig.workflowUrl,
     debug: workflowConfig.mode === 'local',
     env: workflowConfig.mode,
     qstash: {
       token: workflowConfig.qstashToken,
       baseUrl: workflowConfig.qstashUrl,
-    },
-    redis: {
+    }
+  }
+
+  // Only add Redis configuration if URL is provided
+  if (process.env.UPSTASH_REDIS_REST_URL) {
+    config.redis = {
       url: process.env.UPSTASH_REDIS_REST_URL,
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     }
   }
+  
+  return config
 }
 
 export const isLocalMode = (): boolean => getWorkflowConfig().mode === 'local'

@@ -13,12 +13,11 @@ import { passkey } from 'better-auth/plugins/passkey';
 import { twoFactor } from 'better-auth/plugins/two-factor';
 import { headers } from 'next/headers';
 
-import { prisma as database } from '@repo/database/prisma';
 import { analytics } from '@repo/analytics-legacy/posthog/server';
+import { prisma as database } from '@repo/database/prisma';
 
-import { createAuthConfig } from '../shared/config';
-import { ac, roles } from '../shared/permissions';
 import { adminAccessController, adminRoles } from '../shared/admin-permissions';
+import { createAuthConfig } from '../shared/config';
 import {
   sendMagicLinkEmailAuth,
   sendOrganizationInvitation,
@@ -26,6 +25,8 @@ import {
   sendVerificationEmail,
   sendWelcomeEmail,
 } from '../shared/email';
+import { ac, roles } from '../shared/permissions';
+
 import type { AuthSession } from '../shared/types';
 
 const config = createAuthConfig();
@@ -33,19 +34,23 @@ const config = createAuthConfig();
 /**
  * Better Auth instance with full configuration
  */
-export const auth = betterAuth({
+export const auth: any = betterAuth({
   // Social providers configuration
   socialProviders: {
-    github: config.providers.github ? {
-      clientId: config.providers.github.clientId,
-      clientSecret: config.providers.github.clientSecret,
-      enabled: true,
-    } : undefined,
-    google: config.providers.google ? {
-      clientId: config.providers.google.clientId,
-      clientSecret: config.providers.google.clientSecret,
-      enabled: true,
-    } : undefined,
+    github: config.providers.github
+      ? {
+          clientId: config.providers.github.clientId,
+          clientSecret: config.providers.github.clientSecret,
+          enabled: true,
+        }
+      : undefined,
+    google: config.providers.google
+      ? {
+          clientId: config.providers.google.clientId,
+          clientSecret: config.providers.google.clientSecret,
+          enabled: true,
+        }
+      : undefined,
   },
 
   // Database adapter
@@ -84,7 +89,7 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
     sendResetPassword: async ({ url, token, user }) => {
-      await sendPasswordResetEmail({ url, token, email: user.email, name: user.name });
+      await sendPasswordResetEmail({ name: user.name, url, email: user.email, token });
     },
   },
 
@@ -93,7 +98,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     sendOnSignUp: false,
     sendVerificationEmail: async ({ url, token, user }) => {
-      await sendVerificationEmail({ url, token, email: user.email, name: user.name });
+      await sendVerificationEmail({ name: user.name, url, email: user.email, token });
     },
   },
 
@@ -105,7 +110,7 @@ export const auth = betterAuth({
         const newSession = ctx.context?.newSession;
         if (newSession?.user) {
           const user = newSession.user;
-          
+
           analytics.identify({
             distinctId: user.id,
             properties: {
@@ -149,161 +154,186 @@ export const auth = betterAuth({
   // Plugins configuration
   plugins: [
     nextCookies(),
-    
-    // Organization plugin
-    ...(config.features.organizations ? [organization({
-      ac,
-      roles,
-      allowUserToCreateOrganization: async () => true,
-      creatorRole: 'owner' as const,
-      organizationLimit: 5,
-      membershipLimit: 100,
-      invitationLimit: 100,
-      invitationExpiresIn: 48 * 60 * 60, // 48 hours
-      cancelPendingInvitationsOnReInvite: true,
-      sendInvitationEmail: sendOrganizationInvitation,
-      
-      // Organization lifecycle hooks
-      organizationCreation: {
-        afterCreate: async ({ organization, user }) => {
-          await sendWelcomeEmail({
-            name: user.name || user.email,
-            email: user.email,
-            organizationName: organization.name,
-          });
 
-          analytics.capture({
-            distinctId: user.id,
-            event: 'Organization Created',
-            properties: {
-              organizationId: organization.id,
-              organizationName: organization.name,
-              organizationSlug: organization.slug,
-            },
-          });
-        },
-        
-        beforeCreate: async ({ organization, user }) => {
-          return {
-            data: {
-              ...organization,
-              metadata: {
-                ...organization.metadata,
-                createdAt: new Date().toISOString(),
-                ownerId: user.id,
+    // Organization plugin
+    ...(config.features.organizations
+      ? [
+          organization({
+            ac,
+            allowUserToCreateOrganization: async () => true,
+            cancelPendingInvitationsOnReInvite: true,
+            creatorRole: 'owner' as const,
+            invitationExpiresIn: 48 * 60 * 60, // 48 hours
+            invitationLimit: 100,
+            membershipLimit: 100,
+            organizationLimit: 5,
+            roles,
+            sendInvitationEmail: sendOrganizationInvitation,
+
+            // Organization lifecycle hooks
+            organizationCreation: {
+              afterCreate: async ({ organization, user }) => {
+                await sendWelcomeEmail({
+                  name: user.name || user.email,
+                  email: user.email,
+                  organizationName: organization.name,
+                });
+
+                analytics.capture({
+                  distinctId: user.id,
+                  event: 'Organization Created',
+                  properties: {
+                    organizationId: organization.id,
+                    organizationName: organization.name,
+                    organizationSlug: organization.slug,
+                  },
+                });
+              },
+
+              beforeCreate: async ({ organization, user }) => {
+                return {
+                  data: {
+                    ...organization,
+                    metadata: {
+                      ...organization.metadata,
+                      createdAt: new Date().toISOString(),
+                      ownerId: user.id,
+                    },
+                  },
+                };
               },
             },
-          };
-        },
-      },
 
-      organizationDeletion: {
-        afterDelete: async (data) => {
-          analytics.capture({
-            distinctId: data.user.id,
-            event: 'Organization Deleted',
-            properties: {
-              organizationId: data.organization.id,
+            organizationDeletion: {
+              afterDelete: async (data) => {
+                analytics.capture({
+                  distinctId: data.user.id,
+                  event: 'Organization Deleted',
+                  properties: {
+                    organizationId: data.organization.id,
+                  },
+                });
+              },
             },
-          });
-        },
-      },
 
-      teams: {
-        enabled: true,
-        maximumTeams: 10,
-        allowRemovingAllTeams: false,
-      },
-    })] : []),
+            teams: {
+              allowRemovingAllTeams: false,
+              enabled: true,
+              maximumTeams: 10,
+            },
+          }),
+        ]
+      : []),
 
     // API Key plugin
-    ...(config.features.apiKeys ? [apiKey({
-      apiKeyHeaders: ['x-api-key'],
-      defaultKeyLength: 64,
-      defaultPrefix: 'forge_',
-      disableKeyHashing: false,
-      disableSessionForAPIKeys: false,
-      enableMetadata: true,
-      
-      keyExpiration: {
-        defaultExpiresIn: null,
-        disableCustomExpiresTime: false,
-        maxExpiresIn: 365 * 24 * 60 * 60, // 1 year
-        minExpiresIn: 60 * 60, // 1 hour
-      },
-      
-      maximumNameLength: 100,
-      minimumNameLength: 3,
-      
-      permissions: {
-        defaultPermissions: async () => ({
-          read: ['user', 'organization'],
-          write: ['user'],
-        }),
-      },
-      
-      rateLimit: {
-        enabled: true,
-        maxRequests: 100,
-        timeWindow: 1000 * 60 * 60 * 24, // 1 day
-      },
-      
-      startingCharactersConfig: {
-        charactersLength: 4,
-        shouldStore: true,
-      },
-      
-      customKeyGenerator: async (options) => {
-        const { length, prefix } = options;
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let apiKey = prefix ? `${prefix}_` : '';
-        for (let i = 0; i < length; i++) {
-          apiKey += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        return apiKey;
-      },
-    })] : []),
+    ...(config.features.apiKeys
+      ? [
+          apiKey({
+            apiKeyHeaders: ['x-api-key'],
+            defaultKeyLength: 64,
+            defaultPrefix: 'forge_',
+            disableKeyHashing: false,
+            disableSessionForAPIKeys: false,
+            enableMetadata: true,
+
+            keyExpiration: {
+              defaultExpiresIn: null,
+              disableCustomExpiresTime: false,
+              maxExpiresIn: 365 * 24 * 60 * 60, // 1 year
+              minExpiresIn: 60 * 60, // 1 hour
+            },
+
+            maximumNameLength: 100,
+            minimumNameLength: 3,
+
+            permissions: {
+              defaultPermissions: async () => ({
+                read: ['user', 'organization'],
+                write: ['user'],
+              }),
+            },
+
+            rateLimit: {
+              enabled: true,
+              maxRequests: 100,
+              timeWindow: 1000 * 60 * 60 * 24, // 1 day
+            },
+
+            startingCharactersConfig: {
+              charactersLength: 4,
+              shouldStore: true,
+            },
+
+            customKeyGenerator: async (options) => {
+              const { length, prefix } = options;
+              const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+              let apiKey = prefix ? `${prefix}_` : '';
+              for (let i = 0; i < length; i++) {
+                apiKey += characters.charAt(Math.floor(Math.random() * characters.length));
+              }
+              return apiKey;
+            },
+          }),
+        ]
+      : []),
 
     // Admin plugin
-    ...(config.features.admin ? [admin({
-      ac: adminAccessController,
-      adminRoles: ['admin', 'super-admin', 'moderator', 'support'],
-      adminUserIds: [],
-      bannedUserMessage: 'Your account has been suspended. Please contact support for more information.',
-      defaultBanExpiresIn: 60 * 60 * 24 * 7, // 7 days
-      defaultBanReason: 'Violated terms of service',
-      defaultRole: 'user',
-      impersonationSessionDuration: 60 * 60, // 1 hour
-      roles: adminRoles,
-    })] : []),
+    ...(config.features.admin
+      ? [
+          admin({
+            ac: adminAccessController,
+            adminRoles: ['admin', 'super-admin', 'moderator', 'support'],
+            adminUserIds: [],
+            bannedUserMessage:
+              'Your account has been suspended. Please contact support for more information.',
+            defaultBanExpiresIn: 60 * 60 * 24 * 7, // 7 days
+            defaultBanReason: 'Violated terms of service',
+            defaultRole: 'user',
+            impersonationSessionDuration: 60 * 60, // 1 hour
+            roles: adminRoles,
+          }),
+        ]
+      : []),
 
     // Two-factor authentication
-    ...(config.features.twoFactor ? [twoFactor({
-      issuer: 'Forge Ahead',
-    })] : []),
+    ...(config.features.twoFactor
+      ? [
+          twoFactor({
+            issuer: 'Forge Ahead',
+          }),
+        ]
+      : []),
 
     // Passkey authentication
-    ...(config.features.passkeys ? [passkey({
-      authenticatorSelection: {
-        residentKey: 'preferred',
-        userVerification: 'preferred',
-      },
-      origin: config.appUrl,
-      rpID: new URL(config.appUrl).hostname,
-      rpName: 'Forge Ahead',
-    })] : []),
+    ...(config.features.passkeys
+      ? [
+          passkey({
+            authenticatorSelection: {
+              residentKey: 'preferred',
+              userVerification: 'preferred',
+            },
+            origin: config.appUrl,
+            rpID: new URL(config.appUrl).hostname,
+            rpName: 'Forge Ahead',
+          }),
+        ]
+      : []),
 
     // Magic link authentication
-    ...(config.features.magicLink ? [magicLink({
-      expiresIn: 60 * 20, // 20 minutes
-      sendMagicLink: async ({ url, token, user }) => {
-        await sendMagicLinkEmailAuth({ url, token, email: user.email, name: user.name });
-      },
-    })] : []),
+    ...(config.features.magicLink
+      ? [
+          magicLink({
+            expiresIn: 60 * 20, // 20 minutes
+            sendMagicLink: async ({ url, email, token }) => {
+              await sendMagicLinkEmailAuth({ name: email, url, email, token });
+            },
+          }),
+        ]
+      : []),
   ],
 
   secret: config.secret,
-  
+
   // Session configuration
   session: {
     cookieCache: {
@@ -330,14 +360,14 @@ export async function getSession(): Promise<AuthSession | null> {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  
+
   if (!session) {
     return null;
   }
-  
+
   return {
-    user: session.user,
-    session: session.session,
     activeOrganizationId: session.session.activeOrganizationId || undefined,
+    session: session.session,
+    user: session.user,
   };
 }

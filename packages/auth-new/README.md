@@ -72,22 +72,22 @@ import { getCurrentUser, getSession } from '@repo/auth-new/server';
 // In server components
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  
+
   if (!user) {
     redirect('/sign-in');
   }
-  
+
   return <div>Welcome, {user.email}!</div>;
 }
 
 // In API routes
 export async function GET() {
   const session = await getSession();
-  
+
   if (!session) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  
+
   return Response.json({ user: session.user });
 }
 ```
@@ -148,8 +148,8 @@ function OrganizationManager() {
 
   return (
     <div>
-      <select 
-        value={activeOrganization?.id} 
+      <select
+        value={activeOrganization?.id}
         onChange={(e) => setActiveOrganization(e.target.value)}
       >
         {organizations.map(org => (
@@ -175,7 +175,7 @@ async function setupApiKey() {
     permissions: { read: ['user'], write: ['user'] },
     expiresIn: 365 * 24 * 60 * 60, // 1 year
   });
-  
+
   console.log('API Key:', apiKey.key);
 }
 ```
@@ -277,12 +277,7 @@ pnpm test:coverage
 This package provides complete TypeScript coverage with no `any` types:
 
 ```typescript
-import type { 
-  User, 
-  Session, 
-  AuthSession, 
-  OrganizationRole 
-} from '@repo/auth-new/types';
+import type { User, Session, AuthSession, OrganizationRole } from '@repo/auth-new/types';
 ```
 
 ## Security Features
@@ -304,6 +299,7 @@ import type {
 ## Support
 
 For issues and questions:
+
 1. Check the [documentation](../documentation)
 2. Review existing issues
 3. Create new issue with reproduction steps

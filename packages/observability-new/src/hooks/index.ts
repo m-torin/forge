@@ -3,25 +3,22 @@
  */
 
 export {
+  type ErrorContext,
+  // Context
+  ObservabilityContext,
+  // Types
+  type ObservabilityEvent,
   // Hooks
   useObservability,
   useObservabilityManager,
-  useWorkflowObservability,
   usePerformanceTimer,
-  
-  // Context
-  ObservabilityContext,
-  
-  // Types
-  type ObservabilityEvent,
-  type ErrorContext
+  useWorkflowObservability,
 } from './use-observability';
 
 export {
   // Provider component
   ObservabilityProvider,
-  withObservability,
-  
   // Types
-  type ObservabilityProviderProps
+  type ObservabilityProviderProps,
+  withObservability,
 } from './ObservabilityProvider';

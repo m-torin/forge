@@ -4,7 +4,8 @@ Modern orchestration package with enhanced workflow patterns, rate limiting, and
 
 ## Overview
 
-This package provides a next-generation orchestration system built on top of Upstash QStash and Workflow, with additional features:
+This package provides a next-generation orchestration system built on top of Upstash QStash and
+Workflow, with additional features:
 
 - **Rate Limiting** - Upstash Redis-based rate limiting with multiple algorithms
 - **Workflow Patterns** - Reusable patterns (batch, retry, circuit breaker, saga)
@@ -19,7 +20,7 @@ This package provides a next-generation orchestration system built on top of Ups
   /providers          - Provider implementations
     /upstash         - Upstash Workflow provider
     /rate-limit      - Rate limiting provider
-  /shared            
+  /shared
     /patterns        - Reusable workflow patterns
     /types           - Shared type definitions
     /utils           - Utility functions
@@ -68,15 +69,15 @@ const orchestration = await createOrchestration({
   providers: {
     upstash: {
       token: process.env.QSTASH_TOKEN,
-      url: process.env.UPSTASH_WORKFLOW_URL
+      url: process.env.UPSTASH_WORKFLOW_URL,
     },
     rateLimit: {
       redis: {
         url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN
-      }
-    }
-  }
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      },
+    },
+  },
 });
 
 // Create a workflow
@@ -85,9 +86,9 @@ const workflow = orchestration.createWorkflow('process-orders', async (ctx) => {
   await ctx.run('fetch-orders', async () => {
     return await fetchOrders();
   });
-  
+
   await ctx.sleep('wait', 5);
-  
+
   await ctx.run('process', async () => {
     // Process orders
   });
@@ -99,18 +100,22 @@ const workflow = orchestration.createWorkflow('process-orders', async (ctx) => {
 ```typescript
 import { withRateLimit } from '@repo/orchestration-new/patterns';
 
-const workflow = orchestration.createWorkflow('api-calls', 
-  withRateLimit({
-    key: 'external-api',
-    limit: 100,
-    window: '1m',
-    algorithm: 'sliding'
-  }, async (ctx) => {
-    // Rate-limited workflow
-    await ctx.call('api', {
-      url: 'https://api.example.com/data'
-    });
-  })
+const workflow = orchestration.createWorkflow(
+  'api-calls',
+  withRateLimit(
+    {
+      key: 'external-api',
+      limit: 100,
+      window: '1m',
+      algorithm: 'sliding',
+    },
+    async (ctx) => {
+      // Rate-limited workflow
+      await ctx.call('api', {
+        url: 'https://api.example.com/data',
+      });
+    }
+  )
 );
 ```
 
@@ -123,7 +128,7 @@ import { batch, retry, circuitBreaker } from '@repo/orchestration-new/patterns';
 const processBatch = batch({
   batchSize: 100,
   delay: '2s',
-  maxConcurrency: 5
+  maxConcurrency: 5,
 });
 
 // Retry with exponential backoff
@@ -132,14 +137,14 @@ const resilientCall = retry({
   backoff: 'exponential',
   onRetry: (error, attempt) => {
     console.log(`Retry ${attempt}: ${error.message}`);
-  }
+  },
 });
 
 // Circuit breaker
 const protectedCall = circuitBreaker({
   threshold: 5,
   timeout: 60000,
-  resetTimeout: 30000
+  resetTimeout: 30000,
 });
 ```
 
@@ -212,6 +217,7 @@ This package is designed to coexist with the existing orchestration package. Key
 5. **Simplified API** - Easier to use
 
 To migrate:
+
 1. Update imports to `@repo/orchestration-new`
 2. Update configuration to use provider system
 3. Apply new patterns where applicable

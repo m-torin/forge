@@ -16,7 +16,7 @@
   },
   "peerDependencies": {
     "@segment/analytics-next": "^1.70.0",
-    "posthog-js": "^1.100.0", 
+    "posthog-js": "^1.100.0",
     "posthog-node": "^4.0.0",
     "@vercel/analytics": "^1.1.0"
   },
@@ -49,7 +49,7 @@
     "typescript": "catalog:",
     "vitest": "catalog:",
     "@segment/analytics-next": "^1.70.0",
-    "posthog-js": "^1.100.0", 
+    "posthog-js": "^1.100.0",
     "posthog-node": "^4.0.0",
     "@vercel/analytics": "^1.1.0"
   },

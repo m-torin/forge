@@ -24,11 +24,7 @@ const testSimpleDefinition: WorkflowDefinition = {
     description: 'Minimal test workflow to verify the system is working',
     difficulty: 'beginner',
     estimatedTime: '1-2 seconds',
-    features: [
-      'Simple logging',
-      'No complex logic',
-      'Quick completion',
-    ],
+    features: ['Simple logging', 'No complex logic', 'Quick completion'],
     tags: ['test', 'debug'],
     title: 'Test Simple',
   },
@@ -39,24 +35,24 @@ const testSimpleDefinition: WorkflowDefinition = {
       console.log('[TEST-SIMPLE] Context workflowRunId:', context.workflowRunId);
       return { initialized: true };
     });
-    
+
     // Step 1: Log the payload
     const payload = await context.run('log-payload', async () => {
       console.log('[TEST-SIMPLE] Inside log-payload step');
       return { logged: true, result: 'success' };
     });
-    
+
     // Step 2: Complete workflow
     const finalResult = await context.run('complete', async () => {
       console.log('[TEST-SIMPLE] Completing workflow');
-      return { 
-        success: true, 
+      return {
+        success: true,
         payload,
         initResult,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     });
-    
+
     return finalResult;
   },
 };

@@ -1,10 +1,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { WorkflowContext } from '@upstash/workflow';
-import { QStashWorkflowAbort } from '@upstash/qstash';
-import { HTTPMethods } from '@upstash/qstash';
+import { WorkflowContext, QStashWorkflowAbort, upstashServe as serve } from '@repo/orchestration-new/server';
 import { generateText, tool, ToolExecutionError } from 'ai';
 import { z } from 'zod';
-import { serve } from "@upstash/workflow/nextjs";
 
 const createWorkflowOpenAI = (context: WorkflowContext) => {
   return createOpenAI({
@@ -20,12 +17,24 @@ const createWorkflowOpenAI = (context: WorkflowContext) => {
         // Prepare body from init.body
         const body = init?.body ? JSON.parse(init.body as string) : undefined;
 
-        // Call the workflow context
-        const responseInfo = await context.call("call step", {
-          url: input.toString(),
-          method: init?.method as HTTPMethods,
-          headers,
-          body,
+        // Make HTTP request using context.run
+        const responseInfo = await context.run("http-request", async () => {
+          const response = await fetch(input.toString(), {
+            method: init?.method || 'GET',
+            headers,
+            body: init?.body,
+          });
+          
+          const responseHeaders: Record<string, string[]> = {};
+          response.headers.forEach((value, key) => {
+            responseHeaders[key] = [value];
+          });
+          
+          return {
+            status: response.status,
+            header: responseHeaders,
+            body: await response.json(),
+          };
         });
 
         // Construct headers for the response

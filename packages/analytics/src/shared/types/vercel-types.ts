@@ -12,13 +12,9 @@ export interface VercelConfig {
   };
 }
 
-export interface VercelTrackProperties {
-  [key: string]: any;
-}
+export type VercelTrackProperties = Record<string, any>;
 
 // Vercel Analytics has limited server-side support
 // Mainly focused on web vitals and page views on client
 
-export interface VercelOptions {
-  [key: string]: any;
-}
+export type VercelOptions = Record<string, any>;

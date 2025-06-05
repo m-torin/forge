@@ -3,8 +3,12 @@
  * Migrated and improved from the original observability package
  */
 
-import { useCallback, useContext, createContext, useRef, useEffect } from 'react';
-import type { ObservabilityManager, ObservabilityContext as ObsContext } from '../shared/types/types';
+import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
+
+import type {
+  ObservabilityContext as ObsContext,
+  ObservabilityManager,
+} from '../shared/types/types';
 
 // Context for observability manager
 export const ObservabilityContext = createContext<ObservabilityManager | null>(null);
@@ -44,70 +48,76 @@ export interface ErrorContext {
 export function useObservability() {
   const manager = useObservabilityManager();
 
-  const trackEvent = useCallback((event: ObservabilityEvent) => {
-    if (!manager) return;
+  const trackEvent = useCallback(
+    (event: ObservabilityEvent) => {
+      if (!manager) return;
 
-    try {
-      // Log the event
-      manager.log('info', 'Workflow Event', {
-        action: event.action,
-        category: event.category,
-        label: event.label,
-        metadata: event.metadata,
-        timestamp: new Date().toISOString(),
-        userId: event.userId,
-        value: event.value,
-      });
-
-      // Add breadcrumb for debugging
-      manager.addBreadcrumb({
-        category: event.category,
-        message: event.action,
-        level: 'info',
-        data: {
+      try {
+        // Log the event
+        manager.log('info', 'Workflow Event', {
+          action: event.action,
+          category: event.category,
           label: event.label,
+          metadata: event.metadata,
+          timestamp: new Date().toISOString(),
+          userId: event.userId,
           value: event.value,
-          ...event.metadata
-        }
-      });
-    } catch (error) {
-      console.error('Failed to track event:', error);
-    }
-  }, [manager]);
+        });
 
-  const trackError = useCallback((error: Error | string, context?: ErrorContext) => {
-    if (!manager) return;
+        // Add breadcrumb for debugging
+        manager.addBreadcrumb({
+          category: event.category,
+          data: {
+            label: event.label,
+            value: event.value,
+            ...event.metadata,
+          },
+          level: 'info',
+          message: event.action,
+        });
+      } catch (error) {
+        console.error('Failed to track event:', error);
+      }
+    },
+    [manager],
+  );
 
-    try {
-      const errorMessage = typeof error === 'string' ? error : error.message;
-      const errorObject = typeof error === 'string' ? new Error(error) : error;
+  const trackError = useCallback(
+    (error: Error | string, context?: ErrorContext) => {
+      if (!manager) return;
 
-      // Log the error
-      manager.log('error', 'Workflow Error', {
-        component: context?.component,
-        error: errorMessage,
-        metadata: context?.metadata,
-        stack: errorObject.stack,
-        timestamp: new Date().toISOString(),
-        userId: context?.userId,
-        workflow: context?.workflow,
-      });
+      try {
+        const errorMessage = typeof error === 'string' ? error : error.message;
+        const errorObject = typeof error === 'string' ? new Error(error) : error;
 
-      // Capture the exception
-      const obsContext: ObsContext = {
-        userId: context?.userId,
-        extra: context?.metadata,
-        tags: {
-          component: context?.component || 'unknown',
-          workflow: context?.workflow || 'unknown'
-        }
-      };
+        // Log the error
+        manager.log('error', 'Workflow Error', {
+          component: context?.component,
+          error: errorMessage,
+          metadata: context?.metadata,
+          stack: errorObject.stack,
+          timestamp: new Date().toISOString(),
+          userId: context?.userId,
+          workflow: context?.workflow,
+        });
 
-      manager.captureException(errorObject, obsContext);
-    } catch (trackingError) {
-      console.error('Failed to track error:', trackingError);
-    }
-  }, [manager]);
+        // Capture the exception
+        const obsContext: ObsContext = {
+          extra: context?.metadata,
+          tags: {
+            component: context?.component || 'unknown',
+            workflow: context?.workflow || 'unknown',
+          },
+          userId: context?.userId,
+        };
+
+        manager.captureException(errorObject, obsContext);
+      } catch (trackingError) {
+        console.error('Failed to track error:', trackingError);
+      }
+    },
+    [manager],
+  );
 
   const trackPerformance = useCallback(
     (operation: string, duration: number, metadata?: Record<string, unknown>) => {
@@ -124,12 +134,12 @@ export function useObservability() {
         // Add performance breadcrumb
         manager.addBreadcrumb({
           category: 'performance',
-          message: `${operation} completed in ${duration}ms`,
-          level: 'info',
           data: {
             duration,
-            ...metadata
-          }
+            ...metadata,
+          },
+          level: 'info',
+          message: `${operation} completed in ${duration}ms`,
         });
       } catch (error) {
         console.error('Failed to track performance:', error);
@@ -139,10 +149,10 @@ export function useObservability() {
   );
 
   return {
+    manager, // Expose manager for direct access
     trackError,
     trackEvent,
     trackPerformance,
-    manager, // Expose manager for direct access
   };
 }
 
@@ -201,7 +211,7 @@ export function useWorkflowObservability(workflowType: string) {
  * Hook for timing operations with automatic performance tracking
  */
 export function usePerformanceTimer() {
-  const { trackPerformance, manager } = useObservability();
+  const { manager, trackPerformance } = useObservability();
   const transactions = useRef<Map<string, any>>(new Map());
 
   const startTimer = useCallback(
@@ -209,19 +219,19 @@ export function usePerformanceTimer() {
       if (!manager) return null;
 
       const transaction = manager.startTransaction(operation, {
-        tags: metadata as any
+        tags: metadata as any,
       });
 
       if (transaction) {
         transactions.current.set(operation, {
+          startTime: performance.now(),
           transaction,
-          startTime: performance.now()
         });
       }
 
       return transaction;
     },
-    [manager]
+    [manager],
   );
 
   const endTimer = useCallback(
@@ -230,7 +240,7 @@ export function usePerformanceTimer() {
       if (!entry) return;
 
       const duration = performance.now() - entry.startTime;
-      
+
       // End the transaction
       if (entry.transaction?.finish) {
         entry.transaction.finish();
@@ -244,7 +254,7 @@ export function usePerformanceTimer() {
 
       return duration;
     },
-    [trackPerformance]
+    [trackPerformance],
   );
 
   const time = useCallback(
@@ -253,14 +263,14 @@ export function usePerformanceTimer() {
       fn: () => Promise<T>,
       metadata?: Record<string, unknown>,
     ): Promise<T> => {
-      const transaction = startTimer(operation, metadata);
+      const _transaction = startTimer(operation, metadata);
 
       try {
         const result = await fn();
         endTimer(operation, { ...metadata, status: 'success' });
         return result;
       } catch (error) {
-        endTimer(operation, { ...metadata, status: 'error', error: String(error) });
+        endTimer(operation, { ...metadata, error: String(error), status: 'error' });
         throw error;
       }
     },
@@ -270,7 +280,7 @@ export function usePerformanceTimer() {
   // Clean up any lingering transactions on unmount
   useEffect(() => {
     return () => {
-      transactions.current.forEach((entry, operation) => {
+      transactions.current.forEach((entry, _operation) => {
         if (entry.transaction?.finish) {
           entry.transaction.finish();
         }
@@ -279,5 +289,5 @@ export function usePerformanceTimer() {
     };
   }, []);
 
-  return { time, startTimer, endTimer };
+  return { endTimer, startTimer, time };
 }

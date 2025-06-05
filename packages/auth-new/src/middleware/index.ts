@@ -2,20 +2,23 @@
  * Authentication middleware
  */
 
-import type { NextRequest } from 'next/server';
 import { auth } from '../server/auth';
+
+import type { NextRequest } from 'next/server';
 
 /**
  * Create authentication middleware for route protection
  */
-export function createAuthMiddleware(options: {
-  publicRoutes?: readonly string[];
-  protectedRoutes?: readonly string[];
-  redirectUrl?: string;
-} = {}) {
+export function createAuthMiddleware(
+  options: {
+    publicRoutes?: readonly string[];
+    protectedRoutes?: readonly string[];
+    redirectUrl?: string;
+  } = {},
+) {
   const {
-    publicRoutes = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password'] as const,
     protectedRoutes = ['/dashboard', '/settings', '/api'] as const,
+    publicRoutes = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password'] as const,
     redirectUrl = '/sign-in',
   } = options;
 
@@ -23,11 +26,11 @@ export function createAuthMiddleware(options: {
     const { pathname } = request.nextUrl;
 
     // Check if route is public
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+    const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
     if (isPublicRoute) return; // Allow access to public routes
 
     // Check if route needs protection
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+    const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
     if (!isProtectedRoute) return; // Not a protected route, allow access
 
     try {

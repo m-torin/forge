@@ -2,7 +2,8 @@
  * Server authentication tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { getCurrentUser, getSession } from '../server/auth';
 
 // Mock the auth instance
@@ -29,13 +30,13 @@ describe('Server Authentication', () => {
     it('should return user when session exists', async () => {
       const mockUser = {
         id: '1',
-        email: 'test@example.com',
         name: 'Test User',
+        email: 'test@example.com',
       };
 
       mockAuth.api.getSession.mockResolvedValue({
-        user: mockUser,
         session: { id: 'session-1' },
+        user: mockUser,
       });
 
       const user = await getCurrentUser();
@@ -53,14 +54,14 @@ describe('Server Authentication', () => {
   describe('getSession', () => {
     it('should return session data when authenticated', async () => {
       const mockSession = {
-        user: {
-          id: '1',
-          email: 'test@example.com',
-          name: 'Test User',
-        },
         session: {
           id: 'session-1',
           activeOrganizationId: 'org-1',
+        },
+        user: {
+          id: '1',
+          name: 'Test User',
+          email: 'test@example.com',
         },
       };
 
@@ -68,9 +69,9 @@ describe('Server Authentication', () => {
 
       const session = await getSession();
       expect(session).toEqual({
-        user: mockSession.user,
-        session: mockSession.session,
         activeOrganizationId: 'org-1',
+        session: mockSession.session,
+        user: mockSession.user,
       });
     });
 

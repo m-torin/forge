@@ -11,7 +11,7 @@ export class OrchestrationError extends Error {
     message: string,
     code = 'ORCHESTRATION_ERROR',
     retryable = false,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) {
     super(message);
     this.name = 'OrchestrationError';
@@ -51,7 +51,7 @@ export class WorkflowExecutionError extends OrchestrationError {
       executionId?: string;
       stepId?: string;
       [key: string]: any;
-    }
+    },
   ) {
     super(message, code, retryable, context);
     this.name = 'WorkflowExecutionError';
@@ -64,11 +64,7 @@ export class WorkflowExecutionError extends OrchestrationError {
 export class WorkflowValidationError extends OrchestrationError {
   public readonly validationErrors: ValidationError[];
 
-  constructor(
-    message: string,
-    validationErrors: ValidationError[],
-    context?: Record<string, any>
-  ) {
+  constructor(message: string, validationErrors: ValidationError[], context?: Record<string, any>) {
     super(message, 'WORKFLOW_VALIDATION_ERROR', false, context);
     this.name = 'WorkflowValidationError';
     this.validationErrors = validationErrors;
@@ -85,7 +81,7 @@ export class ProviderError extends OrchestrationError {
     providerType: string,
     code = 'PROVIDER_ERROR',
     retryable = true,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) {
     super(message, code, retryable, context);
     this.name = 'ProviderError';
@@ -104,7 +100,7 @@ export class RateLimitError extends OrchestrationError {
     limit: number,
     window: number,
     retryAfter?: number,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) {
     super(message, 'RATE_LIMIT_EXCEEDED', true, context);
     this.name = 'RateLimitError';
@@ -122,7 +118,7 @@ export class CircuitBreakerError extends OrchestrationError {
     message: string,
     circuitName: string,
     state: 'open' | 'half-open',
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) {
     super(message, 'CIRCUIT_BREAKER_OPEN', true, context);
     this.name = 'CircuitBreakerError';
@@ -134,11 +130,7 @@ export class CircuitBreakerError extends OrchestrationError {
 export class TimeoutError extends OrchestrationError {
   public readonly timeoutMs: number;
 
-  constructor(
-    message: string,
-    timeoutMs: number,
-    context?: Record<string, any>
-  ) {
+  constructor(message: string, timeoutMs: number, context?: Record<string, any>) {
     super(message, 'OPERATION_TIMEOUT', false, context);
     this.name = 'TimeoutError';
     this.timeoutMs = timeoutMs;
@@ -148,15 +140,57 @@ export class TimeoutError extends OrchestrationError {
 export class ConfigurationError extends OrchestrationError {
   public readonly configPath?: string;
 
-  constructor(
-    message: string,
-    configPath?: string,
-    context?: Record<string, any>
-  ) {
+  constructor(message: string, configPath?: string, context?: Record<string, any>) {
     super(message, 'CONFIGURATION_ERROR', false, context);
     this.name = 'ConfigurationError';
     this.configPath = configPath;
   }
+}
+
+/**
+ * Centralized error codes for consistent error handling across the orchestration package
+ */
+export enum OrchestrationErrorCodes {
+  // Generic orchestration errors
+  ORCHESTRATION_ERROR = 'ORCHESTRATION_ERROR',
+
+  // Initialization and lifecycle errors
+  INITIALIZATION_ERROR = 'INITIALIZATION_ERROR',
+  SHUTDOWN_ERROR = 'SHUTDOWN_ERROR',
+  CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
+
+  // Provider errors
+  PROVIDER_ERROR = 'PROVIDER_ERROR',
+  PROVIDER_NOT_FOUND = 'PROVIDER_NOT_FOUND',
+  PROVIDER_UNHEALTHY = 'PROVIDER_UNHEALTHY',
+  PROVIDER_REGISTRATION_ERROR = 'PROVIDER_REGISTRATION_ERROR',
+  NO_PROVIDER_AVAILABLE = 'NO_PROVIDER_AVAILABLE',
+
+  // Workflow execution errors
+  WORKFLOW_EXECUTION_ERROR = 'WORKFLOW_EXECUTION_ERROR',
+  WORKFLOW_VALIDATION_ERROR = 'WORKFLOW_VALIDATION_ERROR',
+  GET_EXECUTION_ERROR = 'GET_EXECUTION_ERROR',
+  CANCEL_EXECUTION_ERROR = 'CANCEL_EXECUTION_ERROR',
+  LIST_EXECUTIONS_ERROR = 'LIST_EXECUTIONS_ERROR',
+  SCHEDULE_WORKFLOW_ERROR = 'SCHEDULE_WORKFLOW_ERROR',
+  UNSCHEDULE_WORKFLOW_ERROR = 'UNSCHEDULE_WORKFLOW_ERROR',
+
+  // Step factory errors
+  STEP_EXECUTION_ERROR = 'STEP_EXECUTION_ERROR',
+  STEP_INPUT_VALIDATION_ERROR = 'STEP_INPUT_VALIDATION_ERROR',
+  STEP_OUTPUT_VALIDATION_ERROR = 'STEP_OUTPUT_VALIDATION_ERROR',
+  STEP_CUSTOM_VALIDATION_ERROR = 'STEP_CUSTOM_VALIDATION_ERROR',
+  STEP_TIMEOUT_ERROR = 'STEP_TIMEOUT_ERROR',
+  STEP_FACTORY_DISABLED = 'STEP_FACTORY_DISABLED',
+  STEP_NOT_FOUND = 'STEP_NOT_FOUND',
+  STEP_COMPOSITION_ERROR = 'STEP_COMPOSITION_ERROR',
+  INVALID_STEP_DEFINITION = 'INVALID_STEP_DEFINITION',
+  INVALID_STEP_REGISTRATION = 'INVALID_STEP_REGISTRATION',
+
+  // Pattern-specific errors
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+  CIRCUIT_BREAKER_OPEN = 'CIRCUIT_BREAKER_OPEN',
+  OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
 }
 
 export interface ValidationError {
@@ -182,10 +216,10 @@ export function createWorkflowExecutionError(
     originalError?: Error;
     retryable?: boolean;
     code?: string;
-  }
+  },
 ): WorkflowExecutionError {
   const context: any = {};
-  
+
   if (options?.executionId) context.executionId = options.executionId;
   if (options?.stepId) context.stepId = options.stepId;
   if (options?.originalError) {
@@ -201,7 +235,7 @@ export function createWorkflowExecutionError(
     workflowId,
     options?.code || 'WORKFLOW_EXECUTION_ERROR',
     options?.retryable ?? true,
-    context
+    context,
   );
 }
 
@@ -216,10 +250,10 @@ export function createProviderError(
     originalError?: Error;
     retryable?: boolean;
     code?: string;
-  }
+  },
 ): ProviderError {
   const context: any = {};
-  
+
   if (options?.originalError) {
     context.originalError = {
       name: options.originalError.name,
@@ -234,7 +268,7 @@ export function createProviderError(
     providerType,
     options?.code || 'PROVIDER_ERROR',
     options?.retryable ?? true,
-    context
+    context,
   );
 }
 
@@ -259,7 +293,136 @@ export function isRetryableError(error: Error): boolean {
   ];
 
   const errorString = error.message?.toUpperCase() || '';
-  return retryablePatterns.some(pattern => errorString.includes(pattern));
+  return retryablePatterns.some((pattern) => errorString.includes(pattern));
+}
+
+/**
+ * Creates a standardized OrchestrationError with centralized error codes
+ */
+export function createOrchestrationError(
+  message: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    originalError?: Error;
+    retryable?: boolean;
+    context?: Record<string, any>;
+  },
+): OrchestrationError {
+  const context: any = { ...options?.context };
+
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new OrchestrationError(
+    message,
+    options?.code || OrchestrationErrorCodes.ORCHESTRATION_ERROR,
+    options?.retryable ?? false,
+    context,
+  );
+}
+
+/**
+ * Creates a standardized ProviderError with centralized error codes
+ */
+export function createProviderErrorWithCode(
+  message: string,
+  providerName: string,
+  providerType: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    originalError?: Error;
+    retryable?: boolean;
+    context?: Record<string, any>;
+  },
+): ProviderError {
+  const context: any = { ...options?.context };
+
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new ProviderError(
+    message,
+    providerName,
+    providerType,
+    options?.code || OrchestrationErrorCodes.PROVIDER_ERROR,
+    options?.retryable ?? true,
+    context,
+  );
+}
+
+/**
+ * Creates a standardized WorkflowExecutionError with centralized error codes
+ */
+export function createWorkflowExecutionErrorWithCode(
+  message: string,
+  workflowId: string,
+  options?: {
+    executionId?: string;
+    stepId?: string;
+    originalError?: Error;
+    retryable?: boolean;
+    code?: OrchestrationErrorCodes;
+  },
+): WorkflowExecutionError {
+  const context: any = {};
+
+  if (options?.executionId) context.executionId = options.executionId;
+  if (options?.stepId) context.stepId = options.stepId;
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new WorkflowExecutionError(
+    message,
+    workflowId,
+    options?.code || OrchestrationErrorCodes.WORKFLOW_EXECUTION_ERROR,
+    options?.retryable ?? true,
+    context,
+  );
+}
+
+/**
+ * Creates a validation error with centralized error codes
+ */
+export function createValidationError(
+  message: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    validationErrors?: any[];
+    validationResult?: any;
+    context?: Record<string, any>;
+  },
+): OrchestrationError {
+  const context: any = { ...options?.context };
+
+  if (options?.validationErrors) {
+    context.validationErrors = options.validationErrors;
+  }
+
+  if (options?.validationResult) {
+    context.validationResult = options.validationResult;
+  }
+
+  return new OrchestrationError(
+    message,
+    options?.code || OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
+    false, // Validation errors are typically not retryable
+    context,
+  );
 }
 
 /**

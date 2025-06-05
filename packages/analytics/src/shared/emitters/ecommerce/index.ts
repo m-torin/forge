@@ -1,6 +1,6 @@
 /**
  * Platform-standard ecommerce events
- * 
+ *
  * These events follow industry best practices for ecommerce tracking
  * and are designed to work with any analytics provider.
  */

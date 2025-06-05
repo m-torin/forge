@@ -13,17 +13,17 @@ export interface WorkflowContext<TParams = any> {
    * Unique workflow run ID
    */
   runId: string;
-  
+
   /**
    * Environment the workflow is running in
    */
   env: 'development' | 'production' | 'staging';
-  
+
   /**
    * Initial parameters passed to the workflow
    */
   params: TParams;
-  
+
   /**
    * Metadata about the workflow execution
    */
@@ -54,12 +54,12 @@ export interface WorkflowStep<TInput = any, TOutput = any> {
    * Unique step name
    */
   name: string;
-  
+
   /**
    * Step execution function
    */
   handler: (input: TInput, context: WorkflowContext) => Promise<TOutput>;
-  
+
   /**
    * Optional step configuration
    */
@@ -72,7 +72,7 @@ export interface WorkflowStep<TInput = any, TOutput = any> {
     };
     dependencies?: string[];
   };
-  
+
   /**
    * Optional validation schema
    */
@@ -90,27 +90,27 @@ export interface WorkflowDefinition<TParams = any, TResult = any> {
    * Unique workflow ID
    */
   id: string;
-  
+
   /**
    * Human-readable workflow name
    */
   name: string;
-  
+
   /**
    * Workflow description
    */
   description?: string;
-  
+
   /**
    * Workflow version
    */
   version?: string;
-  
+
   /**
    * Workflow steps
    */
   steps: WorkflowStep[];
-  
+
   /**
    * Workflow configuration
    */
@@ -124,12 +124,12 @@ export interface WorkflowDefinition<TParams = any, TResult = any> {
       window?: string;
     };
   };
-  
+
   /**
    * Input validation schema
    */
   inputSchema?: z.ZodSchema<TParams>;
-  
+
   /**
    * Output validation schema
    */
@@ -144,12 +144,12 @@ export interface WorkflowExecutionOptions {
    * Run ID (defaults to auto-generated)
    */
   runId?: string;
-  
+
   /**
    * Execution delay
    */
   delay?: number | string;
-  
+
   /**
    * Scheduling options
    */
@@ -158,7 +158,7 @@ export interface WorkflowExecutionOptions {
     interval?: string;
     timezone?: string;
   };
-  
+
   /**
    * Callback URLs
    */
@@ -167,7 +167,7 @@ export interface WorkflowExecutionOptions {
     onFailure?: string;
     onProgress?: string;
   };
-  
+
   /**
    * Custom metadata
    */
@@ -182,22 +182,22 @@ export interface WorkflowExecutionResult<T = any> {
    * Unique run ID
    */
   runId: string;
-  
+
   /**
    * Workflow ID
    */
   workflowId: string;
-  
+
   /**
    * Execution status
    */
   status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
-  
+
   /**
    * Result data (if completed)
    */
   result?: T;
-  
+
   /**
    * Error information (if failed)
    */
@@ -206,12 +206,12 @@ export interface WorkflowExecutionResult<T = any> {
     code?: string;
     details?: any;
   };
-  
+
   /**
    * Step results
    */
   steps?: Record<string, StepResult>;
-  
+
   /**
    * Execution timing
    */
@@ -231,48 +231,48 @@ export interface WorkflowProvider {
    * Provider name
    */
   name: string;
-  
+
   /**
    * Provider version
    */
   version: string;
-  
+
   /**
    * Initialize the provider
    */
   initialize(config: any): Promise<void>;
-  
+
   /**
    * Check if provider is available
    */
   isAvailable(): Promise<boolean>;
-  
+
   /**
    * Execute a workflow
    */
   run<TParams = any, TResult = any>(
     workflow: WorkflowDefinition<TParams, TResult>,
     params: TParams,
-    options?: WorkflowExecutionOptions
+    options?: WorkflowExecutionOptions,
   ): Promise<WorkflowExecutionResult<TResult>>;
-  
+
   /**
    * Create a workflow handler for serving
    */
   serve<TParams = any, TResult = any>(
-    workflow: WorkflowDefinition<TParams, TResult>
+    workflow: WorkflowDefinition<TParams, TResult>,
   ): (req: Request) => Promise<Response>;
-  
+
   /**
    * Get workflow execution status
    */
   getStatus(runId: string): Promise<WorkflowExecutionResult>;
-  
+
   /**
    * Cancel a running workflow
    */
   cancel(runId: string): Promise<boolean>;
-  
+
   /**
    * List workflow executions
    */
@@ -282,7 +282,7 @@ export interface WorkflowProvider {
     limit?: number;
     offset?: number;
   }): Promise<WorkflowExecutionResult[]>;
-  
+
   /**
    * Clean up resources
    */
@@ -296,14 +296,14 @@ export interface WorkflowBuilder<TParams = any, TResult = any> {
   step<TInput = any, TOutput = any>(
     name: string,
     handler: WorkflowStep<TInput, TOutput>['handler'],
-    config?: WorkflowStep<TInput, TOutput>['config']
+    config?: WorkflowStep<TInput, TOutput>['config'],
   ): WorkflowBuilder<TParams, TResult>;
-  
+
   withConfig(config: WorkflowDefinition['config']): WorkflowBuilder<TParams, TResult>;
-  
+
   withInputSchema(schema: z.ZodSchema<TParams>): WorkflowBuilder<TParams, TResult>;
-  
+
   withOutputSchema(schema: z.ZodSchema<TResult>): WorkflowBuilder<TParams, TResult>;
-  
+
   build(): WorkflowDefinition<TParams, TResult>;
 }

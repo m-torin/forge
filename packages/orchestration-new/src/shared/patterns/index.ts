@@ -14,23 +14,21 @@ export {
   retryStandard,
   RetryStrategies,
   withRetry,
-} from './retry.js';
+} from './retry';
 
-export type { RetryOptions } from './retry.js';
+export type { RetryOptions } from './retry';
 
 // Batch pattern
-export {
-  Batch,
-  BatchManager,
-  createBatchProcessor,
-  withBatch,
-} from './batch.js';
+export { Batch, BatchManager, createBatchProcessor, withBatch } from './batch';
 
 export type {
   BatchItem,
   BatchOptions,
   BatchProcessor,
-} from './batch.js';
+  BatchResult,
+  BatchContext,
+  BatchProcessorDefinition,
+} from './batch';
 
 // Circuit breaker pattern
 export {
@@ -42,6 +40,6 @@ export {
   getCircuitBreakerStats,
   resetCircuitBreaker,
   withCircuitBreaker,
-} from './circuit-breaker.js';
+} from './circuit-breaker';
 
-export type { CircuitBreakerOptions } from './circuit-breaker.js';
+export type { CircuitBreakerOptions } from './circuit-breaker';

@@ -1,6 +1,6 @@
 /**
  * Analytics emitters - The recommended way to track events
- * 
+ *
  * Emitters provide type-safe, consistent event tracking following
  * the Segment.io specification. They are the primary pattern for
  * analytics in this package.
@@ -8,13 +8,13 @@
 
 // Export core emitter functions as the primary API
 export {
-  // Main emitter functions
-  track,
+  alias,
+  group,
   identify,
   page,
   screen,
-  group,
-  alias
+  // Main emitter functions
+  track,
 } from './emitters';
 
 // Export all emitter types
@@ -26,22 +26,22 @@ export * from './helpers';
 // Export convenience builders
 export {
   ContextBuilder,
-  PayloadBuilder,
-  EventBatch,
-  createUserSession,
   createAnonymousSession,
+  createUserSession,
+  EventBatch,
+  PayloadBuilder,
   withMetadata,
-  withUTM
+  withUTM,
 } from './helpers';
 
 // Export ecommerce emitters as a namespace
 export * as ecommerce from './ecommerce';
 
 // Re-export ecommerce types for convenience
-export type { 
-  EcommerceEventSpec,
+export type {
   BaseProductProperties,
-  ExtendedProductProperties,
   CartProperties,
-  OrderProperties
+  EcommerceEventSpec,
+  ExtendedProductProperties,
+  OrderProperties,
 } from './ecommerce/types';

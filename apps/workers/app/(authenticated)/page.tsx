@@ -73,9 +73,11 @@ export default function WorkersPage() {
 
   // Calculate stats
   const totalRuns = filteredRuns.length;
-  const runningCount = Object.values(optimisticWorkflows).filter(w => w.status === 'running').length;
-  const successCount = filteredRuns.filter(r => r.workflowState === 'RUN_SUCCESS').length;
-  const failedCount = filteredRuns.filter(r => r.workflowState === 'RUN_FAILED').length;
+  const runningCount = Object.values(optimisticWorkflows).filter(
+    (w) => w.status === 'running',
+  ).length;
+  const successCount = filteredRuns.filter((r) => r.workflowState === 'RUN_SUCCESS').length;
+  const failedCount = filteredRuns.filter((r) => r.workflowState === 'RUN_FAILED').length;
 
   // Recent runs (last 5)
   const recentRuns = filteredRuns.slice(0, 5);
@@ -117,8 +119,10 @@ export default function WorkersPage() {
               <Text c="dimmed">Monitor and manage your background workflows</Text>
             </div>
             <Stack gap="xs">
-              <Text size="sm" c="dimmed" mb="xs">Pure Upstash Workflow Tests (No Orchestration Package)</Text>
-              
+              <Text size="sm" c="dimmed" mb="xs">
+                Pure Upstash Workflow Tests (No Orchestration Package)
+              </Text>
+
               <Group gap="xs">
                 <Button
                   size="sm"
@@ -145,9 +149,11 @@ export default function WorkersPage() {
                   Manual Config
                 </Button>
               </Group>
-              
-              <Text size="sm" c="dimmed" mb="xs">Original Tests (With Orchestration Package)</Text>
-              
+
+              <Text size="sm" c="dimmed" mb="xs">
+                Original Tests (With Orchestration Package)
+              </Text>
+
               <Group gap="xs">
                 <Button
                   size="sm"
@@ -165,16 +171,21 @@ export default function WorkersPage() {
                   Test Simple
                 </Button>
               </Group>
-              
-              <Text size="sm" c="dimmed" mb="xs">Debug Tests</Text>
-              
+
+              <Text size="sm" c="dimmed" mb="xs">
+                Debug Tests
+              </Text>
+
               <Group gap="xs">
                 <Button
                   size="sm"
                   variant="light"
                   color="gray"
                   onClick={async () => {
-                    const res = await fetch('/api/test-plain', { method: 'POST', body: JSON.stringify({ test: true }) });
+                    const res = await fetch('/api/test-plain', {
+                      method: 'POST',
+                      body: JSON.stringify({ test: true }),
+                    });
                     const data = await res.json();
                     console.log('Plain API Test:', data);
                   }}
@@ -253,18 +264,31 @@ export default function WorkersPage() {
           {/* Available Workflows */}
           <Grid.Col span={{ base: 12, md: 8 }}>
             <Card shadow="sm" withBorder padding="lg">
-              <Title order={3} mb="md">Available Workflows</Title>
+              <Title order={3} mb="md">
+                Available Workflows
+              </Title>
               <Stack gap="sm">
                 {workflows.map((workflow) => (
-                  <Card key={workflow.slug} withBorder p="md" component={Link} href={`/workflows/${workflow.slug}`} style={{ textDecoration: 'none' }}>
+                  <Card
+                    key={workflow.slug}
+                    withBorder
+                    p="md"
+                    component={Link}
+                    href={`/workflows/${workflow.slug}`}
+                    style={{ textDecoration: 'none' }}
+                  >
                     <Group justify="space-between">
                       <Group>
                         <ThemeIcon color={workflow.color} variant="light" size="lg">
                           <workflow.icon size={20} />
                         </ThemeIcon>
                         <div>
-                          <Text fw={500} size="sm">{workflow.label}</Text>
-                          <Text c="dimmed" size="xs">{workflow.description}</Text>
+                          <Text fw={500} size="sm">
+                            {workflow.label}
+                          </Text>
+                          <Text c="dimmed" size="xs">
+                            {workflow.description}
+                          </Text>
                         </div>
                       </Group>
                       <ActionIcon variant="subtle" color="gray">
@@ -280,7 +304,9 @@ export default function WorkersPage() {
           {/* Recent Activity */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Card shadow="sm" withBorder padding="lg">
-              <Title order={3} mb="md">Recent Activity</Title>
+              <Title order={3} mb="md">
+                Recent Activity
+              </Title>
               {recentRuns.length === 0 ? (
                 <Text c="dimmed" size="sm" ta="center" py="xl">
                   No recent activity

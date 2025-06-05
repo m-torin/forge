@@ -2,20 +2,20 @@
  * Client authentication tests
  */
 
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { describe, expect, it } from 'vitest';
+
 import { useAuth } from '../client/hooks';
 import { AuthProvider } from '../components/auth-provider';
 
 // Mock component to test hooks
 function TestComponent() {
-  const { user, isLoading, isAuthenticated } = useAuth();
-  
+  const { isAuthenticated, isLoading, user } = useAuth();
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
-  
+
   return (
     <div>
       <div data-testid="authenticated">{isAuthenticated ? 'true' : 'false'}</div>
@@ -29,9 +29,9 @@ describe('Client Authentication', () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
     );
-    
+
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
@@ -39,9 +39,9 @@ describe('Client Authentication', () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
     );
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('authenticated')).toHaveTextContent('false');
       expect(screen.getByTestId('user')).toHaveTextContent('null');

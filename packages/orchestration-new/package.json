@@ -48,12 +48,15 @@
     "opossum": "^8.1.4",
     "p-queue": "^8.0.1",
     "p-retry": "^6.2.0",
+    "react": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/opossum": "^8.1.4",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -3,135 +3,129 @@
  * Tests the primary emitter functions following Segment.io specification
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import {
-  track,
-  identify,
-  page,
-  screen,
-  group,
-  alias
-} from '../../shared/emitters/emitters';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { alias, group, identify, page, screen, track } from '../../shared/emitters/emitters';
+
 import type {
-  EmitterTrackPayload,
-  EmitterIdentifyPayload,
-  EmitterPagePayload,
-  EmitterScreenPayload,
-  EmitterGroupPayload,
   EmitterAliasPayload,
+  EmitterContext,
+  EmitterGroupPayload,
+  EmitterIdentifyPayload,
   EmitterOptions,
-  EmitterContext
+  EmitterPagePayload,
+  EmitterTrackPayload,
 } from '../../shared/emitters/emitter-types';
 
 describe('Core Analytics Emitters', () => {
-  let mockTimestamp: number;
+  let mockTimestamp: Date;
   let mockContext: EmitterContext;
   let mockOptions: EmitterOptions;
 
   beforeEach(() => {
-    mockTimestamp = Date.now();
+    mockTimestamp = new Date();
     mockContext = {
       app: {
         name: 'Test App',
-        version: '1.0.0'
-      },
-      page: {
-        path: '/test',
-        url: 'https://example.com/test',
-        title: 'Test Page'
+        version: '1.0.0',
       },
       campaign: {
-        source: 'google',
+        name: 'test-campaign',
         medium: 'cpc',
-        name: 'test-campaign'
-      }
+        source: 'google',
+      },
+      page: {
+        url: 'https://example.com/test',
+        path: '/test',
+        title: 'Test Page',
+      },
     };
     mockOptions = {
-      timestamp: mockTimestamp,
-      context: mockContext,
       anonymousId: 'anon-123',
+      context: mockContext,
       integrations: {
+        'Facebook Pixel': false,
         'Google Analytics': true,
-        'Facebook Pixel': false
-      }
+      },
+      timestamp: mockTimestamp,
     };
   });
 
   describe('identify() emitter', () => {
     it('should create valid identify payload with minimal params', () => {
       const result = identify('user-123');
-      
+
       expect(result).toEqual({
         type: 'identify',
-        userId: 'user-123'
+        userId: 'user-123',
       });
     });
 
     it('should create identify payload with traits', () => {
       const traits = {
-        email: 'user@example.com',
         name: 'John Doe',
+        age: 25,
+        email: 'user@example.com',
         plan: 'premium',
-        age: 25
       };
 
       const result = identify('user-123', traits);
-      
+
       expect(result).toEqual({
         type: 'identify',
+        traits,
         userId: 'user-123',
-        traits
       });
     });
 
     it('should create identify payload with full options', () => {
       const traits = { email: 'user@example.com' };
       const result = identify('user-123', traits, mockOptions);
-      
+
       expect(result).toEqual({
         type: 'identify',
-        userId: 'user-123',
-        traits,
-        timestamp: mockTimestamp,
-        context: mockContext,
         anonymousId: 'anon-123',
-        integrations: mockOptions.integrations
+        context: mockContext,
+        integrations: mockOptions.integrations,
+        timestamp: mockTimestamp,
+        traits,
+        userId: 'user-123',
       });
     });
 
     it('should handle empty traits object', () => {
       const result = identify('user-123', {});
-      
+
       expect(result).toEqual({
         type: 'identify',
+        traits: {},
         userId: 'user-123',
-        traits: {}
       });
     });
 
     it('should handle undefined traits', () => {
       const result = identify('user-123', undefined);
-      
+
       expect(result).toEqual({
         type: 'identify',
-        userId: 'user-123'
+        userId: 'user-123',
       });
     });
 
     it('should preserve trait types correctly', () => {
       const traits = {
-        string: 'text',
-        number: 42,
-        boolean: true,
         array: ['a', 'b', 'c'],
-        object: { nested: 'value' },
+        boolean: true,
         date: new Date('2024-01-01'),
         null: null,
-        undefined: undefined
+        number: 42,
+        object: { nested: 'value' },
+        string: 'text',
+        undefined: undefined,
       };
 
       const result = identify('user-123', traits);
-      
+
       expect(result.traits).toEqual(traits);
       expect(typeof result.traits?.string).toBe('string');
       expect(typeof result.traits?.number).toBe('number');
@@ -143,10 +137,10 @@ describe('Core Analytics Emitters', () => {
   describe('track() emitter', () => {
     it('should create valid track payload with minimal params', () => {
       const result = track('Button Clicked');
-      
+
       expect(result).toEqual({
         type: 'track',
-        event: 'Button Clicked'
+        event: 'Button Clicked',
       });
     });
 
@@ -154,55 +148,55 @@ describe('Core Analytics Emitters', () => {
       const properties = {
         button_id: 'cta-primary',
         page: 'homepage',
+        revenue: 29.99,
         variant: 'blue',
-        revenue: 29.99
       };
 
       const result = track('Button Clicked', properties);
-      
+
       expect(result).toEqual({
         type: 'track',
         event: 'Button Clicked',
-        properties
+        properties,
       });
     });
 
     it('should create track payload with full options', () => {
       const properties = { page: 'checkout' };
       const result = track('Purchase Completed', properties, mockOptions);
-      
+
       expect(result).toEqual({
         type: 'track',
+        anonymousId: 'anon-123',
+        context: mockContext,
         event: 'Purchase Completed',
+        integrations: mockOptions.integrations,
         properties,
         timestamp: mockTimestamp,
-        context: mockContext,
-        anonymousId: 'anon-123',
-        integrations: mockOptions.integrations
       });
     });
 
     it('should handle complex property types', () => {
       const properties = {
-        products: [
-          { id: 'prod-1', name: 'Product 1', price: 10.99 },
-          { id: 'prod-2', name: 'Product 2', price: 15.99 }
-        ],
+        currency: 'USD',
         metadata: {
-          source: 'mobile_app',
-          version: '2.1.0',
           feature_flags: {
             new_checkout: true,
-            recommendations: false
-          }
+            recommendations: false,
+          },
+          source: 'mobile_app',
+          version: '2.1.0',
         },
+        products: [
+          { id: 'prod-1', name: 'Product 1', price: 10.99 },
+          { id: 'prod-2', name: 'Product 2', price: 15.99 },
+        ],
+        timestamp: new Date().toISOString(),
         total: 26.98,
-        currency: 'USD',
-        timestamp: new Date().toISOString()
       };
 
       const result = track('Order Completed', properties);
-      
+
       expect(result.properties).toEqual(properties);
       expect(Array.isArray(result.properties?.products)).toBe(true);
       expect(typeof result.properties?.metadata).toBe('object');
@@ -216,10 +210,10 @@ describe('Core Analytics Emitters', () => {
         'Event.with.dots',
         'Event (with parentheses)',
         'Event/with/slashes',
-        'Event:with:colons'
+        'Event:with:colons',
       ];
 
-      specialEvents.forEach(eventName => {
+      specialEvents.forEach((eventName) => {
         const result = track(eventName);
         expect(result.event).toBe(eventName);
         expect(result.type).toBe('track');
@@ -228,11 +222,11 @@ describe('Core Analytics Emitters', () => {
 
     it('should handle empty properties object', () => {
       const result = track('Event', {});
-      
+
       expect(result).toEqual({
         type: 'track',
         event: 'Event',
-        properties: {}
+        properties: {},
       });
     });
   });
@@ -240,32 +234,32 @@ describe('Core Analytics Emitters', () => {
   describe('page() emitter', () => {
     it('should create valid page payload with no params', () => {
       const result = page();
-      
+
       expect(result).toEqual({
-        type: 'page'
+        type: 'page',
       });
     });
 
     it('should create page payload with category only', () => {
       const result = page('marketing');
-      
+
       expect(result).toEqual({
         type: 'page',
         properties: {
-          category: 'marketing'
-        }
+          category: 'marketing',
+        },
       });
     });
 
     it('should create page payload with category and name', () => {
       const result = page('marketing', 'Landing Page');
-      
+
       expect(result).toEqual({
-        type: 'page',
         name: 'Landing Page',
+        type: 'page',
         properties: {
-          category: 'marketing'
-        }
+          category: 'marketing',
+        },
       });
     });
 
@@ -273,48 +267,48 @@ describe('Core Analytics Emitters', () => {
       const properties = {
         url: 'https://example.com/products',
         path: '/products',
+        referrer: 'https://google.com',
         title: 'Product Catalog',
-        referrer: 'https://google.com'
       };
 
       const result = page('ecommerce', 'Product Catalog', properties);
-      
+
       expect(result).toEqual({
-        type: 'page',
         name: 'Product Catalog',
+        type: 'page',
         properties: {
           ...properties,
-          category: 'ecommerce'
-        }
+          category: 'ecommerce',
+        },
       });
     });
 
     it('should merge category into properties correctly', () => {
       const properties = {
+        category: 'existing_category', // Should be overridden
         existing_prop: 'value',
-        category: 'existing_category'  // Should be overridden
       };
 
       const result = page('new_category', 'Page Name', properties);
-      
+
       expect(result.properties?.category).toBe('new_category');
       expect(result.properties?.existing_prop).toBe('value');
     });
 
     it('should handle full options', () => {
       const result = page('blog', 'Article', { author: 'John' }, mockOptions);
-      
+
       expect(result).toEqual({
-        type: 'page',
         name: 'Article',
+        type: 'page',
+        anonymousId: 'anon-123',
+        context: mockContext,
+        integrations: mockOptions.integrations,
         properties: {
           author: 'John',
-          category: 'blog'
+          category: 'blog',
         },
         timestamp: mockTimestamp,
-        context: mockContext,
-        anonymousId: 'anon-123',
-        integrations: mockOptions.integrations
       });
     });
   });
@@ -322,41 +316,41 @@ describe('Core Analytics Emitters', () => {
   describe('screen() emitter', () => {
     it('should create valid screen payload with minimal params', () => {
       const result = screen('Home Screen');
-      
+
       expect(result).toEqual({
+        name: 'Home Screen',
         type: 'screen',
-        name: 'Home Screen'
       });
     });
 
     it('should create screen payload with properties', () => {
       const properties = {
-        version: '2.1.0',
         build: '1234',
-        previous_screen: 'Login Screen'
+        previous_screen: 'Login Screen',
+        version: '2.1.0',
       };
 
       const result = screen('Dashboard', properties);
-      
+
       expect(result).toEqual({
-        type: 'screen',
         name: 'Dashboard',
-        properties
+        type: 'screen',
+        properties,
       });
     });
 
     it('should create screen payload with full options', () => {
       const properties = { tab: 'profile' };
       const result = screen('Settings Screen', properties, mockOptions);
-      
+
       expect(result).toEqual({
-        type: 'screen',
         name: 'Settings Screen',
+        type: 'screen',
+        anonymousId: 'anon-123',
+        context: mockContext,
+        integrations: mockOptions.integrations,
         properties,
         timestamp: mockTimestamp,
-        context: mockContext,
-        anonymousId: 'anon-123',
-        integrations: mockOptions.integrations
       });
     });
   });
@@ -364,77 +358,78 @@ describe('Core Analytics Emitters', () => {
   describe('group() emitter', () => {
     it('should create valid group payload with minimal params', () => {
       const result = group('group-123');
-      
+
       expect(result).toEqual({
         type: 'group',
-        groupId: 'group-123'
+        groupId: 'group-123',
       });
     });
 
     it('should create group payload with traits', () => {
       const traits = {
         name: 'Acme Corp',
-        industry: 'Technology',
         employees: 100,
-        plan: 'enterprise'
+        industry: 'Technology',
+        plan: 'enterprise',
       };
 
       const result = group('group-123', traits);
-      
+
       expect(result).toEqual({
         type: 'group',
         groupId: 'group-123',
-        traits
+        traits,
       });
     });
 
     it('should create group payload with full options', () => {
       const traits = { name: 'Test Organization' };
       const result = group('group-123', traits, mockOptions);
-      
+
       expect(result).toEqual({
         type: 'group',
-        groupId: 'group-123',
-        traits,
-        timestamp: mockTimestamp,
-        context: mockContext,
         anonymousId: 'anon-123',
-        integrations: mockOptions.integrations
+        context: mockContext,
+        groupId: 'group-123',
+        integrations: mockOptions.integrations,
+        timestamp: mockTimestamp,
+        traits,
       });
     });
   });
 
   describe('alias() emitter', () => {
     it('should create valid alias payload with minimal params', () => {
-      const result = alias('new-user-id');
-      
+      const result = alias('new-user-id', 'old-user-id');
+
       expect(result).toEqual({
         type: 'alias',
-        userId: 'new-user-id'
+        previousId: 'old-user-id',
+        userId: 'new-user-id',
       });
     });
 
     it('should create alias payload with previous user ID', () => {
       const result = alias('new-user-id', 'old-user-id');
-      
+
       expect(result).toEqual({
         type: 'alias',
+        previousId: 'old-user-id',
         userId: 'new-user-id',
-        previousId: 'old-user-id'
       });
     });
 
     it('should create alias payload with full options', () => {
       const result = alias('new-user-id', 'old-user-id', mockOptions);
-      
+
       expect(result).toEqual({
         type: 'alias',
-        userId: 'new-user-id',
+        anonymousId: 'anon-123',
+        context: mockContext,
+        integrations: mockOptions.integrations,
         previousId: 'old-user-id',
         timestamp: mockTimestamp,
-        context: mockContext,
-        anonymousId: 'anon-123',
-        integrations: mockOptions.integrations
+        userId: 'new-user-id',
       });
     });
   });
@@ -442,12 +437,12 @@ describe('Core Analytics Emitters', () => {
   describe('Options handling', () => {
     it('should handle partial options correctly', () => {
       const partialOptions: EmitterOptions = {
+        context: { app: { name: 'Test' } },
         timestamp: mockTimestamp,
-        context: { app: { name: 'Test' } }
       };
 
       const result = track('Test Event', {}, partialOptions);
-      
+
       expect(result.timestamp).toBe(mockTimestamp);
       expect(result.context).toEqual({ app: { name: 'Test' } });
       expect(result.anonymousId).toBeUndefined();
@@ -456,21 +451,21 @@ describe('Core Analytics Emitters', () => {
 
     it('should handle empty options object', () => {
       const result = track('Test Event', {}, {});
-      
+
       expect(result).toEqual({
         type: 'track',
         event: 'Test Event',
-        properties: {}
+        properties: {},
       });
     });
 
     it('should handle undefined options', () => {
       const result = track('Test Event', {}, undefined);
-      
+
       expect(result).toEqual({
         type: 'track',
         event: 'Test Event',
-        properties: {}
+        properties: {},
       });
     });
   });
@@ -480,32 +475,32 @@ describe('Core Analytics Emitters', () => {
       const complexContext: EmitterContext = {
         app: {
           name: 'My App',
-          version: '1.2.3',
+          namespace: 'com.example.app',
           build: '456',
-          namespace: 'com.example.app'
+          version: '1.2.3',
         },
         campaign: {
           name: 'Summer Sale',
-          source: 'email',
-          medium: 'newsletter',
-          term: 'discount',
           content: 'cta-button',
-          custom_param: 'custom_value'
+          custom_param: 'custom_value',
+          medium: 'newsletter',
+          source: 'email',
+          term: 'discount',
         },
         device: {
           id: 'device-123',
+          name: "John's iPhone",
+          type: 'mobile',
+          adTrackingEnabled: true,
+          advertisingId: 'ad-id-123',
           manufacturer: 'Apple',
           model: 'iPhone 15',
-          name: 'John\'s iPhone',
-          type: 'mobile',
           version: '17.0',
-          advertisingId: 'ad-id-123',
-          adTrackingEnabled: true
         },
         ip: '192.168.1.1',
         library: {
           name: '@repo/analytics',
-          version: '1.0.0'
+          version: '1.0.0',
         },
         locale: 'en-US',
         location: {
@@ -513,40 +508,40 @@ describe('Core Analytics Emitters', () => {
           country: 'United States',
           latitude: 37.7749,
           longitude: -122.4194,
-          region: 'CA'
+          region: 'CA',
         },
         network: {
           bluetooth: false,
           carrier: 'Verizon',
           cellular: true,
-          wifi: true
+          wifi: true,
         },
         os: {
           name: 'iOS',
-          version: '17.0'
+          version: '17.0',
         },
         page: {
+          url: 'https://example.com/products/123',
           path: '/products/123',
           referrer: 'https://google.com/search',
           search: '?utm_source=google',
           title: 'Product Details',
-          url: 'https://example.com/products/123'
         },
         screen: {
+          width: 375,
           density: 3,
           height: 812,
-          width: 375
         },
         timezone: 'America/Los_Angeles',
         traits: {
+          name: 'John Doe',
           email: 'user@example.com',
-          name: 'John Doe'
         },
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15'
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
       };
 
       const result = track('Complex Context Test', {}, { context: complexContext });
-      
+
       expect(result.context).toEqual(complexContext);
       expect(result.context?.app?.name).toBe('My App');
       expect(result.context?.device?.manufacturer).toBe('Apple');
@@ -557,19 +552,19 @@ describe('Core Analytics Emitters', () => {
   describe('Integration settings', () => {
     it('should handle integration settings correctly', () => {
       const integrations = {
-        'Google Analytics': {
-          trackingId: 'GA-123456789'
-        },
-        'Facebook Pixel': false,
-        'Mixpanel': true,
         'Custom Integration': {
           apiKey: 'custom-key',
-          endpoint: 'https://api.custom.com'
-        }
+          endpoint: 'https://api.custom.com',
+        },
+        'Facebook Pixel': false,
+        'Google Analytics': {
+          trackingId: 'GA-123456789',
+        },
+        Mixpanel: true,
       };
 
       const result = track('Integration Test', {}, { integrations });
-      
+
       expect(result.integrations).toEqual(integrations);
     });
   });
@@ -581,7 +576,7 @@ describe('Core Analytics Emitters', () => {
       const identifyResult: EmitterIdentifyPayload = identify('user-123');
       const pageResult: EmitterPagePayload = page();
       const groupResult: EmitterGroupPayload = group('group-123');
-      const aliasResult: EmitterAliasPayload = alias('new-id');
+      const aliasResult: EmitterAliasPayload = alias('new-id', 'old-id');
 
       expect(trackResult.type).toBe('track');
       expect(identifyResult.type).toBe('identify');
@@ -594,11 +589,11 @@ describe('Core Analytics Emitters', () => {
       // Empty strings
       expect(track('').event).toBe('');
       expect(identify('').userId).toBe('');
-      
+
       // Special characters in IDs
       const specialId = 'user@example.com:123/456';
       expect(identify(specialId).userId).toBe(specialId);
-      
+
       // Very long strings
       const longString = 'a'.repeat(1000);
       expect(track(longString).event).toBe(longString);
@@ -607,8 +602,10 @@ describe('Core Analytics Emitters', () => {
 
   describe('Performance considerations', () => {
     it('should handle large payloads efficiently', () => {
-      const largeProperties = Array.from({ length: 100 }, (_, i) => [`prop_${i}`, `value_${i}`])
-        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+      const largeProperties = Array.from({ length: 100 }, (_, i) => [
+        `prop_${i}`,
+        `value_${i}`,
+      ]).reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
       const start = performance.now();
       const result = track('Large Payload Test', largeProperties);
@@ -620,11 +617,9 @@ describe('Core Analytics Emitters', () => {
 
     it('should handle many emitter calls efficiently', () => {
       const start = performance.now();
-      
-      const results = Array.from({ length: 1000 }, (_, i) => 
-        track(`Event ${i}`, { index: i })
-      );
-      
+
+      const results = Array.from({ length: 1000 }, (_, i) => track(`Event ${i}`, { index: i }));
+
       const duration = performance.now() - start;
 
       expect(results).toHaveLength(1000);

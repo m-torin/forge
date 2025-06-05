@@ -3,51 +3,46 @@
  * Standardized emitter functions for feature flag operations
  */
 
-import type {
-  FlagContext,
-  FlagEvaluationOptions,
-  FlagValue,
-  TypedFlag
-} from './types';
+import type { FlagContext, FlagEvaluationOptions, FlagValue, TypedFlag } from './types';
 
 // ============================================================================
 // CORE FEATURE FLAG EMITTERS
 // ============================================================================
 
 export interface FlagEvaluationPayload {
-  type: 'flag_evaluation';
-  key: string;
-  defaultValue: any;
   context?: FlagContext;
+  defaultValue: any;
+  key: string;
   options?: FlagEvaluationOptions;
   timestamp: number;
+  type: 'flag_evaluation';
 }
 
 export interface FlagExposurePayload {
-  type: 'flag_exposure';
-  key: string;
-  value: FlagValue;
-  variant?: string;
   context?: FlagContext;
+  key: string;
   reason?: string;
   timestamp: number;
+  type: 'flag_exposure';
+  value: FlagValue;
+  variant?: string;
 }
 
 export interface FlagContextPayload {
-  type: 'flag_context_update';
   context: FlagContext;
   timestamp: number;
+  type: 'flag_context_update';
 }
 
 export interface FlagBatchEvaluationPayload {
-  type: 'flag_batch_evaluation';
-  keys: string[];
   context?: FlagContext;
+  keys: string[];
   options?: FlagEvaluationOptions;
   timestamp: number;
+  type: 'flag_batch_evaluation';
 }
 
-export type FeatureFlagPayload = 
+export type FeatureFlagPayload =
   | FlagEvaluationPayload
   | FlagExposurePayload
   | FlagContextPayload
@@ -68,19 +63,19 @@ export function evaluateFlag<T extends FlagValue = FlagValue>(
     provider?: string;
     trackExposure?: boolean;
     timeout?: number;
-  }
+  },
 ): FlagEvaluationPayload {
   return {
     type: 'flag_evaluation',
-    key,
-    defaultValue,
     context: options?.context,
+    defaultValue,
+    key,
     options: {
       provider: options?.provider,
+      timeout: options?.timeout,
       trackExposure: options?.trackExposure,
-      timeout: options?.timeout
     },
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 }
 
@@ -95,16 +90,16 @@ export function trackFlagExposure(
     context?: FlagContext;
     reason?: string;
     properties?: Record<string, any>;
-  }
+  },
 ): FlagExposurePayload {
   return {
     type: 'flag_exposure',
+    context: options?.context,
     key,
+    reason: options?.reason,
+    timestamp: Date.now(),
     value,
     variant: options?.variant,
-    context: options?.context,
-    reason: options?.reason,
-    timestamp: Date.now()
   };
 }
 
@@ -115,7 +110,7 @@ export function updateFlagContext(context: FlagContext): FlagContextPayload {
   return {
     type: 'flag_context_update',
     context,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 }
 
@@ -128,17 +123,17 @@ export function evaluateFlagBatch(
     context?: FlagContext;
     provider?: string;
     timeout?: number;
-  }
+  },
 ): FlagBatchEvaluationPayload {
   return {
     type: 'flag_batch_evaluation',
-    keys,
     context: options?.context,
+    keys,
     options: {
       provider: options?.provider,
-      timeout: options?.timeout
+      timeout: options?.timeout,
     },
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 }
 
@@ -150,7 +145,7 @@ export function evaluateFlagBatch(
  * Create typed flag evaluation functions
  */
 export function createTypedFlagEmitters<T extends Record<string, any>>(
-  flags: Record<keyof T, TypedFlag<T[keyof T]>>
+  flags: Record<keyof T, TypedFlag<T[keyof T]>>,
 ) {
   return {
     // Evaluate a specific typed flag
@@ -160,7 +155,7 @@ export function createTypedFlagEmitters<T extends Record<string, any>>(
         context?: FlagContext;
         provider?: string;
         trackExposure?: boolean;
-      }
+      },
     ): FlagEvaluationPayload {
       const flag = flags[key];
       return evaluateFlag(flag.key, flag.defaultValue, options);
@@ -172,9 +167,9 @@ export function createTypedFlagEmitters<T extends Record<string, any>>(
       options?: {
         context?: FlagContext;
         provider?: string;
-      }
+      },
     ): FlagBatchEvaluationPayload {
-      const flagKeys = keys.map(key => flags[key].key);
+      const flagKeys = keys.map((key) => flags[key].key);
       return evaluateFlagBatch(flagKeys, options);
     },
 
@@ -186,14 +181,14 @@ export function createTypedFlagEmitters<T extends Record<string, any>>(
         variant?: string;
         context?: FlagContext;
         reason?: string;
-      }
+      },
     ): FlagExposurePayload {
       const flag = flags[key];
       return trackFlagExposure(flag.key, value, options);
     },
 
     // Get flag definitions
-    getFlags: () => flags
+    getFlags: () => flags,
   };
 }
 
@@ -202,21 +197,21 @@ export function createTypedFlagEmitters<T extends Record<string, any>>(
 // ============================================================================
 
 export interface ExperimentEnrollmentPayload {
-  type: 'experiment_enrollment';
-  experimentKey: string;
-  variant: string;
   context?: FlagContext;
+  experimentKey: string;
   timestamp: number;
+  type: 'experiment_enrollment';
+  variant: string;
 }
 
 export interface ExperimentConversionPayload {
-  type: 'experiment_conversion';
-  experimentKey: string;
-  variant: string;
-  metric: string;
-  value?: number;
   context?: FlagContext;
+  experimentKey: string;
+  metric: string;
   timestamp: number;
+  type: 'experiment_conversion';
+  value?: number;
+  variant: string;
 }
 
 /**
@@ -228,14 +223,14 @@ export function trackExperimentEnrollment(
   options?: {
     context?: FlagContext;
     properties?: Record<string, any>;
-  }
+  },
 ): ExperimentEnrollmentPayload {
   return {
     type: 'experiment_enrollment',
-    experimentKey,
-    variant,
     context: options?.context,
-    timestamp: Date.now()
+    experimentKey,
+    timestamp: Date.now(),
+    variant,
   };
 }
 
@@ -250,16 +245,16 @@ export function trackExperimentConversion(
     value?: number;
     context?: FlagContext;
     properties?: Record<string, any>;
-  }
+  },
 ): ExperimentConversionPayload {
   return {
     type: 'experiment_conversion',
-    experimentKey,
-    variant,
-    metric,
-    value: options?.value,
     context: options?.context,
-    timestamp: Date.now()
+    experimentKey,
+    metric,
+    timestamp: Date.now(),
+    value: options?.value,
+    variant,
   };
 }
 
@@ -268,20 +263,20 @@ export function trackExperimentConversion(
 // ============================================================================
 
 export interface FlagStatusPayload {
-  type: 'flag_status_change';
+  context?: FlagContext;
   key: string;
   status: 'enabled' | 'disabled' | 'archived';
-  context?: FlagContext;
   timestamp: number;
+  type: 'flag_status_change';
 }
 
 export interface FlagRuleChangePayload {
-  type: 'flag_rule_change';
-  key: string;
-  ruleId: string;
   action: 'created' | 'updated' | 'deleted';
   context?: FlagContext;
+  key: string;
+  ruleId: string;
   timestamp: number;
+  type: 'flag_rule_change';
 }
 
 /**
@@ -292,14 +287,14 @@ export function trackFlagStatusChange(
   status: 'enabled' | 'disabled' | 'archived',
   options?: {
     context?: FlagContext;
-  }
+  },
 ): FlagStatusPayload {
   return {
     type: 'flag_status_change',
+    context: options?.context,
     key,
     status,
-    context: options?.context,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 }
 
@@ -312,15 +307,15 @@ export function trackFlagRuleChange(
   action: 'created' | 'updated' | 'deleted',
   options?: {
     context?: FlagContext;
-  }
+  },
 ): FlagRuleChangePayload {
   return {
     type: 'flag_rule_change',
-    key,
-    ruleId,
     action,
     context: options?.context,
-    timestamp: Date.now()
+    key,
+    ruleId,
+    timestamp: Date.now(),
   };
 }
 
@@ -343,11 +338,15 @@ export function isFlagContextPayload(payload: any): payload is FlagContextPayloa
   return payload?.type === 'flag_context_update';
 }
 
-export function isExperimentEnrollmentPayload(payload: any): payload is ExperimentEnrollmentPayload {
+export function isExperimentEnrollmentPayload(
+  payload: any,
+): payload is ExperimentEnrollmentPayload {
   return payload?.type === 'experiment_enrollment';
 }
 
-export function isExperimentConversionPayload(payload: any): payload is ExperimentConversionPayload {
+export function isExperimentConversionPayload(
+  payload: any,
+): payload is ExperimentConversionPayload {
   return payload?.type === 'experiment_conversion';
 }
 
@@ -356,34 +355,26 @@ export function isExperimentConversionPayload(payload: any): payload is Experime
  */
 export function validateFlagContext(context: FlagContext): boolean {
   // Basic validation - ensure context has at least one identifier
-  return !!(
-    context.userId || 
-    context.distinctId || 
-    context.anonymousId || 
-    context.sessionId
-  );
+  return !!(context.userId || context.distinctId || context.anonymousId || context.sessionId);
 }
 
 /**
  * Merge flag contexts
  */
-export function mergeFlagContexts(
-  base: FlagContext,
-  override: Partial<FlagContext>
-): FlagContext {
+export function mergeFlagContexts(base: FlagContext, override: Partial<FlagContext>): FlagContext {
   return {
     ...base,
     ...override,
     // Merge attributes deeply
     attributes: {
       ...base.attributes,
-      ...override.attributes
+      ...override.attributes,
     },
     // Merge groups deeply
     groups: {
       ...base.groups,
-      ...override.groups
-    }
+      ...override.groups,
+    },
   };
 }
 
@@ -432,7 +423,7 @@ export class FlagContextBuilder {
   attributes(attrs: Record<string, any>): this {
     this.context.attributes = {
       ...this.context.attributes,
-      ...attrs
+      ...attrs,
     };
     return this;
   }

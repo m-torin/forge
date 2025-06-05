@@ -16,7 +16,9 @@ export async function GET() {
     checks: {
       isLocalQStash: process.env.QSTASH_URL?.includes('localhost') || false,
       hasToken: !!process.env.QSTASH_TOKEN,
-      hasSigningKeys: !!(process.env.QSTASH_CURRENT_SIGNING_KEY && process.env.QSTASH_NEXT_SIGNING_KEY),
+      hasSigningKeys: !!(
+        process.env.QSTASH_CURRENT_SIGNING_KEY && process.env.QSTASH_NEXT_SIGNING_KEY
+      ),
       hasWorkflowUrl: !!process.env.UPSTASH_WORKFLOW_URL,
     },
     recommendations: [],
@@ -30,17 +32,19 @@ export async function GET() {
     config.recommendations.push('Set QSTASH_TOKEN with the token from QStash CLI output');
   }
   if (!config.checks.hasSigningKeys) {
-    config.recommendations.push('Set signing keys from QStash CLI output (even though receiver is disabled)');
+    config.recommendations.push(
+      'Set signing keys from QStash CLI output (even though receiver is disabled)',
+    );
   }
   if (!config.checks.hasWorkflowUrl) {
     config.recommendations.push('Set UPSTASH_WORKFLOW_URL=http://localhost:3400');
   }
 
-  return NextResponse.json(config, { 
+  return NextResponse.json(config, {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
   });
 }
 
@@ -48,10 +52,10 @@ export async function POST(request: NextRequest) {
   try {
     // Try to create a workflow manually and see what happens
     const { serve } = await import('@upstash/workflow/nextjs');
-    
+
     const testWorkflow = serve(
       async (context) => {
-        return { 
+        return {
           message: 'Manual workflow test',
           workflowRunId: context.workflowRunId,
         };
@@ -59,15 +63,18 @@ export async function POST(request: NextRequest) {
       {
         receiver: undefined,
         verbose: true,
-      }
+      },
     );
 
     return testWorkflow.POST(request);
   } catch (error) {
-    return NextResponse.json({
-      error: 'Failed to create workflow',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to create workflow',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      { status: 500 },
+    );
   }
 }

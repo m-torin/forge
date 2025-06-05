@@ -8,91 +8,87 @@
 // ============================================================================
 
 // Manager and provider interfaces
-export { StandardFeatureFlagManager, MemoryFlagCache } from './manager';
+// ============================================================================
+// CONVENIENCE FUNCTIONS
+// ============================================================================
+
+import { createTypedFlagEmitters } from './emitters';
+import { MemoryFlagCache, StandardFeatureFlagManager } from './manager';
+
+import type { FeatureFlagManager, FlagConfig, FlagEvaluationOptions, TypedFlagMap } from './types';
+
+export { MemoryFlagCache, StandardFeatureFlagManager } from './manager';
 export type {
-  FeatureFlagManager,
-  FeatureFlagProvider,
-  FlagConfig,
-  FlagContext,
-  FlagEvaluationResult,
-  FlagEvaluationOptions,
-  FlagValue,
-  FlagCache,
   CacheConfig,
   FeatureFlagError,
-  FlagMetrics,
+  FeatureFlagManager,
+  FeatureFlagProvider,
+  FlagCache,
+  FlagConfig,
+  FlagContext,
   FlagDebugInfo,
-  FlagEvaluationReason
+  FlagEvaluationOptions,
+  FlagEvaluationReason,
+  FlagEvaluationResult,
+  FlagMetrics,
+  FlagValue,
 } from './types';
 
 // Emitters and payload types
 export {
-  evaluateFlag,
-  trackFlagExposure,
-  updateFlagContext,
-  evaluateFlagBatch,
-  createTypedFlagEmitters,
-  trackExperimentEnrollment,
-  trackExperimentConversion,
-  trackFlagStatusChange,
-  trackFlagRuleChange,
-  FlagContextBuilder,
   createFlagContext,
+  createTypedFlagEmitters,
+  evaluateFlag,
+  evaluateFlagBatch,
+  FlagContextBuilder,
+  isExperimentConversionPayload,
+  isExperimentEnrollmentPayload,
+  isFlagContextPayload,
   isFlagEvaluationPayload,
   isFlagExposurePayload,
-  isFlagContextPayload,
-  isExperimentEnrollmentPayload,
-  isExperimentConversionPayload,
+  mergeFlagContexts,
+  trackExperimentConversion,
+  trackExperimentEnrollment,
+  trackFlagExposure,
+  trackFlagRuleChange,
+  trackFlagStatusChange,
+  updateFlagContext,
   validateFlagContext,
-  mergeFlagContexts
 } from './emitters';
 
 export type {
+  ExperimentConversionPayload,
+  ExperimentEnrollmentPayload,
   FeatureFlagPayload,
+  FlagBatchEvaluationPayload,
+  FlagContextPayload,
   FlagEvaluationPayload,
   FlagExposurePayload,
-  FlagContextPayload,
-  FlagBatchEvaluationPayload,
-  ExperimentEnrollmentPayload,
-  ExperimentConversionPayload,
+  FlagRuleChangePayload,
   FlagStatusPayload,
-  FlagRuleChangePayload
 } from './emitters';
 
 // Provider implementations
 export { PostHogFlagProvider } from '../providers/posthog-flags';
 export { LocalFlagProvider } from '../providers/local-flags';
 export type {
-  LocalFlagDefinition,
-  LocalFlagRule,
   LocalFlagCondition,
-  LocalFlagOperator
+  LocalFlagDefinition,
+  LocalFlagOperator,
+  LocalFlagRule,
 } from '../providers/local-flags';
 
 // Type utilities
 export type {
+  ExperimentConfig,
+  ExperimentPrerequisite,
+  ExperimentResult,
+  ExperimentVariant,
   TypedFlag,
   TypedFlagMap,
-  ExperimentConfig,
-  ExperimentVariant,
-  ExperimentPrerequisite,
-  ExperimentResult
 } from './types';
 
 export { defineFlag } from './types';
-
-// ============================================================================
-// CONVENIENCE FUNCTIONS
-// ============================================================================
-
-import type { 
-  FlagConfig, 
-  FeatureFlagManager, 
-  TypedFlagMap, 
-  FlagEvaluationOptions 
-} from './types';
-import { StandardFeatureFlagManager, MemoryFlagCache } from './manager';
-import { createTypedFlagEmitters } from './emitters';
 
 /**
  * Create a feature flag manager with default configuration
@@ -105,26 +101,24 @@ export function createFeatureFlagManager(options?: {
   primaryProvider?: string;
 }): StandardFeatureFlagManager {
   let cache;
-  
+
   if (options?.cache !== false) {
     cache = new MemoryFlagCache({
       enabled: true,
+      strategy: 'ttl',
       ttl: options?.cacheTTL || 5 * 60 * 1000, // 5 minutes default
-      strategy: 'ttl'
     });
   }
 
   const manager = new StandardFeatureFlagManager({
+    primaryProvider: options?.primaryProvider,
     cache,
     debug: options?.debug,
-    primaryProvider: options?.primaryProvider
   });
 
   // Add providers if specified
   if (options?.providers) {
-    Promise.all(
-      options.providers.map(config => manager.addProvider(config))
-    ).catch(error => {
+    Promise.all(options.providers.map((config) => manager.addProvider(config))).catch((error) => {
       console.error('Failed to add feature flag providers:', error);
     });
   }
@@ -137,25 +131,22 @@ export function createFeatureFlagManager(options?: {
  */
 export function createTypedFeatureFlags<T extends Record<string, any>>(
   flags: TypedFlagMap<T>,
-  manager: FeatureFlagManager
+  manager: FeatureFlagManager,
 ) {
   const emitters = createTypedFlagEmitters(flags);
 
   return {
     // Flag evaluation
-    async get<K extends keyof T>(
-      key: K,
-      options?: FlagEvaluationOptions
-    ): Promise<T[K]> {
+    async get<K extends keyof T>(key: K, options?: FlagEvaluationOptions): Promise<T[K]> {
       const flag = flags[key];
       const result = await manager.getFlag(flag.key, flag.defaultValue, options);
       return result.value as T[K];
     },
 
     async getAll(options?: FlagEvaluationOptions): Promise<Partial<T>> {
-      const flagKeys = Object.values(flags).map(f => f.key);
+      const flagKeys = Object.values(flags).map((f) => f.key);
       const batchResult = await manager.getAllFlags(options);
-      
+
       const result: Partial<T> = {};
       Object.entries(flags).forEach(([typedKey, flag]) => {
         const flagResult = batchResult[flag.key];
@@ -163,14 +154,11 @@ export function createTypedFeatureFlags<T extends Record<string, any>>(
           result[typedKey as keyof T] = flagResult.value as T[keyof T];
         }
       });
-      
+
       return result;
     },
 
-    async isEnabled<K extends keyof T>(
-      key: K,
-      options?: FlagEvaluationOptions
-    ): Promise<boolean> {
+    async isEnabled<K extends keyof T>(key: K, options?: FlagEvaluationOptions): Promise<boolean> {
       const result = await this.get(key, options);
       return Boolean(result);
     },
@@ -182,14 +170,16 @@ export function createTypedFeatureFlags<T extends Record<string, any>>(
     flags,
 
     // Manager access
-    manager
+    manager,
   };
 }
 
 /**
  * Environment-specific flag configuration
  */
-export function createEnvironmentConfig(environment: 'development' | 'staging' | 'production'): FlagConfig[] {
+export function createEnvironmentConfig(
+  environment: 'development' | 'staging' | 'production',
+): FlagConfig[] {
   const configs: FlagConfig[] = [];
 
   switch (environment) {
@@ -200,11 +190,11 @@ export function createEnvironmentConfig(environment: 'development' | 'staging' |
         options: {
           flags: {
             'debug-mode': true,
-            'verbose-logging': true,
             'mock-apis': true,
-            'skip-auth': false
-          }
-        }
+            'skip-auth': false,
+            'verbose-logging': true,
+          },
+        },
       });
       break;
 
@@ -213,10 +203,10 @@ export function createEnvironmentConfig(environment: 'development' | 'staging' |
       configs.push({
         provider: 'posthog',
         options: {
-          apiKey: process.env.NEXT_PUBLIC_POSTHOG_STAGING_KEY,
           apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-          environment: 'staging'
-        }
+          apiKey: process.env.NEXT_PUBLIC_POSTHOG_STAGING_KEY,
+          environment: 'staging',
+        },
       });
       break;
 
@@ -225,10 +215,10 @@ export function createEnvironmentConfig(environment: 'development' | 'staging' |
       configs.push({
         provider: 'posthog',
         options: {
-          apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
           apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-          environment: 'production'
-        }
+          apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+          environment: 'production',
+        },
       });
       break;
   }
@@ -242,60 +232,60 @@ export function createEnvironmentConfig(environment: 'development' | 'staging' |
 export const commonFlags = {
   // UI/UX flags
   newDesign: {
-    key: 'new-design',
+    type: 'boolean',
     defaultValue: false,
     description: 'Enable new design system',
-    type: 'boolean'
+    key: 'new-design',
   },
-  
+
   betaFeatures: {
-    key: 'beta-features',
+    type: 'boolean',
     defaultValue: false,
     description: 'Enable beta features',
-    type: 'boolean'
+    key: 'beta-features',
   },
-  
+
   // Performance flags
   lazyLoading: {
-    key: 'lazy-loading',
+    type: 'boolean',
     defaultValue: true,
     description: 'Enable lazy loading for images',
-    type: 'boolean'
+    key: 'lazy-loading',
   },
-  
+
   // Feature rollout flags
   newCheckout: {
-    key: 'new-checkout',
+    type: 'boolean',
     defaultValue: false,
     description: 'Enable new checkout flow',
-    type: 'boolean'
+    key: 'new-checkout',
   },
-  
+
   // A/B testing flags
   ctaVariant: {
-    key: 'cta-variant',
+    type: 'string',
     defaultValue: 'control',
     description: 'CTA button variant',
-    type: 'string',
-    variants: ['control', 'variant-a', 'variant-b']
+    key: 'cta-variant',
+    variants: ['control', 'variant-a', 'variant-b'],
   },
-  
+
   // Configuration flags
   maxItems: {
-    key: 'max-items-per-page',
+    type: 'number',
     defaultValue: 20,
     description: 'Maximum items per page',
-    type: 'number'
+    key: 'max-items-per-page',
   },
-  
+
   // Integration flags
   analyticsProvider: {
-    key: 'analytics-provider',
+    type: 'string',
     defaultValue: 'posthog',
     description: 'Primary analytics provider',
-    type: 'string',
-    variants: ['posthog', 'mixpanel', 'amplitude']
-  }
+    key: 'analytics-provider',
+    variants: ['posthog', 'mixpanel', 'amplitude'],
+  },
 } as const;
 
 export type CommonFlags = typeof commonFlags;

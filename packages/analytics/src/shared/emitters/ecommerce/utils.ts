@@ -21,23 +21,28 @@ export function normalizeProductProperties(product: any): BaseProductProperties 
 
   const normalized = {
     product_id,
-    sku: product.sku ?? product.SKU,
-    category: product.category,
     name: product.name ?? product.title ?? product.productName,
+    image_url: product.image_url ?? product.imageUrl ?? product.image,
+    url: product.url ?? product.link ?? product.product_url,
     brand: product.brand ?? product.manufacturer,
-    variant: product.variant ?? product.variation,
-    price: normalizePrice(product.price),
-    quantity: normalizeQuantity(product.quantity),
+    category: product.category,
     coupon: product.coupon ?? product.couponCode ?? product.coupon_code,
     position: normalizePosition(product.position),
-    url: product.url ?? product.link ?? product.product_url,
-    image_url: product.image_url ?? product.imageUrl ?? product.image,
+    price: normalizePrice(product.price),
+    quantity: normalizeQuantity(product.quantity),
+    sku: product.sku ?? product.SKU,
+    variant: product.variant ?? product.variation,
   };
 
   // Remove undefined and null values - using ES2022 Object.hasOwn
   const result: BaseProductProperties = { product_id };
   Object.entries(normalized).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && Object.hasOwn(normalized, key) && key !== 'product_id') {
+    if (
+      value !== undefined &&
+      value !== null &&
+      Object.hasOwn(normalized, key) &&
+      key !== 'product_id'
+    ) {
       (result as any)[key] = value;
     }
   });
@@ -63,7 +68,7 @@ export function validateProductWithContext(product: any, context?: string): void
     normalizeProductProperties(product);
   } catch (error) {
     throw new Error(`Product validation failed${context ? ` in ${context}` : ''}`, {
-      cause: error
+      cause: error,
     });
   }
 }
@@ -106,9 +111,9 @@ function normalizePosition(position: any): number | undefined {
  */
 export function validateRequiredProperties<T extends Record<string, any>>(
   properties: T,
-  required: (keyof T)[]
+  required: (keyof T)[],
 ): void {
-  const missing = required.filter(prop => {
+  const missing = required.filter((prop) => {
     const value = properties[prop];
     return value === undefined || value === null || value === '';
   });
@@ -135,7 +140,7 @@ export function cleanProperties<T extends Record<string, any>>(obj: T): Partial<
  */
 export function mergeEventProperties(
   specific: EcommerceEventProperties,
-  common?: Record<string, any>
+  common?: Record<string, any>,
 ): EcommerceEventProperties {
   return {
     ...common,
@@ -148,14 +153,14 @@ export function mergeEventProperties(
  */
 export function validateCurrency(currency?: string): string | undefined {
   if (!currency || typeof currency !== 'string') return undefined;
-  
+
   // Basic validation - should be 3 uppercase letters
   const normalized = currency.toUpperCase();
   if (!/^[A-Z]{3}$/.test(normalized)) {
     // Invalid currency code - return undefined
     return undefined;
   }
-  
+
   return normalized;
 }
 

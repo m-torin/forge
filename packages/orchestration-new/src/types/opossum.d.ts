@@ -30,21 +30,20 @@ declare module 'opossum' {
 
   export default class CircuitBreaker<T extends any[], R> {
     constructor(fn: (...args: T) => Promise<R>, options?: CircuitBreakerOptions);
-    
+
     fire(...args: T): Promise<R>;
-    
+
     get stats(): CircuitBreakerStats;
     get options(): CircuitBreakerOptions;
     get closed(): boolean;
     get opened(): boolean;
     get halfOpen(): boolean;
-    
+
     close(): void;
     open(): void;
     destroy(): void;
-    
+
     on(event: 'open' | 'close' | 'halfOpen', listener: () => void): this;
     on(event: string, listener: (...args: any[]) => void): this;
   }
-
 }

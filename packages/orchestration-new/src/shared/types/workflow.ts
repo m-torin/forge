@@ -11,6 +11,8 @@ export interface WorkflowDefinition {
   env?: Record<string, string>;
   /** Unique identifier for the workflow */
   id: string;
+  /** Workflow metadata */
+  metadata?: Record<string, any>;
   /** Human-readable name */
   name: string;
   /** Configuration for retry behavior */
@@ -73,21 +75,29 @@ export interface WorkflowExecution {
 
 export interface WorkflowStepExecution {
   /** Number of retry attempts */
-  attempts: number;
+  attempts?: number;
   /** When step completed */
   completedAt?: Date;
   /** Duration in milliseconds */
   duration?: number;
   /** Error if step failed */
   error?: WorkflowError;
+  /** Input provided to the step */
+  input?: unknown;
+  /** Step name */
+  name?: string;
   /** Step output */
-  output?: any;
+  output?: unknown;
+  /** Number of retry attempts */
+  retryCount?: number;
   /** When step started */
   startedAt?: Date;
   /** Execution status */
   status: WorkflowExecutionStatus;
   /** Step identifier */
   stepId: string;
+  /** Step name (alternative field) */
+  stepName?: string;
 }
 
 export interface WorkflowExecutionMetadata {
@@ -105,17 +115,19 @@ export interface WorkflowExecutionMetadata {
 
 export interface WorkflowError {
   /** Error code */
-  code: string;
+  code?: string;
   /** Original error details */
   details?: any;
   /** Human-readable message */
   message: string;
   /** Whether this error is retryable */
-  retryable: boolean;
+  retryable?: boolean;
+  /** Stack trace */
+  stack?: string;
   /** Step ID where error occurred */
   stepId?: string;
   /** When the error occurred */
-  timestamp: Date;
+  timestamp?: Date;
 }
 
 export interface RetryConfig {
@@ -154,29 +166,44 @@ export interface WorkflowTrigger {
   /** When trigger was activated */
   timestamp: Date;
   /** Type of trigger */
-  type: 'manual' | 'schedule' | 'webhook' | 'event';
+  type: 'manual' | 'schedule' | 'webhook' | 'event' | 'api';
 }
 
-export type WorkflowExecutionStatus = 
+export type WorkflowExecutionStatus =
   | 'pending'
-  | 'running' 
-  | 'completed' 
-  | 'failed' 
-  | 'cancelled' 
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
   | 'timeout'
-  | 'paused';
+  | 'paused'
+  | 'skipped';
 
 export interface WorkflowProvider {
   /** Cancel a running execution */
   cancelExecution(executionId: string): Promise<boolean>;
+  /** Create a new workflow definition */
+  createWorkflow?(definition: WorkflowDefinition): Promise<string>;
   /** Execute a workflow */
   execute(definition: WorkflowDefinition, input?: Record<string, any>): Promise<WorkflowExecution>;
+  /** Execute a workflow by ID */
+  executeWorkflow?(
+    workflowId: string,
+    input?: unknown,
+    options?: Record<string, unknown>,
+  ): Promise<string>;
   /** Get execution status */
   getExecution(executionId: string): Promise<WorkflowExecution | null>;
+  /** Get execution status (alternative method name) */
+  getExecutionStatus?(executionId: string): Promise<WorkflowExecution | null>;
+  /** Get a workflow definition */
+  getWorkflow?(workflowId: string): Promise<WorkflowDefinition | null>;
   /** Health check */
   healthCheck(): Promise<ProviderHealth>;
   /** List executions for a workflow */
   listExecutions(workflowId: string, options?: ListExecutionsOptions): Promise<WorkflowExecution[]>;
+  /** List workflow definitions */
+  listWorkflows?(filter?: { tags?: string[]; status?: string }): Promise<WorkflowDefinition[]>;
   /** Provider identifier */
   name: string;
   /** Schedule a workflow */

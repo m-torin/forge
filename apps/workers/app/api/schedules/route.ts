@@ -1,8 +1,5 @@
 import { getAvailableWorkflows } from '@/workflows/loader';
-import {
-  createWorkflowScheduler,
-  CronExpressions,
-} from '@repo/orchestration';
+import { createWorkflowScheduler, CronExpressions } from '@repo/orchestration';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -18,7 +15,7 @@ const scheduler = createWorkflowScheduler();
 export async function POST(request: NextRequest) {
   try {
     const { action, ...params } = await request.json();
-    
+
     switch (action) {
       case 'list':
         return handleListSchedules(params);
@@ -26,28 +23,28 @@ export async function POST(request: NextRequest) {
         return handleListByPrefix(params);
       default:
         return NextResponse.json(
-          { 
+          {
             error: 'Unknown action. Use workflow-specific endpoints at /api/schedules/[workflow]',
-            hint: 'Valid actions for this endpoint: list, listByPrefix'
-          }, 
-          { status: 400 }
+            hint: 'Valid actions for this endpoint: list, listByPrefix',
+          },
+          { status: 400 },
         );
     }
   } catch (error) {
     console.error('Schedules API error:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Schedule operation failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 async function handleListSchedules(params: { cursor?: string; limit?: number }) {
   const schedules = await scheduler.listSchedules();
-  
+
   return NextResponse.json({
     success: true,
     count: schedules.length,
@@ -61,13 +58,13 @@ async function handleListSchedules(params: { cursor?: string; limit?: number }) 
 
 async function handleListByPrefix(params: { prefix: string }) {
   const { prefix } = params;
-  
+
   if (!prefix) {
     return NextResponse.json({ error: 'prefix is required' }, { status: 400 });
   }
-  
+
   const schedules = await scheduler.listSchedulesByPrefix(prefix);
-  
+
   return NextResponse.json({
     success: true,
     prefix,
@@ -82,11 +79,12 @@ async function handleListByPrefix(params: { prefix: string }) {
 
 export async function GET() {
   const workflows = getAvailableWorkflows();
-  
+
   return NextResponse.json({
     message: 'Workflow Schedules API',
-    description: 'Use this endpoint to list all schedules. For workflow-specific operations, use /api/schedules/[workflow]',
-    availableWorkflows: workflows.map(w => ({
+    description:
+      'Use this endpoint to list all schedules. For workflow-specific operations, use /api/schedules/[workflow]',
+    availableWorkflows: workflows.map((w) => ({
       slug: w,
       scheduleEndpoint: `/api/schedules/${w}`,
     })),

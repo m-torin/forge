@@ -2,11 +2,10 @@
  * OpenTelemetry provider skeleton for distributed tracing
  */
 
-import type { 
-  ObservabilityProvider, 
-  ObservabilityProviderConfig, 
+import type {
   ObservabilityContext,
-  Breadcrumb
+  ObservabilityProvider,
+  ObservabilityProviderConfig,
 } from '../../shared/types/types';
 
 export class OpenTelemetryProvider implements ObservabilityProvider {
@@ -27,10 +26,14 @@ export class OpenTelemetryProvider implements ObservabilityProvider {
     console.error('[OpenTelemetry] Tracking exception:', error, context);
   }
 
-  async captureMessage(message: string, level: 'info' | 'warning' | 'error', context?: ObservabilityContext): Promise<void> {
+  async captureMessage(
+    message: string,
+    level: 'info' | 'warning' | 'error',
+    context?: ObservabilityContext,
+  ): Promise<void> {
     if (!this.isInitialized) return;
     // TODO: Implement message tracking
-    console.log('[OpenTelemetry] Tracking message:', { message, level, context });
+    console.log('[OpenTelemetry] Tracking message:', { context, level, message });
   }
 
   startTransaction(name: string, context?: ObservabilityContext): any {

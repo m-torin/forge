@@ -7,6 +7,6 @@ export default defineConfig({
     ...baseConfig.test,
     environment: 'node',
     globals: true,
-    setupFiles: []
-  }
+    setupFiles: [],
+  },
 });

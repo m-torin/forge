@@ -2,41 +2,50 @@
  * Order-related ecommerce events
  */
 
-import { 
-  ECOMMERCE_EVENTS, 
-  type OrderProperties, 
+import { trackEcommerce } from '../track-ecommerce';
+import {
+  ECOMMERCE_EVENTS,
+  type EcommerceEventSpec,
+  type OrderProperties,
   type OrderStatusProperties,
   type ReturnProperties,
-  type EcommerceEventSpec 
 } from '../types';
-import { normalizeProducts, cleanProperties, validateRequiredProperties, validateCurrency } from '../utils';
-import { trackEcommerce } from '../track-ecommerce';
-import type { EmitterTrackPayload, EmitterOptions } from '../../emitter-types';
+import {
+  cleanProperties,
+  normalizeProducts,
+  validateCurrency,
+  validateRequiredProperties,
+} from '../utils';
+
+import type { EmitterOptions, EmitterTrackPayload } from '../../emitter-types';
 
 /**
  * Track when a user completes an order
  */
-export function orderCompleted(properties: OrderProperties, options?: EmitterOptions): EmitterTrackPayload {
+export function orderCompleted(
+  properties: OrderProperties,
+  options?: EmitterOptions,
+): EmitterTrackPayload {
   validateRequiredProperties(properties, ['order_id']);
 
   const normalizedProps: OrderProperties = {
     order_id: properties.order_id,
     affiliation: properties.affiliation,
-    total: properties.total,
+    coupon: properties.coupon,
+    currency: validateCurrency(properties.currency),
+    discount: properties.discount,
+    products: properties.products ? normalizeProducts(properties.products) : undefined,
     revenue: properties.revenue,
     shipping: properties.shipping,
     tax: properties.tax,
-    discount: properties.discount,
-    coupon: properties.coupon,
-    currency: validateCurrency(properties.currency),
-    products: properties.products ? normalizeProducts(properties.products) : undefined,
+    total: properties.total,
   };
 
   const eventSpec: EcommerceEventSpec = {
     name: ECOMMERCE_EVENTS.ORDER_COMPLETED,
     category: 'ecommerce',
-    requiredProperties: ['order_id'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['order_id'],
   };
 
   return trackEcommerce(eventSpec, options);
@@ -45,33 +54,35 @@ export function orderCompleted(properties: OrderProperties, options?: EmitterOpt
 /**
  * Track when an order fails (payment declined, validation error, etc.)
  */
-export function orderFailed(properties: OrderProperties & { 
-  failure_reason?: string;
-  error_code?: string;
-}): EcommerceEventSpec {
+export function orderFailed(
+  properties: OrderProperties & {
+    failure_reason?: string;
+    error_code?: string;
+  },
+): EcommerceEventSpec {
   validateRequiredProperties(properties, ['order_id']);
 
-  const { failure_reason, error_code, ...orderProps } = properties;
+  const { error_code, failure_reason, ...orderProps } = properties;
   const normalizedProps = {
     order_id: orderProps.order_id,
     affiliation: orderProps.affiliation,
-    total: orderProps.total,
+    coupon: orderProps.coupon,
+    currency: validateCurrency(orderProps.currency),
+    discount: orderProps.discount,
+    error_code,
+    failure_reason,
+    products: orderProps.products ? normalizeProducts(orderProps.products) : undefined,
     revenue: orderProps.revenue,
     shipping: orderProps.shipping,
     tax: orderProps.tax,
-    discount: orderProps.discount,
-    coupon: orderProps.coupon,
-    currency: validateCurrency(orderProps.currency),
-    products: orderProps.products ? normalizeProducts(orderProps.products) : undefined,
-    failure_reason,
-    error_code,
+    total: orderProps.total,
   };
 
   return {
     name: ECOMMERCE_EVENTS.ORDER_FAILED,
     category: 'ecommerce',
-    requiredProperties: ['order_id'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['order_id'],
   };
 }
 
@@ -84,21 +95,21 @@ export function orderRefunded(properties: OrderProperties): EcommerceEventSpec {
   const normalizedProps: OrderProperties = {
     order_id: properties.order_id,
     affiliation: properties.affiliation,
-    total: properties.total,
+    coupon: properties.coupon,
+    currency: validateCurrency(properties.currency),
+    discount: properties.discount,
+    products: properties.products ? normalizeProducts(properties.products) : undefined,
     revenue: properties.revenue,
     shipping: properties.shipping,
     tax: properties.tax,
-    discount: properties.discount,
-    coupon: properties.coupon,
-    currency: validateCurrency(properties.currency),
-    products: properties.products ? normalizeProducts(properties.products) : undefined,
+    total: properties.total,
   };
 
   return {
     name: ECOMMERCE_EVENTS.ORDER_REFUNDED,
     category: 'ecommerce',
-    requiredProperties: ['order_id'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['order_id'],
   };
 }
 
@@ -111,21 +122,21 @@ export function orderCancelled(properties: OrderProperties): EcommerceEventSpec 
   const normalizedProps: OrderProperties = {
     order_id: properties.order_id,
     affiliation: properties.affiliation,
-    total: properties.total,
+    coupon: properties.coupon,
+    currency: validateCurrency(properties.currency),
+    discount: properties.discount,
+    products: properties.products ? normalizeProducts(properties.products) : undefined,
     revenue: properties.revenue,
     shipping: properties.shipping,
     tax: properties.tax,
-    discount: properties.discount,
-    coupon: properties.coupon,
-    currency: validateCurrency(properties.currency),
-    products: properties.products ? normalizeProducts(properties.products) : undefined,
+    total: properties.total,
   };
 
   return {
     name: ECOMMERCE_EVENTS.ORDER_CANCELLED,
     category: 'ecommerce',
-    requiredProperties: ['order_id'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['order_id'],
   };
 }
 
@@ -138,8 +149,8 @@ export function orderStatusUpdated(properties: OrderStatusProperties): Ecommerce
   return {
     name: ECOMMERCE_EVENTS.ORDER_STATUS_UPDATED,
     category: 'ecommerce',
-    requiredProperties: ['order_id', 'status'],
     properties: cleanProperties(properties),
+    requiredProperties: ['order_id', 'status'],
   };
 }
 
@@ -157,18 +168,20 @@ export function returnRequested(properties: ReturnProperties): EcommerceEventSpe
   return {
     name: ECOMMERCE_EVENTS.RETURN_REQUESTED,
     category: 'ecommerce',
-    requiredProperties: ['order_id', 'reason'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['order_id', 'reason'],
   };
 }
 
 /**
  * Track when a return is completed
  */
-export function returnCompleted(properties: ReturnProperties & {
-  completion_date?: string;
-  refund_status?: 'pending' | 'completed' | 'failed';
-}): EcommerceEventSpec {
+export function returnCompleted(
+  properties: ReturnProperties & {
+    completion_date?: string;
+    refund_status?: 'pending' | 'completed' | 'failed';
+  },
+): EcommerceEventSpec {
   validateRequiredProperties(properties, ['order_id', 'return_id']);
 
   const normalizedProps = {
@@ -179,7 +192,7 @@ export function returnCompleted(properties: ReturnProperties & {
   return {
     name: ECOMMERCE_EVENTS.RETURN_COMPLETED,
     category: 'ecommerce',
-    requiredProperties: ['order_id', 'return_id'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['order_id', 'return_id'],
   };
 }

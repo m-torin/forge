@@ -16,13 +16,13 @@ export {
   TimeoutError,
   WorkflowExecutionError,
   WorkflowValidationError,
-} from './errors.js';
+} from './errors';
 
-export type { ValidationError } from './errors.js';
+export type { ValidationError } from './errors';
 
 // Manager utilities
-export { OrchestrationManager } from './manager.js';
-export type { OrchestrationManagerConfig } from './manager.js';
+export { OrchestrationManager } from './manager';
+export type { OrchestrationManagerConfig } from './manager';
 
 // Validation utilities
 export {
@@ -32,4 +32,4 @@ export {
   validateRetryConfig,
   validateScheduleConfig,
   validateWorkflowDefinition,
-} from './validation.js';
+} from './validation';

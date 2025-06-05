@@ -3,7 +3,7 @@
  * Workflow metrics, execution history tracking, and performance monitoring
  */
 
-import type { WorkflowProvider } from '../types/index.js';
+import type { WorkflowProvider } from '../types/index';
 
 export interface WorkflowMetrics {
   /** Workflow identifier */
@@ -219,7 +219,11 @@ export class WorkflowMonitor {
   /**
    * Record workflow execution start
    */
-  recordExecutionStart(executionId: string, workflowId: string, metadata: ExecutionHistory['metadata']): void {
+  recordExecutionStart(
+    executionId: string,
+    workflowId: string,
+    metadata: ExecutionHistory['metadata'],
+  ): void {
     const execution: ExecutionHistory = {
       executionId,
       workflowId,
@@ -241,9 +245,9 @@ export class WorkflowMonitor {
     status: ExecutionHistory['status'],
     output?: unknown,
     error?: ExecutionHistory['error'],
-    resourceUsage?: ExecutionHistory['resourceUsage']
+    resourceUsage?: ExecutionHistory['resourceUsage'],
   ): void {
-    const execution = this.executionHistory.find(e => e.executionId === executionId);
+    const execution = this.executionHistory.find((e) => e.executionId === executionId);
     if (!execution) {
       return;
     }
@@ -270,14 +274,14 @@ export class WorkflowMonitor {
     input?: unknown,
     output?: unknown,
     error?: string,
-    retryCount?: number
+    retryCount?: number,
   ): void {
-    const execution = this.executionHistory.find(e => e.executionId === executionId);
+    const execution = this.executionHistory.find((e) => e.executionId === executionId);
     if (!execution) {
       return;
     }
 
-    let step = execution.steps.find(s => s.stepId === stepId);
+    let step = execution.steps.find((s) => s.stepId === stepId);
     if (!step) {
       step = {
         stepId,
@@ -304,7 +308,10 @@ export class WorkflowMonitor {
   /**
    * Get workflow metrics
    */
-  getWorkflowMetrics(workflowId: string, timeRange?: { start: Date; end: Date }): WorkflowMetrics | undefined {
+  getWorkflowMetrics(
+    workflowId: string,
+    timeRange?: { start: Date; end: Date },
+  ): WorkflowMetrics | undefined {
     const cached = this.metrics.get(workflowId);
     if (cached && !timeRange) {
       return cached;
@@ -323,25 +330,24 @@ export class WorkflowMonitor {
       offset?: number;
       status?: ExecutionHistory['status'];
       timeRange?: { start: Date; end: Date };
-    }
+    },
   ): ExecutionHistory[] {
     let history = this.executionHistory;
 
     // Filter by workflow ID
     if (workflowId) {
-      history = history.filter(e => e.workflowId === workflowId);
+      history = history.filter((e) => e.workflowId === workflowId);
     }
 
     // Filter by status
     if (options?.status) {
-      history = history.filter(e => e.status === options.status);
+      history = history.filter((e) => e.status === options.status);
     }
 
     // Filter by time range
     if (options?.timeRange) {
-      history = history.filter(e => 
-        e.startedAt >= options.timeRange!.start && 
-        e.startedAt <= options.timeRange!.end
+      history = history.filter(
+        (e) => e.startedAt >= options.timeRange!.start && e.startedAt <= options.timeRange!.end,
       );
     }
 
@@ -361,7 +367,10 @@ export class WorkflowMonitor {
   /**
    * Get performance metrics
    */
-  getPerformanceMetrics(workflowId: string, timeWindow: { start: Date; end: Date }): PerformanceMetrics {
+  getPerformanceMetrics(
+    workflowId: string,
+    timeWindow: { start: Date; end: Date },
+  ): PerformanceMetrics {
     const key = `${workflowId}_${timeWindow.start.getTime()}_${timeWindow.end.getTime()}`;
     const cached = this.performanceData.get(key);
     if (cached) {
@@ -412,9 +421,9 @@ export class WorkflowMonitor {
    */
   getActiveAlerts(workflowId?: string): WorkflowAlert[] {
     const alerts = Array.from(this.activeAlerts.values());
-    
+
     if (workflowId) {
-      return alerts.filter(alert => alert.workflowId === workflowId);
+      return alerts.filter((alert) => alert.workflowId === workflowId);
     }
 
     return alerts;
@@ -471,16 +480,20 @@ export class WorkflowMonitor {
       errorRate: number;
     }>;
   } {
-    const targetWorkflows = workflowIds || Array.from(new Set(this.executionHistory.map(e => e.workflowId)));
-    
+    const targetWorkflows =
+      workflowIds || Array.from(new Set(this.executionHistory.map((e) => e.workflowId)));
+
     const workflowMetrics = targetWorkflows
-      .map(id => this.getWorkflowMetrics(id))
+      .map((id) => this.getWorkflowMetrics(id))
       .filter(Boolean) as WorkflowMetrics[];
 
     const totalExecutions = workflowMetrics.reduce((sum, m) => sum + m.totalExecutions, 0);
     const activeExecutions = workflowMetrics.reduce((sum, m) => sum + m.runningExecutions, 0);
-    const avgSuccessRate = workflowMetrics.reduce((sum, m) => sum + m.successRate, 0) / workflowMetrics.length || 0;
-    const avgExecutionTime = workflowMetrics.reduce((sum, m) => sum + m.avgExecutionDuration, 0) / workflowMetrics.length || 0;
+    const avgSuccessRate =
+      workflowMetrics.reduce((sum, m) => sum + m.successRate, 0) / workflowMetrics.length || 0;
+    const avgExecutionTime =
+      workflowMetrics.reduce((sum, m) => sum + m.avgExecutionDuration, 0) /
+        workflowMetrics.length || 0;
 
     return {
       overview: {
@@ -504,42 +517,44 @@ export class WorkflowMonitor {
     this.metrics.set(workflowId, metrics);
   }
 
-  private calculateMetrics(workflowId: string, timeRange?: { start: Date; end: Date }): WorkflowMetrics {
-    let executions = this.executionHistory.filter(e => e.workflowId === workflowId);
+  private calculateMetrics(
+    workflowId: string,
+    timeRange?: { start: Date; end: Date },
+  ): WorkflowMetrics {
+    let executions = this.executionHistory.filter((e) => e.workflowId === workflowId);
 
     if (timeRange) {
-      executions = executions.filter(e => 
-        e.startedAt >= timeRange.start && 
-        e.startedAt <= timeRange.end
+      executions = executions.filter(
+        (e) => e.startedAt >= timeRange.start && e.startedAt <= timeRange.end,
       );
     }
 
     const totalExecutions = executions.length;
-    const successfulExecutions = executions.filter(e => e.status === 'completed').length;
-    const failedExecutions = executions.filter(e => e.status === 'failed').length;
-    const runningExecutions = executions.filter(e => e.status === 'running').length;
+    const successfulExecutions = executions.filter((e) => e.status === 'completed').length;
+    const failedExecutions = executions.filter((e) => e.status === 'failed').length;
+    const runningExecutions = executions.filter((e) => e.status === 'running').length;
 
-    const completedExecutions = executions.filter(e => e.duration !== undefined);
-    const durations = completedExecutions.map(e => e.duration!);
-    
-    const avgExecutionDuration = durations.length > 0 
-      ? durations.reduce((sum, d) => sum + d, 0) / durations.length 
-      : 0;
+    const completedExecutions = executions.filter((e) => e.duration !== undefined);
+    const durations = completedExecutions.map((e) => e.duration!);
+
+    const avgExecutionDuration =
+      durations.length > 0 ? durations.reduce((sum, d) => sum + d, 0) / durations.length : 0;
     const minExecutionDuration = durations.length > 0 ? Math.min(...durations) : 0;
     const maxExecutionDuration = durations.length > 0 ? Math.max(...durations) : 0;
 
     const successRate = totalExecutions > 0 ? successfulExecutions / totalExecutions : 0;
 
-    const steps = executions.flatMap(e => e.steps);
+    const steps = executions.flatMap((e) => e.steps);
     const avgStepsPerExecution = totalExecutions > 0 ? steps.length / totalExecutions : 0;
 
-    const errors = executions
-      .filter(e => e.error)
-      .map(e => e.error!.message);
-    const errorCounts = errors.reduce((acc, error) => {
-      acc[error] = (acc[error] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const errors = executions.filter((e) => e.error).map((e) => e.error!.message);
+    const errorCounts = errors.reduce(
+      (acc, error) => {
+        acc[error] = (acc[error] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     const commonErrors = Object.entries(errorCounts)
       .map(([error, count]) => ({ error, count }))
       .sort((a, b) => b.count - a.count)
@@ -547,11 +562,12 @@ export class WorkflowMonitor {
 
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-    const recentExecutions = executions.filter(e => e.startedAt >= oneHourAgo);
+    const recentExecutions = executions.filter((e) => e.startedAt >= oneHourAgo);
     const executionFrequency = recentExecutions.length;
 
-    const lastExecution = executions
-      .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())[0]?.startedAt;
+    const lastExecution = executions.sort(
+      (a, b) => b.startedAt.getTime() - a.startedAt.getTime(),
+    )[0]?.startedAt;
 
     return {
       workflowId,
@@ -574,24 +590,31 @@ export class WorkflowMonitor {
     };
   }
 
-  private calculatePerformanceMetrics(workflowId: string, timeWindow: { start: Date; end: Date }): PerformanceMetrics {
-    const executions = this.executionHistory.filter(e => 
-      e.workflowId === workflowId &&
-      e.startedAt >= timeWindow.start && 
-      e.startedAt <= timeWindow.end
+  private calculatePerformanceMetrics(
+    workflowId: string,
+    timeWindow: { start: Date; end: Date },
+  ): PerformanceMetrics {
+    const executions = this.executionHistory.filter(
+      (e) =>
+        e.workflowId === workflowId &&
+        e.startedAt >= timeWindow.start &&
+        e.startedAt <= timeWindow.end,
     );
 
     const durations = executions
-      .filter(e => e.duration !== undefined)
-      .map(e => e.duration!)
+      .filter((e) => e.duration !== undefined)
+      .map((e) => e.duration!)
       .sort((a, b) => a - b);
 
-    const errors = executions.filter(e => e.status === 'failed');
-    const errorsByType = errors.reduce((acc, e) => {
-      const errorType = e.error?.code || e.error?.message || 'Unknown';
-      acc[errorType] = (acc[errorType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const errors = executions.filter((e) => e.status === 'failed');
+    const errorsByType = errors.reduce(
+      (acc, e) => {
+        const errorType = e.error?.code || e.error?.message || 'Unknown';
+        acc[errorType] = (acc[errorType] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const timeWindowMs = timeWindow.end.getTime() - timeWindow.start.getTime();
     const timeWindowMinutes = timeWindowMs / (1000 * 60);
@@ -612,7 +635,8 @@ export class WorkflowMonitor {
         p50: durations[Math.floor(durations.length * 0.5)] || 0,
         p95: durations[Math.floor(durations.length * 0.95)] || 0,
         p99: durations[Math.floor(durations.length * 0.99)] || 0,
-        average: durations.length > 0 ? durations.reduce((sum, d) => sum + d, 0) / durations.length : 0,
+        average:
+          durations.length > 0 ? durations.reduce((sum, d) => sum + d, 0) / durations.length : 0,
         minimum: durations[0] || 0,
         maximum: durations[durations.length - 1] || 0,
       },
@@ -666,15 +690,22 @@ export class WorkflowMonitor {
 
   private evaluateAlertCondition(rule: AlertRule, metrics: WorkflowMetrics): boolean {
     const metricValue = metrics[rule.condition.metric as keyof WorkflowMetrics] as number;
-    
+
     switch (rule.condition.operator) {
-      case '>': return metricValue > rule.condition.threshold;
-      case '<': return metricValue < rule.condition.threshold;
-      case '=': return metricValue === rule.condition.threshold;
-      case '!=': return metricValue !== rule.condition.threshold;
-      case '>=': return metricValue >= rule.condition.threshold;
-      case '<=': return metricValue <= rule.condition.threshold;
-      default: return false;
+      case '>':
+        return metricValue > rule.condition.threshold;
+      case '<':
+        return metricValue < rule.condition.threshold;
+      case '=':
+        return metricValue === rule.condition.threshold;
+      case '!=':
+        return metricValue !== rule.condition.threshold;
+      case '>=':
+        return metricValue >= rule.condition.threshold;
+      case '<=':
+        return metricValue <= rule.condition.threshold;
+      default:
+        return false;
     }
   }
 
@@ -745,7 +776,7 @@ export const MonitoringUtils = {
    */
   calculateSuccessRate(executions: ExecutionHistory[]): number {
     if (executions.length === 0) return 1;
-    const successful = executions.filter(e => e.status === 'completed').length;
+    const successful = executions.filter((e) => e.status === 'completed').length;
     return successful / executions.length;
   },
 
@@ -753,13 +784,9 @@ export const MonitoringUtils = {
    * Calculate average execution duration
    */
   calculateAverageDuration(executions: ExecutionHistory[]): number {
-    const durations = executions
-      .filter(e => e.duration !== undefined)
-      .map(e => e.duration!);
-    
-    return durations.length > 0 
-      ? durations.reduce((sum, d) => sum + d, 0) / durations.length 
-      : 0;
+    const durations = executions.filter((e) => e.duration !== undefined).map((e) => e.duration!);
+
+    return durations.length > 0 ? durations.reduce((sum, d) => sum + d, 0) / durations.length : 0;
   },
 
   /**

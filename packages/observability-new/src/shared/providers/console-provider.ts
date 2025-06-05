@@ -2,13 +2,13 @@
  * Console provider for development observability
  */
 
-import type { 
-  ObservabilityProvider, 
-  ObservabilityProviderConfig, 
-  ObservabilityContext,
-  Breadcrumb
-} from '../types/types';
 import type { ConsoleConfig } from '../types/console-types';
+import type {
+  Breadcrumb,
+  ObservabilityContext,
+  ObservabilityProvider,
+  ObservabilityProviderConfig,
+} from '../types/types';
 
 export class ConsoleProvider implements ObservabilityProvider {
   readonly name = 'console';
@@ -26,12 +26,12 @@ export class ConsoleProvider implements ObservabilityProvider {
     this.config = config as ConsoleConfig;
     this.enabled = this.config.enabled !== false;
     this.prefix = this.config.prefix || '[OBS]';
-    
+
     if (this.enabled) {
       console.log(`${this.prefix} Console provider initialized`, {
-        timestamp: this.config.timestamp,
         colors: this.config.colors,
-        levels: this.config.levels
+        levels: this.config.levels,
+        timestamp: this.config.timestamp,
       });
     }
   }
@@ -41,24 +41,28 @@ export class ConsoleProvider implements ObservabilityProvider {
 
     const errorInfo = {
       name: error.name,
+      breadcrumbs: this.breadcrumbs.slice(-10), // Last 10 breadcrumbs
+      context: this.mergeContext(context),
       message: error.message,
       stack: error.stack,
-      context: this.mergeContext(context),
-      breadcrumbs: this.breadcrumbs.slice(-10), // Last 10 breadcrumbs
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     console.error(`${this.prefix} Exception captured:`, errorInfo);
   }
 
-  async captureMessage(message: string, level: 'info' | 'warning' | 'error', context?: ObservabilityContext): Promise<void> {
+  async captureMessage(
+    message: string,
+    level: 'info' | 'warning' | 'error',
+    context?: ObservabilityContext,
+  ): Promise<void> {
     if (!this.enabled) return;
 
     const messageInfo = {
-      message,
-      level,
       context: this.mergeContext(context),
-      timestamp: new Date().toISOString()
+      level,
+      message,
+      timestamp: new Date().toISOString(),
     };
 
     const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : 'info';
@@ -67,16 +71,16 @@ export class ConsoleProvider implements ObservabilityProvider {
 
   async log(level: string, message: string, metadata?: any): Promise<void> {
     if (!this.enabled) return;
-    
+
     if (this.config.levels && !this.config.levels.includes(level as any)) {
       return;
     }
 
-    const logEntry = {
+    const _logEntry = {
       level,
       message,
       metadata,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     const consoleLevel = this.mapLogLevel(level);
@@ -89,14 +93,14 @@ export class ConsoleProvider implements ObservabilityProvider {
     const transaction = {
       id: this.generateId(),
       name,
+      context: this.mergeContext(context),
       startTime: Date.now(),
-      context: this.mergeContext(context)
     };
 
     console.log(`${this.prefix} Transaction started:`, {
       id: transaction.id,
       name: transaction.name,
-      context: transaction.context
+      context: transaction.context,
     });
 
     return {
@@ -105,9 +109,9 @@ export class ConsoleProvider implements ObservabilityProvider {
         console.log(`${this.prefix} Transaction finished:`, {
           id: transaction.id,
           name: transaction.name,
-          duration: `${duration}ms`
+          duration: `${duration}ms`,
         });
-      }
+      },
     };
   }
 
@@ -118,13 +122,13 @@ export class ConsoleProvider implements ObservabilityProvider {
       id: this.generateId(),
       name,
       parentId: parentSpan?.id,
-      startTime: Date.now()
+      startTime: Date.now(),
     };
 
     console.log(`${this.prefix} Span started:`, {
       id: span.id,
       name: span.name,
-      parentId: span.parentId
+      parentId: span.parentId,
     });
 
     return {
@@ -133,68 +137,68 @@ export class ConsoleProvider implements ObservabilityProvider {
         console.log(`${this.prefix} Span finished:`, {
           id: span.id,
           name: span.name,
-          duration: `${duration}ms`
+          duration: `${duration}ms`,
         });
-      }
+      },
     };
   }
 
   setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
     if (!this.enabled) return;
-    
+
     this.user = user;
     console.log(`${this.prefix} User set:`, user);
   }
 
   setTag(key: string, value: string | number | boolean): void {
     if (!this.enabled) return;
-    
+
     this.tags[key] = value;
     console.log(`${this.prefix} Tag set:`, { key, value });
   }
 
   setExtra(key: string, value: any): void {
     if (!this.enabled) return;
-    
+
     this.extras[key] = value;
     console.log(`${this.prefix} Extra set:`, { key, value });
   }
 
   setContext(key: string, context: Record<string, any>): void {
     if (!this.enabled) return;
-    
+
     this.contexts[key] = context;
-    console.log(`${this.prefix} Context set:`, { key, context });
+    console.log(`${this.prefix} Context set:`, { context, key });
   }
 
   addBreadcrumb(breadcrumb: Breadcrumb): void {
     if (!this.enabled) return;
-    
+
     this.breadcrumbs.push(breadcrumb);
-    
+
     // Limit breadcrumbs
     if (this.breadcrumbs.length > this.maxBreadcrumbs) {
       this.breadcrumbs = this.breadcrumbs.slice(-this.maxBreadcrumbs);
     }
-    
+
     console.log(`${this.prefix} Breadcrumb:`, breadcrumb);
   }
 
   startSession(): void {
     if (!this.enabled) return;
-    
+
     console.log(`${this.prefix} Session started`, {
       timestamp: new Date().toISOString(),
-      user: this.user
+      user: this.user,
     });
   }
 
   endSession(): void {
     if (!this.enabled) return;
-    
+
     console.log(`${this.prefix} Session ended`, {
       timestamp: new Date().toISOString(),
-      user: this.user
+      user: this.user,
     });
   }
 
@@ -202,10 +206,10 @@ export class ConsoleProvider implements ObservabilityProvider {
   private mergeContext(context?: ObservabilityContext): ObservabilityContext {
     return {
       ...context,
-      user: this.user,
-      tags: { ...this.tags, ...context?.tags },
+      contexts: this.contexts,
       extra: { ...this.extras, ...context?.extra },
-      contexts: this.contexts
+      tags: { ...this.tags, ...context?.tags },
+      user: this.user,
     };
   }
 

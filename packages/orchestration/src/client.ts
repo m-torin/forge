@@ -97,7 +97,7 @@ export interface WorkflowStatusClient {
    * Get workflow execution status
    */
   getStatus(runId: string): Promise<WorkflowExecutionResult>;
-  
+
   /**
    * List workflow executions
    */
@@ -122,18 +122,18 @@ export function createWorkflowStatusClient(config: {
       const response = await fetch(`${config.baseUrl}/api/workflows/status/${runId}`, {
         headers: config.headers,
       });
-      
+
       if (!response.ok) {
         throw new WorkflowExecutionError(
           'unknown',
           runId,
-          `Failed to get workflow status: ${response.statusText}`
+          `Failed to get workflow status: ${response.statusText}`,
         );
       }
-      
+
       return response.json();
     },
-    
+
     async list(options?: {
       workflowId?: string;
       status?: WorkflowExecutionResult['status'];
@@ -145,18 +145,18 @@ export function createWorkflowStatusClient(config: {
       if (options?.status) params.set('status', options.status);
       if (options?.limit) params.set('limit', options.limit.toString());
       if (options?.offset) params.set('offset', options.offset.toString());
-      
+
       const response = await fetch(`${config.baseUrl}/api/workflows?${params}`, {
         headers: config.headers,
       });
-      
+
       if (!response.ok) {
         throw new OrchestrationError(
           `Failed to list workflows: ${response.statusText}`,
-          'LIST_FAILED'
+          'LIST_FAILED',
         );
       }
-      
+
       return response.json();
     },
   };

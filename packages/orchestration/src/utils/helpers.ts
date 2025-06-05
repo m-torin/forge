@@ -112,7 +112,7 @@ export function extractWithSelectors(
         }
         return undefined;
       }, content);
-      
+
       if (value !== undefined) {
         result[key] = value;
       }
@@ -417,13 +417,19 @@ export function convertToCSV<T extends Record<string, unknown>>(data: T[]): stri
 /**
  * Convert data to XML format
  */
-export function convertToXML<T extends Record<string, unknown>>(data: T[], rootElement = 'data'): string {
+export function convertToXML<T extends Record<string, unknown>>(
+  data: T[],
+  rootElement = 'data',
+): string {
   const toXML = (obj: Record<string, unknown>, indent = ''): string => {
     return Object.entries(obj)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
           return value
-            .map((item) => `${indent}<${key}>${toXML(item as Record<string, unknown>, indent + '  ')}</${key}>`)
+            .map(
+              (item) =>
+                `${indent}<${key}>${toXML(item as Record<string, unknown>, indent + '  ')}</${key}>`,
+            )
             .join('\n');
         }
         if (typeof value === 'object' && value !== null) {

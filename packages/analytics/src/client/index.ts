@@ -1,37 +1,39 @@
 /**
  * Client-side analytics exports
  * Complete analytics solution for browser/client environments
- * 
+ *
  * @example
  * ```typescript
  * import { createClientAnalytics, track, ecommerce } from '@repo/analytics/client';
- * 
+ *
  * const analytics = await createClientAnalytics({
  *   providers: {
  *     segment: { writeKey: 'xxx' },
  *     posthog: { apiKey: 'yyy' }
  *   }
  * });
- * 
+ *
  * // Preferred: Use emitters
  * await analytics.emit(track('Button Clicked', { color: 'blue' }));
  * await analytics.emit(ecommerce.productViewed({ product_id: '123' }));
  * ```
  */
 
-import { SegmentClientProvider } from './providers/segment-client';
-import { PostHogClientProvider } from './providers/posthog-client';
-import { VercelClientProvider } from './providers/vercel-client';
 import { ConsoleProvider } from '../shared/providers/console-provider';
 import { createAnalyticsManager } from '../shared/utils/manager';
-import type { AnalyticsConfig, ProviderRegistry, AnalyticsManager } from '../shared/types/types';
+
+import { PostHogClientProvider } from './providers/posthog-client';
+import { SegmentClientProvider } from './providers/segment-client';
+import { VercelClientProvider } from './providers/vercel-client';
+
+import type { AnalyticsConfig, AnalyticsManager, ProviderRegistry } from '../shared/types/types';
 
 // Client-specific provider registry
 const CLIENT_PROVIDERS: ProviderRegistry = {
-  segment: (config) => new SegmentClientProvider(config),
+  console: (config) => new ConsoleProvider(config),
   posthog: (config) => new PostHogClientProvider(config),
+  segment: (config) => new SegmentClientProvider(config),
   vercel: (config) => new VercelClientProvider(config),
-  console: (config) => new ConsoleProvider(config)
 };
 
 // ============================================================================
@@ -62,31 +64,29 @@ export function createClientAnalyticsUninitialized(config: AnalyticsConfig): Ana
 
 // Export all core emitters - these are the preferred way to track events
 export {
-  // Core Segment.io spec emitters
-  identify,
-  track,
-  page,
-  group,
   alias,
-  
   // Emitter utilities
   ContextBuilder,
-  PayloadBuilder,
-  EventBatch,
-  createUserSession,
   createAnonymousSession,
-  withMetadata,
-  withUTM,
-  
-  // Type guards
-  isTrackPayload,
+  createUserSession,
+  // Ecommerce emitters namespace
+  ecommerce,
+  EventBatch,
+  group,
+  // Core Segment.io spec emitters
+  identify,
+  isAliasPayload,
+  isGroupPayload,
   isIdentifyPayload,
   isPagePayload,
-  isGroupPayload,
-  isAliasPayload,
-  
-  // Ecommerce emitters namespace
-  ecommerce
+
+  // Type guards
+  isTrackPayload,
+  page,
+  PayloadBuilder,
+  track,
+  withMetadata,
+  withUTM,
 } from '../shared/emitters';
 
 // ============================================================================
@@ -94,10 +94,10 @@ export {
 // ============================================================================
 
 export {
+  createEmitterProcessor,
   // Emitter processing utilities
   processEmitterPayload,
-  createEmitterProcessor,
-  trackEcommerceEvent
+  trackEcommerceEvent,
 } from '../shared/utils/emitter-adapter';
 
 // ============================================================================
@@ -105,91 +105,76 @@ export {
 // ============================================================================
 
 // Core analytics types
-export type { 
-  AnalyticsConfig, 
-  TrackingOptions, 
-  ProviderConfig,
-  AnalyticsProvider,
+export type {
+  AnalyticsConfig,
   AnalyticsContext,
-  AnalyticsManager 
+  AnalyticsManager,
+  AnalyticsProvider,
+  ProviderConfig,
+  TrackingOptions,
 } from '../shared/types/types';
 
 // Emitter types
 export type {
-  EmitterOptions,
+  EmitterAliasPayload,
   EmitterContext,
-  EmitterPayload,
-  EmitterIdentifyPayload,
-  EmitterTrackPayload,
-  EmitterPagePayload,
   EmitterGroupPayload,
-  EmitterAliasPayload
+  EmitterIdentifyPayload,
+  EmitterOptions,
+  EmitterPagePayload,
+  EmitterPayload,
+  EmitterTrackPayload,
 } from '../shared/emitters/emitter-types';
 
 // Provider-specific types
-export type {
-  SegmentConfig,
-  SegmentOptions
-} from '../shared/types/segment-types';
+export type { SegmentConfig, SegmentOptions } from '../shared/types/segment-types';
 
 export type {
+  BootstrapData,
+  FeatureFlagPayload,
+  FeatureFlags,
   PostHogConfig,
   PostHogOptions,
-  FeatureFlags,
-  FeatureFlagPayload,
-  BootstrapData
 } from '../shared/types/posthog-types';
 
-export type {
-  VercelConfig,
-  VercelOptions
-} from '../shared/types/vercel-types';
+export type { VercelConfig, VercelOptions } from '../shared/types/vercel-types';
 
-export type {
-  ConsoleConfig,
-  ConsoleOptions
-} from '../shared/types/console-types';
+export type { ConsoleConfig, ConsoleOptions } from '../shared/types/console-types';
 
 // Ecommerce types
 export type {
-  EcommerceEventSpec,
   BaseProductProperties,
-  ExtendedProductProperties,
   CartProperties,
-  OrderProperties
+  EcommerceEventSpec,
+  ExtendedProductProperties,
+  OrderProperties,
 } from '../shared/emitters/ecommerce/types';
 
 // ============================================================================
 // CONFIGURATION UTILITIES
 // ============================================================================
 
-export { 
-  getAnalyticsConfig, 
-  createConfigBuilder, 
+export {
+  createConfigBuilder,
+  getAnalyticsConfig,
+  PROVIDER_REQUIREMENTS,
   validateConfig,
-  PROVIDER_REQUIREMENTS 
 } from '../shared/utils/config';
 
-export type {
-  ConfigBuilder,
-  ConfigRequirements
-} from '../shared/utils/config';
+export type { ConfigBuilder, ConfigRequirements } from '../shared/utils/config';
 
 // ============================================================================
 // VALIDATION UTILITIES
 // ============================================================================
 
-export { 
-  validateAnalyticsConfig, 
-  validateProvider,
+export {
+  debugConfig,
+  validateAnalyticsConfig,
   validateConfigOrThrow,
-  debugConfig 
+  validateProvider,
 } from '../shared/utils/validation';
 
-export type {
-  ValidationError,
-  ValidationResult
-} from '../shared/utils/validation';
+export type { ValidationError, ValidationResult } from '../shared/utils/validation';
 
 // ============================================================================
 // ADVANCED UTILITIES
@@ -201,8 +186,8 @@ export { AnalyticsManager as AnalyticsManagerClass } from '../shared/utils/manag
 
 // PostHog utilities
 export {
+  createBootstrapData,
+  createMinimalBootstrapData,
   generateDistinctId,
   getDistinctIdFromCookies,
-  createBootstrapData,
-  createMinimalBootstrapData
 } from '../shared/utils/posthog-bootstrap';

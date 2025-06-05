@@ -2,13 +2,13 @@
  * Logtail/BetterStack provider for production logging
  */
 
-import type { 
-  ObservabilityProvider, 
-  ObservabilityProviderConfig, 
-  ObservabilityContext,
-  Breadcrumb
-} from '../types/types';
 import type { LogtailConfig } from '../types/logtail-types';
+import type {
+  Breadcrumb,
+  ObservabilityContext,
+  ObservabilityProvider,
+  ObservabilityProviderConfig,
+} from '../types/types';
 
 export class LogtailProvider implements ObservabilityProvider {
   readonly name = 'logtail';
@@ -19,7 +19,7 @@ export class LogtailProvider implements ObservabilityProvider {
 
   async initialize(config: ObservabilityProviderConfig): Promise<void> {
     this.config = config as LogtailConfig;
-    
+
     // In development, only use console unless explicitly configured
     if (this.isDevelopment && !this.config.sendLogsToConsoleInDev) {
       this.isInitialized = true;
@@ -33,11 +33,11 @@ export class LogtailProvider implements ObservabilityProvider {
     try {
       // Dynamically import Logtail to avoid bundling if not used
       const { Logtail } = await import('@logtail/node');
-      
+
       this.client = new Logtail(this.config.sourceToken, {
-        endpoint: this.config.endpoint,
-        batchSize: this.config.batchSize || 100,
         batchInterval: this.config.batchInterval || 1000,
+        batchSize: this.config.batchSize || 100,
+        endpoint: this.config.endpoint,
         retryCount: this.config.retryCount || 3,
       });
 
@@ -68,7 +68,7 @@ export class LogtailProvider implements ObservabilityProvider {
         stack: error.stack,
       },
       level: context?.level || 'error',
-      ...this.buildContext(context)
+      ...this.buildContext(context),
     };
 
     if (this.client) {
@@ -78,12 +78,16 @@ export class LogtailProvider implements ObservabilityProvider {
     }
   }
 
-  async captureMessage(message: string, level: 'info' | 'warning' | 'error', context?: ObservabilityContext): Promise<void> {
+  async captureMessage(
+    message: string,
+    level: 'info' | 'warning' | 'error',
+    context?: ObservabilityContext,
+  ): Promise<void> {
     if (!this.isInitialized) return;
 
     const messageData = {
       level,
-      ...this.buildContext(context)
+      ...this.buildContext(context),
     };
 
     if (this.client) {
@@ -110,7 +114,7 @@ export class LogtailProvider implements ObservabilityProvider {
 
     const logData = {
       ...metadata,
-      level
+      level,
     };
 
     if (this.client) {
@@ -151,133 +155,133 @@ export class LogtailProvider implements ObservabilityProvider {
     this.log('info', `Transaction started: ${name}`, {
       transactionId,
       transactionName: name,
-      ...this.buildContext(context)
+      ...this.buildContext(context),
     });
 
     return {
       finish: () => {
         const duration = Date.now() - startTime;
         this.log('info', `Transaction completed: ${name}`, {
+          duration,
+          durationUnit: 'ms',
           transactionId,
           transactionName: name,
-          duration,
-          durationUnit: 'ms'
         });
-      }
+      },
     };
   }
 
-  startSpan(name: string, parentSpan?: any): any {
+  startSpan(_name: string, _parentSpan?: any): any {
     // Logtail doesn't support spans, return a no-op
     return null;
   }
 
   setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
     if (!this.isInitialized || !this.client) return;
-    
-    const { id, email, username, ...rest } = user;
+
+    const { id, username, email, ...rest } = user;
     // Add user context to all future logs
     this.client.use((log: any) => ({
       ...log,
       user: {
         id,
-        email,
         username,
-        ...rest
-      }
+        email,
+        ...rest,
+      },
     }));
   }
 
   setTag(key: string, value: string | number | boolean): void {
     if (!this.isInitialized || !this.client) return;
-    
+
     // Add tag to all future logs
     this.client.use((log: any) => ({
       ...log,
       tags: {
         ...log.tags,
-        [key]: value
-      }
+        [key]: value,
+      },
     }));
   }
 
   setExtra(key: string, value: any): void {
     if (!this.isInitialized || !this.client) return;
-    
+
     // Add extra data to all future logs
     this.client.use((log: any) => ({
       ...log,
       extra: {
         ...log.extra,
-        [key]: value
-      }
+        [key]: value,
+      },
     }));
   }
 
   setContext(key: string, context: Record<string, any>): void {
     if (!this.isInitialized || !this.client) return;
-    
+
     // Add context to all future logs
     this.client.use((log: any) => ({
       ...log,
       context: {
         ...log.context,
-        [key]: context
-      }
+        [key]: context,
+      },
     }));
   }
 
   addBreadcrumb(breadcrumb: Breadcrumb): void {
     if (!this.isInitialized) return;
-    
+
     // Log breadcrumb as a debug entry
     this.log('debug', 'Breadcrumb', {
       breadcrumb: {
-        timestamp: breadcrumb.timestamp || Date.now(),
         type: breadcrumb.type,
         category: breadcrumb.category,
-        message: breadcrumb.message,
+        data: breadcrumb.data,
         level: breadcrumb.level,
-        data: breadcrumb.data
-      }
+        message: breadcrumb.message,
+        timestamp: breadcrumb.timestamp || Date.now(),
+      },
     });
   }
 
   startSession(): void {
     if (!this.isInitialized) return;
-    
+
     this.log('info', 'Session started', {
       sessionId: this.generateId(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   endSession(): void {
     if (!this.isInitialized) return;
-    
+
     this.log('info', 'Session ended', {
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // Helper methods
   private buildContext(context?: ObservabilityContext): Record<string, any> {
     if (!context) return {};
-    
+
     return {
-      userId: context.userId,
-      sessionId: context.sessionId,
+      environment: context.environment,
+      extra: context.extra,
       organizationId: context.organizationId,
+      platform: context.platform,
+      release: context.release,
       requestId: context.requestId,
-      traceId: context.traceId,
+      serverName: context.serverName,
+      sessionId: context.sessionId,
       spanId: context.spanId,
       tags: context.tags,
-      extra: context.extra,
-      environment: context.environment,
-      release: context.release,
+      traceId: context.traceId,
       transaction: context.transaction,
-      platform: context.platform,
-      serverName: context.serverName
+      userId: context.userId,
     };
   }
 

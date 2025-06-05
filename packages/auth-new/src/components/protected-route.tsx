@@ -4,27 +4,28 @@
 
 'use client';
 
-import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { type ReactNode, useEffect } from 'react';
+
 import { useAuth } from '../client/hooks';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  redirectTo?: string;
   fallback?: ReactNode;
+  redirectTo?: string;
   requireOrganization?: boolean;
 }
 
 /**
  * Component to protect routes that require authentication
  */
-export function ProtectedRoute({ 
-  children, 
-  redirectTo = '/sign-in', 
+export function ProtectedRoute({
+  children,
   fallback = <div>Loading...</div>,
-  requireOrganization = false 
+  redirectTo = '/sign-in',
+  requireOrganization = false,
 }: ProtectedRouteProps) {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export function ProtectedRoute({
  */
 export function withAuth<P extends object>(
   Component: React.ComponentType<P>,
-  options?: Omit<ProtectedRouteProps, 'children'>
+  options?: Omit<ProtectedRouteProps, 'children'>,
 ) {
   return function ProtectedComponent(props: P) {
     return (

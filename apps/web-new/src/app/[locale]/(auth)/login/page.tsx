@@ -9,36 +9,45 @@ import {
   Input,
   twitterSvg,
 } from "@repo/design-system/mantine-ciseco";
+import { getDictionary } from "@/i18n";
 
-export const metadata: Metadata = {
-  description: "Login page for the application",
-  title: "Login",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const dict = await getDictionary(params.locale);
+  return {
+    description: dict.auth.loginDescription,
+    title: dict.auth.login,
+  };
+}
 
-const loginSocials = [
-  {
-    name: "Continue with Facebook",
-    href: "#",
-    icon: facebookSvg,
-  },
-  {
-    name: "Continue with Twitter",
-    href: "#",
-    icon: twitterSvg,
-  },
-  {
-    name: "Continue with Google",
-    href: "#",
-    icon: googleSvg,
-  },
-];
+const PageLogin = async ({ params }: { params: { locale: string } }) => {
+  const dict = await getDictionary(params.locale);
 
-const PageLogin = () => {
+  const loginSocials = [
+    {
+      name: dict.auth.continueWithFacebook,
+      href: "#",
+      icon: facebookSvg,
+    },
+    {
+      name: dict.auth.continueWithTwitter,
+      href: "#",
+      icon: twitterSvg,
+    },
+    {
+      name: dict.auth.continueWithGoogle,
+      href: "#",
+      icon: googleSvg,
+    },
+  ];
   return (
     <div>
       <div className="container mb-24 lg:mb-32">
         <h1 className="my-20 flex items-center justify-center text-3xl font-semibold leading-[115%] text-neutral-900 md:text-5xl md:leading-[115%] dark:text-neutral-100">
-          Login
+          {dict.auth.login}
         </h1>
         <div className="mx-auto flex max-w-md flex-col gap-y-6">
           <div className="grid gap-3">
@@ -63,7 +72,7 @@ const PageLogin = () => {
           {/* OR */}
           <div className="relative text-center">
             <span className="relative z-10 inline-block bg-white px-4 text-sm font-medium dark:bg-neutral-900 dark:text-neutral-400">
-              OR
+              {dict.auth.or}
             </span>
             <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border border-neutral-100 dark:border-neutral-800" />
           </div>
@@ -71,36 +80,36 @@ const PageLogin = () => {
           <form action="#" method="post" className="grid grid-cols-1 gap-6">
             <label className="block">
               <span className="text-neutral-800 dark:text-neutral-200">
-                Email{" "}
+                {dict.auth.email}{" "}
               </span>
               <Input
-                placeholder="example@example.com"
+                placeholder={dict.auth.emailPlaceholder}
                 className="mt-1"
                 type="email"
               />
             </label>
             <label className="block">
               <span className="flex items-center justify-between text-neutral-800 dark:text-neutral-200">
-                Password
+                {dict.auth.password}
                 <Link
                   href="/forgot-password"
                   className="text-primary-600 text-sm"
                 >
-                  Forgot password?
+                  {dict.auth.forgotPasswordQuestion}
                 </Link>
               </span>
               <Input className="mt-1" type="password" />
             </label>
             <ButtonPrimary href="/" type="submit">
-              Continue
+              {dict.auth.continue}
             </ButtonPrimary>
           </form>
 
           {/* ==== */}
           <span className="block text-center text-neutral-700 dark:text-neutral-300">
-            New user? {` `}
+            {dict.auth.newUser} {` `}
             <Link href="/signup" className="text-primary-600">
-              Create an account
+              {dict.auth.createAccount}
             </Link>
           </span>
         </div>

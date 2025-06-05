@@ -17,17 +17,28 @@ import {
   Textarea,
 } from "@repo/design-system/mantine-ciseco";
 import avatarImage from "@repo/design-system/mantine-ciseco/images/users/avatar1.jpg";
+import { getDictionary } from "@/i18n";
 
-export const metadata: Metadata = {
-  description: "Account page",
-  title: "Account",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const dict = await getDictionary(params.locale);
+  return {
+    description: dict.account.accountDescription,
+    title: dict.account.accountPage,
+  };
+}
 
-const Page = () => {
+const Page = async ({ params }: { params: { locale: string } }) => {
+  const dict = await getDictionary(params.locale);
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
       {/* HEADING */}
-      <h1 className="text-2xl font-semibold sm:text-3xl">Account infomation</h1>
+      <h1 className="text-2xl font-semibold sm:text-3xl">
+        {dict.account.personalInfo}
+      </h1>
       <div className="flex flex-col md:flex-row">
         <div className="flex shrink-0 items-start">
           {/* AVATAR */}

@@ -4,7 +4,7 @@
 
 import PQueue from 'p-queue';
 
-import type { BatchPattern, PatternContext } from '../types/patterns.js';
+import type { BatchPattern, PatternContext } from '../types/patterns';
 
 export interface BatchOptions extends Partial<BatchPattern> {
   /** Context for the operation */
@@ -45,10 +45,7 @@ export class BatchManager<T = any, R = any> {
   private processing = false;
   private results = new Map<string, Promise<R>>();
 
-  constructor(
-    processor: BatchProcessor<T, R>,
-    options: BatchOptions = {}
-  ) {
+  constructor(processor: BatchProcessor<T, R>, options: BatchOptions = {}) {
     this.pattern = {
       concurrency: 1,
       errorHandling: 'fail-fast',
@@ -61,7 +58,7 @@ export class BatchManager<T = any, R = any> {
     };
 
     this.processor = processor;
-    this.queue = new PQueue({ 
+    this.queue = new PQueue({
       autoStart: true,
       concurrency: this.pattern.concurrency,
     });
@@ -101,8 +98,8 @@ export class BatchManager<T = any, R = any> {
    * Add multiple items to the batch
    */
   async addMany(items: T[], idPrefix = 'batch'): Promise<R[]> {
-    const promises = items.map((item, index) => 
-      this.add(item, `${idPrefix}_${Date.now()}_${index}`)
+    const promises = items.map((item, index) =>
+      this.add(item, `${idPrefix}_${Date.now()}_${index}`),
     );
 
     return Promise.all(promises);
@@ -150,7 +147,7 @@ export class BatchManager<T = any, R = any> {
         item.reject(new Error('Batch was cleared'));
       }
     }
-    
+
     this.batch = [];
     this.clearBatchTimer();
   }
@@ -197,7 +194,7 @@ export class BatchManager<T = any, R = any> {
     }
 
     this.clearBatchTimer();
-    
+
     // Add batch processing to queue
     this.queue.add(() => this.processBatch());
   }
@@ -218,9 +215,9 @@ export class BatchManager<T = any, R = any> {
 
     this.processing = true;
     const currentBatch = this.batch.splice(0, this.pattern.maxBatchSize);
-    
+
     try {
-      const items = currentBatch.map(item => item.data);
+      const items = currentBatch.map((item) => item.data);
       let results: R[];
 
       try {
@@ -244,7 +241,6 @@ export class BatchManager<T = any, R = any> {
         // Results don't match - this shouldn't happen with proper implementation
         throw new Error('Batch processing returned incorrect number of results');
       }
-
     } catch (error) {
       // Handle unexpected errors
       for (const item of currentBatch) {
@@ -254,7 +250,7 @@ export class BatchManager<T = any, R = any> {
       }
     } finally {
       this.processing = false;
-      
+
       // Process remaining items if any
       if (this.batch.length > 0) {
         this.triggerBatchProcessing();
@@ -304,7 +300,7 @@ export class BatchManager<T = any, R = any> {
       case 'collect-errors':
         // Try individual processing and collect errors
         const errors: Error[] = [];
-        
+
         if (this.processor.processItem) {
           for (const item of batch) {
             try {
@@ -338,10 +334,10 @@ export class BatchManager<T = any, R = any> {
  */
 export function withBatch<T, R>(
   processor: BatchProcessor<T, R>,
-  options: BatchOptions = {}
+  options: BatchOptions = {},
 ): (item: T, id?: string) => Promise<R> {
   const manager = new BatchManager(processor, options);
-  
+
   return (item: T, id?: string) => manager.add(item, id);
 }
 
@@ -349,11 +345,7 @@ export function withBatch<T, R>(
  * Create a batch processing decorator
  */
 export function Batch<T, R>(options: BatchOptions = {}) {
-  return function (
-    target: any,
-    propertyName: string,
-    descriptor: PropertyDescriptor
-  ) {
+  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     let manager: BatchManager<T, R>;
 
@@ -372,12 +364,65 @@ export function Batch<T, R>(options: BatchOptions = {}) {
   };
 }
 
+// Types for test compatibility
+export interface BatchItem<T = any> {
+  id: string;
+  data: T;
+}
+
+export interface BatchResult<T = any> {
+  id: string;
+  success: boolean;
+  result?: T;
+  error?: string;
+}
+
+export interface BatchContext {
+  batchId: string;
+  workflowId: string;
+  processedCount: number;
+  totalCount: number;
+  events: {
+    emit: (event: string, data: any) => Promise<void> | void;
+  };
+  updateProgress: (progress: {
+    processed: number;
+    total: number;
+    percentage: number;
+    batchId: string;
+  }) => Promise<void> | void;
+}
+
+export interface BatchProcessorDefinition<T, R> {
+  name: string;
+  processBatch: (items: BatchItem<T>[], context: BatchContext) => Promise<BatchResult<R>[]>;
+  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
+  onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
+}
+
 /**
- * Utility function to create a simple batch processor
+ * Create a batch processor with the expected interface for tests
  */
-export function createBatchProcessor<T, R>(
+export function createBatchProcessor<T, R>(config: {
+  name: string;
+  processBatch: (items: BatchItem<T>[], context?: BatchContext) => Promise<BatchResult<R>[]>;
+  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
+  onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
+}): BatchProcessorDefinition<T, R> {
+  return {
+    name: config.name,
+    processBatch: config.processBatch,
+    onProgress: config.onProgress,
+    onComplete: config.onComplete,
+  };
+}
+
+/**
+ * Legacy utility function to create a simple batch processor
+ */
+export function createSimpleBatchProcessor<T, R>(
   batchFn: (items: T[]) => Promise<R[]>,
-  itemFn?: (item: T) => Promise<R>
+  itemFn?: (item: T) => Promise<R>,
 ): BatchProcessor<T, R> {
   return {
     processBatch: batchFn,

@@ -11,7 +11,7 @@ const qstashClient = new Client({
 export const { POST } = serve(
   async (context) => {
     console.log('[MINIMAL-SERVE] Workflow started with ID:', context.workflowRunId);
-    
+
     // Just return immediately without any steps
     return {
       success: true,
@@ -25,7 +25,7 @@ export const { POST } = serve(
     receiver: undefined,
     verbose: true,
     url: 'http://localhost:3400/api/workflows/test-minimal-serve',
-  }
+  },
 );
 
 export async function GET() {

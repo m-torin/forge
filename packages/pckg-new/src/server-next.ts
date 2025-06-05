@@ -19,7 +19,7 @@ export async function middleware(request: any) {
 
 // Next.js API route helpers (placeholder)
 export function withAuth(handler: any) {
-  return async function(req: any, res: any) {
+  return async function (req: any, res: any) {
     res.status(501).json({ error: 'Auth wrapper not implemented' });
   };
 }

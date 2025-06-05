@@ -1,31 +1,33 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
-  productSearched,
-  searchResultsViewed,
-  productListViewed,
-  productListFiltered,
   productClicked,
-  productViewed,
   productCompared,
-  productRecommendationViewed,
+  productListFiltered,
+  productListViewed,
   productRecommendationClicked,
+  productRecommendationViewed,
+  productSearched,
+  productViewed,
+  searchResultsViewed,
 } from '../../shared/emitters/ecommerce/events/product';
 import { ECOMMERCE_EVENTS } from '../../shared/emitters/ecommerce/types';
+
 import type {
   BaseProductProperties,
-  ProductListProperties,
-  SearchResultsProperties,
   ProductComparisonProperties,
+  ProductListProperties,
   RecommendationProperties,
+  SearchResultsProperties,
 } from '../../shared/emitters/ecommerce/types';
 
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   trackEcommerce: vi.fn((eventSpec, options) => ({
-    event: eventSpec.name,
-    properties: eventSpec.properties,
     context: { category: 'ecommerce' },
+    event: eventSpec.name,
     options,
+    properties: eventSpec.properties,
   })),
 }));
 
@@ -40,16 +42,16 @@ describe('Product Emitters', () => {
       const result = productSearched(properties);
 
       expect(result).toEqual({
-        event: ECOMMERCE_EVENTS.PRODUCT_SEARCHED,
-        properties: { query: 'running shoes' },
         context: { category: 'ecommerce' },
+        event: ECOMMERCE_EVENTS.PRODUCT_SEARCHED,
         options: undefined,
+        properties: { query: 'running shoes' },
       });
     });
 
     it('should accept emitter options', () => {
       const properties = { query: 'laptops' };
-      const options = { userId: 'user123', timestamp: new Date() };
+      const options = { timestamp: new Date(), userId: 'user123' };
       const result = productSearched(properties, options);
 
       expect(result.options).toBe(options);
@@ -68,9 +70,9 @@ describe('Product Emitters', () => {
     });
 
     it('should clean undefined properties', () => {
-      const properties = { 
-        query: 'test', 
-        extraProp: undefined as any 
+      const properties = {
+        extraProp: undefined as any,
+        query: 'test',
       };
       const result = productSearched(properties);
 
@@ -82,9 +84,9 @@ describe('Product Emitters', () => {
   describe('searchResultsViewed', () => {
     it('should create a valid search results viewed event', () => {
       const properties: SearchResultsProperties = {
+        filters_applied: { brand: 'Apple', price_range: '500-1000' },
         query: 'smartphones',
         results_count: 25,
-        filters_applied: { brand: 'Apple', price_range: '500-1000' },
         sort_order: 'price_asc',
       };
 
@@ -93,24 +95,24 @@ describe('Product Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.SEARCH_RESULTS_VIEWED,
         category: 'ecommerce',
-        requiredProperties: ['query', 'results_count'],
         properties: {
+          filters_applied: { brand: 'Apple', price_range: '500-1000' },
           query: 'smartphones',
           results_count: 25,
-          filters_applied: { brand: 'Apple', price_range: '500-1000' },
           sort_order: 'price_asc',
         },
+        requiredProperties: ['query', 'results_count'],
       });
     });
 
     it('should normalize products when provided', () => {
       const properties: SearchResultsProperties = {
-        query: 'test',
-        results_count: 2,
         products: [
           { product_id: 'p1', name: 'Product 1', price: '99.99' },
-          { productId: 'p2', title: 'Product 2', price: 149.99 },
+          { price: 149.99, productId: 'p2', title: 'Product 2' },
         ] as any,
+        query: 'test',
+        results_count: 2,
       };
 
       const result = searchResultsViewed(properties);
@@ -154,11 +156,11 @@ describe('Product Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.PRODUCT_LIST_VIEWED,
         category: 'ecommerce',
-        requiredProperties: [],
         properties: {
           list_id: 'category_electronics',
           category: 'Electronics',
         },
+        requiredProperties: [],
       });
     });
 
@@ -206,7 +208,7 @@ describe('Product Emitters', () => {
       const properties = {
         list_id: 'category_shoes',
         category: 'Shoes',
-        filters: { size: '10', color: 'black', brand: 'Nike' },
+        filters: { brand: 'Nike', color: 'black', size: '10' },
       };
 
       const result = productListFiltered(properties);
@@ -214,21 +216,21 @@ describe('Product Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.PRODUCT_LIST_FILTERED,
         category: 'ecommerce',
-        requiredProperties: [],
         properties: {
           list_id: 'category_shoes',
           category: 'Shoes',
-          filters: { size: '10', color: 'black', brand: 'Nike' },
+          filters: { brand: 'Nike', color: 'black', size: '10' },
         },
+        requiredProperties: [],
       });
     });
 
     it('should handle complex filter objects', () => {
       const properties = {
         filters: {
-          price: { min: 50, max: 200 },
-          ratings: [4, 5],
           availability: 'in_stock',
+          price: { max: 200, min: 50 },
+          ratings: [4, 5],
         },
       };
 
@@ -239,14 +241,12 @@ describe('Product Emitters', () => {
     it('should normalize products when provided', () => {
       const properties = {
         category: 'Electronics',
-        products: [{ productId: 'p1', title: 'Product 1' }] as any,
         filters: { brand: 'Apple' },
+        products: [{ productId: 'p1', title: 'Product 1' }] as any,
       };
 
       const result = productListFiltered(properties);
-      expect(result.properties.products).toEqual([
-        { product_id: 'p1', name: 'Product 1' },
-      ]);
+      expect(result.properties.products).toEqual([{ product_id: 'p1', name: 'Product 1' }]);
     });
   });
 
@@ -255,9 +255,9 @@ describe('Product Emitters', () => {
       const properties: BaseProductProperties = {
         product_id: 'prod123',
         name: 'Wireless Headphones',
-        price: 199.99,
         category: 'Electronics',
         position: 3,
+        price: 199.99,
       };
 
       const result = productClicked(properties);
@@ -265,23 +265,23 @@ describe('Product Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.PRODUCT_CLICKED,
         category: 'ecommerce',
-        requiredProperties: ['product_id'],
         properties: {
           product_id: 'prod123',
           name: 'Wireless Headphones',
-          price: 199.99,
           category: 'Electronics',
           position: 3,
+          price: 199.99,
         },
+        requiredProperties: ['product_id'],
       });
     });
 
     it('should normalize product properties', () => {
       const properties = {
-        productId: 'p456', // Should normalize to product_id
-        title: 'Product Title', // Should normalize to name
         manufacturer: 'Brand X', // Should normalize to brand
         price: '299.99', // Should normalize to number
+        productId: 'p456', // Should normalize to product_id
+        title: 'Product Title', // Should normalize to name
       } as any;
 
       const result = productClicked(properties);
@@ -301,11 +301,7 @@ describe('Product Emitters', () => {
     });
 
     it('should accept various product ID field names', () => {
-      const testCases = [
-        { product_id: 'p1' },
-        { productId: 'p2' },
-        { id: 'p3' },
-      ];
+      const testCases = [{ product_id: 'p1' }, { productId: 'p2' }, { id: 'p3' }];
 
       testCases.forEach((properties, index) => {
         const result = productClicked(properties as any);
@@ -334,31 +330,31 @@ describe('Product Emitters', () => {
       const properties: BaseProductProperties = {
         product_id: 'prod789',
         name: 'Gaming Laptop',
-        price: 1299.99,
-        category: 'Computers',
         brand: 'TechBrand',
+        category: 'Computers',
+        price: 1299.99,
       };
 
       const result = productViewed(properties);
 
       expect(result).toEqual({
+        context: { category: 'ecommerce' },
         event: ECOMMERCE_EVENTS.PRODUCT_VIEWED,
+        options: undefined,
         properties: {
           product_id: 'prod789',
           name: 'Gaming Laptop',
-          price: 1299.99,
-          category: 'Computers',
           brand: 'TechBrand',
+          category: 'Computers',
+          price: 1299.99,
         },
-        context: { category: 'ecommerce' },
-        options: undefined,
       });
     });
 
     it('should accept emitter options', () => {
       const properties: BaseProductProperties = { product_id: 'p1' };
       const options = { userId: 'user456' };
-      
+
       const result = productViewed(properties, options);
       expect(result.options).toBe(options);
     });
@@ -371,16 +367,16 @@ describe('Product Emitters', () => {
 
     it('should normalize all product properties', () => {
       const properties = {
-        productId: 'p1',
-        title: 'Product Title',
-        SKU: 'ABC123',
-        manufacturer: 'Brand',
-        price: '99.99',
-        quantity: '2',
-        variation: 'size-large',
         couponCode: 'SAVE10',
         imageUrl: 'https://example.com/image.jpg',
         link: 'https://example.com/product',
+        manufacturer: 'Brand',
+        price: '99.99',
+        productId: 'p1',
+        quantity: '2',
+        SKU: 'ABC123',
+        title: 'Product Title',
+        variation: 'size-large',
       } as any;
 
       const result = productViewed(properties);
@@ -388,14 +384,14 @@ describe('Product Emitters', () => {
       expect(result.properties).toEqual({
         product_id: 'p1',
         name: 'Product Title',
-        sku: 'ABC123',
-        brand: 'Brand',
-        price: 99.99,
-        quantity: 2,
-        variant: 'size-large',
-        coupon: 'SAVE10',
         image_url: 'https://example.com/image.jpg',
         url: 'https://example.com/product',
+        brand: 'Brand',
+        coupon: 'SAVE10',
+        price: 99.99,
+        quantity: 2,
+        sku: 'ABC123',
+        variant: 'size-large',
       });
     });
   });
@@ -418,13 +414,13 @@ describe('Product Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.PRODUCT_COMPARED,
         category: 'ecommerce',
-        requiredProperties: ['product_id'],
         properties: {
-          action: 'added',
           product_id: 'p1',
           name: 'Product 1',
+          action: 'added',
           price: 99.99,
         },
+        requiredProperties: ['product_id'],
       });
     });
 
@@ -436,42 +432,38 @@ describe('Product Emitters', () => {
 
       const properties: ProductComparisonProperties = {
         action: 'viewed',
-        product: baseProduct,
         comparison_list: comparisonList,
+        product: baseProduct,
       };
 
       const result = productCompared(properties);
 
       expect(result.properties).toMatchObject({
-        action: 'viewed',
         product_id: 'p1',
         name: 'Product 1',
-        price: 99.99,
+        action: 'viewed',
         comparison_list: [
           { product_id: 'p2', name: 'Product 2' },
           { product_id: 'p3', name: 'Product 3' },
         ],
+        price: 99.99,
       });
     });
 
     it('should normalize the main product and comparison list', () => {
       const properties: ProductComparisonProperties = {
         action: 'removed',
+        comparison_list: [{ productId: 'p2', title: 'Compare Product' }] as any,
         product: { productId: 'p1', title: 'Main Product' } as any,
-        comparison_list: [
-          { productId: 'p2', title: 'Compare Product' },
-        ] as any,
       };
 
       const result = productCompared(properties);
 
       expect(result.properties).toMatchObject({
-        action: 'removed',
         product_id: 'p1',
         name: 'Main Product',
-        comparison_list: [
-          { product_id: 'p2', name: 'Compare Product' },
-        ],
+        action: 'removed',
+        comparison_list: [{ product_id: 'p2', name: 'Compare Product' }],
       });
     });
 
@@ -487,8 +479,8 @@ describe('Product Emitters', () => {
     it('should handle empty comparison list', () => {
       const properties: ProductComparisonProperties = {
         action: 'viewed',
-        product: baseProduct,
         comparison_list: [],
+        product: baseProduct,
       };
 
       const result = productCompared(properties);
@@ -499,11 +491,11 @@ describe('Product Emitters', () => {
   describe('productRecommendationViewed', () => {
     const baseRecommendation: RecommendationProperties = {
       recommendation_type: 'similar',
-      source: 'product_page',
       products: [
         { product_id: 'r1', name: 'Recommended 1' },
         { product_id: 'r2', name: 'Recommended 2' },
       ],
+      source: 'product_page',
     };
 
     it('should create a valid recommendation viewed event', () => {
@@ -512,15 +504,15 @@ describe('Product Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.PRODUCT_RECOMMENDATION_VIEWED,
         category: 'ecommerce',
-        requiredProperties: ['recommendation_type', 'source'],
         properties: {
           recommendation_type: 'similar',
-          source: 'product_page',
           products: [
             { product_id: 'r1', name: 'Recommended 1' },
             { product_id: 'r2', name: 'Recommended 2' },
           ],
+          source: 'product_page',
         },
+        requiredProperties: ['recommendation_type', 'source'],
       });
     });
 
@@ -530,8 +522,8 @@ describe('Product Emitters', () => {
       types.forEach((type) => {
         const properties: RecommendationProperties = {
           recommendation_type: type as any,
-          source: 'cart',
           products: [{ product_id: 'p1' }],
+          source: 'cart',
         };
 
         const result = productRecommendationViewed(properties);
@@ -552,11 +544,11 @@ describe('Product Emitters', () => {
     it('should normalize recommended products', () => {
       const properties: RecommendationProperties = {
         recommendation_type: 'upsell',
-        source: 'checkout',
         products: [
-          { productId: 'p1', title: 'Product 1', price: '199.99' },
+          { price: '199.99', productId: 'p1', title: 'Product 1' },
           { id: 'p2', name: 'Product 2', price: 299.99 },
         ] as any,
+        source: 'checkout',
       };
 
       const result = productRecommendationViewed(properties);
@@ -570,8 +562,8 @@ describe('Product Emitters', () => {
     it('should throw error when required properties are missing', () => {
       expect(() => {
         productRecommendationViewed({
-          source: 'product_page',
           products: [],
+          source: 'product_page',
         } as any);
       }).toThrow('Missing required properties: recommendation_type');
 
@@ -586,8 +578,8 @@ describe('Product Emitters', () => {
     it('should handle empty products array', () => {
       const properties: RecommendationProperties = {
         recommendation_type: 'similar',
-        source: 'product_page',
         products: [],
+        source: 'product_page',
       };
 
       const result = productRecommendationViewed(properties);
@@ -609,13 +601,13 @@ describe('Product Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.PRODUCT_RECOMMENDATION_CLICKED,
         category: 'ecommerce',
-        requiredProperties: ['product_id'],
         properties: {
           product_id: 'r1',
           name: 'Recommended Product',
           recommendation_type: 'similar',
           source: 'product_page',
         },
+        requiredProperties: ['product_id'],
       });
     });
 
@@ -631,12 +623,12 @@ describe('Product Emitters', () => {
 
     it('should normalize product properties', () => {
       const properties = {
-        productId: 'r1', // Should normalize to product_id
-        title: 'Product Title', // Should normalize to name
-        price: '149.99', // Should normalize to number
         recommendation_type: 'cross_sell',
-        source: 'cart',
         position: 1,
+        price: '149.99', // Should normalize to number
+        productId: 'r1', // Should normalize to product_id
+        source: 'cart',
+        title: 'Product Title', // Should normalize to name
       } as any;
 
       const result = productRecommendationClicked(properties);
@@ -644,10 +636,10 @@ describe('Product Emitters', () => {
       expect(result.properties).toEqual({
         product_id: 'r1',
         name: 'Product Title',
-        price: 149.99,
         recommendation_type: 'cross_sell',
-        source: 'cart',
         position: 1,
+        price: 149.99,
+        source: 'cart',
       });
     });
 
@@ -665,12 +657,12 @@ describe('Product Emitters', () => {
       const properties = {
         product_id: 'r1',
         name: 'Product',
-        price: 99.99,
-        category: 'Electronics',
         recommendation_type: 'trending',
-        source: 'homepage',
-        position: 3,
         algorithm: 'ml_v2', // This should not be included in final properties
+        category: 'Electronics',
+        position: 3,
+        price: 99.99,
+        source: 'homepage',
       } as any;
 
       const result = productRecommendationClicked(properties);
@@ -678,11 +670,11 @@ describe('Product Emitters', () => {
       expect(result.properties).toEqual({
         product_id: 'r1',
         name: 'Product',
-        price: 99.99,
-        category: 'Electronics',
         recommendation_type: 'trending',
-        source: 'homepage',
+        category: 'Electronics',
         position: 3,
+        price: 99.99,
+        source: 'homepage',
       });
       expect(result.properties).not.toHaveProperty('algorithm');
     });
@@ -692,9 +684,9 @@ describe('Product Emitters', () => {
         product_id: 'r1',
         name: 'Product',
         recommendation_type: 'similar',
-        source: 'product_page',
-        position: undefined,
         category: undefined,
+        position: undefined,
+        source: 'product_page',
       };
 
       const result = productRecommendationClicked(properties);
@@ -758,21 +750,21 @@ describe('Product Emitters', () => {
       }).toThrow('Product must have an id');
 
       // Should handle invalid numeric values gracefully
-      const invalidPriceResult = productClicked({ 
-        product_id: 'p1', 
-        price: 'invalid' 
+      const invalidPriceResult = productClicked({
+        product_id: 'p1',
+        price: 'invalid',
       } as any);
       expect(invalidPriceResult.properties.price).toBeUndefined();
 
-      const negativeQuantityResult = productClicked({ 
-        product_id: 'p2', 
-        quantity: -1 
+      const negativeQuantityResult = productClicked({
+        product_id: 'p2',
+        quantity: -1,
       } as any);
       expect(negativeQuantityResult.properties.quantity).toBeUndefined();
 
-      const invalidPositionResult = productClicked({ 
-        product_id: 'p3', 
-        position: 'first' 
+      const invalidPositionResult = productClicked({
+        product_id: 'p3',
+        position: 'first',
       } as any);
       expect(invalidPositionResult.properties.position).toBeUndefined();
     });
@@ -782,22 +774,22 @@ describe('Product Emitters', () => {
       // by testing that proper interfaces are enforced
 
       // productSearched requires query
-      const searchProps: Parameters<typeof productSearched>[0] = { 
-        query: 'test' 
+      const searchProps: Parameters<typeof productSearched>[0] = {
+        query: 'test',
       };
       expect(() => productSearched(searchProps)).not.toThrow();
 
       // productViewed requires BaseProductProperties with product_id
-      const viewProps: BaseProductProperties = { 
-        product_id: 'p1' 
+      const viewProps: BaseProductProperties = {
+        product_id: 'p1',
       };
       expect(() => productViewed(viewProps)).not.toThrow();
 
       // productRecommendationViewed requires specific properties
       const recProps: RecommendationProperties = {
         recommendation_type: 'similar',
-        source: 'product_page',
         products: [{ product_id: 'p1' }],
+        source: 'product_page',
       };
       expect(() => productRecommendationViewed(recProps)).not.toThrow();
     });
@@ -811,15 +803,15 @@ describe('Product Emitters', () => {
         productClicked({ product_id: 'p1' }).name,
         productViewed({ product_id: 'p1' }).event,
         productCompared({ action: 'added', product: { product_id: 'p1' } }).name,
-        productRecommendationViewed({ 
-          recommendation_type: 'similar', 
-          source: 'test', 
-          products: [] 
+        productRecommendationViewed({
+          recommendation_type: 'similar',
+          products: [],
+          source: 'test',
         }).name,
-        productRecommendationClicked({ 
-          product_id: 'p1', 
-          recommendation_type: 'similar', 
-          source: 'test' 
+        productRecommendationClicked({
+          product_id: 'p1',
+          recommendation_type: 'similar',
+          source: 'test',
         }).name,
       ];
 

@@ -1,6 +1,6 @@
 /**
  * Simple Step Factory Examples
- * 
+ *
  * Basic examples for testing and demonstration purposes.
  */
 
@@ -10,7 +10,7 @@ import {
   StepTemplates,
   type StepExecutionContext,
   type StepExecutionResult,
-} from '../shared/index.js';
+} from '../shared/index';
 
 /**
  * Simple greeting step example
@@ -24,13 +24,15 @@ export function createGreetingStep() {
       category: 'utility',
       tags: ['greeting', 'simple'],
     },
-    async (context: StepExecutionContext<{ name: string }>): Promise<StepExecutionResult<{ message: string }>> => {
+    async (
+      context: StepExecutionContext<{ name: string }>,
+    ): Promise<StepExecutionResult<{ message: string }>> => {
       const { input } = context;
-      
+
       return {
         success: true,
         output: {
-          message: `Hello, ${input.name}!`
+          message: `Hello, ${input.name}!`,
         },
         performance: context.performance,
       };
@@ -46,7 +48,7 @@ export function createGreetingStep() {
         validateInput: true,
         validateOutput: true,
       },
-    }
+    },
   );
 }
 
@@ -54,10 +56,7 @@ export function createGreetingStep() {
  * Create HTTP request step using template
  */
 export function createApiStep() {
-  return StepTemplates.http(
-    'User Data API',
-    'Fetch user data from API'
-  );
+  return StepTemplates.http('User Data API', 'Fetch user data from API');
 }
 
 /**

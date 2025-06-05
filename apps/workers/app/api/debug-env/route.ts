@@ -10,6 +10,6 @@ export async function GET() {
       QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY ? 'SET' : 'NOT SET',
       UPSTASH_WORKFLOW_URL: process.env.UPSTASH_WORKFLOW_URL,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    }
+    },
   });
 }

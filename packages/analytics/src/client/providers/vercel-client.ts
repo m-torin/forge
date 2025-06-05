@@ -14,7 +14,7 @@ export class VercelClientProvider implements AnalyticsProvider {
 
   constructor(config: ProviderConfig) {
     this.config = {
-      options: config.options
+      options: config.options,
     };
   }
 
@@ -24,13 +24,15 @@ export class VercelClientProvider implements AnalyticsProvider {
     try {
       // Dynamically import Vercel Analytics
       const { inject } = await import('@vercel/analytics');
-      
+
       // Initialize Vercel Analytics
       inject(this.config.options);
-      
+
       this.isInitialized = true;
     } catch (error) {
-      throw new Error('Vercel Analytics not available. Install with: npm install @vercel/analytics');
+      throw new Error(
+        'Vercel Analytics not available. Install with: npm install @vercel/analytics',
+      );
     }
   }
 
@@ -53,7 +55,7 @@ export class VercelClientProvider implements AnalyticsProvider {
     // We can track this as a custom event
     await this.track('User Identified', {
       userId,
-      ...traits
+      ...traits,
     });
   }
 
@@ -63,7 +65,7 @@ export class VercelClientProvider implements AnalyticsProvider {
     if (name || Object.keys(properties).length > 0) {
       await this.track('Page View', {
         page: name,
-        ...properties
+        ...properties,
       });
     }
   }
@@ -73,7 +75,7 @@ export class VercelClientProvider implements AnalyticsProvider {
     // We can track this as a custom event
     await this.track('Group Identified', {
       groupId,
-      ...traits
+      ...traits,
     });
   }
 
@@ -81,8 +83,8 @@ export class VercelClientProvider implements AnalyticsProvider {
     // Vercel Analytics doesn't have a native alias method
     // We can track this as a custom event
     await this.track('User Aliased', {
+      previousId,
       userId,
-      previousId
     });
   }
 }

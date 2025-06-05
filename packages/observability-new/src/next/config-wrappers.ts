@@ -3,23 +3,24 @@
  * Migrated from the original observability package
  */
 
-import { withSentryConfig } from '@sentry/nextjs';
 import { withLogtail } from '@logtail/next';
+import { withSentryConfig } from '@sentry/nextjs';
+
 import type { NextConfig } from 'next';
 
 /**
  * Sentry configuration options for Next.js builds
  */
 export interface SentryBuildOptions {
+  authToken?: string;
+  automaticVercelMonitors?: boolean;
+  disableLogger?: boolean;
+  hideSourceMaps?: boolean;
   org?: string;
   project?: string;
-  authToken?: string;
   silent?: boolean;
-  widenClientFileUpload?: boolean;
   tunnelRoute?: string;
-  disableLogger?: boolean;
-  automaticVercelMonitors?: boolean;
-  hideSourceMaps?: boolean;
+  widenClientFileUpload?: boolean;
 }
 
 /**
@@ -28,13 +29,13 @@ export interface SentryBuildOptions {
  */
 export function withSentry(
   nextConfig: NextConfig,
-  sentryBuildOptions?: SentryBuildOptions
+  sentryBuildOptions?: SentryBuildOptions,
 ): NextConfig {
   const defaultOptions: Parameters<typeof withSentryConfig>[1] = {
+    authToken: sentryBuildOptions?.authToken || process.env.SENTRY_AUTH_TOKEN,
     // Organization and project from env vars
     org: sentryBuildOptions?.org || process.env.SENTRY_ORG,
     project: sentryBuildOptions?.project || process.env.SENTRY_PROJECT,
-    authToken: sentryBuildOptions?.authToken || process.env.SENTRY_AUTH_TOKEN,
 
     // Only print logs for uploading source maps in CI
     silent: sentryBuildOptions?.silent ?? !process.env.CI,
@@ -58,10 +59,7 @@ export function withSentry(
   // Add transpilePackages for Sentry
   const configWithTranspile: NextConfig = {
     ...nextConfig,
-    transpilePackages: [
-      ...(nextConfig.transpilePackages || []),
-      '@sentry/nextjs'
-    ],
+    transpilePackages: [...(nextConfig.transpilePackages || []), '@sentry/nextjs'],
   };
 
   return withSentryConfig(configWithTranspile, defaultOptions);
@@ -78,12 +76,12 @@ export function withLogging(nextConfig: NextConfig): NextConfig {
 /**
  * Wrap Next.js config with all observability providers
  * Apply this to your next.config.js for full observability
- * 
+ *
  * @example
  * ```js
  * // next.config.js
  * import { withObservability } from '@repo/observability-new/next/config';
- * 
+ *
  * export default withObservability({
  *   // Your Next.js config
  * }, {
@@ -100,16 +98,14 @@ export function withObservability(
   options?: {
     sentry?: SentryBuildOptions | boolean;
     logtail?: boolean;
-  }
+  },
 ): NextConfig {
   let config = nextConfig;
 
   // Apply Sentry if enabled
   if (options?.sentry !== false) {
-    const sentryOptions = typeof options?.sentry === 'object' 
-      ? options.sentry 
-      : undefined;
-    
+    const sentryOptions = typeof options?.sentry === 'object' ? options.sentry : undefined;
+
     config = withSentry(config, sentryOptions);
   }
 
@@ -136,7 +132,7 @@ export function createObservabilityConfig(
       sentry?: SentryBuildOptions | boolean;
       logtail?: boolean;
     };
-  }
+  },
 ): NextConfig {
   const isDevelopment = process.env.NODE_ENV === 'development';
   const envOptions = isDevelopment ? options?.development : options?.production;

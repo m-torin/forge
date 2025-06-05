@@ -30,23 +30,21 @@ export function parseError(error: unknown): string {
 export async function parseAndCaptureError(
   error: unknown,
   observability: ObservabilityManager,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ): Promise<string> {
   const message = parseError(error);
 
   try {
     // Convert unknown error to Error object for better tracking
-    const errorObject = error instanceof Error 
-      ? error 
-      : new Error(message);
+    const errorObject = error instanceof Error ? error : new Error(message);
 
     // Capture the error
     await observability.captureException(errorObject, context);
-    
+
     // Also log it
     await observability.log('error', `Parsing error: ${message}`, {
       originalError: error,
-      ...context
+      ...context,
     });
   } catch (newError) {
     // If observability fails, at least log to console
@@ -66,11 +64,11 @@ export function createErrorBoundaryHandler(observability: ObservabilityManager) 
     observability.captureException(error, {
       extra: {
         componentStack: errorInfo.componentStack,
-        errorBoundary: true
+        errorBoundary: true,
       },
       tags: {
-        source: 'error_boundary'
-      }
+        source: 'error_boundary',
+      },
     });
   };
 }
@@ -82,7 +80,7 @@ export function createErrorBoundaryHandler(observability: ObservabilityManager) 
 export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   observability: ObservabilityManager,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ): T {
   return (async (...args: Parameters<T>) => {
     try {
@@ -90,7 +88,7 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
     } catch (error) {
       await parseAndCaptureError(error, observability, {
         function: fn.name || 'anonymous',
-        ...context
+        ...context,
       });
       throw error;
     }
@@ -104,28 +102,28 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
 export function createSafeFunction<T extends (...args: any[]) => any>(
   fn: T,
   observability: ObservabilityManager,
-  fallbackValue?: ReturnType<T>
+  fallbackValue?: ReturnType<T>,
 ): (...args: Parameters<T>) => ReturnType<T> | undefined {
   return (...args: Parameters<T>) => {
     try {
       const result = fn(...args);
-      
+
       // Handle async functions
       if (result instanceof Promise) {
         return result.catch((error) => {
           parseAndCaptureError(error, observability, {
             function: fn.name || 'anonymous',
-            safeFunction: true
+            safeFunction: true,
           });
           return fallbackValue;
         }) as any;
       }
-      
+
       return result;
     } catch (error) {
       parseAndCaptureError(error, observability, {
         function: fn.name || 'anonymous',
-        safeFunction: true
+        safeFunction: true,
       });
       return fallbackValue;
     }

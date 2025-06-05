@@ -5,8 +5,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { authClient } from './auth-client';
-import type { AuthContextType, User, Session } from '../shared/types';
+
+import type { AuthContextType } from '../shared/types';
 
 /**
  * Hook to get current authentication session
@@ -54,7 +56,7 @@ export function useSession() {
           error: null,
           isPending: false,
         });
-      } catch (error) {
+      } catch {
         // Ignore errors during polling
       }
     }, 30000); // Check every 30 seconds
@@ -105,10 +107,10 @@ export function useAuth(): AuthContextType {
   const { data: session, isPending } = useSession();
 
   return {
-    user: session?.user || null,
-    session: session?.session || null,
-    isLoading: isPending,
     isAuthenticated: Boolean(session?.user),
+    isLoading: isPending,
+    session: session?.session || null,
+    user: session?.user || null,
   };
 }
 
@@ -118,8 +120,8 @@ export function useAuth(): AuthContextType {
 export function useOrganization() {
   const [state, setState] = useState({
     activeOrganization: null as any,
-    organizations: [] as any[],
     isLoading: true,
+    organizations: [] as any[],
   });
 
   useEffect(() => {
@@ -129,15 +131,15 @@ export function useOrganization() {
           authClient.organization?.list(),
           authClient.organization?.getActive(),
         ]);
-        
+
         setState({
-          organizations: orgs || [],
           activeOrganization: active || null,
           isLoading: false,
+          organizations: orgs || [],
         });
       } catch (error) {
         console.error('Failed to load organizations:', error);
-        setState(prev => ({ ...prev, isLoading: false }));
+        setState((prev) => ({ ...prev, isLoading: false }));
       }
     };
 
@@ -148,7 +150,7 @@ export function useOrganization() {
     try {
       await authClient.organization?.setActive({ organizationId: orgId });
       const updated = await authClient.organization?.getActive();
-      setState(prev => ({ ...prev, activeOrganization: updated || null }));
+      setState((prev) => ({ ...prev, activeOrganization: updated || null }));
     } catch (error) {
       console.error('Failed to set active organization:', error);
     }

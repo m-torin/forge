@@ -1,6 +1,7 @@
 # @repo/analytics
 
-A multi-provider analytics package with full TypeScript support, designed for modern web applications with separate client and server implementations.
+A multi-provider analytics package with full TypeScript support, designed for modern web
+applications with separate client and server implementations.
 
 ## Features
 
@@ -21,7 +22,7 @@ npm install @repo/analytics
 
 # Optional provider dependencies (install only what you need)
 npm install @segment/analytics-next      # For Segment
-npm install posthog-js posthog-node     # For PostHog  
+npm install posthog-js posthog-node     # For PostHog
 npm install @vercel/analytics           # For Vercel Analytics
 ```
 
@@ -40,7 +41,8 @@ The package uses **import-based environment separation** - no runtime detection:
 
 ### Emitter-First Approach (Recommended)
 
-The analytics package uses **emitters** as the primary pattern for tracking events. Emitters provide type-safe, consistent event tracking following the Segment.io specification.
+The analytics package uses **emitters** as the primary pattern for tracking events. Emitters provide
+type-safe, consistent event tracking following the Segment.io specification.
 
 ```typescript
 import { createClientAnalytics, track, identify, page } from '@repo/analytics/client';
@@ -50,9 +52,9 @@ const analytics = await createClientAnalytics({
   providers: {
     segment: { writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY },
     posthog: { apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY },
-    vercel: {},  // Auto-configured
-    console: { prefix: '[Analytics]' }  // Development logging
-  }
+    vercel: {}, // Auto-configured
+    console: { prefix: '[Analytics]' }, // Development logging
+  },
 });
 
 // Method 1: Direct emitter usage (RECOMMENDED)
@@ -60,7 +62,7 @@ await analytics.emit(
   track('Button Clicked', {
     button_id: 'cta-hero',
     color: 'blue',
-    position: 'above-fold'
+    position: 'above-fold',
   })
 );
 
@@ -68,14 +70,14 @@ await analytics.emit(
 await analytics.identify(
   identify('user_123', {
     email: 'user@example.com',
-    plan: 'premium'
+    plan: 'premium',
   })
 );
 
 // Method 3: Batch multiple events
 await analytics.emitBatch([
   page('Homepage', { path: '/', title: 'Welcome' }),
-  track('Page Viewed', { page: 'homepage' })
+  track('Page Viewed', { page: 'homepage' }),
 ]);
 ```
 
@@ -85,11 +87,11 @@ await analytics.emitBatch([
 // You can still use the traditional API if needed
 await analytics.track('Button Clicked', {
   button_id: 'cta-hero',
-  color: 'blue'
+  color: 'blue',
 });
 
 await analytics.identify('user_123', {
-  email: 'user@example.com'
+  email: 'user@example.com',
 });
 ```
 
@@ -101,8 +103,8 @@ import { createServerAnalytics, track, createUserSession } from '@repo/analytics
 const analytics = await createServerAnalytics({
   providers: {
     segment: { writeKey: process.env.SEGMENT_WRITE_KEY },
-    posthog: { apiKey: process.env.POSTHOG_API_KEY }
-  }
+    posthog: { apiKey: process.env.POSTHOG_API_KEY },
+  },
 });
 
 // Use emitters for consistent tracking
@@ -110,7 +112,7 @@ await analytics.emit(
   track('API Request', {
     endpoint: '/api/users',
     method: 'GET',
-    duration_ms: 45
+    duration_ms: 45,
   })
 );
 
@@ -131,13 +133,13 @@ Emitters are the primary, recommended way to track events in this analytics pack
 ### Emitter Utilities
 
 ```typescript
-import { 
-  ContextBuilder, 
-  PayloadBuilder, 
+import {
+  ContextBuilder,
+  PayloadBuilder,
   EventBatch,
   createAnonymousSession,
   withMetadata,
-  withUTM
+  withUTM,
 } from '@repo/analytics/client';
 
 // Build consistent context across events
@@ -150,9 +152,7 @@ const context = new ContextBuilder()
 
 // Create events with shared context
 const builder = new PayloadBuilder(context);
-await analytics.emit(
-  builder.track('Feature Used', { feature: 'export' })
-);
+await analytics.emit(builder.track('Feature Used', { feature: 'export' }));
 
 // Batch related events
 const batch = new EventBatch(context);
@@ -165,9 +165,7 @@ await analytics.emitBatch(batch.getEvents());
 
 // Anonymous user tracking
 const anonSession = createAnonymousSession('anon_789');
-await analytics.emit(
-  anonSession.track('Product Viewed', { sku: 'PROD-123' })
-);
+await analytics.emit(anonSession.track('Product Viewed', { sku: 'PROD-123' }));
 
 // Later, when user signs up
 await analytics.emit(anonSession.alias('user_123'));
@@ -175,15 +173,13 @@ await analytics.emit(anonSession.identify('user_123', { email: 'new@user.com' })
 
 // Add metadata to any event
 const event = track('Purchase Completed', { amount: 99.99 });
-await analytics.emit(
-  withMetadata(event, { version: '2.0', source: 'checkout' })
-);
+await analytics.emit(withMetadata(event, { version: '2.0', source: 'checkout' }));
 
 // Add UTM parameters
 await analytics.emit(
-  withUTM(event, { 
-    source: 'newsletter', 
-    campaign: 'black-friday' 
+  withUTM(event, {
+    source: 'newsletter',
+    campaign: 'black-friday',
   })
 );
 ```
@@ -227,8 +223,8 @@ export function Button() {
   const showNewDesign = useFeatureFlag('new-design');
 
   const handleClick = () => {
-    trackEvent('Button Clicked', { 
-      variant: showNewDesign ? 'new' : 'old' 
+    trackEvent('Button Clicked', {
+      variant: showNewDesign ? 'new' : 'old'
     });
   };
 
@@ -279,7 +275,7 @@ import { createAnalyticsMiddleware } from '@repo/analytics/server/next';
 
 export const middleware = createAnalyticsMiddleware({
   providers: {
-    segment: { writeKey: process.env.SEGMENT_WRITE_KEY }
+    segment: { writeKey: process.env.SEGMENT_WRITE_KEY },
   },
   // Optional configuration
   matchers: ['/api/*', '/app/*'],
@@ -287,12 +283,12 @@ export const middleware = createAnalyticsMiddleware({
   extractUserId: (request) => request.headers.get('x-user-id'),
   extractContext: (request) => ({
     ip: request.ip,
-    country: request.geo?.country
-  })
+    country: request.geo?.country,
+  }),
 });
 
 export const config = {
-  matcher: ['/((?!_next/static|favicon.ico).*)']
+  matcher: ['/((?!_next/static|favicon.ico).*)'],
 };
 ```
 
@@ -307,7 +303,7 @@ export async function submitForm(formData: FormData) {
   // Track the action
   await trackServerAction('Form Submitted', {
     form_id: 'contact',
-    email: formData.get('email')
+    email: formData.get('email'),
   });
 
   // Process form...
@@ -331,7 +327,7 @@ export function CTASection() {
       >
         Get Started
       </TrackedButton>
-      
+
       <TrackedLink
         href="/pricing"
         event="Link Clicked"
@@ -347,6 +343,7 @@ export function CTASection() {
 ## Providers
 
 ### Segment
+
 Universal customer data platform for all your analytics needs.
 
 ```typescript
@@ -361,6 +358,7 @@ Universal customer data platform for all your analytics needs.
 ```
 
 ### PostHog
+
 Product analytics with feature flags, A/B testing, and session recording.
 
 ```typescript
@@ -385,6 +383,7 @@ Product analytics with feature flags, A/B testing, and session recording.
 ```
 
 ### Vercel Analytics
+
 Web Vitals and performance monitoring (auto-configured on Vercel).
 
 ```typescript
@@ -396,6 +395,7 @@ Web Vitals and performance monitoring (auto-configured on Vercel).
 ```
 
 ### Console
+
 Development provider that logs all events to console.
 
 ```typescript
@@ -416,8 +416,8 @@ import { createClientAnalytics } from '@repo/analytics/client';
 
 const analytics = await createClientAnalytics({
   providers: {
-    posthog: { apiKey: 'xxx' }
-  }
+    posthog: { apiKey: 'xxx' },
+  },
 });
 
 // Check if feature is enabled
@@ -433,23 +433,23 @@ const allFlags = await analytics.getAllFeatureFlags();
 ### Server-Side Feature Flags (Next.js)
 
 ```typescript
-import { 
+import {
   isFeatureEnabledOnServer,
-  getFeatureFlagOnServer 
+  getFeatureFlagOnServer
 } from '@repo/analytics/next/server';
 import { cookies } from 'next/headers';
 
 export default async function Page() {
   const cookieStore = cookies();
   const apiKey = process.env.POSTHOG_API_KEY!;
-  
+
   // Check feature flag
   const showBeta = await isFeatureEnabledOnServer(
-    'beta-feature', 
-    cookieStore, 
+    'beta-feature',
+    cookieStore,
     apiKey
   );
-  
+
   // Get A/B test variant
   const heroVariant = await getFeatureFlagOnServer(
     'hero-test',
@@ -457,7 +457,7 @@ export default async function Page() {
     apiKey,
     { defaultValue: 'control' }
   );
-  
+
   return (
     <div>
       {showBeta && <BetaFeature />}
@@ -480,7 +480,7 @@ const productViewed = ecommerce.productViewed({
   name: 'Wireless Headphones',
   price: 129.99,
   category: 'Electronics',
-  brand: 'AudioTech'
+  brand: 'AudioTech',
 });
 await analytics.emit(productViewed);
 
@@ -491,9 +491,9 @@ const cartUpdated = ecommerce.cartUpdated({
     product_id: '12345',
     name: 'Wireless Headphones',
     price: 129.99,
-    quantity: 1
+    quantity: 1,
   },
-  cart_total: 129.99
+  cart_total: 129.99,
 });
 await analytics.emit(cartUpdated);
 
@@ -505,13 +505,15 @@ const orderCompleted = ecommerce.orderCompleted({
   tax: 12.49,
   shipping: 0,
   currency: 'USD',
-  products: [{
-    product_id: '12345',
-    name: 'Wireless Headphones',
-    price: 129.99,
-    quantity: 1,
-    category: 'Electronics'
-  }]
+  products: [
+    {
+      product_id: '12345',
+      name: 'Wireless Headphones',
+      price: 129.99,
+      quantity: 1,
+      category: 'Electronics',
+    },
+  ],
 });
 await analytics.emit(orderCompleted);
 
@@ -534,7 +536,8 @@ await analytics.emitBatch(checkoutFlow.getEvents());
 - **Wishlist**: `productAddedToWishlist`, `productRemovedFromWishlist`
 - **Marketplace**: `priceComparisonViewed`, `merchantSelected`, `affiliateLinkClicked`
 
-See [Ecommerce Events Documentation](./src/shared/emitters/ecommerce/README.md) for complete details.
+See [Ecommerce Events Documentation](./src/shared/emitters/ecommerce/README.md) for complete
+details.
 
 ## Advanced Usage
 
@@ -542,12 +545,14 @@ See [Ecommerce Events Documentation](./src/shared/emitters/ecommerce/README.md) 
 
 ```typescript
 const analytics = await createClientAnalytics({
-  providers: { /* ... */ },
+  providers: {
+    /* ... */
+  },
   onError: (error, context) => {
     console.error('Analytics error:', error);
     // Send to error tracking service
     Sentry.captureException(error, { extra: context });
-  }
+  },
 });
 ```
 
@@ -576,7 +581,7 @@ import { track, identify, page } from '@repo/analytics/client';
 // ✅ Recommended: Use emit() method
 const event = track('User Registered', {
   method: 'email',
-  referral_source: 'organic'
+  referral_source: 'organic',
 });
 await analytics.emit(event);
 
@@ -584,7 +589,7 @@ await analytics.emit(event);
 await analytics.track(
   track('Feature Activated', {
     feature_name: 'dark_mode',
-    activation_method: 'settings'
+    activation_method: 'settings',
   })
 );
 
@@ -592,26 +597,30 @@ await analytics.track(
 const onboarding = [
   identify('user_123', { role: 'admin' }),
   track('Onboarding Started', { step: 1 }),
-  page('Onboarding', { step: 'welcome' })
+  page('Onboarding', { step: 'welcome' }),
 ];
 await analytics.emitBatch(onboarding);
 
 // ❌ Avoid: Manual event construction (error-prone)
-await analytics.track('some event', { /* untyped properties */ });
+await analytics.track('some event', {
+  /* untyped properties */
+});
 ```
 
 ### Consent Management
 
 ```typescript
 const analytics = createNextJSClientAnalytics({
-  providers: { /* ... */ },
+  providers: {
+    /* ... */
+  },
   nextjs: {
     deferUntilConsent: true,
     checkConsent: async () => {
       // Check your consent management platform
       return await checkUserConsent();
-    }
-  }
+    },
+  },
 });
 
 // Later, when user consents
@@ -625,7 +634,7 @@ await analytics.grantConsent();
 analytics.setContext({
   app_version: '1.2.3',
   deployment: 'production',
-  region: 'us-east-1'
+  region: 'us-east-1',
 });
 
 // All subsequent events will include this context
@@ -653,7 +662,9 @@ track('Event', {});
 
 // New (explicit instance)
 import { createClientAnalytics } from '@repo/analytics/client';
-const analytics = await createClientAnalytics({ /* config */ });
+const analytics = await createClientAnalytics({
+  /* config */
+});
 await analytics.track('Event', {});
 ```
 
@@ -662,7 +673,7 @@ await analytics.track('Event', {});
 ```typescript
 // Old (runtime detection)
 const analytics = createAnalytics({
-  isServer: typeof window === 'undefined'
+  isServer: typeof window === 'undefined',
 });
 
 // New (import-based)
@@ -719,14 +730,13 @@ analytics.emit(track('User Signed Up', { plan: 'premium' }));
 import { track, identify } from '@repo/analytics/client';
 
 export const events = {
-  userSignedUp: (plan: string) => 
-    track('User Signed Up', { plan, timestamp: new Date() }),
-  
+  userSignedUp: (plan: string) => track('User Signed Up', { plan, timestamp: new Date() }),
+
   userUpgraded: (fromPlan: string, toPlan: string) =>
     track('Plan Upgraded', { from_plan: fromPlan, to_plan: toPlan }),
-    
+
   userIdentified: (userId: string, email: string, plan: string) =>
-    identify(userId, { email, plan })
+    identify(userId, { email, plan }),
 };
 
 // Usage
@@ -770,30 +780,34 @@ await analytics.emitBatch(checkout.getEvents());
 // Old approach
 analytics.track('Product Viewed', {
   product_id: '123',
-  price: 99.99
+  price: 99.99,
 });
 
 // New approach - Option 1: Using emit
 import { track } from '@repo/analytics/client';
-analytics.emit(track('Product Viewed', {
-  product_id: '123',
-  price: 99.99
-}));
+analytics.emit(
+  track('Product Viewed', {
+    product_id: '123',
+    price: 99.99,
+  })
+);
 
 // New approach - Option 2: Using overloaded track
 const event = track('Product Viewed', {
   product_id: '123',
-  price: 99.99
+  price: 99.99,
 });
 analytics.track(event);
 
 // New approach - Option 3: Using ecommerce emitters
 import { ecommerce } from '@repo/analytics/client';
-analytics.emit(ecommerce.productViewed({
-  product_id: '123',
-  price: 99.99,
-  name: 'Product Name'
-}));
+analytics.emit(
+  ecommerce.productViewed({
+    product_id: '123',
+    price: 99.99,
+    name: 'Product Name',
+  })
+);
 ```
 
 ### Gradual Migration Strategy
@@ -807,21 +821,27 @@ analytics.emit(ecommerce.productViewed({
 ## Why Emitters?
 
 ### 1. Type Safety
+
 Emitters provide full TypeScript support with autocomplete for event properties.
 
 ### 2. Consistency
+
 All events follow the Segment.io specification automatically.
 
 ### 3. Validation
+
 Emitters validate required properties at compile time.
 
 ### 4. Context Management
+
 Emitters make it easy to maintain consistent context across events.
 
 ### 5. Testing
+
 Emitter payloads are pure data structures that are easy to test.
 
 ### 6. Provider Agnostic
+
 Emitters work with any analytics provider without changes.
 
 ## License

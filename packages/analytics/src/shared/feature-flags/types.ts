@@ -10,29 +10,29 @@
 export type FlagValue = string | number | boolean | object | null;
 
 export interface FlagContext {
-  userId?: string;
-  distinctId?: string;
-  anonymousId?: string;
-  sessionId?: string;
-  groups?: Record<string, string>;
-  attributes?: Record<string, any>;
-  environment?: string;
   [key: string]: any;
+  anonymousId?: string;
+  attributes?: Record<string, any>;
+  distinctId?: string;
+  environment?: string;
+  groups?: Record<string, string>;
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface FlagEvaluationResult<T = FlagValue> {
   key: string;
-  value: T;
-  variant?: string;
-  reason?: FlagEvaluationReason;
   payload?: any;
-  source: 'cache' | 'network' | 'fallback' | 'default';
-  timestamp: number;
+  reason?: FlagEvaluationReason;
   ruleId?: string;
   segmentId?: string;
+  source: 'cache' | 'network' | 'fallback' | 'default';
+  timestamp: number;
+  value: T;
+  variant?: string;
 }
 
-export type FlagEvaluationReason = 
+export type FlagEvaluationReason =
   | 'targeting_match'
   | 'fallthrough'
   | 'prerequisite_failed'
@@ -50,49 +50,40 @@ export type FlagEvaluationReason =
 
 export interface FeatureFlagProvider {
   readonly name: string;
-  
+
+  close(): Promise<void>;
   // Lifecycle
   initialize(context?: FlagContext): Promise<void>;
-  close(): Promise<void>;
-  
+
   // Flag evaluation
   getFlag<T = FlagValue>(
-    key: string, 
-    defaultValue: T, 
-    context?: FlagContext
+    key: string,
+    defaultValue: T,
+    context?: FlagContext,
   ): Promise<FlagEvaluationResult<T>>;
-  
+
   getAllFlags(context?: FlagContext): Promise<Record<string, FlagEvaluationResult>>;
-  
+
   // Variants and experiments
   getVariant(
-    key: string, 
-    context?: FlagContext
+    key: string,
+    context?: FlagContext,
   ): Promise<{ variant: string; payload?: any } | null>;
-  
+
   // Boolean helpers
   isEnabled(key: string, context?: FlagContext): Promise<boolean>;
-  
+
   // Context management
   setContext(context: FlagContext): void;
   updateContext(updates: Partial<FlagContext>): void;
-  
+
   // Real-time updates
-  onFlagChange?(
-    key: string, 
-    callback: (result: FlagEvaluationResult) => void
-  ): () => void;
-  
-  onFlagsChange?(
-    callback: (changes: Record<string, FlagEvaluationResult>) => void
-  ): () => void;
-  
+  onFlagChange?(key: string, callback: (result: FlagEvaluationResult) => void): () => void;
+
+  onFlagsChange?(callback: (changes: Record<string, FlagEvaluationResult>) => void): () => void;
+
   // Analytics integration
-  trackExposure?(
-    key: string, 
-    result: FlagEvaluationResult, 
-    context?: FlagContext
-  ): void;
+  trackExposure?(key: string, result: FlagEvaluationResult, context?: FlagContext): void;
 }
 
 // ============================================================================
@@ -102,7 +93,7 @@ export interface FeatureFlagProvider {
 export interface FlagConfig {
   // Provider configuration
   provider: string;
-  
+
   // Provider-specific options
   options?: {
     // Common options
@@ -111,31 +102,31 @@ export interface FlagConfig {
     environment?: string;
     timeout?: number;
     pollInterval?: number;
-    
+
     // Caching
     enableCache?: boolean;
     cacheTTL?: number;
-    
+
     // Bootstrap data
     bootstrap?: Record<string, FlagValue>;
-    
+
     // Real-time updates
     streaming?: boolean;
-    
+
     // Analytics integration
     trackExposures?: boolean;
     analyticsProvider?: string;
-    
+
     // Error handling
     fallbackStrategy?: 'default' | 'cache' | 'last_known';
-    
+
     // Provider-specific options
     [key: string]: any;
   };
-  
+
   // Default context
   defaultContext?: FlagContext;
-  
+
   // Error handling
   onError?: (error: Error, context?: any) => void;
   onReady?: () => void;
@@ -148,44 +139,41 @@ export interface FlagConfig {
 export interface FeatureFlagManager {
   // Provider management
   addProvider(config: FlagConfig): Promise<void>;
-  removeProvider(name: string): void;
   getProvider(name: string): FeatureFlagProvider | undefined;
-  
+  removeProvider(name: string): void;
+
   // Flag evaluation (uses primary provider or specific provider)
   getFlag<T = FlagValue>(
-    key: string, 
-    defaultValue: T, 
-    options?: FlagEvaluationOptions
+    key: string,
+    defaultValue: T,
+    options?: FlagEvaluationOptions,
   ): Promise<FlagEvaluationResult<T>>;
-  
+
   getAllFlags(options?: FlagEvaluationOptions): Promise<Record<string, FlagEvaluationResult>>;
-  
-  isEnabled(
-    key: string, 
-    options?: FlagEvaluationOptions
-  ): Promise<boolean>;
-  
+
+  isEnabled(key: string, options?: FlagEvaluationOptions): Promise<boolean>;
+
   getVariant(
-    key: string, 
-    options?: FlagEvaluationOptions
+    key: string,
+    options?: FlagEvaluationOptions,
   ): Promise<{ variant: string; payload?: any } | null>;
-  
+
+  getContext(): FlagContext;
   // Context management
   setContext(context: FlagContext): void;
   updateContext(updates: Partial<FlagContext>): void;
-  getContext(): FlagContext;
-  
+
+  close(): Promise<void>;
   // Lifecycle
   initialize(): Promise<void>;
-  close(): Promise<void>;
 }
 
 export interface FlagEvaluationOptions {
-  provider?: string;
   context?: Partial<FlagContext>;
+  fallbackStrategy?: 'default' | 'cache' | 'last_known';
+  provider?: string;
   timeout?: number;
   trackExposure?: boolean;
-  fallbackStrategy?: 'default' | 'cache' | 'last_known';
 }
 
 // ============================================================================
@@ -194,17 +182,17 @@ export interface FlagEvaluationOptions {
 
 export interface ExperimentConfig {
   key: string;
-  variants: ExperimentVariant[];
-  traffic?: number; // 0-1, percentage of users to include
-  segments?: string[];
   prerequisites?: ExperimentPrerequisite[];
+  segments?: string[];
+  traffic?: number; // 0-1, percentage of users to include
+  variants: ExperimentVariant[];
 }
 
 export interface ExperimentVariant {
   key: string;
   name?: string;
-  weight: number; // 0-1, relative weight within the experiment
   payload?: any;
+  weight: number; // 0-1, relative weight within the experiment
 }
 
 export interface ExperimentPrerequisite {
@@ -213,11 +201,11 @@ export interface ExperimentPrerequisite {
 }
 
 export interface ExperimentResult {
-  key: string;
-  variant: string;
   inExperiment: boolean;
+  key: string;
   payload?: any;
   reason: FlagEvaluationReason;
+  variant: string;
 }
 
 // ============================================================================
@@ -225,9 +213,9 @@ export interface ExperimentResult {
 // ============================================================================
 
 export interface TypedFlag<T = FlagValue> {
-  key: string;
   defaultValue: T;
   description?: string;
+  key: string;
   type?: 'boolean' | 'string' | 'number' | 'json';
   variants?: string[];
 }
@@ -238,14 +226,14 @@ export type TypedFlagMap<T extends Record<string, any>> = {
 
 // Create typed flag definitions
 export function defineFlag<T>(
-  key: string, 
-  defaultValue: T, 
-  options?: Omit<TypedFlag<T>, 'key' | 'defaultValue'>
+  key: string,
+  defaultValue: T,
+  options?: Omit<TypedFlag<T>, 'key' | 'defaultValue'>,
 ): TypedFlag<T> {
   return {
-    key,
     defaultValue,
-    ...options
+    key,
+    ...options,
   };
 }
 
@@ -254,18 +242,18 @@ export function defineFlag<T>(
 // ============================================================================
 
 export interface FlagCache {
-  get(key: string): FlagEvaluationResult | null;
-  set(key: string, result: FlagEvaluationResult, ttl?: number): void;
-  delete(key: string): void;
   clear(): void;
+  delete(key: string): void;
+  get(key: string): FlagEvaluationResult | null;
   keys(): string[];
+  set(key: string, result: FlagEvaluationResult, ttl?: number): void;
 }
 
 export interface CacheConfig {
   enabled: boolean;
-  ttl: number; // milliseconds
   maxSize?: number;
   strategy?: 'lru' | 'fifo' | 'ttl';
+  ttl: number; // milliseconds
 }
 
 // ============================================================================
@@ -278,14 +266,14 @@ export class FeatureFlagError extends Error {
     public readonly code: FlagErrorCode,
     public readonly provider?: string,
     public readonly flagKey?: string,
-    public readonly cause?: Error
+    public readonly cause?: Error,
   ) {
     super(message);
     this.name = 'FeatureFlagError';
   }
 }
 
-export type FlagErrorCode = 
+export type FlagErrorCode =
   | 'PROVIDER_NOT_FOUND'
   | 'PROVIDER_NOT_INITIALIZED'
   | 'FLAG_NOT_FOUND'
@@ -301,21 +289,21 @@ export type FlagErrorCode =
 // ============================================================================
 
 export interface FlagMetrics {
-  provider: string;
-  evaluations: number;
-  errors: number;
+  avgResponseTime: number;
   cacheHits: number;
   cacheMisses: number;
-  avgResponseTime: number;
+  errors: number;
+  evaluations: number;
   lastEvaluation?: number;
+  provider: string;
 }
 
 export interface FlagDebugInfo {
+  cacheStatus: 'hit' | 'miss' | 'stale';
+  context: FlagContext;
+  errors?: Error[];
+  evaluationTime: number;
   key: string;
   provider: string;
-  context: FlagContext;
   result: FlagEvaluationResult;
-  evaluationTime: number;
-  cacheStatus: 'hit' | 'miss' | 'stale';
-  errors?: Error[];
 }

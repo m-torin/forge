@@ -1,30 +1,57 @@
 /**
  * Workflow Step Factory System
- * 
+ *
  * Export all step factory functionality including the core factory,
  * step templates, and utility functions.
  */
 
-// Core step factory exports
+// Simple function-based API (recommended for new code)
+export { createStep, createStepWithValidation } from './step-factory';
+
+// Enhancer functions from separate module
+export {
+  withStepMonitoring,
+  withStepRetry,
+  withStepCircuitBreaker,
+  withStepTimeout,
+  compose,
+} from './step-factory-enhancers';
+
+// Legacy complex API (for backward compatibility)
 export {
   createWorkflowStep,
   StandardWorkflowStep,
   StepFactory,
   defaultStepFactory,
-} from './step-factory.js';
+  matchError,
+  when,
+} from './step-factory';
 
+// Simple API types
+export type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
+
+// Legacy API types
 export type {
+  NonEmptyArray,
+  StepId,
+  ExecutionId,
+  ProgressState,
+  ErrorCode,
   StepExecutionConfig,
   StepValidationConfig,
   ValidationResult,
   StepMetadata,
   StepPerformanceData,
   StepExecutionContext,
-  StepExecutionResult,
   StepExecutionFunction,
   WorkflowStepDefinition,
   StepFactoryConfig,
-} from './step-factory.js';
+} from './step-factory';
+
+// Export individual modules for granular access
+export * as StepTypes from './step-factory/step-types';
+export * as StepValidation from './step-factory/step-validation';
+export * as StepPerformance from './step-factory/step-performance';
 
 // Step templates exports
 export {
@@ -48,7 +75,7 @@ export {
   DataTransformationOutputSchema,
   ConditionalInputSchema,
   ConditionalOutputSchema,
-} from './step-templates.js';
+} from './step-templates';
 
 export type {
   StepTemplateType,
@@ -64,13 +91,10 @@ export type {
   DataTransformationOutput,
   ConditionalInput,
   ConditionalOutput,
-} from './step-templates.js';
+} from './step-templates';
 
 // Step registry exports
-export { 
-  StepRegistry, 
-  defaultStepRegistry 
-} from './step-registry.js';
+export { StepRegistry, defaultStepRegistry } from './step-registry';
 
 export type {
   StepRegistryEntry,
@@ -78,4 +102,4 @@ export type {
   StepCompositionConfig,
   StepDependencyNode,
   StepExecutionPlan,
-} from './step-registry.js';
+} from './step-registry';

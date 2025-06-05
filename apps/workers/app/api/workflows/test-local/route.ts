@@ -19,7 +19,7 @@ export const { POST } = serve(
   {
     // Minimal config for local dev
     receiver: undefined,
-  }
+  },
 );
 
 export async function GET() {

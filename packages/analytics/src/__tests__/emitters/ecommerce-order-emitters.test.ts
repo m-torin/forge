@@ -1,28 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
+  orderCancelled,
   orderCompleted,
   orderFailed,
   orderRefunded,
-  orderCancelled,
   orderStatusUpdated,
-  returnRequested,
   returnCompleted,
+  returnRequested,
 } from '../../shared/emitters/ecommerce/events/order';
 import { ECOMMERCE_EVENTS } from '../../shared/emitters/ecommerce/types';
+
 import type {
+  BaseProductProperties,
   OrderProperties,
   OrderStatusProperties,
   ReturnProperties,
-  BaseProductProperties,
 } from '../../shared/emitters/ecommerce/types';
 
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   trackEcommerce: vi.fn((eventSpec, options) => ({
-    event: eventSpec.name,
-    properties: eventSpec.properties,
     context: { category: 'ecommerce' },
+    event: eventSpec.name,
     options,
+    properties: eventSpec.properties,
   })),
 }));
 
@@ -35,33 +37,33 @@ describe('Order Emitters', () => {
     const baseOrderProperties: OrderProperties = {
       order_id: 'order_123',
       affiliation: 'Online Store',
-      total: 299.99,
-      revenue: 259.99,
-      shipping: 15.00,
-      tax: 25.00,
-      discount: 10.00,
       coupon: 'SAVE10',
       currency: 'USD',
+      discount: 10.0,
+      revenue: 259.99,
+      shipping: 15.0,
+      tax: 25.0,
+      total: 299.99,
     };
 
     it('should create a valid order completed event', () => {
       const result = orderCompleted(baseOrderProperties);
 
       expect(result).toEqual({
+        context: { category: 'ecommerce' },
         event: ECOMMERCE_EVENTS.ORDER_COMPLETED,
+        options: undefined,
         properties: {
           order_id: 'order_123',
           affiliation: 'Online Store',
-          total: 299.99,
-          revenue: 259.99,
-          shipping: 15.00,
-          tax: 25.00,
-          discount: 10.00,
           coupon: 'SAVE10',
           currency: 'USD',
+          discount: 10.0,
+          revenue: 259.99,
+          shipping: 15.0,
+          tax: 25.0,
+          total: 299.99,
         },
-        context: { category: 'ecommerce' },
-        options: undefined,
       });
     });
 
@@ -83,7 +85,7 @@ describe('Order Emitters', () => {
 
     it('should normalize products when provided', () => {
       const rawProducts = [
-        { productId: 'p1', title: 'Product 1', price: '99.99' },
+        { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
       ];
 
@@ -121,7 +123,7 @@ describe('Order Emitters', () => {
     });
 
     it('should accept emitter options', () => {
-      const options = { userId: 'user123', timestamp: new Date() };
+      const options = { timestamp: new Date(), userId: 'user123' };
       const result = orderCompleted(baseOrderProperties, options);
 
       expect(result.options).toBe(options);
@@ -137,21 +139,21 @@ describe('Order Emitters', () => {
     it('should clean undefined properties', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
-        total: 100.00,
+        coupon: undefined,
+        currency: undefined,
+        discount: undefined,
+        products: undefined,
         revenue: undefined,
         shipping: undefined,
         tax: undefined,
-        discount: undefined,
-        coupon: undefined,
-        currency: undefined,
-        products: undefined,
+        total: 100.0,
       };
 
       const result = orderCompleted(properties);
 
       expect(result.properties).toEqual({
         order_id: 'order_123',
-        total: 100.00,
+        total: 100.0,
       });
     });
 
@@ -164,22 +166,22 @@ describe('Order Emitters', () => {
     it('should handle zero values correctly', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
-        total: 0,
+        discount: 0,
         revenue: 0,
         shipping: 0,
         tax: 0,
-        discount: 0,
+        total: 0,
       };
 
       const result = orderCompleted(properties);
 
       expect(result.properties).toMatchObject({
         order_id: 'order_123',
-        total: 0,
+        discount: 0,
         revenue: 0,
         shipping: 0,
         tax: 0,
-        discount: 0,
+        total: 0,
       });
     });
   });
@@ -187,15 +189,15 @@ describe('Order Emitters', () => {
   describe('orderFailed', () => {
     const baseOrderProperties: OrderProperties = {
       order_id: 'order_failed_123',
-      total: 199.99,
       currency: 'USD',
+      total: 199.99,
     };
 
     it('should create a valid order failed event', () => {
       const properties = {
         ...baseOrderProperties,
-        failure_reason: 'Credit card declined',
         error_code: 'CARD_DECLINED',
+        failure_reason: 'Credit card declined',
       };
 
       const result = orderFailed(properties);
@@ -203,14 +205,14 @@ describe('Order Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.ORDER_FAILED,
         category: 'ecommerce',
-        requiredProperties: ['order_id'],
         properties: {
           order_id: 'order_failed_123',
-          total: 199.99,
           currency: 'USD',
-          failure_reason: 'Credit card declined',
           error_code: 'CARD_DECLINED',
+          failure_reason: 'Credit card declined',
+          total: 199.99,
         },
+        requiredProperties: ['order_id'],
       });
     });
 
@@ -219,8 +221,8 @@ describe('Order Emitters', () => {
 
       expect(result.properties).toEqual({
         order_id: 'order_failed_123',
-        total: 199.99,
         currency: 'USD',
+        total: 199.99,
       });
     });
 
@@ -266,14 +268,12 @@ describe('Order Emitters', () => {
     });
 
     it('should normalize products in failed order', () => {
-      const products = [
-        { productId: 'p1', title: 'Failed Product', price: '99.99' },
-      ];
+      const products = [{ price: '99.99', productId: 'p1', title: 'Failed Product' }];
 
       const properties = {
         ...baseOrderProperties,
-        products: products as any,
         failure_reason: 'Payment failed',
+        products: products as any,
       };
 
       const result = orderFailed(properties);
@@ -285,25 +285,25 @@ describe('Order Emitters', () => {
 
     it('should throw error when order_id is missing', () => {
       expect(() => {
-        orderFailed({ total: 100, failure_reason: 'test' } as any);
+        orderFailed({ failure_reason: 'test', total: 100 } as any);
       }).toThrow('Missing required properties: order_id');
     });
 
     it('should clean undefined properties', () => {
       const properties = {
         order_id: 'order_123',
-        total: 100,
-        failure_reason: 'Payment failed',
         error_code: undefined,
+        failure_reason: 'Payment failed',
         revenue: undefined,
+        total: 100,
       };
 
       const result = orderFailed(properties);
 
       expect(result.properties).toEqual({
         order_id: 'order_123',
-        total: 100,
         failure_reason: 'Payment failed',
+        total: 100,
       });
     });
   });
@@ -311,9 +311,9 @@ describe('Order Emitters', () => {
   describe('orderRefunded', () => {
     const baseOrderProperties: OrderProperties = {
       order_id: 'order_refund_123',
-      total: 299.99,
-      revenue: 259.99,
       currency: 'USD',
+      revenue: 259.99,
+      total: 299.99,
     };
 
     it('should create a valid order refunded event', () => {
@@ -322,13 +322,13 @@ describe('Order Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.ORDER_REFUNDED,
         category: 'ecommerce',
-        requiredProperties: ['order_id'],
         properties: {
           order_id: 'order_refund_123',
-          total: 299.99,
-          revenue: 259.99,
           currency: 'USD',
+          revenue: 259.99,
+          total: 299.99,
         },
+        requiredProperties: ['order_id'],
       });
     });
 
@@ -339,8 +339,8 @@ describe('Order Emitters', () => {
 
       const properties: OrderProperties = {
         ...baseOrderProperties,
-        total: 99.99, // Partial refund amount
         products,
+        total: 99.99, // Partial refund amount
       };
 
       const result = orderRefunded(properties);
@@ -362,20 +362,20 @@ describe('Order Emitters', () => {
     it('should handle full refund', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
-        total: 299.99,
         revenue: 299.99, // Full refund
-        shipping: 15.00,
-        tax: 25.00,
+        shipping: 15.0,
+        tax: 25.0,
+        total: 299.99,
       };
 
       const result = orderRefunded(properties);
 
       expect(result.properties).toMatchObject({
         order_id: 'order_123',
-        total: 299.99,
         revenue: 299.99,
-        shipping: 15.00,
-        tax: 25.00,
+        shipping: 15.0,
+        tax: 25.0,
+        total: 299.99,
       });
     });
 
@@ -388,9 +388,9 @@ describe('Order Emitters', () => {
     it('should clean undefined properties', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
-        total: 100,
         revenue: undefined,
         shipping: undefined,
+        total: 100,
       };
 
       const result = orderRefunded(properties);
@@ -405,8 +405,8 @@ describe('Order Emitters', () => {
   describe('orderCancelled', () => {
     const baseOrderProperties: OrderProperties = {
       order_id: 'order_cancel_123',
-      total: 199.99,
       currency: 'USD',
+      total: 199.99,
     };
 
     it('should create a valid order cancelled event', () => {
@@ -415,12 +415,12 @@ describe('Order Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.ORDER_CANCELLED,
         category: 'ecommerce',
-        requiredProperties: ['order_id'],
         properties: {
           order_id: 'order_cancel_123',
-          total: 199.99,
           currency: 'USD',
+          total: 199.99,
         },
+        requiredProperties: ['order_id'],
       });
     });
 
@@ -441,9 +441,7 @@ describe('Order Emitters', () => {
     });
 
     it('should normalize products when provided', () => {
-      const rawProducts = [
-        { productId: 'p1', title: 'Cancelled Product' },
-      ];
+      const rawProducts = [{ productId: 'p1', title: 'Cancelled Product' }];
 
       const properties: OrderProperties = {
         ...baseOrderProperties,
@@ -452,9 +450,7 @@ describe('Order Emitters', () => {
 
       const result = orderCancelled(properties);
 
-      expect(result.properties.products).toEqual([
-        { product_id: 'p1', name: 'Cancelled Product' },
-      ]);
+      expect(result.properties.products).toEqual([{ product_id: 'p1', name: 'Cancelled Product' }]);
     });
 
     it('should handle early cancellation', () => {
@@ -482,11 +478,11 @@ describe('Order Emitters', () => {
     it('should create a valid order status updated event', () => {
       const properties: OrderStatusProperties = {
         order_id: 'order_123',
-        status: 'shipped',
-        previous_status: 'processing',
-        tracking_number: 'TRACK123456',
         carrier: 'UPS',
         estimated_delivery: '2024-01-15',
+        previous_status: 'processing',
+        status: 'shipped',
+        tracking_number: 'TRACK123456',
       };
 
       const result = orderStatusUpdated(properties);
@@ -494,15 +490,15 @@ describe('Order Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.ORDER_STATUS_UPDATED,
         category: 'ecommerce',
-        requiredProperties: ['order_id', 'status'],
         properties: {
           order_id: 'order_123',
-          status: 'shipped',
-          previous_status: 'processing',
-          tracking_number: 'TRACK123456',
           carrier: 'UPS',
           estimated_delivery: '2024-01-15',
+          previous_status: 'processing',
+          status: 'shipped',
+          tracking_number: 'TRACK123456',
         },
+        requiredProperties: ['order_id', 'status'],
       });
     });
 
@@ -545,19 +541,19 @@ describe('Order Emitters', () => {
     it('should handle delivery status with tracking', () => {
       const properties: OrderStatusProperties = {
         order_id: 'order_789',
-        status: 'delivered',
-        previous_status: 'out_for_delivery',
-        tracking_number: 'DELIVERED123',
         carrier: 'FedEx',
+        previous_status: 'out_for_delivery',
+        status: 'delivered',
+        tracking_number: 'DELIVERED123',
       };
 
       const result = orderStatusUpdated(properties);
 
       expect(result.properties).toMatchObject({
         order_id: 'order_789',
+        carrier: 'FedEx',
         status: 'delivered',
         tracking_number: 'DELIVERED123',
-        carrier: 'FedEx',
       });
     });
 
@@ -582,10 +578,10 @@ describe('Order Emitters', () => {
     it('should clean undefined properties', () => {
       const properties: OrderStatusProperties = {
         order_id: 'order_123',
-        status: 'shipped',
-        tracking_number: 'TRACK123',
         carrier: undefined,
         estimated_delivery: undefined,
+        status: 'shipped',
+        tracking_number: 'TRACK123',
       };
 
       const result = orderStatusUpdated(properties);
@@ -616,20 +612,18 @@ describe('Order Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.RETURN_REQUESTED,
         category: 'ecommerce',
-        requiredProperties: ['order_id', 'reason'],
         properties: {
           order_id: 'order_123',
           products: baseProducts,
           reason: 'Product arrived damaged',
           return_method: 'mail',
         },
+        requiredProperties: ['order_id', 'reason'],
       });
     });
 
     it('should normalize products when provided', () => {
-      const rawProducts = [
-        { productId: 'p1', title: 'Return Product', price: '49.99' },
-      ];
+      const rawProducts = [{ price: '49.99', productId: 'p1', title: 'Return Product' }];
 
       const properties: ReturnProperties = {
         order_id: 'order_123',
@@ -722,9 +716,9 @@ describe('Order Emitters', () => {
     it('should clean undefined properties', () => {
       const properties: ReturnProperties = {
         order_id: 'order_123',
+        return_id: undefined,
         products: baseProducts,
         reason: 'Defective',
-        return_id: undefined,
         refund_amount: undefined,
         return_method: undefined,
       };
@@ -748,10 +742,10 @@ describe('Order Emitters', () => {
       const properties = {
         order_id: 'order_123',
         return_id: 'return_456',
+        completion_date: '2024-01-10',
         products: baseProducts,
         reason: 'Defective product',
         refund_amount: 99.99,
-        completion_date: '2024-01-10',
         refund_status: 'completed' as const,
       };
 
@@ -760,16 +754,16 @@ describe('Order Emitters', () => {
       expect(result).toEqual({
         name: ECOMMERCE_EVENTS.RETURN_COMPLETED,
         category: 'ecommerce',
-        requiredProperties: ['order_id', 'return_id'],
         properties: {
           order_id: 'order_123',
           return_id: 'return_456',
+          completion_date: '2024-01-10',
           products: baseProducts,
           reason: 'Defective product',
           refund_amount: 99.99,
-          completion_date: '2024-01-10',
           refund_status: 'completed',
         },
+        requiredProperties: ['order_id', 'return_id'],
       });
     });
 
@@ -791,9 +785,7 @@ describe('Order Emitters', () => {
     });
 
     it('should normalize products when provided', () => {
-      const rawProducts = [
-        { productId: 'p1', title: 'Returned Item', price: '75.00' },
-      ];
+      const rawProducts = [{ price: '75.00', productId: 'p1', title: 'Returned Item' }];
 
       const properties = {
         order_id: 'order_123',
@@ -805,7 +797,7 @@ describe('Order Emitters', () => {
       const result = returnCompleted(properties);
 
       expect(result.properties.products).toEqual([
-        { product_id: 'p1', name: 'Returned Item', price: 75.00 },
+        { product_id: 'p1', name: 'Returned Item', price: 75.0 },
       ]);
     });
 
@@ -860,11 +852,11 @@ describe('Order Emitters', () => {
       const properties = {
         order_id: 'order_123',
         return_id: 'return_456',
+        completion_date: undefined,
         products: baseProducts,
         reason: 'Defective',
-        completion_date: undefined,
-        refund_status: undefined,
         refund_amount: undefined,
+        refund_status: undefined,
       };
 
       const result = returnCompleted(properties);
@@ -889,8 +881,8 @@ describe('Order Emitters', () => {
       // 1. Order completed
       const completedResult = orderCompleted({
         order_id: orderId,
-        total: 199.99,
         products,
+        total: 199.99,
       });
 
       // 2. Order status updates
@@ -902,8 +894,8 @@ describe('Order Emitters', () => {
 
       const deliveredResult = orderStatusUpdated({
         order_id: orderId,
-        status: 'delivered',
         previous_status: 'shipped',
+        status: 'delivered',
       });
 
       // 3. Return requested
@@ -943,14 +935,15 @@ describe('Order Emitters', () => {
         quantity: Math.floor(Math.random() * 5) + 1,
       }));
 
-      const totalValue = largeProductList.reduce((sum, product) => 
-        sum + (product.price * product.quantity), 0
+      const totalValue = largeProductList.reduce(
+        (sum, product) => sum + product.price * product.quantity,
+        0,
       );
 
       const properties: OrderProperties = {
         order_id: 'bulk_order_123',
-        total: totalValue,
         products: largeProductList,
+        total: totalValue,
       };
 
       const startTime = performance.now();
@@ -986,11 +979,11 @@ describe('Order Emitters', () => {
     it('should handle complex monetary calculations correctly', () => {
       const properties: OrderProperties = {
         order_id: 'complex_order',
-        total: 299.99,
+        discount: 10.0,
         revenue: 249.99,
-        shipping: 15.00,
-        tax: 25.00,
-        discount: 10.00,
+        shipping: 15.0,
+        tax: 25.0,
+        total: 299.99,
       };
 
       // Test with completion
@@ -1015,9 +1008,9 @@ describe('Order Emitters', () => {
       expect(() => orderCompleted(completeProps)).not.toThrow();
 
       // orderStatusUpdated requires order_id and status
-      const statusProps: OrderStatusProperties = { 
-        order_id: 'o1', 
-        status: 'shipped' 
+      const statusProps: OrderStatusProperties = {
+        order_id: 'o1',
+        status: 'shipped',
       };
       expect(() => orderStatusUpdated(statusProps)).not.toThrow();
 

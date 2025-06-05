@@ -1,11 +1,11 @@
 /**
  * Server-side observability exports
  * Complete observability solution for server/Node.js environments
- * 
+ *
  * @example
  * ```typescript
  * import { createServerObservability } from '@repo/observability-new/server';
- * 
+ *
  * const observability = await createServerObservability({
  *   providers: {
  *     sentry: { dsn: 'xxx' },
@@ -13,7 +13,7 @@
  *     opentelemetry: { serviceName: 'api' }
  *   }
  * });
- * 
+ *
  * // Use observability
  * observability.captureException(new Error('Server error'));
  * observability.log('info', 'Request received', { path: '/api/users' });
@@ -21,23 +21,28 @@
  * ```
  */
 
-import { SentryServerProvider } from './server/providers/sentry-server';
-import { PinoProvider } from './server/providers/pino-provider';
-import { WinstonProvider } from './server/providers/winston-provider';
 import { OpenTelemetryProvider } from './server/providers/opentelemetry-provider';
+import { PinoProvider } from './server/providers/pino-provider';
+import { SentryServerProvider } from './server/providers/sentry-server';
+import { WinstonProvider } from './server/providers/winston-provider';
 import { ConsoleProvider } from './shared/providers/console-provider';
 import { LogtailProvider } from './shared/providers/logtail-provider';
 import { createObservabilityManager } from './shared/utils/manager';
-import type { ObservabilityConfig, ProviderRegistry, ObservabilityManager } from './shared/types/types';
+
+import type {
+  ObservabilityConfig,
+  ObservabilityManager,
+  ProviderRegistry,
+} from './shared/types/types';
 
 // Server-specific provider registry
 const SERVER_PROVIDERS: ProviderRegistry = {
-  sentry: () => new SentryServerProvider(),
+  console: () => new ConsoleProvider(),
   logtail: () => new LogtailProvider(),
-  pino: () => new PinoProvider(),
-  winston: () => new WinstonProvider(),
   opentelemetry: () => new OpenTelemetryProvider(),
-  console: () => new ConsoleProvider()
+  pino: () => new PinoProvider(),
+  sentry: () => new SentryServerProvider(),
+  winston: () => new WinstonProvider(),
 };
 
 // ============================================================================
@@ -48,7 +53,9 @@ const SERVER_PROVIDERS: ProviderRegistry = {
  * Create and initialize a server observability instance
  * This is the primary way to create observability for server-side applications
  */
-export async function createServerObservability(config: ObservabilityConfig): Promise<ObservabilityManager> {
+export async function createServerObservability(
+  config: ObservabilityConfig,
+): Promise<ObservabilityManager> {
   const manager = createObservabilityManager(config, SERVER_PROVIDERS);
   await manager.initialize();
   return manager;
@@ -58,7 +65,9 @@ export async function createServerObservability(config: ObservabilityConfig): Pr
  * Create a server observability instance without initializing
  * Useful when you need to control initialization timing
  */
-export function createServerObservabilityUninitialized(config: ObservabilityConfig): ObservabilityManager {
+export function createServerObservabilityUninitialized(
+  config: ObservabilityConfig,
+): ObservabilityManager {
   return createObservabilityManager(config, SERVER_PROVIDERS);
 }
 
@@ -67,64 +76,48 @@ export function createServerObservabilityUninitialized(config: ObservabilityConf
 // ============================================================================
 
 // Core observability types
-export type { 
-  ObservabilityConfig, 
-  ObservabilityProviderConfig,
-  ObservabilityProvider,
+export type {
+  Breadcrumb,
+  ObservabilityConfig,
   ObservabilityContext,
   ObservabilityManager,
-  Breadcrumb
+  ObservabilityProvider,
+  ObservabilityProviderConfig,
 } from './shared/types/types';
 
 // Provider-specific types
-export type {
-  SentryConfig,
-  SentryOptions,
-  SentryUser
-} from './shared/types/sentry-types';
+export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
+
+export type { OpenTelemetryConfig, OpenTelemetryOptions } from './shared/types/opentelemetry-types';
 
 export type {
-  OpenTelemetryConfig,
-  OpenTelemetryOptions
-} from './shared/types/opentelemetry-types';
-
-export type {
+  LogEntry,
   LoggerConfig,
   LoggerTransport,
   PinoConfig,
   WinstonConfig,
-  LogEntry
 } from './shared/types/logger-types';
 
-export type {
-  ConsoleConfig,
-  ConsoleOptions
-} from './shared/types/console-types';
+export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
 
-export type {
-  LogtailConfig,
-  LogtailOptions
-} from './shared/types/logtail-types';
+export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
 
 // ============================================================================
 // CONFIGURATION UTILITIES
 // ============================================================================
 
-export { 
-  validateConfig,
-  debugConfig 
-} from './shared/utils/validation';
+export { debugConfig, validateConfig } from './shared/utils/validation';
 
 // ============================================================================
 // ERROR HANDLING UTILITIES
 // ============================================================================
 
 export {
-  parseError,
-  parseAndCaptureError,
   createErrorBoundaryHandler,
+  createSafeFunction,
+  parseAndCaptureError,
+  parseError,
   withErrorHandling,
-  createSafeFunction
 } from './shared/utils/error';
 
 // ============================================================================

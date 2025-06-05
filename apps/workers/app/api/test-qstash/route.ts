@@ -9,12 +9,12 @@ export async function GET() {
     // Try to get workflows from QStash CLI
     const response = await fetch(`${qstashUrl}/v2/workflows`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     const result = await response.text();
-    
+
     return NextResponse.json({
       success: response.ok,
       status: response.status,
@@ -41,14 +41,14 @@ export async function POST(request: NextRequest) {
   try {
     const qstashUrl = process.env.QSTASH_URL || 'http://localhost:8080';
     const token = process.env.QSTASH_TOKEN;
-    
+
     // Try to publish to our simple workflow endpoint
     const targetUrl = `http://localhost:3400/api/workflows/simple`;
-    
+
     const response = await fetch(`${qstashUrl}/v2/publish/${encodeURIComponent(targetUrl)}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ test: true }),

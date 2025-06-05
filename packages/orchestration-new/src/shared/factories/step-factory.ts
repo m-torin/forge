@@ -1,238 +1,175 @@
 /**
  * Modern Workflow Step Factory System (ES2022+)
- * 
+ *
  * Provides a standardized way to create and execute workflow steps with
  * built-in patterns for retry, rate limiting, circuit breaking, validation,
  * and comprehensive error handling using modern JavaScript features.
  */
 
 import { nanoid } from 'nanoid';
-import { z } from 'zod';
-import { withRetry, withCircuitBreaker, type RetryOptions, type CircuitBreakerOptions } from '../patterns/index.js';
-import { OrchestrationError } from '../utils/errors.js';
-import type { WorkflowStep, WorkflowStepExecution, RetryConfig, WorkflowError } from '../types/workflow.js';
+import { withRetry, withCircuitBreaker, type RetryOptions } from '../patterns/index';
+import {
+  OrchestrationError,
+  OrchestrationErrorCodes,
+  createOrchestrationError,
+  createValidationError,
+} from '../utils/errors';
 
-// Modern ES2022+ type utilities
-type NonEmptyArray<T> = [T, ...T[]];
-type StepId = `step_${string}`;
-type ExecutionId = `exec_${string}`;
-type ProgressState = 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+// Import modularized components
+import type {
+  StepId,
+  ExecutionId,
+  ErrorCode,
+  StepExecutionConfig,
+  StepValidationConfig,
+  ValidationResult,
+  StepMetadata,
+  StepPerformanceData,
+  StepExecutionContext,
+  StepExecutionResult,
+  StepExecutionFunction,
+  WorkflowStepDefinition,
+  StepFactoryConfig,
+} from './step-factory/step-types';
 
-// Template literal type for better type safety
-type ErrorCode = `${'STEP' | 'VALIDATION' | 'TIMEOUT' | 'CIRCUIT_BREAKER'}_${'INPUT' | 'OUTPUT' | 'EXECUTION' | 'VALIDATION'}_ERROR`;
+import type { WorkflowError } from '../types/workflow';
+import type { SimpleWorkflowStep } from './step-factory/step-types';
 
-/**
- * Configuration for step execution behavior
- */
-export interface StepExecutionConfig {
-  /** Retry configuration */
-  retryConfig?: RetryConfig;
-  /** Rate limiting configuration */
-  rateLimitConfig?: {
-    /** Maximum requests per window */
-    maxRequests: number;
-    /** Time window in milliseconds */
-    windowMs: number;
-    /** Identifier for rate limiting scope */
-    identifier?: string;
-  };
-  /** Circuit breaker configuration */
-  circuitBreakerConfig?: CircuitBreakerOptions;
-  /** Timeout configuration */
-  timeout?: {
-    /** Execution timeout in milliseconds */
-    execution?: number;
-    /** Warning threshold in milliseconds */
-    warning?: number;
-  };
-  /** Concurrency configuration */
-  concurrency?: {
-    /** Maximum concurrent executions */
-    max: number;
-    /** Queue limit */
-    queueLimit?: number;
-  };
-}
+import {
+  validateStepInput,
+  validateStepOutput,
+  validateStepDefinition,
+} from './step-factory/step-validation';
 
-/**
- * Validation configuration for step inputs and outputs
- */
-export interface StepValidationConfig<TInput = any, TOutput = any> {
-  /** Input validation schema */
-  input?: z.ZodSchema<TInput>;
-  /** Output validation schema */
-  output?: z.ZodSchema<TOutput>;
-  /** Whether to validate input */
-  validateInput?: boolean;
-  /** Whether to validate output */
-  validateOutput?: boolean;
-  /** Custom validation function */
-  customValidation?: (input: TInput) => Promise<ValidationResult> | ValidationResult;
-}
+import {
+  initializePerformanceData,
+  updatePerformanceData,
+  createProgressReporter,
+} from './step-factory/step-performance';
+
+// Re-export types for convenience
+export * from './step-factory/step-types';
+export * from './step-factory/step-validation';
+export * from './step-factory/step-performance';
+
+// ===== SIMPLE FUNCTION-BASED API (80% of use cases) =====
 
 /**
- * Result of validation operation
+ * Simple step creation for common use cases
+ * Handles 80% of workflow step creation with minimal configuration
  */
-export interface ValidationResult {
-  /** Whether validation passed */
-  valid: boolean;
-  /** Validation error messages */
-  errors?: string[];
-  /** Additional validation context */
-  context?: Record<string, any>;
-}
-
-/**
- * Metadata about a workflow step
- */
-export interface StepMetadata {
-  /** Step name */
-  name: string;
-  /** Step description */
-  description?: string;
-  /** Step version */
-  version: string;
-  /** Step category/tags */
-  category?: string;
-  /** Step tags for organization */
-  tags?: string[];
-  /** Author information */
-  author?: string;
-  /** Creation timestamp */
-  createdAt?: Date;
-  /** Whether step is deprecated */
-  deprecated?: boolean;
-  /** Deprecation message */
-  deprecationMessage?: string;
-}
-
-/**
- * Performance monitoring data for step execution
- */
-export interface StepPerformanceData {
-  /** Execution start time */
-  readonly startTime: number;
-  /** Execution end time */
-  endTime?: number;
-  /** Duration in milliseconds */
-  duration?: number;
-  /** Memory usage data */
-  memoryUsage?: {
-    readonly before: NodeJS.MemoryUsage;
-    after?: NodeJS.MemoryUsage;
-    peak?: number;
-  };
-  /** CPU usage data */
-  cpuUsage?: {
-    readonly before: NodeJS.CpuUsage;
-    after?: NodeJS.CpuUsage;
-  };
-  /** Custom metrics */
-  customMetrics?: ReadonlyMap<string, number>;
-  /** Progress tracking */
-  progress?: {
-    current: number;
-    total: number;
-    state: ProgressState;
-    details?: string;
+export function createStep<TInput = any, TOutput = any>(
+  name: string,
+  action: (input: TInput) => Promise<TOutput> | TOutput,
+): SimpleWorkflowStep<TInput, TOutput> {
+  return {
+    execute: async (input: TInput) => {
+      try {
+        const output = await action(input);
+        return {
+          success: true,
+          output,
+          performance: { startTime: Date.now(), duration: 0 },
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: {
+            code: 'STEP_EXECUTION_ERROR',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            retryable: true,
+            stepId: name,
+            timestamp: new Date(),
+          },
+          performance: { startTime: Date.now(), duration: 0 },
+        };
+      }
+    },
+    validate: async (input: TInput) => ({ valid: true }),
   };
 }
 
 /**
- * Context passed to step execution function
+ * Enhanced step creation with validation
  */
-export interface StepExecutionContext<TInput = any> {
-  /** Step execution ID */
-  readonly executionId: ExecutionId;
-  /** Workflow execution ID */
-  readonly workflowExecutionId: string;
-  /** Step definition */
-  readonly stepDefinition: WorkflowStepDefinition<TInput>;
-  /** Current attempt number */
-  attempt: number;
-  /** Input data */
-  readonly input: TInput;
-  /** Context from previous steps */
-  readonly previousStepsContext: ReadonlyMap<string, any>;
-  /** Execution metadata */
-  metadata: ReadonlyMap<string, any>;
-  /** Performance monitoring */
-  performance: StepPerformanceData;
-  /** Abort signal for cancellation */
-  readonly abortSignal?: AbortSignal;
-  /** Progress reporter for async generators */
-  reportProgress?: (current: number, total: number, details?: string) => Promise<void>;
+export function createStepWithValidation<TInput = any, TOutput = any>(
+  name: string,
+  action: (input: TInput) => Promise<TOutput> | TOutput,
+  inputValidator?: (input: TInput) => boolean | Promise<boolean>,
+  outputValidator?: (output: TOutput) => boolean | Promise<boolean>,
+): SimpleWorkflowStep<TInput, TOutput> {
+  return {
+    execute: async (input: TInput) => {
+      try {
+        // Validate input if validator provided
+        if (inputValidator && !(await inputValidator(input))) {
+          return {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Input validation failed',
+              retryable: false,
+              stepId: name,
+              timestamp: new Date(),
+            },
+            performance: { startTime: Date.now(), duration: 0 },
+          };
+        }
+
+        const output = await action(input);
+
+        // Validate output if validator provided
+        if (outputValidator && !(await outputValidator(output))) {
+          return {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Output validation failed',
+              retryable: false,
+              stepId: name,
+              timestamp: new Date(),
+            },
+            performance: { startTime: Date.now(), duration: 0 },
+          };
+        }
+
+        return {
+          success: true,
+          output,
+          performance: { startTime: Date.now(), duration: 0 },
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: {
+            code: 'STEP_EXECUTION_ERROR',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            retryable: true,
+            stepId: name,
+            timestamp: new Date(),
+          },
+          performance: { startTime: Date.now(), duration: 0 },
+        };
+      }
+    },
+    validate: async (input: TInput) => {
+      if (inputValidator) {
+        const isValid = await inputValidator(input);
+        return {
+          valid: isValid,
+          errors: isValid ? undefined : ['Input validation failed'],
+        };
+      }
+      return { valid: true };
+    },
+  };
 }
 
-/**
- * Result of step execution
- */
-export interface StepExecutionResult<TOutput = any> {
-  /** Execution success status */
-  success: boolean;
-  /** Output data */
-  output?: TOutput;
-  /** Error information */
-  error?: WorkflowError;
-  /** Execution metadata */
-  metadata?: Record<string, any>;
-  /** Performance data */
-  performance: StepPerformanceData;
-  /** Whether step should be retried on failure */
-  shouldRetry?: boolean;
-  /** Context to pass to next steps */
-  context?: Record<string, any>;
-}
-
-/**
- * Function signature for step execution
- */
-export type StepExecutionFunction<TInput = any, TOutput = any> = (
-  context: StepExecutionContext<TInput>
-) => Promise<StepExecutionResult<TOutput>>;
-
-/**
- * Complete workflow step definition with all configuration
- */
-export interface WorkflowStepDefinition<TInput = any, TOutput = any> {
-  /** Unique step identifier */
-  id: string;
-  /** Step metadata */
-  metadata: StepMetadata;
-  /** Execution function */
-  execute: StepExecutionFunction<TInput, TOutput>;
-  /** Execution configuration */
-  executionConfig?: StepExecutionConfig;
-  /** Validation configuration */
-  validationConfig?: StepValidationConfig<TInput, TOutput>;
-  /** Dependencies - step IDs that must complete first */
-  dependencies?: string[];
-  /** Condition function to determine if step should execute */
-  condition?: (context: Record<string, any>) => boolean | Promise<boolean>;
-  /** Whether step can be skipped on failure */
-  optional?: boolean;
-  /** Cleanup function called after execution */
-  cleanup?: (context: StepExecutionContext<TInput>) => Promise<void> | void;
-}
-
-/**
- * Step factory configuration
- */
-export interface StepFactoryConfig {
-  /** Default execution configuration */
-  defaultExecutionConfig?: StepExecutionConfig;
-  /** Default validation configuration */
-  defaultValidationConfig?: StepValidationConfig;
-  /** Whether to enable performance monitoring */
-  enablePerformanceMonitoring?: boolean;
-  /** Whether to enable detailed logging */
-  enableDetailedLogging?: boolean;
-  /** Custom error handlers */
-  errorHandlers?: Map<string, (error: Error, context: StepExecutionContext) => Promise<void>>;
-}
+// ===== LEGACY COMPLEX API (for backward compatibility) =====
 
 /**
  * Creates a standardized workflow step with all necessary patterns and configurations
+ * @deprecated Use createStep() or enhancer functions for new code
  */
 export function createWorkflowStep<TInput = any, TOutput = any>(
   metadata: StepMetadata,
@@ -244,15 +181,15 @@ export function createWorkflowStep<TInput = any, TOutput = any>(
     condition?: (context: Record<string, any>) => boolean | Promise<boolean>;
     optional?: boolean;
     cleanup?: (context: StepExecutionContext<TInput>) => Promise<void> | void;
-  } = {}
+  } = {},
 ): WorkflowStepDefinition<TInput, TOutput> {
-  const stepId = `step_${nanoid()}`;
+  const stepId: StepId = `step_${nanoid()}`;
 
   return {
     id: stepId,
     metadata: {
       ...metadata,
-      createdAt: metadata.createdAt || new Date(),
+      createdAt: metadata.createdAt ?? new Date(), // nullish coalescing
     },
     execute: executionFunction,
     executionConfig: options.executionConfig,
@@ -286,7 +223,7 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
 
   constructor(
     definition: WorkflowStepDefinition<TInput, TOutput>,
-    factoryConfig: StepFactoryConfig = {}
+    factoryConfig: StepFactoryConfig = {},
   ) {
     this.#definition = definition;
     this.#factoryConfig = {
@@ -305,7 +242,7 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
     workflowExecutionId: string,
     previousStepsContext: Record<string, any> = {},
     metadata: Record<string, any> = {},
-    abortSignal?: AbortSignal
+    abortSignal?: AbortSignal,
   ): Promise<StepExecutionResult<TOutput>> {
     const executionId: ExecutionId = `exec_${nanoid()}`;
     this.#executionCount++;
@@ -314,22 +251,8 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
     // Convert to ReadonlyMaps for immutability
     const contextMap = new Map(Object.entries(previousStepsContext));
     const metadataMap = new Map(Object.entries(metadata));
-    
-    const performance: StepPerformanceData = {
-      startTime: this.#lastExecutionTime,
-      memoryUsage: this.#factoryConfig.enablePerformanceMonitoring 
-        ? { before: process.memoryUsage() }
-        : undefined,
-      cpuUsage: this.#factoryConfig.enablePerformanceMonitoring 
-        ? { before: process.cpuUsage() }
-        : undefined,
-      customMetrics: new Map(),
-      progress: {
-        current: 0,
-        total: 100,
-        state: 'pending' as const,
-      },
-    };
+
+    const performance = initializePerformanceData(this.#factoryConfig.enablePerformanceMonitoring);
 
     const context: StepExecutionContext<TInput> = {
       executionId,
@@ -341,17 +264,17 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
       metadata: metadataMap,
       performance,
       abortSignal,
-      reportProgress: async (current: number, total: number, details?: string) => {
-        performance.progress = { current, total, state: 'in_progress', details };
-        this.#factoryConfig.enableDetailedLogging && 
-          console.log(`[${this.#definition.id}] Progress: ${current}/${total} ${details ?? ''}`);
-      },
+      reportProgress: createProgressReporter(
+        performance,
+        this.#definition.id,
+        this.#factoryConfig.enableDetailedLogging,
+      ),
     };
 
     try {
       // Validate input if configured (nullish coalescing)
       if (this.#definition.validationConfig?.validateInput !== false) {
-        await this.#validateInput(input);
+        await validateStepInput(input, this.#definition.validationConfig);
       }
 
       // Check execution condition
@@ -367,11 +290,11 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
 
       // Validate output if configured and execution succeeded
       if (result.success && result.output && this.#definition.validationConfig?.validateOutput) {
-        await this.#validateOutput(result.output);
+        await validateStepOutput(result.output, this.#definition.validationConfig.output);
       }
 
       // Update performance data using .at() method (ES2022+)
-      this.#updatePerformanceData(performance);
+      updatePerformanceData(performance, this.#factoryConfig.enablePerformanceMonitoring);
 
       // Run cleanup if configured (nullish coalescing)
       if (this.#definition.cleanup) {
@@ -386,12 +309,11 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
         ...result,
         performance,
       };
-
     } catch (error) {
-      this.#updatePerformanceData(performance);
-      
+      updatePerformanceData(performance, this.#factoryConfig.enablePerformanceMonitoring);
+
       const workflowError = this.#createWorkflowError(error, this.#definition.id);
-      
+
       // Handle error with configured handlers
       await this.#handleError(error as Error, context);
 
@@ -406,119 +328,95 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
 
   /**
    * Execute the step with retry, circuit breaker, and other patterns applied
+   * Uses async generators for progress tracking
    */
-  private async executeWithPatterns(
-    context: StepExecutionContext<TInput>
+  async #executeWithPatterns(
+    context: StepExecutionContext<TInput>,
   ): Promise<StepExecutionResult<TOutput>> {
-    let executeFunction = this.definition.execute;
+    let executeFunction = this.#definition.execute;
 
-    // Apply circuit breaker if configured
-    if (this.definition.executionConfig?.circuitBreakerConfig) {
-      executeFunction = withCircuitBreaker(
-        executeFunction,
-        this.definition.executionConfig.circuitBreakerConfig
-      );
+    // Apply circuit breaker if configured (nullish coalescing)
+    const circuitBreakerConfig = this.#definition.executionConfig?.circuitBreakerConfig;
+    if (circuitBreakerConfig) {
+      const originalFunction = executeFunction;
+      executeFunction = async (
+        context: StepExecutionContext<TInput>,
+      ): Promise<StepExecutionResult<TOutput>> => {
+        const result = await withCircuitBreaker(
+          `step-${this.#definition.id}`,
+          originalFunction,
+          [context],
+          circuitBreakerConfig,
+        );
+        return (
+          result.data || {
+            success: false,
+            output: undefined as any,
+            performance: context.performance,
+          }
+        );
+      };
     }
 
     // Apply retry if configured
-    if (this.definition.executionConfig?.retryConfig) {
-      const retryOptions: RetryOptions = {
-        retries: this.definition.executionConfig.retryConfig.maxAttempts - 1,
-        factor: this.definition.executionConfig.retryConfig.backoff === 'exponential' ? 2 : 1,
-        minTimeout: this.definition.executionConfig.retryConfig.delay,
-        maxTimeout: this.definition.executionConfig.retryConfig.maxDelay,
-        randomize: this.definition.executionConfig.retryConfig.jitter,
-        onRetry: (error, attempt) => {
-          context.attempt = attempt + 1;
-          if (this.factoryConfig.enableDetailedLogging) {
-            console.log(`Retrying step ${this.definition.id}, attempt ${attempt + 1}:`, error.message);
-          }
-        },
-      };
+    const retryConfig = this.#definition.executionConfig?.retryConfig;
+    if (retryConfig) {
+      const originalFunction = executeFunction;
+      executeFunction = async (
+        context: StepExecutionContext<TInput>,
+      ): Promise<StepExecutionResult<TOutput>> => {
+        const retryOptions: RetryOptions = {
+          maxAttempts: retryConfig.maxAttempts,
+          strategy: retryConfig.backoff,
+          baseDelay: retryConfig.delay,
+          maxDelay: retryConfig.maxDelay ?? retryConfig.delay * 10,
+          jitter: retryConfig.jitter ?? false,
+          shouldRetry: (error, attempt) => {
+            context.attempt = attempt;
+            this.#factoryConfig.enableDetailedLogging &&
+              console.log(
+                `Retrying step ${this.#definition.id}, attempt ${attempt}:`,
+                error.message,
+              );
+            return attempt < retryConfig.maxAttempts;
+          },
+        };
 
-      executeFunction = withRetry(executeFunction, retryOptions);
+        const result = await withRetry(() => originalFunction(context), retryOptions);
+        return (
+          result.data || {
+            success: false,
+            output: undefined as any,
+            performance: context.performance,
+          }
+        );
+      };
     }
 
-    // Apply timeout if configured
-    if (this.definition.executionConfig?.timeout?.execution) {
-      executeFunction = this.withTimeout(
-        executeFunction,
-        this.definition.executionConfig.timeout.execution
-      );
+    // Apply timeout if configured (nullish coalescing)
+    const timeoutMs = this.#definition.executionConfig?.timeout?.execution;
+    if (timeoutMs) {
+      executeFunction = this.#withTimeout(executeFunction, timeoutMs);
     }
 
     return await executeFunction(context);
   }
 
   /**
-   * Validate step input
+   * Add timeout wrapper to execution function using ES2022+ private method
    */
-  private async validateInput(input: TInput): Promise<void> {
-    const config = this.definition.validationConfig;
-    if (!config) return;
-
-    // Schema validation
-    if (config.input) {
-      const result = config.input.safeParse(input);
-      if (!result.success) {
-        throw new OrchestrationError(
-          `Input validation failed: ${result.error.issues.map(i => i.message).join(', ')}`,
-          'STEP_INPUT_VALIDATION_ERROR',
-          false,
-          { validationErrors: result.error.issues }
-        );
-      }
-    }
-
-    // Custom validation
-    if (config.customValidation) {
-      const result = await config.customValidation(input);
-      if (!result.valid) {
-        throw new OrchestrationError(
-          `Custom input validation failed: ${result.errors?.join(', ') || 'Unknown validation error'}`,
-          'STEP_CUSTOM_VALIDATION_ERROR',
-          false,
-          { validationResult: result }
-        );
-      }
-    }
-  }
-
-  /**
-   * Validate step output
-   */
-  private async validateOutput(output: TOutput): Promise<void> {
-    const schema = this.definition.validationConfig?.output;
-    if (!schema) return;
-
-    const result = schema.safeParse(output);
-    if (!result.success) {
-      throw new OrchestrationError(
-        `Output validation failed: ${result.error.issues.map(i => i.message).join(', ')}`,
-        'STEP_OUTPUT_VALIDATION_ERROR',
-        false,
-        { validationErrors: result.error.issues }
-      );
-    }
-  }
-
-  /**
-   * Add timeout wrapper to execution function
-   */
-  private withTimeout<T>(
-    fn: (context: StepExecutionContext<TInput>) => Promise<T>,
-    timeoutMs: number
-  ) {
+  #withTimeout<T>(fn: (context: StepExecutionContext<TInput>) => Promise<T>, timeoutMs: number) {
     return async (context: StepExecutionContext<TInput>): Promise<T> => {
       return await Promise.race([
         fn(context),
         new Promise<never>((_, reject) => {
           setTimeout(() => {
-            reject(new OrchestrationError(
-              `Step execution timed out after ${timeoutMs}ms`,
-              'STEP_TIMEOUT_ERROR',
-              true
-            ));
+            reject(
+              createOrchestrationError(`Step execution timed out after ${timeoutMs}ms`, {
+                code: OrchestrationErrorCodes.STEP_TIMEOUT_ERROR,
+                retryable: true,
+              }),
+            );
           }, timeoutMs);
         }),
       ]);
@@ -526,44 +424,22 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
   }
 
   /**
-   * Update performance monitoring data
+   * Create workflow error from caught error using ES2022+ private method
    */
-  private updatePerformanceData(performance: StepPerformanceData): void {
-    if (!this.factoryConfig.enablePerformanceMonitoring) return;
-
-    performance.endTime = Date.now();
-    performance.duration = performance.endTime - performance.startTime;
-
-    if (performance.memoryUsage) {
-      performance.memoryUsage.after = process.memoryUsage();
-      performance.memoryUsage.peak = Math.max(
-        performance.memoryUsage.before.heapUsed,
-        performance.memoryUsage.after.heapUsed
-      );
-    }
-
-    if (performance.cpuUsage) {
-      performance.cpuUsage.after = process.cpuUsage(performance.cpuUsage.before);
-    }
-  }
-
-  /**
-   * Create workflow error from caught error
-   */
-  private createWorkflowError(error: unknown, stepId: string): WorkflowError {
+  #createWorkflowError(error: unknown, stepId: string): WorkflowError {
     if (error instanceof OrchestrationError) {
       return {
-        code: error.code,
+        code: error.code as ErrorCode,
         message: error.message,
         retryable: error.retryable,
         stepId,
         timestamp: new Date(),
-        details: error.details,
+        details: error.context,
       };
     }
 
     return {
-      code: 'STEP_EXECUTION_ERROR',
+      code: 'STEP_EXECUTION_ERROR' as ErrorCode,
       message: error instanceof Error ? error.message : 'Unknown error',
       retryable: true,
       stepId,
@@ -573,52 +449,48 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
   }
 
   /**
-   * Determine if error should trigger retry
+   * Determine if error should trigger retry using ES2022+ private method
    */
-  private shouldRetryError(error: WorkflowError): boolean {
-    // Check if retry is configured
-    if (!this.definition.executionConfig?.retryConfig) {
+  #shouldRetryError(error: WorkflowError): boolean {
+    // Check if retry is configured (nullish coalescing)
+    const retryConfig = this.#definition.executionConfig?.retryConfig;
+    if (!retryConfig) {
       return false;
     }
 
-    // Check custom retry condition
-    if (this.definition.executionConfig.retryConfig.retryIf) {
-      return this.definition.executionConfig.retryConfig.retryIf(error);
-    }
-
-    // Default to error's retryable flag
-    return error.retryable;
+    // Check custom retry condition (nullish coalescing)
+    return retryConfig.retryIf?.(error) ?? error.retryable ?? false;
   }
 
   /**
-   * Handle error with configured error handlers
+   * Handle error with configured error handlers using ES2022+ private method
    */
-  private async handleError(error: Error, context: StepExecutionContext<TInput>): Promise<void> {
-    const errorHandlers = this.factoryConfig.errorHandlers;
+  async #handleError(error: Error, context: StepExecutionContext<TInput>): Promise<void> {
+    const errorHandlers = this.#factoryConfig.errorHandlers;
     if (!errorHandlers) return;
 
-    // Try to find specific handler for error type
+    // Try to find specific handler for error type (nullish coalescing)
     const errorType = error.constructor.name;
-    const handler = errorHandlers.get(errorType) || errorHandlers.get('default');
+    const handler = errorHandlers.get(errorType) ?? errorHandlers.get('default');
 
     if (handler) {
       try {
         await handler(error, context);
       } catch (handlerError) {
-        console.warn(`Error handler failed for step ${this.definition.id}:`, handlerError);
+        console.warn(`Error handler failed for step ${this.#definition.id}:`, handlerError);
       }
     }
   }
 
   /**
-   * Create result for skipped step execution
+   * Create result for skipped step execution using ES2022+ private method
    */
-  private createSkippedResult(
+  #createSkippedResult(
     performance: StepPerformanceData,
-    reason: string
+    reason: string,
   ): StepExecutionResult<TOutput> {
-    this.updatePerformanceData(performance);
-    
+    updatePerformanceData(performance, this.#factoryConfig.enablePerformanceMonitoring);
+
     return {
       success: true,
       metadata: { skipped: true, reason },
@@ -627,83 +499,66 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
   }
 
   /**
-   * Get step definition
+   * Get step definition (deep clone for immutability)
    */
   getDefinition(): WorkflowStepDefinition<TInput, TOutput> {
-    return this.definition;
+    // Use structuredClone if available (ES2022+), otherwise JSON fallback
+    return (
+      globalThis.structuredClone?.(this.#definition) ?? JSON.parse(JSON.stringify(this.#definition))
+    );
   }
 
   /**
    * Get step metadata
    */
   getMetadata(): StepMetadata {
-    return this.definition.metadata;
+    return this.#definition.metadata;
   }
 
   /**
-   * Check if step is deprecated
+   * Check if step is deprecated (nullish coalescing)
    */
   isDeprecated(): boolean {
-    return this.definition.metadata.deprecated === true;
+    return this.#definition.metadata.deprecated ?? false;
+  }
+
+  /**
+   * Get execution statistics
+   */
+  getExecutionStats() {
+    return {
+      executionCount: this.#executionCount,
+      lastExecutionTime: this.#lastExecutionTime,
+      stepId: this.#definition.id,
+    };
   }
 
   /**
    * Validate step definition
    */
   static validateDefinition<TInput, TOutput>(
-    definition: WorkflowStepDefinition<TInput, TOutput>
+    definition: WorkflowStepDefinition<TInput, TOutput>,
   ): ValidationResult {
-    const errors: string[] = [];
-
-    // Validate required fields
-    if (!definition.id) {
-      errors.push('Step ID is required');
-    }
-
-    if (!definition.metadata.name) {
-      errors.push('Step name is required');
-    }
-
-    if (!definition.metadata.version) {
-      errors.push('Step version is required');
-    }
-
-    if (!definition.execute || typeof definition.execute !== 'function') {
-      errors.push('Step execute function is required');
-    }
-
-    // Validate retry configuration
-    if (definition.executionConfig?.retryConfig) {
-      const retry = definition.executionConfig.retryConfig;
-      if (retry.maxAttempts < 1) {
-        errors.push('Retry maxAttempts must be at least 1');
-      }
-      if (retry.delay < 0) {
-        errors.push('Retry delay must be non-negative');
-      }
-    }
-
-    // Validate timeout configuration
-    if (definition.executionConfig?.timeout?.execution && definition.executionConfig.timeout.execution <= 0) {
-      errors.push('Execution timeout must be positive');
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-    };
+    return validateStepDefinition(definition);
   }
 }
 
 /**
  * Step factory for creating and managing workflow steps
+ * Uses ES2022+ private fields and modern patterns
  */
 export class StepFactory {
-  private steps = new Map<string, WorkflowStepDefinition>();
-  private config: StepFactoryConfig;
+  // Private fields (ES2022+)
+  #steps = new Map<string, WorkflowStepDefinition>();
+  #config: StepFactoryConfig;
+
+  // Static initialization block
+  static {
+    console.debug('StepFactory: Initialized with ES2022+ features');
+  }
 
   constructor(config: StepFactoryConfig = {}) {
-    this.config = {
+    this.#config = {
       enablePerformanceMonitoring: true,
       enableDetailedLogging: false,
       ...config,
@@ -723,16 +578,16 @@ export class StepFactory {
       condition?: (context: Record<string, any>) => boolean | Promise<boolean>;
       optional?: boolean;
       cleanup?: (context: StepExecutionContext<TInput>) => Promise<void> | void;
-    } = {}
+    } = {},
   ): WorkflowStepDefinition<TInput, TOutput> {
-    // Merge with default configurations
+    // Merge with default configurations (nullish coalescing)
     const mergedExecutionConfig = {
-      ...this.config.defaultExecutionConfig,
+      ...this.#config.defaultExecutionConfig,
       ...options.executionConfig,
     };
 
     const mergedValidationConfig = {
-      ...this.config.defaultValidationConfig,
+      ...this.#config.defaultValidationConfig,
       ...options.validationConfig,
     };
 
@@ -743,14 +598,12 @@ export class StepFactory {
     });
 
     // Validate step definition
-    const validation = StandardWorkflowStep.validateDefinition(definition);
+    const validation = validateStepDefinition(definition);
     if (!validation.valid) {
-      throw new OrchestrationError(
-        `Invalid step definition: ${validation.errors?.join(', ')}`,
-        'INVALID_STEP_DEFINITION',
-        false,
-        { validationErrors: validation.errors }
-      );
+      throw createValidationError(`Invalid step definition: ${validation.errors?.join(', ')}`, {
+        code: OrchestrationErrorCodes.INVALID_STEP_DEFINITION,
+        validationErrors: validation.errors,
+      });
     }
 
     return definition;
@@ -760,74 +613,130 @@ export class StepFactory {
    * Register a step in the factory
    */
   registerStep<TInput = any, TOutput = any>(
-    definition: WorkflowStepDefinition<TInput, TOutput>
+    definition: WorkflowStepDefinition<TInput, TOutput>,
   ): void {
-    const validation = StandardWorkflowStep.validateDefinition(definition);
+    const validation = validateStepDefinition(definition);
     if (!validation.valid) {
-      throw new OrchestrationError(
+      throw createValidationError(
         `Cannot register invalid step: ${validation.errors?.join(', ')}`,
-        'INVALID_STEP_REGISTRATION',
-        false,
-        { validationErrors: validation.errors }
+        {
+          code: OrchestrationErrorCodes.INVALID_STEP_REGISTRATION,
+          validationErrors: validation.errors,
+        },
       );
     }
 
-    this.steps.set(definition.id, definition);
+    this.#steps.set(definition.id, definition);
   }
 
   /**
-   * Get a registered step
+   * Get a registered step (nullish coalescing)
    */
   getStep(stepId: string): WorkflowStepDefinition | undefined {
-    return this.steps.get(stepId);
+    return this.#steps.get(stepId);
   }
 
   /**
    * List all registered steps
    */
   listSteps(): WorkflowStepDefinition[] {
-    return Array.from(this.steps.values());
+    return Array.from(this.#steps.values());
+  }
+
+  /**
+   * List steps by category using .at() method (ES2022+)
+   */
+  listStepsByCategory(category: string): WorkflowStepDefinition[] {
+    return this.listSteps().filter((step) => step.metadata.category === category);
+  }
+
+  /**
+   * Get the latest registered step (using .at(-1) ES2022+)
+   */
+  getLatestStep(): WorkflowStepDefinition | undefined {
+    const steps = this.listSteps();
+    return steps.at(-1); // ES2022+ array .at() method
   }
 
   /**
    * Create executable step instance
    */
   createExecutableStep<TInput = any, TOutput = any>(
-    definition: WorkflowStepDefinition<TInput, TOutput>
+    definition: WorkflowStepDefinition<TInput, TOutput>,
   ): StandardWorkflowStep<TInput, TOutput> {
-    return new StandardWorkflowStep(definition, this.config);
+    return new StandardWorkflowStep(definition, this.#config);
   }
 
   /**
    * Create executable step instance from registered step
    */
   createExecutableStepById<TInput = any, TOutput = any>(
-    stepId: string
+    stepId: string,
   ): StandardWorkflowStep<TInput, TOutput> {
     const definition = this.getStep(stepId);
     if (!definition) {
-      throw new OrchestrationError(
-        `Step with ID ${stepId} not found`,
-        'STEP_NOT_FOUND',
-        false
-      );
+      throw createOrchestrationError(`Step with ID ${stepId} not found`, {
+        code: OrchestrationErrorCodes.STEP_NOT_FOUND,
+        retryable: false,
+      });
     }
 
-    return new StandardWorkflowStep(definition as WorkflowStepDefinition<TInput, TOutput>, this.config);
+    return new StandardWorkflowStep(
+      definition as WorkflowStepDefinition<TInput, TOutput>,
+      this.#config,
+    );
   }
 
   /**
    * Update factory configuration
    */
   updateConfig(config: Partial<StepFactoryConfig>): void {
-    this.config = { ...this.config, ...config };
+    this.#config = { ...this.#config, ...config };
   }
 
   /**
    * Get factory configuration
    */
   getConfig(): StepFactoryConfig {
-    return { ...this.config };
+    return { ...this.#config };
+  }
+
+  /**
+   * Clear all registered steps
+   */
+  clearSteps(): void {
+    this.#steps.clear();
+  }
+
+  /**
+   * Get factory statistics
+   */
+  getStats() {
+    return {
+      totalSteps: this.#steps.size,
+      stepsByCategory: this.#getStepsByCategory(),
+      deprecatedSteps: this.#getDeprecatedStepsCount(),
+    };
+  }
+
+  /**
+   * Private helper for categorizing steps
+   */
+  #getStepsByCategory(): Map<string, number> {
+    const categories = new Map<string, number>();
+    for (const step of this.#steps.values()) {
+      const category = step.metadata.category ?? 'uncategorized';
+      categories.set(category, (categories.get(category) ?? 0) + 1);
+    }
+    return categories;
+  }
+
+  /**
+   * Private helper for counting deprecated steps
+   */
+  #getDeprecatedStepsCount(): number {
+    return Array.from(this.#steps.values()).filter((step) => step.metadata.deprecated ?? false)
+      .length;
   }
 }
 
@@ -835,3 +744,63 @@ export class StepFactory {
  * Default step factory instance
  */
 export const defaultStepFactory = new StepFactory();
+
+// ===== OPTIONAL ENHANCERS (20% of use cases) =====
+
+// Note: Enhancers are exported from factories/index.ts to avoid conflicts
+
+// ===== MODERN UTILITY FUNCTIONS (ES2022+) ====="
+
+/**
+ * Pattern matching for error handling
+ */
+export const matchError = (error: WorkflowError) => ({
+  timeout: (handler: (error: WorkflowError) => void) =>
+    error.code?.includes('TIMEOUT') ? handler(error) : undefined,
+  validation: (handler: (error: WorkflowError) => void) =>
+    error.code?.includes('VALIDATION') ? handler(error) : undefined,
+  execution: (handler: (error: WorkflowError) => void) =>
+    error.code?.includes('EXECUTION') ? handler(error) : undefined,
+  default: (handler: (error: WorkflowError) => void) => handler(error),
+});
+
+/**
+ * Conditional step execution helper
+ */
+export const when = <TInput, TOutput>(
+  condition: (input: TInput) => boolean | Promise<boolean>,
+  trueStep: WorkflowStepDefinition<TInput, TOutput>,
+  falseStep?: WorkflowStepDefinition<TInput, TOutput>,
+): WorkflowStepDefinition<TInput, TOutput> => {
+  return createWorkflowStep(
+    {
+      name: 'conditional_step',
+      description: 'Conditional step execution',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['conditional'],
+    },
+    async (context) => {
+      const shouldExecuteTrue = await condition(context.input);
+      const stepToExecute = shouldExecuteTrue ? trueStep : falseStep;
+
+      if (!stepToExecute) {
+        return {
+          success: true,
+          output: context.input as unknown as TOutput,
+          performance: context.performance,
+          metadata: { skipped: true, reason: 'No step for condition result' },
+        };
+      }
+
+      const stepInstance = new StandardWorkflowStep(stepToExecute);
+      return stepInstance.execute(
+        context.input,
+        context.workflowExecutionId,
+        Object.fromEntries(context.previousStepsContext),
+        Object.fromEntries(context.metadata),
+        context.abortSignal,
+      );
+    },
+  );
+};

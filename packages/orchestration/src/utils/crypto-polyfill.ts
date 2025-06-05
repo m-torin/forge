@@ -59,7 +59,7 @@ export const cryptoPolyfill = {
     } catch {
       // Fallback to simple hash
     }
-    
+
     // Fallback implementation
     return {
       update(data: string) {
@@ -90,7 +90,7 @@ export const cryptoPolyfill = {
     } catch {
       // Fallback to browser implementation
     }
-    
+
     return browserRandomUUID();
   },
 };

@@ -3,8 +3,8 @@
  * Note: analytics-next supports universal runtime environments including Node.js
  */
 
-import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
 import type { SegmentConfig } from '../../shared/types/segment-types';
+import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
 
 export class SegmentServerProvider implements AnalyticsProvider {
   readonly name = 'segment';
@@ -16,10 +16,10 @@ export class SegmentServerProvider implements AnalyticsProvider {
     if (!config.writeKey) {
       throw new Error('Segment writeKey is required');
     }
-    
+
     this.config = {
+      options: config.options,
       writeKey: config.writeKey,
-      options: config.options
     };
   }
 
@@ -30,17 +30,19 @@ export class SegmentServerProvider implements AnalyticsProvider {
       // Dynamically import Segment Analytics Next
       // analytics-next supports Node.js runtime with flushAt: 1 for server environments
       const { Analytics } = await import('@segment/analytics-next');
-      
+
       this.analytics = new Analytics({
         writeKey: this.config.writeKey,
         // Note: flushAt is not supported in @segment/analytics-next
         // Server-side events are sent immediately by default
-        ...this.config.options
+        ...this.config.options,
       });
-      
+
       this.isInitialized = true;
     } catch (error) {
-      throw new Error('Segment Analytics Next not available. Install with: npm install @segment/analytics-next');
+      throw new Error(
+        'Segment Analytics Next not available. Install with: npm install @segment/analytics-next',
+      );
     }
   }
 
@@ -52,7 +54,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
     try {
       await this.analytics.track({
         event,
-        properties
+        properties,
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -66,8 +68,8 @@ export class SegmentServerProvider implements AnalyticsProvider {
 
     try {
       await this.analytics.identify({
+        traits,
         userId,
-        traits
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -82,7 +84,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
     try {
       await this.analytics.page({
         name,
-        properties
+        properties,
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -97,7 +99,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
     try {
       await this.analytics.group({
         groupId,
-        traits
+        traits,
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -111,8 +113,8 @@ export class SegmentServerProvider implements AnalyticsProvider {
 
     try {
       await this.analytics.alias({
+        previousId,
         userId,
-        previousId
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow

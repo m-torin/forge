@@ -277,6 +277,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Types:**
+
 - `feat:` for new features
 - `fix:` for bug fixes
 - `docs:` for documentation
@@ -286,6 +287,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - `chore:` for maintenance tasks
 
 **Example:**
+
 ```
 feat: complete Headless UI to Mantine migration in mantine-ciseco
 
@@ -299,7 +301,7 @@ Replace all remaining Headless UI components with Mantine equivalents:
   - MySwitch: Headless UI Switch → Mantine Switch with proper sizing
   - SwitchDarkMode2: Switch → Mantine Switch with dark mode integration
 
-All components maintain original styling and UX patterns while leveraging 
+All components maintain original styling and UX patterns while leveraging
 Mantine's component system for better maintainability.
 
 🤖 Generated with [Claude Code](https://claude.ai/code)
@@ -308,6 +310,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Guidelines:**
+
 - Use descriptive subject lines (50-72 characters)
 - Include bullet points for multiple changes
 - Use **bold formatting** for component categories

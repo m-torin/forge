@@ -2,15 +2,15 @@
  * PostHog server-side (Node.js) provider implementation with feature flags support
  */
 
-import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
-import type { 
-  PostHogConfig, 
-  FeatureFlags, 
-  FeatureFlagPayload, 
-  ExperimentInfo,
+import type {
   BootstrapData,
-  EnhancedPostHogProvider 
+  EnhancedPostHogProvider,
+  ExperimentInfo,
+  FeatureFlagPayload,
+  FeatureFlags,
+  PostHogConfig,
 } from '../../shared/types/posthog-types';
+import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
 
 export class PostHogServerProvider implements AnalyticsProvider, Partial<EnhancedPostHogProvider> {
   readonly name = 'posthog';
@@ -22,15 +22,15 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     if (!config.apiKey) {
       throw new Error('PostHog apiKey is required');
     }
-    
+
     this.config = {
       apiKey: config.apiKey,
       options: {
         // Server-side optimizations for Next.js
         flushAt: 1,
         flushInterval: 0,
-        ...config.options
-      }
+        ...config.options,
+      },
     };
   }
 
@@ -40,27 +40,27 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       // Dynamically import PostHog Node.js SDK
       const { PostHog } = await import('posthog-node');
-      
+
       // Extract client-side only options that don't apply to server
-      const { 
-        bootstrap, 
-        persistence, 
+      const {
         api_host,
-        ui_host,
         autocapture,
+        bootstrap,
         capture_pageview,
-        disable_session_recording,
         cross_subdomain_cookie,
-        loaded,
+        disable_session_recording,
         fetch_options,
-        ...serverOptions 
+        loaded,
+        persistence,
+        ui_host,
+        ...serverOptions
       } = this.config.options || {};
-      
+
       this.client = new PostHog(this.config.apiKey, {
         host: 'https://app.posthog.com',
-        ...serverOptions
+        ...serverOptions,
       });
-      
+
       this.isInitialized = true;
     } catch (error) {
       throw new Error('PostHog Node.js SDK not available. Install with: npm install posthog-node');
@@ -74,9 +74,9 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.client.capture({
+        distinctId: properties.userId || properties.distinctId || 'anonymous',
         event,
         properties,
-        distinctId: properties.userId || properties.distinctId || 'anonymous'
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -91,7 +91,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       this.client.identify({
         distinctId: userId,
-        properties: traits
+        properties: traits,
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -105,13 +105,13 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.client.capture({
-        event: '$pageview',
         distinctId: properties.userId || properties.distinctId || 'anonymous',
+        event: '$pageview',
         properties: {
           $current_url: properties.url,
           $title: name,
-          ...properties
-        }
+          ...properties,
+        },
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -125,9 +125,9 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.client.groupIdentify({
-        groupType: 'company',
         groupKey: groupId,
-        properties: traits
+        groupType: 'company',
+        properties: traits,
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -141,8 +141,8 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.client.alias({
+        alias: previousId,
         distinctId: userId,
-        alias: previousId
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -230,18 +230,18 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       const flags = await this.getAllFlags(userId);
       const experiments: ExperimentInfo[] = [];
-      
+
       for (const [key, variant] of Object.entries(flags)) {
         if (variant !== false) {
           const payload = await this.getFeatureFlagPayload(key, userId);
           experiments.push({
             key,
+            payload: payload || undefined,
             variant: typeof variant === 'object' ? JSON.stringify(variant) : String(variant),
-            payload: payload || undefined
           });
         }
       }
-      
+
       return experiments;
     } catch (error) {
       return [];
@@ -257,10 +257,10 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       // Get all flags for the user
       const featureFlags = await this.getAllFlags(distinctId);
-      
+
       // Get payloads for flags that have them
       const featureFlagPayloads: Record<string, FeatureFlagPayload> = {};
-      
+
       for (const [flagKey, flagValue] of Object.entries(featureFlags)) {
         if (flagValue !== false) {
           try {
@@ -273,11 +273,11 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
           }
         }
       }
-      
+
       return {
         distinctID: distinctId,
+        featureFlagPayloads,
         featureFlags,
-        featureFlagPayloads
       };
     } catch (error) {
       return { distinctID: distinctId };

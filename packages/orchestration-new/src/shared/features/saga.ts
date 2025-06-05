@@ -3,7 +3,7 @@
  * Distributed transaction management for complex workflows
  */
 
-import type { WorkflowProvider } from '../types/index.js';
+import type { WorkflowProvider } from '../types/index';
 
 export interface SagaStep {
   /** Unique step identifier */
@@ -76,6 +76,21 @@ export interface SagaContext {
   getResult: (key: string) => unknown;
   /** Log message */
   log: (level: 'info' | 'warn' | 'error', message: string, data?: unknown) => void;
+  /** Event emitter for saga events */
+  events?: {
+    emit: (event: string, data?: unknown) => void;
+    on: (event: string, listener: (data?: unknown) => void) => void;
+    off: (event: string, listener: (data?: unknown) => void) => void;
+  };
+  /** Sleep function for delays */
+  sleep?: (milliseconds: number) => Promise<void>;
+  /** Data store for persistent state */
+  store?: {
+    get: (key: string) => unknown;
+    set: (key: string, value: unknown) => void;
+    delete: (key: string) => void;
+    clear: () => void;
+  };
 }
 
 export interface SagaExecutionState {
@@ -149,14 +164,18 @@ export class SagaOrchestrator {
   /**
    * Execute a saga
    */
-  async executeSaga(sagaId: string, input: unknown, metadata?: Record<string, unknown>): Promise<string> {
+  async executeSaga(
+    sagaId: string,
+    input: unknown,
+    metadata?: Record<string, unknown>,
+  ): Promise<string> {
     const saga = this.sagas.get(sagaId);
     if (!saga) {
       throw new Error(`Saga ${sagaId} not found`);
     }
 
     const executionId = this.generateExecutionId();
-    
+
     const state: SagaExecutionState = {
       status: 'pending',
       startedAt: new Date(),
@@ -245,7 +264,7 @@ export class SagaOrchestrator {
 
     // Reset execution state
     if (fromStepId) {
-      const stepIndex = saga.steps.findIndex(step => step.id === fromStepId);
+      const stepIndex = saga.steps.findIndex((step) => step.id === fromStepId);
       if (stepIndex !== -1) {
         execution.state.currentStepIndex = stepIndex;
         execution.state.completedSteps = execution.state.completedSteps.slice(0, stepIndex);
@@ -301,11 +320,11 @@ export class SagaOrchestrator {
         execution.context.log('info', `Executing step ${step.id}: ${step.name}`);
 
         const stepStartTime = new Date();
-        
+
         try {
           // Execute step with timeout and retry
           const result = await this.executeStepWithRetry(step, execution.context);
-          
+
           const stepCompletedTime = new Date();
           const duration = stepCompletedTime.getTime() - stepStartTime.getTime();
 
@@ -325,7 +344,6 @@ export class SagaOrchestrator {
           }
 
           execution.context.log('info', `Step ${step.id} completed successfully`);
-          
         } catch (error) {
           const stepCompletedTime = new Date();
           const duration = stepCompletedTime.getTime() - stepStartTime.getTime();
@@ -346,7 +364,9 @@ export class SagaOrchestrator {
             stack: error instanceof Error ? error.stack : undefined,
           };
 
-          execution.context.log('error', `Step ${step.id} failed`, { error: error instanceof Error ? error.message : String(error) });
+          execution.context.log('error', `Step ${step.id} failed`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
 
           // Start compensation
           execution.state.status = 'compensating';
@@ -360,7 +380,6 @@ export class SagaOrchestrator {
       execution.state.completedAt = new Date();
       execution.result = execution.context.results;
       execution.context.log('info', 'Saga execution completed successfully');
-
     } catch (error) {
       execution.state.status = 'failed';
       execution.state.completedAt = new Date();
@@ -368,7 +387,9 @@ export class SagaOrchestrator {
         stepId: 'global',
         message: error instanceof Error ? error.message : String(error),
       };
-      execution.context.log('error', 'Saga execution failed', { error: error instanceof Error ? error.message : String(error) });
+      execution.context.log('error', 'Saga execution failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -382,8 +403,8 @@ export class SagaOrchestrator {
         if (step.timeout) {
           return await Promise.race([
             step.action(context),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Step timeout')), step.timeout)
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Step timeout')), step.timeout),
             ),
           ]);
         } else {
@@ -391,11 +412,14 @@ export class SagaOrchestrator {
         }
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt < maxAttempts && step.retry) {
           const delay = this.calculateRetryDelay(step.retry, attempt);
-          context.log('warn', `Step ${step.id} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          context.log(
+            'warn',
+            `Step ${step.id} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -411,12 +435,13 @@ export class SagaOrchestrator {
 
     execution.context.log('info', 'Starting compensation');
 
-    const compensationOrder = saga.config?.reverseCompensation !== false 
-      ? [...execution.state.compensationQueue].reverse()
-      : execution.state.compensationQueue;
+    const compensationOrder =
+      saga.config?.reverseCompensation !== false
+        ? [...execution.state.compensationQueue].reverse()
+        : execution.state.compensationQueue;
 
     for (const stepId of compensationOrder) {
-      const step = saga.steps.find(s => s.id === stepId);
+      const step = saga.steps.find((s) => s.id === stepId);
       if (!step || !step.compensation) {
         continue;
       }
@@ -426,18 +451,19 @@ export class SagaOrchestrator {
 
       try {
         await step.compensation(execution.context);
-        
+
         // Update completed step status
-        const completedStep = execution.state.completedSteps.find(s => s.stepId === stepId);
+        const completedStep = execution.state.completedSteps.find((s) => s.stepId === stepId);
         if (completedStep) {
           completedStep.status = 'compensated';
         }
 
         execution.context.log('info', `Step ${stepId} compensated successfully`);
-        
       } catch (error) {
-        execution.context.log('error', `Compensation failed for step ${stepId}`, { error: error instanceof Error ? error.message : String(error) });
-        
+        execution.context.log('error', `Compensation failed for step ${stepId}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+
         if (!saga.config?.continueOnCompensationFailure) {
           execution.state.status = 'failed';
           execution.state.completedAt = new Date();
@@ -453,7 +479,7 @@ export class SagaOrchestrator {
 
   private calculateRetryDelay(retry: NonNullable<SagaStep['retry']>, attempt: number): number {
     const baseDelay = retry.delay;
-    
+
     switch (retry.backoff) {
       case 'exponential':
         return baseDelay * Math.pow(2, attempt - 1);
@@ -526,7 +552,7 @@ export class SagaBuilder {
       retry?: SagaStep['retry'];
       condition?: SagaStep['condition'];
       metadata?: Record<string, unknown>;
-    }
+    },
   ): this {
     const step: SagaStep = {
       id,
@@ -548,6 +574,20 @@ export class SagaBuilder {
     }
 
     return this.saga as SagaDefinition;
+  }
+
+  /**
+   * Execute the saga with a provider
+   */
+  async execute(
+    provider: WorkflowProvider,
+    input?: unknown,
+    metadata?: Record<string, unknown>,
+  ): Promise<string> {
+    const definition = this.build();
+    const orchestrator = new SagaOrchestrator(provider);
+    orchestrator.registerSaga(definition);
+    return orchestrator.executeSaga(definition.id, input, metadata);
   }
 }
 
@@ -575,11 +615,9 @@ export const SagaUtils = {
   createConditionalStep(
     condition: (context: SagaContext) => boolean,
     trueStep: Omit<SagaStep, 'condition'>,
-    falseStep?: Omit<SagaStep, 'condition'>
+    falseStep?: Omit<SagaStep, 'condition'>,
   ): SagaStep[] {
-    const steps: SagaStep[] = [
-      { ...trueStep, condition },
-    ];
+    const steps: SagaStep[] = [{ ...trueStep, condition }];
 
     if (falseStep) {
       steps.push({
@@ -597,7 +635,11 @@ export const SagaUtils = {
   createParallelStep(
     id: string,
     name: string,
-    actions: Array<{ id: string; action: SagaStep['action']; compensation?: SagaStep['compensation'] }>
+    actions: Array<{
+      id: string;
+      action: SagaStep['action'];
+      compensation?: SagaStep['compensation'];
+    }>,
   ): SagaStep {
     return {
       id,
@@ -607,7 +649,7 @@ export const SagaUtils = {
           actions.map(async ({ id: actionId, action }) => ({
             id: actionId,
             result: await action(context),
-          }))
+          })),
         );
 
         // Store results with action IDs
@@ -617,7 +659,7 @@ export const SagaUtils = {
 
         return results;
       },
-      compensation: actions.some(a => a.compensation) 
+      compensation: actions.some((a) => a.compensation)
         ? async (context) => {
             // Compensate in reverse order
             for (const { id: actionId, compensation } of actions.reverse()) {
@@ -633,10 +675,7 @@ export const SagaUtils = {
   /**
    * Create a retry wrapper for any step
    */
-  createRetryWrapper(
-    step: SagaStep,
-    retryConfig: NonNullable<SagaStep['retry']>
-  ): SagaStep {
+  createRetryWrapper(step: SagaStep, retryConfig: NonNullable<SagaStep['retry']>): SagaStep {
     return {
       ...step,
       retry: retryConfig,
@@ -646,10 +685,7 @@ export const SagaUtils = {
   /**
    * Create a timeout wrapper for any step
    */
-  createTimeoutWrapper(
-    step: SagaStep,
-    timeoutMs: number
-  ): SagaStep {
+  createTimeoutWrapper(step: SagaStep, timeoutMs: number): SagaStep {
     return {
       ...step,
       timeout: timeoutMs,

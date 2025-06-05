@@ -1,27 +1,27 @@
 /**
  * Client-side Next.js analytics exports
  * Complete Next.js 15 integration for client components and browser environments
- * 
+ *
  * @example
  * ```typescript
- * import { 
- *   createNextJSClientAnalytics, 
- *   usePageTracking, 
+ * import {
+ *   createNextJSClientAnalytics,
+ *   usePageTracking,
  *   useTrackEvent,
- *   track 
+ *   track
  * } from '@repo/analytics/client/next';
- * 
+ *
  * // Create Next.js optimized analytics
  * const analytics = createNextJSClientAnalytics({
  *   providers: { segment: { writeKey: 'xxx' } },
  *   nextjs: { strategy: 'afterInteractive', bufferEvents: true }
  * });
- * 
+ *
  * // Use in client components
  * function MyComponent() {
  *   const trackEvent = useTrackEvent();
  *   usePageTracking(); // Auto page tracking
- *   
+ *
  *   return <button onClick={() => trackEvent('Button Clicked', { color: 'blue' })}>
  *     Click me
  *   </button>;
@@ -41,18 +41,17 @@ export * from './index';
 // ============================================================================
 
 export {
+  // Context providers
+  AnalyticsProvider,
+  // Tracked components
+  TrackedButton,
+  TrackedLink,
+  useAnalytics,
+  useFeatureFlag,
+
   // React hooks for client components
   usePageTracking,
   useTrackEvent,
-  useFeatureFlag,
-  
-  // Context providers
-  AnalyticsProvider,
-  useAnalytics,
-  
-  // Tracked components
-  TrackedButton,
-  TrackedLink
 } from '../next/app-router';
 
 // Note: Export types only if they exist in the app-router module
@@ -63,20 +62,18 @@ export {
 // ============================================================================
 
 export {
-  // Next.js client analytics manager
-  NextJSClientAnalyticsManager,
   createNextJSClientAnalytics,
-  
+  // PostHog bootstrap helpers
+  createPostHogConfigWithBootstrap,
+
   // Script integration helpers
   getAnalyticsScriptProps,
-  
-  // PostHog bootstrap helpers
-  createPostHogConfigWithBootstrap
+
+  // Next.js client analytics manager
+  NextJSClientAnalyticsManager,
 } from '../next/client';
 
-export type {
-  NextJSClientAnalyticsConfig
-} from '../next/client';
+export type { NextJSClientAnalyticsConfig } from '../next/client';
 
 // ============================================================================
 // NEXT.JS TYPES
@@ -91,17 +88,17 @@ export type {
 
 /**
  * Example usage patterns for client-side Next.js analytics
- * 
+ *
  * @example Basic setup in layout.tsx
  * ```typescript
  * 'use client';
  * import { AnalyticsProvider, usePageTracking } from '@repo/analytics/client/next';
- * 
+ *
  * function RootLayoutContent({ children }) {
  *   usePageTracking(); // Auto page tracking
  *   return <>{children}</>;
  * }
- * 
+ *
  * export default function RootLayout({ children }) {
  *   return (
  *     <AnalyticsProvider config={{
@@ -114,31 +111,31 @@ export type {
  *   );
  * }
  * ```
- * 
+ *
  * @example Event tracking in components
  * ```typescript
  * 'use client';
  * import { useTrackEvent, track } from '@repo/analytics/client/next';
- * 
+ *
  * function MyComponent() {
  *   const trackEvent = useTrackEvent();
- *   
+ *
  *   const handleClick = () => {
  *     trackEvent('Button Clicked', { location: 'hero' });
  *   };
- *   
+ *
  *   return <button onClick={handleClick}>Click me</button>;
  * }
  * ```
- * 
+ *
  * @example Feature flags
  * ```typescript
  * 'use client';
  * import { useFeatureFlag } from '@repo/analytics/client/next';
- * 
+ *
  * function FeatureComponent() {
  *   const showNewFeature = useFeatureFlag('new-feature');
- *   
+ *
  *   return (
  *     <div>
  *       {showNewFeature ? <NewFeature /> : <OldFeature />}

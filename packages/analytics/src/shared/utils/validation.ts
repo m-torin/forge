@@ -2,18 +2,19 @@
  * Validation utilities for analytics configuration
  */
 
-import type { AnalyticsConfig, ProviderConfig } from '../types/types';
 import { PROVIDER_REQUIREMENTS } from './config';
 
+import type { AnalyticsConfig, ProviderConfig } from '../types/types';
+
 export interface ValidationError {
-  provider: string;
   field: string;
   message: string;
+  provider: string;
 }
 
 export interface ValidationResult {
-  isValid: boolean;
   errors: ValidationError[];
+  isValid: boolean;
   warnings: string[];
 }
 
@@ -29,7 +30,7 @@ export function validateAnalyticsConfig(config: AnalyticsConfig): ValidationResu
     errors.push({
       provider: 'global',
       field: 'config',
-      message: 'Analytics configuration is required'
+      message: 'Analytics configuration is required',
     });
     return { isValid: false, errors, warnings };
   }
@@ -39,7 +40,7 @@ export function validateAnalyticsConfig(config: AnalyticsConfig): ValidationResu
     errors.push({
       provider: 'global',
       field: 'providers',
-      message: 'Providers configuration is required and must be an object'
+      message: 'Providers configuration is required and must be an object',
     });
     return { isValid: false, errors, warnings };
   }
@@ -60,19 +61,23 @@ export function validateAnalyticsConfig(config: AnalyticsConfig): ValidationResu
   if (typeof window !== 'undefined') {
     // Client-side warnings
     if (config.providers.mixpanel) {
-      warnings.push('Mixpanel provider configured on client-side. Consider using server-side for better performance.');
+      warnings.push(
+        'Mixpanel provider configured on client-side. Consider using server-side for better performance.',
+      );
     }
   } else {
     // Server-side warnings
     if (config.providers.vercel) {
-      warnings.push('Vercel Analytics has limited server-side support. Consider using client-side for better features.');
+      warnings.push(
+        'Vercel Analytics has limited server-side support. Consider using client-side for better features.',
+      );
     }
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -88,7 +93,7 @@ export function validateProvider(providerName: string, config: ProviderConfig): 
     errors.push({
       provider: providerName,
       field: 'name',
-      message: `Unknown provider '${providerName}'. Known providers: ${knownProviders.join(', ')}`
+      message: `Unknown provider '${providerName}'. Known providers: ${knownProviders.join(', ')}`,
     });
     return errors;
   }
@@ -97,18 +102,18 @@ export function validateProvider(providerName: string, config: ProviderConfig): 
   const requiredFields = PROVIDER_REQUIREMENTS[providerName] || [];
   for (const field of requiredFields) {
     const value = config[field as keyof ProviderConfig];
-    
+
     if (!value) {
       errors.push({
         provider: providerName,
         field,
-        message: `Required field '${field}' is missing for provider '${providerName}'`
+        message: `Required field '${field}' is missing for provider '${providerName}'`,
       });
     } else if (typeof value === 'string' && value.trim() === '') {
       errors.push({
         provider: providerName,
         field,
-        message: `Required field '${field}' cannot be empty for provider '${providerName}'`
+        message: `Required field '${field}' cannot be empty for provider '${providerName}'`,
       });
     }
   }
@@ -120,7 +125,7 @@ export function validateProvider(providerName: string, config: ProviderConfig): 
         errors.push({
           provider: providerName,
           field: 'writeKey',
-          message: 'Segment writeKey appears to be invalid format'
+          message: 'Segment writeKey appears to be invalid format',
         });
       }
       break;
@@ -130,7 +135,7 @@ export function validateProvider(providerName: string, config: ProviderConfig): 
         errors.push({
           provider: providerName,
           field: 'apiKey',
-          message: 'PostHog apiKey appears to be invalid format'
+          message: 'PostHog apiKey appears to be invalid format',
         });
       }
       break;
@@ -148,8 +153,8 @@ export function validateEnvironmentVariables(): ValidationResult {
 
   // Check for common environment variables
   const envVars = {
-    SEGMENT_WRITE_KEY: process.env.SEGMENT_WRITE_KEY,
     POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
+    SEGMENT_WRITE_KEY: process.env.SEGMENT_WRITE_KEY,
   };
 
   for (const [varName, value] of Object.entries(envVars)) {
@@ -165,14 +170,16 @@ export function validateEnvironmentVariables(): ValidationResult {
   // Warn about development environment
   if (process.env.NODE_ENV === 'development') {
     if (!envVars.SEGMENT_WRITE_KEY && !envVars.POSTHOG_API_KEY) {
-      warnings.push('No analytics environment variables detected in development. Consider using console provider for debugging.');
+      warnings.push(
+        'No analytics environment variables detected in development. Consider using console provider for debugging.',
+      );
     }
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -194,18 +201,22 @@ function isValidPostHogApiKey(apiKey: string): boolean {
  */
 export function validateConfigOrThrow(config: AnalyticsConfig): void {
   const result = validateAnalyticsConfig(config);
-  
+
   if (!result.isValid) {
-    const errorMessages = result.errors.map(error => 
-      `${error.provider}.${error.field}: ${error.message}`
-    ).join('\n');
-    
+    const errorMessages = result.errors
+      .map((error) => `${error.provider}.${error.field}: ${error.message}`)
+      .join('\n');
+
     throw new Error(`Analytics configuration validation failed:\n${errorMessages}`);
   }
 
   // Log warnings but don't throw
   if (result.warnings.length > 0 && config.onError) {
-    config.onError(new Error('Analytics configuration warnings'), { provider: 'analytics', method: 'validateConfig', warnings: result.warnings });
+    config.onError(new Error('Analytics configuration warnings'), {
+      provider: 'analytics',
+      method: 'validateConfig',
+      warnings: result.warnings,
+    });
   }
 }
 
@@ -214,19 +225,19 @@ export function validateConfigOrThrow(config: AnalyticsConfig): void {
  */
 export function debugConfig(config: AnalyticsConfig): void {
   console.group('Analytics Configuration Debug');
-  
+
   const result = validateAnalyticsConfig(config);
-  
+
   console.log('Configuration:', config);
   console.log('Validation Result:', result);
-  
+
   if (result.errors.length > 0) {
     console.error('Errors:', result.errors);
   }
-  
+
   if (result.warnings.length > 0) {
     console.warn('Warnings:', result.warnings);
   }
-  
+
   console.groupEnd();
 }

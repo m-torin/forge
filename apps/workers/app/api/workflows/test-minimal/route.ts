@@ -13,15 +13,15 @@ export const { POST } = serve(
       workflowRunId: context.workflowRunId,
       url: context.url,
     });
-    
+
     // Try a simple step
     const result = await context.run('simple-step', async () => {
       console.log('[TEST-MINIMAL] Running simple step');
       return { step: 'completed', time: Date.now() };
     });
-    
+
     console.log('[TEST-MINIMAL] Step result:', result);
-    
+
     // Just return immediately without any more steps
     return {
       success: true,
@@ -35,5 +35,5 @@ export const { POST } = serve(
     qstashClient: process.env.NODE_ENV === 'development' ? qstashClient : undefined,
     url: 'http://localhost:3400/api/workflows/test-minimal',
     verbose: true,
-  }
+  },
 );

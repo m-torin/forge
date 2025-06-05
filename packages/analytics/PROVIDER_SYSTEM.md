@@ -1,12 +1,15 @@
 # Multi-Provider Analytics System Design
 
-This document outlines the design for a flexible, opt-in analytics provider system that supports both client and server environments.
+This document outlines the design for a flexible, opt-in analytics provider system that supports
+both client and server environments.
 
 ## Core Principles
 
 1. **Opt-In Only**: All providers must be explicitly included in configuration
-2. **Presence = Enabled**: If a provider is in the config, it's enabled (no `enabled: true` flag needed)
-3. **Import-Based Runtime**: Client vs server capabilities determined by import path, not runtime detection
+2. **Presence = Enabled**: If a provider is in the config, it's enabled (no `enabled: true` flag
+   needed)
+3. **Import-Based Runtime**: Client vs server capabilities determined by import path, not runtime
+   detection
 4. **Graceful Degradation**: Unavailable providers are silently ignored
 5. **Shared Configuration**: Same config works for both client and server environments
 
@@ -22,13 +25,14 @@ const PROVIDER_REGISTRY = {
   googleAnalytics: (config) => new GoogleAnalyticsProvider(config),
   mixpanel: (config) => new MixpanelProvider(config),
   amplitude: (config) => new AmplitudeProvider(config),
-  console: (config) => new ConsoleProvider(config)
+  console: (config) => new ConsoleProvider(config),
 };
 ```
 
 ### Client vs Server Entry Points
 
 #### Client Entry (`src/client.ts`)
+
 ```typescript
 // Client providers - include browser-specific implementations
 import { SegmentClientProvider } from './providers/segment-client';
@@ -39,7 +43,7 @@ const CLIENT_PROVIDERS = {
   segment: (config) => new SegmentClientProvider(config),
   posthog: (config) => new PostHogClientProvider(config),
   googleAnalytics: (config) => new GoogleAnalyticsProvider(config),
-  console: (config) => new ConsoleProvider(config)
+  console: (config) => new ConsoleProvider(config),
   // No mixpanel - doesn't work well on client
 };
 
@@ -53,6 +57,7 @@ export { ecommerce } from './internal/emitters';
 ```
 
 #### Server Entry (`src/server.ts`)
+
 ```typescript
 // Server providers - include Node.js-specific implementations
 import { SegmentServerProvider } from './providers/segment-server';
@@ -64,7 +69,7 @@ const SERVER_PROVIDERS = {
   posthog: (config) => new PostHogServerProvider(config),
   mixpanel: (config) => new MixpanelServerProvider(config),
   amplitude: (config) => new AmplitudeServerProvider(config),
-  console: (config) => new ConsoleProvider(config)
+  console: (config) => new ConsoleProvider(config),
   // No googleAnalytics - doesn't make sense on server
 };
 
@@ -86,15 +91,15 @@ export { ecommerce } from './internal/emitters';
 const analyticsConfig = {
   providers: {
     segment: {
-      writeKey: process.env.SEGMENT_KEY
+      writeKey: process.env.SEGMENT_KEY,
     },
     posthog: {
       apiKey: process.env.POSTHOG_KEY,
-      events: ['ecommerce', 'page_views'] // optional filtering
-    }
+      events: ['ecommerce', 'page_views'], // optional filtering
+    },
     // googleAnalytics not present = not enabled
     // mixpanel not present = not enabled
-  }
+  },
 };
 ```
 
@@ -103,36 +108,36 @@ const analyticsConfig = {
 ```typescript
 const getAnalyticsConfig = () => {
   const providers: Record<string, any> = {};
-  
+
   // Development - minimal providers
   if (process.env.NODE_ENV === 'development') {
     providers.console = {}; // just presence
     return { providers };
   }
-  
+
   // Staging - selective providers
   if (process.env.NODE_ENV === 'staging') {
     providers.posthog = {
-      apiKey: process.env.POSTHOG_KEY
+      apiKey: process.env.POSTHOG_KEY,
     };
     return { providers };
   }
-  
+
   // Production - multiple providers
   providers.segment = {
-    writeKey: process.env.SEGMENT_KEY
+    writeKey: process.env.SEGMENT_KEY,
   };
-  
+
   providers.posthog = {
-    apiKey: process.env.POSTHOG_KEY
+    apiKey: process.env.POSTHOG_KEY,
   };
-  
+
   if (process.env.GA_MEASUREMENT_ID) {
     providers.googleAnalytics = {
-      measurementId: process.env.GA_MEASUREMENT_ID
+      measurementId: process.env.GA_MEASUREMENT_ID,
     };
   }
-  
+
   return { providers };
 };
 ```
@@ -142,26 +147,26 @@ const getAnalyticsConfig = () => {
 ```typescript
 const buildConfig = async () => {
   const providers: Record<string, any> = {};
-  
+
   // Always include core provider
   providers.segment = {
-    writeKey: process.env.SEGMENT_KEY
+    writeKey: process.env.SEGMENT_KEY,
   };
-  
+
   // Conditionally include based on feature flags
   if (await getFeatureFlag('enable_posthog')) {
     providers.posthog = {
-      apiKey: process.env.POSTHOG_KEY
+      apiKey: process.env.POSTHOG_KEY,
     };
   }
-  
+
   // Conditionally include based on environment variables
   if (process.env.AMPLITUDE_API_KEY) {
     providers.amplitude = {
-      apiKey: process.env.AMPLITUDE_API_KEY
+      apiKey: process.env.AMPLITUDE_API_KEY,
     };
   }
-  
+
   return { providers };
 };
 ```
@@ -176,20 +181,20 @@ interface ProviderConfig {
   apiKey?: string;
   writeKey?: string;
   measurementId?: string;
-  
+
   // Optional configuration
   events?: string[] | 'all';
   options?: Record<string, any>;
-  
+
   // No 'enabled' field - presence = enabled
 }
 
 interface AnalyticsProvider {
   readonly name: string;
-  
+
   initialize(config: ProviderConfig): Promise<void>;
   track(event: string, properties: any): Promise<void>;
-  
+
   // Optional methods
   identify?(userId: string, traits: any): Promise<void>;
   page?(name: string, properties: any): Promise<void>;
@@ -201,10 +206,10 @@ interface AnalyticsProvider {
 ```typescript
 const createAnalyticsManager = (config: AnalyticsConfig, availableProviders: ProviderRegistry) => {
   const activeProviders = new Map();
-  
+
   for (const [name, providerConfig] of Object.entries(config.providers)) {
     const providerFactory = availableProviders[name];
-    
+
     if (providerFactory) {
       try {
         const provider = providerFactory(providerConfig);
@@ -217,7 +222,7 @@ const createAnalyticsManager = (config: AnalyticsConfig, availableProviders: Pro
       console.debug(`Provider '${name}' not available in this environment`);
     }
   }
-  
+
   return new AnalyticsManager(activeProviders);
 };
 ```
@@ -230,18 +235,18 @@ track('Special Event', properties, {
   providers: {
     // Add one-off provider
     mixpanel: {
-      token: process.env.MIXPANEL_TOKEN
-    }
-  }
+      token: process.env.MIXPANEL_TOKEN,
+    },
+  },
 });
 
 // Or use shorthand for configured providers only
 track('Product Viewed', properties, {
-  only: ['segment'] // only send to segment, ignore others
+  only: ['segment'], // only send to segment, ignore others
 });
 
 track('Internal Event', properties, {
-  exclude: ['googleAnalytics'] // send to all except GA
+  exclude: ['googleAnalytics'], // send to all except GA
 });
 ```
 
@@ -250,18 +255,19 @@ track('Internal Event', properties, {
 ### Environment-Specific Providers
 
 #### Segment Client Provider
+
 ```typescript
 // providers/segment-client.ts
 export class SegmentClientProvider implements AnalyticsProvider {
   constructor(private config: { writeKey: string }) {}
-  
+
   async initialize() {
     // Load Segment browser SDK
     const analytics = window.analytics || [];
     analytics.load(this.config.writeKey);
     window.analytics = analytics;
   }
-  
+
   async track(event: string, properties: any) {
     window.analytics?.track(event, properties);
   }
@@ -269,17 +275,18 @@ export class SegmentClientProvider implements AnalyticsProvider {
 ```
 
 #### Segment Server Provider
+
 ```typescript
 // providers/segment-server.ts
 import { Analytics } from '@segment/analytics-node';
 
 export class SegmentServerProvider implements AnalyticsProvider {
   private client: Analytics;
-  
+
   constructor(private config: { writeKey: string }) {
     this.client = new Analytics({ writeKey: config.writeKey });
   }
-  
+
   async track(event: string, properties: any) {
     this.client.track({ event, properties });
   }
@@ -294,20 +301,20 @@ export class SegmentServerProvider implements AnalyticsProvider {
 const validateConfig = (config: AnalyticsConfig) => {
   const requirements = {
     segment: ['writeKey'],
-    posthog: ['apiKey'], 
+    posthog: ['apiKey'],
     googleAnalytics: ['measurementId'],
     amplitude: ['apiKey'],
-    mixpanel: ['token']
+    mixpanel: ['token'],
   };
-  
+
   for (const [providerName, providerConfig] of Object.entries(config.providers)) {
     const requiredFields = requirements[providerName] || [];
-    
+
     for (const field of requiredFields) {
       if (!providerConfig[field]) {
         throw new Error(
           `Provider '${providerName}' missing required field '${field}'. ` +
-          `Remove the provider from config or provide the required field.`
+            `Remove the provider from config or provide the required field.`
         );
       }
     }
@@ -324,20 +331,20 @@ const validateConfig = (config: AnalyticsConfig) => {
 export const analyticsConfig = {
   providers: {
     segment: {
-      writeKey: process.env.SEGMENT_KEY
+      writeKey: process.env.SEGMENT_KEY,
     },
     posthog: {
-      apiKey: process.env.POSTHOG_KEY
+      apiKey: process.env.POSTHOG_KEY,
     },
     googleAnalytics: {
-      measurementId: process.env.GA_MEASUREMENT_ID
+      measurementId: process.env.GA_MEASUREMENT_ID,
       // Will work on client, ignored on server (not in SERVER_PROVIDERS)
     },
     mixpanel: {
-      token: process.env.MIXPANEL_TOKEN
+      token: process.env.MIXPANEL_TOKEN,
       // Will work on server, ignored on client (not in CLIENT_PROVIDERS)
-    }
-  }
+    },
+  },
 };
 ```
 
@@ -350,7 +357,7 @@ import { track, ecommerce } from '@repo/analytics';
 
 track('Button Clicked', { button: 'signup' });
 
-// Server-side usage  
+// Server-side usage
 import { track, ecommerce } from '@repo/analytics/server';
 // Available providers: segment, posthog, mixpanel, amplitude, console
 
@@ -360,58 +367,61 @@ track('API Called', { endpoint: '/users' });
 ### Environment-Specific Examples
 
 #### Minimal Development Setup
+
 ```typescript
 export const analyticsConfig = {
   providers: {
-    console: {} // just log to console
-  }
+    console: {}, // just log to console
+  },
 };
 ```
 
 #### Production Multi-Provider
+
 ```typescript
 export const analyticsConfig = {
   providers: {
     segment: {
-      writeKey: process.env.SEGMENT_WRITE_KEY
+      writeKey: process.env.SEGMENT_WRITE_KEY,
     },
-    
+
     posthog: {
       apiKey: process.env.POSTHOG_API_KEY,
-      events: ['ecommerce', 'feature_flags'] // optional filtering
+      events: ['ecommerce', 'feature_flags'], // optional filtering
     },
-    
+
     googleAnalytics: {
       measurementId: process.env.GA_MEASUREMENT_ID,
-      events: ['page_views', 'conversions']
-    }
-  }
+      events: ['page_views', 'conversions'],
+    },
+  },
 };
 ```
 
 #### Feature Flag Controlled
+
 ```typescript
 const buildAnalyticsConfig = async () => {
   const providers: Record<string, any> = {
     // Always enabled
     segment: {
-      writeKey: process.env.SEGMENT_KEY
-    }
+      writeKey: process.env.SEGMENT_KEY,
+    },
   };
-  
+
   // Conditionally add providers
   if (await getFeatureFlag('enable_posthog')) {
     providers.posthog = {
-      apiKey: process.env.POSTHOG_KEY
+      apiKey: process.env.POSTHOG_KEY,
     };
   }
-  
+
   if (await getFeatureFlag('enable_amplitude')) {
     providers.amplitude = {
-      apiKey: process.env.AMPLITUDE_KEY
+      apiKey: process.env.AMPLITUDE_KEY,
     };
   }
-  
+
   return { providers };
 };
 ```
@@ -421,7 +431,7 @@ const buildAnalyticsConfig = async () => {
 ```
 src/
 ├── client.ts                  # Client exports + CLIENT_PROVIDERS
-├── server.ts                  # Server exports + SERVER_PROVIDERS  
+├── server.ts                  # Server exports + SERVER_PROVIDERS
 ├── external/
 │   ├── types.ts              # Core provider interfaces and types
 │   ├── manager.ts            # AnalyticsManager orchestration
@@ -490,14 +500,14 @@ await initializeAnalytics(config);
 // Track events
 track('Button Clicked', { button: 'signup' });
 
-// Server-side  
+// Server-side
 import { initializeAnalytics, track } from '@repo/analytics/server';
 
 const config = {
   providers: {
     segment: { writeKey: process.env.SEGMENT_WRITE_KEY },
-    console: { prefix: '[Server Analytics]' }
-  }
+    console: { prefix: '[Server Analytics]' },
+  },
 };
 
 await initializeAnalytics(config);
@@ -527,19 +537,19 @@ await initializeAnalytics(config);
 ```typescript
 // Send to specific providers only
 track('Sensitive Event', properties, {
-  only: ['segment'] // Only send to Segment
+  only: ['segment'], // Only send to Segment
 });
 
 // Exclude specific providers
 track('Internal Metric', properties, {
-  exclude: ['vercel'] // Send to all except Vercel
+  exclude: ['vercel'], // Send to all except Vercel
 });
 
 // Add runtime provider
 track('Special Event', properties, {
   providers: {
-    console: { prefix: '[Special]' }
-  }
+    console: { prefix: '[Special]' },
+  },
 });
 ```
 
@@ -551,7 +561,7 @@ To use the providers, install the following packages:
 # For Segment (universal - works in both browser and Node.js)
 npm install @segment/analytics-next
 
-# For PostHog  
+# For PostHog
 npm install posthog-js posthog-node
 
 # For Vercel Analytics

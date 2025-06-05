@@ -17,17 +17,26 @@ import {
   NcInputNumber,
   Prices,
 } from "@repo/design-system/mantine-ciseco";
+import { getDictionary } from "@/i18n";
 
 import LeftSide from "./LeftSide";
 
 import type { TCardProduct } from "@repo/design-system/mantine-ciseco";
 
-export const metadata: Metadata = {
-  description: "Effective checkout page for your e-commerce website",
-  title: "Checkout Page",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const dict = await getDictionary(params.locale);
+  return {
+    description: dict.checkout.checkoutDescription,
+    title: dict.checkout.checkoutPage,
+  };
+}
 
-const CheckoutPage = async () => {
+const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
+  const dict = await getDictionary(params.locale);
   const cart = await getCart("id://cart");
 
   const renderProduct = (product: TCardProduct) => {

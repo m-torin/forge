@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   console.log('[NO-STEPS] Request method:', request.method);
   console.log('[NO-STEPS] Request URL:', request.url);
   console.log('[NO-STEPS] Headers:', Object.fromEntries(request.headers.entries()));
-  
+
   // Log environment variables for debugging
   console.log('[NO-STEPS] Environment check:', {
     NODE_ENV: process.env.NODE_ENV,
@@ -28,59 +28,66 @@ export async function POST(request: NextRequest) {
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY ? 'SET' : 'NOT SET',
     UPSTASH_WORKFLOW_URL: process.env.UPSTASH_WORKFLOW_URL,
   });
-  
+
   try {
     const body = await request.text();
     console.log('[NO-STEPS] Request body:', body);
-    
+
     // Try to create the serve handler
     console.log('[NO-STEPS] Creating serve handler...');
-    const { POST: workflowHandler } = serve(
-      async (context) => {
-        console.log('[NO-STEPS] Workflow function executing');
-        console.log('[NO-STEPS] Context:', {
-          workflowRunId: context.workflowRunId,
-          url: context.url,
-        });
-        
-        return {
-          success: true,
-          message: 'No-steps workflow completed',
-          workflowRunId: context.workflowRunId,
-          timestamp: Date.now(),
-        };
-      }
-    );
-    
+    const { POST: workflowHandler } = serve(async (context) => {
+      console.log('[NO-STEPS] Workflow function executing');
+      console.log('[NO-STEPS] Context:', {
+        workflowRunId: context.workflowRunId,
+        url: context.url,
+      });
+
+      return {
+        success: true,
+        message: 'No-steps workflow completed',
+        workflowRunId: context.workflowRunId,
+        timestamp: Date.now(),
+      };
+    });
+
     console.log('[NO-STEPS] Serve handler created, calling...');
     const result = await workflowHandler(request);
     console.log('[NO-STEPS] Workflow handler result status:', result.status);
-    console.log('[NO-STEPS] Workflow handler result headers:', Object.fromEntries(result.headers.entries()));
-    
+    console.log(
+      '[NO-STEPS] Workflow handler result headers:',
+      Object.fromEntries(result.headers.entries()),
+    );
+
     // If it's an error response, log the body
     if (!result.ok) {
       const errorText = await result.clone().text();
       console.error('[NO-STEPS] Workflow handler error response body:', errorText);
       console.error('[NO-STEPS] Workflow handler error response status:', result.status);
-      
+
       // Return the error response as-is
       return result;
     }
-    
+
     console.log('[NO-STEPS] Workflow handler succeeded');
     return result;
   } catch (error) {
     console.error('[NO-STEPS] Exception in POST handler:', error);
     console.error('[NO-STEPS] Exception type:', error?.constructor?.name);
-    console.error('[NO-STEPS] Exception message:', error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      '[NO-STEPS] Exception message:',
+      error instanceof Error ? error.message : 'Unknown error',
+    );
     console.error('[NO-STEPS] Exception stack:', error instanceof Error ? error.stack : 'No stack');
-    
-    return NextResponse.json({
-      error: 'Workflow failed with exception',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      type: error?.constructor?.name || 'Unknown',
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        error: 'Workflow failed with exception',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        type: error?.constructor?.name || 'Unknown',
+      },
+      { status: 500 },
+    );
   }
 }
 

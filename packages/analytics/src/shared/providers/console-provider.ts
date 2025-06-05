@@ -3,8 +3,8 @@
  * Useful for development and debugging
  */
 
-import type { AnalyticsProvider, ProviderConfig } from '../types/types';
 import type { ConsoleConfig } from '../types/console-types';
+import type { AnalyticsProvider, ProviderConfig } from '../types/types';
 
 export class ConsoleProvider implements AnalyticsProvider {
   readonly name = 'console';
@@ -14,12 +14,12 @@ export class ConsoleProvider implements AnalyticsProvider {
   constructor(config: ProviderConfig) {
     this.config = {
       options: {
-        prefix: '[Analytics]',
         enableColors: config.options?.enableColors ?? false, // Explicit configuration
         logLevel: 'info',
+        prefix: '[Analytics]',
         pretty: true,
-        ...config.options
-      }
+        ...config.options,
+      },
     };
   }
 
@@ -27,7 +27,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     if (this.isInitialized) return;
 
     this.log('Console Analytics Provider initialized', {
-      config: this.config.options
+      config: this.config.options,
     });
 
     this.isInitialized = true;
@@ -42,7 +42,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     this.log('TRACK', {
       event,
       properties,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -53,9 +53,9 @@ export class ConsoleProvider implements AnalyticsProvider {
     }
 
     this.log('IDENTIFY', {
-      userId,
+      timestamp: new Date().toISOString(),
       traits,
-      timestamp: new Date().toISOString()
+      userId,
     });
   }
 
@@ -68,7 +68,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     this.log('PAGE', {
       name,
       properties,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -80,8 +80,8 @@ export class ConsoleProvider implements AnalyticsProvider {
 
     this.log('GROUP', {
       groupId,
+      timestamp: new Date().toISOString(),
       traits,
-      timestamp: new Date().toISOString()
     });
   }
 
@@ -92,15 +92,15 @@ export class ConsoleProvider implements AnalyticsProvider {
     }
 
     this.log('ALIAS', {
-      userId,
       previousId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      userId,
     });
   }
 
   private log(action: string, data: any): void {
-    const { prefix, enableColors, logLevel, pretty } = this.config.options!;
-    
+    const { enableColors, logLevel, prefix, pretty } = this.config.options!;
+
     if (logLevel === 'error') return; // Don't log analytics in error-only mode
 
     const message = `${prefix} ${action}`;

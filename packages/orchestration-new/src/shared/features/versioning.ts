@@ -3,7 +3,7 @@
  * Advanced workflow management with versioning and composition utilities
  */
 
-import type { WorkflowDefinition, WorkflowProvider } from '../types/index.js';
+import type { WorkflowDefinition, WorkflowProvider, WorkflowExecution } from '../types/index';
 
 export interface WorkflowVersion {
   /** Version identifier (semantic version) */
@@ -164,7 +164,7 @@ export class WorkflowVersionManager {
       migration?: WorkflowVersion['migration'];
       compatibility?: WorkflowVersion['compatibility'];
       metadata?: Record<string, unknown>;
-    }
+    },
   ): Promise<void> {
     // Validate version format
     if (!this.isValidVersion(version)) {
@@ -172,9 +172,9 @@ export class WorkflowVersionManager {
     }
 
     const versions = this.versions.get(workflowId) || [];
-    
+
     // Check if version already exists
-    if (versions.some(v => v.version === version)) {
+    if (versions.some((v) => v.version === version)) {
       throw new Error(`Version ${version} already exists for workflow ${workflowId}`);
     }
 
@@ -188,7 +188,7 @@ export class WorkflowVersionManager {
 
     versions.push(workflowVersion);
     versions.sort((a, b) => this.compareVersions(a.version, b.version));
-    
+
     this.versions.set(workflowId, versions);
   }
 
@@ -203,13 +203,15 @@ export class WorkflowVersionManager {
 
     if (!version) {
       // Return latest active version
-      return versions
-        .filter(v => v.status === 'active')
-        .sort((a, b) => this.compareVersions(b.version, a.version))[0] ||
-        versions[versions.length - 1];
+      return (
+        versions
+          .filter((v) => v.status === 'active')
+          .sort((a, b) => this.compareVersions(b.version, a.version))[0] ||
+        versions[versions.length - 1]
+      );
     }
 
-    return versions.find(v => v.version === version);
+    return versions.find((v) => v.version === version);
   }
 
   /**
@@ -228,13 +230,13 @@ export class WorkflowVersionManager {
       throw new Error(`No versions found for workflow ${workflowId}`);
     }
 
-    const targetVersion = versions.find(v => v.version === version);
+    const targetVersion = versions.find((v) => v.version === version);
     if (!targetVersion) {
       throw new Error(`Version ${version} not found for workflow ${workflowId}`);
     }
 
     // Deactivate current active versions
-    versions.forEach(v => {
+    versions.forEach((v) => {
       if (v.status === 'active') {
         v.status = 'deprecated';
       }
@@ -281,8 +283,8 @@ export class WorkflowVersionManager {
       return [];
     }
 
-    const fromIndex = versions.findIndex(v => v.version === fromVersion);
-    const toIndex = versions.findIndex(v => v.version === toVersion);
+    const fromIndex = versions.findIndex((v) => v.version === fromVersion);
+    const toIndex = versions.findIndex((v) => v.version === toVersion);
 
     if (fromIndex === -1 || toIndex === -1) {
       return [];
@@ -376,7 +378,7 @@ export class WorkflowComposer {
   async executeComposition(
     compositionId: string,
     input: unknown,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<string> {
     const composition = this.compositions.get(compositionId);
     if (!composition) {
@@ -384,7 +386,7 @@ export class WorkflowComposer {
     }
 
     const executionId = this.generateExecutionId();
-    
+
     const context: CompositionContext = {
       compositionId,
       executionId,
@@ -406,7 +408,10 @@ export class WorkflowComposer {
 
   // Private methods
 
-  private async runComposition(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
+  private async runComposition(
+    composition: WorkflowComposition,
+    context: CompositionContext,
+  ): Promise<void> {
     try {
       switch (composition.strategy) {
         case 'sequential':
@@ -430,9 +435,11 @@ export class WorkflowComposer {
     }
   }
 
-  private async executeSequential(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
-    const orderedWorkflows = composition.workflows
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  private async executeSequential(
+    composition: WorkflowComposition,
+    context: CompositionContext,
+  ): Promise<void> {
+    const orderedWorkflows = composition.workflows.sort((a, b) => (a.order || 0) - (b.order || 0));
 
     for (const workflow of orderedWorkflows) {
       if (workflow.condition && !workflow.condition(context)) {
@@ -440,31 +447,45 @@ export class WorkflowComposer {
       }
 
       context.currentWorkflow = workflow.alias || workflow.workflowId;
-      
+
       const input = this.mapInput(workflow.inputMapping, context.input);
-      const executionId = await this.provider.executeWorkflow(workflow.workflowId, input);
-      
+      const executionId = await (this.provider.executeWorkflow
+        ? this.provider.executeWorkflow(workflow.workflowId, input)
+        : this.provider.execute(
+            await this.getWorkflowDefinition(workflow.workflowId),
+            input as Record<string, any>,
+          ));
+
       // Wait for completion and get result
       const result = await this.waitForCompletion(executionId);
       const mappedResult = this.mapOutput(workflow.outputMapping, result);
-      
+
       context.setResult(workflow.alias || workflow.workflowId, mappedResult);
     }
   }
 
-  private async executeParallel(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
-    const eligibleWorkflows = composition.workflows
-      .filter(w => !w.condition || w.condition(context));
+  private async executeParallel(
+    composition: WorkflowComposition,
+    context: CompositionContext,
+  ): Promise<void> {
+    const eligibleWorkflows = composition.workflows.filter(
+      (w) => !w.condition || w.condition(context),
+    );
 
     const executionPromises = eligibleWorkflows.map(async (workflow) => {
       context.currentWorkflow = workflow.alias || workflow.workflowId;
-      
+
       const input = this.mapInput(workflow.inputMapping, context.input);
-      const executionId = await this.provider.executeWorkflow(workflow.workflowId, input);
-      
+      const executionId = await (this.provider.executeWorkflow
+        ? this.provider.executeWorkflow(workflow.workflowId, input)
+        : this.provider.execute(
+            await this.getWorkflowDefinition(workflow.workflowId),
+            input as Record<string, any>,
+          ));
+
       const result = await this.waitForCompletion(executionId);
       const mappedResult = this.mapOutput(workflow.outputMapping, result);
-      
+
       return {
         alias: workflow.alias || workflow.workflowId,
         result: mappedResult,
@@ -472,25 +493,33 @@ export class WorkflowComposer {
     });
 
     const results = await Promise.all(executionPromises);
-    
+
     for (const { alias, result } of results) {
       context.setResult(alias, result);
     }
   }
 
-  private async executeConditional(composition: WorkflowComposition, context: CompositionContext): Promise<void> {
+  private async executeConditional(
+    composition: WorkflowComposition,
+    context: CompositionContext,
+  ): Promise<void> {
     for (const workflow of composition.workflows) {
       if (workflow.condition && workflow.condition(context)) {
         context.currentWorkflow = workflow.alias || workflow.workflowId;
-        
+
         const input = this.mapInput(workflow.inputMapping, context.input);
-        const executionId = await this.provider.executeWorkflow(workflow.workflowId, input);
-        
+        const executionId = await (this.provider.executeWorkflow
+          ? this.provider.executeWorkflow(workflow.workflowId, input)
+          : this.provider.execute(
+              await this.getWorkflowDefinition(workflow.workflowId),
+              input as Record<string, any>,
+            ));
+
         const result = await this.waitForCompletion(executionId);
         const mappedResult = this.mapOutput(workflow.outputMapping, result);
-        
+
         context.setResult(workflow.alias || workflow.workflowId, mappedResult);
-        
+
         // Execute only the first matching condition
         break;
       }
@@ -527,10 +556,30 @@ export class WorkflowComposer {
     return mapped;
   }
 
-  private async waitForCompletion(executionId: string): Promise<unknown> {
-    // Poll for execution completion
-    // This would be implemented based on the provider's capabilities
-    return {}; // Placeholder
+  private async getWorkflowDefinition(workflowId: string): Promise<WorkflowDefinition> {
+    if (this.provider.getWorkflow) {
+      const definition = await this.provider.getWorkflow(workflowId);
+      if (!definition) {
+        throw new Error(`Workflow ${workflowId} not found`);
+      }
+      return definition;
+    }
+    throw new Error('Provider does not support getWorkflow method');
+  }
+
+  private async waitForCompletion(executionId: string | WorkflowExecution): Promise<unknown> {
+    if (typeof executionId === 'string') {
+      // Poll for execution completion
+      let execution = await this.provider.getExecution(executionId);
+      while (execution && ['pending', 'running'].includes(execution.status)) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        execution = await this.provider.getExecution(executionId);
+      }
+      return execution?.output || {};
+    } else {
+      // If it's already an execution object, wait for it to complete
+      return executionId.output || {};
+    }
   }
 
   private generateExecutionId(): string {
@@ -549,9 +598,11 @@ export class BulkOperationManager {
   /**
    * Execute bulk operation
    */
-  async executeBulkOperation(operation: Omit<BulkOperation, 'id' | 'status' | 'results' | 'progress'>): Promise<string> {
+  async executeBulkOperation(
+    operation: Omit<BulkOperation, 'id' | 'status' | 'results' | 'progress'>,
+  ): Promise<string> {
     const operationId = this.generateOperationId();
-    
+
     const bulkOp: BulkOperation = {
       ...operation,
       id: operationId,
@@ -603,26 +654,31 @@ export class BulkOperationManager {
     try {
       // Process targets in batches
       for (let i = 0; i < operation.targets.length; i += batchSize) {
-        if (operation.status === 'cancelled') {
+        if ((operation.status as string) === 'cancelled') {
           break;
         }
 
         const batch = operation.targets.slice(i, i + batchSize);
-        
+
         // Process batch with concurrency limit
         const batchPromises = batch.map(async (target, index) => {
-          if (operation.status === 'cancelled') {
+          if ((operation.status as string) === 'cancelled') {
             return;
           }
 
           const startTime = Date.now();
-          
+
           try {
             let result: unknown;
-            
+
             switch (operation.type) {
               case 'execute':
-                result = await this.provider.executeWorkflow(target.workflowId, target.input);
+                result = await (this.provider.executeWorkflow
+                  ? this.provider.executeWorkflow(target.workflowId, target.input)
+                  : this.provider.execute(
+                      await this.getWorkflowDefinition(target.workflowId),
+                      target.input as Record<string, any>,
+                    ));
                 break;
               case 'cancel':
                 if (target.options?.executionId) {
@@ -643,7 +699,6 @@ export class BulkOperationManager {
             });
 
             operation.progress.completed++;
-            
           } catch (error) {
             const duration = Date.now() - startTime;
 
@@ -666,23 +721,20 @@ export class BulkOperationManager {
         // Limit concurrency
         const concurrentBatches = [];
         for (let j = 0; j < batchPromises.length; j += concurrency) {
-          concurrentBatches.push(
-            Promise.all(batchPromises.slice(j, j + concurrency))
-          );
+          concurrentBatches.push(Promise.all(batchPromises.slice(j, j + concurrency)));
         }
 
         await Promise.all(concurrentBatches);
 
         // Delay between batches if configured
         if (batchDelay > 0 && i + batchSize < operation.targets.length) {
-          await new Promise(resolve => setTimeout(resolve, batchDelay));
+          await new Promise((resolve) => setTimeout(resolve, batchDelay));
         }
       }
 
       if (operation.status === 'running') {
         operation.status = 'completed';
       }
-      
     } catch (error) {
       operation.status = 'failed';
     } finally {
@@ -692,6 +744,17 @@ export class BulkOperationManager {
 
   private generateOperationId(): string {
     return `bulk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async getWorkflowDefinition(workflowId: string): Promise<WorkflowDefinition> {
+    if (this.provider.getWorkflow) {
+      const definition = await this.provider.getWorkflow(workflowId);
+      if (!definition) {
+        throw new Error(`Workflow ${workflowId} not found`);
+      }
+      return definition;
+    }
+    throw new Error('Provider does not support getWorkflow method');
   }
 }
 
@@ -707,7 +770,7 @@ export function createWorkflowVersionManager(provider: WorkflowProvider): Workfl
  */
 export function createWorkflowComposer(
   provider: WorkflowProvider,
-  versionManager: WorkflowVersionManager
+  versionManager: WorkflowVersionManager,
 ): WorkflowComposer {
   return new WorkflowComposer(provider, versionManager);
 }

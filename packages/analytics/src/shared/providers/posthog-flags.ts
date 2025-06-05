@@ -3,18 +3,19 @@
  * Implements standardized feature flag interface for PostHog
  */
 
+import { FeatureFlagError } from '../feature-flags/types';
+
 import type {
   FeatureFlagProvider,
   FlagConfig,
   FlagContext,
   FlagEvaluationResult,
-  FlagValue
+  FlagValue,
 } from '../feature-flags/types';
-import { FeatureFlagError } from '../feature-flags/types';
 
 export class PostHogFlagProvider implements FeatureFlagProvider {
   readonly name = 'posthog';
-  
+
   private config: FlagConfig;
   private client: any = null;
   private context: FlagContext = {};
@@ -51,7 +52,7 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
         'PROVIDER_NOT_INITIALIZED',
         'posthog',
         undefined,
-        error instanceof Error ? error : new Error(String(error))
+        error instanceof Error ? error : new Error(String(error)),
       );
     }
   }
@@ -70,14 +71,14 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
   async getFlag<T = FlagValue>(
     key: string,
     defaultValue: T,
-    context?: FlagContext
+    context?: FlagContext,
   ): Promise<FlagEvaluationResult<T>> {
     if (!this.isInitialized) {
       throw new FeatureFlagError(
         'PostHog provider not initialized',
         'PROVIDER_NOT_INITIALIZED',
         'posthog',
-        key
+        key,
       );
     }
 
@@ -117,20 +118,20 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
 
       return {
         key,
-        value: value as T,
-        variant: typeof value === 'string' ? value : undefined,
+        payload: await this.getPayload(key, evaluationContext),
         reason,
         source: 'network',
         timestamp: Date.now(),
-        payload: await this.getPayload(key, evaluationContext)
+        value: value as T,
+        variant: typeof value === 'string' ? value : undefined,
       };
     } catch (error) {
       return {
         key,
-        value: defaultValue,
         reason: 'error',
         source: 'fallback',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        value: defaultValue,
       };
     }
   }
@@ -140,7 +141,7 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
       throw new FeatureFlagError(
         'PostHog provider not initialized',
         'PROVIDER_NOT_INITIALIZED',
-        'posthog'
+        'posthog',
       );
     }
 
@@ -159,7 +160,7 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
         // Server-side: get all flags
         const distinctId = this.getDistinctId(evaluationContext);
         if (this.client && distinctId) {
-          flags = await this.client.getAllFlags(distinctId) || {};
+          flags = (await this.client.getAllFlags(distinctId)) || {};
         }
       }
 
@@ -167,12 +168,12 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
       for (const [key, value] of Object.entries(flags)) {
         results[key] = {
           key,
-          value,
-          variant: typeof value === 'string' ? value : undefined,
+          payload: await this.getPayload(key, evaluationContext),
           reason: 'targeting_match',
           source: 'network',
           timestamp: Date.now(),
-          payload: await this.getPayload(key, evaluationContext)
+          value,
+          variant: typeof value === 'string' ? value : undefined,
         };
       }
 
@@ -183,7 +184,7 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
         'EVALUATION_ERROR',
         'posthog',
         undefined,
-        error instanceof Error ? error : new Error(String(error))
+        error instanceof Error ? error : new Error(String(error)),
       );
     }
   }
@@ -199,18 +200,18 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
 
   async getVariant(
     key: string,
-    context?: FlagContext
+    context?: FlagContext,
   ): Promise<{ variant: string; payload?: any } | null> {
     try {
       const result = await this.getFlag(key, null, context);
-      
+
       if (result.value && typeof result.value === 'string') {
         return {
+          payload: result.payload,
           variant: result.value,
-          payload: result.payload
         };
       }
-      
+
       return null;
     } catch (error) {
       return null;
@@ -223,13 +224,13 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
 
   setContext(context: FlagContext): void {
     this.context = { ...context };
-    
+
     if (this.isClientSide && this.client) {
       // Update PostHog client context
       if (context.userId && this.client.identify) {
         this.client.identify(context.userId, context.attributes || {});
       }
-      
+
       if (context.groups && this.client.group) {
         Object.entries(context.groups).forEach(([groupType, groupId]) => {
           this.client.group(groupType, groupId);
@@ -240,13 +241,13 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
 
   updateContext(updates: Partial<FlagContext>): void {
     this.context = { ...this.context, ...updates };
-    
+
     if (this.isClientSide && this.client) {
       // Update PostHog client context
       if (updates.userId && this.client.identify) {
         this.client.identify(updates.userId, updates.attributes || {});
       }
-      
+
       if (updates.groups && this.client.group) {
         Object.entries(updates.groups).forEach(([groupType, groupId]) => {
           this.client.group(groupType, groupId);
@@ -259,17 +260,16 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
   // REAL-TIME UPDATES
   // ============================================================================
 
-  onFlagChange?(
-    key: string,
-    callback: (result: FlagEvaluationResult) => void
-  ): () => void {
+  onFlagChange?(key: string, callback: (result: FlagEvaluationResult) => void): () => void {
     if (!this.isClientSide || !this.client || !this.client.onFeatureFlags) {
       return () => {}; // No-op for server-side or unsupported
     }
 
     // PostHog feature flag change listener
     const unsubscribe = this.client.onFeatureFlags(() => {
-      this.getFlag(key, null).then(callback).catch(() => {});
+      this.getFlag(key, null)
+        .then(callback)
+        .catch(() => {});
     });
 
     return unsubscribe || (() => {});
@@ -279,19 +279,15 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
   // ANALYTICS INTEGRATION
   // ============================================================================
 
-  trackExposure?(
-    key: string,
-    result: FlagEvaluationResult,
-    context?: FlagContext
-  ): void {
+  trackExposure?(key: string, result: FlagEvaluationResult, context?: FlagContext): void {
     try {
       if (this.client && this.client.capture) {
         this.client.capture('$feature_flag_called', {
           $feature_flag: key,
+          $feature_flag_reason: result.reason,
           $feature_flag_response: result.value,
           $feature_flag_variant: result.variant,
-          $feature_flag_reason: result.reason,
-          ...context?.attributes
+          ...context?.attributes,
         });
       }
     } catch (error) {
@@ -307,12 +303,12 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
     try {
       const posthog = await import('posthog-js');
       this.client = posthog.default;
-      
+
       // Initialize if not already done
       if (!this.client.has_opted_out_capturing && !this.client._isInitialized) {
         this.client.init(this.config.options?.apiKey, {
           api_host: this.config.options?.apiHost || 'https://app.posthog.com',
-          ...this.config.options
+          ...this.config.options,
         });
       }
     } catch (error) {
@@ -323,28 +319,27 @@ export class PostHogFlagProvider implements FeatureFlagProvider {
   private async initializeServer(): Promise<void> {
     try {
       const { PostHog } = await import('posthog-node');
-      this.client = new PostHog(
-        this.config.options?.apiKey || '',
-        {
-          host: this.config.options?.apiHost || 'https://app.posthog.com',
-          flushAt: 1,
-          flushInterval: 0,
-          ...this.config.options
-        }
-      );
+      this.client = new PostHog(this.config.options?.apiKey || '', {
+        flushAt: 1,
+        flushInterval: 0,
+        host: this.config.options?.apiHost || 'https://app.posthog.com',
+        ...this.config.options,
+      });
     } catch (error) {
       throw new Error('PostHog server SDK not available. Install with: npm install posthog-node');
     }
   }
 
   private getDistinctId(context: FlagContext): string | null {
-    return context.distinctId || 
-           context.userId || 
-           context.anonymousId || 
-           this.context.distinctId || 
-           this.context.userId || 
-           this.context.anonymousId || 
-           null;
+    return (
+      context.distinctId ||
+      context.userId ||
+      context.anonymousId ||
+      this.context.distinctId ||
+      this.context.userId ||
+      this.context.anonymousId ||
+      null
+    );
   }
 
   private async getPayload(key: string, context: FlagContext): Promise<any> {

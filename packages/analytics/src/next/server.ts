@@ -3,33 +3,34 @@
  * For use in server components and API routes
  */
 
-import { AnalyticsManager } from '../shared/utils/manager';
-import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
-import type { BootstrapData, FeatureFlags, FeatureFlagPayload } from '../shared/types/posthog-types';
-import { 
-  getCompleteBootstrapData, 
-  isFeatureEnabled as serverIsFeatureEnabled,
-  getFeatureFlag as serverGetFeatureFlag,
+import { type AnalyticsManager } from '../shared/utils/manager';
+import {
+  createPostHogConfig,
+  getCompleteBootstrapData,
   getAllFeatureFlags as serverGetAllFeatureFlags,
-  createPostHogConfig
+  getFeatureFlag as serverGetFeatureFlag,
+  isFeatureEnabled as serverIsFeatureEnabled,
 } from '../shared/utils/posthog-next-utils';
+
+import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 export interface NextJSServerAnalyticsConfig extends AnalyticsConfig {
   nextjs?: {
     // Enable debug mode
     debug?: boolean;
-    
+
     // PostHog specific options
     posthog?: {
       // Cookies for distinct ID extraction
       cookies?: any;
-      
+
       // API key for server-side operations
       apiKey?: string;
-      
+
       // Host override
       host?: string;
-      
+
       // Request timeout for server calls
       timeout?: number;
     };
@@ -60,10 +61,10 @@ export class NextJSServerAnalyticsManager {
       const { ConsoleProvider } = await import('../shared/providers/console-provider');
 
       const SERVER_PROVIDERS = {
-        segment: (config: any) => new SegmentServerProvider(config),
+        console: (config: any) => new ConsoleProvider(config),
         posthog: (config: any) => new PostHogServerProvider(config),
+        segment: (config: any) => new SegmentServerProvider(config),
         vercel: (config: any) => new VercelServerProvider(config),
-        console: (config: any) => new ConsoleProvider(config)
       };
 
       this.manager = createAnalyticsManager(this.config, SERVER_PROVIDERS);
@@ -83,7 +84,7 @@ export class NextJSServerAnalyticsManager {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    
+
     if (this.manager) {
       await this.manager.track(event, properties, options);
     }
@@ -96,7 +97,7 @@ export class NextJSServerAnalyticsManager {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    
+
     if (this.manager) {
       await this.manager.identify(userId, traits, options);
     }
@@ -109,7 +110,7 @@ export class NextJSServerAnalyticsManager {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    
+
     if (this.manager) {
       await this.manager.page(name, properties, options);
     }
@@ -122,7 +123,7 @@ export class NextJSServerAnalyticsManager {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    
+
     if (this.manager) {
       await this.manager.group(groupId, traits, options);
     }
@@ -135,7 +136,7 @@ export class NextJSServerAnalyticsManager {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    
+
     if (this.manager) {
       await this.manager.alias(userId, previousId, options);
     }
@@ -146,8 +147,8 @@ export class NextJSServerAnalyticsManager {
    */
   getStatus() {
     return {
+      activeProviders: this.manager?.getActiveProviders() || [],
       isInitialized: this.isInitialized,
-      activeProviders: this.manager?.getActiveProviders() || []
     };
   }
 }
@@ -155,7 +156,9 @@ export class NextJSServerAnalyticsManager {
 /**
  * Create a Next.js optimized analytics instance for server
  */
-export function createNextJSServerAnalytics(config: NextJSServerAnalyticsConfig): NextJSServerAnalyticsManager {
+export function createNextJSServerAnalytics(
+  config: NextJSServerAnalyticsConfig,
+): NextJSServerAnalyticsManager {
   return new NextJSServerAnalyticsManager(config);
 }
 
@@ -172,7 +175,7 @@ export async function isFeatureEnabledOnServer(
     host?: string;
     timeout?: number;
     defaultValue?: boolean;
-  }
+  },
 ): Promise<boolean> {
   return await serverIsFeatureEnabled(flag, cookies, apiKey, options);
 }
@@ -188,7 +191,7 @@ export async function getFeatureFlagOnServer(
     host?: string;
     timeout?: number;
     defaultValue?: any;
-  }
+  },
 ): Promise<any> {
   return await serverGetFeatureFlag(flag, cookies, apiKey, options);
 }
@@ -202,7 +205,7 @@ export async function getAllFeatureFlagsOnServer(
   options?: {
     host?: string;
     timeout?: number;
-  }
+  },
 ): Promise<FeatureFlags> {
   return await serverGetAllFeatureFlags(cookies, apiKey, options);
 }
@@ -216,7 +219,7 @@ export async function getPostHogBootstrapDataOnServer(
   options?: {
     host?: string;
     timeout?: number;
-  }
+  },
 ): Promise<BootstrapData> {
   return await getCompleteBootstrapData(cookies, apiKey, options);
 }
@@ -232,7 +235,7 @@ export async function createNextJSServerAnalyticsWithBootstrap(
     timeout?: number;
     providers?: Record<string, any>;
     nextjs?: Omit<NextJSServerAnalyticsConfig['nextjs'], 'posthog'>;
-  }
+  },
 ): Promise<{
   analytics: NextJSServerAnalyticsManager;
   bootstrapData: BootstrapData;
@@ -240,26 +243,26 @@ export async function createNextJSServerAnalyticsWithBootstrap(
   // Get bootstrap data
   const bootstrapData = await getCompleteBootstrapData(cookies, apiKey, {
     host: options?.host,
-    timeout: options?.timeout
+    timeout: options?.timeout,
   });
 
   // Create config with server-side settings
   const config: NextJSServerAnalyticsConfig = {
     providers: {
       posthog: createPostHogConfig(apiKey, {
-        host: options?.host
+        host: options?.host,
       }),
-      ...options?.providers
+      ...options?.providers,
     },
     nextjs: {
       ...options?.nextjs,
       posthog: {
-        cookies,
         apiKey,
+        cookies,
         host: options?.host,
-        timeout: options?.timeout
-      }
-    }
+        timeout: options?.timeout,
+      },
+    },
   };
 
   const analytics = new NextJSServerAnalyticsManager(config);

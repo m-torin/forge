@@ -1,4 +1,4 @@
-import { serve } from '@upstash/workflow/nextjs'
+import { upstashServe as serve } from '@repo/orchestration-new/server'
 import { getWorkflowConfig } from '@/lib/workflow-config'
 
 type Invoice = {

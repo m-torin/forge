@@ -17,7 +17,7 @@ export type {
   WorkflowStep,
   WorkflowStepExecution,
   WorkflowTrigger,
-} from './workflow.js';
+} from './workflow';
 
 // Provider configuration types
 export type {
@@ -33,7 +33,7 @@ export type {
   RateLimitConfig,
   UpstashQStashConfig,
   UpstashWorkflowConfig,
-} from './provider.js';
+} from './provider';
 
 // Reliability pattern types
 export type {
@@ -49,4 +49,13 @@ export type {
   RateLimitPattern,
   RetryPattern,
   TimeoutPattern,
-} from './patterns.js';
+} from './patterns';
+
+// Saga pattern types
+export type {
+  SagaContext,
+  SagaDefinition,
+  SagaStep,
+  SagaExecutionState,
+  SagaExecution,
+} from '../features/saga';

@@ -34,8 +34,8 @@ export interface UserEmailData {
 }
 
 export interface EmailUrlData {
-  url: string;
   token: string;
+  url: string;
 }
 
 export interface WelcomeEmailData {
@@ -45,10 +45,10 @@ export interface WelcomeEmailData {
 }
 
 export interface ApiKeyEmailData {
+  apiKeyId: string;
+  apiKeyName: string;
   email: string;
   name: string;
-  apiKeyName: string;
-  apiKeyId: string;
 }
 
 /**

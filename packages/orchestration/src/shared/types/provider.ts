@@ -13,12 +13,12 @@ export interface BaseProviderConfig {
    * Provider name
    */
   name: string;
-  
+
   /**
    * Enable debug logging
    */
   debug?: boolean;
-  
+
   /**
    * Custom logger
    */
@@ -28,7 +28,7 @@ export interface BaseProviderConfig {
     warn: (message: string, data?: any) => void;
     error: (message: string, error?: any) => void;
   };
-  
+
   /**
    * Provider-specific options
    */
@@ -40,7 +40,7 @@ export interface BaseProviderConfig {
  */
 export interface UpstashWorkflowConfig extends BaseProviderConfig {
   name: 'upstash-workflow';
-  
+
   /**
    * QStash configuration
    */
@@ -49,12 +49,12 @@ export interface UpstashWorkflowConfig extends BaseProviderConfig {
      * QStash token
      */
     token: string;
-    
+
     /**
      * Base URL for QStash (optional)
      */
     baseUrl?: string;
-    
+
     /**
      * Default retry configuration
      */
@@ -64,7 +64,7 @@ export interface UpstashWorkflowConfig extends BaseProviderConfig {
       initialInterval?: number;
     };
   };
-  
+
   /**
    * Redis configuration (optional, for persistence)
    */
@@ -73,18 +73,18 @@ export interface UpstashWorkflowConfig extends BaseProviderConfig {
      * Redis URL
      */
     url: string;
-    
+
     /**
      * Redis token
      */
     token: string;
-    
+
     /**
      * Key prefix
      */
     keyPrefix?: string;
   };
-  
+
   /**
    * Workflow serving configuration
    */
@@ -93,7 +93,7 @@ export interface UpstashWorkflowConfig extends BaseProviderConfig {
      * Base URL for workflow endpoints
      */
     baseUrl: string;
-    
+
     /**
      * Authentication method
      */
@@ -110,7 +110,7 @@ export interface UpstashWorkflowConfig extends BaseProviderConfig {
  */
 export interface TemporalProviderConfig extends BaseProviderConfig {
   name: 'temporal';
-  
+
   /**
    * Temporal connection options
    */
@@ -122,7 +122,7 @@ export interface TemporalProviderConfig extends BaseProviderConfig {
       key: string;
     };
   };
-  
+
   /**
    * Worker options
    */
@@ -138,7 +138,7 @@ export interface TemporalProviderConfig extends BaseProviderConfig {
  */
 export interface BullMQProviderConfig extends BaseProviderConfig {
   name: 'bullmq';
-  
+
   /**
    * Redis connection
    */
@@ -148,7 +148,7 @@ export interface BullMQProviderConfig extends BaseProviderConfig {
     password?: string;
     db?: number;
   };
-  
+
   /**
    * Queue options
    */
@@ -170,7 +170,7 @@ export interface BullMQProviderConfig extends BaseProviderConfig {
  */
 export interface InngestProviderConfig extends BaseProviderConfig {
   name: 'inngest';
-  
+
   /**
    * Inngest client configuration
    */
@@ -179,23 +179,23 @@ export interface InngestProviderConfig extends BaseProviderConfig {
      * Inngest app ID
      */
     appId: string;
-    
+
     /**
      * Inngest event key
      */
     eventKey?: string;
-    
+
     /**
      * Inngest signing key
      */
     signingKey?: string;
-    
+
     /**
      * Base URL
      */
     baseUrl?: string;
   };
-  
+
   /**
    * Function configuration
    */
@@ -204,7 +204,7 @@ export interface InngestProviderConfig extends BaseProviderConfig {
      * Default concurrency
      */
     concurrency?: number;
-    
+
     /**
      * Default rate limit
      */
@@ -218,7 +218,7 @@ export interface InngestProviderConfig extends BaseProviderConfig {
 /**
  * Union type of all provider configurations
  */
-export type ProviderConfig = 
+export type ProviderConfig =
   | UpstashWorkflowConfig
   | TemporalProviderConfig
   | BullMQProviderConfig
@@ -241,7 +241,7 @@ export interface ProviderSelectionCriteria {
     | 'batch-processing'
     | 'versioning'
   >;
-  
+
   /**
    * Performance requirements
    */
@@ -250,7 +250,7 @@ export interface ProviderSelectionCriteria {
     minThroughput?: number;
     maxConcurrency?: number;
   };
-  
+
   /**
    * Cost preferences
    */
@@ -258,7 +258,7 @@ export interface ProviderSelectionCriteria {
     maxPerExecution?: number;
     billingModel?: 'pay-per-use' | 'subscription' | 'self-hosted';
   };
-  
+
   /**
    * Infrastructure preferences
    */
@@ -277,7 +277,7 @@ export interface ProviderCapabilities {
    * Supported features
    */
   features: Set<string>;
-  
+
   /**
    * Performance characteristics
    */
@@ -286,7 +286,7 @@ export interface ProviderCapabilities {
     maxThroughput: number;
     maxConcurrency: number;
   };
-  
+
   /**
    * Cost model
    */
@@ -294,7 +294,7 @@ export interface ProviderCapabilities {
     model: 'pay-per-use' | 'subscription' | 'self-hosted';
     estimatedCostPerExecution?: number;
   };
-  
+
   /**
    * Infrastructure details
    */
@@ -303,7 +303,7 @@ export interface ProviderCapabilities {
     regions: string[];
     compliance: string[];
   };
-  
+
   /**
    * Limitations
    */
@@ -318,7 +318,7 @@ export interface ProviderCapabilities {
  * Provider factory function type
  */
 export type ProviderFactory<T extends ProviderConfig> = (
-  config: T
+  config: T,
 ) => Promise<import('./workflow').WorkflowProvider>;
 
 /**
@@ -329,17 +329,17 @@ export interface ProviderRegistryEntry {
    * Provider name
    */
   name: string;
-  
+
   /**
    * Provider factory
    */
   factory: ProviderFactory<any>;
-  
+
   /**
    * Provider capabilities
    */
   capabilities: ProviderCapabilities;
-  
+
   /**
    * Configuration schema
    */
@@ -354,12 +354,12 @@ export interface ProviderInitOptions {
    * Skip health checks
    */
   skipHealthCheck?: boolean;
-  
+
   /**
    * Connection timeout
    */
   connectionTimeout?: number;
-  
+
   /**
    * Retry configuration
    */

@@ -59,7 +59,7 @@ interface WorkflowPageProps {
 
 // Icon mapping based on workflow type
 const iconMap: Record<string, any> = {
-  'basic': IconStack2,
+  basic: IconStack2,
   'kitchen-sink': IconSettings,
   'image-processing': IconPhoto,
   'product-classification': IconRobot,
@@ -72,7 +72,7 @@ const iconMap: Record<string, any> = {
 
 // Color mapping based on workflow type
 const colorMap: Record<string, string> = {
-  'basic': 'blue',
+  basic: 'blue',
   'kitchen-sink': 'grape',
   'image-processing': 'teal',
   'product-classification': 'orange',
@@ -94,7 +94,7 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
   } = useWorkflow();
 
   const [payload, setPayload] = useState<string>(
-    JSON.stringify(definition.defaultPayload || {}, null, 2)
+    JSON.stringify(definition.defaultPayload || {}, null, 2),
   );
   const [isTriggering, setIsTriggering] = useState(false);
   const expandedRuns = useSet<string>();
@@ -105,7 +105,7 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
 
   // Filter runs for this specific workflow
   const workflowRuns = filteredRuns.filter((run) =>
-    run.workflowUrl.includes(`/api/workflows/${slug}`)
+    run.workflowUrl.includes(`/api/workflows/${slug}`),
   );
 
   // Get running workflows for this type
@@ -134,7 +134,7 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
           tags: metadata.tags || [],
           title: metadata.title,
         },
-        parsedPayload
+        parsedPayload,
       );
     } catch (error) {
       console.error('Failed to trigger workflow:', error);
@@ -331,23 +331,27 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
 
             {!sseConnected && (
               <Alert color="yellow" mb="md" icon={<IconAlertCircle />}>
-                <Text size="sm">SSE connection lost. Make sure the dev server is running with `pnpm dev`</Text>
+                <Text size="sm">
+                  SSE connection lost. Make sure the dev server is running with `pnpm dev`
+                </Text>
               </Alert>
             )}
-            
+
             {workflowRuns.length === 0 ? (
               <Stack gap="md" py="xl">
                 <Text c="dimmed" ta="center">
                   No {metadata.title.toLowerCase()} runs found. Trigger one above to see it here.
                 </Text>
                 <Alert color="blue" icon={<IconAlertCircle />}>
-                  <Text size="sm" fw={500}>Make sure QStash CLI is running:</Text>
+                  <Text size="sm" fw={500}>
+                    Make sure QStash CLI is running:
+                  </Text>
                   <Text size="xs" c="dimmed" mt="xs">
-                    The development server should automatically start QStash CLI on port 8080.
-                    If you're still having issues, check that both servers are running:
+                    The development server should automatically start QStash CLI on port 8080. If
+                    you're still having issues, check that both servers are running:
                   </Text>
                   <Code block size="xs" mt="sm">
-                    pnpm dev  # This runs both Next.js and QStash CLI
+                    pnpm dev # This runs both Next.js and QStash CLI
                   </Code>
                   <Group mt="xs">
                     <Button
@@ -368,13 +372,7 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                   const isExpanded = expandedRuns.has(run.workflowRunId);
 
                   return (
-                    <Card
-                      key={run.workflowRunId}
-                      shadow="sm"
-                      withBorder
-                      p="sm"
-                      radius="md"
-                    >
+                    <Card key={run.workflowRunId} shadow="sm" withBorder p="sm" radius="md">
                       <LoadingOverlay visible={loading.get(run.workflowRunId) || false} />
 
                       <Group
@@ -411,17 +409,11 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                         </Group>
 
                         <Group>
-                          <Badge
-                            color={getStatusColor(run.workflowState)}
-                            variant="light"
-                          >
+                          <Badge color={getStatusColor(run.workflowState)} variant="light">
                             {run.workflowState.replace('RUN_', '')}
                           </Badge>
                           <Text c="dimmed" size="xs">
-                            {formatDuration(
-                              run.workflowRunCreatedAt,
-                              run.workflowRunCompletedAt
-                            )}
+                            {formatDuration(run.workflowRunCreatedAt, run.workflowRunCompletedAt)}
                           </Text>
                           {run.workflowState === 'RUN_STARTED' && (
                             <Tooltip label="Cancel workflow">
@@ -451,16 +443,33 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                           </Text>
                           <Group gap="xs">
                             {run.steps.map((stepGroup: any, idx: number) => {
-                              const hasSuccess = stepGroup.steps?.some((s: any) => s.state === 'STEP_SUCCESS');
-                              const hasRetry = stepGroup.steps?.some((s: any) => s.state === 'STEP_RETRY');
-                              const hasFailed = stepGroup.steps?.some((s: any) => s.state === 'STEP_FAILED');
+                              const hasSuccess = stepGroup.steps?.some(
+                                (s: any) => s.state === 'STEP_SUCCESS',
+                              );
+                              const hasRetry = stepGroup.steps?.some(
+                                (s: any) => s.state === 'STEP_RETRY',
+                              );
+                              const hasFailed = stepGroup.steps?.some(
+                                (s: any) => s.state === 'STEP_FAILED',
+                              );
                               const stepCount = stepGroup.steps?.length || 0;
-                              
+
                               return (
-                                <Tooltip key={idx} label={`${stepCount} step(s) in ${stepGroup.type} group`}>
+                                <Tooltip
+                                  key={idx}
+                                  label={`${stepCount} step(s) in ${stepGroup.type} group`}
+                                >
                                   <Badge
                                     size="xs"
-                                    color={hasSuccess ? 'green' : hasRetry ? 'orange' : hasFailed ? 'red' : 'gray'}
+                                    color={
+                                      hasSuccess
+                                        ? 'green'
+                                        : hasRetry
+                                          ? 'orange'
+                                          : hasFailed
+                                            ? 'red'
+                                            : 'gray'
+                                    }
                                     variant="light"
                                   >
                                     {stepGroup.type || `Step ${idx + 1}`}
@@ -474,29 +483,37 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                         <Timeline lineWidth={2} active={-1} bulletSize={20}>
                           {run.steps && Array.isArray(run.steps) && run.steps.length > 0 ? (
                             // Check if we have actual step details
-                            run.steps.some(sg => sg.steps && sg.steps.length > 0) ? (
-                              run.steps.flatMap(
-                                (stepGroup: any, groupIndex: number) => {
-                                  // stepGroup has { steps: [...], type: 'single' | 'parallel' | 'batch' }
-                                  const innerSteps = stepGroup.steps || [];
-                                  
-                                  return innerSteps.map((step: any, stepIndex: number) => {
+                            run.steps.some((sg) => sg.steps && sg.steps.length > 0) ? (
+                              run.steps.flatMap((stepGroup: any, groupIndex: number) => {
+                                // stepGroup has { steps: [...], type: 'single' | 'parallel' | 'batch' }
+                                const innerSteps = stepGroup.steps || [];
+
+                                return innerSteps.map((step: any, stepIndex: number) => {
                                   // For retry steps, they might only have messageId and state
-                                  const stepName = step.stepName || 
-                                                  (step.state === 'STEP_RETRY' ? 'Retrying previous step' : 'Processing');
+                                  const stepName =
+                                    step.stepName ||
+                                    (step.state === 'STEP_RETRY'
+                                      ? 'Retrying previous step'
+                                      : 'Processing');
                                   const uniqueKey = `${run.workflowRunId}-${groupIndex}-${stepIndex}-${stepName}`;
-                                  
+
                                   // Handle both old and new step formats
-                                  const isCompleted = step.status === 'completed' || 
-                                                     step.state === 'STEP_SUCCESS' || 
-                                                     step.completedAt;
-                                  const isFailed = step.status === 'failed' || 
-                                                  step.state === 'STEP_FAILED';
+                                  const isCompleted =
+                                    step.status === 'completed' ||
+                                    step.state === 'STEP_SUCCESS' ||
+                                    step.completedAt;
+                                  const isFailed =
+                                    step.status === 'failed' || step.state === 'STEP_FAILED';
                                   const isRetrying = step.state === 'STEP_RETRY';
-                                  const isPending = step.state === 'STEP_PENDING' || (!step.state && !step.status);
-                                  const isRunning = !isCompleted && !isFailed && !isRetrying && !isPending && 
-                                                   (step.startedAt || step.createdAt);
-                                  
+                                  const isPending =
+                                    step.state === 'STEP_PENDING' || (!step.state && !step.status);
+                                  const isRunning =
+                                    !isCompleted &&
+                                    !isFailed &&
+                                    !isRetrying &&
+                                    !isPending &&
+                                    (step.startedAt || step.createdAt);
+
                                   return (
                                     <Timeline.Item
                                       key={uniqueKey}
@@ -527,13 +544,19 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                                         <Group gap="xs">
                                           <Text fw={500}>{stepName}</Text>
                                           {stepGroup.type === 'parallel' && (
-                                            <Badge size="xs" variant="light">Parallel</Badge>
+                                            <Badge size="xs" variant="light">
+                                              Parallel
+                                            </Badge>
                                           )}
                                           {stepGroup.type === 'batch' && (
-                                            <Badge size="xs" variant="light">Batch</Badge>
+                                            <Badge size="xs" variant="light">
+                                              Batch
+                                            </Badge>
                                           )}
                                           {stepGroup.type === 'next' && isRetrying && (
-                                            <Badge size="xs" color="orange" variant="light">Next Step</Badge>
+                                            <Badge size="xs" color="orange" variant="light">
+                                              Next Step
+                                            </Badge>
                                           )}
                                         </Group>
                                       }
@@ -549,7 +572,10 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                                         </Text>
                                         {(step.startedAt || step.createdAt) && (
                                           <Text c="dimmed" size="xs">
-                                            Started: {new Date(step.startedAt || step.createdAt).toLocaleString()}
+                                            Started:{' '}
+                                            {new Date(
+                                              step.startedAt || step.createdAt,
+                                            ).toLocaleString()}
                                           </Text>
                                         )}
                                         {step.completedAt && (
@@ -559,7 +585,11 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                                         )}
                                         {step.completedAt && (step.startedAt || step.createdAt) && (
                                           <Text c="dimmed" size="xs">
-                                            Duration: {formatDuration(step.startedAt || step.createdAt, step.completedAt)}
+                                            Duration:{' '}
+                                            {formatDuration(
+                                              step.startedAt || step.createdAt,
+                                              step.completedAt,
+                                            )}
                                           </Text>
                                         )}
                                         {step.messageId && (
@@ -568,17 +598,27 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                                           </Text>
                                         )}
                                         {isRetrying && (
-                                          <Alert color="orange" mt="xs" p="xs" title="Step Retrying">
+                                          <Alert
+                                            color="orange"
+                                            mt="xs"
+                                            p="xs"
+                                            title="Step Retrying"
+                                          >
                                             <Stack gap="xs">
-                                              <Text size="xs">This step is being retried. Common causes:</Text>
+                                              <Text size="xs">
+                                                This step is being retried. Common causes:
+                                              </Text>
                                               <List size="xs" withPadding>
-                                                <List.Item>Network timeout or connection issue</List.Item>
+                                                <List.Item>
+                                                  Network timeout or connection issue
+                                                </List.Item>
                                                 <List.Item>Step logic throwing an error</List.Item>
                                                 <List.Item>Missing environment variables</List.Item>
                                                 <List.Item>QStash message delivery retry</List.Item>
                                               </List>
                                               <Text size="xs" c="dimmed">
-                                                Check the console logs and the "View Raw Logs" link for more details.
+                                                Check the console logs and the "View Raw Logs" link
+                                                for more details.
                                               </Text>
                                             </Stack>
                                           </Alert>
@@ -591,10 +631,14 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                                         {step.out && (
                                           <details>
                                             <summary style={{ cursor: 'pointer' }}>
-                                              <Text size="xs" c="dimmed">Step output</Text>
+                                              <Text size="xs" c="dimmed">
+                                                Step output
+                                              </Text>
                                             </summary>
                                             <Code block size="xs" mt="xs">
-                                              {typeof step.out === 'string' ? step.out : JSON.stringify(step.out, null, 2)}
+                                              {typeof step.out === 'string'
+                                                ? step.out
+                                                : JSON.stringify(step.out, null, 2)}
                                             </Code>
                                           </details>
                                         )}
@@ -602,29 +646,29 @@ export default function WorkflowPage({ slug, definition }: WorkflowPageProps) {
                                     </Timeline.Item>
                                   );
                                 });
-                              }
+                              })
+                            ) : (
+                              // Workflow is starting but no step details yet
+                              <Timeline.Item
+                                bullet={
+                                  <ThemeIcon color="blue" radius="xl" size={20}>
+                                    <IconClock size={12} />
+                                  </ThemeIcon>
+                                }
+                                title="Initializing workflow..."
+                              >
+                                <Text c="dimmed" size="xs">
+                                  The workflow has been triggered and is starting up. Step details
+                                  will appear shortly.
+                                </Text>
+                              </Timeline.Item>
                             )
                           ) : (
-                            // Workflow is starting but no step details yet
-                            <Timeline.Item
-                              bullet={
-                                <ThemeIcon color="blue" radius="xl" size={20}>
-                                  <IconClock size={12} />
-                                </ThemeIcon>
-                              }
-                              title="Initializing workflow..."
-                            >
-                              <Text c="dimmed" size="xs">
-                                The workflow has been triggered and is starting up. Step details will appear shortly.
-                              </Text>
-                            </Timeline.Item>
-                          )
-                        ) : (
-                          <Text c="dimmed" size="sm" ta="center" py="md">
-                            No workflow steps found. The workflow may not have started yet.
-                          </Text>
-                        )}
-                      </Timeline>
+                            <Text c="dimmed" size="sm" ta="center" py="md">
+                              No workflow steps found. The workflow may not have started yet.
+                            </Text>
+                          )}
+                        </Timeline>
 
                         <Group justify="flex-end" mt="md">
                           <Anchor

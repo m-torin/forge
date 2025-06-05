@@ -3,9 +3,9 @@
  * Advanced cron scheduling with timezone handling and schedule management
  */
 
-import type { WorkflowDefinition, WorkflowProvider } from '../types/index.js';
+import type { WorkflowDefinition, WorkflowProvider } from '../types/index';
 
-export interface ScheduleConfig {
+export interface EnhancedScheduleConfig {
   /** Cron expression */
   cron: string;
   /** Timezone for schedule execution (IANA timezone) */
@@ -28,7 +28,7 @@ export interface ScheduleStatus {
   /** Associated workflow ID */
   workflowId: string;
   /** Schedule configuration */
-  config: ScheduleConfig;
+  config: EnhancedScheduleConfig;
   /** Current status */
   status: 'active' | 'paused' | 'completed' | 'error';
   /** Next execution time */
@@ -97,14 +97,14 @@ export class AdvancedScheduler {
    */
   async createSchedule(
     workflowId: string,
-    config: ScheduleConfig,
-    scheduleId?: string
+    config: EnhancedScheduleConfig,
+    scheduleId?: string,
   ): Promise<string> {
     const id = scheduleId || this.generateScheduleId();
-    
+
     // Validate cron expression
     this.validateCronExpression(config.cron);
-    
+
     // Validate timezone if provided
     if (config.timezone) {
       this.validateTimezone(config.timezone);
@@ -130,7 +130,7 @@ export class AdvancedScheduler {
   /**
    * Update an existing schedule
    */
-  async updateSchedule(scheduleId: string, config: Partial<ScheduleConfig>): Promise<void> {
+  async updateSchedule(scheduleId: string, config: Partial<EnhancedScheduleConfig>): Promise<void> {
     const schedule = this.schedules.get(scheduleId);
     if (!schedule) {
       throw new Error(`Schedule ${scheduleId} not found`);
@@ -149,7 +149,7 @@ export class AdvancedScheduler {
     // Update schedule configuration
     schedule.config = { ...schedule.config, ...config };
     schedule.updatedAt = new Date();
-    
+
     // Recalculate next execution
     schedule.nextExecution = this.calculateNextExecution(schedule.config);
 
@@ -190,7 +190,7 @@ export class AdvancedScheduler {
     schedule.status = 'active';
     schedule.nextExecution = this.calculateNextExecution(schedule.config);
     schedule.updatedAt = new Date();
-    
+
     await this.scheduleNext(scheduleId);
   }
 
@@ -222,12 +222,12 @@ export class AdvancedScheduler {
     status?: ScheduleStatus['status'];
   }): ScheduleStatus[] {
     const schedules = Array.from(this.schedules.values());
-    
+
     if (!filter) {
       return schedules;
     }
 
-    return schedules.filter(schedule => {
+    return schedules.filter((schedule) => {
       if (filter.workflowId && schedule.workflowId !== filter.workflowId) {
         return false;
       }
@@ -242,19 +242,20 @@ export class AdvancedScheduler {
    * Perform health check on schedules
    */
   async performHealthCheck(scheduleIds?: string[]): Promise<ScheduleHealthCheck[]> {
-    const schedulesToCheck = scheduleIds 
-      ? scheduleIds.map(id => this.schedules.get(id)).filter(Boolean) as ScheduleStatus[]
+    const schedulesToCheck = scheduleIds
+      ? (scheduleIds.map((id) => this.schedules.get(id)).filter(Boolean) as ScheduleStatus[])
       : Array.from(this.schedules.values());
 
     const healthChecks: ScheduleHealthCheck[] = [];
 
     for (const schedule of schedulesToCheck) {
       const issues: string[] = [];
-      
+
       // Check if schedule is overdue
       if (schedule.nextExecution && schedule.nextExecution < new Date()) {
         const overdue = Date.now() - schedule.nextExecution.getTime();
-        if (overdue > 300000) { // 5 minutes
+        if (overdue > 300000) {
+          // 5 minutes
           issues.push(`Schedule is overdue by ${Math.round(overdue / 1000)}s`);
         }
       }
@@ -271,7 +272,7 @@ export class AdvancedScheduler {
       // Determine health status
       let status: ScheduleHealthCheck['status'] = 'healthy';
       if (issues.length > 0) {
-        status = issues.some(issue => issue.includes('overdue')) ? 'critical' : 'warning';
+        status = issues.some((issue) => issue.includes('overdue')) ? 'critical' : 'warning';
       }
 
       healthChecks.push({
@@ -282,7 +283,7 @@ export class AdvancedScheduler {
         metrics: {
           avgExecutionTime: 0, // Would be calculated from execution history
           successRate: 1, // Would be calculated from execution history
-          lastExecutionGap: schedule.lastExecution 
+          lastExecutionGap: schedule.lastExecution
             ? Date.now() - schedule.lastExecution.getTime()
             : 0,
         },
@@ -330,7 +331,7 @@ export class AdvancedScheduler {
     }
 
     const delay = nextExecution.getTime() - Date.now();
-    
+
     if (delay <= 0) {
       // Execute immediately if overdue
       await this.executeSchedule(scheduleId);
@@ -339,7 +340,7 @@ export class AdvancedScheduler {
       const timer = setTimeout(() => {
         this.executeSchedule(scheduleId);
       }, delay);
-      
+
       this.timers.set(scheduleId, timer);
     }
   }
@@ -353,24 +354,26 @@ export class AdvancedScheduler {
     try {
       const executionTime = schedule.nextExecution || new Date();
       await this.executeScheduledWorkflow(schedule, executionTime);
-      
+
       // Update schedule
       schedule.lastExecution = executionTime;
       schedule.executionCount++;
       schedule.updatedAt = new Date();
 
       // Check if max executions reached
-      if (schedule.config.maxExecutions && schedule.executionCount >= schedule.config.maxExecutions) {
+      if (
+        schedule.config.maxExecutions &&
+        schedule.executionCount >= schedule.config.maxExecutions
+      ) {
         schedule.status = 'completed';
         return;
       }
 
       // Calculate next execution
       schedule.nextExecution = this.calculateNextExecution(schedule.config, executionTime);
-      
+
       // Schedule next execution
       await this.scheduleNext(scheduleId);
-      
     } catch (error) {
       schedule.status = 'error';
       schedule.error = error instanceof Error ? error.message : String(error);
@@ -379,22 +382,42 @@ export class AdvancedScheduler {
   }
 
   private async executeScheduledWorkflow(
-    schedule: ScheduleStatus, 
-    scheduledTime: Date
+    schedule: ScheduleStatus,
+    scheduledTime: Date,
   ): Promise<string> {
     // Execute workflow through provider
-    const executionId = await this.provider.executeWorkflow(schedule.workflowId, {
-      scheduledExecution: true,
-      scheduledTime: scheduledTime.toISOString(),
-      scheduleId: schedule.id,
-    });
+    const result = await (this.provider.executeWorkflow
+      ? this.provider.executeWorkflow(schedule.workflowId, {
+          scheduledExecution: true,
+          scheduledTime: scheduledTime.toISOString(),
+          scheduleId: schedule.id,
+        })
+      : this.provider.execute(await this.getWorkflowDefinition(schedule.workflowId), {
+          scheduledExecution: true,
+          scheduledTime: scheduledTime.toISOString(),
+          scheduleId: schedule.id,
+        }));
 
-    return executionId;
+    return typeof result === 'string' ? result : result.id;
   }
 
-  private calculateNextExecution(config: ScheduleConfig, fromTime?: Date): Date | undefined {
+  private async getWorkflowDefinition(workflowId: string): Promise<WorkflowDefinition> {
+    if (this.provider.getWorkflow) {
+      const definition = await this.provider.getWorkflow(workflowId);
+      if (!definition) {
+        throw new Error(`Workflow ${workflowId} not found`);
+      }
+      return definition;
+    }
+    throw new Error('Provider does not support getWorkflow method');
+  }
+
+  private calculateNextExecution(
+    config: EnhancedScheduleConfig,
+    fromTime?: Date,
+  ): Date | undefined {
     const baseTime = fromTime || new Date();
-    
+
     // This is a simplified implementation
     // In a real implementation, you'd use a proper cron parser like 'node-cron'
     return new Date(baseTime.getTime() + 60000); // Next minute for now
@@ -479,12 +502,12 @@ export const ScheduleUtils = {
     // Implementation would use proper cron parser
     const executions: Date[] = [];
     let current = new Date();
-    
+
     for (let i = 0; i < count; i++) {
       current = new Date(current.getTime() + 60000 * (i + 1));
       executions.push(current);
     }
-    
+
     return executions;
   },
 

@@ -28,9 +28,9 @@ export class TestDataBuilder {
   buildProduct(overrides?: Record<string, any>) {
     return {
       ...this.#baseProduct,
+      brand: overrides?.brand ?? 'Default Brand',
       // Nullish coalescing assignment (ES2022)
       category: overrides?.category ?? 'Default Category',
-      brand: overrides?.brand ?? 'Default Brand',
       ...overrides,
     };
   }
@@ -38,7 +38,7 @@ export class TestDataBuilder {
   // Top-level await support (ES2022) - for async test setup
   async getAsyncTestData() {
     // Simulate async data fetching
-    await new Promise(resolve => setTimeout(resolve, 1));
+    await new Promise((resolve) => setTimeout(resolve, 1));
     return this.buildProduct();
   }
 
@@ -50,8 +50,8 @@ export class TestDataBuilder {
       }
       return true;
     } catch (error) {
-      throw new Error('Product validation failed', { 
-        cause: error 
+      throw new Error('Product validation failed', {
+        cause: error,
       });
     }
   }
@@ -76,7 +76,7 @@ export async function* generateTestProducts(count: number) {
  * Safer alternative to Object.prototype.hasOwnProperty
  */
 export function validateObjectProperties(obj: Record<string, any>, requiredKeys: string[]) {
-  return requiredKeys.every(key => Object.hasOwn(obj, key));
+  return requiredKeys.every((key) => Object.hasOwn(obj, key));
 }
 
 /**
@@ -95,7 +95,7 @@ export function getTestProduct(products: any[], index: number) {
 export function validateEmailFormat(email: string) {
   const emailRegex = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/d;
   const match = email.match(emailRegex);
-  
+
   if (match?.indices) {
     return {
       isValid: true,
@@ -103,7 +103,7 @@ export function validateEmailFormat(email: string) {
       domain: email.slice(...match.indices[2]),
     };
   }
-  
+
   return { isValid: false };
 }
 
@@ -116,13 +116,13 @@ export function validateEmailFormat(email: string) {
  */
 export class ModernTestAssertions {
   // Private field for storing test context
-  #testContext: Map<string, any> = new Map();
+  #testContext = new Map<string, any>();
 
   // Static initialization
   static {
     // Configure global test settings
     if (typeof globalThis !== 'undefined') {
-      globalThis.TEST_MODE = true;
+      (globalThis as any).TEST_MODE = true;
     }
   }
 
@@ -138,13 +138,12 @@ export class ModernTestAssertions {
 
   // Modern assertion with detailed error reporting
   assertProductValid(product: any, required: string[] = ['product_id', 'name']) {
-    const missing = required.filter(key => !Object.hasOwn(product, key));
-    
+    const missing = required.filter((key) => !Object.hasOwn(product, key));
+
     if (missing.length > 0) {
-      throw new Error(
-        `Product validation failed: missing ${missing.join(', ')}`,
-        { cause: { product, missing } }
-      );
+      throw new Error(`Product validation failed: missing ${missing.join(', ')}`, {
+        cause: { missing, product },
+      });
     }
   }
 
@@ -153,7 +152,7 @@ export class ModernTestAssertions {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Validation timeout')), timeout);
     });
-    
+
     try {
       return await Promise.race([validator(), timeoutPromise]);
     } catch (error) {
@@ -167,12 +166,14 @@ export class ModernTestAssertions {
  */
 export function processTestData<T>(
   items: T[],
-  processor: (item: T, index: number) => T | null
+  processor: (item: T, index: number) => T | null,
 ): T[] {
-  return items
-    .map(processor)
-    // Use Array.prototype.at() for modern array access
-    .filter((item): item is T => item !== null);
+  return (
+    items
+      .map(processor)
+      // Use Array.prototype.at() for modern array access
+      .filter((item): item is T => item !== null)
+  );
 }
 
 /**
@@ -180,7 +181,7 @@ export function processTestData<T>(
  */
 export function createTestObject(base: Record<string, any>, overrides: Record<string, any> = {}) {
   const result = { ...base };
-  
+
   // Use Object.hasOwn for safer property checking
   for (const [key, value] of Object.entries(overrides)) {
     if (Object.hasOwn(overrides, key)) {
@@ -188,7 +189,7 @@ export function createTestObject(base: Record<string, any>, overrides: Record<st
       result[key] ??= value;
     }
   }
-  
+
   return result;
 }
 
@@ -196,10 +197,7 @@ export function createTestObject(base: Record<string, any>, overrides: Record<st
  * Modern error handling with Error.cause
  */
 export function wrapTestError(operation: string, originalError: unknown) {
-  return new Error(
-    `Test operation '${operation}' failed`,
-    { cause: originalError }
-  );
+  return new Error(`Test operation '${operation}' failed`, { cause: originalError });
 }
 
 /**
@@ -219,15 +217,13 @@ export const testPatterns = {
     const timeout = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms);
     });
-    
+
     return Promise.race([promise, timeout]);
   },
 
   // Safe property access
   safeGet(obj: any, path: string, defaultValue: any = undefined) {
-    return path
-      .split('.')
-      .reduce((current, key) => current?.[key], obj) ?? defaultValue;
+    return path.split('.').reduce((current, key) => current?.[key], obj) ?? defaultValue;
   },
 
   // Modern array utilities
@@ -236,11 +232,11 @@ export const testPatterns = {
     last<T>(arr: T[]): T | undefined {
       return arr.at(-1);
     },
-    
+
     first<T>(arr: T[]): T | undefined {
       return arr.at(0);
     },
-    
+
     nth<T>(arr: T[], index: number): T | undefined {
       return arr.at(index);
     },
@@ -265,23 +261,23 @@ export class TestDataCache {
   get(key: string) {
     const ref = this.#cache.get(key);
     const value = ref?.deref();
-    
+
     if (value === undefined) {
       this.#cache.delete(key);
     }
-    
+
     return value;
   }
 
   has(key: string): boolean {
     const ref = this.#cache.get(key);
     const value = ref?.deref();
-    
+
     if (value === undefined) {
       this.#cache.delete(key);
       return false;
     }
-    
+
     return true;
   }
 }

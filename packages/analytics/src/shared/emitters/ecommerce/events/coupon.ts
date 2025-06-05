@@ -2,17 +2,17 @@
  * Coupon-related ecommerce events
  */
 
-import { ECOMMERCE_EVENTS, type CouponProperties, type EcommerceEventSpec } from '../types';
-import { cleanProperties, validateRequiredProperties } from '../utils';
+import { type CouponProperties, ECOMMERCE_EVENTS, type EcommerceEventSpec } from '../types';
+import { cleanProperties } from '../utils';
 
 /**
  * Track when a coupon is successfully applied
  */
 export function couponApplied(properties: CouponProperties): EcommerceEventSpec<CouponProperties> {
   const normalizedProps: CouponProperties = {
-    order_id: properties.order_id,
     cart_id: properties.cart_id,
     coupon_id: properties.coupon_id,
+    order_id: properties.order_id,
     coupon_name: properties.coupon_name,
     discount: properties.discount,
     reason: properties.reason,
@@ -21,8 +21,8 @@ export function couponApplied(properties: CouponProperties): EcommerceEventSpec<
   return {
     name: ECOMMERCE_EVENTS.COUPON_APPLIED,
     category: 'ecommerce',
-    requiredProperties: [],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: [],
   };
 }
 
@@ -31,9 +31,9 @@ export function couponApplied(properties: CouponProperties): EcommerceEventSpec<
  */
 export function couponRemoved(properties: CouponProperties): EcommerceEventSpec<CouponProperties> {
   const normalizedProps: CouponProperties = {
-    order_id: properties.order_id,
     cart_id: properties.cart_id,
     coupon_id: properties.coupon_id,
+    order_id: properties.order_id,
     coupon_name: properties.coupon_name,
     discount: properties.discount,
     reason: properties.reason,
@@ -42,7 +42,7 @@ export function couponRemoved(properties: CouponProperties): EcommerceEventSpec<
   return {
     name: ECOMMERCE_EVENTS.COUPON_REMOVED,
     category: 'ecommerce',
-    requiredProperties: [],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: [],
   };
 }

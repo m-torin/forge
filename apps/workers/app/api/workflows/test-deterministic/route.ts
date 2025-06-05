@@ -21,7 +21,7 @@ export const { POST } = serve(
   },
   {
     receiver: undefined, // Disable signature verification for local dev
-  }
+  },
 );
 
 export async function GET() {

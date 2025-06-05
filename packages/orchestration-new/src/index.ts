@@ -4,18 +4,18 @@
  */
 
 // Re-export everything from shared
-export * from './shared/index.js';
+export * from './shared/index';
 
 // Re-export providers
-export * from './providers/index.js';
+export * from './providers/index';
 
 // Re-export convenience functions from server
-export { createWorkflowEngine, workflowEngine } from './server.js';
+export { createWorkflowEngine, workflowEngine } from './server';
 
 // Re-export client utilities
-export { createWorkflowClient, WorkflowClient, workflowClient } from './client.js';
-export type { WorkflowClientConfig } from './client.js';
+export { createWorkflowClient, WorkflowClient, workflowClient } from './client';
+export type { WorkflowClientConfig } from './client';
 
 // Re-export Next.js integrations
-export * from './client-next.js';
-export * from './server-next.js';
+export * from './client-next';
+export * from './server-next';

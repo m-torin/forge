@@ -6,9 +6,9 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
-import { createProviderError, RateLimitError } from '../../shared/utils/errors.js';
+import { createProviderError, RateLimitError } from '../../shared/utils/errors';
 
-import type { RateLimitConfig, RateLimitPattern } from '../../shared/types/index.js';
+import type { RateLimitConfig, RateLimitPattern } from '../../shared/types/index';
 
 export interface RateLimitProviderOptions {
   /** Rate limit algorithm */
@@ -68,7 +68,7 @@ export class RateLimitProvider {
    */
   private getRateLimiter(pattern: RateLimitPattern): Ratelimit {
     const key = `${pattern.identifier}-${pattern.tokens}-${pattern.interval}-${pattern.algorithm}`;
-    
+
     if (this.rateLimiters.has(key)) {
       return this.rateLimiters.get(key)!;
     }
@@ -111,7 +111,10 @@ export class RateLimitProvider {
   /**
    * Check if an operation is rate limited
    */
-  async checkRateLimit(pattern: RateLimitPattern, context?: any): Promise<{
+  async checkRateLimit(
+    pattern: RateLimitPattern,
+    context?: any,
+  ): Promise<{
     allowed: boolean;
     limit: number;
     remaining: number;
@@ -120,9 +123,9 @@ export class RateLimitProvider {
     try {
       const rateLimiter = this.getRateLimiter(pattern);
       const key = pattern.keyGenerator ? pattern.keyGenerator(context) : pattern.identifier;
-      
+
       const result = await rateLimiter.limit(key);
-      
+
       const response = {
         allowed: result.success,
         limit: result.limit,
@@ -135,7 +138,7 @@ export class RateLimitProvider {
           `Rate limit exceeded for ${pattern.identifier}`,
           pattern.tokens,
           pattern.interval,
-          Math.ceil((result.reset - Date.now()) / 1000)
+          Math.ceil((result.reset - Date.now()) / 1000),
         );
       }
 
@@ -144,12 +147,12 @@ export class RateLimitProvider {
       if (error instanceof RateLimitError) {
         throw error;
       }
-      
+
       throw createProviderError(
         `Failed to check rate limit for ${pattern.identifier}`,
         this.name,
         'rate-limit',
-        { originalError: error as Error }
+        { originalError: error as Error },
       );
     }
   }
@@ -160,24 +163,24 @@ export class RateLimitProvider {
   async withRateLimit<T>(
     pattern: RateLimitPattern,
     fn: () => Promise<T>,
-    context?: any
+    context?: any,
   ): Promise<T> {
     const check = await this.checkRateLimit(pattern, context);
-    
+
     if (!check.allowed) {
       if (pattern.throwOnLimit) {
         throw new RateLimitError(
           `Rate limit exceeded for ${pattern.identifier}`,
           pattern.tokens,
           pattern.interval,
-          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000)
+          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
         );
       } else {
         throw new RateLimitError(
           `Rate limit exceeded for ${pattern.identifier}`,
           pattern.tokens,
           pattern.interval,
-          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000)
+          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
         );
       }
     }
@@ -197,7 +200,7 @@ export class RateLimitProvider {
         `Failed to reset rate limit for ${identifier}`,
         this.name,
         'rate-limit',
-        { originalError: error as Error }
+        { originalError: error as Error },
       );
     }
   }
@@ -205,7 +208,10 @@ export class RateLimitProvider {
   /**
    * Get rate limit status for a key
    */
-  async getRateLimitStatus(pattern: RateLimitPattern, context?: any): Promise<{
+  async getRateLimitStatus(
+    pattern: RateLimitPattern,
+    context?: any,
+  ): Promise<{
     current: number;
     limit: number;
     resetTime: Date;
@@ -213,11 +219,11 @@ export class RateLimitProvider {
     try {
       const rateLimiter = this.getRateLimiter(pattern);
       const key = pattern.keyGenerator ? pattern.keyGenerator(context) : pattern.identifier;
-      
+
       // This would require additional methods from Upstash Ratelimit
       // For now, we'll use the limit check to get current status
       const result = await rateLimiter.limit(key);
-      
+
       return {
         current: result.limit - result.remaining,
         limit: result.limit,
@@ -228,7 +234,7 @@ export class RateLimitProvider {
         `Failed to get rate limit status for ${pattern.identifier}`,
         this.name,
         'rate-limit',
-        { originalError: error as Error }
+        { originalError: error as Error },
       );
     }
   }
@@ -240,15 +246,15 @@ export class RateLimitProvider {
     return function rateLimitDecorator<T extends (...args: any[]) => Promise<any>>(
       target: any,
       propertyName: string,
-      descriptor: PropertyDescriptor
+      descriptor: PropertyDescriptor,
     ) {
       const method = descriptor.value;
-      
+
       descriptor.value = async function (this: any, ...args: any[]) {
         const provider = new RateLimitProvider((this as any).options);
         return provider.withRateLimit(pattern, () => method.apply(this, args));
       };
-      
+
       return descriptor;
     };
   }
@@ -256,12 +262,17 @@ export class RateLimitProvider {
   /**
    * Health check
    */
-  async healthCheck(): Promise<{ status: 'healthy' | 'unhealthy'; responseTime: number; timestamp: Date; details?: any }> {
+  async healthCheck(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    responseTime: number;
+    timestamp: Date;
+    details?: any;
+  }> {
     const startTime = Date.now();
-    
+
     try {
       await this.redis.ping();
-      
+
       return {
         details: {
           activeLimiters: this.rateLimiters.size,
@@ -300,13 +311,13 @@ export class RateLimitProvider {
     limiterTypes: Record<string, number>;
   } {
     const limiterTypes: Record<string, number> = {};
-    
+
     for (const [key] of this.rateLimiters) {
       const parts = key.split('-');
       const algorithm = parts[parts.length - 1];
       limiterTypes[algorithm] = (limiterTypes[algorithm] || 0) + 1;
     }
-    
+
     return {
       activeLimiters: this.rateLimiters.size,
       limiterTypes,

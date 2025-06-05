@@ -3,16 +3,16 @@
  * Tests the complete integration between feature flags and analytics emitters
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { 
-  createFeatureFlagManager,
-  evaluateFlag,
-  trackFlagExposure,
-  StandardFeatureFlagManager,
-  LocalFlagProvider,
-  MemoryFlagCache
-} from '../shared/feature-flags';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { track } from '../shared/emitters';
+import {
+  evaluateFlag,
+  MemoryFlagCache,
+  StandardFeatureFlagManager,
+  trackFlagExposure,
+} from '../shared/feature-flags';
+
 import type { FlagContext } from '../shared/feature-flags/types';
 
 describe('Feature Flag and Emitter Integration', () => {
@@ -22,26 +22,26 @@ describe('Feature Flag and Emitter Integration', () => {
   beforeEach(async () => {
     // Create a mock analytics client
     mockAnalyticsClient = {
+      capture: vi.fn(),
       emit: vi.fn(),
       track: vi.fn(),
-      capture: vi.fn()
     };
 
     // Create flag manager manually to ensure proper setup
     manager = new StandardFeatureFlagManager({ debug: true });
-    
+
     // Add local provider with test flags
     await manager.addProvider({
       provider: 'local',
       options: {
         flags: {
-          'test-feature': true,
           'beta-feature': false,
           'experiment-variant': 'control',
+          'json-config': { enabled: true, threshold: 10 },
           'numeric-config': 42,
-          'json-config': { enabled: true, threshold: 10 }
-        }
-      }
+          'test-feature': true,
+        },
+      },
     });
 
     await manager.initialize();
@@ -57,50 +57,50 @@ describe('Feature Flag and Emitter Integration', () => {
 
       // Test emitter payload generation
       const flagPayload = evaluateFlag('test-feature', false, {
-        context: { userId: 'test-user-123' }
+        context: { userId: 'test-user-123' },
       });
 
       expect(flagPayload).toEqual({
         type: 'flag_evaluation',
-        key: 'test-feature',
-        defaultValue: false,
         context: { userId: 'test-user-123' },
+        defaultValue: false,
+        key: 'test-feature',
         options: {},
-        timestamp: expect.any(Number)
+        timestamp: expect.any(Number),
       });
     });
 
     it('should track flag exposure with analytics integration', async () => {
       const context: FlagContext = {
+        attributes: { segment: 'premium' },
         userId: 'test-user-123',
-        attributes: { segment: 'premium' }
       };
 
       // Evaluate flag
       const result = await manager.getFlag('beta-feature', false, { context });
-      
+
       // Track exposure using emitter
       const exposurePayload = trackFlagExposure('beta-feature', result.value, {
         context,
-        reason: result.reason
+        reason: result.reason,
       });
 
       expect(exposurePayload).toEqual({
         type: 'flag_exposure',
-        key: 'beta-feature',
-        value: false,
         context,
+        key: 'beta-feature',
         reason: result.reason,
-        timestamp: expect.any(Number)
+        timestamp: expect.any(Number),
+        value: false,
       });
 
       // Verify analytics event structure
       const analyticsPayload = track('Feature Flag Evaluated', {
-        flag_key: 'beta-feature',
-        flag_value: result.value,
-        flag_reason: result.reason,
         user_id: context.userId,
-        ...context.attributes
+        flag_key: 'beta-feature',
+        flag_reason: result.reason,
+        flag_value: result.value,
+        ...context.attributes,
       });
 
       expect(analyticsPayload.type).toBe('track');
@@ -132,37 +132,36 @@ describe('Feature Flag and Emitter Integration', () => {
     it('should integrate with PostHog analytics emitters', async () => {
       const mockPostHogProvider = {
         name: 'posthog',
-        trackExposure: vi.fn(),
         getFlag: vi.fn().mockResolvedValue({
           key: 'posthog-feature',
-          value: true,
-          variant: 'test-variant',
+          payload: { experiment_id: 'exp_123' },
           reason: 'targeting_match',
           source: 'network',
           timestamp: Date.now(),
-          payload: { experiment_id: 'exp_123' }
-        })
+          value: true,
+          variant: 'test-variant',
+        }),
+        trackExposure: vi.fn(),
       };
 
       // Simulate PostHog flag evaluation
       const result = await mockPostHogProvider.getFlag('posthog-feature', false);
-      
+
       // Verify PostHog-style exposure tracking
       mockPostHogProvider.trackExposure('posthog-feature', result, {
+        attributes: { premium: true },
         userId: 'test-user',
-        attributes: { premium: true }
       });
 
-      expect(mockPostHogProvider.trackExposure).toHaveBeenCalledWith(
-        'posthog-feature',
-        result,
-        { userId: 'test-user', attributes: { premium: true } }
-      );
+      expect(mockPostHogProvider.trackExposure).toHaveBeenCalledWith('posthog-feature', result, {
+        attributes: { premium: true },
+        userId: 'test-user',
+      });
 
       // Test emitter integration with PostHog data
       const exposurePayload = trackFlagExposure('posthog-feature', result.value, {
+        reason: result.reason,
         variant: result.variant,
-        reason: result.reason
       });
 
       expect(exposurePayload.variant).toBe('test-variant');
@@ -173,7 +172,7 @@ describe('Feature Flag and Emitter Integration', () => {
   describe('Real-time Analytics Integration', () => {
     it('should emit flag events that can be processed by analytics', async () => {
       const events: any[] = [];
-      
+
       // Mock analytics event processor
       const processEvent = (payload: any) => {
         events.push(payload);
@@ -181,12 +180,12 @@ describe('Feature Flag and Emitter Integration', () => {
 
       // Simulate user journey with flags
       const userContext = {
-        userId: 'journey-user-456',
-        attributes: { 
+        attributes: {
+          country: 'US',
           plan: 'pro',
           signupDate: '2024-01-01',
-          country: 'US'
-        }
+        },
+        userId: 'journey-user-456',
       };
 
       // 1. Evaluate multiple flags
@@ -194,22 +193,28 @@ describe('Feature Flag and Emitter Integration', () => {
       const featureB = await manager.getFlag('beta-feature', false, { context: userContext });
 
       // 2. Generate analytics events
-      processEvent(track('Feature Flags Loaded', {
-        features_evaluated: ['test-feature', 'beta-feature'],
-        user_context: userContext,
-        timestamp: new Date().toISOString()
-      }));
+      processEvent(
+        track('Feature Flags Loaded', {
+          features_evaluated: ['test-feature', 'beta-feature'],
+          timestamp: new Date().toISOString(),
+          user_context: userContext,
+        }),
+      );
 
       // 3. Track individual exposures
-      processEvent(trackFlagExposure('test-feature', featureA.value, {
-        context: userContext,
-        reason: featureA.reason
-      }));
+      processEvent(
+        trackFlagExposure('test-feature', featureA.value, {
+          context: userContext,
+          reason: featureA.reason,
+        }),
+      );
 
-      processEvent(trackFlagExposure('beta-feature', featureB.value, {
-        context: userContext,
-        reason: featureB.reason
-      }));
+      processEvent(
+        trackFlagExposure('beta-feature', featureB.value, {
+          context: userContext,
+          reason: featureB.reason,
+        }),
+      );
 
       // Verify event structure
       expect(events).toHaveLength(3);
@@ -228,16 +233,16 @@ describe('Feature Flag and Emitter Integration', () => {
     it('should handle provider errors gracefully with analytics', async () => {
       // Create a failing provider scenario
       const failingManager = new StandardFeatureFlagManager();
-      
+
       try {
         await failingManager.getFlag('non-existent-flag', 'fallback');
       } catch (error) {
         // Should emit error tracking event
         const errorPayload = track('Feature Flag Error', {
           error_type: 'PROVIDER_NOT_FOUND',
-          flag_key: 'non-existent-flag',
           fallback_used: 'fallback',
-          timestamp: new Date().toISOString()
+          flag_key: 'non-existent-flag',
+          timestamp: new Date().toISOString(),
         });
 
         expect(errorPayload.type).toBe('track');
@@ -249,8 +254,8 @@ describe('Feature Flag and Emitter Integration', () => {
     it('should handle network timeouts with proper analytics', async () => {
       // Simulate network timeout scenario
       const timeoutPayload = trackFlagExposure('slow-flag', false, {
+        context: { userId: 'timeout-user' },
         reason: 'timeout',
-        context: { userId: 'timeout-user' }
       });
 
       expect(timeoutPayload.reason).toBe('timeout');
@@ -258,10 +263,10 @@ describe('Feature Flag and Emitter Integration', () => {
 
       // Should track timeout analytics
       const timeoutAnalytics = track('Feature Flag Timeout', {
+        user_id: 'timeout-user',
+        fallback_used: false,
         flag_key: 'slow-flag',
         timeout_duration: 5000,
-        fallback_used: false,
-        user_id: 'timeout-user'
       });
 
       expect(timeoutAnalytics.properties.flag_key).toBe('slow-flag');
@@ -272,19 +277,19 @@ describe('Feature Flag and Emitter Integration', () => {
   describe('Performance and Caching Integration', () => {
     it('should track cache performance with analytics', async () => {
       // Create manager with cache enabled
-      const cache = new MemoryFlagCache({ 
-        enabled: true, 
-        ttl: 60000, 
-        strategy: 'ttl' 
+      const cache = new MemoryFlagCache({
+        enabled: true,
+        strategy: 'ttl',
+        ttl: 60000,
       });
-      const cachedManager = new StandardFeatureFlagManager({ 
+      const cachedManager = new StandardFeatureFlagManager({
+        cache,
         debug: true,
-        cache
       });
-      
+
       await cachedManager.addProvider({
         provider: 'local',
-        options: { flags: { 'cached-flag': true } }
+        options: { flags: { 'cached-flag': true } },
       });
 
       await cachedManager.initialize();
@@ -305,11 +310,11 @@ describe('Feature Flag and Emitter Integration', () => {
 
       // Track cache performance
       const cacheAnalytics = track('Feature Flag Cache Performance', {
-        flag_key: 'cached-flag',
         cache_hit: duration2 < duration1,
-        cache_miss_duration: duration1,
         cache_hit_duration: duration2,
-        performance_improvement: ((duration1 - duration2) / duration1) * 100
+        cache_miss_duration: duration1,
+        flag_key: 'cached-flag',
+        performance_improvement: ((duration1 - duration2) / duration1) * 100,
       });
 
       expect(cacheAnalytics.properties.cache_hit).toBe(true);
@@ -332,7 +337,7 @@ describe('Emitter Validation', () => {
 
     expect(exposure).toHaveProperty('type', 'flag_exposure');
     expect(exposure).toHaveProperty('key', 'test');
-    expect(exposure).toHaveProperty('value', true);
+    expect(exposure).toHaveValue(true);
     expect(exposure).toHaveProperty('timestamp');
   });
 
@@ -340,22 +345,26 @@ describe('Emitter Validation', () => {
     // Test that flag emitters follow same pattern as analytics emitters
     const currentTime = Date.now();
     const flagEvent = evaluateFlag('integration-test', 'default');
-    const analyticsEvent = track('Integration Test', { source: 'flag-system' }, {
-      timestamp: currentTime
-    });
+    const analyticsEvent = track(
+      'Integration Test',
+      { source: 'flag-system' },
+      {
+        timestamp: currentTime,
+      },
+    );
 
     // Both should have consistent structure
     expect(flagEvent).toHaveProperty('type');
     expect(flagEvent).toHaveProperty('timestamp');
     expect(analyticsEvent).toHaveProperty('type');
-    
+
     // Analytics events should have timestamp when provided
     expect(analyticsEvent).toHaveProperty('timestamp', currentTime);
 
     // Both should be emitter payloads with timestamps
     expect(typeof flagEvent.timestamp).toBe('number');
     expect(typeof analyticsEvent.timestamp).toBe('number');
-    
+
     // Flag events always have timestamps, analytics events have them when provided
     expect(flagEvent.timestamp).toBeGreaterThan(0);
     expect(analyticsEvent.timestamp).toBe(currentTime);

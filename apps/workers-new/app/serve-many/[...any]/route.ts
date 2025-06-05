@@ -1,5 +1,4 @@
-import { WorkflowContext } from "@upstash/workflow";
-import { createWorkflow, serveMany } from "@upstash/workflow/nextjs";
+import { WorkflowContext, createWorkflow, serveMany } from '@repo/orchestration-new/server';
 
 const workflowOne = createWorkflow(async (context) => {
   await context.run("step 1", async () => {

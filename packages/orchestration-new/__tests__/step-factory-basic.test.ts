@@ -1,6 +1,6 @@
 /**
  * Basic Step Factory Tests
- * 
+ *
  * Simple tests to verify the step factory system works correctly.
  */
 
@@ -14,7 +14,7 @@ import {
   StepTemplates,
   defaultStepFactory,
   defaultStepRegistry,
-} from '../src/shared/index.js';
+} from '../src/shared/index';
 
 describe('Basic Step Factory', () => {
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('Basic Step Factory', () => {
           output: { result: 'test' },
           performance: context.performance,
         };
-      }
+      },
     );
 
     expect(step.id).toBeDefined();
@@ -55,14 +55,11 @@ describe('Basic Step Factory', () => {
           output: { data: context.input },
           performance: context.performance,
         };
-      }
+      },
     );
 
     const executableStep = new StandardWorkflowStep(step);
-    const result = await executableStep.execute(
-      { test: 'data' },
-      'workflow_123'
-    );
+    const result = await executableStep.execute({ test: 'data' }, 'workflow_123');
 
     expect(result.success).toBe(true);
     expect(result.output?.data).toEqual({ test: 'data' });
@@ -81,7 +78,7 @@ describe('Basic Step Factory', () => {
   test('should create delay step and execute it', async () => {
     const delayStep = StepTemplates.delay('Test Delay', 50);
     const executableStep = new StandardWorkflowStep(delayStep);
-    
+
     const startTime = Date.now();
     const result = await executableStep.execute({}, 'workflow_123');
     const duration = Date.now() - startTime;
@@ -93,7 +90,7 @@ describe('Basic Step Factory', () => {
 
   test('should register and retrieve steps in registry', () => {
     const registry = new StepRegistry();
-    
+
     const step = createWorkflowStep(
       {
         name: 'Registry Step',
@@ -107,14 +104,14 @@ describe('Basic Step Factory', () => {
           output: {},
           performance: context.performance,
         };
-      }
+      },
     );
 
     registry.register(step, 'test-user');
-    
+
     const retrieved = registry.get(step.id);
     expect(retrieved).toBe(step);
-    
+
     const entry = registry.getEntry(step.id);
     expect(entry?.registeredBy).toBe('test-user');
     expect(entry?.usageCount).toBe(0);
@@ -122,7 +119,7 @@ describe('Basic Step Factory', () => {
 
   test('should use step factory to create and register steps', () => {
     const factory = new StepFactory();
-    
+
     const step = factory.createStep(
       {
         name: 'Factory Step',
@@ -134,11 +131,11 @@ describe('Basic Step Factory', () => {
           output: {},
           performance: context.performance,
         };
-      }
+      },
     );
 
     factory.registerStep(step);
-    
+
     const retrieved = factory.getStep(step.id);
     expect(retrieved).toBe(step);
   });
@@ -155,7 +152,7 @@ describe('Basic Step Factory', () => {
           output: {},
           performance: context.performance,
         };
-      }
+      },
     );
 
     const validation = StandardWorkflowStep.validateDefinition(validStep);
@@ -165,7 +162,7 @@ describe('Basic Step Factory', () => {
 
   test('should search steps by category', () => {
     const registry = new StepRegistry();
-    
+
     const httpStep = createWorkflowStep(
       {
         name: 'HTTP Step',
@@ -173,9 +170,9 @@ describe('Basic Step Factory', () => {
         category: 'http',
         tags: ['http', 'api'],
       },
-      async () => ({ success: true, output: {}, performance: {} as any })
+      async () => ({ success: true, output: {}, performance: {} as any }),
     );
-    
+
     const dbStep = createWorkflowStep(
       {
         name: 'DB Step',
@@ -183,7 +180,7 @@ describe('Basic Step Factory', () => {
         category: 'database',
         tags: ['database', 'sql'],
       },
-      async () => ({ success: true, output: {}, performance: {} as any })
+      async () => ({ success: true, output: {}, performance: {} as any }),
     );
 
     registry.register(httpStep);

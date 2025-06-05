@@ -1,6 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
+
 import { auth } from './auth';
 
 export interface BetterAuthResponse<T = any> {
@@ -74,7 +75,10 @@ export async function updateUser(data: {
 
 export async function deleteUser(): Promise<BetterAuthResponse> {
   try {
-    await auth.api.deleteUser({ headers: await headers() });
+    await auth.api.deleteUser({
+      body: {},
+      headers: await headers(),
+    });
     return { data: { message: 'User deleted' }, success: true };
   } catch (error) {
     return {
@@ -88,7 +92,7 @@ export async function deleteUser(): Promise<BetterAuthResponse> {
 // Admin User Operations
 export async function listUsers(): Promise<BetterAuthResponse> {
   try {
-    const users = await auth.api.admin.listUsers({
+    const users = await auth.api.listUsers({
       headers: await headers(),
       query: { limit: 100 },
     });
@@ -104,7 +108,7 @@ export async function listUsers(): Promise<BetterAuthResponse> {
 
 export async function listSessions(): Promise<BetterAuthResponse> {
   try {
-    const sessions = await auth.api.admin.listSessions({
+    const sessions = await auth.api.listSessions({
       headers: await headers(),
       query: { limit: 100 },
     });
@@ -120,7 +124,7 @@ export async function listSessions(): Promise<BetterAuthResponse> {
 
 export async function impersonateUser(userId: string): Promise<BetterAuthResponse> {
   try {
-    const result = await auth.api.admin.impersonateUser({
+    const result = await auth.api.impersonateUser({
       body: { userId },
       headers: await headers(),
     });
@@ -136,7 +140,7 @@ export async function impersonateUser(userId: string): Promise<BetterAuthRespons
 
 export async function stopImpersonating(): Promise<BetterAuthResponse> {
   try {
-    const result = await auth.api.admin.stopImpersonating({
+    const result = await auth.api.stopImpersonating({
       headers: await headers(),
     });
     return { data: result, success: true };
@@ -151,7 +155,7 @@ export async function stopImpersonating(): Promise<BetterAuthResponse> {
 
 export async function banUser(userId: string): Promise<BetterAuthResponse> {
   try {
-    const result = await auth.api.admin.banUser({
+    const result = await auth.api.banUser({
       body: { userId },
       headers: await headers(),
     });
@@ -167,7 +171,7 @@ export async function banUser(userId: string): Promise<BetterAuthResponse> {
 
 export async function unbanUser(userId: string): Promise<BetterAuthResponse> {
   try {
-    const result = await auth.api.admin.unbanUser({
+    const result = await auth.api.unbanUser({
       body: { userId },
       headers: await headers(),
     });
@@ -189,7 +193,7 @@ export async function getActiveOrganization(): Promise<BetterAuthResponse> {
       return { data: null, error: 'No active organization', success: false };
     }
 
-    const org = await auth.api.getOrganization({
+    const org = await auth.api.getFullOrganization({
       headers: await headers(),
       query: { organizationId: session.session.activeOrganizationId },
     });
@@ -210,8 +214,18 @@ export async function createOrganization(data: {
   metadata?: Record<string, unknown>;
 }): Promise<BetterAuthResponse> {
   try {
+    const orgData = {
+      ...data,
+      slug:
+        data.slug ||
+        data.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, ''),
+    };
+
     const org = await auth.api.createOrganization({
-      body: data,
+      body: orgData,
       headers: await headers(),
     });
     return { data: org, success: true };
@@ -226,7 +240,7 @@ export async function createOrganization(data: {
 
 export async function checkOrganizationSlug(slug: string): Promise<BetterAuthResponse> {
   try {
-    const result = await auth.api.checkSlug({
+    const result = await auth.api.checkOrganizationSlug({
       body: { slug },
       headers: await headers(),
     });
@@ -391,7 +405,7 @@ export async function createApiKey(name: string): Promise<BetterAuthResponse> {
 export async function updateApiKey(id: string, name: string): Promise<BetterAuthResponse> {
   try {
     const key = await auth.api.updateApiKey({
-      body: { id, name },
+      body: { name, keyId: id },
       headers: await headers(),
     });
     return { data: key, success: true };
@@ -407,7 +421,7 @@ export async function updateApiKey(id: string, name: string): Promise<BetterAuth
 export async function deleteApiKey(id: string): Promise<BetterAuthResponse> {
   try {
     await auth.api.deleteApiKey({
-      body: { id },
+      body: { keyId: id },
       headers: await headers(),
     });
     return { data: { message: 'API key deleted' }, success: true };
@@ -423,8 +437,10 @@ export async function deleteApiKey(id: string): Promise<BetterAuthResponse> {
 // Two-Factor Authentication
 export async function getTwoFactorStatus(): Promise<BetterAuthResponse> {
   try {
-    const status = await auth.api.twoFactor.getTwoFactorStatus({ headers: await headers() });
-    return { data: status, success: true };
+    // Check if user has 2FA enabled by getting session and checking user properties
+    const session = await auth.api.getSession({ headers: await headers() });
+    const twoFactorEnabled = session?.user?.twoFactorEnabled || false;
+    return { data: { enabled: twoFactorEnabled }, success: true };
   } catch (error) {
     return {
       data: null,
@@ -434,9 +450,12 @@ export async function getTwoFactorStatus(): Promise<BetterAuthResponse> {
   }
 }
 
-export async function enableTwoFactor(): Promise<BetterAuthResponse> {
+export async function enableTwoFactor(password: string): Promise<BetterAuthResponse> {
   try {
-    const result = await auth.api.twoFactor.enable({ headers: await headers() });
+    const result = await auth.api.enableTwoFactor({
+      body: { password },
+      headers: await headers(),
+    });
     return { data: result, success: true };
   } catch (error) {
     return {
@@ -449,7 +468,7 @@ export async function enableTwoFactor(): Promise<BetterAuthResponse> {
 
 export async function disableTwoFactor(password: string): Promise<BetterAuthResponse> {
   try {
-    await auth.api.twoFactor.disable({
+    await auth.api.disableTwoFactor({
       body: { password },
       headers: await headers(),
     });
@@ -465,7 +484,15 @@ export async function disableTwoFactor(password: string): Promise<BetterAuthResp
 
 export async function getTwoFactorBackupCodes(): Promise<BetterAuthResponse> {
   try {
-    const codes = await auth.api.twoFactor.getBackupCodes({ headers: await headers() });
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      return { data: null, error: 'User not authenticated', success: false };
+    }
+
+    const codes = await auth.api.viewBackupCodes({
+      body: { userId: session.user.id },
+      headers: await headers(),
+    });
     return { data: codes, success: true };
   } catch (error) {
     return {
@@ -479,7 +506,7 @@ export async function getTwoFactorBackupCodes(): Promise<BetterAuthResponse> {
 // Passkeys
 export async function listPasskeys(): Promise<BetterAuthResponse> {
   try {
-    const passkeys = await auth.api.passkey.listUserPasskeys({ headers: await headers() });
+    const passkeys = await auth.api.listPasskeys({ headers: await headers() });
     return { data: passkeys, success: true };
   } catch (error) {
     return {
@@ -492,7 +519,7 @@ export async function listPasskeys(): Promise<BetterAuthResponse> {
 
 export async function generatePasskeyRegistrationOptions(): Promise<BetterAuthResponse> {
   try {
-    const options = await auth.api.passkey.generateRegistrationOptions({
+    const options = await auth.api.generatePasskeyRegistrationOptions({
       headers: await headers(),
     });
     return { data: options, success: true };
@@ -507,7 +534,7 @@ export async function generatePasskeyRegistrationOptions(): Promise<BetterAuthRe
 
 export async function deletePasskey(id: string): Promise<BetterAuthResponse> {
   try {
-    await auth.api.passkey.deleteUserPasskey({
+    await auth.api.deletePasskey({
       body: { id },
       headers: await headers(),
     });

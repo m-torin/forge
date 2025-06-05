@@ -2,8 +2,21 @@
  * Wishlist, sharing, and review-related ecommerce events
  */
 
-import { ECOMMERCE_EVENTS, type WishlistProperties, type SharingProperties, type BaseProductProperties, type CartProperties, type ReviewProperties, type EcommerceEventSpec } from '../types';
-import { normalizeProductProperties, normalizeProducts, cleanProperties, validateRequiredProperties } from '../utils';
+import {
+  type BaseProductProperties,
+  type CartProperties,
+  ECOMMERCE_EVENTS,
+  type EcommerceEventSpec,
+  type ReviewProperties,
+  type SharingProperties,
+  type WishlistProperties,
+} from '../types';
+import {
+  cleanProperties,
+  normalizeProductProperties,
+  normalizeProducts,
+  validateRequiredProperties,
+} from '../utils';
 
 /**
  * Track when a product is added to wishlist
@@ -16,12 +29,12 @@ export function productAddedToWishlist(properties: WishlistProperties): Ecommerc
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_ADDED_TO_WISHLIST,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties({
       wishlist_id,
       wishlist_name,
       ...normalizedProduct,
     }),
+    requiredProperties: ['product_id'],
   };
 }
 
@@ -36,54 +49,58 @@ export function productRemovedFromWishlist(properties: WishlistProperties): Ecom
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_REMOVED_FROM_WISHLIST,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties({
       wishlist_id,
       wishlist_name,
       ...normalizedProduct,
     }),
+    requiredProperties: ['product_id'],
   };
 }
 
 /**
  * Track when a wishlist product is added to cart
  */
-export function wishlistProductAddedToCart(properties: WishlistProperties & { cart_id?: string }): EcommerceEventSpec {
-  const { wishlist_id, wishlist_name, cart_id, ...productProps } = properties;
+export function wishlistProductAddedToCart(
+  properties: WishlistProperties & { cart_id?: string },
+): EcommerceEventSpec {
+  const { cart_id, wishlist_id, wishlist_name, ...productProps } = properties;
   const normalizedProduct = normalizeProductProperties(productProps);
   validateRequiredProperties(normalizedProduct, ['product_id']);
 
   return {
     name: ECOMMERCE_EVENTS.WISHLIST_PRODUCT_ADDED_TO_CART,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties({
+      cart_id,
       wishlist_id,
       wishlist_name,
-      cart_id,
       ...normalizedProduct,
     }),
+    requiredProperties: ['product_id'],
   };
 }
 
 /**
  * Track when a product is shared
  */
-export function productShared(properties: BaseProductProperties & SharingProperties): EcommerceEventSpec {
-  const { share_via, share_message, recipient, ...productProps } = properties;
+export function productShared(
+  properties: BaseProductProperties & SharingProperties,
+): EcommerceEventSpec {
+  const { recipient, share_message, share_via, ...productProps } = properties;
   const normalizedProduct = normalizeProductProperties(productProps);
   validateRequiredProperties(normalizedProduct, ['product_id']);
 
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_SHARED,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties({
-      share_via,
-      share_message,
       recipient,
+      share_message,
+      share_via,
       ...normalizedProduct,
     }),
+    requiredProperties: ['product_id'],
   };
 }
 
@@ -91,19 +108,19 @@ export function productShared(properties: BaseProductProperties & SharingPropert
  * Track when a cart is shared
  */
 export function cartShared(properties: CartProperties & SharingProperties): EcommerceEventSpec {
-  const { share_via, share_message, recipient, cart_id, products } = properties;
+  const { cart_id, products, recipient, share_message, share_via } = properties;
 
   return {
     name: ECOMMERCE_EVENTS.CART_SHARED,
     category: 'ecommerce',
-    requiredProperties: [],
     properties: cleanProperties({
-      share_via,
-      share_message,
-      recipient,
       cart_id,
       products: products ? normalizeProducts(products) : undefined,
+      recipient,
+      share_message,
+      share_via,
     }),
+    requiredProperties: [],
   };
 }
 
@@ -116,7 +133,7 @@ export function productReviewed(properties: ReviewProperties): EcommerceEventSpe
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_REVIEWED,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties(properties),
+    requiredProperties: ['product_id'],
   };
 }

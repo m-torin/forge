@@ -4,16 +4,17 @@
 
 'use client';
 
-import React, { ReactNode } from 'react';
-import { createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
+import React, { type ReactNode } from 'react';
+import { createContext, useContext } from 'react';
 
-// Re-export all client functionality
-export * from './client';
+import { useAuth } from './client/hooks';
 
 // Next.js specific client features
 import type { AuthContextType } from './shared/types';
-import { useAuth } from './client/hooks';
+
+// Re-export all client functionality
+export * from './client';
 
 // Auth context
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -42,15 +43,15 @@ export function useAuthContext(): AuthContextType {
  */
 export function useAuthRedirect() {
   const router = useRouter();
-  
+
   return {
-    redirectToLogin: (returnUrl?: string) => {
-      const url = returnUrl ? `/sign-in?returnUrl=${encodeURIComponent(returnUrl)}` : '/sign-in';
-      router.push(url);
-    },
     redirectAfterLogin: (returnUrl?: string) => {
       const url = returnUrl || '/dashboard';
       router.replace(url);
+    },
+    redirectToLogin: (returnUrl?: string) => {
+      const url = returnUrl ? `/sign-in?returnUrl=${encodeURIComponent(returnUrl)}` : '/sign-in';
+      router.push(url);
     },
     redirectToSignUp: (returnUrl?: string) => {
       const url = returnUrl ? `/sign-up?returnUrl=${encodeURIComponent(returnUrl)}` : '/sign-up';

@@ -175,11 +175,7 @@ export function AppShellLayout({ children }: AppShellLayoutProps) {
                 size="sm"
               />
               <Tooltip label={sseConnected ? 'SSE Connected' : 'SSE Disconnected'}>
-                <Badge 
-                  color={sseConnected ? 'green' : 'red'} 
-                  variant="dot"
-                  size="sm"
-                >
+                <Badge color={sseConnected ? 'green' : 'red'} variant="dot" size="sm">
                   SSE
                 </Badge>
               </Tooltip>

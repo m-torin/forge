@@ -1,6 +1,6 @@
 /**
  * Vercel Analytics server-side (Node.js) provider implementation
- * 
+ *
  * Note: Vercel Analytics is primarily client-side focused.
  * Server-side tracking is limited and mainly for custom events.
  */
@@ -15,7 +15,7 @@ export class VercelServerProvider implements AnalyticsProvider {
 
   constructor(config: ProviderConfig) {
     this.config = {
-      options: config.options
+      options: config.options,
     };
   }
 
@@ -25,7 +25,7 @@ export class VercelServerProvider implements AnalyticsProvider {
     // Vercel Analytics doesn't require server-side initialization
     // Just mark as initialized
     this.isInitialized = true;
-    
+
     // Note: Limited server-side support. Consider using client-side tracking for better features.
   }
 
@@ -37,10 +37,8 @@ export class VercelServerProvider implements AnalyticsProvider {
     try {
       // For server-side, we can use Vercel's Speed Insights API if available
       // Server-side tracking is limited - most tracking happens client-side
-      
       // In production, you might want to send to Vercel's API endpoint
       // This would require additional setup and is not part of the standard SDK
-      
     } catch (error) {
       // Silently fail to avoid disrupting app flow
     }
@@ -50,7 +48,7 @@ export class VercelServerProvider implements AnalyticsProvider {
     // Track as custom event on server
     await this.track('User Identified', {
       userId,
-      ...traits
+      ...traits,
     });
   }
 
@@ -58,7 +56,7 @@ export class VercelServerProvider implements AnalyticsProvider {
     // Track page view on server (limited utility)
     await this.track('Page View (Server)', {
       page: name,
-      ...properties
+      ...properties,
     });
   }
 
@@ -66,15 +64,15 @@ export class VercelServerProvider implements AnalyticsProvider {
     // Track as custom event on server
     await this.track('Group Identified', {
       groupId,
-      ...traits
+      ...traits,
     });
   }
 
   async alias(userId: string, previousId: string): Promise<void> {
     // Track as custom event on server
     await this.track('User Aliased', {
+      previousId,
       userId,
-      previousId
     });
   }
 }

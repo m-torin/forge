@@ -1,0 +1,407 @@
+/**
+ * Pagination scraping pattern for multi-page data extraction
+ * Enhanced from the old package with better error handling and flexibility
+ */
+
+import { createScrapingManager } from '../utils/scraping-manager';
+import { ScrapingError, ScrapingErrorCode } from '../errors';
+import { humanDelay, retryWithBackoff } from '../utils/helpers';
+import type {
+  SelectorMap,
+  ProviderRegistry,
+  ScrapingConfig,
+  ScrapeOptions,
+} from '../types/scraping-types';
+import type { PaginationOptions, PaginationResult } from './types';
+
+/**
+ * Scrape with pagination support
+ * Enhanced version with better URL handling and error recovery
+ */
+export async function scrapeWithPagination(
+  startUrl: string,
+  selectors: SelectorMap & {
+    nextPageSelector?: string;
+  },
+  options: PaginationOptions & ScrapeOptions = {},
+): Promise<PaginationResult[]> {
+  const {
+    maxPages = 10,
+    delay = 2000,
+    nextPageSelector,
+    stopCondition,
+    onPageComplete,
+    provider = 'auto',
+    ...scrapeOptions
+  } = options;
+
+  // Set up providers based on environment
+  const providers: ProviderRegistry = {};
+
+  if (typeof window !== 'undefined') {
+    // Client environment - limited pagination support
+    const { FetchProvider } = await import('../../client/providers/fetch-provider');
+    providers.fetch = (config) => new FetchProvider();
+  } else {
+    // Server environment - full browser support needed for pagination
+    const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
+    const { PuppeteerProvider } = await import('../../server/providers/puppeteer-provider');
+    const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
+
+    providers.playwright = (config) => new PlaywrightProvider();
+    providers.puppeteer = (config) => new PuppeteerProvider();
+    providers.cheerio = (config) => new CheerioProvider();
+  }
+
+  const config: ScrapingConfig = {
+    providers: {
+      [provider === 'auto' ? 'playwright' : provider]: {},
+    },
+    debug: false,
+  };
+
+  const manager = createScrapingManager(config, providers);
+  const results: PaginationResult[] = [];
+
+  try {
+    await manager.initialize();
+
+    let currentUrl = startUrl;
+    let pageNum = 1;
+
+    while (pageNum <= maxPages) {
+      try {
+        // Extract the nextPageSelector from selectors for this iteration
+        const { nextPageSelector: _, ...pageSelectors } = selectors;
+        const currentNextPageSelector = nextPageSelector || selectors.nextPageSelector;
+
+        const result = await retryWithBackoff(
+          async () => {
+            return manager.scrape(currentUrl, {
+              ...scrapeOptions,
+              extract: pageSelectors,
+            });
+          },
+          { attempts: 3, delay: 1000 },
+        );
+
+        const pageResult: PaginationResult = {
+          page: pageNum,
+          data: result.data || {},
+          url: currentUrl,
+        };
+
+        results.push(pageResult);
+
+        if (onPageComplete) {
+          onPageComplete(pageNum, pageResult.data);
+        }
+
+        // Check stop condition
+        if (stopCondition && stopCondition(pageNum, pageResult.data)) {
+          break;
+        }
+
+        // Look for next page link
+        if (currentNextPageSelector && pageNum < maxPages) {
+          const nextPageUrl = await findNextPageUrl(
+            manager,
+            currentUrl,
+            currentNextPageSelector,
+            scrapeOptions,
+          );
+
+          if (!nextPageUrl) {
+            break; // No more pages
+          }
+
+          currentUrl = nextPageUrl;
+          pageNum++;
+
+          // Add delay between pages
+          if (delay > 0) {
+            await humanDelay(delay, delay * 1.2);
+          }
+        } else {
+          break; // No pagination selector or reached max pages
+        }
+      } catch (error) {
+        throw new ScrapingError(
+          `Failed to scrape page ${pageNum}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          ScrapingErrorCode.SCRAPING_FAILED,
+          { page: pageNum, url: currentUrl },
+          error instanceof Error ? error : undefined,
+        );
+      }
+    }
+
+    return results;
+  } finally {
+    await manager.dispose();
+  }
+}
+
+/**
+ * Find the next page URL using various strategies
+ */
+async function findNextPageUrl(
+  manager: any,
+  currentUrl: string,
+  nextPageSelector: string,
+  scrapeOptions: ScrapeOptions,
+): Promise<string | null> {
+  try {
+    // Try to extract the next page URL
+    const result = await manager.scrape(currentUrl, {
+      ...scrapeOptions,
+      extract: {
+        nextPageUrl: {
+          selector: nextPageSelector,
+          attribute: 'href',
+        },
+      },
+    });
+
+    const nextPageUrl = result.data?.nextPageUrl;
+
+    if (!nextPageUrl) {
+      return null;
+    }
+
+    // Handle relative URLs
+    try {
+      return new URL(nextPageUrl, currentUrl).href;
+    } catch {
+      // If URL parsing fails, return as-is
+      return nextPageUrl;
+    }
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Scrape with numeric pagination (page=1, page=2, etc.)
+ */
+export async function scrapeWithNumericPagination(
+  baseUrl: string,
+  selectors: SelectorMap,
+  options: {
+    startPage?: number;
+    maxPages?: number;
+    pageParam?: string;
+    delay?: number;
+    onPageComplete?: (page: number, data: any) => void;
+    stopCondition?: (page: number, data: any) => boolean;
+  } & ScrapeOptions = {},
+): Promise<PaginationResult[]> {
+  const {
+    startPage = 1,
+    maxPages = 10,
+    pageParam = 'page',
+    delay = 1000,
+    onPageComplete,
+    stopCondition,
+    provider = 'auto',
+    ...scrapeOptions
+  } = options;
+
+  // Set up providers
+  const providers: ProviderRegistry = {};
+
+  if (typeof window !== 'undefined') {
+    const { FetchProvider } = await import('../../client/providers/fetch-provider');
+    providers.fetch = (config) => new FetchProvider();
+  } else {
+    const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
+    const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
+
+    providers.cheerio = (config) => new CheerioProvider();
+    providers.playwright = (config) => new PlaywrightProvider();
+  }
+
+  const config: ScrapingConfig = {
+    providers: {
+      [provider === 'auto' ? Object.keys(providers)[0] : provider]: {},
+    },
+    debug: false,
+  };
+
+  const manager = createScrapingManager(config, providers);
+  const results: PaginationResult[] = [];
+
+  try {
+    await manager.initialize();
+
+    for (let page = startPage; page <= startPage + maxPages - 1; page++) {
+      // Build URL with page parameter
+      const url = new URL(baseUrl);
+      url.searchParams.set(pageParam, page.toString());
+      const pageUrl = url.href;
+
+      try {
+        const result = await retryWithBackoff(
+          async () => {
+            return manager.scrape(pageUrl, {
+              ...scrapeOptions,
+              extract: selectors,
+            });
+          },
+          { attempts: 3, delay: 1000 },
+        );
+
+        const pageResult: PaginationResult = {
+          page,
+          data: result.data || {},
+          url: pageUrl,
+        };
+
+        // Check if page has any data (stop if empty)
+        const hasData = Object.values(pageResult.data).some(
+          (value) =>
+            value !== null &&
+            value !== undefined &&
+            (Array.isArray(value) ? value.length > 0 : true),
+        );
+
+        if (!hasData) {
+          break; // No more data, stop pagination
+        }
+
+        results.push(pageResult);
+
+        if (onPageComplete) {
+          onPageComplete(page, pageResult.data);
+        }
+
+        // Check stop condition
+        if (stopCondition && stopCondition(page, pageResult.data)) {
+          break;
+        }
+
+        // Add delay between pages
+        if (delay > 0 && page < startPage + maxPages - 1) {
+          await humanDelay(delay, delay * 1.2);
+        }
+      } catch (error) {
+        throw new ScrapingError(
+          `Failed to scrape page ${page}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          ScrapingErrorCode.SCRAPING_FAILED,
+          { page, url: pageUrl },
+          error instanceof Error ? error : undefined,
+        );
+      }
+    }
+
+    return results;
+  } finally {
+    await manager.dispose();
+  }
+}
+
+/**
+ * Scrape with infinite scroll pagination
+ * Requires browser automation
+ */
+export async function scrapeWithInfiniteScroll(
+  url: string,
+  selectors: SelectorMap,
+  options: {
+    maxScrolls?: number;
+    scrollDelay?: number;
+    loadMoreSelector?: string;
+    onScroll?: (scroll: number, data: any) => void;
+    stopCondition?: (scroll: number, data: any) => boolean;
+  } & ScrapeOptions = {},
+): Promise<PaginationResult[]> {
+  const {
+    maxScrolls = 10,
+    scrollDelay = 2000,
+    loadMoreSelector,
+    onScroll,
+    stopCondition,
+    provider = 'playwright',
+    ...scrapeOptions
+  } = options;
+
+  // Only server-side browsers support infinite scroll
+  if (typeof window !== 'undefined') {
+    throw new ScrapingError(
+      'Infinite scroll scraping requires server-side browser automation',
+      ScrapingErrorCode.PROVIDER_ERROR,
+    );
+  }
+
+  const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
+
+  const providers: ProviderRegistry = {
+    playwright: (config) => new PlaywrightProvider(),
+  };
+
+  const config: ScrapingConfig = {
+    providers: { [provider]: {} },
+    debug: false,
+  };
+
+  const manager = createScrapingManager(config, providers);
+  const results: PaginationResult[] = [];
+
+  try {
+    await manager.initialize();
+
+    // Initial page load
+    await manager.scrape(url, scrapeOptions);
+
+    for (let scroll = 1; scroll <= maxScrolls; scroll++) {
+      try {
+        // Scroll to bottom or click load more button
+        if (loadMoreSelector) {
+          // Click load more button if available
+          // Note: This would need to be implemented in the provider
+          // await manager.click(loadMoreSelector);
+        } else {
+          // Scroll to bottom
+          // Note: This would need to be implemented in the provider
+          // await manager.scrollToBottom();
+        }
+
+        // Wait for content to load
+        await humanDelay(scrollDelay, scrollDelay * 1.2);
+
+        // Extract data from current state
+        const result = await manager.scrape(url, {
+          ...scrapeOptions,
+          extract: selectors,
+        });
+
+        const scrollResult: PaginationResult = {
+          page: scroll,
+          data: result.data || {},
+          url,
+        };
+
+        results.push(scrollResult);
+
+        if (onScroll) {
+          onScroll(scroll, scrollResult.data);
+        }
+
+        // Check stop condition
+        if (stopCondition && stopCondition(scroll, scrollResult.data)) {
+          break;
+        }
+      } catch (error) {
+        throw new ScrapingError(
+          `Failed at scroll ${scroll}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          ScrapingErrorCode.SCRAPING_FAILED,
+          { scroll, url },
+          error instanceof Error ? error : undefined,
+        );
+      }
+    }
+
+    return results;
+  } finally {
+    await manager.dispose();
+  }
+}

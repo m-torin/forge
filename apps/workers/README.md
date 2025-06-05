@@ -22,19 +22,23 @@ Background job processing and workflow management application built with Next.js
 ### Local Development Setup
 
 1. **Copy environment variables**:
+
    ```bash
    cp .env.local.example .env.local
    ```
 
 2. **Update `.env.local`** with your values:
+
    - Database URL (required)
    - Auth secrets (required)
    - Other services as needed
 
 3. **Run without Doppler** (recommended for local testing):
+
    ```bash
    pnpm dev:local
    ```
+
    This starts both Next.js (port 3400) and QStash CLI (port 8080) locally.
 
 4. **Run with Doppler** (for production-like environment):
@@ -72,6 +76,7 @@ pnpm typecheck    # TypeScript type checking
 3. The workflow will automatically be available at `/api/workflows/[workflow-name]`
 
 Example workflow structure:
+
 ```typescript
 const workflowDefinition = {
   metadata: {
@@ -104,6 +109,7 @@ const workflowDefinition = {
 ### Testing Workflows Locally
 
 1. Start the development server:
+
    ```bash
    pnpm dev:local
    ```

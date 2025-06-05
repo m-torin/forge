@@ -2,7 +2,7 @@
  * Provider configuration and management types
  */
 
-import type { WorkflowProvider } from './workflow.js';
+import type { WorkflowProvider } from './workflow';
 
 export interface ProviderConfig {
   /** Provider-specific configuration */
@@ -86,10 +86,10 @@ export interface CustomProviderConfig extends ProviderConfig {
   type: 'custom';
 }
 
-export type AnyProviderConfig = 
-  | UpstashWorkflowConfig 
-  | UpstashQStashConfig 
-  | RateLimitConfig 
+export type AnyProviderConfig =
+  | UpstashWorkflowConfig
+  | UpstashQStashConfig
+  | RateLimitConfig
   | CustomProviderConfig;
 
 export interface ProviderRegistry {
@@ -144,7 +144,7 @@ export interface ProviderMetrics {
   totalExecutions: number;
 }
 
-export type ProviderFeature = 
+export type ProviderFeature =
   | 'workflow-execution'
   | 'scheduling'
   | 'rate-limiting'

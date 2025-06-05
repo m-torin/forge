@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
         {
           id: 'execute',
           name: 'Execute Workflow',
-          type: 'http',
-          config: {
+          action: 'http',
+          input: {
             url: `${config.workflowUrl}/${route}`,
             method: 'POST',
             headers: {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`[WORKFLOW-TRIGGER] Triggering workflow: ${route}`)
 
-    const executionId = await engine.executeWorkflow(workflowDefinition, payload)
+    const executionId = await engine.executeWorkflow(workflowDefinition, payload as Record<string, any>)
 
     console.log(`[WORKFLOW-TRIGGER] Workflow triggered successfully: ${executionId}`)
 

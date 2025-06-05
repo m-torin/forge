@@ -4,27 +4,26 @@
  * https://segment.com/docs/connections/spec/
  */
 
-import type { 
-  EmitterOptions, 
+import type {
+  EmitterAliasPayload,
+  EmitterGroupPayload,
   EmitterIdentifyPayload,
-  EmitterTrackPayload,
+  EmitterOptions,
   EmitterPagePayload,
   EmitterScreenPayload,
-  EmitterGroupPayload,
-  EmitterAliasPayload,
-  EmitterContext
-} from './emitter-types'
+  EmitterTrackPayload,
+} from './emitter-types';
 
 /**
  * Identify - who is the customer?
  * Ties a user to their actions and records traits about them.
  * https://segment.com/docs/connections/spec/identify/
- * 
+ *
  * Call this:
  * - After a user first registers
  * - After a user logs in
  * - When a user updates their info
- * 
+ *
  * @param userId - Unique identifier for the user in your database (required unless anonymousId is set)
  * @param traits - Free-form dictionary of traits about the user, like email or name
  * @param options - Optional fields like timestamp, anonymousId, context, integrations
@@ -33,7 +32,7 @@ import type {
 export function identify(
   userId: string,
   traits?: Record<string, any>,
-  options?: EmitterOptions
+  options?: EmitterOptions,
 ): EmitterIdentifyPayload {
   const payload: EmitterIdentifyPayload = {
     type: 'identify',
@@ -42,17 +41,17 @@ export function identify(
     ...(options?.timestamp && { timestamp: options.timestamp }),
     ...(options?.context && { context: options.context }),
     ...(options?.anonymousId && { anonymousId: options.anonymousId }),
-    ...(options?.integrations && { integrations: options.integrations })
-  }
-  
-  return payload
+    ...(options?.integrations && { integrations: options.integrations }),
+  };
+
+  return payload;
 }
 
 /**
  * Track - what are they doing?
  * Records any actions your users perform, along with properties that describe the action.
  * https://segment.com/docs/connections/spec/track/
- * 
+ *
  * @param event - Name of the action that a user has performed (required)
  * @param properties - Free-form dictionary of properties of the event, like revenue
  * @param options - Optional fields like timestamp, anonymousId, context, integrations
@@ -61,7 +60,7 @@ export function identify(
 export function track(
   event: string,
   properties?: Record<string, any>,
-  options?: EmitterOptions
+  options?: EmitterOptions,
 ): EmitterTrackPayload {
   const payload: EmitterTrackPayload = {
     type: 'track',
@@ -71,19 +70,19 @@ export function track(
     ...(options?.context && { context: options.context }),
     ...(options?.anonymousId && { anonymousId: options.anonymousId }),
     ...(options?.integrations && { integrations: options.integrations }),
-    ...(options?.anonymousId && { anonymousId: options.anonymousId })
-  }
-  
+    ...(options?.anonymousId && { anonymousId: options.anonymousId }),
+  };
+
   // userId should be passed through the main function params or via options
-  
-  return payload
+
+  return payload;
 }
 
 /**
  * Page - what web page are they on?
  * Records page views on your website, along with optional properties about the page.
  * https://segment.com/docs/connections/spec/page/
- * 
+ *
  * @param category - Category of the page (optional)
  * @param name - Name of the page (optional)
  * @param properties - Free-form dictionary of properties of the page, like url and referrer
@@ -94,14 +93,14 @@ export function page(
   category?: string,
   name?: string,
   properties?: Record<string, any>,
-  options?: EmitterOptions
+  options?: EmitterOptions,
 ): EmitterPagePayload {
   // Merge category into properties if provided
   const mergedProperties = {
     ...(properties || {}),
-    ...(category && { category })
-  }
-  
+    ...(category && { category }),
+  };
+
   const payload: EmitterPagePayload = {
     type: 'page',
     ...(name && { name }),
@@ -109,19 +108,19 @@ export function page(
     ...(options?.timestamp && { timestamp: options.timestamp }),
     ...(options?.context && { context: options.context }),
     ...(options?.anonymousId && { anonymousId: options.anonymousId }),
-    ...(options?.integrations && { integrations: options.integrations })
-  }
-  
+    ...(options?.integrations && { integrations: options.integrations }),
+  };
+
   // userId should be passed through the main function params or via options
-  
-  return payload
+
+  return payload;
 }
 
 /**
  * Screen - what app screen are they on?
  * The mobile equivalent of page, records screen views in your mobile app.
  * https://segment.com/docs/connections/spec/screen/
- * 
+ *
  * @param name - Name of the screen (optional)
  * @param properties - Free-form dictionary of properties of the screen
  * @param options - Optional fields like timestamp, anonymousId, context, integrations
@@ -130,7 +129,7 @@ export function page(
 export function screen(
   name?: string,
   properties?: Record<string, any>,
-  options?: EmitterOptions
+  options?: EmitterOptions,
 ): EmitterScreenPayload {
   const payload: EmitterScreenPayload = {
     type: 'screen',
@@ -139,19 +138,19 @@ export function screen(
     ...(options?.timestamp && { timestamp: options.timestamp }),
     ...(options?.context && { context: options.context }),
     ...(options?.anonymousId && { anonymousId: options.anonymousId }),
-    ...(options?.integrations && { integrations: options.integrations })
-  }
-  
+    ...(options?.integrations && { integrations: options.integrations }),
+  };
+
   // userId should be passed through the main function params or via options
-  
-  return payload
+
+  return payload;
 }
 
 /**
  * Group - what account or organization are they part of?
  * Associates an individual user with a group—a company, organization, account, project, or team.
  * https://segment.com/docs/connections/spec/group/
- * 
+ *
  * @param groupId - Unique identifier for the group in your database (required)
  * @param traits - Free-form dictionary of traits of the group, like name or industry
  * @param options - Optional fields like timestamp, anonymousId, context, integrations
@@ -160,7 +159,7 @@ export function screen(
 export function group(
   groupId: string,
   traits?: Record<string, any>,
-  options?: EmitterOptions
+  options?: EmitterOptions,
 ): EmitterGroupPayload {
   const payload: EmitterGroupPayload = {
     type: 'group',
@@ -169,21 +168,21 @@ export function group(
     ...(options?.timestamp && { timestamp: options.timestamp }),
     ...(options?.context && { context: options.context }),
     ...(options?.anonymousId && { anonymousId: options.anonymousId }),
-    ...(options?.integrations && { integrations: options.integrations })
-  }
-  
+    ...(options?.integrations && { integrations: options.integrations }),
+  };
+
   // userId should be passed through the main function params or via options
-  
-  return payload
+
+  return payload;
 }
 
 /**
  * Alias - what was their past identity?
  * Merges two user identities, effectively connecting two sets of user data in one profile.
  * https://segment.com/docs/connections/spec/alias/
- * 
+ *
  * Advanced method: This should only be done when required for downstream destination compatibility.
- * 
+ *
  * @param userId - The user's new identity, or an existing identity to merge with previousId (required)
  * @param previousId - The existing ID you've referred to the user by (optional, defaults to anonymousId)
  * @param options - Optional fields like timestamp, context, integrations
@@ -192,17 +191,17 @@ export function group(
 export function alias(
   userId: string,
   previousId: string,
-  options?: EmitterOptions
+  options?: EmitterOptions,
 ): EmitterAliasPayload {
   const payload: EmitterAliasPayload = {
     type: 'alias',
-    userId,
     previousId,
+    userId,
     ...(options?.timestamp && { timestamp: options.timestamp }),
     ...(options?.context && { context: options.context }),
     ...(options?.anonymousId && { anonymousId: options.anonymousId }),
-    ...(options?.integrations && { integrations: options.integrations })
-  }
-  
-  return payload
+    ...(options?.integrations && { integrations: options.integrations }),
+  };
+
+  return payload;
 }

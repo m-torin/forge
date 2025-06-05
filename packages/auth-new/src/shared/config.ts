@@ -4,6 +4,7 @@
 
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
+
 import type { AuthConfig } from './types';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -46,32 +47,34 @@ export const env = createEnv({
  */
 export function createAuthConfig(): AuthConfig {
   const config = env;
-  
+
   return {
-    secret: config.BETTER_AUTH_SECRET || 'development-secret',
-    databaseUrl: config.DATABASE_URL || 'postgresql://localhost:5432/dev',
-    appUrl: config.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
     providers: {
-      ...(config.GITHUB_CLIENT_ID && config.GITHUB_CLIENT_SECRET && {
-        github: {
-          clientId: config.GITHUB_CLIENT_ID,
-          clientSecret: config.GITHUB_CLIENT_SECRET,
-        },
-      }),
-      ...(config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET && {
-        google: {
-          clientId: config.GOOGLE_CLIENT_ID,
-          clientSecret: config.GOOGLE_CLIENT_SECRET,
-        },
-      }),
+      ...(config.GITHUB_CLIENT_ID &&
+        config.GITHUB_CLIENT_SECRET && {
+          github: {
+            clientId: config.GITHUB_CLIENT_ID,
+            clientSecret: config.GITHUB_CLIENT_SECRET,
+          },
+        }),
+      ...(config.GOOGLE_CLIENT_ID &&
+        config.GOOGLE_CLIENT_SECRET && {
+          google: {
+            clientId: config.GOOGLE_CLIENT_ID,
+            clientSecret: config.GOOGLE_CLIENT_SECRET,
+          },
+        }),
     },
+    appUrl: config.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    databaseUrl: config.DATABASE_URL || 'postgresql://localhost:5432/dev',
     features: {
-      organizations: true,
-      apiKeys: true,
       admin: true,
-      twoFactor: true,
-      passkeys: true,
+      apiKeys: true,
       magicLink: true,
+      organizations: true,
+      passkeys: true,
+      twoFactor: true,
     },
+    secret: config.BETTER_AUTH_SECRET || 'development-secret',
   };
 }

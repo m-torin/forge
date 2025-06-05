@@ -28,12 +28,12 @@ export const { POST } = serve(
     // Step 3: Final verification
     const step3 = await context.run('verify-complete', async () => {
       console.log('[VERIFY-SETUP] Step 3: All steps completed successfully');
-      return { 
-        step: 3, 
-        success: true, 
+      return {
+        step: 3,
+        success: true,
         allSteps: [step1, step2],
         message: 'Local QStash setup is working correctly!',
-        timestamp: Date.now() 
+        timestamp: Date.now(),
       };
     });
 
@@ -48,7 +48,7 @@ export const { POST } = serve(
     // For local development with QStash CLI
     receiver: undefined, // Disable signature verification as per docs
     verbose: true, // Enable detailed logging
-  }
+  },
 );
 
 // GET endpoint for checking the route exists

@@ -1,11 +1,12 @@
 # Next.js 15 Analytics Integration
 
-This package provides full support for Next.js 15 with deferred loading, script optimization, consent management, and comprehensive PostHog feature flags.
+This package provides full support for Next.js 15 with deferred loading, script optimization,
+consent management, and comprehensive PostHog feature flags.
 
 ## Features
 
 - ✅ **Deferred Script Loading** with Next.js Script component strategies
-- ✅ **Event Buffering** before initialization  
+- ✅ **Event Buffering** before initialization
 - ✅ **Consent Management** integration
 - ✅ **Performance Optimized** loading strategies
 - ✅ **SSR/SSG Compatible** with proper hydration
@@ -25,17 +26,17 @@ import { createNextJSAnalytics } from '@repo/analytics';
 export const analytics = createNextJSAnalytics({
   providers: {
     segment: {
-      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!
+      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!,
     },
     vercel: {},
-    console: { prefix: '[Analytics]' }
+    console: { prefix: '[Analytics]' },
   },
   nextjs: {
     strategy: 'afterInteractive',
     bufferEvents: true,
     maxBufferSize: 100,
-    debug: process.env.NODE_ENV === 'development'
-  }
+    debug: process.env.NODE_ENV === 'development',
+  },
 });
 ```
 
@@ -46,11 +47,7 @@ export const analytics = createNextJSAnalytics({
 import { analytics } from '@/lib/analytics';
 import { useEffect } from 'react';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Initialize analytics on client
     analytics.initialize();
@@ -58,9 +55,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
@@ -77,17 +72,13 @@ export function SignupForm() {
     // Track immediately - will buffer if not initialized
     analytics.track('Form Submitted', {
       form: 'signup',
-      method: 'email'
+      method: 'email',
     });
-    
+
     // Process signup...
   };
 
-  return (
-    <form action={handleSubmit}>
-      {/* form fields */}
-    </form>
-  );
+  return <form action={handleSubmit}>{/* form fields */}</form>;
 }
 ```
 
@@ -113,9 +104,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body>
-        <AnalyticsProvider bootstrapData={bootstrapData}>
-          {children}
-        </AnalyticsProvider>
+        <AnalyticsProvider bootstrapData={bootstrapData}>{children}</AnalyticsProvider>
       </body>
     </html>
   );
@@ -129,10 +118,10 @@ Use feature flags directly in server components:
 ```tsx
 // app/page.tsx - Server component with flags
 import { cookies } from 'next/headers';
-import { 
-  isFeatureEnabledOnServer, 
+import {
+  isFeatureEnabledOnServer,
   getFeatureFlagOnServer,
-  getAllFeatureFlagsOnServer 
+  getAllFeatureFlagsOnServer,
 } from '@repo/analytics';
 
 export default async function HomePage() {
@@ -142,7 +131,7 @@ export default async function HomePage() {
   // Check individual flags
   const showNewDesign = await isFeatureEnabledOnServer('new-design', cookieStore, apiKey);
   const ctaText = await getFeatureFlagOnServer('cta-text', cookieStore, apiKey, {
-    defaultValue: 'Click here'
+    defaultValue: 'Click here',
   });
 
   // Get all flags at once (more efficient)
@@ -151,7 +140,7 @@ export default async function HomePage() {
   return (
     <main>
       <h1>Welcome to our app</h1>
-      
+
       {showNewDesign ? (
         <div className="new-design">
           <h2>New Design!</h2>
@@ -161,12 +150,10 @@ export default async function HomePage() {
           <h2>Classic Design</h2>
         </div>
       )}
-      
+
       <button>{ctaText}</button>
-      
-      {allFlags['premium-features'] && (
-        <div>Premium features available!</div>
-      )}
+
+      {allFlags['premium-features'] && <div>Premium features available!</div>}
     </main>
   );
 }
@@ -188,7 +175,7 @@ export function FeatureComponent() {
 
   useEffect(() => {
     const checkFlag = async () => {
-      // This will use live PostHog data if available, 
+      // This will use live PostHog data if available,
       // or fall back to bootstrap data
       const enabled = await analytics.isFeatureEnabled('new-feature');
       setFlagValue(enabled);
@@ -202,15 +189,7 @@ export function FeatureComponent() {
     return <div>Loading...</div>;
   }
 
-  return (
-    <div>
-      {flagValue ? (
-        <NewFeature />
-      ) : (
-        <OldFeature />
-      )}
-    </div>
-  );
+  return <div>{flagValue ? <NewFeature /> : <OldFeature />}</div>;
 }
 ```
 
@@ -226,29 +205,26 @@ export default async function ExperimentPage() {
   const apiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY!;
 
   // A/B test with variants
-  const buttonVariant = await getFeatureFlagOnServer(
-    'button-color-test', 
-    cookieStore, 
-    apiKey,
-    { defaultValue: 'blue' }
-  );
+  const buttonVariant = await getFeatureFlagOnServer('button-color-test', cookieStore, apiKey, {
+    defaultValue: 'blue',
+  });
 
   const buttonStyles = {
     blue: 'bg-blue-500 hover:bg-blue-600',
-    red: 'bg-red-500 hover:bg-red-600', 
-    green: 'bg-green-500 hover:bg-green-600'
+    red: 'bg-red-500 hover:bg-red-600',
+    green: 'bg-green-500 hover:bg-green-600',
   };
 
   return (
     <div>
       <h1>A/B Test Page</h1>
-      <button 
+      <button
         className={`px-4 py-2 text-white rounded ${buttonStyles[buttonVariant] || buttonStyles.blue}`}
         onClick={() => {
           // Track the conversion event
           analytics.track('Button Clicked', {
             variant: buttonVariant,
-            experiment: 'button-color-test'
+            experiment: 'button-color-test',
           });
         }}
       >
@@ -275,15 +251,15 @@ export async function getAnalyticsWithBootstrap() {
     providers: {
       // Add other providers
       segment: {
-        writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
+        writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY,
       },
-      vercel: {}
+      vercel: {},
     },
     nextjs: {
       strategy: 'afterInteractive',
       bufferEvents: true,
-      debug: process.env.NODE_ENV === 'development'
-    }
+      debug: process.env.NODE_ENV === 'development',
+    },
   });
 }
 
@@ -296,9 +272,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body>
-        <AnalyticsProvider analytics={analytics}>
-          {children}
-        </AnalyticsProvider>
+        <AnalyticsProvider analytics={analytics}>{children}</AnalyticsProvider>
       </body>
     </html>
   );
@@ -318,16 +292,16 @@ interface ConditionalFeatureProps {
   fallback?: React.ReactNode;
 }
 
-export async function ConditionalFeature({ 
-  flag, 
-  children, 
-  fallback = null 
+export async function ConditionalFeature({
+  flag,
+  children,
+  fallback = null,
 }: ConditionalFeatureProps) {
   const cookieStore = cookies();
   const apiKey = process.env.NEXT_PUBLIC_POSTHOG_API_KEY!;
-  
+
   const enabled = await isFeatureEnabledOnServer(flag, cookieStore, apiKey);
-  
+
   return enabled ? <>{children}</> : <>{fallback}</>;
 }
 
@@ -336,15 +310,12 @@ export default function SomePage() {
   return (
     <div>
       <h1>My Page</h1>
-      
+
       <ConditionalFeature flag="premium-section">
         <PremiumContent />
       </ConditionalFeature>
-      
-      <ConditionalFeature 
-        flag="beta-feature" 
-        fallback={<div>Coming soon!</div>}
-      >
+
+      <ConditionalFeature flag="beta-feature" fallback={<div>Coming soon!</div>}>
         <BetaFeature />
       </ConditionalFeature>
     </div>
@@ -362,7 +333,7 @@ import { createNextJSAnalytics } from '@repo/analytics';
 
 export const analytics = createNextJSAnalytics({
   providers: {
-    segment: { writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! }
+    segment: { writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! },
   },
   nextjs: {
     deferUntilConsent: true,
@@ -370,8 +341,8 @@ export const analytics = createNextJSAnalytics({
       // Check your consent management system
       return await checkUserConsent();
     },
-    bufferEvents: true
-  }
+    bufferEvents: true,
+  },
 });
 
 // Grant consent when user accepts
@@ -397,7 +368,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
-        
+
         {/* Load analytics scripts with optimal strategy */}
         <Script
           {...getAnalyticsScriptProps('lazyOnload')}
@@ -421,23 +392,23 @@ import { getFeatureFlag } from '@/lib/feature-flags';
 
 const buildAnalyticsConfig = async () => {
   const providers: any = {};
-  
+
   // Always include core provider
   providers.segment = {
-    writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!
+    writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!,
   };
-  
+
   // Conditionally include based on feature flags
   if (await getFeatureFlag('enable_posthog')) {
     providers.posthog = {
-      apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!
+      apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!,
     };
   }
-  
+
   if (await getFeatureFlag('enable_vercel_analytics')) {
     providers.vercel = {};
   }
-  
+
   return { providers };
 };
 
@@ -445,8 +416,8 @@ export const analytics = createNextJSAnalytics({
   ...(await buildAnalyticsConfig()),
   nextjs: {
     strategy: 'afterInteractive',
-    bufferEvents: true
-  }
+    bufferEvents: true,
+  },
 });
 ```
 
@@ -458,15 +429,15 @@ import { analytics } from '@/lib/analytics';
 
 export async function createUser(formData: FormData) {
   'use server';
-  
+
   const email = formData.get('email') as string;
-  
+
   // Server-side tracking
   await analytics.track('User Created', {
     email,
-    source: 'server_action'
+    source: 'server_action',
   });
-  
+
   // Create user logic...
 }
 ```
@@ -484,7 +455,7 @@ export function middleware(request: NextRequest) {
   analytics.page('Page View', {
     path: request.nextUrl.pathname,
     userAgent: request.headers.get('user-agent'),
-    referrer: request.headers.get('referer')
+    referrer: request.headers.get('referer'),
   });
 
   return NextResponse.next();
@@ -494,42 +465,46 @@ export function middleware(request: NextRequest) {
 ## Loading Strategies
 
 ### 1. After Interactive (Recommended)
+
 ```tsx
 const analytics = createNextJSAnalytics({
   // ... providers
   nextjs: {
-    strategy: 'afterInteractive' // Load after page is interactive
-  }
+    strategy: 'afterInteractive', // Load after page is interactive
+  },
 });
 ```
 
 ### 2. Lazy On Load (Performance First)
+
 ```tsx
 const analytics = createNextJSAnalytics({
   // ... providers
   nextjs: {
-    strategy: 'lazyOnload' // Load when browser is idle
-  }
+    strategy: 'lazyOnload', // Load when browser is idle
+  },
 });
 ```
 
 ### 3. Before Interactive (Critical Analytics)
+
 ```tsx
 const analytics = createNextJSAnalytics({
   // ... providers
   nextjs: {
-    strategy: 'beforeInteractive' // Load before page is interactive
-  }
+    strategy: 'beforeInteractive', // Load before page is interactive
+  },
 });
 ```
 
 ### 4. Web Worker (Experimental)
+
 ```tsx
 const analytics = createNextJSAnalytics({
   // ... providers
   nextjs: {
-    strategy: 'worker' // Load in web worker (if supported)
-  }
+    strategy: 'worker', // Load in web worker (if supported)
+  },
 });
 ```
 
@@ -540,8 +515,8 @@ const analytics = createNextJSAnalytics({
   // ... providers
   nextjs: {
     debug: true, // Enable debug logging
-    bufferEvents: true
-  }
+    bufferEvents: true,
+  },
 });
 
 // Check status

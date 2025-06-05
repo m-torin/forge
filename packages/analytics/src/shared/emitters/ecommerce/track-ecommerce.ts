@@ -3,19 +3,20 @@
  */
 
 import { track } from '../emitters';
+
 import type { EmitterOptions, EmitterTrackPayload } from '../emitter-types';
 import type { EcommerceEventSpec } from './types';
 
 /**
  * Convert an ecommerce event specification to a track payload
- * 
+ *
  * @param eventSpec - The ecommerce event specification
  * @param options - Optional emitter options
  * @returns Track payload ready to be sent to analytics providers
  */
 export function trackEcommerce(
   eventSpec: EcommerceEventSpec,
-  options?: EmitterOptions
+  options?: EmitterOptions,
 ): EmitterTrackPayload {
   // Add ecommerce context to options
   const enrichedOptions: EmitterOptions = {
@@ -23,14 +24,14 @@ export function trackEcommerce(
     context: {
       ...options?.context,
       // Add ecommerce-specific context if needed
-      ...(eventSpec.category && { 
+      ...(eventSpec.category && {
         // Store category as a custom field since EmitterContext doesn't have category
-        traits: { 
+        traits: {
           ...options?.context?.traits,
-          event_category: eventSpec.category 
-        }
-      })
-    }
+          event_category: eventSpec.category,
+        },
+      }),
+    },
   };
 
   // Return the track payload with the event name and properties
@@ -42,7 +43,7 @@ export function trackEcommerce(
  * This allows for cleaner usage in applications
  */
 export function createEcommerceTracker<T extends Record<string, any>>(
-  eventFactory: (properties: T) => EcommerceEventSpec
+  eventFactory: (properties: T) => EcommerceEventSpec,
 ) {
   return (properties: T, options?: EmitterOptions): EmitterTrackPayload => {
     const eventSpec = eventFactory(properties);

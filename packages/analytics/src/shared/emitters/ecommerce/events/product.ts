@@ -2,31 +2,39 @@
  * Product-related ecommerce events
  */
 
-import { 
-  ECOMMERCE_EVENTS, 
-  type BaseProductProperties, 
-  type ProductListProperties, 
-  type SearchResultsProperties,
-  type ProductComparisonProperties,
-  type RecommendationProperties,
-  type EngagementProperties,
-  type EcommerceEventSpec 
-} from '../types';
-import { normalizeProductProperties, normalizeProducts, cleanProperties, createEcommerceContext, validateRequiredProperties } from '../utils';
 import { trackEcommerce } from '../track-ecommerce';
-import type { EmitterTrackPayload, EmitterOptions } from '../../emitter-types';
+import {
+  type BaseProductProperties,
+  ECOMMERCE_EVENTS,
+  type EcommerceEventSpec,
+  type ProductComparisonProperties,
+  type ProductListProperties,
+  type RecommendationProperties,
+  type SearchResultsProperties,
+} from '../types';
+import {
+  cleanProperties,
+  normalizeProductProperties,
+  normalizeProducts,
+  validateRequiredProperties,
+} from '../utils';
+
+import type { EmitterOptions, EmitterTrackPayload } from '../../emitter-types';
 
 /**
  * Track when a user searches for products
  */
-export function productSearched(properties: { query: string }, options?: EmitterOptions): EmitterTrackPayload {
+export function productSearched(
+  properties: { query: string },
+  options?: EmitterOptions,
+): EmitterTrackPayload {
   validateRequiredProperties(properties, ['query']);
 
   const eventSpec: EcommerceEventSpec = {
     name: ECOMMERCE_EVENTS.PRODUCT_SEARCHED,
     category: 'ecommerce',
-    requiredProperties: ['query'],
     properties: cleanProperties(properties),
+    requiredProperties: ['query'],
   };
 
   return trackEcommerce(eventSpec, options);
@@ -46,15 +54,17 @@ export function searchResultsViewed(properties: SearchResultsProperties): Ecomme
   return {
     name: ECOMMERCE_EVENTS.SEARCH_RESULTS_VIEWED,
     category: 'ecommerce',
-    requiredProperties: ['query', 'results_count'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['query', 'results_count'],
   };
 }
 
 /**
  * Track when a user views a product list or category
  */
-export function productListViewed(properties: ProductListProperties): EcommerceEventSpec<ProductListProperties> {
+export function productListViewed(
+  properties: ProductListProperties,
+): EcommerceEventSpec<ProductListProperties> {
   const normalizedProps: ProductListProperties = {
     list_id: properties.list_id,
     category: properties.category,
@@ -64,27 +74,29 @@ export function productListViewed(properties: ProductListProperties): EcommerceE
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_LIST_VIEWED,
     category: 'ecommerce',
-    requiredProperties: [],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: [],
   };
 }
 
 /**
  * Track when a user filters a product list
  */
-export function productListFiltered(properties: ProductListProperties & { filters?: Record<string, any> }): EcommerceEventSpec {
+export function productListFiltered(
+  properties: ProductListProperties & { filters?: Record<string, any> },
+): EcommerceEventSpec {
   const normalizedProps = {
     list_id: properties.list_id,
     category: properties.category,
-    products: properties.products ? normalizeProducts(properties.products) : undefined,
     filters: properties.filters,
+    products: properties.products ? normalizeProducts(properties.products) : undefined,
   };
 
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_LIST_FILTERED,
     category: 'ecommerce',
-    requiredProperties: [],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: [],
   };
 }
 
@@ -98,23 +110,26 @@ export function productClicked(properties: BaseProductProperties): EcommerceEven
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_CLICKED,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['product_id'],
   };
 }
 
 /**
  * Track when a user views a product detail page
  */
-export function productViewed(properties: BaseProductProperties, options?: EmitterOptions): EmitterTrackPayload {
+export function productViewed(
+  properties: BaseProductProperties,
+  options?: EmitterOptions,
+): EmitterTrackPayload {
   const normalizedProps = normalizeProductProperties(properties);
   validateRequiredProperties(normalizedProps, ['product_id']);
 
   const eventSpec: EcommerceEventSpec = {
     name: ECOMMERCE_EVENTS.PRODUCT_VIEWED,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['product_id'],
   };
 
   return trackEcommerce(eventSpec, options);
@@ -124,26 +139,28 @@ export function productViewed(properties: BaseProductProperties, options?: Emitt
  * Track when a user compares products
  */
 export function productCompared(properties: ProductComparisonProperties): EcommerceEventSpec {
-  const { action, product, comparison_list } = properties;
+  const { action, comparison_list, product } = properties;
   const normalizedProduct = normalizeProductProperties(product);
   validateRequiredProperties(normalizedProduct, ['product_id']);
 
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_COMPARED,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties({
       action,
       ...normalizedProduct,
       comparison_list: comparison_list ? normalizeProducts(comparison_list) : undefined,
     }),
+    requiredProperties: ['product_id'],
   };
 }
 
 /**
  * Track when product recommendations are viewed
  */
-export function productRecommendationViewed(properties: RecommendationProperties): EcommerceEventSpec {
+export function productRecommendationViewed(
+  properties: RecommendationProperties,
+): EcommerceEventSpec {
   validateRequiredProperties(properties, ['recommendation_type', 'source']);
 
   const normalizedProps = {
@@ -154,32 +171,34 @@ export function productRecommendationViewed(properties: RecommendationProperties
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_RECOMMENDATION_VIEWED,
     category: 'ecommerce',
-    requiredProperties: ['recommendation_type', 'source'],
     properties: cleanProperties(normalizedProps),
+    requiredProperties: ['recommendation_type', 'source'],
   };
 }
 
 /**
  * Track when a recommended product is clicked
  */
-export function productRecommendationClicked(properties: BaseProductProperties & {
-  recommendation_type: string;
-  source: string;
-  position?: number;
-}): EcommerceEventSpec {
-  const { recommendation_type, source, position, ...productProps } = properties;
+export function productRecommendationClicked(
+  properties: BaseProductProperties & {
+    recommendation_type: string;
+    source: string;
+    position?: number;
+  },
+): EcommerceEventSpec {
+  const { recommendation_type, position, source, ...productProps } = properties;
   const normalizedProduct = normalizeProductProperties(productProps);
   validateRequiredProperties(normalizedProduct, ['product_id']);
 
   return {
     name: ECOMMERCE_EVENTS.PRODUCT_RECOMMENDATION_CLICKED,
     category: 'ecommerce',
-    requiredProperties: ['product_id'],
     properties: cleanProperties({
       ...normalizedProduct,
       recommendation_type,
-      source,
       position,
+      source,
     }),
+    requiredProperties: ['product_id'],
   };
 }

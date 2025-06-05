@@ -3,34 +3,34 @@
  */
 
 export interface LogtailConfig {
-  sourceToken: string;
-  endpoint?: string;
-  batchSize?: number;
   batchInterval?: number;
+  batchSize?: number;
+  endpoint?: string;
   retryCount?: number;
   retryDelay?: number;
-  
+  sourceToken: string;
+
   // Metadata
   application?: string;
   environment?: string;
   release?: string;
-  
-  // Options
-  sendLogsToConsoleInDev?: boolean;
+
   captureErrors?: boolean;
   captureRejections?: boolean;
+  // Options
+  sendLogsToConsoleInDev?: boolean;
 }
 
 export interface LogtailOptions {
   // Context fields to include with every log
   context?: Record<string, any>;
-  
+
   // Middleware functions
-  middleware?: Array<(log: any) => any>;
-  
+  middleware?: ((log: any) => any)[];
+
   // Should logs be buffered when offline
   bufferOffline?: boolean;
-  
+
   // Maximum buffer size
   maxBufferSize?: number;
 }

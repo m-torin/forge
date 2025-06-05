@@ -4,7 +4,7 @@
 
 // Core client and hooks
 export { authClient as default } from './auth-client';
-export { useAuth, useSession, useUser, useOrganization } from './hooks';
+export { useAuth, useOrganization, useSession, useUser } from './hooks';
 
 // Authentication methods
 export * from './methods';

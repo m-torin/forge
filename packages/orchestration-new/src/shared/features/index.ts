@@ -4,16 +4,16 @@
  */
 
 // Scheduler exports
-export * from './scheduler.js';
+export * from './scheduler';
 
 // Monitoring exports
-export * from './monitoring.js';
+export * from './monitoring';
 
 // Saga pattern exports
-export * from './saga.js';
+export * from './saga';
 
 // Versioning and composition exports
-export * from './versioning.js';
+export * from './versioning';
 
 // Testing utilities exports
-export * from './testing.js';
+export * from './testing';

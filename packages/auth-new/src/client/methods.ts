@@ -5,6 +5,7 @@
 'use client';
 
 import { authClient } from './auth-client';
+
 import type { AuthClientMethods } from '../shared/types';
 
 // Basic authentication methods
@@ -13,9 +14,9 @@ export const signIn: AuthClientMethods['signIn'] = async (credentials) => {
     await authClient.signIn.email(credentials);
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Sign in failed' 
+    return {
+      error: error instanceof Error ? error.message : 'Sign in failed',
+      success: false,
     };
   }
 };
@@ -29,9 +30,9 @@ export const signUp: AuthClientMethods['signUp'] = async (data) => {
     await authClient.signUp.email(data);
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Sign up failed' 
+    return {
+      error: error instanceof Error ? error.message : 'Sign up failed',
+      success: false,
     };
   }
 };
@@ -41,21 +42,21 @@ export const forgotPassword: AuthClientMethods['forgotPassword'] = async (email)
     await authClient.forgetPassword({ email });
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to send reset email' 
+    return {
+      error: error instanceof Error ? error.message : 'Failed to send reset email',
+      success: false,
     };
   }
 };
 
 export const resetPassword: AuthClientMethods['resetPassword'] = async (token, password) => {
   try {
-    await authClient.resetPassword({ token, password });
+    await authClient.resetPassword({ password, token });
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Password reset failed' 
+    return {
+      error: error instanceof Error ? error.message : 'Password reset failed',
+      success: false,
     };
   }
 };
@@ -65,9 +66,9 @@ export const verifyEmail: AuthClientMethods['verifyEmail'] = async (token) => {
     await authClient.verifyEmail({ token });
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Email verification failed' 
+    return {
+      error: error instanceof Error ? error.message : 'Email verification failed',
+      success: false,
     };
   }
 };
@@ -82,9 +83,9 @@ export const sendMagicLink = async (email: string) => {
     await authClient.magicLink?.sendMagicLink({ email });
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to send magic link' 
+    return {
+      error: error instanceof Error ? error.message : 'Failed to send magic link',
+      success: false,
     };
   }
 };
@@ -94,9 +95,9 @@ export const verifyMagicLink = async (token: string) => {
     await authClient.magicLink?.verifyMagicLink({ token });
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Magic link verification failed' 
+    return {
+      error: error instanceof Error ? error.message : 'Magic link verification failed',
+      success: false,
     };
   }
 };

@@ -17,20 +17,29 @@ import {
   Prices,
   type TCardProduct,
 } from "@repo/design-system/mantine-ciseco";
+import { getDictionary } from "@/i18n";
 
-export const metadata: Metadata = {
-  description: "Effective cart page for your e-commerce website",
-  title: "Cart Page",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const dict = await getDictionary(params.locale);
+  return {
+    description: dict.cart.cartDescription,
+    title: dict.cart.cartPage,
+  };
+}
 
-const CartPage = async () => {
+const CartPage = async ({ params }: { params: { locale: string } }) => {
+  const dict = await getDictionary(params.locale);
   const cart = await getCart("id://cart");
 
   const renderStatusInstock = () => {
     return (
       <div className="flex items-center justify-center rounded-full border border-neutral-200 px-2.5 py-1.5 text-xs text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
         <CheckIcon className="h-3.5 w-3.5" />
-        <span className="ml-1 leading-none">In Stock</span>
+        <span className="ml-1 leading-none">{dict.cart.inStock}</span>
       </div>
     );
   };
@@ -121,7 +130,7 @@ const CartPage = async () => {
             {renderStatusInstock()}
 
             <div className="text-primary-600 hover:text-primary-500 relative z-10 mt-3 flex items-center text-sm font-medium">
-              <span>Remove</span>
+              <span>{dict.cart.remove}</span>
             </div>
           </div>
         </div>
@@ -134,12 +143,12 @@ const CartPage = async () => {
       <main className="container py-16 lg:pb-28 lg:pt-20">
         <div className="mb-12 sm:mb-16">
           <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">
-            Shopping Cart
+            {dict.cart.title}
           </h2>
           <Breadcrumb
             className="mt-5"
-            breadcrumbs={[{ id: 1, name: "Home", href: "/" }]}
-            currentPage="Shopping Cart"
+            breadcrumbs={[{ id: 1, name: dict.cart.home, href: "/" }]}
+            currentPage={dict.cart.title}
           />
         </div>
 
@@ -152,33 +161,35 @@ const CartPage = async () => {
           <div className="my-10 shrink-0 border-t border-neutral-200 lg:mx-10 lg:my-0 lg:border-l lg:border-t-0 xl:mx-16 2xl:mx-20 dark:border-neutral-700" />
           <div className="flex-1">
             <div className="sticky top-28">
-              <h3 className="text-lg font-semibold">Order Summary</h3>
+              <h3 className="text-lg font-semibold">
+                {dict.cart.orderSummary}
+              </h3>
               <div className="mt-7 divide-y divide-neutral-200/70 text-sm text-neutral-500 dark:divide-neutral-700/80 dark:text-neutral-400">
                 <div className="flex justify-between pb-4">
-                  <span>Subtotal</span>
+                  <span>{dict.cart.subtotal}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ${cart.cost.subtotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>Shipping estimate</span>
+                  <span>{dict.cart.shippingEstimate}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ${cart.cost.shipping.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>Tax estimate</span>
+                  <span>{dict.cart.taxEstimate}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ${cart.cost.tax.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between pt-4 text-base font-semibold text-neutral-900 dark:text-neutral-200">
-                  <span>Order total</span>
+                  <span>{dict.cart.orderTotal}</span>
                   <span>${cart.cost.total.toFixed(2)}</span>
                 </div>
               </div>
               <ButtonPrimary href="/checkout" className="mt-8 w-full">
-                Checkout
+                {dict.cart.checkout}
               </ButtonPrimary>
               <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
                 <p className="relative block pl-5">
@@ -189,17 +200,20 @@ const CartPage = async () => {
                     className="absolute -left-1 top-0.5"
                     size={16}
                   />
-                  Learn more{` `}
+                  {dict.cart.learnMore}
+                  {` `}
                   <a
                     href="##"
                     className="font-medium text-neutral-900 underline dark:text-neutral-200"
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    Taxes
+                    {dict.cart.taxes}
                   </a>
                   <span>
-                    {` `}and{` `}
+                    {` `}
+                    {dict.cart.and}
+                    {` `}
                   </span>
                   <a
                     href="##"
@@ -207,9 +221,9 @@ const CartPage = async () => {
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    Shipping
+                    {dict.cart.shipping}
                   </a>
-                  {` `} infomation
+                  {` `} {dict.cart.information}
                 </p>
               </div>
             </div>

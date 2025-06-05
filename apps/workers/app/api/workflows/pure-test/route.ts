@@ -7,7 +7,7 @@ export const { POST } = serve(
     const result = await context.run('pure-test-step', async () => {
       console.log('[PURE-TEST] Pure workflow executing');
       console.log('[PURE-TEST] Workflow ID:', context.workflowRunId);
-      
+
       return {
         success: true,
         message: 'Pure Upstash Workflow test completed',
@@ -20,7 +20,7 @@ export const { POST } = serve(
   {
     // Absolute minimal configuration
     receiver: undefined,
-  }
+  },
 );
 
 export async function GET() {

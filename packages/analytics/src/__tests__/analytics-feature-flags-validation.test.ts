@@ -3,17 +3,14 @@
  * Comprehensive test to validate the complete integration
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { 
-  createFeatureFlagManager,
-  StandardFeatureFlagManager,
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { identify, page, track } from '../shared/emitters';
+import {
   PostHogFlagProvider,
-  LocalFlagProvider,
-  evaluateFlag,
-  trackFlagExposure
+  StandardFeatureFlagManager,
+  trackFlagExposure,
 } from '../shared/feature-flags';
-import { track, identify, page } from '../shared/emitters';
-import { createAnalyticsManager } from '../shared/utils/manager';
 
 describe('Analytics and Feature Flags Complete Integration', () => {
   let flagManager: StandardFeatureFlagManager;
@@ -23,27 +20,27 @@ describe('Analytics and Feature Flags Complete Integration', () => {
   beforeEach(async () => {
     // Create mock PostHog client
     mockPostHogClient = {
-      getFeatureFlag: vi.fn(),
-      getAllFlags: vi.fn(),
-      getFeatureFlagPayload: vi.fn(),
-      capture: vi.fn(),
       identify: vi.fn(),
+      __loaded: true,
+      capture: vi.fn(),
+      getAllFlags: vi.fn(),
+      getFeatureFlag: vi.fn(),
+      getFeatureFlagPayload: vi.fn(),
       group: vi.fn(),
-      setPersonProperties: vi.fn(),
-      onFeatureFlags: vi.fn(),
       init: vi.fn(),
+      onFeatureFlags: vi.fn(),
+      setPersonProperties: vi.fn(),
       shutdown: vi.fn(),
-      __loaded: true
     };
 
     // Create mock analytics manager
     mockAnalyticsManager = {
-      emit: vi.fn(),
-      track: vi.fn(),
       identify: vi.fn(),
-      page: vi.fn(),
+      alias: vi.fn(),
+      emit: vi.fn(),
       group: vi.fn(),
-      alias: vi.fn()
+      page: vi.fn(),
+      track: vi.fn(),
     };
 
     // Setup flag manager with both local and PostHog providers
@@ -55,10 +52,10 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       // Mock PostHog responses
       mockPostHogClient.getFeatureFlag.mockImplementation((key: string) => {
         const flags: Record<string, any> = {
-          'new-checkout': true,
-          'experiment-variant': 'variant-a',
           'disabled-feature': false,
-          'json-config': { enabled: true, config: { threshold: 50 } }
+          'experiment-variant': 'variant-a',
+          'json-config': { config: { threshold: 50 }, enabled: true },
+          'new-checkout': true,
         };
         return flags[key];
       });
@@ -66,25 +63,25 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       mockPostHogClient.getFeatureFlagPayload.mockImplementation((key: string) => {
         const payloads: Record<string, any> = {
           'experiment-variant': { experiment_id: 'exp_123', variant_id: 'var_a' },
-          'json-config': { config_version: '2.1' }
+          'json-config': { config_version: '2.1' },
         };
         return payloads[key];
       });
 
       mockPostHogClient.getAllFlags.mockResolvedValue({
-        'new-checkout': true,
-        'experiment-variant': 'variant-a',
         'disabled-feature': false,
-        'json-config': { enabled: true, config: { threshold: 50 } }
+        'experiment-variant': 'variant-a',
+        'json-config': { config: { threshold: 50 }, enabled: true },
+        'new-checkout': true,
       });
 
       // Create PostHog provider with mock client
       const postHogProvider = new PostHogFlagProvider({
         provider: 'posthog',
         options: {
+          apiHost: 'https://app.posthog.com',
           apiKey: 'test-key',
-          apiHost: 'https://app.posthog.com'
-        }
+        },
       });
 
       // Override the client with our mock
@@ -95,7 +92,7 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       // Add the provider to the manager
       await flagManager.addProvider({
         provider: 'posthog',
-        options: { apiKey: 'test-key' }
+        options: { apiKey: 'test-key' },
       });
 
       // Override the provider in the manager
@@ -120,7 +117,7 @@ describe('Analytics and Feature Flags Complete Integration', () => {
 
       // Test complex JSON flag
       const jsonFlag = await flagManager.getFlag('json-config', null);
-      expect(jsonFlag.value).toEqual({ enabled: true, config: { threshold: 50 } });
+      expect(jsonFlag.value).toEqual({ config: { threshold: 50 }, enabled: true });
       expect(jsonFlag.payload).toEqual({ config_version: '2.1' });
 
       // Verify PostHog methods were called correctly
@@ -131,7 +128,7 @@ describe('Analytics and Feature Flags Complete Integration', () => {
     it('should properly track feature flag exposures to PostHog', async () => {
       const postHogProvider = new PostHogFlagProvider({
         provider: 'posthog',
-        options: { apiKey: 'test-key' }
+        options: { apiKey: 'test-key' },
       });
 
       (postHogProvider as any).client = mockPostHogClient;
@@ -140,18 +137,18 @@ describe('Analytics and Feature Flags Complete Integration', () => {
 
       const flagResult = {
         key: 'test-feature',
-        value: true,
-        variant: 'test-variant',
-        reason: 'targeting_match',
+        payload: { experiment_id: 'exp_456' },
+        reason: 'targeting_match' as const,
         source: 'network' as const,
         timestamp: Date.now(),
-        payload: { experiment_id: 'exp_456' }
+        value: true,
+        variant: 'test-variant',
       };
 
       // Track exposure
       postHogProvider.trackExposure?.('test-feature', flagResult, {
+        attributes: { plan: 'premium' },
         userId: 'user_123',
-        attributes: { plan: 'premium' }
       });
 
       // Verify PostHog capture was called with correct structure
@@ -159,11 +156,11 @@ describe('Analytics and Feature Flags Complete Integration', () => {
         '$feature_flag_called',
         expect.objectContaining({
           $feature_flag: 'test-feature',
+          $feature_flag_reason: 'targeting_match',
           $feature_flag_response: true,
           $feature_flag_variant: 'test-variant',
-          $feature_flag_reason: 'targeting_match',
-          plan: 'premium'
-        })
+          plan: 'premium',
+        }),
       );
     });
 
@@ -172,26 +169,26 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       const postHogProvider = new PostHogFlagProvider({
         provider: 'posthog',
         options: {
-          apiKey: 'test-key'
-        }
+          apiKey: 'test-key',
+        },
       });
 
       // Mock client that simulates bootstrap-like behavior
       const mockBootstrapClient = {
+        capture: vi.fn(),
         getFeatureFlag: vi.fn().mockImplementation((key: string) => {
           const bootstrapFlags: Record<string, any> = {
             'bootstrap-feature': true,
-            'bootstrap-variant': 'beta'
+            'bootstrap-variant': 'beta',
           };
           return bootstrapFlags[key];
         }),
         getFeatureFlagPayload: vi.fn().mockImplementation((key: string) => {
           const payloads: Record<string, any> = {
-            'bootstrap-variant': { payload_data: 'test' }
+            'bootstrap-variant': { payload_data: 'test' },
           };
           return payloads[key];
         }),
-        capture: vi.fn()
       };
 
       (postHogProvider as any).client = mockBootstrapClient;
@@ -223,29 +220,29 @@ describe('Analytics and Feature Flags Complete Integration', () => {
         provider: 'local',
         options: {
           flags: {
-            'show-premium-upsell': true,
             'checkout-variant': 'express',
-            'max-cart-items': 10
-          }
-        }
+            'max-cart-items': 10,
+            'show-premium-upsell': true,
+          },
+        },
       });
 
       await flagManager.initialize();
 
       const userContext = {
-        userId: 'user_789',
-        email: 'user@example.com',
         attributes: {
-          plan: 'free',
           country: 'US',
-          signupDate: '2024-01-01'
-        }
+          plan: 'free',
+          signupDate: '2024-01-01',
+        },
+        email: 'user@example.com',
+        userId: 'user_789',
       };
 
       // 1. User identifies
       const identifyEvent = identify(userContext.userId, {
         email: userContext.email,
-        plan: userContext.attributes.plan
+        plan: userContext.attributes.plan,
       });
       captureEvent(identifyEvent);
 
@@ -255,43 +252,51 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       // 3. Page view with flag evaluation
       const pageEvent = page('product', 'Product Page', {
         product_id: 'prod_123',
-        category: 'electronics'
+        category: 'electronics',
       });
       captureEvent(pageEvent);
 
       // 4. Evaluate flags for page personalization
       const upsellFlag = await flagManager.getFlag('show-premium-upsell', false, {
-        context: userContext
+        context: userContext,
       });
       const checkoutVariant = await flagManager.getFlag('checkout-variant', 'standard');
       const maxItems = await flagManager.getFlag('max-cart-items', 5);
 
       // 5. Track flag exposures
-      captureEvent(trackFlagExposure('show-premium-upsell', upsellFlag.value, {
-        context: userContext,
-        reason: upsellFlag.reason
-      }));
+      captureEvent(
+        trackFlagExposure('show-premium-upsell', upsellFlag.value, {
+          context: userContext,
+          reason: upsellFlag.reason,
+        }),
+      );
 
-      captureEvent(trackFlagExposure('checkout-variant', checkoutVariant.value, {
-        context: userContext,
-        reason: checkoutVariant.reason
-      }));
+      captureEvent(
+        trackFlagExposure('checkout-variant', checkoutVariant.value, {
+          context: userContext,
+          reason: checkoutVariant.reason,
+        }),
+      );
 
       // 6. Business logic based on flags
       if (upsellFlag.value) {
-        captureEvent(track('Premium Upsell Shown', {
-          user_plan: userContext.attributes.plan,
-          product_id: 'prod_123',
-          flag_variant: 'upsell_enabled'
-        }));
+        captureEvent(
+          track('Premium Upsell Shown', {
+            product_id: 'prod_123',
+            flag_variant: 'upsell_enabled',
+            user_plan: userContext.attributes.plan,
+          }),
+        );
       }
 
       // 7. Track checkout interaction with variant
-      captureEvent(track('Checkout Started', {
-        checkout_variant: checkoutVariant.value,
-        max_cart_items: maxItems.value,
-        user_id: userContext.userId
-      }));
+      captureEvent(
+        track('Checkout Started', {
+          user_id: userContext.userId,
+          checkout_variant: checkoutVariant.value,
+          max_cart_items: maxItems.value,
+        }),
+      );
 
       // Verify the complete event flow
       expect(events).toHaveLength(6);
@@ -323,12 +328,12 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       // Create a failing PostHog provider
       const failingProvider = new PostHogFlagProvider({
         provider: 'posthog',
-        options: { apiKey: 'invalid-key' }
+        options: { apiKey: 'invalid-key' },
       });
 
       const mockFailingClient = {
+        capture: vi.fn(),
         getFeatureFlag: vi.fn().mockRejectedValue(new Error('Network timeout')),
-        capture: vi.fn()
       };
 
       (failingProvider as any).client = mockFailingClient;
@@ -347,13 +352,13 @@ describe('Analytics and Feature Flags Complete Integration', () => {
 
       // Should still be able to track analytics
       const errorEvent = track('Feature Flag Error', {
-        flag_key: 'failing-flag',
         error_type: 'network_timeout',
-        fallback_used: 'fallback'
+        fallback_used: 'fallback',
+        flag_key: 'failing-flag',
       });
 
       expect(errorEvent.type).toBe('track');
-      expect(errorEvent.properties.error_type).toBe('network_timeout');
+      expect(errorEvent.properties?.error_type).toBe('network_timeout');
     });
   });
 
@@ -362,9 +367,11 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       await flagManager.addProvider({
         provider: 'local',
         options: {
-          flags: Array.from({ length: 100 }, (_, i) => [`test-flag-${i}`, Math.random() > 0.5])
-            .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
-        }
+          flags: Array.from({ length: 100 }, (_, i) => [
+            `test-flag-${i}`,
+            Math.random() > 0.5,
+          ]).reduce((acc, [key, value]) => ({ ...acc, [key as string]: value }), {}),
+        },
       });
 
       await flagManager.initialize();
@@ -373,7 +380,7 @@ describe('Analytics and Feature Flags Complete Integration', () => {
 
       // Evaluate 100 flags
       const promises = Array.from({ length: 100 }, (_, i) =>
-        flagManager.getFlag(`test-flag-${i}`, false)
+        flagManager.getFlag(`test-flag-${i}`, false),
       );
 
       const results = await Promise.all(promises);
@@ -384,7 +391,7 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       expect(results).toHaveLength(100);
 
       // All should have proper structure
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toHaveProperty('key');
         expect(result).toHaveProperty('value');
         expect(result).toHaveProperty('timestamp');

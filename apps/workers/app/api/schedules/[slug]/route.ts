@@ -1,9 +1,5 @@
 import { loadWorkflow } from '@/workflows/loader';
-import {
-  createWorkflowScheduler,
-  CronExpressions,
-  type ScheduleConfig,
-} from '@repo/orchestration';
+import { createWorkflowScheduler, CronExpressions, type ScheduleConfig } from '@repo/orchestration';
 import { notFound } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -17,23 +13,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const params = await context.params;
     const { slug } = params;
-    
+
     // Verify workflow exists
     const definition = await loadWorkflow(slug);
     if (!definition) {
       notFound();
     }
-    
+
     const body = await request.json();
     const { action, ...actionParams } = body;
-    
+
     // Determine the workflow URL dynamically
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3400';
-    
+
     const workflowUrl = `${baseUrl}/api/workflows/${slug}`;
-    
+
     switch (action) {
       case 'create':
         return handleCreateSchedule({ ...actionParams, workflowUrl });
@@ -55,11 +51,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
   } catch (error) {
     console.error('Schedule API error:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Schedule operation failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -74,14 +70,11 @@ async function handleCreateSchedule(params: {
   timeout?: string;
 }) {
   const { scheduleId, workflowUrl, cron, payload = {}, headers, retries, timeout } = params;
-  
+
   if (!scheduleId || !cron) {
-    return NextResponse.json(
-      { error: 'scheduleId and cron are required' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'scheduleId and cron are required' }, { status: 400 });
   }
-  
+
   const config: ScheduleConfig = {
     scheduleId,
     destination: workflowUrl,
@@ -91,9 +84,9 @@ async function handleCreateSchedule(params: {
     retries,
     timeout,
   };
-  
+
   const result = await scheduler.createSchedule(config);
-  
+
   return NextResponse.json({
     success: true,
     scheduleId: result.scheduleId,
@@ -112,13 +105,13 @@ async function handleUpdateSchedule(params: {
   timeout?: string;
 }) {
   const { scheduleId, ...updateConfig } = params;
-  
+
   if (!scheduleId) {
     return NextResponse.json({ error: 'scheduleId is required' }, { status: 400 });
   }
-  
+
   await scheduler.updateSchedule({ scheduleId, ...updateConfig });
-  
+
   return NextResponse.json({
     success: true,
     message: `Schedule ${scheduleId} updated`,
@@ -127,13 +120,13 @@ async function handleUpdateSchedule(params: {
 
 async function handlePauseSchedule(params: { scheduleId: string }) {
   const { scheduleId } = params;
-  
+
   if (!scheduleId) {
     return NextResponse.json({ error: 'scheduleId is required' }, { status: 400 });
   }
-  
+
   await scheduler.pauseSchedule(scheduleId);
-  
+
   return NextResponse.json({
     success: true,
     message: `Schedule ${scheduleId} paused`,
@@ -142,13 +135,13 @@ async function handlePauseSchedule(params: { scheduleId: string }) {
 
 async function handleResumeSchedule(params: { scheduleId: string }) {
   const { scheduleId } = params;
-  
+
   if (!scheduleId) {
     return NextResponse.json({ error: 'scheduleId is required' }, { status: 400 });
   }
-  
+
   await scheduler.resumeSchedule(scheduleId);
-  
+
   return NextResponse.json({
     success: true,
     message: `Schedule ${scheduleId} resumed`,
@@ -157,13 +150,13 @@ async function handleResumeSchedule(params: { scheduleId: string }) {
 
 async function handleDeleteSchedule(params: { scheduleId: string }) {
   const { scheduleId } = params;
-  
+
   if (!scheduleId) {
     return NextResponse.json({ error: 'scheduleId is required' }, { status: 400 });
   }
-  
+
   await scheduler.deleteSchedule(scheduleId);
-  
+
   return NextResponse.json({
     success: true,
     message: `Schedule ${scheduleId} deleted`,
@@ -172,13 +165,13 @@ async function handleDeleteSchedule(params: { scheduleId: string }) {
 
 async function handleGetSchedule(params: { scheduleId: string }) {
   const { scheduleId } = params;
-  
+
   if (!scheduleId) {
     return NextResponse.json({ error: 'scheduleId is required' }, { status: 400 });
   }
-  
+
   const schedule = await scheduler.getSchedule(scheduleId);
-  
+
   return NextResponse.json({
     success: true,
     schedule: {
@@ -191,13 +184,13 @@ async function handleGetSchedule(params: { scheduleId: string }) {
 
 async function handleGetScheduleLogs(params: { scheduleId: string; cursor?: string }) {
   const { scheduleId, cursor } = params;
-  
+
   if (!scheduleId) {
     return NextResponse.json({ error: 'scheduleId is required' }, { status: 400 });
   }
-  
+
   const result = await scheduler.getScheduleLogs(scheduleId, cursor);
-  
+
   return NextResponse.json({
     success: true,
     scheduleId,
@@ -213,13 +206,13 @@ async function handleGetScheduleLogs(params: { scheduleId: string; cursor?: stri
 export async function GET(request: NextRequest, context: RouteContext) {
   const params = await context.params;
   const { slug } = params;
-  
+
   // Verify workflow exists
   const definition = await loadWorkflow(slug);
   if (!definition) {
     notFound();
   }
-  
+
   return NextResponse.json({
     workflow: slug,
     metadata: definition.metadata,

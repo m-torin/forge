@@ -47,11 +47,11 @@ export type {
   AuthenticationError,
   AuthorizationError,
 } from './shared/utils/errors';
-export { 
+export {
   OrchestrationError,
   ErrorUtils,
-  OrchestrationManager, 
-  createOrchestrationManager 
+  OrchestrationManager,
+  createOrchestrationManager,
 } from './shared/utils/manager';
 
 // Provider exports

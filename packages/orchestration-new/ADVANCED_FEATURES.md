@@ -4,7 +4,8 @@ This document describes the advanced features implemented in Phase 3 of the orch
 
 ## Overview
 
-The advanced features provide production-ready capabilities for complex workflow orchestration scenarios:
+The advanced features provide production-ready capabilities for complex workflow orchestration
+scenarios:
 
 1. **Enhanced Scheduling** - Advanced cron scheduling with timezone handling
 2. **Monitoring & Observability** - Comprehensive workflow metrics and execution tracking
@@ -16,6 +17,7 @@ The advanced features provide production-ready capabilities for complex workflow
 ## Enhanced Scheduling
 
 ### Features
+
 - Advanced cron expression support
 - Timezone-aware scheduling
 - Schedule management (pause, resume, delete)
@@ -48,6 +50,7 @@ const healthChecks = await scheduler.performHealthCheck([scheduleId]);
 ## Monitoring & Observability
 
 ### Features
+
 - Real-time workflow metrics
 - Execution history tracking
 - Performance analytics
@@ -159,6 +162,7 @@ export const cancelExecution = actions.cancelExecution;
 ## Saga Pattern
 
 ### Features
+
 - Distributed transaction management
 - Automatic compensation on failure
 - Step-by-step execution control
@@ -172,31 +176,46 @@ import { createSaga, createSagaOrchestrator } from '@repo/orchestration';
 
 // Define a saga
 const paymentSaga = createSaga('payment-saga', 'Payment Processing')
-  .step('validate-payment', 'Validate Payment', async (context) => {
-    // Validate payment details
-    return { valid: true };
-  }, {
-    compensation: async (context) => {
-      // Cleanup validation
+  .step(
+    'validate-payment',
+    'Validate Payment',
+    async (context) => {
+      // Validate payment details
+      return { valid: true };
     },
-  })
-  .step('charge-card', 'Charge Credit Card', async (context) => {
-    // Charge the card
-    return { transactionId: '12345' };
-  }, {
-    compensation: async (context) => {
-      // Refund the charge
+    {
+      compensation: async (context) => {
+        // Cleanup validation
+      },
+    }
+  )
+  .step(
+    'charge-card',
+    'Charge Credit Card',
+    async (context) => {
+      // Charge the card
+      return { transactionId: '12345' };
     },
-    retry: { maxAttempts: 3, delay: 1000 },
-  })
-  .step('update-inventory', 'Update Inventory', async (context) => {
-    // Update inventory
-    return { updated: true };
-  }, {
-    compensation: async (context) => {
-      // Restore inventory
+    {
+      compensation: async (context) => {
+        // Refund the charge
+      },
+      retry: { maxAttempts: 3, delay: 1000 },
+    }
+  )
+  .step(
+    'update-inventory',
+    'Update Inventory',
+    async (context) => {
+      // Update inventory
+      return { updated: true };
     },
-  })
+    {
+      compensation: async (context) => {
+        // Restore inventory
+      },
+    }
+  )
   .build();
 
 // Execute saga
@@ -410,36 +429,42 @@ const scenarios = WorkflowDebugUtils.generateTestScenarios(workflow);
 ## Best Practices
 
 ### Scheduling
+
 - Use timezone-aware scheduling for global applications
 - Implement health checks for critical schedules
 - Use catch-up execution carefully to avoid overwhelming the system
 - Monitor schedule execution frequency and adjust as needed
 
 ### Monitoring
+
 - Set up alert rules for critical metrics (error rate, execution time)
 - Use appropriate time windows for metrics collection
 - Implement proper logging for workflow executions
 - Monitor resource usage and queue sizes
 
 ### Saga Pattern
+
 - Design compensation actions carefully
 - Keep saga steps idempotent
 - Use timeouts for external service calls
 - Implement proper error handling and logging
 
 ### Versioning
+
 - Follow semantic versioning for workflow versions
 - Provide migration instructions for breaking changes
 - Test version compatibility thoroughly
 - Use feature flags for gradual rollouts
 
 ### Testing
+
 - Write comprehensive test scenarios for all code paths
 - Use mock providers for isolated testing
 - Implement automated testing in CI/CD pipelines
 - Test error conditions and edge cases
 
 ### Performance
+
 - Monitor execution metrics and optimize bottlenecks
 - Use appropriate concurrency levels for bulk operations
 - Implement caching for frequently accessed data
@@ -448,24 +473,28 @@ const scenarios = WorkflowDebugUtils.generateTestScenarios(workflow);
 ## Architecture Considerations
 
 ### Scalability
+
 - Use horizontal scaling for workflow providers
 - Implement proper load balancing
 - Use distributed caching for shared state
 - Monitor resource usage and scale accordingly
 
 ### Reliability
+
 - Implement proper error handling and retry mechanisms
 - Use circuit breakers for external dependencies
 - Implement backup and recovery procedures
 - Monitor system health continuously
 
 ### Security
+
 - Implement proper authentication and authorization
 - Use secure communication channels
 - Audit workflow executions and access
 - Implement proper secrets management
 
 ### Maintainability
+
 - Use modular design with clear interfaces
 - Implement comprehensive logging and monitoring
 - Use version control for workflow definitions

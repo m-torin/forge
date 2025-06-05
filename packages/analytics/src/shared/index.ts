@@ -5,66 +5,66 @@
 
 // Export all types
 export type {
+  AnalyticsConfig,
+  AnalyticsContext,
   // Core types
   AnalyticsProvider,
-  AnalyticsConfig,
   ProviderConfig,
-  ProviderRegistry,
   ProviderFactory,
+  ProviderRegistry,
   TrackingOptions,
-  AnalyticsContext
 } from './types/types';
 
 // Export provider-specific types
 export type {
   // Segment types
   SegmentConfig,
-  SegmentOptions
+  SegmentOptions,
 } from './types/segment-types';
 
 export type {
+  BootstrapData,
+  EnhancedPostHogProvider,
+  ExperimentInfo,
+  FeatureFlagPayload,
+  FeatureFlags,
   // PostHog types
   PostHogConfig,
-  PostHogOptions,
-  FeatureFlags,
-  FeatureFlagPayload,
-  BootstrapData,
   PostHogCookie,
-  ExperimentInfo,
-  EnhancedPostHogProvider
+  PostHogOptions,
 } from './types/posthog-types';
 
 export type {
   // Vercel types
   VercelConfig,
-  VercelOptions
+  VercelOptions,
 } from './types/vercel-types';
 
 export type {
   // Console types
   ConsoleConfig,
   ConsoleOptions,
-  LogLevel
+  LogLevel,
 } from './types/console-types';
 
 // Export emitter types
 export type {
-  EmitterOptions,
-  EmitterContext,
-  EmitterIntegrations,
-  EmitterBasePayload,
-  EmitterIdentifyPayload,
-  EmitterTrackPayload,
-  EmitterPagePayload,
-  EmitterScreenPayload,
-  EmitterGroupPayload,
-  EmitterAliasPayload,
-  EmitterPayload,
-  EmitterUserTraits,
-  EmitterEventProperties,
-  EmitterGroupTraits,
   AnalyticsEmitter,
-  EmitterConfig
+  EmitterAliasPayload,
+  EmitterBasePayload,
+  EmitterConfig,
+  EmitterContext,
+  EmitterEventProperties,
+  EmitterGroupPayload,
+  EmitterGroupTraits,
+  EmitterIdentifyPayload,
+  EmitterIntegrations,
+  EmitterOptions,
+  EmitterPagePayload,
+  EmitterPayload,
+  EmitterScreenPayload,
+  EmitterTrackPayload,
+  EmitterUserTraits,
 } from './emitters/emitter-types';
 
 // Export all emitters
@@ -72,68 +72,62 @@ export * from './emitters';
 
 // Export utilities
 export {
+  createConfigBuilder,
   // Configuration
   getAnalyticsConfig,
-  createConfigBuilder,
+  PROVIDER_REQUIREMENTS,
   validateConfig,
-  PROVIDER_REQUIREMENTS
 } from './utils/config';
 
-export type {
-  ConfigBuilder,
-  ConfigRequirements
-} from './utils/config';
+export type { ConfigBuilder, ConfigRequirements } from './utils/config';
 
 export {
+  debugConfig,
   // Validation
   validateAnalyticsConfig,
-  validateProvider,
   validateConfigOrThrow,
-  debugConfig
+  validateProvider,
 } from './utils/validation';
 
-export type {
-  ValidationError,
-  ValidationResult
-} from './utils/validation';
+export type { ValidationError, ValidationResult } from './utils/validation';
 
 export {
   // Manager
-  createAnalyticsManager
+  createAnalyticsManager,
 } from './utils/manager';
 
 export { AnalyticsManager as AnalyticsManagerClass } from './utils/manager';
 
 export {
+  createBootstrapData,
+  createMinimalBootstrapData,
   // PostHog utilities
   generateDistinctId,
-  getDistinctIdFromCookies,
-  createBootstrapData,
   getCachedBootstrapData,
+  getDistinctIdFromCookies,
   setCachedBootstrapData,
-  createMinimalBootstrapData
 } from './utils/posthog-bootstrap';
 
 export {
+  createPostHogConfig,
   // PostHog Next.js utilities
   createPostHogServerClient,
-  isFeatureEnabled,
-  getFeatureFlag,
   getAllFeatureFlags,
   getCompleteBootstrapData,
-  createPostHogConfig
+  getFeatureFlag,
+  isFeatureEnabled,
 } from './utils/posthog-next-utils';
 
 export {
+  createEmitterProcessor,
+  processAliasPayload,
   // Emitter adapter utilities
   processEmitterPayload,
-  processIdentifyPayload,
-  processTrackPayload,
-  processPagePayload,
   processGroupPayload,
-  processAliasPayload,
-  createEmitterProcessor,
-  trackEcommerceEvent
+  processIdentifyPayload,
+  processPagePayload,
+  processTrackPayload,
+  trackEcommerceEvent,
 } from './utils/emitter-adapter';
 
 // Export console provider (works in both environments)

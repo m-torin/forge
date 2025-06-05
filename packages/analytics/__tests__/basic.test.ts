@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { createClientAnalytics } from '../src/client';
 import { createServerAnalytics } from '../src/server';
 import { ecommerce } from '../src/shared/emitters';
@@ -24,7 +25,7 @@ describe('Analytics Package', () => {
     const event = ecommerce.productViewed({
       product_id: 'test-123',
       name: 'Test Product',
-      price: 99.99
+      price: 99.99,
     });
 
     expect(event).toMatchObject({
@@ -33,8 +34,8 @@ describe('Analytics Package', () => {
       properties: expect.objectContaining({
         product_id: 'test-123',
         name: 'Test Product',
-        price: 99.99
-      })
+        price: 99.99,
+      }),
     });
   });
 });

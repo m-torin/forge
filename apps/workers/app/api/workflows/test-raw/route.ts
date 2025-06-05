@@ -4,7 +4,7 @@ import { serve } from '@upstash/workflow/nextjs';
 export const { POST } = serve(
   async (context) => {
     console.log('[TEST-RAW] Starting raw workflow test');
-    
+
     // Simple step without any complexity
     const result = await context.run('simple-step', async () => {
       console.log('[TEST-RAW] Executing simple step');
@@ -23,12 +23,12 @@ export const { POST } = serve(
     // Minimal configuration for local development
     receiver: undefined,
     verbose: true,
-  }
+  },
 );
 
 export async function GET() {
-  return Response.json({ 
+  return Response.json({
     message: 'Test raw workflow endpoint',
-    description: 'Minimal workflow without orchestration package'
+    description: 'Minimal workflow without orchestration package',
   });
 }

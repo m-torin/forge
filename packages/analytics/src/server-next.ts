@@ -1,23 +1,23 @@
 /**
  * Server-side Next.js analytics exports
  * Complete Next.js 15 integration for server components, API routes, and middleware
- * 
+ *
  * @example
  * ```typescript
- * import { 
+ * import {
  *   createNextJSServerAnalytics,
  *   trackServerEvent,
  *   getServerFeatureFlag,
  *   createAnalyticsMiddleware
  * } from '@repo/analytics/server/next';
- * 
+ *
  * // Server component
  * export default async function Page() {
  *   await trackServerEvent('Page Viewed', { path: '/home' });
  *   const showFeature = await getServerFeatureFlag('new-feature', cookies());
  *   return <div>{showFeature && <NewFeature />}</div>;
  * }
- * 
+ *
  * // Middleware
  * export const middleware = createAnalyticsMiddleware({
  *   providers: { segment: { writeKey: process.env.SEGMENT_WRITE_KEY } }
@@ -30,6 +30,24 @@
 // ============================================================================
 
 // Re-export everything from server for convenience
+// ============================================================================
+// FEATURE FLAGS FOR NEXT.JS SERVER
+// ============================================================================
+
+// Import feature flag functions for convenience exports
+import {
+  commonFlags,
+  createFeatureFlagManager,
+  createFlagContext,
+  createTypedFeatureFlags,
+  evaluateFlag,
+  trackFlagExposure,
+} from './shared/feature-flags';
+import {
+  getFeatureFlagVariant,
+  getFeatureFlagWithFallback,
+} from './shared/utils/posthog-next-utils';
+
 export * from './server';
 
 // ============================================================================
@@ -37,25 +55,24 @@ export * from './server';
 // ============================================================================
 
 export {
-  // Server component tracking functions
-  trackServerEvent,
-  identifyServerUser,
-  trackServerPageView,
-  
-  // Server Actions support
-  trackEventAction,
-  identifyUserAction,
-  
-  // Context management for RSCs
-  ServerAnalyticsProvider,
-  withServerPageTracking,
   createServerFeatureFlags,
-  
+  getAllServerFeatureFlags,
+  getServerBootstrapData,
+
   // Server-side feature flag functions
   getServerFeatureFlag,
+  identifyServerUser,
+  identifyUserAction,
   isServerFeatureEnabled,
-  getAllServerFeatureFlags,
-  getServerBootstrapData
+  // Context management for RSCs
+  ServerAnalyticsProvider,
+
+  // Server Actions support
+  trackEventAction,
+  // Server component tracking functions
+  trackServerEvent,
+  trackServerPageView,
+  withServerPageTracking,
 } from './next/rsc';
 
 // ============================================================================
@@ -63,60 +80,40 @@ export {
 // ============================================================================
 
 export {
+  createNextJSServerAnalytics,
+  createNextJSServerAnalyticsWithBootstrap,
   // Next.js server analytics manager
   NextJSServerAnalyticsManager,
-  createNextJSServerAnalytics,
-  createNextJSServerAnalyticsWithBootstrap
 } from './next/server';
 
-export type {
-  NextJSServerAnalyticsConfig
-} from './next/server';
+export type { NextJSServerAnalyticsConfig } from './next/server';
 
 // ============================================================================
 // POSTHOG SERVER-SIDE FEATURE FLAGS
 // ============================================================================
 
 export {
+  getAllFeatureFlagsOnServer,
+  getFeatureFlagOnServer,
+  getPostHogBootstrapDataOnServer,
   // Server-side feature flag functions
   isFeatureEnabledOnServer,
-  getFeatureFlagOnServer,
-  getAllFeatureFlagsOnServer,
-  getPostHogBootstrapDataOnServer
 } from './next/server';
 
 // PostHog server utilities (from next-utils)
 export {
-  createPostHogServerClient,
-  getOrGenerateDistinctId,
-  getPostHogBootstrapData,
   createPostHogConfig,
-  createPostHogSuspenseData,
   createPostHogMiddleware,
+  createPostHogServerClient,
+  createPostHogSuspenseData,
   getCompleteBootstrapData,
+  getFeatureFlagVariant,
   // Enhanced feature flag utilities
   getFeatureFlagWithFallback,
-  getFeatureFlagVariant,
+  getMultipleFeatureFlags,
+  getOrGenerateDistinctId,
+  getPostHogBootstrapData,
   trackFeatureFlagExposure,
-  getMultipleFeatureFlags
-} from './shared/utils/posthog-next-utils';
-
-// ============================================================================
-// FEATURE FLAGS FOR NEXT.JS SERVER
-// ============================================================================
-
-// Import feature flag functions for convenience exports
-import {
-  evaluateFlag,
-  trackFlagExposure,
-  createFlagContext,
-  createFeatureFlagManager,
-  createTypedFeatureFlags,
-  commonFlags
-} from './shared/feature-flags';
-import {
-  getFeatureFlagWithFallback,
-  getFeatureFlagVariant
 } from './shared/utils/posthog-next-utils';
 
 // Server-side feature flag helpers optimized for Next.js RSC
@@ -126,34 +123,38 @@ export const nextServerFlags = {
     // This would integrate with PostHog server client and cookies
     return defaultValue; // Placeholder
   },
-  
+
   // Batch server-side flag evaluation
   evaluateBatch: async (flags: string[], cookies?: any) => {
     // This would integrate with PostHog server batch evaluation
     return {}; // Placeholder
   },
-  
+
   // PostHog server integration helpers
   posthog: {
+    context: createFlagContext,
     evaluate: evaluateFlag,
     track: trackFlagExposure,
-    context: createFlagContext,
     withCookies: (cookies: any) => ({
-      evaluate: (key: string, defaultValue: any) => getFeatureFlagWithFallback(key, cookies, process.env.NEXT_PUBLIC_POSTHOG_KEY || '', { defaultValue }),
-      variant: (key: string) => getFeatureFlagVariant(key, cookies, process.env.NEXT_PUBLIC_POSTHOG_KEY || '')
-    })
-  }
+      evaluate: (key: string, defaultValue: any) =>
+        getFeatureFlagWithFallback(key, cookies, process.env.NEXT_PUBLIC_POSTHOG_KEY || '', {
+          defaultValue,
+        }),
+      variant: (key: string) =>
+        getFeatureFlagVariant(key, cookies, process.env.NEXT_PUBLIC_POSTHOG_KEY || ''),
+    }),
+  },
 };
 
 // Re-export feature flag system for Next.js server
 export const flagsServer = {
-  manager: createFeatureFlagManager,
   typed: createTypedFeatureFlags,
+  common: commonFlags,
   context: createFlagContext,
   evaluate: evaluateFlag,
+  manager: createFeatureFlagManager,
+  nextjs: nextServerFlags,
   track: trackFlagExposure,
-  common: commonFlags,
-  nextjs: nextServerFlags
 };
 
 // ============================================================================
@@ -162,12 +163,12 @@ export const flagsServer = {
 
 export {
   // Analytics middleware for edge runtime
-  createAnalyticsMiddleware
+  createAnalyticsMiddleware,
 } from './next/middleware';
 
 export type {
   // Middleware types
-  AnalyticsMiddlewareConfig
+  AnalyticsMiddlewareConfig,
 } from './next/middleware';
 
 // ============================================================================
@@ -175,24 +176,24 @@ export type {
 // ============================================================================
 
 export type {
+  AddToCartEvent,
   // Next.js specific types that actually exist
   AnalyticsEvent,
-  PageViewEvent,
-  ProductViewEvent,
-  AddToCartEvent,
+  AnalyticsMiddlewareContext,
+  AnalyticsProviderProps,
   CheckoutEvent,
-  PurchaseEvent,
+  EventName,
+  EventProperties,
+  FormErrorEvent,
   FormStartEvent,
   FormSubmitEvent,
-  FormErrorEvent,
-  AnalyticsMiddlewareContext,
+  PageViewEvent,
+  ProductViewEvent,
+  PurchaseEvent,
   TrackedComponentProps,
+  TypedTrackFunction,
   UseAnalyticsReturn,
   UseFeatureFlagsReturn,
-  AnalyticsProviderProps,
-  EventProperties,
-  EventName,
-  TypedTrackFunction
 } from './next/types.d';
 
 // ============================================================================
@@ -201,22 +202,22 @@ export type {
 
 /**
  * Example usage patterns for server-side Next.js analytics
- * 
+ *
  * @example Server component tracking
  * ```typescript
  * import { trackServerEvent, getServerFeatureFlag } from '@repo/analytics/server/next';
  * import { cookies } from 'next/headers';
- * 
+ *
  * export default async function HomePage() {
  *   // Track page view
  *   await trackServerEvent('Page Viewed', {
  *     path: '/home',
  *     title: 'Home Page'
  *   });
- *   
+ *
  *   // Check feature flag
  *   const showBeta = await getServerFeatureFlag('beta-feature', cookies());
- *   
+ *
  *   return (
  *     <div>
  *       <h1>Welcome</h1>
@@ -225,47 +226,47 @@ export type {
  *   );
  * }
  * ```
- * 
+ *
  * @example API route tracking
  * ```typescript
  * import { createServerAnalytics, track } from '@repo/analytics/server/next';
- * 
+ *
  * const analytics = await createServerAnalytics({
  *   providers: {
  *     segment: { writeKey: process.env.SEGMENT_WRITE_KEY }
  *   }
  * });
- * 
+ *
  * export async function POST(request: Request) {
  *   await analytics.emit(track('API Called', {
  *     endpoint: '/api/users',
  *     method: 'POST'
  *   }));
- *   
+ *
  *   // Handle request...
  * }
  * ```
- * 
+ *
  * @example Server Actions
  * ```typescript
  * 'use server';
  * import { trackServerAction } from '@repo/analytics/server/next';
- * 
+ *
  * export async function submitForm(formData: FormData) {
  *   await trackServerAction('Form Submitted', {
  *     form_id: 'contact',
  *     email: formData.get('email')
  *   });
- *   
+ *
  *   // Process form...
  * }
  * ```
- * 
+ *
  * @example Middleware setup
  * ```typescript
  * // middleware.ts
  * import { createAnalyticsMiddleware } from '@repo/analytics/server/next';
- * 
+ *
  * export const middleware = createAnalyticsMiddleware({
  *   providers: {
  *     segment: { writeKey: process.env.SEGMENT_WRITE_KEY }
@@ -278,7 +279,7 @@ export type {
  *     country: request.geo?.country
  *   })
  * });
- * 
+ *
  * export const config = {
  *   matcher: ['/((?!_next/static|favicon.ico).*)']
  * };

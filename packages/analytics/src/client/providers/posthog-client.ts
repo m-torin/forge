@@ -2,15 +2,15 @@
  * PostHog client-side (browser) provider implementation with feature flags support
  */
 
-import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
-import type { 
-  PostHogConfig, 
-  FeatureFlags, 
-  FeatureFlagPayload, 
-  ExperimentInfo,
+import type {
   BootstrapData,
-  EnhancedPostHogProvider 
+  EnhancedPostHogProvider,
+  ExperimentInfo,
+  FeatureFlagPayload,
+  FeatureFlags,
+  PostHogConfig,
 } from '../../shared/types/posthog-types';
+import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
 
 declare global {
   interface Window {
@@ -26,17 +26,17 @@ declare global {
         set_once: (properties: any) => void;
       };
       register: (properties: any) => void;
-      
+
       // Feature flag methods
       isFeatureEnabled: (flag: string) => boolean;
       getFeatureFlag: (flag: string) => any;
       getFeatureFlagPayload: (flag: string) => any;
       getAllFlags: () => Record<string, any>;
       onFeatureFlags: (callback: (flags: string[], variants: Record<string, any>) => void) => void;
-      
+
       // Experiment methods
       getActiveMatchingFeatureFlags: () => string[];
-      
+
       // Utility methods
       get_distinct_id: () => string;
       shutdown: () => Promise<void>;
@@ -49,7 +49,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
   private config: PostHogConfig;
   private isInitialized = false;
   private posthogInstance: any = null;
-  private retryQueue: Array<{ method: string; args: any[] }> = [];
+  private retryQueue: { method: string; args: any[] }[] = [];
   private isOnline = true;
   private debugMode = false;
 
@@ -57,16 +57,16 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     if (!config.apiKey) {
       throw new Error('PostHog apiKey is required');
     }
-    
+
     this.config = {
       apiKey: config.apiKey,
-      options: config.options
+      options: config.options,
     };
 
     // Set up debug mode
-    this.debugMode = config.options?.debug || 
-                    (typeof window !== 'undefined' && 
-                     window.location.search.includes('debug=posthog'));
+    this.debugMode =
+      config.options?.debug ||
+      (typeof window !== 'undefined' && window.location.search.includes('debug=posthog'));
 
     // Monitor network status for retry queue
     if (typeof window !== 'undefined') {
@@ -74,7 +74,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
         this.isOnline = true;
         this.flushRetryQueue();
       });
-      
+
       window.addEventListener('offline', () => {
         this.isOnline = false;
       });
@@ -87,67 +87,67 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     try {
       // Dynamically import PostHog (optional dependency)
       const { default: posthog } = await import('posthog-js');
-      
+
       // Extract bootstrap data if provided
       const bootstrap = this.config.options?.bootstrap;
-      
+
       // Initialize PostHog with enhanced options and all missing configurations
       const initOptions: any = {
         // Core PostHog configuration with PostHog recommended defaults
         api_host: 'https://app.posthog.com',
-        ui_host: 'https://app.posthog.com',
-        capture_pageview: false, // We handle pageviews manually
         capture_pageleave: true, // Important for engagement tracking
-        
+        capture_pageview: false, // We handle pageviews manually
+        ui_host: 'https://app.posthog.com',
+
+        opt_in_site_apps: false, // Conservative default
         // Privacy & GDPR compliance
         person_profiles: 'identified_only', // GDPR-friendly default
-        opt_in_site_apps: false, // Conservative default
         respect_dnt: true, // Respect Do Not Track headers
-        
+
         // Performance optimizations
         uuid_version: 'v7', // Better performance than v4
-        request_batching: true, // Batch requests for better performance
         batch_flush_interval_ms: 10000, // 10 second batching
-        
+        request_batching: true, // Batch requests for better performance
+
         // Session recording with safe defaults
         session_recording: {
           maskAllInputs: false,
           maskInputOptions: {
-            password: true, // Always mask passwords
             email: false,
             number: false,
-            text: false
+            password: true, // Always mask passwords
+            text: false,
           },
-          recordCrossOriginIframes: false, // Conservative default
           recordCanvas: false, // Performance consideration
+          recordCrossOriginIframes: false, // Conservative default
           sampling: {
             minimumDurationMs: 1000, // Only record sessions > 1s
-            sampleRate: 1.0 // Record all sessions by default
-          }
+            sampleRate: 1.0, // Record all sessions by default
+          },
         },
-        
+
         // Debug mode
         debug: this.debugMode,
-        
+
         // Apply user configuration (this will override defaults)
         ...this.config.options,
-        
+
         // Add bootstrap data if available (must be last to not be overridden)
         ...(bootstrap && {
           bootstrap: {
             distinctID: bootstrap.distinctID,
+            featureFlagPayloads: bootstrap.featureFlagPayloads,
             featureFlags: bootstrap.featureFlags,
-            featureFlagPayloads: bootstrap.featureFlagPayloads
-          }
-        })
+          },
+        }),
       };
-      
+
       posthog.init(this.config.apiKey, initOptions);
-      
+
       // Store instance references
       this.posthogInstance = posthog;
       window.posthog = posthog as any;
-      
+
       this.isInitialized = true;
     } catch (error) {
       throw new Error('PostHog JS SDK not available. Install with: npm install posthog-js');
@@ -163,19 +163,19 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     try {
       // Debug logging
       this.log('Tracking event:', event, properties);
-      
+
       // Validate properties in debug mode
       if (this.debugMode) {
         this.validateEventProperties(event, properties);
       }
-      
+
       this.posthogInstance.capture(event, properties);
     } catch (error) {
       // Queue event if offline
       if (!this.isOnline) {
         this.queueEvent('track', [event, properties]);
       }
-      
+
       // Enhanced error reporting
       this.reportError(error, 'track', { event, properties });
     }
@@ -202,7 +202,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       this.posthogInstance.capture('$pageview', {
         $current_url: window.location.href,
         $title: name || document.title,
-        ...properties
+        ...properties,
       });
     } catch (error) {
       // Silently fail to avoid disrupting app flow
@@ -244,7 +244,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
         // If userId provided, identify first to ensure flags are for correct user
         await this.identify(userId);
       }
-      
+
       return this.posthogInstance.getAllFlags() || {};
     } catch (error) {
       return {};
@@ -260,7 +260,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       if (userId) {
         await this.identify(userId);
       }
-      
+
       return this.posthogInstance.getFeatureFlag(flag);
     } catch (error) {
       return false;
@@ -276,7 +276,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       if (userId) {
         await this.identify(userId);
       }
-      
+
       return this.posthogInstance.isFeatureEnabled(flag) || false;
     } catch (error) {
       return false;
@@ -292,7 +292,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       if (userId) {
         await this.identify(userId);
       }
-      
+
       return this.posthogInstance.getFeatureFlagPayload(flag) || null;
     } catch (error) {
       return null;
@@ -308,12 +308,12 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       if (userId) {
         await this.identify(userId);
       }
-      
+
       const activeFlags = this.posthogInstance.getActiveMatchingFeatureFlags() || [];
       return activeFlags.map((flag: string) => ({
         key: flag,
+        payload: this.posthogInstance.getFeatureFlagPayload(flag),
         variant: this.posthogInstance.getFeatureFlag(flag),
-        payload: this.posthogInstance.getFeatureFlagPayload(flag)
       }));
     } catch (error) {
       return [];
@@ -328,11 +328,11 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       const flags = await this.getAllFlags();
-      
+
       return {
         distinctID: distinctId,
+        featureFlagPayloads: {},
         featureFlags: flags,
-        featureFlagPayloads: {}
       };
     } catch (error) {
       return { distinctID: distinctId };
@@ -381,20 +381,21 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
   // Enhanced error handling and utility methods
   private queueEvent(method: string, args: any[]) {
-    this.retryQueue.push({ method, args });
+    this.retryQueue.push({ args, method });
     this.log(`Queued ${method} event for retry:`, args);
   }
 
   private async flushRetryQueue() {
     this.log(`Flushing retry queue with ${this.retryQueue.length} events`);
-    
+
     while (this.retryQueue.length > 0) {
-      const { method, args } = this.retryQueue.shift()!;
+      const { args, method } = this.retryQueue.shift()!;
       try {
         await (this as any)[method](...args);
       } catch (error) {
         // Re-queue failed events (limit retries)
-        if (this.retryQueue.length < 100) { // Prevent infinite queue growth
+        if (this.retryQueue.length < 100) {
+          // Prevent infinite queue growth
           this.queueEvent(method, args);
         }
         break;
@@ -411,10 +412,10 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
   private validateEventProperties(event: string, properties: any) {
     // Check for reserved property names
     const reserved = ['$set', '$set_once', '$unset', 'distinct_id', '$groups'];
-    const conflicts = Object.keys(properties).filter(key => 
-      reserved.includes(key) && !key.startsWith('$')
+    const conflicts = Object.keys(properties).filter(
+      (key) => reserved.includes(key) && !key.startsWith('$'),
     );
-    
+
     if (conflicts.length > 0) {
       console.warn(`PostHog: Properties ${conflicts.join(', ')} may conflict with reserved names`);
     }
@@ -431,7 +432,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     if (this.debugMode) {
       console.error(`[PostHog Error] ${method}:`, error, context);
     }
-    
+
     // Could emit error event to other analytics providers
     // this.emit('analytics_error', { provider: 'posthog', method, error: error.message, context });
   }
@@ -460,7 +461,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     groupType: string,
     groupKey: string,
     groupProperties: any,
-    options?: { setAsDefault?: boolean }
+    options?: { setAsDefault?: boolean },
   ): Promise<void> {
     if (!this.isInitialized || !this.posthogInstance) {
       return;
@@ -468,20 +469,20 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.log('Group identify:', groupType, groupKey, groupProperties);
-      
+
       // Set group properties
       this.posthogInstance.group(groupType, groupKey, groupProperties);
-      
+
       // Optionally set as default group for user
       if (options?.setAsDefault) {
         this.posthogInstance.register({
           [`$groups`]: {
-            [groupType]: groupKey
-          }
+            [groupType]: groupKey,
+          },
         });
       }
     } catch (error) {
-      this.reportError(error, 'groupIdentify', { groupType, groupKey, groupProperties });
+      this.reportError(error, 'groupIdentify', { groupKey, groupProperties, groupType });
     }
   }
 }
