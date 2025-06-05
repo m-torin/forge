@@ -7,7 +7,10 @@ The workers-new app is functional but has several critical issues that need addr
 ### TypeScript Errors: 3
 
 - All errors originate from the orchestration-new package (circuit-breaker.ts)
-- Not blocking app functionality but indicates incomplete migration in the dependency
+- **Line 169**: Property 'options' does not exist on type 'CircuitBreaker<any, any>'
+- **Lines 213, 223**: Property 'destroy' does not exist on type 'CircuitBreaker<any, any>'
+- These are type definition issues with the opossum library integration
+- Not blocking app functionality but indicates incomplete type definitions in the dependency
 
 ## Critical Issues (Blocks Production)
 
@@ -100,9 +103,9 @@ The app currently uses:
 
 Missing integrations:
 
-- `@repo/auth` ❌ (critical)
-- `@repo/security` ❌ (critical)
-- `@repo/observability` ❌ (important)
+- `@repo/auth-new` ❌ (critical)
+- `@repo/security-new` ❌ (critical)
+- `@repo/observability-new` ❌ (important)
 - `@repo/analytics` ❌ (important)
 - `@repo/database` ❌ (might be needed for workflow persistence)
 
@@ -116,7 +119,7 @@ Missing integrations:
 
 2. **Security Hardening**:
 
-   - Add `@repo/security` for rate limiting
+   - Add `@repo/security-new` for rate limiting
    - Implement proper error handling
    - Add input validation schemas
 

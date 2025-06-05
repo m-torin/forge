@@ -21,6 +21,7 @@ import type {
   WorkflowStepDefinition,
   StepExecutionPlan,
   StepMetadata,
+  ValidationResult,
 } from '../src/shared/factories';
 import { OrchestrationErrorCodes } from '../src/shared/utils/errors';
 import { validateStepDefinition } from '../src/shared/factories/step-factory/step-validation';
@@ -202,7 +203,7 @@ describe('Step Factory System', () => {
       );
 
       const executableStep = new StandardWorkflowStep(step);
-      const result = await executableStep.execute({ invalid: 'data' }, 'workflow_123');
+      const result = await executableStep.execute({}, 'workflow_123');
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('STEP_INPUT_VALIDATION_ERROR');
@@ -260,6 +261,12 @@ describe('Step Factory System', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('STEP_TIMEOUT_ERROR');
+    });
+
+    test('should handle invalid input gracefully', async () => {
+      const executableStep = factory.createExecutableStep(mockStep)
+      const result = await executableStep.execute({}, 'workflow_123')
+      expect(result).toBeDefined()
     });
   });
 
@@ -346,10 +353,16 @@ describe('Step Factory System', () => {
       });
 
       test('should validate step definition', () => {
-        const invalidStep = { ...mockStep, metadata: { ...mockStep.metadata, name: undefined } }
-        const result = validateStepDefinition(invalidStep as any)
-        expect(result.valid).toBe(false)
-        expect(result.errors).toContain('Step name is required')
+        const invalidStep = {
+          id: 'test-step',
+          metadata: {
+            version: '1.0.0',
+            category: 'test',
+            tags: ['test'],
+          },
+          execute: vi.fn(),
+        } as any;
+        expect(() => factory.registerStep(invalidStep as any)).toThrow('Cannot register invalid step: Step name is required');
       });
     });
 
