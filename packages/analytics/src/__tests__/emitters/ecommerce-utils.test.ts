@@ -334,7 +334,7 @@ describe('Ecommerce Utils', () => {
       };
 
       expect(() => {
-        validateRequiredProperties(properties, ['product_id', 'name']);
+        validateRequiredProperties(properties, ['product_id', 'name'] as (keyof typeof properties)[]);
       }).toThrow('Missing required properties: name');
     });
 
@@ -344,7 +344,7 @@ describe('Ecommerce Utils', () => {
       };
 
       expect(() => {
-        validateRequiredProperties(properties, ['product_id', 'name', 'price']);
+        validateRequiredProperties(properties as any, ['product_id', 'name', 'price']);
       }).toThrow('Missing required properties: product_id, name, price');
     });
 
@@ -522,7 +522,7 @@ describe('Ecommerce Utils', () => {
     it('should handle empty objects', () => {
       expect(mergeEventProperties({}, {})).toEqual({});
       expect(mergeEventProperties({}, { common: 'value' })).toEqual({ common: 'value' });
-      expect(mergeEventProperties({ specific: 'value' }, {})).toEqual({ specific: 'value' });
+      expect(mergeEventProperties({ specific: 'value' } as any, {})).toEqual({ specific: 'value' });
     });
   });
 
@@ -753,11 +753,11 @@ describe('Ecommerce Utils', () => {
         }),
       );
 
-      expect(result.product_id).toBe('special-chars-123');
-      expect(result.name).toBe('Product with "quotes" & symbols');
-      expect(result.category).toBe('Electronics & Gadgets');
-      expect(result.url).toBe('https://example.com/product?id=123&ref=homepage');
-      expect(result.price).toBe(99.99);
+      expect((result as any).product_id).toBe('special-chars-123');
+      expect((result as any).name).toBe('Product with "quotes" & symbols');
+      expect((result as any).category).toBe('Electronics & Gadgets');
+      expect((result as any).url).toBe('https://example.com/product?id=123&ref=homepage');
+      expect((result as any).price).toBe(99.99);
       expect(result).toHaveProperty('timestamp');
     });
   });

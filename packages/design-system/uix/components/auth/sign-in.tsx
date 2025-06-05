@@ -4,7 +4,7 @@ import { Alert, Button, Divider, Paper, PasswordInput, Stack, TextInput } from '
 import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { analytics } from '@repo/analytics-legacy';
+import { createClientAnalytics, track } from '@repo/analytics/client';
 import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth-new/client';
 
 export const SignIn = () => {
@@ -31,21 +31,18 @@ export const SignIn = () => {
       });
 
       // Track successful sign-in
-      analytics.capture('sign_in_completed', {
+      await analytics.emit(track('sign_in_completed', {
         method: 'email',
-      });
-
-      // Identify user for future analytics
-      analytics.identify(email);
+      }));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
       setError(errorMessage);
 
       // Track sign-in failure
-      analytics.capture('sign_in_failed', {
+      await analytics.emit(track('sign_in_failed', {
         error: errorMessage,
         method: 'email',
-      });
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -56,9 +53,19 @@ export const SignIn = () => {
     setError(null);
 
     // Track social sign-in attempt
-    analytics.capture('sign_in_attempted', {
-      method: provider,
+    const analytics = await createClientAnalytics({
+      providers: {
+        posthog: {
+          apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!,
+          config: {
+            api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+          },
+        },
+      },
     });
+    await analytics.emit(track('sign_in_attempted', {
+      method: provider,
+    }));
 
     try {
       if (provider === 'google') {
@@ -68,19 +75,19 @@ export const SignIn = () => {
       }
 
       // Track successful social sign-in
-      analytics.capture('sign_in_completed', {
+      await analytics.emit(track('sign_in_completed', {
         method: provider,
-      });
+      }));
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : `Failed to sign in with ${provider}`;
       setError(errorMessage);
 
       // Track social sign-in failure
-      analytics.capture('sign_in_failed', {
+      await analytics.emit(track('sign_in_failed', {
         error: errorMessage,
         method: provider,
-      });
+      }));
     } finally {
       setIsSocialLoading(null);
     }

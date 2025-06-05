@@ -10,16 +10,16 @@ import {
   IconTags,
 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import { FLAGS, useFlag } from '@repo/analytics-legacy';
+import { flag, flags } from '@repo/analytics/client';
 import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
 
 const workflowCategories = [
   {
     color: 'blue',
     description: 'AI-powered product categorization with training feedback',
-    flagKey: FLAGS.workflows.productClassification,
+    flagKey: 'workflows.product-classification',
     href: '/workflows/product-classification',
     icon: IconRobot,
     stats: { active: 12, pending: 3 },
@@ -28,7 +28,7 @@ const workflowCategories = [
   {
     color: 'green',
     description: 'Create and manage scheduled workflow executions',
-    flagKey: FLAGS.workflows.schedules,
+    flagKey: 'workflows.schedules',
     href: '/workflows/schedules',
     icon: IconCalendarEvent,
     stats: { active: 5, scheduled: 8 },
@@ -37,7 +37,7 @@ const workflowCategories = [
   {
     color: 'violet',
     description: 'Configure workflow parameters and retry policies',
-    flagKey: FLAGS.workflows.configuration,
+    flagKey: 'workflows.configuration',
     href: '/workflows/configuration',
     icon: IconSettings,
     stats: { workflows: 15 },
@@ -46,7 +46,7 @@ const workflowCategories = [
   {
     color: 'orange',
     description: 'Bulk import and process large datasets',
-    flagKey: FLAGS.workflows.batchProcessing,
+    flagKey: 'workflows.batch-processing',
     href: '/workflows/batch-processing',
     icon: IconFileImport,
     stats: { processing: 1, queued: 2 },
@@ -55,7 +55,7 @@ const workflowCategories = [
   {
     color: 'cyan',
     description: 'Chart PDPs, sitemaps, and external system workflows',
-    flagKey: FLAGS.workflows.integrations,
+    flagKey: 'workflows.integrations',
     href: '/workflows/integrations',
     icon: IconApi,
     stats: { active: 7 },
@@ -64,7 +64,7 @@ const workflowCategories = [
   {
     color: 'grape',
     description: 'Review and approve product classifications',
-    flagKey: FLAGS.workflows.productClassification, // Shares the same flag as product classification
+    flagKey: 'workflows.product-classification', // Shares the same flag as product classification
     href: '/taxonomy-verification',
     icon: IconTags,
     stats: { pending: 24 },

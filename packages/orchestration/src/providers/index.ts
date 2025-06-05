@@ -1,8 +1,11 @@
 /**
- * Workflow providers index
+ * Provider exports for orchestration package
  */
 
-export * from './upstash-workflow';
+// Upstash Workflow Provider
+export { UpstashWorkflowProvider } from './upstash-workflow/provider';
+export type { UpstashWorkflowProviderOptions } from './upstash-workflow/provider';
 
-// Re-export provider registry from server for convenience
-export { AVAILABLE_PROVIDERS } from '../server';
+// Rate Limit Provider
+export { RateLimitProvider } from './rate-limit/provider';
+export type { RateLimitProviderOptions } from './rate-limit/provider';

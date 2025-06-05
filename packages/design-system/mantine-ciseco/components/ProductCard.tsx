@@ -122,10 +122,10 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
         <Link href={productUrl as any} className="block">
           {featuredImage?.src && (
             <ProgressiveImage
-              placeholder={featuredImage.blurDataURL}
+              placeholder={featuredImage.alt}
               priority={false}
               className="flex aspect-[11/12] w-full relative"
-              alt={handle}
+              alt={handle || 'Product image'}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
               src={featuredImage.src}

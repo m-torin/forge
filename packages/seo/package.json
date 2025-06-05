@@ -2,6 +2,12 @@
   "name": "@repo/seo",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./metadata-enhanced": "./metadata-enhanced.ts",
+    "./structured-data": "./structured-data.tsx",
+    "./types": "./types.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix",

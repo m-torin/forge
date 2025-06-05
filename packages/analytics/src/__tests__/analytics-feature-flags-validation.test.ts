@@ -240,8 +240,8 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       };
 
       // 1. User identifies
-      const identifyEvent = identify(userContext.userId, {
-        email: userContext.email,
+      const identifyEvent = identify(userContext.userId!, {
+        email: userContext.email!,
         plan: userContext.attributes.plan,
       });
       captureEvent(identifyEvent);
@@ -284,7 +284,7 @@ describe('Analytics and Feature Flags Complete Integration', () => {
           track('Premium Upsell Shown', {
             product_id: 'prod_123',
             flag_variant: 'upsell_enabled',
-            user_plan: userContext.attributes.plan,
+            user_plan: userContext.attributes?.plan,
           }),
         );
       }
@@ -292,7 +292,7 @@ describe('Analytics and Feature Flags Complete Integration', () => {
       // 7. Track checkout interaction with variant
       captureEvent(
         track('Checkout Started', {
-          user_id: userContext.userId,
+          user_id: userContext.userId!,
           checkout_variant: checkoutVariant.value,
           max_cart_items: maxItems.value,
         }),

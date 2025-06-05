@@ -39,7 +39,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { analytics } from '@repo/analytics-legacy';
+import { createClientAnalytics, track } from '@repo/analytics/client';
 import { updateUser } from '@repo/auth-new/actions';
 import {
   listUserSessions,

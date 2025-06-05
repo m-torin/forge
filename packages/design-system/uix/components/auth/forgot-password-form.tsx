@@ -5,7 +5,7 @@ import { useForm } from '@mantine/form';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { analytics } from '@repo/analytics-legacy';
+import { createClientAnalytics, track } from '@repo/analytics/client';
 import { forgetPassword } from '@repo/auth-new/client';
 
 import { AuthForm } from './auth-form';

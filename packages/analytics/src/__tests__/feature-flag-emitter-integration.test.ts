@@ -105,7 +105,7 @@ describe('Feature Flag and Emitter Integration', () => {
 
       expect(analyticsPayload.type).toBe('track');
       expect(analyticsPayload.event).toBe('Feature Flag Evaluated');
-      expect(analyticsPayload.properties.flag_key).toBe('beta-feature');
+      expect(analyticsPayload.properties?.flag_key).toBe('beta-feature');
     });
 
     it('should handle different flag value types correctly', async () => {
@@ -224,8 +224,8 @@ describe('Feature Flag and Emitter Integration', () => {
 
       // Verify analytics compatibility
       const trackEvent = events[0];
-      expect(trackEvent.properties.features_evaluated).toContain('test-feature');
-      expect(trackEvent.properties.user_context.userId).toBe('journey-user-456');
+      expect(trackEvent.properties?.features_evaluated).toContain('test-feature');
+      expect(trackEvent.properties?.user_context.userId).toBe('journey-user-456');
     });
   });
 
@@ -247,7 +247,7 @@ describe('Feature Flag and Emitter Integration', () => {
 
         expect(errorPayload.type).toBe('track');
         expect(errorPayload.event).toBe('Feature Flag Error');
-        expect(errorPayload.properties.error_type).toBe('PROVIDER_NOT_FOUND');
+        expect(errorPayload.properties?.error_type).toBe('PROVIDER_NOT_FOUND');
       }
     });
 
@@ -269,8 +269,8 @@ describe('Feature Flag and Emitter Integration', () => {
         timeout_duration: 5000,
       });
 
-      expect(timeoutAnalytics.properties.flag_key).toBe('slow-flag');
-      expect(timeoutAnalytics.properties.timeout_duration).toBe(5000);
+      expect(timeoutAnalytics.properties?.flag_key).toBe('slow-flag');
+      expect(timeoutAnalytics.properties?.timeout_duration).toBe(5000);
     });
   });
 
@@ -317,8 +317,8 @@ describe('Feature Flag and Emitter Integration', () => {
         performance_improvement: ((duration1 - duration2) / duration1) * 100,
       });
 
-      expect(cacheAnalytics.properties.cache_hit).toBe(true);
-      expect(cacheAnalytics.properties.performance_improvement).toBeGreaterThan(0);
+      expect(cacheAnalytics.properties?.cache_hit).toBe(true);
+      expect(cacheAnalytics.properties?.performance_improvement).toBeGreaterThan(0);
     });
   });
 });
@@ -337,7 +337,7 @@ describe('Emitter Validation', () => {
 
     expect(exposure).toHaveProperty('type', 'flag_exposure');
     expect(exposure).toHaveProperty('key', 'test');
-    expect(exposure).toHaveValue(true);
+    expect(exposure).toHaveProperty('value', true);
     expect(exposure).toHaveProperty('timestamp');
   });
 
@@ -349,7 +349,7 @@ describe('Emitter Validation', () => {
       'Integration Test',
       { source: 'flag-system' },
       {
-        timestamp: currentTime,
+        timestamp: new Date(currentTime),
       },
     );
 
@@ -359,14 +359,14 @@ describe('Emitter Validation', () => {
     expect(analyticsEvent).toHaveProperty('type');
 
     // Analytics events should have timestamp when provided
-    expect(analyticsEvent).toHaveProperty('timestamp', currentTime);
+    expect(analyticsEvent).toHaveProperty('timestamp', new Date(currentTime));
 
     // Both should be emitter payloads with timestamps
     expect(typeof flagEvent.timestamp).toBe('number');
-    expect(typeof analyticsEvent.timestamp).toBe('number');
+    expect(analyticsEvent.timestamp).toBeInstanceOf(Date);
 
     // Flag events always have timestamps, analytics events have them when provided
     expect(flagEvent.timestamp).toBeGreaterThan(0);
-    expect(analyticsEvent.timestamp).toBe(currentTime);
+    expect((analyticsEvent.timestamp as Date).getTime()).toBe(currentTime);
   });
 });

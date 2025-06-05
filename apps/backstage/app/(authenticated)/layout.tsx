@@ -2,7 +2,7 @@ import { AppShell, Badge, Box, Group, Title } from '@mantine/core';
 import { redirect } from 'next/navigation';
 import { type ReactNode } from 'react';
 
-import { flag } from '@repo/analytics-legacy/server';
+import { flag } from '@repo/analytics/server';
 import { getCurrentUser } from '@repo/auth-new/server';
 import { HeaderSearch } from '@repo/design-system/components/search';
 
@@ -10,7 +10,7 @@ import { UserMenu } from './components/user-menu';
 
 export default async function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
-  const betaFeature = await flag('ui.betaComponents', user?.id);
+  const betaFeature = await flag.evaluate('ui.beta-components', false, { userId: user?.id });
 
   if (!user) {
     return redirect('/sign-in');

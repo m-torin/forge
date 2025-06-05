@@ -109,3 +109,98 @@ export function PaginationGap({
     </span>
   );
 }
+
+// Complete pagination component that accepts totalPages, currentPage, and baseUrl
+export interface CompletePaginationProps {
+  totalPages: number;
+  currentPage: number;
+  baseUrl: string;
+  className?: string;
+}
+
+export function CompletePagination({
+  totalPages,
+  currentPage,
+  baseUrl,
+  className,
+}: CompletePaginationProps) {
+  // Don't render pagination if there's only one page or less
+  if (totalPages <= 1) return null;
+
+  // Helper function to generate page URL
+  const getPageUrl = (page: number) => {
+    if (page === 1) {
+      return baseUrl;
+    }
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    return `${baseUrl}${separator}page=${page}`;
+  };
+
+  // Calculate which pages to show
+  const getVisiblePages = () => {
+    const pages: (number | 'gap')[] = [];
+    const delta = 2; // Number of pages to show around current page
+
+    if (totalPages <= 7) {
+      // Show all pages if there are 7 or fewer
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+
+      // Add gap if needed
+      if (currentPage - delta > 2) {
+        pages.push('gap');
+      }
+
+      // Add pages around current page
+      const start = Math.max(2, currentPage - delta);
+      const end = Math.min(totalPages - 1, currentPage + delta);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      // Add gap if needed
+      if (currentPage + delta < totalPages - 1) {
+        pages.push('gap');
+      }
+
+      // Always show last page (if different from first)
+      if (totalPages > 1) {
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  const visiblePages = getVisiblePages();
+  const prevPage = currentPage > 1 ? currentPage - 1 : null;
+  const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+
+  return (
+    <Pagination className={clsx('mx-auto', className)}>
+      <PaginationPrevious href={prevPage ? getPageUrl(prevPage) : null} />
+      <PaginationList>
+        {visiblePages.map((page, index) => {
+          if (page === 'gap') {
+            return <PaginationGap key={`gap-${index}`} />;
+          }
+          return (
+            <PaginationPage
+              key={page}
+              href={getPageUrl(page)}
+              current={page === currentPage}
+            >
+              {page}
+            </PaginationPage>
+          );
+        })}
+      </PaginationList>
+      <PaginationNext href={nextPage ? getPageUrl(nextPage) : null} />
+    </Pagination>
+  );
+}

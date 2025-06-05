@@ -12,7 +12,7 @@ interface I18nSEOConfig {
 export class I18nSEOManager extends SEOManager {
   private i18nConfig: I18nSEOConfig;
 
-  constructor(config: Parameters<typeof SEOManager>[0] & { i18n: I18nSEOConfig }) {
+  constructor(config: ConstructorParameters<typeof SEOManager>[0] & { i18n: I18nSEOConfig }) {
     super(config);
     this.i18nConfig = config.i18n;
   }
@@ -63,18 +63,25 @@ export class I18nSEOManager extends SEOManager {
     }
 
     // Add language meta tag
-    metadata.other = {
-      ...metadata.other,
+    const otherMetadata: Record<string, string | number | (string | number)[]> = {
       'content-language': locale,
     };
 
     // Handle RTL languages
     if (this.i18nConfig.rtlLocales?.includes(locale)) {
-      metadata.other = {
-        ...metadata.other,
-        direction: 'rtl',
-      };
+      otherMetadata.direction = 'rtl';
     }
+
+    // Merge with existing metadata.other, filtering out any undefined values
+    if (metadata.other) {
+      Object.entries(metadata.other).forEach(([key, value]) => {
+        if (value !== undefined) {
+          otherMetadata[key] = value;
+        }
+      });
+    }
+
+    metadata.other = otherMetadata;
 
     return metadata;
   }

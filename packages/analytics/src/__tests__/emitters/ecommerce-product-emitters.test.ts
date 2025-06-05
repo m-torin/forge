@@ -20,14 +20,16 @@ import type {
   RecommendationProperties,
   SearchResultsProperties,
 } from '../../shared/emitters/ecommerce/types';
+import type { EmitterOptions } from '../../shared/emitters/emitter-types';
 
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   trackEcommerce: vi.fn((eventSpec, options) => ({
-    context: { category: 'ecommerce' },
+    type: 'track' as const,
     event: eventSpec.name,
-    options,
     properties: eventSpec.properties,
+    ...(options?.timestamp && { timestamp: options.timestamp }),
+    ...(options?.context && { context: options.context }),
   })),
 }));
 
@@ -42,19 +44,19 @@ describe('Product Emitters', () => {
       const result = productSearched(properties);
 
       expect(result).toEqual({
-        context: { category: 'ecommerce' },
+        type: 'track',
         event: ECOMMERCE_EVENTS.PRODUCT_SEARCHED,
-        options: undefined,
         properties: { query: 'running shoes' },
       });
     });
 
     it('should accept emitter options', () => {
       const properties = { query: 'laptops' };
-      const options = { timestamp: new Date(), userId: 'user123' };
+      const options = { timestamp: new Date(), context: { traits: { userId: 'user123' } } };
       const result = productSearched(properties, options);
 
-      expect(result.options).toBe(options);
+      expect(result.timestamp).toBe(options.timestamp);
+      expect(result.context?.traits?.userId).toBe('user123');
     });
 
     it('should throw error when query is missing', () => {
@@ -338,9 +340,8 @@ describe('Product Emitters', () => {
       const result = productViewed(properties);
 
       expect(result).toEqual({
-        context: { category: 'ecommerce' },
+        type: 'track',
         event: ECOMMERCE_EVENTS.PRODUCT_VIEWED,
-        options: undefined,
         properties: {
           product_id: 'prod789',
           name: 'Gaming Laptop',
@@ -353,10 +354,10 @@ describe('Product Emitters', () => {
 
     it('should accept emitter options', () => {
       const properties: BaseProductProperties = { product_id: 'p1' };
-      const options = { userId: 'user456' };
+      const options: EmitterOptions = { context: { traits: { userId: 'user456' } } };
 
       const result = productViewed(properties, options);
-      expect(result.options).toBe(options);
+      expect(result.context?.traits?.userId).toBe('user456');
     });
 
     it('should throw error when product_id is missing', () => {
@@ -746,7 +747,7 @@ describe('Product Emitters', () => {
 
       // Should throw for missing ID
       expect(() => {
-        productClicked({});
+        productClicked({} as any);
       }).toThrow('Product must have an id');
 
       // Should handle invalid numeric values gracefully

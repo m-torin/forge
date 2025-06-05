@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import Image, { type ImageProps } from 'next/image';
 import { useState } from 'react';
 
-interface ProgressiveImageProps extends Omit<ImageProps, 'src'> {
+interface ProgressiveImageProps extends Omit<ImageProps, 'src' | 'placeholder'> {
   blurDataURL?: string;
   placeholder?: string;
   rootMargin?: string;

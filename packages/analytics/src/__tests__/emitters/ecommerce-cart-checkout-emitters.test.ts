@@ -19,10 +19,11 @@ import type {
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   trackEcommerce: vi.fn((eventSpec, options) => ({
-    context: { category: 'ecommerce' },
+    type: 'track' as const,
     event: eventSpec.name,
-    options,
     properties: eventSpec.properties,
+    ...(options?.timestamp && { timestamp: options.timestamp }),
+    ...(options?.context && { context: options.context }),
   })),
 }));
 
@@ -51,9 +52,8 @@ describe('Cart and Checkout Emitters', () => {
       const result = cartUpdated(properties);
 
       expect(result).toEqual({
-        context: { category: 'ecommerce' },
+        type: 'track',
         event: ECOMMERCE_EVENTS.CART_UPDATED,
-        options: undefined,
         properties: {
           cart_id: 'cart123',
           product_id: 'p123',
@@ -78,7 +78,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartUpdated(properties);
 
-      expect(result.properties).toMatchObject({
+      expect(result.properties!).toMatchObject({
         product_id: 'p123',
         action: 'removed',
         cart_total: 99.99,
@@ -96,7 +96,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartUpdated(properties);
 
-      expect(result.properties).toMatchObject({
+      expect(result.properties!).toMatchObject({
         product_id: 'p123',
         action: 'updated',
         cart_total: 299.97,
@@ -109,11 +109,12 @@ describe('Cart and Checkout Emitters', () => {
         action: 'added',
         product: baseProduct,
       };
-      const options = { timestamp: new Date(), userId: 'user123' };
+      const options = { timestamp: new Date(), context: { traits: { userId: 'user123' } } };
 
       const result = cartUpdated(properties, options);
 
-      expect(result.options).toBe(options);
+      expect(result.timestamp).toBe(options.timestamp);
+      expect(result.context?.traits?.userId).toBe('user123');
     });
 
     it('should normalize product properties', () => {
@@ -131,7 +132,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartUpdated(properties);
 
-      expect(result.properties).toMatchObject({
+      expect(result.properties!).toMatchObject({
         product_id: 'p456',
         name: 'Raw Product',
         action: 'added',
@@ -148,7 +149,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartUpdated(properties);
 
-      expect(result.properties).toEqual({
+      expect(result.properties!).toEqual({
         product_id: 'p1',
         action: 'added',
       });
@@ -165,9 +166,9 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartUpdated(properties);
 
-      expect(result.properties).not.toHaveProperty('quantity_change');
-      expect(result.properties).not.toHaveProperty('cart_total');
-      expect(result.properties).not.toHaveProperty('cart_id');
+      expect(result.properties!).not.toHaveProperty('quantity_change');
+      expect(result.properties!).not.toHaveProperty('cart_total');
+      expect(result.properties!).not.toHaveProperty('cart_id');
     });
 
     it('should throw error when action is missing', () => {
@@ -195,7 +196,7 @@ describe('Cart and Checkout Emitters', () => {
         };
 
         const result = cartUpdated(properties);
-        expect(result.properties.action).toBe(action);
+        expect(result.properties!.action).toBe(action);
       });
     });
 
@@ -207,7 +208,7 @@ describe('Cart and Checkout Emitters', () => {
       };
 
       const result = cartUpdated(properties);
-      expect(result.properties.cart_total).toBe(0);
+      expect(result.properties!.cart_total).toBe(0);
     });
 
     it('should handle negative quantity changes', () => {
@@ -218,7 +219,7 @@ describe('Cart and Checkout Emitters', () => {
       };
 
       const result = cartUpdated(properties);
-      expect(result.properties.quantity_change).toBe(-5);
+      expect(result.properties!.quantity_change).toBe(-5);
     });
   });
 
@@ -266,7 +267,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartViewed(properties);
 
-      expect(result.properties).toEqual({
+      expect(result.properties!).toEqual({
         cart_id: 'cart123',
         products,
       });
@@ -285,7 +286,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartViewed(properties);
 
-      expect(result.properties.products).toEqual([
+      expect(result.properties!.products).toEqual([
         { product_id: 'p1', name: 'Product 1', price: 99.99 },
         { product_id: 'p2', name: 'Product 2', price: 149.99 },
       ]);
@@ -299,7 +300,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartViewed(properties);
 
-      expect(result.properties.products).toEqual([]);
+      expect(result.properties!.products).toEqual([]);
     });
 
     it('should clean undefined properties', () => {
@@ -310,7 +311,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartViewed(properties);
 
-      expect(result.properties).toEqual({
+      expect(result.properties!).toEqual({
         cart_id: 'cart123',
       });
       expect(result.properties).not.toHaveProperty('products');
@@ -333,7 +334,7 @@ describe('Cart and Checkout Emitters', () => {
       const endTime = performance.now();
 
       expect(endTime - startTime).toBeLessThan(100); // Should complete in under 100ms
-      expect(result.properties.products).toHaveLength(1000);
+      expect(result.properties!.products).toHaveLength(1000);
     });
   });
 
@@ -377,7 +378,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartAbandoned(properties);
 
-      expect(result.properties).toEqual({
+      expect(result.properties!).toEqual({
         cart_id: 'cart456',
         cart_value: 199.99,
         products: baseProducts,
@@ -396,7 +397,7 @@ describe('Cart and Checkout Emitters', () => {
         };
 
         const result = cartAbandoned(properties);
-        expect(result.properties.abandonment_reason).toBe(reason);
+        expect(result.properties!.abandonment_reason).toBe(reason);
       });
     });
 
@@ -414,7 +415,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartAbandoned(properties);
 
-      expect(result.properties.products).toEqual([
+      expect(result.properties!.products).toEqual([
         { product_id: 'p1', name: 'Product 1', price: 99.99 },
         { product_id: 'p2', name: 'Product 2', price: 149.99 },
       ]);
@@ -454,7 +455,7 @@ describe('Cart and Checkout Emitters', () => {
       };
 
       const result = cartAbandoned(properties);
-      expect(result.properties.cart_value).toBe(0);
+      expect(result.properties!.cart_value).toBe(0);
     });
 
     it('should handle empty products array', () => {
@@ -465,7 +466,7 @@ describe('Cart and Checkout Emitters', () => {
       };
 
       const result = cartAbandoned(properties);
-      expect(result.properties.products).toEqual([]);
+      expect(result.properties!.products).toEqual([]);
     });
 
     it('should handle zero time in cart', () => {
@@ -477,7 +478,7 @@ describe('Cart and Checkout Emitters', () => {
       };
 
       const result = cartAbandoned(properties);
-      expect(result.properties.time_in_cart).toBe(0);
+      expect(result.properties!.time_in_cart).toBe(0);
     });
 
     it('should clean undefined properties', () => {
@@ -491,7 +492,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = cartAbandoned(properties);
 
-      expect(result.properties).toEqual({
+      expect(result.properties!).toEqual({
         cart_id: 'cart123',
         cart_value: 100,
         products: baseProducts,
@@ -543,7 +544,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = checkoutProgressed(properties);
 
-      expect(result.properties).toEqual({
+      expect(result.properties!).toEqual({
         step_name: 'Payment Information',
         action: 'completed',
         step: 2,
@@ -561,7 +562,7 @@ describe('Cart and Checkout Emitters', () => {
         };
 
         const result = checkoutProgressed(properties);
-        expect(result.properties.action).toBe(action);
+        expect(result.properties!.action).toBe(action);
       });
     });
 
@@ -576,7 +577,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = checkoutProgressed(properties);
 
-      expect(result.properties).toMatchObject({
+      expect(result.properties!).toMatchObject({
         checkout_id: 'checkout123',
         step_name: 'Payment Processing',
         action: 'error',
@@ -600,7 +601,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = checkoutProgressed(properties);
 
-      expect(result.properties.products).toEqual([
+      expect(result.properties!.products).toEqual([
         { product_id: 'p1', name: 'Product 1', price: 99.99 },
         { product_id: 'p2', name: 'Product 2', price: 149.99 },
       ]);
@@ -618,7 +619,7 @@ describe('Cart and Checkout Emitters', () => {
         };
 
         const result = checkoutProgressed(properties);
-        expect(result.properties.payment_method).toBe(method);
+        expect(result.properties!.payment_method).toBe(method);
       });
     });
 
@@ -634,7 +635,7 @@ describe('Cart and Checkout Emitters', () => {
         };
 
         const result = checkoutProgressed(properties);
-        expect(result.properties.shipping_method).toBe(method);
+        expect(result.properties!.shipping_method).toBe(method);
       });
     });
 
@@ -679,7 +680,7 @@ describe('Cart and Checkout Emitters', () => {
       };
 
       const result = checkoutProgressed(properties);
-      expect(result.properties.step).toBe(0);
+      expect(result.properties!.step).toBe(0);
     });
 
     it('should handle empty products array', () => {
@@ -691,7 +692,7 @@ describe('Cart and Checkout Emitters', () => {
       };
 
       const result = checkoutProgressed(properties);
-      expect(result.properties.products).toEqual([]);
+      expect(result.properties!.products).toEqual([]);
     });
 
     it('should clean undefined properties', () => {
@@ -708,7 +709,7 @@ describe('Cart and Checkout Emitters', () => {
 
       const result = checkoutProgressed(properties);
 
-      expect(result.properties).toEqual({
+      expect(result.properties!).toEqual({
         step_name: 'Shipping',
         action: 'viewed',
         step: 1,
@@ -741,13 +742,13 @@ describe('Cart and Checkout Emitters', () => {
 
         const result = checkoutProgressed(properties);
 
-        expect(result.properties.step).toBe(stepData.step);
-        expect(result.properties.step_name).toBe(stepData.step_name);
-        expect(result.properties.action).toBe(stepData.action);
-        expect(result.properties.checkout_id).toBe('checkout123');
+        expect(result.properties!.step).toBe(stepData.step);
+        expect(result.properties!.step_name).toBe(stepData.step_name);
+        expect(result.properties!.action).toBe(stepData.action);
+        expect(result.properties!.checkout_id).toBe('checkout123');
 
         if (stepData.error_message) {
-          expect(result.properties.error_message).toBe(stepData.error_message);
+          expect(result.properties!.error_message).toBe(stepData.error_message);
         }
       });
     });
@@ -779,8 +780,8 @@ describe('Cart and Checkout Emitters', () => {
       const endTime = performance.now();
 
       expect(endTime - startTime).toBeLessThan(200); // Should complete in under 200ms
-      expect(result.properties.products).toHaveLength(5000);
-      expect(result.properties.cart_value).toBe(cartValue);
+      expect(result.properties!.products).toHaveLength(5000);
+      expect(result.properties!.cart_value).toBe(cartValue);
     });
 
     it('should maintain data consistency across cart lifecycle', () => {
@@ -820,16 +821,16 @@ describe('Cart and Checkout Emitters', () => {
       });
 
       // All operations should maintain consistent cart_id
-      expect(addResult.properties.cart_id).toBe('lifecycle_cart');
-      expect(viewResult.properties.cart_id).toBe('lifecycle_cart');
-      expect(updateResult.properties.cart_id).toBe('lifecycle_cart');
-      expect(checkoutResult.properties.checkout_id).toBe('checkout_lifecycle');
+      expect(addResult.properties!.cart_id).toBe('lifecycle_cart');
+      expect(viewResult.properties!.cart_id).toBe('lifecycle_cart');
+      expect(updateResult.properties!.cart_id).toBe('lifecycle_cart');
+      expect(checkoutResult.properties!.checkout_id).toBe('checkout_lifecycle');
 
       // Product data should be consistent
-      expect(addResult.properties.product_id).toBe('p1');
-      expect(viewResult.properties.products![0].product_id).toBe('p1');
-      expect(updateResult.properties.product_id).toBe('p1');
-      expect(checkoutResult.properties.products![0].product_id).toBe('p1');
+      expect(addResult.properties!.product_id).toBe('p1');
+      expect(viewResult.properties!.products![0].product_id).toBe('p1');
+      expect(updateResult.properties!.product_id).toBe('p1');
+      expect(checkoutResult.properties!.products![0].product_id).toBe('p1');
     });
 
     it('should ensure consistent event naming across all cart emitters', () => {
@@ -874,7 +875,7 @@ describe('Cart and Checkout Emitters', () => {
         action: 'viewed',
         step: -1,
       });
-      expect(result.properties.step).toBe(-1); // Should preserve the value, validation is up to the application
+      expect(result.properties!.step).toBe(-1); // Should preserve the value, validation is up to the application
     });
 
     it('should handle floating point precision in cart calculations', () => {
@@ -893,8 +894,8 @@ describe('Cart and Checkout Emitters', () => {
         product,
       });
 
-      expect(result.properties.cart_total).toBe(expectedTotal);
-      expect(result.properties.price).toBe(99.99);
+      expect(result.properties!.cart_total).toBe(expectedTotal);
+      expect(result.properties!.price).toBe(99.99);
     });
 
     it('should maintain type safety across all cart emitters', () => {

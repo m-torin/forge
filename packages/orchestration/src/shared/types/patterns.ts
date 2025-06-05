@@ -1,424 +1,183 @@
 /**
- * Workflow Pattern Types
- * Common patterns and abstractions for workflow implementations
+ * Reliability and resilience pattern types
  */
 
-import type { WorkflowStep, WorkflowContext } from './workflow';
-
-/**
- * Circuit breaker state
- */
-export type CircuitBreakerState = 'closed' | 'open' | 'half-open';
-
-/**
- * Circuit breaker configuration
- */
-export interface CircuitBreakerConfig {
-  /**
-   * Failure threshold before opening circuit
-   */
-  failureThreshold: number;
-
-  /**
-   * Time window for failure counting (ms)
-   */
-  failureWindow: number;
-
-  /**
-   * Time to wait before attempting recovery (ms)
-   */
-  recoveryTimeout: number;
-
-  /**
-   * Number of successful calls to close circuit
-   */
-  successThreshold: number;
-
-  /**
-   * Fallback function when circuit is open
-   */
-  fallback?: <T>(error: Error) => T | Promise<T>;
-}
-
-/**
- * Retry configuration
- */
-export interface RetryConfig {
-  /**
-   * Maximum number of retry attempts
-   */
+export interface RetryPattern {
+  /** Base delay in milliseconds */
+  baseDelay: number;
+  /** Whether to add jitter to delays */
+  jitter?: boolean;
+  /** Maximum number of attempts */
   maxAttempts: number;
-
-  /**
-   * Backoff strategy
-   */
-  backoff: {
-    type: 'fixed' | 'exponential' | 'linear' | 'custom';
-    baseDelay: number;
-    maxDelay?: number;
-    multiplier?: number;
-    customStrategy?: (attempt: number) => number;
-  };
-
-  /**
-   * Errors to retry (default: all)
-   */
-  retryableErrors?: Array<new (...args: any[]) => Error>;
-
-  /**
-   * Errors to not retry
-   */
-  nonRetryableErrors?: Array<new (...args: any[]) => Error>;
-
-  /**
-   * Custom retry predicate
-   */
+  /** Maximum delay cap (for exponential/linear) */
+  maxDelay?: number;
+  /** Callback called before each retry */
+  onRetry?: (error: Error, attempt: number) => void;
+  /** Function to determine if error should be retried */
   shouldRetry?: (error: Error, attempt: number) => boolean;
-
-  /**
-   * Jitter configuration
-   */
-  jitter?: {
-    type: 'none' | 'full' | 'decorrelated';
-    factor?: number;
-  };
+  /** Strategy for retry delays */
+  strategy: 'fixed' | 'exponential' | 'linear';
 }
 
-/**
- * Rate limiting configuration
- */
-export interface RateLimitConfig {
-  /**
-   * Maximum requests allowed
-   */
-  limit: number;
-
-  /**
-   * Time window (ms)
-   */
-  window: number;
-
-  /**
-   * Strategy for rate limiting
-   */
-  strategy: 'sliding-window' | 'fixed-window' | 'token-bucket';
-
-  /**
-   * Key generator for distributed rate limiting
-   */
-  keyGenerator?: (context: WorkflowContext) => string;
-
-  /**
-   * What to do when rate limited
-   */
-  onRateLimit?: 'queue' | 'reject' | 'delay';
+export interface CircuitBreakerPattern {
+  /** Custom error transformer */
+  errorFilter?: (error: Error) => boolean;
+  /** Failure threshold to open circuit */
+  failureThreshold: number;
+  /** Minimum number of calls to consider statistics */
+  minimumCallsToTrip?: number;
+  /** Callback when circuit closes */
+  onClose?: () => void;
+  /** Callback when circuit is half-open */
+  onHalfOpen?: () => void;
+  /** Callback when circuit opens */
+  onOpen?: () => void;
+  /** How long to wait before attempting reset (ms) */
+  resetTimeout: number;
+  /** Rolling window size for statistics */
+  rollingCountWindow?: number;
+  /** Time window for failure counting (ms) */
+  timeout: number;
 }
 
-/**
- * Batch processing configuration
- */
-export interface BatchConfig<T = any> {
-  /**
-   * Maximum batch size
-   */
-  maxSize: number;
-
-  /**
-   * Maximum wait time before processing (ms)
-   */
-  maxWait: number;
-
-  /**
-   * Concurrency for batch processing
-   */
+export interface BatchPattern {
+  /** Concurrency for batch processing */
   concurrency?: number;
-
-  /**
-   * Group items into batches
-   */
-  groupBy?: (item: T) => string;
-
-  /**
-   * Process individual batch
-   */
-  processor: (batch: T[]) => Promise<any[]>;
-
-  /**
-   * Error handling strategy
-   */
-  errorStrategy?: 'fail-fast' | 'fail-silent' | 'partial';
-}
-
-/**
- * Parallel execution configuration
- */
-export interface ParallelConfig {
-  /**
-   * Maximum concurrent executions
-   */
-  maxConcurrency: number;
-
-  /**
-   * Order preservation
-   */
+  /** Error handling strategy */
+  errorHandling?: 'fail-fast' | 'continue' | 'collect-errors';
+  /** Maximum batch size */
+  maxBatchSize: number;
+  /** Maximum wait time before processing batch (ms) */
+  maxWaitTime: number;
+  /** Minimum batch size to trigger processing */
+  minBatchSize?: number;
+  /** Whether to preserve order in results */
   preserveOrder?: boolean;
-
-  /**
-   * Timeout per execution (ms)
-   */
-  timeout?: number;
-
-  /**
-   * Error handling
-   */
-  onError?: 'fail-fast' | 'continue' | 'collect';
+  /** Callback for batch processing */
+  processor: (items: any[]) => Promise<any[]>;
 }
 
-/**
- * Pipeline stage definition
- */
-export interface PipelineStage<TInput = any, TOutput = any> {
-  /**
-   * Stage name
-   */
+export interface RateLimitPattern {
+  /** Algorithm to use */
+  algorithm: 'sliding-window' | 'fixed-window' | 'token-bucket';
+  /** Unique identifier for this rate limiter */
+  identifier: string;
+  /** Time window in milliseconds */
+  interval: number;
+  /** Custom key generator */
+  keyGenerator?: (context: any) => string;
+  /** Whether to throw error or return false when limited */
+  throwOnLimit?: boolean;
+  /** Number of tokens/requests allowed */
+  tokens: number;
+}
+
+export interface DeduplicationPattern {
+  /** Whether to extend window on duplicate */
+  extendWindow?: boolean;
+  /** Key extractor function */
+  keyExtractor: (item: any) => string;
+  /** Maximum entries to store */
+  maxEntries?: number;
+  /** Storage backend for deduplication state */
+  storage: 'memory' | 'redis' | 'database';
+  /** Time window for deduplication (ms) */
+  windowMs: number;
+}
+
+export interface BulkheadPattern {
+  /** Maximum concurrent operations */
+  maxConcurrency: number;
+  /** Maximum queue size for waiting operations */
+  maxQueueSize: number;
+  /** Name of the bulkhead */
   name: string;
-
-  /**
-   * Transform function
-   */
-  transform: (input: TInput, context: WorkflowContext) => Promise<TOutput>;
-
-  /**
-   * Stage configuration
-   */
-  config?: {
-    parallel?: boolean;
-    optional?: boolean;
-    condition?: (input: TInput) => boolean;
-  };
+  /** Callback for rejected operations */
+  onRejection?: (operation: any) => void;
+  /** Timeout for queued operations */
+  queueTimeout?: number;
+  /** Rejection strategy when full */
+  rejectionStrategy: 'throw' | 'drop' | 'callback';
 }
 
-/**
- * Fan-out/fan-in pattern configuration
- */
-export interface FanOutFanInConfig<T = any, R = any> {
-  /**
-   * Split function to create parallel tasks
-   */
-  split: (input: T) => T[] | Promise<T[]>;
-
-  /**
-   * Process individual item
-   */
-  process: (item: T, index: number) => Promise<R>;
-
-  /**
-   * Combine results
-   */
-  combine: (results: R[]) => any;
-
-  /**
-   * Parallel execution config
-   */
-  parallel?: ParallelConfig;
+export interface TimeoutPattern {
+  /** Timeout duration in milliseconds */
+  duration: number;
+  /** Custom timeout message */
+  message?: string;
+  /** Callback when operation times out */
+  onTimeout?: () => void;
+  /** Whether to use AbortController */
+  useAbortController?: boolean;
 }
 
-/**
- * Saga pattern configuration
- */
-export interface SagaConfig<T = any> {
-  /**
-   * Saga steps with compensations
-   */
-  steps: Array<{
-    name: string;
-    action: (data: T, context: WorkflowContext) => Promise<any>;
-    compensation?: (data: T, context: WorkflowContext, error?: Error) => Promise<void>;
-  }>;
-
-  /**
-   * Compensation strategy
-   */
-  compensationStrategy?: 'sequential' | 'parallel';
-
-  /**
-   * Isolation level
-   */
-  isolationLevel?: 'read-uncommitted' | 'read-committed' | 'repeatable-read' | 'serializable';
+export interface CachePattern {
+  /** Cache key generator */
+  keyGenerator: (args: any[]) => string;
+  /** Maximum cache size */
+  maxSize?: number;
+  /** Whether to refresh cache in background */
+  refreshAhead?: boolean;
+  /** Refresh threshold (percentage of TTL) */
+  refreshThreshold?: number;
+  /** Cache storage backend */
+  storage: 'memory' | 'redis';
+  /** Time to live in milliseconds */
+  ttl: number;
 }
 
-/**
- * Workflow composition patterns
- */
-export interface CompositionPatterns {
-  /**
-   * Sequential composition
-   */
-  sequence<T>(...steps: WorkflowStep[]): WorkflowStep<T, T>;
-
-  /**
-   * Parallel composition
-   */
-  parallel<T>(...steps: WorkflowStep[]): WorkflowStep<T, T[]>;
-
-  /**
-   * Conditional composition
-   */
-  conditional<T>(
-    predicate: (input: T) => boolean,
-    ifTrue: WorkflowStep,
-    ifFalse?: WorkflowStep,
-  ): WorkflowStep<T, T>;
-
-  /**
-   * Loop composition
-   */
-  loop<T>(
-    condition: (input: T, iteration: number) => boolean,
-    step: WorkflowStep,
-    maxIterations?: number,
-  ): WorkflowStep<T, T>;
-
-  /**
-   * Map over array
-   */
-  map<T, R>(step: WorkflowStep<T, R>, config?: ParallelConfig): WorkflowStep<T[], R[]>;
-
-  /**
-   * Reduce array
-   */
-  reduce<T, R>(step: WorkflowStep<{ acc: R; item: T }, R>, initialValue: R): WorkflowStep<T[], R>;
-
-  /**
-   * Filter array
-   */
-  filter<T>(predicate: (item: T) => boolean | Promise<boolean>): WorkflowStep<T[], T[]>;
-
-  /**
-   * Retry wrapper
-   */
-  retry<T, R>(step: WorkflowStep<T, R>, config: RetryConfig): WorkflowStep<T, R>;
-
-  /**
-   * Circuit breaker wrapper
-   */
-  circuitBreaker<T, R>(step: WorkflowStep<T, R>, config: CircuitBreakerConfig): WorkflowStep<T, R>;
-
-  /**
-   * Rate limit wrapper
-   */
-  rateLimit<T, R>(step: WorkflowStep<T, R>, config: RateLimitConfig): WorkflowStep<T, R>;
-
-  /**
-   * Timeout wrapper
-   */
-  timeout<T, R>(step: WorkflowStep<T, R>, ms: number): WorkflowStep<T, R>;
-
-  /**
-   * Cache wrapper
-   */
-  cache<T, R>(
-    step: WorkflowStep<T, R>,
-    config: {
-      key: (input: T) => string;
-      ttl: number;
-      storage?: 'memory' | 'redis';
-    },
-  ): WorkflowStep<T, R>;
+export interface FallbackPattern {
+  /** Fallback operation */
+  fallback: () => Promise<any>;
+  /** Conditions to trigger fallback */
+  fallbackOn?: (error: Error) => boolean;
+  /** Primary operation */
+  primary: () => Promise<any>;
+  /** Delay before retrying primary */
+  retryDelay?: number;
+  /** Whether to try primary again after fallback */
+  retryPrimary?: boolean;
 }
 
-/**
- * Deduplication configuration
- */
-export interface DeduplicationConfig {
-  /**
-   * Generate deduplication key
-   */
-  keyGenerator: (params: any) => string;
-
-  /**
-   * Deduplication window (ms)
-   */
-  window: number;
-
-  /**
-   * Storage backend
-   */
-  storage?: 'memory' | 'redis' | 'database';
-
-  /**
-   * What to do with duplicates
-   */
-  onDuplicate?: 'ignore' | 'merge' | 'reject';
+export interface MonitoringPattern {
+  /** Custom metric extractors */
+  customMetrics?: Record<string, (result: any, duration: number) => number>;
+  /** Whether to log operations */
+  enableLogging?: boolean;
+  /** Log level */
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  /** Metrics to collect */
+  metrics: ('duration' | 'success-rate' | 'error-rate' | 'throughput')[];
+  /** Sampling rate (0-1) */
+  samplingRate?: number;
 }
 
-/**
- * Event sourcing configuration
- */
-export interface EventSourcingConfig {
-  /**
-   * Event store
-   */
-  store: {
-    save: (event: any) => Promise<void>;
-    load: (aggregateId: string) => Promise<any[]>;
-  };
-
-  /**
-   * Event handlers
-   */
-  handlers: Record<string, (event: any, state: any) => any>;
-
-  /**
-   * Snapshot configuration
-   */
-  snapshots?: {
-    frequency: number;
-    store: {
-      save: (aggregateId: string, state: any) => Promise<void>;
-      load: (aggregateId: string) => Promise<any>;
-    };
-  };
+export interface PatternContext {
+  /** Attempt number */
+  attempt: number;
+  /** Additional context */
+  metadata?: Record<string, any>;
+  /** Operation identifier */
+  operationId: string;
+  /** Previous errors */
+  previousErrors: Error[];
+  /** Start time */
+  startTime: Date;
 }
 
-/**
- * Workflow hooks
- */
-export interface WorkflowHooks {
-  /**
-   * Before workflow starts
-   */
-  beforeStart?: (context: WorkflowContext) => Promise<void>;
-
-  /**
-   * After workflow completes
-   */
-  afterComplete?: (context: WorkflowContext, result: any) => Promise<void>;
-
-  /**
-   * On workflow error
-   */
-  onError?: (context: WorkflowContext, error: Error) => Promise<void>;
-
-  /**
-   * Before each step
-   */
-  beforeStep?: (stepName: string, input: any) => Promise<void>;
-
-  /**
-   * After each step
-   */
-  afterStep?: (stepName: string, output: any) => Promise<void>;
-
-  /**
-   * On step error
-   */
-  onStepError?: (stepName: string, error: Error) => Promise<void>;
+export interface PatternResult<T = any> {
+  /** Number of attempts made */
+  attempts: number;
+  /** Result data (if successful) */
+  data?: T;
+  /** Duration in milliseconds */
+  duration: number;
+  /** Error (if failed) */
+  error?: Error;
+  /** Additional metadata */
+  metadata?: Record<string, any>;
+  /** Pattern that was applied */
+  pattern?: string;
+  /** Whether operation succeeded */
+  success: boolean;
 }
-
-/**
- * Workflow middleware
- */
-export type WorkflowMiddleware = (
-  next: (input: any) => Promise<any>,
-) => (input: any) => Promise<any>;

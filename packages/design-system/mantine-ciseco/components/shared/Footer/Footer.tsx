@@ -56,7 +56,7 @@ const widgetMenus: WidgetFooterMenu[] = [
   },
 ];
 
-const Footer: React.FC = () => {
+function Footer() {
   const localizeHref = useLocalizeHref();
 
   const renderWidgetMenuItem = (menu: WidgetFooterMenu, index: number) => {

@@ -1,17 +1,12 @@
-import path from 'path';
-
 import { defineConfig } from 'vitest/config';
+import baseConfig from '@repo/testing/config/node';
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './'),
-      '@repo': path.resolve(__dirname, '../../packages'),
-    },
-  },
+  ...baseConfig,
   test: {
+    ...baseConfig.test,
     environment: 'node',
     globals: true,
-    setupFiles: ['./test-setup.ts'],
+    setupFiles: [],
   },
 });

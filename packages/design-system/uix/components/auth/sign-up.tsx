@@ -3,7 +3,7 @@
 import { Alert, Button, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useState } from 'react';
 
-import { analytics } from '@repo/analytics-legacy';
+import { createClientAnalytics, track } from '@repo/analytics/client';
 import { signUp } from '@repo/auth-new/client';
 
 export const SignUp = () => {

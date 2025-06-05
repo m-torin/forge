@@ -1,17 +1,18 @@
-import path from 'path';
-
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './'),
-      '@repo': path.resolve(__dirname, '../../packages'),
-    },
-  },
   test: {
-    clearMocks: true,
+    coverage: {
+      provider: 'v8',
+      exclude: [
+        'src/__tests__/**',
+        'src/**/*.test.ts',
+        'src/**/*.spec.ts',
+        'node_modules/**',
+        'dist/**',
+      ],
+      reporter: ['text', 'json', 'html'],
+    },
     environment: 'node',
-    globals: true,
   },
 });

@@ -1,333 +1,218 @@
-# @repo/scraping
+# @repo/scraping-new
 
-A powerful web scraping package with support for multiple browser engines (Puppeteer, Playwright,
-Hero) and enhanced utilities to reduce boilerplate.
+A modern, multi-provider web scraping system that supports various scraping strategies from
+lightweight HTML parsing to full browser automation and managed scraping services.
+
+## Features
+
+- 🎭 **Multiple Provider Types**: Browser automation, HTML parsing, and managed services
+- 🔄 **Provider Agnostic**: Switch between scraping strategies based on needs
+- ⚡ **Performance First**: Use the lightest tool that gets the job done
+- 🛡️ **Built-in Reliability**: Automatic retries, failover, and error recovery
+- 🔧 **Extensible**: Easy to add new providers and capabilities
+- 📊 **Monitoring**: Built-in metrics and health checks
+- 🎯 **Smart Routing**: Automatic provider selection based on URL patterns
 
 ## Installation
 
 ```bash
-pnpm add @repo/scraping
+pnpm add @repo/scraping-new
 
-# Install the browser engine you want to use:
-pnpm add playwright  # For Playwright
-pnpm add puppeteer   # For Puppeteer
+# Install the providers you need:
+pnpm add playwright  # For Playwright provider
+pnpm add puppeteer   # For Puppeteer provider
+pnpm add cheerio     # For Cheerio HTML parser
 ```
-
-## Features
-
-- 🎭 **Multiple Browser Engines**: Support for Puppeteer, Playwright, and Hero
-- 🚀 **Enhanced Utilities**: High-level functions to reduce boilerplate
-- 🔄 **Automatic Retries**: Built-in retry logic with exponential backoff
-- 🎯 **Smart Extraction**: Declarative selector-based data extraction
-- 🤖 **Human-like Behavior**: Random delays and user agents
-- 📸 **Screenshots**: Capture full page or specific elements
-- 🔍 **CAPTCHA Detection**: Automatic detection of CAPTCHA challenges
-- ⚡ **Resource Blocking**: Block images, styles, etc. for faster scraping
 
 ## Quick Start
 
-### Using Enhanced Playwright (Recommended for Less Boilerplate)
+### Basic Usage
 
 ```typescript
-import { quickScrape, scrapeMultiple, scrapeWithPagination } from '@repo/scraping/playwright';
+import { createServerScraping } from '@repo/scraping-new/server';
 
-// Quick scrape with selectors
-const { data, title, screenshot } = await quickScrape(
-  'https://example.com',
-  {
-    title: { selector: 'h1' },
+const scraper = await createServerScraping({
+  providers: [
+    { name: 'playwright', type: 'browser' },
+    { name: 'cheerio', type: 'html' },
+  ],
+  routing: {
+    static: 'cheerio', // Use Cheerio for static sites
+    dynamic: 'playwright', // Use Playwright for SPAs
+    default: 'playwright', // Default fallback
+  },
+});
+
+// Scrape a page
+const result = await scraper.scrape('https://example.com', {
+  waitForSelector: '.content',
+  extract: {
+    title: 'h1',
     price: { selector: '.price', transform: (text) => parseFloat(text.replace('$', '')) },
-    description: { selector: '.description' },
     images: { selector: 'img', attribute: 'src', multiple: true },
   },
-  {
-    waitForSelector: 'h1',
-    blockResources: ['image', 'stylesheet'],
-    screenshot: true,
-  }
-);
+});
 
-// Scrape multiple URLs
+console.log(result.data);
+// { title: 'Product Name', price: 29.99, images: ['img1.jpg', 'img2.jpg'] }
+```
+
+### Advanced Usage
+
+```typescript
+// Import everything from the unified server module
+import {
+  createServerScraping,
+  quickScrape,
+  scrapeMultiple,
+  scrapeWithPagination,
+  EnhancedScraper,
+} from '@repo/scraping-new/server';
+
+// Scrape with specific provider
+const result = await scraper.scrape('https://spa-app.com', {
+  provider: 'playwright',
+  waitUntil: 'networkidle',
+  blockResources: ['image', 'stylesheet', 'font'],
+  screenshot: true,
+  executeScript: () => window.__INITIAL_DATA__,
+});
+
+// Quick one-liner scraping
+const data = await quickScrape('https://example.com', {
+  title: 'h1',
+  price: '.price',
+});
+
+// Scrape multiple URLs concurrently
 const results = await scrapeMultiple(
   ['https://example.com/page1', 'https://example.com/page2'],
   {
-    title: { selector: 'h1' },
-    content: { selector: '.content' },
+    title: 'h1',
+    content: '.article-content',
   },
   {
-    concurrent: 3,
+    concurrent: 5,
     onProgress: (url, index, total) => {
-      console.log(`Scraping ${index}/${total}: ${url}`);
+      console.log(`Progress: ${index}/${total}`);
     },
   }
 );
 
-// Scrape with pagination
-const pages = await scrapeWithPagination(
-  'https://example.com/products',
-  {
+// Pagination scraping
+const allPages = await scrapeWithPagination('https://example.com/products', {
+  selectors: {
     products: { selector: '.product', multiple: true },
-    nextPageSelector: 'a.next-page',
   },
-  {
-    maxPages: 5,
-    delay: 1000, // Wait 1s between pages
-  }
-);
-```
-
-### Using Enhanced Playwright Class
-
-```typescript
-import { EnhancedPlaywrightScraper } from '@repo/scraping/playwright';
-
-const scraper = new EnhancedPlaywrightScraper({
-  headless: true,
-  defaultTimeout: 30000,
+  nextPageSelector: '.next-page',
+  maxPages: 5,
 });
 
-// Use with auto-close
-await scraper.withAutoClose(async (s) => {
-  // Navigate
-  await s.goto('https://example.com');
-
-  // Wait for element
-  await s.waitFor('.products-loaded');
-
-  // Extract data
-  const data = await s.extract({
-    products: {
-      selector: '.product-card',
-      multiple: true,
-    },
-    totalCount: {
-      selector: '.total-count',
-      transform: (text) => parseInt(text),
-    },
-  });
-
-  // Get all links
-  const links = await s.getLinks('a.product-link');
-
-  // Take screenshot
-  const screenshot = await s.screenshot({ fullPage: true });
-
-  return { data, links, screenshot };
+// Enhanced scraper class for complex scenarios
+const enhancedScraper = new EnhancedScraper();
+await enhancedScraper.withAutoClose(async (scraper) => {
+  return scraper.scrape('https://example.com');
 });
 ```
 
-### Form Interaction
+## Provider Types
 
-```typescript
-const scraper = new EnhancedPlaywrightScraper();
+### 1. Browser Automation (Puppeteer, Playwright, Hero)
 
-await scraper.withAutoClose(async (s) => {
-  await s.goto('https://example.com/search');
+- Full JavaScript execution
+- Screenshots and PDFs
+- Complex interactions
+- Best for: SPAs, dynamic content, authenticated sessions
 
-  // Fill form fields with human-like delays
-  await s.fillForm({
-    '#search-input': 'laptops',
-    '#min-price': '500',
-    '#max-price': '2000',
-  });
+### 2. HTML Parsers (Cheerio, JSDOM)
 
-  // Click search button
-  await s.click('#search-button');
+- Fast and lightweight
+- No JavaScript execution
+- Simple data extraction
+- Best for: Static sites, high-volume scraping
 
-  // Wait for results
-  await s.waitForNavigation();
-  await s.waitFor('.search-results');
+### 3. Managed Services (ScrapingBee, Bright Data, Apify)
 
-  // Extract results
-  return s.extract({
-    results: { selector: '.result-item', multiple: true },
-  });
-});
+- Built-in proxy rotation
+- CAPTCHA solving
+- No infrastructure needed
+- Best for: Scale, anti-bot protection
+
+## Architecture
+
+The package follows a provider-based architecture similar to our analytics and AI packages:
+
+```
+┌─────────────────────────────────────────────┐
+│          ScrapingManager                    │
+│    (Routes to appropriate provider)         │
+├─────────┬──────────┬───────────┬───────────┤
+│ Browser │   HTML   │  Managed  │  Custom   │
+│Providers│ Parsers  │ Services  │ Providers │
+└─────────┴──────────┴───────────┴───────────┘
 ```
 
-### Traditional API (Still Available)
+## Configuration
 
 ```typescript
-import { createScraper } from '@repo/scraping';
-
-// Create a scraper instance
-const scraper = createScraper('playwright', {
-  headless: true,
-  maxConcurrency: 5,
-});
-
-// Launch browser
-await scraper.launch();
-
-// Scrape a page
-const result = await scraper.scrape({
-  url: 'https://example.com',
-  waitForSelector: '.content',
-  screenshot: true,
-  blockedResourceTypes: ['image', 'stylesheet'],
-});
-
-// Extract data from HTML
-const data = scraper.extract(result.html, {
-  title: { selector: 'h1' },
-  price: {
-    selector: '.price',
-    attribute: 'data-price',
-    transform: (value) => parseFloat(value),
-  },
-  images: {
-    selector: 'img',
-    attribute: 'src',
-    multiple: true,
-  },
-});
-
-// Clean up
-await scraper.close();
-```
-
-## Advanced Features
-
-### Resource Blocking for Performance
-
-```typescript
-const scraper = new EnhancedPlaywrightScraper();
-
-await scraper.withAutoClose(async (s) => {
-  // Block resources before navigation
-  await s.blockResources(['image', 'stylesheet', 'font', 'media']);
-
-  await s.goto('https://example.com');
-  // Page loads much faster without images and styles
-});
-```
-
-### Custom JavaScript Execution
-
-```typescript
-await scraper.withAutoClose(async (s) => {
-  await s.goto('https://example.com');
-
-  // Execute custom JavaScript
-  const pageData = await s.evaluate(() => {
-    return {
-      totalProducts: document.querySelectorAll('.product').length,
-      hasMorePages: !!document.querySelector('.next-page'),
-      customData: window.someGlobalVariable,
-    };
-  });
-});
-```
-
-### Error Handling
-
-```typescript
-import { ScrapingError, ScrapingErrorCodes } from '@repo/scraping';
-
-try {
-  await quickScrape('https://example.com', selectors);
-} catch (error) {
-  if (error instanceof ScrapingError) {
-    switch (error.code) {
-      case ScrapingErrorCodes.CAPTCHA_DETECTED:
-        console.log('CAPTCHA detected, need manual intervention');
-        break;
-      case ScrapingErrorCodes.ELEMENT_NOT_FOUND:
-        console.log('Page structure changed:', error.message);
-        break;
-      default:
-        console.log('Scraping failed:', error.message);
-    }
-  }
-}
-```
-
-## Workflow Integration
-
-The scraping package integrates seamlessly with the orchestration package for workflow-based
-scraping:
-
-```typescript
-import { quickScrape } from '@repo/scraping/playwright';
-import type { WorkflowContext } from '@upstash/workflow';
-
-export async function scrapingWorkflow(context: WorkflowContext<{ urls: string[] }>) {
-  const { urls } = context.requestPayload;
-
-  // Scrape URLs in parallel batches
-  const results = await context.run('scrape-products', async () => {
-    return scrapeMultiple(
-      urls,
-      {
-        title: { selector: 'h1' },
-        price: { selector: '.price' },
-        availability: { selector: '.availability' },
+const scraper = await createServerScraping({
+  providers: [
+    {
+      name: 'playwright',
+      type: 'browser',
+      config: {
+        headless: true,
+        browsers: ['chromium', 'firefox'],
       },
-      {
-        concurrent: 3,
-      }
-    );
-  });
+    },
+    {
+      name: 'scrapingbee',
+      type: 'managed',
+      config: {
+        apiKey: process.env.SCRAPINGBEE_KEY,
+        premium: true,
+      },
+    },
+  ],
 
-  // Process results
-  const available = results.filter((r) => r.data.availability?.includes('In Stock'));
+  defaults: {
+    timeout: 30000,
+    retries: 3,
+    userAgent: 'MyBot/1.0',
+  },
 
-  return {
-    total: results.length,
-    available: available.length,
-    results,
-  };
-}
+  middleware: [rateLimiter({ requests: 10, window: '1m' }), cacher({ ttl: '1h' })],
+});
 ```
 
-## Best Practices
+## Migration from @repo/scraping
 
-1. **Use Enhanced Utilities**: The enhanced utilities handle common patterns and reduce boilerplate
-2. **Block Unnecessary Resources**: Block images, styles, and fonts for faster scraping
-3. **Add Delays**: Use human-like delays between actions to avoid detection
-4. **Handle Errors**: Always wrap scraping in try-catch blocks
-5. **Respect robots.txt**: Check and respect website scraping policies
-6. **Use Headless Mode**: Run in headless mode for better performance
-7. **Rotate User Agents**: The package automatically rotates user agents
+The new package maintains compatibility while adding more features:
 
-## API Reference
+```typescript
+// Old
+import { createScraper } from '@repo/scraping';
+const scraper = createScraper('playwright', { headless: true });
 
-### Enhanced Playwright API
+// New
+import { createServerScraping } from '@repo/scraping-new/server';
+const scraper = await createServerScraping({
+  providers: [{ name: 'playwright', type: 'browser', config: { headless: true } }],
+});
+```
 
-#### `quickScrape(url, selectors, options)`
+## Next.js Integration
 
-Quick scraping with automatic resource management.
+```typescript
+// app/api/scrape/route.ts
+import { createServerScraping } from '@repo/scraping-new/server/next';
 
-#### `scrapeMultiple(urls, selectors, options)`
+export async function POST(request: Request) {
+  const { url } = await request.json();
 
-Scrape multiple URLs concurrently.
+  const scraper = await createServerScraping();
+  const result = await scraper.scrape(url);
 
-#### `scrapeWithPagination(startUrl, selectors, options)`
-
-Automatically follow pagination links.
-
-#### `EnhancedPlaywrightScraper`
-
-Class with convenient methods for complex scraping scenarios.
-
-### Traditional API
-
-#### `createScraper(engine, config)`
-
-Create a scraper instance with specified engine.
-
-#### `scraper.launch()`
-
-Launch the browser instance.
-
-#### `scraper.scrape(options)`
-
-Scrape a single page.
-
-#### `scraper.extract(html, selectors)`
-
-Extract data from HTML using selectors.
-
-#### `scraper.close()`
-
-Close the browser instance.
+  return Response.json(result);
+}
+```

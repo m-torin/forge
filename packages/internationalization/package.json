@@ -2,6 +2,14 @@
   "name": "@repo/internationalization",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./extend": "./extend.ts",
+    "./middleware": "./middleware.ts",
+    "./client": "./client.ts",
+    "./link": "./link.tsx",
+    "./types": "./index.ts"
+  },
   "scripts": {
     "translate": "npx -y languine@latest translate",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",

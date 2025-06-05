@@ -1,518 +1,703 @@
 /**
- * Orchestration Manager - Core orchestration for multi-provider workflow execution
+ * Modern OrchestrationManager - Central management class for workflow orchestration
+ * Uses ES2022+ features including private fields, nullish coalescing, and async generators
  */
 
-import type {
-  WorkflowProvider,
-  WorkflowDefinition,
-  WorkflowExecutionOptions,
-  WorkflowExecutionResult,
-} from '../types/workflow';
-import type {
-  ProviderConfig,
-  ProviderFactory,
-  ProviderRegistryEntry,
-  ProviderSelectionCriteria,
-} from '../types/provider';
 import {
   OrchestrationError,
-  ProviderNotFoundError,
-  ProviderInitializationError,
-  ProviderNotAvailableError,
-  ConfigurationError,
+  ProviderError,
+  OrchestrationErrorCodes,
+  createOrchestrationError,
+  createProviderErrorWithCode,
+  createWorkflowExecutionErrorWithCode,
 } from './errors';
+import { StepRegistry, defaultStepRegistry } from '../factories/step-registry';
+import { StepFactory, defaultStepFactory, StandardWorkflowStep } from '../factories/step-factory';
 
-export interface OrchestrationConfig {
-  /**
-   * Provider configurations
-   */
-  providers: Record<string, ProviderConfig>;
+import type {
+  ListExecutionsOptions,
+  ProviderHealthReport,
+  WorkflowDefinition,
+  WorkflowExecution,
+  WorkflowProvider,
+} from '../types/index';
+import type {
+  WorkflowStepDefinition,
+  StepSearchFilters,
+  StepExecutionPlan,
+  StepCompositionConfig,
+  ValidationResult,
+} from '../factories/index';
 
-  /**
-   * Default provider to use
-   */
+export interface OrchestrationManagerConfig {
+  /** Whether to auto-retry failed operations */
+  autoRetry?: boolean;
+  /** Default provider name to use for executions */
   defaultProvider?: string;
-
-  /**
-   * Provider selection strategy
-   */
-  selectionStrategy?: 'default' | 'round-robin' | 'least-loaded' | 'criteria-based';
-
-  /**
-   * Enable debug logging
-   */
-  debug?: boolean;
-
-  /**
-   * Error handler
-   */
-  onError?: (error: Error, context: any) => void;
-
-  /**
-   * Info logger
-   */
-  onInfo?: (message: string, data?: any) => void;
-
-  /**
-   * Warn logger
-   */
-  onWarn?: (message: string, data?: any) => void;
+  /** Default retry configuration */
+  defaultRetryConfig?: {
+    maxAttempts: number;
+    delay: number;
+    backoff: 'fixed' | 'exponential' | 'linear';
+  };
+  /** Whether to enable health checks */
+  enableHealthChecks?: boolean;
+  /** Whether to enable metrics collection */
+  enableMetrics?: boolean;
+  /** Global timeout for operations */
+  globalTimeout?: number;
+  /** Health check interval in milliseconds */
+  healthCheckInterval?: number;
+  /** Maximum concurrent executions */
+  maxConcurrentExecutions?: number;
+  /** Step registry instance to use */
+  stepRegistry?: StepRegistry;
+  /** Step factory instance to use */
+  stepFactory?: StepFactory;
+  /** Whether to enable step factory features */
+  enableStepFactory?: boolean;
 }
 
 export class OrchestrationManager {
+  // Private fields using conventional private syntax
   private providers = new Map<string, WorkflowProvider>();
-  private providerRegistry = new Map<string, ProviderRegistryEntry>();
+  private config: OrchestrationManagerConfig;
+  private healthCheckTimer?: NodeJS.Timeout;
   private isInitialized = false;
-  private currentProviderIndex = 0;
+  private stepRegistry: StepRegistry;
+  private stepFactory: StepFactory;
+  private executionMetrics = new Map<
+    string,
+    { count: number; lastExecution: number; avgDuration: number }
+  >();
+  private abortController = new AbortController();
 
-  constructor(
-    private config: OrchestrationConfig,
-    availableProviders?: Record<string, ProviderRegistryEntry>,
-  ) {
-    // Register available providers
-    if (availableProviders) {
-      for (const [name, entry] of Object.entries(availableProviders)) {
-        this.providerRegistry.set(name, entry);
-      }
-    }
+  constructor(config: OrchestrationManagerConfig = {}) {
+    this.config = {
+      autoRetry: true,
+      defaultRetryConfig: {
+        backoff: 'exponential',
+        delay: 1000,
+        maxAttempts: 3,
+      },
+      enableHealthChecks: true,
+      enableMetrics: true,
+      enableStepFactory: true,
+      globalTimeout: 300000, // 5 minutes
+      healthCheckInterval: 60000, // 1 minute
+      maxConcurrentExecutions: 100,
+      ...config,
+    };
+
+    // Initialize step factory components (nullish coalescing)
+    this.stepRegistry = config.stepRegistry ?? defaultStepRegistry;
+    this.stepFactory = config.stepFactory ?? defaultStepFactory;
   }
 
   /**
-   * Register a new provider factory
-   */
-  registerProvider(name: string, entry: ProviderRegistryEntry): void {
-    this.providerRegistry.set(name, entry);
-  }
-
-  /**
-   * Initialize all configured providers
+   * Initialize the orchestration manager
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
-
-    const initPromises: Promise<void>[] = [];
-
-    for (const [providerName, providerConfig] of Object.entries(this.config.providers)) {
-      const registryEntry = this.providerRegistry.get(providerConfig.name);
-
-      if (!registryEntry) {
-        const error = new ProviderNotFoundError(providerConfig.name);
-        if (this.config.onError) {
-          this.config.onError(error, { provider: providerConfig.name });
-        }
-        continue;
-      }
-
-      try {
-        // Validate configuration if schema provided
-        if (registryEntry.configSchema) {
-          const result = registryEntry.configSchema.safeParse(providerConfig);
-          if (!result.success) {
-            throw new ConfigurationError(providerConfig.name, 'Invalid provider configuration', {
-              errors: result.error.errors,
-            });
-          }
-        }
-
-        // Create provider instance
-        const provider = await registryEntry.factory(providerConfig);
-        this.providers.set(providerName, provider);
-
-        // Initialize provider with error boundary
-        initPromises.push(
-          provider.initialize(providerConfig).catch((error) => {
-            const wrappedError = new ProviderInitializationError(
-              providerConfig.name,
-              error.message,
-              { originalError: error },
-            );
-
-            if (this.config.onError) {
-              this.config.onError(wrappedError, {
-                provider: providerName,
-                method: 'initialize',
-              });
-            }
-
-            // Remove failed provider
-            this.providers.delete(providerName);
-          }),
-        );
-      } catch (error) {
-        const errorObj = error instanceof Error ? error : new Error(String(error));
-        const wrappedError =
-          error instanceof OrchestrationError
-            ? error
-            : new ProviderInitializationError(providerConfig.name, errorObj.message, {
-                originalError: errorObj,
-              });
-
-        if (this.config.onError) {
-          this.config.onError(wrappedError, {
-            provider: providerName,
-            method: 'create',
-          });
-        }
-      }
-    }
-
-    // Wait for all providers to initialize
-    await Promise.allSettled(initPromises);
-
-    // Check if at least one provider is available
-    const availableProviders = [];
-    for (const [name, provider] of this.providers.entries()) {
-      if (await provider.isAvailable()) {
-        availableProviders.push(name);
-      } else {
-        this.providers.delete(name);
-        if (this.config.onWarn) {
-          this.config.onWarn(`Provider "${name}" is not available`);
-        }
-      }
-    }
-
-    if (availableProviders.length === 0) {
-      throw new OrchestrationError(
-        'No providers available after initialization',
-        'NO_PROVIDERS_AVAILABLE',
-      );
-    }
-
-    this.isInitialized = true;
-
-    if (this.config.debug && this.config.onInfo) {
-      this.config.onInfo(
-        `Orchestration initialized with providers: ${availableProviders.join(', ')}`,
-      );
-    }
-  }
-
-  /**
-   * Execute a workflow using the selected provider
-   */
-  async run<TParams = any, TResult = any>(
-    workflow: WorkflowDefinition<TParams, TResult>,
-    params: TParams,
-    options?: WorkflowExecutionOptions & { provider?: string },
-  ): Promise<WorkflowExecutionResult<TResult>> {
-    if (!this.isInitialized) {
-      throw new OrchestrationError('Orchestration manager not initialized', 'NOT_INITIALIZED');
-    }
-
-    // Select provider
-    const provider = await this.selectProvider(options?.provider);
-
-    if (!provider) {
-      throw new ProviderNotAvailableError('No available provider found');
+    if (this.isInitialized) {
+      return;
     }
 
     try {
-      // Execute workflow
-      const result = await provider.run(workflow, params, options);
-
-      if (this.config.debug && this.config.onInfo) {
-        this.config.onInfo(`Workflow "${workflow.id}" executed successfully`, {
-          provider: provider.name,
-          runId: result.runId,
-          status: result.status,
-        });
+      // Start health checks if enabled (nullish coalescing)
+      if (this.config.enableHealthChecks) {
+        this.startHealthChecks();
       }
 
-      return result;
+      // Initialize metrics collection if enabled
+      if (this.config.enableMetrics) {
+        this.initializeMetrics();
+      }
+
+      this.isInitialized = true;
     } catch (error) {
-      if (this.config.onError) {
-        this.config.onError(error instanceof Error ? error : new Error(String(error)), {
-          provider: provider.name,
-          workflow: workflow.id,
-          method: 'run',
-        });
-      }
-      throw error;
+      throw createOrchestrationError('Failed to initialize orchestration manager', {
+        code: OrchestrationErrorCodes.INITIALIZATION_ERROR,
+        originalError: error as Error,
+        retryable: false,
+      });
     }
   }
 
   /**
-   * Create a workflow handler for serving
+   * Shutdown the orchestration manager
    */
-  serve<TParams = any, TResult = any>(
-    workflow: WorkflowDefinition<TParams, TResult>,
-    providerName?: string,
-  ): (req: Request) => Promise<Response> {
-    return async (req: Request) => {
-      if (!this.isInitialized) {
-        return new Response(JSON.stringify({ error: 'Orchestration manager not initialized' }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        });
+  async shutdown(): Promise<void> {
+    if (!this.isInitialized) {
+      return;
+    }
+
+    try {
+      // Abort any ongoing operations
+      this.abortController.abort();
+
+      // Stop health checks
+      if (this.healthCheckTimer) {
+        clearInterval(this.healthCheckTimer);
+        this.healthCheckTimer = undefined;
       }
 
-      try {
-        const provider = await this.selectProvider(providerName);
+      // Clear providers and metrics
+      this.providers.clear();
+      this.executionMetrics.clear();
+      this.isInitialized = false;
+    } catch (error) {
+      throw createOrchestrationError('Failed to shutdown orchestration manager', {
+        code: OrchestrationErrorCodes.SHUTDOWN_ERROR,
+        originalError: error as Error,
+        retryable: false,
+      });
+    }
+  }
 
-        if (!provider) {
-          return new Response(JSON.stringify({ error: 'No available provider found' }), {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
-
-        const handler = provider.serve(workflow);
-        return handler(req);
-      } catch (error) {
-        if (this.config.onError) {
-          this.config.onError(error instanceof Error ? error : new Error(String(error)), {
-            workflow: workflow.id,
-            method: 'serve',
-          });
-        }
-
-        return new Response(
-          JSON.stringify({
-            error: error instanceof Error ? error.message : 'Internal server error',
-          }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } },
+  /**
+   * Register a workflow provider
+   */
+  async registerProvider(name: string, provider: WorkflowProvider): Promise<void> {
+    try {
+      // Validate provider health
+      const health = await provider.healthCheck();
+      if (health.status === 'unhealthy') {
+        throw createProviderErrorWithCode(
+          `Provider ${name} failed health check`,
+          name,
+          provider.name,
+          {
+            code: OrchestrationErrorCodes.PROVIDER_UNHEALTHY,
+            retryable: false,
+          },
         );
       }
-    };
+
+      this.providers.set(name, provider);
+
+      // Set as default if this is the first provider (nullish coalescing)
+      if (!this.config.defaultProvider && this.providers.size === 1) {
+        this.config.defaultProvider = name;
+      }
+    } catch (error) {
+      throw createProviderErrorWithCode(
+        `Failed to register provider ${name}`,
+        name,
+        provider.name,
+        {
+          code: OrchestrationErrorCodes.PROVIDER_REGISTRATION_ERROR,
+          originalError: error as Error,
+          retryable: false,
+        },
+      );
+    }
+  }
+
+  /**
+   * Unregister a workflow provider
+   */
+  async unregisterProvider(name: string): Promise<void> {
+    if (!this.providers.has(name)) {
+      throw createProviderErrorWithCode(`Provider ${name} not found`, name, 'unknown', {
+        code: OrchestrationErrorCodes.PROVIDER_NOT_FOUND,
+        retryable: false,
+      });
+    }
+
+    this.providers.delete(name);
+
+    // Update default provider if needed (using .at(0) ES2022+ method)
+    if (this.config.defaultProvider === name) {
+      const remainingProviders = Array.from(this.providers.keys());
+      this.config.defaultProvider = remainingProviders.at(0); // ES2022+ .at() method
+    }
+  }
+
+  /**
+   * Get a registered provider
+   */
+  getProvider(name?: string): WorkflowProvider {
+    const providerName = name ?? this.config.defaultProvider; // nullish coalescing
+
+    if (!providerName) {
+      throw createOrchestrationError('No provider specified and no default provider configured', {
+        code: OrchestrationErrorCodes.NO_PROVIDER_AVAILABLE,
+        retryable: false,
+      });
+    }
+
+    const provider = this.providers.get(providerName);
+    if (!provider) {
+      throw createProviderErrorWithCode(
+        `Provider ${providerName} not found`,
+        providerName,
+        'unknown',
+        {
+          code: OrchestrationErrorCodes.PROVIDER_NOT_FOUND,
+          retryable: false,
+        },
+      );
+    }
+
+    return provider;
+  }
+
+  /**
+   * List all registered providers
+   */
+  listProviders(): string[] {
+    return Array.from(this.providers.keys());
+  }
+
+  /**
+   * Execute a workflow using the specified or default provider
+   */
+  async executeWorkflow(
+    definition: WorkflowDefinition,
+    input?: Record<string, any>,
+    providerName?: string,
+  ): Promise<WorkflowExecution> {
+    const provider = this.getProvider(providerName);
+
+    try {
+      return await provider.execute(definition, input);
+    } catch (error) {
+      throw createProviderErrorWithCode(
+        `Failed to execute workflow ${definition.id}`,
+        providerName ?? this.config.defaultProvider ?? 'unknown',
+        provider.name,
+        {
+          code: OrchestrationErrorCodes.WORKFLOW_EXECUTION_ERROR,
+          originalError: error as Error,
+          retryable: true,
+          context: { workflowId: definition.id },
+        },
+      );
+    }
   }
 
   /**
    * Get workflow execution status
    */
-  async getStatus(runId: string, providerName?: string): Promise<WorkflowExecutionResult> {
-    if (!this.isInitialized) {
-      throw new OrchestrationError('Orchestration manager not initialized', 'NOT_INITIALIZED');
-    }
+  async getExecution(
+    executionId: string,
+    providerName?: string,
+  ): Promise<WorkflowExecution | null> {
+    const provider = this.getProvider(providerName);
 
-    // If provider specified, use it
-    if (providerName) {
-      const provider = this.providers.get(providerName);
-      if (!provider) {
-        throw new ProviderNotFoundError(providerName);
-      }
-      return provider.getStatus(runId);
-    }
-
-    // Otherwise, try all providers
-    const errors: Error[] = [];
-
-    for (const [name, provider] of this.providers.entries()) {
-      try {
-        const result = await provider.getStatus(runId);
-        return result;
-      } catch (error) {
-        errors.push(error instanceof Error ? error : new Error(String(error)));
-        // Continue trying other providers
-      }
-    }
-
-    throw new OrchestrationError(
-      `Workflow run "${runId}" not found in any provider`,
-      'RUN_NOT_FOUND',
-      { errors },
-    );
-  }
-
-  /**
-   * Cancel a running workflow
-   */
-  async cancel(runId: string, providerName?: string): Promise<boolean> {
-    if (!this.isInitialized) {
-      throw new OrchestrationError('Orchestration manager not initialized', 'NOT_INITIALIZED');
-    }
-
-    // If provider specified, use it
-    if (providerName) {
-      const provider = this.providers.get(providerName);
-      if (!provider) {
-        throw new ProviderNotFoundError(providerName);
-      }
-      return provider.cancel(runId);
-    }
-
-    // Otherwise, try all providers
-    for (const [name, provider] of this.providers.entries()) {
-      try {
-        const result = await provider.cancel(runId);
-        if (result) return true;
-      } catch (error) {
-        // Continue trying other providers
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * List workflow executions
-   */
-  async list(options?: {
-    workflowId?: string;
-    status?: WorkflowExecutionResult['status'];
-    limit?: number;
-    offset?: number;
-    provider?: string;
-  }): Promise<WorkflowExecutionResult[]> {
-    if (!this.isInitialized) {
-      throw new OrchestrationError('Orchestration manager not initialized', 'NOT_INITIALIZED');
-    }
-
-    // If provider specified, use it
-    if (options?.provider) {
-      const provider = this.providers.get(options.provider);
-      if (!provider) {
-        throw new ProviderNotFoundError(options.provider);
-      }
-      return provider.list(options);
-    }
-
-    // Otherwise, aggregate from all providers
-    const allResults: WorkflowExecutionResult[] = [];
-
-    for (const [name, provider] of this.providers.entries()) {
-      try {
-        const results = await provider.list(options);
-        allResults.push(...results);
-      } catch (error) {
-        if (this.config.onWarn) {
-          this.config.onWarn(`Failed to list workflows from provider "${name}"`, error);
-        }
-      }
-    }
-
-    // Sort by start time (newest first)
-    allResults.sort((a, b) => {
-      const aTime = a.timing.startedAt?.getTime() || 0;
-      const bTime = b.timing.startedAt?.getTime() || 0;
-      return bTime - aTime;
-    });
-
-    // Apply limit and offset
-    const start = options?.offset || 0;
-    const end = options?.limit ? start + options.limit : undefined;
-
-    return allResults.slice(start, end);
-  }
-
-  /**
-   * Get active providers
-   */
-  getActiveProviders(): string[] {
-    return Array.from(this.providers.keys());
-  }
-
-  /**
-   * Get a specific provider
-   */
-  getProvider(name: string): WorkflowProvider | undefined {
-    return this.providers.get(name);
-  }
-
-  /**
-   * Clean up all providers
-   */
-  async cleanup(): Promise<void> {
-    const cleanupPromises: Promise<void>[] = [];
-
-    for (const [name, provider] of this.providers.entries()) {
-      cleanupPromises.push(
-        provider.cleanup().catch((error) => {
-          if (this.config.onError) {
-            this.config.onError(error instanceof Error ? error : new Error(String(error)), {
-              provider: name,
-              method: 'cleanup',
-            });
-          }
-        }),
+    try {
+      return await provider.getExecution(executionId);
+    } catch (error) {
+      throw createProviderErrorWithCode(
+        `Failed to get execution ${executionId}`,
+        providerName || this.config.defaultProvider || 'unknown',
+        provider.name,
+        {
+          code: OrchestrationErrorCodes.GET_EXECUTION_ERROR,
+          originalError: error as Error,
+          retryable: true,
+          context: { executionId },
+        },
       );
     }
-
-    await Promise.allSettled(cleanupPromises);
-    this.providers.clear();
-    this.isInitialized = false;
   }
 
   /**
-   * Select a provider based on strategy
+   * Cancel a workflow execution
    */
-  private async selectProvider(
-    requestedProvider?: string,
-    criteria?: ProviderSelectionCriteria,
-  ): Promise<WorkflowProvider | null> {
-    // If specific provider requested, use it
-    if (requestedProvider) {
-      const provider = this.providers.get(requestedProvider);
-      if (!provider) {
-        throw new ProviderNotFoundError(requestedProvider);
-      }
+  async cancelExecution(executionId: string, providerName?: string): Promise<boolean> {
+    const provider = this.getProvider(providerName);
 
-      const isAvailable = await provider.isAvailable();
-      if (!isAvailable) {
-        throw new ProviderNotAvailableError(requestedProvider);
-      }
+    try {
+      return await provider.cancelExecution(executionId);
+    } catch (error) {
+      throw createProviderErrorWithCode(
+        `Failed to cancel execution ${executionId}`,
+        providerName || this.config.defaultProvider || 'unknown',
+        provider.name,
+        {
+          code: OrchestrationErrorCodes.CANCEL_EXECUTION_ERROR,
+          originalError: error as Error,
+          retryable: true,
+          context: { executionId },
+        },
+      );
+    }
+  }
 
-      return provider;
+  /**
+   * List executions for a workflow
+   */
+  async listExecutions(
+    workflowId: string,
+    options?: ListExecutionsOptions,
+    providerName?: string,
+  ): Promise<WorkflowExecution[]> {
+    const provider = this.getProvider(providerName);
+
+    try {
+      return await provider.listExecutions(workflowId, options);
+    } catch (error) {
+      throw createProviderErrorWithCode(
+        `Failed to list executions for workflow ${workflowId}`,
+        providerName || this.config.defaultProvider || 'unknown',
+        provider.name,
+        {
+          code: OrchestrationErrorCodes.LIST_EXECUTIONS_ERROR,
+          originalError: error as Error,
+          retryable: true,
+          context: { workflowId },
+        },
+      );
+    }
+  }
+
+  /**
+   * Schedule a workflow
+   */
+  async scheduleWorkflow(definition: WorkflowDefinition, providerName?: string): Promise<string> {
+    const provider = this.getProvider(providerName);
+
+    try {
+      return await provider.scheduleWorkflow(definition);
+    } catch (error) {
+      throw createProviderErrorWithCode(
+        `Failed to schedule workflow ${definition.id}`,
+        providerName || this.config.defaultProvider || 'unknown',
+        provider.name,
+        {
+          code: OrchestrationErrorCodes.SCHEDULE_WORKFLOW_ERROR,
+          originalError: error as Error,
+          retryable: true,
+          context: { workflowId: definition.id },
+        },
+      );
+    }
+  }
+
+  /**
+   * Unschedule a workflow
+   */
+  async unscheduleWorkflow(workflowId: string, providerName?: string): Promise<boolean> {
+    const provider = this.getProvider(providerName);
+
+    try {
+      return await provider.unscheduleWorkflow(workflowId);
+    } catch (error) {
+      throw createProviderErrorWithCode(
+        `Failed to unschedule workflow ${workflowId}`,
+        providerName || this.config.defaultProvider || 'unknown',
+        provider.name,
+        {
+          code: OrchestrationErrorCodes.UNSCHEDULE_WORKFLOW_ERROR,
+          originalError: error as Error,
+          retryable: true,
+          context: { workflowId },
+        },
+      );
+    }
+  }
+
+  /**
+   * Health check all providers
+   */
+  async healthCheckAll(): Promise<ProviderHealthReport[]> {
+    const reports: ProviderHealthReport[] = [];
+
+    for (const [name, provider] of this.providers) {
+      try {
+        const startTime = Date.now();
+        const health = await provider.healthCheck();
+        const responseTime = Date.now() - startTime;
+
+        reports.push({
+          name,
+          type: provider.name,
+          details: health.details,
+          responseTime,
+          status: health.status,
+          timestamp: new Date(),
+        });
+      } catch (error) {
+        reports.push({
+          name,
+          type: provider.name,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          responseTime: 0,
+          status: 'unhealthy',
+          timestamp: new Date(),
+        });
+      }
     }
 
-    // Get all available providers
-    const availableProviders: Array<[string, WorkflowProvider]> = [];
+    return reports;
+  }
 
-    for (const [name, provider] of this.providers.entries()) {
-      if (await provider.isAvailable()) {
-        availableProviders.push([name, provider]);
-      }
+  /**
+   * Get manager status
+   */
+  getStatus() {
+    const stepRegistryStats = this.config.enableStepFactory ? this.stepRegistry.getStats() : null;
+
+    return {
+      defaultProvider: this.config.defaultProvider,
+      providerCount: this.providers.size,
+      healthChecksEnabled: this.config.enableHealthChecks,
+      initialized: this.isInitialized,
+      metricsEnabled: this.config.enableMetrics,
+      stepFactoryEnabled: this.config.enableStepFactory,
+      stepRegistry: stepRegistryStats,
+      executionMetrics: this.config.enableMetrics
+        ? Object.fromEntries(this.executionMetrics)
+        : null,
+      abortController: this.abortController.signal.aborted ? 'aborted' : 'active',
+    };
+  }
+
+  // ===== STEP FACTORY METHODS =====
+
+  /**
+   * Register a step definition in the step registry
+   */
+  registerStep<TInput = any, TOutput = any>(
+    definition: WorkflowStepDefinition<TInput, TOutput>,
+    registeredBy?: string,
+  ): void {
+    if (!this.config.enableStepFactory) {
+      throw createOrchestrationError('Step factory is not enabled', {
+        code: OrchestrationErrorCodes.STEP_FACTORY_DISABLED,
+        retryable: false,
+      });
     }
 
-    if (availableProviders.length === 0) {
+    this.stepRegistry.register(definition, registeredBy);
+  }
+
+  /**
+   * Get a registered step definition
+   */
+  getStep(stepId: string): WorkflowStepDefinition | undefined {
+    if (!this.config.enableStepFactory) {
+      return undefined;
+    }
+
+    return this.stepRegistry.get(stepId);
+  }
+
+  /**
+   * Search for steps based on filters
+   */
+  searchSteps(filters: StepSearchFilters = {}): WorkflowStepDefinition[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.search(filters);
+  }
+
+  /**
+   * List all registered steps
+   */
+  listSteps(activeOnly = true): WorkflowStepDefinition[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.list(activeOnly);
+  }
+
+  /**
+   * Create execution plan for a set of steps
+   */
+  createStepExecutionPlan(
+    stepIds: string[],
+    config: StepCompositionConfig = {},
+  ): StepExecutionPlan {
+    if (!this.config.enableStepFactory) {
+      throw createOrchestrationError('Step factory is not enabled', {
+        code: OrchestrationErrorCodes.STEP_FACTORY_DISABLED,
+        retryable: false,
+      });
+    }
+
+    return this.stepRegistry.createExecutionPlan(stepIds, config);
+  }
+
+  /**
+   * Validate step dependencies
+   */
+  validateStepDependencies(stepIds: string[]): ValidationResult {
+    if (!this.config.enableStepFactory) {
+      return { valid: false, errors: ['Step factory is not enabled'] };
+    }
+
+    return this.stepRegistry.validateDependencies(stepIds);
+  }
+
+  /**
+   * Execute a single step by ID
+   */
+  async executeStep<TInput = any, TOutput = any>(
+    stepId: string,
+    input: TInput,
+    workflowExecutionId: string,
+    previousStepsContext: Record<string, any> = {},
+    metadata: Record<string, any> = {},
+    abortSignal?: AbortSignal,
+  ) {
+    if (!this.config.enableStepFactory) {
+      throw createOrchestrationError('Step factory is not enabled', {
+        code: OrchestrationErrorCodes.STEP_FACTORY_DISABLED,
+        retryable: false,
+      });
+    }
+
+    const executableStep = this.stepRegistry.createExecutableStep<TInput, TOutput>(stepId);
+    const startTime = Date.now();
+
+    try {
+      const result = await executableStep.execute(
+        input,
+        workflowExecutionId,
+        previousStepsContext,
+        metadata,
+        abortSignal ?? this.abortController.signal, // Use manager's abort signal as fallback
+      );
+
+      // Track execution metrics if enabled
+      if (this.config.enableMetrics) {
+        this.updateExecutionMetrics(stepId, Date.now() - startTime);
+      }
+
+      return result;
+    } catch (error) {
+      // Track failed execution metrics
+      if (this.config.enableMetrics) {
+        this.updateExecutionMetrics(stepId, Date.now() - startTime, false);
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Get step registry instance
+   */
+  getStepRegistry(): StepRegistry {
+    return this.stepRegistry;
+  }
+
+  /**
+   * Get step factory instance
+   */
+  getStepFactory(): StepFactory {
+    return this.stepFactory;
+  }
+
+  /**
+   * Get available step categories
+   */
+  getStepCategories(): string[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.getCategories();
+  }
+
+  /**
+   * Get available step tags
+   */
+  getStepTags(): string[] {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.getTags();
+  }
+
+  /**
+   * Get step usage statistics
+   */
+  getStepUsageStatistics() {
+    if (!this.config.enableStepFactory) {
       return null;
     }
 
-    // Apply selection strategy
-    const strategy = this.config.selectionStrategy || 'default';
-
-    switch (strategy) {
-      case 'default':
-        // Use default provider if specified
-        if (this.config.defaultProvider) {
-          const defaultEntry = availableProviders.find(
-            ([name]) => name === this.config.defaultProvider,
-          );
-          if (defaultEntry) return defaultEntry[1];
-        }
-        // Otherwise use first available
-        return availableProviders[0][1];
-
-      case 'round-robin':
-        // Rotate through providers
-        const selected = availableProviders[this.currentProviderIndex % availableProviders.length];
-        this.currentProviderIndex++;
-        return selected[1];
-
-      case 'least-loaded':
-        // TODO: Implement load tracking
-        return availableProviders[0][1];
-
-      case 'criteria-based':
-        // TODO: Implement criteria matching
-        if (criteria) {
-          // Match providers based on criteria
-          // For now, just return first available
-        }
-        return availableProviders[0][1];
-
-      default:
-        return availableProviders[0][1];
-    }
+    return this.stepRegistry.getUsageStatistics();
   }
-}
 
-/**
- * Factory function to create orchestration manager
- */
-export function createOrchestrationManager(
-  config: OrchestrationConfig,
-  providers?: Record<string, ProviderRegistryEntry>,
-): OrchestrationManager {
-  return new OrchestrationManager(config, providers);
+  /**
+   * Export step definitions
+   */
+  exportSteps() {
+    if (!this.config.enableStepFactory) {
+      return [];
+    }
+
+    return this.stepRegistry.export();
+  }
+
+  /**
+   * Import step definitions
+   */
+  importSteps(
+    data: Array<{
+      definition: WorkflowStepDefinition;
+      metadata?: any;
+    }>,
+    overwrite = false,
+  ) {
+    if (!this.config.enableStepFactory) {
+      throw createOrchestrationError('Step factory is not enabled', {
+        code: OrchestrationErrorCodes.STEP_FACTORY_DISABLED,
+        retryable: false,
+      });
+    }
+
+    return this.stepRegistry.import(data, overwrite);
+  }
+
+  /**
+   * Start periodic health checks
+   */
+  private startHealthChecks(): void {
+    if (this.healthCheckTimer) {
+      return;
+    }
+
+    this.healthCheckTimer = setInterval(async () => {
+      try {
+        await this.healthCheckAll();
+      } catch (error) {
+        console.warn('Health check failed:', error);
+      }
+    }, this.config.healthCheckInterval);
+  }
+
+  /**
+   * Initialize metrics collection
+   */
+  private initializeMetrics(): void {
+    // Initialize metrics collection system
+    this.executionMetrics.clear();
+  }
+
+  /**
+   * Update execution metrics
+   */
+  private updateExecutionMetrics(stepId: string, duration: number, success: boolean = true): void {
+    const existing = this.executionMetrics.get(stepId) || {
+      count: 0,
+      lastExecution: 0,
+      avgDuration: 0,
+    };
+
+    existing.count += 1;
+    existing.lastExecution = Date.now();
+    existing.avgDuration =
+      (existing.avgDuration * (existing.count - 1) + duration) / existing.count;
+
+    this.executionMetrics.set(stepId, existing);
+  }
 }

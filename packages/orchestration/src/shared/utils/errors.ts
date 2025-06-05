@@ -1,293 +1,108 @@
 /**
- * Custom Error Classes for Orchestration
- * Provides detailed error information for workflow execution
+ * Custom error classes for orchestration
  */
 
-/**
- * Base orchestration error
- */
 export class OrchestrationError extends Error {
   public readonly code: string;
-  public readonly details?: any;
-  public readonly timestamp: Date;
+  public readonly retryable: boolean;
+  public readonly context?: Record<string, any>;
 
-  constructor(message: string, code: string, details?: any) {
+  constructor(
+    message: string,
+    code = 'ORCHESTRATION_ERROR',
+    retryable = false,
+    context?: Record<string, any>,
+  ) {
     super(message);
     this.name = 'OrchestrationError';
     this.code = code;
-    this.details = details;
-    this.timestamp = new Date();
+    this.retryable = retryable;
+    this.context = context;
 
-    // Maintain proper stack trace
+    // Maintain proper stack trace for where our error was thrown
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
+      Error.captureStackTrace(this, OrchestrationError);
     }
   }
 
   toJSON() {
     return {
       name: this.name,
-      message: this.message,
       code: this.code,
-      details: this.details,
-      timestamp: this.timestamp,
+      context: this.context,
+      message: this.message,
+      retryable: this.retryable,
       stack: this.stack,
     };
   }
 }
 
-/**
- * Provider-related errors
- */
-export class ProviderError extends OrchestrationError {
-  public readonly provider: string;
-
-  constructor(provider: string, message: string, code: string, details?: any) {
-    super(message, code, details);
-    this.name = 'ProviderError';
-    this.provider = provider;
-  }
-}
-
-/**
- * Provider not found error
- */
-export class ProviderNotFoundError extends ProviderError {
-  constructor(provider: string) {
-    super(provider, `Provider "${provider}" not found`, 'PROVIDER_NOT_FOUND');
-    this.name = 'ProviderNotFoundError';
-  }
-}
-
-/**
- * Provider initialization error
- */
-export class ProviderInitializationError extends ProviderError {
-  constructor(provider: string, reason: string, details?: any) {
-    super(
-      provider,
-      `Failed to initialize provider "${provider}": ${reason}`,
-      'PROVIDER_INIT_FAILED',
-      details,
-    );
-    this.name = 'ProviderInitializationError';
-  }
-}
-
-/**
- * Provider not available error
- */
-export class ProviderNotAvailableError extends ProviderError {
-  constructor(provider: string, reason?: string) {
-    super(
-      provider,
-      `Provider "${provider}" is not available${reason ? `: ${reason}` : ''}`,
-      'PROVIDER_NOT_AVAILABLE',
-    );
-    this.name = 'ProviderNotAvailableError';
-  }
-}
-
-/**
- * Workflow-related errors
- */
-export class WorkflowError extends OrchestrationError {
+export class WorkflowExecutionError extends OrchestrationError {
   public readonly workflowId: string;
-  public readonly runId?: string;
+  public readonly executionId?: string;
+  public readonly stepId?: string;
 
-  constructor(workflowId: string, message: string, code: string, details?: any, runId?: string) {
-    super(message, code, details);
-    this.name = 'WorkflowError';
+  constructor(
+    message: string,
+    workflowId: string,
+    code = 'WORKFLOW_EXECUTION_ERROR',
+    retryable = true,
+    context?: {
+      executionId?: string;
+      stepId?: string;
+      [key: string]: any;
+    },
+  ) {
+    super(message, code, retryable, context);
+    this.name = 'WorkflowExecutionError';
     this.workflowId = workflowId;
-    this.runId = runId;
+    this.executionId = context?.executionId;
+    this.stepId = context?.stepId;
   }
 }
 
-/**
- * Workflow validation error
- */
-export class WorkflowValidationError extends WorkflowError {
-  public readonly validationErrors: Array<{
-    path: string;
-    message: string;
-  }>;
+export class WorkflowValidationError extends OrchestrationError {
+  public readonly validationErrors: ValidationError[];
 
-  constructor(workflowId: string, validationErrors: Array<{ path: string; message: string }>) {
-    super(
-      workflowId,
-      `Workflow validation failed: ${validationErrors.map((e) => e.message).join(', ')}`,
-      'WORKFLOW_VALIDATION_FAILED',
-      { validationErrors },
-    );
+  constructor(message: string, validationErrors: ValidationError[], context?: Record<string, any>) {
+    super(message, 'WORKFLOW_VALIDATION_ERROR', false, context);
     this.name = 'WorkflowValidationError';
     this.validationErrors = validationErrors;
   }
 }
 
-/**
- * Workflow execution error
- */
-export class WorkflowExecutionError extends WorkflowError {
-  public readonly stepName?: string;
-  public readonly attemptNumber?: number;
+export class ProviderError extends OrchestrationError {
+  public readonly providerName: string;
+  public readonly providerType: string;
 
   constructor(
-    workflowId: string,
-    runId: string,
     message: string,
-    details?: any,
-    stepName?: string,
-    attemptNumber?: number,
+    providerName: string,
+    providerType: string,
+    code = 'PROVIDER_ERROR',
+    retryable = true,
+    context?: Record<string, any>,
   ) {
-    super(
-      workflowId,
-      message,
-      'WORKFLOW_EXECUTION_FAILED',
-      { ...details, stepName, attemptNumber },
-      runId,
-    );
-    this.name = 'WorkflowExecutionError';
-    this.stepName = stepName;
-    this.attemptNumber = attemptNumber;
+    super(message, code, retryable, context);
+    this.name = 'ProviderError';
+    this.providerName = providerName;
+    this.providerType = providerType;
   }
 }
 
-/**
- * Workflow timeout error
- */
-export class WorkflowTimeoutError extends WorkflowError {
-  public readonly timeoutMs: number;
-
-  constructor(workflowId: string, runId: string, timeoutMs: number) {
-    super(
-      workflowId,
-      `Workflow execution timed out after ${timeoutMs}ms`,
-      'WORKFLOW_TIMEOUT',
-      { timeoutMs },
-      runId,
-    );
-    this.name = 'WorkflowTimeoutError';
-    this.timeoutMs = timeoutMs;
-  }
-}
-
-/**
- * Workflow not found error
- */
-export class WorkflowNotFoundError extends WorkflowError {
-  constructor(workflowId: string) {
-    super(workflowId, `Workflow "${workflowId}" not found`, 'WORKFLOW_NOT_FOUND');
-    this.name = 'WorkflowNotFoundError';
-  }
-}
-
-/**
- * Step-related errors
- */
-export class StepError extends OrchestrationError {
-  public readonly stepName: string;
-  public readonly workflowId?: string;
-  public readonly runId?: string;
-
-  constructor(
-    stepName: string,
-    message: string,
-    code: string,
-    details?: any,
-    workflowId?: string,
-    runId?: string,
-  ) {
-    super(message, code, details);
-    this.name = 'StepError';
-    this.stepName = stepName;
-    this.workflowId = workflowId;
-    this.runId = runId;
-  }
-}
-
-/**
- * Step validation error
- */
-export class StepValidationError extends StepError {
-  public readonly validationType: 'input' | 'output';
-
-  constructor(
-    stepName: string,
-    validationType: 'input' | 'output',
-    message: string,
-    details?: any,
-  ) {
-    super(
-      stepName,
-      `Step ${validationType} validation failed: ${message}`,
-      'STEP_VALIDATION_FAILED',
-      { ...details, validationType },
-    );
-    this.name = 'StepValidationError';
-    this.validationType = validationType;
-  }
-}
-
-/**
- * Step execution error
- */
-export class StepExecutionError extends StepError {
-  public readonly originalError?: Error;
-
-  constructor(
-    stepName: string,
-    message: string,
-    originalError?: Error,
-    workflowId?: string,
-    runId?: string,
-  ) {
-    super(
-      stepName,
-      message,
-      'STEP_EXECUTION_FAILED',
-      { originalError: originalError?.message },
-      workflowId,
-      runId,
-    );
-    this.name = 'StepExecutionError';
-    this.originalError = originalError;
-  }
-}
-
-/**
- * Step timeout error
- */
-export class StepTimeoutError extends StepError {
-  public readonly timeoutMs: number;
-
-  constructor(stepName: string, timeoutMs: number, workflowId?: string, runId?: string) {
-    super(
-      stepName,
-      `Step execution timed out after ${timeoutMs}ms`,
-      'STEP_TIMEOUT',
-      { timeoutMs },
-      workflowId,
-      runId,
-    );
-    this.name = 'StepTimeoutError';
-    this.timeoutMs = timeoutMs;
-  }
-}
-
-/**
- * Rate limiting error
- */
 export class RateLimitError extends OrchestrationError {
   public readonly limit: number;
   public readonly window: number;
   public readonly retryAfter?: number;
 
-  constructor(limit: number, window: number, retryAfter?: number) {
-    super(`Rate limit exceeded: ${limit} requests per ${window}ms`, 'RATE_LIMIT_EXCEEDED', {
-      limit,
-      window,
-      retryAfter,
-    });
+  constructor(
+    message: string,
+    limit: number,
+    window: number,
+    retryAfter?: number,
+    context?: Record<string, any>,
+  ) {
+    super(message, 'RATE_LIMIT_EXCEEDED', true, context);
     this.name = 'RateLimitError';
     this.limit = limit;
     this.window = window;
@@ -295,166 +110,348 @@ export class RateLimitError extends OrchestrationError {
   }
 }
 
-/**
- * Circuit breaker error
- */
 export class CircuitBreakerError extends OrchestrationError {
+  public readonly circuitName: string;
   public readonly state: 'open' | 'half-open';
-  public readonly resetTimeout: number;
 
-  constructor(state: 'open' | 'half-open', resetTimeout: number) {
-    super(`Circuit breaker is ${state}`, 'CIRCUIT_BREAKER_OPEN', { state, resetTimeout });
+  constructor(
+    message: string,
+    circuitName: string,
+    state: 'open' | 'half-open',
+    context?: Record<string, any>,
+  ) {
+    super(message, 'CIRCUIT_BREAKER_OPEN', true, context);
     this.name = 'CircuitBreakerError';
+    this.circuitName = circuitName;
     this.state = state;
-    this.resetTimeout = resetTimeout;
   }
 }
 
-/**
- * Deduplication error
- */
-export class DeduplicationError extends OrchestrationError {
-  public readonly duplicateKey: string;
-  public readonly originalRunId?: string;
+export class TimeoutError extends OrchestrationError {
+  public readonly timeoutMs: number;
 
-  constructor(duplicateKey: string, originalRunId?: string) {
-    super(`Duplicate execution detected for key: ${duplicateKey}`, 'DUPLICATE_EXECUTION', {
-      duplicateKey,
-      originalRunId,
-    });
-    this.name = 'DeduplicationError';
-    this.duplicateKey = duplicateKey;
-    this.originalRunId = originalRunId;
+  constructor(message: string, timeoutMs: number, context?: Record<string, any>) {
+    super(message, 'OPERATION_TIMEOUT', false, context);
+    this.name = 'TimeoutError';
+    this.timeoutMs = timeoutMs;
   }
 }
 
-/**
- * Configuration error
- */
 export class ConfigurationError extends OrchestrationError {
-  public readonly configKey: string;
+  public readonly configPath?: string;
 
-  constructor(configKey: string, message: string, details?: any) {
-    super(`Configuration error for "${configKey}": ${message}`, 'CONFIGURATION_ERROR', details);
+  constructor(message: string, configPath?: string, context?: Record<string, any>) {
+    super(message, 'CONFIGURATION_ERROR', false, context);
     this.name = 'ConfigurationError';
-    this.configKey = configKey;
+    this.configPath = configPath;
   }
 }
 
 /**
- * Authentication error
+ * Centralized error codes for consistent error handling across the orchestration package
  */
-export class AuthenticationError extends OrchestrationError {
-  constructor(message: string, details?: any) {
-    super(message, 'AUTHENTICATION_FAILED', details);
-    this.name = 'AuthenticationError';
-  }
+export enum OrchestrationErrorCodes {
+  // Generic orchestration errors
+  ORCHESTRATION_ERROR = 'ORCHESTRATION_ERROR',
+
+  // Initialization and lifecycle errors
+  INITIALIZATION_ERROR = 'INITIALIZATION_ERROR',
+  SHUTDOWN_ERROR = 'SHUTDOWN_ERROR',
+  CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
+
+  // Provider errors
+  PROVIDER_ERROR = 'PROVIDER_ERROR',
+  PROVIDER_NOT_FOUND = 'PROVIDER_NOT_FOUND',
+  PROVIDER_UNHEALTHY = 'PROVIDER_UNHEALTHY',
+  PROVIDER_REGISTRATION_ERROR = 'PROVIDER_REGISTRATION_ERROR',
+  NO_PROVIDER_AVAILABLE = 'NO_PROVIDER_AVAILABLE',
+
+  // Workflow execution errors
+  WORKFLOW_EXECUTION_ERROR = 'WORKFLOW_EXECUTION_ERROR',
+  WORKFLOW_VALIDATION_ERROR = 'WORKFLOW_VALIDATION_ERROR',
+  GET_EXECUTION_ERROR = 'GET_EXECUTION_ERROR',
+  CANCEL_EXECUTION_ERROR = 'CANCEL_EXECUTION_ERROR',
+  LIST_EXECUTIONS_ERROR = 'LIST_EXECUTIONS_ERROR',
+  SCHEDULE_WORKFLOW_ERROR = 'SCHEDULE_WORKFLOW_ERROR',
+  UNSCHEDULE_WORKFLOW_ERROR = 'UNSCHEDULE_WORKFLOW_ERROR',
+
+  // Step factory errors
+  STEP_EXECUTION_ERROR = 'STEP_EXECUTION_ERROR',
+  STEP_INPUT_VALIDATION_ERROR = 'STEP_INPUT_VALIDATION_ERROR',
+  STEP_OUTPUT_VALIDATION_ERROR = 'STEP_OUTPUT_VALIDATION_ERROR',
+  STEP_CUSTOM_VALIDATION_ERROR = 'STEP_CUSTOM_VALIDATION_ERROR',
+  STEP_TIMEOUT_ERROR = 'STEP_TIMEOUT_ERROR',
+  STEP_FACTORY_DISABLED = 'STEP_FACTORY_DISABLED',
+  STEP_NOT_FOUND = 'STEP_NOT_FOUND',
+  STEP_COMPOSITION_ERROR = 'STEP_COMPOSITION_ERROR',
+  INVALID_STEP_DEFINITION = 'INVALID_STEP_DEFINITION',
+  INVALID_STEP_REGISTRATION = 'INVALID_STEP_REGISTRATION',
+  DUPLICATE_STEP = 'DUPLICATE_STEP',
+
+  // Pattern-specific errors
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+  CIRCUIT_BREAKER_OPEN = 'CIRCUIT_BREAKER_OPEN',
+  OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
+}
+
+export interface ValidationError {
+  /** Error message */
+  message: string;
+  /** Field path where error occurred */
+  path: string;
+  /** Validation rule that failed */
+  rule?: string;
+  /** Invalid value */
+  value?: any;
 }
 
 /**
- * Authorization error
+ * Creates a workflow execution error with consistent formatting
  */
-export class AuthorizationError extends OrchestrationError {
-  public readonly requiredPermissions?: string[];
+export function createWorkflowExecutionError(
+  message: string,
+  workflowId: string,
+  options?: {
+    executionId?: string;
+    stepId?: string;
+    originalError?: Error;
+    retryable?: boolean;
+    code?: string;
+  },
+): WorkflowExecutionError {
+  const context: any = {};
 
-  constructor(message: string, requiredPermissions?: string[]) {
-    super(message, 'AUTHORIZATION_FAILED', { requiredPermissions });
-    this.name = 'AuthorizationError';
-    this.requiredPermissions = requiredPermissions;
+  if (options?.executionId) context.executionId = options.executionId;
+  if (options?.stepId) context.stepId = options.stepId;
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
   }
+
+  return new WorkflowExecutionError(
+    message,
+    workflowId,
+    options?.code || 'WORKFLOW_EXECUTION_ERROR',
+    options?.retryable ?? true,
+    context,
+  );
 }
 
 /**
- * Error utility functions
+ * Creates a provider error with consistent formatting
  */
-export const ErrorUtils = {
-  /**
-   * Check if error is retryable
-   */
-  isRetryable(error: Error): boolean {
-    if (error instanceof RateLimitError) return true;
-    if (error instanceof CircuitBreakerError) return false;
-    if (error instanceof AuthenticationError) return false;
-    if (error instanceof AuthorizationError) return false;
-    if (error instanceof WorkflowValidationError) return false;
-    if (error instanceof StepValidationError) return false;
-    if (error instanceof DeduplicationError) return false;
-    if (error instanceof ConfigurationError) return false;
-
-    // Network errors are usually retryable
-    if (error.message.includes('ECONNREFUSED')) return true;
-    if (error.message.includes('ETIMEDOUT')) return true;
-    if (error.message.includes('ENOTFOUND')) return true;
-
-    return false;
+export function createProviderError(
+  message: string,
+  providerName: string,
+  providerType: string,
+  options?: {
+    originalError?: Error;
+    retryable?: boolean;
+    code?: string;
   },
+): ProviderError {
+  const context: any = {};
 
-  /**
-   * Extract error code
-   */
-  getErrorCode(error: Error): string {
-    if (error instanceof OrchestrationError) {
-      return error.code;
-    }
-    return 'UNKNOWN_ERROR';
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new ProviderError(
+    message,
+    providerName,
+    providerType,
+    options?.code || 'PROVIDER_ERROR',
+    options?.retryable ?? true,
+    context,
+  );
+}
+
+/**
+ * Determines if an error is retryable
+ */
+export function isRetryableError(error: Error): boolean {
+  if (error instanceof OrchestrationError) {
+    return error.retryable;
+  }
+
+  // Common retryable error patterns
+  const retryablePatterns = [
+    'ECONNRESET',
+    'ENOTFOUND',
+    'ECONNREFUSED',
+    'ETIMEDOUT',
+    'EAI_AGAIN',
+    'RATE_LIMIT',
+    'SERVICE_UNAVAILABLE',
+    'INTERNAL_SERVER_ERROR',
+  ];
+
+  const errorString = error.message?.toUpperCase() || '';
+  return retryablePatterns.some((pattern) => errorString.includes(pattern));
+}
+
+/**
+ * Creates a standardized OrchestrationError with centralized error codes
+ */
+export function createOrchestrationError(
+  message: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    originalError?: Error;
+    retryable?: boolean;
+    context?: Record<string, any>;
   },
+): OrchestrationError {
+  const context: any = { ...options?.context };
 
-  /**
-   * Create user-friendly error message
-   */
-  getUserMessage(error: Error): string {
-    if (error instanceof ProviderNotFoundError) {
-      return 'The requested service is not available.';
-    }
-    if (error instanceof WorkflowNotFoundError) {
-      return 'The requested workflow does not exist.';
-    }
-    if (error instanceof RateLimitError) {
-      return 'Too many requests. Please try again later.';
-    }
-    if (error instanceof AuthenticationError) {
-      return 'Authentication required.';
-    }
-    if (error instanceof AuthorizationError) {
-      return 'You do not have permission to perform this action.';
-    }
-    if (error instanceof WorkflowTimeoutError) {
-      return 'The operation took too long to complete.';
-    }
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
+  }
 
-    return 'An error occurred while processing your request.';
+  return new OrchestrationError(
+    message,
+    options?.code || OrchestrationErrorCodes.ORCHESTRATION_ERROR,
+    options?.retryable ?? false,
+    context,
+  );
+}
+
+/**
+ * Creates a standardized ProviderError with centralized error codes
+ */
+export function createProviderErrorWithCode(
+  message: string,
+  providerName: string,
+  providerType: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    originalError?: Error;
+    retryable?: boolean;
+    context?: Record<string, any>;
   },
+): ProviderError {
+  const context: any = { ...options?.context };
 
-  /**
-   * Wrap error with context
-   */
-  wrapError(
-    error: Error,
-    context: { workflowId?: string; stepName?: string; runId?: string },
-  ): Error {
-    if (error instanceof OrchestrationError) {
-      return error;
-    }
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
+  }
 
-    if (context.stepName) {
-      return new StepExecutionError(
-        context.stepName,
-        error.message,
-        error,
-        context.workflowId,
-        context.runId,
-      );
-    }
+  return new ProviderError(
+    message,
+    providerName,
+    providerType,
+    options?.code || OrchestrationErrorCodes.PROVIDER_ERROR,
+    options?.retryable ?? true,
+    context,
+  );
+}
 
-    if (context.workflowId) {
-      return new WorkflowExecutionError(
-        context.workflowId,
-        context.runId || 'unknown',
-        error.message,
-        { originalError: error.message },
-      );
-    }
-
-    return new OrchestrationError(error.message, 'UNKNOWN_ERROR', { originalError: error.message });
+/**
+ * Creates a standardized WorkflowExecutionError with centralized error codes
+ */
+export function createWorkflowExecutionErrorWithCode(
+  message: string,
+  workflowId: string,
+  options?: {
+    executionId?: string;
+    stepId?: string;
+    originalError?: Error;
+    retryable?: boolean;
+    code?: OrchestrationErrorCodes;
   },
-};
+): WorkflowExecutionError {
+  const context: any = {};
+
+  if (options?.executionId) context.executionId = options.executionId;
+  if (options?.stepId) context.stepId = options.stepId;
+  if (options?.originalError) {
+    context.originalError = {
+      name: options.originalError.name,
+      message: options.originalError.message,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new WorkflowExecutionError(
+    message,
+    workflowId,
+    options?.code || OrchestrationErrorCodes.WORKFLOW_EXECUTION_ERROR,
+    options?.retryable ?? true,
+    context,
+  );
+}
+
+/**
+ * Creates a validation error with centralized error codes
+ */
+export function createValidationError(
+  message: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    validationErrors?: any[];
+    validationResult?: any;
+    context?: Record<string, any>;
+  },
+): OrchestrationError {
+  const context: any = { ...options?.context };
+
+  if (options?.validationErrors) {
+    context.validationErrors = options.validationErrors;
+  }
+
+  if (options?.validationResult) {
+    context.validationResult = options.validationResult;
+  }
+
+  return new OrchestrationError(
+    message,
+    options?.code || OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
+    false, // Validation errors are typically not retryable
+    context,
+  );
+}
+
+/**
+ * Extracts error details for logging/monitoring
+ */
+export function extractErrorDetails(error: Error): Record<string, any> {
+  const details: Record<string, any> = {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+  };
+
+  if (error instanceof OrchestrationError) {
+    details.code = error.code;
+    details.retryable = error.retryable;
+    details.context = error.context;
+  }
+
+  if (error instanceof WorkflowExecutionError) {
+    details.workflowId = error.workflowId;
+    details.executionId = error.executionId;
+    details.stepId = error.stepId;
+  }
+
+  if (error instanceof ProviderError) {
+    details.providerName = error.providerName;
+    details.providerType = error.providerType;
+  }
+
+  return details;
+}

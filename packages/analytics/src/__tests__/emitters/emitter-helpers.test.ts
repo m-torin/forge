@@ -384,7 +384,7 @@ describe('Emitter Helpers', () => {
       const events = batch.getEvents();
       expect(events).toHaveLength(1);
       expect(events[0].type).toBe('track');
-      expect(events[0].event).toBe('batch_track');
+      expect((events[0] as any).event).toBe('batch_track');
     });
 
     it('should add identify event to batch', () => {
@@ -531,7 +531,7 @@ describe('Emitter Helpers', () => {
       const session = createUserSession('user123', 'session456');
       const trackPayload = session.track('test_event');
 
-      expect(trackPayload.context.traits).toBeDefined();
+      expect(trackPayload.context?.traits).toBeDefined();
     });
   });
 
@@ -653,7 +653,7 @@ describe('Emitter Helpers', () => {
 
       const result = withMetadata(payload, metadata);
 
-      expect(result.context.app).toEqual(metadata);
+      expect(result.context?.app).toEqual(metadata);
     });
 
     it('should merge with existing app context', () => {
@@ -662,7 +662,7 @@ describe('Emitter Helpers', () => {
         context: {
           app: {
             name: 'Existing App',
-            platform: 'ios',
+            build: 'ios-1.0',
           },
         },
         event: 'test',
@@ -676,10 +676,10 @@ describe('Emitter Helpers', () => {
 
       const result = withMetadata(payload, metadata);
 
-      expect(result.context.app).toEqual({
+      expect(result.context?.app).toEqual({
         name: 'Existing App',
-        platform: 'ios',
-        source: 'app_store',
+        build: 'ios-1.0',
+        source: 'app_store' as any,
         version: '2.0.0',
       });
     });
@@ -698,9 +698,9 @@ describe('Emitter Helpers', () => {
       const metadata = { version: '1.0.0' };
       const result = withMetadata(payload, metadata);
 
-      expect(result.context.device).toEqual({ type: 'mobile' });
-      expect(result.context.page).toEqual({ url: 'https://example.com' });
-      expect(result.context.app).toEqual({ version: '1.0.0' });
+      expect(result.context?.device).toEqual({ type: 'mobile' });
+      expect(result.context?.page).toEqual({ url: 'https://example.com' });
+      expect(result.context?.app).toEqual({ version: '1.0.0' });
     });
 
     it('should work with different payload types', () => {
@@ -715,7 +715,7 @@ describe('Emitter Helpers', () => {
       const result = withMetadata(identifyPayload, metadata);
 
       expect(result.type).toBe('identify');
-      expect(result.context.app).toEqual(metadata);
+      expect(result.context?.app).toEqual(metadata);
     });
   });
 
@@ -738,7 +738,7 @@ describe('Emitter Helpers', () => {
 
       const result = withUTM(payload, utm);
 
-      expect(result.context.campaign).toEqual(utm);
+      expect(result.context?.campaign).toEqual(utm);
     });
 
     it('should merge with existing campaign context', () => {
@@ -761,7 +761,7 @@ describe('Emitter Helpers', () => {
 
       const result = withUTM(payload, utm);
 
-      expect(result.context.campaign).toEqual({
+      expect(result.context?.campaign).toEqual({
         id: 'camp_123',
         name: 'Existing Campaign',
         medium: 'social',
@@ -784,7 +784,7 @@ describe('Emitter Helpers', () => {
 
       const result = withUTM(payload, utm);
 
-      expect(result.context.campaign).toEqual({
+      expect(result.context?.campaign).toEqual({
         campaign: 'newsletter',
         source: 'email',
       });
@@ -804,9 +804,9 @@ describe('Emitter Helpers', () => {
       const utm = { source: 'twitter' };
       const result = withUTM(payload, utm);
 
-      expect(result.context.app).toEqual({ name: 'Test App' });
-      expect(result.context.device).toEqual({ type: 'desktop' });
-      expect(result.context.campaign).toEqual({ source: 'twitter' });
+      expect(result.context?.app).toEqual({ name: 'Test App' });
+      expect(result.context?.device).toEqual({ type: 'desktop' });
+      expect(result.context?.campaign).toEqual({ source: 'twitter' });
     });
 
     it('should work with different payload types', () => {
@@ -825,7 +825,7 @@ describe('Emitter Helpers', () => {
       const result = withUTM(pagePayload, utm);
 
       expect(result.type).toBe('page');
-      expect(result.context.campaign).toEqual(utm);
+      expect(result.context?.campaign).toEqual(utm);
     });
   });
 
@@ -865,10 +865,10 @@ describe('Emitter Helpers', () => {
 
       // Verify complex integration
       expect(events).toHaveLength(2);
-      expect(events[0].context.app.version).toBe('2.1.0');
-      expect(events[0].context.campaign.utm_source).toBe('email');
-      expect(events[0].context.campaign.content).toBe('email_link');
-      expect(events[1].context.traits.name).toBe('John Doe');
+      expect(events[0].context?.app?.version).toBe('2.1.0');
+      expect(events[0].context?.campaign?.utm_source).toBe('email');
+      expect(events[0].context?.campaign?.content).toBe('email_link');
+      expect(events[1].context?.traits?.name).toBe('John Doe');
     });
 
     it('should handle performance with large batches', () => {
@@ -902,7 +902,7 @@ describe('Emitter Helpers', () => {
 
       // Each context should be independent
       expect(contexts[0]).not.toBe(contexts[1]); // Different object references
-      expect(contexts[99].page.path).toBe('/page_99');
+      expect(contexts[99].page?.path).toBe('/page_99');
       expect(contexts[0].groupId).toBe('org_0');
       expect(contexts[99].groupId).toBe('org_99');
     });
@@ -951,11 +951,11 @@ describe('Emitter Helpers', () => {
         properties: {},
       };
       const withEmptyMetadata = withMetadata(payload, {});
-      expect(withEmptyMetadata.context.app).toEqual({});
+      expect(withEmptyMetadata.context?.app).toEqual({});
 
       // UTM with empty object
       const withEmptyUTM = withUTM(payload, {});
-      expect(withEmptyUTM.context.campaign).toEqual({});
+      expect(withEmptyUTM.context?.campaign).toEqual({});
     });
   });
 });

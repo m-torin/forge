@@ -1,0 +1,220 @@
+/**
+ * Server-side API key validation
+ */
+
+import 'server-only';
+import { headers } from 'next/headers';
+import { type NextRequest } from 'next/server';
+
+import { auth } from '../auth';
+import { hasPermission, checkApiKeyPermissions } from '../../shared/api-keys/permissions';
+
+import type { 
+  ApiKeyValidationResult, 
+  PermissionCheck,
+  RateLimitResult,
+} from '../../shared/api-keys/types';
+import type { AuthSession } from '../../shared/types';
+
+/**
+ * Validates an API key from request headers and optionally checks permissions
+ */
+export async function validateApiKey(
+  request: NextRequest | Headers,
+  permissions?: PermissionCheck,
+): Promise<ApiKeyValidationResult> {
+  try {
+    // Get headers from request or use directly
+    const requestHeaders = request instanceof Headers ? request : request.headers;
+
+    // Check for API key in headers (support multiple header formats)
+    let apiKey = requestHeaders.get('x-api-key');
+    
+    if (!apiKey) {
+      const authHeader = requestHeaders.get('authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        apiKey = authHeader.substring(7);
+      }
+    }
+
+    if (!apiKey) {
+      return {
+        isValid: false,
+        error: 'No API key provided',
+      };
+    }
+
+    // Verify the API key using Better Auth
+    const verifyOptions: any = { body: { key: apiKey } };
+
+    if (permissions) {
+      verifyOptions.body.permissions = permissions;
+    }
+
+    const result = await auth.api.verifyApiKey(verifyOptions);
+
+    if (!result.valid) {
+      return {
+        isValid: false,
+        error: result.error?.message || 'Invalid API key',
+      };
+    }
+
+    // Check permissions if provided
+    if (permissions && result.key?.permissions) {
+      const hasRequiredPermissions = checkApiKeyPermissions(
+        result.key.permissions,
+        permissions
+      );
+
+      if (!hasRequiredPermissions) {
+        return {
+          isValid: false,
+          error: 'Insufficient permissions',
+        };
+      }
+    }
+
+    return {
+      isValid: true,
+      keyData: {
+        id: result.key.id,
+        organizationId: result.key.organizationId,
+        name: result.key.name,
+        permissions: result.key.permissions,
+        expiresAt: result.key.expiresAt ? new Date(result.key.expiresAt) : undefined,
+        lastUsedAt: result.key.lastUsedAt ? new Date(result.key.lastUsedAt) : undefined,
+      },
+    };
+  } catch (error) {
+    console.error('API key validation error:', error);
+    return {
+      isValid: false,
+      error: 'Failed to validate API key',
+    };
+  }
+}
+
+/**
+ * Ensures the request has valid authentication (API key or session)
+ */
+export async function requireAuth(request: NextRequest): Promise<AuthSession | null> {
+  // First check for API key
+  const apiKeyResult = await validateApiKey(request.headers);
+
+  if (apiKeyResult.isValid && apiKeyResult.keyData) {
+    // Create a synthetic session for API key authentication
+    // This allows API key requests to work with existing session-based code
+    try {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      // If we have a session from the API key, return it
+      if (session) {
+        return session;
+      }
+
+      // Otherwise, we need to handle API key-only requests
+      // This is a simplified approach - in production you might want to 
+      // create a more sophisticated API key session system
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Fall back to session authentication
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    return session;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Checks if the request has permission to perform an action
+ */
+export async function hasPermissionForRequest(
+  request: NextRequest,
+  permissions: PermissionCheck,
+): Promise<boolean> {
+  // Check API key permissions first
+  const apiKeyResult = await validateApiKey(request.headers, permissions);
+
+  if (apiKeyResult.isValid) {
+    return true;
+  }
+
+  // Check session permissions
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return false;
+    }
+
+    // For session auth, check user permissions
+    // This is a simplified implementation - you can customize based on your needs
+    return true; // Assume session users have full permissions for now
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validates API key and checks rate limits
+ */
+export async function validateApiKeyWithRateLimit(
+  request: NextRequest | Headers,
+  permissions?: PermissionCheck,
+): Promise<ApiKeyValidationResult & { rateLimit?: RateLimitResult }> {
+  const result = await validateApiKey(request, permissions);
+
+  if (!result.isValid || !result.keyData) {
+    return result;
+  }
+
+  // TODO: Implement rate limiting logic here
+  // This would typically involve checking a rate limit store (Redis, etc.)
+  // For now, we'll return success with placeholder rate limit data
+  const rateLimit: RateLimitResult = {
+    allowed: true,
+    remaining: 100,
+    resetTime: new Date(Date.now() + 60000), // 1 minute from now
+    limit: 100,
+  };
+
+  return {
+    ...result,
+    rateLimit,
+  };
+}
+
+/**
+ * Extracts API key from various header formats
+ */
+export function extractApiKeyFromHeaders(headers: Headers): string | null {
+  // Check x-api-key header
+  let apiKey = headers.get('x-api-key');
+  
+  if (apiKey) {
+    return apiKey;
+  }
+
+  // Check authorization header with Bearer format
+  const authHeader = headers.get('authorization');
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+
+  // Check other common API key headers
+  apiKey = headers.get('api-key') || headers.get('x-api-token');
+  
+  return apiKey;
+}

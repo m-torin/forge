@@ -1,10 +1,9 @@
 {
-  "extends": "@repo/config/typescript/base.json",
+  "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
+    "rootDir": ".",
+    "outDir": "dist"
   },
-  "include": ["src/**/*", "*.ts", "*.config.ts"],
+  "include": ["src/**/*", "eslint.config.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

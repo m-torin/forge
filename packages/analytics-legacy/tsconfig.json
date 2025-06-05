@@ -1,9 +1,0 @@
-{
-  "extends": "@repo/config/typescript/nextjs.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "types": ["@testing-library/jest-dom", "vitest/globals"]
-  },
-  "include": ["**/*.ts", "**/*.tsx", "setup-tests.ts"],
-  "exclude": ["node_modules"]
-}

@@ -3,26 +3,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
-    "./puppeteer": {
-      "types": "./src/puppeteer/index.ts",
-      "default": "./src/puppeteer/index.ts"
-    },
-    "./playwright": {
-      "types": "./src/playwright/index.ts",
-      "default": "./src/playwright/index.ts"
-    },
-    "./playwright/enhanced": {
-      "types": "./src/playwright/enhanced.ts",
-      "default": "./src/playwright/enhanced.ts"
-    }
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts"
   },
   "scripts": {
-    "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -31,25 +19,57 @@
   "dependencies": {
     "zod": "catalog:"
   },
-  "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/testing": "workspace:*",
-    "@repo/config": "workspace:*",
-    "@types/node": "catalog:",
-    "eslint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  },
   "peerDependencies": {
-    "playwright": "^1.40.0",
-    "puppeteer": "^21.0.0"
+    "@anthropic-ai/sdk": "*",
+    "@ulixee/hero-playground": "*",
+    "cheerio": "*",
+    "jsdom": "*",
+    "openai": "*",
+    "playwright": "*",
+    "puppeteer": "*"
   },
   "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@ulixee/hero-playground": {
+      "optional": true
+    },
+    "cheerio": {
+      "optional": true
+    },
+    "jsdom": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    },
     "playwright": {
       "optional": true
     },
     "puppeteer": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.38.0",
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/eslint": "^9.6.1",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^4.5.1",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "openai": "^4.77.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   }
 }

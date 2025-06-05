@@ -1,8 +1,3 @@
-// eslint.config.ts
-import serverConfig from '@repo/eslint-config/server';
+import baseConfig from '@repo/eslint-config/package';
 
-import type { Linter } from 'eslint';
-
-const config: Linter.FlatConfig[] = serverConfig;
-
-export default config;
+export default [...baseConfig];

@@ -1,7 +1,70 @@
 /**
- * Shared types index
+ * Shared type definitions for orchestration package
  */
 
-export * from './workflow';
-export * from './provider';
-export * from './patterns';
+// Core workflow types
+export type {
+  ListExecutionsOptions,
+  ProviderHealth,
+  RetryConfig,
+  ScheduleConfig,
+  WorkflowDefinition,
+  WorkflowError,
+  WorkflowExecution,
+  WorkflowExecutionMetadata,
+  WorkflowExecutionStatus,
+  WorkflowProvider,
+  WorkflowStep,
+  WorkflowStepExecution,
+  WorkflowTrigger,
+} from './workflow';
+
+// Provider configuration types
+export type {
+  AnyProviderConfig,
+  CustomProviderConfig,
+  ProviderCapabilities,
+  ProviderConfig,
+  ProviderContext,
+  ProviderFeature,
+  ProviderHealthReport,
+  ProviderMetrics,
+  ProviderRegistry,
+  RateLimitConfig,
+  UpstashQStashConfig,
+  UpstashWorkflowConfig,
+} from './provider';
+
+// Reliability pattern types
+export type {
+  BatchPattern,
+  BulkheadPattern,
+  CachePattern,
+  CircuitBreakerPattern,
+  DeduplicationPattern,
+  FallbackPattern,
+  MonitoringPattern,
+  PatternContext,
+  PatternResult,
+  RateLimitPattern,
+  RetryPattern,
+  TimeoutPattern,
+} from './patterns';
+
+// Saga pattern types
+export type {
+  SagaContext,
+  SagaDefinition,
+  SagaStep,
+  SagaExecutionState,
+  SagaExecution,
+} from '../features/saga';
+
+export interface ScheduledExecution {
+  id: string;
+  scheduleId: string;
+  executionTime: Date;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  result?: unknown;
+  error?: string;
+}

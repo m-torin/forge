@@ -54,9 +54,12 @@
     "@vercel/analytics": "^1.1.0"
   },
   "exports": {
+    ".": "./src/index.ts",
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
-    "./server/next": "./src/server-next.ts"
+    "./server/next": "./src/server-next.ts",
+    "./types": "./src/shared/types/types.ts",
+    "./flags": "./src/shared/feature-flags/index.ts"
   }
 }

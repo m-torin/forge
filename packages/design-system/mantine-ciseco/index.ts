@@ -129,6 +129,8 @@ export {
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
+  CompletePagination,
+  type CompletePaginationProps,
 } from './components/shared/Pagination/Pagination';
 export { default as Radio } from './components/shared/Radio/Radio';
 export { default as Select } from './components/shared/Select/Select';

@@ -21,7 +21,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconCopy, IconShield, IconShieldCheck } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { analytics } from '@repo/analytics-legacy';
+import { createClientAnalytics, track } from '@repo/analytics/client';
 import {
   disableTwoFactor,
   enableTwoFactor,

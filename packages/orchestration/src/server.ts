@@ -1,146 +1,134 @@
 /**
- * Server-only exports for the orchestration package
- * These exports require Node.js environment and process.env access
+ * Server-side orchestration exports
+ * Core workflow management and execution functionality
  */
 
-// Re-export everything from the main index for server use
-export * from './index';
+import { RateLimitProvider, UpstashWorkflowProvider } from './providers/index';
+// Core types
+// Import for internal use
+import { OrchestrationManager, validateWorkflowDefinition } from './shared/utils/index';
 
-// New orchestration architecture exports
-// Export only types that are not in index.ts
-export type {
-  WorkflowProvider,
-  WorkflowDefinition,
-  WorkflowExecutionOptions,
-  WorkflowExecutionResult,
-  StepResult,
-} from './shared/types/workflow';
-export * from './shared/types/provider';
-export type {
-  BatchConfig,
-  PipelineStage,
-  FanOutFanInConfig,
-  SagaConfig,
-  CompositionPatterns,
-  DeduplicationConfig,
-  EventSourcingConfig,
-  WorkflowHooks,
-  WorkflowMiddleware,
-} from './shared/types/patterns';
-export type {
-  ProviderError,
-  ProviderNotFoundError,
-  ProviderInitializationError,
-  ProviderNotAvailableError,
-  WorkflowValidationError,
-  WorkflowExecutionError,
-  WorkflowTimeoutError,
-  WorkflowNotFoundError,
-  StepError,
-  StepValidationError,
-  StepExecutionError,
-  StepTimeoutError,
-  RateLimitError,
-  CircuitBreakerError,
-  DeduplicationError,
-  ConfigurationError,
-  AuthenticationError,
-  AuthorizationError,
-} from './shared/utils/errors';
+export type * from './shared/types/index';
+
+// Manager and utilities
 export {
+  createProviderError,
+  createWorkflowExecutionError,
   OrchestrationError,
-  ErrorUtils,
   OrchestrationManager,
-  createOrchestrationManager,
-} from './shared/utils/manager';
+  ProviderError,
+  validateProviderConfig,
+  validateWorkflowDefinition,
+  WorkflowExecutionError,
+} from './shared/utils/index';
 
-// Provider exports
-export * from './providers/upstash-workflow/provider';
-export type {
-  UpstashWorkflowContext,
-  UpstashStepConfig,
-  UpstashRuntimeInfo,
-  UpstashStepResult,
-  UpstashWorkflowState,
-  UpstashEventType,
-  UpstashEvent,
-  UpstashPersistenceAdapter,
-  UpstashMetrics,
-  UpstashHealthCheck,
-  UpstashStepBuilder,
-  UpstashWorkflowBuilder,
-} from './providers/upstash-workflow/types';
+export type { OrchestrationManagerConfig, ValidationError } from './shared/utils/index';
 
-// Provider registry
-import type { ProviderRegistryEntry } from './shared/types/provider';
-import { createUpstashWorkflowProvider } from './providers/upstash-workflow/provider';
+// Providers
+export { RateLimitProvider, UpstashWorkflowProvider } from './providers/index';
 
-export const AVAILABLE_PROVIDERS: Record<string, ProviderRegistryEntry> = {
-  'upstash-workflow': {
-    name: 'upstash-workflow',
-    factory: createUpstashWorkflowProvider,
-    capabilities: {
-      features: new Set([
-        'scheduling',
-        'deduplication',
-        'rate-limiting',
-        'distributed-execution',
-        'event-driven',
-        'batch-processing',
-      ]),
-      performance: {
-        typicalLatency: 100,
-        maxThroughput: 10000,
-        maxConcurrency: 1000,
-      },
-      cost: {
-        model: 'pay-per-use',
-        estimatedCostPerExecution: 0.00001,
-      },
-      infrastructure: {
-        type: 'cloud',
-        regions: ['us-east-1', 'eu-west-1'],
-        compliance: ['SOC2', 'GDPR'],
-      },
-      limitations: {
-        maxExecutionTime: 15 * 60 * 1000, // 15 minutes
-        maxPayloadSize: 1024 * 1024, // 1MB
-        maxStepsPerWorkflow: 100,
-      },
-    },
-  },
-};
+export type { RateLimitProviderOptions, UpstashWorkflowProviderOptions } from './providers/index';
 
-// Legacy exports (kept for backward compatibility)
-// Server-specific workflow builders that use process.env
-export { workflows } from './runtime/core/workflow-builder';
-
-// Server-only utilities that require database access
-export * from './utils/product-classification';
-export * from './utils/ai-integration';
-
-// Server-only runtime components
-export * from './runtime/core/dev-server';
-
-// Server-only environment utilities
+// Patterns
 export {
-  env,
-  ENV_CONFIGS,
-  envLog,
-  getApiBaseUrl,
-  getBooleanEnvVar,
-  getDefaultMaxRetries,
-  getDefaultTimeout,
-  getEnvConfig,
-  getEnvironment,
-  getEnvVar,
-  getNumericEnvVar,
-  getRequiredEnvVar,
-  isCacheEnabled,
-  isDevelopment,
-  isFeatureEnabled,
-  isLocalQStash,
-  isProduction,
-  isStrictMode,
-  isTest,
-} from './utils/environment';
+  BatchManager,
+  CircuitBreakerConfigs,
+  circuitBreakerManager,
+  RetryStrategies,
+  withBatch,
+  withCircuitBreaker,
+  withRetry,
+} from './shared/patterns/index';
+
+export type { BatchOptions, CircuitBreakerOptions, RetryOptions } from './shared/patterns/index';
+
+// Convenience functions for common use cases
+
+/**
+ * Create a workflow engine with default configuration
+ */
+export function createWorkflowEngine(config?: {
+  providers?: {
+    name: string;
+    type: 'upstash-workflow' | 'rate-limit';
+    config: Record<string, any>;
+  }[];
+  defaultProvider?: string;
+  enableHealthChecks?: boolean;
+  enableMetrics?: boolean;
+}) {
+  const manager = new OrchestrationManager({
+    defaultProvider: config?.defaultProvider,
+    enableHealthChecks: config?.enableHealthChecks,
+    enableMetrics: config?.enableMetrics,
+  });
+
+  return {
+    manager,
+
+    async initialize() {
+      await manager.initialize();
+
+      // Register providers if configured
+      if (config?.providers) {
+        for (const providerConfig of config.providers) {
+          let provider;
+
+          switch (providerConfig.type) {
+            case 'upstash-workflow':
+              provider = new UpstashWorkflowProvider(providerConfig.config as any);
+              break;
+            case 'rate-limit':
+              provider = new RateLimitProvider(providerConfig.config as any);
+              break;
+            default:
+              throw new Error(`Unknown provider type: ${providerConfig.type}`);
+          }
+
+          await manager.registerProvider(providerConfig.name, provider as any);
+        }
+      }
+    },
+
+    async executeWorkflow(definition: any, input?: Record<string, any>, providerName?: string) {
+      const validatedDefinition = validateWorkflowDefinition(definition);
+      return manager.executeWorkflow(validatedDefinition, input, providerName);
+    },
+
+    async getExecution(executionId: string, providerName?: string) {
+      return manager.getExecution(executionId, providerName);
+    },
+
+    async listExecutions(workflowId: string, options?: any, providerName?: string) {
+      return manager.listExecutions(workflowId, options, providerName);
+    },
+
+    async scheduleWorkflow(definition: any, providerName?: string) {
+      const validatedDefinition = validateWorkflowDefinition(definition);
+      return manager.scheduleWorkflow(validatedDefinition, providerName);
+    },
+
+    async healthCheck() {
+      return manager.healthCheckAll();
+    },
+
+    getStatus() {
+      return manager.getStatus();
+    },
+
+    async shutdown() {
+      return manager.shutdown();
+    },
+  };
+}
+
+/**
+ * Default workflow engine instance
+ */
+export const workflowEngine = createWorkflowEngine();
+
+// Re-export Upstash packages for direct usage in workflow routes
+export { Client as QStashClient, QStashWorkflowAbort } from '@upstash/qstash';
+export { Redis } from '@upstash/redis';
+export { serve as upstashServe, createWorkflow, serveMany } from '@upstash/workflow/nextjs';
+export type { WorkflowContext } from '@upstash/workflow';

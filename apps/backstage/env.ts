@@ -1,7 +1,8 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
-import { keys as analytics } from '@repo/analytics-legacy/keys';
+// Analytics keys to be implemented in new package
+// import { keys as analytics } from '@repo/analytics/keys';
 import { keys as auth } from '@repo/auth-new/keys';
 import { keys as core } from '@repo/config/next/keys';
 import { keys as database } from '@repo/database/keys';
@@ -16,7 +17,7 @@ export const env = createEnv({
   },
   extends: [
     auth(),
-    analytics(),
+    // analytics(), // TODO: implement keys in new analytics package
     core(),
     database(),
     email(),

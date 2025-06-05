@@ -1,0 +1,316 @@
+/**
+ * Organization permission checking utilities
+ */
+
+import 'server-only';
+import { headers } from 'next/headers';
+
+import { auth } from '../auth';
+import { getUserRoleInOrganization } from './helpers';
+
+/**
+ * Organization permissions hierarchy
+ */
+export const ORGANIZATION_PERMISSIONS = {
+  ORGANIZATION: {
+    READ: 'organization:read',
+    WRITE: 'organization:write',
+    DELETE: 'organization:delete',
+    MANAGE: 'organization:manage',
+  },
+  MEMBERS: {
+    READ: 'members:read',
+    WRITE: 'members:write',
+    INVITE: 'members:invite',
+    REMOVE: 'members:remove',
+    MANAGE: 'members:manage',
+  },
+  TEAMS: {
+    READ: 'teams:read',
+    WRITE: 'teams:write',
+    CREATE: 'teams:create',
+    DELETE: 'teams:delete',
+    MANAGE: 'teams:manage',
+  },
+  API_KEYS: {
+    READ: 'api-keys:read',
+    WRITE: 'api-keys:write',
+    CREATE: 'api-keys:create',
+    REVOKE: 'api-keys:revoke',
+    MANAGE: 'api-keys:manage',
+  },
+  SETTINGS: {
+    READ: 'settings:read',
+    WRITE: 'settings:write',
+    MANAGE: 'settings:manage',
+  },
+} as const;
+
+/**
+ * Role-based permissions for organizations
+ */
+export const ROLE_PERMISSIONS = {
+  owner: [
+    // Full access to everything
+    'organization:*',
+    'members:*',
+    'teams:*',
+    'api-keys:*',
+    'settings:*',
+  ],
+  admin: [
+    // Can manage most things but not delete organization
+    'organization:read',
+    'organization:write',
+    'organization:manage',
+    'members:*',
+    'teams:*',
+    'api-keys:*',
+    'settings:*',
+  ],
+  member: [
+    // Basic read access and limited actions
+    'organization:read',
+    'members:read',
+    'teams:read',
+    'teams:create', // Members can create teams
+    'api-keys:read',
+    'api-keys:create', // Members can create API keys for themselves
+    'settings:read',
+  ],
+} as const;
+
+/**
+ * Checks if a role has a specific permission
+ */
+export function roleHasPermission(role: string, permission: string): boolean {
+  const permissions = ROLE_PERMISSIONS[role as keyof typeof ROLE_PERMISSIONS];
+  if (!permissions) {
+    return false;
+  }
+
+  // Check for exact permission match
+  if (permissions.includes(permission)) {
+    return true;
+  }
+
+  // Check for wildcard permissions
+  const [resource, action] = permission.split(':');
+  const wildcardPermission = `${resource}:*`;
+  
+  if (permissions.includes(wildcardPermission)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Server-side helper to check if user has permission in their active organization
+ */
+export async function checkPermission(
+  permission: string,
+  organizationId?: string
+): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return false;
+    }
+
+    const targetOrgId = organizationId || session.session.activeOrganizationId;
+
+    if (!targetOrgId) {
+      return false;
+    }
+
+    const userRole = await getUserRoleInOrganization(session.user.id, targetOrgId);
+
+    if (!userRole) {
+      return false;
+    }
+
+    return roleHasPermission(userRole, permission);
+  } catch (error) {
+    console.error('Check permission error:', error);
+    return false;
+  }
+}
+
+/**
+ * Server-side helper to check multiple permissions
+ */
+export async function checkPermissions(
+  permissions: Record<string, string[]>,
+  organizationId?: string
+): Promise<boolean> {
+  try {
+    // Use Better Auth's built-in permission checking if available
+    const result = await auth.api.hasPermission({
+      body: { permissions },
+      headers: await headers(),
+    });
+
+    return result?.hasPermission || false;
+  } catch (error) {
+    console.error('Check permissions error:', error);
+    
+    // Fallback to individual permission checks
+    try {
+      for (const [resource, actions] of Object.entries(permissions)) {
+        for (const action of actions) {
+          const permission = `${resource}:${action}`;
+          const hasPermission = await checkPermission(permission, organizationId);
+          if (!hasPermission) {
+            return false;
+          }
+        }
+      }
+      return true;
+    } catch (fallbackError) {
+      console.error('Fallback permission check error:', fallbackError);
+      return false;
+    }
+  }
+}
+
+/**
+ * Checks if user can perform an action on another user based on organizational hierarchy
+ */
+export async function canActOnUser(
+  targetUserId: string,
+  action: string,
+  organizationId?: string
+): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return false;
+    }
+
+    const targetOrgId = organizationId || session.session.activeOrganizationId;
+
+    if (!targetOrgId) {
+      return false;
+    }
+
+    // Users can always act on themselves for certain actions
+    if (session.user.id === targetUserId && 
+        ['members:read', 'settings:read', 'api-keys:read'].includes(action)) {
+      return true;
+    }
+
+    // Get both users' roles
+    const [currentUserRole, targetUserRole] = await Promise.all([
+      getUserRoleInOrganization(session.user.id, targetOrgId),
+      getUserRoleInOrganization(targetUserId, targetOrgId),
+    ]);
+
+    if (!currentUserRole || !targetUserRole) {
+      return false;
+    }
+
+    // Check if current user has the required permission
+    if (!roleHasPermission(currentUserRole, action)) {
+      return false;
+    }
+
+    // Define role hierarchy levels
+    const roleLevels = {
+      owner: 3,
+      admin: 2,
+      member: 1,
+    };
+
+    const currentLevel = roleLevels[currentUserRole as keyof typeof roleLevels] || 0;
+    const targetLevel = roleLevels[targetUserRole as keyof typeof roleLevels] || 0;
+
+    // Users can only act on users with lower hierarchy levels
+    // Exception: owners can act on other owners for some actions
+    if (currentUserRole === 'owner' && targetUserRole === 'owner') {
+      // Owners can read each other but not remove/modify
+      return action.includes(':read');
+    }
+
+    return currentLevel > targetLevel;
+  } catch (error) {
+    console.error('Can act on user error:', error);
+    return false;
+  }
+}
+
+/**
+ * Gets all permissions for a user in an organization
+ */
+export async function getUserPermissions(
+  userId?: string,
+  organizationId?: string
+): Promise<string[]> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return [];
+    }
+
+    const targetUserId = userId || session.user.id;
+    const targetOrgId = organizationId || session.session.activeOrganizationId;
+
+    if (!targetOrgId) {
+      return [];
+    }
+
+    const userRole = await getUserRoleInOrganization(targetUserId, targetOrgId);
+
+    if (!userRole) {
+      return [];
+    }
+
+    return [...(ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS] || [])];
+  } catch (error) {
+    console.error('Get user permissions error:', error);
+    return [];
+  }
+}
+
+/**
+ * Validates permission format
+ */
+export function isValidPermission(permission: string): boolean {
+  const parts = permission.split(':');
+  if (parts.length !== 2) return false;
+  
+  const [resource, action] = parts;
+  
+  // Resource and action must be non-empty
+  if (!resource || !action) return false;
+  
+  // Check for valid characters (alphanumeric, underscore, hyphen, wildcard)
+  const validPattern = /^[a-zA-Z0-9_\-*]+$/;
+  return validPattern.test(resource) && validPattern.test(action);
+}
+
+/**
+ * Gets the required permission level for an action
+ */
+export function getRequiredPermissionLevel(permission: string): number {
+  // Define permission levels (higher = more restrictive)
+  const permissionLevels: Record<string, number> = {
+    'organization:delete': 100, // Only owners
+    'organization:manage': 75,  // Owners and admins
+    'members:remove': 50,       // Admins and above
+    'members:invite': 25,       // Members and above
+    'teams:create': 10,         // All members
+    // Add more as needed
+  };
+
+  return permissionLevels[permission] || 0;
+}

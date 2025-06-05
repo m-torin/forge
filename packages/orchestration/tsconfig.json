@@ -1,9 +1,9 @@
 {
-  "extends": "@repo/config/typescript/base.json",
+  "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
-    "lib": ["es2022", "dom", "dom.iterable"]
+    "rootDir": ".",
+    "outDir": "dist"
   },
-  "include": ["src/**/*", "__tests__/**/*", "*.ts", "*.config.ts"],
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["node_modules", "dist"]
 }

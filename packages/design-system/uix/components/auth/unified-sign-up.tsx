@@ -4,7 +4,7 @@ import { Button, Checkbox, PasswordInput, Stack, TextInput } from '@mantine/core
 import { useForm } from '@mantine/form';
 import { useEffect, useState } from 'react';
 
-import { analytics, FLAGS, getAuthFlags, useFlag } from '@repo/analytics-legacy';
+import { createClientAnalytics, track, flag, flags } from '@repo/analytics/client';
 import { signInWithGitHub, signInWithGoogle, signUp } from '@repo/auth-new/client';
 
 import { AuthForm } from './auth-form';
@@ -16,25 +16,52 @@ export const UnifiedSignUp = () => {
   const [authFlags, setAuthFlags] = useState<any>(null);
 
   // Feature flag hooks for individual auth methods
-  const googleOAuthEnabled = useFlag(FLAGS.auth.oauth.google);
-  const githubOAuthEnabled = useFlag(FLAGS.auth.oauth.github);
+  const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
+  const [githubOAuthEnabled, setGithubOAuthEnabled] = useState(false);
 
   useEffect(() => {
     // Load auth flags for analytics
     const loadAuthFlags = async () => {
       try {
-        const flags = await getAuthFlags();
-        setAuthFlags(flags);
+        const analytics = await createClientAnalytics({
+          providers: {
+            posthog: {
+              apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!,
+              config: {
+                api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+              },
+            },
+          },
+        });
+
+        // Evaluate individual flags
+        const googleOAuth = await flag.evaluate('auth.oauth.google', false);
+        const githubOAuth = await flag.evaluate('auth.oauth.github', false);
+        const magicLink = await flag.evaluate('auth.magic-link', false);
+        const passkey = await flag.evaluate('auth.passkey', false);
+        const twoFactorOptional = await flag.evaluate('auth.two-factor-optional', false);
+        const twoFactorRequired = await flag.evaluate('auth.two-factor-required', false);
+
+        setGoogleOAuthEnabled(googleOAuth.value);
+        setGithubOAuthEnabled(githubOAuth.value);
+        setAuthFlags({
+          googleOAuthEnabled: googleOAuth.value,
+          githubOAuthEnabled: githubOAuth.value,
+          magicLinkEnabled: magicLink.value,
+          passkeyEnabled: passkey.value,
+          twoFactorOptional: twoFactorOptional.value,
+          twoFactorRequired: twoFactorRequired.value,
+        });
 
         // Track auth methods availability for sign-up
-        analytics.capture('auth_methods_loaded', {
-          githubOAuthEnabled: flags.githubOAuthEnabled,
-          googleOAuthEnabled: flags.googleOAuthEnabled,
-          magicLinkEnabled: flags.magicLinkEnabled,
-          passkeyEnabled: flags.passkeyEnabled,
+        await analytics.emit(track('auth_methods_loaded', {
+          githubOAuthEnabled: githubOAuth.value,
+          googleOAuthEnabled: googleOAuth.value,
+          magicLinkEnabled: magicLink.value,
+          passkeyEnabled: passkey.value,
           source: 'unified_sign_up',
-          twoFactorEnabled: flags.twoFactorOptional || flags.twoFactorRequired,
-        });
+          twoFactorEnabled: twoFactorOptional.value || twoFactorRequired.value,
+        }));
       } catch (error) {
         console.error('Failed to load auth flags:', error);
       }

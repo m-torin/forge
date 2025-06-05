@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { AuthProvider } from '../provider';
+import { AuthProvider } from '../src/components/auth-provider';
 
 import { AppRouterProvider } from './next-navigation';
 import { setStoryContext } from './story-context';

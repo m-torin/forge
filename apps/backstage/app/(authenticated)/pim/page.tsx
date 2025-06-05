@@ -10,9 +10,9 @@ import {
   IconTags,
 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import { FLAGS, useFlag } from '@repo/analytics-legacy';
+import { flag, flags } from '@repo/analytics/client';
 import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
 
 const pimModules = [
@@ -72,7 +72,7 @@ export default function PIMOverviewPage() {
   const { trackEvent } = useObservability();
 
   // Feature flags
-  const pimEnabled = useFlag(FLAGS.workflows.productClassification);
+  const [pimEnabled, setPimEnabled] = useState(false);\n\n  useEffect(() => {\n    flag.evaluate('workflows.product-classification', false).then(result => {\n      setPimEnabled(result.value);\n    });\n  }, []);
 
   useEffect(() => {
     trackPage('pim_overview');

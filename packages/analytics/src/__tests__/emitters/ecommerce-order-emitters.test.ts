@@ -21,10 +21,11 @@ import type {
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   trackEcommerce: vi.fn((eventSpec, options) => ({
-    context: { category: 'ecommerce' },
+    type: 'track' as const,
     event: eventSpec.name,
-    options,
     properties: eventSpec.properties,
+    ...(options?.timestamp && { timestamp: options.timestamp }),
+    ...(options?.context && { context: options.context }),
   })),
 }));
 
@@ -50,9 +51,8 @@ describe('Order Emitters', () => {
       const result = orderCompleted(baseOrderProperties);
 
       expect(result).toEqual({
-        context: { category: 'ecommerce' },
+        type: 'track',
         event: ECOMMERCE_EVENTS.ORDER_COMPLETED,
-        options: undefined,
         properties: {
           order_id: 'order_123',
           affiliation: 'Online Store',
@@ -80,7 +80,7 @@ describe('Order Emitters', () => {
 
       const result = orderCompleted(properties);
 
-      expect(result.properties.products).toEqual(products);
+      expect(result.properties!.products).toEqual(products);
     });
 
     it('should normalize products when provided', () => {
@@ -96,7 +96,7 @@ describe('Order Emitters', () => {
 
       const result = orderCompleted(properties);
 
-      expect(result.properties.products).toEqual([
+      expect(result.properties!.products).toEqual([
         { product_id: 'p1', name: 'Product 1', price: 99.99 },
         { product_id: 'p2', name: 'Product 2', price: 149.99 },
       ]);
@@ -109,7 +109,7 @@ describe('Order Emitters', () => {
       };
 
       const result = orderCompleted(properties);
-      expect(result.properties.currency).toBe('EUR');
+      expect(result.properties!.currency).toBe('EUR');
     });
 
     it('should handle invalid currency gracefully', () => {
@@ -119,14 +119,15 @@ describe('Order Emitters', () => {
       };
 
       const result = orderCompleted(properties);
-      expect(result.properties.currency).toBeUndefined();
+      expect(result.properties!.currency).toBeUndefined();
     });
 
     it('should accept emitter options', () => {
-      const options = { timestamp: new Date(), userId: 'user123' };
+      const options = { timestamp: new Date(), context: { traits: { userId: 'user123' } } };
       const result = orderCompleted(baseOrderProperties, options);
 
-      expect(result.options).toBe(options);
+      expect(result.timestamp).toBe(options.timestamp);
+      expect(result.context?.traits?.userId).toBe('user123');
     });
 
     it('should handle minimal order properties', () => {
@@ -242,7 +243,7 @@ describe('Order Emitters', () => {
         };
 
         const result = orderFailed(properties);
-        expect(result.properties.failure_reason).toBe(reason);
+        expect(result.properties!.failure_reason).toBe(reason);
       });
     });
 
@@ -263,7 +264,7 @@ describe('Order Emitters', () => {
         };
 
         const result = orderFailed(properties);
-        expect(result.properties.error_code).toBe(code);
+        expect(result.properties!.error_code).toBe(code);
       });
     });
 
@@ -278,7 +279,7 @@ describe('Order Emitters', () => {
 
       const result = orderFailed(properties);
 
-      expect(result.properties.products).toEqual([
+      expect(result.properties!.products).toEqual([
         { product_id: 'p1', name: 'Failed Product', price: 99.99 },
       ]);
     });
@@ -345,8 +346,8 @@ describe('Order Emitters', () => {
 
       const result = orderRefunded(properties);
 
-      expect(result.properties.products).toEqual(products);
-      expect(result.properties.total).toBe(99.99);
+      expect(result.properties!.products).toEqual(products);
+      expect(result.properties!.total).toBe(99.99);
     });
 
     it('should normalize currency', () => {
@@ -356,7 +357,7 @@ describe('Order Emitters', () => {
       };
 
       const result = orderRefunded(properties);
-      expect(result.properties.currency).toBe('GBP');
+      expect(result.properties!.currency).toBe('GBP');
     });
 
     it('should handle full refund', () => {
@@ -437,7 +438,7 @@ describe('Order Emitters', () => {
 
       const result = orderCancelled(properties);
 
-      expect(result.properties.products).toEqual(products);
+      expect(result.properties!.products).toEqual(products);
     });
 
     it('should normalize products when provided', () => {
@@ -450,7 +451,7 @@ describe('Order Emitters', () => {
 
       const result = orderCancelled(properties);
 
-      expect(result.properties.products).toEqual([{ product_id: 'p1', name: 'Cancelled Product' }]);
+      expect(result.properties!.products).toEqual([{ product_id: 'p1', name: 'Cancelled Product' }]);
     });
 
     it('should handle early cancellation', () => {
@@ -520,7 +521,7 @@ describe('Order Emitters', () => {
         };
 
         const result = orderStatusUpdated(properties);
-        expect(result.properties.status).toBe(status);
+        expect(result.properties!.status).toBe(status);
       });
     });
 
@@ -633,7 +634,7 @@ describe('Order Emitters', () => {
 
       const result = returnRequested(properties);
 
-      expect(result.properties.products).toEqual([
+      expect(result.properties!.products).toEqual([
         { product_id: 'p1', name: 'Return Product', price: 49.99 },
       ]);
     });
@@ -656,7 +657,7 @@ describe('Order Emitters', () => {
         };
 
         const result = returnRequested(properties);
-        expect(result.properties.reason).toBe(reason);
+        expect(result.properties!.reason).toBe(reason);
       });
     });
 
@@ -672,7 +673,7 @@ describe('Order Emitters', () => {
         };
 
         const result = returnRequested(properties);
-        expect(result.properties.return_method).toBe(method);
+        expect(result.properties!.return_method).toBe(method);
       });
     });
 
@@ -686,7 +687,7 @@ describe('Order Emitters', () => {
 
       const result = returnRequested(properties);
 
-      expect(result.properties.refund_amount).toBe(99.99);
+      expect(result.properties!.refund_amount).toBe(99.99);
     });
 
     it('should throw error when order_id is missing', () => {
@@ -780,7 +781,7 @@ describe('Order Emitters', () => {
         };
 
         const result = returnCompleted(properties);
-        expect(result.properties.refund_status).toBe(status);
+        expect(result.properties!.refund_status).toBe(status);
       });
     });
 
@@ -796,7 +797,7 @@ describe('Order Emitters', () => {
 
       const result = returnCompleted(properties);
 
-      expect(result.properties.products).toEqual([
+      expect(result.properties!.products).toEqual([
         { product_id: 'p1', name: 'Returned Item', price: 75.0 },
       ]);
     });
@@ -915,16 +916,16 @@ describe('Order Emitters', () => {
       });
 
       // All events should maintain consistent order_id
-      expect(completedResult.properties.order_id).toBe(orderId);
-      expect(shippedResult.properties.order_id).toBe(orderId);
-      expect(deliveredResult.properties.order_id).toBe(orderId);
-      expect(returnRequestResult.properties.order_id).toBe(orderId);
-      expect(returnCompletedResult.properties.order_id).toBe(orderId);
+      expect(completedResult.properties!.order_id).toBe(orderId);
+      expect(shippedResult.properties!.order_id).toBe(orderId);
+      expect(deliveredResult.properties!.order_id).toBe(orderId);
+      expect(returnRequestResult.properties!.order_id).toBe(orderId);
+      expect(returnCompletedResult.properties!.order_id).toBe(orderId);
 
       // Products should be consistent
-      expect(completedResult.properties.products).toEqual(products);
-      expect(returnRequestResult.properties.products).toEqual(products);
-      expect(returnCompletedResult.properties.products).toEqual(products);
+      expect(completedResult.properties!.products).toEqual(products);
+      expect(returnRequestResult.properties!.products).toEqual(products);
+      expect(returnCompletedResult.properties!.products).toEqual(products);
     });
 
     it('should handle large orders with many products efficiently', () => {
@@ -951,8 +952,8 @@ describe('Order Emitters', () => {
       const endTime = performance.now();
 
       expect(endTime - startTime).toBeLessThan(200); // Should complete in under 200ms
-      expect(result.properties.products).toHaveLength(1000);
-      expect(result.properties.total).toBe(totalValue);
+      expect(result.properties!.products).toHaveLength(1000);
+      expect(result.properties!.total).toBe(totalValue);
     });
 
     it('should ensure consistent event naming across all order emitters', () => {
@@ -988,8 +989,8 @@ describe('Order Emitters', () => {
 
       // Test with completion
       const completedResult = orderCompleted(properties);
-      expect(completedResult.properties.total).toBe(299.99);
-      expect(completedResult.properties.revenue).toBe(249.99);
+      expect(completedResult.properties!.total).toBe(299.99);
+      expect(completedResult.properties!.revenue).toBe(249.99);
 
       // Test with refund
       const refundProperties: OrderProperties = {
@@ -997,7 +998,7 @@ describe('Order Emitters', () => {
         total: 149.99, // Partial refund
       };
       const refundResult = orderRefunded(refundProperties);
-      expect(refundResult.properties.total).toBe(149.99);
+      expect(refundResult.properties!.total).toBe(149.99);
     });
 
     it('should maintain type safety across all order emitters', () => {
@@ -1029,7 +1030,7 @@ describe('Order Emitters', () => {
         order_id: 'test',
         currency: 'INVALID_CURRENCY',
       });
-      expect(invalidCurrencyResult.properties.currency).toBeUndefined();
+      expect(invalidCurrencyResult.properties!.currency).toBeUndefined();
 
       // Test with malformed products
       expect(() => {

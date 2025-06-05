@@ -94,8 +94,6 @@ export function ViewportAwareProductGrid({
               }}
             >
               <ProductCard
-                loading={!hasBeenSeen ? 'lazy' : 'eager'}
-                priority={actualIndex < 8} // First 8 items
                 data={product}
               />
             </div>

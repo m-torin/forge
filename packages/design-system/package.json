@@ -46,7 +46,7 @@
     "@mantine/nprogress": "^8.0.2",
     "@mantine/spotlight": "^8.0.2",
     "@repo/analytics": "workspace:*",
-    "@repo/auth-new": "workspace:*",
+    "@repo/auth": "workspace:*",
     "@repo/notifications": "workspace:*",
     "@repo/observability": "workspace:*",
     "@tabler/icons-react": "catalog:",
