@@ -32,20 +32,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 
-// Import server actions from auth package
-import {
-  cancelOrganizationInvitation,
-  createOrganizationTeam,
-  getOrganizationById,
-  inviteOrganizationMember,
-  listOrganizationInvitations,
-  listOrganizationTeams,
-  removeOrganizationMember,
-  removeOrganizationTeam,
-  updateOrganizationById,
-  updateOrganizationMemberRole,
-  updateOrganizationTeam,
-} from '@repo/auth-new/actions';
+// Note: Auth functions removed - this page now shows static demo data
 
 // Declare unused variables with underscore prefix
 const _IconUsers = IconUsers;
@@ -127,40 +114,48 @@ export default function OrganizationDetailPage() {
   const loadOrganization = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('Loading organization with ID:', organizationId);
-      const response = await getOrganizationById(organizationId);
-      console.log('Organization data received:', response);
-      if (response.success && response.data) {
-        interface OrganizationData {
-          createdAt: string;
-          id: string;
-          logo?: string;
-          members: Member[];
-          metadata?: Record<string, unknown>;
-          name: string;
-          slug: string;
-        }
+      // Mock organization data
+      const mockOrg: Organization = {
+        id: organizationId,
+        name: organizationId === '1' ? 'Demo Organization' : 'Test Company',
+        createdAt: new Date().toISOString(),
+        members: [
+          {
+            id: '1',
+            createdAt: new Date().toISOString(),
+            role: 'owner',
+            user: {
+              id: 'user1',
+              name: 'John Doe',
+              email: 'john@example.com',
+            },
+            userId: 'user1',
+          },
+          {
+            id: '2',
+            createdAt: new Date().toISOString(),
+            role: 'member',
+            user: {
+              id: 'user2',
+              name: 'Jane Smith',
+              email: 'jane@example.com',
+            },
+            userId: 'user2',
+          },
+        ],
+        metadata: { plan: 'pro', region: 'us-east-1' },
+        slug: organizationId === '1' ? 'demo-org' : 'test-company',
+      };
 
-        const org = response.data as OrganizationData;
-        setOrganization({
-          id: org.id,
-          name: org.name,
-          createdAt: org.createdAt,
-          logo: org.logo,
-          members: org.members,
-          metadata: org.metadata,
-          slug: org.slug,
-        });
-        setEditedOrg({
-          name: org.name,
-          logo: org.logo || '',
-          metadata: JSON.stringify(org.metadata || {}, null, 2),
-          slug: org.slug,
-        });
-      }
+      setOrganization(mockOrg);
+      setEditedOrg({
+        name: mockOrg.name,
+        logo: mockOrg.logo || '',
+        metadata: JSON.stringify(mockOrg.metadata || {}, null, 2),
+        slug: mockOrg.slug,
+      });
     } catch (error) {
       console.error('Failed to load organization:', error);
-      console.error('Error details:', error);
       notifications.show({
         color: 'red',
         message: `Failed to load organization: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -173,28 +168,31 @@ export default function OrganizationDetailPage() {
 
   const loadInvitations = useCallback(async () => {
     try {
-      const response = await listOrganizationInvitations(organizationId);
-      if (response.success && response.data) {
-        setInvitations(response.data as Invitation[]);
-      }
+      // Mock invitations data
+      const mockInvitations: Invitation[] = [
+        {
+          id: '1',
+          email: 'newuser@example.com',
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          inviter: {
+            user: {
+              name: 'John Doe',
+              email: 'john@example.com',
+            },
+          },
+          role: 'member',
+          status: 'pending',
+        },
+      ];
+      setInvitations(mockInvitations);
     } catch (error) {
       console.error('Failed to load invitations:', error);
     }
   }, [organizationId]);
 
   const loadTeams = useCallback(async () => {
-    try {
-      const response = await listOrganizationTeams(organizationId);
-      if (response.success && response.data) {
-        if (Array.isArray(response.data)) {
-          setTeams(response.data as Team[]);
-        } else if ('data' in response.data && Array.isArray(response.data.data)) {
-          setTeams(response.data.data as Team[]);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load teams:', error);
-    }
+    // TODO: Implement team listing functionality
+    console.log('Team listing not implemented yet');
   }, [organizationId]);
 
   // Only one useEffect after all useCallbacks are defined
@@ -205,212 +203,84 @@ export default function OrganizationDetailPage() {
   }, [loadOrganization, loadInvitations, loadTeams]);
 
   const handleUpdate = async () => {
-    try {
-      const metadata = editedOrg.metadata ? JSON.parse(editedOrg.metadata) : undefined;
-
-      await updateOrganizationById(organizationId, {
-        name: editedOrg.name,
-        logo: editedOrg.logo || undefined,
-        metadata,
-        slug: editedOrg.slug,
-      });
-
-      notifications.show({
-        color: 'green',
-        message: 'Organization updated successfully',
-        title: 'Success',
-      });
-      setEditMode(false);
-      loadOrganization();
-    } catch (error) {
-      console.error('Failed to update organization:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to update organization',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement organization update functionality
+    notifications.show({
+      color: 'orange',
+      message: 'Organization update functionality not yet implemented',
+      title: 'Not Implemented',
+    });
   };
 
   const handleInvite = async () => {
-    if (!inviteEmail) {
-      notifications.show({
-        color: 'red',
-        message: 'Email is required',
-        title: 'Error',
-      });
-      return;
-    }
-
-    try {
-      await inviteOrganizationMember(
-        organizationId,
-        inviteEmail,
-        inviteRole as 'member' | 'admin' | 'owner',
-        inviteTeamId || undefined,
-      );
-
-      notifications.show({
-        color: 'green',
-        message: 'Invitation sent successfully',
-        title: 'Success',
-      });
-      setInviteEmail('');
-      setInviteRole('member');
-      setInviteTeamId('');
-      loadInvitations();
-    } catch (error) {
-      console.error('Failed to send invitation:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to send invitation',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement invitation functionality
+    notifications.show({
+      color: 'orange',
+      message: 'Invitation functionality not yet implemented',
+      title: 'Not Implemented',
+    });
   };
 
   const handleCancelInvitation = async (invitationId: string) => {
-    try {
-      await cancelOrganizationInvitation(invitationId);
-      notifications.show({
-        color: 'green',
-        message: 'Invitation cancelled',
-        title: 'Success',
-      });
-      loadInvitations();
-    } catch (error) {
-      console.error('Failed to cancel invitation:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to cancel invitation',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement invitation cancellation
+    console.log('Cancel invitation:', invitationId);
+    notifications.show({
+      color: 'orange',
+      message: 'Invitation cancellation not yet implemented',
+      title: 'Not Implemented',
+    });
   };
 
   const handleUpdateRole = async (memberId: string, newRole: string) => {
-    try {
-      await updateOrganizationMemberRole(
-        organizationId,
-        memberId,
-        newRole as 'member' | 'admin' | 'owner',
-      );
-      notifications.show({
-        color: 'green',
-        message: 'Member role updated',
-        title: 'Success',
-      });
-      loadOrganization();
-    } catch (error) {
-      console.error('Failed to update role:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to update role',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement role update
+    console.log('Update role:', memberId, newRole);
+    notifications.show({
+      color: 'orange',
+      message: 'Role update functionality not yet implemented',
+      title: 'Not Implemented',
+    });
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    try {
-      const response = await removeOrganizationMember(organizationId, memberId);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to remove member');
-      }
-      notifications.show({
-        color: 'green',
-        message: 'Member removed',
-        title: 'Success',
-      });
-      loadOrganization();
-      setRemoveModalOpen(false);
-      setSelectedMember(null);
-    } catch (error) {
-      console.error('Failed to remove member:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to remove member',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement member removal
+    console.log('Remove member:', memberId);
+    notifications.show({
+      color: 'orange',
+      message: 'Member removal functionality not yet implemented',
+      title: 'Not Implemented',
+    });
+    setRemoveModalOpen(false);
+    setSelectedMember(null);
   };
 
   const handleCreateTeam = async () => {
-    if (!newTeamName) {
-      notifications.show({
-        color: 'red',
-        message: 'Team name is required',
-        title: 'Error',
-      });
-      return;
-    }
-
-    try {
-      const response = await createOrganizationTeam(organizationId, newTeamName);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to create team');
-      }
-      notifications.show({
-        color: 'green',
-        message: 'Team created successfully',
-        title: 'Success',
-      });
-      setNewTeamName('');
-      loadTeams();
-    } catch (error) {
-      console.error('Failed to create team:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to create team',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement team creation
+    notifications.show({
+      color: 'orange',
+      message: 'Team creation functionality not yet implemented',
+      title: 'Not Implemented',
+    });
   };
 
   const _handleUpdateTeam = async (teamId: string, name: string) => {
-    try {
-      const response = await updateOrganizationTeam(teamId, name);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to update team');
-      }
-      notifications.show({
-        color: 'green',
-        message: 'Team updated',
-        title: 'Success',
-      });
-      loadTeams();
-    } catch (error) {
-      console.error('Failed to update team:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to update team',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement team update
+    console.log('Update team:', teamId, name);
+    notifications.show({
+      color: 'orange',
+      message: 'Team update functionality not yet implemented',
+      title: 'Not Implemented',
+    });
   };
 
   const handleRemoveTeam = async (teamId: string) => {
-    try {
-      const response = await removeOrganizationTeam(teamId);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to remove team');
-      }
-      notifications.show({
-        color: 'green',
-        message: 'Team removed',
-        title: 'Success',
-      });
-      loadTeams();
-      setRemoveTeamModalOpen(false);
-      setSelectedTeam(null);
-    } catch (error) {
-      console.error('Failed to remove team:', error);
-      notifications.show({
-        color: 'red',
-        message: 'Failed to remove team',
-        title: 'Error',
-      });
-    }
+    // TODO: Implement team removal
+    console.log('Remove team:', teamId);
+    notifications.show({
+      color: 'orange',
+      message: 'Team removal functionality not yet implemented',
+      title: 'Not Implemented',
+    });
+    setRemoveTeamModalOpen(false);
+    setSelectedTeam(null);
   };
 
   if (loading || !organization) {
@@ -419,7 +289,7 @@ export default function OrganizationDetailPage() {
         <Skeleton width={300} height={48} />
         <Stack gap="md">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} height={128} />
+            <Skeleton key={`skeleton-${i}`} height={128} />
           ))}
         </Stack>
       </Stack>

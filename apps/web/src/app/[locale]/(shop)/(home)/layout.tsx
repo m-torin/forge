@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function Layout({
   children,
-  params,
+  params: _params,
 }: {
   children: React.ReactNode;
   params: any;

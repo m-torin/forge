@@ -24,8 +24,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { createClientAnalytics, track } from '@repo/analytics/client';
-import { addPasskey, deletePasskey, listPasskeys, signInWithPasskey } from '@repo/auth-new/client';
+import { addPasskey, deletePasskey, listPasskeys, signInWithPasskey } from '@repo/auth/client';
 
 interface Passkey {
   createdAt: string;
@@ -61,9 +60,9 @@ export function PasskeySetup({ onCancel, onComplete }: PasskeySetupProps) {
       // Add the passkey
       await addPasskey?.({ name: values.name });
 
-      analytics.capture('passkey_added', {
-        source: 'passkey_setup_component',
-      });
+      // analytics.capture('passkey_added', {
+      //   source: 'passkey_setup_component',
+      // });
 
       setSuccess(true);
       setTimeout(() => {
@@ -75,9 +74,9 @@ export function PasskeySetup({ onCancel, onComplete }: PasskeySetupProps) {
           ? error.message
           : 'Failed to add passkey. Make sure your device supports passkeys.';
       setError(errorMessage);
-      analytics.capture('passkey_setup_failed', {
-        error: errorMessage,
-      });
+      // analytics.capture('passkey_setup_failed', {
+      //   error: errorMessage,
+      // });
     } finally {
       setIsLoading(false);
     }
@@ -161,10 +160,10 @@ export function PasskeyList({ refreshTrigger = 0 }: PasskeyListProps) {
       await deletePasskey?.({ passkeyId });
       setPasskeys(passkeys.filter((pk) => pk.id !== passkeyId));
 
-      analytics.capture('passkey_removed', {
-        passkeyId,
-        source: 'passkey_list_component',
-      });
+      // analytics.capture('passkey_removed', {
+      //   passkeyId,
+      //   source: 'passkey_list_component',
+      // });
     } catch (error) {
       console.error('Failed to delete passkey:', error);
     } finally {
@@ -279,21 +278,21 @@ export function PasskeySignInButton({
     try {
       await signInWithPasskey?.();
 
-      analytics.capture('sign_in_completed', {
-        method: 'passkey',
-        source: 'passkey_signin_button',
-      });
+      // analytics.capture('sign_in_completed', {
+      //   method: 'passkey',
+      //   source: 'passkey_signin_button',
+      // });
 
       onSuccess?.();
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to sign in');
       onError?.(err);
 
-      analytics.capture('sign_in_failed', {
-        error: err.message,
-        method: 'passkey',
-        source: 'passkey_signin_button',
-      });
+      // analytics.capture('sign_in_failed', {
+      //   error: err.message,
+      //   method: 'passkey',
+      //   source: 'passkey_signin_button',
+      // });
     } finally {
       setIsLoading(false);
     }

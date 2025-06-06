@@ -1,16 +1,60 @@
 import React, { type FC } from 'react';
 
 export interface VerifyIconProps {
+  animate?: string;
   className?: string;
+  fillRule?: 'inherit' | 'nonzero' | 'evenodd';
+  gradient?: boolean;
   iconClass?: string;
+  preserveAspectRatio?: string;
+  size?: { base: number; sm: number; md: number; lg: number } | number;
+  strokeWidth?: number;
+  viewBox?: string;
 }
 
-const VerifyIcon: FC<VerifyIconProps> = ({ className = 'ml-1', iconClass = 'w-5 h-5' }) => {
+const VerifyIcon: FC<VerifyIconProps> = ({
+  strokeWidth = 1.5,
+  animate,
+  className = 'ml-1',
+  fillRule,
+  gradient,
+  iconClass = 'w-5 h-5',
+  preserveAspectRatio,
+  size,
+  viewBox = '0 0 17 17',
+}) => {
   return (
-    <span className={className}>
-      <svg viewBox="0 0 17 17" className={iconClass} fill="none">
+    <span data-testid="verify-icon" className={className}>
+      <svg
+        preserveAspectRatio={preserveAspectRatio}
+        viewBox={viewBox}
+        className={iconClass}
+        style={{
+          ...(size && typeof size === 'object'
+            ? {
+                '@media (min-width: 640px)': { width: size.sm, height: size.sm },
+                '@media (min-width: 768px)': { width: size.md, height: size.md },
+                '@media (min-width: 1024px)': { width: size.lg, height: size.lg },
+                width: size.base,
+                height: size.base,
+              }
+            : size
+              ? { width: size, height: size }
+              : {}),
+          ...(animate ? { animation: animate } : {}),
+          ...(gradient
+            ? {
+                background: 'linear-gradient(45deg, #38BDF8, #818CF8)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }
+            : {}),
+        }}
+        fill="none"
+        fillRule={fillRule}
+      >
         <path
-          strokeWidth="1.5"
+          strokeWidth={strokeWidth}
           stroke="#38BDF8"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -18,7 +62,7 @@ const VerifyIcon: FC<VerifyIconProps> = ({ className = 'ml-1', iconClass = 'w-5 
           fill="#38BDF8"
         />
         <path
-          strokeWidth="1.5"
+          strokeWidth={strokeWidth}
           stroke="white"
           strokeLinecap="round"
           strokeLinejoin="round"

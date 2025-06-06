@@ -7,7 +7,6 @@ export type {
   ListExecutionsOptions,
   ProviderHealth,
   RetryConfig,
-  ScheduleConfig,
   WorkflowDefinition,
   WorkflowError,
   WorkflowExecution,
@@ -18,6 +17,9 @@ export type {
   WorkflowStepExecution,
   WorkflowTrigger,
 } from './workflow';
+
+// Scheduler types
+export type { ScheduleConfig } from './scheduler';
 
 // Provider configuration types
 export type {
@@ -55,16 +57,16 @@ export type {
 export type {
   SagaContext,
   SagaDefinition,
-  SagaStep,
-  SagaExecutionState,
   SagaExecution,
+  SagaExecutionState,
+  SagaStep,
 } from '../features/saga';
 
 export interface ScheduledExecution {
-  id: string;
-  scheduleId: string;
-  executionTime: Date;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  result?: unknown;
   error?: string;
+  executionTime: Date;
+  id: string;
+  result?: unknown;
+  scheduleId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
 }

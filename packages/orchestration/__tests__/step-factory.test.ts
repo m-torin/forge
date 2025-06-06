@@ -5,26 +5,21 @@
  * step creation, execution, templates, registry, and integration.
  */
 
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { z } from 'zod';
+
 import {
   createWorkflowStep,
+  defaultStepFactory,
+  defaultStepRegistry,
+  OrchestrationManager,
   StandardWorkflowStep,
   StepFactory,
   StepRegistry,
   StepTemplates,
-  defaultStepFactory,
-  defaultStepRegistry,
-  OrchestrationManager,
 } from '../src/shared/index';
-import type {
-  WorkflowStepDefinition,
-  StepExecutionPlan,
-  StepMetadata,
-  ValidationResult,
-} from '../src/shared/factories';
-import { OrchestrationErrorCodes } from '../src/shared/utils/errors';
-import { validateStepDefinition } from '../src/shared/factories/step-factory/step-validation';
+
+import type { StepMetadata, WorkflowStepDefinition } from '../src/shared/factories';
 
 describe('Step Factory System', () => {
   beforeEach(() => {
@@ -41,9 +36,9 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: { result: 'test' },
             performance: context.performance,
+            success: true,
           };
         },
       );
@@ -62,17 +57,17 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: {},
             performance: context.performance,
+            success: true,
           };
         },
         {
           executionConfig: {
             retryConfig: {
-              maxAttempts: 5,
-              delay: 2000,
               backoff: 'exponential',
+              delay: 2000,
+              maxAttempts: 5,
             },
             timeout: { execution: 30000 },
           },
@@ -99,17 +94,17 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: { result: 'validated' },
             performance: context.performance,
+            success: true,
           };
         },
         {
           validationConfig: {
-            input: inputSchema,
-            output: outputSchema,
             validateInput: true,
             validateOutput: true,
+            input: inputSchema,
+            output: outputSchema,
           },
         },
       );
@@ -128,9 +123,9 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: { data: context.input },
             performance: context.performance,
+            success: true,
           };
         },
       );
@@ -156,17 +151,17 @@ describe('Step Factory System', () => {
             throw new Error('Temporary failure');
           }
           return {
-            success: true,
             output: { attempts },
             performance: context.performance,
+            success: true,
           };
         },
         {
           executionConfig: {
             retryConfig: {
-              maxAttempts: 3,
-              delay: 10,
               backoff: 'fixed',
+              delay: 10,
+              maxAttempts: 3,
             },
           },
         },
@@ -187,17 +182,17 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: {},
             performance: context.performance,
+            success: true,
           };
         },
         {
           validationConfig: {
+            validateInput: true,
             input: z.object({
               required: z.string(),
             }),
-            validateInput: true,
           },
         },
       );
@@ -217,9 +212,9 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: { executed: true },
             performance: context.performance,
+            success: true,
           };
         },
         {
@@ -244,9 +239,9 @@ describe('Step Factory System', () => {
         async (context) => {
           await new Promise((resolve) => setTimeout(resolve, 1000));
           return {
-            success: true,
             output: {},
             performance: context.performance,
+            success: true,
           };
         },
         {
@@ -271,17 +266,17 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: {},
             performance: context.performance,
+            success: true,
           };
         },
         {
           validationConfig: {
+            validateInput: true,
             input: z.object({
               required: z.string(),
             }),
-            validateInput: true,
           },
         },
       );
@@ -349,14 +344,14 @@ describe('Step Factory System', () => {
     describe('Step Registration', () => {
       const mockStep: WorkflowStepDefinition = {
         id: 'test-step',
+        execute: vi.fn(),
         metadata: {
           name: 'Test Step',
-          description: 'A test step',
-          version: '1.0.0',
           category: 'test',
+          description: 'A test step',
           tags: ['test'],
+          version: '1.0.0',
         },
-        execute: vi.fn(),
       };
 
       test('should register step successfully', () => {
@@ -376,14 +371,16 @@ describe('Step Factory System', () => {
       test('should validate step definition', () => {
         const invalidStep = {
           id: 'test-step',
+          execute: vi.fn(),
           metadata: {
-            version: '1.0.0',
             category: 'test',
             tags: ['test'],
+            version: '1.0.0',
           },
-          execute: vi.fn(),
         } as any;
-        expect(() => factory.registerStep(invalidStep as any)).toThrow('Cannot register invalid step: Step name is required');
+        expect(() => factory.registerStep(invalidStep as any)).toThrow(
+          'Cannot register invalid step: Step name is required',
+        );
       });
     });
 
@@ -391,30 +388,30 @@ describe('Step Factory System', () => {
       const mockSteps = [
         {
           id: 'step-1',
+          execute: vi.fn(),
           metadata: {
             name: 'Step 1',
-            version: '1.0.0',
             category: 'test',
+            version: '1.0.0',
           },
-          execute: vi.fn(),
         },
         {
           id: 'step-2',
+          execute: vi.fn(),
           metadata: {
             name: 'Step 2',
-            version: '1.0.0',
             category: 'test',
+            version: '1.0.0',
           },
-          execute: vi.fn(),
         },
         {
           id: 'step-3',
+          execute: vi.fn(),
           metadata: {
             name: 'Step 3',
-            version: '1.0.0',
             category: 'other',
+            version: '1.0.0',
           },
-          execute: vi.fn(),
         },
       ];
 
@@ -442,9 +439,9 @@ describe('Step Factory System', () => {
     describe('Step Creation', () => {
       const metadata: StepMetadata = {
         name: 'Test Step',
-        version: '1.0.0',
         category: 'test',
         tags: ['test'],
+        version: '1.0.0',
       };
 
       const executeFn = vi.fn().mockResolvedValue({ output: 'test' });
@@ -499,15 +496,15 @@ describe('Step Factory System', () => {
       const step = createWorkflowStep(
         {
           name: 'Registry Step',
-          version: '1.0.0',
           category: 'test',
           tags: ['registry', 'test'],
+          version: '1.0.0',
         },
         async (context) => {
           return {
-            success: true,
             output: {},
             performance: context.performance,
+            success: true,
           };
         },
       );
@@ -528,21 +525,21 @@ describe('Step Factory System', () => {
       const step1 = createWorkflowStep(
         {
           name: 'HTTP Step',
-          version: '1.0.0',
           category: 'http',
           tags: ['http', 'api'],
+          version: '1.0.0',
         },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
       );
 
       const step2 = createWorkflowStep(
         {
           name: 'DB Step',
-          version: '1.0.0',
           category: 'database',
           tags: ['database', 'sql'],
+          version: '1.0.0',
         },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
       );
 
       registry.register(step1);
@@ -568,14 +565,14 @@ describe('Step Factory System', () => {
       const registry = new StepRegistry();
 
       const step1 = createWorkflowStep({ name: 'Step 1', version: '1.0.0' }, async () => ({
-        success: true,
         output: {},
         performance: {} as any,
+        success: true,
       }));
 
       const step2 = createWorkflowStep(
         { name: 'Step 2', version: '1.0.0' },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
         { dependencies: [step1.id] },
       );
 
@@ -588,7 +585,7 @@ describe('Step Factory System', () => {
       // Test with missing dependency
       const step3 = createWorkflowStep(
         { name: 'Step 3', version: '1.0.0' },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
         { dependencies: ['missing-step'] },
       );
 
@@ -602,20 +599,20 @@ describe('Step Factory System', () => {
       const registry = new StepRegistry();
 
       const step1 = createWorkflowStep({ name: 'Step 1', version: '1.0.0' }, async () => ({
-        success: true,
         output: {},
         performance: {} as any,
+        success: true,
       }));
 
       const step2 = createWorkflowStep(
         { name: 'Step 2', version: '1.0.0' },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
         { dependencies: [step1.id] },
       );
 
       const step3 = createWorkflowStep(
         { name: 'Step 3', version: '1.0.0' },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
         { dependencies: [step1.id] },
       );
 
@@ -635,9 +632,9 @@ describe('Step Factory System', () => {
       const registry = new StepRegistry();
 
       const step = createWorkflowStep({ name: 'Usage Step', version: '1.0.0' }, async () => ({
-        success: true,
         output: {},
         performance: {} as any,
+        success: true,
       }));
 
       registry.register(step);
@@ -663,10 +660,10 @@ describe('Step Factory System', () => {
       const step = createWorkflowStep(
         {
           name: 'Export Step',
-          version: '1.0.0',
           category: 'export',
+          version: '1.0.0',
         },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
       );
 
       registry.register(step, 'export-user');
@@ -702,9 +699,9 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: {},
             performance: context.performance,
+            success: true,
           };
         },
       );
@@ -727,9 +724,9 @@ describe('Step Factory System', () => {
       expect(() => {
         manager.registerStep(
           createWorkflowStep({ name: 'Test', version: '1.0.0' }, async () => ({
-            success: true,
             output: {},
             performance: {} as any,
+            success: true,
           })),
         );
       }).toThrow('Step factory is not enabled');
@@ -750,9 +747,9 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: { processed: context.input },
             performance: context.performance,
+            success: true,
           };
         },
       );
@@ -805,9 +802,9 @@ describe('Step Factory System', () => {
         },
         async (context) => {
           return {
-            success: true,
             output: {},
             performance: context.performance,
+            success: true,
           };
         },
       );
@@ -820,11 +817,11 @@ describe('Step Factory System', () => {
     test('should fail validation for invalid step definition', () => {
       const invalidStep = {
         id: '',
+        execute: null,
         metadata: {
           name: '',
           version: '',
         },
-        execute: null,
       } as any;
 
       const validation = StandardWorkflowStep.validateDefinition(invalidStep);
@@ -838,13 +835,13 @@ describe('Step Factory System', () => {
           name: 'Retry Step',
           version: '1.0.0',
         },
-        async () => ({ success: true, output: {}, performance: {} as any }),
+        async () => ({ output: {}, performance: {} as any, success: true }),
         {
           executionConfig: {
             retryConfig: {
-              maxAttempts: 0, // Invalid
-              delay: -100, // Invalid
               backoff: 'exponential',
+              delay: -100, // Invalid
+              maxAttempts: 0, // Invalid
             },
           },
         },

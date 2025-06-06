@@ -3,17 +3,33 @@
  */
 
 export { auth, getCurrentUser, getSession } from './auth';
-export * from './actions';
 export * from './utils';
 
 // Server-side API key functionality
 export * from './api-keys';
 
-// Server-side team functionality
-export * from './teams';
+// Server-side team functionality - specific exports to avoid conflicts
+export * from './teams/actions';
+export * from './teams/permissions';
+export { inviteToTeam, listTeamInvitations, respondToInvitation } from './teams/invitations';
 
 // Server-side organization functionality
 export * from './organizations';
+
+// Actions - only export what actually exists
+export { getActiveOrganization, updateUser } from './actions';
+
+// Admin management functions
+export {
+  listApiKeys,
+  deleteSession,
+  deleteUser,
+  listUsers,
+  listSessions,
+  impersonateUser,
+  banUser,
+  unbanUser,
+} from './admin-management';
 
 // Types and permissions
 export * from '../shared/types';

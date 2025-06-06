@@ -22,12 +22,12 @@ export type { RetryOptions } from './retry';
 export { Batch, BatchManager, createBatchProcessor, withBatch } from './batch';
 
 export type {
+  BatchContext,
   BatchItem,
   BatchOptions,
   BatchProcessor,
-  BatchResult,
-  BatchContext,
   BatchProcessorDefinition,
+  BatchResult,
 } from './batch';
 
 // Circuit breaker pattern

@@ -132,4 +132,5 @@ const AddToCardButton = ({
   );
 };
 
+export { AddToCardButton };
 export default AddToCardButton;

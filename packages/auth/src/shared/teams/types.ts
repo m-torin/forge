@@ -5,145 +5,140 @@
 // Re-export Team type from database
 export type { Team } from '@repo/database/prisma';
 
-export interface TeamRole {
-  id: string;
-  name: string;
-  permissions: string[];
-  description?: string;
-}
+// TeamRole is defined in permissions.ts to avoid circular imports
 
 export interface TeamMember {
   id: string;
-  userId: string;
-  teamId: string;
-  role: string;
-  joinedAt: Date;
   invitedBy?: string;
+  joinedAt: Date;
+  role: string;
+  teamId: string;
   user: {
     id: string;
     name: string;
     email: string;
     image?: string;
   };
+  userId: string;
 }
 
 export interface TeamWithMembers {
-  id: string;
-  name: string;
-  description?: string;
-  organizationId: string;
   createdAt: Date;
-  updatedAt: Date;
-  members: TeamMember[];
+  description?: string;
+  id: string;
   memberCount: number;
+  members: TeamMember[];
+  name: string;
+  organizationId: string;
+  updatedAt: Date;
 }
 
 export interface TeamInvitation {
-  id: string;
-  teamId: string;
-  email: string;
-  role: string;
-  invitedBy: string;
-  expiresAt: Date;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
   createdAt: Date;
-  team: {
-    id: string;
-    name: string;
-    organizationId: string;
-  };
+  email: string;
+  expiresAt: Date;
+  id: string;
+  invitedBy: string;
   inviter: {
     id: string;
     name: string;
     email: string;
   };
+  role: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  team: {
+    id: string;
+    name: string;
+    organizationId: string;
+  };
+  teamId: string;
 }
 
 // Team creation data
 export interface CreateTeamData {
-  name: string;
   description?: string;
-  organizationId?: string;
-  initialMembers?: Array<{
+  initialMembers?: {
     email: string;
     role: string;
-  }>;
+  }[];
+  name: string;
+  organizationId?: string;
 }
 
 export interface CreateTeamResult {
+  error?: string;
   success: boolean;
   team?: TeamWithMembers;
-  error?: string;
 }
 
 // Team invitation data
 export interface InviteToTeamData {
-  teamId: string;
   email: string;
-  role: string;
   message?: string;
+  role: string;
+  teamId: string;
 }
 
 export interface InviteToTeamResult {
-  success: boolean;
-  invitation?: TeamInvitation;
   error?: string;
+  invitation?: TeamInvitation;
+  success: boolean;
 }
 
 // Team member management
 export interface UpdateTeamMemberData {
+  role: string;
   teamId: string;
   userId: string;
-  role: string;
 }
 
 export interface UpdateTeamMemberResult {
-  success: boolean;
-  member?: TeamMember;
   error?: string;
+  member?: TeamMember;
+  success: boolean;
 }
 
 export interface RemoveTeamMemberResult {
-  success: boolean;
   error?: string;
+  success: boolean;
 }
 
 // Team listing and queries
 export interface ListTeamsResult {
+  error?: string;
   success: boolean;
   teams?: TeamWithMembers[];
   total?: number;
-  error?: string;
 }
 
 export interface GetTeamResult {
+  error?: string;
   success: boolean;
   team?: TeamWithMembers;
-  error?: string;
 }
 
 // Team updates
 export interface UpdateTeamData {
-  name?: string;
   description?: string;
+  name?: string;
 }
 
 export interface UpdateTeamResult {
+  error?: string;
   success: boolean;
   team?: TeamWithMembers;
-  error?: string;
 }
 
 export interface DeleteTeamResult {
-  success: boolean;
   error?: string;
+  success: boolean;
 }
 
 // Team invitations management
 export interface ListTeamInvitationsResult {
-  success: boolean;
-  invitations?: TeamInvitation[];
   error?: string;
+  invitations?: TeamInvitation[];
+  success: boolean;
 }
 
 export interface RespondToInvitationData {
@@ -152,40 +147,40 @@ export interface RespondToInvitationData {
 }
 
 export interface RespondToInvitationResult {
+  error?: string;
   success: boolean;
   teamId?: string;
-  error?: string;
 }
 
 export interface CancelInvitationResult {
-  success: boolean;
   error?: string;
+  success: boolean;
 }
 
 // Team permissions and roles
 export interface TeamPermissionCheck {
-  teamId: string;
   permission: string;
+  teamId: string;
   userId?: string;
 }
 
 export interface TeamPermissionResult {
+  error?: string;
   hasPermission: boolean;
   role?: string;
-  error?: string;
 }
 
 // Team statistics and analytics
 export interface TeamStats {
-  memberCount: number;
   activeMembers: number;
-  pendingInvitations: number;
   createdAt: Date;
   lastActivity?: Date;
+  memberCount: number;
+  pendingInvitations: number;
 }
 
 export interface GetTeamStatsResult {
-  success: boolean;
-  stats?: TeamStats;
   error?: string;
+  stats?: TeamStats;
+  success: boolean;
 }

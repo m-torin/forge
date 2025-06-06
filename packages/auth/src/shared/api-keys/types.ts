@@ -8,6 +8,7 @@ export interface ApiKeyPermissions {
 }
 
 export interface ApiKeyValidationResult {
+  error?: string;
   isValid: boolean;
   keyData?: {
     id: string;
@@ -17,54 +18,53 @@ export interface ApiKeyValidationResult {
     name: string;
     lastUsedAt?: Date;
   };
-  error?: string;
 }
 
 export interface CreateApiKeyData {
-  name: string;
-  permissions: string[];
   expiresAt?: Date;
+  name: string;
   organizationId?: string;
+  permissions: string[];
 }
 
 export interface CreateApiKeyResult {
-  success: boolean;
   apiKey?: string;
-  keyId?: string;
   error?: string;
+  keyId?: string;
+  success: boolean;
 }
 
 export interface ApiKeyListItem {
+  createdAt: Date;
+  expiresAt?: Date;
   id: string;
+  isActive: boolean;
+  lastUsedAt?: Date;
   name: string;
   permissions: string[];
-  expiresAt?: Date;
-  lastUsedAt?: Date;
-  createdAt: Date;
-  isActive: boolean;
 }
 
 export interface ListApiKeysResult {
-  success: boolean;
-  keys?: ApiKeyListItem[];
-  total?: number;
   error?: string;
+  keys?: ApiKeyListItem[];
+  success: boolean;
+  total?: number;
 }
 
 export interface RevokeApiKeyResult {
-  success: boolean;
   error?: string;
+  success: boolean;
 }
 
 export interface UpdateApiKeyData {
+  expiresAt?: Date;
   name?: string;
   permissions?: string[];
-  expiresAt?: Date;
 }
 
 export interface UpdateApiKeyResult {
-  success: boolean;
   error?: string;
+  success: boolean;
 }
 
 // Permission check types
@@ -72,33 +72,33 @@ export type PermissionCheck = Record<string, string[]>;
 
 // Service-to-service authentication types
 export interface ServiceAuthOptions {
-  serviceId: string;
-  permissions: string[];
   expiresIn?: string;
+  permissions: string[];
+  serviceId: string;
 }
 
 export interface ServiceAuthResult {
+  error?: string;
+  expiresAt?: Date;
   success: boolean;
   token?: string;
-  expiresAt?: Date;
-  error?: string;
 }
 
 // Rate limiting types for API keys
 export interface ApiKeyRateLimit {
-  requestsPerMinute: number;
-  requestsPerHour: number;
-  requestsPerDay: number;
   currentUsage: {
     minute: number;
     hour: number;
     day: number;
   };
+  requestsPerDay: number;
+  requestsPerHour: number;
+  requestsPerMinute: number;
 }
 
 export interface RateLimitResult {
   allowed: boolean;
+  limit: number;
   remaining: number;
   resetTime: Date;
-  limit: number;
 }

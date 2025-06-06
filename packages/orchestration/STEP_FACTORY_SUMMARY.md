@@ -2,10 +2,10 @@
 
 ## Overview
 
-I have successfully implemented a comprehensive workflow step factory system for the
-orchestration package that standardizes step definitions and execution. This system provides a
-robust, type-safe, and reusable framework for creating workflow steps with built-in patterns for
-reliability and observability.
+I have successfully implemented a comprehensive workflow step factory system for the orchestration
+package that standardizes step definitions and execution. This system provides a robust, type-safe,
+and reusable framework for creating workflow steps with built-in patterns for reliability and
+observability.
 
 ## 🏗️ Core Components Implemented
 

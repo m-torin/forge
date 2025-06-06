@@ -7,17 +7,17 @@
  */
 
 import { z } from 'zod';
+
+import { OrchestrationError } from '../utils/errors';
+
 import {
   createWorkflowStep,
-  matchError,
-  StandardWorkflowStep,
-  type WorkflowStepDefinition,
+  type StepExecutionConfig,
   type StepExecutionContext,
   type StepExecutionResult,
-  type StepExecutionConfig,
   type StepValidationConfig,
+  type WorkflowStepDefinition,
 } from './step-factory';
-import { OrchestrationError } from '../utils/errors';
 
 // Modern utility types
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
@@ -33,24 +33,24 @@ type Priority = 'low' | 'normal' | 'high' | 'urgent';
 export const HttpRequestInputSchema = z
   .object({
     url: z.string().url('Must be a valid URL'),
-    method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']).default('GET'),
-    headers: z.record(z.string()).optional(),
     body: z.any().optional(),
-    timeout: z.number().positive().default(30000),
-    retryStatusCodes: z.array(z.number()).default([408, 429, 500, 502, 503, 504]),
-    followRedirects: z.boolean().default(true),
-    maxRedirects: z.number().nonnegative().default(5),
-    // Modern additions
-    signal: z.custom<AbortSignal>().optional(),
     cache: z.enum(['default', 'no-store', 'reload', 'no-cache', 'force-cache']).optional(),
     credentials: z.enum(['omit', 'same-origin', 'include']).optional(),
+    followRedirects: z.boolean().default(true),
+    headers: z.record(z.string()).optional(),
+    maxRedirects: z.number().nonnegative().default(5),
+    method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']).default('GET'),
     mode: z.enum(['cors', 'no-cors', 'same-origin']).optional(),
+    retryStatusCodes: z.array(z.number()).default([408, 429, 500, 502, 503, 504]),
+    // Modern additions
+    signal: z.custom<AbortSignal>().optional(),
+    timeout: z.number().positive().default(30000),
   })
   .refine(
     (data) => {
       // Custom validation using nullish coalescing
       const hasBody = data.body != null;
-      const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(data.method);
+      const isBodyMethod = ['PATCH', 'POST', 'PUT'].includes(data.method);
       return !hasBody || isBodyMethod;
     },
     { message: 'Body can only be provided with POST, PUT, or PATCH methods' },
@@ -60,17 +60,17 @@ export const HttpRequestInputSchema = z
  * Output schema for HTTP request steps (enhanced)
  */
 export const HttpRequestOutputSchema = z.object({
-  status: z.number(),
-  statusText: z.string(),
-  headers: z.record(z.string()),
-  data: z.any(),
+  type: z.enum(['basic', 'cors', 'error', 'opaque', 'opaqueredirect']).optional(),
   url: z.string(),
+  cached: z.boolean().optional(),
+  data: z.any(),
   duration: z.number(),
+  headers: z.record(z.string()),
   // Modern additions
   redirected: z.boolean().optional(),
-  type: z.enum(['basic', 'cors', 'error', 'opaque', 'opaqueredirect']).optional(),
   size: z.number().optional(),
-  cached: z.boolean().optional(),
+  status: z.number(),
+  statusText: z.string(),
 });
 
 export type HttpRequestInput = z.infer<typeof HttpRequestInputSchema>;
@@ -120,15 +120,15 @@ export function createHttpRequestStep(
   return createWorkflowStep(
     {
       name,
-      description: description || `HTTP request step: ${name}`,
-      version: '1.0.0',
       category: 'http',
+      description: description || `HTTP request step: ${name}`,
       tags: ['http', 'request', 'api'],
+      version: '1.0.0',
     },
     async (
       context: StepExecutionContext<HttpRequestInput>,
     ): Promise<StepExecutionResult<HttpRequestOutput>> => {
-      const { input, abortSignal } = context;
+      const { abortSignal, input } = context;
       const startTime = Date.now();
 
       try {
@@ -155,14 +155,14 @@ export function createHttpRequestStep(
         const headers = createHeadersFn(processedInput.headers);
 
         const response = await fetch(processedInput.url, {
-          method: processedInput.method,
-          headers,
           body: processedInput.body ? JSON.stringify(processedInput.body) : undefined,
-          signal: controller.signal,
-          redirect: processedInput.followRedirects ? 'follow' : 'manual',
           cache: processedInput.cache,
           credentials: processedInput.credentials,
+          headers,
+          method: processedInput.method,
           mode: processedInput.mode,
+          redirect: processedInput.followRedirects ? 'follow' : 'manual',
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -176,15 +176,15 @@ export function createHttpRequestStep(
         await context.reportProgress?.(80, 100, 'Processing response');
 
         let output: HttpRequestOutput = {
+          type: response.type as any,
+          url: response.url,
+          data,
+          duration,
+          headers: Object.fromEntries(response.headers.entries()),
+          redirected: response.redirected,
+          size: parseInt(response.headers.get('content-length') ?? '0') || undefined,
           status: response.status,
           statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-          data,
-          url: response.url,
-          duration,
-          redirected: response.redirected,
-          type: response.type as any,
-          size: parseInt(response.headers.get('content-length') ?? '0') || undefined,
         };
 
         // Apply response interceptor if provided
@@ -198,30 +198,30 @@ export function createHttpRequestStep(
         if (!response.ok) {
           const shouldRetry = processedInput.retryStatusCodes.includes(response.status);
           return {
-            success: false,
             error: {
               code: 'HTTP_REQUEST_ERROR' as const,
+              details: { response: output },
               message: `HTTP request failed with status ${response.status}: ${response.statusText}`,
               retryable: shouldRetry,
               timestamp: new Date(),
-              details: { response: output },
             },
             output,
             performance: context.performance,
             shouldRetry,
+            success: false,
           };
         }
 
         return {
-          success: true,
+          metadata: {
+            cached: response.headers.get('cache-control') !== null,
+            duration,
+            requestSize: JSON.stringify(processedInput.body ?? '').length,
+            status: response.status,
+          },
           output,
           performance: context.performance,
-          metadata: {
-            duration,
-            status: response.status,
-            cached: response.headers.get('cache-control') !== null,
-            requestSize: JSON.stringify(processedInput.body ?? '').length,
-          },
+          success: true,
         };
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -236,39 +236,39 @@ export function createHttpRequestStep(
             : ('HTTP_REQUEST_ERROR' as const);
 
         return {
-          success: false,
           error: {
             code: errorCode,
+            details: { duration, errorType: error?.constructor.name, originalError: error },
             message: error instanceof Error ? error.message : 'Unknown HTTP error',
             retryable: !isNetworkError, // Network errors typically aren't retryable
             timestamp: new Date(),
-            details: { originalError: error, duration, errorType: error?.constructor.name },
           },
+          metadata: { duration, errorType: errorCode },
           performance: context.performance,
           shouldRetry: !isNetworkError,
-          metadata: { duration, errorType: errorCode },
+          success: false,
         };
       }
     },
     {
+      validationConfig: {
+        validateInput: true,
+        validateOutput: true,
+        input: HttpRequestInputSchema as any,
+        output: HttpRequestOutputSchema as any,
+        ...customConfig?.validationConfig,
+      },
       executionConfig: {
         retryConfig: {
-          maxAttempts: 3,
-          delay: 1000,
           backoff: 'exponential',
+          delay: 1000,
           jitter: true,
+          maxAttempts: 3,
           retryIf: (error) =>
             error.code ? ['HTTP_REQUEST_ERROR', 'HTTP_TIMEOUT_ERROR'].includes(error.code) : false,
         },
         timeout: { execution: 60000 },
         ...customConfig?.executionConfig,
-      },
-      validationConfig: {
-        input: HttpRequestInputSchema as any,
-        output: HttpRequestOutputSchema as any,
-        validateInput: true,
-        validateOutput: true,
-        ...customConfig?.validationConfig,
       },
     },
   );
@@ -285,11 +285,11 @@ const validateParameters = (query: string, parameters: any[] = []): boolean => {
 };
 
 const createQueryContext = (query: string, parameters: any[] = []) => ({
-  query: sanitizeQuery(query),
-  parameters,
   isValid: validateParameters(query, parameters),
-  parameterCount: parameters.length,
   estimatedComplexity: query.length > 1000 ? 'high' : query.includes('JOIN') ? 'medium' : 'low',
+  parameterCount: parameters.length,
+  parameters,
+  query: sanitizeQuery(query),
 });
 
 /**
@@ -297,15 +297,15 @@ const createQueryContext = (query: string, parameters: any[] = []) => ({
  */
 export const DatabaseQueryInputSchema = z
   .object({
-    query: z.string().min(1, 'Query cannot be empty'),
-    parameters: z.array(z.any()).optional(),
-    timeout: z.number().positive().default(30000),
     connection: z.string().optional(),
-    transactionId: z.string().optional(),
+    maxRows: z.number().positive().optional(),
+    parameters: z.array(z.any()).optional(),
+    query: z.string().min(1, 'Query cannot be empty'),
     // Modern additions
     readOnly: z.boolean().default(false),
-    maxRows: z.number().positive().optional(),
     streaming: z.boolean().default(false),
+    timeout: z.number().positive().default(30000),
+    transactionId: z.string().optional(),
   })
   .refine((data) => validateParameters(data.query, data.parameters), {
     message: 'Parameter count must match query placeholders',
@@ -315,14 +315,14 @@ export const DatabaseQueryInputSchema = z
  * Enhanced output schema for database query steps
  */
 export const DatabaseQueryOutputSchema = z.object({
-  rows: z.array(z.record(z.any())),
-  rowCount: z.number(),
-  duration: z.number(),
-  metadata: z.record(z.any()).optional(),
   // Modern additions
   affectedRows: z.number().optional(),
+  duration: z.number(),
   insertId: z.union([z.string(), z.number()]).optional(),
+  metadata: z.record(z.any()).optional(),
   queryPlan: z.record(z.any()).optional(),
+  rowCount: z.number(),
+  rows: z.array(z.record(z.any())),
   warnings: z.array(z.string()).optional(),
 });
 
@@ -348,10 +348,10 @@ export function createDatabaseQueryStep(
   return createWorkflowStep(
     {
       name,
-      description: description || `Database query step: ${name}`,
-      version: '1.0.0',
       category: 'database',
+      description: description || `Database query step: ${name}`,
       tags: ['database', 'query', 'sql'],
+      version: '1.0.0',
     },
     async (
       context: StepExecutionContext<DatabaseQueryInput>,
@@ -403,29 +403,29 @@ export function createDatabaseQueryStep(
 
         const duration = Date.now() - startTime;
         const mockResult: DatabaseQueryOutput = {
-          rows,
-          rowCount: rows.length,
+          affectedRows: input.readOnly ? undefined : 0,
           duration,
           metadata: {
-            query: queryContext.query,
-            parameters: queryContext.parameters,
             complexity: queryContext.estimatedComplexity,
+            parameters: queryContext.parameters,
+            query: queryContext.query,
           },
-          affectedRows: input.readOnly ? undefined : 0,
+          rowCount: rows.length,
+          rows,
           warnings: [],
         };
 
         await context.reportProgress?.(100, 100, 'Query completed');
 
         return {
-          success: true,
-          output: mockResult,
-          performance: context.performance,
           metadata: {
-            queryDuration: duration,
             complexity: queryContext.estimatedComplexity,
             parameterCount: queryContext.parameterCount,
+            queryDuration: duration,
           },
+          output: mockResult,
+          performance: context.performance,
+          success: true,
         };
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -448,42 +448,42 @@ export function createDatabaseQueryStep(
               : ('DATABASE_QUERY_ERROR' as const);
 
         return {
-          success: false,
           error: {
             code: errorCode,
+            details: {
+              duration,
+              errorType: error?.constructor.name,
+              originalError: error,
+              query: input.query,
+            },
             message: error instanceof Error ? error.message : 'Database query failed',
             retryable: isConnectionError, // Only retry connection errors
             timestamp: new Date(),
-            details: {
-              originalError: error,
-              query: input.query,
-              duration,
-              errorType: error?.constructor.name,
-            },
           },
+          metadata: { duration, errorType: errorCode },
           performance: context.performance,
           shouldRetry: isConnectionError,
-          metadata: { duration, errorType: errorCode },
+          success: false,
         };
       }
     },
     {
+      validationConfig: {
+        validateInput: true,
+        validateOutput: true,
+        input: DatabaseQueryInputSchema as any,
+        output: DatabaseQueryOutputSchema,
+        ...customConfig?.validationConfig,
+      },
       executionConfig: {
         retryConfig: {
-          maxAttempts: 3,
-          delay: 500,
           backoff: 'exponential',
+          delay: 500,
+          maxAttempts: 3,
           retryIf: (error) => error.code === 'DATABASE_CONNECTION_ERROR',
         },
         timeout: { execution: 30000 },
         ...customConfig?.executionConfig,
-      },
-      validationConfig: {
-        input: DatabaseQueryInputSchema as any,
-        output: DatabaseQueryOutputSchema,
-        validateInput: true,
-        validateOutput: true,
-        ...customConfig?.validationConfig,
       },
     },
   );
@@ -495,22 +495,22 @@ export function createDatabaseQueryStep(
  * Input schema for file processing steps
  */
 export const FileProcessingInputSchema = z.object({
+  encoding: z.string().default('utf-8'),
   filePath: z.string().min(1, 'File path is required'),
   operation: z.enum(['read', 'write', 'delete', 'copy', 'move', 'compress', 'decompress']),
   options: z.record(z.any()).optional(),
   outputPath: z.string().optional(),
-  encoding: z.string().default('utf-8'),
 });
 
 /**
  * Output schema for file processing steps
  */
 export const FileProcessingOutputSchema = z.object({
-  success: z.boolean(),
-  filePath: z.string(),
-  size: z.number().optional(),
   content: z.any().optional(),
+  filePath: z.string(),
   metadata: z.record(z.any()).optional(),
+  size: z.number().optional(),
+  success: z.boolean(),
 });
 
 export type FileProcessingInput = z.infer<typeof FileProcessingInputSchema>;
@@ -530,10 +530,10 @@ export function createFileProcessingStep(
   return createWorkflowStep(
     {
       name,
-      description: description || `File processing step: ${name}`,
-      version: '1.0.0',
       category: 'file',
+      description: description || `File processing step: ${name}`,
       tags: ['file', 'processing', 'io'],
+      version: '1.0.0',
     },
     async (
       context: StepExecutionContext<FileProcessingInput>,
@@ -545,46 +545,46 @@ export function createFileProcessingStep(
         // In real implementation, this would use fs/promises or similar
 
         const mockResult: FileProcessingOutput = {
-          success: true,
           filePath: input.filePath,
-          size: 1024,
           metadata: {
-            operation: input.operation,
             encoding: input.encoding,
+            operation: input.operation,
           },
+          size: 1024,
+          success: true,
         };
 
         return {
-          success: true,
           output: mockResult,
           performance: context.performance,
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'FILE_PROCESSING_ERROR',
+            details: { filePath: input.filePath, originalError: error },
             message: error instanceof Error ? error.message : 'File processing failed',
             retryable: false, // File errors are typically not retryable
             timestamp: new Date(),
-            details: { originalError: error, filePath: input.filePath },
           },
           performance: context.performance,
           shouldRetry: false,
+          success: false,
         };
       }
     },
     {
+      validationConfig: {
+        validateInput: true,
+        validateOutput: true,
+        input: FileProcessingInputSchema as any,
+        output: FileProcessingOutputSchema,
+        ...customConfig?.validationConfig,
+      },
       executionConfig: {
         timeout: { execution: 60000 },
         ...customConfig?.executionConfig,
-      },
-      validationConfig: {
-        input: FileProcessingInputSchema as any,
-        output: FileProcessingOutputSchema,
-        validateInput: true,
-        validateOutput: true,
-        ...customConfig?.validationConfig,
       },
     },
   );
@@ -597,31 +597,31 @@ export function createFileProcessingStep(
  */
 export const NotificationInputSchema = z.object({
   type: z.enum(['email', 'sms', 'push', 'webhook', 'slack']),
-  recipients: z.array(z.string()).min(1, 'At least one recipient is required'),
-  subject: z.string().optional(),
-  message: z.string().min(1, 'Message is required'),
-  priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
-  metadata: z.record(z.any()).optional(),
   attachments: z
     .array(
       z.object({
         name: z.string(),
-        content: z.string(),
         type: z.string(),
+        content: z.string(),
       }),
     )
     .optional(),
+  message: z.string().min(1, 'Message is required'),
+  metadata: z.record(z.any()).optional(),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
+  recipients: z.array(z.string()).min(1, 'At least one recipient is required'),
+  subject: z.string().optional(),
 });
 
 /**
  * Output schema for notification steps
  */
 export const NotificationOutputSchema = z.object({
-  sent: z.boolean(),
+  cost: z.number().optional(),
+  deliveryStatus: z.record(z.string()),
   messageId: z.string().optional(),
   recipients: z.array(z.string()),
-  deliveryStatus: z.record(z.string()),
-  cost: z.number().optional(),
+  sent: z.boolean(),
 });
 
 export type NotificationInput = z.infer<typeof NotificationInputSchema>;
@@ -641,10 +641,10 @@ export function createNotificationStep(
   return createWorkflowStep(
     {
       name,
-      description: description || `Notification step: ${name}`,
-      version: '1.0.0',
       category: 'notification',
+      description: description || `Notification step: ${name}`,
       tags: ['notification', 'communication', 'alert'],
+      version: '1.0.0',
     },
     async (
       context: StepExecutionContext<NotificationInput>,
@@ -656,54 +656,54 @@ export function createNotificationStep(
         // In real implementation, this would integrate with notification providers
 
         const mockResult: NotificationOutput = {
-          sent: true,
-          messageId: `msg_${Date.now()}`,
-          recipients: input.recipients,
           deliveryStatus: Object.fromEntries(
             input.recipients.map((recipient) => [recipient, 'delivered']),
           ),
+          messageId: `msg_${Date.now()}`,
+          recipients: input.recipients,
+          sent: true,
         };
 
         return {
-          success: true,
-          output: mockResult,
-          performance: context.performance,
           metadata: {
             notificationType: input.type,
             recipientCount: input.recipients.length,
           },
+          output: mockResult,
+          performance: context.performance,
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'NOTIFICATION_ERROR',
+            details: { notificationType: input.type, originalError: error },
             message: error instanceof Error ? error.message : 'Notification failed',
             retryable: true,
             timestamp: new Date(),
-            details: { originalError: error, notificationType: input.type },
           },
           performance: context.performance,
           shouldRetry: true,
+          success: false,
         };
       }
     },
     {
+      validationConfig: {
+        validateInput: true,
+        validateOutput: true,
+        input: NotificationInputSchema as any,
+        output: NotificationOutputSchema,
+        ...customConfig?.validationConfig,
+      },
       executionConfig: {
         retryConfig: {
-          maxAttempts: 3,
-          delay: 2000,
           backoff: 'exponential',
+          delay: 2000,
+          maxAttempts: 3,
         },
         timeout: { execution: 30000 },
         ...customConfig?.executionConfig,
-      },
-      validationConfig: {
-        input: NotificationInputSchema as any,
-        output: NotificationOutputSchema,
-        validateInput: true,
-        validateOutput: true,
-        ...customConfig?.validationConfig,
       },
     },
   );
@@ -716,19 +716,19 @@ export function createNotificationStep(
  */
 export const DataTransformationInputSchema = z.object({
   data: z.any(),
+  options: z
+    .object({
+      continueOnError: z.boolean().default(true),
+      maxItems: z.number().positive().optional(),
+      strict: z.boolean().default(false),
+    })
+    .optional(),
   transformations: z.array(
     z.object({
       type: z.enum(['map', 'filter', 'reduce', 'sort', 'group', 'validate', 'convert']),
       config: z.record(z.any()),
     }),
   ),
-  options: z
-    .object({
-      strict: z.boolean().default(false),
-      continueOnError: z.boolean().default(true),
-      maxItems: z.number().positive().optional(),
-    })
-    .optional(),
 });
 
 /**
@@ -736,17 +736,17 @@ export const DataTransformationInputSchema = z.object({
  */
 export const DataTransformationOutputSchema = z.object({
   data: z.any(),
-  transformedCount: z.number(),
   errors: z
     .array(
       z.object({
-        transformation: z.string(),
         error: z.string(),
         item: z.any().optional(),
+        transformation: z.string(),
       }),
     )
     .optional(),
   metadata: z.record(z.any()).optional(),
+  transformedCount: z.number(),
 });
 
 export type DataTransformationInput = z.infer<typeof DataTransformationInputSchema>;
@@ -766,10 +766,10 @@ export function createDataTransformationStep(
   return createWorkflowStep(
     {
       name,
-      description: description || `Data transformation step: ${name}`,
-      version: '1.0.0',
       category: 'transformation',
+      description: description || `Data transformation step: ${name}`,
       tags: ['data', 'transformation', 'processing'],
+      version: '1.0.0',
     },
     async (
       context: StepExecutionContext<DataTransformationInput>,
@@ -790,8 +790,8 @@ export function createDataTransformationStep(
                 if (Array.isArray(data)) {
                   data = data.map((item, index) => ({
                     ...item,
-                    _transformed: true,
                     _index: index,
+                    _transformed: true,
                   }));
                   transformedCount += data.length;
                 }
@@ -812,9 +812,9 @@ export function createDataTransformationStep(
             }
           } catch (error) {
             const errorDetails = {
-              transformation: transformation.type,
               error: error instanceof Error ? error.message : 'Unknown error',
               item: null, // Would include the specific item that failed
+              transformation: transformation.type,
             };
 
             errors.push(errorDetails);
@@ -832,49 +832,49 @@ export function createDataTransformationStep(
 
         const result: DataTransformationOutput = {
           data,
-          transformedCount,
           errors: errors.length > 0 ? errors : undefined,
           metadata: {
             originalDataType: typeof input.data,
             transformationCount: input.transformations.length,
           },
+          transformedCount,
         };
 
         return {
-          success: true,
+          metadata: {
+            errorCount: errors.length,
+            transformedItems: transformedCount,
+          },
           output: result,
           performance: context.performance,
-          metadata: {
-            transformedItems: transformedCount,
-            errorCount: errors.length,
-          },
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'DATA_TRANSFORMATION_ERROR',
+            details: { originalError: error },
             message: error instanceof Error ? error.message : 'Data transformation failed',
             retryable: false, // Data transformation errors are typically not retryable
             timestamp: new Date(),
-            details: { originalError: error },
           },
           performance: context.performance,
           shouldRetry: false,
+          success: false,
         };
       }
     },
     {
+      validationConfig: {
+        validateInput: true,
+        validateOutput: true,
+        input: DataTransformationInputSchema as any,
+        output: DataTransformationOutputSchema,
+        ...customConfig?.validationConfig,
+      },
       executionConfig: {
         timeout: { execution: 120000 }, // 2 minutes for data processing
         ...customConfig?.executionConfig,
-      },
-      validationConfig: {
-        input: DataTransformationInputSchema as any,
-        output: DataTransformationOutputSchema,
-        validateInput: true,
-        validateOutput: true,
-        ...customConfig?.validationConfig,
       },
     },
   );
@@ -896,13 +896,13 @@ export const ConditionalInputSchema = z.object({
       'exists',
       'custom',
     ]),
+    customFunction: z.string().optional(), // For custom conditions
     left: z.any(),
     right: z.any().optional(),
-    customFunction: z.string().optional(), // For custom conditions
   }),
-  trueSteps: z.array(z.string()).optional(),
   falseSteps: z.array(z.string()).optional(),
   metadata: z.record(z.any()).optional(),
+  trueSteps: z.array(z.string()).optional(),
 });
 
 /**
@@ -910,8 +910,8 @@ export const ConditionalInputSchema = z.object({
  */
 export const ConditionalOutputSchema = z.object({
   conditionMet: z.boolean(),
-  nextSteps: z.array(z.string()).optional(),
   evaluationDetails: z.record(z.any()).optional(),
+  nextSteps: z.array(z.string()).optional(),
 });
 
 export type ConditionalInput = z.infer<typeof ConditionalInputSchema>;
@@ -931,10 +931,10 @@ export function createConditionalStep(
   return createWorkflowStep(
     {
       name,
-      description: description || `Conditional step: ${name}`,
-      version: '1.0.0',
       category: 'control',
+      description: description || `Conditional step: ${name}`,
       tags: ['conditional', 'control-flow', 'logic'],
+      version: '1.0.0',
     },
     async (
       context: StepExecutionContext<ConditionalInput>,
@@ -989,49 +989,49 @@ export function createConditionalStep(
 
         const result: ConditionalOutput = {
           conditionMet,
-          nextSteps,
           evaluationDetails,
+          nextSteps,
         };
 
         return {
-          success: true,
-          output: result,
-          performance: context.performance,
-          metadata: {
-            conditionMet,
-            nextStepCount: nextSteps?.length || 0,
-          },
           context: {
             conditionResult: conditionMet,
             nextSteps: nextSteps || [],
           },
+          metadata: {
+            conditionMet,
+            nextStepCount: nextSteps?.length || 0,
+          },
+          output: result,
+          performance: context.performance,
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'CONDITIONAL_EVALUATION_ERROR',
+            details: { condition: input.condition, originalError: error },
             message: error instanceof Error ? error.message : 'Condition evaluation failed',
             retryable: false,
             timestamp: new Date(),
-            details: { originalError: error, condition: input.condition },
           },
           performance: context.performance,
           shouldRetry: false,
+          success: false,
         };
       }
     },
     {
+      validationConfig: {
+        validateInput: true,
+        validateOutput: true,
+        input: ConditionalInputSchema,
+        output: ConditionalOutputSchema,
+        ...customConfig?.validationConfig,
+      },
       executionConfig: {
         timeout: { execution: 5000 }, // Quick evaluation
         ...customConfig?.executionConfig,
-      },
-      validationConfig: {
-        input: ConditionalInputSchema,
-        output: ConditionalOutputSchema,
-        validateInput: true,
-        validateOutput: true,
-        ...customConfig?.validationConfig,
       },
     },
   );
@@ -1050,10 +1050,10 @@ export function createDelayStep(
   return createWorkflowStep(
     {
       name,
-      description: description || `Delay step: ${name} (${delayMs}ms)`,
-      version: '1.0.0',
       category: 'utility',
+      description: description || `Delay step: ${name} (${delayMs}ms)`,
       tags: ['delay', 'sleep', 'wait'],
+      version: '1.0.0',
     },
     async (context): Promise<StepExecutionResult<{ delayMs: number; actualDelay: number }>> => {
       const delay = context.input.delayMs || delayMs;
@@ -1074,32 +1074,32 @@ export function createDelayStep(
         const actualDelay = Date.now() - startTime;
 
         return {
-          success: true,
-          output: { delayMs: delay, actualDelay },
+          metadata: { actualDelay, plannedDelay: delay },
+          output: { actualDelay, delayMs: delay },
           performance: context.performance,
-          metadata: { plannedDelay: delay, actualDelay },
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'DELAY_ERROR',
+            details: { originalError: error, plannedDelay: delay },
             message: error instanceof Error ? error.message : 'Delay failed',
             retryable: false,
             timestamp: new Date(),
-            details: { originalError: error, plannedDelay: delay },
           },
           performance: context.performance,
           shouldRetry: false,
+          success: false,
         };
       }
     },
     {
       validationConfig: {
-        input: z.object({ delayMs: z.number().positive().optional() }),
-        output: z.object({ delayMs: z.number(), actualDelay: z.number() }),
         validateInput: true,
         validateOutput: true,
+        input: z.object({ delayMs: z.number().positive().optional() }),
+        output: z.object({ actualDelay: z.number(), delayMs: z.number() }),
       },
     },
   );
@@ -1124,10 +1124,10 @@ export function createBatchProcessingStep<TInput, TOutput>(
   return createWorkflowStep(
     {
       name,
-      description: description ?? `Batch processing step: ${name}`,
-      version: '1.0.0',
       category: 'batch',
+      description: description ?? `Batch processing step: ${name}`,
       tags: ['batch', 'processing', 'async'],
+      version: '1.0.0',
     },
     async (context: StepExecutionContext<TInput[]>): Promise<StepExecutionResult<TOutput[]>> => {
       const { input } = context;
@@ -1161,28 +1161,28 @@ export function createBatchProcessingStep<TInput, TOutput>(
         }
 
         return {
-          success: true,
-          output: results,
-          performance: context.performance,
           metadata: {
-            totalBatches: batches.length,
             batchSize,
             concurrency,
             processedItems: results.length,
+            totalBatches: batches.length,
           },
+          output: results,
+          performance: context.performance,
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'BATCH_PROCESSING_ERROR' as const,
+            details: { originalError: error },
             message: error instanceof Error ? error.message : 'Batch processing failed',
             retryable: true,
             timestamp: new Date(),
-            details: { originalError: error },
           },
           performance: context.performance,
           shouldRetry: true,
+          success: false,
         };
       }
     },
@@ -1205,10 +1205,10 @@ export function createMapReduceStep<TInput, TMapped, TOutput>(
   return createWorkflowStep(
     {
       name,
-      description: options.description ?? `Map-reduce step: ${name}`,
-      version: '1.0.0',
       category: 'functional',
+      description: options.description ?? `Map-reduce step: ${name}`,
       tags: ['map-reduce', 'functional', 'processing'],
+      version: '1.0.0',
     },
     async (context: StepExecutionContext<TInput[]>): Promise<StepExecutionResult<TOutput>> => {
       const { input } = context;
@@ -1240,27 +1240,27 @@ export function createMapReduceStep<TInput, TMapped, TOutput>(
         await context.reportProgress?.(100, 100, 'Map-reduce completed');
 
         return {
-          success: true,
-          output: result,
-          performance: context.performance,
           metadata: {
+            concurrency,
             inputCount: input.length,
             mappedCount: mappedResults.length,
-            concurrency,
           },
+          output: result,
+          performance: context.performance,
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'MAP_REDUCE_ERROR' as const,
+            details: { originalError: error },
             message: error instanceof Error ? error.message : 'Map-reduce operation failed',
             retryable: false,
             timestamp: new Date(),
-            details: { originalError: error },
           },
           performance: context.performance,
           shouldRetry: false,
+          success: false,
         };
       }
     },
@@ -1271,14 +1271,14 @@ export function createMapReduceStep<TInput, TMapped, TOutput>(
  * Step template registry with modern functional utilities
  */
 export const StepTemplates = {
+  conditional: createConditionalStep,
+  database: createDatabaseQueryStep,
+  delay: createDelayStep,
+  file: createFileProcessingStep,
   // Core templates
   http: createHttpRequestStep,
-  database: createDatabaseQueryStep,
-  file: createFileProcessingStep,
   notification: createNotificationStep,
   transformation: createDataTransformationStep,
-  conditional: createConditionalStep,
-  delay: createDelayStep,
 
   // Modern functional templates
   batch: createBatchProcessingStep,

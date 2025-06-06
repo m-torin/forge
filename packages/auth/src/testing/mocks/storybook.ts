@@ -3,13 +3,10 @@
  */
 
 import { vi } from 'vitest';
-import { createMockSession, mockUsers, mockOrganizations } from './auth';
 
-import type { 
-  AuthContextType,
-  AuthSession,
-  OrganizationRole,
-} from '../../shared/types';
+import { createMockSession, mockOrganizations, mockUsers } from './auth';
+
+import type { AuthContextType, OrganizationRole } from '../../shared/types';
 
 /**
  * Mock Auth Context for Storybook
@@ -18,7 +15,7 @@ export function createMockAuthContext(
   authenticated = true,
   userType: keyof typeof mockUsers = 'member',
   organizationId?: string,
-  role: OrganizationRole = 'member'
+  role: OrganizationRole = 'member',
 ): AuthContextType {
   if (!authenticated) {
     return {
@@ -47,23 +44,25 @@ export const authDecorators = {
   /**
    * Authenticated user decorator
    */
-  authenticated: (userType: keyof typeof mockUsers = 'member') => (Story: any) => {
-    const mockContext = createMockAuthContext(true, userType);
-    
-    // Mock useAuth hook
-    vi.doMock('../../client/hooks', () => ({
-      useAuth: () => mockContext,
-    }));
+  authenticated:
+    (userType: keyof typeof mockUsers = 'member') =>
+    (Story: any) => {
+      const mockContext = createMockAuthContext(true, userType);
 
-    return Story();
-  },
+      // Mock useAuth hook
+      vi.doMock('../../client/hooks', () => ({
+        useAuth: () => mockContext,
+      }));
+
+      return Story();
+    },
 
   /**
    * Unauthenticated user decorator
    */
   unauthenticated: () => (Story: any) => {
     const mockContext = createMockAuthContext(false);
-    
+
     // Mock useAuth hook
     vi.doMock('../../client/hooks', () => ({
       useAuth: () => mockContext,
@@ -82,7 +81,7 @@ export const authDecorators = {
       session: null,
       user: null,
     };
-    
+
     // Mock useAuth hook
     vi.doMock('../../client/hooks', () => ({
       useAuth: () => mockContext,
@@ -96,15 +95,15 @@ export const authDecorators = {
    */
   owner: () => (Story: any) => {
     const mockContext = createMockAuthContext(true, 'owner', undefined, 'owner');
-    
+
     // Mock useAuth hook and organization methods
     vi.doMock('../../client/hooks', () => ({
       useAuth: () => mockContext,
       useOrganization: () => ({
         currentOrganization: mockOrganizations.primary,
-        userRole: 'owner',
-        isLoading: false,
         error: null,
+        isLoading: false,
+        userRole: 'owner',
       }),
     }));
 
@@ -116,15 +115,15 @@ export const authDecorators = {
    */
   admin: () => (Story: any) => {
     const mockContext = createMockAuthContext(true, 'admin', undefined, 'admin');
-    
+
     // Mock useAuth hook and organization methods
     vi.doMock('../../client/hooks', () => ({
       useAuth: () => mockContext,
       useOrganization: () => ({
         currentOrganization: mockOrganizations.primary,
-        userRole: 'admin',
-        isLoading: false,
         error: null,
+        isLoading: false,
+        userRole: 'admin',
       }),
     }));
 
@@ -136,50 +135,50 @@ export const authDecorators = {
  * Mock API responses for Storybook
  */
 export const storybookApiMocks = {
+  '/api/auth/session': {
+    GET: createMockSession(),
+  },
   // Auth endpoints
   '/api/auth/sign-in': {
-    POST: { success: true },
-  },
-  '/api/auth/sign-up': {
     POST: { success: true },
   },
   '/api/auth/sign-out': {
     POST: { success: true },
   },
-  '/api/auth/session': {
-    GET: createMockSession(),
+  '/api/auth/sign-up': {
+    POST: { success: true },
   },
 
+  '/api/auth/organizations/:id': {
+    DELETE: { success: true },
+    GET: { organization: mockOrganizations.primary, success: true },
+    PATCH: { organization: mockOrganizations.primary, success: true },
+  },
   // Organization endpoints
   '/api/auth/organizations': {
-    GET: { success: true, organizations: [mockOrganizations.primary] },
-    POST: { success: true, organization: mockOrganizations.primary },
-  },
-  '/api/auth/organizations/:id': {
-    GET: { success: true, organization: mockOrganizations.primary },
-    PATCH: { success: true, organization: mockOrganizations.primary },
-    DELETE: { success: true },
+    GET: { organizations: [mockOrganizations.primary], success: true },
+    POST: { organization: mockOrganizations.primary, success: true },
   },
 
+  '/api/auth/teams/:id': {
+    DELETE: { success: true },
+    GET: { success: true, team: { id: 'mock-team-1', name: 'Mock Team' } },
+    PATCH: { success: true, team: { id: 'mock-team-1', name: 'Updated Team' } },
+  },
   // Team endpoints
   '/api/auth/teams': {
     GET: { success: true, teams: [] },
     POST: { success: true, team: { id: 'mock-team-1', name: 'Mock Team' } },
   },
-  '/api/auth/teams/:id': {
-    GET: { success: true, team: { id: 'mock-team-1', name: 'Mock Team' } },
-    PATCH: { success: true, team: { id: 'mock-team-1', name: 'Updated Team' } },
-    DELETE: { success: true },
-  },
 
-  // API Key endpoints
-  '/api/auth/api-keys': {
-    GET: { success: true, keys: [] },
-    POST: { success: true, apiKey: 'mock-api-key-12345' },
-  },
   '/api/auth/api-keys/:id': {
     DELETE: { success: true },
     PATCH: { success: true },
+  },
+  // API Key endpoints
+  '/api/auth/api-keys': {
+    GET: { keys: [], success: true },
+    POST: { apiKey: 'mock-api-key-12345', success: true },
   },
 };
 
@@ -230,28 +229,28 @@ export const storybookMockImplementations = {
 
   useOrganization: () => ({
     currentOrganization: mockOrganizations.primary,
-    userRole: 'member' as OrganizationRole,
-    isLoading: false,
     error: null,
+    isLoading: false,
     switchOrganization: vi.fn(),
+    userRole: 'member' as OrganizationRole,
   }),
 
   useTeams: () => ({
-    teams: [],
-    loading: false,
+    createTeam: vi.fn().mockResolvedValue({ success: true }),
+    deleteTeam: vi.fn().mockResolvedValue({ success: true }),
     error: null,
     fetchTeams: vi.fn(),
-    createTeam: vi.fn().mockResolvedValue({ success: true }),
+    loading: false,
+    teams: [],
     updateTeam: vi.fn().mockResolvedValue({ success: true }),
-    deleteTeam: vi.fn().mockResolvedValue({ success: true }),
   }),
 
   useApiKeys: () => ({
-    keys: [],
-    loading: false,
+    createKey: vi.fn().mockResolvedValue({ apiKey: 'mock-key', success: true }),
     error: null,
     fetchKeys: vi.fn(),
-    createKey: vi.fn().mockResolvedValue({ success: true, apiKey: 'mock-key' }),
+    keys: [],
+    loading: false,
     revokeKey: vi.fn().mockResolvedValue({ success: true }),
     updateKey: vi.fn().mockResolvedValue({ success: true }),
   }),

@@ -93,9 +93,7 @@ export function ViewportAwareProductGrid({
                 transform: `translateY(${Math.floor(actualIndex / 4) * itemHeight}px)`,
               }}
             >
-              <ProductCard
-                data={product}
-              />
+              <ProductCard data={product} />
             </div>
           );
         })}

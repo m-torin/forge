@@ -33,7 +33,7 @@ export default async function Home({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale: _locale } = await params;
 
   const allCollections = await getCollections();
   const departmentCollections = allCollections.slice(11, 15);

@@ -4,8 +4,7 @@ import { Alert, Button, Divider, Paper, PasswordInput, Stack, TextInput } from '
 import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { createClientAnalytics, track } from '@repo/analytics/client';
-import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth-new/client';
+import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth/client';
 
 export const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -19,30 +18,14 @@ export const SignIn = () => {
     setIsLoading(true);
     setError(null);
 
-    // Track sign-in attempt
-    analytics.capture('sign_in_attempted', {
-      method: 'email',
-    });
-
     try {
-      await signIn.email({
+      await signIn({
         email,
         password,
       });
-
-      // Track successful sign-in
-      await analytics.emit(track('sign_in_completed', {
-        method: 'email',
-      }));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
       setError(errorMessage);
-
-      // Track sign-in failure
-      await analytics.emit(track('sign_in_failed', {
-        error: errorMessage,
-        method: 'email',
-      }));
     } finally {
       setIsLoading(false);
     }
@@ -52,42 +35,16 @@ export const SignIn = () => {
     setIsSocialLoading(provider);
     setError(null);
 
-    // Track social sign-in attempt
-    const analytics = await createClientAnalytics({
-      providers: {
-        posthog: {
-          apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!,
-          config: {
-            api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-          },
-        },
-      },
-    });
-    await analytics.emit(track('sign_in_attempted', {
-      method: provider,
-    }));
-
     try {
       if (provider === 'google') {
-        await signInWithGoogle?.({ providerId: 'google' });
+        await signInWithGoogle?.();
       } else {
-        await signInWithGitHub?.({ providerId: 'github' });
+        await signInWithGitHub?.();
       }
-
-      // Track successful social sign-in
-      await analytics.emit(track('sign_in_completed', {
-        method: provider,
-      }));
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : `Failed to sign in with ${provider}`;
       setError(errorMessage);
-
-      // Track social sign-in failure
-      await analytics.emit(track('sign_in_failed', {
-        error: errorMessage,
-        method: provider,
-      }));
     } finally {
       setIsSocialLoading(null);
     }

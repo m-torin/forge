@@ -5,8 +5,7 @@ import { useForm } from '@mantine/form';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { createClientAnalytics, track } from '@repo/analytics/client';
-import { forgetPassword } from '@repo/auth-new/client';
+import { forgotPassword } from '@repo/auth/client';
 
 import { AuthForm } from './auth-form';
 
@@ -50,28 +49,13 @@ export const ForgotPasswordForm = ({
     setIsLoading(true);
     setError(null);
 
-    analytics.capture('password_reset_requested', {
-      email: values.email,
-    });
-
     try {
-      await forgetPassword({
-        email: values.email,
-        redirectTo: resetPasswordRoute,
-      });
+      await forgotPassword(values.email);
 
       setSuccess(true);
-      analytics.capture('password_reset_email_sent', {
-        email: values.email,
-      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
       setError(errorMessage);
-
-      analytics.capture('password_reset_failed', {
-        email: values.email,
-        error: errorMessage,
-      });
     } finally {
       setIsLoading(false);
     }

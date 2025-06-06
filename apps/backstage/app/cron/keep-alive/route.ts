@@ -1,16 +1,13 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
-import { requireAuth } from '../../../lib/auth';
 import { createPrismaAdapter } from '@repo/database/prisma';
+
+export const dynamic = 'force-dynamic';
 
 const adapter = createPrismaAdapter();
 
 export const GET = async (request: NextRequest) => {
-  // Validate authentication
-  const authResult = await requireAuth(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
+  // No auth validation in demo mode
   await adapter.initialize();
   const database = await adapter.raw('client', {});
 

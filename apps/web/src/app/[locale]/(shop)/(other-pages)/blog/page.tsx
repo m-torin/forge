@@ -32,6 +32,6 @@ async function BlogPage() {
       </div>
     </div>
   );
-};
+}
 
 export default BlogPage;

@@ -366,38 +366,38 @@ export function Batch<T, R>(options: BatchOptions = {}) {
 
 // Types for test compatibility
 export interface BatchItem<T = any> {
-  id: string;
   data: T;
+  id: string;
 }
 
 export interface BatchResult<T = any> {
-  id: string;
-  success: boolean;
-  result?: T;
   error?: string;
+  id: string;
+  result?: T;
+  success: boolean;
 }
 
 export interface BatchContext {
   batchId: string;
-  workflowId: string;
-  processedCount: number;
-  totalCount: number;
   events: {
     emit: (event: string, data: any) => Promise<void> | void;
   };
+  processedCount: number;
+  totalCount: number;
   updateProgress: (progress: {
     processed: number;
     total: number;
     percentage: number;
     batchId: string;
   }) => Promise<void> | void;
+  workflowId: string;
 }
 
 export interface BatchProcessorDefinition<T, R> {
   name: string;
-  processBatch: (items: BatchItem<T>[], context: BatchContext) => Promise<BatchResult<R>[]>;
-  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
   onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
+  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
+  processBatch: (items: BatchItem<T>[], context: BatchContext) => Promise<BatchResult<R>[]>;
 }
 
 /**
@@ -411,9 +411,9 @@ export function createBatchProcessor<T, R>(config: {
 }): BatchProcessorDefinition<T, R> {
   return {
     name: config.name,
-    processBatch: config.processBatch,
-    onProgress: config.onProgress,
     onComplete: config.onComplete,
+    onProgress: config.onProgress,
+    processBatch: config.processBatch,
   };
 }
 

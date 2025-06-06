@@ -8,87 +8,80 @@ export { useAuth, useOrganization, useSession, useUser } from './hooks';
 
 // Authentication methods - explicit exports to avoid ambiguity
 export {
-  // Basic auth methods
-  signIn,
-  signOut,
-  signUp,
-  forgotPassword,
-  resetPassword,
-  verifyEmail,
-  
-  // Social auth
-  signInWithGoogle,
-  signInWithGitHub,
-  
-  // Magic link
-  sendMagicLink,
-  verifyMagicLink,
-  
-  // Organization methods
-  createOrganization,
-  updateOrganization,
-  deleteOrganization,
-  checkSlug,
-  inviteMember,
-  removeOrganizationMember,
-  updateMemberRole,
-  leaveOrganization,
-  getOrganization,
-  listOrganizations,
-  listInvitations,
-  getInvitation,
   acceptInvitation,
-  rejectInvitation,
-  cancelInvitation as cancelOrganizationInvitation,
-  getActiveMember,
-  setActiveOrganization,
-  
-  // Team methods from ./methods (organization.* methods)
-  createTeam as createTeamFromOrg,
-  updateTeam as updateTeamFromOrg,
-  removeTeam,
-  listTeams as listTeamsFromOrg,
-  
-  // Permission methods
-  hasPermission,
-  checkOrgRolePermission,
-  
-  // API Key methods
-  createApiKey,
-  updateApiKey,
-  deleteApiKey,
-  listApiKeys,
-  
-  // Admin methods
-  createUser,
-  listUsers,
-  setUserRole,
-  banUser,
-  unbanUser,
-  listUserSessions,
-  revokeUserSession,
-  revokeUserSessions,
-  impersonateUser,
-  stopImpersonating,
-  removeUser,
-  hasAdminPermission,
-  checkRolePermission,
-  
-  // Two-factor authentication
-  enableTwoFactor,
-  disableTwoFactor,
-  verifyTwoFactor,
-  getTwoFactorQRCode,
-  getTwoFactorStatus,
-  getTwoFactorBackupCodes,
-  regenerateTwoFactorBackupCodes,
-  
   // Passkey authentication
   addPasskey,
-  listPasskeys,
+  banUser,
+  cancelInvitation as cancelOrganizationInvitation,
+  checkOrgRolePermission,
+  checkRolePermission,
+  checkSlug,
+  // API Key methods
+  createApiKey,
+
+  // Organization methods
+  createOrganization,
+  // Team methods from ./methods (organization.* methods)
+  createTeam as createTeamFromOrg,
+
+  // Admin methods
+  createUser,
+  deleteApiKey,
+  deleteOrganization,
   deletePasskey,
+  disableTwoFactor,
+  // Two-factor authentication
+  enableTwoFactor,
+  forgotPassword,
+  getActiveMember,
+  getInvitation,
+  getOrganization,
+  getTwoFactorBackupCodes,
+  getTwoFactorQRCode,
+  getTwoFactorStatus,
+  hasAdminPermission,
+  // Permission methods
+  hasPermission,
+  impersonateUser,
+  inviteMember,
+  leaveOrganization,
+  listApiKeys,
+  listInvitations,
+  listOrganizations,
+  listPasskeys,
+  listTeams as listTeamsFromOrg,
+  listUsers,
+  listUserSessions,
+  regenerateTwoFactorBackupCodes,
+  rejectInvitation,
+  removeOrganizationMember,
+  removeTeam,
+  removeUser,
+  resetPassword,
+  revokeUserSession,
+  revokeUserSessions,
+  // Magic link
+  sendMagicLink,
+  setActiveOrganization,
+  setUserRole,
+  // Basic auth methods
+  signIn,
+  signInWithGitHub,
+  // Social auth
+  signInWithGoogle,
   signInWithPasskey,
+  signOut,
+  signUp,
   signUpWithPasskey,
+  stopImpersonating,
+  unbanUser,
+  updateApiKey,
+  updateMemberRole,
+  updateOrganization,
+  updateTeam as updateTeamFromOrg,
+  verifyEmail,
+  verifyMagicLink,
+  verifyTwoFactor,
 } from './methods';
 
 // Client-side API key functionality
@@ -96,27 +89,26 @@ export * from './api-keys';
 
 // Client-side team functionality - explicit exports to avoid ambiguity
 export {
-  // Team hooks
-  useTeams,
-  useTeam,
-  useTeamInvitations,
-  useTeamStats,
-  
+  cancelInvitation,
   // Team methods (standalone functions)
   createTeam,
-  updateTeam,
   deleteTeam,
   getTeam,
-  listTeams,
-  inviteToTeam,
-  listTeamInvitations,
-  respondToInvitation,
-  cancelInvitation,
-  updateTeamMember,
-  removeTeamMember,
   getTeamStats,
   getUserPendingInvitations,
+  inviteToTeam,
   leaveTeam,
+  listTeamInvitations,
+  listTeams,
+  removeTeamMember,
+  respondToInvitation,
+  updateTeam,
+  updateTeamMember,
+  useTeam,
+  useTeamInvitations,
+  // Team hooks
+  useTeams,
+  useTeamStats,
 } from './teams';
 
 // Types

@@ -16,23 +16,16 @@ export {
 export {
   createNextJSServerAnalytics,
   createNextJSServerAnalyticsWithBootstrap,
-  getAllFeatureFlagsOnServer,
-  getFeatureFlagOnServer,
   getPostHogBootstrapDataOnServer,
-  isFeatureEnabledOnServer,
   type NextJSServerAnalyticsConfig,
   NextJSServerAnalyticsManager,
 } from './server';
 
 // React Server Component exports
 export {
-  createServerFeatureFlags,
-  getAllServerFeatureFlags,
   getServerBootstrapData,
-  getServerFeatureFlag,
   identifyServerUser,
   identifyUserAction,
-  isServerFeatureEnabled,
   ServerAnalyticsProvider,
   trackEventAction,
   trackServerEvent,
@@ -49,8 +42,6 @@ export {
   useAnalytics,
   useAnalyticsConsent,
   useEcommerceTracking,
-  useFeatureFlag,
-  useFeatureFlags,
   useFormTracking,
   useIdentifyUser,
   usePageTracking,
@@ -78,12 +69,7 @@ export type {
   TrackingOptions,
 } from '../shared/types/types';
 
-export type {
-  BootstrapData,
-  FeatureFlagPayload,
-  FeatureFlags,
-  PostHogConfig,
-} from '../shared/types/posthog-types';
+export type { BootstrapData, PostHogConfig } from '../shared/types/posthog-types';
 
 // Export utilities
 export {

@@ -44,7 +44,7 @@ export default async function Page({
     id,
     author,
     category,
-    content,
+    content: _content,
     date,
     excerpt,
     featuredImage,
@@ -238,7 +238,7 @@ export default async function Page({
               written by
             </span>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-200">
-              <a href="#">{author?.name}</a>
+              <span>{author?.name}</span>
             </h2>
             <span className="text-sm text-neutral-500 sm:text-base dark:text-neutral-300">
               {author?.description}

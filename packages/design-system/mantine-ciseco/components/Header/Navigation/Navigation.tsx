@@ -145,8 +145,41 @@ const DropdownMenu = ({ menuItem }: { menuItem: TNavigationItem }) => {
 
 export interface Props {
   className?: string;
+  currentPath?: string;
   featuredCollection: TCollection;
+  items?: {
+    label: string;
+    href: string;
+    children?: {
+      label: string;
+      href: string;
+    }[];
+    onClick?: () => void;
+    icon?: string;
+    megaMenu?: {
+      columns: {
+        title: string;
+        items: {
+          label: string;
+          href: string;
+        }[];
+      }[];
+    };
+    badge?:
+      | string
+      | {
+          text: string;
+          color: string;
+        };
+  }[];
   menu: TNavigationItem[];
+  orientation?: 'horizontal' | 'vertical';
+  responsive?: boolean;
+  styles?: {
+    item: string;
+    activeItem: string;
+    dropdown: string;
+  };
 }
 const Navigation: FC<Props> = ({ className, featuredCollection, menu }) => {
   return (
@@ -168,4 +201,5 @@ const Navigation: FC<Props> = ({ className, featuredCollection, menu }) => {
   );
 };
 
+export { Navigation };
 export default Navigation;

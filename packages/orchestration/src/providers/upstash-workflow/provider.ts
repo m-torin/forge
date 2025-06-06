@@ -27,6 +27,8 @@ export interface UpstashWorkflowProviderOptions {
   debug?: boolean;
   /** Environment name */
   env?: string;
+  /** Webhook URL pattern - defaults to '/api/workflows/{id}/execute' */
+  webhookUrlPattern?: string;
   /** QStash client configuration */
   qstash: {
     token: string;
@@ -71,6 +73,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   static fromConfig(config: UpstashWorkflowConfig): UpstashWorkflowProvider {
     return new UpstashWorkflowProvider({
       baseUrl: config.config.baseUrl,
+      webhookUrlPattern: config.config.webhookUrlPattern,
       qstash: {
         token: config.config.qstashToken,
       },
@@ -106,7 +109,6 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
           },
         },
         startedAt,
-        startTime: startedAt,
         status: 'pending',
         steps: definition.steps.map((step) => ({
           attempts: 0,
@@ -126,7 +128,8 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       }
 
       // Queue workflow execution using QStash
-      const webhookUrl = `${this.options.baseUrl}/api/workflows/${definition.id}/execute`;
+      const webhookUrlPattern = this.options.webhookUrlPattern || '/api/workflows/{id}/execute';
+      const webhookUrl = `${this.options.baseUrl}${webhookUrlPattern.replace('{id}', definition.id)}`;
 
       await this.qstash.publishJSON({
         url: webhookUrl,
@@ -185,6 +188,10 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
 
       return JSON.parse(data as string);
     } catch (error) {
+      // Re-throw ProviderError instances without wrapping
+      if (error instanceof ProviderError) {
+        throw error;
+      }
       throw createProviderError(
         `Failed to get execution ${executionId}`,
         this.name,
@@ -294,6 +301,10 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
 
       return filtered;
     } catch (error) {
+      // Re-throw ProviderError instances without wrapping
+      if (error instanceof ProviderError) {
+        throw error;
+      }
       throw createProviderError(
         `Failed to list executions for workflow ${workflowId}`,
         this.name,
@@ -310,7 +321,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
     try {
       if (!definition.schedule) {
         throw new ProviderError(
-          'Workflow definition does not include schedule configuration',
+          `Workflow ${definition.id} does not include schedule configuration`,
           this.name,
           'upstash-workflow',
           'NO_SCHEDULE_CONFIG',
@@ -352,6 +363,10 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
 
       return scheduleId;
     } catch (error) {
+      // Re-throw ProviderError instances without wrapping
+      if (error instanceof ProviderError) {
+        throw error;
+      }
       throw createProviderError(
         `Failed to schedule workflow ${definition.id}`,
         this.name,

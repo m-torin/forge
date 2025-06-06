@@ -26,8 +26,6 @@ export type {
   BootstrapData,
   EnhancedPostHogProvider,
   ExperimentInfo,
-  FeatureFlagPayload,
-  FeatureFlags,
   // PostHog types
   PostHogConfig,
   PostHogCookie,
@@ -112,10 +110,7 @@ export {
   createPostHogConfig,
   // PostHog Next.js utilities
   createPostHogServerClient,
-  getAllFeatureFlags,
   getCompleteBootstrapData,
-  getFeatureFlag,
-  isFeatureEnabled,
 } from './utils/posthog-next-utils';
 
 export {

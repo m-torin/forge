@@ -2,26 +2,26 @@
  * React hooks for team management
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type {
-  TeamWithMembers,
   CreateTeamData,
   CreateTeamResult,
-  UpdateTeamData,
-  UpdateTeamResult,
   DeleteTeamResult,
-  ListTeamsResult,
+  GetTeamStatsResult,
   InviteToTeamData,
   InviteToTeamResult,
   ListTeamInvitationsResult,
+  ListTeamsResult,
+  RemoveTeamMemberResult,
   RespondToInvitationData,
   RespondToInvitationResult,
+  TeamStats,
+  TeamWithMembers,
+  UpdateTeamData,
   UpdateTeamMemberData,
   UpdateTeamMemberResult,
-  RemoveTeamMemberResult,
-  TeamStats,
-  GetTeamStatsResult,
+  UpdateTeamResult,
 } from '../../shared/teams/types';
 
 /**
@@ -35,7 +35,7 @@ export function useTeams(organizationId?: string) {
   const fetchTeams = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const url = new URL('/api/auth/teams', window.location.origin);
       if (organizationId) {
@@ -43,12 +43,12 @@ export function useTeams(organizationId?: string) {
       }
 
       const response = await fetch(url.toString(), {
-        method: 'GET',
         credentials: 'include',
+        method: 'GET',
       });
-      
+
       const result: ListTeamsResult = await response.json();
-      
+
       if (result.success && result.teams) {
         setTeams(result.teams);
       } else {
@@ -61,96 +61,99 @@ export function useTeams(organizationId?: string) {
     }
   }, [organizationId]);
 
-  const createTeam = useCallback(async (data: CreateTeamData): Promise<CreateTeamResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch('/api/auth/teams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      
-      const result: CreateTeamResult = await response.json();
-      
-      if (result.success) {
-        await fetchTeams(); // Refresh teams list
-      } else {
-        setError(result.error || 'Failed to create team');
-      }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to create team';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchTeams]);
+  const createTeam = useCallback(
+    async (data: CreateTeamData): Promise<CreateTeamResult> => {
+      setLoading(true);
+      setError(null);
 
-  const updateTeam = useCallback(async (
-    teamId: string,
-    data: UpdateTeamData
-  ): Promise<UpdateTeamResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`/api/auth/teams/${teamId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      
-      const result: UpdateTeamResult = await response.json();
-      
-      if (result.success) {
-        await fetchTeams(); // Refresh teams list
-      } else {
-        setError(result.error || 'Failed to update team');
+      try {
+        const response = await fetch('/api/auth/teams', {
+          body: JSON.stringify(data),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        });
+
+        const result: CreateTeamResult = await response.json();
+
+        if (result.success) {
+          await fetchTeams(); // Refresh teams list
+        } else {
+          setError(result.error || 'Failed to create team');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to create team';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
       }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to update team';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchTeams]);
+    },
+    [fetchTeams],
+  );
+
+  const updateTeam = useCallback(
+    async (teamId: string, data: UpdateTeamData): Promise<UpdateTeamResult> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/auth/teams/${teamId}`, {
+          body: JSON.stringify(data),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'PATCH',
+        });
+
+        const result: UpdateTeamResult = await response.json();
+
+        if (result.success) {
+          await fetchTeams(); // Refresh teams list
+        } else {
+          setError(result.error || 'Failed to update team');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to update team';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchTeams],
+  );
 
   const deleteTeam = useCallback(async (teamId: string): Promise<DeleteTeamResult> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`/api/auth/teams/${teamId}`, {
-        method: 'DELETE',
         credentials: 'include',
+        method: 'DELETE',
       });
-      
+
       const result: DeleteTeamResult = await response.json();
-      
+
       if (result.success) {
-        setTeams(prev => prev.filter(team => team.id !== teamId));
+        setTeams((prev) => prev.filter((team) => team.id !== teamId));
       } else {
         setError(result.error || 'Failed to delete team');
       }
-      
+
       return result;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to delete team';
       setError(error);
-      return { success: false, error };
+      return { error, success: false };
     } finally {
       setLoading(false);
     }
@@ -162,13 +165,13 @@ export function useTeams(organizationId?: string) {
   }, [fetchTeams]);
 
   return {
-    teams,
-    loading,
+    createTeam,
+    deleteTeam,
     error,
     fetchTeams,
-    createTeam,
+    loading,
+    teams,
     updateTeam,
-    deleteTeam,
   };
 }
 
@@ -182,18 +185,18 @@ export function useTeam(teamId: string) {
 
   const fetchTeam = useCallback(async () => {
     if (!teamId) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`/api/auth/teams/${teamId}`, {
-        method: 'GET',
         credentials: 'include',
+        method: 'GET',
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.team) {
         setTeam(result.team);
       } else {
@@ -206,79 +209,83 @@ export function useTeam(teamId: string) {
     }
   }, [teamId]);
 
-  const updateMember = useCallback(async (
-    data: UpdateTeamMemberData
-  ): Promise<UpdateTeamMemberResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`/api/auth/teams/${teamId}/members/${data.userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ role: data.role }),
-      });
-      
-      const result: UpdateTeamMemberResult = await response.json();
-      
-      if (result.success) {
-        await fetchTeam(); // Refresh team data
-      } else {
-        setError(result.error || 'Failed to update member');
-      }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to update member';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [teamId, fetchTeam]);
+  const updateMember = useCallback(
+    async (data: UpdateTeamMemberData): Promise<UpdateTeamMemberResult> => {
+      setLoading(true);
+      setError(null);
 
-  const removeMember = useCallback(async (userId: string): Promise<RemoveTeamMemberResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`/api/auth/teams/${teamId}/members/${userId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      
-      const result: RemoveTeamMemberResult = await response.json();
-      
-      if (result.success) {
-        await fetchTeam(); // Refresh team data
-      } else {
-        setError(result.error || 'Failed to remove member');
+      try {
+        const response = await fetch(`/api/auth/teams/${teamId}/members/${data.userId}`, {
+          body: JSON.stringify({ role: data.role }),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'PATCH',
+        });
+
+        const result: UpdateTeamMemberResult = await response.json();
+
+        if (result.success) {
+          await fetchTeam(); // Refresh team data
+        } else {
+          setError(result.error || 'Failed to update member');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to update member';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
       }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to remove member';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [teamId, fetchTeam]);
+    },
+    [teamId, fetchTeam],
+  );
+
+  const removeMember = useCallback(
+    async (userId: string): Promise<RemoveTeamMemberResult> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/auth/teams/${teamId}/members/${userId}`, {
+          credentials: 'include',
+          method: 'DELETE',
+        });
+
+        const result: RemoveTeamMemberResult = await response.json();
+
+        if (result.success) {
+          await fetchTeam(); // Refresh team data
+        } else {
+          setError(result.error || 'Failed to remove member');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to remove member';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [teamId, fetchTeam],
+  );
 
   useEffect(() => {
     fetchTeam();
   }, [fetchTeam]);
 
   return {
-    team,
-    loading,
     error,
     fetchTeam,
-    updateMember,
+    loading,
     removeMember,
+    team,
+    updateMember,
   };
 }
 
@@ -293,7 +300,7 @@ export function useTeamInvitations(teamId?: string) {
   const fetchInvitations = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const url = new URL('/api/auth/teams/invitations', window.location.origin);
       if (teamId) {
@@ -301,12 +308,12 @@ export function useTeamInvitations(teamId?: string) {
       }
 
       const response = await fetch(url.toString(), {
-        method: 'GET',
         credentials: 'include',
+        method: 'GET',
       });
-      
+
       const result: ListTeamInvitationsResult = await response.json();
-      
+
       if (result.success && result.invitations) {
         setInvitations(result.invitations);
       } else {
@@ -319,95 +326,99 @@ export function useTeamInvitations(teamId?: string) {
     }
   }, [teamId]);
 
-  const inviteUser = useCallback(async (data: InviteToTeamData): Promise<InviteToTeamResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch('/api/auth/teams/invitations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      
-      const result: InviteToTeamResult = await response.json();
-      
-      if (result.success) {
-        await fetchInvitations(); // Refresh invitations
-      } else {
-        setError(result.error || 'Failed to send invitation');
-      }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to send invitation';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchInvitations]);
+  const inviteUser = useCallback(
+    async (data: InviteToTeamData): Promise<InviteToTeamResult> => {
+      setLoading(true);
+      setError(null);
 
-  const respondToInvitation = useCallback(async (
-    data: RespondToInvitationData
-  ): Promise<RespondToInvitationResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`/api/auth/teams/invitations/${data.invitationId}/respond`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ response: data.response }),
-      });
-      
-      const result: RespondToInvitationResult = await response.json();
-      
-      if (result.success) {
-        await fetchInvitations(); // Refresh invitations
-      } else {
-        setError(result.error || 'Failed to respond to invitation');
+      try {
+        const response = await fetch('/api/auth/teams/invitations', {
+          body: JSON.stringify(data),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        });
+
+        const result: InviteToTeamResult = await response.json();
+
+        if (result.success) {
+          await fetchInvitations(); // Refresh invitations
+        } else {
+          setError(result.error || 'Failed to send invitation');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to send invitation';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
       }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to respond to invitation';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchInvitations]);
+    },
+    [fetchInvitations],
+  );
+
+  const respondToInvitation = useCallback(
+    async (data: RespondToInvitationData): Promise<RespondToInvitationResult> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/auth/teams/invitations/${data.invitationId}/respond`, {
+          body: JSON.stringify({ response: data.response }),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        });
+
+        const result: RespondToInvitationResult = await response.json();
+
+        if (result.success) {
+          await fetchInvitations(); // Refresh invitations
+        } else {
+          setError(result.error || 'Failed to respond to invitation');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to respond to invitation';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchInvitations],
+  );
 
   const cancelInvitation = useCallback(async (invitationId: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`/api/auth/teams/invitations/${invitationId}`, {
-        method: 'DELETE',
         credentials: 'include',
+        method: 'DELETE',
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
-        setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
+        setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
       } else {
         setError(result.error || 'Failed to cancel invitation');
       }
-      
+
       return result;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to cancel invitation';
       setError(error);
-      return { success: false, error };
+      return { error, success: false };
     } finally {
       setLoading(false);
     }
@@ -418,13 +429,13 @@ export function useTeamInvitations(teamId?: string) {
   }, [fetchInvitations]);
 
   return {
-    invitations,
-    loading,
+    cancelInvitation,
     error,
     fetchInvitations,
+    invitations,
     inviteUser,
+    loading,
     respondToInvitation,
-    cancelInvitation,
   };
 }
 
@@ -438,18 +449,18 @@ export function useTeamStats(teamId: string) {
 
   const fetchStats = useCallback(async () => {
     if (!teamId) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`/api/auth/teams/${teamId}/stats`, {
-        method: 'GET',
         credentials: 'include',
+        method: 'GET',
       });
-      
+
       const result: GetTeamStatsResult = await response.json();
-      
+
       if (result.success && result.stats) {
         setStats(result.stats);
       } else {
@@ -467,9 +478,9 @@ export function useTeamStats(teamId: string) {
   }, [fetchStats]);
 
   return {
-    stats,
-    loading,
     error,
     fetchStats,
+    loading,
+    stats,
   };
 }

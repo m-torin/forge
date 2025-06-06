@@ -183,14 +183,18 @@ export async function createAIScraper(
 }
 
 // Provider factory functions with async loading
-async function createPlaywrightProvider(config: Partial<ProviderConfig> = {}): Promise<ScrapingProvider> {
+async function createPlaywrightProvider(
+  config: Partial<ProviderConfig> = {},
+): Promise<ScrapingProvider> {
   const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
   const provider = new PlaywrightProvider();
   await provider.initialize(config);
   return provider;
 }
 
-async function createPuppeteerProvider(config: Partial<ProviderConfig> = {}): Promise<ScrapingProvider> {
+async function createPuppeteerProvider(
+  config: Partial<ProviderConfig> = {},
+): Promise<ScrapingProvider> {
   const { PuppeteerProvider } = await import('../../server/providers/puppeteer-provider');
   const provider = new PuppeteerProvider();
   await provider.initialize(config);
@@ -204,21 +208,27 @@ async function createHeroProvider(config: Partial<ProviderConfig> = {}): Promise
   return provider;
 }
 
-async function createCheerioProvider(config: Partial<ProviderConfig> = {}): Promise<ScrapingProvider> {
+async function createCheerioProvider(
+  config: Partial<ProviderConfig> = {},
+): Promise<ScrapingProvider> {
   const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
   const provider = new CheerioProvider();
   await provider.initialize(config);
   return provider;
 }
 
-async function createNodeFetchProvider(config: Partial<ProviderConfig> = {}): Promise<ScrapingProvider> {
+async function createNodeFetchProvider(
+  config: Partial<ProviderConfig> = {},
+): Promise<ScrapingProvider> {
   const { NodeFetchProvider } = await import('../../server/providers/node-fetch-provider');
   const provider = new NodeFetchProvider();
   await provider.initialize(config);
   return provider;
 }
 
-async function createFetchProvider(config: Partial<ProviderConfig> = {}): Promise<ScrapingProvider> {
+async function createFetchProvider(
+  config: Partial<ProviderConfig> = {},
+): Promise<ScrapingProvider> {
   if (typeof window !== 'undefined') {
     const { FetchProvider } = await import('../../client/providers/fetch-provider');
     const provider = new FetchProvider();
@@ -229,7 +239,9 @@ async function createFetchProvider(config: Partial<ProviderConfig> = {}): Promis
   }
 }
 
-async function createConsoleProvider(config: Partial<ProviderConfig> = {}): Promise<ScrapingProvider> {
+async function createConsoleProvider(
+  config: Partial<ProviderConfig> = {},
+): Promise<ScrapingProvider> {
   const { ConsoleProvider } = await import('../providers/console-provider');
   const provider = new ConsoleProvider();
   await provider.initialize(config);

@@ -5,8 +5,8 @@
 import { getSessionCookie } from 'better-auth/cookies';
 import { NextResponse } from 'next/server';
 
-import type { NextRequest } from 'next/server';
 import type { MiddlewareOptions } from '../shared/types';
+import type { NextRequest } from 'next/server';
 
 const defaultPublicApiRoutes = ['/api/health', '/api/public', '/api/auth'];
 
@@ -18,16 +18,18 @@ const isPublicApiRoute = (pathname: string, publicRoutes: string[]) => {
 /**
  * Enhanced middleware specifically for API routes with API key support
  */
-export function createApiMiddleware(options: MiddlewareOptions & {
-  allowedHeaders?: string[];
-  publicApiRoutes?: string[];
-} = {}) {
+export function createApiMiddleware(
+  options: MiddlewareOptions & {
+    allowedHeaders?: string[];
+    publicApiRoutes?: string[];
+  } = {},
+) {
   const {
-    requireAuth = true,
-    publicPaths = [],
     allowedHeaders = ['x-api-key', 'authorization'],
-    publicApiRoutes = [],
     enableRateLimit = false,
+    publicApiRoutes = [],
+    publicPaths = [],
+    requireAuth = true,
   } = options;
 
   return async function apiMiddleware(request: NextRequest) {
@@ -58,11 +60,11 @@ export function createApiMiddleware(options: MiddlewareOptions & {
       // Add headers to indicate API key auth method
       const response = NextResponse.next();
       response.headers.set('x-auth-method', 'api-key');
-      
+
       if (enableRateLimit) {
         response.headers.set('x-rate-limit-check', 'api-key');
       }
-      
+
       return response;
     }
 
@@ -77,7 +79,7 @@ export function createApiMiddleware(options: MiddlewareOptions & {
           message: 'Please provide a valid API key or authentication.',
           supportedMethods: {
             'API Key': allowedHeaders.map((h) => `${h}: your-api-key`),
-            'Session': 'Include session cookie with request',
+            Session: 'Include session cookie with request',
           },
         },
         { status: 401 },
@@ -87,11 +89,11 @@ export function createApiMiddleware(options: MiddlewareOptions & {
     if (sessionCookie) {
       const response = NextResponse.next();
       response.headers.set('x-auth-method', 'session');
-      
+
       if (enableRateLimit) {
         response.headers.set('x-rate-limit-check', 'session');
       }
-      
+
       return response;
     }
 

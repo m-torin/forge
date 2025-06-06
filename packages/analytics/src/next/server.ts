@@ -4,15 +4,9 @@
  */
 
 import { type AnalyticsManager } from '../shared/utils/manager';
-import {
-  createPostHogConfig,
-  getCompleteBootstrapData,
-  getAllFeatureFlags as serverGetAllFeatureFlags,
-  getFeatureFlag as serverGetFeatureFlag,
-  isFeatureEnabled as serverIsFeatureEnabled,
-} from '../shared/utils/posthog-next-utils';
+import { createPostHogConfig, getCompleteBootstrapData } from '../shared/utils/posthog-next-utils';
 
-import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+import type { BootstrapData } from '../shared/types/posthog-types';
 import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 export interface NextJSServerAnalyticsConfig extends AnalyticsConfig {
@@ -160,54 +154,6 @@ export function createNextJSServerAnalytics(
   config: NextJSServerAnalyticsConfig,
 ): NextJSServerAnalyticsManager {
   return new NextJSServerAnalyticsManager(config);
-}
-
-// Server-side Feature Flag Functions (for Server Components)
-
-/**
- * Check if a feature flag is enabled on the server
- */
-export async function isFeatureEnabledOnServer(
-  flag: string,
-  cookies: any,
-  apiKey: string,
-  options?: {
-    host?: string;
-    timeout?: number;
-    defaultValue?: boolean;
-  },
-): Promise<boolean> {
-  return await serverIsFeatureEnabled(flag, cookies, apiKey, options);
-}
-
-/**
- * Get feature flag value on the server
- */
-export async function getFeatureFlagOnServer(
-  flag: string,
-  cookies: any,
-  apiKey: string,
-  options?: {
-    host?: string;
-    timeout?: number;
-    defaultValue?: any;
-  },
-): Promise<any> {
-  return await serverGetFeatureFlag(flag, cookies, apiKey, options);
-}
-
-/**
- * Get all feature flags on the server
- */
-export async function getAllFeatureFlagsOnServer(
-  cookies: any,
-  apiKey: string,
-  options?: {
-    host?: string;
-    timeout?: number;
-  },
-): Promise<FeatureFlags> {
-  return await serverGetAllFeatureFlags(cookies, apiKey, options);
 }
 
 /**

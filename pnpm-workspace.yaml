@@ -22,7 +22,9 @@ catalog:
   "@types/node": ^22.15.29
   "@types/react-dom": ^19.1.6
   "@types/react": ^19.1.6
+  "@vercel/flags": ^3.1.1
   "@vercel/style-guide": ^6.0.0
+  "@vercel/toolbar": ^0.1.27
   "@vitest/coverage-v8": ^3.2.1
   "@vitest/ui": ^3.2.1
   next-themes: ^0.4.6

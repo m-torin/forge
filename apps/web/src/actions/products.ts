@@ -205,7 +205,12 @@ export async function getBrands() {
         { id: "brand-2", name: "Adidas", productCount: 120, slug: "adidas" },
         { id: "brand-3", name: "Puma", productCount: 80, slug: "puma" },
         { id: "brand-4", name: "Reebok", productCount: 60, slug: "reebok" },
-        { id: "brand-5", name: "Under Armour", productCount: 90, slug: "under-armour" },
+        {
+          id: "brand-5",
+          name: "Under Armour",
+          productCount: 90,
+          slug: "under-armour",
+        },
       ];
     },
     ["brands"],
@@ -266,7 +271,7 @@ export async function getLocations() {
           id: "loc-1",
           name: "New York Store",
           address: "123 5th Avenue, New York, NY 10001",
-          coordinates: { lat: 40.7128, lng: -74.0060 },
+          coordinates: { lat: 40.7128, lng: -74.006 },
           country: "USA",
           slug: "new-york",
         },

@@ -123,7 +123,7 @@ export default function Layout({ children }) {
     },
   });
 
-  return <>{children}</>;
+  return children;
 }
 ```
 

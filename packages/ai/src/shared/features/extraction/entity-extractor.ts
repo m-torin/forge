@@ -1,8 +1,8 @@
 export class EntityExtractor {
   // Placeholder implementation - can be enhanced with specific providers
   async extractEntities(
-    text: string,
-    customPrompt?: string,
+    _text: string,
+    _customPrompt?: string,
   ): Promise<{
     entities: {
       type: string;

@@ -10,20 +10,20 @@ export { createStep, createStepWithValidation } from './step-factory';
 
 // Enhancer functions from separate module
 export {
+  compose,
+  withStepCircuitBreaker,
   withStepMonitoring,
   withStepRetry,
-  withStepCircuitBreaker,
   withStepTimeout,
-  compose,
 } from './step-factory-enhancers';
 
 // Legacy complex API (for backward compatibility)
 export {
   createWorkflowStep,
-  StandardWorkflowStep,
-  StepFactory,
   defaultStepFactory,
   matchError,
+  StandardWorkflowStep,
+  StepFactory,
   when,
 } from './step-factory';
 
@@ -32,20 +32,20 @@ export type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/ste
 
 // Legacy API types
 export type {
-  NonEmptyArray,
-  StepId,
-  ExecutionId,
-  ProgressState,
   ErrorCode,
+  ExecutionId,
+  NonEmptyArray,
+  ProgressState,
   StepExecutionConfig,
-  StepValidationConfig,
-  ValidationResult,
-  StepMetadata,
-  StepPerformanceData,
   StepExecutionContext,
   StepExecutionFunction,
-  WorkflowStepDefinition,
   StepFactoryConfig,
+  StepId,
+  StepMetadata,
+  StepPerformanceData,
+  StepValidationConfig,
+  ValidationResult,
+  WorkflowStepDefinition,
 } from './step-factory';
 
 // Export individual modules for granular access
@@ -55,51 +55,51 @@ export * as StepPerformance from './step-factory/step-performance';
 
 // Step templates exports
 export {
-  StepTemplates,
-  createHttpRequestStep,
-  createDatabaseQueryStep,
-  createFileProcessingStep,
-  createNotificationStep,
-  createDataTransformationStep,
-  createConditionalStep,
-  createDelayStep,
-  HttpRequestInputSchema,
-  HttpRequestOutputSchema,
-  DatabaseQueryInputSchema,
-  DatabaseQueryOutputSchema,
-  FileProcessingInputSchema,
-  FileProcessingOutputSchema,
-  NotificationInputSchema,
-  NotificationOutputSchema,
-  DataTransformationInputSchema,
-  DataTransformationOutputSchema,
   ConditionalInputSchema,
   ConditionalOutputSchema,
+  createConditionalStep,
+  createDatabaseQueryStep,
+  createDataTransformationStep,
+  createDelayStep,
+  createFileProcessingStep,
+  createHttpRequestStep,
+  createNotificationStep,
+  DatabaseQueryInputSchema,
+  DatabaseQueryOutputSchema,
+  DataTransformationInputSchema,
+  DataTransformationOutputSchema,
+  FileProcessingInputSchema,
+  FileProcessingOutputSchema,
+  HttpRequestInputSchema,
+  HttpRequestOutputSchema,
+  NotificationInputSchema,
+  NotificationOutputSchema,
+  StepTemplates,
 } from './step-templates';
 
 export type {
-  StepTemplateType,
-  HttpRequestInput,
-  HttpRequestOutput,
-  DatabaseQueryInput,
-  DatabaseQueryOutput,
-  FileProcessingInput,
-  FileProcessingOutput,
-  NotificationInput,
-  NotificationOutput,
-  DataTransformationInput,
-  DataTransformationOutput,
   ConditionalInput,
   ConditionalOutput,
+  DatabaseQueryInput,
+  DatabaseQueryOutput,
+  DataTransformationInput,
+  DataTransformationOutput,
+  FileProcessingInput,
+  FileProcessingOutput,
+  HttpRequestInput,
+  HttpRequestOutput,
+  NotificationInput,
+  NotificationOutput,
+  StepTemplateType,
 } from './step-templates';
 
 // Step registry exports
-export { StepRegistry, defaultStepRegistry } from './step-registry';
+export { defaultStepRegistry, StepRegistry } from './step-registry';
 
 export type {
-  StepRegistryEntry,
-  StepSearchFilters,
   StepCompositionConfig,
   StepDependencyNode,
   StepExecutionPlan,
+  StepRegistryEntry,
+  StepSearchFilters,
 } from './step-registry';

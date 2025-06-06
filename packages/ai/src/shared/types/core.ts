@@ -89,3 +89,11 @@ export interface EntityResult {
     confidence: number;
   }[];
 }
+
+export interface AICoreConfig {
+  capabilities: Capability[];
+  defaultModel?: string;
+  maxTokens?: number;
+  temperature?: number;
+  timeout?: number;
+}

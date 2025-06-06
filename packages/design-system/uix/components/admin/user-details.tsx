@@ -32,7 +32,7 @@ import {
   revokeUserSessions,
   setUserRole,
   unbanUser,
-} from '@repo/auth-new/client';
+} from '@repo/auth/client';
 
 import { ChangePasswordDialog } from './change-password-dialog';
 

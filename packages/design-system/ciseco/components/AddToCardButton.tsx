@@ -105,7 +105,7 @@ const AddToCardButton = ({
 }: AddToCardButtonProps) => {
   const notifyAddTocart = () => {
     toast.custom(
-      (t) => (
+      (t: any) => (
         <NotifyAddToCart
           color={color}
           show={t.visible}

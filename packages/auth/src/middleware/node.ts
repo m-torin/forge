@@ -7,8 +7,8 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '../server/auth';
 
-import type { NextRequest } from 'next/server';
 import type { MiddlewareOptions } from '../shared/types';
+import type { NextRequest } from 'next/server';
 
 const defaultPublicRoutes = [
   '/sign-in',
@@ -26,7 +26,7 @@ const isPublicRoute = (pathname: string, publicPaths: string[]) => {
   if (pathname === '/') {
     return true;
   }
-  
+
   const allPublicPaths = [...defaultPublicRoutes, ...publicPaths];
   return allPublicPaths.some((route) => pathname.startsWith(route));
 };
@@ -37,10 +37,10 @@ const isPublicRoute = (pathname: string, publicPaths: string[]) => {
  */
 export function createNodeMiddleware(options: MiddlewareOptions = {}) {
   const {
-    requireAuth = true,
-    redirectTo = '/sign-in',
-    publicPaths = [],
     enableSessionCache = true,
+    publicPaths = [],
+    redirectTo = '/sign-in',
+    requireAuth = true,
   } = options;
 
   return async function nodeMiddleware(request: NextRequest) {
@@ -70,11 +70,11 @@ export function createNodeMiddleware(options: MiddlewareOptions = {}) {
 
       // Session exists, add caching headers if enabled
       const response = NextResponse.next();
-      
+
       if (enableSessionCache) {
         response.headers.set('x-session-cached', 'true');
         response.headers.set('x-user-id', session.user.id);
-        
+
         if (session.session.activeOrganizationId) {
           response.headers.set('x-organization-id', session.session.activeOrganizationId);
         }
@@ -83,7 +83,7 @@ export function createNodeMiddleware(options: MiddlewareOptions = {}) {
       return response;
     } catch (error) {
       console.error('Node middleware error:', error);
-      
+
       // Redirect to sign-in on error
       const signInUrl = new URL(redirectTo, request.url);
       signInUrl.searchParams.set('error', 'session-error');

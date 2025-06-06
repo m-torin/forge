@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: 'Backstage',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({ children }: RootLayoutProperties): React.ReactElement {
   return (
     <html lang="en">

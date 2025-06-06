@@ -101,9 +101,7 @@ export {
   // Core scraping patterns
   quickScrape,
   scrapeMultiple,
-
   scrapeWithPagination,
-
   sessionScrape,
   withBrowser,
   withSession,
@@ -119,10 +117,9 @@ export {
   // Utility provider
   ConsoleProvider,
   HeroProvider,
-  
   NodeFetchProvider,
   PlaywrightProvider,
-  
+
   // Browser automation providers
   PuppeteerProvider,
 } from './server/providers';

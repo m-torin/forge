@@ -62,12 +62,32 @@ export interface WorkflowClientConfig {
 }
 
 /**
+ * Create abort signal with timeout
+ */
+function createTimeoutSignal(timeout: number): AbortSignal | undefined {
+  // Check if AbortSignal.timeout is available (Node.js 16+)
+  if ('timeout' in AbortSignal && typeof AbortSignal.timeout === 'function') {
+    return AbortSignal.timeout(timeout);
+  }
+  // Fallback for older environments or tests
+  return undefined;
+}
+
+/**
  * Simple workflow client for browser/client-side usage
  */
 export class WorkflowClient {
   private config: Required<WorkflowClientConfig>;
 
   constructor(config: WorkflowClientConfig) {
+    if (!config.baseUrl) {
+      throw new Error('baseUrl is required');
+    }
+
+    if (config.apiKey !== undefined && !config.apiKey) {
+      throw new Error('apiKey cannot be empty string');
+    }
+
     this.config = {
       apiKey: undefined,
       enableRetries: true,
@@ -99,7 +119,7 @@ export class WorkflowClient {
           ...this.config.headers,
         },
         method: 'POST',
-        signal: AbortSignal.timeout(this.config.timeout),
+        signal: createTimeoutSignal(this.config.timeout),
       });
 
       if (!response.ok) {
@@ -134,7 +154,7 @@ export class WorkflowClient {
             ...this.config.headers,
           },
           method: 'GET',
-          signal: AbortSignal.timeout(this.config.timeout),
+          signal: createTimeoutSignal(this.config.timeout),
         },
       );
 
@@ -174,7 +194,7 @@ export class WorkflowClient {
             ...this.config.headers,
           },
           method: 'POST',
-          signal: AbortSignal.timeout(this.config.timeout),
+          signal: createTimeoutSignal(this.config.timeout),
         },
       );
 
@@ -220,7 +240,7 @@ export class WorkflowClient {
           ...this.config.headers,
         },
         method: 'GET',
-        signal: AbortSignal.timeout(this.config.timeout),
+        signal: createTimeoutSignal(this.config.timeout),
       });
 
       if (!response.ok) {

@@ -30,24 +30,7 @@
 // ============================================================================
 
 // Re-export everything from server for convenience
-// ============================================================================
-// FEATURE FLAGS FOR NEXT.JS SERVER
-// ============================================================================
-
-// Import feature flag functions for convenience exports
-import {
-  commonFlags,
-  createFeatureFlagManager,
-  createFlagContext,
-  createTypedFeatureFlags,
-  evaluateFlag,
-  trackFlagExposure,
-} from './shared/feature-flags';
-import {
-  getFeatureFlagVariant,
-  getFeatureFlagWithFallback,
-} from './shared/utils/posthog-next-utils';
-
+// Re-export everything from server for convenience
 export * from './server';
 
 // ============================================================================
@@ -55,15 +38,9 @@ export * from './server';
 // ============================================================================
 
 export {
-  createServerFeatureFlags,
-  getAllServerFeatureFlags,
   getServerBootstrapData,
-
-  // Server-side feature flag functions
-  getServerFeatureFlag,
   identifyServerUser,
   identifyUserAction,
-  isServerFeatureEnabled,
   // Context management for RSCs
   ServerAnalyticsProvider,
 
@@ -89,16 +66,10 @@ export {
 export type { NextJSServerAnalyticsConfig } from './next/server';
 
 // ============================================================================
-// POSTHOG SERVER-SIDE FEATURE FLAGS
+// POSTHOG SERVER-SIDE BOOTSTRAP
 // ============================================================================
 
-export {
-  getAllFeatureFlagsOnServer,
-  getFeatureFlagOnServer,
-  getPostHogBootstrapDataOnServer,
-  // Server-side feature flag functions
-  isFeatureEnabledOnServer,
-} from './next/server';
+export { getPostHogBootstrapDataOnServer } from './next/server';
 
 // PostHog server utilities (from next-utils)
 export {
@@ -107,55 +78,9 @@ export {
   createPostHogServerClient,
   createPostHogSuspenseData,
   getCompleteBootstrapData,
-  getFeatureFlagVariant,
-  // Enhanced feature flag utilities
-  getFeatureFlagWithFallback,
-  getMultipleFeatureFlags,
   getOrGenerateDistinctId,
   getPostHogBootstrapData,
-  trackFeatureFlagExposure,
 } from './shared/utils/posthog-next-utils';
-
-// Server-side feature flag helpers optimized for Next.js RSC
-export const nextServerFlags = {
-  // Server-side flag evaluation with cookies integration
-  evaluate: async (key: string, defaultValue: any, cookies?: any) => {
-    // This would integrate with PostHog server client and cookies
-    return defaultValue; // Placeholder
-  },
-
-  // Batch server-side flag evaluation
-  evaluateBatch: async (flags: string[], cookies?: any) => {
-    // This would integrate with PostHog server batch evaluation
-    return {}; // Placeholder
-  },
-
-  // PostHog server integration helpers
-  posthog: {
-    context: createFlagContext,
-    evaluate: evaluateFlag,
-    track: trackFlagExposure,
-    withCookies: (cookies: any) => ({
-      evaluate: (key: string, defaultValue: any) =>
-        getFeatureFlagWithFallback(key, cookies, process.env.NEXT_PUBLIC_POSTHOG_KEY || '', {
-          defaultValue,
-        }),
-      variant: (key: string) =>
-        getFeatureFlagVariant(key, cookies, process.env.NEXT_PUBLIC_POSTHOG_KEY || ''),
-    }),
-  },
-};
-
-// Re-export feature flag system for Next.js server
-export const flagsServer = {
-  typed: createTypedFeatureFlags,
-  common: commonFlags,
-  context: createFlagContext,
-  evaluate: evaluateFlag,
-  manager: createFeatureFlagManager,
-  nextjs: nextServerFlags,
-  track: trackFlagExposure,
-};
 
 // ============================================================================
 // MIDDLEWARE INTEGRATION
@@ -193,7 +118,6 @@ export type {
   TrackedComponentProps,
   TypedTrackFunction,
   UseAnalyticsReturn,
-  UseFeatureFlagsReturn,
 } from './next/types.d';
 
 // ============================================================================
@@ -215,13 +139,9 @@ export type {
  *     title: 'Home Page'
  *   });
  *
- *   // Check feature flag
- *   const showBeta = await getServerFeatureFlag('beta-feature', cookies());
- *
  *   return (
  *     <div>
  *       <h1>Welcome</h1>
- *       {showBeta && <BetaFeature />}
  *     </div>
  *   );
  * }
@@ -244,21 +164,6 @@ export type {
  *   }));
  *
  *   // Handle request...
- * }
- * ```
- *
- * @example Server Actions
- * ```typescript
- * 'use server';
- * import { trackServerAction } from '@repo/analytics/server/next';
- *
- * export async function submitForm(formData: FormData) {
- *   await trackServerAction('Form Submitted', {
- *     form_id: 'contact',
- *     email: formData.get('email')
- *   });
- *
- *   // Process form...
  * }
  * ```
  *

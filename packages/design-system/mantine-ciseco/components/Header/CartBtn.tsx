@@ -3,14 +3,14 @@
 import { ShoppingCart02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
-import { useAside } from '../aside';
+interface CartBtnProps {
+  onClick?: () => void;
+}
 
-export default function CartBtn() {
-  const { open: openAside } = useAside();
-
+export default function CartBtn({ onClick }: CartBtnProps) {
   return (
     <button
-      onClick={() => openAside('cart')}
+      onClick={onClick}
       className="relative -m-2.5 flex cursor-pointer items-center justify-center rounded-full p-2.5 hover:bg-neutral-100 focus-visible:outline-0 dark:hover:bg-neutral-800"
     >
       <div className="absolute top-2 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] leading-none font-medium text-white dark:bg-primary-600">

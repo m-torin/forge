@@ -60,13 +60,13 @@ vi.mock('@repo/database/prisma', () => ({
 
 // Mock analytics
 vi.mock('@repo/analytics/server', () => ({
+  identify: vi.fn(),
   createServerAnalytics: vi.fn(() => ({
-    emit: vi.fn(),
     identify: vi.fn(),
+    emit: vi.fn(),
     track: vi.fn(),
   })),
   track: vi.fn(),
-  identify: vi.fn(),
 }));
 
 // Mock email

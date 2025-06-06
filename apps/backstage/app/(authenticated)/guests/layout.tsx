@@ -20,14 +20,10 @@ export default function AdminLayout({ children }: AdminLayoutProperties): React.
   const navLinks = [
     { href: '/guests' as Route, label: 'Users' },
     { href: '/guests/organizations' as Route, label: 'Organizations' },
-    { href: '/guests/sessions' as Route, label: 'Sessions' },
-    { href: '/guests/api-keys' as Route, label: 'API Keys' },
-    { href: '/guests/roles' as Route, label: 'Roles & Permissions' },
-    { href: '/guests/debug-auth' as Route, label: 'Debug Auth' },
   ];
 
-  // Only show navbar on debug-auth page
-  const showNavbar = pathname === '/guests/debug-auth';
+  // Simplified layout without debug functionality
+  const showNavbar = false;
 
   return (
     <AppShell

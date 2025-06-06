@@ -51,8 +51,8 @@ export class FileTrainingStorage implements TrainingStorage {
     try {
       const fs = await import('fs/promises');
       await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (error) {
-      console.warn('Failed to save training data to file:', error);
+    } catch (_error) {
+      console.error('Failed to save training data');
     }
   }
 
@@ -68,7 +68,8 @@ export class FileTrainingStorage implements TrainingStorage {
       const fs = await import('fs/promises');
       const content = await fs.readFile(this.filePath, 'utf-8');
       return JSON.parse(content);
-    } catch (error) {
+    } catch (_error) {
+      console.error('Failed to load training data');
       // File doesn't exist or is invalid
       return [];
     }
@@ -83,7 +84,7 @@ export class FileTrainingStorage implements TrainingStorage {
     try {
       const fs = await import('fs/promises');
       await fs.unlink(this.filePath);
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist, ignore
     }
   }

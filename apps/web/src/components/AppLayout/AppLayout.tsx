@@ -45,7 +45,7 @@ export function AppLayout({
     asideOpened,
     asideWidth,
     navbarWidth,
-    toggleAside,
+    toggleAside: _toggleAside,
     footerEnabled,
     footerHeight,
     headerEnabled,

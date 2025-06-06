@@ -2,9 +2,9 @@
  * Core workflow type definitions
  */
 
+import type { StepRegistry } from '../factories/step-registry';
 // import type { EventBus } from '../features/event-bus';
 import type { AdvancedScheduler } from '../features/scheduler';
-import type { StepRegistry } from '../factories/step-registry';
 
 // Temporary EventBus type until event-bus feature is implemented
 type EventBus = any;
@@ -80,10 +80,6 @@ export interface WorkflowExecution {
   steps: WorkflowStepExecution[];
   /** Workflow definition ID */
   workflowId: string;
-  /** When execution started */
-  startTime: Date;
-  /** When execution completed (if finished) */
-  endTime?: Date;
 }
 
 export interface WorkflowStepExecution {
@@ -252,7 +248,10 @@ export interface ProviderHealth {
 
 export interface WorkflowEngineConfig {
   defaultProvider?: string;
-  providers: WorkflowProvider[];
+  events?: {
+    enabled: boolean;
+    bus?: EventBus;
+  };
   monitoring?: {
     enabled: boolean;
     metrics?: {
@@ -260,10 +259,7 @@ export interface WorkflowEngineConfig {
       interval?: number;
     };
   };
-  events?: {
-    enabled: boolean;
-    bus?: EventBus;
-  };
+  providers: WorkflowProvider[];
   scheduling?: {
     enabled: boolean;
     service?: SchedulingService;

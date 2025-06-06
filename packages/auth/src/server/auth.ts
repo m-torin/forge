@@ -34,19 +34,25 @@ const config = createAuthConfig();
 // Create analytics instance for auth tracking
 const analyticsInstance = createServerAnalytics({
   providers: {
-    posthog: process.env.POSTHOG_API_KEY
+    ...(process.env.POSTHOG_API_KEY
       ? {
-          apiKey: process.env.POSTHOG_API_KEY,
-          config: {
-            apiHost: process.env.POSTHOG_HOST || "https://app.posthog.com",
-          },
+          posthog: {
+            apiKey: process.env.POSTHOG_API_KEY,
+            config: {
+              apiHost: process.env.POSTHOG_HOST || 'https://app.posthog.com',
+            },
+          } as any,
         }
-      : undefined,
-    console: {
-      enabled: process.env.NODE_ENV === "development",
-    },
+      : {}),
+    ...(process.env.NODE_ENV === 'development'
+      ? {
+          console: {
+            enabled: true,
+          } as any,
+        }
+      : {}),
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === 'development',
 });
 
 let analytics: any = null;
@@ -202,10 +208,10 @@ export const auth: any = betterAuth({
 
                 if (analytics) {
                   await analytics.track('Organization Created', {
-                    userId: user.id,
                     organizationId: organization.id,
                     organizationName: organization.name,
                     organizationSlug: organization.slug,
+                    userId: user.id,
                   });
                 }
               },
@@ -269,10 +275,13 @@ export const auth: any = betterAuth({
             permissions: {
               defaultPermissions: async () => {
                 const defaultPerms = config.apiKeys?.defaultPermissions || ['read'];
-                return defaultPerms.reduce((acc, perm) => {
-                  acc[perm] = ['user', 'organization'];
-                  return acc;
-                }, {} as Record<string, string[]>);
+                return defaultPerms.reduce(
+                  (acc, perm) => {
+                    acc[perm] = ['user', 'organization'];
+                    return acc;
+                  },
+                  {} as Record<string, string[]>,
+                );
               },
             },
 
@@ -312,9 +321,9 @@ export const auth: any = betterAuth({
             defaultBanExpiresIn: 60 * 60 * 24 * 7, // 7 days
             defaultBanReason: 'Violated terms of service',
             defaultRole: 'user',
+            enableImpersonation: config.features.impersonation,
             impersonationSessionDuration: 60 * 60, // 1 hour
             roles: adminRoles,
-            enableImpersonation: config.features.impersonation,
           }),
         ]
       : []),

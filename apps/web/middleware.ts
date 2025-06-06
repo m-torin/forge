@@ -16,8 +16,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // Otherwise, run auth middleware
-  const authHandler = authMiddleware();
-  return authHandler(request);
+  return authMiddleware(request);
 }
 
 export const config = {

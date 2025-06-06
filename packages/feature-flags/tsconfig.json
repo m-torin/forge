@@ -1,0 +1,12 @@
+{
+  "extends": "@repo/config/typescript/base.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "target": "es2022"
+  },
+  "include": ["src/**/*", "examples/**/*", "eslint.config.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

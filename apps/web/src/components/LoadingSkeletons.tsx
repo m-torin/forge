@@ -2,7 +2,8 @@ export function ProductGridSkeleton() {
   return (
     <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {[...Array(8)].map((_, i) => (
-        <div key={i} className="animate-pulse">
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={`product-skeleton-${i}`} className="animate-pulse">
           <div className="aspect-[11/12] rounded-3xl bg-neutral-200 dark:bg-neutral-700" />
           <div className="mt-4 space-y-2">
             <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />
@@ -40,7 +41,8 @@ export function BlogSkeleton() {
   return (
     <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
       {[...Array(3)].map((_, i) => (
-        <div key={i} className="animate-pulse">
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={`blog-skeleton-${i}`} className="animate-pulse">
           <div className="aspect-video rounded-2xl bg-neutral-200 dark:bg-neutral-700" />
           <div className="mt-4 space-y-2">
             <div className="h-6 w-3/4 rounded bg-neutral-200 dark:bg-neutral-700" />

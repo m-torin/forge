@@ -24,17 +24,7 @@ export const AIChat = ({
   systemPrompt,
   welcomeMessage = 'Hello! How can I help you today?',
 }: AIChatProps) => {
-  const {
-    append,
-    clear,
-    handleInputChange,
-    handleSubmit,
-    input,
-    isLoading,
-    messages,
-    regenerate,
-    stop,
-  } = useAIChat({
+  const { append, isLoading, messages } = useAIChat({
     api,
     initialMessages: welcomeMessage
       ? [{ id: 'welcome', content: welcomeMessage, role: 'assistant' as const }]

@@ -2,34 +2,36 @@ import { vi } from 'vitest';
 
 // Mock QStash Client
 export const createMockQStashClient = () => ({
-  publishJSON: vi.fn().mockResolvedValue({
-    messageId: 'msg_123',
-  }),
-  schedules: {
-    create: vi.fn().mockResolvedValue({
-      scheduleId: 'schedule_123',
-    }),
+  dlq: {
+    deleteMessage: vi.fn().mockResolvedValue(true),
+    listMessages: vi.fn().mockResolvedValue([]),
+  },
+  events: vi.fn().mockResolvedValue([]),
+  messages: {
+    cancel: vi.fn().mockResolvedValue(true),
     delete: vi.fn().mockResolvedValue(true),
     get: vi.fn().mockResolvedValue({
-      scheduleId: 'schedule_123',
-      cron: '0 9 * * 1',
-      destination: 'http://localhost:3001/api/webhook',
-    }),
-    list: vi.fn().mockResolvedValue([]),
-  },
-  messages: {
-    get: vi.fn().mockResolvedValue({
-      messageId: 'msg_123',
       url: 'http://localhost:3001/api/webhook',
       body: '{"test": "data"}',
       createdAt: Date.now(),
+      messageId: 'msg_123',
     }),
-    cancel: vi.fn().mockResolvedValue(true),
   },
-  events: vi.fn().mockResolvedValue([]),
-  dlq: {
-    listMessages: vi.fn().mockResolvedValue([]),
-    deleteMessage: vi.fn().mockResolvedValue(true),
+  publishJSON: vi.fn().mockResolvedValue({
+    messageId: 'msg_' + Math.random().toString(36).substring(7),
+  }),
+  schedules: {
+    create: vi.fn().mockImplementation(() => {
+      const scheduleId = 'schedule_' + Math.random().toString(36).substring(7);
+      return Promise.resolve({ scheduleId });
+    }),
+    delete: vi.fn().mockResolvedValue(true),
+    get: vi.fn().mockResolvedValue({
+      cron: '0 9 * * 1',
+      destination: 'http://localhost:3001/api/webhook',
+      scheduleId: 'schedule_123',
+    }),
+    list: vi.fn().mockResolvedValue([]),
   },
 });
 
@@ -38,80 +40,92 @@ export const createMockRedisClient = () => {
   const storage = new Map<string, string>();
 
   return {
-    set: vi.fn().mockImplementation(async (key: string, value: string, options?: any) => {
-      storage.set(key, value);
-      return 'OK';
-    }),
-    get: vi.fn().mockImplementation(async (key: string) => {
-      return storage.get(key) || null;
-    }),
-    del: vi.fn().mockImplementation(async (key: string) => {
-      const existed = storage.has(key);
-      storage.delete(key);
-      return existed ? 1 : 0;
-    }),
-    keys: vi.fn().mockImplementation(async (pattern: string) => {
-      const regex = new RegExp(pattern.replace('*', '.*'));
-      return Array.from(storage.keys()).filter((key) => regex.test(key));
-    }),
-    ping: vi.fn().mockResolvedValue('PONG'),
-    exists: vi.fn().mockImplementation(async (key: string) => {
-      return storage.has(key) ? 1 : 0;
-    }),
-    expire: vi.fn().mockResolvedValue(1),
-    ttl: vi.fn().mockResolvedValue(3600),
-    incr: vi.fn().mockImplementation(async (key: string) => {
-      const current = parseInt(storage.get(key) || '0');
-      const newValue = current + 1;
-      storage.set(key, newValue.toString());
-      return newValue;
-    }),
     decr: vi.fn().mockImplementation(async (key: string) => {
       const current = parseInt(storage.get(key) || '0');
       const newValue = current - 1;
       storage.set(key, newValue.toString());
       return newValue;
     }),
-    hset: vi.fn().mockResolvedValue(1),
+    del: vi.fn().mockImplementation(async (key: string) => {
+      const existed = storage.has(key);
+      storage.delete(key);
+      return existed ? 1 : 0;
+    }),
+    exists: vi.fn().mockImplementation(async (key: string) => {
+      return storage.has(key) ? 1 : 0;
+    }),
+    expire: vi.fn().mockResolvedValue(1),
+    get: vi.fn().mockImplementation(async (key: string) => {
+      const value = storage.get(key);
+      return value || null;
+    }),
     hget: vi.fn().mockResolvedValue(null),
     hgetall: vi.fn().mockResolvedValue({}),
-    lpush: vi.fn().mockResolvedValue(1),
-    rpop: vi.fn().mockResolvedValue(null),
+    hset: vi.fn().mockResolvedValue(1),
+    incr: vi.fn().mockImplementation(async (key: string) => {
+      const current = parseInt(storage.get(key) || '0');
+      const newValue = current + 1;
+      storage.set(key, newValue.toString());
+      return newValue;
+    }),
+    keys: vi.fn().mockImplementation(async (pattern: string) => {
+      const regex = new RegExp(pattern.replace('*', '.*'));
+      return Array.from(storage.keys()).filter((key) => regex.test(key));
+    }),
     llen: vi.fn().mockResolvedValue(0),
+    lpush: vi.fn().mockResolvedValue(1),
+    ping: vi.fn().mockResolvedValue('PONG'),
+    rpop: vi.fn().mockResolvedValue(null),
+    set: vi.fn().mockImplementation(async (key: string, value: string, options?: any) => {
+      storage.set(key, value);
+      return 'OK';
+    }),
+    ttl: vi.fn().mockResolvedValue(3600),
 
+    _clear: () => storage.clear(),
     // Helper to access internal storage for testing
     _getStorage: () => storage,
-    _clear: () => storage.clear(),
   };
 };
 
 // Mock Upstash Workflow serve function
 export const createMockWorkflowServe = () => {
   return vi.fn().mockImplementation((handler: Function) => {
-    return async (request: Request) => {
-      const body = await request.json();
-      const context = {
-        requestPayload: body,
-        waitUntil: vi.fn(),
-        sleep: vi
-          .fn()
-          .mockImplementation((ms: number) => new Promise((resolve) => setTimeout(resolve, ms))),
-        run: vi.fn(),
-        cancel: vi.fn(),
-      };
+    // Return Next.js route handler object
+    return {
+      GET: async () => {
+        return Response.json({ status: 'ok' }, { status: 200 });
+      },
+      POST: async (request: Request) => {
+        const body = await request.json();
+        const context = {
+          cancel: vi.fn(),
+          requestPayload: body,
+          run: vi.fn().mockImplementation(async (id: string, fn: Function) => {
+            return await fn();
+          }),
+          sleep: vi
+            .fn()
+            .mockImplementation((ms: number) => new Promise((resolve) => setTimeout(resolve, ms))),
+          waitUntil: vi.fn(),
+        };
 
-      return handler(context);
+        await handler(context);
+        return Response.json({ success: true }, { status: 200 });
+      },
     };
   });
 };
 
 // Mock workflow execution context
 export const createMockWorkflowContext = (payload: any = {}) => ({
+  cancel: vi.fn().mockResolvedValue(true),
+  env: {
+    QSTASH_TOKEN: 'test-token',
+    UPSTASH_REDIS_REST_TOKEN: 'test-redis-token',
+    UPSTASH_REDIS_REST_URL: 'https://test-redis.upstash.io',
+  },
   requestPayload: payload,
-  waitUntil: vi.fn(),
-  sleep: vi
-    .fn()
-    .mockImplementation((ms: number) => new Promise((resolve) => setTimeout(resolve, ms))),
   run: vi.fn().mockImplementation(async (name: string, fn: Function) => {
     try {
       return await fn();
@@ -119,12 +133,10 @@ export const createMockWorkflowContext = (payload: any = {}) => ({
       throw error;
     }
   }),
-  cancel: vi.fn().mockResolvedValue(true),
-  env: {
-    QSTASH_TOKEN: 'test-token',
-    UPSTASH_REDIS_REST_URL: 'https://test-redis.upstash.io',
-    UPSTASH_REDIS_REST_TOKEN: 'test-redis-token',
-  },
+  sleep: vi
+    .fn()
+    .mockImplementation((ms: number) => new Promise((resolve) => setTimeout(resolve, ms))),
+  waitUntil: vi.fn(),
 });
 
 // Setup global mocks for Upstash packages
@@ -135,7 +147,7 @@ export const setupUpstashMocks = () => {
 
   // Mock @upstash/qstash
   vi.doMock('@upstash/qstash', () => ({
-    Client: vi.fn(() => mockQStash),
+    Client: vi.fn().mockImplementation(() => mockQStash),
     Receiver: vi.fn(() => ({
       verify: vi.fn().mockResolvedValue(true),
     })),
@@ -143,7 +155,7 @@ export const setupUpstashMocks = () => {
 
   // Mock @upstash/redis
   vi.doMock('@upstash/redis', () => ({
-    Redis: vi.fn(() => mockRedis),
+    Redis: vi.fn().mockImplementation(() => mockRedis),
   }));
 
   // Mock @upstash/workflow
@@ -152,12 +164,12 @@ export const setupUpstashMocks = () => {
   }));
 
   vi.doMock('@upstash/workflow', () => ({
-    serve: mockServe,
     Client: vi.fn(() => ({
-      run: vi.fn(),
       cancel: vi.fn(),
       getResult: vi.fn(),
+      run: vi.fn(),
     })),
+    serve: mockServe,
   }));
 
   return {
@@ -177,7 +189,6 @@ export const resetUpstashMocks = (mocks: ReturnType<typeof setupUpstashMocks>) =
 export const createTestWorkflowDefinition = (overrides: any = {}) => ({
   id: 'test-workflow',
   name: 'Test Workflow',
-  version: '1.0.0',
   steps: [
     {
       id: 'step-1',
@@ -188,35 +199,17 @@ export const createTestWorkflowDefinition = (overrides: any = {}) => ({
       id: 'step-2',
       name: 'Second Step',
       action: 'send-notification',
-      dependencies: ['step-1'],
+      dependsOn: ['step-1'],
     },
   ],
-  retryConfig: {
-    maxAttempts: 3,
-    delay: 1000,
-  },
+  version: '1.0.0',
   ...overrides,
 });
 
 // Create test execution
 export const createTestExecution = (overrides: any = {}) => ({
   id: 'exec_123',
-  workflowId: 'test-workflow',
-  status: 'pending' as const,
-  startedAt: new Date(),
   input: { test: 'data' },
-  steps: [
-    {
-      stepId: 'step-1',
-      status: 'pending' as const,
-      attempts: 0,
-    },
-    {
-      stepId: 'step-2',
-      status: 'pending' as const,
-      attempts: 0,
-    },
-  ],
   metadata: {
     trigger: {
       type: 'manual' as const,
@@ -224,5 +217,20 @@ export const createTestExecution = (overrides: any = {}) => ({
       timestamp: new Date(),
     },
   },
+  startedAt: new Date(),
+  status: 'pending' as const,
+  steps: [
+    {
+      attempts: 0,
+      status: 'pending' as const,
+      stepId: 'step-1',
+    },
+    {
+      attempts: 0,
+      status: 'pending' as const,
+      stepId: 'step-2',
+    },
+  ],
+  workflowId: 'test-workflow',
   ...overrides,
 });

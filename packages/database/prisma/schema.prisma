@@ -175,25 +175,27 @@ enum AssetType {
 }
 
 model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean
-  image         String?
-  phoneNumber   String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  role          String   @default("user")
-  banned        Boolean  @default(false)
-  banReason     String?
-  banExpires    DateTime?
-  sessions      Session[]
-  accounts      Account[]
-  members       Member[]
-  apiKeys       ApiKey[]
-  twoFactor     TwoFactor?
-  passkeys      Passkey[]
-  scanHistory   ScanHistory[]
+  id              String    @id
+  name            String
+  email           String
+  emailVerified   Boolean
+  image           String?
+  phoneNumber     String?
+  createdAt       DateTime
+  updatedAt       DateTime
+  role            String   @default("user")
+  banned          Boolean  @default(false)
+  banReason       String?
+  banExpires      DateTime?
+  sessions        Session[]
+  accounts        Account[]
+  members         Member[]
+  apiKeys         ApiKey[]
+  twoFactor       TwoFactor?
+  passkeys        Passkey[]
+  scanHistory     ScanHistory[]
+  invitationsSent Invitation[] @relation("InvitedBy")
+  teamMemberships TeamMember[] @relation("TeamMemberships")
 
   @@unique([email])
   @@index([email]) // Performance index
@@ -260,6 +262,7 @@ model Organization {
   name        String
   slug        String       @unique
   logo        String?
+  description String?      // Add description field
   metadata    Json?
   createdAt   DateTime
   updatedAt   DateTime?
@@ -294,6 +297,7 @@ model Invitation {
   id             String       @id
   email          String
   inviterId      String
+  invitedById    String?      // Add invitedById field (alternative naming)
   organizationId String
   role           String
   teamId         String?
@@ -303,25 +307,46 @@ model Invitation {
   updatedAt      DateTime?
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   team           Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  invitedBy      User?        @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
 
   @@index([email])
   @@index([organizationId])
   @@index([teamId])
+  @@index([invitedById])
   @@map("invitation")
 }
 
 model Team {
   id             String       @id
   name           String
+  description    String?      // Add description field
   organizationId String
   createdAt      DateTime
   updatedAt      DateTime?
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members        Member[]
   invitations    Invitation[]
+  teamMembers    TeamMember[] // Add relation to TeamMember
 
   @@index([organizationId])
   @@map("team")
+}
+
+// TeamMember model for explicit team membership
+model TeamMember {
+  id             String   @id @default(cuid())
+  userId         String
+  teamId         String
+  role           String   @default("member")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation("TeamMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  team           Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@index([userId])
+  @@index([teamId])
+  @@map("team_member")
 }
 
 // API Key plugin tables
@@ -332,9 +357,11 @@ model ApiKey {
   prefix              String?   @db.VarChar(12)
   key                 String    @unique
   userId              String
+  organizationId      String?   // Add organizationId field
   refillInterval      Int?
   refillAmount        Int?
   lastRefillAt        DateTime?
+  lastUsedAt          DateTime? // Add lastUsedAt field
   enabled             Boolean   @default(true)
   rateLimitEnabled    Boolean   @default(true)
   rateLimitTimeWindow Int?
@@ -350,6 +377,7 @@ model ApiKey {
   user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([organizationId])
   @@index([enabled])
   @@index([expiresAt])
   @@map("apikey")

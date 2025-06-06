@@ -1,13 +1,6 @@
 import React, { type FC } from "react";
 
-import {
-  AsideProductQuickview,
-  AsideSidebarCart,
-  AsideSidebarNavigation,
-  Divider,
-  Footer,
-  Header2,
-} from "@repo/design-system/mantine-ciseco";
+import { Divider, Footer, Header2 } from "@repo/design-system/mantine-ciseco";
 
 import PageTab from "./PageTab";
 
@@ -42,11 +35,6 @@ const Layout: FC<Props> = ({ children }) => {
         </div>
       </div>
       <Footer />
-
-      {/* ASIDES */}
-      <AsideSidebarNavigation />
-      <AsideSidebarCart />
-      <AsideProductQuickview />
     </>
   );
 };

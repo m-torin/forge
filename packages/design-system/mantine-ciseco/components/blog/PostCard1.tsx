@@ -65,4 +65,5 @@ const PostCard1: FC<Props> = ({ className = 'h-full', post, size = 'md' }) => {
   );
 };
 
+export { PostCard1 };
 export default PostCard1;

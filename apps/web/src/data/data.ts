@@ -342,7 +342,7 @@ export async function getShopData() {
   };
 }
 
-export async function getProductReviews(handle: string) {
+export async function getProductReviews(_handle: string) {
   return [
     {
       id: "1",
@@ -584,7 +584,7 @@ export async function getBlogPostsByHandle(handle: string) {
   };
 }
 
-export function getCart(id: string) {
+export function getCart(_id: string) {
   return {
     id: "gid://shopify/Cart/1",
     cost: {

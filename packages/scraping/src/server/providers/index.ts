@@ -102,10 +102,6 @@ export function registerProvider(
 
 // Legacy factory functions (maintain old API)
 export { createPuppeteerScraper, scrapePuppeteer } from './puppeteer-provider';
-export {
-  quickScrape,
-  scrapeMultiple,
-  scrapeWithPagination,
-} from './playwright-provider';
+export { quickScrape, scrapeMultiple, scrapeWithPagination } from './playwright-provider';
 export { scrapeWithCheerio } from './cheerio-provider';
 export { createHeroScraper, scrapeHero } from './hero-provider';

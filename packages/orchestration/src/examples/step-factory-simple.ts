@@ -5,11 +5,12 @@
  */
 
 import { z } from 'zod';
+
 import {
   createWorkflowStep,
-  StepTemplates,
   type StepExecutionContext,
   type StepExecutionResult,
+  StepTemplates,
 } from '../shared/index';
 
 /**
@@ -19,10 +20,10 @@ export function createGreetingStep() {
   return createWorkflowStep(
     {
       name: 'Simple Greeting',
-      description: 'Creates a simple greeting message',
-      version: '1.0.0',
       category: 'utility',
+      description: 'Creates a simple greeting message',
       tags: ['greeting', 'simple'],
+      version: '1.0.0',
     },
     async (
       context: StepExecutionContext<{ name: string }>,
@@ -30,23 +31,23 @@ export function createGreetingStep() {
       const { input } = context;
 
       return {
-        success: true,
         output: {
           message: `Hello, ${input.name}!`,
         },
         performance: context.performance,
+        success: true,
       };
     },
     {
       validationConfig: {
+        validateInput: true,
+        validateOutput: true,
         input: z.object({
           name: z.string().min(1, 'Name is required'),
         }),
         output: z.object({
           message: z.string(),
         }),
-        validateInput: true,
-        validateOutput: true,
       },
     },
   );

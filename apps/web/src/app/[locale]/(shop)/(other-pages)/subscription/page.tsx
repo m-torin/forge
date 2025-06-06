@@ -84,8 +84,8 @@ const PageSubcription = () => {
           </h2>
         </div>
         <nav className="mb-8 space-y-4">
-          {pricing.features.map((item, index) => (
-            <li key={index} className="flex items-center">
+          {pricing.features.map((item) => (
+            <li key={item} className="flex items-center">
               <span className="text-primary-600 mr-4 inline-flex shrink-0">
                 <CheckIcon aria-hidden="true" className="h-5 w-5" />
               </span>

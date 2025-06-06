@@ -1,7 +1,12 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { createBatchProcessor } from '../../src/shared/patterns/batch';
-import { setupUpstashMocks, resetUpstashMocks } from '../utils/upstash-mocks';
-import type { BatchItem, BatchResult, BatchContext } from '../../src/shared/types/index';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+
+import {
+  type BatchContext,
+  type BatchItem,
+  type BatchResult,
+  createBatchProcessor,
+} from '../../src/shared/patterns/batch';
+import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
 
 describe('Batch Processing', () => {
   let mocks: ReturnType<typeof setupUpstashMocks>;
@@ -26,8 +31,8 @@ describe('Batch Processing', () => {
         processBatch: async (batch) => {
           return batch.map((item) => ({
             id: item.id,
-            success: true,
             result: item.data.value * 2,
+            success: true,
           }));
         },
       });
@@ -42,15 +47,15 @@ describe('Batch Processing', () => {
 
       const processor = createBatchProcessor({
         name: 'progress-processor',
+        onComplete,
+        onProgress,
         processBatch: async (batch) => {
           return batch.map((item) => ({
             id: item.id,
-            success: true,
             result: item.data,
+            success: true,
           }));
         },
-        onProgress,
-        onComplete,
       });
 
       expect(processor.onProgress).toBe(onProgress);
@@ -70,25 +75,25 @@ describe('Batch Processing', () => {
         processBatch: async (batch) => {
           return batch.map((item) => ({
             id: item.id,
-            success: true,
             result: `Processed: ${item.data.name}`,
+            success: true,
           }));
         },
       });
 
       const items: BatchItem<SimpleData>[] = [
-        { id: 'item1', data: { id: 1, name: 'Alice' } },
-        { id: 'item2', data: { id: 2, name: 'Bob' } },
-        { id: 'item3', data: { id: 3, name: 'Charlie' } },
+        { id: 'item1', addedAt: new Date(), data: { id: 1, name: 'Alice' } },
+        { id: 'item2', addedAt: new Date(), data: { id: 2, name: 'Bob' } },
+        { id: 'item3', addedAt: new Date(), data: { id: 3, name: 'Charlie' } },
       ];
 
       const mockContext: BatchContext = {
         batchId: 'batch_123',
-        workflowId: 'workflow_test',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 3,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'workflow_test',
       };
 
       const results = await processor.processBatch(items, mockContext);
@@ -96,8 +101,8 @@ describe('Batch Processing', () => {
       expect(results).toHaveLength(3);
       expect(results[0]).toEqual({
         id: 'item1',
-        success: true,
         result: 'Processed: Alice',
+        success: true,
       });
       expect(results[1].result).toBe('Processed: Bob');
       expect(results[2].result).toBe('Processed: Charlie');
@@ -116,32 +121,32 @@ describe('Batch Processing', () => {
             if (item.data.shouldFail) {
               return {
                 id: item.id,
-                success: false,
                 error: `Processing failed for item ${item.data.id}`,
+                success: false,
               };
             }
             return {
               id: item.id,
-              success: true,
               result: `Success: ${item.data.id}`,
+              success: true,
             };
           });
         },
       });
 
       const items: BatchItem<ErrorData>[] = [
-        { id: 'item1', data: { id: 1, shouldFail: false } },
-        { id: 'item2', data: { id: 2, shouldFail: true } },
-        { id: 'item3', data: { id: 3, shouldFail: false } },
+        { id: 'item1', addedAt: new Date(), data: { id: 1, shouldFail: false } },
+        { id: 'item2', addedAt: new Date(), data: { id: 2, shouldFail: true } },
+        { id: 'item3', addedAt: new Date(), data: { id: 3, shouldFail: false } },
       ];
 
       const mockContext: BatchContext = {
         batchId: 'batch_123',
-        workflowId: 'workflow_test',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 3,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'workflow_test',
       };
 
       const results = await processor.processBatch(items, mockContext);
@@ -159,39 +164,39 @@ describe('Batch Processing', () => {
 
       const processor = createBatchProcessor({
         name: 'progress-test',
+        onComplete,
+        onProgress,
         processBatch: async (batch, context) => {
           // Simulate progress updates
           for (let i = 0; i < batch.length; i++) {
-            await context.updateProgress({
+            await context?.updateProgress({
+              batchId: context?.batchId || '',
+              percentage: ((i + 1) / batch.length) * 100,
               processed: i + 1,
               total: batch.length,
-              percentage: ((i + 1) / batch.length) * 100,
-              batchId: context.batchId,
             });
           }
 
           return batch.map((item) => ({
             id: item.id,
-            success: true,
             result: item.data,
+            success: true,
           }));
         },
-        onProgress,
-        onComplete,
       });
 
       const items: BatchItem<any>[] = [
-        { id: 'item1', data: { value: 1 } },
-        { id: 'item2', data: { value: 2 } },
+        { id: 'item1', addedAt: new Date(), data: { value: 1 } },
+        { id: 'item2', addedAt: new Date(), data: { value: 2 } },
       ];
 
       const mockContext: BatchContext = {
         batchId: 'batch_123',
-        workflowId: 'workflow_test',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 2,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'workflow_test',
       };
 
       await processor.processBatch(items, mockContext);
@@ -199,16 +204,16 @@ describe('Batch Processing', () => {
       // Progress should be updated for each item
       expect(mockContext.updateProgress).toHaveBeenCalledTimes(2);
       expect(mockContext.updateProgress).toHaveBeenCalledWith({
+        batchId: 'batch_123',
+        percentage: 50,
         processed: 1,
         total: 2,
-        percentage: 50,
-        batchId: 'batch_123',
       });
       expect(mockContext.updateProgress).toHaveBeenCalledWith({
+        batchId: 'batch_123',
+        percentage: 100,
         processed: 2,
         total: 2,
-        percentage: 100,
-        batchId: 'batch_123',
       });
     });
   });
@@ -233,18 +238,18 @@ describe('Batch Processing', () => {
             // Process chunk
             const chunkResults = chunk.map((item) => ({
               id: item.id,
-              success: true,
               result: `Processed ${item.data.value}`,
+              success: true,
             }));
 
             results.push(...chunkResults);
 
             // Update progress
-            await context.updateProgress({
+            await context?.updateProgress({
+              batchId: context?.batchId,
+              percentage: (Math.min(i + chunkSize, batch.length) / batch.length) * 100,
               processed: Math.min(i + chunkSize, batch.length),
               total: batch.length,
-              percentage: (Math.min(i + chunkSize, batch.length) / batch.length) * 100,
-              batchId: context.batchId,
             });
           }
 
@@ -255,16 +260,17 @@ describe('Batch Processing', () => {
       // Create large dataset
       const items: BatchItem<LargeData>[] = Array.from({ length: 1000 }, (_, i) => ({
         id: `item_${i}`,
+        addedAt: new Date(),
         data: { id: i, value: `value_${i}` },
       }));
 
       const mockContext: BatchContext = {
         batchId: 'large_batch_123',
-        workflowId: 'large_workflow',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 1000,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'large_workflow',
       };
 
       const results = await processor.processBatch(items, mockContext);
@@ -296,22 +302,22 @@ describe('Batch Processing', () => {
               const result = item.data.size * 2;
               results.push({
                 id: item.id,
-                success: true,
                 result,
+                success: true,
               });
               processedCount++;
 
               // Emit progress for each item
-              await context.events.emit('item.processed', {
+              await context?.events.emit('item.processed', {
                 itemId: item.id,
                 processedCount,
-                totalCount: context.totalCount,
+                totalCount: context?.totalCount,
               });
             } catch (error) {
               results.push({
                 id: item.id,
-                success: false,
                 error: error instanceof Error ? error.message : 'Processing failed',
+                success: false,
               });
             }
           }
@@ -322,16 +328,17 @@ describe('Batch Processing', () => {
 
       const items: BatchItem<StreamData>[] = Array.from({ length: 50 }, (_, i) => ({
         id: `stream_${i}`,
+        addedAt: new Date(),
         data: { id: `stream_${i}`, size: i + 1 },
       }));
 
       const mockContext: BatchContext = {
         batchId: 'stream_batch',
-        workflowId: 'stream_workflow',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 50,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'stream_workflow',
       };
 
       const results = await processor.processBatch(items, mockContext);
@@ -358,22 +365,22 @@ describe('Batch Processing', () => {
               case 'pass':
                 return {
                   id: item.id,
-                  success: true,
                   result: `Success: ${item.data.id}`,
+                  success: true,
                 };
               case 'fail':
                 return {
                   id: item.id,
-                  success: false,
                   error: `Business logic failure for ${item.data.id}`,
+                  success: false,
                 };
               case 'error':
                 throw new Error(`System error for ${item.data.id}`);
               default:
                 return {
                   id: item.id,
-                  success: false,
                   error: 'Unknown operation',
+                  success: false,
                 };
             }
           });
@@ -381,18 +388,18 @@ describe('Batch Processing', () => {
       });
 
       const items: BatchItem<FailureData>[] = [
-        { id: 'item1', data: { id: 1, operation: 'pass' } },
-        { id: 'item2', data: { id: 2, operation: 'fail' } },
-        { id: 'item3', data: { id: 3, operation: 'pass' } },
+        { id: 'item1', addedAt: new Date(), data: { id: 1, operation: 'pass' } },
+        { id: 'item2', addedAt: new Date(), data: { id: 2, operation: 'fail' } },
+        { id: 'item3', addedAt: new Date(), data: { id: 3, operation: 'pass' } },
       ];
 
       const mockContext: BatchContext = {
         batchId: 'failure_batch',
-        workflowId: 'failure_workflow',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 3,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'failure_workflow',
       };
 
       const results = await processor.processBatch(items, mockContext);
@@ -412,15 +419,15 @@ describe('Batch Processing', () => {
         },
       });
 
-      const items: BatchItem<any>[] = [{ id: 'item1', data: { value: 1 } }];
+      const items: BatchItem<any>[] = [{ id: 'item1', addedAt: new Date(), data: { value: 1 } }];
 
       const mockContext: BatchContext = {
         batchId: 'error_batch',
-        workflowId: 'error_workflow',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 1,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'error_workflow',
       };
 
       await expect(processor.processBatch(items, mockContext)).rejects.toThrow(
@@ -432,20 +439,37 @@ describe('Batch Processing', () => {
   describe('Complex Batch Scenarios', () => {
     test('should handle data transformation pipeline', async () => {
       interface RawData {
+        category: string;
         id: string;
         rawValue: string;
-        category: string;
       }
 
       interface ProcessedData {
+        category: string;
         id: string;
         normalizedValue: number;
-        category: string;
         processedAt: Date;
       }
 
       const transformationProcessor = createBatchProcessor<RawData, ProcessedData>({
         name: 'data-transformation',
+        onComplete: async (summary, context) => {
+          await context?.events.emit('transformation.complete', {
+            batchId: context?.batchId,
+            duration: summary.duration,
+            failed: summary.failed,
+            successful: summary.successful,
+            totalProcessed: summary.totalProcessed,
+          });
+        },
+        onProgress: async (progress, context) => {
+          await context?.events.emit('transformation.progress', {
+            batchId: context?.batchId,
+            percentage: progress.percentage,
+            processed: progress.processed,
+            total: progress.total,
+          });
+        },
         processBatch: async (batch, context) => {
           const results: BatchResult<ProcessedData>[] = [];
 
@@ -455,8 +479,8 @@ describe('Batch Processing', () => {
               if (!item.data.rawValue || !item.data.category) {
                 results.push({
                   id: item.id,
-                  success: false,
                   error: 'Missing required fields',
+                  success: false,
                 });
                 continue;
               }
@@ -466,8 +490,8 @@ describe('Batch Processing', () => {
               if (isNaN(normalizedValue)) {
                 results.push({
                   id: item.id,
-                  success: false,
                   error: 'Invalid numeric value',
+                  success: false,
                 });
                 continue;
               }
@@ -477,67 +501,62 @@ describe('Batch Processing', () => {
 
               const processed: ProcessedData = {
                 id: item.data.id,
-                normalizedValue,
                 category: item.data.category.toLowerCase(),
+                normalizedValue,
                 processedAt: new Date(),
               };
 
               results.push({
                 id: item.id,
-                success: true,
                 result: processed,
+                success: true,
               });
 
               // Emit processing event
-              await context.events.emit('data.transformed', {
-                originalId: item.data.id,
+              await context?.events.emit('data.transformed', {
                 category: processed.category,
+                originalId: item.data.id,
                 value: processed.normalizedValue,
               });
             } catch (error) {
               results.push({
                 id: item.id,
-                success: false,
                 error: error instanceof Error ? error.message : 'Processing failed',
+                success: false,
               });
             }
           }
 
           return results;
         },
-        onProgress: async (progress, context) => {
-          await context.events.emit('transformation.progress', {
-            batchId: context.batchId,
-            processed: progress.processed,
-            total: progress.total,
-            percentage: progress.percentage,
-          });
-        },
-        onComplete: async (summary, context) => {
-          await context.events.emit('transformation.complete', {
-            batchId: context.batchId,
-            totalProcessed: summary.totalProcessed,
-            successful: summary.successful,
-            failed: summary.failed,
-            duration: summary.duration,
-          });
-        },
       });
 
       const rawData: BatchItem<RawData>[] = [
-        { id: 'raw1', data: { id: 'data1', rawValue: '123.45', category: 'SALES' } },
-        { id: 'raw2', data: { id: 'data2', rawValue: 'invalid', category: 'MARKETING' } },
-        { id: 'raw3', data: { id: 'data3', rawValue: '67.89', category: 'SUPPORT' } },
-        { id: 'raw4', data: { id: 'data4', rawValue: '', category: 'SALES' } },
+        {
+          id: 'raw1',
+          addedAt: new Date(),
+          data: { id: 'data1', category: 'SALES', rawValue: '123.45' },
+        },
+        {
+          id: 'raw2',
+          addedAt: new Date(),
+          data: { id: 'data2', category: 'MARKETING', rawValue: 'invalid' },
+        },
+        {
+          id: 'raw3',
+          addedAt: new Date(),
+          data: { id: 'data3', category: 'SUPPORT', rawValue: '67.89' },
+        },
+        { id: 'raw4', addedAt: new Date(), data: { id: 'data4', category: 'SALES', rawValue: '' } },
       ];
 
       const mockContext: BatchContext = {
         batchId: 'transform_batch',
-        workflowId: 'etl_pipeline',
+        events: { emit: vi.fn() },
         processedCount: 0,
         totalCount: 4,
-        events: { emit: vi.fn() },
         updateProgress: vi.fn(),
+        workflowId: 'etl_pipeline',
       };
 
       const results = await transformationProcessor.processBatch(rawData, mockContext);

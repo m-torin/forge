@@ -8,13 +8,13 @@ import { createApiMiddleware } from './api';
 import { createNodeMiddleware } from './node';
 import { createWebMiddleware } from './web';
 
-import type { NextRequest } from 'next/server';
 import type { AuthConfig, MiddlewareOptions } from '../shared/types';
+import type { NextRequest } from 'next/server';
 
 export interface AdvancedMiddlewareOptions extends MiddlewareOptions {
   // Runtime selection
   runtime?: 'edge' | 'nodejs' | 'auto';
-  
+
   // Route-specific configurations
   apiRoutes?: {
     paths: string[];
@@ -24,12 +24,12 @@ export interface AdvancedMiddlewareOptions extends MiddlewareOptions {
     protectedPaths?: string[];
     options: MiddlewareOptions;
   };
-  
+
+  customHeaders?: Record<string, string>;
+  enableAuditLog?: boolean;
   // Advanced features
   enableMetrics?: boolean;
-  enableAuditLog?: boolean;
-  customHeaders?: Record<string, string>;
-  
+
   // Conditional middleware based on features
   conditionalFeatures?: {
     enableApiKeys?: boolean;
@@ -44,27 +44,28 @@ export interface AdvancedMiddlewareOptions extends MiddlewareOptions {
  */
 export function createAdvancedMiddleware(
   config: AuthConfig,
-  options: AdvancedMiddlewareOptions = {}
+  options: AdvancedMiddlewareOptions = {},
 ) {
   const {
-    runtime = 'auto',
     apiRoutes,
-    webRoutes,
-    enableMetrics = false,
-    enableAuditLog = false,
-    customHeaders = {},
     conditionalFeatures = {},
+    customHeaders = {},
+    enableAuditLog = false,
+    enableMetrics = false,
+    runtime = 'auto',
+    webRoutes,
     ...baseOptions
   } = options;
 
   // Create specialized middleware instances based on configuration
-  const apiMiddleware = config.features.apiKeys && (conditionalFeatures.enableApiKeys !== false)
-    ? createApiMiddleware({
-        ...baseOptions,
-        ...(apiRoutes?.options || {}),
-        allowedHeaders: apiRoutes?.options?.allowedHeaders || ['x-api-key', 'authorization'],
-      })
-    : null;
+  const apiMiddleware =
+    config.features.apiKeys && conditionalFeatures.enableApiKeys !== false
+      ? createApiMiddleware({
+          ...baseOptions,
+          ...(apiRoutes?.options || {}),
+          allowedHeaders: apiRoutes?.options?.allowedHeaders || ['x-api-key', 'authorization'],
+        })
+      : null;
 
   const webMiddleware = createWebMiddleware({
     ...baseOptions,
@@ -72,12 +73,13 @@ export function createAdvancedMiddleware(
     protectedPaths: webRoutes?.protectedPaths,
   });
 
-  const nodeMiddleware = runtime === 'nodejs' 
-    ? createNodeMiddleware({
-        ...baseOptions,
-        enableSessionCache: config.features.sessionCaching,
-      })
-    : null;
+  const nodeMiddleware =
+    runtime === 'nodejs'
+      ? createNodeMiddleware({
+          ...baseOptions,
+          enableSessionCache: config.features.sessionCaching,
+        })
+      : null;
 
   return async function advancedMiddleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -121,30 +123,33 @@ export function createAdvancedMiddleware(
 
       // Add feature flags to response headers for debugging
       if (process.env.NODE_ENV === 'development' && response) {
-        response.headers.set('x-auth-features', JSON.stringify({
-          apiKeys: config.features.apiKeys,
-          teams: config.features.teams,
-          impersonation: config.features.impersonation,
-          sessionCaching: config.features.sessionCaching,
-        }));
+        response.headers.set(
+          'x-auth-features',
+          JSON.stringify({
+            apiKeys: config.features.apiKeys,
+            impersonation: config.features.impersonation,
+            sessionCaching: config.features.sessionCaching,
+            teams: config.features.teams,
+          }),
+        );
       }
 
       // Audit logging (in production, this would go to a logging service)
       if (enableAuditLog && process.env.NODE_ENV !== 'test') {
         console.log('Auth middleware audit:', {
-          path: pathname,
           middleware: middleware_used,
-          timestamp: new Date().toISOString(),
           duration: enableMetrics ? Date.now() - startTime : undefined,
-          userAgent: request.headers.get('user-agent'),
           ip: (request as any).ip || request.headers.get('x-forwarded-for'),
+          path: pathname,
+          timestamp: new Date().toISOString(),
+          userAgent: request.headers.get('user-agent'),
         });
       }
 
       return response || NextResponse.next();
     } catch (error) {
       console.error('Advanced middleware error:', error);
-      
+
       // Return error response with debugging info
       return NextResponse.json(
         {
@@ -153,12 +158,12 @@ export function createAdvancedMiddleware(
           ...(process.env.NODE_ENV === 'development' && {
             debug: {
               middleware: middleware_used,
-              path: pathname,
               error: error instanceof Error ? error.message : 'Unknown error',
+              path: pathname,
             },
           }),
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   };
@@ -168,30 +173,32 @@ export function createAdvancedMiddleware(
  * Creates a combined middleware that handles both web and API routes
  * with automatic runtime detection
  */
-export function createCombinedMiddleware(options: AdvancedMiddlewareOptions & {
-  publicWebRoutes?: string[];
-  publicApiRoutes?: string[];
-  apiKeyHeaders?: string[];
-  redirectPath?: string;
-} = {}) {
+export function createCombinedMiddleware(
+  options: AdvancedMiddlewareOptions & {
+    publicWebRoutes?: string[];
+    publicApiRoutes?: string[];
+    apiKeyHeaders?: string[];
+    redirectPath?: string;
+  } = {},
+) {
   const {
-    publicWebRoutes = ['/sign-in', '/sign-up', '/_next', '/favicon.ico', '/.well-known'],
-    publicApiRoutes = [],
     apiKeyHeaders = ['x-api-key', 'authorization'],
+    publicApiRoutes = [],
+    publicWebRoutes = ['/sign-in', '/sign-up', '/_next', '/favicon.ico', '/.well-known'],
     redirectPath = '/sign-in',
     ...advancedOptions
   } = options;
 
   const apiMiddleware = createApiMiddleware({
-    publicPaths: publicApiRoutes,
     allowedHeaders: apiKeyHeaders,
+    publicPaths: publicApiRoutes,
     ...advancedOptions,
   });
 
   const webMiddleware = createWebMiddleware({
+    apiKeyHeaders,
     publicPaths: publicWebRoutes,
     redirectTo: redirectPath,
-    apiKeyHeaders,
     ...advancedOptions,
   });
 
@@ -213,18 +220,17 @@ export function createCombinedMiddleware(options: AdvancedMiddlewareOptions & {
 export function createSmartMiddleware(config: AuthConfig, options: AdvancedMiddlewareOptions = {}) {
   // Detect runtime capabilities
   const hasNodeRuntime = typeof process !== 'undefined' && process.versions?.node;
-  const effectiveRuntime = options.runtime === 'auto' 
-    ? (hasNodeRuntime ? 'nodejs' : 'edge')
-    : options.runtime;
+  const effectiveRuntime =
+    options.runtime === 'auto' ? (hasNodeRuntime ? 'nodejs' : 'edge') : options.runtime;
 
   return createAdvancedMiddleware(config, {
     ...options,
-    runtime: effectiveRuntime,
     conditionalFeatures: {
       enableApiKeys: config.features.apiKeys,
-      enableTeams: config.features.teams,
       enableImpersonation: config.features.impersonation,
+      enableTeams: config.features.teams,
       ...options.conditionalFeatures,
     },
+    runtime: effectiveRuntime,
   });
 }

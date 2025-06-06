@@ -6,43 +6,44 @@ import 'server-only';
 import { headers } from 'next/headers';
 
 import { auth } from '../auth';
+
 import { getUserRoleInOrganization } from './helpers';
 
 /**
  * Organization permissions hierarchy
  */
 export const ORGANIZATION_PERMISSIONS = {
-  ORGANIZATION: {
-    READ: 'organization:read',
-    WRITE: 'organization:write',
-    DELETE: 'organization:delete',
-    MANAGE: 'organization:manage',
+  API_KEYS: {
+    CREATE: 'api-keys:create',
+    MANAGE: 'api-keys:manage',
+    READ: 'api-keys:read',
+    REVOKE: 'api-keys:revoke',
+    WRITE: 'api-keys:write',
   },
   MEMBERS: {
-    READ: 'members:read',
-    WRITE: 'members:write',
     INVITE: 'members:invite',
-    REMOVE: 'members:remove',
     MANAGE: 'members:manage',
+    READ: 'members:read',
+    REMOVE: 'members:remove',
+    WRITE: 'members:write',
+  },
+  ORGANIZATION: {
+    DELETE: 'organization:delete',
+    MANAGE: 'organization:manage',
+    READ: 'organization:read',
+    WRITE: 'organization:write',
+  },
+  SETTINGS: {
+    MANAGE: 'settings:manage',
+    READ: 'settings:read',
+    WRITE: 'settings:write',
   },
   TEAMS: {
-    READ: 'teams:read',
-    WRITE: 'teams:write',
     CREATE: 'teams:create',
     DELETE: 'teams:delete',
     MANAGE: 'teams:manage',
-  },
-  API_KEYS: {
-    READ: 'api-keys:read',
-    WRITE: 'api-keys:write',
-    CREATE: 'api-keys:create',
-    REVOKE: 'api-keys:revoke',
-    MANAGE: 'api-keys:manage',
-  },
-  SETTINGS: {
-    READ: 'settings:read',
-    WRITE: 'settings:write',
-    MANAGE: 'settings:manage',
+    READ: 'teams:read',
+    WRITE: 'teams:write',
   },
 } as const;
 
@@ -50,14 +51,6 @@ export const ORGANIZATION_PERMISSIONS = {
  * Role-based permissions for organizations
  */
 export const ROLE_PERMISSIONS = {
-  owner: [
-    // Full access to everything
-    'organization:*',
-    'members:*',
-    'teams:*',
-    'api-keys:*',
-    'settings:*',
-  ],
   admin: [
     // Can manage most things but not delete organization
     'organization:read',
@@ -78,6 +71,14 @@ export const ROLE_PERMISSIONS = {
     'api-keys:create', // Members can create API keys for themselves
     'settings:read',
   ],
+  owner: [
+    // Full access to everything
+    'organization:*',
+    'members:*',
+    'teams:*',
+    'api-keys:*',
+    'settings:*',
+  ],
 } as const;
 
 /**
@@ -89,16 +90,19 @@ export function roleHasPermission(role: string, permission: string): boolean {
     return false;
   }
 
+  // Convert readonly array to regular array for type compatibility
+  const permissionArray = [...permissions];
+
   // Check for exact permission match
-  if (permissions.includes(permission)) {
+  if (permissionArray.includes(permission as any)) {
     return true;
   }
 
   // Check for wildcard permissions
   const [resource, action] = permission.split(':');
   const wildcardPermission = `${resource}:*`;
-  
-  if (permissions.includes(wildcardPermission)) {
+
+  if (permissionArray.includes(wildcardPermission as any)) {
     return true;
   }
 
@@ -110,7 +114,7 @@ export function roleHasPermission(role: string, permission: string): boolean {
  */
 export async function checkPermission(
   permission: string,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
@@ -145,7 +149,7 @@ export async function checkPermission(
  */
 export async function checkPermissions(
   permissions: Record<string, string[]>,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<boolean> {
   try {
     // Use Better Auth's built-in permission checking if available
@@ -157,7 +161,7 @@ export async function checkPermissions(
     return result?.hasPermission || false;
   } catch (error) {
     console.error('Check permissions error:', error);
-    
+
     // Fallback to individual permission checks
     try {
       for (const [resource, actions] of Object.entries(permissions)) {
@@ -183,7 +187,7 @@ export async function checkPermissions(
 export async function canActOnUser(
   targetUserId: string,
   action: string,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
@@ -201,8 +205,10 @@ export async function canActOnUser(
     }
 
     // Users can always act on themselves for certain actions
-    if (session.user.id === targetUserId && 
-        ['members:read', 'settings:read', 'api-keys:read'].includes(action)) {
+    if (
+      session.user.id === targetUserId &&
+      ['api-keys:read', 'members:read', 'settings:read'].includes(action)
+    ) {
       return true;
     }
 
@@ -223,9 +229,9 @@ export async function canActOnUser(
 
     // Define role hierarchy levels
     const roleLevels = {
-      owner: 3,
       admin: 2,
       member: 1,
+      owner: 3,
     };
 
     const currentLevel = roleLevels[currentUserRole as keyof typeof roleLevels] || 0;
@@ -250,7 +256,7 @@ export async function canActOnUser(
  */
 export async function getUserPermissions(
   userId?: string,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<string[]> {
   try {
     const session = await auth.api.getSession({
@@ -287,12 +293,12 @@ export async function getUserPermissions(
 export function isValidPermission(permission: string): boolean {
   const parts = permission.split(':');
   if (parts.length !== 2) return false;
-  
+
   const [resource, action] = parts;
-  
+
   // Resource and action must be non-empty
   if (!resource || !action) return false;
-  
+
   // Check for valid characters (alphanumeric, underscore, hyphen, wildcard)
   const validPattern = /^[a-zA-Z0-9_\-*]+$/;
   return validPattern.test(resource) && validPattern.test(action);
@@ -304,11 +310,11 @@ export function isValidPermission(permission: string): boolean {
 export function getRequiredPermissionLevel(permission: string): number {
   // Define permission levels (higher = more restrictive)
   const permissionLevels: Record<string, number> = {
+    'members:invite': 25, // Members and above
+    'members:remove': 50, // Admins and above
     'organization:delete': 100, // Only owners
-    'organization:manage': 75,  // Owners and admins
-    'members:remove': 50,       // Admins and above
-    'members:invite': 25,       // Members and above
-    'teams:create': 10,         // All members
+    'organization:manage': 75, // Owners and admins
+    'teams:create': 10, // All members
     // Add more as needed
   };
 

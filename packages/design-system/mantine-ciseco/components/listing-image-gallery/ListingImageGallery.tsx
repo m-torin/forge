@@ -137,4 +137,5 @@ const ListingImageGallery: FC<Props> = ({ images, onClose }) => {
   );
 };
 
+export { ListingImageGallery };
 export default ListingImageGallery;

@@ -24,11 +24,17 @@ const retryConfigSchema = z.object({
 });
 
 const scheduleConfigSchema = z.object({
-  cron: z.string().min(1),
-  enabled: z.boolean(),
+  cron: z.string().optional(),
+  enabled: z.boolean().optional(),
   endDate: z.date().optional(),
+  input: z.record(z.any()).optional(),
+  maxRetries: z.number().int().optional(),
+  metadata: z.record(z.any()).optional(),
+  retryDelay: z.number().int().optional(),
+  runAt: z.date().optional(),
   startDate: z.date().optional(),
   timezone: z.string().optional(),
+  workflowId: z.string().min(1),
 });
 
 const workflowStepSchema: z.ZodType<WorkflowStep> = z.object({
@@ -43,7 +49,7 @@ const workflowStepSchema: z.ZodType<WorkflowStep> = z.object({
   timeout: z.number().int().min(1000).optional(), // minimum 1 second
 });
 
-const workflowDefinitionSchema: z.ZodType<WorkflowDefinition> = z.object({
+const workflowDefinitionSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   allowManualTrigger: z.boolean().optional(),
@@ -236,7 +242,7 @@ export function validateWorkflowDefinition(definition: unknown): WorkflowDefinit
       throw new WorkflowValidationError('Workflow definition validation failed', validationErrors);
     }
 
-    return validated;
+    return validated as WorkflowDefinition;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const validationErrors: ValidationError[] = error.errors.map((err) => ({
@@ -303,7 +309,7 @@ export function validateScheduleConfig(config: unknown): ScheduleConfig {
     const validated = scheduleConfigSchema.parse(config);
 
     // Additional cron validation
-    if (!isValidCronExpression(validated.cron)) {
+    if (validated.cron && !isValidCronExpression(validated.cron)) {
       throw new ConfigurationError(`Invalid cron expression: ${validated.cron}`, 'schedule.cron');
     }
 

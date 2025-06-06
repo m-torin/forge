@@ -98,16 +98,9 @@ export interface PostHogUserProperties {
   name?: string;
 }
 
-/**
- * Feature flag related types
- */
-export type FeatureFlagPayload = Record<string, any>;
-
-export type FeatureFlags = Record<string, boolean | string | number | FeatureFlagPayload>;
-
 export interface ExperimentInfo {
   key: string;
-  payload?: FeatureFlagPayload;
+  payload?: Record<string, any>;
   variant?: string | boolean;
 }
 
@@ -116,8 +109,6 @@ export interface ExperimentInfo {
  */
 export interface BootstrapData {
   distinctID: string;
-  featureFlagPayloads?: Record<string, FeatureFlagPayload>;
-  featureFlags?: FeatureFlags;
 }
 
 /**
@@ -140,12 +131,6 @@ export interface EnhancedPostHogProvider {
   page(name?: string, properties?: any): Promise<void>;
   // Standard analytics methods
   track(event: string, properties?: any): Promise<void>;
-
-  // Feature flag methods
-  getAllFlags(userId?: string): Promise<FeatureFlags>;
-  getFeatureFlag(flag: string, userId?: string): Promise<any>;
-  getFeatureFlagPayload(flag: string, userId?: string): Promise<FeatureFlagPayload | null>;
-  isFeatureEnabled(flag: string, userId?: string): Promise<boolean>;
 
   // Experiment methods
   getActiveExperiments(userId?: string): Promise<ExperimentInfo[]>;

@@ -24,7 +24,7 @@ export function InventorySkeleton() {
 
 // Dynamic pricing component - streams in after static shell
 export async function DynamicProductPrice({
-  basePrice,
+  basePrice: _basePrice,
   customerGroup,
   productId,
 }: {

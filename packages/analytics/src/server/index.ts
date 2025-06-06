@@ -132,8 +132,6 @@ export type { SegmentConfig, SegmentOptions } from '../shared/types/segment-type
 export type {
   BootstrapData,
   EnhancedPostHogProvider,
-  FeatureFlagPayload,
-  FeatureFlags,
   PostHogConfig,
   PostHogOptions,
 } from '../shared/types/posthog-types';
@@ -196,8 +194,5 @@ export {
 export {
   createPostHogConfig,
   createPostHogServerClient,
-  getAllFeatureFlags,
   getCompleteBootstrapData,
-  getFeatureFlag,
-  isFeatureEnabled,
 } from '../shared/utils/posthog-next-utils';

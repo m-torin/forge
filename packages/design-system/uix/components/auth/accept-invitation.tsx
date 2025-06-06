@@ -15,7 +15,7 @@ import { IconAlertTriangle, IconCheck } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { acceptInvitation, useSession } from '@repo/auth-new/client';
+import { acceptInvitation, useSession } from '@repo/auth/client';
 
 import type { Route } from 'next';
 

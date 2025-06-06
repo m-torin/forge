@@ -14,7 +14,7 @@ export function hasPermission(_permissions: PermissionCheck): boolean {
   if (process.env.NODE_ENV === 'development') {
     console.warn('Client-side hasPermission called - actual validation requires server-side check');
   }
-  
+
   return true; // Optimistic for UI purposes
 }
 
@@ -32,7 +32,7 @@ export function createApiKeyHeaders(apiKey: string): Record<string, string> {
  */
 export function createBearerHeaders(token: string): Record<string, string> {
   return {
-    'authorization': `Bearer ${token}`,
+    authorization: `Bearer ${token}`,
   };
 }
 
@@ -49,7 +49,7 @@ export function isValidApiKeyFormat(apiKey: string): boolean {
   // Example: Check if it's at least 32 characters and alphanumeric
   const minLength = 32;
   const pattern = /^[a-zA-Z0-9_-]+$/;
-  
+
   return apiKey.length >= minLength && pattern.test(apiKey);
 }
 
@@ -60,11 +60,11 @@ export function maskApiKey(apiKey: string): string {
   if (!apiKey || apiKey.length < 12) {
     return '****';
   }
-  
+
   const start = apiKey.substring(0, 8);
   const end = apiKey.substring(apiKey.length - 4);
   const middle = '*'.repeat(Math.max(0, apiKey.length - 12));
-  
+
   return `${start}${middle}${end}`;
 }
 
@@ -74,11 +74,11 @@ export function maskApiKey(apiKey: string): string {
 export function generateApiKeyName(): string {
   const adjectives = ['Quick', 'Secure', 'Fast', 'Smart', 'Auto', 'Main', 'Test', 'Dev'];
   const nouns = ['Access', 'Key', 'Token', 'Auth', 'API', 'Service', 'Client', 'App'];
-  
+
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
   const noun = nouns[Math.floor(Math.random() * nouns.length)];
   const suffix = Math.floor(Math.random() * 1000);
-  
+
   return `${adjective} ${noun} ${suffix}`;
 }
 
@@ -89,7 +89,7 @@ export function isApiKeyExpired(expiresAt?: Date): boolean {
   if (!expiresAt) {
     return false; // No expiration
   }
-  
+
   return new Date() > expiresAt;
 }
 
@@ -105,20 +105,20 @@ export function getTimeUntilExpiration(expiresAt?: Date): {
   if (!expiresAt) {
     return { expired: false };
   }
-  
+
   const now = new Date();
   const expiry = new Date(expiresAt);
-  
+
   if (now >= expiry) {
     return { expired: true };
   }
-  
+
   const diffMs = expiry.getTime() - now.getTime();
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  
-  return { expired: false, days, hours, minutes };
+
+  return { days, expired: false, hours, minutes };
 }
 
 /**
@@ -126,7 +126,7 @@ export function getTimeUntilExpiration(expiresAt?: Date): {
  */
 export function formatPermissionsForDisplay(permissions: string[]): string[] {
   return permissions
-    .map(permission => {
+    .map((permission) => {
       const [resource, action] = permission.split(':');
       return `${resource}: ${action}`;
     })
@@ -138,7 +138,7 @@ export function formatPermissionsForDisplay(permissions: string[]): string[] {
  */
 export function groupPermissionsByResource(permissions: string[]): Record<string, string[]> {
   const grouped: Record<string, string[]> = {};
-  
+
   for (const permission of permissions) {
     const [resource, action] = permission.split(':');
     if (!grouped[resource]) {
@@ -146,11 +146,11 @@ export function groupPermissionsByResource(permissions: string[]): Record<string
     }
     grouped[resource].push(action);
   }
-  
+
   // Sort actions within each resource
   for (const resource in grouped) {
     grouped[resource].sort();
   }
-  
+
   return grouped;
 }

@@ -3,14 +3,14 @@
 import { Menu01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
-import { useAside } from '../aside';
+interface HamburgerBtnMenuProps {
+  onClick?: () => void;
+}
 
-const HamburgerBtnMenu = () => {
-  const { open: openAside } = useAside();
-
+const HamburgerBtnMenu = ({ onClick }: HamburgerBtnMenuProps) => {
   return (
     <button
-      onClick={() => openAside('sidebar-navigation')}
+      onClick={onClick}
       className="-m-2.5 flex cursor-pointer items-center justify-center rounded-full p-2.5 hover:bg-neutral-100 focus-visible:outline-0 dark:hover:bg-neutral-700"
       type="button"
     >

@@ -81,12 +81,12 @@ export class DirectAnthropicProvider extends BaseProvider {
       });
 
       let isFirst = true;
-      let totalText = '';
+      let _totalText = '';
 
       for await (const chunk of stream) {
         if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
           const text = chunk.delta.text;
-          totalText += text;
+          _totalText += text;
 
           const streamChunk: StreamChunk = {
             isFirst,

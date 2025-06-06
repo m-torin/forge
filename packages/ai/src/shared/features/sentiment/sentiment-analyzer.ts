@@ -1,6 +1,6 @@
 export class SentimentAnalyzer {
   // Placeholder implementation - can be enhanced with specific providers
-  async analyzeSentiment(text: string): Promise<{
+  async analyzeSentiment(_text: string): Promise<{
     sentiment: 'positive' | 'negative' | 'neutral';
     confidence: number;
     reasoning: string;

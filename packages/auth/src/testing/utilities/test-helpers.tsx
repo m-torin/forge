@@ -2,13 +2,14 @@
  * Test helper utilities
  */
 
-import { vi } from 'vitest';
 import { render } from '@testing-library/react';
+import { vi } from 'vitest';
+
 import { createMockAuthContext } from '../mocks/storybook';
 
-import type { ReactElement } from 'react';
 import type { OrganizationRole } from '../../shared/types';
 import type { mockUsers } from '../mocks/auth';
+import type { ReactElement } from 'react';
 
 /**
  * Custom render function that includes auth context
@@ -20,14 +21,9 @@ export function renderWithAuth(
     userType?: keyof typeof mockUsers;
     organizationId?: string;
     role?: OrganizationRole;
-  } = {}
-) {
-  const {
-    authenticated = true,
-    userType = 'member',
-    organizationId,
-    role = 'member',
-  } = options;
+  } = {},
+): ReturnType<typeof render> {
+  const { authenticated = true, organizationId, role = 'member', userType = 'member' } = options;
 
   const mockContext = createMockAuthContext(authenticated, userType, organizationId, role);
 
@@ -51,7 +47,7 @@ export function renderWithAuth(
  * Wait for async operations to complete
  */
 export function waitForAsync(ms = 0): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -66,16 +62,16 @@ export function throwError(message = 'Test error') {
  */
 export function mockConsole() {
   const originalConsole = { ...console };
-  
+
   const mocks = {
-    log: vi.spyOn(console, 'log').mockImplementation(() => {}),
-    warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
     error: vi.spyOn(console, 'error').mockImplementation(() => {}),
     info: vi.spyOn(console, 'info').mockImplementation(() => {}),
+    log: vi.spyOn(console, 'log').mockImplementation(() => {}),
+    warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
   };
 
   const restore = () => {
-    Object.keys(mocks).forEach(key => {
+    Object.keys(mocks).forEach((key) => {
       mocks[key as keyof typeof mocks].mockRestore();
     });
   };
@@ -90,18 +86,18 @@ export function mockLocalStorage() {
   const store: Record<string, string> = {};
 
   const mockStorage = {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
+    clear: vi.fn(() => {
+      Object.keys(store).forEach((key) => delete store[key]);
     }),
+    getItem: vi.fn((key: string) => store[key] || null),
+    key: vi.fn((index: number) => Object.keys(store)[index] || null),
+    length: 0,
     removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: vi.fn(() => {
-      Object.keys(store).forEach(key => delete store[key]);
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
     }),
-    length: 0,
-    key: vi.fn((index: number) => Object.keys(store)[index] || null),
   };
 
   Object.defineProperty(window, 'localStorage', {
@@ -119,18 +115,18 @@ export function mockSessionStorage() {
   const store: Record<string, string> = {};
 
   const mockStorage = {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
+    clear: vi.fn(() => {
+      Object.keys(store).forEach((key) => delete store[key]);
     }),
+    getItem: vi.fn((key: string) => store[key] || null),
+    key: vi.fn((index: number) => Object.keys(store)[index] || null),
+    length: 0,
     removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: vi.fn(() => {
-      Object.keys(store).forEach(key => delete store[key]);
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
     }),
-    length: 0,
-    key: vi.fn((index: number) => Object.keys(store)[index] || null),
   };
 
   Object.defineProperty(window, 'sessionStorage', {
@@ -146,21 +142,21 @@ export function mockSessionStorage() {
  */
 export function mockLocation(url = 'http://localhost:3000') {
   const location = new URL(url);
-  
+
   Object.defineProperty(window, 'location', {
     value: {
+      hostname: location.hostname,
+      pathname: location.pathname,
+      assign: vi.fn(),
+      hash: location.hash,
+      host: location.host,
       href: location.href,
       origin: location.origin,
-      protocol: location.protocol,
-      host: location.host,
-      hostname: location.hostname,
       port: location.port,
-      pathname: location.pathname,
-      search: location.search,
-      hash: location.hash,
-      assign: vi.fn(),
-      replace: vi.fn(),
+      protocol: location.protocol,
       reload: vi.fn(),
+      replace: vi.fn(),
+      search: location.search,
     },
     writable: true,
   });
@@ -182,8 +178,8 @@ export function createDeferred<T = any>() {
 
   return {
     promise,
-    resolve: resolve!,
     reject: reject!,
+    resolve: resolve!,
   };
 }
 
@@ -192,14 +188,16 @@ export function createDeferred<T = any>() {
  */
 export async function expectToThrow(
   fn: () => Promise<any> | any,
-  errorMessage?: string
+  errorMessage?: string,
 ): Promise<Error> {
   try {
     await fn();
     throw new Error('Expected function to throw, but it did not');
   } catch (error) {
     if (errorMessage && !(error as Error).message.includes(errorMessage)) {
-      throw new Error(`Expected error message to include "${errorMessage}", but got "${(error as Error).message}"`);
+      throw new Error(
+        `Expected error message to include "${errorMessage}", but got "${(error as Error).message}"`,
+      );
     }
     return error as Error;
   }
@@ -210,25 +208,25 @@ export async function expectToThrow(
  */
 export function createApiTestHelper(baseUrl = '/api/auth') {
   const buildUrl = (path: string) => `${baseUrl}${path}`;
-  
+
   const mockRequest = (method: string, path: string, data?: any) => {
     return {
-      method,
       url: buildUrl(path),
       headers: {
         'Content-Type': 'application/json',
         ...(data && { body: JSON.stringify(data) }),
       },
+      method,
     };
   };
 
   return {
     buildUrl,
-    mockRequest,
-    get: (path: string) => mockRequest('GET', path),
-    post: (path: string, data?: any) => mockRequest('POST', path, data),
-    patch: (path: string, data?: any) => mockRequest('PATCH', path, data),
     delete: (path: string) => mockRequest('DELETE', path),
+    get: (path: string) => mockRequest('GET', path),
+    mockRequest,
+    patch: (path: string, data?: any) => mockRequest('PATCH', path, data),
+    post: (path: string, data?: any) => mockRequest('POST', path, data),
   };
 }
 
@@ -237,28 +235,28 @@ export function createApiTestHelper(baseUrl = '/api/auth') {
  */
 export function mockNextRouter(overrides: Partial<any> = {}) {
   const router = {
-    route: '/',
     pathname: '/',
-    query: {},
     asPath: '/',
-    isFallback: false,
+    back: vi.fn(),
     basePath: '',
+    beforePopState: vi.fn(),
+    defaultLocale: 'en',
+    events: {
+      emit: vi.fn(),
+      off: vi.fn(),
+      on: vi.fn(),
+    },
+    isFallback: false,
+    isPreview: false,
+    isReady: true,
     locale: 'en',
     locales: ['en'],
-    defaultLocale: 'en',
-    isReady: true,
-    isPreview: false,
-    push: vi.fn(() => Promise.resolve(true)),
-    replace: vi.fn(() => Promise.resolve(true)),
-    reload: vi.fn(),
-    back: vi.fn(),
     prefetch: vi.fn(() => Promise.resolve()),
-    beforePopState: vi.fn(),
-    events: {
-      on: vi.fn(),
-      off: vi.fn(),
-      emit: vi.fn(),
-    },
+    push: vi.fn(() => Promise.resolve(true)),
+    query: {},
+    reload: vi.fn(),
+    replace: vi.fn(() => Promise.resolve(true)),
+    route: '/',
     ...overrides,
   };
 
@@ -285,12 +283,12 @@ export function createHookTester<T>(hook: () => T) {
   const utils = render(<TestComponent />);
 
   return {
-    result: result!,
     error,
     rerender: () => {
       utils.rerender(<TestComponent />);
-      return { result: result!, error };
+      return { error, result: result! };
     },
+    result: result!,
     unmount: utils.unmount,
   };
 }

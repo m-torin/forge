@@ -53,10 +53,10 @@ export function StandardLayout({
             <LikeButton className="absolute right-3 top-3" />
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6">
-            {images?.map((image: any, index: number) => {
+            {images?.map((image: any) => {
               if (!image?.src) return null;
               return (
-                <div key={index} className="relative aspect-[3/4] w-full">
+                <div key={image.src} className="relative aspect-[3/4] w-full">
                   <Image
                     className="rounded-2xl object-cover"
                     alt={image.alt || "product detail"}

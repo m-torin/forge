@@ -2,6 +2,9 @@
  * Shared TypeScript types for authentication
  */
 
+import type { ApiKeyValidationResult } from './api-keys/types';
+// Import types needed internally
+import type { ApiKey, Organization, Team } from '@repo/database/prisma';
 import type { Session, User } from 'better-auth';
 
 // Re-export Better Auth types
@@ -10,12 +13,17 @@ export type { Session, User } from 'better-auth';
 // Re-export database types
 export type { ApiKey, Invitation, Member, Organization, Team } from '@repo/database/prisma';
 
-// Import types needed internally
-import type { ApiKey, Organization, Team } from '@repo/database/prisma';
-import type { ApiKeyValidationResult } from './api-keys/types';
-
 // Auth configuration
 export interface AuthConfig {
+  apiKeys?: {
+    enableServiceAuth?: boolean;
+    defaultPermissions?: string[];
+    expirationDays?: number;
+    rateLimiting?: {
+      enabled: boolean;
+      requestsPerMinute: number;
+    };
+  };
   appUrl: string;
   databaseUrl: string;
   features: {
@@ -32,6 +40,14 @@ export interface AuthConfig {
     organizationInvitations: boolean;
     sessionCaching: boolean;
   };
+  middleware?: {
+    enableApiMiddleware?: boolean;
+    enableNodeMiddleware?: boolean;
+    enableWebMiddleware?: boolean;
+    requireAuthentication?: boolean;
+    redirectTo?: string;
+    publicPaths?: string[];
+  };
   providers: {
     github?: {
       clientId: string;
@@ -42,29 +58,12 @@ export interface AuthConfig {
       clientSecret: string;
     };
   };
-  middleware?: {
-    enableApiMiddleware?: boolean;
-    enableNodeMiddleware?: boolean;
-    enableWebMiddleware?: boolean;
-    requireAuthentication?: boolean;
-    redirectTo?: string;
-    publicPaths?: string[];
-  };
-  apiKeys?: {
-    enableServiceAuth?: boolean;
-    defaultPermissions?: string[];
-    expirationDays?: number;
-    rateLimiting?: {
-      enabled: boolean;
-      requestsPerMinute: number;
-    };
-  };
+  secret: string;
   teams?: {
     enableInvitations?: boolean;
     defaultPermissions?: string[];
     maxTeamsPerOrganization?: number;
   };
-  secret: string;
 }
 
 // Session data structure
@@ -125,76 +124,77 @@ export interface AuthError {
 
 // Team types (basic - extended types in teams module)
 export interface TeamInvitation {
-  id: string;
-  teamId: string;
   email: string;
-  role: string;
-  invitedBy: string;
   expiresAt: Date;
+  id: string;
+  invitedBy: string;
+  role: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired';
+  teamId: string;
 }
 
 // Organization types
 export interface OrganizationWithMembers {
   id: string;
-  name: string;
-  slug: string;
-  members: Array<{
+  members: {
     id: string;
     userId: string;
     role: OrganizationRole;
     user: User;
-  }>;
+  }[];
+  name: string;
+  slug: string;
 }
 
 // Middleware types
 export interface MiddlewareOptions {
-  requireAuth?: boolean;
-  redirectTo?: string;
-  publicPaths?: string[];
   enableRateLimit?: boolean;
   enableSessionCache?: boolean;
+  publicPaths?: string[];
+  redirectTo?: string;
+  requireAuth?: boolean;
 }
 
 // Service-to-service auth types
 export interface ServiceAuthOptions {
-  serviceId: string;
-  permissions: string[];
   expiresIn?: string;
+  permissions: string[];
+  serviceId: string;
 }
 
 // Impersonation types
 export interface ImpersonationContext {
+  expiresAt?: Date;
   impersonatorId: string;
-  targetUserId: string;
   permissions: string[];
   startedAt: Date;
-  expiresAt?: Date;
+  targetUserId: string;
 }
 
 // Conditional types for feature-based method exposure
-export type ConditionalAuthMethods<TConfig extends AuthConfig> = 
+export type ConditionalAuthMethods<TConfig extends AuthConfig> =
   (TConfig['features']['teams'] extends true ? TeamMethods : {}) &
-  (TConfig['features']['apiKeys'] extends true ? ApiKeyMethods : {}) &
-  (TConfig['features']['impersonation'] extends true ? ImpersonationMethods : {}) &
-  (TConfig['features']['organizations'] extends true ? OrganizationMethods : {});
+    (TConfig['features']['apiKeys'] extends true ? ApiKeyMethods : {}) &
+    (TConfig['features']['impersonation'] extends true ? ImpersonationMethods : {}) &
+    (TConfig['features']['organizations'] extends true ? OrganizationMethods : {});
 
 // Enhanced conditional types for middleware
-export type ConditionalMiddleware<TConfig extends AuthConfig> = 
-  (TConfig['features']['advancedMiddleware'] extends true ? {
-    createApiMiddleware: typeof import('../middleware/api').createApiMiddleware;
-    createNodeMiddleware: typeof import('../middleware/node').createNodeMiddleware;
-    createWebMiddleware: typeof import('../middleware/web').createWebMiddleware;
-    createAdvancedMiddleware: typeof import('../middleware/factory').createAdvancedMiddleware;
-  } : {}) &
-  {
+export type ConditionalMiddleware<TConfig extends AuthConfig> =
+  (TConfig['features']['advancedMiddleware'] extends true
+    ? {
+        createApiMiddleware: typeof import('../middleware/api').createApiMiddleware;
+        createNodeMiddleware: typeof import('../middleware/node').createNodeMiddleware;
+        createWebMiddleware: typeof import('../middleware/web').createWebMiddleware;
+        createAdvancedMiddleware: typeof import('../middleware/factory').createAdvancedMiddleware;
+      }
+    : {}) & {
     createAuthMiddleware: typeof import('../middleware').createAuthMiddleware;
   };
 
 // Type-safe configuration validation
 export type ValidateConfig<T extends Partial<AuthConfig>> = T & {
-  features: T['features'] extends undefined 
-    ? AuthConfig['features'] 
+  features: T['features'] extends undefined
+    ? AuthConfig['features']
     : T['features'] & AuthConfig['features'];
 };
 
@@ -204,42 +204,57 @@ export type EnabledFeatures<TConfig extends AuthConfig> = {
 }[keyof TConfig['features']];
 
 // Type for conditional plugin configuration
-export type ConditionalPluginConfig<TConfig extends AuthConfig> = {
-  organizations: TConfig['features']['organizations'] extends true ? boolean : false;
-  apiKeys: TConfig['features']['apiKeys'] extends true ? boolean : false;
-  teams: TConfig['features']['teams'] extends true ? boolean : false;
+export interface ConditionalPluginConfig<TConfig extends AuthConfig> {
   admin: TConfig['features']['admin'] extends true ? boolean : false;
-  twoFactor: TConfig['features']['twoFactor'] extends true ? boolean : false;
-  passkeys: TConfig['features']['passkeys'] extends true ? boolean : false;
-  magicLink: TConfig['features']['magicLink'] extends true ? boolean : false;
+  apiKeys: TConfig['features']['apiKeys'] extends true ? boolean : false;
   impersonation: TConfig['features']['impersonation'] extends true ? boolean : false;
+  magicLink: TConfig['features']['magicLink'] extends true ? boolean : false;
+  organizations: TConfig['features']['organizations'] extends true ? boolean : false;
+  passkeys: TConfig['features']['passkeys'] extends true ? boolean : false;
   sessionCaching: TConfig['features']['sessionCaching'] extends true ? boolean : false;
-};
+  teams: TConfig['features']['teams'] extends true ? boolean : false;
+  twoFactor: TConfig['features']['twoFactor'] extends true ? boolean : false;
+}
 
 // Feature-specific method interfaces
 export interface TeamMethods {
-  createTeam: (data: { name: string; description?: string }) => Promise<{ success: boolean; team?: Team; error?: string }>;
-  inviteToTeam: (teamId: string, email: string, role: string) => Promise<{ success: boolean; error?: string }>;
+  createTeam: (data: {
+    name: string;
+    description?: string;
+  }) => Promise<{ success: boolean; team?: Team; error?: string }>;
+  inviteToTeam: (
+    teamId: string,
+    email: string,
+    role: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   removeFromTeam: (teamId: string, userId: string) => Promise<{ success: boolean; error?: string }>;
-  updateTeamRole: (teamId: string, userId: string, role: string) => Promise<{ success: boolean; error?: string }>;
+  updateTeamRole: (
+    teamId: string,
+    userId: string,
+    role: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface ApiKeyMethods {
-  createApiKey: (data: { name: string; permissions: string[]; expiresAt?: Date }) => Promise<{ success: boolean; apiKey?: string; error?: string }>;
-  validateApiKey: (key: string) => Promise<ApiKeyValidationResult>;
-  revokeApiKey: (keyId: string) => Promise<{ success: boolean; error?: string }>;
+  createApiKey: (data: {
+    name: string;
+    permissions: string[];
+    expiresAt?: Date;
+  }) => Promise<{ success: boolean; apiKey?: string; error?: string }>;
   listApiKeys: () => Promise<{ success: boolean; keys?: ApiKey[]; error?: string }>;
+  revokeApiKey: (keyId: string) => Promise<{ success: boolean; error?: string }>;
+  validateApiKey: (key: string) => Promise<ApiKeyValidationResult>;
 }
 
 export interface ImpersonationMethods {
+  getImpersonationContext: () => Promise<ImpersonationContext | null>;
   startImpersonation: (targetUserId: string) => Promise<{ success: boolean; error?: string }>;
   stopImpersonation: () => Promise<{ success: boolean; error?: string }>;
-  getImpersonationContext: () => Promise<ImpersonationContext | null>;
 }
 
 export interface OrganizationMethods {
+  checkPermission: (permission: string, organizationId?: string) => Promise<boolean>;
   getCurrentOrganization: () => Promise<Organization | null>;
   getOrganizationBySlug: (slug: string) => Promise<Organization | null>;
   switchOrganization: (organizationId: string) => Promise<{ success: boolean; error?: string }>;
-  checkPermission: (permission: string, organizationId?: string) => Promise<boolean>;
 }

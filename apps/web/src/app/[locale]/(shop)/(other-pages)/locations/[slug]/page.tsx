@@ -118,7 +118,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale: _locale, slug } = await params;
   const location = await getLocationBySlug(slug);
 
   if (!location) {
@@ -156,7 +156,7 @@ export default async function LocationPage({
   params: Promise<{ slug: string; locale: string }>;
   searchParams: Promise<{ page?: string; store?: string }>;
 }) {
-  const { locale, slug } = await params;
+  const { locale: _locale, slug } = await params;
   const { page = "1" } = await searchParams;
 
   const location = await getLocationBySlug(slug);
@@ -174,7 +174,7 @@ export default async function LocationPage({
     "ClothingStore",
     {
       name: `Ciseco ${location.name}`,
-      url: `https://ciseco.com/${locale}/locations/${location.slug}`,
+      url: `https://ciseco.com/${_locale}/locations/${location.slug}`,
       address: {
         "@type": "PostalAddress",
         addressCountry: location.country,
@@ -199,16 +199,16 @@ export default async function LocationPage({
 
   // Breadcrumb structured data
   const breadcrumbSchema = structuredData.breadcrumbs([
-    { name: "Home", url: `/${locale}` },
-    { name: "Locations", url: `/${locale}/locations` },
+    { name: "Home", url: `/${_locale}` },
+    { name: "Locations", url: `/${_locale}/locations` },
     {
       name: `${location.name}, ${location.country}`,
-      url: `/${locale}/locations/${location.slug}`,
+      url: `/${_locale}/locations/${location.slug}`,
     },
   ]);
 
   // Organization structured data for stores
-  const storesSchema = location.stores.map((store, index) =>
+  const storesSchema = location.stores.map((store, _index) =>
     createStructuredData<LocalBusiness>("ClothingStore", {
       name: store.name,
       address: {
@@ -233,8 +233,8 @@ export default async function LocationPage({
           <div>
             <Breadcrumb
               breadcrumbs={[
-                { id: 1, name: "Home", href: `/${locale}` },
-                { id: 2, name: "Locations", href: `/${locale}/locations` },
+                { id: 1, name: "Home", href: `/${_locale}` },
+                { id: 2, name: "Locations", href: `/${_locale}/locations` },
               ]}
               currentPage={location.name}
             />
@@ -273,8 +273,8 @@ export default async function LocationPage({
               <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 dark:border-neutral-700 dark:bg-neutral-800">
                 <h3 className="mb-4 font-semibold">Featured Stores</h3>
                 <div className="space-y-4">
-                  {location.stores.slice(0, 3).map((store, index) => (
-                    <div key={index} className="text-sm">
+                  {location.stores.slice(0, 3).map((store, _index) => (
+                    <div key={store.name} className="text-sm">
                       <div className="font-medium text-neutral-900 dark:text-neutral-100">
                         {store.name}
                       </div>
@@ -326,7 +326,7 @@ export default async function LocationPage({
               <div className="mt-12 flex justify-center">
                 <CompletePagination
                   totalPages={totalPages}
-                  baseUrl={`/${locale}/locations/${slug}`}
+                  baseUrl={`/${_locale}/locations/${slug}`}
                   currentPage={currentPage}
                 />
               </div>

@@ -6,64 +6,76 @@
 import type { WorkflowProvider } from '../types/index';
 
 export interface WorkflowMetrics {
-  /** Workflow identifier */
-  workflowId: string;
-  /** Total number of executions */
-  totalExecutions: number;
-  /** Number of successful executions */
-  successfulExecutions: number;
-  /** Number of failed executions */
-  failedExecutions: number;
-  /** Number of currently running executions */
-  runningExecutions: number;
   /** Average execution duration in milliseconds */
   avgExecutionDuration: number;
-  /** Minimum execution duration in milliseconds */
-  minExecutionDuration: number;
-  /** Maximum execution duration in milliseconds */
-  maxExecutionDuration: number;
-  /** Success rate (0-1) */
-  successRate: number;
   /** Average steps per execution */
   avgStepsPerExecution: number;
-  /** Most common error types */
-  commonErrors: Array<{ error: string; count: number }>;
-  /** Execution frequency (executions per hour) */
-  executionFrequency: number;
-  /** Last execution timestamp */
-  lastExecution?: Date;
   /** Metrics collection period */
   collectionPeriod: {
     start: Date;
     end: Date;
   };
+  /** Most common error types */
+  commonErrors: { error: string; count: number }[];
+  /** Execution frequency (executions per hour) */
+  executionFrequency: number;
+  /** Number of failed executions */
+  failedExecutions: number;
+  /** Last execution timestamp */
+  lastExecution?: Date;
+  /** Maximum execution duration in milliseconds */
+  maxExecutionDuration: number;
+  /** Minimum execution duration in milliseconds */
+  minExecutionDuration: number;
+  /** Number of currently running executions */
+  runningExecutions: number;
+  /** Number of successful executions */
+  successfulExecutions: number;
+  /** Success rate (0-1) */
+  successRate: number;
+  /** Total number of executions */
+  totalExecutions: number;
+  /** Workflow identifier */
+  workflowId: string;
 }
 
 export interface ExecutionHistory {
-  /** Execution ID */
-  executionId: string;
-  /** Workflow ID */
-  workflowId: string;
-  /** Execution status */
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
-  /** Start timestamp */
-  startedAt: Date;
   /** Completion timestamp */
   completedAt?: Date;
   /** Total duration in milliseconds */
   duration?: number;
-  /** Input data */
-  input?: unknown;
-  /** Output data */
-  output?: unknown;
   /** Error information */
   error?: {
     message: string;
     stack?: string;
     code?: string;
   };
+  /** Execution ID */
+  executionId: string;
+  /** Input data */
+  input?: unknown;
+  /** Execution metadata */
+  metadata: {
+    triggeredBy?: 'manual' | 'schedule' | 'webhook' | 'api';
+    triggerSource?: string;
+    priority?: number;
+    tags?: string[];
+    parentExecutionId?: string;
+  };
+  /** Output data */
+  output?: unknown;
+  /** Resource usage */
+  resourceUsage?: {
+    cpuTime: number;
+    memoryPeak: number;
+    networkRequests: number;
+  };
+  /** Start timestamp */
+  startedAt: Date;
+  /** Execution status */
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
   /** Step execution details */
-  steps: Array<{
+  steps: {
     stepId: string;
     stepName: string;
     status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
@@ -74,38 +86,18 @@ export interface ExecutionHistory {
     output?: unknown;
     error?: string;
     retryCount?: number;
-  }>;
-  /** Execution metadata */
-  metadata: {
-    triggeredBy?: 'manual' | 'schedule' | 'webhook' | 'api';
-    triggerSource?: string;
-    priority?: number;
-    tags?: string[];
-    parentExecutionId?: string;
-  };
-  /** Resource usage */
-  resourceUsage?: {
-    cpuTime: number;
-    memoryPeak: number;
-    networkRequests: number;
-  };
+  }[];
+  /** Workflow ID */
+  workflowId: string;
 }
 
 export interface PerformanceMetrics {
-  /** Workflow ID */
-  workflowId: string;
-  /** Time window for metrics */
-  timeWindow: {
-    start: Date;
-    end: Date;
-  };
-  /** Throughput metrics */
-  throughput: {
-    executionsPerMinute: number;
-    executionsPerHour: number;
-    executionsPerDay: number;
-    peakThroughput: number;
-    peakThroughputTime: Date;
+  /** Error metrics */
+  errors: {
+    errorRate: number;
+    errorsByType: Record<string, number>;
+    timeToFailure: number;
+    recoveryTime: number;
   };
   /** Latency metrics */
   latency: {
@@ -116,12 +108,12 @@ export interface PerformanceMetrics {
     minimum: number;
     maximum: number;
   };
-  /** Error metrics */
-  errors: {
-    errorRate: number;
-    errorsByType: Record<string, number>;
-    timeToFailure: number;
-    recoveryTime: number;
+  /** Queue metrics */
+  queue: {
+    avgQueueTime: number;
+    maxQueueTime: number;
+    currentQueueSize: number;
+    maxQueueSize: number;
   };
   /** Resource utilization */
   resources: {
@@ -131,22 +123,30 @@ export interface PerformanceMetrics {
     peakCpuUsage: number;
     peakMemoryUsage: number;
   };
-  /** Queue metrics */
-  queue: {
-    avgQueueTime: number;
-    maxQueueTime: number;
-    currentQueueSize: number;
-    maxQueueSize: number;
+  /** Throughput metrics */
+  throughput: {
+    executionsPerMinute: number;
+    executionsPerHour: number;
+    executionsPerDay: number;
+    peakThroughput: number;
+    peakThroughputTime: Date;
   };
+  /** Time window for metrics */
+  timeWindow: {
+    start: Date;
+    end: Date;
+  };
+  /** Workflow ID */
+  workflowId: string;
 }
 
 export interface AlertRule {
-  /** Unique alert rule ID */
-  id: string;
-  /** Rule name */
-  name: string;
-  /** Target workflow ID (or * for all) */
-  workflowId: string;
+  /** Alert channels */
+  channels: {
+    type: 'email' | 'slack' | 'webhook' | 'sms';
+    target: string;
+    config?: Record<string, unknown>;
+  }[];
   /** Alert condition */
   condition: {
     metric: keyof WorkflowMetrics | 'custom';
@@ -154,47 +154,31 @@ export interface AlertRule {
     threshold: number;
     timeWindow: number; // in minutes
   };
-  /** Alert severity */
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  /** Alert channels */
-  channels: Array<{
-    type: 'email' | 'slack' | 'webhook' | 'sms';
-    target: string;
-    config?: Record<string, unknown>;
-  }>;
-  /** Rule status */
-  enabled: boolean;
   /** Cooldown period in minutes */
   cooldown: number;
-  /** Last triggered timestamp */
-  lastTriggered?: Date;
   /** Creation timestamp */
   createdAt: Date;
+  /** Rule status */
+  enabled: boolean;
+  /** Unique alert rule ID */
+  id: string;
+  /** Last triggered timestamp */
+  lastTriggered?: Date;
+  /** Rule name */
+  name: string;
+  /** Alert severity */
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  /** Target workflow ID (or * for all) */
+  workflowId: string;
 }
 
 export interface WorkflowAlert {
-  /** Alert ID */
-  id: string;
-  /** Alert rule that triggered this alert */
-  ruleId: string;
-  /** Workflow ID */
-  workflowId: string;
-  /** Alert message */
-  message: string;
-  /** Alert severity */
-  severity: AlertRule['severity'];
-  /** Alert status */
-  status: 'active' | 'acknowledged' | 'resolved';
-  /** Trigger timestamp */
-  triggeredAt: Date;
   /** Acknowledgment details */
   acknowledgedBy?: {
     user: string;
     timestamp: Date;
     note?: string;
   };
-  /** Resolution details */
-  resolvedAt?: Date;
   /** Alert context data */
   context: {
     metricValue: number;
@@ -202,6 +186,22 @@ export interface WorkflowAlert {
     timeWindow: string;
     affectedExecutions?: string[];
   };
+  /** Alert ID */
+  id: string;
+  /** Alert message */
+  message: string;
+  /** Resolution details */
+  resolvedAt?: Date;
+  /** Alert rule that triggered this alert */
+  ruleId: string;
+  /** Alert severity */
+  severity: AlertRule['severity'];
+  /** Alert status */
+  status: 'active' | 'acknowledged' | 'resolved';
+  /** Trigger timestamp */
+  triggeredAt: Date;
+  /** Workflow ID */
+  workflowId: string;
 }
 
 export class WorkflowMonitor {
@@ -226,11 +226,11 @@ export class WorkflowMonitor {
   ): void {
     const execution: ExecutionHistory = {
       executionId,
-      workflowId,
-      status: 'running',
-      startedAt: new Date(),
-      steps: [],
       metadata,
+      startedAt: new Date(),
+      status: 'running',
+      steps: [],
+      workflowId,
     };
 
     this.executionHistory.push(execution);
@@ -284,9 +284,9 @@ export class WorkflowMonitor {
     let step = execution.steps.find((s) => s.stepId === stepId);
     if (!step) {
       step = {
+        status: 'pending',
         stepId,
         stepName,
-        status: 'pending',
       };
       execution.steps.push(step);
     }
@@ -440,9 +440,9 @@ export class WorkflowMonitor {
 
     alert.status = 'acknowledged';
     alert.acknowledgedBy = {
-      user,
-      timestamp: new Date(),
       note,
+      timestamp: new Date(),
+      user,
     };
   }
 
@@ -473,12 +473,12 @@ export class WorkflowMonitor {
     workflowMetrics: WorkflowMetrics[];
     recentExecutions: ExecutionHistory[];
     activeAlerts: WorkflowAlert[];
-    performanceTrends: Array<{
+    performanceTrends: {
       timestamp: Date;
       throughput: number;
       latency: number;
       errorRate: number;
-    }>;
+    }[];
   } {
     const targetWorkflows =
       workflowIds || Array.from(new Set(this.executionHistory.map((e) => e.workflowId)));
@@ -496,17 +496,17 @@ export class WorkflowMonitor {
         workflowMetrics.length || 0;
 
     return {
-      overview: {
-        totalWorkflows: targetWorkflows.length,
-        totalExecutions,
-        activeExecutions,
-        successRate: avgSuccessRate,
-        avgExecutionTime,
-      },
-      workflowMetrics,
-      recentExecutions: this.getExecutionHistory(undefined, { limit: 10 }),
       activeAlerts: this.getActiveAlerts(),
+      overview: {
+        activeExecutions,
+        avgExecutionTime,
+        successRate: avgSuccessRate,
+        totalExecutions,
+        totalWorkflows: targetWorkflows.length,
+      },
       performanceTrends: this.calculatePerformanceTrends(targetWorkflows),
+      recentExecutions: this.getExecutionHistory(undefined, { limit: 10 }),
+      workflowMetrics,
     };
   }
 
@@ -556,7 +556,7 @@ export class WorkflowMonitor {
       {} as Record<string, number>,
     );
     const commonErrors = Object.entries(errorCounts)
-      .map(([error, count]) => ({ error, count }))
+      .map(([error, count]) => ({ count, error }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
@@ -570,23 +570,23 @@ export class WorkflowMonitor {
     )[0]?.startedAt;
 
     return {
-      workflowId,
-      totalExecutions,
-      successfulExecutions,
-      failedExecutions,
-      runningExecutions,
       avgExecutionDuration,
-      minExecutionDuration,
-      maxExecutionDuration,
-      successRate,
       avgStepsPerExecution,
+      collectionPeriod: timeRange || {
+        end: now,
+        start: executions[executions.length - 1]?.startedAt || now,
+      },
       commonErrors,
       executionFrequency,
+      failedExecutions,
       lastExecution,
-      collectionPeriod: timeRange || {
-        start: executions[executions.length - 1]?.startedAt || now,
-        end: now,
-      },
+      maxExecutionDuration,
+      minExecutionDuration,
+      runningExecutions,
+      successfulExecutions,
+      successRate,
+      totalExecutions,
+      workflowId,
     };
   }
 
@@ -622,29 +622,26 @@ export class WorkflowMonitor {
     const timeWindowDays = timeWindowMs / (1000 * 60 * 60 * 24);
 
     return {
-      workflowId,
-      timeWindow,
-      throughput: {
-        executionsPerMinute: executions.length / timeWindowMinutes,
-        executionsPerHour: executions.length / timeWindowHours,
-        executionsPerDay: executions.length / timeWindowDays,
-        peakThroughput: 0, // Would need more detailed time-series data
-        peakThroughputTime: new Date(),
-      },
-      latency: {
-        p50: durations[Math.floor(durations.length * 0.5)] || 0,
-        p95: durations[Math.floor(durations.length * 0.95)] || 0,
-        p99: durations[Math.floor(durations.length * 0.99)] || 0,
-        average:
-          durations.length > 0 ? durations.reduce((sum, d) => sum + d, 0) / durations.length : 0,
-        minimum: durations[0] || 0,
-        maximum: durations[durations.length - 1] || 0,
-      },
       errors: {
         errorRate: executions.length > 0 ? errors.length / executions.length : 0,
         errorsByType,
-        timeToFailure: 0, // Would need more detailed analysis
         recoveryTime: 0, // Would need more detailed analysis
+        timeToFailure: 0, // Would need more detailed analysis
+      },
+      latency: {
+        average:
+          durations.length > 0 ? durations.reduce((sum, d) => sum + d, 0) / durations.length : 0,
+        maximum: durations[durations.length - 1] || 0,
+        minimum: durations[0] || 0,
+        p50: durations[Math.floor(durations.length * 0.5)] || 0,
+        p95: durations[Math.floor(durations.length * 0.95)] || 0,
+        p99: durations[Math.floor(durations.length * 0.99)] || 0,
+      },
+      queue: {
+        avgQueueTime: 0, // Would need queue timing data
+        currentQueueSize: 0,
+        maxQueueSize: 0,
+        maxQueueTime: 0,
       },
       resources: {
         avgCpuUsage: 0, // Would need resource monitoring integration
@@ -653,12 +650,15 @@ export class WorkflowMonitor {
         peakCpuUsage: 0,
         peakMemoryUsage: 0,
       },
-      queue: {
-        avgQueueTime: 0, // Would need queue timing data
-        maxQueueTime: 0,
-        currentQueueSize: 0,
-        maxQueueSize: 0,
+      throughput: {
+        executionsPerDay: executions.length / timeWindowDays,
+        executionsPerHour: executions.length / timeWindowHours,
+        executionsPerMinute: executions.length / timeWindowMinutes,
+        peakThroughput: 0, // Would need more detailed time-series data
+        peakThroughputTime: new Date(),
       },
+      timeWindow,
+      workflowId,
     };
   }
 
@@ -715,17 +715,17 @@ export class WorkflowMonitor {
 
     const alert: WorkflowAlert = {
       id: alertId,
-      ruleId: rule.id,
-      workflowId,
-      message: `${rule.name}: ${rule.condition.metric} (${metricValue}) ${rule.condition.operator} ${rule.condition.threshold}`,
-      severity: rule.severity,
-      status: 'active',
-      triggeredAt: new Date(),
       context: {
         metricValue,
         threshold: rule.condition.threshold,
         timeWindow: `${rule.condition.timeWindow} minutes`,
       },
+      message: `${rule.name}: ${rule.condition.metric} (${metricValue}) ${rule.condition.operator} ${rule.condition.threshold}`,
+      ruleId: rule.id,
+      severity: rule.severity,
+      status: 'active',
+      triggeredAt: new Date(),
+      workflowId,
     };
 
     this.activeAlerts.set(alertId, alert);
@@ -740,12 +740,12 @@ export class WorkflowMonitor {
     console.log(`Alert triggered: ${alert.message}`);
   }
 
-  private calculatePerformanceTrends(workflowIds: string[]): Array<{
+  private calculatePerformanceTrends(workflowIds: string[]): {
     timestamp: Date;
     throughput: number;
     latency: number;
     errorRate: number;
-  }> {
+  }[] {
     // Implementation would calculate performance trends over time
     // This is a placeholder
     return [];

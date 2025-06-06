@@ -45,7 +45,8 @@ export function ProductCard({ product }: { product: any }) {
   };
 
   return (
-    <div onMouseEnter={handleView}>
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div onMouseEnter={handleView} aria-label={`Product: ${product.name}`}>
       <h3>{product.name}</h3>
       <p>${product.price}</p>
       <button onClick={handleAddToCart}>Add to Cart</button>
@@ -100,7 +101,7 @@ export function HeroSection() {
 
 export function SignupForm() {
   const analytics = useAnalytics();
-  const [formData, setFormData] = React.useState({
+  const [formData, _setFormData] = React.useState({
     company: '',
     email: '',
     role: '',
@@ -267,7 +268,7 @@ export async function trackMiddlewareEvents(request: Request) {
 
 export function LiveDashboard() {
   const analytics = useAnalytics();
-  const [metrics, setMetrics] = React.useState({});
+  const [_metrics, setMetrics] = React.useState({});
 
   React.useEffect(() => {
     // Track dashboard view
@@ -310,7 +311,7 @@ export class AnalyticsErrorBoundary extends React.Component<
   { children: React.ReactNode; analytics: any },
   { hasError: boolean }
 > {
-  constructor(props: any) {
+  constructor(props: { children: React.ReactNode; analytics: any }) {
     super(props);
     this.state = { hasError: false };
   }
@@ -349,7 +350,7 @@ export class AnalyticsErrorBoundary extends React.Component<
 export function EnhancedSearchBar() {
   const analytics = useAnalytics();
   const [query, setQuery] = React.useState('');
-  const [suggestions, setSuggestions] = React.useState<string[]>([]);
+  const [suggestions, _setSuggestions] = React.useState<string[]>([]);
 
   // Debounced search tracking
   const trackSearch = React.useMemo(() => {
@@ -367,7 +368,7 @@ export function EnhancedSearchBar() {
         }
       }, 500);
     };
-  }, [analytics, suggestions]);
+  }, [analytics, suggestions.length]);
 
   const handleSearch = (value: string) => {
     setQuery(value);

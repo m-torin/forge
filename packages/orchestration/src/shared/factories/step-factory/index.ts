@@ -6,42 +6,42 @@
 
 // Export types from step-types
 export type {
-  NonEmptyArray,
-  StepId,
-  ExecutionId,
-  ProgressState,
   ErrorCode,
+  ExecutionId,
+  NonEmptyArray,
+  ProgressState,
   StepExecutionConfig,
-  StepValidationConfig,
-  ValidationResult,
+  StepExecutionContext,
+  StepExecutionFunction,
+  StepExecutionResult,
+  StepFactoryConfig,
+  StepId,
   StepMetadata,
   StepPerformanceData,
-  StepExecutionContext,
-  StepExecutionResult,
-  StepExecutionFunction,
+  StepValidationConfig,
+  ValidationResult,
   WorkflowStepDefinition,
-  StepFactoryConfig,
 } from './step-types';
 
 // Export validation functions
-export { validateStepInput, validateStepOutput, validateStepDefinition } from './step-validation';
+export { validateStepDefinition, validateStepInput, validateStepOutput } from './step-validation';
 
 // Export performance monitoring functions
 export {
-  initializePerformanceData,
-  updatePerformanceData,
-  createProgressReporter,
   addCustomMetric,
   calculatePerformanceStats,
+  createProgressReporter,
   formatPerformanceData,
+  initializePerformanceData,
+  updatePerformanceData,
 } from './step-performance';
 
 // Re-export everything from the main step-factory module
 export {
   createWorkflowStep,
-  StandardWorkflowStep,
-  StepFactory,
   defaultStepFactory,
   matchError,
+  StandardWorkflowStep,
+  StepFactory,
   when,
 } from '../step-factory';

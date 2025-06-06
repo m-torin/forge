@@ -1,19 +1,32 @@
 'use client';
 
-import { Button, Container, Stack } from '@mantine/core';
+import { Button, Card, Container, Stack, Text, Title } from '@mantine/core';
+import { IconArrowLeft } from '@tabler/icons-react';
 import Link from 'next/link';
 
-import { BackButton, usePageTracking, UserProfile } from '@repo/design-system/uix';
-
 export default function SettingsPage() {
-  usePageTracking('backstage-settings');
+  console.log('Page Tracking: backstage-settings');
 
   return (
     <Container py="xl" size="md">
-      <BackButton href="/">Back to Dashboard</BackButton>
+      <Button
+        href="/"
+        component={Link}
+        leftSection={<IconArrowLeft size={16} />}
+        mb="xl"
+        variant="subtle"
+      >
+        Back to Dashboard
+      </Button>
 
       <Stack gap="xl">
-        <UserProfile showSocialAccounts={false} />
+        {/* UserProfile removed due to auth dependencies */}
+        <Card withBorder p="lg">
+          <Title order={3} mb="md">
+            User Settings
+          </Title>
+          <Text c="dimmed">User profile functionality has been disabled.</Text>
+        </Card>
 
         <Button
           fullWidth

@@ -10,9 +10,27 @@ import ButtonPrimary from '../shared/Button/ButtonPrimary';
 import ButtonSecondary from '../shared/Button/ButtonSecondary';
 
 export interface SectionHeroProps {
+  animated?: boolean;
+  backgroundImage?: string;
   className?: string;
+  ctaButtons?: {
+    text: string;
+    href?: string;
+    onClick?: () => void;
+    variant?: string;
+  }[];
+  fullHeight?: boolean;
   heading?: ReactNode;
+  overlay?: boolean;
+  overlayOpacity?: number;
+  showScrollIndicator?: boolean;
   subHeading?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  videoBackground?: string;
+  videoProps?: {
+    muted?: boolean;
+    autoPlay?: boolean;
+  };
 }
 
 const SectionHero: FC<SectionHeroProps> = ({
@@ -81,4 +99,5 @@ const SectionHero: FC<SectionHeroProps> = ({
   );
 };
 
+export { SectionHero };
 export default SectionHero;

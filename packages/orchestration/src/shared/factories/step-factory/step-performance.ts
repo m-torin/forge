@@ -5,24 +5,24 @@
  * for workflow step execution.
  */
 
-import type { StepPerformanceData, ProgressState } from './step-types';
+import type { ProgressState, StepPerformanceData } from './step-types';
 
 /**
  * Initialize performance monitoring data
  */
-export function initializePerformanceData(enableMonitoring: boolean = true): StepPerformanceData {
+export function initializePerformanceData(enableMonitoring = true): StepPerformanceData {
   const startTime = Date.now();
 
   return {
-    startTime,
-    memoryUsage: enableMonitoring ? { before: process.memoryUsage() } : undefined,
     cpuUsage: enableMonitoring ? { before: process.cpuUsage() } : undefined,
     customMetrics: new Map(),
+    memoryUsage: enableMonitoring ? { before: process.memoryUsage() } : undefined,
     progress: {
       current: 0,
-      total: 100,
       state: 'pending' as ProgressState,
+      total: 100,
     },
+    startTime,
   };
 }
 
@@ -31,7 +31,7 @@ export function initializePerformanceData(enableMonitoring: boolean = true): Ste
  */
 export function updatePerformanceData(
   performance: StepPerformanceData,
-  enableMonitoring: boolean = true,
+  enableMonitoring = true,
 ): void {
   if (!enableMonitoring) return;
 
@@ -65,15 +65,15 @@ export function updatePerformanceData(
 export function createProgressReporter(
   performance: StepPerformanceData,
   stepId: string,
-  enableDetailedLogging: boolean = false,
+  enableDetailedLogging = false,
 ): (current: number, total: number, details?: string) => Promise<void> {
   return async (current: number, total: number, details?: string) => {
     if (performance.progress) {
       performance.progress = {
         current,
-        total,
-        state: 'in_progress' as ProgressState,
         details,
+        state: 'in_progress' as ProgressState,
+        total,
       };
     }
 
@@ -129,7 +129,7 @@ export function calculatePerformanceStats(performance: StepPerformanceData): {
  */
 export function formatPerformanceData(
   performance: StepPerformanceData,
-  includeDetails: boolean = false,
+  includeDetails = false,
 ): string {
   const stats = calculatePerformanceStats(performance);
   let result = `Duration: ${stats.duration}ms`;

@@ -4,52 +4,47 @@
 
 import { vi } from 'vitest';
 
-import type { 
-  AuthSession, 
-  User, 
-  Session,
-  OrganizationRole,
-} from '../../shared/types';
+import type { AuthSession, OrganizationRole, Session, User } from '../../shared/types';
 
 /**
  * Mock user data
  */
 export const mockUsers = {
-  owner: {
-    id: 'user-owner-1',
-    name: 'Owner User',
-    email: 'owner@example.com',
-    emailVerified: true,
-    image: 'https://example.com/avatar-owner.jpg',
-    createdAt: new Date('2023-01-01'),
-    updatedAt: new Date('2023-01-01'),
-  },
   admin: {
     id: 'user-admin-1',
     name: 'Admin User',
+    createdAt: new Date('2023-01-02'),
     email: 'admin@example.com',
     emailVerified: true,
     image: 'https://example.com/avatar-admin.jpg',
-    createdAt: new Date('2023-01-02'),
     updatedAt: new Date('2023-01-02'),
-  },
-  member: {
-    id: 'user-member-1',
-    name: 'Member User',
-    email: 'member@example.com',
-    emailVerified: true,
-    image: 'https://example.com/avatar-member.jpg',
-    createdAt: new Date('2023-01-03'),
-    updatedAt: new Date('2023-01-03'),
   },
   guest: {
     id: 'user-guest-1',
     name: 'Guest User',
+    createdAt: new Date('2023-01-04'),
     email: 'guest@example.com',
     emailVerified: false,
     image: 'https://example.com/avatar-guest.jpg',
-    createdAt: new Date('2023-01-04'),
     updatedAt: new Date('2023-01-04'),
+  },
+  member: {
+    id: 'user-member-1',
+    name: 'Member User',
+    createdAt: new Date('2023-01-03'),
+    email: 'member@example.com',
+    emailVerified: true,
+    image: 'https://example.com/avatar-member.jpg',
+    updatedAt: new Date('2023-01-03'),
+  },
+  owner: {
+    id: 'user-owner-1',
+    name: 'Owner User',
+    createdAt: new Date('2023-01-01'),
+    email: 'owner@example.com',
+    emailVerified: true,
+    image: 'https://example.com/avatar-owner.jpg',
+    updatedAt: new Date('2023-01-01'),
   },
 } as const;
 
@@ -60,17 +55,17 @@ export const mockOrganizations = {
   primary: {
     id: 'org-primary-1',
     name: 'Primary Organization',
-    slug: 'primary-org',
-    description: 'Primary test organization',
     createdAt: new Date('2023-01-01'),
+    description: 'Primary test organization',
+    slug: 'primary-org',
     updatedAt: new Date('2023-01-01'),
   },
   secondary: {
     id: 'org-secondary-1',
     name: 'Secondary Organization',
-    slug: 'secondary-org',
-    description: 'Secondary test organization',
     createdAt: new Date('2023-01-02'),
+    description: 'Secondary test organization',
+    slug: 'secondary-org',
     updatedAt: new Date('2023-01-02'),
   },
 } as const;
@@ -82,17 +77,17 @@ export const mockTeams = {
   development: {
     id: 'team-dev-1',
     name: 'Development Team',
+    createdAt: new Date('2023-01-01'),
     description: 'Software development team',
     organizationId: mockOrganizations.primary.id,
-    createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
   },
   marketing: {
     id: 'team-marketing-1',
     name: 'Marketing Team',
+    createdAt: new Date('2023-01-02'),
     description: 'Marketing and growth team',
     organizationId: mockOrganizations.primary.id,
-    createdAt: new Date('2023-01-02'),
     updatedAt: new Date('2023-01-02'),
   },
 } as const;
@@ -103,23 +98,23 @@ export const mockTeams = {
 export function createMockSession(
   user: User = mockUsers.member,
   organizationId?: string,
-  role: OrganizationRole = 'member'
+  role: OrganizationRole = 'member',
 ): AuthSession {
   const session: Session = {
     id: `session-${user.id}`,
-    userId: user.id,
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     createdAt: new Date(),
-    updatedAt: new Date(),
-    token: `mock-token-${user.id}`,
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     ipAddress: '127.0.0.1',
+    token: `mock-token-${user.id}`,
+    updatedAt: new Date(),
     userAgent: 'Mock User Agent',
+    userId: user.id,
   };
 
   return {
+    activeOrganizationId: organizationId || mockOrganizations.primary.id,
     session,
     user,
-    activeOrganizationId: organizationId || mockOrganizations.primary.id,
   };
 }
 
@@ -178,42 +173,42 @@ export const mockAuthState = new MockAuthState();
  */
 export const mockAuth = {
   api: {
+    addMember: vi.fn().mockResolvedValue({ success: true }),
+    createApiKey: vi.fn().mockResolvedValue({
+      apiKey: 'mock-api-key-12345',
+      success: true,
+    }),
+    createOrganization: vi.fn().mockResolvedValue({
+      organization: mockOrganizations.primary,
+      success: true,
+    }),
+    forgotPassword: vi.fn().mockResolvedValue({ success: true }),
     getSession: vi.fn().mockImplementation(() => mockAuthState.getSession()),
+    hasPermission: vi.fn().mockResolvedValue({ hasPermission: true }),
+    listApiKeys: vi.fn().mockResolvedValue({
+      apiKeys: [],
+      success: true,
+    }),
+    listOrganizations: vi.fn().mockResolvedValue([mockOrganizations.primary]),
+    removeMember: vi.fn().mockResolvedValue({ success: true }),
+    resetPassword: vi.fn().mockResolvedValue({ success: true }),
+    revokeApiKey: vi.fn().mockResolvedValue({ success: true }),
+    setActiveOrganization: vi.fn().mockImplementation(({ body }) => {
+      mockAuthState.setActiveOrganization(body.organizationId);
+      return Promise.resolve({ success: true });
+    }),
     signIn: vi.fn().mockResolvedValue({ success: true }),
     signOut: vi.fn().mockImplementation(() => {
       mockAuthState.signOut();
       return Promise.resolve();
     }),
     signUp: vi.fn().mockResolvedValue({ success: true }),
-    forgotPassword: vi.fn().mockResolvedValue({ success: true }),
-    resetPassword: vi.fn().mockResolvedValue({ success: true }),
-    verifyEmail: vi.fn().mockResolvedValue({ success: true }),
-    createApiKey: vi.fn().mockResolvedValue({ 
-      success: true, 
-      apiKey: 'mock-api-key-12345' 
-    }),
-    verifyApiKey: vi.fn().mockResolvedValue({ 
-      valid: true, 
-      key: { id: 'mock-key-1', permissions: ['read'] } 
-    }),
-    revokeApiKey: vi.fn().mockResolvedValue({ success: true }),
-    listApiKeys: vi.fn().mockResolvedValue({ 
-      success: true, 
-      apiKeys: [] 
-    }),
-    createOrganization: vi.fn().mockResolvedValue({ 
-      success: true, 
-      organization: mockOrganizations.primary 
-    }),
-    listOrganizations: vi.fn().mockResolvedValue([mockOrganizations.primary]),
-    setActiveOrganization: vi.fn().mockImplementation(({ body }) => {
-      mockAuthState.setActiveOrganization(body.organizationId);
-      return Promise.resolve({ success: true });
-    }),
-    addMember: vi.fn().mockResolvedValue({ success: true }),
-    removeMember: vi.fn().mockResolvedValue({ success: true }),
     updateMemberRole: vi.fn().mockResolvedValue({ success: true }),
-    hasPermission: vi.fn().mockResolvedValue({ hasPermission: true }),
+    verifyApiKey: vi.fn().mockResolvedValue({
+      valid: true,
+      key: { id: 'mock-key-1', permissions: ['read'] },
+    }),
+    verifyEmail: vi.fn().mockResolvedValue({ success: true }),
   },
 };
 
@@ -221,14 +216,14 @@ export const mockAuth = {
  * Mock client auth methods
  */
 export const mockClientAuth = {
+  forgotPassword: vi.fn().mockResolvedValue({ success: true }),
+  resetPassword: vi.fn().mockResolvedValue({ success: true }),
   signIn: vi.fn().mockResolvedValue({ success: true }),
   signOut: vi.fn().mockImplementation(() => {
     mockAuthState.signOut();
     return Promise.resolve();
   }),
   signUp: vi.fn().mockResolvedValue({ success: true }),
-  forgotPassword: vi.fn().mockResolvedValue({ success: true }),
-  resetPassword: vi.fn().mockResolvedValue({ success: true }),
   verifyEmail: vi.fn().mockResolvedValue({ success: true }),
 };
 
@@ -238,7 +233,7 @@ export const mockClientAuth = {
 export function setupMockAuthenticatedUser(
   userType: keyof typeof mockUsers = 'member',
   organizationId?: string,
-  role: OrganizationRole = 'member'
+  role: OrganizationRole = 'member',
 ) {
   const user = mockUsers[userType];
   const session = createMockSession(user, organizationId, role);

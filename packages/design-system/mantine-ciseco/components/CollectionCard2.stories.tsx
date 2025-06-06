@@ -194,7 +194,7 @@ export const Grid: Story = {
         },
       ].map((item, index) => (
         <CollectionCard2
-          key={index}
+          key={`${item.title}-${index}`}
           collection={{
             id: `gid://${index}`,
             color: item.color,
@@ -219,7 +219,7 @@ export const ResponsiveGrid: Story = {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
       {Array.from({ length: 6 }, (_, i) => (
         <CollectionCard2
-          key={i}
+          key={`collection-${i}`}
           collection={{
             id: `gid://${i}`,
             color: [

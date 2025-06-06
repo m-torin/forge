@@ -1,13 +1,8 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { requireAuth } from '../../lib/auth';
+export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
-  // Validate authentication
-  const authResult = await requireAuth(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
+export async function GET() {
   return NextResponse.json({
     environment: process.env.NODE_ENV,
     status: 'ok',

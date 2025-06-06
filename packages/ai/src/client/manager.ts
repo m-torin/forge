@@ -86,7 +86,7 @@ export class ClientAIManager extends AIManager {
                 options.onChunk(chunk);
               }
               yield chunk;
-            } catch (error) {
+            } catch (_error) {
               console.warn('Failed to parse chunk:', data);
             }
           }

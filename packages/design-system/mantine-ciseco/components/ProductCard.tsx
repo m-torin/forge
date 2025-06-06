@@ -4,16 +4,18 @@ import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ShoppingBag03Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { Drawer, ScrollArea } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import Link from 'next/link';
-import { type FC } from 'react';
+import { type FC, useEffect, useRef } from 'react';
 
 import { type TProductItem } from '../data/data';
 import { useLocalizeHref } from '../hooks/useLocale';
 
 import AddToCardButton from './AddToCardButton';
-import { useAside } from './aside';
 import LikeButton from './LikeButton';
 import Prices from './Prices';
+import ProductQuickView from './ProductQuickView';
 import ProductStatus from './ProductStatus';
 import { ProgressiveImage } from './ProgressiveImage';
 import ButtonPrimary from './shared/Button/ButtonPrimary';
@@ -21,12 +23,45 @@ import ButtonSecondary from './shared/Button/ButtonSecondary';
 
 export interface ProductCardProps {
   className?: string;
-  data: TProductItem;
+  data?: TProductItem;
+  imageAspectRatio?: string;
   isLiked?: boolean;
+  layout?: 'grid' | 'list';
+  lazyLoad?: boolean;
+  loading?: boolean;
+  onAddToCart?: () => void;
+  onClick?: () => void;
+  onCompare?: () => void;
+  onLike?: () => void;
+  onQuickView?: () => void;
+  onWishlist?: () => void;
+  priceFormatter?: (price: number) => string;
+  product?: TProductItem;
+  responsive?: Record<string, any>;
+  showAddToCart?: boolean;
+  showCompare?: boolean;
+  showDiscount?: boolean;
+  showImageGallery?: boolean;
+  showLike?: boolean;
+  showQuickView?: boolean;
+  showRating?: boolean;
+  showShipping?: boolean;
+  showSizes?: boolean;
+  showVariants?: boolean;
+  showWishlist?: boolean;
 }
 
-const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) => {
+const ProductCard: FC<ProductCardProps> = ({
+  className = '',
+  data,
+  isLiked,
+  product,
+  ...props
+}) => {
   const localizeHref = useLocalizeHref();
+  const [quickViewOpened, { close: closeQuickView, open: openQuickView }] = useDisclosure(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   const {
     id,
     featuredImage,
@@ -39,10 +74,31 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
     selectedOptions,
     status,
     title,
-  } = data;
+  } = product || data || {};
   const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
 
-  const { open: openAside, setProductQuickViewHandle } = useAside();
+  // Reset scroll position when drawer opens
+  useEffect(() => {
+    if (quickViewOpened) {
+      // Multiple approaches to ensure scroll reset works
+      const resetScroll = () => {
+        if (scrollAreaRef.current) {
+          scrollAreaRef.current.scrollTop = 0;
+        }
+      };
+
+      // Immediate reset
+      resetScroll();
+      
+      // Fallback after animation frame
+      requestAnimationFrame(resetScroll);
+      
+      // Final fallback after a short delay
+      const timeout = setTimeout(resetScroll, 100);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [quickViewOpened]);
 
   const renderColorOptions = () => {
     const optionColorValues = options?.find((option) => option.name === 'Color')?.optionValues;
@@ -98,10 +154,7 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
 
         <ButtonSecondary
           fontSize="text-xs"
-          onClick={() => {
-            setProductQuickViewHandle(handle || '');
-            openAside('product-quick-view');
-          }}
+          onClick={openQuickView}
           className="ms-1.5 bg-white shadow-lg transition-colors hover:bg-gray-100! hover:text-neutral-900"
           sizeClass="py-2 px-4"
         >
@@ -115,49 +168,77 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
   const productUrl = localizeHref(`/products/${handle}`);
 
   return (
-    <div className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}>
-      <Link href={productUrl as any} className="absolute inset-0" />
+    <>
+      <div className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}>
+        <Link href={productUrl as any} className="absolute inset-0" />
 
-      <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
-        <Link href={productUrl as any} className="block">
-          {featuredImage?.src && (
-            <ProgressiveImage
-              placeholder={featuredImage.alt}
-              priority={false}
-              className="flex aspect-[11/12] w-full relative"
-              alt={handle || 'Product image'}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
-              src={featuredImage.src}
-            />
-          )}
-        </Link>
-        <ProductStatus status={status} />
-        <LikeButton className="absolute end-3 top-3 z-10" liked={isLiked} />
-        {renderGroupButtons()}
-      </div>
-
-      <div className="space-y-4 px-2.5 pt-5 pb-2.5">
-        {renderColorOptions()}
-        <div>
-          <h2 className="nc-ProductCard__title text-base font-semibold transition-colors">
-            {title}
-          </h2>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{color}</p>
+        <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
+          <Link href={productUrl as any} className="block">
+            {featuredImage?.src && (
+              <ProgressiveImage
+                placeholder={featuredImage.alt}
+                priority={false}
+                className="flex aspect-[11/12] w-full relative"
+                alt={handle || 'Product image'}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                src={featuredImage.src}
+              />
+            )}
+          </Link>
+          <ProductStatus status={status} />
+          <LikeButton className="absolute end-3 top-3 z-10" liked={isLiked} />
+          {renderGroupButtons()}
         </div>
 
-        <div className="flex items-end justify-between">
-          <Prices price={price ?? 1} />
-          <div className="mb-0.5 flex items-center">
-            <StarIcon className="h-5 w-5 pb-px text-amber-400" />
-            <span className="ms-1 text-sm text-neutral-500 dark:text-neutral-400">
-              {rating || ''} ({reviewNumber || 0} reviews)
-            </span>
+        <div className="space-y-4 px-2.5 pt-5 pb-2.5">
+          {renderColorOptions()}
+          <div>
+            <h2 className="nc-ProductCard__title text-base font-semibold transition-colors">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{color}</p>
+          </div>
+
+          <div className="flex items-end justify-between">
+            <Prices price={price ?? 1} />
+            <div className="mb-0.5 flex items-center">
+              <StarIcon className="h-5 w-5 pb-px text-amber-400" />
+              <span className="ms-1 text-sm text-neutral-500 dark:text-neutral-400">
+                {rating || ''} ({reviewNumber || 0} reviews)
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <Drawer
+        onClose={closeQuickView}
+        opened={quickViewOpened}
+        overlayProps={{ blur: 4, opacity: 0.5 }}
+        position="right"
+        transitionProps={{ duration: 300, transition: 'slide-left' }}
+        size={800}
+        title="Product Details"
+        zIndex={200}
+        styles={{
+          body: { height: "100%", padding: 0 },
+          content: { display: "flex", flexDirection: "column" },
+        }}
+      >
+        <ScrollArea 
+          ref={scrollAreaRef}
+          h="100%" 
+          type="scroll"
+          scrollbarSize={8}
+          p="md"
+        >
+          <ProductQuickView product={product || data} />
+        </ScrollArea>
+      </Drawer>
+    </>
   );
 };
 
+export { ProductCard };
 export default ProductCard;

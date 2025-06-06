@@ -3,29 +3,26 @@
  */
 
 import 'server-only';
+
 import { prisma as database } from '@repo/database/prisma';
+
+import { canActOnUser, isValidRole, roleHasPermission } from '../../shared/teams/permissions';
 import { auth } from '../auth';
-import { 
-  DEFAULT_TEAM_ROLES, 
-  roleHasPermission, 
-  canActOnUser,
-  isValidRole,
-} from '../../shared/teams/permissions';
 
 import type {
   CreateTeamData,
   CreateTeamResult,
-  UpdateTeamData,
-  UpdateTeamResult,
   DeleteTeamResult,
   GetTeamResult,
+  GetTeamStatsResult,
   ListTeamsResult,
-  TeamWithMembers,
-  UpdateTeamMemberData,
-  UpdateTeamMemberResult,
   RemoveTeamMemberResult,
   TeamStats,
-  GetTeamStatsResult,
+  TeamWithMembers,
+  UpdateTeamData,
+  UpdateTeamMemberData,
+  UpdateTeamMemberResult,
+  UpdateTeamResult,
 } from '../../shared/teams/types';
 
 /**
@@ -34,44 +31,49 @@ import type {
 export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
-    const { name, description, organizationId, initialMembers = [] } = data;
+    const { name, description, initialMembers = [], organizationId } = data;
 
     // Use the active organization if none specified
     const teamOrganizationId = organizationId || session.session.activeOrganizationId;
-    
+
     if (!teamOrganizationId) {
-      return { success: false, error: 'Organization ID required' };
+      return { error: 'Organization ID required', success: false };
     }
 
     // Validate that user is a member of the organization
     const membership = await database.member.findFirst({
       where: {
-        userId: session.user.id,
         organizationId: teamOrganizationId,
+        userId: session.user.id,
       },
     });
 
     if (!membership) {
-      return { success: false, error: 'Not a member of this organization' };
+      return { error: 'Not a member of this organization', success: false };
     }
 
     // Create the team
     const team = await database.team.create({
       data: {
+        id: `team_${Math.random().toString(36).substr(2, 9)}`,
         name,
+        createdAt: new Date(),
         description,
-        organizationId: teamOrganizationId,
         members: {
           create: {
-            userId: session.user.id,
+            id: `member_${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: new Date(),
+            organizationId: teamOrganizationId,
             role: 'owner',
+            userId: session.user.id,
           },
         },
+        organizationId: teamOrganizationId,
       },
       include: {
         members: {
@@ -95,12 +97,16 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
         // Create invitation for each initial member
         await database.invitation.create({
           data: {
+            id: `invitation_${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: new Date(),
             email: member.email,
-            role: member.role,
-            teamId: team.id,
-            organizationId: teamOrganizationId,
-            invitedById: session.user.id,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+            invitedById: session.user.id,
+            inviterId: session.user.id,
+            organizationId: teamOrganizationId,
+            role: member.role,
+            status: 'pending',
+            teamId: team.id,
           },
         });
       }
@@ -108,36 +114,38 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
 
     const teamWithMembers: TeamWithMembers = {
       ...team,
+      description: team.description || undefined,
       memberCount: team.members.length,
       members: team.members.map((member: any) => ({
         id: member.id,
-        userId: member.userId,
-        teamId: member.teamId,
-        role: member.role,
         joinedAt: member.createdAt,
-        user: member.user,
+        role: member.role,
+        teamId: member.teamId,
+        user: {
+          ...member.user,
+          image: member.user.image || undefined,
+        },
+        userId: member.userId,
       })),
+      updatedAt: team.updatedAt || team.createdAt,
     };
 
     return { success: true, team: teamWithMembers };
   } catch (error) {
     console.error('Create team error:', error);
-    return { success: false, error: 'Failed to create team' };
+    return { error: 'Failed to create team', success: false };
   }
 }
 
 /**
  * Updates a team
  */
-export async function updateTeam(
-  teamId: string,
-  data: UpdateTeamData
-): Promise<UpdateTeamResult> {
+export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<UpdateTeamResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     // Check if user is a member with write permissions
@@ -149,11 +157,10 @@ export async function updateTeam(
     });
 
     if (!membership || !roleHasPermission(membership.role, 'team:write')) {
-      return { success: false, error: 'Insufficient permissions' };
+      return { error: 'Insufficient permissions', success: false };
     }
 
     const team = await database.team.update({
-      where: { id: teamId },
       data: {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
@@ -172,25 +179,31 @@ export async function updateTeam(
           },
         },
       },
+      where: { id: teamId },
     });
 
     const teamWithMembers: TeamWithMembers = {
       ...team,
+      description: team.description || undefined,
       memberCount: team.members.length,
       members: team.members.map((member: any) => ({
         id: member.id,
-        userId: member.userId,
-        teamId: member.teamId,
-        role: member.role,
         joinedAt: member.createdAt,
-        user: member.user,
+        role: member.role,
+        teamId: member.teamId,
+        user: {
+          ...member.user,
+          image: member.user.image || undefined,
+        },
+        userId: member.userId,
       })),
+      updatedAt: team.updatedAt || team.createdAt,
     };
 
     return { success: true, team: teamWithMembers };
   } catch (error) {
     console.error('Update team error:', error);
-    return { success: false, error: 'Failed to update team' };
+    return { error: 'Failed to update team', success: false };
   }
 }
 
@@ -200,9 +213,9 @@ export async function updateTeam(
 export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     // Check if user is team owner
@@ -214,7 +227,7 @@ export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
     });
 
     if (!membership || membership.role !== 'owner') {
-      return { success: false, error: 'Only team owners can delete teams' };
+      return { error: 'Only team owners can delete teams', success: false };
     }
 
     // Delete the team (cascade will handle members and invitations)
@@ -225,7 +238,7 @@ export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
     return { success: true };
   } catch (error) {
     console.error('Delete team error:', error);
-    return { success: false, error: 'Failed to delete team' };
+    return { error: 'Failed to delete team', success: false };
   }
 }
 
@@ -235,20 +248,12 @@ export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
 export async function getTeam(teamId: string): Promise<GetTeamResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     const team = await database.team.findFirst({
-      where: {
-        id: teamId,
-        members: {
-          some: {
-            userId: session.user.id,
-          },
-        },
-      },
       include: {
         members: {
           include: {
@@ -263,29 +268,42 @@ export async function getTeam(teamId: string): Promise<GetTeamResult> {
           },
         },
       },
+      where: {
+        id: teamId,
+        members: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
     });
 
     if (!team) {
-      return { success: false, error: 'Team not found or access denied' };
+      return { error: 'Team not found or access denied', success: false };
     }
 
     const teamWithMembers: TeamWithMembers = {
       ...team,
+      description: team.description || undefined,
       memberCount: team.members.length,
       members: team.members.map((member: any) => ({
         id: member.id,
-        userId: member.userId,
-        teamId: member.teamId,
-        role: member.role,
         joinedAt: member.createdAt,
-        user: member.user,
+        role: member.role,
+        teamId: member.teamId,
+        user: {
+          ...member.user,
+          image: member.user.image || undefined,
+        },
+        userId: member.userId,
       })),
+      updatedAt: team.updatedAt || team.createdAt,
     };
 
     return { success: true, team: teamWithMembers };
   } catch (error) {
     console.error('Get team error:', error);
-    return { success: false, error: 'Failed to get team' };
+    return { error: 'Failed to get team', success: false };
   }
 }
 
@@ -295,22 +313,14 @@ export async function getTeam(teamId: string): Promise<GetTeamResult> {
 export async function listTeams(organizationId?: string): Promise<ListTeamsResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     const targetOrgId = organizationId || session.session.activeOrganizationId;
 
     const teams = await database.team.findMany({
-      where: {
-        ...(targetOrgId && { organizationId: targetOrgId }),
-        members: {
-          some: {
-            userId: session.user.id,
-          },
-        },
-      },
       include: {
         members: {
           include: {
@@ -328,43 +338,58 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
       orderBy: {
         createdAt: 'desc',
       },
+      where: {
+        ...(targetOrgId && { organizationId: targetOrgId }),
+        members: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
     });
 
     const teamsWithMembers: TeamWithMembers[] = teams.map((team: any) => ({
       ...team,
+      description: team.description || undefined,
       memberCount: team.members.length,
       members: team.members.map((member: any) => ({
         id: member.id,
-        userId: member.userId,
-        teamId: member.teamId,
-        role: member.role,
         joinedAt: member.createdAt,
-        user: member.user,
+        role: member.role,
+        teamId: member.teamId,
+        user: {
+          ...member.user,
+          image: member.user.image || undefined,
+        },
+        userId: member.userId,
       })),
+      updatedAt: team.updatedAt || team.createdAt,
     }));
 
     return { success: true, teams: teamsWithMembers, total: teams.length };
   } catch (error) {
     console.error('List teams error:', error);
-    return { success: false, error: 'Failed to list teams' };
+    return { error: 'Failed to list teams', success: false };
   }
 }
 
 /**
  * Updates a team member's role
  */
-export async function updateTeamMember(data: UpdateTeamMemberData): Promise<UpdateTeamMemberResult> {
+export async function updateTeamMember(
+  data: UpdateTeamMemberData,
+): Promise<UpdateTeamMemberResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
-    const { teamId, userId, role } = data;
+    const { role, teamId, userId } = data;
 
     if (!isValidRole(role)) {
-      return { success: false, error: 'Invalid role' };
+      return { error: 'Invalid role', success: false };
     }
 
     // Check if current user can update members
@@ -376,7 +401,7 @@ export async function updateTeamMember(data: UpdateTeamMemberData): Promise<Upda
     });
 
     if (!currentUserMembership || !roleHasPermission(currentUserMembership.role, 'members:write')) {
-      return { success: false, error: 'Insufficient permissions' };
+      return { error: 'Insufficient permissions', success: false };
     }
 
     // Get target user's current role
@@ -388,19 +413,16 @@ export async function updateTeamMember(data: UpdateTeamMemberData): Promise<Upda
     });
 
     if (!targetMembership) {
-      return { success: false, error: 'User is not a team member' };
+      return { error: 'User is not a team member', success: false };
     }
 
     // Check if current user can act on target user
     if (!canActOnUser(currentUserMembership.role, targetMembership.role, 'members:write')) {
-      return { success: false, error: 'Cannot modify user with equal or higher role' };
+      return { error: 'Cannot modify user with equal or higher role', success: false };
     }
 
     // Update the member's role
     const updatedMember = await database.teamMember.update({
-      where: {
-        id: targetMembership.id,
-      },
       data: {
         role,
       },
@@ -414,21 +436,27 @@ export async function updateTeamMember(data: UpdateTeamMemberData): Promise<Upda
           },
         },
       },
+      where: {
+        id: targetMembership.id,
+      },
     });
 
     const memberWithUser = {
       id: updatedMember.id,
-      userId: updatedMember.userId,
-      teamId: updatedMember.teamId,
-      role: updatedMember.role,
       joinedAt: updatedMember.createdAt,
-      user: updatedMember.user,
+      role: updatedMember.role,
+      teamId: updatedMember.teamId,
+      user: {
+        ...updatedMember.user,
+        image: updatedMember.user.image || undefined,
+      },
+      userId: updatedMember.userId,
     };
 
-    return { success: true, member: memberWithUser };
+    return { member: memberWithUser, success: true };
   } catch (error) {
     console.error('Update team member error:', error);
-    return { success: false, error: 'Failed to update team member' };
+    return { error: 'Failed to update team member', success: false };
   }
 }
 
@@ -437,13 +465,13 @@ export async function updateTeamMember(data: UpdateTeamMemberData): Promise<Upda
  */
 export async function removeTeamMember(
   teamId: string,
-  userId: string
+  userId: string,
 ): Promise<RemoveTeamMemberResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     // Check if current user can remove members
@@ -454,8 +482,11 @@ export async function removeTeamMember(
       },
     });
 
-    if (!currentUserMembership || !roleHasPermission(currentUserMembership.role, 'members:remove')) {
-      return { success: false, error: 'Insufficient permissions' };
+    if (
+      !currentUserMembership ||
+      !roleHasPermission(currentUserMembership.role, 'members:remove')
+    ) {
+      return { error: 'Insufficient permissions', success: false };
     }
 
     // Get target user's membership
@@ -467,7 +498,7 @@ export async function removeTeamMember(
     });
 
     if (!targetMembership) {
-      return { success: false, error: 'User is not a team member' };
+      return { error: 'User is not a team member', success: false };
     }
 
     // Users can always remove themselves
@@ -480,7 +511,7 @@ export async function removeTeamMember(
 
     // Check if current user can act on target user
     if (!canActOnUser(currentUserMembership.role, targetMembership.role, 'members:remove')) {
-      return { success: false, error: 'Cannot remove user with equal or higher role' };
+      return { error: 'Cannot remove user with equal or higher role', success: false };
     }
 
     // Remove the member
@@ -491,7 +522,7 @@ export async function removeTeamMember(
     return { success: true };
   } catch (error) {
     console.error('Remove team member error:', error);
-    return { success: false, error: 'Failed to remove team member' };
+    return { error: 'Failed to remove team member', success: false };
   }
 }
 
@@ -501,9 +532,9 @@ export async function removeTeamMember(
 export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     // Check if user is a team member
@@ -515,40 +546,40 @@ export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> 
     });
 
     if (!membership) {
-      return { success: false, error: 'Access denied' };
+      return { error: 'Access denied', success: false };
     }
 
     const [team, memberCount, pendingInvitations] = await Promise.all([
       database.team.findUnique({
-        where: { id: teamId },
         select: { createdAt: true },
+        where: { id: teamId },
       }),
       database.teamMember.count({
         where: { teamId },
       }),
       database.invitation.count({
         where: {
-          teamId,
           status: 'pending',
+          teamId,
         },
       }),
     ]);
 
     if (!team) {
-      return { success: false, error: 'Team not found' };
+      return { error: 'Team not found', success: false };
     }
 
     const stats: TeamStats = {
-      memberCount,
       activeMembers: memberCount, // In a real app, you might track last activity
-      pendingInvitations,
       createdAt: team.createdAt,
       lastActivity: new Date(), // Placeholder - implement based on your activity tracking
+      memberCount,
+      pendingInvitations,
     };
 
-    return { success: true, stats };
+    return { stats, success: true };
   } catch (error) {
     console.error('Get team stats error:', error);
-    return { success: false, error: 'Failed to get team statistics' };
+    return { error: 'Failed to get team statistics', success: false };
   }
 }

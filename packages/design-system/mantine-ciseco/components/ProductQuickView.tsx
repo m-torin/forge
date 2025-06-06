@@ -14,7 +14,6 @@ import { useLocalizeHref } from '../hooks/useLocale';
 
 import AccordionInfo from './AccordionInfo';
 import AddToCardButton from './AddToCardButton';
-import { useAside } from './aside';
 import { Divider } from './Divider';
 import IconDiscount from './IconDiscount';
 import LikeButton from './LikeButton';
@@ -24,35 +23,62 @@ import ButtonPrimary from './shared/Button/ButtonPrimary';
 
 export interface ProductQuickViewProps {
   className?: string;
+  isOpen?: boolean;
+  loading?: boolean;
+  onAddToCart?: () => void;
+  onClose?: () => void;
+  onLike?: () => void;
+  onShare?: () => void;
+  onViewDetails?: () => void;
+  product?: TProductDetail;
 }
 
-const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
+const ProductQuickView: FC<ProductQuickViewProps> = ({
+  className,
+  isOpen,
+  loading,
+  onAddToCart,
+  onClose,
+  onLike,
+  onShare,
+  onViewDetails,
+  product: propProduct,
+}) => {
   const localizeHref = useLocalizeHref();
-  const { productQuickViewHandle: handle } = useAside();
 
   const [qualitySelected, setQualitySelected] = useState(1);
-  const [product, setProduct] = useState<TProductDetail>();
+  const [detailedProduct, setDetailedProduct] = useState<TProductDetail | undefined>(propProduct);
+
   useEffect(() => {
-    if (!handle) {
+    if (!propProduct) {
       return;
     }
 
+    // If we have a full product object, use it
+    if ('descriptionHtml' in propProduct) {
+      setDetailedProduct(propProduct);
+      return;
+    }
+
+    // Otherwise, fetch the detailed product data
     const fetchProduct = async () => {
-      const response = await getProductDetailByHandle(handle);
-      if (!response) {
-        return;
+      if (propProduct.handle) {
+        const response = await getProductDetailByHandle(propProduct.handle);
+        if (response) {
+          setDetailedProduct(response);
+        }
       }
-      setProduct(response);
     };
     fetchProduct();
-  }, [handle]);
+  }, [propProduct]);
 
-  if (!product) {
+  if (!detailedProduct) {
     return null;
   }
 
   const {
     featuredImage,
+    handle,
     images,
     options,
     price,
@@ -61,7 +87,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
     selectedOptions,
     status,
     title,
-  } = product;
+  } = detailedProduct;
   const sizeSelected = selectedOptions?.find((option) => option.name === 'Size')?.value;
   const colorSelected = selectedOptions?.find((option) => option.name === 'Color')?.value;
 
@@ -263,7 +289,10 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
             {
               name: 'Description',
               content:
-                'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
+                'descriptionHtml' in detailedProduct &&
+                typeof detailedProduct.descriptionHtml === 'string'
+                  ? detailedProduct.descriptionHtml
+                  : 'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
             },
             {
               name: 'Features',
@@ -357,4 +386,5 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
   );
 };
 
+export { ProductQuickView };
 export default ProductQuickView;

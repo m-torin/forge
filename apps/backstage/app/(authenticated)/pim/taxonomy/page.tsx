@@ -35,8 +35,6 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
-
 interface TaxonomyNode {
   children?: TaxonomyNode[];
   description: string;
@@ -213,8 +211,6 @@ function TaxonomyTree({
   onEdit: (node: TaxonomyNode) => void;
   onDelete: (nodeId: string) => void;
 }) {
-  const { trackClick } = useUIAnalytics();
-
   const renderNode = (node: TaxonomyNode): any => ({
     children: node.children ? node.children.map(renderNode) : undefined,
     label: (
@@ -240,7 +236,7 @@ function TaxonomyTree({
             onClick={(e) => {
               e.stopPropagation();
               onEdit(node);
-              trackClick('taxonomy_edit', { nodeId: node.id });
+              console.log('Taxonomy Node Edited', { nodeId: node.id });
             }}
             size="sm"
             variant="subtle"
@@ -252,7 +248,7 @@ function TaxonomyTree({
             onClick={(e) => {
               e.stopPropagation();
               onDelete(node.id);
-              trackClick('taxonomy_delete', { nodeId: node.id });
+              console.log('Taxonomy Node Deleted', { nodeId: node.id });
             }}
             size="sm"
             variant="subtle"
@@ -273,26 +269,21 @@ export default function TaxonomyManagementPage() {
   const [modalOpened, { close: closeModal, open: openModal }] = useDisclosure(false);
   const [editingNode, setEditingNode] = useState<TaxonomyNode | null>(null);
 
-  // Analytics and observability
-  const { trackPage } = useAnalytics();
-  const { trackClick, trackView } = useUIAnalytics();
-  const { trackEvent } = useObservability();
-
   useEffect(() => {
-    trackPage('pim_taxonomy_management');
-    trackView('taxonomy_tree');
-    trackEvent({
+    console.log('Page Viewed', { page: 'pim_taxonomy_management' });
+    console.log('Component Viewed', { component: 'taxonomy_tree' });
+    console.log('Track Event', {
       action: 'view',
       category: 'pim',
       label: 'taxonomy_management',
       metadata: { totalCategories: taxonomy.length },
     });
-  }, [trackPage, trackView, trackEvent, taxonomy.length]);
+  }, [taxonomy.length]);
 
   const handleCreateCategory = () => {
     setEditingNode(null);
     openModal();
-    trackClick('create_category_button');
+    console.log('Create Category Button Clicked');
   };
 
   const handleEditCategory = (node: TaxonomyNode) => {

@@ -62,10 +62,10 @@ const A_FEATURES = [
 const Policy = () => {
   return (
     <div className="relative grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {A_FEATURES.map((item, index) => {
+      {A_FEATURES.map((item, _index) => {
         return (
           <div
-            key={index}
+            key={item.name}
             className={`flex flex-col rounded-2xl p-5 ${item.color} `}
           >
             <div dangerouslySetInnerHTML={{ __html: item.svg }} />

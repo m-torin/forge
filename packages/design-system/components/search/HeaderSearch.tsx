@@ -248,13 +248,13 @@ export function HeaderSearch({
           <Group gap={4} ml="auto">
             <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 width: 18,
-                height: 18,
-                borderRadius: 4,
+                alignItems: 'center',
                 backgroundColor: 'var(--mantine-color-gray-1)',
+                borderRadius: 4,
+                display: 'flex',
+                height: 18,
+                justifyContent: 'center',
               }}
             >
               <IconCommand size={10} />

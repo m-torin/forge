@@ -9,7 +9,6 @@ applications with separate client and server implementations.
 - 🎯 **Multi-Provider Support** - Segment, PostHog, Vercel Analytics, and Console logging
 - 🔄 **Environment-Specific** - Separate client and server implementations
 - ⚡ **Next.js Optimized** - Special support for Next.js 15 with SSR/SSG
-- 🎭 **Feature Flags** - Built-in PostHog feature flags and A/B testing
 - 🛒 **Ecommerce Events** - Comprehensive ecommerce tracking following Segment's specification
 - 📦 **Tree-Shakeable** - Import only what you need
 - 🔒 **Type-Safe** - Full TypeScript support with strict typing
@@ -188,32 +187,25 @@ await analytics.emit(
 
 ### React Server Components
 
-```typescript
+```tsx
 // app/page.tsx
-import { trackServerEvent, getServerFeatureFlag } from '@repo/analytics/server/next';
+import { trackServerEvent } from '@repo/analytics/server/next';
 import { cookies } from 'next/headers';
 
 export default async function Page() {
   // Track events from RSCs
   await trackServerEvent('Page Viewed', {
     path: '/home',
-    title: 'Home Page'
+    title: 'Home Page',
   });
 
-  // Check feature flags
-  const showNewFeature = await getServerFeatureFlag(
-    'new-feature',
-    cookies(),
-    process.env.POSTHOG_API_KEY!
-  );
-
-  return <div>{showNewFeature && <NewFeature />}</div>;
+  return <div>Home Page</div>;
 }
 ```
 
 ### Client Components with Hooks
 
-```typescript
+```tsx
 // app/components/button.tsx
 'use client';
 import { useTrackEvent, useFeatureFlag } from '@repo/analytics/client/next';
@@ -224,7 +216,7 @@ export function Button() {
 
   const handleClick = () => {
     trackEvent('Button Clicked', {
-      variant: showNewDesign ? 'new' : 'old'
+      variant: showNewDesign ? 'new' : 'old',
     });
   };
 
@@ -238,7 +230,7 @@ export function Button() {
 
 ### Automatic Page Tracking
 
-```typescript
+```tsx
 // app/layout.tsx
 'use client';
 import { AnalyticsProvider, usePageTracking } from '@repo/analytics/client/next';
@@ -253,12 +245,14 @@ export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <AnalyticsProvider config={{
-          providers: {
-            segment: { writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY },
-            posthog: { apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY }
-          }
-        }}>
+        <AnalyticsProvider
+          config={{
+            providers: {
+              segment: { writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY },
+              posthog: { apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY },
+            },
+          }}
+        >
           <RootLayoutContent>{children}</RootLayoutContent>
         </AnalyticsProvider>
       </body>
@@ -312,7 +306,7 @@ export async function submitForm(formData: FormData) {
 
 ### Tracked Components
 
-```typescript
+```tsx
 // app/components/tracked.tsx
 'use client';
 import { TrackedButton, TrackedLink } from '@repo/analytics/client/next';
@@ -320,19 +314,11 @@ import { TrackedButton, TrackedLink } from '@repo/analytics/client/next';
 export function CTASection() {
   return (
     <div>
-      <TrackedButton
-        event="CTA Clicked"
-        properties={{ location: 'hero' }}
-        className="btn-primary"
-      >
+      <TrackedButton event="CTA Clicked" properties={{ location: 'hero' }} className="btn-primary">
         Get Started
       </TrackedButton>
 
-      <TrackedLink
-        href="/pricing"
-        event="Link Clicked"
-        properties={{ link: 'pricing' }}
-      >
+      <TrackedLink href="/pricing" event="Link Clicked" properties={{ link: 'pricing' }}>
         View Pricing
       </TrackedLink>
     </div>
@@ -359,7 +345,7 @@ Universal customer data platform for all your analytics needs.
 
 ### PostHog
 
-Product analytics with feature flags, A/B testing, and session recording.
+Product analytics with session recording and user insights.
 
 ```typescript
 {
@@ -404,66 +390,6 @@ Development provider that logs all events to console.
     prefix: '[Analytics]',
     enabled: process.env.NODE_ENV === 'development'
   }
-}
-```
-
-## Feature Flags (PostHog)
-
-### Client-Side Feature Flags
-
-```typescript
-import { createClientAnalytics } from '@repo/analytics/client';
-
-const analytics = await createClientAnalytics({
-  providers: {
-    posthog: { apiKey: 'xxx' },
-  },
-});
-
-// Check if feature is enabled
-const showNewFeature = await analytics.isFeatureEnabled('new-feature');
-
-// Get feature flag value (for A/B tests)
-const buttonColor = await analytics.getFeatureFlag('button-color-test');
-
-// Get all flags
-const allFlags = await analytics.getAllFeatureFlags();
-```
-
-### Server-Side Feature Flags (Next.js)
-
-```typescript
-import {
-  isFeatureEnabledOnServer,
-  getFeatureFlagOnServer
-} from '@repo/analytics/next/server';
-import { cookies } from 'next/headers';
-
-export default async function Page() {
-  const cookieStore = cookies();
-  const apiKey = process.env.POSTHOG_API_KEY!;
-
-  // Check feature flag
-  const showBeta = await isFeatureEnabledOnServer(
-    'beta-feature',
-    cookieStore,
-    apiKey
-  );
-
-  // Get A/B test variant
-  const heroVariant = await getFeatureFlagOnServer(
-    'hero-test',
-    cookieStore,
-    apiKey,
-    { defaultValue: 'control' }
-  );
-
-  return (
-    <div>
-      {showBeta && <BetaFeature />}
-      <Hero variant={heroVariant} />
-    </div>
-  );
 }
 ```
 
@@ -692,13 +618,6 @@ import { createServerAnalytics } from '@repo/analytics/server';
 2. Enable debug mode: `console: { enabled: true }`
 3. Verify provider API keys are correct
 4. Check browser console for errors
-
-### Feature Flags Not Working
-
-1. Ensure PostHog provider is configured
-2. Check that distinct ID is being set correctly
-3. Verify feature flag exists in PostHog dashboard
-4. Use bootstrap data for server-side rendering
 
 ### TypeScript Errors
 

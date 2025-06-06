@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+
 import baseConfig from '@repo/testing/config/node';
 
 export default defineConfig({

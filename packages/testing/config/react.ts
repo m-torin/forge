@@ -20,4 +20,4 @@ export function createReactConfig(options: ReactConfigOptions = {}): UserConfig 
   };
 }
 
-export default createReactConfig;
+export default createReactConfig();

@@ -7,8 +7,13 @@ const LikeSaveBtns = () => {
   return (
     <div className="flow-root">
       <div className="flex text-neutral-700 dark:text-neutral-300 text-sm -mx-3 -my-1.5">
-        <span className="py-1.5 px-3 flex rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">
+        <button
+          className="py-1.5 px-3 flex rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer border-none bg-transparent"
+          aria-label="Share"
+          type="button"
+        >
           <svg
+            aria-hidden="true"
             stroke="currentColor"
             viewBox="0 0 24 24"
             className="h-5 w-5"
@@ -23,12 +28,16 @@ const LikeSaveBtns = () => {
             />
           </svg>
           <span className="hidden sm:block ml-2">Share</span>
-        </span>
-        <span
+        </button>
+        <button
           onClick={() => setIsLiked(!isLiked)}
-          className={`py-1.5 px-3 flex rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer `}
+          className="py-1.5 px-3 flex rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer border-none bg-transparent"
+          aria-label={isLiked ? 'Remove from saved' : 'Save'}
+          aria-pressed={isLiked}
+          type="button"
         >
           <svg
+            aria-hidden="true"
             stroke="currentColor"
             viewBox="0 0 24 24"
             className={`h-5 w-5 ${isLiked ? 'text-red-500' : ''}`}
@@ -43,10 +52,11 @@ const LikeSaveBtns = () => {
             />
           </svg>
           <span className="hidden sm:block ml-2">Save</span>
-        </span>
+        </button>
       </div>
     </div>
   );
 };
 
+export { LikeSaveBtns };
 export default LikeSaveBtns;

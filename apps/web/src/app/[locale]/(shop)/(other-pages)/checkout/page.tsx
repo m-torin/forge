@@ -36,7 +36,7 @@ export async function generateMetadata({
 }
 
 const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
-  const dict = await getDictionary(params.locale);
+  const _dict = await getDictionary(params.locale);
   const cart = await getCart("id://cart");
 
   const renderProduct = (product: TCardProduct) => {

@@ -3,7 +3,7 @@
  */
 
 // Re-export all middleware variants
-export { createApiMiddleware, apiMiddleware } from './api';
+export { apiMiddleware, createApiMiddleware } from './api';
 export { createNodeMiddleware, nodeMiddleware } from './node';
 export { createWebMiddleware, webMiddleware } from './web';
 export {

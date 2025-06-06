@@ -4,21 +4,21 @@ import { notifications } from '@mantine/notifications';
 import { IconCheck, IconX } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 
-import { analytics } from '@repo/analytics-legacy';
-
 /**
  * Hook for tracking page views with analytics
  */
 export function usePageTracking(pageName: string, metadata?: Record<string, any>) {
   useEffect(() => {
-    analytics.capture('page_viewed', {
-      page: pageName,
-      title: pageName
-        .split('-')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' '),
-      ...metadata,
-    });
+    // TODO: Add analytics tracking when analytics instance is available
+    // const analytics = await createClientAnalytics({...});
+    // await analytics.emit(track('page_viewed', {
+    //   page: pageName,
+    //   title: pageName
+    //     .split('-')
+    //     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    //     .join(' '),
+    //   ...metadata,
+    // }));
   }, [pageName, metadata]);
 }
 

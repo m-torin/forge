@@ -9,4 +9,4 @@ export function createNodeConfig(options: BaseConfigOptions = {}): UserConfig {
   });
 }
 
-export default createNodeConfig;
+export default createNodeConfig();

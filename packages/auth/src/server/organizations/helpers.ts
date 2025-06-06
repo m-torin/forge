@@ -4,12 +4,13 @@
 
 import 'server-only';
 import { headers } from 'next/headers';
+
 import { prisma as database } from '@repo/database/prisma';
 
 import { auth } from '../auth';
 
-import type { Organization, Member } from '@repo/database/prisma';
 import type { OrganizationRole } from '../../shared/types';
+import type { Member, Organization } from '@repo/database/prisma';
 
 /**
  * Gets the current organization for the authenticated user
@@ -92,11 +93,9 @@ export async function getUserOrganizations(): Promise<Organization[]> {
 /**
  * Gets organization with full member details
  */
-export async function getOrganizationWithMembers(
-  organizationId: string
-): Promise<{
+export async function getOrganizationWithMembers(organizationId: string): Promise<{
   organization: Organization;
-  members: Array<Member & { user: { id: string; name: string; email: string } }>;
+  members: (Member & { user: { id: string; name: string; email: string } })[];
 } | null> {
   try {
     const session = await auth.api.getSession({
@@ -110,8 +109,8 @@ export async function getOrganizationWithMembers(
     // Check if user is a member of this organization
     const membership = await database.member.findFirst({
       where: {
-        userId: session.user.id,
         organizationId,
+        userId: session.user.id,
       },
     });
 
@@ -124,7 +123,6 @@ export async function getOrganizationWithMembers(
         where: { id: organizationId },
       }),
       database.member.findMany({
-        where: { organizationId },
         include: {
           user: {
             select: {
@@ -134,6 +132,7 @@ export async function getOrganizationWithMembers(
             },
           },
         },
+        where: { organizationId },
       }),
     ]);
 
@@ -141,7 +140,7 @@ export async function getOrganizationWithMembers(
       return null;
     }
 
-    return { organization, members };
+    return { members, organization };
   } catch (error) {
     console.error('Get organization with members error:', error);
     return null;
@@ -153,17 +152,17 @@ export async function getOrganizationWithMembers(
  */
 export async function getUserRoleInOrganization(
   userId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<OrganizationRole | null> {
   try {
     const membership = await database.member.findFirst({
       where: {
-        userId,
         organizationId,
+        userId,
       },
     });
 
-    return membership?.role as OrganizationRole || null;
+    return (membership?.role as OrganizationRole) || null;
   } catch (error) {
     console.error('Get user role in organization error:', error);
     return null;
@@ -183,10 +182,7 @@ export async function getCurrentUserRole(): Promise<OrganizationRole | null> {
       return null;
     }
 
-    return getUserRoleInOrganization(
-      session.user.id,
-      session.session.activeOrganizationId
-    );
+    return getUserRoleInOrganization(session.user.id, session.session.activeOrganizationId);
   } catch (error) {
     console.error('Get current user role error:', error);
     return null;
@@ -198,7 +194,7 @@ export async function getCurrentUserRole(): Promise<OrganizationRole | null> {
  */
 export async function isOrganizationOwner(
   userId?: string,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
@@ -229,7 +225,7 @@ export async function isOrganizationOwner(
  */
 export async function isOrganizationAdmin(
   userId?: string,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
@@ -282,8 +278,8 @@ export async function getOrganizationStats(organizationId?: string): Promise<{
     // Check if user has access to this organization
     const membership = await database.member.findFirst({
       where: {
-        userId: session.user.id,
         organizationId: targetOrgId,
+        userId: session.user.id,
       },
     });
 
@@ -310,10 +306,10 @@ export async function getOrganizationStats(organizationId?: string): Promise<{
     ]);
 
     return {
-      memberCount,
-      teamCount,
       apiKeyCount,
       invitationCount,
+      memberCount,
+      teamCount,
     };
   } catch (error) {
     console.error('Get organization stats error:', error);
@@ -337,8 +333,8 @@ export async function switchOrganization(organizationId: string): Promise<boolea
     // Check if user is a member of the target organization
     const membership = await database.member.findFirst({
       where: {
-        userId: session.user.id,
         organizationId,
+        userId: session.user.id,
       },
     });
 

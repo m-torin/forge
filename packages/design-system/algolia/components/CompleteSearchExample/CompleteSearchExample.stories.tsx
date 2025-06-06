@@ -127,12 +127,12 @@ export const FullECommerceSearch: Story = {
                           />
                           <div className="flex items-center">
                             {[...Array(stars)].map((_, i) => (
-                              <span key={i} className="text-yellow-400">
+                              <span key={`star-filled-${stars}-${i}`} className="text-yellow-400">
                                 ★
                               </span>
                             ))}
                             {[...Array(5 - stars)].map((_, i) => (
-                              <span key={i} className="text-gray-300">
+                              <span key={`star-empty-${stars}-${i}`} className="text-gray-300">
                                 ★
                               </span>
                             ))}
@@ -203,19 +203,28 @@ export const DocumentationSearch: Story = {
                 <h3 className="font-semibold text-gray-900 mb-3">Getting Started</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="#" className="text-blue-600 hover:text-blue-800">
+                    <button
+                      className="text-blue-600 hover:text-blue-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       Installation
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       Quick Start
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       Configuration
-                    </a>
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -224,24 +233,36 @@ export const DocumentationSearch: Story = {
                 <h3 className="font-semibold text-gray-900 mb-3">Components</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       SearchProvider
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       SearchBox
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       SearchResults
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       Autocomplete
-                    </a>
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -250,19 +271,28 @@ export const DocumentationSearch: Story = {
                 <h3 className="font-semibold text-gray-900 mb-3">Advanced</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       Custom Styling
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       Server-Side Rendering
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                    <button
+                      className="text-gray-600 hover:text-gray-800 bg-transparent border-none cursor-pointer text-left"
+                      type="button"
+                    >
                       Performance
-                    </a>
+                    </button>
                   </li>
                 </ul>
               </div>

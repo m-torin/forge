@@ -5,8 +5,10 @@
  * validation and step definition validation.
  */
 
-import { z } from 'zod';
+import { type z } from 'zod';
+
 import { createValidationError, OrchestrationErrorCodes } from '../../utils/errors';
+
 import type { StepValidationConfig, ValidationResult, WorkflowStepDefinition } from './step-types';
 
 /**
@@ -25,8 +27,8 @@ export async function validateStepInput<TInput>(
       throw createValidationError(
         `Input validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
         {
-          code: OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
           validationErrors: result.error.issues,
+          code: OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
         },
       );
     }
@@ -39,8 +41,8 @@ export async function validateStepInput<TInput>(
       throw createValidationError(
         `Custom input validation failed: ${result.errors?.join(', ') || 'Unknown validation error'}`,
         {
-          code: OrchestrationErrorCodes.STEP_CUSTOM_VALIDATION_ERROR,
           validationResult: result,
+          code: OrchestrationErrorCodes.STEP_CUSTOM_VALIDATION_ERROR,
         },
       );
     }
@@ -61,8 +63,8 @@ export async function validateStepOutput<TOutput>(
     throw createValidationError(
       `Output validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
       {
-        code: OrchestrationErrorCodes.STEP_OUTPUT_VALIDATION_ERROR,
         validationErrors: result.error.issues,
+        code: OrchestrationErrorCodes.STEP_OUTPUT_VALIDATION_ERROR,
       },
     );
   }

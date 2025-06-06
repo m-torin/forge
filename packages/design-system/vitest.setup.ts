@@ -27,6 +27,7 @@ vi.mock('next/navigation', () => ({
     replace: vi.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
 }));
 
 // Mock next-themes

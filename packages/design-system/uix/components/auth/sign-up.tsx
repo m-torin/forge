@@ -3,8 +3,7 @@
 import { Alert, Button, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useState } from 'react';
 
-import { createClientAnalytics, track } from '@repo/analytics/client';
-import { signUp } from '@repo/auth-new/client';
+import { signUp } from '@repo/auth/client';
 
 export const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -18,37 +17,15 @@ export const SignUp = () => {
     setIsLoading(true);
     setError(null);
 
-    // Track sign-up attempt
-    analytics.capture('sign_up_attempted', {
-      method: 'email',
-    });
-
     try {
-      await signUp.email({
+      await signUp({
         name,
         email,
         password,
       });
-
-      // Track successful sign-up
-      analytics.capture('sign_up_completed', {
-        method: 'email',
-      });
-
-      // Identify new user
-      analytics.identify(email, {
-        name,
-        created_at: new Date().toISOString(),
-      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign up';
       setError(errorMessage);
-
-      // Track sign-up failure
-      analytics.capture('sign_up_failed', {
-        error: errorMessage,
-        method: 'email',
-      });
     } finally {
       setIsLoading(false);
     }

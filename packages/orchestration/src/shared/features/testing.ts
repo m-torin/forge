@@ -5,72 +5,58 @@
 
 import type {
   WorkflowDefinition,
-  WorkflowProvider,
   WorkflowExecution,
-  WorkflowStep,
-  WorkflowStepExecution,
-  WorkflowExecutionStatus,
   WorkflowExecutionMetadata,
+  WorkflowExecutionStatus,
+  WorkflowProvider,
+  WorkflowStepExecution,
 } from '../types/index';
 import type { ExecutionHistory } from './monitoring';
-import type { SagaDefinition, SagaExecution } from './saga';
 
 export interface MockWorkflowConfig {
   /** Mock execution behavior */
   behavior: 'success' | 'failure' | 'timeout' | 'custom';
   /** Execution delay in milliseconds */
   delay?: number;
-  /** Custom execution result */
-  result?: unknown;
   /** Custom error for failure behavior */
   error?: Error;
+  /** Execution metadata */
+  metadata?: Record<string, unknown>;
+  /** Custom execution result */
+  result?: unknown;
   /** Step-by-step execution simulation */
-  stepResults?: Array<{
+  stepResults?: {
     stepId: string;
     result?: unknown;
     error?: Error;
     delay?: number;
-  }>;
-  /** Execution metadata */
-  metadata?: Record<string, unknown>;
+  }[];
 }
 
 export interface TestScenario {
-  /** Scenario name */
-  name: string;
-  /** Scenario description */
-  description?: string;
-  /** Input data for the workflow */
-  input: unknown;
-  /** Expected output */
-  expectedOutput?: unknown;
-  /** Expected error */
-  expectedError?: string;
-  /** Mock configuration for dependencies */
-  mocks?: Record<string, MockWorkflowConfig>;
   /** Test assertions */
-  assertions?: Array<{
+  assertions?: {
     type: 'output' | 'error' | 'duration' | 'steps' | 'custom';
     condition: unknown;
     message?: string;
-  }>;
+  }[];
+  /** Scenario description */
+  description?: string;
+  /** Expected error */
+  expectedError?: string;
+  /** Expected output */
+  expectedOutput?: unknown;
+  /** Input data for the workflow */
+  input: unknown;
+  /** Mock configuration for dependencies */
+  mocks?: Record<string, MockWorkflowConfig>;
+  /** Scenario name */
+  name: string;
   /** Timeout for scenario execution */
   timeout?: number;
 }
 
 export interface WorkflowTestSuite {
-  /** Test suite name */
-  name: string;
-  /** Test suite description */
-  description?: string;
-  /** Workflow to test */
-  workflowId: string;
-  /** Setup function */
-  setup?: () => Promise<void>;
-  /** Cleanup function */
-  teardown?: () => Promise<void>;
-  /** Test scenarios */
-  scenarios: TestScenario[];
   /** Test configuration */
   config?: {
     /** Parallel execution */
@@ -80,40 +66,52 @@ export interface WorkflowTestSuite {
     /** Test timeout */
     timeout?: number;
   };
+  /** Test suite description */
+  description?: string;
+  /** Test suite name */
+  name: string;
+  /** Test scenarios */
+  scenarios: TestScenario[];
+  /** Setup function */
+  setup?: () => Promise<void>;
+  /** Cleanup function */
+  teardown?: () => Promise<void>;
+  /** Workflow to test */
+  workflowId: string;
 }
 
 export interface TestExecutionResult {
-  /** Scenario name */
-  scenarioName: string;
-  /** Test status */
-  status: 'passed' | 'failed' | 'skipped' | 'timeout';
-  /** Execution duration */
-  duration: number;
   /** Actual output */
   actualOutput?: unknown;
+  /** Assertion results */
+  assertions?: {
+    type: string;
+    passed: boolean;
+    message?: string;
+  }[];
+  /** Execution duration */
+  duration: number;
   /** Error information */
   error?: {
     message: string;
     stack?: string;
     type: 'assertion' | 'execution' | 'timeout';
   };
-  /** Assertion results */
-  assertions?: Array<{
-    type: string;
-    passed: boolean;
-    message?: string;
-  }>;
   /** Execution details */
   execution?: WorkflowExecution;
+  /** Scenario name */
+  scenarioName: string;
+  /** Test status */
+  status: 'passed' | 'failed' | 'skipped' | 'timeout';
 }
 
 export interface TestSuiteResult {
-  /** Test suite name */
-  suiteName: string;
-  /** Overall status */
-  status: 'passed' | 'failed' | 'partial';
   /** Total duration */
   duration: number;
+  /** Suite-level error */
+  error?: string;
+  /** Individual test results */
+  results: TestExecutionResult[];
   /** Statistics */
   stats: {
     total: number;
@@ -122,10 +120,10 @@ export interface TestSuiteResult {
     skipped: number;
     timeout: number;
   };
-  /** Individual test results */
-  results: TestExecutionResult[];
-  /** Suite-level error */
-  error?: string;
+  /** Overall status */
+  status: 'passed' | 'failed' | 'partial';
+  /** Test suite name */
+  suiteName: string;
 }
 
 export class MockWorkflowProvider implements WorkflowProvider {
@@ -210,13 +208,12 @@ export class MockWorkflowProvider implements WorkflowProvider {
     const startedAt = new Date();
     const execution: WorkflowExecution = {
       id: executionId,
-      workflowId,
-      status: 'running',
-      startedAt,
-      startTime: startedAt,
       input: input as Record<string, any>,
-      steps: [],
       metadata: (options as WorkflowExecutionMetadata) || {},
+      startedAt,
+      status: 'running',
+      steps: [],
+      workflowId,
     };
 
     this.executions.set(executionId, execution);
@@ -263,8 +260,8 @@ export class MockWorkflowProvider implements WorkflowProvider {
     timestamp: Date;
   }> {
     return {
-      status: 'healthy',
       responseTime: 1,
+      status: 'healthy',
       timestamp: new Date(),
     };
   }
@@ -346,11 +343,11 @@ export class MockWorkflowProvider implements WorkflowProvider {
         stepId: string;
         status: WorkflowExecutionStatus;
       } = {
-        stepId: step.id,
         name: step.name,
-        status: 'running',
-        startedAt: new Date(),
         input: execution.input,
+        startedAt: new Date(),
+        status: 'running',
+        stepId: step.id,
       };
 
       execution.steps.push(stepExecution);
@@ -371,16 +368,16 @@ export class MockWorkflowProvider implements WorkflowProvider {
       if (stepConfig?.error) {
         stepExecution.status = 'failed';
         stepExecution.error = {
-          message: stepConfig.error.message,
           code: 'SIMULATION_ERROR',
+          message: stepConfig.error.message,
           retryable: false,
         };
         stepExecution.completedAt = new Date();
 
         execution.status = 'failed';
         execution.error = {
-          message: stepConfig.error.message,
           code: 'SIMULATION_ERROR',
+          message: stepConfig.error.message,
           retryable: false,
         };
         execution.completedAt = new Date();
@@ -394,7 +391,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
 
     if (execution.status === 'running') {
       execution.status = 'completed';
-      execution.output = { success: true, steps: execution.steps.length };
+      execution.output = { steps: execution.steps.length, success: true };
       execution.completedAt = new Date();
     }
   }
@@ -407,8 +404,8 @@ export class MockWorkflowProvider implements WorkflowProvider {
       case 'failure':
         execution.status = 'failed';
         execution.error = config.error || {
-          message: 'Mock execution failed',
           code: 'MOCK_FAILURE',
+          message: 'Mock execution failed',
           retryable: false,
         };
         break;
@@ -431,48 +428,48 @@ export class MockWorkflowProvider implements WorkflowProvider {
 
   private recordExecutionHistory(execution: WorkflowExecution): void {
     // Map WorkflowExecutionStatus to ExecutionHistory status
-    const mappedStatus = ['timeout', 'paused'].includes(execution.status)
+    const mappedStatus = ['paused', 'timeout'].includes(execution.status)
       ? ('failed' as const)
       : execution.status === 'skipped'
         ? ('cancelled' as const)
         : (execution.status as 'pending' | 'running' | 'completed' | 'failed' | 'cancelled');
 
     const history: ExecutionHistory = {
-      executionId: execution.id,
-      workflowId: execution.workflowId,
-      status: mappedStatus,
-      startedAt: execution.startedAt,
       completedAt: execution.completedAt,
       duration: execution.completedAt
         ? execution.completedAt.getTime() - execution.startedAt.getTime()
         : undefined,
-      input: execution.input,
-      output: execution.output,
       error: execution.error,
+      executionId: execution.id,
+      input: execution.input,
+      metadata: {
+        triggeredBy: 'api',
+      },
+      output: execution.output,
+      startedAt: execution.startedAt,
+      status: mappedStatus,
       steps: execution.steps.map((step) => {
         // Map step status to ExecutionHistory step status
-        const mappedStepStatus = ['timeout', 'paused', 'cancelled'].includes(step.status)
+        const mappedStepStatus = ['cancelled', 'paused', 'timeout'].includes(step.status)
           ? ('failed' as const)
           : (step.status as 'pending' | 'running' | 'completed' | 'failed' | 'skipped');
 
         return {
-          stepId: step.stepId,
-          stepName: step.name || step.stepName || '',
-          status: mappedStepStatus,
-          startedAt: step.startedAt,
           completedAt: step.completedAt,
           duration:
             step.completedAt && step.startedAt
               ? step.completedAt.getTime() - step.startedAt.getTime()
               : undefined,
+          error: step.error?.message,
           input: step.input,
           output: step.output,
-          error: step.error?.message,
+          startedAt: step.startedAt,
+          status: mappedStepStatus,
+          stepId: step.stepId,
+          stepName: step.name || step.stepName || '',
         };
       }),
-      metadata: {
-        triggeredBy: 'api',
-      },
+      workflowId: execution.workflowId,
     };
 
     this.executionHistory.push(history);
@@ -542,32 +539,32 @@ export class WorkflowTestRunner {
       }
     } catch (error) {
       return {
-        suiteName: testSuite.name,
-        status: 'failed',
         duration: Date.now() - startTime,
-        stats: { total: 0, passed: 0, failed: 0, skipped: 0, timeout: 0 },
-        results: [],
         error: error instanceof Error ? error.message : String(error),
+        results: [],
+        stats: { failed: 0, passed: 0, skipped: 0, timeout: 0, total: 0 },
+        status: 'failed',
+        suiteName: testSuite.name,
       };
     }
 
     const stats = {
-      total: results.length,
-      passed: results.filter((r) => r.status === 'passed').length,
       failed: results.filter((r) => r.status === 'failed').length,
+      passed: results.filter((r) => r.status === 'passed').length,
       skipped: results.filter((r) => r.status === 'skipped').length,
       timeout: results.filter((r) => r.status === 'timeout').length,
+      total: results.length,
     };
 
     const status =
       stats.failed > 0 ? 'failed' : stats.passed === stats.total ? 'passed' : 'partial';
 
     return {
-      suiteName: testSuite.name,
-      status,
       duration: Date.now() - startTime,
-      stats,
       results,
+      stats,
+      status,
+      suiteName: testSuite.name,
     };
   }
 
@@ -605,26 +602,26 @@ export class WorkflowTestRunner {
       const allPassed = assertions.every((a) => a.passed);
 
       return {
-        scenarioName: scenario.name,
-        status: allPassed ? 'passed' : 'failed',
-        duration,
         actualOutput: execution.output,
         assertions,
+        duration,
         execution,
+        scenarioName: scenario.name,
+        status: allPassed ? 'passed' : 'failed',
       };
     } catch (error) {
       const duration = Date.now() - startTime;
       const isTimeout = error instanceof Error && error.message.includes('timeout');
 
       return {
-        scenarioName: scenario.name,
-        status: isTimeout ? 'timeout' : 'failed',
         duration,
         error: {
+          type: isTimeout ? 'timeout' : 'execution',
           message: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
-          type: isTimeout ? 'timeout' : 'execution',
         },
+        scenarioName: scenario.name,
+        status: isTimeout ? 'timeout' : 'failed',
       };
     }
   }
@@ -665,11 +662,11 @@ export class WorkflowTestRunner {
     scenario: TestScenario,
     execution: WorkflowExecution,
   ): Promise<
-    Array<{
+    {
       type: string;
       passed: boolean;
       message?: string;
-    }>
+    }[]
   > {
     const results = [];
 
@@ -678,10 +675,10 @@ export class WorkflowTestRunner {
       const passed = JSON.stringify(execution.output) === JSON.stringify(scenario.expectedOutput);
       results.push({
         type: 'output',
-        passed,
         message: passed
           ? undefined
           : `Expected ${JSON.stringify(scenario.expectedOutput)}, got ${JSON.stringify(execution.output)}`,
+        passed,
       });
     }
 
@@ -690,10 +687,10 @@ export class WorkflowTestRunner {
       const hasExpectedError = execution.error?.message === scenario.expectedError;
       results.push({
         type: 'error',
-        passed: hasExpectedError,
         message: hasExpectedError
           ? undefined
           : `Expected error "${scenario.expectedError}", got "${execution.error?.message || 'no error'}"`,
+        passed: hasExpectedError,
       });
     }
 
@@ -704,14 +701,14 @@ export class WorkflowTestRunner {
           const passed = await this.evaluateAssertion(assertion, execution);
           results.push({
             type: assertion.type,
-            passed,
             message: passed ? undefined : assertion.message,
+            passed,
           });
         } catch (error) {
           results.push({
             type: assertion.type,
-            passed: false,
             message: error instanceof Error ? error.message : String(error),
+            passed: false,
           });
         }
       }
@@ -911,16 +908,16 @@ export const WorkflowDebugUtils = {
     scenarios.push({
       name: 'Happy Path',
       description: 'Test successful execution with valid input',
-      input: { test: true },
       expectedOutput: { success: true },
+      input: { test: true },
     });
 
     // Error scenarios
     scenarios.push({
       name: 'Invalid Input',
       description: 'Test execution with invalid input',
-      input: null,
       expectedError: 'Invalid input',
+      input: null,
     });
 
     // Timeout scenario
@@ -928,13 +925,13 @@ export const WorkflowDebugUtils = {
       name: 'Timeout',
       description: 'Test execution timeout',
       input: { test: true },
-      timeout: 1000,
       mocks: {
         [workflow.id]: {
           behavior: 'timeout',
           delay: 2000,
         },
       },
+      timeout: 1000,
     });
 
     return scenarios;

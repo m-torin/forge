@@ -6,14 +6,13 @@
  */
 
 import {
+  compose,
   createStep,
   createStepWithValidation,
+  withStepCircuitBreaker,
   withStepMonitoring,
   withStepRetry,
-  withStepCircuitBreaker,
   withStepTimeout,
-  compose,
-  type SimpleWorkflowStep,
 } from '../shared/factories';
 
 // ===== SIMPLE API EXAMPLES (80% of use cases) =====
@@ -39,10 +38,10 @@ const processPaymentStep = createStepWithValidation(
   'process-payment',
   async (input: { amount: number; currency: string }) => {
     // Simulate payment processing
-    return { transactionId: 'txn_456', amount: input.amount, status: 'completed' };
+    return { amount: input.amount, status: 'completed', transactionId: 'txn_456' };
   },
   // Input validator
-  (input) => input.amount > 0 && ['USD', 'EUR', 'GBP'].includes(input.currency),
+  (input) => input.amount > 0 && ['EUR', 'GBP', 'USD'].includes(input.currency),
   // Output validator
   (output) => output.status === 'completed',
 );
@@ -60,10 +59,10 @@ const monitoredStep = withStepMonitoring(sendEmailStep, { enableDetailedLogging:
  * Only when you need resilience patterns
  */
 const resilientStep = withStepRetry(processPaymentStep, {
-  maxAttempts: 3,
-  delay: 1000,
   backoff: 'exponential',
+  delay: 1000,
   jitter: true,
+  maxAttempts: 3,
 });
 
 /**
@@ -86,8 +85,8 @@ async function demonstrateSimpleAPI() {
   // Example 1: Basic usage
   console.log('1. Basic step execution:');
   const emailResult = await sendEmailStep.execute({
-    email: 'user@example.com',
     name: 'John Doe',
+    email: 'user@example.com',
   });
   console.log('Result:', emailResult);
   console.log();
@@ -104,8 +103,8 @@ async function demonstrateSimpleAPI() {
   // Example 3: Enhanced step with monitoring
   console.log('3. Enhanced step with monitoring:');
   const monitoredResult = await monitoredStep.execute({
-    email: 'monitored@example.com',
     name: 'Jane Smith',
+    email: 'monitored@example.com',
   });
   console.log('Result:', monitoredResult);
   console.log();
@@ -113,8 +112,8 @@ async function demonstrateSimpleAPI() {
   // Example 4: Robust step with multiple enhancers
   console.log('4. Robust step with multiple enhancers:');
   const robustResult = await robustEmailStep.execute({
-    email: 'robust@example.com',
     name: 'Bob Wilson',
+    email: 'robust@example.com',
   });
   console.log('Result:', robustResult);
 }
@@ -165,10 +164,10 @@ async function demonstrateSimpleAPI() {
 
 // Export for testing
 export {
-  sendEmailStep,
-  processPaymentStep,
+  demonstrateSimpleAPI,
   monitoredStep,
+  processPaymentStep,
   resilientStep,
   robustEmailStep,
-  demonstrateSimpleAPI,
+  sendEmailStep,
 };

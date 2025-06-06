@@ -5,15 +5,13 @@
  * Provides step validation, composition utilities, and lifecycle management.
  */
 
-import { nanoid } from 'nanoid';
-import { z } from 'zod';
 import { OrchestrationError } from '../utils/errors';
+
 import {
-  type WorkflowStepDefinition,
-  type StepMetadata,
-  type ValidationResult,
   StandardWorkflowStep,
   StepFactory,
+  type ValidationResult,
+  type WorkflowStepDefinition,
 } from './step-factory';
 import { StepTemplates, type StepTemplateType } from './step-templates';
 
@@ -21,18 +19,18 @@ import { StepTemplates, type StepTemplateType } from './step-templates';
  * Step registry entry with additional metadata
  */
 export interface StepRegistryEntry<TInput = any, TOutput = any> {
+  /** Whether the step is currently active */
+  active: boolean;
   /** Step definition */
   definition: WorkflowStepDefinition<TInput, TOutput>;
+  /** Last time this step was used */
+  lastUsedAt?: Date;
   /** When the step was registered */
   registeredAt: Date;
   /** Who registered the step */
   registeredBy?: string;
   /** Number of times this step has been used */
   usageCount: number;
-  /** Last time this step was used */
-  lastUsedAt?: Date;
-  /** Whether the step is currently active */
-  active: boolean;
   /** Step validation status */
   validated: boolean;
   /** Validation result details */
@@ -43,44 +41,42 @@ export interface StepRegistryEntry<TInput = any, TOutput = any> {
  * Step search filters
  */
 export interface StepSearchFilters {
-  /** Filter by category */
-  category?: string;
-  /** Filter by tags (all must match) */
-  tags?: string[];
-  /** Filter by name pattern */
-  namePattern?: string;
-  /** Filter by version */
-  version?: string;
-  /** Filter by author */
-  author?: string;
-  /** Include deprecated steps */
-  includeDeprecated?: boolean;
   /** Only active steps */
   activeOnly?: boolean;
+  /** Filter by author */
+  author?: string;
+  /** Filter by category */
+  category?: string;
+  /** Include deprecated steps */
+  includeDeprecated?: boolean;
+  /** Filter by name pattern */
+  namePattern?: string;
+  /** Filter by tags (all must match) */
+  tags?: string[];
   /** Only validated steps */
   validatedOnly?: boolean;
+  /** Filter by version */
+  version?: string;
 }
 
 /**
  * Step composition configuration
  */
 export interface StepCompositionConfig {
-  /** Whether to validate dependencies */
-  validateDependencies?: boolean;
-  /** Whether to optimize execution order */
-  optimizeOrder?: boolean;
   /** Whether to detect cycles */
   detectCycles?: boolean;
   /** Maximum composition depth */
   maxDepth?: number;
+  /** Whether to optimize execution order */
+  optimizeOrder?: boolean;
+  /** Whether to validate dependencies */
+  validateDependencies?: boolean;
 }
 
 /**
  * Step dependency graph node
  */
 export interface StepDependencyNode {
-  /** Step ID */
-  stepId: string;
   /** Step definition */
   definition: WorkflowStepDefinition;
   /** Direct dependencies */
@@ -89,20 +85,22 @@ export interface StepDependencyNode {
   dependents: string[];
   /** Depth in dependency graph */
   depth: number;
+  /** Step ID */
+  stepId: string;
 }
 
 /**
  * Step execution plan
  */
 export interface StepExecutionPlan {
-  /** Execution order (topologically sorted) */
-  executionOrder: string[];
-  /** Parallel execution groups */
-  parallelGroups: string[][];
   /** Dependency graph */
   dependencyGraph: Map<string, StepDependencyNode>;
   /** Total estimated execution time */
   estimatedDuration?: number;
+  /** Execution order (topologically sorted) */
+  executionOrder: string[];
+  /** Parallel execution groups */
+  parallelGroups: string[][];
   /** Warnings or issues */
   warnings: string[];
 }
@@ -135,7 +133,7 @@ export class StepRegistry {
         `Cannot register invalid step: ${validationResult.errors?.join(', ')}`,
         'INVALID_STEP_REGISTRATION',
         false,
-        { stepId: definition.id, validationErrors: validationResult.errors },
+        { validationErrors: validationResult.errors, stepId: definition.id },
       );
     }
 
@@ -151,13 +149,13 @@ export class StepRegistry {
 
     // Create registry entry
     const entry: StepRegistryEntry<TInput, TOutput> = {
+      validated: validationResult.valid,
+      validationResult,
+      active: true,
       definition,
       registeredAt: new Date(),
       registeredBy,
       usageCount: 0,
-      active: true,
-      validated: validationResult.valid,
-      validationResult,
     };
 
     // Update collections
@@ -408,9 +406,9 @@ export class StepRegistry {
   createExecutionPlan(stepIds: string[], config: StepCompositionConfig = {}): StepExecutionPlan {
     const {
       validateDependencies = true,
-      optimizeOrder = true,
       detectCycles = true,
       maxDepth = 10,
+      optimizeOrder = true,
     } = config;
 
     const warnings: string[] = [];
@@ -426,11 +424,11 @@ export class StepRegistry {
 
       const dependencies = definition.dependencies || [];
       const node: StepDependencyNode = {
-        stepId,
         definition,
         dependencies,
         dependents: [],
         depth: 0,
+        stepId,
       };
 
       dependencyGraph.set(stepId, node);
@@ -467,9 +465,9 @@ export class StepRegistry {
     const parallelGroups = this.createParallelGroups(executionOrder, dependencyGraph);
 
     return {
+      dependencyGraph,
       executionOrder,
       parallelGroups,
-      dependencyGraph,
       warnings,
     };
   }
@@ -481,15 +479,15 @@ export class StepRegistry {
     totalSteps: number;
     activeSteps: number;
     categories: Record<string, number>;
-    mostUsed: Array<{ stepId: string; usageCount: number }>;
-    recentlyUsed: Array<{ stepId: string; lastUsedAt: Date }>;
+    mostUsed: { stepId: string; usageCount: number }[];
+    recentlyUsed: { stepId: string; lastUsedAt: Date }[];
   } {
     const stats = {
-      totalSteps: this.steps.size,
       activeSteps: 0,
       categories: {} as Record<string, number>,
-      mostUsed: [] as Array<{ stepId: string; usageCount: number }>,
-      recentlyUsed: [] as Array<{ stepId: string; lastUsedAt: Date }>,
+      mostUsed: [] as { stepId: string; usageCount: number }[],
+      recentlyUsed: [] as { stepId: string; lastUsedAt: Date }[],
+      totalSteps: this.steps.size,
     };
 
     const allEntries = Array.from(this.steps.entries());
@@ -514,7 +512,7 @@ export class StepRegistry {
     // Recently used steps
     stats.recentlyUsed = allEntries
       .filter(([, entry]) => entry.active && entry.lastUsedAt)
-      .map(([stepId, entry]) => ({ stepId, lastUsedAt: entry.lastUsedAt! }))
+      .map(([stepId, entry]) => ({ lastUsedAt: entry.lastUsedAt!, stepId }))
       .sort((a, b) => b.lastUsedAt.getTime() - a.lastUsedAt.getTime())
       .slice(0, 10);
 
@@ -524,10 +522,10 @@ export class StepRegistry {
   /**
    * Export step definitions for backup/migration
    */
-  export(): Array<{
+  export(): {
     definition: WorkflowStepDefinition;
     metadata: Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>;
-  }> {
+  }[] {
     return Array.from(this.steps.values()).map((entry) => ({
       definition: entry.definition,
       metadata: {
@@ -542,13 +540,13 @@ export class StepRegistry {
    * Import step definitions from backup/migration
    */
   import(
-    data: Array<{
+    data: {
       definition: WorkflowStepDefinition;
       metadata?: Partial<Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>>;
-    }>,
+    }[],
     overwrite = false,
   ): { imported: number; skipped: number; errors: string[] } {
-    const result = { imported: 0, skipped: 0, errors: [] as string[] };
+    const result = { errors: [] as string[], imported: 0, skipped: 0 };
 
     for (const item of data) {
       try {
@@ -678,7 +676,7 @@ export class StepRegistry {
 
       if (canExecute) {
         // Find or create a group for this step
-        let groupIndex = groups.findIndex((group) =>
+        const groupIndex = groups.findIndex((group) =>
           group.every((groupStepId) => {
             const groupNode = dependencyGraph.get(groupStepId);
             return groupNode && !groupNode.dependents.includes(stepId);
@@ -720,11 +718,11 @@ export class StepRegistry {
     const activeSteps = Array.from(this.steps.values()).filter((entry) => entry.active).length;
 
     return {
-      totalSteps: this.steps.size,
       activeSteps,
-      inactiveSteps: this.steps.size - activeSteps,
       categories: this.categories.size,
+      inactiveSteps: this.steps.size - activeSteps,
       tags: this.tags.size,
+      totalSteps: this.steps.size,
     };
   }
 }

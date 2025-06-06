@@ -21,7 +21,6 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconCopy, IconShield, IconShieldCheck } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { createClientAnalytics, track } from '@repo/analytics/client';
 import {
   disableTwoFactor,
   enableTwoFactor,
@@ -30,7 +29,7 @@ import {
   getTwoFactorStatus,
   regenerateTwoFactorBackupCodes,
   verifyTwoFactor,
-} from '@repo/auth-new/client';
+} from '@repo/auth/client';
 
 interface TwoFactorSetupProps {
   onCancel?: () => void;
@@ -77,17 +76,9 @@ export function TwoFactorSetup({ onCancel, onComplete }: TwoFactorSetupProps) {
           setSecret(qrData.secret);
         }
       }
-
-      analytics.capture('two_factor_setup_started', {
-        source: 'two_factor_setup_component',
-      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to setup 2FA';
       setError(errorMessage);
-      analytics.capture('two_factor_setup_failed', {
-        error: errorMessage,
-        step: 'initialization',
-      });
     } finally {
       setIsLoading(false);
     }
@@ -106,27 +97,17 @@ export function TwoFactorSetup({ onCancel, onComplete }: TwoFactorSetupProps) {
         setBackupCodes(codes.backupCodes);
       }
 
-      analytics.capture('two_factor_enabled', {
-        source: 'two_factor_setup_component',
-      });
-
       // Move to backup codes step
       setActive(2);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Invalid code';
       setError(errorMessage);
-      analytics.capture('two_factor_verification_failed', {
-        error: errorMessage,
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleComplete = () => {
-    analytics.capture('two_factor_setup_completed', {
-      source: 'two_factor_setup_component',
-    });
     onComplete?.();
   };
 
@@ -249,7 +230,7 @@ export function TwoFactorSetup({ onCancel, onComplete }: TwoFactorSetupProps) {
                 </Group>
                 <List size="sm" spacing="xs">
                   {backupCodes.map((code, index) => (
-                    <List.Item key={index}>
+                    <List.Item key={`backup-code-${code}-${index}`}>
                       <Code>{code}</Code>
                     </List.Item>
                   ))}
@@ -307,9 +288,6 @@ export function TwoFactorManage({ onDisabled }: TwoFactorManageProps) {
       const codes = await regenerateTwoFactorBackupCodes?.();
       if (codes?.backupCodes) {
         setBackupCodes(codes.backupCodes);
-        analytics.capture('two_factor_backup_codes_regenerated', {
-          source: 'two_factor_manage_component',
-        });
       }
     } catch (error) {
       console.error('Failed to regenerate backup codes:', error);
@@ -322,9 +300,6 @@ export function TwoFactorManage({ onDisabled }: TwoFactorManageProps) {
     setIsLoading(true);
     try {
       await disableTwoFactor?.();
-      analytics.capture('two_factor_disabled', {
-        source: 'two_factor_manage_component',
-      });
       closeConfirmDisable();
       onDisabled?.();
     } catch (error) {
@@ -379,7 +354,7 @@ export function TwoFactorManage({ onDisabled }: TwoFactorManageProps) {
               </Group>
               <List size="sm" spacing="xs">
                 {backupCodes.map((code, index) => (
-                  <List.Item key={index}>
+                  <List.Item key={`backup-code-modal-${code}-${index}`}>
                     <Code>{code}</Code>
                   </List.Item>
                 ))}

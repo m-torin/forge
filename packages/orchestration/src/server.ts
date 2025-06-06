@@ -76,7 +76,18 @@ export function createWorkflowEngine(config?: {
 
           switch (providerConfig.type) {
             case 'upstash-workflow':
-              provider = new UpstashWorkflowProvider(providerConfig.config as any);
+              provider = new UpstashWorkflowProvider({
+                baseUrl: providerConfig.config.baseUrl,
+                qstash: {
+                  token: providerConfig.config.qstashToken,
+                },
+                redis: providerConfig.config.redisUrl
+                  ? {
+                      url: providerConfig.config.redisUrl,
+                      token: providerConfig.config.redisToken,
+                    }
+                  : undefined,
+              });
               break;
             case 'rate-limit':
               provider = new RateLimitProvider(providerConfig.config as any);
@@ -130,5 +141,5 @@ export const workflowEngine = createWorkflowEngine();
 // Re-export Upstash packages for direct usage in workflow routes
 export { Client as QStashClient, QStashWorkflowAbort } from '@upstash/qstash';
 export { Redis } from '@upstash/redis';
-export { serve as upstashServe, createWorkflow, serveMany } from '@upstash/workflow/nextjs';
+export { createWorkflow, serveMany, serve as upstashServe } from '@upstash/workflow/nextjs';
 export type { WorkflowContext } from '@upstash/workflow';

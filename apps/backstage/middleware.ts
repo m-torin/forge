@@ -1,7 +1,5 @@
 import { type NextMiddleware, NextResponse } from 'next/server';
 
-import { authMiddleware as betterAuthMiddleware } from '@repo/auth-new/middleware';
-import { parseError } from '@repo/observability/error';
 import { secure } from '@repo/security';
 import { noseconeMiddleware, noseconeOptions } from '@repo/security/middleware';
 
@@ -16,17 +14,7 @@ export const config = {
 
 const securityHeaders = noseconeMiddleware(noseconeOptions);
 
-// Use auth middleware from auth package
-
 const middleware: NextMiddleware = async (request) => {
-  // Check auth first for admin app
-  const authHandler = betterAuthMiddleware();
-  const authResponse = await authHandler(request);
-  // If auth middleware redirects or blocks, return its response
-  if (authResponse.status !== 200 || authResponse.headers.get('Location')) {
-    return authResponse;
-  }
-
   if (!env.ARCJET_KEY) {
     return securityHeaders();
   }
@@ -43,7 +31,7 @@ const middleware: NextMiddleware = async (request) => {
 
     return securityHeaders();
   } catch (error) {
-    const message = parseError(error);
+    const message = error instanceof Error ? error.message : 'Access denied';
 
     return NextResponse.json({ error: message }, { status: 403 });
   }

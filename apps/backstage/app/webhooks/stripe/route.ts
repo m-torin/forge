@@ -1,23 +1,16 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { analytics } from '@repo/analytics-legacy';
-import { createPrismaAdapter } from '@repo/database/prisma';
-import { parseError } from '@repo/observability/error';
-import { log } from '@repo/observability/log';
+import { prisma as database } from '@repo/database/prisma';
 import { stripe } from '@repo/payments';
 
 import { env } from '../../../env';
 
 import type { Stripe } from '@repo/payments';
 
-const adapter = createPrismaAdapter();
+export const dynamic = 'force-dynamic';
 
 const getUserFromCustomerId = async (customerId: string) => {
-  // Using the adapter to access the database
-  await adapter.initialize();
-  const database = await adapter.raw('client', {});
-
   const user = await database.user.findFirst({
     where: {
       email: {
@@ -41,7 +34,7 @@ const handleCheckoutSessionCompleted = async (data: Stripe.Checkout.Session) => 
     return;
   }
 
-  await analytics.capture('User Subscribed', {
+  console.log('User Subscribed', {
     customerId,
     source: 'stripe-webhook',
     timestamp: new Date().toISOString(),
@@ -61,7 +54,7 @@ const handleSubscriptionScheduleCanceled = async (data: Stripe.SubscriptionSched
     return;
   }
 
-  await analytics.capture('User Unsubscribed', {
+  console.log('User Unsubscribed', {
     customerId,
     source: 'stripe-webhook',
     timestamp: new Date().toISOString(),
@@ -95,7 +88,7 @@ export const POST = async (request: Request): Promise<Response> => {
         break;
       }
       default: {
-        log.warn(`Unhandled event type ${event.type}`);
+        console.warn(`Unhandled event type ${event.type}`);
       }
     }
 
@@ -103,9 +96,9 @@ export const POST = async (request: Request): Promise<Response> => {
 
     return NextResponse.json({ ok: true, result: event });
   } catch (error) {
-    const message = parseError(error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
 
-    log.error(message);
+    console.error(message, { error });
 
     return NextResponse.json(
       {

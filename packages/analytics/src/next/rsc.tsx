@@ -6,16 +6,11 @@
 import { cookies, headers } from 'next/headers';
 import { cache } from 'react';
 
-import {
-  getAllFeatureFlags,
-  getCompleteBootstrapData,
-  getFeatureFlag,
-  isFeatureEnabled,
-} from '../shared/utils/posthog-next-utils';
+import { getCompleteBootstrapData } from '../shared/utils/posthog-next-utils';
 
 import { createNextJSServerAnalytics } from './server';
 
-import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+import type { BootstrapData } from '../shared/types/posthog-types';
 import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 /**
@@ -104,61 +99,6 @@ export async function trackServerPageView(
 }
 
 /**
- * Get feature flag value in React Server Components
- * Cached per request for consistency
- */
-export const getServerFeatureFlag = cache(
-  async (
-    flag: string,
-    apiKey: string,
-    options?: {
-      host?: string;
-      timeout?: number;
-      defaultValue?: any;
-    },
-  ): Promise<any> => {
-    const cookieStore = cookies();
-    return await getFeatureFlag(flag, cookieStore, apiKey, options);
-  },
-);
-
-/**
- * Check if feature is enabled in React Server Components
- * Cached per request for consistency
- */
-export const isServerFeatureEnabled = cache(
-  async (
-    flag: string,
-    apiKey: string,
-    options?: {
-      host?: string;
-      timeout?: number;
-      defaultValue?: boolean;
-    },
-  ): Promise<boolean> => {
-    const cookieStore = cookies();
-    return await isFeatureEnabled(flag, cookieStore, apiKey, options);
-  },
-);
-
-/**
- * Get all feature flags in React Server Components
- * Cached per request for consistency
- */
-export const getAllServerFeatureFlags = cache(
-  async (
-    apiKey: string,
-    options?: {
-      host?: string;
-      timeout?: number;
-    },
-  ): Promise<FeatureFlags> => {
-    const cookieStore = cookies();
-    return await getAllFeatureFlags(cookieStore, apiKey, options);
-  },
-);
-
-/**
  * Get PostHog bootstrap data for server components
  * Includes distinct ID extraction and feature flag fetching
  */
@@ -201,7 +141,7 @@ export async function ServerAnalyticsProvider({
 
   // Return children with any necessary context
   // Note: In RSC, we can't use React context, but we can pass data via props
-  return <>{children}</>;
+  return children as React.ReactElement;
 }
 
 /**
@@ -222,38 +162,6 @@ export function withServerPageTracking<P extends object>(
     });
 
     return <Component {...props} />;
-  };
-}
-
-/**
- * Utility to create typed feature flag checkers for server components
- */
-export function createServerFeatureFlags<T extends Record<string, boolean>>(
-  apiKey: string,
-  flags: T,
-) {
-  return {
-    async isEnabled(flag: keyof T): Promise<boolean> {
-      return await isServerFeatureEnabled(flag as string, apiKey);
-    },
-
-    async getAll(): Promise<Partial<T>> {
-      const allFlags = await getAllServerFeatureFlags(apiKey);
-      const typedFlags: Partial<T> = {};
-
-      for (const key in flags) {
-        if (key in allFlags) {
-          typedFlags[key] = Boolean(allFlags[key]) as T[typeof key];
-        }
-      }
-
-      return typedFlags;
-    },
-
-    async getValue<K extends keyof T>(flag: K): Promise<T[K] | undefined> {
-      const value = await getServerFeatureFlag(flag as string, apiKey);
-      return value as T[K] | undefined;
-    },
   };
 }
 
@@ -332,5 +240,5 @@ export async function identifyUserAction(
 }
 
 // Re-export types for convenience
-export type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+export type { BootstrapData } from '../shared/types/posthog-types';
 export type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';

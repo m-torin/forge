@@ -3,33 +3,21 @@
  */
 
 export interface TeamRole {
+  description?: string;
   id: string;
+  level: number; // Higher level = more permissions
   name: string;
   permissions: string[];
-  description?: string;
-  level: number; // Higher level = more permissions
 }
 
 /**
  * Default team roles and their permissions
  */
 export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
-  owner: {
-    id: 'owner',
-    name: 'Owner',
-    level: 100,
-    permissions: [
-      'team:*',
-      'members:*',
-      'invitations:*',
-      'settings:*',
-      'permissions:*',
-    ],
-    description: 'Full access to team management and settings',
-  },
   admin: {
     id: 'admin',
     name: 'Administrator',
+    description: 'Manage team members and most settings',
     level: 75,
     permissions: [
       'team:read',
@@ -42,11 +30,18 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
       'settings:read',
       'settings:write',
     ],
-    description: 'Manage team members and most settings',
+  },
+  guest: {
+    id: 'guest',
+    name: 'Guest',
+    description: 'Limited access to basic team information',
+    level: 10,
+    permissions: ['team:read'],
   },
   manager: {
     id: 'manager',
     name: 'Manager',
+    description: 'Invite new members and view team information',
     level: 50,
     permissions: [
       'team:read',
@@ -55,26 +50,20 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
       'invitations:create',
       'settings:read',
     ],
-    description: 'Invite new members and view team information',
   },
   member: {
     id: 'member',
     name: 'Member',
-    level: 25,
-    permissions: [
-      'team:read',
-      'members:read',
-    ],
     description: 'View team information and member list',
+    level: 25,
+    permissions: ['team:read', 'members:read'],
   },
-  guest: {
-    id: 'guest',
-    name: 'Guest',
-    level: 10,
-    permissions: [
-      'team:read',
-    ],
-    description: 'Limited access to basic team information',
+  owner: {
+    id: 'owner',
+    name: 'Owner',
+    description: 'Full access to team management and settings',
+    level: 100,
+    permissions: ['team:*', 'members:*', 'invitations:*', 'settings:*', 'permissions:*'],
   },
 } as const;
 
@@ -82,33 +71,33 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
  * Team permission categories
  */
 export const TEAM_PERMISSIONS = {
-  TEAM: {
-    READ: 'team:read',
-    WRITE: 'team:write',
-    DELETE: 'team:delete',
-    ALL: 'team:*',
+  INVITATIONS: {
+    ALL: 'invitations:*',
+    CANCEL: 'invitations:cancel',
+    CREATE: 'invitations:create',
   },
   MEMBERS: {
-    READ: 'members:read',
-    WRITE: 'members:write',
-    INVITE: 'members:invite',
-    REMOVE: 'members:remove',
     ALL: 'members:*',
-  },
-  INVITATIONS: {
-    CREATE: 'invitations:create',
-    CANCEL: 'invitations:cancel',
-    ALL: 'invitations:*',
-  },
-  SETTINGS: {
-    READ: 'settings:read',
-    WRITE: 'settings:write',
-    ALL: 'settings:*',
+    INVITE: 'members:invite',
+    READ: 'members:read',
+    REMOVE: 'members:remove',
+    WRITE: 'members:write',
   },
   PERMISSIONS: {
-    VIEW: 'permissions:view',
-    MANAGE: 'permissions:manage',
     ALL: 'permissions:*',
+    MANAGE: 'permissions:manage',
+    VIEW: 'permissions:view',
+  },
+  SETTINGS: {
+    ALL: 'settings:*',
+    READ: 'settings:read',
+    WRITE: 'settings:write',
+  },
+  TEAM: {
+    ALL: 'team:*',
+    DELETE: 'team:delete',
+    READ: 'team:read',
+    WRITE: 'team:write',
   },
 } as const;
 
@@ -129,7 +118,7 @@ export function roleHasPermission(role: string, permission: string): boolean {
   // Check for wildcard permissions
   const [resource, action] = permission.split(':');
   const wildcardPermission = `${resource}:*`;
-  
+
   if (roleData.permissions.includes(wildcardPermission)) {
     return true;
   }
@@ -145,11 +134,7 @@ export function roleHasPermission(role: string, permission: string): boolean {
 /**
  * Checks if a user can perform an action on another user based on roles
  */
-export function canActOnUser(
-  actorRole: string,
-  targetRole: string,
-  permission: string
-): boolean {
+export function canActOnUser(actorRole: string, targetRole: string, permission: string): boolean {
   const actor = DEFAULT_TEAM_ROLES[actorRole];
   const target = DEFAULT_TEAM_ROLES[targetRole];
 
@@ -205,8 +190,7 @@ export function isValidRole(role: string): boolean {
  * Gets all available roles in order of permission level
  */
 export function getAllRoles(): TeamRole[] {
-  return Object.values(DEFAULT_TEAM_ROLES)
-    .sort((a, b) => b.level - a.level);
+  return Object.values(DEFAULT_TEAM_ROLES).sort((a, b) => b.level - a.level);
 }
 
 /**
@@ -219,7 +203,7 @@ export function getAssignableRoles(userRole: string): TeamRole[] {
   }
 
   // Users can only assign roles with lower levels than their own
-  return getAllRoles().filter(role => role.level < userRoleData.level);
+  return getAllRoles().filter((role) => role.level < userRoleData.level);
 }
 
 /**
@@ -241,20 +225,24 @@ export function canAssignRole(assignerRole: string, targetRole: string): boolean
  * Gets default permissions for team creation
  */
 export function getDefaultTeamPermissions(): string[] {
-  return [
-    TEAM_PERMISSIONS.TEAM.READ,
-    TEAM_PERMISSIONS.MEMBERS.READ,
-  ];
+  return [TEAM_PERMISSIONS.TEAM.READ, TEAM_PERMISSIONS.MEMBERS.READ];
+}
+
+/**
+ * Gets permissions for a specific role
+ */
+export function getPermissionsForRole(role: string): string[] {
+  const roleData = DEFAULT_TEAM_ROLES[role];
+  return roleData ? roleData.permissions : [];
 }
 
 /**
  * Validates permission format for teams
  */
 export function isValidTeamPermission(permission: string): boolean {
-  const validPermissions = Object.values(TEAM_PERMISSIONS)
-    .flatMap(category => Object.values(category));
-  
-  return validPermissions.includes(permission) || 
-         permission.endsWith(':*') || 
-         permission === '*';
+  const validPermissions = Object.values(TEAM_PERMISSIONS).flatMap((category) =>
+    Object.values(category),
+  ) as string[];
+
+  return validPermissions.includes(permission) || permission.endsWith(':*') || permission === '*';
 }

@@ -25,12 +25,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import {
-  checkOrganizationSlug,
-  createOrganization,
-  deleteOrganizationById,
-  listAllOrganizations,
-} from '@repo/auth-new/actions';
+// Note: Auth functions removed - this page now shows static demo data
 
 // Declare unused variable with underscore prefix
 const _BuildingIcon = IconBuilding;
@@ -66,15 +61,28 @@ export default function OrganizationsPage() {
   const loadOrganizations = async () => {
     try {
       setLoading(true);
-      const response = await listAllOrganizations();
-      console.log('Organizations response:', response);
-
-      if (response.success && response.data) {
-        setOrganizations(response.data as Organization[]);
-      } else if (!response.success) {
-        console.error('Error from API:', response.error);
-        throw new Error(response.error || 'Failed to load organizations');
-      }
+      // Mock data for demonstration
+      const mockOrganizations: Organization[] = [
+        {
+          id: '1',
+          name: 'Demo Organization',
+          createdAt: new Date().toISOString(),
+          logo: undefined,
+          members: [{ id: '1' }, { id: '2' }],
+          metadata: {},
+          slug: 'demo-org',
+        },
+        {
+          id: '2',
+          name: 'Test Company',
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          logo: undefined,
+          members: [{ id: '1' }],
+          metadata: {},
+          slug: 'test-company',
+        },
+      ];
+      setOrganizations(mockOrganizations);
     } catch (error) {
       console.error('Failed to load organizations:', error);
       notifications.show({
@@ -95,10 +103,9 @@ export default function OrganizationsPage() {
 
     try {
       setSlugChecking(true);
-      const result = await checkOrganizationSlug(slug);
-      if (result.success && result.data && 'status' in result.data) {
-        setSlugAvailable(result.data.status as boolean);
-      }
+      // Mock slug availability check
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setSlugAvailable(!['demo-org', 'test-company'].includes(slug));
     } catch (error) {
       console.error('Failed to check slug:', error);
       setSlugAvailable(null);
@@ -118,26 +125,14 @@ export default function OrganizationsPage() {
     }
 
     try {
-      const metadata = newOrg.metadata ? JSON.parse(newOrg.metadata) : undefined;
-
-      const response = await createOrganization({
-        name: newOrg.name,
-        logo: newOrg.logo || undefined,
-        metadata,
-        slug: newOrg.slug,
-      });
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to create organization');
-      }
-
+      // Mock organization creation
       notifications.show({
-        color: 'green',
-        message: 'Organization created successfully',
-        title: 'Success',
+        color: 'orange',
+        message: 'Organization creation disabled in demo mode',
+        title: 'Demo Mode',
       });
       close();
       resetNewOrg();
-      loadOrganizations();
     } catch (error) {
       console.error('Failed to create organization:', error);
       notifications.show({
@@ -152,32 +147,19 @@ export default function OrganizationsPage() {
     modals.openConfirmModal({
       children: (
         <Text size="sm">
-          Are you sure you want to delete this organization? This action cannot be undone.
+          Organization deletion functionality is not yet implemented for admin management.
         </Text>
       ),
       confirmProps: { color: 'red' },
-      labels: { cancel: 'Cancel', confirm: 'Delete' },
+      labels: { cancel: 'Close', confirm: 'OK' },
       onCancel: () => {},
-      onConfirm: async () => {
-        try {
-          const response = await deleteOrganizationById(orgId);
-          if (!response.success) {
-            throw new Error(response.error || 'Failed to delete organization');
-          }
-          notifications.show({
-            color: 'green',
-            message: 'Organization deleted successfully',
-            title: 'Success',
-          });
-          loadOrganizations();
-        } catch (error) {
-          console.error('Failed to delete organization:', error);
-          notifications.show({
-            color: 'red',
-            message: 'Failed to delete organization',
-            title: 'Error',
-          });
-        }
+      onConfirm: () => {
+        // TODO: Implement organization deletion by admin
+        notifications.show({
+          color: 'orange',
+          message: 'Organization deletion feature coming soon',
+          title: 'Not Implemented',
+        });
       },
       title: 'Delete Organization',
     });
@@ -199,7 +181,7 @@ export default function OrganizationsPage() {
         <Skeleton width={200} height={40} />
         <Stack gap="md">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} height={80} />
+            <Skeleton key={`skeleton-${i}`} height={80} />
           ))}
         </Stack>
       </Stack>

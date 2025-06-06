@@ -22,15 +22,16 @@ export interface ProviderConfig {
 }
 
 export interface UpstashWorkflowConfig extends ProviderConfig {
-  name: string;
-  type: 'upstash-workflow';
-  enabled: boolean;
   config: {
     baseUrl: string;
     qstashToken: string;
     redisUrl: string;
     redisToken: string;
+    webhookUrlPattern?: string;
   };
+  enabled: boolean;
+  name: string;
+  type: 'upstash-workflow';
 }
 
 export interface UpstashQStashConfig extends ProviderConfig {

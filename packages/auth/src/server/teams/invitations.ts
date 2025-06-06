@@ -3,17 +3,19 @@
  */
 
 import 'server-only';
+
 import { prisma as database } from '@repo/database/prisma';
+
+import { isValidRole, roleHasPermission } from '../../shared/teams/permissions';
 import { auth } from '../auth';
-import { roleHasPermission, isValidRole } from '../../shared/teams/permissions';
 
 import type {
+  CancelInvitationResult,
   InviteToTeamData,
   InviteToTeamResult,
   ListTeamInvitationsResult,
   RespondToInvitationData,
   RespondToInvitationResult,
-  CancelInvitationResult,
   TeamInvitation,
 } from '../../shared/teams/types';
 
@@ -23,15 +25,15 @@ import type {
 export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeamResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
-    const { teamId, email, role, message } = data;
+    const { email, message, role, teamId } = data;
 
     if (!isValidRole(role)) {
-      return { success: false, error: 'Invalid role' };
+      return { error: 'Invalid role', success: false };
     }
 
     // Check if user can invite to this team
@@ -43,21 +45,21 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
     });
 
     if (!membership || !roleHasPermission(membership.role, 'invitations:create')) {
-      return { success: false, error: 'Insufficient permissions to invite users' };
+      return { error: 'Insufficient permissions to invite users', success: false };
     }
 
     // Get team info for the invitation
     const team = await database.team.findUnique({
-      where: { id: teamId },
       select: {
         id: true,
         name: true,
         organizationId: true,
       },
+      where: { id: teamId },
     });
 
     if (!team) {
-      return { success: false, error: 'Team not found' };
+      return { error: 'Team not found', success: false };
     }
 
     // Check if user is already a team member
@@ -71,42 +73,38 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
     });
 
     if (existingMember) {
-      return { success: false, error: 'User is already a team member' };
+      return { error: 'User is already a team member', success: false };
     }
 
     // Check if there's already a pending invitation
     const existingInvitation = await database.invitation.findFirst({
       where: {
-        teamId,
         email,
         status: 'pending',
+        teamId,
       },
     });
 
     if (existingInvitation) {
-      return { success: false, error: 'Invitation already pending for this email' };
+      return { error: 'Invitation already pending for this email', success: false };
     }
 
     // Create the invitation
     const invitation = await database.invitation.create({
       data: {
+        id: `invitation_${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: new Date(),
         email,
-        role,
-        teamId,
-        organizationId: team.organizationId,
-        invitedById: session.user.id,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        invitedById: session.user.id,
+        inviterId: session.user.id,
+        organizationId: team.organizationId,
+        role,
         status: 'pending',
+        teamId,
         ...(message && { message }),
       },
       include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-            organizationId: true,
-          },
-        },
         invitedBy: {
           select: {
             id: true,
@@ -114,29 +112,36 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
             email: true,
           },
         },
+        team: {
+          select: {
+            id: true,
+            name: true,
+            organizationId: true,
+          },
+        },
       },
     });
 
     const teamInvitation: TeamInvitation = {
       id: invitation.id,
-      teamId: invitation.teamId!,
-      email: invitation.email,
-      role: invitation.role!,
-      invitedBy: invitation.invitedById,
-      expiresAt: invitation.expiresAt,
-      status: invitation.status as 'pending',
       createdAt: invitation.createdAt,
-      team: invitation.team!,
-      inviter: invitation.invitedBy,
+      email: invitation.email,
+      expiresAt: invitation.expiresAt,
+      invitedBy: invitation.invitedById || '',
+      inviter: (invitation as any).invitedBy || null,
+      role: invitation.role,
+      status: invitation.status as 'pending',
+      team: invitation.team || { id: '', name: '', organizationId: '' },
+      teamId: invitation.teamId || '',
     };
 
     // TODO: Send invitation email here
     // await sendTeamInvitationEmail(invitation);
 
-    return { success: true, invitation: teamInvitation };
+    return { invitation: teamInvitation, success: true };
   } catch (error) {
     console.error('Invite to team error:', error);
-    return { success: false, error: 'Failed to send invitation' };
+    return { error: 'Failed to send invitation', success: false };
   }
 }
 
@@ -145,13 +150,13 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
  */
 export async function listTeamInvitations(
   teamId?: string,
-  includeExpired = false
+  includeExpired = false,
 ): Promise<ListTeamInvitationsResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     const whereConditions: any = {};
@@ -166,19 +171,19 @@ export async function listTeamInvitations(
       });
 
       if (!membership || !roleHasPermission(membership.role, 'invitations:create')) {
-        return { success: false, error: 'Insufficient permissions' };
+        return { error: 'Insufficient permissions', success: false };
       }
 
       whereConditions.teamId = teamId;
     } else {
       // List invitations for all teams the user manages
       const managedTeams = await database.teamMember.findMany({
+        select: {
+          role: true,
+          teamId: true,
+        },
         where: {
           userId: session.user.id,
-        },
-        select: {
-          teamId: true,
-          role: true,
         },
       });
 
@@ -187,7 +192,7 @@ export async function listTeamInvitations(
         .map((membership: any) => membership.teamId);
 
       if (teamIds.length === 0) {
-        return { success: true, invitations: [] };
+        return { invitations: [], success: true };
       }
 
       whereConditions.teamId = { in: teamIds };
@@ -198,15 +203,7 @@ export async function listTeamInvitations(
     }
 
     const invitations = await database.invitation.findMany({
-      where: whereConditions,
       include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-            organizationId: true,
-          },
-        },
         invitedBy: {
           select: {
             id: true,
@@ -214,75 +211,85 @@ export async function listTeamInvitations(
             email: true,
           },
         },
+        team: {
+          select: {
+            id: true,
+            name: true,
+            organizationId: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
+      where: whereConditions,
     });
 
     const teamInvitations: TeamInvitation[] = invitations
       .filter((inv: any) => inv.teamId && inv.role)
       .map((invitation: any) => ({
         id: invitation.id,
-        teamId: invitation.teamId!,
-        email: invitation.email,
-        role: invitation.role!,
-        invitedBy: invitation.invitedById,
-        expiresAt: invitation.expiresAt,
-        status: invitation.status as TeamInvitation['status'],
         createdAt: invitation.createdAt,
-        team: invitation.team!,
+        email: invitation.email,
+        expiresAt: invitation.expiresAt,
+        invitedBy: invitation.invitedById,
         inviter: invitation.invitedBy,
+        role: invitation.role!,
+        status: invitation.status as TeamInvitation['status'],
+        team: invitation.team!,
+        teamId: invitation.teamId!,
       }));
 
-    return { success: true, invitations: teamInvitations };
+    return { invitations: teamInvitations, success: true };
   } catch (error) {
     console.error('List team invitations error:', error);
-    return { success: false, error: 'Failed to list invitations' };
+    return { error: 'Failed to list invitations', success: false };
   }
 }
 
 /**
  * Responds to a team invitation
  */
-export async function respondToInvitation(data: RespondToInvitationData): Promise<RespondToInvitationResult> {
+export async function respondToInvitation(
+  data: RespondToInvitationData,
+): Promise<RespondToInvitationResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     const { invitationId, response } = data;
 
     // Get the invitation
     const invitation = await database.invitation.findUnique({
-      where: { id: invitationId },
       include: {
         team: true,
       },
+      where: { id: invitationId },
     });
 
     if (!invitation || !invitation.teamId) {
-      return { success: false, error: 'Invitation not found' };
+      return { error: 'Invitation not found', success: false };
     }
 
     // Check if invitation is for the current user
     if (invitation.email !== session.user.email) {
-      return { success: false, error: 'This invitation is not for you' };
+      return { error: 'This invitation is not for you', success: false };
     }
 
     // Check if invitation is still valid
     if (invitation.status !== 'pending') {
-      return { success: false, error: 'Invitation is no longer valid' };
+      return { error: 'Invitation is no longer valid', success: false };
     }
 
     if (invitation.expiresAt < new Date()) {
       await database.invitation.update({
-        where: { id: invitationId },
         data: { status: 'expired' },
+        where: { id: invitationId },
       });
-      return { success: false, error: 'Invitation has expired' };
+      return { error: 'Invitation has expired', success: false };
     }
 
     if (response === 'accept') {
@@ -297,8 +304,8 @@ export async function respondToInvitation(data: RespondToInvitationData): Promis
       if (existingMember) {
         // Update invitation status but don't create duplicate membership
         await database.invitation.update({
-          where: { id: invitationId },
           data: { status: 'accepted' },
+          where: { id: invitationId },
         });
         return { success: true, teamId: invitation.teamId };
       }
@@ -306,31 +313,31 @@ export async function respondToInvitation(data: RespondToInvitationData): Promis
       // Create team membership
       await database.teamMember.create({
         data: {
+          role: invitation.role!,
           teamId: invitation.teamId,
           userId: session.user.id,
-          role: invitation.role!,
         },
       });
 
       // Update invitation status
       await database.invitation.update({
-        where: { id: invitationId },
         data: { status: 'accepted' },
+        where: { id: invitationId },
       });
 
       return { success: true, teamId: invitation.teamId };
     } else {
       // Decline invitation
       await database.invitation.update({
-        where: { id: invitationId },
         data: { status: 'declined' },
+        where: { id: invitationId },
       });
 
       return { success: true };
     }
   } catch (error) {
     console.error('Respond to invitation error:', error);
-    return { success: false, error: 'Failed to respond to invitation' };
+    return { error: 'Failed to respond to invitation', success: false };
   }
 }
 
@@ -340,9 +347,9 @@ export async function respondToInvitation(data: RespondToInvitationData): Promis
 export async function cancelInvitation(invitationId: string): Promise<CancelInvitationResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     // Get the invitation
@@ -351,7 +358,7 @@ export async function cancelInvitation(invitationId: string): Promise<CancelInvi
     });
 
     if (!invitation || !invitation.teamId) {
-      return { success: false, error: 'Invitation not found' };
+      return { error: 'Invitation not found', success: false };
     }
 
     // Check if user can cancel invitations for this team
@@ -363,7 +370,7 @@ export async function cancelInvitation(invitationId: string): Promise<CancelInvi
     });
 
     if (!membership || !roleHasPermission(membership.role, 'invitations:cancel')) {
-      return { success: false, error: 'Insufficient permissions' };
+      return { error: 'Insufficient permissions', success: false };
     }
 
     // Cancel the invitation
@@ -374,7 +381,7 @@ export async function cancelInvitation(invitationId: string): Promise<CancelInvi
     return { success: true };
   } catch (error) {
     console.error('Cancel invitation error:', error);
-    return { success: false, error: 'Failed to cancel invitation' };
+    return { error: 'Failed to cancel invitation', success: false };
   }
 }
 
@@ -384,26 +391,13 @@ export async function cancelInvitation(invitationId: string): Promise<CancelInvi
 export async function getUserPendingInvitations(): Promise<ListTeamInvitationsResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { success: false, error: 'Authentication required' };
+      return { error: 'Authentication required', success: false };
     }
 
     const invitations = await database.invitation.findMany({
-      where: {
-        email: session.user.email,
-        status: 'pending',
-        teamId: { not: null },
-        expiresAt: { gt: new Date() },
-      },
       include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-            organizationId: true,
-          },
-        },
         invitedBy: {
           select: {
             id: true,
@@ -411,9 +405,22 @@ export async function getUserPendingInvitations(): Promise<ListTeamInvitationsRe
             email: true,
           },
         },
+        team: {
+          select: {
+            id: true,
+            name: true,
+            organizationId: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
+      },
+      where: {
+        email: session.user.email,
+        expiresAt: { gt: new Date() },
+        status: 'pending',
+        teamId: { not: null },
       },
     });
 
@@ -421,20 +428,20 @@ export async function getUserPendingInvitations(): Promise<ListTeamInvitationsRe
       .filter((inv: any) => inv.teamId && inv.role)
       .map((invitation: any) => ({
         id: invitation.id,
-        teamId: invitation.teamId!,
-        email: invitation.email,
-        role: invitation.role!,
-        invitedBy: invitation.invitedById,
-        expiresAt: invitation.expiresAt,
-        status: invitation.status as 'pending',
         createdAt: invitation.createdAt,
-        team: invitation.team!,
+        email: invitation.email,
+        expiresAt: invitation.expiresAt,
+        invitedBy: invitation.invitedById,
         inviter: invitation.invitedBy,
+        role: invitation.role!,
+        status: invitation.status as 'pending',
+        team: invitation.team!,
+        teamId: invitation.teamId!,
       }));
 
-    return { success: true, invitations: teamInvitations };
+    return { invitations: teamInvitations, success: true };
   } catch (error) {
     console.error('Get user pending invitations error:', error);
-    return { success: false, error: 'Failed to get pending invitations' };
+    return { error: 'Failed to get pending invitations', success: false };
   }
 }

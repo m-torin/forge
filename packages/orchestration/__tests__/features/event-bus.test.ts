@@ -1,16 +1,16 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 // import { createEventBus } from '../../src/shared/utils/index'
 // import type { EventBus, WorkflowEvent } from '../../src/shared/types/index'
 
 // TODO: Implement EventBus functionality
-type EventBus = {
+interface EventBus {
+  emit: (type: string, data?: any) => Promise<void>;
   subscribe: (
     pattern: string,
     handler: (event: any) => void,
     options?: { replay?: boolean },
   ) => () => void;
-  emit: (type: string, data?: any) => Promise<void>;
-};
+}
 type WorkflowEvent = any;
 
 // Mock implementation for testing
@@ -21,9 +21,66 @@ const createEventBus = (options?: {
 }): EventBus & { getHistory?: () => any[]; replayEvents?: (pattern?: string) => Promise<void> } => {
   const handlers = new Map<string, ((event: any) => void)[]>();
   const history: any[] = [];
-  const { enableHistory = false, maxHistorySize = 1000, enableReplay = false } = options || {};
+  const { enableHistory = false, enableReplay = false, maxHistorySize = 1000 } = options || {};
+
+  // Helper function for pattern matching
+  function matchesPattern(pattern: string, eventType: string): boolean {
+    // Exact match
+    if (pattern === eventType) return true;
+
+    // Convert pattern to regex - order matters!
+    let regexPattern = pattern
+      .replace(/\*\*/g, '###DOUBLE###') // Temporarily replace **
+      .replace(/\*/g, '[^.]+') // * matches one segment
+      .replace(/\./g, '\\.') // Escape dots
+      .replace(/###DOUBLE###/g, '.*'); // ** matches any number of segments
+
+    // Add anchors
+    regexPattern = `^${regexPattern}$`;
+
+    return new RegExp(regexPattern).test(eventType);
+  }
 
   return {
+    emit: async (type: string, data?: any) => {
+      const event = {
+        id: Math.random().toString(36).substring(7),
+        type,
+        data,
+        timestamp: Date.now(),
+      };
+
+      // Add to history if enabled
+      if (enableHistory) {
+        history.push(event);
+        if (history.length > maxHistorySize) {
+          history.shift();
+        }
+      }
+
+      for (const [pattern, patternHandlers] of handlers) {
+        if (matchesPattern(pattern, type)) {
+          patternHandlers.forEach((handler) => handler(event));
+        }
+      }
+    },
+    getHistory: enableHistory ? () => [...history] : undefined,
+    replayEvents: enableReplay
+      ? async (pattern?: string) => {
+          for (const event of history) {
+            if (!pattern || event.type === pattern || matchesPattern(pattern, event.type)) {
+              for (const [handlerPattern, patternHandlers] of handlers) {
+                const shouldCall =
+                  handlerPattern === event.type || matchesPattern(handlerPattern, event.type);
+
+                if (shouldCall) {
+                  patternHandlers.forEach((handler) => handler(event));
+                }
+              }
+            }
+          }
+        }
+      : undefined,
     subscribe: (pattern: string, handler: (event: any) => void, options?: { replay?: boolean }) => {
       if (!handlers.has(pattern)) {
         handlers.set(pattern, []);
@@ -33,10 +90,7 @@ const createEventBus = (options?: {
       // If replay is enabled and requested, replay historical events
       if (options?.replay && enableReplay) {
         for (const event of history) {
-          if (
-            event.type === pattern ||
-            (pattern.endsWith('*') && event.type.startsWith(pattern.slice(0, -1)))
-          ) {
+          if (event.type === pattern || matchesPattern(pattern, event.type)) {
             handler(event);
           }
         }
@@ -52,54 +106,6 @@ const createEventBus = (options?: {
         }
       };
     },
-    emit: async (type: string, data?: any) => {
-      const event = {
-        type,
-        data,
-        timestamp: Date.now(),
-        id: Math.random().toString(36).substring(7),
-      };
-
-      // Add to history if enabled
-      if (enableHistory) {
-        history.push(event);
-        if (history.length > maxHistorySize) {
-          history.shift();
-        }
-      }
-
-      for (const [pattern, patternHandlers] of handlers) {
-        const shouldCall =
-          pattern === type || (pattern.endsWith('*') && type.startsWith(pattern.slice(0, -1)));
-
-        if (shouldCall) {
-          patternHandlers.forEach((handler) => handler(event));
-        }
-      }
-    },
-    getHistory: enableHistory ? () => [...history] : undefined,
-    replayEvents: enableReplay
-      ? async (pattern?: string) => {
-          for (const event of history) {
-            if (
-              !pattern ||
-              event.type === pattern ||
-              (pattern.endsWith('*') && event.type.startsWith(pattern.slice(0, -1)))
-            ) {
-              for (const [handlerPattern, patternHandlers] of handlers) {
-                const shouldCall =
-                  handlerPattern === event.type ||
-                  (handlerPattern.endsWith('*') &&
-                    event.type.startsWith(handlerPattern.slice(0, -1)));
-
-                if (shouldCall) {
-                  patternHandlers.forEach((handler) => handler(event));
-                }
-              }
-            }
-          }
-        }
-      : undefined,
   };
 };
 
@@ -116,13 +122,13 @@ describe('Event Bus', () => {
 
       const unsubscribe = eventBus.subscribe('user.created', handler);
 
-      await eventBus.emit('user.created', { userId: '123', name: 'John' });
+      await eventBus.emit('user.created', { name: 'John', userId: '123' });
 
       expect(handler).toHaveBeenCalledWith({
-        type: 'user.created',
-        data: { userId: '123', name: 'John' },
-        timestamp: expect.any(Number),
         id: expect.any(String),
+        type: 'user.created',
+        data: { name: 'John', userId: '123' },
+        timestamp: expect.any(Number),
       });
 
       unsubscribe();
@@ -208,10 +214,10 @@ describe('Event Bus', () => {
       await eventBus.emit('auto.event', { message: 'test' });
 
       expect(handler).toHaveBeenCalledWith({
+        id: expect.any(String),
         type: 'auto.event',
         data: { message: 'test' },
         timestamp: expect.any(Number),
-        id: expect.any(String),
       });
 
       const event = handler.mock.calls[0][0];
@@ -227,10 +233,10 @@ describe('Event Bus', () => {
       await eventBus.emit('empty.event');
 
       expect(handler).toHaveBeenCalledWith({
+        id: expect.any(String),
         type: 'empty.event',
         data: undefined,
         timestamp: expect.any(Number),
-        id: expect.any(String),
       });
     });
 
@@ -240,6 +246,11 @@ describe('Event Bus', () => {
       eventBus.subscribe('complex.event', handler);
 
       const complexData = {
+        items: [1, 2, 3, 4, 5],
+        metadata: {
+          source: 'api',
+          version: '1.2.3',
+        },
         user: {
           id: '123',
           profile: {
@@ -247,20 +258,15 @@ describe('Event Bus', () => {
             preferences: ['email', 'sms'],
           },
         },
-        metadata: {
-          source: 'api',
-          version: '1.2.3',
-        },
-        items: [1, 2, 3, 4, 5],
       };
 
       await eventBus.emit('complex.event', complexData);
 
       expect(handler).toHaveBeenCalledWith({
+        id: expect.any(String),
         type: 'complex.event',
         data: complexData,
         timestamp: expect.any(Number),
-        id: expect.any(String),
       });
     });
   });
@@ -394,11 +400,11 @@ describe('Event Bus', () => {
       const history = eventBusWithHistory.getHistory?.();
 
       expect(history).toHaveLength(3);
-      expect(history[0].type).toBe('history.event1');
-      expect(history[0].data).toEqual({ data: 'first' });
-      expect(history[1].type).toBe('history.event2');
-      expect(history[2].type).toBe('history.event1');
-      expect(history[2].data).toEqual({ data: 'third' });
+      expect(history![0].type).toBe('history.event1');
+      expect(history![0].data).toEqual({ data: 'first' });
+      expect(history![1].type).toBe('history.event2');
+      expect(history![2].type).toBe('history.event1');
+      expect(history![2].data).toEqual({ data: 'third' });
     });
 
     test('should limit history size', async () => {
@@ -414,11 +420,12 @@ describe('Event Bus', () => {
 
       const history = eventBusWithLimitedHistory.getHistory?.();
 
-      expect(history).toHaveLength(3);
+      expect(history).toBeDefined();
+      expect(history!).toHaveLength(3);
       // Should contain the last 3 events (indices 2, 3, 4)
-      expect(history[0].data).toEqual({ index: 2 });
-      expect(history[1].data).toEqual({ index: 3 });
-      expect(history[2].data).toEqual({ index: 4 });
+      expect(history![0].data).toEqual({ index: 2 });
+      expect(history![1].data).toEqual({ index: 3 });
+      expect(history![2].data).toEqual({ index: 4 });
     });
 
     test('should replay events to new subscribers', async () => {
@@ -462,21 +469,21 @@ describe('Event Bus', () => {
 
       // Simulate workflow lifecycle
       await eventBus.emit('workflow.started', {
-        workflowId: 'wf_123',
-        startTime: new Date(),
         input: { userId: '123' },
+        startTime: new Date(),
+        workflowId: 'wf_123',
       });
 
       await eventBus.emit('workflow.step.completed', {
-        workflowId: 'wf_123',
-        stepId: 'step_1',
         result: { processed: true },
+        stepId: 'step_1',
+        workflowId: 'wf_123',
       });
 
       await eventBus.emit('workflow.completed', {
-        workflowId: 'wf_123',
         endTime: new Date(),
         result: { success: true },
+        workflowId: 'wf_123',
       });
 
       expect(lifecycleHandler).toHaveBeenCalledTimes(3);

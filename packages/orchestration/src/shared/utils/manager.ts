@@ -3,17 +3,22 @@
  * Uses ES2022+ features including private fields, nullish coalescing, and async generators
  */
 
+import { defaultStepFactory, type StepFactory } from '../factories/step-factory';
+import { defaultStepRegistry, type StepRegistry } from '../factories/step-registry';
+
 import {
-  OrchestrationError,
-  ProviderError,
-  OrchestrationErrorCodes,
   createOrchestrationError,
   createProviderErrorWithCode,
-  createWorkflowExecutionErrorWithCode,
+  OrchestrationErrorCodes,
 } from './errors';
-import { StepRegistry, defaultStepRegistry } from '../factories/step-registry';
-import { StepFactory, defaultStepFactory, StandardWorkflowStep } from '../factories/step-factory';
 
+import type {
+  StepCompositionConfig,
+  StepExecutionPlan,
+  StepSearchFilters,
+  ValidationResult,
+  WorkflowStepDefinition,
+} from '../factories/index';
 import type {
   ListExecutionsOptions,
   ProviderHealthReport,
@@ -21,13 +26,6 @@ import type {
   WorkflowExecution,
   WorkflowProvider,
 } from '../types/index';
-import type {
-  WorkflowStepDefinition,
-  StepSearchFilters,
-  StepExecutionPlan,
-  StepCompositionConfig,
-  ValidationResult,
-} from '../factories/index';
 
 export interface OrchestrationManagerConfig {
   /** Whether to auto-retry failed operations */
@@ -44,18 +42,18 @@ export interface OrchestrationManagerConfig {
   enableHealthChecks?: boolean;
   /** Whether to enable metrics collection */
   enableMetrics?: boolean;
+  /** Whether to enable step factory features */
+  enableStepFactory?: boolean;
   /** Global timeout for operations */
   globalTimeout?: number;
   /** Health check interval in milliseconds */
   healthCheckInterval?: number;
   /** Maximum concurrent executions */
   maxConcurrentExecutions?: number;
-  /** Step registry instance to use */
-  stepRegistry?: StepRegistry;
   /** Step factory instance to use */
   stepFactory?: StepFactory;
-  /** Whether to enable step factory features */
-  enableStepFactory?: boolean;
+  /** Step registry instance to use */
+  stepRegistry?: StepRegistry;
 }
 
 export class OrchestrationManager {
@@ -268,9 +266,9 @@ export class OrchestrationManager {
         provider.name,
         {
           code: OrchestrationErrorCodes.WORKFLOW_EXECUTION_ERROR,
+          context: { workflowId: definition.id },
           originalError: error as Error,
           retryable: true,
-          context: { workflowId: definition.id },
         },
       );
     }
@@ -294,9 +292,9 @@ export class OrchestrationManager {
         provider.name,
         {
           code: OrchestrationErrorCodes.GET_EXECUTION_ERROR,
+          context: { executionId },
           originalError: error as Error,
           retryable: true,
-          context: { executionId },
         },
       );
     }
@@ -317,9 +315,9 @@ export class OrchestrationManager {
         provider.name,
         {
           code: OrchestrationErrorCodes.CANCEL_EXECUTION_ERROR,
+          context: { executionId },
           originalError: error as Error,
           retryable: true,
-          context: { executionId },
         },
       );
     }
@@ -344,9 +342,9 @@ export class OrchestrationManager {
         provider.name,
         {
           code: OrchestrationErrorCodes.LIST_EXECUTIONS_ERROR,
+          context: { workflowId },
           originalError: error as Error,
           retryable: true,
-          context: { workflowId },
         },
       );
     }
@@ -367,9 +365,9 @@ export class OrchestrationManager {
         provider.name,
         {
           code: OrchestrationErrorCodes.SCHEDULE_WORKFLOW_ERROR,
+          context: { workflowId: definition.id },
           originalError: error as Error,
           retryable: true,
-          context: { workflowId: definition.id },
         },
       );
     }
@@ -390,9 +388,9 @@ export class OrchestrationManager {
         provider.name,
         {
           code: OrchestrationErrorCodes.UNSCHEDULE_WORKFLOW_ERROR,
+          context: { workflowId },
           originalError: error as Error,
           retryable: true,
-          context: { workflowId },
         },
       );
     }
@@ -442,15 +440,15 @@ export class OrchestrationManager {
     return {
       defaultProvider: this.config.defaultProvider,
       providerCount: this.providers.size,
+      abortController: this.abortController.signal.aborted ? 'aborted' : 'active',
+      executionMetrics: this.config.enableMetrics
+        ? Object.fromEntries(this.executionMetrics)
+        : null,
       healthChecksEnabled: this.config.enableHealthChecks,
       initialized: this.isInitialized,
       metricsEnabled: this.config.enableMetrics,
       stepFactoryEnabled: this.config.enableStepFactory,
       stepRegistry: stepRegistryStats,
-      executionMetrics: this.config.enableMetrics
-        ? Object.fromEntries(this.executionMetrics)
-        : null,
-      abortController: this.abortController.signal.aborted ? 'aborted' : 'active',
     };
   }
 
@@ -642,10 +640,10 @@ export class OrchestrationManager {
    * Import step definitions
    */
   importSteps(
-    data: Array<{
+    data: {
       definition: WorkflowStepDefinition;
       metadata?: any;
-    }>,
+    }[],
     overwrite = false,
   ) {
     if (!this.config.enableStepFactory) {
@@ -686,11 +684,11 @@ export class OrchestrationManager {
   /**
    * Update execution metrics
    */
-  private updateExecutionMetrics(stepId: string, duration: number, success: boolean = true): void {
+  private updateExecutionMetrics(stepId: string, duration: number, success = true): void {
     const existing = this.executionMetrics.get(stepId) || {
+      avgDuration: 0,
       count: 0,
       lastExecution: 0,
-      avgDuration: 0,
     };
 
     existing.count += 1;

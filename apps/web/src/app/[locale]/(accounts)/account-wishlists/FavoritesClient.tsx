@@ -2,7 +2,6 @@
 
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useGuestFavorites } from "@/hooks/useGuestFavorites";
-import { analytics } from "@/lib/analytics-setup";
 import { useEffect, useState } from "react";
 
 import {
@@ -27,13 +26,13 @@ export function FavoritesClient({ allProducts }: FavoritesClientProps) {
     setFavoriteProducts(filtered);
   }, [favorites, allProducts]);
 
-  // Track page view with analytics
+  // Track page view
   useEffect(() => {
-    analytics
-      .page("account", "wishlists", {
-        favoriteCount: favorites.size,
-      })
-      .catch(() => {});
+    console.log("Page Viewed", {
+      category: "wishlists",
+      favoriteCount: favorites.size,
+      page: "account",
+    });
   }, [favorites.size]);
 
   if (favoriteProducts.length === 0) {

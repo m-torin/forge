@@ -11,13 +11,14 @@ export interface UseClassificationOptions {
 }
 
 export interface UseClassificationReturn {
-  batchClassify: (
-    products: ProductData[],
-  ) => Promise<{
-    productId: string;
-    result: ProductClassificationResult;
-    error?: string;
-  }[] | null>;
+  batchClassify: (products: ProductData[]) => Promise<
+    | {
+        productId: string;
+        result: ProductClassificationResult;
+        error?: string;
+      }[]
+    | null
+  >;
   classify: (product: ProductData) => Promise<ProductClassificationResult | null>;
   clear: () => void;
   error: Error | null;
@@ -77,11 +78,14 @@ export function useClassification({
   const batchClassify = useCallback(
     async (
       products: ProductData[],
-    ): Promise<{
-      productId: string;
-      result: ProductClassificationResult;
-      error?: string;
-    }[] | null> => {
+    ): Promise<
+      | {
+          productId: string;
+          result: ProductClassificationResult;
+          error?: string;
+        }[]
+      | null
+    > => {
       try {
         setIsClassifying(true);
         setError(null);

@@ -116,7 +116,7 @@ export const Grid: Story = {
   render: () => (
     <div className="grid grid-cols-4 gap-4">
       {Array.from({ length: 12 }, (_, i) => (
-        <LikeButton key={i} liked={i % 3 === 0} />
+        <LikeButton key={`like-button-${i}`} liked={i % 3 === 0} />
       ))}
     </div>
   ),

@@ -6,11 +6,7 @@
 import { type AnalyticsManager } from '../shared/utils/manager';
 import { createPostHogConfig } from '../shared/utils/posthog-next-utils';
 
-import type {
-  BootstrapData,
-  FeatureFlagPayload,
-  FeatureFlags,
-} from '../shared/types/posthog-types';
+import type { BootstrapData } from '../shared/types/posthog-types';
 import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 export interface NextJSClientAnalyticsConfig extends AnalyticsConfig {
@@ -304,91 +300,6 @@ export class NextJSClientAnalyticsManager {
       isInitialized: this.isInitialized,
       isLoading: this.isLoading,
     };
-  }
-
-  // Feature Flag Methods (Client-side PostHog Support)
-
-  /**
-   * Check if a feature flag is enabled
-   */
-  async isFeatureEnabled(flag: string, userId?: string): Promise<boolean> {
-    if (this.isInitialized && this.manager) {
-      // Try to get PostHog provider for feature flag check
-      const posthogProvider = this.getPostHogProvider();
-      if (posthogProvider && 'isFeatureEnabled' in posthogProvider) {
-        return await (posthogProvider as any).isFeatureEnabled(flag, userId);
-      }
-    }
-
-    // Fallback to bootstrap data if available
-    if (this.config.nextjs?.posthog?.bootstrap?.featureFlags) {
-      const flagValue = this.config.nextjs.posthog.bootstrap.featureFlags[flag];
-      return Boolean(flagValue);
-    }
-
-    return false;
-  }
-
-  /**
-   * Get feature flag value
-   */
-  async getFeatureFlag(flag: string, userId?: string): Promise<any> {
-    if (this.isInitialized && this.manager) {
-      const posthogProvider = this.getPostHogProvider();
-      if (posthogProvider && 'getFeatureFlag' in posthogProvider) {
-        return await (posthogProvider as any).getFeatureFlag(flag, userId);
-      }
-    }
-
-    // Fallback to bootstrap data
-    if (this.config.nextjs?.posthog?.bootstrap?.featureFlags) {
-      return this.config.nextjs.posthog.bootstrap.featureFlags[flag] || false;
-    }
-
-    return false;
-  }
-
-  /**
-   * Get all feature flags
-   */
-  async getAllFeatureFlags(userId?: string): Promise<FeatureFlags> {
-    if (this.isInitialized && this.manager) {
-      const posthogProvider = this.getPostHogProvider();
-      if (posthogProvider && 'getAllFlags' in posthogProvider) {
-        return await (posthogProvider as any).getAllFlags(userId);
-      }
-    }
-
-    // Fallback to bootstrap data
-    return this.config.nextjs?.posthog?.bootstrap?.featureFlags || {};
-  }
-
-  /**
-   * Get feature flag payload
-   */
-  async getFeatureFlagPayload(flag: string, userId?: string): Promise<FeatureFlagPayload | null> {
-    if (this.isInitialized && this.manager) {
-      const posthogProvider = this.getPostHogProvider();
-      if (posthogProvider && 'getFeatureFlagPayload' in posthogProvider) {
-        return await (posthogProvider as any).getFeatureFlagPayload(flag, userId);
-      }
-    }
-
-    // Fallback to bootstrap data
-    if (this.config.nextjs?.posthog?.bootstrap?.featureFlagPayloads) {
-      return this.config.nextjs.posthog.bootstrap.featureFlagPayloads[flag] || null;
-    }
-
-    return null;
-  }
-
-  /**
-   * Helper to get PostHog provider instance
-   */
-  private getPostHogProvider(): any {
-    if (!this.manager) return null;
-
-    return this.manager.getProvider('posthog');
   }
 }
 

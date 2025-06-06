@@ -3,32 +3,27 @@
  */
 
 import 'server-only';
-import { auth } from '../auth';
-import { DEFAULT_API_PERMISSIONS } from '../../shared/api-keys/permissions';
 
-import type { 
-  ServiceAuthOptions, 
-  ServiceAuthResult,
-  CreateApiKeyResult,
-} from '../../shared/api-keys/types';
+import { DEFAULT_API_PERMISSIONS } from '../../shared/api-keys/permissions';
+import { auth } from '../auth';
+
+import type { ServiceAuthOptions, ServiceAuthResult } from '../../shared/api-keys/types';
 
 /**
  * Creates a service-to-service authentication token
  */
-export async function createServiceAuth(
-  options: ServiceAuthOptions
-): Promise<ServiceAuthResult> {
+export async function createServiceAuth(options: ServiceAuthOptions): Promise<ServiceAuthResult> {
   try {
-    const { serviceId, permissions, expiresIn = '30d' } = options;
+    const { expiresIn = '30d', permissions, serviceId } = options;
 
     // Calculate expiration date
     const expiresAt = new Date();
     const match = expiresIn.match(/^(\d+)([dhm])$/);
-    
+
     if (match) {
       const [, amount, unit] = match;
       const value = parseInt(amount, 10);
-      
+
       switch (unit) {
         case 'd':
           expiresAt.setDate(expiresAt.getDate() + value);
@@ -49,33 +44,33 @@ export async function createServiceAuth(
     const result = await auth.api.createApiKey({
       body: {
         name: `Service: ${serviceId}`,
-        permissions: permissions.length > 0 ? permissions : DEFAULT_API_PERMISSIONS.service,
         expiresAt: expiresAt.toISOString(),
         metadata: {
           type: 'service',
-          serviceId,
           createdAt: new Date().toISOString(),
+          serviceId,
         },
+        permissions: permissions.length > 0 ? permissions : DEFAULT_API_PERMISSIONS.service,
       },
     });
 
     if (!result.success) {
       return {
-        success: false,
         error: result.error?.message || 'Failed to create service authentication',
+        success: false,
       };
     }
 
     return {
+      expiresAt,
       success: true,
       token: result.apiKey,
-      expiresAt,
     };
   } catch (error) {
     console.error('Service auth creation error:', error);
     return {
-      success: false,
       error: 'Failed to create service authentication',
+      success: false,
     };
   }
 }
@@ -102,7 +97,7 @@ export async function validateServiceAuth(token: string): Promise<{
     }
 
     const metadata = result.key?.metadata;
-    
+
     if (metadata?.type !== 'service') {
       return {
         isValid: false,
@@ -112,8 +107,8 @@ export async function validateServiceAuth(token: string): Promise<{
 
     return {
       isValid: true,
-      serviceId: metadata.serviceId,
       permissions: result.key?.permissions || [],
+      serviceId: metadata.serviceId,
     };
   } catch (error) {
     console.error('Service auth validation error:', error);
@@ -137,30 +132,30 @@ export async function revokeServiceAuth(serviceId: string): Promise<{
 
     if (!keys.success) {
       return {
-        success: false,
         error: 'Failed to list API keys',
+        success: false,
       };
     }
 
     // Find service keys for this serviceId
-    const serviceKeys = keys.apiKeys?.filter((key: any) => 
-      key.metadata?.type === 'service' && 
-      key.metadata?.serviceId === serviceId
-    ) || [];
+    const serviceKeys =
+      keys.apiKeys?.filter(
+        (key: any) => key.metadata?.type === 'service' && key.metadata?.serviceId === serviceId,
+      ) || [];
 
     // Revoke all service keys for this service
     const revokePromises = serviceKeys.map((key: any) =>
-      auth.api.revokeApiKey({ body: { keyId: key.id } })
+      auth.api.revokeApiKey({ body: { keyId: key.id } }),
     );
 
     const results = await Promise.all(revokePromises);
-    
-    const failed = results.filter(result => !result.success);
-    
+
+    const failed = results.filter((result) => !result.success);
+
     if (failed.length > 0) {
       return {
-        success: false,
         error: `Failed to revoke ${failed.length} service tokens`,
+        success: false,
       };
     }
 
@@ -170,8 +165,8 @@ export async function revokeServiceAuth(serviceId: string): Promise<{
   } catch (error) {
     console.error('Service auth revocation error:', error);
     return {
-      success: false,
       error: 'Failed to revoke service authentication',
+      success: false,
     };
   }
 }
@@ -181,13 +176,13 @@ export async function revokeServiceAuth(serviceId: string): Promise<{
  */
 export async function listServiceAuth(): Promise<{
   success: boolean;
-  services?: Array<{
+  services?: {
     serviceId: string;
     tokenId: string;
     permissions: string[];
     expiresAt?: Date;
     createdAt: Date;
-  }>;
+  }[];
   error?: string;
 }> {
   try {
@@ -195,30 +190,31 @@ export async function listServiceAuth(): Promise<{
 
     if (!keys.success) {
       return {
-        success: false,
         error: 'Failed to list API keys',
+        success: false,
       };
     }
 
-    const serviceTokens = keys.apiKeys
-      ?.filter((key: any) => key.metadata?.type === 'service')
-      .map((key: any) => ({
-        serviceId: key.metadata.serviceId,
-        tokenId: key.id,
-        permissions: key.permissions || [],
-        expiresAt: key.expiresAt ? new Date(key.expiresAt) : undefined,
-        createdAt: new Date(key.createdAt),
-      })) || [];
+    const serviceTokens =
+      keys.apiKeys
+        ?.filter((key: any) => key.metadata?.type === 'service')
+        .map((key: any) => ({
+          createdAt: new Date(key.createdAt),
+          expiresAt: key.expiresAt ? new Date(key.expiresAt) : undefined,
+          permissions: key.permissions || [],
+          serviceId: key.metadata.serviceId,
+          tokenId: key.id,
+        })) || [];
 
     return {
-      success: true,
       services: serviceTokens,
+      success: true,
     };
   } catch (error) {
     console.error('Service auth listing error:', error);
     return {
-      success: false,
       error: 'Failed to list service authentications',
+      success: false,
     };
   }
 }

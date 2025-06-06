@@ -39,8 +39,8 @@ const PageContact = () => {
         </h1>
         <div className="grid shrink-0 grid-cols-1 gap-12 md:grid-cols-2">
           <div className="flex max-w-sm flex-col gap-y-8">
-            {info.map((item, index) => (
-              <div key={index}>
+            {info.map((item) => (
+              <div key={item.title}>
                 <p className="text-sm font-semibold uppercase tracking-wider dark:text-neutral-200">
                   {item.title}
                 </p>

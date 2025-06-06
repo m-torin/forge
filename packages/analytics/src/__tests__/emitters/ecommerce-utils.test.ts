@@ -334,7 +334,10 @@ describe('Ecommerce Utils', () => {
       };
 
       expect(() => {
-        validateRequiredProperties(properties, ['product_id', 'name'] as (keyof typeof properties)[]);
+        validateRequiredProperties(properties, [
+          'product_id',
+          'name',
+        ] as (keyof typeof properties)[]);
       }).toThrow('Missing required properties: name');
     });
 

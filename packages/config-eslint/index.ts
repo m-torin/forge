@@ -56,12 +56,7 @@ const perfectionistSortConfig = {
 
 // File patterns
 const MARKDOWN_FILES = ['**/*.md', '**/*.mdx'];
-const MARKDOWN_CODE_BLOCKS = [
-  '**/*.md/*.{js,jsx,ts,tsx,mjs,cjs}',
-  '**/*.mdx/*.{js,jsx,ts,tsx,mjs,cjs}',
-  '**/README.md/*.{js,jsx,ts,tsx,mjs,cjs}',
-  '**/README.md/[0-9]*_[0-9]*.{js,jsx,ts,tsx}',
-];
+const MARKDOWN_CODE_BLOCKS = ['**/*.md/**', '**/*.mdx/**'];
 
 const config: Linter.FlatConfig[] = [
   // Base ESLint recommended rules
@@ -86,6 +81,9 @@ const config: Linter.FlatConfig[] = [
       globals: {
         ...globals.node,
         ...globals.browser,
+        ...globals.es2021,
+        React: 'readonly',
+        JSX: 'readonly',
       },
       parser: tseslint.parser,
       parserOptions: {
@@ -93,12 +91,22 @@ const config: Linter.FlatConfig[] = [
           jsx: true,
         },
         project: null, // Disable TypeScript project configuration for markdown files
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        // Critical: Allow JSX in .ts files from markdown
+        jsxPragma: 'React',
+        jsxFragmentName: 'Fragment',
       },
-      sourceType: 'module',
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       'unused-imports': unusedImportsPlugin,
+    },
+    settings: {
+      // Force TypeScript parser to treat .ts files as if they could contain JSX
+      'import/parsers': {
+        '@typescript-eslint/parser': ['.ts', '.tsx', '.mts', '.cts'],
+      },
     },
     rules: {
       // Disable TypeScript rules that require type checking
@@ -155,9 +163,20 @@ const config: Linter.FlatConfig[] = [
     },
   },
 
-  // TypeScript ESLint recommended rules
+  // TypeScript ESLint recommended rules - exclude markdown code blocks
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: config.files || ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
+    ignores: [...(config.ignores || []), '**/*.md/**', '**/*.mdx/**'],
+  })),
+  ...tseslint.configs.stylistic.map((config) => ({
+    ...config,
+    files: config.files || ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
+    ignores: [...(config.ignores || []), '**/*.md/**', '**/*.mdx/**'],
+  })),
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
+    ignores: ['**/*.md/**', '**/*.mdx/**'],
     rules: {
       '@typescript-eslint/consistent-type-imports': [
         'error',
@@ -166,8 +185,6 @@ const config: Linter.FlatConfig[] = [
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
-  ...tseslint.configs.recommended,
-  ...tseslint.configs.stylistic,
 
   // Security Plugin recommended rules - with overrides
   {
@@ -249,6 +266,9 @@ const config: Linter.FlatConfig[] = [
       '**/*.min.js',
       '**/*.css',
       '.eslintrc.js',
+      // Exclude markdown code blocks from TypeScript project processing
+      '**/*.md/**',
+      '**/*.mdx/**',
     ],
 
     languageOptions: {

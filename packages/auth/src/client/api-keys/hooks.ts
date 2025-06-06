@@ -2,11 +2,11 @@
  * React hooks for API key management
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import type { 
-  ApiKeyListItem, 
-  CreateApiKeyData, 
+import type {
+  ApiKeyListItem,
+  CreateApiKeyData,
   CreateApiKeyResult,
   ListApiKeysResult,
   RevokeApiKeyResult,
@@ -25,15 +25,15 @@ export function useApiKeys() {
   const fetchKeys = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch('/api/auth/api-keys', {
-        method: 'GET',
         credentials: 'include',
+        method: 'GET',
       });
-      
+
       const result: ListApiKeysResult = await response.json();
-      
+
       if (result.success && result.keys) {
         setKeys(result.keys);
       } else {
@@ -46,103 +46,106 @@ export function useApiKeys() {
     }
   }, []);
 
-  const createKey = useCallback(async (data: CreateApiKeyData): Promise<CreateApiKeyResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch('/api/auth/api-keys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      
-      const result: CreateApiKeyResult = await response.json();
-      
-      if (result.success) {
-        // Refresh the keys list
-        await fetchKeys();
-      } else {
-        setError(result.error || 'Failed to create API key');
+  const createKey = useCallback(
+    async (data: CreateApiKeyData): Promise<CreateApiKeyResult> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch('/api/auth/api-keys', {
+          body: JSON.stringify(data),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        });
+
+        const result: CreateApiKeyResult = await response.json();
+
+        if (result.success) {
+          // Refresh the keys list
+          await fetchKeys();
+        } else {
+          setError(result.error || 'Failed to create API key');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to create API key';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
       }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to create API key';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchKeys]);
+    },
+    [fetchKeys],
+  );
 
   const revokeKey = useCallback(async (keyId: string): Promise<RevokeApiKeyResult> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`/api/auth/api-keys/${keyId}`, {
-        method: 'DELETE',
         credentials: 'include',
+        method: 'DELETE',
       });
-      
+
       const result: RevokeApiKeyResult = await response.json();
-      
+
       if (result.success) {
         // Remove the key from local state
-        setKeys(prev => prev.filter(key => key.id !== keyId));
+        setKeys((prev) => prev.filter((key) => key.id !== keyId));
       } else {
         setError(result.error || 'Failed to revoke API key');
       }
-      
+
       return result;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to revoke API key';
       setError(error);
-      return { success: false, error };
+      return { error, success: false };
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const updateKey = useCallback(async (
-    keyId: string, 
-    data: UpdateApiKeyData
-  ): Promise<UpdateApiKeyResult> => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`/api/auth/api-keys/${keyId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      
-      const result: UpdateApiKeyResult = await response.json();
-      
-      if (result.success) {
-        // Refresh the keys list
-        await fetchKeys();
-      } else {
-        setError(result.error || 'Failed to update API key');
+  const updateKey = useCallback(
+    async (keyId: string, data: UpdateApiKeyData): Promise<UpdateApiKeyResult> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/auth/api-keys/${keyId}`, {
+          body: JSON.stringify(data),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'PATCH',
+        });
+
+        const result: UpdateApiKeyResult = await response.json();
+
+        if (result.success) {
+          // Refresh the keys list
+          await fetchKeys();
+        } else {
+          setError(result.error || 'Failed to update API key');
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to update API key';
+        setError(error);
+        return { error, success: false };
+      } finally {
+        setLoading(false);
       }
-      
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to update API key';
-      setError(error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchKeys]);
+    },
+    [fetchKeys],
+  );
 
   // Fetch keys on mount
   useEffect(() => {
@@ -150,11 +153,11 @@ export function useApiKeys() {
   }, [fetchKeys]);
 
   return {
-    keys,
-    loading,
+    createKey,
     error,
     fetchKeys,
-    createKey,
+    keys,
+    loading,
     revokeKey,
     updateKey,
   };
@@ -172,29 +175,29 @@ export function useCreateApiKey() {
     setLoading(true);
     setError(null);
     setResult(null);
-    
+
     try {
       const response = await fetch('/api/auth/api-keys', {
-        method: 'POST',
+        body: JSON.stringify(data),
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
-        body: JSON.stringify(data),
+        method: 'POST',
       });
-      
+
       const result: CreateApiKeyResult = await response.json();
       setResult(result);
-      
+
       if (!result.success) {
         setError(result.error || 'Failed to create API key');
       }
-      
+
       return result;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to create API key';
       setError(error);
-      const failResult = { success: false, error };
+      const failResult = { error, success: false };
       setResult(failResult);
       return failResult;
     } finally {
@@ -209,11 +212,11 @@ export function useCreateApiKey() {
   }, []);
 
   return {
-    loading,
-    error,
-    result,
     createKey,
+    error,
+    loading,
     reset,
+    result,
   };
 }
 
@@ -230,17 +233,17 @@ export function useApiKeyValidation() {
   const validateKey = useCallback(async (apiKey: string) => {
     setValidating(true);
     setValidationResult(null);
-    
+
     try {
       const response = await fetch('/api/auth/validate-api-key', {
-        method: 'POST',
+        body: JSON.stringify({ test: true }),
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': apiKey,
         },
-        body: JSON.stringify({ test: true }),
+        method: 'POST',
       });
-      
+
       if (response.ok) {
         setValidationResult({ isValid: true });
       } else {
@@ -248,9 +251,9 @@ export function useApiKeyValidation() {
         setValidationResult({ isValid: false, error });
       }
     } catch (err) {
-      setValidationResult({ 
-        isValid: false, 
-        error: err instanceof Error ? err.message : 'Validation failed' 
+      setValidationResult({
+        isValid: false,
+        error: err instanceof Error ? err.message : 'Validation failed',
       });
     } finally {
       setValidating(false);
@@ -258,8 +261,8 @@ export function useApiKeyValidation() {
   }, []);
 
   return {
+    validateKey,
     validating,
     validationResult,
-    validateKey,
   };
 }

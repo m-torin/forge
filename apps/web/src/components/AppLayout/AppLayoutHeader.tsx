@@ -13,9 +13,9 @@ interface AppLayoutHeaderProps {
 }
 
 export function AppLayoutHeader({
-  _dict,
-  _locale,
-  dict,
+  _dict: __dict,
+  _locale: __locale,
+  dict: _dict,
   mobileNavbarOpened,
   navbarOpened,
   toggleMobileNavbar,

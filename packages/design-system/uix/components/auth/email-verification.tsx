@@ -5,8 +5,7 @@ import { IconCircleCheck, IconCircleX, IconMail, IconRefresh } from '@tabler/ico
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { createClientAnalytics, track } from '@repo/analytics/client';
-import { sendVerificationEmail, useSession, verifyEmail } from '@repo/auth-new/client';
+import { useSession, verifyEmail } from '@repo/auth/client';
 
 interface EmailVerificationBannerProps {
   onVerified?: () => void;
@@ -25,13 +24,8 @@ export function EmailVerificationBanner({ onVerified }: EmailVerificationBannerP
   const handleSendVerification = async () => {
     setIsLoading(true);
     try {
-      await sendVerificationEmail?.();
+      // TODO: Add resend verification email method once available in auth package
       setEmailSent(true);
-
-      analytics.capture('verification_email_sent', {
-        email: session.user.email,
-        source: 'verification_banner',
-      });
 
       // Reset the sent state after 60 seconds
       setTimeout(() => setEmailSent(false), 60000);
@@ -87,11 +81,7 @@ export function EmailVerificationPage({ onComplete }: EmailVerificationPageProps
 
   const verifyEmailWithToken = async (token: string) => {
     try {
-      await verifyEmail?.({ token });
-
-      analytics.capture('email_verified', {
-        source: 'verification_page',
-      });
+      await verifyEmail?.(token);
 
       setStatus('success');
 
@@ -110,22 +100,12 @@ export function EmailVerificationPage({ onComplete }: EmailVerificationPageProps
           : 'Failed to verify email. The link may have expired.';
       setError(errorMessage);
       setStatus('error');
-
-      analytics.capture('email_verification_failed', {
-        error: errorMessage,
-        source: 'verification_page',
-      });
     }
   };
 
   const handleResendEmail = async () => {
     try {
-      await sendVerificationEmail?.();
-
-      analytics.capture('verification_email_resent', {
-        source: 'verification_page',
-      });
-
+      // TODO: Add resend verification email method once available in auth package
       // Show success message
       setError('A new verification email has been sent. Please check your inbox.');
     } catch (error) {
@@ -188,14 +168,9 @@ export function EmailVerificationPrompt({ email, onResend }: EmailVerificationPr
   const handleResend = async () => {
     setIsLoading(true);
     try {
-      await sendVerificationEmail?.();
+      // TODO: Add resend verification email method once available in auth package
       setEmailSent(true);
       onResend?.();
-
-      analytics.capture('verification_email_sent', {
-        email,
-        source: 'verification_prompt',
-      });
 
       // Reset after 60 seconds
       setTimeout(() => setEmailSent(false), 60000);

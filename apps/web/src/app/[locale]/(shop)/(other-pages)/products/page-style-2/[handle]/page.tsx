@@ -33,11 +33,11 @@ export async function generateMetadata({
   params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
   const { handle, locale } = await params;
-  const dict = await getDictionary(locale);
+  const _dict = await getDictionary(locale);
   const product = await getProductDetailByHandle(handle);
-  const title = product?.title || dict.product.productDetail;
+  const title = product?.title || _dict.product.productDetail;
   const description =
-    product?.description || dict.product.productDetailDescription;
+    product?.description || _dict.product.productDetailDescription;
   return {
     description,
     title,
@@ -50,7 +50,7 @@ export default async function Page({
   params: Promise<{ handle: string; locale: string }>;
 }) {
   const { handle, locale } = await params;
-  const dict = await getDictionary(locale);
+  const _dict = await getDictionary(locale);
   const product = await getProductDetailByHandle(handle);
   const relatedProducts = (await getProducts()).slice(2, 8);
   const reviews = await getProductReviews(handle);
@@ -249,9 +249,9 @@ export default async function Page({
             </div>
 
             {/*  */}
-            {images?.slice(2, 4)?.map((image, index) => (
+            {images?.slice(2, 4)?.map((image) => (
               <div
-                key={index}
+                key={image.src}
                 className="relative z-0 overflow-hidden rounded-md sm:rounded-xl"
               >
                 <NcImage

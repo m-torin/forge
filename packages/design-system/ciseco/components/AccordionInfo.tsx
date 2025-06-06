@@ -64,7 +64,7 @@ const AccordionInfo: FC<Props> = ({
       {/* ============ */}
       {data.map((item, index) => {
         return (
-          <Disclosure key={index} defaultOpen={index < 2}>
+          <Disclosure key={`${item.name}-${index}`} defaultOpen={index < 2}>
             {({ open }) => (
               <div>
                 <DisclosureButton className="flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-neutral-500/75 dark:bg-neutral-800 dark:hover:bg-neutral-700">

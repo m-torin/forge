@@ -6,8 +6,6 @@ import type {
   BootstrapData,
   EnhancedPostHogProvider,
   ExperimentInfo,
-  FeatureFlagPayload,
-  FeatureFlags,
   PostHogConfig,
 } from '../../shared/types/posthog-types';
 import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
@@ -150,7 +148,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
   }
 
   // Feature Flag Methods (Server-Side)
-  async getAllFlags(userId: string): Promise<FeatureFlags> {
+  async getAllFlags(userId: string): Promise<Record<string, any>> {
     if (!this.isInitialized || !this.client) {
       return {};
     }
@@ -201,7 +199,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     }
   }
 
-  async getFeatureFlagPayload(flag: string, userId?: string): Promise<FeatureFlagPayload | null> {
+  async getFeatureFlagPayload(flag: string, userId?: string): Promise<any | null> {
     if (!this.isInitialized || !this.client) {
       return null;
     }
@@ -259,7 +257,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
       const featureFlags = await this.getAllFlags(distinctId);
 
       // Get payloads for flags that have them
-      const featureFlagPayloads: Record<string, FeatureFlagPayload> = {};
+      const featureFlagPayloads: Record<string, any> = {};
 
       for (const [flagKey, flagValue] of Object.entries(featureFlags)) {
         if (flagValue !== false) {
@@ -276,8 +274,6 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
       return {
         distinctID: distinctId,
-        featureFlagPayloads,
-        featureFlags,
       };
     } catch (error) {
       return { distinctID: distinctId };

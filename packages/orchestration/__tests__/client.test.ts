@@ -1,6 +1,10 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 import { WorkflowClient, type WorkflowClientConfig } from '../src/client';
-import type { WorkflowExecution, WorkflowDefinition } from '../src/shared/types';
+
+import { createTestWorkflow } from './fixtures';
+
+import type { WorkflowExecution } from '../src/shared/types';
 
 // Mock fetch
 const mockFetch = vi.fn();
@@ -9,8 +13,8 @@ global.fetch = mockFetch;
 describe('Workflow Client', () => {
   let client: WorkflowClient;
   const mockConfig: WorkflowClientConfig = {
-    baseUrl: 'http://localhost:3000',
     apiKey: 'test-key',
+    baseUrl: 'http://localhost:3000',
     enableRetries: true,
     timeout: 5000,
   };
@@ -26,17 +30,16 @@ describe('Workflow Client', () => {
     });
 
     test('should throw error with invalid config', () => {
-      expect(() => new WorkflowClient({} as any)).toThrow();
+      // WorkflowClient constructor validates required fields
+      expect(() => new WorkflowClient({ baseUrl: '' } as any)).toThrow();
+      expect(
+        () => new WorkflowClient({ apiKey: '', baseUrl: 'http://localhost' } as any),
+      ).toThrow();
     });
   });
 
   describe('Workflow Execution', () => {
-    const mockWorkflow: WorkflowDefinition = {
-      id: 'test-workflow',
-      name: 'Test Workflow',
-      version: '1.0.0',
-      steps: [],
-    };
+    const mockWorkflow = createTestWorkflow();
 
     test('should submit workflow successfully', async () => {
       const mockResponse = {
@@ -45,8 +48,8 @@ describe('Workflow Client', () => {
       };
 
       mockFetch.mockResolvedValueOnce({
-        ok: true,
         json: () => Promise.resolve(mockResponse),
+        ok: true,
       });
 
       const result = await client.submitWorkflow(mockWorkflow, { test: 'data' });
@@ -54,23 +57,29 @@ describe('Workflow Client', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/workflows/execute',
         expect.objectContaining({
-          method: 'POST',
           headers: expect.objectContaining({
-            'Content-Type': 'application/json',
             Authorization: 'Bearer test-key',
+            'Content-Type': 'application/json',
           }),
+          method: 'POST',
         }),
       );
     });
 
     test('should handle execution errors', async () => {
+      // Create client with retries disabled for faster error tests
+      const errorClient = new WorkflowClient({
+        ...mockConfig,
+        enableRetries: false,
+      });
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
       });
 
-      await expect(client.submitWorkflow(mockWorkflow, {})).rejects.toThrow(
+      await expect(errorClient.submitWorkflow(mockWorkflow, {})).rejects.toThrow(
         'HTTP 500: Internal Server Error',
       );
     });
@@ -80,17 +89,17 @@ describe('Workflow Client', () => {
     test('should get execution status', async () => {
       const mockStatus: WorkflowExecution = {
         id: 'exec_123',
-        workflowId: 'test-workflow',
-        status: 'completed',
-        startedAt: new Date(),
         completedAt: new Date(),
-        steps: [],
         output: { success: true },
+        startedAt: new Date(),
+        status: 'completed',
+        steps: [],
+        workflowId: 'test-workflow',
       };
 
       mockFetch.mockResolvedValueOnce({
-        ok: true,
         json: () => Promise.resolve(mockStatus),
+        ok: true,
       });
 
       const status = await client.getExecutionStatus('exec_123');
@@ -98,10 +107,10 @@ describe('Workflow Client', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/workflows/executions/exec_123',
         expect.objectContaining({
-          method: 'GET',
           headers: expect.objectContaining({
             Authorization: 'Bearer test-key',
           }),
+          method: 'GET',
         }),
       );
     });
@@ -120,8 +129,8 @@ describe('Workflow Client', () => {
   describe('Execution Management', () => {
     test('should cancel execution', async () => {
       mockFetch.mockResolvedValueOnce({
-        ok: true,
         json: () => Promise.resolve({ cancelled: true }),
+        ok: true,
       });
 
       const result = await client.cancelExecution('exec_123');
@@ -129,10 +138,10 @@ describe('Workflow Client', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/workflows/executions/exec_123/cancel',
         expect.objectContaining({
-          method: 'POST',
           headers: expect.objectContaining({
             Authorization: 'Bearer test-key',
           }),
+          method: 'POST',
         }),
       );
     });
@@ -141,24 +150,24 @@ describe('Workflow Client', () => {
       const mockExecutions: WorkflowExecution[] = [
         {
           id: 'exec_1',
-          workflowId: 'test-workflow',
-          status: 'completed',
-          startedAt: new Date(),
           completedAt: new Date(),
+          startedAt: new Date(),
+          status: 'completed',
           steps: [],
+          workflowId: 'test-workflow',
         },
         {
           id: 'exec_2',
-          workflowId: 'test-workflow',
-          status: 'running',
           startedAt: new Date(),
+          status: 'running',
           steps: [],
+          workflowId: 'test-workflow',
         },
       ];
 
       mockFetch.mockResolvedValueOnce({
-        ok: true,
         json: () => Promise.resolve(mockExecutions),
+        ok: true,
       });
 
       const executions = await client.listExecutions('test-workflow', {
@@ -170,10 +179,10 @@ describe('Workflow Client', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/workflows/test-workflow/executions?limit=10&status=completed%2Crunning',
         expect.objectContaining({
-          method: 'GET',
           headers: expect.objectContaining({
             Authorization: 'Bearer test-key',
           }),
+          method: 'GET',
         }),
       );
     });
@@ -181,13 +190,25 @@ describe('Workflow Client', () => {
 
   describe('Error Handling', () => {
     test('should handle network errors', async () => {
+      // Create client with retries disabled for faster error tests
+      const errorClient = new WorkflowClient({
+        ...mockConfig,
+        enableRetries: false,
+      });
+
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
-      await expect(client.getExecutionStatus('exec_123')).rejects.toThrow('Network error');
+      await expect(errorClient.getExecutionStatus('exec_123')).rejects.toThrow('Network error');
     });
 
     test('should handle timeout', async () => {
+      // Create client with retries disabled for faster error tests
+      const errorClient = new WorkflowClient({
+        ...mockConfig,
+        enableRetries: false,
+      });
+
       mockFetch.mockRejectedValueOnce(new Error('Timeout'));
-      await expect(client.getExecutionStatus('exec_123')).rejects.toThrow('Timeout');
+      await expect(errorClient.getExecutionStatus('exec_123')).rejects.toThrow('Timeout');
     });
   });
 });

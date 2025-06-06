@@ -3,28 +3,9 @@
  * Advanced workflow management with versioning and composition utilities
  */
 
-import type { WorkflowDefinition, WorkflowProvider, WorkflowExecution } from '../types/index';
+import type { WorkflowDefinition, WorkflowExecution, WorkflowProvider } from '../types/index';
 
 export interface WorkflowVersion {
-  /** Version identifier (semantic version) */
-  version: string;
-  /** Workflow definition for this version */
-  definition: WorkflowDefinition;
-  /** Version status */
-  status: 'draft' | 'active' | 'deprecated' | 'archived';
-  /** Version description/changelog */
-  description?: string;
-  /** Creation timestamp */
-  createdAt: Date;
-  /** User who created this version */
-  createdBy?: string;
-  /** Migration instructions from previous version */
-  migration?: {
-    fromVersion: string;
-    instructions: string;
-    automaticMigration?: boolean;
-    migrationScript?: (oldData: unknown) => unknown;
-  };
   /** Compatibility information */
   compatibility?: {
     /** Minimum compatible version */
@@ -34,19 +15,50 @@ export interface WorkflowVersion {
     /** Breaking changes */
     breakingChanges?: string[];
   };
+  /** Creation timestamp */
+  createdAt: Date;
+  /** User who created this version */
+  createdBy?: string;
+  /** Workflow definition for this version */
+  definition: WorkflowDefinition;
+  /** Version description/changelog */
+  description?: string;
   /** Version metadata */
   metadata?: Record<string, unknown>;
+  /** Migration instructions from previous version */
+  migration?: {
+    fromVersion: string;
+    instructions: string;
+    automaticMigration?: boolean;
+    migrationScript?: (oldData: unknown) => unknown;
+  };
+  /** Version status */
+  status: 'draft' | 'active' | 'deprecated' | 'archived';
+  /** Version identifier (semantic version) */
+  version: string;
 }
 
 export interface WorkflowComposition {
-  /** Composition identifier */
-  id: string;
-  /** Composition name */
-  name: string;
   /** Description */
   description?: string;
+  /** Error handling strategy */
+  errorHandling: 'fail-fast' | 'continue' | 'retry';
+  /** Composition identifier */
+  id: string;
+  /** Composition metadata */
+  metadata?: Record<string, unknown>;
+  /** Composition name */
+  name: string;
+  /** Retry configuration */
+  retry?: {
+    maxAttempts: number;
+    delay: number;
+    strategy: 'linear' | 'exponential';
+  };
+  /** Composition execution strategy */
+  strategy: 'sequential' | 'parallel' | 'conditional' | 'custom';
   /** Child workflows */
-  workflows: Array<{
+  workflows: {
     /** Workflow ID */
     workflowId: string;
     /** Workflow version (optional, uses latest if not specified) */
@@ -63,50 +75,29 @@ export interface WorkflowComposition {
     group?: string;
     /** Conditional execution */
     condition?: (context: CompositionContext) => boolean;
-  }>;
-  /** Composition execution strategy */
-  strategy: 'sequential' | 'parallel' | 'conditional' | 'custom';
-  /** Error handling strategy */
-  errorHandling: 'fail-fast' | 'continue' | 'retry';
-  /** Retry configuration */
-  retry?: {
-    maxAttempts: number;
-    delay: number;
-    strategy: 'linear' | 'exponential';
-  };
-  /** Composition metadata */
-  metadata?: Record<string, unknown>;
+  }[];
 }
 
 export interface CompositionContext {
   /** Composition execution ID */
   compositionId: string;
+  /** Current workflow being executed */
+  currentWorkflow?: string;
   /** Execution ID */
   executionId: string;
+  /** Get result from a workflow */
+  getResult: (alias: string) => unknown;
   /** Input data */
   input: unknown;
   /** Results from completed workflows */
   results: Record<string, unknown>;
-  /** Current workflow being executed */
-  currentWorkflow?: string;
   /** Set result for a workflow */
   setResult: (alias: string, result: unknown) => void;
-  /** Get result from a workflow */
-  getResult: (alias: string) => unknown;
 }
 
 export interface BulkOperation {
-  /** Operation ID */
-  id: string;
-  /** Operation type */
-  type: 'execute' | 'cancel' | 'retry' | 'schedule' | 'delete';
-  /** Target workflows */
-  targets: Array<{
-    workflowId: string;
-    version?: string;
-    input?: unknown;
-    options?: Record<string, unknown>;
-  }>;
+  /** Completion timestamp */
+  completedAt?: Date;
   /** Operation configuration */
   config: {
     /** Maximum concurrent operations */
@@ -120,20 +111,8 @@ export interface BulkOperation {
     /** Error handling */
     errorHandling: 'fail-fast' | 'continue' | 'retry';
   };
-  /** Operation status */
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
-  /** Start timestamp */
-  startedAt?: Date;
-  /** Completion timestamp */
-  completedAt?: Date;
-  /** Results from individual operations */
-  results: Array<{
-    workflowId: string;
-    status: 'success' | 'failed' | 'cancelled';
-    result?: unknown;
-    error?: string;
-    duration?: number;
-  }>;
+  /** Operation ID */
+  id: string;
   /** Overall progress */
   progress: {
     total: number;
@@ -141,6 +120,27 @@ export interface BulkOperation {
     failed: number;
     cancelled: number;
   };
+  /** Results from individual operations */
+  results: {
+    workflowId: string;
+    status: 'success' | 'failed' | 'cancelled';
+    result?: unknown;
+    error?: string;
+    duration?: number;
+  }[];
+  /** Start timestamp */
+  startedAt?: Date;
+  /** Operation status */
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  /** Target workflows */
+  targets: {
+    workflowId: string;
+    version?: string;
+    input?: unknown;
+    options?: Record<string, unknown>;
+  }[];
+  /** Operation type */
+  type: 'execute' | 'cancel' | 'retry' | 'schedule' | 'delete';
 }
 
 export class WorkflowVersionManager {
@@ -179,10 +179,10 @@ export class WorkflowVersionManager {
     }
 
     const workflowVersion: WorkflowVersion = {
-      version,
+      createdAt: new Date(),
       definition,
       status: 'draft',
-      createdAt: new Date(),
+      version,
       ...options,
     };
 
@@ -390,13 +390,13 @@ export class WorkflowComposer {
     const context: CompositionContext = {
       compositionId,
       executionId,
+      getResult: (alias: string) => {
+        return context.results[alias];
+      },
       input,
       results: {},
       setResult: (alias: string, result: unknown) => {
         context.results[alias] = result;
-      },
-      getResult: (alias: string) => {
-        return context.results[alias];
       },
     };
 
@@ -606,14 +606,14 @@ export class BulkOperationManager {
     const bulkOp: BulkOperation = {
       ...operation,
       id: operationId,
-      status: 'pending',
-      results: [],
       progress: {
-        total: operation.targets.length,
+        cancelled: 0,
         completed: 0,
         failed: 0,
-        cancelled: 0,
+        total: operation.targets.length,
       },
+      results: [],
+      status: 'pending',
     };
 
     this.operations.set(operationId, bulkOp);
@@ -649,7 +649,7 @@ export class BulkOperationManager {
     operation.status = 'running';
     operation.startedAt = new Date();
 
-    const { concurrency = 5, batchSize = 10, batchDelay = 0 } = operation.config;
+    const { batchDelay = 0, batchSize = 10, concurrency = 5 } = operation.config;
 
     try {
       // Process targets in batches
@@ -692,10 +692,10 @@ export class BulkOperationManager {
             const duration = Date.now() - startTime;
 
             operation.results.push({
-              workflowId: target.workflowId,
-              status: 'success',
-              result,
               duration,
+              result,
+              status: 'success',
+              workflowId: target.workflowId,
             });
 
             operation.progress.completed++;
@@ -703,10 +703,10 @@ export class BulkOperationManager {
             const duration = Date.now() - startTime;
 
             operation.results.push({
-              workflowId: target.workflowId,
-              status: 'failed',
-              error: error instanceof Error ? error.message : String(error),
               duration,
+              error: error instanceof Error ? error.message : String(error),
+              status: 'failed',
+              workflowId: target.workflowId,
             });
 
             operation.progress.failed++;

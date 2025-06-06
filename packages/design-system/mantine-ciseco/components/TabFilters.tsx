@@ -82,15 +82,6 @@ const TabFilters = ({ className }: { className?: string }) => {
   };
 
   // OK
-  const renderXClear = () => {
-    return (
-      <span className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white">
-        <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Cancel01Icon} size={10} />
-      </span>
-    );
-  };
-
-  // OK
   const renderTabsCategories = () => {
     return (
       <FieldPopover
@@ -277,6 +268,18 @@ const TabFilters = ({ className }: { className?: string }) => {
     );
   };
 
+  const renderXClear = () => {
+    return (
+      <HugeiconsIcon
+        strokeWidth={1.5}
+        color="currentColor"
+        icon={Cancel01Icon}
+        size={14}
+        className="ml-1"
+      />
+    );
+  };
+
   // OK
   const renderTabIsOnsale = () => {
     return (
@@ -357,15 +360,17 @@ const FieldPopover = ({
           {!fieldState?.length ? (
             <ChevronDownIcon className="ms-3 h-4 w-4" />
           ) : (
-            <span
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClickClear();
               }}
-              className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white"
+              className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white border-none"
+              aria-label="Clear filter"
+              type="button"
             >
               <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Cancel01Icon} size={10} />
-            </span>
+            </button>
           )}
         </button>
       </Popover.Target>

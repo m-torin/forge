@@ -299,9 +299,7 @@ export class PuppeteerProvider implements ScrapingProvider {
     // In production, this would use a proper HTML parser like cheerio
     for (const [key, selectorOrConfig] of Object.entries(selectors)) {
       const config: SelectorConfig =
-        typeof selectorOrConfig === 'string'
-          ? { selector: selectorOrConfig }
-          : selectorOrConfig;
+        typeof selectorOrConfig === 'string' ? { selector: selectorOrConfig } : selectorOrConfig;
 
       // Placeholder extraction logic
       // This is simplified - a real implementation would parse the HTML properly

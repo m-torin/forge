@@ -16,7 +16,7 @@ This package provides internationalization functionality with:
 
 ### Server Components
 
-```typescript
+```tsx
 import { getDictionary } from '@repo/internationalization';
 
 export default async function Page({ params: { locale } }) {

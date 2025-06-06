@@ -12,9 +12,6 @@ import {
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { flag, flags } from '@repo/analytics/client';
-import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
-
 const workflowCategories = [
   {
     color: 'blue',
@@ -73,26 +70,23 @@ const workflowCategories = [
 ];
 
 function WorkflowCard({ category }: { category: (typeof workflowCategories)[0] }) {
-  const isEnabled = useFlag(category.flagKey);
-  const { trackClick, trackView } = useUIAnalytics();
-  const { trackEvent } = useObservability();
+  const [isEnabled, setIsEnabled] = useState(true);
+
+  useEffect(() => {
+    // For now, enable all workflow categories by default since feature flags are not available
+    setIsEnabled(true);
+  }, [category.flagKey]);
 
   useEffect(() => {
     if (isEnabled) {
-      trackView('workflow_card', { workflowType: category.title });
+      console.log('Workflow Card Viewed:', { workflowType: category.title });
     }
-  }, [isEnabled, trackView, category.title]);
+  }, [isEnabled, category.title]);
 
   const handleClick = () => {
-    trackClick('workflow_card', {
+    console.log('Workflow Card Clicked:', {
       href: category.href,
       workflowType: category.title,
-    });
-    trackEvent({
-      action: 'navigate',
-      category: 'workflow',
-      label: category.title,
-      metadata: { href: category.href },
     });
   };
 
@@ -107,24 +101,21 @@ function WorkflowCard({ category }: { category: (typeof workflowCategories)[0] }
         href={category.href as any}
         component={Link}
         onClick={handleClick}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '';
-        }}
         shadow="sm"
         withBorder
-        style={{
-          cursor: 'pointer',
-          height: '100%',
-          textDecoration: 'none',
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        }}
         padding="lg"
         radius="md"
+        styles={{
+          root: {
+            height: '100%',
+            transition: 'all 0.2s ease',
+            textDecoration: 'none',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: 'var(--mantine-shadow-md)',
+            },
+          },
+        }}
       >
         <Stack style={{ height: '100%' }} gap="md">
           <Group justify="space-between">
@@ -153,17 +144,9 @@ function WorkflowCard({ category }: { category: (typeof workflowCategories)[0] }
 }
 
 export default function WorkflowsOverviewPage() {
-  const { trackPage } = useAnalytics();
-  const { trackEvent } = useObservability();
-
   useEffect(() => {
-    trackPage('workflows_overview');
-    trackEvent({
-      action: 'view',
-      category: 'workflow',
-      label: 'overview_page',
-    });
-  }, [trackPage, trackEvent]);
+    console.log('Page Viewed: workflows_overview');
+  }, []);
 
   return (
     <Container py="xl" size="xl">

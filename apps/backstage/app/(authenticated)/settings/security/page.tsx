@@ -1,26 +1,13 @@
 'use client';
 
 import { Button, Card, Container, Stack, Text, Title } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { IconShield } from '@tabler/icons-react';
+import { IconArrowLeft } from '@tabler/icons-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { analytics } from '@repo/analytics-legacy';
-import { getTwoFactorStatus } from '@repo/auth-new/client';
-import {
-  BackButton,
-  PasskeyManager,
-  SessionManagement,
-  TwoFactorManage,
-  TwoFactorSetup,
-  usePageTracking,
-} from '@repo/design-system/uix';
-
 export default function SecuritySettingsPage() {
-  usePageTracking('backstage-security-settings');
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  console.log('Page Tracking: backstage-security-settings');
   const [isLoading, setIsLoading] = useState(true);
-  const [setupOpened, { close: closeSetup, open: openSetup }] = useDisclosure(false);
 
   useEffect(() => {
     checkTwoFactorStatus();
@@ -28,8 +15,8 @@ export default function SecuritySettingsPage() {
 
   const checkTwoFactorStatus = async () => {
     try {
-      const status = await getTwoFactorStatus?.();
-      setTwoFactorEnabled(status?.enabled || false);
+      // Mock loading for demo
+      await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (error) {
       console.error('Failed to check 2FA status:', error);
     } finally {
@@ -37,24 +24,17 @@ export default function SecuritySettingsPage() {
     }
   };
 
-  const handleTwoFactorComplete = () => {
-    setTwoFactorEnabled(true);
-    closeSetup();
-    analytics.capture('two_factor_enabled', {
-      source: 'backstage_security_settings',
-    });
-  };
-
-  const handleTwoFactorDisabled = () => {
-    setTwoFactorEnabled(false);
-    analytics.capture('two_factor_disabled', {
-      source: 'backstage_security_settings',
-    });
-  };
-
   return (
     <Container py="xl" size="md">
-      <BackButton href="/settings">Back to Settings</BackButton>
+      <Button
+        href="/settings"
+        component={Link}
+        leftSection={<IconArrowLeft size={16} />}
+        mb="xl"
+        variant="subtle"
+      >
+        Back to Settings
+      </Button>
 
       <Title order={1} mb="xl">
         Security Settings
@@ -71,87 +51,39 @@ export default function SecuritySettingsPage() {
               </Text>
             </div>
 
-            {isLoading ? (
-              <Text c="dimmed">Checking 2FA status...</Text>
-            ) : twoFactorEnabled ? (
-              <TwoFactorManage onDisabled={handleTwoFactorDisabled} />
-            ) : (
-              <>
-                <Text>
-                  Two-factor authentication is not enabled for your account. We strongly recommend
-                  enabling it for enhanced security.
-                </Text>
-                <Button
-                  leftSection={<IconShield size={16} />}
-                  onClick={openSetup}
-                  style={{ alignSelf: 'flex-start' }}
-                >
-                  Enable Two-Factor Authentication
-                </Button>
-              </>
-            )}
+            <Text c="orange">
+              Security features are disabled in demo mode. Authentication has been removed from this
+              backstage instance.
+            </Text>
           </Stack>
         </Card>
 
         {/* Passkeys */}
         <Card withBorder>
-          <PasskeyManager />
+          <Stack>
+            <div>
+              <Title order={3}>Passkeys</Title>
+              <Text c="dimmed" mt="xs" size="sm">
+                Passkey management is disabled in demo mode
+              </Text>
+            </div>
+            <Text c="orange">Passkey features require authentication to be enabled.</Text>
+          </Stack>
         </Card>
 
         {/* Active Sessions */}
         <Card withBorder>
-          <SessionManagement />
-        </Card>
-      </Stack>
-
-      {/* 2FA Setup Modal */}
-      {setupOpened && (
-        <Card
-          shadow="lg"
-          withBorder
-          style={{
-            maxWidth: 600,
-            width: '90%',
-            left: '50%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            position: 'fixed',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-          }}
-        >
           <Stack>
-            <Title order={2}>Set Up Two-Factor Authentication</Title>
-            <TwoFactorSetup onCancel={closeSetup} onComplete={handleTwoFactorComplete} />
+            <div>
+              <Title order={3}>Active Sessions</Title>
+              <Text c="dimmed" mt="xs" size="sm">
+                Session management is disabled in demo mode
+              </Text>
+            </div>
+            <Text c="orange">Session management requires authentication to be enabled.</Text>
           </Stack>
         </Card>
-      )}
-
-      {/* Backdrop */}
-      {setupOpened && (
-        <div
-          onClick={closeSetup}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              closeSetup();
-            }
-          }}
-          role="button"
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            bottom: 0,
-            cursor: 'pointer',
-            left: 0,
-            position: 'fixed',
-            right: 0,
-            top: 0,
-            zIndex: 999,
-          }}
-          aria-label="Close two-factor authentication setup"
-          tabIndex={0}
-        />
-      )}
+      </Stack>
     </Container>
   );
 }

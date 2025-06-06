@@ -198,7 +198,10 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
                   </Text>
                   <Group gap={4}>
                     {result.path.map((category, index) => (
-                      <Box key={index} style={{ alignItems: 'center', display: 'flex' }}>
+                      <Box
+                        key={`${category}-${index}`}
+                        style={{ alignItems: 'center', display: 'flex' }}
+                      >
                         {index > 0 && (
                           <Text c="dimmed" mx={4}>
                             →

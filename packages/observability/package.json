@@ -57,6 +57,7 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/eslint": "^9.6.1",
@@ -82,6 +83,7 @@
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
-    "./server/next": "./src/server-next.ts"
+    "./server/next": "./src/server-next.ts",
+    "./error": "./src/shared/utils/error.ts"
   }
 }

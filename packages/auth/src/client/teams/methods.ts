@@ -5,20 +5,20 @@
 import type {
   CreateTeamData,
   CreateTeamResult,
-  UpdateTeamData,
-  UpdateTeamResult,
   DeleteTeamResult,
   GetTeamResult,
-  ListTeamsResult,
+  GetTeamStatsResult,
   InviteToTeamData,
   InviteToTeamResult,
   ListTeamInvitationsResult,
+  ListTeamsResult,
+  RemoveTeamMemberResult,
   RespondToInvitationData,
   RespondToInvitationResult,
+  UpdateTeamData,
   UpdateTeamMemberData,
   UpdateTeamMemberResult,
-  RemoveTeamMemberResult,
-  GetTeamStatsResult,
+  UpdateTeamResult,
 } from '../../shared/teams/types';
 
 /**
@@ -27,19 +27,19 @@ import type {
 export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult> {
   try {
     const response = await fetch('/api/auth/teams', {
-      method: 'POST',
+      body: JSON.stringify(data),
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
-      body: JSON.stringify(data),
+      method: 'POST',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to create team',
+      success: false,
     };
   }
 }
@@ -47,25 +47,22 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
 /**
  * Updates a team
  */
-export async function updateTeam(
-  teamId: string,
-  data: UpdateTeamData
-): Promise<UpdateTeamResult> {
+export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<UpdateTeamResult> {
   try {
     const response = await fetch(`/api/auth/teams/${teamId}`, {
-      method: 'PATCH',
+      body: JSON.stringify(data),
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
-      body: JSON.stringify(data),
+      method: 'PATCH',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to update team',
+      success: false,
     };
   }
 }
@@ -76,15 +73,15 @@ export async function updateTeam(
 export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
   try {
     const response = await fetch(`/api/auth/teams/${teamId}`, {
-      method: 'DELETE',
       credentials: 'include',
+      method: 'DELETE',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to delete team',
+      success: false,
     };
   }
 }
@@ -95,15 +92,15 @@ export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
 export async function getTeam(teamId: string): Promise<GetTeamResult> {
   try {
     const response = await fetch(`/api/auth/teams/${teamId}`, {
-      method: 'GET',
       credentials: 'include',
+      method: 'GET',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to get team',
+      success: false,
     };
   }
 }
@@ -119,15 +116,15 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
     }
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
       credentials: 'include',
+      method: 'GET',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to list teams',
+      success: false,
     };
   }
 }
@@ -138,19 +135,19 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
 export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeamResult> {
   try {
     const response = await fetch('/api/auth/teams/invitations', {
-      method: 'POST',
+      body: JSON.stringify(data),
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
-      body: JSON.stringify(data),
+      method: 'POST',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to send invitation',
+      success: false,
     };
   }
 }
@@ -160,7 +157,7 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
  */
 export async function listTeamInvitations(
   teamId?: string,
-  includeExpired = false
+  includeExpired = false,
 ): Promise<ListTeamInvitationsResult> {
   try {
     const url = new URL('/api/auth/teams/invitations', window.location.origin);
@@ -172,15 +169,15 @@ export async function listTeamInvitations(
     }
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
       credentials: 'include',
+      method: 'GET',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to list invitations',
+      success: false,
     };
   }
 }
@@ -189,23 +186,23 @@ export async function listTeamInvitations(
  * Responds to a team invitation
  */
 export async function respondToInvitation(
-  data: RespondToInvitationData
+  data: RespondToInvitationData,
 ): Promise<RespondToInvitationResult> {
   try {
     const response = await fetch(`/api/auth/teams/invitations/${data.invitationId}/respond`, {
-      method: 'POST',
+      body: JSON.stringify({ response: data.response }),
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
-      body: JSON.stringify({ response: data.response }),
+      method: 'POST',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to respond to invitation',
+      success: false,
     };
   }
 }
@@ -216,15 +213,15 @@ export async function respondToInvitation(
 export async function cancelInvitation(invitationId: string) {
   try {
     const response = await fetch(`/api/auth/teams/invitations/${invitationId}`, {
-      method: 'DELETE',
       credentials: 'include',
+      method: 'DELETE',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to cancel invitation',
+      success: false,
     };
   }
 }
@@ -233,23 +230,23 @@ export async function cancelInvitation(invitationId: string) {
  * Updates a team member's role
  */
 export async function updateTeamMember(
-  data: UpdateTeamMemberData
+  data: UpdateTeamMemberData,
 ): Promise<UpdateTeamMemberResult> {
   try {
     const response = await fetch(`/api/auth/teams/${data.teamId}/members/${data.userId}`, {
-      method: 'PATCH',
+      body: JSON.stringify({ role: data.role }),
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
-      body: JSON.stringify({ role: data.role }),
+      method: 'PATCH',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to update team member',
+      success: false,
     };
   }
 }
@@ -259,19 +256,19 @@ export async function updateTeamMember(
  */
 export async function removeTeamMember(
   teamId: string,
-  userId: string
+  userId: string,
 ): Promise<RemoveTeamMemberResult> {
   try {
     const response = await fetch(`/api/auth/teams/${teamId}/members/${userId}`, {
-      method: 'DELETE',
       credentials: 'include',
+      method: 'DELETE',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to remove team member',
+      success: false,
     };
   }
 }
@@ -282,15 +279,15 @@ export async function removeTeamMember(
 export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> {
   try {
     const response = await fetch(`/api/auth/teams/${teamId}/stats`, {
-      method: 'GET',
       credentials: 'include',
+      method: 'GET',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to get team statistics',
+      success: false,
     };
   }
 }
@@ -301,15 +298,15 @@ export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> 
 export async function getUserPendingInvitations(): Promise<ListTeamInvitationsResult> {
   try {
     const response = await fetch('/api/auth/teams/invitations/pending', {
-      method: 'GET',
       credentials: 'include',
+      method: 'GET',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to get pending invitations',
+      success: false,
     };
   }
 }
@@ -320,15 +317,15 @@ export async function getUserPendingInvitations(): Promise<ListTeamInvitationsRe
 export async function leaveTeam(teamId: string): Promise<RemoveTeamMemberResult> {
   try {
     const response = await fetch(`/api/auth/teams/${teamId}/leave`, {
-      method: 'POST',
       credentials: 'include',
+      method: 'POST',
     });
-    
+
     return await response.json();
   } catch (error) {
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to leave team',
+      success: false,
     };
   }
 }

@@ -62,7 +62,7 @@ const Order = ({ order }: { order: TOrder }) => {
             price,
             quantity,
             size,
-            status,
+            status: _status,
             title,
           }) => (
             <div key={id} className="flex py-4 first:pt-0 last:pb-0 sm:py-7">

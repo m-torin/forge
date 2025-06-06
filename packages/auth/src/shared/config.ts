@@ -49,6 +49,14 @@ export function createAuthConfig(): AuthConfig {
   const config = env;
 
   return {
+    middleware: {
+      enableApiMiddleware: true,
+      enableNodeMiddleware: true,
+      enableWebMiddleware: true,
+      publicPaths: ['/sign-in', '/sign-up', '/forgot-password', '/reset-password'],
+      redirectTo: '/sign-in',
+      requireAuthentication: false,
+    },
     providers: {
       ...(config.GITHUB_CLIENT_ID &&
         config.GITHUB_CLIENT_SECRET && {
@@ -65,44 +73,36 @@ export function createAuthConfig(): AuthConfig {
           },
         }),
     },
-    appUrl: config.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-    databaseUrl: config.DATABASE_URL || 'postgresql://localhost:5432/dev',
-    features: {
-      admin: true,
-      apiKeys: true,
-      magicLink: true,
-      organizations: true,
-      passkeys: true,
-      twoFactor: true,
-      teams: true,
-      advancedMiddleware: true,
-      serviceToService: true,
-      impersonation: true,
-      organizationInvitations: true,
-      sessionCaching: true,
-    },
-    middleware: {
-      enableApiMiddleware: true,
-      enableNodeMiddleware: true,
-      enableWebMiddleware: true,
-      requireAuthentication: false,
-      redirectTo: '/sign-in',
-      publicPaths: ['/sign-in', '/sign-up', '/forgot-password', '/reset-password'],
-    },
     apiKeys: {
-      enableServiceAuth: true,
       defaultPermissions: ['read'],
+      enableServiceAuth: true,
       expirationDays: 90,
       rateLimiting: {
         enabled: true,
         requestsPerMinute: 100,
       },
     },
-    teams: {
-      enableInvitations: true,
-      defaultPermissions: ['read'],
-      maxTeamsPerOrganization: 10,
+    appUrl: config.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    databaseUrl: config.DATABASE_URL || 'postgresql://localhost:5432/dev',
+    features: {
+      advancedMiddleware: true,
+      admin: true,
+      apiKeys: true,
+      impersonation: true,
+      magicLink: true,
+      organizationInvitations: true,
+      organizations: true,
+      passkeys: true,
+      serviceToService: true,
+      sessionCaching: true,
+      teams: true,
+      twoFactor: true,
     },
     secret: config.BETTER_AUTH_SECRET || 'development-secret',
+    teams: {
+      defaultPermissions: ['read'],
+      enableInvitations: true,
+      maxTeamsPerOrganization: 10,
+    },
   };
 }

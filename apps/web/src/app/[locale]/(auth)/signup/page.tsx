@@ -47,9 +47,9 @@ const PageSignUp = async ({ params }: { params: { locale: string } }) => {
       </h1>
       <div className="mx-auto max-w-md space-y-6">
         <div className="grid gap-3">
-          {loginSocials.map((item, index) => (
+          {loginSocials.map((item) => (
             <a
-              key={index}
+              key={item.name}
               href={item.href}
               className="bg-primary-50 flex w-full rounded-lg px-4 py-3 transition-transform hover:translate-y-[-2px] sm:px-6 dark:bg-neutral-800"
             >

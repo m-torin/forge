@@ -4,15 +4,15 @@
 
 import { vi } from 'vitest';
 
-import type { 
-  User, 
-  Session, 
-  AuthSession,
-  Organization,
-  Team,
-  Member,
+import type {
   ApiKey,
+  AuthSession,
+  Member,
+  Organization,
   OrganizationRole,
+  Session,
+  Team,
+  User,
 } from '../../shared/types';
 
 /**
@@ -22,10 +22,10 @@ export function createMockUser(overrides: Partial<User> = {}): User {
   return {
     id: `user-${Math.random().toString(36).substr(2, 9)}`,
     name: 'Test User',
+    createdAt: new Date(),
     email: 'test@example.com',
     emailVerified: true,
     image: 'https://example.com/avatar.jpg',
-    createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
   };
@@ -36,16 +36,16 @@ export function createMockUser(overrides: Partial<User> = {}): User {
  */
 export function createMockSessionObject(overrides: Partial<Session> = {}): Session {
   const userId = overrides.userId || `user-${Math.random().toString(36).substr(2, 9)}`;
-  
+
   return {
     id: `session-${Math.random().toString(36).substr(2, 9)}`,
-    userId,
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     createdAt: new Date(),
-    updatedAt: new Date(),
-    token: `token-${Math.random().toString(36).substr(2, 16)}`,
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     ipAddress: '127.0.0.1',
+    token: `token-${Math.random().toString(36).substr(2, 16)}`,
+    updatedAt: new Date(),
     userAgent: 'Test User Agent',
+    userId,
     ...overrides,
   } as Session;
 }
@@ -55,7 +55,7 @@ export function createMockSessionObject(overrides: Partial<Session> = {}): Sessi
  */
 export function createMockAuthSession(
   userOverrides: Partial<User> = {},
-  sessionOverrides: Partial<Session> = {}
+  sessionOverrides: Partial<Session> = {},
 ): AuthSession {
   const user = createMockUser(userOverrides);
   const session = createMockSessionObject({
@@ -64,9 +64,10 @@ export function createMockAuthSession(
   });
 
   return {
-    user,
+    activeOrganizationId:
+      (session as any).activeOrganizationId || `org-${Math.random().toString(36).substr(2, 9)}`,
     session,
-    activeOrganizationId: (session as any).activeOrganizationId || `org-${Math.random().toString(36).substr(2, 9)}`,
+    user,
   };
 }
 
@@ -80,10 +81,10 @@ export function createMockOrganization(overrides: Partial<Organization> = {}): O
   return {
     id: `org-${Math.random().toString(36).substr(2, 9)}`,
     name,
-    slug,
+    createdAt: new Date(),
     logo: null,
     metadata: {},
-    createdAt: new Date(),
+    slug,
     updatedAt: null,
     ...overrides,
   } as Organization;
@@ -96,8 +97,8 @@ export function createMockTeam(overrides: Partial<Team> = {}): Team {
   return {
     id: `team-${Math.random().toString(36).substr(2, 9)}`,
     name: 'Test Team',
-    organizationId: `org-${Math.random().toString(36).substr(2, 9)}`,
     createdAt: new Date(),
+    organizationId: `org-${Math.random().toString(36).substr(2, 9)}`,
     updatedAt: null,
     ...overrides,
   } as Team;
@@ -108,14 +109,14 @@ export function createMockTeam(overrides: Partial<Team> = {}): Team {
  */
 export function createMockTeamMember(overrides: Partial<Member> = {}): Member {
   const user = createMockUser();
-  
+
   return {
     id: `member-${Math.random().toString(36).substr(2, 9)}`,
-    userId: user.id,
+    createdAt: new Date(),
     organizationId: `org-${Math.random().toString(36).substr(2, 9)}`,
     role: 'member',
-    createdAt: new Date(),
     updatedAt: new Date(),
+    userId: user.id,
     ...overrides,
   } as Member;
 }
@@ -127,17 +128,17 @@ export function createMockApiKey(overrides: Partial<ApiKey> = {}): ApiKey {
   return {
     id: `key-${Math.random().toString(36).substr(2, 9)}`,
     name: 'Test API Key',
+    createdAt: new Date(),
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    key: `forge_${Math.random().toString(36).substr(2, 32)}`,
+    lastUsedAt: null,
+    metadata: null,
     organizationId: `org-${Math.random().toString(36).substr(2, 9)}`,
     permissions: JSON.stringify(['read']) as any,
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-    lastUsedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    key: `forge_${Math.random().toString(36).substr(2, 32)}`,
-    userId: null,
-    scopes: null,
     revokedAt: null,
-    metadata: null,
+    scopes: null,
+    updatedAt: new Date(),
+    userId: null,
     ...overrides,
   } as ApiKey;
 }
@@ -147,10 +148,6 @@ export function createMockApiKey(overrides: Partial<ApiKey> = {}): ApiKey {
  */
 export function createMockUsersWithRoles(): Record<OrganizationRole, User> {
   return {
-    owner: createMockUser({
-      name: 'Owner User',
-      email: 'owner@example.com',
-    }),
     admin: createMockUser({
       name: 'Admin User',
       email: 'admin@example.com',
@@ -158,6 +155,10 @@ export function createMockUsersWithRoles(): Record<OrganizationRole, User> {
     member: createMockUser({
       name: 'Member User',
       email: 'member@example.com',
+    }),
+    owner: createMockUser({
+      name: 'Owner User',
+      email: 'owner@example.com',
     }),
   };
 }
@@ -168,7 +169,7 @@ export function createMockUsersWithRoles(): Record<OrganizationRole, User> {
 export function createMockOrganizationStructure() {
   const organization = createMockOrganization();
   const users = createMockUsersWithRoles();
-  
+
   const teams = [
     createMockTeam({
       name: 'Development Team',
@@ -182,11 +183,10 @@ export function createMockOrganizationStructure() {
 
   const members = Object.entries(users).map(([role, user]) =>
     createMockTeamMember({
-      userId: user.id,
-      teamId: teams[0].id,
       role,
-      user,
-    })
+      teamId: teams[0].id,
+      userId: user.id,
+    }),
   );
 
   const apiKeys = [
@@ -203,11 +203,11 @@ export function createMockOrganizationStructure() {
   ];
 
   return {
-    organization,
-    users,
-    teams,
-    members,
     apiKeys,
+    members,
+    organization,
+    teams,
+    users,
   };
 }
 
@@ -217,7 +217,7 @@ export function createMockOrganizationStructure() {
 export function createMany<T>(
   factory: () => T,
   count: number,
-  overridesFn?: (index: number) => Partial<T>
+  overridesFn?: (index: number) => Partial<T>,
 ): T[] {
   return Array.from({ length: count }, (_, index) => {
     const item = factory();
@@ -233,13 +233,13 @@ export function createMockFetch(responses: Record<string, any> = {}) {
   return vi.fn().mockImplementation((url: string, options?: RequestInit) => {
     const method = options?.method || 'GET';
     const key = `${method} ${url}`;
-    
+
     const response = responses[key] || responses[url] || { success: true };
-    
+
     return Promise.resolve({
+      json: () => Promise.resolve(response),
       ok: true,
       status: 200,
-      json: () => Promise.resolve(response),
       text: () => Promise.resolve(JSON.stringify(response)),
     });
   });
@@ -261,11 +261,11 @@ export function createMockEnv(overrides: Record<string, string> = {}) {
   return {
     BETTER_AUTH_SECRET: 'test-secret',
     DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
-    NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
     GITHUB_CLIENT_ID: 'test-github-client-id',
     GITHUB_CLIENT_SECRET: 'test-github-client-secret',
     GOOGLE_CLIENT_ID: 'test-google-client-id',
     GOOGLE_CLIENT_SECRET: 'test-google-client-secret',
+    NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
     ...overrides,
   };
 }

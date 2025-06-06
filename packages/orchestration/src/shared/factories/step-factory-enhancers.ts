@@ -5,8 +5,9 @@
  * to add advanced functionality like retry, circuit breaking, monitoring, etc.
  */
 
-import type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 import { initializePerformanceData, updatePerformanceData } from './step-factory/step-performance';
+
+import type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 
 /**
  * Add monitoring capabilities to a workflow step
@@ -20,6 +21,7 @@ export function withStepMonitoring<TInput = any, TOutput = any>(
   } = {},
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
+    validate: step.validate,
     execute: async (input: TInput) => {
       const startTime = Date.now();
       const performance = initializePerformanceData(true);
@@ -40,7 +42,6 @@ export function withStepMonitoring<TInput = any, TOutput = any>(
 
       return result;
     },
-    validate: step.validate,
   };
 }
 
@@ -56,9 +57,10 @@ export function withStepRetry<TInput = any, TOutput = any>(
     jitter?: boolean;
   } = {},
 ): SimpleWorkflowStep<TInput, TOutput> {
-  const { maxAttempts = 3, delay = 1000, backoff = 'exponential', jitter = false } = options;
+  const { backoff = 'exponential', delay = 1000, jitter = false, maxAttempts = 3 } = options;
 
   return {
+    validate: step.validate,
     execute: async (input: TInput) => {
       let lastError: any;
 
@@ -92,13 +94,12 @@ export function withStepRetry<TInput = any, TOutput = any>(
       }
 
       return {
-        success: false,
         error: lastError,
-        performance: { startTime: Date.now(), duration: 0 },
+        performance: { duration: 0, startTime: Date.now() },
         shouldRetry: false,
+        success: false,
       };
     },
-    validate: step.validate,
   };
 }
 
@@ -120,6 +121,7 @@ export function withStepCircuitBreaker<TInput = any, TOutput = any>(
   let state: 'closed' | 'open' | 'half-open' = 'closed';
 
   return {
+    validate: step.validate,
     execute: async (input: TInput) => {
       const now = Date.now();
 
@@ -132,7 +134,6 @@ export function withStepCircuitBreaker<TInput = any, TOutput = any>(
       // Circuit is open - fail fast
       if (state === 'open') {
         return {
-          success: false,
           error: {
             code: 'CIRCUIT_BREAKER_OPEN',
             message: 'Circuit breaker is open',
@@ -140,7 +141,8 @@ export function withStepCircuitBreaker<TInput = any, TOutput = any>(
             stepId: 'circuit-breaker',
             timestamp: new Date(),
           },
-          performance: { startTime: now, duration: 0 },
+          performance: { duration: 0, startTime: now },
+          success: false,
         };
       }
 
@@ -162,7 +164,6 @@ export function withStepCircuitBreaker<TInput = any, TOutput = any>(
 
       return result;
     },
-    validate: step.validate,
   };
 }
 
@@ -174,6 +175,7 @@ export function withStepTimeout<TInput = any, TOutput = any>(
   timeoutMs: number,
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
+    validate: step.validate,
     execute: async (input: TInput) => {
       const timeoutPromise = new Promise<StepExecutionResult<TOutput>>((_, reject) => {
         setTimeout(() => {
@@ -185,7 +187,6 @@ export function withStepTimeout<TInput = any, TOutput = any>(
         return await Promise.race([step.execute(input), timeoutPromise]);
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'STEP_TIMEOUT_ERROR',
             message: error instanceof Error ? error.message : 'Timeout error',
@@ -193,11 +194,11 @@ export function withStepTimeout<TInput = any, TOutput = any>(
             stepId: 'timeout',
             timestamp: new Date(),
           },
-          performance: { startTime: Date.now(), duration: timeoutMs },
+          performance: { duration: timeoutMs, startTime: Date.now() },
+          success: false,
         };
       }
     },
-    validate: step.validate,
   };
 }
 
@@ -206,9 +207,9 @@ export function withStepTimeout<TInput = any, TOutput = any>(
  */
 export function compose<TInput = any, TOutput = any>(
   step: SimpleWorkflowStep<TInput, TOutput>,
-  ...enhancers: Array<
-    (step: SimpleWorkflowStep<TInput, TOutput>) => SimpleWorkflowStep<TInput, TOutput>
-  >
+  ...enhancers: ((
+    step: SimpleWorkflowStep<TInput, TOutput>,
+  ) => SimpleWorkflowStep<TInput, TOutput>)[]
 ): SimpleWorkflowStep<TInput, TOutput> {
   return enhancers.reduce((currentStep, enhancer) => enhancer(currentStep), step);
 }

@@ -11,9 +11,9 @@ export * from './client';
 // Next.js specific client features (placeholder)
 export function useRouter() {
   return {
+    back: () => {},
     push: () => {},
     replace: () => {},
-    back: () => {},
   };
 }
 
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // Next.js auth hooks (placeholder)
 export function useAuthRedirect() {
   return {
-    redirectToLogin: () => {},
     redirectAfterLogin: () => {},
+    redirectToLogin: () => {},
   };
 }

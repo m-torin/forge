@@ -1,7 +1,6 @@
 "use client";
 
 import { useProductFavorite } from "@/hooks/useGuestFavorites";
-import { analytics } from "@/lib/analytics-setup";
 import React from "react";
 
 interface LikeSaveBtnsWithFavoritesProps {
@@ -13,7 +12,7 @@ interface LikeSaveBtnsWithFavoritesProps {
 export function LikeSaveBtnsWithFavorites({
   onShare,
   productId,
-  productName,
+  productName: _productName,
 }: LikeSaveBtnsWithFavoritesProps) {
   const { isFavorite, toggleFavorite } = useProductFavorite(productId);
 
@@ -25,13 +24,6 @@ export function LikeSaveBtnsWithFavorites({
     if (onShare) {
       onShare();
     }
-    analytics
-      .track("Product Shared", {
-        method: "button",
-        productId,
-        productName,
-      })
-      .catch(() => {});
   };
 
   return (

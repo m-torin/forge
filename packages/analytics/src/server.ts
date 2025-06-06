@@ -22,17 +22,6 @@
 import { PostHogServerProvider } from './server/providers/posthog-server';
 import { SegmentServerProvider } from './server/providers/segment-server';
 import { VercelServerProvider } from './server/providers/vercel-server';
-// Import feature flag functions for convenience exports
-import {
-  commonFlags,
-  createFeatureFlagManager,
-  createFlagContext,
-  createTypedFeatureFlags,
-  evaluateFlag,
-  evaluateFlagBatch,
-  trackFlagExposure,
-  updateFlagContext,
-} from './shared/feature-flags';
 import { ConsoleProvider } from './shared/providers/console-provider';
 import { createAnalyticsManager } from './shared/utils/manager';
 
@@ -207,105 +196,5 @@ export {
 export {
   createPostHogConfig,
   createPostHogServerClient,
-  getAllFeatureFlags,
   getCompleteBootstrapData,
-  getFeatureFlag,
-  isFeatureEnabled,
 } from './shared/utils/posthog-next-utils';
-
-// ============================================================================
-// FEATURE FLAGS
-// ============================================================================
-
-// Core feature flag exports
-export {
-  commonFlags,
-  createEnvironmentConfig,
-  createFeatureFlagManager,
-  createTypedFeatureFlags,
-  MemoryFlagCache,
-  StandardFeatureFlagManager,
-} from './shared/feature-flags';
-
-// Feature flag types
-export type {
-  CacheConfig,
-  CommonFlags,
-  FeatureFlagError,
-  FeatureFlagManager,
-  FeatureFlagProvider,
-  FlagCache,
-  FlagConfig,
-  FlagContext,
-  FlagDebugInfo,
-  FlagEvaluationOptions,
-  FlagEvaluationReason,
-  FlagEvaluationResult,
-  FlagMetrics,
-  FlagValue,
-  TypedFlag,
-  TypedFlagMap,
-} from './shared/feature-flags';
-
-// Feature flag emitters
-export {
-  createFlagContext,
-  createTypedFlagEmitters,
-  evaluateFlag,
-  evaluateFlagBatch,
-  FlagContextBuilder,
-  isExperimentConversionPayload,
-  isExperimentEnrollmentPayload,
-  isFlagContextPayload,
-  isFlagEvaluationPayload,
-  isFlagExposurePayload,
-  mergeFlagContexts,
-  trackExperimentConversion,
-  trackExperimentEnrollment,
-  trackFlagExposure,
-  trackFlagRuleChange,
-  trackFlagStatusChange,
-  updateFlagContext,
-  validateFlagContext,
-} from './shared/feature-flags';
-
-// Feature flag providers
-export { PostHogFlagProvider } from './shared/feature-flags';
-export { LocalFlagProvider } from './shared/feature-flags';
-export type {
-  LocalFlagCondition,
-  LocalFlagDefinition,
-  LocalFlagOperator,
-  LocalFlagRule,
-} from './shared/feature-flags';
-
-// Feature flag payload types
-export type {
-  ExperimentConversionPayload,
-  ExperimentEnrollmentPayload,
-  FeatureFlagPayload,
-  FlagBatchEvaluationPayload,
-  FlagContextPayload,
-  FlagEvaluationPayload,
-  FlagExposurePayload,
-  FlagRuleChangePayload,
-  FlagStatusPayload,
-} from './shared/feature-flags';
-
-// Feature flag helpers for server-side
-export const flag = {
-  batch: evaluateFlagBatch,
-  evaluate: evaluateFlag,
-  track: trackFlagExposure,
-  updateContext: updateFlagContext,
-};
-
-// Feature flags default utilities
-export const flags = {
-  typed: createTypedFeatureFlags,
-  common: commonFlags,
-  context: createFlagContext,
-  evaluate: evaluateFlag,
-  manager: createFeatureFlagManager,
-  track: trackFlagExposure,
-};

@@ -1,7 +1,6 @@
 'use client';
 
 import { Button, Center, Container, MantineProvider, Stack, Text, Title } from '@mantine/core';
-import { captureException } from '@sentry/nextjs';
 import React, { useEffect } from 'react';
 
 import type NextError from 'next/error';
@@ -13,7 +12,7 @@ interface GlobalErrorProperties {
 
 export default function GlobalError({ error, reset }: GlobalErrorProperties): React.ReactElement {
   useEffect(() => {
-    captureException(error);
+    console.error('Global error:', error);
   }, [error]);
 
   return (

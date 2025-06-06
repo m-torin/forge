@@ -5,7 +5,7 @@ import { IconBuilding, IconCheck } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 
-import { listOrganizations, setActiveOrganization, useSession } from '@repo/auth-new/client';
+import { listOrganizations, setActiveOrganization, useSession } from '@repo/auth/client';
 
 import type { Route } from 'next';
 

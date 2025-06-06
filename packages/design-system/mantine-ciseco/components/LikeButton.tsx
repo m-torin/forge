@@ -3,9 +3,27 @@
 import React from 'react';
 
 export interface LikeButtonProps {
+  ariaLabel?: string;
   className?: string;
+  color?: string;
+  count?: number;
+  debounce?: boolean;
+  disabled?: boolean;
+  doubleClickToLike?: boolean;
+  icon?: React.ReactNode;
   liked?: boolean;
+  likedIcon?: React.ReactNode;
+  likedTooltip?: string;
+  loading?: boolean;
   onClick?: () => void;
+  productId?: string;
+  showConfirmation?: boolean;
+  showCount?: boolean;
+  showRipple?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  tooltip?: string;
+  trackAnalytics?: boolean;
+  variant?: 'filled' | 'outline' | 'ghost';
 }
 
 const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false, onClick }) => {
@@ -35,4 +53,5 @@ const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false, 
   );
 };
 
+export { LikeButton };
 export default LikeButton;

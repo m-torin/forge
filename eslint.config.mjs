@@ -9,7 +9,7 @@ export default [
     // Ignore directories
     ignores: ['**/.next', '**/node_modules', '**/dist', '**/storybook-static', '**/ios/Pods', '**/Pods'],
   },
-  
+
   // Apply TypeScript recommended rules first
   ...ts.configs.recommended,
   {
@@ -55,7 +55,7 @@ export default [
       '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
-  
+
   // Add markdown plugin configuration
   ...markdownPlugin.configs.recommended,
   {
@@ -112,7 +112,7 @@ export default [
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/triple-slash-reference': 'off',
       '@typescript-eslint/unbound-method': 'off',
-      
+
       // Disable React Next.js rules
       '@next/next/no-img-element': 'off',
       'react-hooks/exhaustive-deps': 'off',
@@ -137,7 +137,7 @@ export default [
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
       'react/require-render-return': 'off',
-      
+
       // Disable basic JS rules
       'constructor-super': 'off',
       'for-direction': 'off',
@@ -202,6 +202,16 @@ export default [
       'require-yield': 'off',
       'use-isnan': 'off',
       'valid-typeof': 'off',
+    },
+  },
+  // Add a new configuration to ignore TypeScript parsing for markdown files
+  {
+    files: ['**/*.md', '**/*.mdx'],
+    ignores: ['**/*.md/**', '**/*.mdx/**'],
+    languageOptions: {
+      parserOptions: {
+        project: false,
+      },
     },
   },
 ];

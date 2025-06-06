@@ -3,19 +3,18 @@
  * API route helpers and middleware for workflow management in Next.js applications
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import type { WorkflowDefinition, WorkflowProvider, WorkflowExecution } from './shared/types/index';
-import type { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import type {
-  WorkflowMetrics,
-  ExecutionHistory,
   AlertRule,
+  ExecutionHistory,
   WorkflowAlert,
+  WorkflowMetrics,
 } from './shared/features/monitoring';
+import type { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
+import type { WorkflowDefinition, WorkflowProvider } from './shared/types/index';
 
 export interface WorkflowApiConfig {
-  /** Workflow provider instance */
-  provider: WorkflowProvider;
   /** Authentication handler */
   authenticate?: (request: NextRequest) => Promise<{ userId: string; roles: string[] } | null>;
   /** Authorization handler */
@@ -24,20 +23,22 @@ export interface WorkflowApiConfig {
     action: string,
     resource: string,
   ) => Promise<boolean>;
+  /** Error handler */
+  onError?: (error: Error, request: NextRequest) => Promise<NextResponse> | NextResponse;
+  /** Workflow provider instance */
+  provider: WorkflowProvider;
   /** Rate limiting configuration */
   rateLimit?: {
     maxRequests: number;
     windowMs: number;
   };
-  /** Error handler */
-  onError?: (error: Error, request: NextRequest) => Promise<NextResponse> | NextResponse;
 }
 
 export interface ApiRouteContext {
-  user?: { userId: string; roles: string[] };
-  workflowId?: string;
   executionId?: string;
   scheduleId?: string;
+  user?: { userId: string; roles: string[] };
+  workflowId?: string;
 }
 
 /**
@@ -59,8 +60,8 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       const user = await authenticate(request);
       if (!user) {
         return {
-          user: { userId: '', roles: [] },
           error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+          user: { roles: [], userId: '' },
         };
       }
 
@@ -69,8 +70,8 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const isAuthorized = await authorize(user, action, resource);
         if (!isAuthorized) {
           return {
-            user,
             error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
+            user,
           };
         }
       }
@@ -78,7 +79,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       return { user };
     }
 
-    return { user: { userId: 'anonymous', roles: [] } };
+    return { user: { roles: [], userId: 'anonymous' } };
   }
 
   /**
@@ -99,7 +100,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async listWorkflows(request: NextRequest): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'read', 'workflows');
+        const { error, user } = await withAuth(request, 'read', 'workflows');
         if (error) return error;
 
         const url = new URL(request.url);
@@ -124,7 +125,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
         if (error) return error;
 
         // Note: getWorkflow is not available in the current WorkflowProvider interface
@@ -145,7 +146,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async createWorkflow(request: NextRequest): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'create', 'workflows');
+        const { error, user } = await withAuth(request, 'create', 'workflows');
         if (error) return error;
 
         const body = await request.json();
@@ -154,7 +155,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         // Note: createWorkflow is not available in the current WorkflowProvider interface
         const workflowId = workflow.id;
 
-        return NextResponse.json({ workflowId, workflow }, { status: 201 });
+        return NextResponse.json({ workflow, workflowId }, { status: 201 });
       } catch (error) {
         return handleError(error as Error, request);
       }
@@ -169,7 +170,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'execute', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'execute', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const body = await request.json();
@@ -180,8 +181,8 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const workflowDefinition: WorkflowDefinition = {
           id: params.workflowId,
           name: params.workflowId,
-          version: '1.0.0',
           steps: [{ id: 'execute', name: 'Execute', action: 'execute' }],
+          version: '1.0.0',
         };
         const execution = await provider.execute(workflowDefinition, input);
         const executionId = execution.id;
@@ -201,7 +202,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; executionId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const execution = await provider.getExecution(params.executionId);
@@ -224,7 +225,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; executionId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'execute', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'execute', `workflow:${params.workflowId}`);
         if (error) return error;
 
         await provider.cancelExecution(params.executionId);
@@ -244,7 +245,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const url = new URL(request.url);
@@ -254,8 +255,8 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const timeRange =
           startTime && endTime
             ? {
-                start: new Date(startTime),
                 end: new Date(endTime),
+                start: new Date(startTime),
               }
             : undefined;
 
@@ -278,7 +279,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const url = new URL(request.url);
@@ -291,8 +292,8 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const timeRange =
           startTime && endTime
             ? {
-                start: new Date(startTime),
                 end: new Date(endTime),
+                start: new Date(startTime),
               }
             : undefined;
 
@@ -303,9 +304,9 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         return NextResponse.json({
           executions,
           pagination: {
+            hasMore: executions.length === limit,
             limit,
             offset,
-            hasMore: executions.length === limit,
           },
         });
       } catch (error) {
@@ -322,7 +323,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'create', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'create', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const body = await request.json();
@@ -347,7 +348,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; scheduleId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
         if (error) return error;
 
         // This would call a schedule provider method
@@ -373,7 +374,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; scheduleId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const body = await request.json();
@@ -397,7 +398,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; scheduleId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
         if (error) return error;
 
         // This would call a schedule provider method
@@ -418,7 +419,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; scheduleId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
         if (error) return error;
 
         // This would call a schedule provider method
@@ -439,7 +440,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; scheduleId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'delete', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'delete', `workflow:${params.workflowId}`);
         if (error) return error;
 
         // This would call a schedule provider method
@@ -460,7 +461,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'create', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'create', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const body = await request.json();
@@ -485,7 +486,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'read', `workflow:${params.workflowId}`);
         if (error) return error;
 
         // This would call an alert provider method
@@ -507,7 +508,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; alertId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
         if (error) return error;
 
         const body = await request.json();
@@ -531,7 +532,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
       { params }: { params: { workflowId: string; alertId: string } },
     ): Promise<NextResponse> {
       try {
-        const { user, error } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
+        const { error, user } = await withAuth(request, 'update', `workflow:${params.workflowId}`);
         if (error) return error;
 
         // This would call an alert provider method
@@ -552,7 +553,6 @@ export function createWorkflowMiddleware(config: WorkflowApiConfig) {
   const api = createWorkflowApi(config);
 
   return {
-    api,
     /**
      * Middleware function for Next.js
      */
@@ -573,6 +573,7 @@ export function createWorkflowMiddleware(config: WorkflowApiConfig) {
       // Let the route handlers take over
       return;
     },
+    api,
   };
 }
 
@@ -624,12 +625,12 @@ export function createWorkflowWebhookHandler(config: {
 }
 
 export interface WorkflowWebhookEvent {
-  type: 'execution.started' | 'execution.completed' | 'execution.failed' | 'schedule.triggered';
-  workflowId: string;
+  data: unknown;
   executionId?: string;
   scheduleId?: string;
   timestamp: string;
-  data: unknown;
+  type: 'execution.started' | 'execution.completed' | 'execution.failed' | 'schedule.triggered';
+  workflowId: string;
 }
 
 /**
@@ -645,8 +646,8 @@ export function createWorkflowActions(provider: WorkflowProvider) {
       const workflowDefinition: WorkflowDefinition = {
         id: workflowId,
         name: workflowId,
-        version: '1.0.0',
         steps: [{ id: 'execute', name: 'Execute', action: 'execute' }],
+        version: '1.0.0',
       };
       const execution = await provider.execute(workflowDefinition, input as Record<string, any>);
       return execution.id;
@@ -687,7 +688,7 @@ export function createWorkflowActions(provider: WorkflowProvider) {
 export class WorkflowApiError extends Error {
   constructor(
     message: string,
-    public statusCode: number = 500,
+    public statusCode = 500,
     public code?: string,
   ) {
     super(message);
@@ -697,8 +698,8 @@ export class WorkflowApiError extends Error {
   toResponse(): NextResponse {
     return NextResponse.json(
       {
-        error: this.message,
         code: this.code,
+        error: this.message,
       },
       { status: this.statusCode },
     );
@@ -774,6 +775,6 @@ export const ValidationUtils = {
       }
     }
 
-    return { limit: parsedLimit, offset: parsedOffset, errors };
+    return { errors, limit: parsedLimit, offset: parsedOffset };
   },
 };

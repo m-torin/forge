@@ -7,13 +7,19 @@
     ".": "./index.ts",
     "./database": "./database.ts",
     "./playwright": "./playwright.ts",
-    "./auth-helpers": "./auth-helpers.ts"
+    "./auth-helpers": "./auth-helpers.ts",
+    "./e2e": "./e2e/index.ts",
+    "./config/node": "./config/node.ts",
+    "./config/react": "./config/react.ts",
+    "./config/next": "./config/next.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@faker-js/faker": "^9.3.0",
     "@mantine/core": "catalog:",
     "@mantine/notifications": "catalog:",
     "@playwright/test": "catalog:",

@@ -6,8 +6,6 @@ import type {
   BootstrapData,
   EnhancedPostHogProvider,
   ExperimentInfo,
-  FeatureFlagPayload,
-  FeatureFlags,
   PostHogConfig,
 } from '../../shared/types/posthog-types';
 import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
@@ -136,8 +134,6 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
         ...(bootstrap && {
           bootstrap: {
             distinctID: bootstrap.distinctID,
-            featureFlagPayloads: bootstrap.featureFlagPayloads,
-            featureFlags: bootstrap.featureFlags,
           },
         }),
       };
@@ -234,7 +230,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
   }
 
   // Feature Flag Methods
-  async getAllFlags(userId?: string): Promise<FeatureFlags> {
+  async getAllFlags(userId?: string): Promise<Record<string, any>> {
     if (!this.isInitialized || !this.posthogInstance) {
       return {};
     }
@@ -283,7 +279,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     }
   }
 
-  async getFeatureFlagPayload(flag: string, userId?: string): Promise<FeatureFlagPayload | null> {
+  async getFeatureFlagPayload(flag: string, userId?: string): Promise<any | null> {
     if (!this.isInitialized || !this.posthogInstance) {
       return null;
     }
@@ -331,8 +327,6 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
       return {
         distinctID: distinctId,
-        featureFlagPayloads: {},
-        featureFlags: flags,
       };
     } catch (error) {
       return { distinctID: distinctId };

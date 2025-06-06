@@ -47,8 +47,6 @@ export {
   TrackedButton,
   TrackedLink,
   useAnalytics,
-  useFeatureFlag,
-
   // React hooks for client components
   usePageTracking,
   useTrackEvent,

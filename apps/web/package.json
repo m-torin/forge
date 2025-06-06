@@ -20,7 +20,6 @@
     "@hugeicons/react": "^1.0.5",
     "@mantine/core": "catalog:",
     "@mantine/hooks": "catalog:",
-    "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/config": "workspace:*",
     "@repo/database": "workspace:*",

@@ -12,9 +12,6 @@ import {
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { flag, flags } from '@repo/analytics/client';
-import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
-
 const pimModules = [
   {
     color: 'blue',
@@ -67,23 +64,17 @@ const pimModules = [
 ];
 
 export default function PIMOverviewPage() {
-  const { trackPage } = useAnalytics();
-  const { trackView } = useUIAnalytics();
-  const { trackEvent } = useObservability();
-
   // Feature flags
-  const [pimEnabled, setPimEnabled] = useState(false);\n\n  useEffect(() => {\n    flag.evaluate('workflows.product-classification', false).then(result => {\n      setPimEnabled(result.value);\n    });\n  }, []);
+  const [pimEnabled, setPimEnabled] = useState(false);
 
   useEffect(() => {
-    trackPage('pim_overview');
-    trackView('pim_dashboard');
-    trackEvent({
-      action: 'view',
-      category: 'pim',
-      label: 'overview_page',
-      metadata: { pimEnabled },
-    });
-  }, [trackPage, trackView, trackEvent, pimEnabled]);
+    // For now, enable PIM by default since feature flags are not available
+    setPimEnabled(true);
+  }, []);
+
+  useEffect(() => {
+    console.log('Page Viewed: pim_overview', { pimEnabled });
+  }, [pimEnabled]);
 
   if (!pimEnabled) {
     return (
@@ -114,24 +105,21 @@ export default function PIMOverviewPage() {
               <Card
                 href={module.href as any}
                 component={Link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '';
-                }}
                 shadow="sm"
                 withBorder
-                style={{
-                  cursor: 'pointer',
-                  height: '100%',
-                  textDecoration: 'none',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}
                 padding="lg"
                 radius="md"
+                styles={{
+                  root: {
+                    height: '100%',
+                    transition: 'all 0.2s ease',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 'var(--mantine-shadow-md)',
+                    },
+                  },
+                }}
               >
                 <Stack style={{ height: '100%' }} gap="md">
                   <Group justify="space-between">

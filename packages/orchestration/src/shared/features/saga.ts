@@ -6,39 +6,29 @@
 import type { WorkflowProvider } from '../types/index';
 
 export interface SagaStep {
-  /** Unique step identifier */
-  id: string;
-  /** Step name for display */
-  name: string;
   /** The action to execute */
   action: (context: SagaContext) => Promise<unknown>;
   /** The compensation action to execute if saga fails */
   compensation?: (context: SagaContext) => Promise<unknown>;
-  /** Step timeout in milliseconds */
-  timeout?: number;
+  /** Condition to determine if step should execute */
+  condition?: (context: SagaContext) => boolean;
+  /** Unique step identifier */
+  id: string;
+  /** Step metadata */
+  metadata?: Record<string, unknown>;
+  /** Step name for display */
+  name: string;
   /** Retry configuration */
   retry?: {
     maxAttempts: number;
     delay: number;
     backoff?: 'linear' | 'exponential';
   };
-  /** Condition to determine if step should execute */
-  condition?: (context: SagaContext) => boolean;
-  /** Step metadata */
-  metadata?: Record<string, unknown>;
+  /** Step timeout in milliseconds */
+  timeout?: number;
 }
 
 export interface SagaDefinition {
-  /** Unique saga identifier */
-  id: string;
-  /** Saga name */
-  name: string;
-  /** Saga description */
-  description?: string;
-  /** Ordered list of saga steps */
-  steps: SagaStep[];
-  /** Global saga timeout */
-  timeout?: number;
   /** Saga configuration */
   config?: {
     /** Whether to run compensation in reverse order */
@@ -50,40 +40,54 @@ export interface SagaDefinition {
       maxAttempts: number;
       delay: number;
     };
+    /** Success callback */
+    onSuccess?: (context: SagaContext) => void | Promise<void>;
+    /** Failure callback */
+    onFailure?: (context: SagaContext, error: Error) => void | Promise<void>;
   };
+  /** Saga description */
+  description?: string;
+  /** Unique saga identifier */
+  id: string;
   /** Saga metadata */
   metadata?: Record<string, unknown>;
+  /** Saga name */
+  name: string;
+  /** Ordered list of saga steps */
+  steps: SagaStep[];
+  /** Global saga timeout */
+  timeout?: number;
 }
 
 export interface SagaContext {
-  /** Saga execution ID */
-  sagaId: string;
-  /** Execution ID */
-  executionId: string;
   /** Current step ID */
   currentStepId?: string;
-  /** Saga input data */
-  input: unknown;
-  /** Accumulated results from previous steps */
-  results: Record<string, unknown>;
-  /** Saga execution state */
-  state: SagaExecutionState;
-  /** Execution metadata */
-  metadata: Record<string, unknown>;
-  /** Set result for current step */
-  setResult: (key: string, value: unknown) => void;
-  /** Get result from previous step */
-  getResult: (key: string) => unknown;
-  /** Log message */
-  log: (level: 'info' | 'warn' | 'error', message: string, data?: unknown) => void;
   /** Event emitter for saga events */
   events?: {
     emit: (event: string, data?: unknown) => void;
     on: (event: string, listener: (data?: unknown) => void) => void;
     off: (event: string, listener: (data?: unknown) => void) => void;
   };
+  /** Execution ID */
+  executionId: string;
+  /** Get result from previous step */
+  getResult: (key: string) => unknown;
+  /** Saga input data */
+  input: unknown;
+  /** Log message */
+  log: (level: 'info' | 'warn' | 'error', message: string, data?: unknown) => void;
+  /** Execution metadata */
+  metadata: Record<string, unknown>;
+  /** Accumulated results from previous steps */
+  results: Record<string, unknown>;
+  /** Saga execution ID */
+  sagaId: string;
+  /** Set result for current step */
+  setResult: (key: string, value: unknown) => void;
   /** Sleep function for delays */
   sleep?: (milliseconds: number) => Promise<void>;
+  /** Saga execution state */
+  state: SagaExecutionState;
   /** Data store for persistent state */
   store?: {
     get: (key: string) => unknown;
@@ -94,16 +98,12 @@ export interface SagaContext {
 }
 
 export interface SagaExecutionState {
-  /** Current saga status */
-  status: 'pending' | 'running' | 'completed' | 'compensating' | 'compensated' | 'failed';
-  /** Execution start time */
-  startedAt: Date;
+  /** Steps that need compensation */
+  compensationQueue: string[];
   /** Execution completion time */
   completedAt?: Date;
-  /** Current step index */
-  currentStepIndex: number;
   /** Completed steps */
-  completedSteps: Array<{
+  completedSteps: {
     stepId: string;
     status: 'completed' | 'failed' | 'compensated';
     result?: unknown;
@@ -111,9 +111,9 @@ export interface SagaExecutionState {
     startedAt: Date;
     completedAt: Date;
     duration: number;
-  }>;
-  /** Steps that need compensation */
-  compensationQueue: string[];
+  }[];
+  /** Current step index */
+  currentStepIndex: number;
   /** Error information */
   error?: {
     stepId: string;
@@ -121,28 +121,34 @@ export interface SagaExecutionState {
     stack?: string;
   };
   /** Execution logs */
-  logs: Array<{
+  logs: {
     timestamp: Date;
     level: 'info' | 'warn' | 'error';
     message: string;
     stepId?: string;
     data?: unknown;
-  }>;
+  }[];
+  /** Execution metadata */
+  metadata?: Record<string, unknown>;
+  /** Execution start time */
+  startedAt: Date;
+  /** Current saga status */
+  status: 'pending' | 'running' | 'completed' | 'compensating' | 'compensated' | 'failed';
 }
 
 export interface SagaExecution {
+  /** Execution context */
+  context: SagaContext;
   /** Saga execution ID */
   id: string;
-  /** Saga definition ID */
-  sagaId: string;
-  /** Execution state */
-  state: SagaExecutionState;
   /** Input data */
   input: unknown;
   /** Final result */
   result?: unknown;
-  /** Execution context */
-  context: SagaContext;
+  /** Saga definition ID */
+  sagaId: string;
+  /** Execution state */
+  state: SagaExecutionState;
 }
 
 export class SagaOrchestrator {
@@ -177,44 +183,44 @@ export class SagaOrchestrator {
     const executionId = this.generateExecutionId();
 
     const state: SagaExecutionState = {
-      status: 'pending',
-      startedAt: new Date(),
-      currentStepIndex: 0,
-      completedSteps: [],
       compensationQueue: [],
+      completedSteps: [],
+      currentStepIndex: 0,
       logs: [],
+      startedAt: new Date(),
+      status: 'pending',
     };
 
     const context: SagaContext = {
-      sagaId,
       executionId,
-      input,
-      results: {},
-      state,
-      metadata: metadata || {},
-      setResult: (key: string, value: unknown) => {
-        context.results[key] = value;
-      },
       getResult: (key: string) => {
         return context.results[key];
       },
+      input,
       log: (level, message, data) => {
         state.logs.push({
-          timestamp: new Date(),
+          data,
           level,
           message,
           stepId: context.currentStepId,
-          data,
+          timestamp: new Date(),
         });
       },
+      metadata: metadata || {},
+      results: {},
+      sagaId,
+      setResult: (key: string, value: unknown) => {
+        context.results[key] = value;
+      },
+      state,
     };
 
     const execution: SagaExecution = {
       id: executionId,
+      context,
+      input,
       sagaId,
       state,
-      input,
-      context,
     };
 
     this.executions.set(executionId, execution);
@@ -296,8 +302,8 @@ export class SagaOrchestrator {
           if (execution.state.status === 'running') {
             execution.state.status = 'compensating';
             execution.state.error = {
-              stepId: 'global',
               message: 'Saga execution timeout',
+              stepId: 'global',
             };
             execution.context.log('error', 'Saga execution timeout');
             this.compensate(execution);
@@ -330,12 +336,12 @@ export class SagaOrchestrator {
 
           // Record successful step
           execution.state.completedSteps.push({
-            stepId: step.id,
-            status: 'completed',
-            result,
-            startedAt: stepStartTime,
             completedAt: stepCompletedTime,
             duration,
+            result,
+            startedAt: stepStartTime,
+            status: 'completed',
+            stepId: step.id,
           });
 
           // Add step to compensation queue if it has compensation
@@ -350,18 +356,18 @@ export class SagaOrchestrator {
 
           // Record failed step
           execution.state.completedSteps.push({
-            stepId: step.id,
-            status: 'failed',
-            error: error instanceof Error ? error.message : String(error),
-            startedAt: stepStartTime,
             completedAt: stepCompletedTime,
             duration,
+            error: error instanceof Error ? error.message : String(error),
+            startedAt: stepStartTime,
+            status: 'failed',
+            stepId: step.id,
           });
 
           execution.state.error = {
-            stepId: step.id,
             message: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
+            stepId: step.id,
           };
 
           execution.context.log('error', `Step ${step.id} failed`, {
@@ -384,8 +390,8 @@ export class SagaOrchestrator {
       execution.state.status = 'failed';
       execution.state.completedAt = new Date();
       execution.state.error = {
-        stepId: 'global',
         message: error instanceof Error ? error.message : String(error),
+        stepId: 'global',
       };
       execution.context.log('error', 'Saga execution failed', {
         error: error instanceof Error ? error.message : String(error),
@@ -566,6 +572,28 @@ export class SagaBuilder {
   }
 
   /**
+   * Add success callback
+   */
+  onSuccess(callback: (context: SagaContext) => void | Promise<void>): this {
+    if (!this.saga.config) {
+      this.saga.config = {};
+    }
+    this.saga.config.onSuccess = callback;
+    return this;
+  }
+
+  /**
+   * Add failure callback
+   */
+  onFailure(callback: (context: SagaContext, error: Error) => void | Promise<void>): this {
+    if (!this.saga.config) {
+      this.saga.config = {};
+    }
+    this.saga.config.onFailure = callback;
+    return this;
+  }
+
+  /**
    * Build the saga definition
    */
   build(): SagaDefinition {
@@ -635,11 +663,11 @@ export const SagaUtils = {
   createParallelStep(
     id: string,
     name: string,
-    actions: Array<{
+    actions: {
       id: string;
       action: SagaStep['action'];
       compensation?: SagaStep['compensation'];
-    }>,
+    }[],
   ): SagaStep {
     return {
       id,

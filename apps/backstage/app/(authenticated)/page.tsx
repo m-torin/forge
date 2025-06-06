@@ -1,6 +1,20 @@
 'use client';
 
-import { Badge, Card, Container, Grid, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { 
+  Badge, 
+  Card, 
+  Container, 
+  Grid, 
+  Group, 
+  Stack, 
+  Text, 
+  ThemeIcon, 
+  Title,
+  Progress,
+  Paper,
+  SimpleGrid,
+  Skeleton
+} from '@mantine/core';
 import {
   IconChevronRight,
   IconFileText,
@@ -8,10 +22,12 @@ import {
   IconRocket,
   IconSettings,
   IconUsers,
+  IconActivity,
+  IconDatabase,
+  IconBrandStripe,
 } from '@tabler/icons-react';
-import { useEffect } from 'react';
-
-import { useAnalytics, useUIAnalytics } from '@repo/observability';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 const sections = [
   {
@@ -61,26 +77,105 @@ const adminTools = [
   },
 ];
 
+const statsData = [
+  { 
+    title: 'Active Workflows', 
+    value: '24', 
+    change: '+12%', 
+    icon: IconActivity,
+    color: 'blue'
+  },
+  { 
+    title: 'Total Products', 
+    value: '3,456', 
+    change: '+5%', 
+    icon: IconPackage,
+    color: 'green'
+  },
+  { 
+    title: 'Active Users', 
+    value: '892', 
+    change: '+8%', 
+    icon: IconUsers,
+    color: 'violet'
+  },
+  { 
+    title: 'API Calls Today', 
+    value: '12.5k', 
+    change: '-2%', 
+    icon: IconDatabase,
+    color: 'orange'
+  },
+];
+
 export default function HomePage() {
-  const { trackPage } = useAnalytics();
-  const { trackView } = useUIAnalytics();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    trackPage('backstage_dashboard');
-    trackView('admin_dashboard');
-  }, [trackPage, trackView]);
+    console.log('Page Viewed', { page: 'backstage_dashboard' });
+    console.log('Track Event', {
+      action: 'view',
+      category: 'admin_dashboard',
+      label: 'backstage_home',
+    });
+    
+    // Simulate loading
+    setTimeout(() => setLoading(false), 500);
+  }, []);
 
   return (
     <Container py="xl" size="xl">
       <Stack gap="xl">
         <div>
           <Title order={1} mb="md">
-            Backstage
+            Welcome back!
           </Title>
           <Text c="dimmed" size="lg">
-            Comprehensive management platform for workflows, products, content, and users
+            Here's what's happening with your platform today
           </Text>
         </div>
+
+        {/* Stats Cards */}
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
+          {statsData.map((stat) => (
+            <Paper 
+              key={stat.title} 
+              shadow="xs" 
+              p="md" 
+              radius="md"
+              withBorder
+            >
+              {loading ? (
+                <Stack gap="xs">
+                  <Skeleton height={40} width={40} radius="md" />
+                  <Skeleton height={16} width="60%" />
+                  <Skeleton height={24} width="40%" />
+                </Stack>
+              ) : (
+                <Stack gap="xs">
+                  <ThemeIcon size="lg" radius="md" variant="light" color={stat.color}>
+                    <stat.icon size={24} />
+                  </ThemeIcon>
+                  <Text size="sm" c="dimmed" fw={500}>
+                    {stat.title}
+                  </Text>
+                  <Group justify="space-between" align="flex-end">
+                    <Text size="xl" fw={700}>
+                      {stat.value}
+                    </Text>
+                    <Badge 
+                      size="sm" 
+                      variant="light"
+                      color={stat.change.startsWith('+') ? 'green' : 'red'}
+                    >
+                      {stat.change}
+                    </Badge>
+                  </Group>
+                </Stack>
+              )}
+            </Paper>
+          ))}
+        </SimpleGrid>
 
         {/* Main Sections */}
         <div>
@@ -91,24 +186,23 @@ export default function HomePage() {
             {sections.map((section) => (
               <Grid.Col key={section.href} span={{ base: 12, lg: 3, sm: 6 }}>
                 <Card
-                  onClick={() => (window.location.href = section.href)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.12)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '';
-                  }}
+                  component={Link}
+                  href={section.href}
                   shadow="sm"
                   withBorder
-                  style={{
-                    cursor: 'pointer',
-                    height: '100%',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  }}
                   padding="lg"
                   radius="md"
+                  styles={{
+                    root: {
+                      height: '100%',
+                      transition: 'all 0.2s ease',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 'var(--mantine-shadow-md)',
+                      },
+                    },
+                  }}
                 >
                   <Stack style={{ height: '100%' }} gap="md">
                     <Group align="flex-start" justify="space-between">
@@ -154,12 +248,22 @@ export default function HomePage() {
             {adminTools.map((tool) => (
               <Grid.Col key={tool.href} span={{ base: 12, sm: 6 }}>
                 <Card
-                  onClick={() => (window.location.href = tool.href)}
+                  component={Link}
+                  href={tool.href}
                   shadow="sm"
                   withBorder
-                  style={{ cursor: 'pointer' }}
                   padding="md"
                   radius="md"
+                  styles={{
+                    root: {
+                      transition: 'all 0.2s ease',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: 'var(--mantine-shadow-sm)',
+                      },
+                    },
+                  }}
                 >
                   <Group justify="space-between">
                     <div>

@@ -12,7 +12,34 @@ import NcImage from './shared/NcImage/NcImage';
 
 export interface Props {
   className?: string;
+  onAddToCart?: () => void;
+  onCompare?: () => void;
+  onLike?: () => void;
+  onQuickView?: () => void;
+  onShare?: () => void;
+  onWishlist?: () => void;
   product: TProductItem;
+  relatedProducts?: TProductItem[];
+  responsive?: boolean;
+  showAvailability?: boolean;
+  showBundle?: boolean;
+  showCompare?: boolean;
+  showDetailedPricing?: boolean;
+  showEnhancedActions?: boolean;
+  showExtendedInfo?: boolean;
+  showFeatures?: boolean;
+  showImageGallery?: boolean;
+  showInstallments?: boolean;
+  showLoyalty?: boolean;
+  showQuantityControls?: boolean;
+  showRelated?: boolean;
+  showReviews?: boolean;
+  showShippingInfo?: boolean;
+  showSizeGuide?: boolean;
+  showSocialShare?: boolean;
+  showSpecifications?: boolean;
+  showVariantDetails?: boolean;
+  showWishlist?: boolean;
 }
 
 const ProductCardLarge: FC<Props> = ({ className, product }) => {

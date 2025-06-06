@@ -4,16 +4,15 @@
  * Simple tests to verify the step factory system works correctly.
  */
 
-import { describe, test, expect, beforeEach } from 'vitest';
-import { z } from 'zod';
+import { beforeEach, describe, expect, test } from 'vitest';
+
 import {
   createWorkflowStep,
+  defaultStepRegistry,
   StandardWorkflowStep,
   StepFactory,
   StepRegistry,
   StepTemplates,
-  defaultStepFactory,
-  defaultStepRegistry,
 } from '../src/shared/index';
 
 describe('Basic Step Factory', () => {
@@ -30,9 +29,9 @@ describe('Basic Step Factory', () => {
       },
       async (context) => {
         return {
-          success: true,
           output: { result: 'test' },
           performance: context.performance,
+          success: true,
         };
       },
     );
@@ -51,9 +50,9 @@ describe('Basic Step Factory', () => {
       },
       async (context) => {
         return {
-          success: true,
           output: { data: context.input },
           performance: context.performance,
+          success: true,
         };
       },
     );
@@ -94,15 +93,15 @@ describe('Basic Step Factory', () => {
     const step = createWorkflowStep(
       {
         name: 'Registry Step',
-        version: '1.0.0',
         category: 'test',
         tags: ['registry', 'test'],
+        version: '1.0.0',
       },
       async (context) => {
         return {
-          success: true,
           output: {},
           performance: context.performance,
+          success: true,
         };
       },
     );
@@ -127,9 +126,9 @@ describe('Basic Step Factory', () => {
       },
       async (context) => {
         return {
-          success: true,
           output: {},
           performance: context.performance,
+          success: true,
         };
       },
     );
@@ -148,9 +147,9 @@ describe('Basic Step Factory', () => {
       },
       async (context) => {
         return {
-          success: true,
           output: {},
           performance: context.performance,
+          success: true,
         };
       },
     );
@@ -166,21 +165,21 @@ describe('Basic Step Factory', () => {
     const httpStep = createWorkflowStep(
       {
         name: 'HTTP Step',
-        version: '1.0.0',
         category: 'http',
         tags: ['http', 'api'],
+        version: '1.0.0',
       },
-      async () => ({ success: true, output: {}, performance: {} as any }),
+      async () => ({ output: {}, performance: {} as any, success: true }),
     );
 
     const dbStep = createWorkflowStep(
       {
         name: 'DB Step',
-        version: '1.0.0',
         category: 'database',
         tags: ['database', 'sql'],
+        version: '1.0.0',
       },
-      async () => ({ success: true, output: {}, performance: {} as any }),
+      async () => ({ output: {}, performance: {} as any, success: true }),
     );
 
     registry.register(httpStep);

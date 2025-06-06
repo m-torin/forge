@@ -92,7 +92,7 @@ export class PlaywrightProvider implements ScrapingProvider {
           } else {
             waitUntil = 'networkidle';
           }
-          
+
           const response = await page.goto(url, {
             timeout: options.timeout,
             waitUntil,

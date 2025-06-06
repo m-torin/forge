@@ -129,13 +129,7 @@ export type {
 // Provider-specific types
 export type { SegmentConfig, SegmentOptions } from '../shared/types/segment-types';
 
-export type {
-  BootstrapData,
-  FeatureFlagPayload,
-  FeatureFlags,
-  PostHogConfig,
-  PostHogOptions,
-} from '../shared/types/posthog-types';
+export type { BootstrapData, PostHogConfig, PostHogOptions } from '../shared/types/posthog-types';
 
 export type { VercelConfig, VercelOptions } from '../shared/types/vercel-types';
 

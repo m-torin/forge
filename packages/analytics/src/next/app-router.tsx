@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createNextJSClientAnalytics, type NextJSClientAnalyticsManager } from './client';
 
-import type { BootstrapData, FeatureFlags } from '../shared/types/posthog-types';
+import type { BootstrapData } from '../shared/types/posthog-types';
 import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
 
 // Global analytics instance
@@ -78,7 +78,15 @@ export function usePageTracking(options?: {
 
     // Track page view
     globalAnalytics.page(pathname, properties);
-  }, [pathname, searchParams, params, options]);
+  }, [
+    pathname,
+    searchParams,
+    params,
+    options?.skip,
+    options?.trackSearch,
+    options?.trackParams,
+    options?.properties,
+  ]);
 }
 
 /**
@@ -99,40 +107,6 @@ export function useIdentifyUser() {
     if (!globalAnalytics) return;
     globalAnalytics.identify(userId, traits, options);
   }, []);
-}
-
-/**
- * Hook for feature flags (client-side)
- */
-export function useFeatureFlag(flag: string, defaultValue = false): boolean {
-  const [value, setValue] = useState(defaultValue);
-
-  useEffect(() => {
-    if (!globalAnalytics) return;
-
-    globalAnalytics.isFeatureEnabled(flag).then((enabled) => {
-      setValue(enabled);
-    });
-  }, [flag]);
-
-  return value;
-}
-
-/**
- * Hook for all feature flags
- */
-export function useFeatureFlags(): FeatureFlags {
-  const [flags, setFlags] = useState<FeatureFlags>({});
-
-  useEffect(() => {
-    if (!globalAnalytics) return;
-
-    globalAnalytics.getAllFeatureFlags().then((allFlags) => {
-      setFlags(allFlags);
-    });
-  }, []);
-
-  return flags;
 }
 
 /**
@@ -214,11 +188,9 @@ export function AnalyticsProvider({
   }, [config, bootstrapData]);
 
   // Auto page tracking
-  if (autoPageTracking) {
-    usePageTracking(pageTrackingOptions);
-  }
+  usePageTracking(autoPageTracking ? pageTrackingOptions : { skip: true });
 
-  return <>{children}</>;
+  return children as React.ReactElement;
 }
 
 /**
@@ -239,7 +211,7 @@ export function withViewTracking<P extends object>(
         const properties = getProperties ? getProperties(props) : {};
         track(eventName, properties);
       }
-    }, [track, props]);
+    }, [track, eventName, getProperties]);
 
     return <Component {...props} />;
   };

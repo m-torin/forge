@@ -81,15 +81,6 @@ const TabFilters = ({ className }: { className?: string }) => {
   };
 
   // OK
-  const renderXClear = () => {
-    return (
-      <span className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white">
-        <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Cancel01Icon} size={10} />
-      </span>
-    );
-  };
-
-  // OK
   const renderTabsCategories = () => {
     return (
       <FieldPopover
@@ -279,18 +270,40 @@ const TabFilters = ({ className }: { className?: string }) => {
   // OK
   const renderTabIsOnsale = () => {
     return (
-      <div
+      <button
         onClick={() => setIsIsOnSale(!isOnSale)}
         className={`flex cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-sm select-none focus:outline-hidden ${
           isOnSale
             ? 'border-primary-500 bg-primary-50 text-primary-900'
             : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500'
         }`}
+        aria-label="Filter by on sale items"
+        aria-pressed={isOnSale}
+        type="button"
       >
         <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={PercentCircleIcon} size={16} />
         <span className="ms-2 line-clamp-1">On sale</span>
-        {isOnSale && renderXClear()}
-      </div>
+        {isOnSale && (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsIsOnSale(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                setIsIsOnSale(false);
+              }
+            }}
+            role="button"
+            className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white"
+            aria-label="Clear on sale filter"
+            tabIndex={0}
+          >
+            <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Cancel01Icon} size={10} />
+          </span>
+        )}
+      </button>
     );
   };
 

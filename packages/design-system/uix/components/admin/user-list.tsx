@@ -35,7 +35,7 @@ import {
   removeUser,
   setUserRole,
   unbanUser,
-} from '@repo/auth-new/client';
+} from '@repo/auth/client';
 
 interface User {
   banExpires?: string;
@@ -232,7 +232,7 @@ export function UserList({ onCreateUser, onUserSelect }: UserListProps) {
         <Skeleton height={40} />
         <Stack gap="xs">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} height={60} />
+            <Skeleton key={`skeleton-${i}`} height={60} />
           ))}
         </Stack>
       </Stack>

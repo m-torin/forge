@@ -42,9 +42,6 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { flags } from '@repo/analytics/client';
-import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
-
 // Mock feature flag data structure
 interface FeatureFlag {
   category: 'workflows' | 'ui' | 'ai' | 'analytics' | 'auth' | 'payments' | 'email';
@@ -237,12 +234,11 @@ function FlagCard({
   onEdit: (flag: FeatureFlag) => void;
   onDelete: (key: string) => void;
 }) {
-  const { trackClick } = useUIAnalytics();
   const category = flagCategories.find((c) => c.key === flag.category);
 
   const handleToggle = () => {
     onToggle(flag.key);
-    trackClick('feature_flag_toggle', {
+    console.log('Feature Flag Toggled:', {
       category: flag.category,
       flagKey: flag.key,
       newState: !flag.enabled,
@@ -290,7 +286,7 @@ function FlagCard({
               <ActionIcon
                 onClick={() => {
                   onEdit(flag);
-                  trackClick('feature_flag_edit', { flagKey: flag.key });
+                  console.log('Feature Flag Edit Clicked:', { flagKey: flag.key });
                 }}
                 size="sm"
                 variant="subtle"
@@ -303,7 +299,7 @@ function FlagCard({
                 color="red"
                 onClick={() => {
                   onDelete(flag.key);
-                  trackClick('feature_flag_delete', { flagKey: flag.key });
+                  console.log('Feature Flag Delete Clicked:', { flagKey: flag.key });
                 }}
                 size="sm"
                 variant="subtle"
@@ -412,21 +408,16 @@ export default function FeatureFlagsPage() {
   const [createModalOpened, { close: closeCreateModal, open: openCreateModal }] =
     useDisclosure(false);
 
-  // Analytics and observability
-  const { trackPage } = useAnalytics();
-  const { trackClick, trackView } = useUIAnalytics();
-  const { trackEvent } = useObservability();
-
   useEffect(() => {
-    trackPage('feature_flags_management');
-    trackView('feature_flags_page');
-    trackEvent({
+    console.log('Page Viewed', { page: 'feature_flags_management' });
+    console.log('Component Viewed', { component: 'feature_flags_page' });
+    console.log('Track Event', {
       action: 'view',
       category: 'admin',
       label: 'feature_flags',
       metadata: { totalFlags: flags.length },
     });
-  }, [trackPage, trackView, trackEvent, flags.length]);
+  }, [flags.length]);
 
   const filteredFlags = selectedCategory
     ? flags.filter((flag) => flag.category === selectedCategory)
@@ -508,7 +499,7 @@ export default function FeatureFlagsPage() {
               leftSection={<IconPlus size={16} />}
               onClick={() => {
                 openCreateModal();
-                trackClick('create_feature_flag_button');
+                console.log('Create Feature Flag Button Clicked');
               }}
             >
               Create Flag
@@ -523,7 +514,7 @@ export default function FeatureFlagsPage() {
               <Paper
                 onClick={() => {
                   setSelectedCategory(selectedCategory === category.key ? null : category.key);
-                  trackClick('category_filter', { category: category.key });
+                  console.log('Category Filter Clicked', { category: category.key });
                 }}
                 withBorder
                 style={{

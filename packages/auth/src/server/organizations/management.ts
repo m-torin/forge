@@ -32,14 +32,14 @@ export async function addMember(data: {
     });
 
     return {
-      success: result.success || false,
       error: result.error?.message,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Add member error:', error);
     return {
-      success: false,
       error: 'Failed to add member',
+      success: false,
     };
   }
 }
@@ -47,10 +47,7 @@ export async function addMember(data: {
 /**
  * Removes a member from an organization
  */
-export async function removeMember(data: {
-  userId: string;
-  organizationId: string;
-}): Promise<{
+export async function removeMember(data: { userId: string; organizationId: string }): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -63,14 +60,14 @@ export async function removeMember(data: {
     });
 
     return {
-      success: result.success || false,
       error: result.error?.message,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Remove member error:', error);
     return {
-      success: false,
       error: 'Failed to remove member',
+      success: false,
     };
   }
 }
@@ -90,20 +87,20 @@ export async function updateMemberRole(data: {
     const result = await auth.api.updateMemberRole({
       body: {
         organizationId: data.organizationId,
-        userId: data.userId,
         role: data.role,
+        userId: data.userId,
       },
     });
 
     return {
-      success: result.success || false,
       error: result.error?.message,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Update member role error:', error);
     return {
-      success: false,
       error: 'Failed to update member role',
+      success: false,
     };
   }
 }
@@ -124,22 +121,22 @@ export async function createOrganization(data: {
     const result = await auth.api.createOrganization({
       body: {
         name: data.name,
-        slug: data.slug,
         description: data.description,
+        slug: data.slug,
       },
       headers: await headers(),
     });
 
     return {
-      success: result.success || false,
-      organization: result.organization,
       error: result.error?.message,
+      organization: result.organization,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Create organization error:', error);
     return {
-      success: false,
       error: 'Failed to create organization',
+      success: false,
     };
   }
 }
@@ -160,24 +157,24 @@ export async function updateOrganization(data: {
   try {
     const result = await auth.api.updateOrganization({
       body: {
-        organizationId: data.organizationId,
         name: data.name,
-        slug: data.slug,
         description: data.description,
+        organizationId: data.organizationId,
+        slug: data.slug,
       },
       headers: await headers(),
     });
 
     return {
-      success: result.success || false,
-      organization: result.organization,
       error: result.error?.message,
+      organization: result.organization,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Update organization error:', error);
     return {
-      success: false,
       error: 'Failed to update organization',
+      success: false,
     };
   }
 }
@@ -196,14 +193,14 @@ export async function deleteOrganization(organizationId: string): Promise<{
     });
 
     return {
-      success: result.success || false,
       error: result.error?.message,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Delete organization error:', error);
     return {
-      success: false,
       error: 'Failed to delete organization',
+      success: false,
     };
   }
 }
@@ -226,24 +223,24 @@ export async function inviteUser(data: {
     const result = await auth.api.inviteUser({
       body: {
         email: data.email,
+        message: data.message,
         organizationId: data.organizationId,
         role: data.role,
         teamId: data.teamId,
-        message: data.message,
       },
       headers: await headers(),
     });
 
     return {
-      success: result.success || false,
-      invitation: result.invitation,
       error: result.error?.message,
+      invitation: result.invitation,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Invite user error:', error);
     return {
-      success: false,
       error: 'Failed to invite user',
+      success: false,
     };
   }
 }
@@ -262,14 +259,14 @@ export async function cancelInvitation(invitationId: string): Promise<{
     });
 
     return {
-      success: result.success || false,
       error: result.error?.message,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Cancel invitation error:', error);
     return {
-      success: false,
       error: 'Failed to cancel invitation',
+      success: false,
     };
   }
 }
@@ -289,15 +286,15 @@ export async function acceptInvitation(invitationId: string): Promise<{
     });
 
     return {
-      success: result.success || false,
-      organizationId: result.organizationId,
       error: result.error?.message,
+      organizationId: result.organizationId,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Accept invitation error:', error);
     return {
-      success: false,
       error: 'Failed to accept invitation',
+      success: false,
     };
   }
 }
@@ -316,14 +313,14 @@ export async function declineInvitation(invitationId: string): Promise<{
     });
 
     return {
-      success: result.success || false,
       error: result.error?.message,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Decline invitation error:', error);
     return {
-      success: false,
       error: 'Failed to decline invitation',
+      success: false,
     };
   }
 }
@@ -343,15 +340,15 @@ export async function listInvitations(organizationId?: string): Promise<{
     });
 
     return {
-      success: result.success || false,
-      invitations: result.invitations,
       error: result.error?.message,
+      invitations: result.invitations,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('List invitations error:', error);
     return {
-      success: false,
       error: 'Failed to list invitations',
+      success: false,
     };
   }
 }
@@ -371,15 +368,15 @@ export async function getOrganizationMembers(organizationId: string): Promise<{
     });
 
     return {
-      success: result.success || false,
-      members: result.members,
       error: result.error?.message,
+      members: result.members,
+      success: result.success || false,
     };
   } catch (error) {
     console.error('Get organization members error:', error);
     return {
-      success: false,
       error: 'Failed to get organization members',
+      success: false,
     };
   }
 }

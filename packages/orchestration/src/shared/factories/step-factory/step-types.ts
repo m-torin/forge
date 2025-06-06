@@ -5,14 +5,9 @@
  * Extracted from the monolithic step-factory.ts for better modularity.
  */
 
-import type { z } from 'zod';
-import type {
-  WorkflowStep as LegacyWorkflowStep,
-  WorkflowStepExecution,
-  RetryConfig,
-  WorkflowError,
-} from '../../types/workflow';
 import type { CircuitBreakerOptions } from '../../patterns/index';
+import type { RetryConfig, WorkflowError } from '../../types/workflow';
+import type { z } from 'zod';
 
 // ===== SIMPLE FUNCTION-BASED TYPES =====
 
@@ -29,12 +24,12 @@ export interface SimpleWorkflowStep<TInput = any, TOutput = any> {
  * Result from step execution
  */
 export interface StepExecutionResult<TOutput = any> {
-  success: boolean;
-  output?: TOutput;
   error?: WorkflowError;
-  performance: StepPerformanceData;
   metadata?: Record<string, any>;
+  output?: TOutput;
+  performance: StepPerformanceData;
   shouldRetry?: boolean;
+  success: boolean;
 }
 
 // Modern ES2022+ type utilities
@@ -51,8 +46,15 @@ export type ErrorCode =
  * Configuration for step execution behavior
  */
 export interface StepExecutionConfig {
-  /** Retry configuration */
-  retryConfig?: RetryConfig;
+  /** Circuit breaker configuration */
+  circuitBreakerConfig?: CircuitBreakerOptions;
+  /** Concurrency configuration */
+  concurrency?: {
+    /** Maximum concurrent executions */
+    max: number;
+    /** Queue limit */
+    queueLimit?: number;
+  };
   /** Rate limiting configuration */
   rateLimitConfig?: {
     /** Maximum requests per window */
@@ -62,8 +64,8 @@ export interface StepExecutionConfig {
     /** Identifier for rate limiting scope */
     identifier?: string;
   };
-  /** Circuit breaker configuration */
-  circuitBreakerConfig?: CircuitBreakerOptions;
+  /** Retry configuration */
+  retryConfig?: RetryConfig;
   /** Timeout configuration */
   timeout?: {
     /** Execution timeout in milliseconds */
@@ -71,19 +73,14 @@ export interface StepExecutionConfig {
     /** Warning threshold in milliseconds */
     warning?: number;
   };
-  /** Concurrency configuration */
-  concurrency?: {
-    /** Maximum concurrent executions */
-    max: number;
-    /** Queue limit */
-    queueLimit?: number;
-  };
 }
 
 /**
  * Validation configuration for step inputs and outputs
  */
 export interface StepValidationConfig<TInput = any, TOutput = any> {
+  /** Custom validation function */
+  customValidation?: (input: TInput) => Promise<ValidationResult> | ValidationResult;
   /** Input validation schema */
   input?: z.ZodSchema<TInput>;
   /** Output validation schema */
@@ -92,62 +89,48 @@ export interface StepValidationConfig<TInput = any, TOutput = any> {
   validateInput?: boolean;
   /** Whether to validate output */
   validateOutput?: boolean;
-  /** Custom validation function */
-  customValidation?: (input: TInput) => Promise<ValidationResult> | ValidationResult;
 }
 
 /**
  * Result of validation operation
  */
 export interface ValidationResult {
-  /** Whether validation passed */
-  valid: boolean;
-  /** Validation error messages */
-  errors?: string[];
   /** Additional validation context */
   context?: Record<string, any>;
+  /** Validation error messages */
+  errors?: string[];
+  /** Whether validation passed */
+  valid: boolean;
 }
 
 /**
  * Metadata about a workflow step
  */
 export interface StepMetadata {
-  /** Step name */
-  name: string;
-  /** Step description */
-  description?: string;
-  /** Step version */
-  version: string;
-  /** Step category/tags */
-  category?: string;
-  /** Step tags for organization */
-  tags?: string[];
   /** Author information */
   author?: string;
+  /** Step category/tags */
+  category?: string;
   /** Creation timestamp */
   createdAt?: Date;
   /** Whether step is deprecated */
   deprecated?: boolean;
   /** Deprecation message */
   deprecationMessage?: string;
+  /** Step description */
+  description?: string;
+  /** Step name */
+  name: string;
+  /** Step tags for organization */
+  tags?: string[];
+  /** Step version */
+  version: string;
 }
 
 /**
  * Performance monitoring data for step execution
  */
 export interface StepPerformanceData {
-  /** Execution start time */
-  readonly startTime: number;
-  /** Execution end time */
-  endTime?: number;
-  /** Duration in milliseconds */
-  duration?: number;
-  /** Memory usage data */
-  memoryUsage?: {
-    readonly before: NodeJS.MemoryUsage;
-    after?: NodeJS.MemoryUsage;
-    peak?: number;
-  };
   /** CPU usage data */
   cpuUsage?: {
     readonly before: NodeJS.CpuUsage;
@@ -155,6 +138,16 @@ export interface StepPerformanceData {
   };
   /** Custom metrics */
   customMetrics?: ReadonlyMap<string, number>;
+  /** Duration in milliseconds */
+  duration?: number;
+  /** Execution end time */
+  endTime?: number;
+  /** Memory usage data */
+  memoryUsage?: {
+    readonly before: NodeJS.MemoryUsage;
+    after?: NodeJS.MemoryUsage;
+    peak?: number;
+  };
   /** Progress tracking */
   progress?: {
     current: number;
@@ -162,52 +155,54 @@ export interface StepPerformanceData {
     state: ProgressState;
     details?: string;
   };
+  /** Execution start time */
+  readonly startTime: number;
 }
 
 /**
  * Context passed to step execution function
  */
 export interface StepExecutionContext<TInput = any> {
-  /** Step execution ID */
-  readonly executionId: ExecutionId;
-  /** Workflow execution ID */
-  readonly workflowExecutionId: string;
-  /** Step definition */
-  readonly stepDefinition: WorkflowStepDefinition<TInput>;
+  /** Abort signal for cancellation */
+  readonly abortSignal?: AbortSignal;
   /** Current attempt number */
   attempt: number;
+  /** Step execution ID */
+  readonly executionId: ExecutionId;
   /** Input data */
   readonly input: TInput;
-  /** Context from previous steps */
-  readonly previousStepsContext: ReadonlyMap<string, any>;
   /** Execution metadata */
   metadata: ReadonlyMap<string, any>;
   /** Performance monitoring */
   performance: StepPerformanceData;
-  /** Abort signal for cancellation */
-  readonly abortSignal?: AbortSignal;
+  /** Context from previous steps */
+  readonly previousStepsContext: ReadonlyMap<string, any>;
   /** Progress reporter for async generators */
   reportProgress?: (current: number, total: number, details?: string) => Promise<void>;
+  /** Step definition */
+  readonly stepDefinition: WorkflowStepDefinition<TInput>;
+  /** Workflow execution ID */
+  readonly workflowExecutionId: string;
 }
 
 /**
  * Result of step execution
  */
 export interface StepExecutionResult<TOutput = any> {
-  /** Execution success status */
-  success: boolean;
-  /** Output data */
-  output?: TOutput;
+  /** Context to pass to next steps */
+  context?: Record<string, any>;
   /** Error information */
   error?: WorkflowError;
   /** Execution metadata */
   metadata?: Record<string, any>;
+  /** Output data */
+  output?: TOutput;
   /** Performance data */
   performance: StepPerformanceData;
   /** Whether step should be retried on failure */
   shouldRetry?: boolean;
-  /** Context to pass to next steps */
-  context?: Record<string, any>;
+  /** Execution success status */
+  success: boolean;
 }
 
 /**
@@ -221,24 +216,24 @@ export type StepExecutionFunction<TInput = any, TOutput = any> = (
  * Complete workflow step definition with all configuration
  */
 export interface WorkflowStepDefinition<TInput = any, TOutput = any> {
-  /** Unique step identifier */
-  id: string;
-  /** Step metadata */
-  metadata: StepMetadata;
+  /** Cleanup function called after execution */
+  cleanup?: (context: StepExecutionContext<TInput>) => Promise<void> | void;
+  /** Condition function to determine if step should execute */
+  condition?: (context: Record<string, any>) => boolean | Promise<boolean>;
+  /** Dependencies - step IDs that must complete first */
+  dependencies?: string[];
   /** Execution function */
   execute: StepExecutionFunction<TInput, TOutput>;
   /** Execution configuration */
   executionConfig?: StepExecutionConfig;
-  /** Validation configuration */
-  validationConfig?: StepValidationConfig<TInput, TOutput>;
-  /** Dependencies - step IDs that must complete first */
-  dependencies?: string[];
-  /** Condition function to determine if step should execute */
-  condition?: (context: Record<string, any>) => boolean | Promise<boolean>;
+  /** Unique step identifier */
+  id: string;
+  /** Step metadata */
+  metadata: StepMetadata;
   /** Whether step can be skipped on failure */
   optional?: boolean;
-  /** Cleanup function called after execution */
-  cleanup?: (context: StepExecutionContext<TInput>) => Promise<void> | void;
+  /** Validation configuration */
+  validationConfig?: StepValidationConfig<TInput, TOutput>;
 }
 
 /**
@@ -249,10 +244,10 @@ export interface StepFactoryConfig {
   defaultExecutionConfig?: StepExecutionConfig;
   /** Default validation configuration */
   defaultValidationConfig?: StepValidationConfig;
-  /** Whether to enable performance monitoring */
-  enablePerformanceMonitoring?: boolean;
   /** Whether to enable detailed logging */
   enableDetailedLogging?: boolean;
+  /** Whether to enable performance monitoring */
+  enablePerformanceMonitoring?: boolean;
   /** Custom error handlers */
   errorHandlers?: Map<string, (error: Error, context: StepExecutionContext) => Promise<void>>;
 }

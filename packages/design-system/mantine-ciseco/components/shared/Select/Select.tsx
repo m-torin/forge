@@ -16,4 +16,5 @@ const Select: FC<SelectProps> = ({ children, className = '', sizeClass = 'h-11',
   );
 };
 
+export { Select };
 export default Select;

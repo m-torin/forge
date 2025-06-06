@@ -68,7 +68,7 @@ const MockSidebar = () => {
         <Group h="100%" px="md">
           <Burger hiddenFrom="sm" onClick={toggle} opened={opened} size="sm" />
           <Breadcrumbs separator="›">
-            <Anchor href="#" size="sm">
+            <Anchor href="/docs/building-your-application" size="sm">
               Building Your Application
             </Anchor>
             <Text size="sm">Data Fetching</Text>

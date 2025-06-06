@@ -52,4 +52,4 @@ export function createNextConfig(options: NextConfigOptions = {}): UserConfig {
   };
 }
 
-export default createNextConfig;
+export default createNextConfig();

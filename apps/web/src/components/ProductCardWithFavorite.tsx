@@ -19,8 +19,8 @@ interface ProductCardWithFavoriteProps {
 export function ProductCardWithFavorite({
   className,
   data,
-  listId,
-  position,
+  listId: _listId,
+  position: _position,
 }: ProductCardWithFavoriteProps) {
   const { isFavorite } = useProductFavorite(data.id || "");
 

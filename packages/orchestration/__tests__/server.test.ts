@@ -1,50 +1,51 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 import { createWorkflowEngine } from '../src/server';
+
+import { createUpstashWorkflowConfig } from './fixtures';
+
 import type {
+  ProviderHealthReport,
   WorkflowDefinition,
   WorkflowExecution,
-  ProviderHealthReport,
 } from '../src/shared/types';
 
 // Mock dependencies
-vi.mock('@upstash/workflow', () => ({
-  serve: vi.fn(),
-  Client: vi.fn(() => ({
-    run: vi.fn(),
-    cancel: vi.fn(),
-    getResult: vi.fn(),
-  })),
+vi.mock('@upstash/workflow/nextjs', () => ({
+  serve: vi.fn().mockReturnValue({
+    GET: vi.fn(),
+    POST: vi.fn(),
+  }),
 }));
 
 vi.mock('@upstash/qstash', () => ({
   Client: vi.fn(() => ({
-    publishJSON: vi.fn(),
-    schedule: vi.fn(),
+    messages: {
+      delete: vi.fn().mockResolvedValue(true),
+    },
+    publishJSON: vi.fn().mockResolvedValue({ messageId: 'msg_123' }),
+    schedules: {
+      create: vi.fn().mockResolvedValue({ scheduleId: 'schedule_123' }),
+      delete: vi.fn().mockResolvedValue(true),
+    },
   })),
 }));
 
 vi.mock('@upstash/redis', () => ({
   Redis: vi.fn(() => ({
-    set: vi.fn(),
-    get: vi.fn(),
-    del: vi.fn(),
+    del: vi.fn().mockResolvedValue(1),
+    get: vi.fn().mockResolvedValue(null),
+    keys: vi.fn().mockResolvedValue([]),
+    ping: vi.fn().mockResolvedValue('PONG'),
+    set: vi.fn().mockResolvedValue('OK'),
   })),
 }));
 
 describe('Workflow Engine', () => {
   let engine: ReturnType<typeof createWorkflowEngine>;
   const mockConfig = {
-    providers: [
-      {
-        name: 'test-provider',
-        type: 'upstash-workflow' as const,
-        config: {
-          workflowUrl: 'http://localhost:8080',
-          qstashToken: 'test-token',
-        },
-      },
-    ],
-    defaultProvider: 'test-provider',
+    defaultProvider: 'test-upstash-workflow',
+    providers: [createUpstashWorkflowConfig()],
     enableHealthChecks: true,
     enableMetrics: true,
   };
@@ -75,7 +76,7 @@ describe('Workflow Engine', () => {
     test('should register providers during initialization', async () => {
       const spy = vi.spyOn(engine.manager, 'registerProvider');
       await engine.initialize();
-      expect(spy).toHaveBeenCalledWith('test-provider', expect.any(Object));
+      expect(spy).toHaveBeenCalledWith('test-upstash-workflow', expect.any(Object));
     });
   });
 
@@ -83,8 +84,14 @@ describe('Workflow Engine', () => {
     const mockWorkflow: WorkflowDefinition = {
       id: 'test-workflow',
       name: 'Test Workflow',
+      steps: [
+        {
+          id: 'step-1',
+          name: 'Test Step',
+          action: 'test-action',
+        },
+      ],
       version: '1.0.0',
-      steps: [],
     };
 
     beforeEach(async () => {
@@ -94,10 +101,10 @@ describe('Workflow Engine', () => {
     test('should execute workflow successfully', async () => {
       const mockExecution: WorkflowExecution = {
         id: 'exec_123',
-        workflowId: 'test-workflow',
-        status: 'running',
         startedAt: new Date(),
+        status: 'running',
         steps: [],
+        workflowId: 'test-workflow',
       };
 
       vi.spyOn(engine.manager, 'executeWorkflow').mockResolvedValue(mockExecution);
@@ -107,8 +114,25 @@ describe('Workflow Engine', () => {
     });
 
     test('should handle execution errors', async () => {
-      vi.spyOn(engine.manager, 'executeWorkflow').mockRejectedValue(new Error('Execution failed'));
-      await expect(engine.executeWorkflow(mockWorkflow, {})).rejects.toThrow('Execution failed');
+      // Mock the manager's executeWorkflow to throw an error after validation
+      const executeSpy = vi.spyOn(engine.manager, 'executeWorkflow');
+      executeSpy.mockRejectedValue(new Error('Execution failed'));
+
+      // Create a valid workflow that passes validation
+      const validWorkflow = {
+        id: 'test-workflow',
+        name: 'Test Workflow',
+        steps: [
+          {
+            id: 'step-1',
+            name: 'Test Step',
+            action: 'test-action',
+          },
+        ],
+        version: '1.0.0',
+      };
+
+      await expect(engine.executeWorkflow(validWorkflow, {})).rejects.toThrow('Execution failed');
     });
   });
 
@@ -120,12 +144,12 @@ describe('Workflow Engine', () => {
     test('should get execution status', async () => {
       const mockStatus: WorkflowExecution = {
         id: 'exec_123',
-        workflowId: 'test-workflow',
-        status: 'completed',
-        startedAt: new Date(),
         completedAt: new Date(),
-        steps: [],
         output: { success: true },
+        startedAt: new Date(),
+        status: 'completed',
+        steps: [],
+        workflowId: 'test-workflow',
       };
 
       vi.spyOn(engine.manager, 'getExecution').mockResolvedValue(mockStatus);
@@ -138,18 +162,18 @@ describe('Workflow Engine', () => {
       const mockExecutions: WorkflowExecution[] = [
         {
           id: 'exec_1',
-          workflowId: 'test-workflow',
-          status: 'completed',
-          startedAt: new Date(),
           completedAt: new Date(),
+          startedAt: new Date(),
+          status: 'completed',
           steps: [],
+          workflowId: 'test-workflow',
         },
         {
           id: 'exec_2',
-          workflowId: 'test-workflow',
-          status: 'running',
           startedAt: new Date(),
+          status: 'running',
           steps: [],
+          workflowId: 'test-workflow',
         },
       ];
 
@@ -172,20 +196,40 @@ describe('Workflow Engine', () => {
     test('should schedule workflow', async () => {
       const mockSchedule = 'schedule_123';
 
-      vi.spyOn(engine.manager, 'scheduleWorkflow').mockResolvedValue(mockSchedule);
+      const scheduleSpy = vi.spyOn(engine.manager, 'scheduleWorkflow');
+      scheduleSpy.mockResolvedValue(mockSchedule);
 
-      const result = await engine.scheduleWorkflow({
+      // First mock the validateWorkflowDefinition to avoid errors
+      const validateSpy = vi.spyOn(
+        await import('../src/shared/utils/validation'),
+        'validateWorkflowDefinition',
+      );
+      validateSpy.mockImplementation((def) => def as any);
+
+      const workflowWithSchedule = {
         id: 'test-workflow',
         name: 'Test Workflow',
-        version: '1.0.0',
-        steps: [],
         schedule: {
           cron: '0 0 * * *',
           enabled: true,
         },
-      });
+        steps: [
+          {
+            id: 'step-1',
+            name: 'Test Step',
+            action: 'test-action',
+          },
+        ],
+        version: '1.0.0',
+      };
+
+      const result = await engine.scheduleWorkflow(workflowWithSchedule);
 
       expect(result).toBe(mockSchedule);
+      expect(scheduleSpy).toHaveBeenCalledWith(
+        workflowWithSchedule,
+        undefined, // providerName parameter
+      );
     });
   });
 
@@ -199,13 +243,13 @@ describe('Workflow Engine', () => {
         {
           name: 'test-provider',
           type: 'upstash-workflow',
-          status: 'healthy',
-          responseTime: 100,
-          timestamp: new Date(),
           details: {
-            version: '1.0.0',
             uptime: 3600,
+            version: '1.0.0',
           },
+          responseTime: 100,
+          status: 'healthy',
+          timestamp: new Date(),
         },
       ];
 
@@ -219,13 +263,13 @@ describe('Workflow Engine', () => {
       const mockStatus = {
         defaultProvider: 'test-provider',
         providerCount: 1,
+        abortController: 'test-controller',
+        executionMetrics: null,
         healthChecksEnabled: true,
         initialized: true,
         metricsEnabled: true,
         stepFactoryEnabled: true,
         stepRegistry: null,
-        executionMetrics: null,
-        abortController: 'test-controller',
       };
 
       vi.spyOn(engine.manager, 'getStatus').mockReturnValue(mockStatus);

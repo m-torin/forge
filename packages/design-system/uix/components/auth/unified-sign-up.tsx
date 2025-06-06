@@ -2,10 +2,9 @@
 
 import { Button, Checkbox, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { createClientAnalytics, track, flag, flags } from '@repo/analytics/client';
-import { signInWithGitHub, signInWithGoogle, signUp } from '@repo/auth-new/client';
+import { signInWithGitHub, signInWithGoogle, signUp } from '@repo/auth/client';
 
 import { AuthForm } from './auth-form';
 
@@ -13,62 +12,11 @@ export const UnifiedSignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [authFlags, setAuthFlags] = useState<any>(null);
 
-  // Feature flag hooks for individual auth methods
-  const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
-  const [githubOAuthEnabled, setGithubOAuthEnabled] = useState(false);
-
-  useEffect(() => {
-    // Load auth flags for analytics
-    const loadAuthFlags = async () => {
-      try {
-        const analytics = await createClientAnalytics({
-          providers: {
-            posthog: {
-              apiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY!,
-              config: {
-                api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-              },
-            },
-          },
-        });
-
-        // Evaluate individual flags
-        const googleOAuth = await flag.evaluate('auth.oauth.google', false);
-        const githubOAuth = await flag.evaluate('auth.oauth.github', false);
-        const magicLink = await flag.evaluate('auth.magic-link', false);
-        const passkey = await flag.evaluate('auth.passkey', false);
-        const twoFactorOptional = await flag.evaluate('auth.two-factor-optional', false);
-        const twoFactorRequired = await flag.evaluate('auth.two-factor-required', false);
-
-        setGoogleOAuthEnabled(googleOAuth.value);
-        setGithubOAuthEnabled(githubOAuth.value);
-        setAuthFlags({
-          googleOAuthEnabled: googleOAuth.value,
-          githubOAuthEnabled: githubOAuth.value,
-          magicLinkEnabled: magicLink.value,
-          passkeyEnabled: passkey.value,
-          twoFactorOptional: twoFactorOptional.value,
-          twoFactorRequired: twoFactorRequired.value,
-        });
-
-        // Track auth methods availability for sign-up
-        await analytics.emit(track('auth_methods_loaded', {
-          githubOAuthEnabled: githubOAuth.value,
-          googleOAuthEnabled: googleOAuth.value,
-          magicLinkEnabled: magicLink.value,
-          passkeyEnabled: passkey.value,
-          source: 'unified_sign_up',
-          twoFactorEnabled: twoFactorOptional.value || twoFactorRequired.value,
-        }));
-      } catch (error) {
-        console.error('Failed to load auth flags:', error);
-      }
-    };
-
-    loadAuthFlags();
-  }, []);
+  // For now, enable all auth methods by default
+  // TODO: Integrate with feature flag system when available
+  const googleOAuthEnabled = true;
+  const githubOAuthEnabled = true;
 
   const form = useForm({
     validate: {
@@ -92,69 +40,31 @@ export const UnifiedSignUp = () => {
     setIsLoading(true);
     setError(null);
 
-    analytics.capture('sign_up_attempted', {
-      authMethodsAvailable: {
-        github: githubOAuthEnabled,
-        google: googleOAuthEnabled,
-        passkey: authFlags?.passkeyEnabled || false,
-        twoFactor: authFlags?.twoFactorOptional || authFlags?.twoFactorRequired || false,
-      },
-      featureFlagsLoaded: !!authFlags,
-      hasAcceptedTerms: values.acceptTerms,
-      method: 'email',
-      source: 'unified_sign_up',
-    });
+    // TODO: Add analytics tracking when analytics instance is available
 
     try {
-      await signUp.email({
+      await signUp({
         name: values.name,
         email: values.email,
         password: values.password,
       });
 
-      analytics.capture('sign_up_completed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-        },
-        method: 'email',
-        source: 'unified_sign_up',
-        userName: values.name,
-      });
-
-      analytics.identify(values.email, {
-        name: values.name,
-        created_at: new Date().toISOString(),
-        signup_method: 'email',
-      });
+      // TODO: Track successful sign-up and identify user
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign up';
       setError(errorMessage);
 
-      analytics.capture('sign_up_failed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-        },
-        error: errorMessage,
-        method: 'email',
-        source: 'unified_sign_up',
-      });
+      // TODO: Track failed sign-up
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSocialSignUp = async (provider: 'google' | 'github') => {
-    // Check if provider is enabled via feature flag
+    // Check if provider is enabled
     const isProviderEnabled = provider === 'google' ? googleOAuthEnabled : githubOAuthEnabled;
 
     if (!isProviderEnabled) {
-      analytics.capture('sign_up_blocked', {
-        method: provider,
-        reason: 'feature_flag_disabled',
-        source: 'unified_sign_up',
-      });
       setError(`${provider} sign-up is currently unavailable`);
       return;
     }
@@ -162,47 +72,22 @@ export const UnifiedSignUp = () => {
     setIsSocialLoading(provider);
     setError(null);
 
-    analytics.capture('sign_up_attempted', {
-      authMethodsAvailable: {
-        github: githubOAuthEnabled,
-        google: googleOAuthEnabled,
-        passkey: authFlags?.passkeyEnabled || false,
-        twoFactor: authFlags?.twoFactorOptional || authFlags?.twoFactorRequired || false,
-      },
-      featureFlagsLoaded: !!authFlags,
-      method: provider,
-      source: 'unified_sign_up',
-    });
+    // TODO: Add analytics tracking when analytics instance is available
 
     try {
       if (provider === 'google') {
-        await signInWithGoogle?.({ providerId: 'google' });
+        await signInWithGoogle?.();
       } else {
-        await signInWithGitHub?.({ providerId: 'github' });
+        await signInWithGitHub?.();
       }
 
-      analytics.capture('sign_up_completed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-        },
-        method: provider,
-        source: 'unified_sign_up',
-      });
+      // TODO: Track successful sign-up
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : `Failed to sign up with ${provider}`;
       setError(errorMessage);
 
-      analytics.capture('sign_up_failed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-        },
-        error: errorMessage,
-        method: provider,
-        source: 'unified_sign_up',
-      });
+      // TODO: Track failed sign-up
     } finally {
       setIsSocialLoading(null);
     }

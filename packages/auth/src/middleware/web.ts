@@ -5,8 +5,8 @@
 import { getSessionCookie } from 'better-auth/cookies';
 import { NextResponse } from 'next/server';
 
-import type { NextRequest } from 'next/server';
 import type { MiddlewareOptions } from '../shared/types';
+import type { NextRequest } from 'next/server';
 
 const defaultProtectedRoutes = ['/account', '/dashboard', '/settings', '/admin'];
 
@@ -22,15 +22,13 @@ const defaultPublicRoutes = [
 
 const isProtectedRoute = (pathname: string, protectedPaths?: string[]) => {
   const routes = protectedPaths || defaultProtectedRoutes;
-  
+
   // Remove locale prefix if present (e.g., /en/account -> /account)
   const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(-[A-Z]{2})?/, '');
 
   // Check if the pathname starts with any protected route
   // This handles both the route itself and any sub-routes
-  return routes.some(
-    (route) => pathname.startsWith(route) || pathWithoutLocale.startsWith(route),
-  );
+  return routes.some((route) => pathname.startsWith(route) || pathWithoutLocale.startsWith(route));
 };
 
 const isPublicRoute = (pathname: string, publicPaths: string[]) => {
@@ -38,7 +36,7 @@ const isPublicRoute = (pathname: string, publicPaths: string[]) => {
   if (pathname === '/') {
     return true;
   }
-  
+
   const allPublicPaths = [...defaultPublicRoutes, ...publicPaths];
   return allPublicPaths.some((route) => pathname.startsWith(route));
 };
@@ -51,16 +49,18 @@ const isApiRoute = (pathname: string) => {
  * Edge-compatible middleware using cookie-only approach
  * Works in both Edge and Node.js runtime environments
  */
-export function createWebMiddleware(options: MiddlewareOptions & {
-  protectedPaths?: string[];
-  apiKeyHeaders?: string[];
-} = {}) {
+export function createWebMiddleware(
+  options: MiddlewareOptions & {
+    protectedPaths?: string[];
+    apiKeyHeaders?: string[];
+  } = {},
+) {
   const {
-    requireAuth = true,
-    redirectTo = '/sign-in',
-    publicPaths = [],
-    protectedPaths,
     apiKeyHeaders = ['x-api-key', 'authorization'],
+    protectedPaths,
+    publicPaths = [],
+    redirectTo = '/sign-in',
+    requireAuth = true,
   } = options;
 
   return async function webMiddleware(request: NextRequest) {
@@ -91,12 +91,12 @@ export function createWebMiddleware(options: MiddlewareOptions & {
       if (!sessionCookie && requireAuth) {
         // No authentication at all for API route
         return NextResponse.json(
-          { 
+          {
             error: 'Unauthorized',
             message: 'Please provide a valid API key or authentication.',
             supportedMethods: {
               'API Key': apiKeyHeaders.map((h) => `${h}: your-api-key`),
-              'Session': 'Include session cookie with request',
+              Session: 'Include session cookie with request',
             },
           },
           { status: 401 },

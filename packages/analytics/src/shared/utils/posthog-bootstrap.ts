@@ -3,7 +3,7 @@
  * Enables consistent feature flag delivery from server to client
  */
 
-import type { BootstrapData, FeatureFlags, PostHogCookie } from '../types/posthog-types';
+import type { BootstrapData, PostHogCookie } from '../types/posthog-types';
 
 /**
  * Generate a unique distinct ID (compatible with PostHog format)
@@ -82,15 +82,9 @@ export function getDistinctIdFromCookies(
 /**
  * Create bootstrap data for PostHog client initialization
  */
-export function createBootstrapData(
-  distinctId: string,
-  featureFlags?: FeatureFlags,
-  featureFlagPayloads?: Record<string, any>,
-): BootstrapData {
+export function createBootstrapData(distinctId: string): BootstrapData {
   return {
     distinctID: distinctId,
-    featureFlagPayloads: featureFlagPayloads || {},
-    featureFlags: featureFlags || {},
   };
 }
 
@@ -130,24 +124,12 @@ export function setCachedBootstrapData(distinctId: string, data: BootstrapData):
 export function mergeBootstrapData(...bootstrapData: BootstrapData[]): BootstrapData {
   const merged: BootstrapData = {
     distinctID: '',
-    featureFlagPayloads: {},
-    featureFlags: {},
   };
 
   for (const data of bootstrapData) {
     // Use the first non-empty distinct ID
     if (!merged.distinctID && data.distinctID) {
       merged.distinctID = data.distinctID;
-    }
-
-    // Merge feature flags
-    if (data.featureFlags) {
-      Object.assign(merged.featureFlags || {}, data.featureFlags);
-    }
-
-    // Merge feature flag payloads
-    if (data.featureFlagPayloads) {
-      Object.assign(merged.featureFlagPayloads || {}, data.featureFlagPayloads);
     }
   }
 
@@ -158,13 +140,7 @@ export function mergeBootstrapData(...bootstrapData: BootstrapData[]): Bootstrap
  * Validate bootstrap data structure
  */
 export function validateBootstrapData(data: any): data is BootstrapData {
-  return (
-    data &&
-    typeof data === 'object' &&
-    typeof data.distinctID === 'string' &&
-    (data.featureFlags === undefined || typeof data.featureFlags === 'object') &&
-    (data.featureFlagPayloads === undefined || typeof data.featureFlagPayloads === 'object')
-  );
+  return data && typeof data === 'object' && typeof data.distinctID === 'string';
 }
 
 /**
@@ -198,7 +174,5 @@ export function deserializeBootstrapData(serialized: string): BootstrapData | nu
 export function createMinimalBootstrapData(distinctId?: string): BootstrapData {
   return {
     distinctID: distinctId || generateDistinctId(),
-    featureFlagPayloads: {},
-    featureFlags: {},
   };
 }

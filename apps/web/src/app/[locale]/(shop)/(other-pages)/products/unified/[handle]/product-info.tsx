@@ -97,14 +97,20 @@ export function ProductInfo({
 
       {/* ---------- 3 VARIANTS AND SIZE LIST ----------  */}
       <div className="flex flex-col gap-y-8">
-        <ProductOptions options={options?.map(opt => ({
-          name: opt.name,
-          optionValues: opt.values?.map(value => ({ name: value, swatch: null })) || []
-        }))} />
-        <ProductSizeOption options={options?.map(opt => ({
-          name: opt.name,
-          optionValues: opt.values?.map(value => ({ name: value, swatch: null })) || []
-        }))} />
+        <ProductOptions
+          options={options?.map((opt) => ({
+            name: opt.name,
+            optionValues:
+              opt.values?.map((value) => ({ name: value, swatch: null })) || [],
+          }))}
+        />
+        <ProductSizeOption
+          options={options?.map((opt) => ({
+            name: opt.name,
+            optionValues:
+              opt.values?.map((value) => ({ name: value, swatch: null })) || [],
+          }))}
+        />
       </div>
 
       {/* ---------- 4 SELLER OPTIONS ----------  */}

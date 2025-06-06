@@ -11,6 +11,6 @@ function ButtonPrimary({ className = '', ...props }: ButtonPrimaryProps) {
       {...props}
     />
   );
-};
+}
 
 export default ButtonPrimary;

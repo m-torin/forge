@@ -11,7 +11,7 @@ export function useResponsive() {
 // Hook for responsive grid layouts
 export function useResponsiveGrid() {
   const { device } = useGuestActions();
-  const { width } = device.viewport;
+  const { width: _width } = device.viewport;
 
   const columns = device.isMobile
     ? 1
@@ -37,7 +37,7 @@ export function useResponsiveGrid() {
 // Hook for responsive product loading
 export function useResponsiveProductLoad() {
   const { device, preferences } = useGuestActions();
-  const { viewport } = device;
+  const { viewport: _viewport } = device;
 
   // Adjust based on viewport and view mode
   const isGridView = preferences.get("viewMode") === "grid";

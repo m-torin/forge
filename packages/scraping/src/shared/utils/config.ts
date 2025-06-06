@@ -279,7 +279,7 @@ export function validateConfig(config: ScrapingConfig): { valid: boolean; errors
   for (const [name, providerConfig] of Object.entries(config.providers)) {
     const result = validateProviderConfig(name, providerConfig);
     if (!result.valid) {
-      errors.push(...result.errors.map(e => `${name}: ${e}`));
+      errors.push(...result.errors.map((e) => `${name}: ${e}`));
     }
   }
 

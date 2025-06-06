@@ -1,4 +1,4 @@
-import { AuthProvider } from '@repo/auth-new/provider';
+import { AuthProvider } from '@repo/auth/components';
 
 import { TooltipProvider } from './components/ui/tooltip';
 import { MantineProvider } from './providers/mantine-provider';

@@ -2,10 +2,10 @@
 
 ## Overview
 
-The `@repo/ai` package implements a modern AI integration system built on top of **Vercel AI SDK
-as the primary framework**, with support for custom providers when needed. It follows the
-established pattern from `@repo/analytics-new` while leveraging the power and maintenance benefits
-of Vercel's AI SDK.
+The `@repo/ai` package implements a modern AI integration system built on top of **Vercel AI SDK as
+the primary framework**, with support for custom providers when needed. It follows the established
+pattern from `@repo/analytics-new` while leveraging the power and maintenance benefits of Vercel's
+AI SDK.
 
 ## Key Design Principles
 

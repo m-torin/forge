@@ -1,154 +1,246 @@
 'use client';
 
-import { Alert, Box, Button, Card, Group, Stack, Tabs, Text, Title } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
-import { IconUserCheck } from '@tabler/icons-react';
-import React, { useState } from 'react';
+import { Container, SimpleGrid, Stack, Avatar, Group, Text, Badge } from '@mantine/core';
+import { 
+  IconUsers, 
+  IconUserPlus, 
+  IconUserCheck,
+  IconUserX,
+  IconBuilding,
+  IconKey,
+  IconActivity,
+  IconCalendar
+} from '@tabler/icons-react';
+import { useState, useEffect } from 'react';
+import { PageHeader } from '../components/page-header';
+import { StatsCard } from '../components/stats-card';
+import { DataTable } from '../components/data-table';
 
-import { stopImpersonating } from '@repo/auth-new';
-import { CreateUserDialog, UserDetails, UserList } from '@repo/design-system/uix';
+// Mock data for demo
+const mockUsers = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    organization: 'Acme Corp',
+    role: 'Admin',
+    status: 'active',
+    lastActive: '2024-01-10T10:30:00',
+    createdAt: '2023-12-01T00:00:00',
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane.smith@example.com',
+    organization: 'Tech Solutions',
+    role: 'Member',
+    status: 'active',
+    lastActive: '2024-01-10T09:15:00',
+    createdAt: '2023-12-15T00:00:00',
+  },
+  {
+    id: '3',
+    name: 'Bob Wilson',
+    email: 'bob.wilson@example.com',
+    organization: 'Acme Corp',
+    role: 'Viewer',
+    status: 'inactive',
+    lastActive: '2024-01-05T14:20:00',
+    createdAt: '2023-11-20T00:00:00',
+  },
+  {
+    id: '4',
+    name: 'Alice Brown',
+    email: 'alice.brown@example.com',
+    organization: 'StartupXYZ',
+    role: 'Admin',
+    status: 'pending',
+    lastActive: null,
+    createdAt: '2024-01-08T00:00:00',
+  },
+];
 
-interface User {
-  banExpires?: string;
-  banned: boolean;
-  banReason?: string;
-  createdAt: string;
-  email: string;
-  emailVerified: boolean;
-  id: string;
-  name: string;
-  role: string;
-}
+const statsData = [
+  {
+    title: 'Total Users',
+    value: '892',
+    icon: IconUsers,
+    color: 'blue',
+    change: { value: 12 },
+  },
+  {
+    title: 'Active Users',
+    value: '756',
+    icon: IconUserCheck,
+    color: 'green',
+    progress: { value: 85, label: 'of total users' },
+  },
+  {
+    title: 'New This Month',
+    value: '124',
+    icon: IconUserPlus,
+    color: 'violet',
+    change: { value: 8 },
+  },
+  {
+    title: 'Organizations',
+    value: '43',
+    icon: IconBuilding,
+    color: 'orange',
+    change: { value: 3 },
+  },
+];
 
 export default function UsersPage() {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Check if currently impersonating - this would ideally come from the session
-  React.useEffect(() => {
-    // Check if there's an active impersonation session
-    const checkImpersonation = async () => {
-      // This would normally check the session for impersonatedBy field
-      // For now, we'll use a simple flag
-      const impersonating = sessionStorage.getItem('impersonating') === 'true';
-      setIsImpersonating(impersonating);
-    };
-
-    checkImpersonation();
+  useEffect(() => {
+    // Simulate data loading
+    setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  const handleUserSelect = (user: User) => {
-    setSelectedUser(user);
-  };
-
-  const handleUserCreate = () => {
-    setRefreshKey((prev) => prev + 1);
-    setSelectedUser(null);
-  };
-
-  const handleUserUpdate = () => {
-    setRefreshKey((prev) => prev + 1);
-    if (selectedUser) {
-      // Refresh the selected user data
-      setSelectedUser(null);
-    }
-  };
-
-  const handleStopImpersonating = async () => {
-    try {
-      const response = await stopImpersonating();
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to stop impersonating');
-      }
-      sessionStorage.removeItem('impersonating');
-      notifications.show({
-        color: 'green',
-        message: 'Stopped impersonating user',
-        title: 'Success',
-      });
-      window.location.href = '/guests';
-    } catch (error) {
-      console.error('Failed to stop impersonating:', error);
-      notifications.show({ color: 'red', message: 'Failed to stop impersonating', title: 'Error' });
-    }
-  };
+  const columns = [
+    {
+      key: 'name',
+      label: 'User',
+      sortable: true,
+      render: (value: string, row: any) => (
+        <Group gap="sm">
+          <Avatar size="sm" radius="xl">
+            {value.split(' ').map((n: string) => n[0]).join('')}
+          </Avatar>
+          <div>
+            <Text size="sm" fw={500}>{value}</Text>
+            <Text size="xs" c="dimmed">{row.email}</Text>
+          </div>
+        </Group>
+      ),
+    },
+    {
+      key: 'organization',
+      label: 'Organization',
+      sortable: true,
+    },
+    {
+      key: 'role',
+      label: 'Role',
+      sortable: true,
+      render: (value: string) => (
+        <Badge variant="light" color={value === 'Admin' ? 'red' : value === 'Member' ? 'blue' : 'gray'}>
+          {value}
+        </Badge>
+      ),
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      render: (value: string) => (
+        <Badge
+          variant="dot"
+          color={value === 'active' ? 'green' : value === 'inactive' ? 'gray' : 'yellow'}
+        >
+          {value}
+        </Badge>
+      ),
+    },
+    {
+      key: 'lastActive',
+      label: 'Last Active',
+      sortable: true,
+      render: (value: string) => {
+        if (!value) return <Text size="sm" c="dimmed">Never</Text>;
+        const date = new Date(value);
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        if (hours < 1) return <Text size="sm">Just now</Text>;
+        if (hours < 24) return <Text size="sm">{hours}h ago</Text>;
+        const days = Math.floor(hours / 24);
+        return <Text size="sm">{days}d ago</Text>;
+      },
+    },
+  ];
 
   return (
-    <Stack gap="lg">
-      <div>
-        <Title order={1}>User Management</Title>
-        <Text c="dimmed">Manage user accounts, roles, and permissions</Text>
-      </div>
-
-      {isImpersonating && (
-        <Alert
-          color="yellow"
-          icon={<IconUserCheck size={16} />}
-          styles={{
-            body: { flex: 1 },
-            root: { alignItems: 'center', display: 'flex' },
+    <Container py="xl" size="xl">
+      <Stack gap="xl">
+        <PageHeader
+          title="User Management"
+          description="Manage users, organizations, and access permissions"
+          badge={{ label: 'Beta', color: 'blue' }}
+          actions={{
+            primary: {
+              label: 'Invite User',
+              icon: <IconUserPlus size={16} />,
+              onClick: () => console.log('Invite user'),
+            },
+            secondary: [
+              {
+                label: 'Export',
+                onClick: () => console.log('Export users'),
+              },
+            ],
           }}
-          variant="light"
-        >
-          <Group style={{ width: '100%' }} justify="space-between">
-            <Text>You are currently impersonating a user</Text>
-            <Button onClick={handleStopImpersonating} size="xs" variant="outline">
-              Stop Impersonating
-            </Button>
-          </Group>
-        </Alert>
-      )}
+          onRefresh={() => setLoading(true)}
+        />
 
-      <Tabs defaultValue="list">
-        <Tabs.List>
-          <Tabs.Tab value="list">User List</Tabs.Tab>
-          {selectedUser && <Tabs.Tab value="details">User Details</Tabs.Tab>}
-        </Tabs.List>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
+          {statsData.map((stat) => (
+            <StatsCard
+              key={stat.title}
+              {...stat}
+              loading={loading}
+              onClick={() => console.log(`View ${stat.title}`)}
+            />
+          ))}
+        </SimpleGrid>
 
-        <Box mt="md">
-          <Tabs.Panel value="list">
-            <Card shadow="sm" withBorder radius="md">
-              <Card.Section withBorder inheritPadding py="xs">
-                <Group justify="space-between">
-                  <div>
-                    <Title order={3}>All Users</Title>
-                    <Text c="dimmed" size="sm">
-                      View and manage all registered users
-                    </Text>
-                  </div>
-                  <CreateUserDialog onSuccess={handleUserCreate} />
-                </Group>
-              </Card.Section>
-
-              <Card.Section inheritPadding py="md">
-                <UserList
-                  key={refreshKey}
-                  onCreateUser={handleUserCreate}
-                  onUserSelect={handleUserSelect}
-                />
-              </Card.Section>
-            </Card>
-          </Tabs.Panel>
-
-          {selectedUser && (
-            <Tabs.Panel value="details">
-              <Card shadow="sm" withBorder radius="md">
-                <Card.Section withBorder inheritPadding py="xs">
-                  <Title order={3}>{selectedUser.name}</Title>
-                  <Text c="dimmed" size="sm">
-                    {selectedUser.email}
-                  </Text>
-                </Card.Section>
-
-                <Card.Section inheritPadding py="md">
-                  <UserDetails onUpdate={handleUserUpdate} user={selectedUser} />
-                </Card.Section>
-              </Card>
-            </Tabs.Panel>
-          )}
-        </Box>
-      </Tabs>
-    </Stack>
+        <DataTable
+          data={mockUsers}
+          columns={columns}
+          loading={loading}
+          selectable
+          searchPlaceholder="Search users..."
+          emptyState={{
+            title: 'No users found',
+            description: 'Invite your first user to get started',
+            icon: IconUsers,
+          }}
+          actions={{
+            onView: (row) => console.log('View user', row),
+            onEdit: (row) => console.log('Edit user', row),
+            onDelete: (row) => console.log('Delete user', row),
+            custom: [
+              {
+                label: 'Reset Password',
+                icon: <IconKey size={14} />,
+                onClick: (row) => console.log('Reset password', row),
+              },
+              {
+                label: 'View Activity',
+                icon: <IconActivity size={14} />,
+                onClick: (row) => console.log('View activity', row),
+              },
+            ],
+          }}
+          bulkActions={[
+            {
+              label: 'Delete',
+              color: 'red',
+              onClick: (rows) => console.log('Delete users', rows),
+            },
+            {
+              label: 'Export',
+              onClick: (rows) => console.log('Export users', rows),
+            },
+          ]}
+          pagination={{
+            total: mockUsers.length,
+            pageSize: 10,
+          }}
+        />
+      </Stack>
+    </Container>
   );
 }

@@ -109,7 +109,7 @@ describe('Cart and Checkout Emitters', () => {
         action: 'added',
         product: baseProduct,
       };
-      const options = { timestamp: new Date(), context: { traits: { userId: 'user123' } } };
+      const options = { context: { traits: { userId: 'user123' } }, timestamp: new Date() };
 
       const result = cartUpdated(properties, options);
 

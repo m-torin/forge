@@ -59,7 +59,6 @@
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
     "./server/next": "./src/server-next.ts",
-    "./types": "./src/shared/types/types.ts",
-    "./flags": "./src/shared/feature-flags/index.ts"
+    "./types": "./src/shared/types/types.ts"
   }
 }

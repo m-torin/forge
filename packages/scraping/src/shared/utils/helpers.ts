@@ -321,7 +321,6 @@ export class Queue<T> {
   }
 }
 
-
 /**
  * Check if URL is allowed by robots.txt rules
  * This is a simplified implementation

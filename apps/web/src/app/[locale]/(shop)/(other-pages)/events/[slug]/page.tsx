@@ -94,7 +94,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale: _locale, slug } = await params;
   const event = await getEventBySlug(slug);
 
   if (!event) {
@@ -132,7 +132,7 @@ export default async function EventPage({
   params: Promise<{ slug: string; locale: string }>;
   searchParams: Promise<{ page?: string; sort?: string; filter?: string }>;
 }) {
-  const { locale, slug } = await params;
+  const { locale: _locale, slug } = await params;
   const { page = "1" } = await searchParams;
 
   const event = await getEventBySlug(slug);
@@ -170,7 +170,7 @@ export default async function EventPage({
     offers: {
       validFrom: new Date().toISOString(),
       "@type": "Offer",
-      url: `https://ciseco.com/${locale}/events/${event.slug}`,
+      url: `https://ciseco.com/${_locale}/events/${event.slug}`,
       availability: "https://schema.org/InStock",
       priceCurrency: "USD",
     },
@@ -183,9 +183,9 @@ export default async function EventPage({
   });
 
   const breadcrumbSchema = structuredData.breadcrumbs([
-    { name: "Home", url: `/${locale}` },
-    { name: "Events", url: `/${locale}/events` },
-    { name: event.name, url: `/${locale}/events/${event.slug}` },
+    { name: "Home", url: `/${_locale}` },
+    { name: "Events", url: `/${_locale}/events` },
+    { name: event.name, url: `/${_locale}/events/${event.slug}` },
   ]);
 
   return (
@@ -197,8 +197,8 @@ export default async function EventPage({
           <div>
             <Breadcrumb
               breadcrumbs={[
-                { id: 1, name: "Home", href: `/${locale}` },
-                { id: 2, name: "Events", href: `/${locale}/events` },
+                { id: 1, name: "Home", href: `/${_locale}` },
+                { id: 2, name: "Events", href: `/${_locale}/events` },
               ]}
               currentPage={event.name}
             />
@@ -306,7 +306,7 @@ export default async function EventPage({
               <div className="mt-12 flex justify-center">
                 <CompletePagination
                   totalPages={totalPages}
-                  baseUrl={`/${locale}/events/${slug}`}
+                  baseUrl={`/${_locale}/events/${slug}`}
                   currentPage={currentPage}
                 />
               </div>

@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { createClientAnalytics, track } from '@repo/analytics/client';
-import { resetPassword } from '@repo/auth-new/client';
+import { resetPassword } from '@repo/auth/client';
 
 import { AuthForm } from './auth-form';
 
@@ -80,20 +79,12 @@ export const ResetPasswordForm = ({
     setIsLoading(true);
     setError(null);
 
-    analytics.capture('password_reset_attempted', {
-      hasToken: !!token,
-    });
-
     try {
-      await resetPassword({
-        newPassword: values.password,
-        token,
-      });
+      await resetPassword(token, values.password);
 
       setSuccess(true);
-      analytics.capture('password_reset_completed');
 
-      // Redirect after success
+      // Redirect to sign in after successful reset
       setTimeout(() => {
         if (onSignInNavigate) {
           onSignInNavigate();
@@ -104,10 +95,6 @@ export const ResetPasswordForm = ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to reset password';
       setError(errorMessage);
-
-      analytics.capture('password_reset_failed', {
-        error: errorMessage,
-      });
     } finally {
       setIsLoading(false);
     }

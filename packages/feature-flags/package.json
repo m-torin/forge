@@ -1,0 +1,37 @@
+{
+  "name": "@repo/feature-flags",
+  "version": "0.1.0",
+  "description": "Feature flags implementation using Vercel Flags SDK",
+  "type": "module",
+  "main": "./src/server.ts",
+  "exports": {
+    ".": "./src/shared/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./types": "./src/shared/types.ts",
+    "./middleware": "./src/middleware/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "@vercel/edge-config": "^1.4.0",
+    "@vercel/flags": "catalog:",
+    "nanoid": "catalog:",
+    "next": "catalog:",
+    "posthog-js": "^1.249.2",
+    "posthog-node": "^4.18.0",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  }
+}

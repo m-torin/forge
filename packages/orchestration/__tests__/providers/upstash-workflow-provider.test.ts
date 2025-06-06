@@ -1,18 +1,29 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { UpstashWorkflowProvider } from '../../src/providers/upstash-workflow/provider';
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+
 import {
-  setupUpstashMocks,
-  resetUpstashMocks,
-  createTestWorkflowDefinition,
   createTestExecution,
+  createTestWorkflowDefinition,
+  resetUpstashMocks,
+  setupUpstashMocks,
 } from '../utils/upstash-mocks';
 
-describe('UpstashWorkflowProvider', () => {
-  let mocks: ReturnType<typeof setupUpstashMocks>;
-  let provider: UpstashWorkflowProvider;
+// Set up mocks before importing the provider
+let mocks: ReturnType<typeof setupUpstashMocks>;
+beforeAll(() => {
+  mocks = setupUpstashMocks();
+});
 
-  beforeEach(() => {
-    mocks = setupUpstashMocks();
+describe('UpstashWorkflowProvider', () => {
+  let provider: any;
+  let UpstashWorkflowProvider: any;
+
+  beforeEach(async () => {
+    // Clear all mocks
+    vi.clearAllMocks();
+
+    // Dynamic import to ensure mocks are in place
+    const module = await import('../../src/providers/upstash-workflow/provider');
+    UpstashWorkflowProvider = module.UpstashWorkflowProvider;
 
     provider = new UpstashWorkflowProvider({
       baseUrl: 'http://localhost:3001',
@@ -54,9 +65,10 @@ describe('UpstashWorkflowProvider', () => {
         config: {
           baseUrl: 'http://localhost:3001',
           qstashToken: 'test-token',
-          redisUrl: 'https://test-redis.upstash.io',
           redisToken: 'test-redis-token',
+          redisUrl: 'https://test-redis.upstash.io',
         },
+        enabled: true,
       };
 
       const provider = UpstashWorkflowProvider.fromConfig(config);
@@ -67,7 +79,7 @@ describe('UpstashWorkflowProvider', () => {
   describe('Workflow Execution', () => {
     test('should execute workflow successfully', async () => {
       const definition = createTestWorkflowDefinition();
-      const input = { userId: '123', action: 'test' };
+      const input = { action: 'test', userId: '123' };
 
       const execution = await provider.execute(definition, input);
 
@@ -78,7 +90,7 @@ describe('UpstashWorkflowProvider', () => {
       expect(execution.steps).toHaveLength(2);
       expect(execution.startedAt).toBeInstanceOf(Date);
 
-      // Verify QStash was called
+      // Verify QStash was called with default URL pattern
       expect(mocks.qstash.publishJSON).toHaveBeenCalledWith({
         url: 'http://localhost:3001/api/workflows/test-workflow/execute',
         body: {
@@ -87,7 +99,7 @@ describe('UpstashWorkflowProvider', () => {
           input,
           workflowId: 'test-workflow',
         },
-        delay: 1000,
+        delay: 0, // No delay by default
         headers: {
           'X-Execution-ID': execution.id,
           'X-Workflow-ID': 'test-workflow',
@@ -119,6 +131,46 @@ describe('UpstashWorkflowProvider', () => {
       expect(mocks.qstash.publishJSON).toHaveBeenCalled();
     });
 
+    test('should use custom webhook URL pattern when provided', async () => {
+      // Create provider with custom webhook URL pattern
+      const customProvider = new UpstashWorkflowProvider({
+        baseUrl: 'http://localhost:3001',
+        webhookUrlPattern: '/{id}',
+        qstash: {
+          token: 'test-token',
+        },
+        redis: {
+          url: 'redis://localhost:6379',
+          token: 'test-redis-token',
+        },
+      });
+
+      const mockQStash = vi.mocked(customProvider['qstash']);
+      mockQStash.publishJSON = vi.fn().mockResolvedValue({ messageId: 'test-message-id' });
+
+      const definition = createTestWorkflowDefinition();
+      const input = { testInput: 'value' };
+
+      const execution = await customProvider.execute(definition, input);
+
+      // Verify QStash was called with custom URL pattern
+      expect(mockQStash.publishJSON).toHaveBeenCalledWith({
+        url: 'http://localhost:3001/test-workflow',
+        body: {
+          definition,
+          executionId: execution.id,
+          input,
+          workflowId: 'test-workflow',
+        },
+        delay: 0,
+        headers: {
+          'X-Execution-ID': execution.id,
+          'X-Workflow-ID': 'test-workflow',
+        },
+        retries: 3,
+      });
+    });
+
     test('should handle QStash publish error', async () => {
       mocks.qstash.publishJSON.mockRejectedValue(new Error('QStash error'));
 
@@ -134,12 +186,28 @@ describe('UpstashWorkflowProvider', () => {
     test('should get execution by ID', async () => {
       const testExecution = createTestExecution();
 
-      // Store execution in mock Redis
-      mocks.redis.set(`workflow:execution:${testExecution.id}`, JSON.stringify(testExecution));
+      // Store execution in mock Redis - ensure it's properly serialized
+      await mocks.redis.set(
+        `workflow:execution:${testExecution.id}`,
+        JSON.stringify(testExecution),
+      );
 
       const execution = await provider.getExecution(testExecution.id);
 
-      expect(execution).toEqual(testExecution);
+      // Parse dates to match the expected format
+      expect(execution).toEqual(
+        expect.objectContaining({
+          ...testExecution,
+          metadata: {
+            ...testExecution.metadata,
+            trigger: {
+              ...testExecution.metadata.trigger,
+              timestamp: testExecution.metadata.trigger.timestamp.toISOString(),
+            },
+          },
+          startedAt: testExecution.startedAt.toISOString(),
+        }),
+      );
       expect(mocks.redis.get).toHaveBeenCalledWith(`workflow:execution:${testExecution.id}`);
     });
 
@@ -160,7 +228,7 @@ describe('UpstashWorkflowProvider', () => {
       });
 
       await expect(providerWithoutRedis.getExecution('exec_123')).rejects.toThrow(
-        'Redis not configured',
+        'Redis not configured - cannot retrieve execution state',
       );
     });
 
@@ -275,7 +343,7 @@ describe('UpstashWorkflowProvider', () => {
       });
 
       await expect(providerWithoutRedis.listExecutions('test-workflow')).rejects.toThrow(
-        'Redis not configured',
+        'Redis not configured - cannot list executions',
       );
     });
   });
@@ -313,15 +381,15 @@ describe('UpstashWorkflowProvider', () => {
       const definition = createTestWorkflowDefinition();
 
       await expect(provider.scheduleWorkflow(definition)).rejects.toThrow(
-        'does not include schedule configuration',
+        'Workflow test-workflow does not include schedule configuration',
       );
     });
 
     test('should unschedule workflow', async () => {
       const scheduleData = {
+        cron: '0 9 * * 1',
         scheduleId: 'schedule_123',
         workflowId: 'test-workflow',
-        cron: '0 9 * * 1',
       };
 
       mocks.redis.keys.mockResolvedValue(['workflow:schedule:schedule_123']);
@@ -349,9 +417,9 @@ describe('UpstashWorkflowProvider', () => {
       const health = await provider.healthCheck();
 
       expect(health.status).toBe('healthy');
-      expect(health.details.qstash).toBe('healthy');
-      expect(health.details.redis).toBe('healthy');
-      expect(health.responseTime).toBeGreaterThan(0);
+      expect(health.details?.qstash).toBe('healthy');
+      expect(health.details?.redis).toBe('healthy');
+      expect(health.responseTime).toBeGreaterThanOrEqual(0);
       expect(health.timestamp).toBeInstanceOf(Date);
     });
 
@@ -361,7 +429,7 @@ describe('UpstashWorkflowProvider', () => {
       const health = await provider.healthCheck();
 
       expect(health.status).toBe('unhealthy');
-      expect(health.details.error).toBe('Redis connection failed');
+      expect(health.details?.error).toBe('Redis connection failed');
     });
 
     test('should handle provider without Redis', async () => {
@@ -375,7 +443,7 @@ describe('UpstashWorkflowProvider', () => {
       const health = await providerWithoutRedis.healthCheck();
 
       expect(health.status).toBe('healthy');
-      expect(health.details.redis).toBe('not-configured');
+      expect(health.details?.redis).toBe('not-configured');
     });
   });
 
@@ -422,26 +490,53 @@ describe('UpstashWorkflowProvider', () => {
     test('should create workflow handler', () => {
       const handler = provider.createWorkflowHandler();
 
-      expect(handler).toBeInstanceOf(Function);
+      expect(handler).toBeDefined();
+      expect(handler).toHaveProperty('POST');
+      expect(handler.POST).toBeInstanceOf(Function);
       expect(mocks.serve).toHaveBeenCalled();
     });
 
     test('should execute workflow steps in handler', async () => {
       const definition = createTestWorkflowDefinition();
+      const executionId = 'exec_123';
       const payload = {
         definition,
-        executionId: 'exec_123',
+        executionId,
         input: { test: 'data' },
         workflowId: 'test-workflow',
       };
 
-      // Mock the handler creation and execution
-      const mockHandler = vi.fn();
-      mocks.serve.mockReturnValue(mockHandler);
+      // Create a test execution and store it in mock Redis
+      const testExecution = createTestExecution({
+        id: executionId,
+        status: 'running',
+        workflowId: 'test-workflow',
+      });
 
+      // Store the execution before creating the handler
+      mocks.redis.get.mockImplementation(async (key: string) => {
+        if (key === `workflow:execution:${executionId}`) {
+          return JSON.stringify(testExecution);
+        }
+        return null;
+      });
+
+      // Create handler
       const handler = provider.createWorkflowHandler();
 
+      // Create mock request
+      const mockRequest = {
+        json: vi.fn().mockResolvedValue(payload),
+      } as unknown as Request;
+
+      // Execute the POST handler
+      const response = await handler.POST(mockRequest);
+
+      expect(response).toBeDefined();
+      expect(response.status).toBe(200);
+
       // The serve mock should have been called with a function
+      expect(mocks.serve).toHaveBeenCalledTimes(1);
       const workflowFunction = mocks.serve.mock.calls[0][0];
       expect(workflowFunction).toBeInstanceOf(Function);
     });

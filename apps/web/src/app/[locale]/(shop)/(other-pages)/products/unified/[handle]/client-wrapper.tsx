@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { analytics } from "@repo/analytics-legacy";
-
 import { LayoutSwitcher } from "./layout-switcher";
 import { ChildrenLayout } from "./layouts/children";
 import { GalleryLayout } from "./layouts/gallery";
@@ -32,7 +30,7 @@ export function ClientWrapper({
   // Track product view on mount
   useEffect(() => {
     if (product?.id) {
-      analytics.capture("Product Viewed", {
+      console.log("Product Viewed", {
         url: window.location.href,
         brand: "Your Brand Name",
         category: "general",

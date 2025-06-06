@@ -52,7 +52,7 @@ describe('Product Emitters', () => {
 
     it('should accept emitter options', () => {
       const properties = { query: 'laptops' };
-      const options = { timestamp: new Date(), context: { traits: { userId: 'user123' } } };
+      const options = { context: { traits: { userId: 'user123' } }, timestamp: new Date() };
       const result = productSearched(properties, options);
 
       expect(result.timestamp).toBe(options.timestamp);

@@ -43,7 +43,7 @@ pnpm add @repo/auth-new
 
 ### Client-side
 
-```typescript
+```tsx
 import { useAuth, signIn, signOut } from '@repo/auth-new/client';
 
 function LoginComponent() {
@@ -66,7 +66,7 @@ function LoginComponent() {
 
 ### Server-side
 
-```typescript
+```tsx
 import { getCurrentUser, getSession } from '@repo/auth-new/server';
 
 // In server components
@@ -94,7 +94,7 @@ export async function GET() {
 
 ### Next.js Integration
 
-```typescript
+```tsx
 // app/layout.tsx
 import { AuthProvider } from '@repo/auth-new/client-next';
 
@@ -102,9 +102,7 @@ export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
@@ -122,7 +120,7 @@ export const config = {
 
 ### Protected Routes
 
-```typescript
+```tsx
 import { ProtectedRoute } from '@repo/auth-new/components';
 
 function App() {
@@ -136,7 +134,7 @@ function App() {
 
 ### Organization Management
 
-```typescript
+```tsx
 import { useOrganization, createOrganization } from '@repo/auth-new/client';
 
 function OrganizationManager() {
@@ -152,13 +150,13 @@ function OrganizationManager() {
         value={activeOrganization?.id}
         onChange={(e) => setActiveOrganization(e.target.value)}
       >
-        {organizations.map(org => (
-          <option key={org.id} value={org.id}>{org.name}</option>
+        {organizations.map((org) => (
+          <option key={org.id} value={org.id}>
+            {org.name}
+          </option>
         ))}
       </select>
-      <button onClick={() => handleCreateOrg('New Org')}>
-        Create Organization
-      </button>
+      <button onClick={() => handleCreateOrg('New Org')}>Create Organization</button>
     </div>
   );
 }

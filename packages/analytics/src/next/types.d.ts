@@ -175,13 +175,6 @@ export interface UseAnalyticsReturn {
   track: (event: string, properties?: any) => void;
 }
 
-export interface UseFeatureFlagsReturn<T extends Record<string, boolean>> {
-  error?: Error;
-  flags: Partial<T>;
-  isLoading: boolean;
-  refetch: () => Promise<void>;
-}
-
 // Provider props types
 export interface AnalyticsProviderProps {
   autoPageTracking?: boolean;

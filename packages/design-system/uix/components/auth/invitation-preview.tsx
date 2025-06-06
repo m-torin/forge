@@ -3,7 +3,7 @@
 import { Alert, Badge, Button, Card, Center, Loader, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useState } from 'react';
 
-import { getInvitation } from '@repo/auth-new/client';
+import { getInvitation } from '@repo/auth/client';
 
 interface InvitationPreviewProps {
   invitationId: string;

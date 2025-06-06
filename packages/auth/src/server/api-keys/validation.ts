@@ -6,11 +6,11 @@ import 'server-only';
 import { headers } from 'next/headers';
 import { type NextRequest } from 'next/server';
 
+import { checkApiKeyPermissions } from '../../shared/api-keys/permissions';
 import { auth } from '../auth';
-import { hasPermission, checkApiKeyPermissions } from '../../shared/api-keys/permissions';
 
-import type { 
-  ApiKeyValidationResult, 
+import type {
+  ApiKeyValidationResult,
   PermissionCheck,
   RateLimitResult,
 } from '../../shared/api-keys/types';
@@ -29,7 +29,7 @@ export async function validateApiKey(
 
     // Check for API key in headers (support multiple header formats)
     let apiKey = requestHeaders.get('x-api-key');
-    
+
     if (!apiKey) {
       const authHeader = requestHeaders.get('authorization');
       if (authHeader?.startsWith('Bearer ')) {
@@ -62,10 +62,7 @@ export async function validateApiKey(
 
     // Check permissions if provided
     if (permissions && result.key?.permissions) {
-      const hasRequiredPermissions = checkApiKeyPermissions(
-        result.key.permissions,
-        permissions
-      );
+      const hasRequiredPermissions = checkApiKeyPermissions(result.key.permissions, permissions);
 
       if (!hasRequiredPermissions) {
         return {
@@ -79,11 +76,11 @@ export async function validateApiKey(
       isValid: true,
       keyData: {
         id: result.key.id,
-        organizationId: result.key.organizationId,
         name: result.key.name,
-        permissions: result.key.permissions,
         expiresAt: result.key.expiresAt ? new Date(result.key.expiresAt) : undefined,
         lastUsedAt: result.key.lastUsedAt ? new Date(result.key.lastUsedAt) : undefined,
+        organizationId: result.key.organizationId,
+        permissions: result.key.permissions,
       },
     };
   } catch (error) {
@@ -116,7 +113,7 @@ export async function requireAuth(request: NextRequest): Promise<AuthSession | n
       }
 
       // Otherwise, we need to handle API key-only requests
-      // This is a simplified approach - in production you might want to 
+      // This is a simplified approach - in production you might want to
       // create a more sophisticated API key session system
       return null;
     } catch {
@@ -185,9 +182,9 @@ export async function validateApiKeyWithRateLimit(
   // For now, we'll return success with placeholder rate limit data
   const rateLimit: RateLimitResult = {
     allowed: true,
+    limit: 100,
     remaining: 100,
     resetTime: new Date(Date.now() + 60000), // 1 minute from now
-    limit: 100,
   };
 
   return {
@@ -202,7 +199,7 @@ export async function validateApiKeyWithRateLimit(
 export function extractApiKeyFromHeaders(headers: Headers): string | null {
   // Check x-api-key header
   let apiKey = headers.get('x-api-key');
-  
+
   if (apiKey) {
     return apiKey;
   }
@@ -215,6 +212,6 @@ export function extractApiKeyFromHeaders(headers: Headers): string | null {
 
   // Check other common API key headers
   apiKey = headers.get('api-key') || headers.get('x-api-token');
-  
+
   return apiKey;
 }

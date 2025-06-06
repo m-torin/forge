@@ -20,7 +20,7 @@ import { notifications } from '@mantine/notifications';
 import { IconCopy, IconEye, IconEyeOff, IconRefresh, IconTrash } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 
-import { deleteApiKey, listApiKeys } from '@repo/auth-new/client';
+import { deleteApiKey, listApiKeys } from '@repo/auth/client';
 
 interface ApiKey {
   createdAt: string;
@@ -149,7 +149,7 @@ export function ApiKeyList({
         <Skeleton width={200} height={48} />
         <Stack gap="xs">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} height={64} />
+            <Skeleton key={`skeleton-${i}`} height={64} />
           ))}
         </Stack>
       </Stack>

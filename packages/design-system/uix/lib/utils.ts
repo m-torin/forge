@@ -2,9 +2,18 @@ import { notifications } from '@mantine/notifications';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { parseError } from '@repo/observability/error';
-
 import type { ClassValue } from 'clsx';
+
+// Simple error parsing utility
+const parseError = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return 'An unknown error occurred';
+};
 
 export const cn = (...inputs: ClassValue[]): string => twMerge(clsx(inputs));
 

@@ -17,12 +17,54 @@ import CurrLangDropdown from './CurrLangDropdown';
 import HamburgerBtnMenu from './HamburgerBtnMenu';
 import MegaMenuPopover from './MegaMenuPopover';
 import SearchBtnPopover from './SearchBtnPopover';
+
 export interface HeaderProps {
+  announcementText?: string;
+  breadcrumbs?: {
+    label: string;
+    href: string;
+  }[];
+  cartCount?: number;
+  currentLanguage?: string;
   currentLocale?: string;
   hasBorderBottom?: boolean;
+  languages?: {
+    code: string;
+    name: string;
+  }[];
+  logo?: React.ReactNode;
+  megaMenu?: boolean;
+  menuItems?: {
+    label: string;
+    children?: {
+      label: string;
+      href: string;
+    }[];
+  }[];
+  notificationCount?: number;
+  onCartClick?: () => void;
+  onMenuClick?: () => void;
+  onMenuToggle?: () => void;
+  onSearch?: (query: string) => void;
+  searchSuggestions?: string[];
+  showCart?: boolean;
+  showNotifications?: boolean;
+  showSearch?: boolean;
+  showThemeToggle?: boolean;
+  sticky?: boolean;
+  user?: {
+    name: string;
+    email: string;
+    avatar?: string;
+  };
 }
 
-const Header: FC<HeaderProps> = async ({ currentLocale, hasBorderBottom = true }) => {
+const Header: FC<HeaderProps> = async ({
+  currentLocale,
+  hasBorderBottom = true,
+  onCartClick,
+  onMenuClick,
+}) => {
   const megamenu = await getNavMegaMenu();
   const dropdownCategories = await getHeaderDropdownCategories();
   const currencies = await getCurrencies();
@@ -47,7 +89,7 @@ const Header: FC<HeaderProps> = async ({ currentLocale, hasBorderBottom = true }
 
           <div className="flex flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5">
             <div className="block lg:hidden">
-              <HamburgerBtnMenu />
+              <HamburgerBtnMenu onClick={onMenuClick} />
             </div>
             <MegaMenuPopover featuredCollection={featuredCollections[0]} megamenu={megamenu} />
             <CurrLangDropdown
@@ -58,7 +100,7 @@ const Header: FC<HeaderProps> = async ({ currentLocale, hasBorderBottom = true }
             />
             <SearchBtnPopover />
             <AvatarDropdown />
-            <CartBtn />
+            <CartBtn onClick={onCartClick} />
           </div>
         </div>
       </div>
@@ -66,4 +108,5 @@ const Header: FC<HeaderProps> = async ({ currentLocale, hasBorderBottom = true }
   );
 };
 
+export { Header };
 export default Header;

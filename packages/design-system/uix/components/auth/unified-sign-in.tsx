@@ -3,10 +3,9 @@
 import { Anchor, Button, PasswordInput, Stack, Text, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { createClientAnalytics, track, flag, flags } from '@repo/analytics/client';
-import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth-new/client';
+import { signIn, signInWithGitHub, signInWithGoogle } from '@repo/auth/client';
 
 import { AuthForm } from './auth-form';
 
@@ -30,36 +29,12 @@ export const UnifiedSignIn = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [authFlags, setAuthFlags] = useState<any>(null);
 
-  // Feature flag hooks for individual auth methods
-  const googleOAuthEnabled = useFlag(FLAGS.auth.oauth.google);
-  const githubOAuthEnabled = useFlag(FLAGS.auth.oauth.github);
-  const magicLinkEnabled = useFlag(FLAGS.auth.magicLink);
-
-  useEffect(() => {
-    // Load auth flags for analytics
-    const loadAuthFlags = async () => {
-      try {
-        const flags = await getAuthFlags();
-        setAuthFlags(flags);
-
-        // Track auth methods availability
-        analytics.capture('auth_methods_loaded', {
-          githubOAuthEnabled: flags.githubOAuthEnabled,
-          googleOAuthEnabled: flags.googleOAuthEnabled,
-          magicLinkEnabled: flags.magicLinkEnabled,
-          passkeyEnabled: flags.passkeyEnabled,
-          source: 'unified_sign_in',
-          twoFactorEnabled: flags.twoFactorOptional || flags.twoFactorRequired,
-        });
-      } catch (error) {
-        console.error('Failed to load auth flags:', error);
-      }
-    };
-
-    loadAuthFlags();
-  }, []);
+  // For now, enable all auth methods by default
+  // TODO: Integrate with feature flag system when available
+  const googleOAuthEnabled = true;
+  const githubOAuthEnabled = true;
+  const magicLinkEnabled = false;
 
   const form = useForm({
     validate: {
@@ -76,65 +51,30 @@ export const UnifiedSignIn = ({
     setIsLoading(true);
     setError(null);
 
-    analytics.capture('sign_in_attempted', {
-      authMethodsAvailable: {
-        github: githubOAuthEnabled,
-        google: googleOAuthEnabled,
-        magicLink: magicLinkEnabled,
-        passkey: authFlags?.passkeyEnabled || false,
-        twoFactor: authFlags?.twoFactorOptional || authFlags?.twoFactorRequired || false,
-      },
-      featureFlagsLoaded: !!authFlags,
-      method: 'email',
-      source: 'unified_sign_in',
-    });
+    // TODO: Add analytics tracking when analytics instance is available
 
     try {
-      await signIn.email({
+      await signIn({
         email: values.email,
         password: values.password,
       });
 
-      analytics.capture('sign_in_completed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-          magicLink: magicLinkEnabled,
-        },
-        method: 'email',
-        source: 'unified_sign_in',
-      });
-
-      analytics.identify(values.email);
+      // TODO: Track successful sign-in
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
       setError(errorMessage);
 
-      analytics.capture('sign_in_failed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-          magicLink: magicLinkEnabled,
-        },
-        error: errorMessage,
-        method: 'email',
-        source: 'unified_sign_in',
-      });
+      // TODO: Track failed sign-in
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSocialSignIn = async (provider: 'google' | 'github') => {
-    // Check if provider is enabled via feature flag
+    // Check if provider is enabled
     const isProviderEnabled = provider === 'google' ? googleOAuthEnabled : githubOAuthEnabled;
 
     if (!isProviderEnabled) {
-      analytics.capture('sign_in_blocked', {
-        method: provider,
-        reason: 'feature_flag_disabled',
-        source: 'unified_sign_in',
-      });
       setError(`${provider} sign-in is currently unavailable`);
       return;
     }
@@ -142,50 +82,22 @@ export const UnifiedSignIn = ({
     setIsSocialLoading(provider);
     setError(null);
 
-    analytics.capture('sign_in_attempted', {
-      authMethodsAvailable: {
-        github: githubOAuthEnabled,
-        google: googleOAuthEnabled,
-        magicLink: magicLinkEnabled,
-        passkey: authFlags?.passkeyEnabled || false,
-        twoFactor: authFlags?.twoFactorOptional || authFlags?.twoFactorRequired || false,
-      },
-      featureFlagsLoaded: !!authFlags,
-      method: provider,
-      source: 'unified_sign_in',
-    });
+    // TODO: Add analytics tracking when analytics instance is available
 
     try {
       if (provider === 'google') {
-        await signInWithGoogle?.({ providerId: 'google' });
+        await signInWithGoogle?.();
       } else {
-        await signInWithGitHub?.({ providerId: 'github' });
+        await signInWithGitHub?.();
       }
 
-      analytics.capture('sign_in_completed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-          magicLink: magicLinkEnabled,
-        },
-        method: provider,
-        source: 'unified_sign_in',
-      });
+      // TODO: Track successful sign-in
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : `Failed to sign in with ${provider}`;
       setError(errorMessage);
 
-      analytics.capture('sign_in_failed', {
-        authMethodsAvailable: {
-          github: githubOAuthEnabled,
-          google: googleOAuthEnabled,
-          magicLink: magicLinkEnabled,
-        },
-        error: errorMessage,
-        method: provider,
-        source: 'unified_sign_in',
-      });
+      // TODO: Track failed sign-in
     } finally {
       setIsSocialLoading(null);
     }

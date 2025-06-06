@@ -56,4 +56,5 @@ const Avatar: FC<AvatarProps> = ({
   );
 };
 
+export { Avatar };
 export default Avatar;

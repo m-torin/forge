@@ -4,7 +4,6 @@ import { ShoppingBag03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 
-import { analytics } from "@repo/analytics-legacy";
 import {
   AddToCardButton,
   ButtonPrimary,
@@ -45,8 +44,8 @@ export function SellerOptions({
   const displayHighestPrice = Math.max(...sellers.map((s) => s.price));
 
   const handleAddToCart = () => {
-    // Track add to cart event using PostHog
-    analytics.capture("Product Added", {
+    // Track add to cart event
+    console.log("Product Added", {
       color: productData.colorSelected,
       currency: "USD",
       locale,

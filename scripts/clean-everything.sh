@@ -198,36 +198,107 @@ trap 'print_error "An error occurred. Cleaning process failed."' ERR
 # Start cleaning process
 print_header "Starting Clean Process"
 
-# Define patterns to search for
-build_patterns=(".cache" ".next" ".strapi" ".turbo" "build" "dist" ".eslintcache" "coverage" "generated" "storybook-static" ".swc")
-cache_patterns=("*cache*")
-log_patterns=("*.log" "*debug.log*" "*error.log*")
-lock_patterns=("package-lock.json" "yarn.lock" ".yarnrc" ".yarnrc.yml" "tsconfig.tsbuildinfo")
-node_patterns=("node_modules")
+# Track what we deleted for summary
+deleted_dirs=()
+deleted_files=()
 
-# Scan for items
-print_progress "Scanning for files and directories to clean..."
+# Function to track deletions
+track_deletion() {
+  local item="$1"
+  local type="$2"
+  local parent=$(dirname "$item")
+  local name=$(basename "$item")
+  
+  # Only track top-level deletions (apps/*, packages/*, or root)
+  if [[ "$parent" == "." ]] || [[ "$parent" =~ ^./apps/[^/]+$ ]] || [[ "$parent" =~ ^./packages/[^/]+$ ]]; then
+    if [[ "$type" == "dir" ]]; then
+      deleted_dirs+=("${parent#./}/$name")
+    else
+      deleted_files+=("${parent#./}/$name")
+    fi
+  fi
+}
 
-scan_patterns build_patterns "build-related items" true "directory"
-scan_patterns cache_patterns "cache-related items" false "directory"
-scan_patterns log_patterns "log files" true "file"
-scan_patterns lock_patterns "package manager files" true "file"
-scan_patterns node_patterns "node_modules directories" true "directory"
+print_progress "Removing build artifacts and caches..."
 
-# Remove items
-remove_items build_patterns true "directory" "" "build directories"
-remove_items cache_patterns false "directory" "*/node_modules/*" "cache directories"
-remove_items log_patterns true "file" "" "log files"
-remove_items lock_patterns true "file" "" "lock files"
-remove_items node_patterns true "directory" "" "node_modules directories"
+# Remove build/cache directories with a single find command
+# Using -prune to avoid descending into directories we're deleting
+find . -type d \( \
+  -name "node_modules" -o \
+  -name ".next" -o \
+  -name "dist" -o \
+  -name "build" -o \
+  -name ".turbo" -o \
+  -name "coverage" -o \
+  -name ".cache" -o \
+  -name ".eslintcache" -o \
+  -name "storybook-static" -o \
+  -name ".swc" -o \
+  -name "generated" -o \
+  -name ".strapi" -o \
+  -name "tsconfig.tsbuildinfo" -o \
+  -name "*cache*" \
+\) -prune -print0 2>/dev/null | while IFS= read -r -d '' dir; do
+  track_deletion "$dir" "dir"
+  rm -rf "$dir" 2>/dev/null || true
+done
 
-# We don't need this line anymore since each remove_items call prints its own success message
+print_success "Build artifacts removed"
 
-# Clean pnpm
-print_progress "Cleaning pnpm cache..."
-pnpm store prune --force
-rm -f pnpm-lock.yaml
-print_success "pnpm cache cleaned"
+print_progress "Removing lock files and logs..."
+
+# Remove lock files and logs
+find . -type f \( \
+  -name "package-lock.json" -o \
+  -name "yarn.lock" -o \
+  -name ".yarnrc" -o \
+  -name ".yarnrc.yml" -o \
+  -name "pnpm-lock.yaml" -o \
+  -name "*.log" -o \
+  -name "*debug.log*" -o \
+  -name "*error.log*" -o \
+  -name "tsconfig.tsbuildinfo" \
+\) -print0 2>/dev/null | while IFS= read -r -d '' file; do
+  track_deletion "$file" "file"
+  rm -f "$file" 2>/dev/null || true
+done
+
+print_success "Lock files and logs removed"
+
+# Clean pnpm-lock.yaml at root if not already removed
+if [[ -f "pnpm-lock.yaml" ]]; then
+  rm -f pnpm-lock.yaml
+  deleted_files+=("pnpm-lock.yaml")
+fi
+
+# Print deletion summary
+print_header "Deletion Summary"
+
+if [[ ${#deleted_dirs[@]} -gt 0 ]] || [[ ${#deleted_files[@]} -gt 0 ]]; then
+  echo -e "${YELLOW}Removed from top-level directories:${NC}\n"
+  
+  # Group by parent directory
+  declare -A deletions_by_parent
+  
+  for dir in "${deleted_dirs[@]}"; do
+    parent=$(dirname "$dir")
+    name=$(basename "$dir")
+    deletions_by_parent[$parent]+="$name (dir) "
+  done
+  
+  for file in "${deleted_files[@]}"; do
+    parent=$(dirname "$file")
+    name=$(basename "$file")
+    deletions_by_parent[$parent]+="$name "
+  done
+  
+  # Sort and display
+  for parent in "${!deletions_by_parent[@]}"; do
+    echo -e "${GREEN}${parent}:${NC} ${deletions_by_parent[$parent]}"
+  done
+else
+  echo -e "${YELLOW}No items were deleted${NC}"
+fi
 
 print_header "Clean Process Complete"
 echo -e "${GREEN}You can now run 'pnpm install' to reinstall dependencies${NC}\n"

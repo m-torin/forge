@@ -4,34 +4,34 @@
  */
 
 // Placeholder auth server functions
-export function createAuthServer(config?: any) {
+export function createAuthServer(_config?: any) {
   return {
     validateSession: async () => ({ valid: false, user: null }),
-    createSession: async () => ({ success: false, message: 'Not implemented' }),
-    deleteSession: async () => ({ success: false, message: 'Not implemented' }),
-    refreshToken: async () => ({ success: false, message: 'Not implemented' }),
+    createSession: async () => ({ message: 'Not implemented', success: false }),
+    deleteSession: async () => ({ message: 'Not implemented', success: false }),
+    refreshToken: async () => ({ message: 'Not implemented', success: false }),
   };
 }
 
 // Server-side auth utilities
-export async function getServerSession(request?: Request) {
+export async function getServerSession(_request?: Request) {
   return null;
 }
 
-export async function requireAuth(request: Request) {
+export async function requireAuth(_request: Request) {
   throw new Error('Authentication not implemented');
 }
 
 // Middleware placeholder
-export function authMiddleware(request: Request) {
+export function authMiddleware(_request: Request) {
   return new Response('Authentication middleware not implemented', { status: 501 });
 }
 
 // Placeholder configuration
 export interface AuthServerConfig {
-  secret?: string;
-  providers?: any[];
   database?: any;
+  providers?: any[];
+  secret?: string;
 }
 
 export const authServer = createAuthServer();

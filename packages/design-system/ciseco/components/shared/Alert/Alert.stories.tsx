@@ -83,9 +83,9 @@ export const WithHTML: Story = {
     children: (
       <div>
         <strong>Important:</strong> Please review your{' '}
-        <a href="#" className="underline">
+        <button className="underline bg-transparent border-none cursor-pointer" type="button">
           settings
-        </a>{' '}
+        </button>{' '}
         before continuing.
       </div>
     ),

@@ -3,9 +3,11 @@
  */
 
 import 'server-only';
-import { database } from '@repo/database';
-import { auth } from '../auth';
+
+import { prisma as database } from '@repo/database/prisma';
+
 import { roleHasPermission } from '../../shared/teams/permissions';
+import { auth } from '../auth';
 
 import type { TeamPermissionCheck, TeamPermissionResult } from '../../shared/teams/types';
 
@@ -13,16 +15,16 @@ import type { TeamPermissionCheck, TeamPermissionResult } from '../../shared/tea
  * Checks if a user has permission to perform an action on a team
  */
 export async function checkTeamPermission(
-  check: TeamPermissionCheck
+  check: TeamPermissionCheck,
 ): Promise<TeamPermissionResult> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { hasPermission: false, error: 'Authentication required' };
+      return { error: 'Authentication required', hasPermission: false };
     }
 
-    const { teamId, permission, userId } = check;
+    const { permission, teamId, userId } = check;
     const targetUserId = userId || session.user.id;
 
     // Get user's team membership
@@ -34,7 +36,7 @@ export async function checkTeamPermission(
     });
 
     if (!membership) {
-      return { hasPermission: false, error: 'User is not a team member' };
+      return { error: 'User is not a team member', hasPermission: false };
     }
 
     const hasPermission = roleHasPermission(membership.role, permission);
@@ -45,20 +47,17 @@ export async function checkTeamPermission(
     };
   } catch (error) {
     console.error('Check team permission error:', error);
-    return { hasPermission: false, error: 'Failed to check permission' };
+    return { error: 'Failed to check permission', hasPermission: false };
   }
 }
 
 /**
  * Checks if the current user can manage a specific team member
  */
-export async function canManageTeamMember(
-  teamId: string,
-  targetUserId: string
-): Promise<boolean> {
+export async function canManageTeamMember(teamId: string, targetUserId: string): Promise<boolean> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
       return false;
     }
@@ -99,7 +98,7 @@ export async function canManageTeamMember(
 
     // Import role data to check levels
     const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams/permissions');
-    
+
     const currentLevel = DEFAULT_TEAM_ROLES[currentUserRole]?.level || 0;
     const targetLevel = DEFAULT_TEAM_ROLES[targetUserRole]?.level || 0;
 
@@ -115,7 +114,7 @@ export async function canManageTeamMember(
  */
 export async function getUserTeamPermissions(
   teamId: string,
-  userId?: string
+  userId?: string,
 ): Promise<{
   permissions: string[];
   role: string;
@@ -123,9 +122,9 @@ export async function getUserTeamPermissions(
 }> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
-      return { permissions: [], role: '', error: 'Authentication required' };
+      return { error: 'Authentication required', permissions: [], role: '' };
     }
 
     const targetUserId = userId || session.user.id;
@@ -138,7 +137,7 @@ export async function getUserTeamPermissions(
     });
 
     if (!membership) {
-      return { permissions: [], role: '', error: 'User is not a team member' };
+      return { error: 'User is not a team member', permissions: [], role: '' };
     }
 
     // Import role data to get permissions
@@ -151,7 +150,7 @@ export async function getUserTeamPermissions(
     };
   } catch (error) {
     console.error('Get user team permissions error:', error);
-    return { permissions: [], role: '', error: 'Failed to get permissions' };
+    return { error: 'Failed to get permissions', permissions: [], role: '' };
   }
 }
 
@@ -161,7 +160,7 @@ export async function getUserTeamPermissions(
 export async function isTeamOwner(teamId: string, userId?: string): Promise<boolean> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
       return false;
     }
@@ -188,7 +187,7 @@ export async function isTeamOwner(teamId: string, userId?: string): Promise<bool
 export async function isTeamAdmin(teamId: string, userId?: string): Promise<boolean> {
   try {
     const session = await auth.api.getSession();
-    
+
     if (!session) {
       return false;
     }
@@ -212,17 +211,19 @@ export async function isTeamAdmin(teamId: string, userId?: string): Promise<bool
 /**
  * Gets team role hierarchy for permission checks
  */
-export async function getTeamRoleHierarchy(): Promise<Array<{
-  role: string;
-  level: number;
-  permissions: string[];
-}>> {
+export async function getTeamRoleHierarchy(): Promise<
+  {
+    role: string;
+    level: number;
+    permissions: string[];
+  }[]
+> {
   // Import role data
   const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams/permissions');
-  
-  return Object.values(DEFAULT_TEAM_ROLES).map(role => ({
-    role: role.id,
+
+  return Object.values(DEFAULT_TEAM_ROLES).map((role) => ({
     level: role.level,
     permissions: role.permissions,
+    role: role.id,
   }));
 }

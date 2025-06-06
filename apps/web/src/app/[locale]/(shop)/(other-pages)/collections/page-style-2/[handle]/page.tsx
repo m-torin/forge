@@ -17,7 +17,7 @@ export default async function Page({
 }: {
   params: Promise<{ handle: string }>;
 }) {
-  const { handle } = await params;
+  const { handle: _handle } = await params;
   const products = await getProducts();
 
   return (

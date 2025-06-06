@@ -8,7 +8,7 @@ export interface AlertProps {
   type?: 'default' | 'warning' | 'info' | 'success' | 'error';
 }
 
-export const Alert: React.FC<AlertProps> = ({
+const Alert: React.FC<AlertProps> = ({
   type = 'default',
   children = 'Alert Text',
   containerClassName = '',
@@ -44,3 +44,6 @@ export const Alert: React.FC<AlertProps> = ({
     </div>
   );
 };
+
+export { Alert };
+export default Alert;

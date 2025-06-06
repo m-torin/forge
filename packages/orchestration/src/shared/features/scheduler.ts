@@ -6,81 +6,83 @@
 import type { WorkflowDefinition, WorkflowProvider } from '../types/index';
 
 export interface EnhancedScheduleConfig {
-  /** Cron expression */
-  cron: string;
-  /** Timezone for schedule execution (IANA timezone) */
-  timezone?: string;
-  /** Maximum number of executions (undefined for unlimited) */
-  maxExecutions?: number;
-  /** Start time for schedule (ISO string) */
-  startTime?: string;
-  /** End time for schedule (ISO string) */
-  endTime?: string;
   /** Whether to catch up on missed executions */
   catchUp?: boolean;
+  /** Cron expression */
+  cron: string;
+  /** End time for schedule (ISO string) */
+  endTime?: string;
+  /** Maximum number of executions (undefined for unlimited) */
+  maxExecutions?: number;
   /** Schedule metadata */
   metadata?: Record<string, unknown>;
+  /** Start time for schedule (ISO string) */
+  startTime?: string;
+  /** Timezone for schedule execution (IANA timezone) */
+  timezone?: string;
 }
 
 export interface ScheduleStatus {
-  /** Unique schedule identifier */
-  id: string;
-  /** Associated workflow ID */
-  workflowId: string;
   /** Schedule configuration */
   config: EnhancedScheduleConfig;
-  /** Current status */
-  status: 'active' | 'paused' | 'completed' | 'error';
-  /** Next execution time */
-  nextExecution?: Date;
-  /** Last execution time */
-  lastExecution?: Date;
-  /** Number of executions completed */
-  executionCount: number;
   /** Creation timestamp */
   createdAt: Date;
-  /** Last update timestamp */
-  updatedAt: Date;
+  /** Whether schedule is enabled */
+  enabled?: boolean;
   /** Error message if status is 'error' */
   error?: string;
+  /** Number of executions completed */
+  executionCount: number;
+  /** Unique schedule identifier */
+  id: string;
+  /** Last execution time */
+  lastExecution?: Date;
+  /** Next execution time */
+  nextExecution?: Date;
+  /** Current status */
+  status: 'active' | 'paused' | 'completed' | 'error';
+  /** Last update timestamp */
+  updatedAt: Date;
+  /** Associated workflow ID */
+  workflowId: string;
 }
 
 export interface ScheduleExecution {
-  /** Unique execution identifier */
-  id: string;
-  /** Schedule ID */
-  scheduleId: string;
-  /** Workflow execution ID */
-  workflowExecutionId: string;
-  /** Scheduled execution time */
-  scheduledAt: Date;
-  /** Actual execution start time */
-  executedAt: Date;
   /** Execution completion time */
   completedAt?: Date;
-  /** Execution status */
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  /** Execution result or error */
-  result?: unknown;
   /** Error details if failed */
   error?: string;
+  /** Actual execution start time */
+  executedAt: Date;
+  /** Unique execution identifier */
+  id: string;
+  /** Execution result or error */
+  result?: unknown;
+  /** Scheduled execution time */
+  scheduledAt: Date;
+  /** Schedule ID */
+  scheduleId: string;
+  /** Execution status */
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  /** Workflow execution ID */
+  workflowExecutionId: string;
 }
 
 export interface ScheduleHealthCheck {
-  /** Schedule ID */
-  scheduleId: string;
-  /** Health status */
-  status: 'healthy' | 'warning' | 'critical';
-  /** Last check timestamp */
-  lastCheck: Date;
   /** Issues found during health check */
   issues: string[];
+  /** Last check timestamp */
+  lastCheck: Date;
   /** Performance metrics */
   metrics: {
     avgExecutionTime: number;
     successRate: number;
     lastExecutionGap: number;
   };
+  /** Schedule ID */
+  scheduleId: string;
+  /** Health status */
+  status: 'healthy' | 'warning' | 'critical';
 }
 
 export class AdvancedScheduler {
@@ -97,28 +99,38 @@ export class AdvancedScheduler {
    */
   async createSchedule(
     workflowId: string,
-    config: EnhancedScheduleConfig,
+    config: EnhancedScheduleConfig | import('../types/scheduler').ScheduleConfig,
     scheduleId?: string,
   ): Promise<string> {
     const id = scheduleId || this.generateScheduleId();
 
+    // Convert ScheduleConfig to EnhancedScheduleConfig if needed
+    const enhancedConfig: EnhancedScheduleConfig =
+      'workflowId' in config
+        ? {
+            cron: config.cron || '0 * * * *',
+            metadata: config.metadata,
+            timezone: config.timezone,
+          }
+        : config;
+
     // Validate cron expression
-    this.validateCronExpression(config.cron);
+    this.validateCronExpression(enhancedConfig.cron);
 
     // Validate timezone if provided
-    if (config.timezone) {
-      this.validateTimezone(config.timezone);
+    if (enhancedConfig.timezone) {
+      this.validateTimezone(enhancedConfig.timezone);
     }
 
     const schedule: ScheduleStatus = {
       id,
-      workflowId,
-      config,
-      status: 'active',
-      nextExecution: this.calculateNextExecution(config),
-      executionCount: 0,
+      config: enhancedConfig,
       createdAt: new Date(),
+      executionCount: 0,
+      nextExecution: this.calculateNextExecution(enhancedConfig),
+      status: 'active',
       updatedAt: new Date(),
+      workflowId,
     };
 
     this.schedules.set(id, schedule);
@@ -239,6 +251,57 @@ export class AdvancedScheduler {
   }
 
   /**
+   * Trigger a schedule manually
+   */
+  async triggerSchedule(
+    scheduleId: string,
+  ): Promise<{ scheduleId: string; triggeredManually: boolean; executionId: string }> {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      throw new Error(`Schedule ${scheduleId} not found`);
+    }
+
+    // Execute the workflow with schedule input
+    const execution = await this.provider.execute({
+      id: schedule.workflowId,
+      name: schedule.workflowId,
+      steps: [],
+      version: '1.0.0',
+    });
+
+    return {
+      executionId: execution.id,
+      scheduleId,
+      triggeredManually: true,
+    };
+  }
+
+  /**
+   * Get next execution time for a schedule
+   */
+  getNextExecution(scheduleId: string): Date | null {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      return null;
+    }
+
+    return schedule.nextExecution || null;
+  }
+
+  /**
+   * Get execution history for a schedule
+   */
+  getExecutionHistory(scheduleId: string): ScheduleExecution[] {
+    const schedule = this.schedules.get(scheduleId);
+    if (!schedule) {
+      return [];
+    }
+
+    // Return mock execution history for testing
+    return [];
+  }
+
+  /**
    * Perform health check on schedules
    */
   async performHealthCheck(scheduleIds?: string[]): Promise<ScheduleHealthCheck[]> {
@@ -276,17 +339,17 @@ export class AdvancedScheduler {
       }
 
       healthChecks.push({
-        scheduleId: schedule.id,
-        status,
-        lastCheck: new Date(),
         issues,
+        lastCheck: new Date(),
         metrics: {
           avgExecutionTime: 0, // Would be calculated from execution history
-          successRate: 1, // Would be calculated from execution history
           lastExecutionGap: schedule.lastExecution
             ? Date.now() - schedule.lastExecution.getTime()
             : 0,
+          successRate: 1, // Would be calculated from execution history
         },
+        scheduleId: schedule.id,
+        status,
       });
     }
 

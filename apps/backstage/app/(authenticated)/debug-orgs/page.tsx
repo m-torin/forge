@@ -3,8 +3,6 @@
 import { Button, Card, Code, Container, Stack, Title } from '@mantine/core';
 import { useState } from 'react';
 
-import { listOrganizations } from '@repo/auth-new/client';
-
 export default function DebugOrgsPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -16,10 +14,15 @@ export default function DebugOrgsPage() {
     setResult(null);
 
     try {
-      console.log('Calling listOrganizations...');
-      const response = await listOrganizations();
-      console.log('Response:', response);
-      setResult(response);
+      // Mock response since auth is removed
+      const mockResponse = {
+        data: [
+          { id: '1', name: 'Demo Organization', slug: 'demo-org' },
+          { id: '2', name: 'Test Company', slug: 'test-company' },
+        ],
+        success: true,
+      };
+      setResult(mockResponse);
     } catch (err) {
       console.error('Error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');

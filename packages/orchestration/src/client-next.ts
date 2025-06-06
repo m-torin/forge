@@ -6,40 +6,41 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { WorkflowDefinition, WorkflowExecution, WorkflowProvider } from './shared/types/index';
+
 import type {
-  WorkflowMetrics,
   ExecutionHistory,
   WorkflowAlert,
+  WorkflowMetrics,
 } from './shared/features/monitoring';
 import type { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
+import type { WorkflowDefinition, WorkflowExecution, WorkflowProvider } from './shared/types/index';
 
 export interface UseWorkflowOptions {
-  /** Workflow provider instance */
-  provider: WorkflowProvider | null;
-  /** Polling interval for execution status (ms) */
-  pollInterval?: number;
   /** Auto-refresh workflow data */
   autoRefresh?: boolean;
   /** Enable/disable the hook */
   enabled?: boolean;
+  /** Polling interval for execution status (ms) */
+  pollInterval?: number;
+  /** Workflow provider instance */
+  provider: WorkflowProvider | null;
 }
 
 export interface UseWorkflowResult {
+  /** Cancel current execution */
+  cancel: () => Promise<void>;
+  /** Clear execution state */
+  clear: () => void;
+  /** Execution error */
+  error: Error | null;
   /** Execute workflow with input data */
   execute: (input?: unknown) => Promise<string>;
   /** Current workflow execution */
   execution: WorkflowExecution | null;
   /** Execution loading state */
   isExecuting: boolean;
-  /** Execution error */
-  error: Error | null;
-  /** Cancel current execution */
-  cancel: () => Promise<void>;
   /** Retry failed execution */
   retry: () => Promise<void>;
-  /** Clear execution state */
-  clear: () => void;
 }
 
 /**
@@ -51,7 +52,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
   const [error, setError] = useState<Error | null>(null);
   const [currentExecutionId, setCurrentExecutionId] = useState<string | null>(null);
 
-  const { provider, pollInterval = 1000, autoRefresh = true, enabled = true } = options;
+  const { provider, autoRefresh = true, enabled = true, pollInterval = 1000 } = options;
 
   // Poll execution status
   useEffect(() => {
@@ -96,7 +97,6 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
         const workflowDefinition: WorkflowDefinition = {
           id: workflowId,
           name: workflowId,
-          version: '1.0.0',
           steps: [
             {
               id: 'execute',
@@ -104,6 +104,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
               action: 'execute',
             },
           ],
+          version: '1.0.0',
         };
 
         const execution = await provider.execute(workflowDefinition, input as Record<string, any>);
@@ -148,37 +149,37 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
   }, []);
 
   return {
+    cancel,
+    clear,
+    error,
     execute,
     execution,
     isExecuting,
-    error,
-    cancel,
     retry,
-    clear,
   };
 }
 
 export interface UseWorkflowListOptions {
-  /** Workflow provider instance */
-  provider: WorkflowProvider;
-  /** Auto-refresh interval (ms) */
-  refreshInterval?: number;
   /** Filter workflows */
   filter?: {
     tags?: string[];
     status?: string;
   };
+  /** Workflow provider instance */
+  provider: WorkflowProvider;
+  /** Auto-refresh interval (ms) */
+  refreshInterval?: number;
 }
 
 export interface UseWorkflowListResult {
-  /** List of workflows */
-  workflows: WorkflowDefinition[];
-  /** Loading state */
-  isLoading: boolean;
   /** Error state */
   error: Error | null;
+  /** Loading state */
+  isLoading: boolean;
   /** Refresh workflows */
   refresh: () => Promise<void>;
+  /** List of workflows */
+  workflows: WorkflowDefinition[];
 }
 
 /**
@@ -189,7 +190,7 @@ export function useWorkflowList(options: UseWorkflowListOptions): UseWorkflowLis
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const { provider, refreshInterval = 30000, filter } = options;
+  const { provider, filter, refreshInterval = 30000 } = options;
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -218,31 +219,31 @@ export function useWorkflowList(options: UseWorkflowListOptions): UseWorkflowLis
   }, [refresh, refreshInterval]);
 
   return {
-    workflows,
-    isLoading,
     error,
+    isLoading,
     refresh,
+    workflows,
   };
 }
 
 export interface UseWorkflowMetricsOptions {
+  /** Enable/disable the hook */
+  enabled?: boolean;
   /** Workflow provider instance */
   provider: WorkflowProvider | null;
   /** Auto-refresh interval (ms) */
   refreshInterval?: number;
   /** Time range for metrics */
   timeRange?: { start: Date; end: Date };
-  /** Enable/disable the hook */
-  enabled?: boolean;
 }
 
 export interface UseWorkflowMetricsResult {
-  /** Workflow metrics */
-  metrics: WorkflowMetrics | null;
-  /** Loading state */
-  isLoading: boolean;
   /** Error state */
   error: Error | null;
+  /** Loading state */
+  isLoading: boolean;
+  /** Workflow metrics */
+  metrics: WorkflowMetrics | null;
   /** Refresh metrics */
   refresh: () => Promise<void>;
 }
@@ -258,7 +259,7 @@ export function useWorkflowMetrics(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const { provider, refreshInterval = 10000, timeRange, enabled = true } = options;
+  const { provider, enabled = true, refreshInterval = 10000, timeRange } = options;
 
   const refresh = useCallback(async () => {
     if (!enabled || !provider) {
@@ -296,45 +297,45 @@ export function useWorkflowMetrics(
   }, [refresh, refreshInterval, enabled, provider]);
 
   return {
-    metrics,
-    isLoading,
     error,
+    isLoading,
+    metrics,
     refresh,
   };
 }
 
 export interface UseExecutionHistoryOptions {
-  /** Workflow provider instance */
-  provider: WorkflowProvider | null;
-  /** Auto-refresh interval (ms) */
-  refreshInterval?: number;
-  /** Pagination options */
-  pagination?: {
-    limit: number;
-    offset: number;
-  };
+  /** Enable/disable the hook */
+  enabled?: boolean;
   /** Filter options */
   filter?: {
     status?: ExecutionHistory['status'];
     timeRange?: { start: Date; end: Date };
   };
-  /** Enable/disable the hook */
-  enabled?: boolean;
+  /** Pagination options */
+  pagination?: {
+    limit: number;
+    offset: number;
+  };
+  /** Workflow provider instance */
+  provider: WorkflowProvider | null;
+  /** Auto-refresh interval (ms) */
+  refreshInterval?: number;
 }
 
 export interface UseExecutionHistoryResult {
-  /** Execution history */
-  executions: ExecutionHistory[];
-  /** Loading state */
-  isLoading: boolean;
   /** Error state */
   error: Error | null;
-  /** Refresh history */
-  refresh: () => Promise<void>;
-  /** Load more executions */
-  loadMore: () => Promise<void>;
+  /** Execution history */
+  executions: ExecutionHistory[];
   /** Has more executions to load */
   hasMore: boolean;
+  /** Loading state */
+  isLoading: boolean;
+  /** Load more executions */
+  loadMore: () => Promise<void>;
+  /** Refresh history */
+  refresh: () => Promise<void>;
 }
 
 /**
@@ -350,7 +351,7 @@ export function useExecutionHistory(
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
-  const { provider, refreshInterval = 30000, pagination, filter, enabled = true } = options;
+  const { provider, enabled = true, filter, pagination, refreshInterval = 30000 } = options;
 
   const refresh = useCallback(async () => {
     if (!enabled || !provider) {
@@ -413,12 +414,12 @@ export function useExecutionHistory(
   }, [refresh, refreshInterval, enabled, provider]);
 
   return {
-    executions,
-    isLoading,
     error,
-    refresh,
-    loadMore,
+    executions,
     hasMore,
+    isLoading,
+    loadMore,
+    refresh,
   };
 }
 
@@ -430,24 +431,24 @@ export interface UseWorkflowScheduleOptions {
 }
 
 export interface UseWorkflowScheduleResult {
-  /** Schedule status */
-  schedule: ScheduleStatus | null;
-  /** Loading state */
-  isLoading: boolean;
-  /** Error state */
-  error: Error | null;
   /** Create schedule */
   createSchedule: (config: EnhancedScheduleConfig) => Promise<string>;
-  /** Update schedule */
-  updateSchedule: (config: Partial<EnhancedScheduleConfig>) => Promise<void>;
-  /** Pause schedule */
-  pauseSchedule: () => Promise<void>;
-  /** Resume schedule */
-  resumeSchedule: () => Promise<void>;
   /** Delete schedule */
   deleteSchedule: () => Promise<void>;
+  /** Error state */
+  error: Error | null;
+  /** Loading state */
+  isLoading: boolean;
+  /** Pause schedule */
+  pauseSchedule: () => Promise<void>;
   /** Refresh schedule */
   refresh: () => Promise<void>;
+  /** Resume schedule */
+  resumeSchedule: () => Promise<void>;
+  /** Schedule status */
+  schedule: ScheduleStatus | null;
+  /** Update schedule */
+  updateSchedule: (config: Partial<EnhancedScheduleConfig>) => Promise<void>;
 }
 
 /**
@@ -586,15 +587,15 @@ export function useWorkflowSchedule(
   }, [refresh, refreshInterval, currentScheduleId]);
 
   return {
-    schedule,
-    isLoading,
-    error,
     createSchedule,
-    updateSchedule,
-    pauseSchedule,
-    resumeSchedule,
     deleteSchedule,
+    error,
+    isLoading,
+    pauseSchedule,
     refresh,
+    resumeSchedule,
+    schedule,
+    updateSchedule,
   };
 }
 
@@ -672,11 +673,11 @@ export function useWorkflowAlerts(
   }, [refresh, refreshInterval]);
 
   return {
-    alerts,
-    isLoading,
-    error,
-    refresh,
     acknowledgeAlert,
+    alerts,
+    error,
+    isLoading,
+    refresh,
     resolveAlert,
   };
 }
@@ -687,26 +688,26 @@ export function useWorkflowAlerts(
 export function createReactWorkflowClient(provider: WorkflowProvider) {
   return {
     provider,
+    useExecutionHistory: (
+      workflowId: string,
+      options?: Omit<UseExecutionHistoryOptions, 'provider'>,
+    ) => useExecutionHistory(workflowId, { provider, ...options }),
     useWorkflow: (workflowId: string, options?: Omit<UseWorkflowOptions, 'provider'>) =>
       useWorkflow(workflowId, { provider, ...options }),
+    useWorkflowAlerts: (
+      workflowId: string,
+      options?: Omit<UseWorkflowMetricsOptions, 'provider'>,
+    ) => useWorkflowAlerts(workflowId, { provider, ...options }),
     useWorkflowList: (options?: Omit<UseWorkflowListOptions, 'provider'>) =>
       useWorkflowList({ provider, ...options }),
     useWorkflowMetrics: (
       workflowId: string,
       options?: Omit<UseWorkflowMetricsOptions, 'provider'>,
     ) => useWorkflowMetrics(workflowId, { provider, ...options }),
-    useExecutionHistory: (
-      workflowId: string,
-      options?: Omit<UseExecutionHistoryOptions, 'provider'>,
-    ) => useExecutionHistory(workflowId, { provider, ...options }),
     useWorkflowSchedule: (
       workflowId: string,
       scheduleId?: string,
       options?: Omit<UseWorkflowScheduleOptions, 'provider'>,
     ) => useWorkflowSchedule(workflowId, scheduleId, { provider, ...options }),
-    useWorkflowAlerts: (
-      workflowId: string,
-      options?: Omit<UseWorkflowMetricsOptions, 'provider'>,
-    ) => useWorkflowAlerts(workflowId, { provider, ...options }),
   };
 }

@@ -38,8 +38,6 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
-
 interface MediaItem {
   alt?: string;
   description?: string;
@@ -123,27 +121,18 @@ export default function MediaLibraryPage() {
   const [opened, { close, open }] = useDisclosure(false);
   const [editOpened, { close: closeEdit, open: openEdit }] = useDisclosure(false);
 
-  const { trackPage } = useAnalytics();
-  const { trackClick, trackView } = useUIAnalytics();
-  const { trackEvent } = useObservability();
-
   const itemsPerPage = 12;
 
   useEffect(() => {
-    trackPage('cms_media_library');
-    trackView('media_grid');
-    trackEvent({
-      action: 'view',
-      category: 'cms',
-      label: 'media_library',
-    });
+    // Log page view
+    console.log('Page Viewed: cms_media_library');
 
     // Simulate loading
     setTimeout(() => {
       setMediaItems(mockMediaItems);
       setLoading(false);
     }, 1000);
-  }, [trackPage, trackView, trackEvent]);
+  }, []);
 
   // Filter and search logic
   const filteredItems = mediaItems.filter((item) => {
@@ -186,13 +175,13 @@ export default function MediaLibraryPage() {
 
   const handleThumbnailClick = (item: MediaItem) => {
     setSelectedItem(item);
-    trackClick('media_thumbnail', { mediaId: item.id, mediaType: item.type });
+    console.log('Media Thumbnail Clicked:', { mediaId: item.id, mediaType: item.type });
     open();
   };
 
   const handleEditClick = (item: MediaItem) => {
     setEditingItem({ ...item });
-    trackClick('media_edit', { mediaId: item.id });
+    console.log('Media Edit Clicked:', { mediaId: item.id });
     openEdit();
   };
 
@@ -203,12 +192,7 @@ export default function MediaLibraryPage() {
       items.map((item) => (item.id === editingItem.id ? editingItem : item)),
     );
 
-    trackEvent({
-      action: 'edit',
-      category: 'media',
-      label: 'item_updated',
-      metadata: { mediaId: editingItem.id },
-    });
+    console.log('Media item updated:', { mediaId: editingItem.id });
 
     closeEdit();
     setEditingItem(null);
@@ -216,12 +200,7 @@ export default function MediaLibraryPage() {
 
   const handleDelete = (itemId: string) => {
     setMediaItems((items) => items.filter((item) => item.id !== itemId));
-    trackEvent({
-      action: 'delete',
-      category: 'media',
-      label: 'item_deleted',
-      metadata: { mediaId: itemId },
-    });
+    console.log('Media item deleted:', { mediaId: itemId });
   };
 
   return (

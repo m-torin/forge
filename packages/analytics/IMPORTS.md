@@ -141,7 +141,7 @@ await analytics.emit(track('API Called', { endpoint: '/users' }));
 
 ### Next.js Client Components
 
-```typescript
+```tsx
 'use client';
 import { useTrackEvent, AnalyticsProvider } from '@repo/analytics/client/next';
 
@@ -153,7 +153,7 @@ function MyComponent() {
 
 ### Next.js Server Components
 
-```typescript
+```tsx
 import { trackServerEvent, getServerFeatureFlag } from '@repo/analytics/server/next';
 import { cookies } from 'next/headers';
 

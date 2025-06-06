@@ -108,8 +108,8 @@ export function useAIStream({
                   setText(fullText);
 
                   onChunk?.(chunk);
-                } catch (parseError) {
-                  console.warn('Failed to parse chunk:', data);
+                } catch (_parseError) {
+                  console.error('Failed to parse chunk:', data);
                 }
               }
             }

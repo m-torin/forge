@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { Accordion } from '@mantine/core';
 import React, { type FC } from 'react';
 
@@ -76,7 +76,7 @@ const AccordionInfo: FC<Props> = ({
       multiple
     >
       {data.map((item, index) => (
-        <Accordion.Item key={index} value={String(index)}>
+        <Accordion.Item key={`${item.name}-${index}`} value={String(index)}>
           <Accordion.Control>{item.name}</Accordion.Control>
           <Accordion.Panel>
             <div dangerouslySetInnerHTML={{ __html: item.content }} />

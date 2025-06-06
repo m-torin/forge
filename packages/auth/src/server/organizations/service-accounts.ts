@@ -3,10 +3,14 @@
  */
 
 import 'server-only';
+import { headers } from 'next/headers';
+
 import { prisma as database } from '@repo/database/prisma';
-import { auth } from '../auth';
-import { checkPermission } from './permissions';
+
 import { createServiceAuth } from '../api-keys/service-auth';
+import { auth } from '../auth';
+
+import { checkPermission } from './permissions';
 
 import type { ServiceAuthOptions, ServiceAuthResult } from '../../shared/api-keys/types';
 
@@ -21,21 +25,33 @@ export async function createServiceAccount(data: {
   expiresIn?: string;
 }): Promise<ServiceAuthResult & { serviceAccountId?: string }> {
   try {
+    // Get current session to check permissions and get user ID
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return {
+        error: 'Authentication required',
+        success: false,
+      };
+    }
+
     // Check if user has permission to create service accounts
     const hasPermission = await checkPermission('api-keys:create', data.organizationId);
-    
+
     if (!hasPermission) {
       return {
-        success: false,
         error: 'Insufficient permissions to create service accounts',
+        success: false,
       };
     }
 
     // Create service authentication
     const serviceOptions: ServiceAuthOptions = {
-      serviceId: `${data.organizationId}-${data.name}`,
-      permissions: data.permissions,
       expiresIn: data.expiresIn,
+      permissions: data.permissions,
+      serviceId: `${data.organizationId}-${data.name}`,
     };
 
     const authResult = await createServiceAuth(serviceOptions);
@@ -47,15 +63,20 @@ export async function createServiceAccount(data: {
     // Store service account metadata
     const serviceAccount = await database.apiKey.create({
       data: {
+        id: `apikey_${Math.random().toString(36).substr(2, 9)}`,
         name: data.name,
-        organizationId: data.organizationId,
-        permissions: data.permissions,
+        createdAt: new Date(),
         expiresAt: authResult.expiresAt,
+        key: authResult.token || '',
         metadata: {
           type: 'service-account',
           description: data.description,
           serviceId: serviceOptions.serviceId,
         },
+        organizationId: data.organizationId,
+        permissions: JSON.stringify(data.permissions),
+        updatedAt: new Date(),
+        userId: session.user.id, // User who created the service account
       },
     });
 
@@ -66,8 +87,8 @@ export async function createServiceAccount(data: {
   } catch (error) {
     console.error('Create service account error:', error);
     return {
-      success: false,
       error: 'Failed to create service account',
+      success: false,
     };
   }
 }
@@ -77,7 +98,7 @@ export async function createServiceAccount(data: {
  */
 export async function listServiceAccounts(organizationId: string): Promise<{
   success: boolean;
-  serviceAccounts?: Array<{
+  serviceAccounts?: {
     id: string;
     name: string;
     description?: string;
@@ -85,52 +106,52 @@ export async function listServiceAccounts(organizationId: string): Promise<{
     expiresAt?: Date;
     createdAt: Date;
     isActive: boolean;
-  }>;
+  }[];
   error?: string;
 }> {
   try {
     // Check if user has permission to list service accounts
     const hasPermission = await checkPermission('api-keys:read', organizationId);
-    
+
     if (!hasPermission) {
       return {
-        success: false,
         error: 'Insufficient permissions to list service accounts',
+        success: false,
       };
     }
 
     const apiKeys = await database.apiKey.findMany({
-      where: {
-        organizationId,
-        metadata: {
-          path: ['type'],
-          equals: 'service-account',
-        },
-      },
       orderBy: {
         createdAt: 'desc',
+      },
+      where: {
+        metadata: {
+          equals: 'service-account',
+          path: ['type'],
+        },
+        organizationId,
       },
     });
 
     const serviceAccounts = apiKeys.map((key: any) => ({
       id: key.id,
       name: key.name,
-      description: key.metadata?.description,
-      permissions: key.permissions,
-      expiresAt: key.expiresAt,
       createdAt: key.createdAt,
+      description: (key.metadata as any)?.description,
+      expiresAt: key.expiresAt,
       isActive: !key.expiresAt || key.expiresAt > new Date(),
+      permissions: key.permissions ? JSON.parse(key.permissions) : [],
     }));
 
     return {
-      success: true,
       serviceAccounts,
+      success: true,
     };
   } catch (error) {
     console.error('List service accounts error:', error);
     return {
-      success: false,
       error: 'Failed to list service accounts',
+      success: false,
     };
   }
 }
@@ -151,23 +172,19 @@ export async function updateServiceAccount(data: {
   try {
     // Check if user has permission to update service accounts
     const hasPermission = await checkPermission('api-keys:write', data.organizationId);
-    
+
     if (!hasPermission) {
       return {
-        success: false,
         error: 'Insufficient permissions to update service accounts',
+        success: false,
       };
     }
 
     // Update the service account metadata
     await database.apiKey.update({
-      where: {
-        id: data.serviceAccountId,
-        organizationId: data.organizationId,
-      },
       data: {
         ...(data.name && { name: data.name }),
-        ...(data.permissions && { permissions: data.permissions }),
+        ...(data.permissions && { permissions: JSON.stringify(data.permissions) }),
         ...(data.description !== undefined && {
           metadata: {
             type: 'service-account',
@@ -175,14 +192,18 @@ export async function updateServiceAccount(data: {
           },
         }),
       },
+      where: {
+        id: data.serviceAccountId,
+        organizationId: data.organizationId,
+      },
     });
 
     return { success: true };
   } catch (error) {
     console.error('Update service account error:', error);
     return {
-      success: false,
       error: 'Failed to update service account',
+      success: false,
     };
   }
 }
@@ -200,11 +221,11 @@ export async function revokeServiceAccount(data: {
   try {
     // Check if user has permission to revoke service accounts
     const hasPermission = await checkPermission('api-keys:revoke', data.organizationId);
-    
+
     if (!hasPermission) {
       return {
-        success: false,
         error: 'Insufficient permissions to revoke service accounts',
+        success: false,
       };
     }
 
@@ -220,8 +241,8 @@ export async function revokeServiceAccount(data: {
   } catch (error) {
     console.error('Revoke service account error:', error);
     return {
-      success: false,
       error: 'Failed to revoke service account',
+      success: false,
     };
   }
 }
@@ -249,52 +270,52 @@ export async function getServiceAccount(data: {
   try {
     // Check if user has permission to read service accounts
     const hasPermission = await checkPermission('api-keys:read', data.organizationId);
-    
+
     if (!hasPermission) {
       return {
-        success: false,
         error: 'Insufficient permissions to access service account',
+        success: false,
       };
     }
 
     const apiKey = await database.apiKey.findFirst({
       where: {
         id: data.serviceAccountId,
-        organizationId: data.organizationId,
         metadata: {
-          path: ['type'],
           equals: 'service-account',
+          path: ['type'],
         },
+        organizationId: data.organizationId,
       },
     });
 
     if (!apiKey) {
       return {
-        success: false,
         error: 'Service account not found',
+        success: false,
       };
     }
 
     const serviceAccount = {
       id: apiKey.id,
       name: apiKey.name,
-      description: apiKey.metadata?.description,
-      permissions: apiKey.permissions,
-      expiresAt: apiKey.expiresAt,
       createdAt: apiKey.createdAt,
-      lastUsedAt: apiKey.lastUsedAt,
+      description: (apiKey.metadata as any)?.description,
+      expiresAt: apiKey.expiresAt || undefined,
       isActive: !apiKey.expiresAt || apiKey.expiresAt > new Date(),
+      lastUsedAt: apiKey.lastUsedAt || undefined,
+      permissions: apiKey.permissions ? JSON.parse(apiKey.permissions) : [],
     };
 
     return {
-      success: true,
       serviceAccount,
+      success: true,
     };
   } catch (error) {
     console.error('Get service account error:', error);
     return {
-      success: false,
       error: 'Failed to get service account',
+      success: false,
     };
   }
 }
@@ -310,11 +331,11 @@ export async function regenerateServiceAccountToken(data: {
   try {
     // Check if user has permission to manage service accounts
     const hasPermission = await checkPermission('api-keys:write', data.organizationId);
-    
+
     if (!hasPermission) {
       return {
-        success: false,
         error: 'Insufficient permissions to regenerate service account token',
+        success: false,
       };
     }
 
@@ -322,26 +343,28 @@ export async function regenerateServiceAccountToken(data: {
     const currentAccount = await database.apiKey.findFirst({
       where: {
         id: data.serviceAccountId,
-        organizationId: data.organizationId,
         metadata: {
-          path: ['type'],
           equals: 'service-account',
+          path: ['type'],
         },
+        organizationId: data.organizationId,
       },
     });
 
     if (!currentAccount) {
       return {
-        success: false,
         error: 'Service account not found',
+        success: false,
       };
     }
 
     // Create new service authentication
     const serviceOptions: ServiceAuthOptions = {
-      serviceId: currentAccount.metadata?.serviceId || `${data.organizationId}-${currentAccount.name}`,
-      permissions: currentAccount.permissions,
       expiresIn: data.expiresIn,
+      permissions: currentAccount.permissions ? JSON.parse(currentAccount.permissions) : [],
+      serviceId:
+        (currentAccount.metadata as any)?.serviceId ||
+        `${data.organizationId}-${currentAccount.name}`,
     };
 
     const authResult = await createServiceAuth(serviceOptions);
@@ -352,18 +375,18 @@ export async function regenerateServiceAccountToken(data: {
 
     // Update the service account with new expiration
     await database.apiKey.update({
-      where: { id: data.serviceAccountId },
       data: {
         expiresAt: authResult.expiresAt,
       },
+      where: { id: data.serviceAccountId },
     });
 
     return authResult;
   } catch (error) {
     console.error('Regenerate service account token error:', error);
     return {
-      success: false,
       error: 'Failed to regenerate service account token',
+      success: false,
     };
   }
 }

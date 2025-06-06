@@ -112,17 +112,17 @@ export function PaginationGap({
 
 // Complete pagination component that accepts totalPages, currentPage, and baseUrl
 export interface CompletePaginationProps {
-  totalPages: number;
-  currentPage: number;
   baseUrl: string;
   className?: string;
+  currentPage: number;
+  totalPages: number;
 }
 
 export function CompletePagination({
-  totalPages,
-  currentPage,
   baseUrl,
   className,
+  currentPage,
+  totalPages,
 }: CompletePaginationProps) {
   // Don't render pagination if there's only one page or less
   if (totalPages <= 1) return null;
@@ -158,7 +158,7 @@ export function CompletePagination({
       // Add pages around current page
       const start = Math.max(2, currentPage - delta);
       const end = Math.min(totalPages - 1, currentPage + delta);
-      
+
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
@@ -190,11 +190,7 @@ export function CompletePagination({
             return <PaginationGap key={`gap-${index}`} />;
           }
           return (
-            <PaginationPage
-              key={page}
-              href={getPageUrl(page)}
-              current={page === currentPage}
-            >
+            <PaginationPage key={page} href={getPageUrl(page)} current={page === currentPage}>
               {page}
             </PaginationPage>
           );

@@ -123,7 +123,7 @@ describe('Order Emitters', () => {
     });
 
     it('should accept emitter options', () => {
-      const options = { timestamp: new Date(), context: { traits: { userId: 'user123' } } };
+      const options = { context: { traits: { userId: 'user123' } }, timestamp: new Date() };
       const result = orderCompleted(baseOrderProperties, options);
 
       expect(result.timestamp).toBe(options.timestamp);
@@ -451,7 +451,9 @@ describe('Order Emitters', () => {
 
       const result = orderCancelled(properties);
 
-      expect(result.properties!.products).toEqual([{ product_id: 'p1', name: 'Cancelled Product' }]);
+      expect(result.properties!.products).toEqual([
+        { product_id: 'p1', name: 'Cancelled Product' },
+      ]);
     });
 
     it('should handle early cancellation', () => {

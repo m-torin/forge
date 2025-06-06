@@ -143,7 +143,7 @@ export default function AvatarDropdown({ className }: Props) {
 
             {/* ------------------ 2 --------------------- */}
             <Link
-              href="#"
+              href="/help"
               className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
@@ -204,9 +204,12 @@ export default function AvatarDropdown({ className }: Props) {
             </Link>
 
             {/* ------------------ 2 --------------------- */}
-            <Link
-              href="#"
-              className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+            <button
+              onClick={() => {
+                // Handle logout
+              }}
+              className="-m-3 flex w-full items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+              type="button"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                 <svg
@@ -242,7 +245,7 @@ export default function AvatarDropdown({ className }: Props) {
               <div className="ml-4">
                 <p className="text-sm font-medium">Log out</p>
               </div>
-            </Link>
+            </button>
           </div>
         </PopoverPanel>
       </Popover>

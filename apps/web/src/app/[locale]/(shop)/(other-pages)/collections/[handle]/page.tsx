@@ -71,8 +71,8 @@ export default async function Page({
   params: Promise<{ handle: string; locale: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
-  const { handle } = await params;
-  const { page = "1" } = await searchParams;
+  const { handle: _handle } = await params;
+  const { page: _page = "1" } = await searchParams;
   const products = await getProducts();
 
   return (

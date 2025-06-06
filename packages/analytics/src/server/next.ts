@@ -14,8 +14,7 @@
  * // Server component
  * export default async function Page() {
  *   await trackServerEvent('Page Viewed', { path: '/home' });
- *   const showFeature = await getServerFeatureFlag('new-feature', cookies());
- *   return <div>{showFeature && <NewFeature />}</div>;
+ *   return <div>Page content</div>;
  * }
  *
  * // Middleware
@@ -37,15 +36,9 @@ export * from './index';
 // ============================================================================
 
 export {
-  createServerFeatureFlags,
-  getAllServerFeatureFlags,
   getServerBootstrapData,
-
-  // Server-side feature flag functions
-  getServerFeatureFlag,
   identifyServerUser,
   identifyUserAction,
-  isServerFeatureEnabled,
   // Context management for RSCs
   ServerAnalyticsProvider,
 
@@ -71,16 +64,10 @@ export {
 export type { NextJSServerAnalyticsConfig } from '../next/server';
 
 // ============================================================================
-// POSTHOG SERVER-SIDE FEATURE FLAGS
+// POSTHOG SERVER-SIDE BOOTSTRAP
 // ============================================================================
 
-export {
-  getAllFeatureFlagsOnServer,
-  getFeatureFlagOnServer,
-  getPostHogBootstrapDataOnServer,
-  // Server-side feature flag functions
-  isFeatureEnabledOnServer,
-} from '../next/server';
+export { getPostHogBootstrapDataOnServer } from '../next/server';
 
 // Additional PostHog utilities
 export {
@@ -130,7 +117,6 @@ export type {
   TrackedComponentProps,
   TypedTrackFunction,
   UseAnalyticsReturn,
-  UseFeatureFlagsReturn,
 } from '../next/types.d';
 
 // ============================================================================

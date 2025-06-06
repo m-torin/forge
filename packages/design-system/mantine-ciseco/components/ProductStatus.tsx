@@ -4,8 +4,32 @@ import { type FC } from 'react';
 import IconDiscount from './IconDiscount';
 
 interface Props {
+  animate?: boolean;
+  availableDate?: string;
   className?: string;
+  clickable?: boolean;
+  colorScheme?: {
+    background: string;
+    text: string;
+  };
+  icon?: React.ReactNode;
+  maxStock?: number;
+  notification?: boolean;
+  onClick?: () => void;
+  restockDate?: string;
+  shape?: 'rounded' | 'square' | 'pill';
+  showCount?: boolean;
+  showDate?: boolean;
+  showIcon?: boolean;
+  showProgress?: boolean;
+  showRestockDate?: boolean;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | { base: string; sm: string; md: string; lg: string };
   status?: string;
+  stockCount?: number;
+  text?: string;
+  tooltip?: string;
+  urgent?: boolean;
+  variant?: 'filled' | 'outline' | 'light' | 'dot';
 }
 
 const ProductStatus: FC<Props> = ({

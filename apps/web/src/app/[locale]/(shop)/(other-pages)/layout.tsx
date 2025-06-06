@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 
-import { ApplicationLayout } from "../application-layout";
+import { ApplicationLayoutWithHeader } from "../application-layout-with-header";
 
 export const metadata: Metadata = {
   description:
@@ -19,10 +19,10 @@ export const metadata: Metadata = {
 
 export default function Layout({
   children,
-  params,
+  params: _params,
 }: {
   children: React.ReactNode;
   params: any;
 }) {
-  return <ApplicationLayout>{children}</ApplicationLayout>;
+  return <ApplicationLayoutWithHeader>{children}</ApplicationLayoutWithHeader>;
 }

@@ -3,7 +3,7 @@
 import { Avatar, Group, Menu, Text, UnstyledButton } from '@mantine/core';
 import { IconLogout } from '@tabler/icons-react';
 
-import { signOut, useSession } from '@repo/auth-new/client';
+import { signOut, useSession } from '@repo/auth/client';
 
 interface UserButtonProps {
   _appearance?: {

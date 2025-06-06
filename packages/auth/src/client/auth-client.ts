@@ -39,8 +39,8 @@ export const authClient = createAuthClient({
       ? [
           adminClient({
             ac: adminAccessController,
-            roles: adminRoles,
             enableImpersonation: config.features.impersonation,
+            roles: adminRoles,
           }),
         ]
       : []),

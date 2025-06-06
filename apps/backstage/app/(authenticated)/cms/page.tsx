@@ -14,8 +14,6 @@ import {
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-import { useAnalytics, useObservability, useUIAnalytics } from '@repo/observability';
-
 const cmsModules = [
   {
     color: 'blue',
@@ -84,19 +82,10 @@ const cmsModules = [
 ];
 
 export default function CMSOverviewPage() {
-  const { trackPage } = useAnalytics();
-  const { trackView } = useUIAnalytics();
-  const { trackEvent } = useObservability();
-
   useEffect(() => {
-    trackPage('cms_overview');
-    trackView('cms_dashboard');
-    trackEvent({
-      action: 'view',
-      category: 'cms',
-      label: 'overview_page',
-    });
-  }, [trackPage, trackView, trackEvent]);
+    // Log page view
+    console.log('Page Viewed: cms_overview');
+  }, []);
 
   return (
     <Container py="xl" size="xl">
@@ -114,24 +103,21 @@ export default function CMSOverviewPage() {
               <Card
                 href={module.href as any}
                 component={Link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '';
-                }}
                 shadow="sm"
                 withBorder
-                style={{
-                  cursor: 'pointer',
-                  height: '100%',
-                  textDecoration: 'none',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}
                 padding="lg"
                 radius="md"
+                styles={{
+                  root: {
+                    height: '100%',
+                    transition: 'all 0.2s ease',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 'var(--mantine-shadow-md)',
+                    },
+                  },
+                }}
               >
                 <Stack style={{ height: '100%' }} gap="md">
                   <Group justify="space-between">

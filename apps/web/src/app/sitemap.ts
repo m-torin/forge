@@ -89,13 +89,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // Location pages
-  const locationPages: MetadataRoute.Sitemap = locations.flatMap((location: any) =>
-    languages.map((lang) => ({
-      url: `${baseUrl}/${lang}/locations/${location.slug}`,
-      changeFrequency: "monthly" as const,
-      lastModified: new Date(),
-      priority: 0.5,
-    })),
+  const locationPages: MetadataRoute.Sitemap = locations.flatMap(
+    (location: any) =>
+      languages.map((lang) => ({
+        url: `${baseUrl}/${lang}/locations/${location.slug}`,
+        changeFrequency: "monthly" as const,
+        lastModified: new Date(),
+        priority: 0.5,
+      })),
   );
 
   // Blog post pages

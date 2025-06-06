@@ -25,7 +25,7 @@ const SocialsList: FC<SocialsListProps> = ({ className = '', itemClass = 'block 
     >
       {socialsDemo.map((item, i) => (
         <a
-          key={i}
+          key={`${item.name}-${i}`}
           href={item.href}
           className={`${itemClass}`}
           rel="noopener noreferrer"

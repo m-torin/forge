@@ -7,45 +7,44 @@
  */
 
 import { nanoid } from 'nanoid';
-import { withRetry, withCircuitBreaker, type RetryOptions } from '../patterns/index';
+
+import { type RetryOptions, withCircuitBreaker, withRetry } from '../patterns/index';
 import {
-  OrchestrationError,
-  OrchestrationErrorCodes,
   createOrchestrationError,
   createValidationError,
+  OrchestrationError,
+  OrchestrationErrorCodes,
 } from '../utils/errors';
 
-// Import modularized components
-import type {
-  StepId,
-  ExecutionId,
-  ErrorCode,
-  StepExecutionConfig,
-  StepValidationConfig,
-  ValidationResult,
-  StepMetadata,
-  StepPerformanceData,
-  StepExecutionContext,
-  StepExecutionResult,
-  StepExecutionFunction,
-  WorkflowStepDefinition,
-  StepFactoryConfig,
-} from './step-factory/step-types';
-
-import type { WorkflowError } from '../types/workflow';
-import type { SimpleWorkflowStep } from './step-factory/step-types';
-
 import {
-  validateStepInput,
-  validateStepOutput,
-  validateStepDefinition,
-} from './step-factory/step-validation';
-
-import {
+  createProgressReporter,
   initializePerformanceData,
   updatePerformanceData,
-  createProgressReporter,
 } from './step-factory/step-performance';
+import {
+  validateStepDefinition,
+  validateStepInput,
+  validateStepOutput,
+} from './step-factory/step-validation';
+
+import type { WorkflowError } from '../types/workflow';
+// Import modularized components
+import type {
+  ErrorCode,
+  ExecutionId,
+  StepExecutionConfig,
+  StepExecutionContext,
+  StepExecutionFunction,
+  StepExecutionResult,
+  StepFactoryConfig,
+  StepId,
+  StepMetadata,
+  StepPerformanceData,
+  StepValidationConfig,
+  ValidationResult,
+  WorkflowStepDefinition,
+} from './step-factory/step-types';
+import type { SimpleWorkflowStep } from './step-factory/step-types';
 
 // Re-export types for convenience
 export * from './step-factory/step-types';
@@ -63,17 +62,17 @@ export function createStep<TInput = any, TOutput = any>(
   action: (input: TInput) => Promise<TOutput> | TOutput,
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
+    validate: async (input: TInput) => ({ valid: true }),
     execute: async (input: TInput) => {
       try {
         const output = await action(input);
         return {
-          success: true,
           output,
-          performance: { startTime: Date.now(), duration: 0 },
+          performance: { duration: 0, startTime: Date.now() },
+          success: true,
         };
       } catch (error) {
         return {
-          success: false,
           error: {
             code: 'STEP_EXECUTION_ERROR',
             message: error instanceof Error ? error.message : 'Unknown error',
@@ -81,11 +80,11 @@ export function createStep<TInput = any, TOutput = any>(
             stepId: name,
             timestamp: new Date(),
           },
-          performance: { startTime: Date.now(), duration: 0 },
+          performance: { duration: 0, startTime: Date.now() },
+          success: false,
         };
       }
     },
-    validate: async (input: TInput) => ({ valid: true }),
   };
 }
 
@@ -99,59 +98,6 @@ export function createStepWithValidation<TInput = any, TOutput = any>(
   outputValidator?: (output: TOutput) => boolean | Promise<boolean>,
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
-    execute: async (input: TInput) => {
-      try {
-        // Validate input if validator provided
-        if (inputValidator && !(await inputValidator(input))) {
-          return {
-            success: false,
-            error: {
-              code: 'VALIDATION_ERROR',
-              message: 'Input validation failed',
-              retryable: false,
-              stepId: name,
-              timestamp: new Date(),
-            },
-            performance: { startTime: Date.now(), duration: 0 },
-          };
-        }
-
-        const output = await action(input);
-
-        // Validate output if validator provided
-        if (outputValidator && !(await outputValidator(output))) {
-          return {
-            success: false,
-            error: {
-              code: 'VALIDATION_ERROR',
-              message: 'Output validation failed',
-              retryable: false,
-              stepId: name,
-              timestamp: new Date(),
-            },
-            performance: { startTime: Date.now(), duration: 0 },
-          };
-        }
-
-        return {
-          success: true,
-          output,
-          performance: { startTime: Date.now(), duration: 0 },
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: {
-            code: 'STEP_EXECUTION_ERROR',
-            message: error instanceof Error ? error.message : 'Unknown error',
-            retryable: true,
-            stepId: name,
-            timestamp: new Date(),
-          },
-          performance: { startTime: Date.now(), duration: 0 },
-        };
-      }
-    },
     validate: async (input: TInput) => {
       if (inputValidator) {
         const isValid = await inputValidator(input);
@@ -161,6 +107,59 @@ export function createStepWithValidation<TInput = any, TOutput = any>(
         };
       }
       return { valid: true };
+    },
+    execute: async (input: TInput) => {
+      try {
+        // Validate input if validator provided
+        if (inputValidator && !(await inputValidator(input))) {
+          return {
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Input validation failed',
+              retryable: false,
+              stepId: name,
+              timestamp: new Date(),
+            },
+            performance: { duration: 0, startTime: Date.now() },
+            success: false,
+          };
+        }
+
+        const output = await action(input);
+
+        // Validate output if validator provided
+        if (outputValidator && !(await outputValidator(output))) {
+          return {
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Output validation failed',
+              retryable: false,
+              stepId: name,
+              timestamp: new Date(),
+            },
+            performance: { duration: 0, startTime: Date.now() },
+            success: false,
+          };
+        }
+
+        return {
+          output,
+          performance: { duration: 0, startTime: Date.now() },
+          success: true,
+        };
+      } catch (error) {
+        return {
+          error: {
+            code: 'STEP_EXECUTION_ERROR',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            retryable: true,
+            stepId: name,
+            timestamp: new Date(),
+          },
+          performance: { duration: 0, startTime: Date.now() },
+          success: false,
+        };
+      }
     },
   };
 }
@@ -187,17 +186,17 @@ export function createWorkflowStep<TInput = any, TOutput = any>(
 
   return {
     id: stepId,
+    validationConfig: options.validationConfig,
+    cleanup: options.cleanup,
+    condition: options.condition,
+    dependencies: options.dependencies,
+    execute: executionFunction,
+    executionConfig: options.executionConfig,
     metadata: {
       ...metadata,
       createdAt: metadata.createdAt ?? new Date(), // nullish coalescing
     },
-    execute: executionFunction,
-    executionConfig: options.executionConfig,
-    validationConfig: options.validationConfig,
-    dependencies: options.dependencies,
-    condition: options.condition,
     optional: options.optional,
-    cleanup: options.cleanup,
   };
 }
 
@@ -227,8 +226,8 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
   ) {
     this.#definition = definition;
     this.#factoryConfig = {
-      enablePerformanceMonitoring: true,
       enableDetailedLogging: false,
+      enablePerformanceMonitoring: true,
       ...factoryConfig,
     };
   }
@@ -255,20 +254,20 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
     const performance = initializePerformanceData(this.#factoryConfig.enablePerformanceMonitoring);
 
     const context: StepExecutionContext<TInput> = {
-      executionId,
-      workflowExecutionId,
-      stepDefinition: this.#definition,
+      abortSignal,
       attempt: 1,
+      executionId,
       input,
-      previousStepsContext: contextMap,
       metadata: metadataMap,
       performance,
-      abortSignal,
+      previousStepsContext: contextMap,
       reportProgress: createProgressReporter(
         performance,
         this.#definition.id,
         this.#factoryConfig.enableDetailedLogging,
       ),
+      stepDefinition: this.#definition,
+      workflowExecutionId,
     };
 
     try {
@@ -318,10 +317,10 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
       await this.#handleError(error as Error, context);
 
       return {
-        success: false,
         error: workflowError,
         performance,
         shouldRetry: this.#shouldRetryError(workflowError),
+        success: false,
       };
     }
   }
@@ -350,9 +349,9 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
         );
         return (
           result.data || {
-            success: false,
             output: undefined as any,
             performance: context.performance,
+            success: false,
           }
         );
       };
@@ -366,11 +365,10 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
         context: StepExecutionContext<TInput>,
       ): Promise<StepExecutionResult<TOutput>> => {
         const retryOptions: RetryOptions = {
-          maxAttempts: retryConfig.maxAttempts,
-          strategy: retryConfig.backoff,
           baseDelay: retryConfig.delay,
-          maxDelay: retryConfig.maxDelay ?? retryConfig.delay * 10,
           jitter: retryConfig.jitter ?? false,
+          maxAttempts: retryConfig.maxAttempts,
+          maxDelay: retryConfig.maxDelay ?? retryConfig.delay * 10,
           shouldRetry: (error, attempt) => {
             context.attempt = attempt;
             this.#factoryConfig.enableDetailedLogging &&
@@ -380,14 +378,15 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
               );
             return attempt < retryConfig.maxAttempts;
           },
+          strategy: retryConfig.backoff,
         };
 
         const result = await withRetry(() => originalFunction(context), retryOptions);
         return (
           result.data || {
-            success: false,
             output: undefined as any,
             performance: context.performance,
+            success: false,
           }
         );
       };
@@ -430,21 +429,21 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
     if (error instanceof OrchestrationError) {
       return {
         code: error.code as ErrorCode,
+        details: error.context,
         message: error.message,
         retryable: error.retryable,
         stepId,
         timestamp: new Date(),
-        details: error.context,
       };
     }
 
     return {
       code: 'STEP_EXECUTION_ERROR' as ErrorCode,
+      details: { originalError: error },
       message: error instanceof Error ? error.message : 'Unknown error',
       retryable: true,
       stepId,
       timestamp: new Date(),
-      details: { originalError: error },
     };
   }
 
@@ -492,9 +491,9 @@ export class StandardWorkflowStep<TInput = any, TOutput = any> {
     updatePerformanceData(performance, this.#factoryConfig.enablePerformanceMonitoring);
 
     return {
-      success: true,
-      metadata: { skipped: true, reason },
+      metadata: { reason, skipped: true },
       performance,
+      success: true,
     };
   }
 
@@ -561,8 +560,8 @@ export class StepFactory {
 
   constructor(config: StepFactoryConfig = {}) {
     this.#config = {
-      enablePerformanceMonitoring: true,
       enableDetailedLogging: false,
+      enablePerformanceMonitoring: true,
       ...config,
     };
     this.#steps = new Map();
@@ -577,15 +576,15 @@ export class StepFactory {
     const httpStep = createWorkflowStep(
       {
         name: 'HTTP Request',
-        description: 'Make an HTTP request',
-        version: '1.0.0',
         category: 'http',
+        description: 'Make an HTTP request',
         tags: ['http', 'api'],
+        version: '1.0.0',
       },
       async (context) => ({
-        success: true,
         output: {},
         performance: context.performance,
+        success: true,
       }),
     );
     httpStep.id = 'builtin_http_request';
@@ -595,15 +594,15 @@ export class StepFactory {
     const dbStep = createWorkflowStep(
       {
         name: 'Database Query',
-        description: 'Execute a database query',
-        version: '1.0.0',
         category: 'database',
+        description: 'Execute a database query',
         tags: ['database', 'sql'],
+        version: '1.0.0',
       },
       async (context) => ({
-        success: true,
         output: {},
         performance: context.performance,
+        success: true,
       }),
     );
     dbStep.id = 'builtin_db_query';
@@ -638,16 +637,16 @@ export class StepFactory {
 
     const definition = createWorkflowStep(metadata, executionFunction, {
       ...options,
-      executionConfig: mergedExecutionConfig,
       validationConfig: mergedValidationConfig,
+      executionConfig: mergedExecutionConfig,
     });
 
     // Validate step definition
     const validation = validateStepDefinition(definition);
     if (!validation.valid) {
       throw createValidationError(`Invalid step definition: ${validation.errors?.join(', ')}`, {
-        code: OrchestrationErrorCodes.INVALID_STEP_DEFINITION,
         validationErrors: validation.errors,
+        code: OrchestrationErrorCodes.INVALID_STEP_DEFINITION,
       });
     }
 
@@ -665,8 +664,8 @@ export class StepFactory {
       throw createValidationError(
         `Cannot register invalid step: ${validation.errors?.join(', ')}`,
         {
-          code: OrchestrationErrorCodes.INVALID_STEP_REGISTRATION,
           validationErrors: validation.errors,
+          code: OrchestrationErrorCodes.INVALID_STEP_REGISTRATION,
         },
       );
     }
@@ -765,9 +764,9 @@ export class StepFactory {
    */
   getStats() {
     return {
-      totalSteps: this.#steps.size,
-      stepsByCategory: this.#getStepsByCategory(),
       deprecatedSteps: this.#getDeprecatedStepsCount(),
+      stepsByCategory: this.#getStepsByCategory(),
+      totalSteps: this.#steps.size,
     };
   }
 
@@ -807,13 +806,13 @@ export const defaultStepFactory = new StepFactory();
  * Pattern matching for error handling
  */
 export const matchError = (error: WorkflowError) => ({
-  timeout: (handler: (error: WorkflowError) => void) =>
-    error.code?.includes('TIMEOUT') ? handler(error) : undefined,
   validation: (handler: (error: WorkflowError) => void) =>
     error.code?.includes('VALIDATION') ? handler(error) : undefined,
+  default: (handler: (error: WorkflowError) => void) => handler(error),
   execution: (handler: (error: WorkflowError) => void) =>
     error.code?.includes('EXECUTION') ? handler(error) : undefined,
-  default: (handler: (error: WorkflowError) => void) => handler(error),
+  timeout: (handler: (error: WorkflowError) => void) =>
+    error.code?.includes('TIMEOUT') ? handler(error) : undefined,
 });
 
 /**
@@ -827,10 +826,10 @@ export const when = <TInput, TOutput>(
   return createWorkflowStep(
     {
       name: 'conditional_step',
-      description: 'Conditional step execution',
-      version: '1.0.0',
       category: 'control',
+      description: 'Conditional step execution',
       tags: ['conditional'],
+      version: '1.0.0',
     },
     async (context) => {
       const shouldExecuteTrue = await condition(context.input);
@@ -838,10 +837,10 @@ export const when = <TInput, TOutput>(
 
       if (!stepToExecute) {
         return {
-          success: true,
+          metadata: { reason: 'No step for condition result', skipped: true },
           output: context.input as unknown as TOutput,
           performance: context.performance,
-          metadata: { skipped: true, reason: 'No step for condition result' },
+          success: true,
         };
       }
 

@@ -39,7 +39,7 @@ const Layout = async ({
   if (!collection?.id) {
     return notFound();
   }
-  const { count, description, title } = collection;
+  const { count: _count, description, title } = collection;
   const products = await getProducts();
 
   return (

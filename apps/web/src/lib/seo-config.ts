@@ -15,7 +15,7 @@ export const seoManager = new SEOManager({
 });
 
 // Use in your pages
-export async function generateProductMetadata(product: any, locale: string) {
+export async function generateProductMetadata(product: any, _locale: string) {
   return seoManager.createMetadata({
     alternates: {
       canonical: `/products/${product.handle}`,

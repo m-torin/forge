@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
   experimental: {
     ...config.experimental,
     optimizePackageImports: ["@mantine/core", "@mantine/hooks"],
-    // Enable PPR for select routes
-    ppr: true,
+    // Temporarily disable PPR for debugging
+    // ppr: true,
   },
   // Cache headers for static assets
   async headers() {

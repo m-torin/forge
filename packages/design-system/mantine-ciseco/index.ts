@@ -46,12 +46,7 @@ export { default as TabFilters } from './components/TabFilters';
 export { default as TabFiltersPopover } from './components/TabFiltersPopover';
 export { default as VerifyIcon } from './components/VerifyIcon';
 
-// Aside Components
-export { default as AsideCategoryFilters } from './components/aside-category-filters';
-export { default as AsideProductQuickview } from './components/aside-product-quickview';
-export { default as AsideSidebarCart } from './components/aside-sidebar-cart';
-export { default as AsideSidebarNavigation } from './components/aside-sidebar-navigation';
-export { default as Aside } from './components/aside';
+// Aside Components - Removed in favor of Mantine Drawers
 
 // Background Components
 export { default as BackgroundSection } from './components/BackgroundSection/BackgroundSection';
@@ -123,14 +118,14 @@ export { default as Next } from './components/shared/NextPrev/Next';
 export { default as NextPrev } from './components/shared/NextPrev/NextPrev';
 export { default as Prev } from './components/shared/NextPrev/Prev';
 export {
+  CompletePagination,
+  type CompletePaginationProps,
   Pagination,
   PaginationGap,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-  CompletePagination,
-  type CompletePaginationProps,
 } from './components/shared/Pagination/Pagination';
 export { default as Radio } from './components/shared/Radio/Radio';
 export { default as Select } from './components/shared/Select/Select';

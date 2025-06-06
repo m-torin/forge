@@ -4,12 +4,12 @@
  */
 
 // Placeholder auth client functions
-export function createAuthClient(config?: any) {
+export function createAuthClient(_config?: any) {
   return {
-    signIn: async () => ({ success: false, message: 'Not implemented' }),
-    signOut: async () => ({ success: false, message: 'Not implemented' }),
     getUser: async () => null,
     isAuthenticated: () => false,
+    signIn: async () => ({ message: 'Not implemented', success: false }),
+    signOut: async () => ({ message: 'Not implemented', success: false }),
   };
 }
 
@@ -20,24 +20,24 @@ export interface AuthConfig {
 }
 
 export interface AuthUser {
-  id: string;
   email: string;
+  id: string;
   name?: string;
 }
 
 export interface AuthSession {
-  user: AuthUser;
   token: string;
+  user: AuthUser;
 }
 
 // Placeholder hooks
 export function useAuth() {
   return {
-    user: null,
-    isLoading: false,
     isAuthenticated: false,
+    isLoading: false,
     signIn: async () => {},
     signOut: async () => {},
+    user: null,
   };
 }
 

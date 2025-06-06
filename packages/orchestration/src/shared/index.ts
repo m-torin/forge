@@ -16,4 +16,4 @@ export * from './features/index';
 
 // Factory exports
 export * from './factories/index';
-export { StepRegistry, defaultStepRegistry } from './factories/step-registry';
+export { defaultStepRegistry, StepRegistry } from './factories/step-registry';

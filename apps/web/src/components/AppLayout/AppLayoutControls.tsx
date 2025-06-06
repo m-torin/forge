@@ -47,7 +47,7 @@ export function AppLayoutControls({
 
     // Visibility controls
     setAside,
-    toggleAside,
+    toggleAside: _toggleAside,
     closeAll,
     openAll,
     setMobileNavbar,
@@ -56,14 +56,14 @@ export function AppLayoutControls({
     toggleNavbar,
 
     setAsideEnabled,
-    toggleAsideEnabled,
+    toggleAsideEnabled: _toggleAsideEnabled,
     setFooterEnabled,
     // Enable/disable controls
     setHeaderEnabled,
     setNavbarEnabled,
-    toggleFooterEnabled,
-    toggleHeaderEnabled,
-    toggleNavbarEnabled,
+    toggleFooterEnabled: _toggleFooterEnabled,
+    toggleHeaderEnabled: _toggleHeaderEnabled,
+    toggleNavbarEnabled: _toggleNavbarEnabled,
 
     // Dimension controls
     setAsideWidth,

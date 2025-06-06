@@ -77,7 +77,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale: _locale, slug } = await params;
   const brand = await getBrandBySlug(slug);
 
   if (!brand) {
