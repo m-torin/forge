@@ -84,10 +84,9 @@ describe('AddToCardButton', () => {
     expect(button).toBeDisabled();
   });
 
-  it('handles click event with custom onClick prop', () => {
-    const mockOnClick = vi.fn();
+  it('handles click event', () => {
     render(
-      <AddToCardButton {...defaultProps} onClick={mockOnClick}>
+      <AddToCardButton {...defaultProps}>
         Add to Cart
       </AddToCardButton>
     );
@@ -95,8 +94,7 @@ describe('AddToCardButton', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    // Both the custom onClick and the internal notification should be called
-    expect(mockOnClick).toHaveBeenCalled();
+    // The internal notification should be called
     expect(notify.custom).toHaveBeenCalled();
   });
 

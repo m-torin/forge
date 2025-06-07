@@ -67,7 +67,7 @@ describe('PinoProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(mockPino.debug).toHaveBeenCalledWith({ userId: '123' }, 'Debug message');
     });
@@ -79,7 +79,7 @@ describe('PinoProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(mockPino.info).toHaveBeenCalledWith({}, 'Info message');
     });
@@ -92,7 +92,7 @@ describe('PinoProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(mockPino.warn).toHaveBeenCalledWith({ code: 'WARN001' }, 'Warning message');
     });
@@ -104,7 +104,7 @@ describe('PinoProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(mockPino.error).toHaveBeenCalledWith({}, 'Error message');
     });
@@ -116,7 +116,7 @@ describe('PinoProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(mockPino.info).toHaveBeenCalledWith({}, 'Simple message');
     });

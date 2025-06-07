@@ -1,7 +1,7 @@
 /**
  * Test setup for observability package
  */
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom';
 
 // Mock @t3-oss/env-nextjs to avoid server-side environment restrictions

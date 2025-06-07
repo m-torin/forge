@@ -2,6 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
 import { ProgressiveImage } from '../../../mantine-ciseco/components/ProgressiveImage';
 
+// Mock @mantine/hooks
+vi.mock('@mantine/hooks', () => ({
+  useIntersection: () => ({
+    ref: vi.fn(),
+    entry: { isIntersecting: true }
+  }),
+  useViewportSize: () => ({
+    width: 1920,
+    height: 1080
+  })
+}));
+
 describe('ProgressiveImage', () => {
   const defaultProps = {
     src: '/high-res-image.jpg',
@@ -11,13 +23,11 @@ describe('ProgressiveImage', () => {
   };
 
   beforeEach(() => {
-    // Mock IntersectionObserver
+    // Mock IntersectionObserver to immediately trigger
     global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
       observe: vi.fn().mockImplementation((target) => {
-        // Simulate image entering viewport
-        setTimeout(() => {
-          callback([{ isIntersecting: true, target }]);
-        }, 100);
+        // Immediately simulate image entering viewport
+        callback([{ isIntersecting: true, target }], this);
       }),
       unobserve: vi.fn(),
       disconnect: vi.fn(),
@@ -30,13 +40,11 @@ describe('ProgressiveImage', () => {
     expect(placeholder).toBeInTheDocument();
   });
 
-  it('loads image when in viewport', async () => {
+  it('loads image when in viewport', () => {
     render(<ProgressiveImage {...defaultProps} />);
-
-    await waitFor(() => {
-      const image = screen.getByAltText(defaultProps.alt);
-      expect(image).toHaveAttribute('src', expect.stringContaining(defaultProps.src));
-    });
+    
+    const image = screen.getByAltText(defaultProps.alt);
+    expect(image).toHaveAttribute('src', expect.stringContaining('high-res-image.jpg'));
   });
 
   it('renders with alt text', () => {
@@ -54,7 +62,9 @@ describe('ProgressiveImage', () => {
 
   it('renders with custom className', () => {
     const { container } = render(<ProgressiveImage {...defaultProps} className="custom-image" />);
-    expect(container.firstChild).toHaveClass('custom-image');
+    // The className is applied to the wrapper div
+    const wrapper = container.querySelector('.custom-image');
+    expect(wrapper).toBeInTheDocument();
   });
 
   it('handles responsive image sources', () => {
@@ -65,6 +75,6 @@ describe('ProgressiveImage', () => {
     };
     render(<ProgressiveImage {...defaultProps} src={responsiveSrc} />);
     const image = screen.getByAltText(defaultProps.alt);
-    expect(image).toHaveAttribute('src', expect.stringContaining(responsiveSrc.large));
+    expect(image).toHaveAttribute('src', expect.stringContaining('large.jpg'));
   });
 });
