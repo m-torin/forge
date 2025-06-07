@@ -10,6 +10,11 @@ import { imageProcessingWorkflow } from './image-processing';
 import { userOnboardingWorkflow } from './user-onboarding';
 import { analyticsPipelineWorkflow } from './analytics-pipeline';
 import { orderProcessingWorkflow } from './order-processing';
+import { imageDeduplicationWorkflow } from './image-deduplication';
+import { distributedComputationWorkflow } from './distributed-computation';
+import { analyticsVectorizationWorkflow } from './analytics-vectorization';
+import { sitemapParserWorkflow } from './sitemap-parser';
+import { universalRegistryWorkflow } from './universal-registry';
 
 export interface WorkflowRegistryEntry {
   id: string;
@@ -73,6 +78,36 @@ class WorkflowRegistry {
       workflow: orderProcessingWorkflow,
       category: 'ecommerce',
       tags: ['order', 'payment', 'fulfillment', 'ecommerce', 'transaction'],
+    });
+
+    this.register({
+      workflow: imageDeduplicationWorkflow,
+      category: 'media',
+      tags: ['image', 'deduplication', 'hashing', 'perceptual', 'streaming'],
+    });
+
+    this.register({
+      workflow: distributedComputationWorkflow,
+      category: 'compute',
+      tags: ['distributed', 'map-reduce', 'parallel', 'computation', 'dynamic'],
+    });
+
+    this.register({
+      workflow: analyticsVectorizationWorkflow,
+      category: 'ml',
+      tags: ['analytics', 'vectorization', 'ml', 'embeddings', 'recommendation'],
+    });
+
+    this.register({
+      workflow: sitemapParserWorkflow,
+      category: 'data',
+      tags: ['sitemap', 'parser', 'crawler', 'seo', 'tracking'],
+    });
+
+    this.register({
+      workflow: universalRegistryWorkflow,
+      category: 'catalog',
+      tags: ['registry', 'catalog', 'product', 'normalization', 'universal'],
     });
   }
 
