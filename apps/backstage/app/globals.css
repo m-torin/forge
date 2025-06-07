@@ -3,7 +3,9 @@
 
 /* Smooth transitions for better UX */
 * {
-  transition: color 200ms ease, background-color 200ms ease;
+  transition:
+    color 200ms ease,
+    background-color 200ms ease;
 }
 
 /* Better focus styles */

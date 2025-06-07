@@ -1,5 +1,6 @@
-import { type ReactNode } from "react";
 import WebHeader2 from "@/components/WebHeader2";
+import { type ReactNode } from "react";
+
 import { ApplicationLayout } from "./application-layout";
 
 interface Props {

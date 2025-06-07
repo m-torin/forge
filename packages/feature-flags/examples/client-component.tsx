@@ -1,6 +1,7 @@
 'use client';
 
-import { useFlag } from '../src/client';
+import { useFlag } from '../src/client-next';
+
 import { newFeatureFlag } from './flags';
 
 export function ClientFeatureComponent() {

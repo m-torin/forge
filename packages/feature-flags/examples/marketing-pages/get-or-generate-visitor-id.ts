@@ -1,5 +1,6 @@
-import { nanoid } from 'nanoid';
 import { dedupe } from '@vercel/flags/next';
+import { nanoid } from 'nanoid';
+
 import type { ReadonlyHeaders, ReadonlyRequestCookies } from '@vercel/flags';
 import type { NextRequest } from 'next/server';
 

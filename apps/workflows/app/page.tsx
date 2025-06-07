@@ -1,6 +1,5 @@
 'use client';
 
-import { workflowService } from '@/lib';
 import { type WorkflowDefinition } from '@/types';
 import {
   ActionIcon,
@@ -14,7 +13,13 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { IconCheck, IconClock, IconEye, IconPlay, IconRefresh } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconClock,
+  IconEye,
+  IconPlayerPlay as IconPlay,
+  IconRefresh,
+} from '@tabler/icons-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -36,13 +41,18 @@ export default function HomePage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [workflowsData, statsData] = await Promise.all([
-        workflowService.getWorkflows(),
-        workflowService.getWorkflowStats(),
+      const [workflowsResponse, statsResponse] = await Promise.all([
+        fetch('/api/workflows'),
+        fetch('/api/stats'),
       ]);
 
-      setWorkflows(workflowsData);
-      setStats(statsData);
+      const workflowsData = await workflowsResponse.json();
+      const statsData = await statsResponse.json();
+
+      if (workflowsData.success && statsData.success) {
+        setWorkflows(workflowsData.data.workflows);
+        setStats(statsData.data);
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -52,11 +62,19 @@ export default function HomePage() {
 
   const executeWorkflow = async (workflowId: string) => {
     try {
-      const result = await workflowService.executeWorkflow(
-        workflowId,
-        {}, // Empty input for demo
-        { type: 'manual', payload: {}, triggeredBy: 'user' },
-      );
+      const response = await fetch('/api/workflows', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workflowId,
+          input: {}, // Empty input for demo
+          options: {},
+        }),
+      });
+
+      const result = await response.json();
       console.log('Workflow executed:', result);
       // Optionally refresh stats
       loadData();
@@ -174,7 +192,7 @@ export default function HomePage() {
               View All Workflows
             </Button>
             <Button
-              href="/executions"
+              href={'/executions' as any}
               component={Link}
               leftSection={<IconEye size={16} />}
               variant="light"
@@ -182,7 +200,7 @@ export default function HomePage() {
               View Executions
             </Button>
             <Button
-              href="/monitor"
+              href={'/monitor' as any}
               component={Link}
               leftSection={<IconClock size={16} />}
               variant="outline"
@@ -266,7 +284,7 @@ export default function HomePage() {
                           Execute
                         </Button>
                         <ActionIcon
-                          href={`/workflows/${workflow.id}`}
+                          href={`/workflows/${workflow.id}` as any}
                           component={Link}
                           size="sm"
                           variant="subtle"

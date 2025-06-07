@@ -1,11 +1,12 @@
-import { flag, dedupe } from '../src/server';
+import { dedupe, flag } from '../src/server-next';
 import { getOrGenerateVisitorId } from '../src/shared/utils';
+
 import type { ReadonlyRequestCookies } from '@vercel/flags';
 
 // Simple feature flag
 export const newFeatureFlag = flag<boolean>({
-  key: 'new-feature',
   decide: () => false,
+  key: 'new-feature',
 });
 
 // A/B test flag with visitor targeting
@@ -21,13 +22,13 @@ const identifyVisitor = dedupe(
 );
 
 export const heroTestFlag = flag<'A' | 'B'>({
-  key: 'hero-test',
-  identify: identifyVisitor,
   decide: ({ entities }) => {
     if (!entities?.visitor) return 'A';
     // Use first character of ID for 50/50 split
     return entities.visitor.id[0] < '8' ? 'A' : 'B';
   },
+  identify: identifyVisitor,
+  key: 'hero-test',
   options: [
     { label: 'Hero Variant A', value: 'A' },
     { label: 'Hero Variant B', value: 'B' },
@@ -56,12 +57,12 @@ const identifyUser = dedupe(
 );
 
 export const premiumFeatureFlag = flag<boolean>({
-  key: 'premium-feature',
-  identify: identifyUser,
   decide: ({ entities }) => {
     const plan = entities?.user?.plan;
     return plan === 'pro' || plan === 'enterprise';
   },
+  identify: identifyUser,
+  key: 'premium-feature',
 });
 
 // Marketing flags array for precomputation

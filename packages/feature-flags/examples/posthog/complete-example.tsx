@@ -1,14 +1,17 @@
 /**
  * Complete PostHog adapter example showing various flag types
  */
-import { flag, dedupe } from '@vercel/flags/next';
-import { postHogAdapter } from '@repo/feature-flags/server/next';
+import { dedupe, flag } from '@vercel/flags/next';
+
+import { useFlag } from '@repo/feature-flags/client/next';
+import { postHogServerAdapter as postHogAdapter } from '@repo/feature-flags/server/next';
+
 import type { ReadonlyRequestCookies } from '@vercel/flags';
 
 // Define entities for type safety
 interface Entities {
-  user?: { id: string };
   team?: { id: string };
+  user?: { id: string };
 }
 
 // Dedupe the identify function to prevent duplicate calls
@@ -17,29 +20,29 @@ const identify = dedupe(({ cookies }: { cookies: ReadonlyRequestCookies }): Enti
   const teamId = cookies.get('team-id')?.value;
 
   return {
-    user: userId ? { id: userId } : undefined,
     team: teamId ? { id: teamId } : undefined,
+    user: userId ? { id: userId } : undefined,
   };
 });
 
 // Basic boolean feature flag
 export const betaFeatureFlag = flag<boolean, Entities>({
-  key: 'beta-feature',
-  adapter: postHogAdapter.isFeatureEnabled(),
   identify,
+  adapter: postHogAdapter.isFeatureEnabled(),
   defaultValue: false,
+  key: 'beta-feature',
 });
 
 // Multivariate A/B test flag
 export const homepageVariantFlag = flag<string | boolean, Entities>({
-  key: 'homepage-variant',
-  adapter: postHogAdapter.featureFlagValue(),
   identify,
+  adapter: postHogAdapter.featureFlagValue(),
   defaultValue: 'control',
+  key: 'homepage-variant',
   options: [
-    { value: 'control', label: 'Control' },
-    { value: 'variant-a', label: 'Variant A' },
-    { value: 'variant-b', label: 'Variant B' },
+    { label: 'Control', value: 'control' },
+    { label: 'Variant A', value: 'variant-a' },
+    { label: 'Variant B', value: 'variant-b' },
   ],
 });
 
@@ -51,7 +54,7 @@ interface ExperimentConfig {
 }
 
 export const experimentConfigFlag = flag<ExperimentConfig, Entities>({
-  key: 'experiment-config',
+  identify,
   adapter: postHogAdapter.featureFlagPayload<ExperimentConfig>((payload) => {
     // Transform the payload if needed
     return {
@@ -60,28 +63,28 @@ export const experimentConfigFlag = flag<ExperimentConfig, Entities>({
       showBadge: payload.showBadge ?? false,
     };
   }),
-  identify,
   defaultValue: {
     buttonColor: '#0070f3',
     buttonText: 'Get Started',
     showBadge: false,
   },
+  key: 'experiment-config',
 });
 
 // Percentage rollout flag
 export const newCheckoutFlag = flag<boolean, Entities>({
-  key: 'new-checkout-flow',
-  adapter: postHogAdapter.isFeatureEnabled(),
   identify,
+  adapter: postHogAdapter.isFeatureEnabled(),
   defaultValue: false,
+  key: 'new-checkout-flow',
 });
 
 // Team-based feature flag
 export const teamFeatureFlag = flag<boolean, Entities>({
-  key: 'team-collaboration-feature',
-  adapter: postHogAdapter.isFeatureEnabled(),
   identify,
+  adapter: postHogAdapter.isFeatureEnabled(),
   defaultValue: false,
+  key: 'team-collaboration-feature',
 });
 
 // Example usage in a Server Component
@@ -122,8 +125,6 @@ export default async function ExamplePage() {
 
 // Example usage in a Client Component
 ('use client');
-
-import { useFlag } from '@repo/feature-flags/client/next';
 
 export function ClientExample() {
   const betaFeature = useFlag(betaFeatureFlag, false);

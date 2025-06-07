@@ -1,404 +1,529 @@
 import { expect, test } from "@repo/testing/e2e";
-import { ResponsiveTestUtils, WaitUtils } from "@repo/testing/e2e";
+import { PerformanceUtils, WaitUtils } from "@repo/testing/e2e";
 
-test.describe("Responsive Design", () => {
+import { withPerformanceMonitoring } from "./utils/performance-monitor";
+import { createVisualTester } from "./utils/visual-testing";
+
+test.describe("Responsive Design - Enhanced", () => {
   let waitUtils: WaitUtils;
-  let _responsiveUtils: ResponsiveTestUtils;
-
-  const viewports = {
-    desktop: { width: 1280, height: 720 },
-    desktopLarge: { width: 1920, height: 1080 },
-    mobile: { width: 375, height: 667 },
-    mobileLandscape: { width: 667, height: 375 },
-    tablet: { width: 768, height: 1024 },
-    tabletLandscape: { width: 1024, height: 768 },
-  };
+  let perfUtils: PerformanceUtils;
 
   test.beforeEach(async ({ page }) => {
     waitUtils = new WaitUtils(page);
-    responsiveUtils = new ResponsiveTestUtils(page);
+    perfUtils = new PerformanceUtils(page);
   });
 
-  test("should be responsive on mobile devices", async ({ page }) => {
-    await page.setViewportSize(viewports.mobile);
-    await page.goto("/");
-    await waitUtils.forNavigation();
+  const viewports = [
+    { width: 375, name: "Mobile", height: 667 },
+    { width: 768, name: "Tablet", height: 1024 },
+    { width: 1440, name: "Desktop", height: 900 },
+    { width: 1920, name: "Large Desktop", height: 1080 },
+  ];
 
-    // Check if mobile navigation is working
-    const mobileMenu = page.getByRole("button", {
-      name: /menu|hamburger|navigation/i,
-    });
-    const mobileMenuIcon = page.locator(
-      '[data-testid="mobile-menu"], .mobile-menu, .hamburger',
-    );
-
-    const menuButton =
-      (await mobileMenu.count()) > 0 ? mobileMenu : mobileMenuIcon;
-
-    if ((await menuButton.count()) > 0) {
-      await expect(menuButton.first()).toBeVisible();
-
-      // Test mobile menu functionality
-      await menuButton.first().click();
-      await page.waitForTimeout(300);
-
-      // Navigation should be visible after clicking
-      const navigation = page.getByRole("navigation");
-      if ((await navigation.count()) > 0) {
-        await expect(navigation.first()).toBeVisible();
-      }
-    }
-
-    // Check if content is properly stacked on mobile
-    const body = page.locator("body");
-    const width = await body.boundingBox();
-    expect(width?.width).toBeLessThanOrEqual(viewports.mobile.width);
-  });
-
-  test("should adapt layout for tablet", async ({ page }) => {
-    await page.setViewportSize(viewports.tablet);
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Check if layout adapts for tablet
-    const container = page.locator(".container, .max-w-7xl, .mx-auto").first();
-
-    if ((await container.count()) > 0) {
-      const boundingBox = await container.boundingBox();
-      expect(boundingBox?.width).toBeLessThanOrEqual(viewports.tablet.width);
-    }
-
-    // Tablet should show more content than mobile but less than desktop
-    const gridItems = page.locator('[class*="grid"], [class*="flex"]');
-    if ((await gridItems.count()) > 0) {
-      const styles = await gridItems.first().evaluate((el) => {
-        return (
-          window.getComputedStyle(el).gridTemplateColumns ||
-          window.getComputedStyle(el).flexDirection
-        );
-      });
-      expect(styles).toBeTruthy();
-    }
-  });
-
-  test("should display full layout on desktop", async ({ page }) => {
-    await page.setViewportSize(viewports.desktop);
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Desktop should show full navigation
-    const navigation = page.getByRole("navigation");
-    if ((await navigation.count()) > 0) {
-      await expect(navigation.first()).toBeVisible();
-    }
-
-    // Should not show mobile menu button
-    const mobileMenuButton = page.getByRole("button", {
-      name: /menu|hamburger/i,
-    });
-    if ((await mobileMenuButton.count()) > 0) {
-      const isVisible = await mobileMenuButton.first().isVisible();
-      expect(isVisible).toBeFalsy();
-    }
-
-    // Content should be laid out horizontally where appropriate
-    const mainContent = page.locator("main, .main-content").first();
-    if ((await mainContent.count()) > 0) {
-      const width = await mainContent.boundingBox();
-      expect(width?.width).toBeGreaterThan(800);
-    }
-  });
-
-  test("should handle touch interactions on mobile", async ({ page }) => {
-    await page.setViewportSize(viewports.mobile);
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Test touch interactions
-    const button = page.getByRole("button").first();
-
-    if ((await button.count()) > 0) {
-      // Should respond to touch events
-      await button.tap();
-      await page.waitForTimeout(300);
-
-      // Button should remain functional
-      await expect(button).toBeVisible();
-    }
-
-    // Test swipe gestures if carousel exists
-    const carousel = page.locator(
-      '[class*="carousel"], [class*="slider"], [data-testid="carousel"]',
-    );
-
-    if ((await carousel.count()) > 0) {
-      const boundingBox = await carousel.first().boundingBox();
-
-      if (boundingBox) {
-        // Simulate swipe gesture
-        await page.mouse.move(
-          boundingBox.x + boundingBox.width * 0.8,
-          boundingBox.y + boundingBox.height / 2,
-        );
-        await page.mouse.down();
-        await page.mouse.move(
-          boundingBox.x + boundingBox.width * 0.2,
-          boundingBox.y + boundingBox.height / 2,
-        );
-        await page.mouse.up();
-
-        await page.waitForTimeout(500);
-        // Carousel should respond to swipe
-        expect(await carousel.first().isVisible()).toBeTruthy();
-      }
-    }
-  });
-
-  test("should have appropriate font sizes for different screens", async ({
+  test("responsive layout adapts across all viewport sizes", async ({
+    context,
     page,
   }) => {
-    const testPages = ["/", "/about", "/contact"];
+    const visualTester = createVisualTester(page);
+    const responsiveResults = [];
 
-    for (const testPage of testPages) {
-      await page.goto(testPage);
-      await waitUtils.forNavigation();
+    for (const viewport of viewports) {
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
 
-      // Test mobile font sizes
-      await page.setViewportSize(viewports.mobile);
+      const { report, result } = await withPerformanceMonitoring(
+        page,
+        context,
+        "/",
+        async () => {
+          await waitUtils.forNavigation();
+
+          // Check basic layout elements
+          const header = page.locator("header").first();
+          const main = page.locator("main").first();
+          const footer = page.locator("footer").first();
+
+          const layoutData = {
+            hasFooter: (await footer.count()) > 0,
+            hasHeader: (await header.count()) > 0,
+            hasMain: (await main.count()) > 0,
+            headerVisible: await header.isVisible().catch(() => false),
+            mainVisible: await main.isVisible().catch(() => false),
+          };
+
+          // Take viewport-specific screenshot
+          await visualTester.comparePageState(
+            page,
+            `homepage-${viewport.name.toLowerCase()}`,
+            {
+              animations: "disabled",
+              fullPage: true,
+            },
+          );
+
+          return layoutData;
+        },
+        {
+          fcp: { error: 4000, warning: 2000 },
+          lcp: { error: 5000, warning: 3000 },
+        },
+      );
+
+      responsiveResults.push({
+        width: viewport.width,
+        height: viewport.height,
+        layout: result,
+        performance: {
+          fcp: report.fcp,
+          lcp: report.lcp,
+          networkRequests: report.networkActivity?.requestCount || 0,
+        },
+        viewport: viewport.name,
+      });
+
+      // All viewports should have basic layout elements
+      expect(result.hasMain).toBeTruthy();
+    }
+
+    await test.info().attach("responsive-analysis", {
+      body: JSON.stringify(responsiveResults, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("mobile navigation works correctly", async ({ page }) => {
+    // Test mobile-specific navigation patterns
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+    await waitUtils.forNavigation();
+
+    // Look for mobile menu patterns
+    const hamburgerBtn = page
+      .locator('[data-testid="hamburger-menu"], button[aria-label*="menu"]')
+      .first();
+    const mobileMenuToggle = page
+      .getByRole("button", { name: /menu|navigation/i })
+      .first();
+
+    const menuButton =
+      (await hamburgerBtn.count()) > 0 ? hamburgerBtn : mobileMenuToggle;
+
+    if ((await menuButton.count()) > 0) {
+      // Test menu opening
+      await menuButton.click();
       await page.waitForTimeout(300);
 
-      const mobileHeading = page.locator("h1, h2, h3").first();
-      if ((await mobileHeading.count()) > 0) {
-        const mobileFontSize = await mobileHeading.evaluate((el) =>
-          parseInt(window.getComputedStyle(el).fontSize),
-        );
+      // Check if menu opened
+      const mobileMenu = page.locator(
+        '[data-testid="mobile-menu"], .mobile-menu, nav[class*="mobile"]',
+      );
+      const overlayMenu = page.locator('[role="dialog"], .overlay, .drawer');
 
-        // Test desktop font sizes
-        await page.setViewportSize(viewports.desktop);
-        await page.waitForTimeout(300);
+      const menu = (await mobileMenu.count()) > 0 ? mobileMenu : overlayMenu;
 
-        const desktopFontSize = await mobileHeading.evaluate((el) =>
-          parseInt(window.getComputedStyle(el).fontSize),
-        );
+      if ((await menu.count()) > 0) {
+        await expect(menu.first()).toBeVisible();
 
-        // Desktop font should be larger or equal to mobile
-        expect(desktopFontSize).toBeGreaterThanOrEqual(mobileFontSize);
-      }
-    }
-  });
+        // Check navigation links in mobile menu
+        const navLinks = menu.getByRole("link");
+        expect(await navLinks.count()).toBeGreaterThan(0);
 
-  test("should handle orientation changes", async ({ page }) => {
-    // Start in portrait
-    await page.setViewportSize(viewports.mobile);
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    const portraitLayout = await page.evaluate(() => {
-      return {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        orientation:
-          window.innerWidth < window.innerHeight ? "portrait" : "landscape",
-      };
-    });
-
-    expect(portraitLayout.orientation).toBe("portrait");
-
-    // Switch to landscape
-    await page.setViewportSize(viewports.mobileLandscape);
-    await page.waitForTimeout(500);
-
-    const landscapeLayout = await page.evaluate(() => {
-      return {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        orientation:
-          window.innerWidth < window.innerHeight ? "portrait" : "landscape",
-      };
-    });
-
-    expect(landscapeLayout.orientation).toBe("landscape");
-
-    // Layout should adapt to orientation change
-    expect(landscapeLayout.width).toBeGreaterThan(portraitLayout.width);
-    expect(landscapeLayout.height).toBeLessThan(portraitLayout.height);
-  });
-
-  test("should display images responsively", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    const images = page.locator("img");
-    const imageCount = await images.count();
-
-    if (imageCount > 0) {
-      for (const viewport of Object.values(viewports)) {
-        await page.setViewportSize(viewport);
-        await page.waitForTimeout(300);
-
-        const firstImage = images.first();
-        const imageBounds = await firstImage.boundingBox();
-
-        if (imageBounds) {
-          // Image should not exceed viewport width
-          expect(imageBounds.width).toBeLessThanOrEqual(viewport.width);
-
-          // Image should maintain aspect ratio
-          const aspectRatio = imageBounds.width / imageBounds.height;
-          expect(aspectRatio).toBeGreaterThan(0.1);
-          expect(aspectRatio).toBeLessThan(10);
+        // Test closing menu
+        const closeBtn = menu.getByRole("button", { name: /close/i }).first();
+        if ((await closeBtn.count()) > 0) {
+          await closeBtn.click();
+          await page.waitForTimeout(300);
+          await expect(menu.first()).not.toBeVisible();
+        } else {
+          // Try clicking menu button again to close
+          await menuButton.click();
+          await page.waitForTimeout(300);
         }
       }
     }
   });
 
-  test("should have accessible touch targets on mobile", async ({ page }) => {
-    await page.setViewportSize(viewports.mobile);
+  test("tablet layout provides optimal experience", async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");
     await waitUtils.forNavigation();
 
-    // Check button sizes for touch accessibility
-    const buttons = page.locator('button, a, [role="button"]');
+    // Check tablet-specific layout optimizations
+    const navigationElements = await page.locator("nav").count();
+    const gridElements = await page.locator('.grid, [class*="grid"]').count();
+    const flexElements = await page.locator('[class*="flex"]').count();
+
+    // Tablet should have structured layout
+    expect(navigationElements + gridElements + flexElements).toBeGreaterThan(0);
+
+    // Test touch targets are appropriate for tablet
+    const buttons = page.getByRole("button");
     const buttonCount = await buttons.count();
 
-    for (let i = 0; i < Math.min(buttonCount, 10); i++) {
-      const button = buttons.nth(i);
-      const boundingBox = await button.boundingBox();
+    if (buttonCount > 0) {
+      for (let i = 0; i < Math.min(3, buttonCount); i++) {
+        const button = buttons.nth(i);
+        const box = await button.boundingBox();
 
-      if (boundingBox) {
-        // Touch targets should be at least 44px (Apple) or 48dp (Material Design)
-        const minSize = 44;
-        expect(boundingBox.width).toBeGreaterThanOrEqual(minSize - 10); // Allow some tolerance
-        expect(boundingBox.height).toBeGreaterThanOrEqual(minSize - 10);
+        if (box) {
+          // Touch targets should be at least 44px for tablet
+          expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+        }
       }
     }
   });
 
-  test("should handle form elements responsively", async ({ page }) => {
+  test("desktop layout utilizes full screen efficiently", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
     await waitUtils.forNavigation();
 
-    const forms = page.locator("form");
+    // Check desktop-specific optimizations
+    const sidebar = page.locator('aside, .sidebar, [data-testid="sidebar"]');
+    const mainContent = page.locator('main, [role="main"]');
 
-    if ((await forms.count()) > 0) {
-      const form = forms.first();
+    if ((await sidebar.count()) > 0 && (await mainContent.count()) > 0) {
+      const sidebarBox = await sidebar.first().boundingBox();
+      const mainBox = await mainContent.first().boundingBox();
 
-      for (const viewport of [
-        viewports.mobile,
-        viewports.tablet,
-        viewports.desktop,
-      ]) {
-        await page.setViewportSize(viewport);
-        await page.waitForTimeout(300);
+      if (sidebarBox && mainBox) {
+        // Desktop should utilize horizontal space efficiently
+        const totalWidth = sidebarBox.width + mainBox.width;
+        const viewportWidth = page.viewportSize()?.width || 1440;
 
-        const inputs = form.locator("input, textarea, select");
-        const inputCount = await inputs.count();
+        expect(totalWidth / viewportWidth).toBeGreaterThan(0.8);
+      }
+    }
 
-        if (inputCount > 0) {
-          const firstInput = inputs.first();
-          const inputBounds = await firstInput.boundingBox();
+    // Check for multi-column layouts
+    const columns = await page
+      .locator('.columns, .col, [class*="col-"]')
+      .count();
+    const flexItems = await page.locator('[class*="flex"] > *').count();
 
-          if (inputBounds) {
-            // Input should not exceed container width
-            expect(inputBounds.width).toBeLessThanOrEqual(viewport.width - 40); // Account for padding
+    // Desktop should have multi-column content
+    expect(columns + flexItems).toBeGreaterThan(2);
+  });
 
-            // Input should be large enough for touch on mobile
-            if (viewport.width <= 768) {
-              expect(inputBounds.height).toBeGreaterThanOrEqual(40);
-            }
+  test("responsive images and media", async ({ page }) => {
+    const testViewports = [
+      { width: 375, height: 667 },
+      { width: 1440, height: 900 },
+    ];
+
+    for (const viewport of testViewports) {
+      await page.setViewportSize(viewport);
+      await page.goto("/");
+      await waitUtils.forNavigation();
+
+      // Check responsive images
+      const images = page.locator("img");
+      const imageCount = await images.count();
+
+      if (imageCount > 0) {
+        for (let i = 0; i < Math.min(3, imageCount); i++) {
+          const img = images.nth(i);
+
+          // Check for responsive image attributes
+          const srcset = await img.getAttribute("srcset");
+          const sizes = await img.getAttribute("sizes");
+          const loading = await img.getAttribute("loading");
+
+          // At least one responsive feature should be present
+          const hasResponsiveFeatures = srcset || sizes || loading === "lazy";
+
+          if (i === 0) {
+            // First image should have some optimization
+            expect(hasResponsiveFeatures).toBeTruthy();
           }
         }
       }
+
+      // Check video elements for responsive behavior
+      const videos = page.locator("video");
+      const videoCount = await videos.count();
+
+      if (videoCount > 0) {
+        const video = videos.first();
+        const videoBox = await video.boundingBox();
+
+        if (videoBox) {
+          // Video should fit within viewport
+          expect(videoBox.width).toBeLessThanOrEqual(viewport.width);
+        }
+      }
     }
   });
 
-  test("should handle tables responsively", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
+  test("responsive typography and spacing", async ({ page }) => {
+    const viewports = [
+      { width: 375, name: "mobile", height: 667 },
+      { width: 1440, name: "desktop", height: 900 },
+    ];
 
-    const tables = page.locator("table");
+    const typographyData = [];
 
-    if ((await tables.count()) > 0) {
-      const table = tables.first();
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.goto("/");
+      await waitUtils.forNavigation();
 
-      // Test on mobile
-      await page.setViewportSize(viewports.mobile);
-      await page.waitForTimeout(300);
+      // Measure typography at different viewport sizes
+      const fontSizes = await page.evaluate(() => {
+        const elements = document.querySelectorAll("h1, h2, h3, p, span, div");
+        const sizes = new Map();
 
-      const tableBounds = await table.boundingBox();
+        elements.forEach((el) => {
+          if (el.textContent && el.textContent.trim()) {
+            const style = window.getComputedStyle(el);
+            const fontSize = parseFloat(style.fontSize);
+            const lineHeight = parseFloat(style.lineHeight);
+            const tag = el.tagName.toLowerCase();
 
-      if (tableBounds) {
-        // Table should handle overflow on mobile
-        const parentOverflow = await table.evaluate((el) => {
-          const parent = el.parentElement;
-          return parent ? window.getComputedStyle(parent).overflowX : "visible";
+            if (!sizes.has(tag)) {
+              sizes.set(tag, []);
+            }
+            sizes.get(tag).push({ fontSize, lineHeight });
+          }
         });
 
-        // Should have horizontal scroll or be responsive
-        expect(
-          ["auto", "hidden", "scroll"].includes(parentOverflow) ||
-            tableBounds.width <= viewports.mobile.width,
-        ).toBeTruthy();
-      }
-    }
-  });
-
-  test("should maintain performance across viewports", async ({ page }) => {
-    const performanceMetrics = [];
-
-    for (const [name, viewport] of Object.entries(viewports)) {
-      await page.setViewportSize(viewport);
-
-      const startTime = Date.now();
-      await page.goto("/", { waitUntil: "domcontentloaded" });
-      const loadTime = Date.now() - startTime;
-
-      performanceMetrics.push({ loadTime, viewport: name });
-
-      // Should load within reasonable time on all viewports
-      expect(loadTime).toBeLessThan(10000); // 10 seconds max
-    }
-
-    // Mobile shouldn't be significantly slower than desktop
-    const mobile = performanceMetrics.find((m) => m.viewport === "mobile");
-    const desktop = performanceMetrics.find((m) => m.viewport === "desktop");
-
-    if (mobile && desktop) {
-      // Mobile should not be more than 3x slower than desktop
-      expect(mobile.loadTime / desktop.loadTime).toBeLessThan(3);
-    }
-  });
-
-  test("should have proper spacing and layout at all breakpoints", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    for (const [_name, viewport] of Object.entries(viewports)) {
-      await page.setViewportSize(viewport);
-      await page.waitForTimeout(300);
-
-      // Check for horizontal scrollbars
-      const hasHorizontalScroll = await page.evaluate(() => {
-        return (
-          document.documentElement.scrollWidth >
-          document.documentElement.clientWidth
-        );
+        return Object.fromEntries(sizes);
       });
 
-      // Should not have horizontal scroll except for tables/code blocks
-      if (hasHorizontalScroll) {
-        // Check if it's intentional (tables, code, etc.)
-        const intentionalOverflow = await page
-          .locator("table, pre, code, .overflow-x-auto, .overflow-x-scroll")
-          .count();
-        expect(intentionalOverflow).toBeGreaterThan(0);
+      typographyData.push({
+        width: viewport.width,
+        fontSizes,
+        viewport: viewport.name,
+      });
+    }
+
+    // Compare mobile vs desktop typography
+    const mobile = typographyData.find((d) => d.viewport === "mobile");
+    const desktop = typographyData.find((d) => d.viewport === "desktop");
+
+    if (mobile && desktop && mobile.fontSizes.h1 && desktop.fontSizes.h1) {
+      const mobileH1 = mobile.fontSizes.h1[0]?.fontSize || 0;
+      const desktopH1 = desktop.fontSizes.h1[0]?.fontSize || 0;
+
+      // Desktop headings should generally be larger than mobile
+      if (mobileH1 > 0 && desktopH1 > 0) {
+        expect(desktopH1).toBeGreaterThanOrEqual(mobileH1);
+      }
+    }
+
+    await test.info().attach("responsive-typography", {
+      body: JSON.stringify(typographyData, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("responsive performance across devices", async ({ context, page }) => {
+    const performanceResults = [];
+
+    for (const viewport of viewports) {
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
+
+      try {
+        const { report } = await withPerformanceMonitoring(
+          page,
+          context,
+          "/",
+          async () => {
+            await waitUtils.forNavigation();
+
+            // Simulate device-specific interactions
+            if (viewport.width < 768) {
+              // Mobile: test touch interactions
+              const touchableElements = await page
+                .locator('button, a, [role="button"]')
+                .count();
+              return { deviceType: "mobile", touchableElements };
+            } else {
+              // Desktop: test hover interactions
+              const hoverElements = await page
+                .locator('[class*="hover"], button, a')
+                .count();
+              return { deviceType: "desktop", hoverElements };
+            }
+          },
+          {
+            fcp: { error: 4000, warning: 2500 },
+            lcp: { error: 5500, warning: 3500 },
+          },
+        );
+
+        performanceResults.push({
+          cls: report.cls,
+          dimensions: `${viewport.width}x${viewport.height}`,
+          fcp: report.fcp,
+          lcp: report.lcp,
+          networkRequests: report.networkActivity?.requestCount || 0,
+          totalSize: report.networkActivity?.totalSize || 0,
+          viewport: viewport.name,
+        });
+      } catch (error) {
+        console.warn(`Performance test failed for ${viewport.name}:`, error);
+      }
+    }
+
+    // Mobile should have reasonable performance
+    const mobileResult = performanceResults.find(
+      (r) => r.viewport === "Mobile",
+    );
+    if (mobileResult) {
+      expect(mobileResult.fcp).toBeLessThan(4000);
+      expect(mobileResult.lcp).toBeLessThan(5500);
+    }
+
+    await test.info().attach("responsive-performance", {
+      body: JSON.stringify(performanceResults, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("responsive navigation patterns", async ({ page }) => {
+    const navigationPatterns = [];
+
+    for (const viewport of viewports) {
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
+      await page.goto("/");
+      await waitUtils.forNavigation();
+
+      const navPattern = await page.evaluate((viewportWidth) => {
+        const nav = document.querySelector("nav");
+        const hamburger = document.querySelector(
+          '[data-testid="hamburger-menu"], button[aria-label*="menu"]',
+        );
+        const breadcrumb = document.querySelector(
+          '[aria-label*="breadcrumb"], .breadcrumb',
+        );
+        const sidebar = document.querySelector("aside, .sidebar");
+
+        return {
+          hasSidebar: !!sidebar,
+          viewportWidth,
+          hamburgerVisible: hamburger
+            ? window.getComputedStyle(hamburger).display !== "none"
+            : false,
+          hasBreadcrumb: !!breadcrumb,
+          hasHamburger: !!hamburger,
+          hasMainNav: !!nav,
+          navVisible: nav
+            ? window.getComputedStyle(nav).display !== "none"
+            : false,
+        };
+      }, viewport.width);
+
+      navigationPatterns.push({
+        viewport: viewport.name,
+        ...navPattern,
+      });
+    }
+
+    // Mobile should have hamburger, desktop should have main nav
+    const mobile = navigationPatterns.find((p) => p.viewport === "Mobile");
+    const desktop = navigationPatterns.find((p) => p.viewport === "Desktop");
+
+    if (mobile && desktop) {
+      // Mobile typically uses hamburger menu
+      if (mobile.hasHamburger) {
+        expect(mobile.hamburgerVisible).toBeTruthy();
       }
 
-      // Check content doesn't overflow viewport
-      const bodyWidth = await page.evaluate(() => document.body.offsetWidth);
-      expect(bodyWidth).toBeLessThanOrEqual(viewport.width + 20); // Small tolerance for scrollbars
+      // Desktop typically shows full navigation
+      if (desktop.hasMainNav) {
+        expect(desktop.navVisible).toBeTruthy();
+      }
     }
+
+    await test.info().attach("navigation-patterns", {
+      body: JSON.stringify(navigationPatterns, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("responsive form layouts", async ({ page }) => {
+    // Test form responsiveness on contact page
+    await page.goto("/en/contact");
+    await waitUtils.forNavigation();
+
+    const formViewports = [
+      { width: 375, name: "mobile", height: 667 },
+      { width: 768, name: "tablet", height: 1024 },
+      { width: 1440, name: "desktop", height: 900 },
+    ];
+
+    const formData = [];
+
+    for (const viewport of formViewports) {
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
+      await page.waitForTimeout(300);
+
+      const formMetrics = await page.evaluate(() => {
+        const forms = document.querySelectorAll("form");
+        const inputs = document.querySelectorAll("input, textarea, select");
+        const labels = document.querySelectorAll("label");
+
+        let totalFormWidth = 0;
+        let inputsPerRow = 0;
+
+        if (forms.length > 0) {
+          const form = forms[0];
+          const formStyle = window.getComputedStyle(form);
+          totalFormWidth = parseFloat(formStyle.width);
+
+          // Count inputs in first row (simplified)
+          const formInputs = form.querySelectorAll("input, select");
+          if (formInputs.length > 0) {
+            const firstInput = formInputs[0];
+            const firstInputTop = firstInput.getBoundingClientRect().top;
+            inputsPerRow = Array.from(formInputs).filter(
+              (input) =>
+                Math.abs(input.getBoundingClientRect().top - firstInputTop) <
+                10,
+            ).length;
+          }
+        }
+
+        return {
+          totalFormWidth,
+          formCount: forms.length,
+          inputCount: inputs.length,
+          inputsPerRow,
+          labelCount: labels.length,
+        };
+      });
+
+      formData.push({
+        width: viewport.width,
+        viewport: viewport.name,
+        ...formMetrics,
+      });
+    }
+
+    // Mobile should stack inputs vertically (1 per row)
+    // Desktop should allow multiple inputs per row
+    const mobile = formData.find((d) => d.viewport === "mobile");
+    const desktop = formData.find((d) => d.viewport === "desktop");
+
+    if (mobile && desktop && mobile.inputCount > 0 && desktop.inputCount > 0) {
+      expect(mobile.inputsPerRow).toBeLessThanOrEqual(desktop.inputsPerRow);
+    }
+
+    await test.info().attach("responsive-forms", {
+      body: JSON.stringify(formData, null, 2),
+      contentType: "application/json",
+    });
   });
 });

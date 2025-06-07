@@ -775,7 +775,7 @@ export async function getCollections() {
       count: 77,
       description:
         "Excoolent new arrivals for every occasion, from casual to formal. Explore our collection of trendy jackets that elevate your outfit.",
-      handle: "explore-new-arrivals",
+      handle: "explore-arrivals",
       image: {
         width: collectionImage5.width,
         alt: "Explore new arrivals",

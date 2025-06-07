@@ -1,12 +1,12 @@
-import { flag } from '../src/server';
+import { flag } from '../src/server-next';
 
 // Example flag with custom evaluation context
 export const customContextFlag = flag<boolean>({
-  key: 'custom-context-example',
-  decide: ({ entities }) => {
+  decide: ({ entities }: any) => {
     // Access custom entities passed via run()
     return entities?.customData?.enabled === true;
   },
+  key: 'custom-context-example',
 });
 
 // Using the flag with custom evaluation context
@@ -31,11 +31,11 @@ export async function ExampleWithCustomContext() {
 
 // Example showing options with labels
 export const variantFlag = flag<string>({
-  key: 'variant-test',
   decide: () => {
     const variants = ['default', 'experiment-a', 'experiment-b'];
     return variants[Math.floor(Math.random() * variants.length)];
   },
+  key: 'variant-test',
   options: [
     { label: 'Default Experience', value: 'default' },
     { label: 'Experiment A', value: 'experiment-a' },
@@ -45,37 +45,37 @@ export const variantFlag = flag<string>({
 
 // Example with object values in options
 interface FeatureConfig {
+  allowedFormats: string[];
   enableChat: boolean;
   maxFileSize: number;
-  allowedFormats: string[];
 }
 
 export const featureConfigFlag = flag<FeatureConfig>({
-  key: 'feature-config',
-  decide: ({ entities }) => {
+  decide: ({ entities }: any) => {
     const isPremium = entities?.user?.plan === 'premium';
 
     return {
+      allowedFormats: isPremium ? ['jpg', 'png', 'pdf', 'doc'] : ['jpg', 'png'],
       enableChat: true,
       maxFileSize: isPremium ? 100 : 10, // MB
-      allowedFormats: isPremium ? ['jpg', 'png', 'pdf', 'doc'] : ['jpg', 'png'],
     };
   },
+  key: 'feature-config',
   options: [
     {
       label: 'Free Tier',
       value: {
+        allowedFormats: ['jpg', 'png'],
         enableChat: false,
         maxFileSize: 10,
-        allowedFormats: ['jpg', 'png'],
       },
     },
     {
       label: 'Premium Tier',
       value: {
+        allowedFormats: ['jpg', 'png', 'pdf', 'doc'],
         enableChat: true,
         maxFileSize: 100,
-        allowedFormats: ['jpg', 'png', 'pdf', 'doc'],
       },
     },
   ],

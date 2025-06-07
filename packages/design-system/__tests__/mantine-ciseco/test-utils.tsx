@@ -176,6 +176,14 @@ export const mockRouter = {
 // Mock next/image loader
 export const mockImageLoader = ({ src }: { src: string }) => src;
 
+// Mock window.scrollTo for scroll indicator tests
+export const mockScrollTo = () => {
+  Object.defineProperty(window, 'scrollTo', {
+    value: vi.fn(),
+    writable: true,
+  });
+};
+
 // Test ID helpers
 export const testIds = {
   // Components

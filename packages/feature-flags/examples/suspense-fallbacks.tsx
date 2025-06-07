@@ -1,13 +1,14 @@
+import { type NextRequest, NextResponse } from 'next/server';
 import { Suspense } from 'react';
-import { NextRequest, NextResponse } from 'next/server';
-import { flag } from '../src/server';
+
+import { flag } from '../src/server-next';
 
 // Flag that checks for auth cookie existence (fast check)
 export const hasAuthCookieFlag = flag<boolean>({
-  key: 'has-auth-cookie',
   decide: ({ cookies }) => {
     return cookies?.has('auth-token') ?? false;
   },
+  key: 'has-auth-cookie',
 });
 
 // Example of authenticated skeleton
@@ -68,7 +69,7 @@ export default async function SuspensePage() {
 
 // Middleware for this example
 export async function suspenseMiddleware(request: NextRequest) {
-  const { precompute } = await import('../src/server');
+  const { precompute } = await import('../src/server-next');
   const flags = [hasAuthCookieFlag] as const;
 
   const code = await precompute(flags);

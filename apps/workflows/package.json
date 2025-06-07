@@ -2,7 +2,6 @@
   "name": "workflows",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "concurrently \"pnpm:next\" \"pnpm:ws-server\"",
     "next": "next dev -p 3100",
@@ -36,6 +35,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@tabler/icons-react": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

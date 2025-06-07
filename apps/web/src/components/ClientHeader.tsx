@@ -1,27 +1,28 @@
 "use client";
 
+import clsx from "clsx";
 import { type FC } from "react";
+
 import {
-  Logo,
+  AvatarDropdown,
   CartBtn,
   HamburgerBtnMenu,
+  Logo,
   SearchBtnPopover,
-  AvatarDropdown,
 } from "@repo/design-system/mantine-ciseco";
-import clsx from "clsx";
 
 export interface ClientHeaderProps {
+  cartCount?: number;
   hasBorderBottom?: boolean;
   onCartClick?: () => void;
   onMenuClick?: () => void;
-  cartCount?: number;
 }
 
 const ClientHeader: FC<ClientHeaderProps> = ({
+  cartCount = 0,
   hasBorderBottom = true,
   onCartClick,
   onMenuClick,
-  cartCount = 0,
 }) => {
   return (
     <div className="relative z-10 w-full bg-white">

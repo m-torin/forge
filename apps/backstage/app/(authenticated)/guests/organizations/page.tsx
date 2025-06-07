@@ -143,7 +143,7 @@ export default function OrganizationsPage() {
     }
   };
 
-  const handleDelete = async (orgId: string) => {
+  const handleDelete = async (_orgId: string) => {
     modals.openConfirmModal({
       children: (
         <Text size="sm">

@@ -22,20 +22,20 @@ export async function listApiKeys(): Promise<{
 
     if (!result.success) {
       return {
-        success: false,
         error: result.error?.message || 'Failed to list API keys',
+        success: false,
       };
     }
 
     return {
-      success: true,
       data: result.apiKeys || [],
+      success: true,
     };
   } catch (error) {
     console.error('Failed to list API keys:', error);
     return {
-      success: false,
       error: 'Failed to list API keys',
+      success: false,
     };
   }
 }
@@ -52,8 +52,8 @@ export async function deleteSession(sessionId?: string): Promise<{
     if (!sessionId) {
       const result = await auth.api.signOut();
       return {
-        success: result.success,
         error: result.error?.message,
+        success: result.success,
       };
     }
 
@@ -64,8 +64,8 @@ export async function deleteSession(sessionId?: string): Promise<{
   } catch (error) {
     console.error('Failed to delete session:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to delete session',
+      success: false,
     };
   }
 }
@@ -83,8 +83,8 @@ export async function deleteUser(userId?: string): Promise<{
   } catch (error) {
     console.error('Failed to delete user:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to delete user',
+      success: false,
     };
   }
 }
@@ -103,8 +103,8 @@ export async function listUsers(): Promise<{
   } catch (error) {
     console.error('Failed to list users:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to list users',
+      success: false,
     };
   }
 }
@@ -123,8 +123,8 @@ export async function listSessions(): Promise<{
   } catch (error) {
     console.error('Failed to list sessions:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to list sessions',
+      success: false,
     };
   }
 }
@@ -142,8 +142,8 @@ export async function impersonateUser(userId: string): Promise<{
   } catch (error) {
     console.error('Failed to impersonate user:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to impersonate user',
+      success: false,
     };
   }
 }
@@ -164,8 +164,8 @@ export async function banUser(
   } catch (error) {
     console.error('Failed to ban user:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to ban user',
+      success: false,
     };
   }
 }
@@ -183,8 +183,8 @@ export async function unbanUser(userId: string): Promise<{
   } catch (error) {
     console.error('Failed to unban user:', error);
     return {
-      success: false,
       error: error instanceof Error ? error.message : 'Failed to unban user',
+      success: false,
     };
   }
 }

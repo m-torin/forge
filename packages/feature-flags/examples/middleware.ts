@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { precompute } from '../src/server';
-import { marketingFlags } from './flags';
+
+import { precompute } from '../src/server-next';
 import { getOrGenerateVisitorId } from '../src/shared/utils';
+
+import { marketingFlags } from './flags';
 
 export const config = {
   matcher: ['/', '/pricing', '/features'],
@@ -24,9 +26,9 @@ export async function middleware(request: NextRequest) {
   // Set visitor ID cookie if new
   if (!request.cookies.has('visitor-id')) {
     response.cookies.set('visitor-id', visitorId, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 365, // 1 year
       httpOnly: true,
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: '/',
       sameSite: 'lax',
     });
 

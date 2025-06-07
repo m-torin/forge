@@ -1,4 +1,4 @@
-# @repo/auth-new
+# @repo/auth
 
 Modern, type-safe authentication package using Better Auth for the forge-ahead monorepo.
 
@@ -38,13 +38,13 @@ This is the next-generation authentication package that provides:
 ### Installation
 
 ```bash
-pnpm add @repo/auth-new
+pnpm add @repo/auth
 ```
 
 ### Client-side
 
 ```tsx
-import { useAuth, signIn, signOut } from '@repo/auth-new/client';
+import { useAuth, signIn, signOut } from '@repo/auth/client';
 
 function LoginComponent() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -67,7 +67,7 @@ function LoginComponent() {
 ### Server-side
 
 ```tsx
-import { getCurrentUser, getSession } from '@repo/auth-new/server';
+import { getCurrentUser, getSession } from '@repo/auth/server';
 
 // In server components
 export default async function DashboardPage() {
@@ -96,7 +96,7 @@ export async function GET() {
 
 ```tsx
 // app/layout.tsx
-import { AuthProvider } from '@repo/auth-new/client-next';
+import { AuthProvider } from '@repo/auth/client-next';
 
 export default function RootLayout({ children }) {
   return (
@@ -109,7 +109,7 @@ export default function RootLayout({ children }) {
 }
 
 // middleware.ts
-import { authMiddleware } from '@repo/auth-new/server-next';
+import { authMiddleware } from '@repo/auth/server-next';
 
 export default authMiddleware;
 
@@ -121,7 +121,7 @@ export const config = {
 ### Protected Routes
 
 ```tsx
-import { ProtectedRoute } from '@repo/auth-new/components';
+import { ProtectedRoute } from '@repo/auth/components';
 
 function App() {
   return (
@@ -135,7 +135,7 @@ function App() {
 ### Organization Management
 
 ```tsx
-import { useOrganization, createOrganization } from '@repo/auth-new/client';
+import { useOrganization, createOrganization } from '@repo/auth/client';
 
 function OrganizationManager() {
   const { activeOrganization, organizations, setActiveOrganization } = useOrganization();
@@ -165,7 +165,7 @@ function OrganizationManager() {
 ### API Key Management
 
 ```typescript
-import { createApiKey, listApiKeys } from '@repo/auth-new/client';
+import { createApiKey, listApiKeys } from '@repo/auth/client';
 
 async function setupApiKey() {
   const apiKey = await createApiKey({
@@ -233,8 +233,8 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 import { authClient, useUser } from '@repo/auth';
 
 // New
-import { useAuth } from '@repo/auth-new/client';
-import authClient from '@repo/auth-new/client';
+import { useAuth } from '@repo/auth/client';
+import authClient from '@repo/auth/client';
 ```
 
 ### Hook Changes
@@ -254,7 +254,7 @@ const { user, isLoading, isAuthenticated } = useAuth();
 import { currentUser } from '@repo/auth/index.server';
 
 // New
-import { getCurrentUser } from '@repo/auth-new/server';
+import { getCurrentUser } from '@repo/auth/server';
 ```
 
 ## Testing
@@ -275,7 +275,7 @@ pnpm test:coverage
 This package provides complete TypeScript coverage with no `any` types:
 
 ```typescript
-import type { User, Session, AuthSession, OrganizationRole } from '@repo/auth-new/types';
+import type { User, Session, AuthSession, OrganizationRole } from '@repo/auth/types';
 ```
 
 ## Security Features

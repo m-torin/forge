@@ -5,11 +5,11 @@ interface Entities {
 }
 
 export const exampleFlag = flag<boolean, Entities>({
-  key: 'identify-example-flag',
-  identify() {
-    return { user: { id: 'user1' } };
-  },
   decide({ entities }) {
     return entities?.user?.id === 'user1';
   },
+  identify() {
+    return { user: { id: 'user1' } };
+  },
+  key: 'identify-example-flag',
 });

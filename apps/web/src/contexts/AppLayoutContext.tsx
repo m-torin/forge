@@ -1,15 +1,15 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
 import { useDisclosure } from "@mantine/hooks";
+import { createContext, type ReactNode, useContext } from "react";
 
 interface AppLayoutContextType {
   cartOpened: boolean;
+  closeCart: () => void;
+  closeNav: () => void;
   navOpened: boolean;
   openCart: () => void;
-  closeCart: () => void;
   openNav: () => void;
-  closeNav: () => void;
 }
 
 const AppLayoutContext = createContext<AppLayoutContextType | undefined>(
@@ -25,11 +25,11 @@ export function AppLayoutProvider({ children }: { children: ReactNode }) {
     <AppLayoutContext.Provider
       value={{
         cartOpened,
+        closeCart,
+        closeNav,
         navOpened,
         openCart,
-        closeCart,
         openNav,
-        closeNav,
       }}
     >
       {children}

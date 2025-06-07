@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+
 import { basicEdgeMiddlewareFlag } from './flags';
 
 export const config = {

@@ -1,4 +1,4 @@
-import { premiumFeatureFlag, newFeatureFlag } from './flags';
+import { newFeatureFlag, premiumFeatureFlag } from './flags';
 
 export default async function ServerFeatureComponent() {
   // Evaluate flags directly in server components

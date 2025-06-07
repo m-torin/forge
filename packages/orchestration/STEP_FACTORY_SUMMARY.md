@@ -137,7 +137,7 @@ interface StepValidationConfig<TInput, TOutput> {
 ### Creating Custom Steps
 
 ```typescript
-import { createWorkflowStep, StepTemplates } from '@repo/orchestration-new';
+import { createWorkflowStep, StepTemplates } from '@repo/orchestration';
 
 // Create custom step
 const customStep = createWorkflowStep(
@@ -179,7 +179,7 @@ const delayStep = StepTemplates.delay('Wait 5s', 5000);
 ### Using Step Registry
 
 ```typescript
-import { StepRegistry, OrchestrationManager } from '@repo/orchestration-new';
+import { StepRegistry, OrchestrationManager } from '@repo/orchestration';
 
 const manager = new OrchestrationManager({
   enableStepFactory: true,
@@ -303,11 +303,10 @@ The workflow step factory system provides:
 
 ✅ **Standardization** - Consistent step creation and execution ✅ **Reliability** - Built-in retry,
 circuit breaker, and error handling ✅ **Observability** - Performance monitoring and usage
-analytics  
-✅ **Reusability** - Template system and step registry ✅ **Type Safety** - Full TypeScript support
-with validation ✅ **Integration** - Seamless integration with existing orchestration ✅
-**Testing** - Comprehensive test coverage ✅ **Developer Experience** - Intuitive APIs and
-documentation
+analytics ✅ **Reusability** - Template system and step registry ✅ **Type Safety** - Full
+TypeScript support with validation ✅ **Integration** - Seamless integration with existing
+orchestration ✅ **Testing** - Comprehensive test coverage ✅ **Developer Experience** - Intuitive
+APIs and documentation
 
 The system is production-ready and provides a solid foundation for building robust, maintainable
 workflows with standardized, reusable steps.

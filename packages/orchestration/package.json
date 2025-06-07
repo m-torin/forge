@@ -16,8 +16,8 @@
       "import": "./src/client.ts"
     },
     "./examples": {
-      "types": "./src/workflows/examples/index.ts",
-      "import": "./src/workflows/examples/index.ts"
+      "types": "./src/examples/index.ts",
+      "import": "./src/examples/index.ts"
     },
     "./workflows/ai/product-classification": {
       "types": "./src/workflows/ai/product-classification.ts",

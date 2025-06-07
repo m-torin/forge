@@ -1,5 +1,6 @@
-import { type NextRequest, NextResponse } from 'next/server';
 import { precompute } from '@vercel/flags/next';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import { marketingFlags } from './flags';
 
 // Note that we're running this middleware for / only, but

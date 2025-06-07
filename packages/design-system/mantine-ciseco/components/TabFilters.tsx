@@ -274,8 +274,8 @@ const TabFilters = ({ className }: { className?: string }) => {
         strokeWidth={1.5}
         color="currentColor"
         icon={Cancel01Icon}
-        size={14}
         className="ml-1"
+        size={14}
       />
     );
   };

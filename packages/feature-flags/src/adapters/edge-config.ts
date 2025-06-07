@@ -1,4 +1,5 @@
 import { createClient, type EdgeConfigClient } from '@vercel/edge-config';
+
 import type { Adapter } from '@vercel/flags';
 
 export interface EdgeConfigAdapterOptions {
@@ -42,16 +43,6 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
 
   return function edgeConfigAdapter<T = any, E = any>(): Adapter<T, E> {
     return {
-      origin: {
-        provider: 'edge-config',
-        edgeConfigId:
-          typeof connectionString === 'string'
-            ? connectionString.split('/').pop() || ''
-            : 'custom-client',
-        edgeConfigItemKey,
-        ...(teamSlug && { teamSlug }),
-      },
-      config: { reportValue: true },
       decide: async ({ key }) => {
         try {
           // Get the flags object from Edge Config
@@ -74,6 +65,16 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
           console.error('Error reading from Edge Config:', error);
           throw error;
         }
+      },
+      config: { reportValue: true },
+      origin: {
+        provider: 'edge-config',
+        edgeConfigId:
+          typeof connectionString === 'string'
+            ? connectionString.split('/').pop() || ''
+            : 'custom-client',
+        edgeConfigItemKey,
+        ...(teamSlug && { teamSlug }),
       },
     };
   };

@@ -335,7 +335,7 @@ describe('SentryClientProvider', () => {
     });
 
     it('should start transaction when no parent span', () => {
-      const span = provider.startSpan('test-span');
+      const _span = provider.startSpan('test-span');
 
       expect(mockSentry.startTransaction).toHaveBeenCalledWith({
         name: 'test-span',

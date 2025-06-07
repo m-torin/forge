@@ -1,7 +1,7 @@
 import { workflowService } from '@/lib';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   try {
     const health = await workflowService.healthCheck();
     const metrics = await workflowService.getMetrics();

@@ -1,7 +1,8 @@
 "use client";
 
-import { HamburgerBtnMenu } from "@repo/design-system/mantine-ciseco";
 import { useAppLayout } from "@/contexts/AppLayoutContext";
+
+import { HamburgerBtnMenu } from "@repo/design-system/mantine-ciseco";
 
 export default function ContextualHamburgerBtn() {
   const { openNav } = useAppLayout();

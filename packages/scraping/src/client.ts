@@ -4,7 +4,7 @@
  *
  * @example
  * ```typescript
- * import { createClientScraping, quickScrape, scrapeMultiple } from '@repo/scraping-new/client';
+ * import { createClientScraping, quickScrape, scrapeMultiple } from '@repo/scraping/client';
  *
  * const scraper = await createClientScraping({
  *   providers: {

@@ -36,7 +36,7 @@ export function useProductFavorite(productId: string, _metadata?: any) {
   const { lists } = useGuestActions();
 
   return {
-    addToFavorites: () => lists.add("favorites", productId, metadata),
+    addToFavorites: () => lists.add("favorites", productId, _metadata),
     isFavorite: lists.has("favorites", productId),
     removeFromFavorites: () => lists.remove("favorites", productId),
     toggleFavorite: () => lists.toggle("favorites", productId),

@@ -14,15 +14,22 @@ import {
   Anchor,
   Image,
   Badge,
+  Alert,
+  Code,
+  JsonInput,
 } from '@mantine/core'
 import {
   IconExternalLink,
   IconFileText,
   IconBrandGithub,
+  IconCheck,
+  IconX,
+  IconAlertCircle,
 } from '@tabler/icons-react'
 import { FormEvent, Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useLocalQStashClientFlag } from '../lib/client-flags'
+import { getExamplePayload, type WorkflowName } from '../lib/workflow-schemas'
 
 const routes = [
   'path',
@@ -44,24 +51,43 @@ export default function HomePage() {
 }
 
 const Page = () => {
-  const [requestBody, setRequestBody] = useState(
-    '{"date":123,"email":"my@mail.com","amount":10}',
-  )
-  const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const useLocalQStash = useLocalQStashClientFlag()
-
   const search = searchParams.get('function')
   const [route, setRoute] = useState(search ?? 'path')
+  const [requestBody, setRequestBody] = useState(
+    getExamplePayload(route as WorkflowName),
+  )
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  // Update example payload when route changes
+  const handleRouteChange = (newRoute: string) => {
+    setRoute(newRoute)
+    setRequestBody(getExamplePayload(newRoute as WorkflowName))
+    setResult(null)
+    setError(null)
+  }
 
   // form submit handler
   const handleSend = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setLoading(true)
+    setResult(null)
+    setError(null)
 
     const url = `/-call-qstash`
 
     try {
-      setLoading(true)
+      // Validate JSON before sending
+      let payload
+      try {
+        payload = JSON.parse(requestBody)
+      } catch (jsonError) {
+        throw new Error('Invalid JSON format in request body')
+      }
+
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -69,11 +95,22 @@ const Page = () => {
         method: 'POST',
         body: JSON.stringify({
           route,
-          payload: JSON.parse(requestBody),
+          payload,
         }),
       })
-      console.log('Response:', await response.json())
+
+      const responseData = await response.json()
+
+      if (!response.ok) {
+        throw new Error(responseData.error || `HTTP ${response.status}`)
+      }
+
+      setResult(responseData)
+      console.log('Workflow triggered successfully:', responseData)
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred'
+      setError(errorMessage)
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -136,14 +173,14 @@ const Page = () => {
             </Badge>
           </Group>
           <Text c="dimmed" size="sm">
-            {useLocalQStash 
+            {useLocalQStash
               ? 'Using local QStash CLI server for development. Workflows will be executed locally without external dependencies.'
-              : 'Using production QStash service. Workflows will be executed in the cloud with full QStash features.'
-            }
+              : 'Using production QStash service. Workflows will be executed in the cloud with full QStash features.'}
           </Text>
           {useLocalQStash && (
             <Text c="dimmed" size="sm" mt="xs">
-              Make sure you have the QStash CLI running locally: <code>npx @upstash/qstash-cli dev</code>
+              Make sure you have the QStash CLI running locally:{' '}
+              <code>npx @upstash/qstash-cli dev</code>
             </Text>
           )}
         </Card>
@@ -233,17 +270,19 @@ const Page = () => {
                   <Select
                     label="Route"
                     value={route}
-                    onChange={(value) => setRoute(value || 'path')}
+                    onChange={(value) => handleRouteChange(value || 'path')}
                     data={routes.map((r) => ({ value: r, label: r }))}
                     size="sm"
                   />
 
                   <Textarea
-                    label="Request Body"
+                    label="Request Body (JSON)"
                     value={requestBody}
                     onChange={(e) => setRequestBody(e.target.value)}
-                    rows={3}
+                    rows={4}
                     size="sm"
+                    placeholder="Enter valid JSON payload"
+                    description={`Example payload for ${route} workflow`}
                   />
 
                   <Button
@@ -251,9 +290,56 @@ const Page = () => {
                     loading={loading}
                     color="green"
                     size="sm"
+                    disabled={!requestBody.trim()}
                   >
-                    {loading ? 'Sending...' : 'Send Request'}
+                    {loading ? 'Triggering Workflow...' : 'Trigger Workflow'}
                   </Button>
+
+                  {/* Success Result */}
+                  {result && (
+                    <Alert
+                      icon={<IconCheck size={16} />}
+                      color="green"
+                      title="Workflow Triggered Successfully"
+                      mt="sm"
+                    >
+                      <Stack gap="xs">
+                        <Text size="sm">
+                          <strong>Workflow ID:</strong>{' '}
+                          <Code>{result.workflowRunId}</Code>
+                        </Text>
+                        <Text size="sm">
+                          <strong>Route:</strong> {result.route}
+                        </Text>
+                        <Text size="sm">
+                          <strong>Status:</strong> {result.status}
+                        </Text>
+                        <Text size="sm">
+                          <strong>Triggered at:</strong> {result.timestamp}
+                        </Text>
+                      </Stack>
+                    </Alert>
+                  )}
+
+                  {/* Error Display */}
+                  {error && (
+                    <Alert
+                      icon={<IconX size={16} />}
+                      color="red"
+                      title="Workflow Trigger Failed"
+                      mt="sm"
+                    >
+                      <Stack gap="xs">
+                        <Text size="sm">{error}</Text>
+                        {error.includes('QStash CLI') && (
+                          <Text size="sm" c="dimmed">
+                            💡 Run <Code>pnpm qstash:dev</Code> in a separate
+                            terminal
+                          </Text>
+                        )}
+                      </Stack>
+                    </Alert>
+                  )}
                 </Stack>
               </form>
             </Stack>

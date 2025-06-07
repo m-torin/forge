@@ -14,8 +14,10 @@
  * 4. Open Vercel Toolbar and check the Feature Flags section
  */
 import { flag } from '@vercel/flags/next';
-import { postHogAdapter, createPostHogAdapter } from '@repo/feature-flags/server/next';
+
 import { useFlag } from '@repo/feature-flags/client/next';
+import { postHogServerAdapter as postHogAdapter } from '@repo/feature-flags/server/next';
+
 import type { ReadonlyRequestCookies } from '@vercel/flags';
 
 // Define the identify function for user targeting
@@ -26,41 +28,41 @@ const identify = ({ cookies }: { cookies: ReadonlyRequestCookies }) => {
 
 // Test flag 1: Simple boolean flag
 export const testBooleanFlag = flag({
-  key: 'test-boolean-flag',
-  adapter: postHogAdapter.isFeatureEnabled(),
   identify,
+  adapter: postHogAdapter.isFeatureEnabled(),
   description: 'Test boolean flag for Vercel Toolbar',
+  key: 'test-boolean-flag',
 });
 
 // Test flag 2: Multivariate flag
 export const testVariantFlag = flag({
-  key: 'test-variant-flag',
-  adapter: postHogAdapter.featureFlagValue(),
   identify,
+  adapter: postHogAdapter.featureFlagValue(),
   description: 'Test multivariate flag with string values',
+  key: 'test-variant-flag',
 });
 
 // Test flag 3: Payload flag
 interface TestPayload {
-  theme: 'light' | 'dark';
   buttonColor: string;
   showBanner: boolean;
+  theme: 'light' | 'dark';
 }
 
 export const testPayloadFlag = flag<TestPayload>({
-  key: 'test-payload-flag',
+  identify,
   adapter: postHogAdapter.featureFlagPayload<TestPayload>((payload) => ({
-    theme: payload.theme || 'light',
     buttonColor: payload.buttonColor || '#0070f3',
     showBanner: payload.showBanner ?? true,
+    theme: payload.theme || 'light',
   })),
-  identify,
   defaultValue: {
-    theme: 'light',
     buttonColor: '#0070f3',
     showBanner: true,
+    theme: 'light',
   },
   description: 'Test payload flag with complex data',
+  key: 'test-payload-flag',
 });
 
 // Server Component Example
@@ -111,9 +113,9 @@ export function ClientTestComponent() {
   const booleanValue = useFlag(testBooleanFlag, false);
   const variantValue = useFlag(testVariantFlag, 'default');
   const payloadValue = useFlag(testPayloadFlag, {
-    theme: 'light',
     buttonColor: '#0070f3',
     showBanner: true,
+    theme: 'light',
   });
 
   if (booleanValue === undefined || variantValue === undefined || payloadValue === undefined) {
@@ -142,9 +144,9 @@ export function ClientTestComponent() {
         <button
           style={{
             backgroundColor: payloadValue.buttonColor,
+            borderRadius: '4px',
             color: 'white',
             padding: '8px 16px',
-            borderRadius: '4px',
           }}
         >
           Test Button

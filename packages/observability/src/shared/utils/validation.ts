@@ -2,7 +2,11 @@
  * Configuration validation utilities
  */
 
-import type { ObservabilityConfig, ObservabilityProviderConfig } from '../types/types';
+import type {
+  LogLevel,
+  ObservabilityConfig,
+  ObservabilityProviderConfig,
+} from '../types/types';
 
 export interface ValidationError {
   field?: string;
@@ -16,9 +20,9 @@ export interface ValidationResult {
 }
 
 /**
- * Validate observability configuration
+ * Validate observability configuration (returns ValidationResult)
  */
-export function validateConfig(config: ObservabilityConfig): ValidationResult {
+export function validateObservabilityConfig(config: ObservabilityConfig): ValidationResult {
   const errors: ValidationError[] = [];
 
   if (!config) {
@@ -33,7 +37,7 @@ export function validateConfig(config: ObservabilityConfig): ValidationResult {
 
   // Validate each provider
   for (const [providerName, providerConfig] of Object.entries(config.providers)) {
-    const providerErrors = validateProvider(providerName, providerConfig);
+    const providerErrors = validateProviderConfig(providerName, providerConfig);
     errors.push(...providerErrors);
   }
 
@@ -46,7 +50,7 @@ export function validateConfig(config: ObservabilityConfig): ValidationResult {
 /**
  * Validate individual provider configuration
  */
-export function validateProvider(
+export function validateProviderConfig(
   name: string,
   config: ObservabilityProviderConfig,
 ): ValidationError[] {
@@ -93,8 +97,116 @@ export function validateProvider(
 /**
  * Debug configuration by logging validation results
  */
+/**
+ * Validate log level
+ */
+export function validateLogLevel(level: LogLevel): void {
+  const validLevels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
+  if (!validLevels.includes(level)) {
+    throw new Error(`Invalid log level: ${level}. Valid levels are: ${validLevels.join(', ')}`);
+  }
+}
+
+/**
+ * Validate observability provider
+ */
+export function validateProvider(provider: unknown): void {
+  if (provider === null || provider === undefined) {
+    throw new Error('Provider cannot be null or undefined');
+  }
+
+  if (typeof provider !== 'object') {
+    throw new Error('Provider must be an object');
+  }
+
+  const providerObj = provider as Record<string, unknown>;
+
+  if (typeof providerObj.log !== 'function') {
+    throw new Error('Provider must implement log method');
+  }
+
+  if (typeof providerObj.captureException !== 'function') {
+    throw new Error('Provider must implement captureException method');
+  }
+}
+
+/**
+ * Validate configuration (throws on error - for tests)
+ */
+export function validateConfig(config: any): void {
+  if (!config) {
+    throw new Error('Configuration is required');
+  }
+
+  if (!Array.isArray(config.providers)) {
+    throw new Error('Providers must be an array');
+  }
+
+  if (config.defaultLogLevel !== undefined) {
+    validateLogLevel(config.defaultLogLevel);
+  }
+
+  if (config.enableConsoleInDev !== undefined && typeof config.enableConsoleInDev !== 'boolean') {
+    throw new Error('enableConsoleInDev must be a boolean');
+  }
+
+  if (config.enabledEnvironments !== undefined) {
+    if (!Array.isArray(config.enabledEnvironments)) {
+      throw new Error('enabledEnvironments must be an array');
+    }
+
+    for (const env of config.enabledEnvironments) {
+      if (typeof env !== 'string') {
+        throw new Error('All environments must be strings');
+      }
+    }
+  }
+}
+
+/**
+ * Validate email format
+ */
+export function isValidEmail(email: string): boolean {
+  if (typeof email !== 'string') {
+    return false;
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Basic regex check first
+  if (!emailRegex.test(email)) {
+    return false;
+  }
+  // Additional checks for leading/trailing dots
+  const [localPart, domain] = email.split('@');
+  if (localPart.startsWith('.') || localPart.endsWith('.')) {
+    return false;
+  }
+  if (domain.startsWith('.') || domain.endsWith('.')) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Validate URL format
+ */
+export function isValidUrl(url: string): boolean {
+  if (typeof url !== 'string') {
+    return false;
+  }
+  try {
+    const parsedUrl = new URL(url);
+    // Only allow HTTP and HTTPS protocols
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Debug configuration by logging validation results
+ */
 export function debugConfig(config: ObservabilityConfig): void {
-  const result = validateConfig(config);
+  const result = validateObservabilityConfig(config);
 
   if (result.valid) {
     console.log('[Observability] Configuration is valid');

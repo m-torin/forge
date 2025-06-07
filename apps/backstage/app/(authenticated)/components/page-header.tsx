@@ -1,86 +1,82 @@
 'use client';
 
-import { Group, Title, Text, Button, ActionIcon, Badge, Stack } from '@mantine/core';
-import { IconPlus, IconDownload, IconFilter, IconRefresh } from '@tabler/icons-react';
+import { ActionIcon, Badge, Button, Group, Stack, Text, Title } from '@mantine/core';
+import { IconPlus, IconRefresh } from '@tabler/icons-react';
+
 import type { ReactNode } from 'react';
 
 interface PageHeaderProps {
-  title: string;
-  description?: string;
-  badge?: {
-    label: string;
-    color?: string;
-  };
   actions?: {
     primary?: {
       label: string;
       icon?: ReactNode;
       onClick: () => void;
     };
-    secondary?: Array<{
+    secondary?: {
       label: string;
       icon?: ReactNode;
       onClick: () => void;
-    }>;
+    }[];
   };
-  stats?: Array<{
+  badge?: {
+    label: string;
+    color?: string;
+  };
+  description?: string;
+  onRefresh?: () => void;
+  stats?: {
     label: string;
     value: string | number;
     color?: string;
-  }>;
-  onRefresh?: () => void;
+  }[];
+  title: string;
 }
 
-export function PageHeader({ 
-  title, 
-  description, 
+export function PageHeader({
+  actions,
   badge,
-  actions, 
+  description,
+  onRefresh,
   stats,
-  onRefresh 
+  title,
 }: PageHeaderProps) {
   return (
     <Stack gap="md" mb="xl">
-      <Group justify="space-between" align="flex-start">
+      <Group align="flex-start" justify="space-between">
         <div>
           <Group gap="sm" mb={description ? 'xs' : 0}>
             <Title order={1}>{title}</Title>
             {badge && (
-              <Badge size="lg" variant="light" color={badge.color || 'blue'}>
+              <Badge color={badge.color || 'blue'} size="lg" variant="light">
                 {badge.label}
               </Badge>
             )}
           </Group>
           {description && (
-            <Text size="lg" c="dimmed">
+            <Text c="dimmed" size="lg">
               {description}
             </Text>
           )}
         </div>
-        
+
         <Group gap="sm">
           {onRefresh && (
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="lg"
-              onClick={onRefresh}
-            >
+            <ActionIcon color="gray" onClick={onRefresh} size="lg" variant="subtle">
               <IconRefresh size={20} />
             </ActionIcon>
           )}
-          
-          {actions?.secondary?.map((action, index) => (
+
+          {actions?.secondary?.map((action) => (
             <Button
-              key={index}
-              variant="subtle"
+              key={action.label}
               leftSection={action.icon}
               onClick={action.onClick}
+              variant="subtle"
             >
               {action.label}
             </Button>
           ))}
-          
+
           {actions?.primary && (
             <Button
               leftSection={actions.primary.icon || <IconPlus size={16} />}
@@ -91,15 +87,15 @@ export function PageHeader({
           )}
         </Group>
       </Group>
-      
+
       {stats && stats.length > 0 && (
         <Group gap="xl">
-          {stats.map((stat, index) => (
-            <div key={index}>
-              <Text size="sm" c="dimmed" fw={500}>
+          {stats.map((stat) => (
+            <div key={stat.label}>
+              <Text c="dimmed" fw={500} size="sm">
                 {stat.label}
               </Text>
-              <Text size="xl" fw={700} c={stat.color}>
+              <Text c={stat.color} fw={700} size="xl">
                 {stat.value}
               </Text>
             </div>

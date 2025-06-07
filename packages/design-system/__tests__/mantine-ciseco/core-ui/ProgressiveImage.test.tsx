@@ -6,6 +6,8 @@ describe('ProgressiveImage', () => {
   const defaultProps = {
     src: '/high-res-image.jpg',
     alt: 'Test Image',
+    width: 800,
+    height: 600,
   };
 
   beforeEach(() => {

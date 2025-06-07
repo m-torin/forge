@@ -1,4 +1,4 @@
-# @repo/observability-new
+# @repo/observability
 
 Multi-provider observability package for error tracking, logging, monitoring, and distributed
 tracing.
@@ -42,7 +42,7 @@ The package follows a provider registry pattern similar to the analytics package
 ### Client-side
 
 ```typescript
-import { createClientObservability } from '@repo/observability-new/client';
+import { createClientObservability } from '@repo/observability/client';
 
 const observability = await createClientObservability({
   providers: {
@@ -59,7 +59,7 @@ observability.log('info', 'User action', { userId: '123' });
 ### Server-side
 
 ```typescript
-import { createServerObservability } from '@repo/observability-new/server';
+import { createServerObservability } from '@repo/observability/server';
 
 const observability = await createServerObservability({
   providers: {
@@ -80,10 +80,10 @@ transaction.finish();
 
 ```typescript
 // Client-side
-import { createNextJSClientObservability } from '@repo/observability-new/client/next';
+import { createNextJSClientObservability } from '@repo/observability/client/next';
 
 // Server-side
-import { createNextJSServerObservability } from '@repo/observability-new/server/next';
+import { createNextJSServerObservability } from '@repo/observability/server/next';
 ```
 
 ## Provider Configuration

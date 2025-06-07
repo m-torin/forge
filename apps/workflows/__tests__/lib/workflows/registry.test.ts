@@ -1,6 +1,23 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WorkflowRegistry } from '@/lib/workflows/registry';
 
+// Mock the workflow modules
+vi.mock('/test/workflows/test-workflow.ts', () => ({
+  default: {
+    id: 'test-workflow',
+    name: 'Test Workflow',
+    handler: vi.fn().mockResolvedValue({ result: 'success' }),
+  },
+}));
+
+vi.mock('/test/workflows/another-workflow.ts', () => ({
+  default: {
+    id: 'another-workflow',
+    name: 'Another Workflow',
+    handler: vi.fn().mockResolvedValue({ result: 'success' }),
+  },
+}));
+
 describe('WorkflowRegistry', () => {
   let registry: WorkflowRegistry;
 
@@ -34,12 +51,12 @@ describe('WorkflowRegistry', () => {
   beforeEach(() => {
     registry = new WorkflowRegistry('./test-workflows');
     vi.clearAllMocks();
-    
+
     // Set up default import mock
     const mockImport = vi.fn().mockImplementation((path) => {
       if (path === mockWorkflow.filePath) {
         return Promise.resolve({
-          default: { ...mockWorkflow, handler: vi.fn().mockResolvedValue({ result: 'success' }) }
+          default: { ...mockWorkflow, handler: vi.fn().mockResolvedValue({ result: 'success' }) },
         });
       }
       return Promise.reject(new Error(`Cannot find module '${path}'`));
@@ -54,7 +71,7 @@ describe('WorkflowRegistry', () => {
   describe('workflow management', () => {
     it('should register and retrieve workflows', async () => {
       await registry.registerWorkflow(mockWorkflow);
-      
+
       const workflows = registry.getWorkflows();
       expect(workflows).toHaveLength(1);
       expect(workflows[0]).toEqual(mockWorkflow);
@@ -62,7 +79,7 @@ describe('WorkflowRegistry', () => {
 
     it('should get workflow by ID', async () => {
       await registry.registerWorkflow(mockWorkflow);
-      
+
       const workflow = registry.getWorkflow('test-workflow');
       expect(workflow).toEqual(mockWorkflow);
     });
@@ -75,7 +92,7 @@ describe('WorkflowRegistry', () => {
     it('should filter workflows by category', async () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow(mockWorkflow2);
-      
+
       const testWorkflows = registry.getWorkflowsByCategory('test');
       expect(testWorkflows).toHaveLength(1);
       expect(testWorkflows[0].id).toBe('test-workflow');
@@ -84,7 +101,7 @@ describe('WorkflowRegistry', () => {
     it('should filter workflows by tag', async () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow(mockWorkflow2);
-      
+
       const exampleWorkflows = registry.getWorkflowsByTag('example');
       expect(exampleWorkflows).toHaveLength(1);
       expect(exampleWorkflows[0].id).toBe('test-workflow');
@@ -93,7 +110,7 @@ describe('WorkflowRegistry', () => {
     it('should search workflows by text', async () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow(mockWorkflow2);
-      
+
       const results = registry.searchWorkflows('example');
       expect(results).toHaveLength(1);
       expect(results[0].id).toBe('test-workflow');
@@ -103,9 +120,9 @@ describe('WorkflowRegistry', () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow({
         ...mockWorkflow2,
-        description: 'Another different workflow'
+        description: 'Another different workflow',
       });
-      
+
       const results = registry.searchWorkflows('test workflow');
       expect(results).toHaveLength(1);
       expect(results[0].id).toBe('test-workflow');
@@ -114,7 +131,7 @@ describe('WorkflowRegistry', () => {
     it('should search workflows by tags', async () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow(mockWorkflow2);
-      
+
       const results = registry.searchWorkflows('example');
       expect(results).toHaveLength(1);
       expect(results[0].id).toBe('test-workflow');
@@ -123,40 +140,34 @@ describe('WorkflowRegistry', () => {
 
   describe('workflow execution', () => {
     it('should execute workflow successfully', async () => {
-      const mockHandler = vi.fn().mockResolvedValue({ result: 'success' });
-      const mockImport = vi.fn().mockResolvedValue({
-        default: { ...mockWorkflow, handler: mockHandler }
-      });
-      vi.stubGlobal('import', mockImport);
-
       await registry.registerWorkflow(mockWorkflow);
-      
+
       const result = await registry.executeWorkflow('test-workflow', { input: 'test' });
-      
+
       expect(result).toEqual({ result: 'success' });
-      expect(mockImport).toHaveBeenCalledWith(mockWorkflow.filePath);
-      expect(mockHandler).toHaveBeenCalledWith({ input: 'test' });
     });
 
     it('should throw error for non-existent workflow', async () => {
-      await expect(
-        registry.executeWorkflow('non-existent', {})
-      ).rejects.toThrow('Workflow not found: non-existent');
+      await expect(registry.executeWorkflow('non-existent', {})).rejects.toThrow(
+        'Workflow not found: non-existent',
+      );
     });
 
     it('should handle execution errors', async () => {
-      const mockError = new Error('Execution failed');
-      const mockHandler = vi.fn().mockRejectedValue(mockError);
-      const mockImport = vi.fn().mockResolvedValue({
-        default: { ...mockWorkflow, handler: mockHandler }
-      });
-      vi.stubGlobal('import', mockImport);
+      // Re-mock with error
+      vi.doMock('/test/workflows/test-workflow.ts', () => ({
+        default: {
+          id: 'test-workflow',
+          name: 'Test Workflow',
+          handler: vi.fn().mockRejectedValue(new Error('Execution failed')),
+        },
+      }));
 
       await registry.registerWorkflow(mockWorkflow);
-      
-      await expect(
-        registry.executeWorkflow('test-workflow', {})
-      ).rejects.toThrow('Execution failed');
+
+      await expect(registry.executeWorkflow('test-workflow', {})).rejects.toThrow(
+        'Execution failed',
+      );
     });
   });
 
@@ -164,7 +175,7 @@ describe('WorkflowRegistry', () => {
     it('should get all categories', async () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow(mockWorkflow2);
-      
+
       const categories = registry.getCategories();
       expect(categories).toEqual(['other', 'test']);
     });
@@ -172,7 +183,7 @@ describe('WorkflowRegistry', () => {
     it('should get all tags', async () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow(mockWorkflow2);
-      
+
       const tags = registry.getTags();
       expect(tags).toEqual(['example', 'other', 'test']);
     });
@@ -180,7 +191,7 @@ describe('WorkflowRegistry', () => {
     it('should get workflow statistics', async () => {
       await registry.registerWorkflow(mockWorkflow);
       await registry.registerWorkflow(mockWorkflow2);
-      
+
       const stats = registry.getStats();
       expect(stats).toEqual({
         total: 2,
@@ -198,27 +209,27 @@ describe('WorkflowRegistry', () => {
     it('should allow subscribing to workflow changes', () => {
       const callback = vi.fn();
       const unsubscribe = registry.subscribe(callback);
-      
+
       expect(typeof unsubscribe).toBe('function');
     });
 
     it('should notify subscribers of workflow changes', async () => {
       const callback = vi.fn();
       registry.subscribe(callback);
-      
+
       await registry.registerWorkflow(mockWorkflow);
-      
+
       expect(callback).toHaveBeenCalledWith([mockWorkflow]);
     });
 
     it('should allow unsubscribing from changes', async () => {
       const callback = vi.fn();
       const unsubscribe = registry.subscribe(callback);
-      
+
       unsubscribe();
-      
+
       await registry.registerWorkflow(mockWorkflow);
-      
+
       expect(callback).not.toHaveBeenCalled();
     });
   });

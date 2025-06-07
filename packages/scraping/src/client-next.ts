@@ -4,7 +4,7 @@
  *
  * @example
  * ```typescript
- * import { createClientScraping, useScrape } from '@repo/scraping-new/client/next';
+ * import { createClientScraping, useScrape } from '@repo/scraping/client/next';
  *
  * // In a component
  * const { scrape, data, loading } = useScrape();

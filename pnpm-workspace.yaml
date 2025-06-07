@@ -1,5 +1,6 @@
 packages:
   - apps/*
+  - "!apps/workers-backup"
   - packages/*
   - functions/*
   - infrastructure/*

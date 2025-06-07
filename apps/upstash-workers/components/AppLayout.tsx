@@ -104,7 +104,13 @@ export function AppLayout({ children, workflows }: AppLayoutProps) {
             <Badge
               variant="light"
               color={useLocalQStash ? 'orange' : 'blue'}
-              leftSection={useLocalQStash ? <IconDeviceDesktop size={12} /> : <IconCloud size={12} />}
+              leftSection={
+                useLocalQStash ? (
+                  <IconDeviceDesktop size={12} />
+                ) : (
+                  <IconCloud size={12} />
+                )
+              }
             >
               {useLocalQStash ? 'Local QStash' : 'Production QStash'}
             </Badge>

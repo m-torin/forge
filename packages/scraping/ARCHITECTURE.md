@@ -1,8 +1,8 @@
-# Scraping-New Package Architecture
+# Scraping Package Architecture
 
 ## Overview
 
-The `@repo/scraping-new` package provides a modern, multi-provider web scraping system that supports
+The `@repo/scraping` package provides a modern, multi-provider web scraping system that supports
 various scraping strategies from lightweight HTML parsing to full browser automation and managed
 scraping services.
 
@@ -330,7 +330,7 @@ console.log(health);
 
 ```typescript
 // app/api/scrape/route.ts
-import { createServerScraping } from '@repo/scraping-new/server/next';
+import { createServerScraping } from '@repo/scraping/server/next';
 
 export async function POST(request: Request) {
   const { url } = await request.json();
@@ -343,7 +343,7 @@ export async function POST(request: Request) {
 
 // components/scraper.tsx
 ('use client');
-import { useScraper } from '@repo/scraping-new/client/next';
+import { useScraper } from '@repo/scraping/client/next';
 
 export function ScraperComponent() {
   const { scrape, isLoading, data, error } = useScraper();

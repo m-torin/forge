@@ -1,6 +1,8 @@
 import { flag } from '@vercel/flags/next';
-import { postHogServerAdapter } from '@repo/feature-flags/server/next';
 import { dedupe } from '@vercel/flags/next';
+
+import { postHogServerAdapter } from '@repo/feature-flags/server/next';
+
 import type { ReadonlyRequestCookies } from '@vercel/flags';
 
 interface Entities {
@@ -14,22 +16,22 @@ const identify = dedupe(({ cookies }: { cookies: ReadonlyRequestCookies }): Enti
 
 // Basic boolean flag using PostHog
 export const myFlag = flag({
-  key: 'posthog-is-feature-enabled',
-  adapter: postHogServerAdapter.isFeatureEnabled(),
   identify,
+  adapter: postHogServerAdapter.isFeatureEnabled(),
+  key: 'posthog-is-feature-enabled',
 });
 
 // Multivariate flag using PostHog
 export const myFlagVariant = flag({
-  key: 'posthog-feature-flag-value',
-  adapter: postHogServerAdapter.featureFlagValue(),
   identify,
+  adapter: postHogServerAdapter.featureFlagValue(),
+  key: 'posthog-feature-flag-value',
 });
 
 // Flag with payload using PostHog
 export const myFlagPayload = flag({
-  key: 'posthog-feature-flag-payload',
+  identify,
   adapter: postHogServerAdapter.featureFlagPayload((v) => v),
   defaultValue: {},
-  identify,
+  key: 'posthog-feature-flag-payload',
 });

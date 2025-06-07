@@ -1,115 +1,114 @@
 'use client';
 
-import { 
-  AppShell, 
-  Group, 
-  TextInput, 
-  Title, 
-  Menu, 
-  Button, 
+import {
+  ActionIcon,
+  Anchor,
+  AppShell,
+  Box,
+  Breadcrumbs,
+  Button,
+  Divider,
+  Group,
+  Menu,
   rem,
-  UnstyledButton,
   Text,
   ThemeIcon,
-  ActionIcon,
+  Title,
   Tooltip,
-  Box,
-  Divider,
-  Breadcrumbs,
-  Anchor,
-  useMantineColorScheme
+  UnstyledButton,
+  useMantineColorScheme,
 } from '@mantine/core';
-import { 
-  IconSearch, 
+import { useHotkeys } from '@mantine/hooks';
+import {
+  IconBell,
   IconChevronDown,
-  IconRocket,
-  IconPackage,
   IconFileText,
-  IconUsers,
-  IconSettings,
   IconFlag,
   IconHome,
   IconLogout,
-  IconBell,
-  IconSun,
   IconMoon,
-  IconCommand
+  IconPackage,
+  IconRocket,
+  IconSearch,
+  IconSettings,
+  IconSun,
+  IconUsers,
 } from '@tabler/icons-react';
-import { usePathname, useRouter } from 'next/navigation';
-import { type ReactNode, useEffect, useState } from 'react';
-import { useHotkeys } from '@mantine/hooks';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { type ReactNode, useState } from 'react';
+
 import { SearchModal } from './components/search-modal';
 
 const navigationItems = [
   {
-    label: 'Dashboard',
-    icon: IconHome,
+    color: 'blue',
     href: '/',
-    color: 'blue'
+    icon: IconHome,
+    label: 'Dashboard',
   },
   {
-    label: 'Workflows',
-    icon: IconRocket,
-    href: '/workflows',
     color: 'violet',
+    href: '/workflows',
+    icon: IconRocket,
     items: [
-      { label: 'Product Classification', href: '/workflows/product-classification' },
-      { label: 'Batch Processing', href: '/workflows/batch-processing' },
-      { label: 'Schedules', href: '/workflows/schedules' },
-      { label: 'Integrations', href: '/workflows/integrations' },
-      { label: 'Configuration', href: '/workflows/configuration' },
-    ]
+      { href: '/workflows/product-classification', label: 'Product Classification' },
+      { href: '/workflows/batch-processing', label: 'Batch Processing' },
+      { href: '/workflows/schedules', label: 'Schedules' },
+      { href: '/workflows/integrations', label: 'Integrations' },
+      { href: '/workflows/configuration', label: 'Configuration' },
+    ],
+    label: 'Workflows',
   },
   {
-    label: 'PIM',
-    icon: IconPackage,
-    href: '/pim',
     color: 'green',
+    href: '/pim',
+    icon: IconPackage,
     items: [
-      { label: 'Product Catalog', href: '/pim' },
-      { label: 'Taxonomy', href: '/pim/taxonomy' },
-      { label: 'Classification', href: '/pim/classification' },
-    ]
+      { href: '/pim', label: 'Product Catalog' },
+      { href: '/pim/taxonomy', label: 'Taxonomy' },
+      { href: '/pim/classification', label: 'Classification' },
+    ],
+    label: 'PIM',
   },
   {
-    label: 'CMS',
-    icon: IconFileText,
-    href: '/cms',
     color: 'orange',
+    href: '/cms',
+    icon: IconFileText,
     items: [
-      { label: 'Content Editor', href: '/cms/editor' },
-      { label: 'Media Library', href: '/cms/media' },
-    ]
+      { href: '/cms/editor', label: 'Content Editor' },
+      { href: '/cms/media', label: 'Media Library' },
+    ],
+    label: 'CMS',
   },
   {
-    label: 'Guests',
-    icon: IconUsers,
-    href: '/guests',
     color: 'cyan',
+    href: '/guests',
+    icon: IconUsers,
     items: [
-      { label: 'Users', href: '/guests' },
-      { label: 'Organizations', href: '/guests/organizations' },
-    ]
+      { href: '/guests', label: 'Users' },
+      { href: '/guests/organizations', label: 'Organizations' },
+    ],
+    label: 'Guests',
   },
 ];
 
 const adminItems = [
   {
-    label: 'Feature Flags',
-    icon: IconFlag,
+    color: 'pink',
     href: '/feature-flags',
-    color: 'pink'
+    icon: IconFlag,
+    label: 'Feature Flags',
   },
   {
-    label: 'Settings',
-    icon: IconSettings,
-    href: '/settings',
     color: 'gray',
+    href: '/settings',
+    icon: IconSettings,
     items: [
-      { label: 'General', href: '/settings' },
-      { label: 'Security', href: '/settings/security' },
-    ]
+      { href: '/settings', label: 'General' },
+      { href: '/settings/security', label: 'Security' },
+    ],
+    label: 'Settings',
   },
 ];
 
@@ -118,7 +117,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
   const router = useRouter();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [searchOpened, setSearchOpened] = useState(false);
-  
+
   // Keyboard shortcuts
   useHotkeys([
     ['mod+K', () => setSearchOpened(true)],
@@ -128,64 +127,76 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
   // Generate breadcrumbs
   const getBreadcrumbs = () => {
     const paths = pathname.split('/').filter(Boolean);
-    const breadcrumbs = [{ title: 'Home', href: '/' }];
-    
+    const breadcrumbs = [{ href: '/', title: 'Home' }];
+
     let currentPath = '';
     paths.forEach((path) => {
       currentPath += `/${path}`;
-      const navItem = [...navigationItems, ...adminItems].find(item => item.href === currentPath);
+      const navItem = [...navigationItems, ...adminItems].find((item) => item.href === currentPath);
       breadcrumbs.push({
-        title: navItem?.label || path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' '),
         href: currentPath,
+        title: navItem?.label || path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' '),
       });
     });
-    
+
     return breadcrumbs;
   };
 
   return (
     <AppShell
-      header={{ height: 60 }}
-      padding="md"
       styles={{
         main: {
-          background: colorScheme === 'dark' 
-            ? 'var(--mantine-color-dark-8)' 
-            : 'var(--mantine-color-gray-0)',
+          background:
+            colorScheme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
         },
       }}
+      header={{ height: 60 }}
+      padding="md"
     >
-      <AppShell.Header styles={{ header: { borderBottom: '1px solid var(--mantine-color-gray-2)' } }}>
-        <Group h="100%" px="md" justify="space-between">
+      <AppShell.Header
+        styles={{ header: { borderBottom: '1px solid var(--mantine-color-gray-2)' } }}
+      >
+        <Group h="100%" justify="space-between" px="md">
           <Group>
             <Title order={3}>Backstage Admin</Title>
-            
+
             <Group gap={0}>
               {navigationItems.map((item) => (
-                <Menu key={item.label} trigger="hover" transitionProps={{ exitDuration: 0 }} withinPortal>
+                <Menu
+                  key={item.label}
+                  transitionProps={{ exitDuration: 0 }}
+                  withinPortal
+                  trigger="hover"
+                >
                   <Menu.Target>
                     <UnstyledButton
-                      px="md"
-                      py="sm"
-                      onClick={() => router.push(item.href)}
+                      onClick={() => router.push(item.href as any)}
                       styles={{
                         root: {
-                          borderRadius: rem(4),
-                          color: pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)) 
-                            ? `var(--mantine-color-${item.color}-6)` 
-                            : undefined,
-                          backgroundColor: pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
-                            ? `var(--mantine-color-${item.color}-0)` 
-                            : undefined,
                           '&:hover': {
                             backgroundColor: 'var(--mantine-color-gray-0)',
                           },
-                        }
+                          backgroundColor:
+                            pathname === item.href ||
+                            (item.href !== '/' && pathname.startsWith(item.href))
+                              ? `var(--mantine-color-${item.color}-0)`
+                              : undefined,
+                          borderRadius: rem(4),
+                          color:
+                            pathname === item.href ||
+                            (item.href !== '/' && pathname.startsWith(item.href))
+                              ? `var(--mantine-color-${item.color}-6)`
+                              : undefined,
+                        },
                       }}
+                      px="md"
+                      py="sm"
                     >
                       <Group gap="xs">
                         <item.icon size={16} />
-                        <Text size="sm" fw={500}>{item.label}</Text>
+                        <Text fw={500} size="sm">
+                          {item.label}
+                        </Text>
                         {item.items && <IconChevronDown size={14} />}
                       </Group>
                     </UnstyledButton>
@@ -195,8 +206,8 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
                       {item.items.map((subItem) => (
                         <Menu.Item
                           key={subItem.href}
-                          onClick={() => router.push(subItem.href)}
                           leftSection={<div style={{ width: rem(14) }} />}
+                          onClick={() => router.push(subItem.href as any)}
                         >
                           {subItem.label}
                         </Menu.Item>
@@ -211,52 +222,54 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
           <Group>
             <Tooltip label="Search (⌘K)">
               <ActionIcon
-                onClick={() => setSearchOpened(true)}
-                variant="subtle"
                 color="gray"
+                onClick={() => setSearchOpened(true)}
                 size="lg"
+                variant="subtle"
               >
                 <IconSearch size={20} />
               </ActionIcon>
             </Tooltip>
-            
+
             <Tooltip label="Notifications">
-              <ActionIcon variant="subtle" color="gray" size="lg">
+              <ActionIcon color="gray" size="lg" variant="subtle">
                 <IconBell size={20} />
               </ActionIcon>
             </Tooltip>
-            
+
             <Tooltip label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}>
               <ActionIcon
-                onClick={() => toggleColorScheme()}
-                variant="subtle"
                 color="gray"
+                onClick={() => toggleColorScheme()}
                 size="lg"
+                variant="subtle"
               >
                 {colorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
               </ActionIcon>
             </Tooltip>
-            
+
             <Divider orientation="vertical" />
-            
-            <Menu trigger="hover" transitionProps={{ exitDuration: 0 }} withinPortal>
+
+            <Menu transitionProps={{ exitDuration: 0 }} withinPortal trigger="hover">
               <Menu.Target>
-                <Button variant="subtle" color="gray" rightSection={<IconChevronDown size={14} />}>
+                <Button color="gray" rightSection={<IconChevronDown size={14} />} variant="subtle">
                   Admin
                 </Button>
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Label>Administration</Menu.Label>
-                {adminItems.map((item) => (
+                {adminItems.map((item) =>
                   item.items ? (
-                    <Menu key={item.label} trigger="hover" position="right-start" withinPortal>
+                    <Menu key={item.label} position="right-start" withinPortal trigger="hover">
                       <Menu.Target>
                         <Menu.Item
-                          rightSection={<IconChevronDown size={14} style={{ transform: 'rotate(-90deg)' }} />}
                           leftSection={
-                            <ThemeIcon size="sm" variant="light" color={item.color}>
+                            <ThemeIcon color={item.color} size="sm" variant="light">
                               <item.icon size={14} />
                             </ThemeIcon>
+                          }
+                          rightSection={
+                            <IconChevronDown style={{ transform: 'rotate(-90deg)' }} size={14} />
                           }
                         >
                           {item.label}
@@ -266,7 +279,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
                         {item.items.map((subItem) => (
                           <Menu.Item
                             key={subItem.href}
-                            onClick={() => router.push(subItem.href)}
+                            onClick={() => router.push(subItem.href as any)}
                           >
                             {subItem.label}
                           </Menu.Item>
@@ -276,22 +289,22 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
                   ) : (
                     <Menu.Item
                       key={item.label}
-                      onClick={() => router.push(item.href)}
                       leftSection={
-                        <ThemeIcon size="sm" variant="light" color={item.color}>
+                        <ThemeIcon color={item.color} size="sm" variant="light">
                           <item.icon size={14} />
                         </ThemeIcon>
                       }
+                      onClick={() => router.push(item.href as any)}
                     >
                       {item.label}
                     </Menu.Item>
-                  )
-                ))}
+                  ),
+                )}
                 <Menu.Divider />
                 <Menu.Item
                   color="red"
                   leftSection={<IconLogout size={14} />}
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push('/' as any)}
                 >
                   Logout
                 </Menu.Item>
@@ -304,8 +317,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
       <AppShell.Main>
         <Box className="page-transition">
           {pathname !== '/' && (
-            <Breadcrumbs 
-              mb="md" 
+            <Breadcrumbs
               separator="›"
               styles={{
                 root: {
@@ -316,18 +328,19 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
                   marginRight: rem(6),
                 },
               }}
+              mb="md"
             >
               {getBreadcrumbs().map((item, index) => (
                 <Anchor
                   key={item.href}
+                  href={item.href as any}
                   component={Link}
-                  href={item.href}
-                  size="sm"
-                  c={index === getBreadcrumbs().length - 1 ? 'dimmed' : undefined}
                   style={{
-                    textDecoration: 'none',
                     fontWeight: index === getBreadcrumbs().length - 1 ? 500 : undefined,
+                    textDecoration: 'none',
                   }}
+                  c={index === getBreadcrumbs().length - 1 ? 'dimmed' : undefined}
+                  size="sm"
                 >
                   {item.title}
                 </Anchor>
@@ -337,8 +350,8 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
           {children}
         </Box>
       </AppShell.Main>
-      
-      <SearchModal opened={searchOpened} onClose={() => setSearchOpened(false)} />
+
+      <SearchModal onClose={() => setSearchOpened(false)} opened={searchOpened} />
     </AppShell>
   );
 }

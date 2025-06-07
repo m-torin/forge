@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { keys as core } from '@repo/config/next/keys';
 import { keys as database } from '@repo/database/keys';
 import { keys as email } from '@repo/email/keys';
-// Observability-new package doesn't have keys export
+// Observability package doesn't have keys export
 // import { keys as observability } from '@repo/observability/keys';
 import { keys as payments } from '@repo/payments/keys';
 import { keys as security } from '@repo/security/keys';

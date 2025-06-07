@@ -135,7 +135,6 @@ describe('UpstashWorkflowProvider', () => {
       // Create provider with custom webhook URL pattern
       const customProvider = new UpstashWorkflowProvider({
         baseUrl: 'http://localhost:3001',
-        webhookUrlPattern: '/{id}',
         qstash: {
           token: 'test-token',
         },
@@ -143,6 +142,7 @@ describe('UpstashWorkflowProvider', () => {
           url: 'redis://localhost:6379',
           token: 'test-redis-token',
         },
+        webhookUrlPattern: '/{id}',
       });
 
       const mockQStash = vi.mocked(customProvider['qstash']);

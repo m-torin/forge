@@ -1,10 +1,10 @@
-import { generatePermutations } from '../src/server';
-import { flag } from '../src/server';
+import { generatePermutations } from '../src/server-next';
+import { flag } from '../src/server-next';
 
 // Multiple flags for testing combinations
 export const featureAFlag = flag<boolean>({
-  key: 'feature-a',
   decide: () => false,
+  key: 'feature-a',
   options: [
     { label: 'Disabled', value: false },
     { label: 'Enabled', value: true },
@@ -12,8 +12,8 @@ export const featureAFlag = flag<boolean>({
 });
 
 export const featureBFlag = flag<boolean>({
-  key: 'feature-b',
   decide: () => false,
+  key: 'feature-b',
   options: [
     { label: 'Disabled', value: false },
     { label: 'Enabled', value: true },
@@ -21,8 +21,8 @@ export const featureBFlag = flag<boolean>({
 });
 
 export const variantFlag = flag<'A' | 'B' | 'C'>({
-  key: 'variant',
   decide: () => 'A',
+  key: 'variant',
   options: [
     { label: 'Variant A', value: 'A' },
     { label: 'Variant B', value: 'B' },
@@ -37,7 +37,7 @@ export async function generateStaticParams() {
   // Without filter: would generate 2 * 2 * 3 = 12 combinations
   // With filter: only generate specific combinations we care about
 
-  const codes = await generatePermutations(advancedFlags, (combination) => {
+  const codes = await generatePermutations(advancedFlags, (combination: Record<string, any>) => {
     // Only prerender combinations where:
     // 1. Both features are enabled together, OR
     // 2. Both features are disabled together
@@ -49,12 +49,12 @@ export async function generateStaticParams() {
     return featureA === featureB;
   });
 
-  return codes.map((code) => ({ code }));
+  return codes.map((code: string) => ({ code }));
 }
 
 // Alternative example: Only prerender popular combinations
 export async function generatePopularCombinations() {
-  const codes = await generatePermutations(advancedFlags, (combination) => {
+  const codes = await generatePermutations(advancedFlags, (combination: Record<string, any>) => {
     // Only prerender the most common combinations:
     // - Default state (all false/A)
     // - Premium state (all true/C)

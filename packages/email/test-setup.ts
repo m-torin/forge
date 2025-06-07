@@ -1,8 +1,4 @@
-import { vi } from 'vitest';
+import React from 'react';
 
-// Mock environment variables
-vi.mock('./keys', () => ({
-  keys: () => ({
-    RESEND_TOKEN: 'test-resend-token',
-  }),
-}));
+// Make React available globally for JSX
+global.React = React;

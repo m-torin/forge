@@ -1,42 +1,38 @@
 'use client';
 
-import { Stack, Title, Text, Button, ThemeIcon } from '@mantine/core';
+import { Button, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
-import type { TablerIconsProps } from '@tabler/icons-react';
 
 interface EmptyStateProps {
-  title: string;
-  description: string;
-  icon: React.FC<TablerIconsProps>;
   actionLabel?: string;
+  description: string;
+  icon: React.FC<{ size?: string | number; stroke?: string | number }>;
   onAction?: () => void;
+  title: string;
 }
 
-export function EmptyState({ 
-  title, 
-  description, 
-  icon: Icon, 
-  actionLabel, 
-  onAction 
+export function EmptyState({
+  actionLabel,
+  description,
+  icon: Icon,
+  onAction,
+  title,
 }: EmptyStateProps) {
   return (
-    <Stack align="center" py="xl" gap="lg">
-      <ThemeIcon size={80} variant="light" color="gray" radius="xl">
-        <Icon size={40} stroke={1.5} />
+    <Stack align="center" gap="lg" py="xl">
+      <ThemeIcon color="gray" radius="xl" size={80} variant="light">
+        <Icon stroke={1.5} size={40} />
       </ThemeIcon>
-      
+
       <Stack align="center" gap="xs">
         <Title order={3}>{title}</Title>
-        <Text size="sm" c="dimmed" ta="center" maw={400}>
+        <Text c="dimmed" maw={400} size="sm" ta="center">
           {description}
         </Text>
       </Stack>
-      
+
       {actionLabel && onAction && (
-        <Button 
-          leftSection={<IconPlus size={16} />} 
-          onClick={onAction}
-        >
+        <Button leftSection={<IconPlus size={16} />} onClick={onAction}>
           {actionLabel}
         </Button>
       )}

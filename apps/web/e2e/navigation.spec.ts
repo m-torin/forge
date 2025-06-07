@@ -9,28 +9,30 @@ test.describe("Navigation", () => {
   });
 
   test("should navigate between main pages", async ({ page }) => {
-    // Start at homepage
+    // Start at homepage (will redirect to locale)
     await page.goto("/");
     await waitUtils.forNavigation();
 
-    // Navigate to collections
+    // Get current locale from URL
+    const currentUrl = page.url();
+    const locale = currentUrl.match(/\/(en|es|de|zh|fr|pt)\//)?.[1] || "en";
+
+    // Navigate to collections (if link exists)
     const collectionsLink = page.getByRole("link", { name: /collections/i });
     if ((await collectionsLink.count()) > 0) {
       await collectionsLink.first().click();
       await waitUtils.forNavigation();
-      expect(page.url()).toContain("/collections");
+      expect(page.url()).toMatch(new RegExp(`/${locale}/.*collections`));
     }
 
     // Navigate to about page
-    await page.goto("/about");
+    await page.goto(`/${locale}/about`);
     await waitUtils.forNavigation();
-    const aboutHeading = page.getByRole("heading", { name: /about/i });
-    if ((await aboutHeading.count()) > 0) {
-      await expect(aboutHeading.first()).toBeVisible();
-    }
+    const aboutContent = await page.textContent("body");
+    expect(aboutContent).toBeTruthy();
 
     // Navigate to contact
-    await page.goto("/contact");
+    await page.goto(`/${locale}/contact`);
     await waitUtils.forNavigation();
     expect(page.url()).toContain("/contact");
   });

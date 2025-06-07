@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDuration, workflowService } from '@/lib';
+import { formatDuration } from '@/lib/utils';
 import { type WorkflowDefinition } from '@/types';
 import {
   ActionIcon,
@@ -21,7 +21,7 @@ import {
   IconCode,
   IconEye,
   IconFilter,
-  IconPlay,
+  IconPlayerPlay as IconPlay,
   IconSearch,
 } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -33,7 +33,7 @@ export default function WorkflowsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedTag, setSelectedTag] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState('grid');
+  const [activeTab, setActiveTab] = useState<string | null>('grid');
 
   useEffect(() => {
     loadWorkflows();
@@ -42,8 +42,12 @@ export default function WorkflowsPage() {
   const loadWorkflows = async () => {
     try {
       setLoading(true);
-      const data = await workflowService.getWorkflows();
-      setWorkflows(data);
+      const response = await fetch('/api/workflows');
+      const result = await response.json();
+
+      if (result.success) {
+        setWorkflows(result.data.workflows);
+      }
     } catch (error) {
       console.error('Failed to load workflows:', error);
     } finally {
@@ -53,11 +57,19 @@ export default function WorkflowsPage() {
 
   const executeWorkflow = async (workflowId: string) => {
     try {
-      const result = await workflowService.executeWorkflow(
-        workflowId,
-        {}, // Empty input for demo
-        { type: 'manual', payload: {}, triggeredBy: 'user' },
-      );
+      const response = await fetch('/api/workflows', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workflowId,
+          input: {}, // Empty input for demo
+          options: {},
+        }),
+      });
+
+      const result = await response.json();
       console.log('Workflow executed:', result);
     } catch (error) {
       console.error('Failed to execute workflow:', error);
@@ -186,7 +198,7 @@ export default function WorkflowsPage() {
           </Button>
           <Group gap="xs">
             <ActionIcon
-              href={`/workflows/${workflow.id}`}
+              href={`/workflows/${workflow.id}` as any}
               component={Link}
               size="sm"
               variant="subtle"
@@ -236,7 +248,7 @@ export default function WorkflowsPage() {
             Execute
           </Button>
           <ActionIcon
-            href={`/workflows/${workflow.id}`}
+            href={`/workflows/${workflow.id}` as any}
             component={Link}
             size="sm"
             variant="subtle"

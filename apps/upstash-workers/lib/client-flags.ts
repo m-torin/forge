@@ -10,11 +10,11 @@ export function useLocalQStashClientFlag(): boolean {
   // In client environment, check environment and default to development mode
   if (typeof window !== 'undefined') {
     // Client-side: simple development mode detection
-    return process.env.NODE_ENV === 'development';
+    return process.env.NODE_ENV === 'development'
   }
-  
+
   // Fallback for SSR
-  return false;
+  return false
 }
 
 /**
@@ -22,4 +22,4 @@ export function useLocalQStashClientFlag(): boolean {
  */
 export const clientFlags = {
   useLocalQStash: useLocalQStashClientFlag,
-} as const;
+} as const

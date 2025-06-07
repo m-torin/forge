@@ -30,10 +30,10 @@ export interface StepNumberProps
 
 const StepNumber = ({ order = 1, className, ...props }: StepNumberProps) => {
   return (
-    <span className="absolute left-0 top-0 h-6 sm:h-8">
+    <span className="absolute top-0 left-0 h-6 sm:h-8">
       <span
         className={cx(
-          'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+          'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
           'flex size-8 items-center justify-center sm:size-10',
           'rounded-full border-4 border-white bg-zinc-100 text-center',
           className,

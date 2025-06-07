@@ -89,13 +89,13 @@ const ProductCard: FC<ProductCardProps> = ({
 
       // Immediate reset
       resetScroll();
-      
+
       // Fallback after animation frame
       requestAnimationFrame(resetScroll);
-      
+
       // Final fallback after a short delay
       const timeout = setTimeout(resetScroll, 100);
-      
+
       return () => clearTimeout(timeout);
     }
   }, [quickViewOpened]);
@@ -218,21 +218,15 @@ const ProductCard: FC<ProductCardProps> = ({
         overlayProps={{ blur: 4, opacity: 0.5 }}
         position="right"
         transitionProps={{ duration: 300, transition: 'slide-left' }}
+        styles={{
+          body: { height: '100%', padding: 0 },
+          content: { display: 'flex', flexDirection: 'column' },
+        }}
         size={800}
         title="Product Details"
         zIndex={200}
-        styles={{
-          body: { height: "100%", padding: 0 },
-          content: { display: "flex", flexDirection: "column" },
-        }}
       >
-        <ScrollArea 
-          ref={scrollAreaRef}
-          h="100%" 
-          type="scroll"
-          scrollbarSize={8}
-          p="md"
-        >
+        <ScrollArea ref={scrollAreaRef} scrollbarSize={8} h="100%" p="md" type="scroll">
           <ProductQuickView product={product || data} />
         </ScrollArea>
       </Drawer>

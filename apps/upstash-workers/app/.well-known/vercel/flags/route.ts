@@ -1,12 +1,12 @@
-import { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server'
 
 /**
  * Discovery endpoint for Vercel Toolbar
  * This endpoint allows the Vercel Toolbar to discover and override feature flags
  */
 export async function GET(request: NextRequest) {
-  const baseUrl = request.nextUrl.origin;
-  
+  const baseUrl = request.nextUrl.origin
+
   return Response.json({
     definitions: {
       'use-local-qstash': {
@@ -18,5 +18,5 @@ export async function GET(request: NextRequest) {
         ],
       },
     },
-  });
+  })
 }

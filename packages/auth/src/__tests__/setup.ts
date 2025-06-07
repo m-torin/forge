@@ -8,6 +8,43 @@ import '@testing-library/jest-dom';
 // Mock server-only module
 vi.mock('server-only', () => ({}));
 
+// Mock @t3-oss/env-nextjs to avoid server-side restrictions
+vi.mock('@t3-oss/env-nextjs', () => ({
+  createEnv: vi.fn(() => {
+    // Return a mock environment object that doesn't enforce server-side restrictions
+    // This will be accessed dynamically when the config is created
+    return new Proxy(
+      {},
+      {
+        get(target, prop) {
+          // Return the actual process.env value or a default
+          const envValue = process.env[prop as string];
+          if (envValue !== undefined) {
+            return envValue;
+          }
+
+          // Provide defaults for specific environment variables
+          switch (prop) {
+            case 'BETTER_AUTH_SECRET':
+              return 'development-secret';
+            case 'DATABASE_URL':
+              return 'postgresql://localhost:5432/dev';
+            case 'NEXT_PUBLIC_APP_URL':
+              return 'http://localhost:3000';
+            case 'GITHUB_CLIENT_ID':
+            case 'GITHUB_CLIENT_SECRET':
+            case 'GOOGLE_CLIENT_ID':
+            case 'GOOGLE_CLIENT_SECRET':
+              return '';
+            default:
+              return undefined;
+          }
+        },
+      },
+    );
+  }),
+}));
+
 // Mock Next.js modules
 vi.mock('next/headers', () => ({
   headers: vi.fn(() => Promise.resolve(new Headers())),
@@ -27,7 +64,21 @@ vi.mock('next/navigation', () => ({
 vi.mock('better-auth', () => ({
   betterAuth: vi.fn(() => ({
     api: {
+      banUser: vi.fn(() => Promise.resolve({ success: true })),
+      createApiKey: vi.fn(() => Promise.resolve({ id: 'test-key', key: 'test-key-value' })),
+      deleteApiKey: vi.fn(() => Promise.resolve({ success: true })),
+      deleteSession: vi.fn(() => Promise.resolve({ success: true })),
+      deleteUser: vi.fn(() => Promise.resolve({ success: true })),
       getSession: vi.fn(() => Promise.resolve(null)),
+      impersonateUser: vi.fn(() => Promise.resolve({ success: true })),
+      listApiKeys: vi.fn(() => Promise.resolve([])),
+      listSessions: vi.fn(() => Promise.resolve([])),
+      listUsers: vi.fn(() => Promise.resolve([])),
+      signIn: vi.fn(() => Promise.resolve({ success: true })),
+      signOut: vi.fn(() => Promise.resolve({ success: true })),
+      signUp: vi.fn(() => Promise.resolve({ success: true })),
+      unbanUser: vi.fn(() => Promise.resolve({ success: true })),
+      updateApiKey: vi.fn(() => Promise.resolve({ success: true })),
     },
   })),
 }));
@@ -79,8 +130,25 @@ vi.mock('@repo/email', () => ({
   sendWelcomeEmail: vi.fn(),
 }));
 
+// Mock email functions
+vi.mock('@repo/email', () => ({
+  sendApiKeyCreatedEmail: vi.fn(),
+  sendMagicLinkEmail: vi.fn(),
+  sendOrganizationInvitationEmail: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
+  sendTeamInvitationEmail: vi.fn().mockResolvedValue(true),
+  sendVerificationEmail: vi.fn(),
+  sendWelcomeEmail: vi.fn(),
+}));
+
 // Set up environment variables for tests
 process.env.NODE_ENV = 'test';
 process.env.BETTER_AUTH_SECRET = 'test-secret';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';
+
+// Additional env vars for auth config
+process.env.GITHUB_CLIENT_ID = '';
+process.env.GITHUB_CLIENT_SECRET = '';
+process.env.GOOGLE_CLIENT_ID = '';
+process.env.GOOGLE_CLIENT_SECRET = '';

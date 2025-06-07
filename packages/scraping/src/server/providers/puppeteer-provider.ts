@@ -171,11 +171,12 @@ export class PuppeteerProvider implements ScrapingProvider {
       let screenshot: Buffer | undefined;
       if (options.screenshot) {
         const screenshotOptions = typeof options.screenshot === 'object' ? options.screenshot : {};
-        screenshot = await page.screenshot({
+        const result = await page.screenshot({
           type: 'png',
           fullPage: screenshotOptions.fullPage || false,
           ...screenshotOptions,
         });
+        screenshot = Buffer.from(result);
       }
 
       // Extract data if selectors provided
@@ -368,13 +369,32 @@ export class PuppeteerProvider implements ScrapingProvider {
           ScrapingErrorCode.ELEMENT_NOT_FOUND,
         );
       }
-      return element.screenshot({ path: options.path });
+      const screenshotOptions: any = {};
+      if (
+        options.path &&
+        (options.path.endsWith('.png') ||
+          options.path.endsWith('.jpeg') ||
+          options.path.endsWith('.webp'))
+      ) {
+        screenshotOptions.path = options.path;
+      }
+      const result = await element.screenshot(screenshotOptions);
+      return Buffer.from(result);
     }
 
-    return page.screenshot({
+    const screenshotOptions: any = {
       fullPage: options.fullPage,
-      path: options.path,
-    });
+    };
+    if (
+      options.path &&
+      (options.path.endsWith('.png') ||
+        options.path.endsWith('.jpeg') ||
+        options.path.endsWith('.webp'))
+    ) {
+      screenshotOptions.path = options.path;
+    }
+    const result = await page.screenshot(screenshotOptions);
+    return Buffer.from(result);
   }
 
   // Implementation of ScrapingProvider screenshot method

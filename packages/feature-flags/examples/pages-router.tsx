@@ -1,14 +1,16 @@
+import { generatePermutations } from '../src/server-next';
+
+import { heroTestFlag, marketingFlags } from './flags';
+
 import type { GetStaticPaths, GetStaticProps } from 'next';
-import { generatePermutations } from '../src/server';
-import { marketingFlags, heroTestFlag } from './flags';
 
 // Pages Router example with precomputation
 export const getStaticPaths = (async () => {
   const codes = await generatePermutations(marketingFlags);
 
   return {
-    paths: codes.map((code) => ({ params: { code } })),
     fallback: 'blocking', // Enable ISR
+    paths: codes.map((code) => ({ params: { code } })),
   };
 }) satisfies GetStaticPaths;
 
@@ -21,10 +23,10 @@ export const getStaticProps = (async (context) => {
   const heroVariant = await heroTestFlag(context.params.code, marketingFlags);
 
   return {
+    revalidate: 60 * 60, // Revalidate every hour
     props: {
       heroVariant,
     },
-    revalidate: 60 * 60, // Revalidate every hour
   };
 }) satisfies GetStaticProps<{ heroVariant: 'A' | 'B' }>;
 

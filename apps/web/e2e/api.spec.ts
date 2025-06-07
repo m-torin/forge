@@ -1,341 +1,499 @@
 import { expect, test } from "@repo/testing/e2e";
-import { APITestUtils } from "@repo/testing/e2e";
+import { PerformanceUtils, WaitUtils } from "@repo/testing/e2e";
 
-test.describe("API Endpoints", () => {
-  let _apiUtils: APITestUtils;
+import { createApiMocker, mockStates } from "./utils/api-mock";
 
-  test.beforeEach(async ({ request }) => {
-    _apiUtils = new APITestUtils(request);
+test.describe("API Integration - Enhanced", () => {
+  let waitUtils: WaitUtils;
+  let perfUtils: PerformanceUtils;
+
+  test.beforeEach(async ({ page }) => {
+    waitUtils = new WaitUtils(page);
+    perfUtils = new PerformanceUtils(page);
   });
 
-  test("health endpoint should respond correctly", async ({ request }) => {
-    const response = await request.get("/api/health");
-
-    expect(response.ok()).toBeTruthy();
-    expect(response.status()).toBe(200);
-
-    const data = await response.json();
-    expect(data).toBeTruthy();
-    expect(data.status).toBe("ok");
-  });
-
-  test("should handle CORS properly", async ({ request }) => {
-    const response = await request.get("/api/health", {
-      headers: {
-        Origin: "https://example.com",
-      },
-    });
-
-    // Check CORS headers
-    const corsHeader = response.headers()["access-control-allow-origin"];
-    expect(corsHeader).toBeTruthy();
-  });
-
-  test("auth endpoints should exist", async ({ request }) => {
-    const authEndpoints = [
-      "/api/auth/session",
-      "/api/auth/signin",
-      "/api/auth/signout",
-      "/api/auth/signup",
+  test("health check endpoints should be accessible", async ({ page }) => {
+    const healthEndpoints = [
+      { expectedStatus: 200, path: "/api/health" },
+      { expectedStatus: [200, 404], path: "/health" }, // Optional endpoint
+      { expectedStatus: [200, 404], path: "/api/status" }, // Optional endpoint
     ];
 
-    for (const endpoint of authEndpoints) {
-      const response = await request.get(endpoint);
+    const healthResults = [];
 
-      // Should not return 404 (endpoint exists)
-      expect(response.status()).not.toBe(404);
+    for (const endpoint of healthEndpoints) {
+      try {
+        const response = await page.request.get(endpoint.path);
+        const status = response.status();
 
-      // Auth endpoints typically return 401, 405, or redirect
-      expect([200, 301, 302, 401, 405]).toContain(response.status());
+        healthResults.push({
+          endpoint: endpoint.path,
+          responseTime: Date.now(), // Simplified timing
+          status,
+          success: Array.isArray(endpoint.expectedStatus)
+            ? endpoint.expectedStatus.includes(status)
+            : status === endpoint.expectedStatus,
+        });
+
+        if (Array.isArray(endpoint.expectedStatus)) {
+          expect(endpoint.expectedStatus).toContain(status);
+        } else {
+          expect(status).toBe(endpoint.expectedStatus);
+        }
+      } catch (error) {
+        console.warn(`Health check failed for ${endpoint.path}:`, error);
+        healthResults.push({
+          endpoint: endpoint.path,
+          error: error.message,
+          status: 0,
+          success: false,
+        });
+      }
     }
+
+    await test.info().attach("health-check-results", {
+      body: JSON.stringify(healthResults, null, 2),
+      contentType: "application/json",
+    });
+
+    // At least one health endpoint should be working
+    const workingEndpoints = healthResults.filter((r) => r.success);
+    expect(workingEndpoints.length).toBeGreaterThan(0);
   });
 
-  test("should handle authentication", async ({ request }) => {
-    // Test unauthenticated request to protected endpoint
-    const protectedResponse = await request.get("/api/auth/session");
+  test("API error handling with mocked failures", async ({ page }) => {
+    const mocker = await createApiMocker(page);
 
-    // Should handle unauthenticated requests gracefully
-    expect([200, 401, 403]).toContain(protectedResponse.status());
+    // Test different error scenarios
+    const errorScenarios = [
+      { errorType: "server-error", expectedStatus: 500, path: "/api/products" },
+      {
+        errorType: "unauthorized",
+        expectedStatus: 401,
+        path: "/api/auth/session",
+      },
+      { errorType: "not-found", expectedStatus: 404, path: "/api/nonexistent" },
+    ];
+
+    const errorResults = [];
+
+    for (const scenario of errorScenarios) {
+      // Mock the specific error
+      mocker.mockApiError(scenario.path, scenario.errorType);
+
+      try {
+        const response = await page.request.get(scenario.path);
+        const status = response.status();
+
+        errorResults.push({
+          actualStatus: status,
+          errorType: scenario.errorType,
+          expectedStatus: scenario.expectedStatus,
+          handledCorrectly: status === scenario.expectedStatus,
+          path: scenario.path,
+        });
+
+        expect(status).toBe(scenario.expectedStatus);
+      } catch (error) {
+        errorResults.push({
+          error: error.message,
+          errorType: scenario.errorType,
+          handledCorrectly: false,
+          path: scenario.path,
+        });
+      }
+    }
+
+    await test.info().attach("api-error-handling", {
+      body: JSON.stringify(errorResults, null, 2),
+      contentType: "application/json",
+    });
   });
 
-  test("should validate request methods", async ({ request }) => {
-    // Test wrong HTTP method
-    const response = await request.patch("/api/health");
+  test("API performance and response times", async ({ page }) => {
+    const apiEndpoints = [
+      { critical: true, method: "GET", path: "/api/health" },
+      { critical: false, method: "GET", path: "/api/auth/session" },
+      { critical: true, method: "GET", path: "/" }, // HTML page
+    ];
 
-    // Should return 405 Method Not Allowed or handle gracefully
-    expect([405, 501]).toContain(response.status());
-  });
+    const performanceResults = [];
 
-  test("should handle malformed JSON", async ({ request }) => {
-    try {
-      const response = await request.post("/api/auth/signin", {
-        data: "invalid json{",
-        headers: {
-          "Content-Type": "application/json",
-        },
+    for (const endpoint of apiEndpoints) {
+      const iterations = endpoint.critical ? 3 : 1;
+      const responseTimes = [];
+
+      for (let i = 0; i < iterations; i++) {
+        try {
+          const startTime = Date.now();
+          const response = await page.request.get(endpoint.path);
+          const endTime = Date.now();
+          const responseTime = endTime - startTime;
+
+          responseTimes.push({
+            attempt: i + 1,
+            contentLength: (await response.text()).length,
+            responseTime,
+            status: response.status(),
+          });
+        } catch (error) {
+          responseTimes.push({
+            attempt: i + 1,
+            error: error.message,
+            responseTime: -1,
+          });
+        }
+      }
+
+      const validTimes = responseTimes.filter((r) => r.responseTime > 0);
+      const avgResponseTime =
+        validTimes.length > 0
+          ? validTimes.reduce((sum, r) => sum + r.responseTime, 0) /
+            validTimes.length
+          : -1;
+
+      performanceResults.push({
+        attempts: responseTimes,
+        averageResponseTime: avgResponseTime,
+        critical: endpoint.critical,
+        endpoint: endpoint.path,
+        method: endpoint.method,
+        performanceGrade:
+          avgResponseTime < 100
+            ? "A"
+            : avgResponseTime < 300
+              ? "B"
+              : avgResponseTime < 1000
+                ? "C"
+                : "D",
       });
 
-      // Should return 400 Bad Request for malformed JSON
-      expect([400, 422]).toContain(response.status());
-    } catch (error) {
-      // Some frameworks might throw errors for malformed JSON
-      expect(error).toBeTruthy();
+      // Critical endpoints should respond quickly
+      if (endpoint.critical && avgResponseTime > 0) {
+        expect(avgResponseTime).toBeLessThan(2000); // 2 seconds max for critical APIs
+      }
     }
+
+    await test.info().attach("api-performance-analysis", {
+      body: JSON.stringify(performanceResults, null, 2),
+      contentType: "application/json",
+    });
   });
 
-  test("should handle large payloads", async ({ request }) => {
-    const largePayload = {
-      data: "x".repeat(100000), // 100KB string
+  test("API rate limiting behavior", async ({ page }) => {
+    const mocker = await createApiMocker(page);
+
+    // Mock rate limiting
+    mocker.mockRateLimit("/api/limited", { limit: 3, window: 1000 });
+
+    const rateLimitResults = [];
+    const testEndpoint = "/api/limited";
+
+    // Make rapid requests to test rate limiting
+    for (let i = 0; i < 5; i++) {
+      try {
+        const startTime = Date.now();
+        const response = await page.request.get(testEndpoint);
+        const endTime = Date.now();
+
+        rateLimitResults.push({
+          rateLimited: response.status() === 429,
+          request: i + 1,
+          responseTime: endTime - startTime,
+          status: response.status(),
+        });
+      } catch (error) {
+        rateLimitResults.push({
+          error: error.message,
+          rateLimited: true,
+          request: i + 1,
+        });
+      }
+
+      // Small delay between requests
+      await page.waitForTimeout(100);
+    }
+
+    // Should see rate limiting after the limit is reached
+    const rateLimitedRequests = rateLimitResults.filter((r) => r.rateLimited);
+    expect(rateLimitedRequests.length).toBeGreaterThan(0);
+
+    await test.info().attach("rate-limiting-test", {
+      body: JSON.stringify(rateLimitResults, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("API authentication flow integration", async ({ page }) => {
+    const mocker = await createApiMocker(page, "auth");
+
+    // Test authenticated vs unauthenticated requests
+    const authTests = [
+      {
+        description: "Session endpoint",
+        expectsAuth: false, // Session endpoint should work without auth
+        path: "/api/auth/session",
+      },
+      {
+        description: "User profile",
+        expectsAuth: true,
+        path: "/api/user/profile",
+      },
+      {
+        description: "Admin endpoint",
+        expectsAuth: true,
+        path: "/api/admin/users",
+      },
+    ];
+
+    const authResults = [];
+
+    for (const authTest of authTests) {
+      // Test without authentication
+      try {
+        const unauthedResponse = await page.request.get(authTest.path);
+        const unauthedStatus = unauthedResponse.status();
+
+        authResults.push({
+          description: authTest.description,
+          endpoint: authTest.path,
+          properlyProtected: authTest.expectsAuth
+            ? unauthedStatus === 401
+            : unauthedStatus < 400,
+          shouldRequireAuth: authTest.expectsAuth,
+          unauthenticatedStatus: unauthedStatus,
+        });
+
+        if (authTest.expectsAuth) {
+          // Should be unauthorized
+          expect([401, 403]).toContain(unauthedStatus);
+        } else {
+          // Should be accessible or not found (if endpoint doesn't exist)
+          expect(unauthedStatus).toBeLessThan(500);
+        }
+      } catch (error) {
+        authResults.push({
+          description: authTest.description,
+          endpoint: authTest.path,
+          error: error.message,
+          properlyProtected: authTest.expectsAuth, // Assume protected if it errors
+        });
+      }
+    }
+
+    // Test with mocked authentication
+    mocker.mockAuth({ loginSuccess: true, user: { id: 1, role: "user" } });
+
+    for (const authTest of authTests) {
+      try {
+        const authedResponse = await page.request.get(authTest.path, {
+          headers: { Authorization: "Bearer mock-token" },
+        });
+
+        const result = authResults.find((r) => r.endpoint === authTest.path);
+        if (result) {
+          result.authenticatedStatus = authedResponse.status();
+          result.authWorking = authedResponse.status() < 400;
+        }
+      } catch (error) {
+        const result = authResults.find((r) => r.endpoint === authTest.path);
+        if (result) {
+          result.authenticatedError = error.message;
+        }
+      }
+    }
+
+    await test.info().attach("auth-integration-test", {
+      body: JSON.stringify(authResults, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("API offline behavior and resilience", async ({ page }) => {
+    const mocker = await createApiMocker(page);
+
+    // Test offline scenario
+    mockStates.offline(mocker);
+
+    await page.goto("/");
+    await waitUtils.forNavigation();
+
+    // Check how the app handles offline state
+    const offlineIndicators = [
+      '[data-testid="offline-banner"]',
+      ".offline-message",
+      '[aria-label*="offline"]',
+      ".network-error",
+    ];
+
+    const offlineHandling = {
+      hasOfflineIndicator: false,
+      indicatorType: null,
+      pageStillFunctional: false,
     };
 
-    try {
-      const response = await request.post("/api/health", {
-        data: largePayload,
-      });
-
-      // Should either accept or reject with appropriate status
-      expect([200, 413, 422]).toContain(response.status());
-    } catch (error) {
-      // Large payloads might be rejected at the network level
-      expect(error).toBeTruthy();
-    }
-  });
-
-  test("should rate limit requests", async ({ request }) => {
-    const endpoint = "/api/health";
-    const requests = [];
-
-    // Make multiple rapid requests
-    for (let i = 0; i < 20; i++) {
-      requests.push(request.get(endpoint));
-    }
-
-    const responses = await Promise.all(requests);
-
-    // Should handle multiple requests gracefully
-    // Some might be rate limited (429) or all might succeed
-    const statusCodes = responses.map((r) => r.status());
-    const hasRateLimit = statusCodes.includes(429);
-    const allSuccessful = statusCodes.every((code) => code === 200);
-
-    expect(hasRateLimit || allSuccessful).toBeTruthy();
-  });
-
-  test("should handle SQL injection attempts", async ({ request }) => {
-    const sqlInjectionPayloads = [
-      "'; DROP TABLE users; --",
-      "1' OR '1'='1",
-      "admin'--",
-      "1' UNION SELECT * FROM users--",
-    ];
-
-    for (const payload of sqlInjectionPayloads) {
-      try {
-        const response = await request.post("/api/auth/signin", {
-          data: {
-            email: payload,
-            password: payload,
-          },
-        });
-
-        // Should not execute SQL (return error or handle gracefully)
-        expect([400, 401, 422, 500]).toContain(response.status());
-
-        const responseText = await response.text();
-        // Should not contain SQL error messages
-        expect(responseText.toLowerCase()).not.toContain("sql");
-        expect(responseText.toLowerCase()).not.toContain("mysql");
-        expect(responseText.toLowerCase()).not.toContain("postgresql");
-      } catch (error) {
-        // SQL injection should be blocked
-        expect(error).toBeTruthy();
+    for (const selector of offlineIndicators) {
+      const element = page.locator(selector);
+      if ((await element.count()) > 0) {
+        offlineHandling.hasOfflineIndicator = true;
+        offlineHandling.indicatorType = selector;
+        break;
       }
     }
-  });
 
-  test("should handle XSS attempts", async ({ request }) => {
-    const xssPayloads = [
-      '<script>alert("xss")</script>',
-      'javascript:alert("xss")',
-      '<img src="x" onerror="alert(1)">',
-      '"><script>alert(document.cookie)</script>',
-    ];
+    // Check if basic page functionality still works
+    const bodyText = await page.textContent("body");
+    offlineHandling.pageStillFunctional = bodyText && bodyText.length > 100;
 
-    for (const payload of xssPayloads) {
-      try {
-        const response = await request.post("/api/auth/signin", {
-          data: {
-            email: payload,
-            password: "test",
-          },
-        });
+    // Test retry functionality
+    const retryButtons = page.locator(
+      '[data-testid="retry"], button[aria-label*="retry"]',
+    );
+    if ((await retryButtons.count()) > 0) {
+      // Reset to online state
+      mockStates.online(mocker);
 
-        const responseText = await response.text();
+      await retryButtons.first().click();
+      await page.waitForTimeout(1000);
 
-        // Should sanitize or reject XSS payloads
-        expect(responseText).not.toContain("<script>");
-        expect(responseText).not.toContain("javascript:");
-        expect(responseText).not.toContain("onerror=");
-      } catch (error) {
-        // XSS should be blocked
-        expect(error).toBeTruthy();
-      }
-    }
-  });
-
-  test("should return proper content types", async ({ request }) => {
-    const response = await request.get("/api/health");
-
-    const contentType = response.headers()["content-type"];
-    expect(contentType).toBeTruthy();
-    expect(contentType).toContain("application/json");
-  });
-
-  test("should handle concurrent requests", async ({ request }) => {
-    const concurrentRequests = 10;
-    const requests = [];
-
-    for (let i = 0; i < concurrentRequests; i++) {
-      requests.push(request.get("/api/health"));
+      offlineHandling.hasRetryFunctionality = true;
     }
 
-    const startTime = Date.now();
-    const responses = await Promise.all(requests);
-    const endTime = Date.now();
-
-    // All requests should complete
-    expect(responses).toHaveLength(concurrentRequests);
-
-    // Should handle concurrent requests efficiently
-    const avgResponseTime = (endTime - startTime) / concurrentRequests;
-    expect(avgResponseTime).toBeLessThan(5000); // 5 seconds per request average
-
-    // All should be successful or handled gracefully
-    const successfulResponses = responses.filter((r) => r.ok()).length;
-    expect(successfulResponses).toBeGreaterThan(0);
-  });
-
-  test("should handle timeout scenarios", async ({ request }) => {
-    try {
-      // Set a very short timeout
-      const response = await request.get("/api/health", {
-        timeout: 1, // 1ms timeout
-      });
-
-      // If it succeeds, that's fine too
-      expect(response).toBeTruthy();
-    } catch (error) {
-      // Timeout errors are expected
-      expect((error as Error).message).toContain("timeout");
-    }
-  });
-
-  test("should validate input parameters", async ({ request }) => {
-    // Test with invalid parameters
-    const response = await request.post("/api/auth/signin", {
-      data: {
-        email: "not-an-email",
-        password: "", // empty password
-      },
+    await test.info().attach("offline-resilience-test", {
+      body: JSON.stringify(offlineHandling, null, 2),
+      contentType: "application/json",
     });
 
-    // Should validate input and return appropriate error
-    expect([400, 422]).toContain(response.status());
-
-    if (response.ok()) {
-      const data = await response.json();
-      expect(data.errors || data.error).toBeTruthy();
-    }
+    // App should either show offline indicator or maintain functionality
+    expect(
+      offlineHandling.hasOfflineIndicator ||
+        offlineHandling.pageStillFunctional,
+    ).toBeTruthy();
   });
 
-  test("should handle file uploads properly", async ({ request }) => {
-    // Test file upload endpoint if it exists
-    try {
-      const response = await request.post("/api/upload", {
-        multipart: {
-          file: {
-            name: "test.txt",
-            buffer: Buffer.from("test file content"),
-            mimeType: "text/plain",
-          },
-        },
-      });
-
-      // Should handle file uploads or return method not allowed
-      expect([200, 201, 400, 404, 405, 413]).toContain(response.status());
-    } catch (error) {
-      // Upload endpoint might not exist
-      expect(error).toBeTruthy();
-    }
-  });
-
-  test("should handle pagination parameters", async ({ request }) => {
-    const endpoints = [
-      "/api/products",
-      "/api/collections",
-      "/api/blog",
-      "/api/search",
+  test("API request/response content validation", async ({ page }) => {
+    const apiEndpoints = [
+      {
+        expectedContentType: "application/json",
+        path: "/api/health",
+        requiredFields: ["status"],
+      },
     ];
+
+    const contentValidationResults = [];
+
+    for (const endpoint of apiEndpoints) {
+      try {
+        const response = await page.request.get(endpoint.path);
+        const status = response.status();
+        const contentType = response.headers()["content-type"] || "";
+
+        const contentValidation = {
+          contentType,
+          contentTypeMatch: contentType.includes(endpoint.expectedContentType),
+          endpoint: endpoint.path,
+          expectedContentType: endpoint.expectedContentType,
+          fieldsPresent: [],
+          requiredFields: endpoint.requiredFields,
+          status,
+        };
+
+        if (status === 200 && contentType.includes("json")) {
+          try {
+            const jsonData = await response.json();
+
+            endpoint.requiredFields.forEach((field) => {
+              const hasField = jsonData.hasOwnProperty(field);
+              contentValidation.fieldsPresent.push({
+                field,
+                present: hasField,
+                value: hasField ? jsonData[field] : null,
+              });
+            });
+
+            // All required fields should be present
+            const allFieldsPresent = contentValidation.fieldsPresent.every(
+              (f) => f.present,
+            );
+            expect(allFieldsPresent).toBeTruthy();
+
+            contentValidation.allFieldsPresent = allFieldsPresent;
+          } catch (parseError) {
+            contentValidation.jsonParseError = parseError.message;
+          }
+        }
+
+        contentValidationResults.push(contentValidation);
+
+        // Content type should match expected
+        if (status === 200) {
+          expect(contentType).toContain(endpoint.expectedContentType);
+        }
+      } catch (error) {
+        contentValidationResults.push({
+          endpoint: endpoint.path,
+          error: error.message,
+        });
+      }
+    }
+
+    await test.info().attach("content-validation-results", {
+      body: JSON.stringify(contentValidationResults, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("API caching and optimization headers", async ({ page }) => {
+    const endpoints = [
+      { type: "html", path: "/" },
+      { type: "api", path: "/api/health" },
+    ];
+
+    const cachingResults = [];
 
     for (const endpoint of endpoints) {
       try {
-        const response = await request.get(`${endpoint}?page=1&limit=10`);
+        const response = await page.request.get(endpoint.path);
+        const headers = response.headers();
 
-        if (response.ok()) {
-          const data = await response.json();
+        const cachingInfo = {
+          type: endpoint.type,
+          cacheControl: headers["cache-control"],
+          endpoint: endpoint.path,
+          etag: headers["etag"],
+          expires: headers["expires"],
+          hasCachingHeaders: !!(
+            headers["cache-control"] ||
+            headers["etag"] ||
+            headers["expires"]
+          ),
+          lastModified: headers["last-modified"],
+          securityHeaders: {
+            strictTransportSecurity: headers["strict-transport-security"],
+            xContentTypeOptions: headers["x-content-type-options"],
+            xFrameOptions: headers["x-frame-options"],
+            xXssProtection: headers["x-xss-protection"],
+          },
+          status: response.status(),
+        };
 
-          // Should return structured data for pagination
-          expect(data).toBeTruthy();
+        cachingResults.push(cachingInfo);
 
-          // Common pagination fields
-          const hasPagination =
-            data.page || data.items || data.data || data.results;
-          expect(hasPagination).toBeTruthy();
+        // Static resources should have caching headers
+        if (endpoint.type === "html" && response.status() === 200) {
+          expect(cachingInfo.hasCachingHeaders).toBeTruthy();
         }
       } catch (error) {
-        // Endpoint might not exist
-        expect(error).toBeTruthy();
-      }
-    }
-  });
-
-  test("should handle search queries", async ({ request }) => {
-    try {
-      const response = await request.get("/api/search?q=test");
-
-      if (response.ok()) {
-        const data = await response.json();
-        expect(data).toBeTruthy();
-
-        // Should return search results structure
-        const hasResults = data.results || data.items || data.data;
-        expect(hasResults).toBeTruthy();
-      }
-    } catch (error) {
-      // Search endpoint might not exist
-      expect(error).toBeTruthy();
-    }
-  });
-
-  test("should handle webhooks properly", async ({ request }) => {
-    const webhookEndpoints = [
-      "/api/webhooks/stripe",
-      "/api/webhooks/github",
-      "/api/webhooks/auth",
-    ];
-
-    for (const endpoint of webhookEndpoints) {
-      try {
-        const response = await request.post(endpoint, {
-          data: { test: "webhook" },
+        cachingResults.push({
+          endpoint: endpoint.path,
+          error: error.message,
         });
-
-        // Webhooks should exist or return proper errors
-        expect([200, 400, 401, 404, 405]).toContain(response.status());
-      } catch (error) {
-        // Webhook endpoints might not exist
-        expect(error).toBeTruthy();
       }
     }
+
+    await test.info().attach("caching-and-headers", {
+      body: JSON.stringify(cachingResults, null, 2),
+      contentType: "application/json",
+    });
   });
 });

@@ -241,7 +241,7 @@ export function GuestActionsProvider({ children }: { children: ReactNode }) {
 
   const guestOperations = useMemo<GuestOperations>(
     () => ({
-      id: guestId,
+      id: typeof guestId === "function" ? guestId() : guestId,
       becomeAuthenticated: async (userId: string) => {
         setAuthenticatedUserId(userId);
       },

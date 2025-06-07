@@ -21,13 +21,13 @@ export { getActiveOrganization, updateUser } from './actions';
 
 // Admin management functions
 export {
-  listApiKeys,
+  banUser,
   deleteSession,
   deleteUser,
-  listUsers,
-  listSessions,
   impersonateUser,
-  banUser,
+  listApiKeys,
+  listSessions,
+  listUsers,
   unbanUser,
 } from './admin-management';
 

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 
 export default function SecuritySettingsPage() {
   console.log('Page Tracking: backstage-security-settings');
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkTwoFactorStatus();

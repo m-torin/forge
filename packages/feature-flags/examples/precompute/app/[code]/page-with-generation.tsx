@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { generatePermutations } from '@vercel/flags/next';
+
 import { marketingFlags } from '../../flags';
 
 export async function generateStaticParams() {

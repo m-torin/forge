@@ -11,33 +11,53 @@ describe('ArchiveFilterListBox', () => {
     { label: 'Home & Garden', value: 'home-garden' },
   ];
 
-  it('renders filter listbox with options', () => {
+  it('renders filter listbox with options', async () => {
     render(<ArchiveFilterListBox options={defaultOptions} />);
 
-    const listbox = screen.getByRole('listbox');
-    expect(listbox).toBeInTheDocument();
+    // Click the input to open the dropdown
+    const input = screen.getByRole('textbox');
+    expect(input).toBeInTheDocument();
 
-    defaultOptions.forEach((option) => {
-      expect(screen.getByText(option.label)).toBeInTheDocument();
+    fireEvent.click(input);
+
+    // Wait for options to appear
+    await waitFor(() => {
+      defaultOptions.forEach((option) => {
+        expect(screen.getByText(option.label)).toBeInTheDocument();
+      });
     });
   });
 
-  it('handles option selection', () => {
+  it('handles option selection', async () => {
     const mockOnChange = vi.fn();
     render(<ArchiveFilterListBox options={defaultOptions} onChange={mockOnChange} />);
 
-    const electronicsOption = screen.getByText('Electronics');
-    fireEvent.click(electronicsOption);
+    // Open dropdown first
+    const input = screen.getByRole('textbox');
+    fireEvent.click(input);
+
+    // Wait for options to appear and click one
+    await waitFor(() => {
+      const electronicsOption = screen.getByText('Electronics');
+      fireEvent.click(electronicsOption);
+    });
 
     expect(mockOnChange).toHaveBeenCalledWith('electronics');
   });
 
-  it('shows selected option', () => {
+  it('shows selected option', async () => {
     render(<ArchiveFilterListBox options={defaultOptions} value="electronics" />);
 
-    const selectedOption = screen.getByText('Electronics');
-    expect(selectedOption).toHaveClass('selected');
-    expect(selectedOption).toHaveAttribute('aria-selected', 'true');
+    // Check that the input shows the selected value
+    const input = screen.getByRole('textbox');
+
+    // Open dropdown to see selected state
+    fireEvent.click(input);
+
+    await waitFor(() => {
+      const selectedOption = screen.getByRole('option', { name: 'Electronics' });
+      expect(selectedOption).toHaveAttribute('aria-selected', 'true');
+    });
   });
 
   it('supports multi-select mode', () => {

@@ -1,29 +1,29 @@
 import clsx from "clsx";
 import { type FC } from "react";
 
-import { getCollections } from "@repo/design-system/mantine-ciseco/data/data";
-import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
 import {
-  Logo,
   AvatarDropdown,
   CartBtn,
   HamburgerBtnMenu,
+  Logo,
   Navigation,
   SearchBtnPopover,
 } from "@repo/design-system/mantine-ciseco";
+import { getCollections } from "@repo/design-system/mantine-ciseco/data/data";
+import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
 
 export interface InteractiveHeader2Props {
+  cartCount?: number;
   hasBorder?: boolean;
   onCartClick?: () => void;
   onMenuClick?: () => void;
-  cartCount?: number;
 }
 
 const InteractiveHeader2: FC<InteractiveHeader2Props> = async ({
+  cartCount = 0,
   hasBorder = true,
   onCartClick,
   onMenuClick,
-  cartCount = 0,
 }) => {
   const navigationMenu = await getNavigation();
   const allCollections = await getCollections();

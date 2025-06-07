@@ -1,0 +1,5958 @@
+[
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-06-06T18:10:12.395Z",
+    "endTime": "2025-06-06T18:11:20.063Z",
+    "duration": 67668,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "3aa63559e8a89f65beaed7d7f09849d66f672242",
+    "buildId": "build-1925",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-06-06T23:40:53.395Z",
+    "endTime": "2025-06-06T23:41:08.401Z",
+    "duration": 15006,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "338ff7f0b719474b8ccf1b2d9c826e9296bcfd2a",
+    "buildId": "build-1660",
+    "tags": ["e2e", "critical", "smoke", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-06-06T13:34:14.395Z",
+    "endTime": "2025-06-06T13:34:33.599Z",
+    "duration": 19204,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "a32a27e591d6c1b743e4291ba6098b6f2b5ba510",
+    "buildId": "build-9717",
+    "tags": ["e2e", "critical", "api", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-06-06T08:31:47.395Z",
+    "endTime": "2025-06-06T08:32:02.273Z",
+    "duration": 14878,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "32d1a52a89ef378caa244c6263bf7c113a269d7d",
+    "buildId": "build-6914",
+    "tags": ["e2e", "ui", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-06-07T00:58:16.395Z",
+    "endTime": "2025-06-07T00:58:43.827Z",
+    "duration": 27432,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "d2221f7bf870ee1a85ed492ee6d20481f2bd7d4e",
+    "buildId": "build-1840",
+    "tags": ["e2e", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-06-06T15:40:33.395Z",
+    "endTime": "2025-06-06T15:40:46.607Z",
+    "duration": 13212,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "e8c90ea7e63ec92a5988beddb950f0f21e790d52",
+    "buildId": "build-7781",
+    "tags": ["e2e", "ui", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-06-05T12:28:40.395Z",
+    "endTime": "2025-06-05T12:29:14.523Z",
+    "duration": 34128,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "88b248d151f764eb6bf2112f32108b404af74362",
+    "buildId": "build-5503",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-06-05T13:42:12.395Z",
+    "endTime": "2025-06-05T13:42:51.195Z",
+    "duration": 38800,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "bdca34bb29d1d6f85f5edb4234d27095a6edc4fd",
+    "buildId": "build-9485",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-06-05T11:15:10.395Z",
+    "endTime": "2025-06-05T11:15:32.606Z",
+    "duration": 22211,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "a4554d4e842fd1a8dc5a0525c316083fd78eace0",
+    "buildId": "build-9702",
+    "tags": ["e2e", "ui", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-06-05T12:13:03.395Z",
+    "endTime": "2025-06-05T12:14:00.513Z",
+    "duration": 57118,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "b03b09026653ccf3b98a55f2c7b92861dc0a6f19",
+    "buildId": "build-8335",
+    "tags": ["e2e", "performance", "api", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-06-05T07:00:21.395Z",
+    "endTime": "2025-06-05T07:00:48.466Z",
+    "duration": 27071,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "6eed3b78ca62ccf14ac771abc538e15404007d6c",
+    "buildId": "build-2735",
+    "tags": ["e2e", "critical", "mobile", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-06-05T20:40:20.395Z",
+    "endTime": "2025-06-05T20:40:28.433Z",
+    "duration": 8038,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "51234f67c6286459666c4dae587f38e3b6189a33",
+    "buildId": "build-8943",
+    "tags": ["e2e", "desktop", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-06-05T10:47:19.395Z",
+    "endTime": "2025-06-05T10:47:44.255Z",
+    "duration": 24860,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "04798590d506f1911c2ff83475054408981e1cd3",
+    "buildId": "build-3906",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-06-05T13:05:09.395Z",
+    "endTime": "2025-06-05T13:05:49.164Z",
+    "duration": 39769.6,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "07d6874010498f0b40c42bcc77c976988779d88b",
+    "buildId": "build-877",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-06-06T01:07:34.395Z",
+    "endTime": "2025-06-06T01:08:05.909Z",
+    "duration": 31514,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "2f7d1fcfd83d427061840ec732d121d7f734020e",
+    "buildId": "build-6290",
+    "tags": ["e2e", "performance", "smoke", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-06-05T13:39:09.395Z",
+    "endTime": "2025-06-05T13:39:44.671Z",
+    "duration": 35276.8,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "e1ff99abccefc10c540b7dc6c2ddcbf666e8d029",
+    "buildId": "build-6025",
+    "tags": ["e2e", "mobile", "api", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-06-04T10:11:02.395Z",
+    "endTime": "2025-06-04T10:11:18.719Z",
+    "duration": 16324,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "d0477a601171d88aece48b7608fd030482d12521",
+    "buildId": "build-942",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-06-04T06:30:49.395Z",
+    "endTime": "2025-06-04T06:31:10.786Z",
+    "duration": 21391,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "9529ae89c2e17e87e5bb4c3469f35d01bb9694bb",
+    "buildId": "build-7888",
+    "tags": ["e2e", "ui", "desktop", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-06-04T07:02:40.395Z",
+    "endTime": "2025-06-04T07:03:01.081Z",
+    "duration": 20686,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "e13ab57463669c4dd35892bfb9201be7f60336f6",
+    "buildId": "build-8863",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-06-04T06:19:40.395Z",
+    "endTime": "2025-06-04T06:20:04.509Z",
+    "duration": 24114,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "b84421cd8f22f6a90bf2df8cd48c81685cf8527c",
+    "buildId": "build-2308",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-06-04T22:16:51.395Z",
+    "endTime": "2025-06-04T22:17:10.606Z",
+    "duration": 19211,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "55bb3b829917fd512a407b037088eed3af157508",
+    "buildId": "build-6049",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-06-04T20:47:08.395Z",
+    "endTime": "2025-06-04T20:47:16.437Z",
+    "duration": 8042.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "Error: Page crashed during test execution",
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "7be6f121c1c797d2e01428ac476ca6a7e90094ee",
+    "buildId": "build-8663",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-06-04T05:23:35.395Z",
+    "endTime": "2025-06-04T05:24:08.728Z",
+    "duration": 33333.3,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "d52dfe5ee6a955357d67d76a51621ab6c196d037",
+    "buildId": "build-8373",
+    "tags": ["e2e", "mobile", "critical", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-06-04T14:09:24.395Z",
+    "endTime": "2025-06-04T14:10:01.747Z",
+    "duration": 37352.9,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "886d06a6c7981c8a029ef748b95f9d4b4ce65178",
+    "buildId": "build-209",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-06-03T05:53:17.395Z",
+    "endTime": "2025-06-03T05:53:34.702Z",
+    "duration": 17307,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "680244935a7f50b6e7cf81ad1151499f8e3c447a",
+    "buildId": "build-309",
+    "tags": ["e2e", "ui", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-06-03T05:30:19.395Z",
+    "endTime": "2025-06-03T05:30:49.228Z",
+    "duration": 29833,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "bd6922d962d9c0d1bc3d6410e0f5bece05981051",
+    "buildId": "build-1890",
+    "tags": ["e2e", "critical", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-06-04T02:25:14.395Z",
+    "endTime": "2025-06-04T02:25:28.485Z",
+    "duration": 14090,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "2dc57cc82a4368d318a59770ed1f149f9adde250",
+    "buildId": "build-2108",
+    "tags": ["e2e", "critical", "api", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-06-03T16:08:14.395Z",
+    "endTime": "2025-06-03T16:09:18.171Z",
+    "duration": 63776,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "147b789aef39477a8ce2d9e27cf65da171785f28",
+    "buildId": "build-7301",
+    "tags": ["e2e", "performance", "smoke", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-06-03T08:12:59.395Z",
+    "endTime": "2025-06-03T08:13:50.351Z",
+    "duration": 50956,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "6331f232e2b142ea3528b350e25a99b05f1249e9",
+    "buildId": "build-3319",
+    "tags": ["e2e", "performance", "smoke", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-06-03T23:34:46.395Z",
+    "endTime": "2025-06-03T23:35:20.146Z",
+    "duration": 33751,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "151c1673d294adea265f519c4e5e5d616b7b2e89",
+    "buildId": "build-9845",
+    "tags": ["e2e", "critical", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-06-03T14:00:47.395Z",
+    "endTime": "2025-06-03T14:01:53.173Z",
+    "duration": 65778,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "8bcf62788ba3b8d1e09fcc5889e212869e012732",
+    "buildId": "build-132",
+    "tags": ["e2e", "performance", "api", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-06-03T18:22:45.395Z",
+    "endTime": "2025-06-03T18:23:06.470Z",
+    "duration": 21075,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "56475a3cb8666965cf60a1a355d6835243618fc0",
+    "buildId": "build-6139",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-06-02T15:15:56.395Z",
+    "endTime": "2025-06-02T15:16:06.870Z",
+    "duration": 10475,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "51cc5da7c566e9156388fff96c657674a0f01c8f",
+    "buildId": "build-6104",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-06-02T05:01:28.395Z",
+    "endTime": "2025-06-02T05:02:02.003Z",
+    "duration": 33608,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "06ccc4c694277386617c09679471d5bff0e56045",
+    "buildId": "build-3616",
+    "tags": ["e2e", "critical", "smoke", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-06-02T22:07:29.395Z",
+    "endTime": "2025-06-02T22:07:37.452Z",
+    "duration": 8057,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "f008c9bff53a90b422817015e3b1e6801e9640e8",
+    "buildId": "build-3124",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-06-02T17:06:02.395Z",
+    "endTime": "2025-06-02T17:06:29.016Z",
+    "duration": 26621,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "ca43af717d8f938cb778aa3d88eb3172ce68e935",
+    "buildId": "build-5004",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-06-02T04:56:18.395Z",
+    "endTime": "2025-06-02T04:56:50.018Z",
+    "duration": 31623,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "299d9d26dbf3e70028edf3861a70752550e4d474",
+    "buildId": "build-1446",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-06-03T03:20:14.395Z",
+    "endTime": "2025-06-03T03:20:23.449Z",
+    "duration": 9054,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "da7ae4e8632ef0f131576b48b711b4528eae5f60",
+    "buildId": "build-3064",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-06-03T01:23:28.395Z",
+    "endTime": "2025-06-03T01:23:36.752Z",
+    "duration": 8357.7,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "f431b3695a688d5221fa176b52b8749f351c9ae2",
+    "buildId": "build-9309",
+    "tags": ["e2e", "mobile", "ui", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-06-02T07:26:11.395Z",
+    "endTime": "2025-06-02T07:26:40.634Z",
+    "duration": 29239,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "4eeff3ef53b7e176a67bc690bb43bb2b99406f0b",
+    "buildId": "build-9321",
+    "tags": ["e2e", "critical", "api", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-06-03T01:52:05.395Z",
+    "endTime": "2025-06-03T01:52:13.928Z",
+    "duration": 8533,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "7a87ce006d68f46566014a59a91ec123b44bbe21",
+    "buildId": "build-3474",
+    "tags": ["e2e", "ui", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-06-02T04:08:02.395Z",
+    "endTime": "2025-06-02T04:08:11.092Z",
+    "duration": 8697,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "37e45541794468446398e0173f420d78bd81f8da",
+    "buildId": "build-3664",
+    "tags": ["e2e", "desktop", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-06-02T06:03:49.395Z",
+    "endTime": "2025-06-02T06:03:59.857Z",
+    "duration": 10462,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "2f9c209cf01fc1bee3c8573070c0bb829f2c9cb1",
+    "buildId": "build-5683",
+    "tags": ["e2e", "desktop", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-06-01T16:10:44.396Z",
+    "endTime": "2025-06-01T16:10:53.009Z",
+    "duration": 8613,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "88b01aa1a77c77e34a8ef7a0a122ba0cc0554640",
+    "buildId": "build-7477",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-06-02T02:19:06.396Z",
+    "endTime": "2025-06-02T02:19:28.118Z",
+    "duration": 21722,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "bee1a9c42a810edfeb008db4d269e9244f1ed405",
+    "buildId": "build-1324",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-06-01T16:34:57.396Z",
+    "endTime": "2025-06-01T16:35:21.788Z",
+    "duration": 24392,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "3fc31553623ed5ee01aaf92b364a3e9e7238de2f",
+    "buildId": "build-4194",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-06-01T05:09:17.396Z",
+    "endTime": "2025-06-01T05:09:34.560Z",
+    "duration": 17164,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "8140c7a22a6b27c65d768d2fe53e009445f08d51",
+    "buildId": "build-8633",
+    "tags": ["e2e", "critical", "smoke", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-06-01T15:32:50.396Z",
+    "endTime": "2025-06-01T15:33:22.716Z",
+    "duration": 32320.600000000002,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "082d2a2a4915e0939b535634f0cd82262c385827",
+    "buildId": "build-3353",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-06-01T04:40:55.396Z",
+    "endTime": "2025-06-01T04:41:18.208Z",
+    "duration": 22812,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "4c69ce2490568c0606967748066874ae7b8c478d",
+    "buildId": "build-6645",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-06-01T20:16:47.396Z",
+    "endTime": "2025-06-01T20:16:59.734Z",
+    "duration": 12338,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "77a48f71e9e601c7d10db06e264bc1d0384108ac",
+    "buildId": "build-2559",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-06-01T06:27:12.396Z",
+    "endTime": "2025-06-01T06:28:03.112Z",
+    "duration": 50716,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "246d991fa15175f25cc626956f3c147b9fed0d60",
+    "buildId": "build-6076",
+    "tags": ["e2e", "performance", "smoke", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-06-01T16:36:11.396Z",
+    "endTime": "2025-06-01T16:36:42.844Z",
+    "duration": 31448,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "7a2e406f563154909c0dc4f65337eab8102cac22",
+    "buildId": "build-610",
+    "tags": ["e2e", "ui", "desktop", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-31T21:40:02.396Z",
+    "endTime": "2025-05-31T21:40:16.290Z",
+    "duration": 13894.4,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "97f671e0b7bff22b56f45f351477d529706881b5",
+    "buildId": "build-3020",
+    "tags": ["e2e", "mobile", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-31T21:48:02.396Z",
+    "endTime": "2025-05-31T21:49:12.188Z",
+    "duration": 69792,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "d15e696ff477c1b2ef56d555ffbf99d71fd48765",
+    "buildId": "build-2992",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-31T19:00:52.396Z",
+    "endTime": "2025-05-31T19:01:13.970Z",
+    "duration": 21574,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "8b7dd7050dcd6949946cfdb0a8590579d168eba8",
+    "buildId": "build-4992",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-31T13:34:25.396Z",
+    "endTime": "2025-05-31T13:34:39.713Z",
+    "duration": 14317.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "TimeoutError: Element not found within 30000ms",
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "26e773de8d36dd188aa53090e8513f6fe7476301",
+    "buildId": "build-530",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-31T18:17:34.396Z",
+    "endTime": "2025-05-31T18:18:08.699Z",
+    "duration": 34303,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "863c9cd934aca33d64a927cb05be2044aeecbddf",
+    "buildId": "build-820",
+    "tags": ["e2e", "smoke", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-31T20:17:04.396Z",
+    "endTime": "2025-05-31T20:17:29.658Z",
+    "duration": 25262,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "f137d781842b686470015b09dc6722ce85a1bd17",
+    "buildId": "build-1860",
+    "tags": ["e2e", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-31T05:33:41.396Z",
+    "endTime": "2025-05-31T05:33:58.680Z",
+    "duration": 17284,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "f2b1415b04b3ec50ef75a53c1b1500e98f0a8139",
+    "buildId": "build-6452",
+    "tags": ["e2e", "critical", "api", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-31T12:08:42.396Z",
+    "endTime": "2025-05-31T12:08:54.277Z",
+    "duration": 11881,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "bd1633054d4e9c7dc511fb6bb1e3636b0621a88c",
+    "buildId": "build-5329",
+    "tags": ["e2e", "critical", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-31T09:56:07.396Z",
+    "endTime": "2025-05-31T09:56:24.051Z",
+    "duration": 16655,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "87075cccc4562b3cd24def63acf306a1f9fb2cd8",
+    "buildId": "build-4408",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-31T12:59:19.396Z",
+    "endTime": "2025-05-31T12:59:33.739Z",
+    "duration": 14343,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "c19dc066a5a8b1d4878ee78025e26b982dbbba8b",
+    "buildId": "build-6509",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-31T12:18:49.396Z",
+    "endTime": "2025-05-31T12:19:42.776Z",
+    "duration": 53380,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "ef0b20a1567f72f8ce595d4b5444e9e654045b15",
+    "buildId": "build-8766",
+    "tags": ["e2e", "performance", "api", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-31T08:03:09.396Z",
+    "endTime": "2025-05-31T08:04:11.032Z",
+    "duration": 61636,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "9f82626975ddc8f120f6c0848d8e93bdabb95dc5",
+    "buildId": "build-9865",
+    "tags": ["e2e", "performance", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-31T22:34:11.396Z",
+    "endTime": "2025-05-31T22:35:17.476Z",
+    "duration": 66080,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "d50ee4eb3e0cb1dc78996e083c0c2cc33ad35c4b",
+    "buildId": "build-5262",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-30T12:58:44.396Z",
+    "endTime": "2025-05-30T12:58:51.667Z",
+    "duration": 7271,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "855319c5dd7d9f9d8892272f59f1469fe1cdae56",
+    "buildId": "build-4713",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-30T16:58:37.396Z",
+    "endTime": "2025-05-30T16:58:46.351Z",
+    "duration": 8955,
+    "status": "flaky",
+    "retries": 1,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "3ca86933c87fc320f574fa2b0fa64ac16b125765",
+    "buildId": "build-1584",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-31T03:29:11.396Z",
+    "endTime": "2025-05-31T03:29:17.621Z",
+    "duration": 6225,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "4e2a48cd577ee5f687e0a0139fec3c5b838add20",
+    "buildId": "build-7058",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-30T14:46:08.396Z",
+    "endTime": "2025-05-30T14:46:20.840Z",
+    "duration": 12444,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "652c69fec2d5c7ebe2b15e22ed780e6273d84ca4",
+    "buildId": "build-972",
+    "tags": ["e2e", "performance", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-30T16:05:43.396Z",
+    "endTime": "2025-05-30T16:06:17.879Z",
+    "duration": 34483.5,
+    "status": "flaky",
+    "retries": 2,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "19ea194afd1966791a1d282be3aaa9ca12a4e87a",
+    "buildId": "build-5918",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-30T04:13:48.396Z",
+    "endTime": "2025-05-30T04:13:59.535Z",
+    "duration": 11139,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "5c5a727097724fd616c143dde38e6a881f842733",
+    "buildId": "build-4308",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-30T19:58:20.396Z",
+    "endTime": "2025-05-30T19:59:22.510Z",
+    "duration": 62114,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "5f0e875ac214900b37b5b8f2ce9b6242b0b03647",
+    "buildId": "build-6892",
+    "tags": ["e2e", "performance", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-30T11:53:48.396Z",
+    "endTime": "2025-05-30T11:54:13.537Z",
+    "duration": 25141,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "8a2e2c3b8a045c79880247b1111b49f4b1e2321c",
+    "buildId": "build-1",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-30T22:36:14.396Z",
+    "endTime": "2025-05-30T22:36:29.791Z",
+    "duration": 15395,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "2934f42da6fc3f1be96116d5cc4df6ed97851521",
+    "buildId": "build-33",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-30T09:44:06.396Z",
+    "endTime": "2025-05-30T09:44:22.623Z",
+    "duration": 16227,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "db73aedf692bb219be9f87130a4df47be1bd631d",
+    "buildId": "build-5850",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-30T00:24:15.396Z",
+    "endTime": "2025-05-30T00:24:23.356Z",
+    "duration": 7960,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "72b734b94eabd4ec077ea1c032fd9a21fe80f18b",
+    "buildId": "build-6578",
+    "tags": ["e2e", "critical", "performance", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-30T03:38:26.396Z",
+    "endTime": "2025-05-30T03:38:30.559Z",
+    "duration": 4163.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "NetworkError: Failed to fetch /api/products",
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "f613faf813c08d75ea310f1b6eda2ea61c17a29d",
+    "buildId": "build-7901",
+    "tags": ["e2e", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-29T22:46:59.396Z",
+    "endTime": "2025-05-29T22:47:31.334Z",
+    "duration": 31938,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "0669a7c21d77dbf7bebdcfb86284de10d2e43bfd",
+    "buildId": "build-6070",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-29T22:34:06.396Z",
+    "endTime": "2025-05-29T22:35:07.585Z",
+    "duration": 61189.05,
+    "status": "flaky",
+    "retries": 2,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "2c7fe7b653d6034c00466f1709f778b4c78aa771",
+    "buildId": "build-7951",
+    "tags": ["e2e", "mobile", "api", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-29T07:48:40.396Z",
+    "endTime": "2025-05-29T07:49:06.479Z",
+    "duration": 26083,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "65881aa1eb8e3930e0a4ca084c1eb05251e3ee95",
+    "buildId": "build-7169",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-28T04:56:56.396Z",
+    "endTime": "2025-05-28T04:57:06.290Z",
+    "duration": 9894,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "2e15d6990cf00ca766f9573064d5d062e6d46513",
+    "buildId": "build-8370",
+    "tags": ["e2e", "ui", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-28T08:22:06.396Z",
+    "endTime": "2025-05-28T08:22:35.291Z",
+    "duration": 28895,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "b1f6da0891148ab6a1145c46190302015ebd4506",
+    "buildId": "build-4694",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-29T01:39:34.396Z",
+    "endTime": "2025-05-29T01:40:03.152Z",
+    "duration": 28756,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "a4f6665ea21eac6a138779b0e05c7a02400cc8b2",
+    "buildId": "build-9881",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-28T21:10:27.396Z",
+    "endTime": "2025-05-28T21:10:44.249Z",
+    "duration": 16853,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "60fbc593cebace08fe3b31c6912c2b36026c4db4",
+    "buildId": "build-3811",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-28T04:23:33.396Z",
+    "endTime": "2025-05-28T04:23:52.902Z",
+    "duration": 19506,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "7a52388b77f3c884c035a1a4953a118082ca4ced",
+    "buildId": "build-7864",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-28T03:13:13.396Z",
+    "endTime": "2025-05-28T03:13:21.473Z",
+    "duration": 8077,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "8752b89511cfea7c134bdba09d6415e18f1ec20b",
+    "buildId": "build-3251",
+    "tags": ["e2e", "api", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-27T20:04:30.396Z",
+    "endTime": "2025-05-27T20:04:56.866Z",
+    "duration": 26470,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "db6762a9474712e25ff08f9c196f7f45ac6e700c",
+    "buildId": "build-5002",
+    "tags": ["e2e", "performance", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-27T05:28:07.396Z",
+    "endTime": "2025-05-27T05:28:29.420Z",
+    "duration": 22024,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "0ff2d968682633b525e7964ccf788d010c2df72e",
+    "buildId": "build-4662",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-27T15:45:56.396Z",
+    "endTime": "2025-05-27T15:46:05.054Z",
+    "duration": 8658,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "cf7d0af1f7138aadea38dc57a9e65c7979beb1bd",
+    "buildId": "build-9623",
+    "tags": ["e2e", "performance", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-27T06:06:38.396Z",
+    "endTime": "2025-05-27T06:06:54.714Z",
+    "duration": 16318,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "4a7cb520375ff9cec709131283e59e54dcd491de",
+    "buildId": "build-8088",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-27T18:58:20.396Z",
+    "endTime": "2025-05-27T18:58:54.797Z",
+    "duration": 34401,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "c53917d9213279ae0c18851e96e704ffaf0d3d18",
+    "buildId": "build-7687",
+    "tags": ["e2e", "ui", "performance", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-26T16:03:44.396Z",
+    "endTime": "2025-05-26T16:04:00.348Z",
+    "duration": 15952,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "c0e21a3436193f5ac62d80a3ade1a9dfb656038c",
+    "buildId": "build-1374",
+    "tags": ["e2e", "critical", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-26T16:49:35.396Z",
+    "endTime": "2025-05-26T16:49:58.868Z",
+    "duration": 23472,
+    "status": "flaky",
+    "retries": 3,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "887f24eab79fd691493ae1af2e5def61b89c1ef4",
+    "buildId": "build-9346",
+    "tags": ["e2e", "performance", "api", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-26T22:19:29.396Z",
+    "endTime": "2025-05-26T22:19:39.355Z",
+    "duration": 9959.300000000001,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "378904023766238c5058d085f8f5ac562a3257b9",
+    "buildId": "build-9737",
+    "tags": ["e2e", "mobile", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-26T20:43:57.396Z",
+    "endTime": "2025-05-26T20:44:24.858Z",
+    "duration": 27462,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "e55baa31ac6aaf950225e4963ea1b3940cc496cb",
+    "buildId": "build-3646",
+    "tags": ["e2e", "desktop", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-26T06:09:35.396Z",
+    "endTime": "2025-05-26T06:09:44.899Z",
+    "duration": 9503,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "295e645e7fdd3e47919178ebc1e13e6ff1aba478",
+    "buildId": "build-9304",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-27T02:50:25.396Z",
+    "endTime": "2025-05-27T02:50:46.286Z",
+    "duration": 20890,
+    "status": "failed",
+    "retries": 0,
+    "error": "ElementNotFoundError: Selector \"button[data-testid=submit]\" not found",
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "e9dac9d54d7a5ec7f8a469034bec7ad69fad90d0",
+    "buildId": "build-7311",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-26T22:12:15.396Z",
+    "endTime": "2025-05-26T22:13:20.462Z",
+    "duration": 65066,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "5f375206708273f957d53bba2085bc566f8c80b6",
+    "buildId": "build-5171",
+    "tags": ["e2e", "performance", "mobile", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-26T14:19:03.396Z",
+    "endTime": "2025-05-26T14:19:35.936Z",
+    "duration": 32540,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "c323d682d89b191d322c1139996fea46b774785f",
+    "buildId": "build-4243",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-26T23:23:38.396Z",
+    "endTime": "2025-05-26T23:23:56.127Z",
+    "duration": 17731,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "5d0025e0cce27b7e9d58fdee6f0d070766538506",
+    "buildId": "build-7470",
+    "tags": ["e2e", "critical", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-26T09:13:41.396Z",
+    "endTime": "2025-05-26T09:14:18.308Z",
+    "duration": 36912.200000000004,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "380bfd617bb9e2a3833d7c687a4f88d889ed9f78",
+    "buildId": "build-1048",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-26T22:51:49.396Z",
+    "endTime": "2025-05-26T22:52:05.451Z",
+    "duration": 16055,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "6ffa79c5fe3ae0aea13214e0d9a53e65e7bc3592",
+    "buildId": "build-3707",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-26T10:56:09.396Z",
+    "endTime": "2025-05-26T10:57:18.820Z",
+    "duration": 69424,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "767c94a2067614abd54e1d074b2674a88b7fbbf6",
+    "buildId": "build-7481",
+    "tags": ["e2e", "performance", "api", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-26T13:11:02.396Z",
+    "endTime": "2025-05-26T13:11:35.734Z",
+    "duration": 33338,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "e39181e7e7ba7add43ca66418646011fbab049fe",
+    "buildId": "build-1716",
+    "tags": ["e2e", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-26T07:34:50.396Z",
+    "endTime": "2025-05-26T07:35:20.144Z",
+    "duration": 29748,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "1920bb0fa124c878425924bb14ddde50123f9d8b",
+    "buildId": "build-7963",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-26T11:43:50.396Z",
+    "endTime": "2025-05-26T11:44:58.672Z",
+    "duration": 68276,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "a8e8bf149f34cac01c5a1f5d69d01df1d6612a5c",
+    "buildId": "build-7654",
+    "tags": ["e2e", "performance", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-25T23:09:35.396Z",
+    "endTime": "2025-05-25T23:09:42.033Z",
+    "duration": 6637,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "3bd4a12dc80aa724b92aacc71fd1b077822bbab4",
+    "buildId": "build-6121",
+    "tags": ["e2e", "critical", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-25T22:30:05.396Z",
+    "endTime": "2025-05-25T22:30:24.636Z",
+    "duration": 19240,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "1ebc11997f98f6b39f5e894cbcd4f307512f7425",
+    "buildId": "build-1033",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-25T20:20:38.396Z",
+    "endTime": "2025-05-25T20:20:51.906Z",
+    "duration": 13510,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "0a8b5db2a14f8cb891effec7cdd8ab2185e70f84",
+    "buildId": "build-6298",
+    "tags": ["e2e", "critical", "api", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-26T02:21:38.396Z",
+    "endTime": "2025-05-26T02:22:16.932Z",
+    "duration": 38536,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "7851786351ff83e6b281480df311637464cbd519",
+    "buildId": "build-7778",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-25T16:18:44.396Z",
+    "endTime": "2025-05-25T16:19:15.893Z",
+    "duration": 31497,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "c7f23cc93b9bc9dc345b7b4715eee1d1fffbc228",
+    "buildId": "build-4770",
+    "tags": ["e2e", "ui", "performance", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-26T00:09:13.396Z",
+    "endTime": "2025-05-26T00:09:42.061Z",
+    "duration": 28665,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "53e1c504d81c185eccdaf855d1352d4055644c32",
+    "buildId": "build-9786",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-26T00:58:04.396Z",
+    "endTime": "2025-05-26T00:58:20.916Z",
+    "duration": 16520,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "a58dcf9a40affeb3cb2e48b191141396b15d89ad",
+    "buildId": "build-130",
+    "tags": ["e2e", "ui", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-25T19:41:15.396Z",
+    "endTime": "2025-05-25T19:41:42.414Z",
+    "duration": 27018,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "17c09655b6e6e1ad3c62de79fa5b621408c4d92d",
+    "buildId": "build-6078",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-25T07:51:34.396Z",
+    "endTime": "2025-05-25T07:51:44.092Z",
+    "duration": 9696.7,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "00be84252f450dfd9e033f8243dfcf5bc91a0475",
+    "buildId": "build-2806",
+    "tags": ["e2e", "mobile", "regression", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-25T15:45:22.396Z",
+    "endTime": "2025-05-25T15:45:51.687Z",
+    "duration": 29291,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "7b867c3bc29fa95beef8d4dd71568d260ee1f03d",
+    "buildId": "build-879",
+    "tags": ["e2e", "ui", "desktop", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-25T16:39:27.396Z",
+    "endTime": "2025-05-25T16:39:43.485Z",
+    "duration": 16089,
+    "status": "flaky",
+    "retries": 2,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "d3b5ddb3f653650ab688dcb62d1e87f7cc6d2105",
+    "buildId": "build-5431",
+    "tags": ["e2e", "performance", "mobile", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-25T22:33:47.396Z",
+    "endTime": "2025-05-25T22:34:05.762Z",
+    "duration": 18366,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "0e2c916d333832cf59807fa470b0ea222313e6b6",
+    "buildId": "build-7828",
+    "tags": ["e2e", "critical", "mobile", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-25T08:39:17.396Z",
+    "endTime": "2025-05-25T08:39:48.047Z",
+    "duration": 30651,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "60c6e7bff2956703006adf67c0240008aebb0cdf",
+    "buildId": "build-4836",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-25T08:57:31.396Z",
+    "endTime": "2025-05-25T08:58:04.019Z",
+    "duration": 32623,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "ed76dc439fcbc161383739eaa205e71fe7fb1e92",
+    "buildId": "build-4997",
+    "tags": ["e2e", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-24T23:37:55.396Z",
+    "endTime": "2025-05-24T23:38:24.327Z",
+    "duration": 28931,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "e532618177befac5ba158cf4ece3b915b7a21dda",
+    "buildId": "build-3810",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-24T05:14:27.396Z",
+    "endTime": "2025-05-24T05:14:58.712Z",
+    "duration": 31316,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "6ee42225f3fd06ca9bd10fa4c10fdb59301cf40f",
+    "buildId": "build-9854",
+    "tags": ["e2e", "critical", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-24T05:27:35.396Z",
+    "endTime": "2025-05-24T05:27:35.396Z",
+    "duration": 0,
+    "status": "skipped",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "f87260e5f4ebbe7a3b1c6a1f79ad5fe0239ac94c",
+    "buildId": "build-804",
+    "tags": ["e2e", "critical", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-24T06:21:00.396Z",
+    "endTime": "2025-05-24T06:21:21.250Z",
+    "duration": 20854,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "318b02f2214ff9882d4ef4fcb7374eafd64a08d9",
+    "buildId": "build-5999",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-24T07:02:44.396Z",
+    "endTime": "2025-05-24T07:03:18.785Z",
+    "duration": 34389,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "1e214bbc852306c1f0506d992d40ac21c96d7915",
+    "buildId": "build-8752",
+    "tags": ["e2e", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-24T15:27:46.396Z",
+    "endTime": "2025-05-24T15:27:57.802Z",
+    "duration": 11406,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "b52e141b93ec3b83de566723598bfecc373c8475",
+    "buildId": "build-9544",
+    "tags": ["e2e", "critical", "ui", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-24T10:49:11.396Z",
+    "endTime": "2025-05-24T10:49:26.612Z",
+    "duration": 15216,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "8112f315cb407c4c685c4934deeffd741b91abe2",
+    "buildId": "build-9255",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-24T14:44:15.396Z",
+    "endTime": "2025-05-24T14:45:04.471Z",
+    "duration": 49075.5,
+    "status": "flaky",
+    "retries": 1,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "190f9462e6886ef29d2d89ea0138ae38d4ded0e4",
+    "buildId": "build-7485",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-25T03:06:36.396Z",
+    "endTime": "2025-05-25T03:06:54.817Z",
+    "duration": 18421,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "6f0ad55627798966a8a288a25f47914a4db985b3",
+    "buildId": "build-9076",
+    "tags": ["e2e", "critical", "mobile", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-23T09:20:17.396Z",
+    "endTime": "2025-05-23T09:20:47.357Z",
+    "duration": 29961,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "c324813ac8bac444e737e709a0088741ea9320eb",
+    "buildId": "build-606",
+    "tags": ["e2e", "ui", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-23T13:37:31.396Z",
+    "endTime": "2025-05-23T13:37:42.831Z",
+    "duration": 11435.45,
+    "status": "failed",
+    "retries": 0,
+    "error": "AssertionError: Expected \"Welcome\" to be visible",
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "fb845cbd9d68b1fb6d7e4b65f63b43db287d07d1",
+    "buildId": "build-6088",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-23T15:47:14.396Z",
+    "endTime": "2025-05-23T15:47:57.750Z",
+    "duration": 43354,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "93e72666f5997929571cd6e4c73d7f990f4f6aac",
+    "buildId": "build-1741",
+    "tags": ["e2e", "performance", "mobile", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-23T06:11:04.396Z",
+    "endTime": "2025-05-23T06:11:48.370Z",
+    "duration": 43974,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "02bd42a86908db1eef6e5627fee4df2b75a0bd8f",
+    "buildId": "build-5806",
+    "tags": ["e2e", "performance", "critical", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-23T13:05:37.396Z",
+    "endTime": "2025-05-23T13:05:49.319Z",
+    "duration": 11923,
+    "status": "failed",
+    "retries": 0,
+    "error": "TimeoutError: Element not found within 30000ms",
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "0ca07914c63ae90748c58ceedf85d1e068f296e0",
+    "buildId": "build-6435",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-23T19:57:40.396Z",
+    "endTime": "2025-05-23T19:57:49.012Z",
+    "duration": 8616,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "1f624e5303c63ce6b030a158a7b3f1c3fc0931ca",
+    "buildId": "build-6751",
+    "tags": ["e2e", "ui", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-23T13:01:59.396Z",
+    "endTime": "2025-05-23T13:02:04.374Z",
+    "duration": 4978.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "Error: Page crashed during test execution",
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "ef6348805dd3926db5c5901ced299d58ba2a09e2",
+    "buildId": "build-4606",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-23T10:57:53.396Z",
+    "endTime": "2025-05-23T10:58:04.915Z",
+    "duration": 11519,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "162b2334233e49ebb19bd2365222e86d16cbf357",
+    "buildId": "build-7645",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-23T14:07:21.396Z",
+    "endTime": "2025-05-23T14:07:51.762Z",
+    "duration": 30366,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "6d6f9870a62ed01ea020830b17408fc026ed17b2",
+    "buildId": "build-9849",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-23T14:01:02.396Z",
+    "endTime": "2025-05-23T14:01:29.299Z",
+    "duration": 26903.5,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "8691e78a7847920f9cdc0558959faef00d86572c",
+    "buildId": "build-5245",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-23T04:05:38.396Z",
+    "endTime": "2025-05-23T04:06:23.834Z",
+    "duration": 45438.9,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "6efef085ea9f0e79bb05a416d75bf4ed2b0d13a4",
+    "buildId": "build-7369",
+    "tags": ["e2e", "mobile", "api", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-22T12:30:42.396Z",
+    "endTime": "2025-05-22T12:30:53.342Z",
+    "duration": 10946,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "9942188b6023c0aabf95300a2857e55b1db2c210",
+    "buildId": "build-6395",
+    "tags": ["e2e", "mobile", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-22T20:20:08.396Z",
+    "endTime": "2025-05-22T20:20:23.154Z",
+    "duration": 14758,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "98f1c8f68139b296a0cc95230ac53d7c8932c687",
+    "buildId": "build-3920",
+    "tags": ["e2e", "desktop", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-22T21:47:06.396Z",
+    "endTime": "2025-05-22T21:47:28.857Z",
+    "duration": 22461,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "2f5e7e5275be8c2990499a7475c4412c558faacd",
+    "buildId": "build-3129",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-22T17:03:26.396Z",
+    "endTime": "2025-05-22T17:03:53.048Z",
+    "duration": 26652,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "4be8fae3aea33ecf185e5783bc4b6aec2e56dde8",
+    "buildId": "build-9106",
+    "tags": ["e2e", "critical", "ui", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-22T06:19:59.396Z",
+    "endTime": "2025-05-22T06:20:14.349Z",
+    "duration": 14953,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "c10f724e9e0d35873a64d621b444c55d42b6664c",
+    "buildId": "build-6667",
+    "tags": ["e2e", "critical", "desktop", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-23T00:12:31.396Z",
+    "endTime": "2025-05-23T00:13:15.384Z",
+    "duration": 43988,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "86643d2cea776d3e1e27d09b393621d028055d18",
+    "buildId": "build-5243",
+    "tags": ["e2e", "performance", "api", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-22T16:59:28.396Z",
+    "endTime": "2025-05-22T17:00:33.934Z",
+    "duration": 65538,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "71dd9db60e1d9522f20f5dc46f6235a7c4d93555",
+    "buildId": "build-1814",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-22T09:04:28.396Z",
+    "endTime": "2025-05-22T09:05:35.964Z",
+    "duration": 67568,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "4703a907f64c2ff49065d5fc2c3a4a415e13ec67",
+    "buildId": "build-6452",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-22T19:27:40.396Z",
+    "endTime": "2025-05-22T19:28:36.466Z",
+    "duration": 56070,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "51535d1c10f72d14b56ea9ee03ea8d01699e9d4c",
+    "buildId": "build-7159",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-22T14:46:22.396Z",
+    "endTime": "2025-05-22T14:47:03.937Z",
+    "duration": 41541.5,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "c571fa92fadcd07fb5025a881a3ee590faebdbc4",
+    "buildId": "build-7834",
+    "tags": ["e2e", "mobile", "regression", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-22T23:36:48.396Z",
+    "endTime": "2025-05-22T23:37:57.710Z",
+    "duration": 69314,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "52d64bc625fedecf49d13561d69ecf0e251f05a2",
+    "buildId": "build-7527",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-22T22:43:26.396Z",
+    "endTime": "2025-05-22T22:43:44.862Z",
+    "duration": 18466.5,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "bf6d3e3c7d7fbe512aa6a2d3bcdf4684fe06ae5f",
+    "buildId": "build-814",
+    "tags": ["e2e", "mobile", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-22T22:32:45.396Z",
+    "endTime": "2025-05-22T22:32:51.275Z",
+    "duration": 5879.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "ElementNotFoundError: Selector \"button[data-testid=submit]\" not found",
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "49a6684e54986967ae0a453dc0538f6689c8abbe",
+    "buildId": "build-1428",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-21T13:25:57.396Z",
+    "endTime": "2025-05-21T13:26:14.074Z",
+    "duration": 16678,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "cbde0620764239153e43b31bcbcd1bc63564fde8",
+    "buildId": "build-9653",
+    "tags": ["e2e", "regression", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-21T13:21:41.396Z",
+    "endTime": "2025-05-21T13:22:14.904Z",
+    "duration": 33508,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "36ac46827a7aa3461ec2b09796e010d0790ae4dc",
+    "buildId": "build-5096",
+    "tags": ["e2e", "smoke", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-22T01:58:30.396Z",
+    "endTime": "2025-05-22T01:59:03.115Z",
+    "duration": 32719,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "45e4c85c2890ed9f417b83d1db4736eb580d9cbc",
+    "buildId": "build-1718",
+    "tags": ["e2e", "critical", "mobile", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-21T12:21:50.396Z",
+    "endTime": "2025-05-21T12:22:31.490Z",
+    "duration": 41094.3,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "61d18fbe4106974d0e58ce8312e600acb007b0a6",
+    "buildId": "build-4099",
+    "tags": ["e2e", "mobile", "performance", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-21T04:21:09.396Z",
+    "endTime": "2025-05-21T04:21:38.686Z",
+    "duration": 29290,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "a01f7cd57c7753e9fc10162e50721e23c16a2e2b",
+    "buildId": "build-4590",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-21T16:18:21.396Z",
+    "endTime": "2025-05-21T16:19:07.172Z",
+    "duration": 45776,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "c8c0b014f3ed5c9d0d84b55463724b59110ddb71",
+    "buildId": "build-6487",
+    "tags": ["e2e", "performance", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-21T20:50:18.396Z",
+    "endTime": "2025-05-21T20:50:47.152Z",
+    "duration": 28756,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "73831f4a7eede898af709273564c0fc460d495a3",
+    "buildId": "build-4228",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-20T22:37:33.396Z",
+    "endTime": "2025-05-20T22:37:55.082Z",
+    "duration": 21686,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "db57b9800605cbf9186fe2b3102ad89c65fcbc27",
+    "buildId": "build-811",
+    "tags": ["e2e", "critical", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-20T22:11:51.396Z",
+    "endTime": "2025-05-20T22:12:18.350Z",
+    "duration": 26954,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "e9ef857c509387c5029c427e2246416e90a26289",
+    "buildId": "build-898",
+    "tags": ["e2e", "ui", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-20T13:28:04.396Z",
+    "endTime": "2025-05-20T13:28:10.175Z",
+    "duration": 5779,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "93035c5c6f113fbf930b88b0a03589e80fe5aeb9",
+    "buildId": "build-3662",
+    "tags": ["e2e", "critical", "regression", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-20T13:34:57.396Z",
+    "endTime": "2025-05-20T13:35:24.841Z",
+    "duration": 27445,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "8b822bb3cb009aaffb94a294aeed88724aa0a617",
+    "buildId": "build-228",
+    "tags": ["e2e", "critical", "regression", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-20T11:42:18.396Z",
+    "endTime": "2025-05-20T11:42:34.098Z",
+    "duration": 15702,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "a9c165c11c6fc876ced089c20e7433bd2016ca74",
+    "buildId": "build-5324",
+    "tags": ["e2e", "critical", "api", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-20T09:55:59.396Z",
+    "endTime": "2025-05-20T09:56:14.750Z",
+    "duration": 15354,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "13f0f12bea3ea541a59f35355a8dd53be633071e",
+    "buildId": "build-6832",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-19T07:27:37.396Z",
+    "endTime": "2025-05-19T07:28:19.114Z",
+    "duration": 41718,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "2b73bc29c6f90a1c70e69ec242132ffcfae05606",
+    "buildId": "build-3753",
+    "tags": ["e2e", "performance", "ui", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-19T10:19:28.396Z",
+    "endTime": "2025-05-19T10:19:47.886Z",
+    "duration": 19490,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "2c780d2d6ec6d388d043e8b6dd5b3f91c65c8ef4",
+    "buildId": "build-5223",
+    "tags": ["e2e", "performance", "smoke", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-19T17:23:17.396Z",
+    "endTime": "2025-05-19T17:23:42.592Z",
+    "duration": 25196,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "4cb72419a9144aac5d6c39234835c67eb05443f9",
+    "buildId": "build-9205",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-20T02:36:42.396Z",
+    "endTime": "2025-05-20T02:37:26.884Z",
+    "duration": 44488,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "d6b214b5c44eb65259733fca684349e615f9eb3e",
+    "buildId": "build-6362",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-20T03:02:26.396Z",
+    "endTime": "2025-05-20T03:02:49.518Z",
+    "duration": 23122,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "a664a41d6ed66803414d26eab7a6078a5df36018",
+    "buildId": "build-6757",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-19T10:37:39.396Z",
+    "endTime": "2025-05-19T10:38:02.492Z",
+    "duration": 23096,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "e10315b9677a966a54b44cf5689cc679e57394cf",
+    "buildId": "build-1276",
+    "tags": ["e2e", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-20T02:36:54.396Z",
+    "endTime": "2025-05-20T02:37:34.339Z",
+    "duration": 39943.5,
+    "status": "flaky",
+    "retries": 2,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "832b06e94be940b979978f5494c9c224f9c3cb81",
+    "buildId": "build-6964",
+    "tags": ["e2e", "performance", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-19T17:32:23.396Z",
+    "endTime": "2025-05-19T17:32:32.001Z",
+    "duration": 8605,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "550a1eff5fbf5c74a9d8b3ab61f3c223d112e5ba",
+    "buildId": "build-8899",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-19T09:29:54.396Z",
+    "endTime": "2025-05-19T09:30:21.732Z",
+    "duration": 27336,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "ed3647739b3fb715840d79dc1c8531274d8fd22c",
+    "buildId": "build-9217",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-20T01:04:18.396Z",
+    "endTime": "2025-05-20T01:04:27.143Z",
+    "duration": 8747,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "58f5cb59bb4c93011862f9ebe253f2da88391d51",
+    "buildId": "build-6522",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-20T00:02:00.396Z",
+    "endTime": "2025-05-20T00:02:24.322Z",
+    "duration": 23926,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "05eaac46629461021371d123ae8acd4b76538d28",
+    "buildId": "build-341",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-19T18:02:41.396Z",
+    "endTime": "2025-05-19T18:03:19.098Z",
+    "duration": 37702,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "50378e7c00e1bf0e32dbdf9dea5494bd36e4b7b1",
+    "buildId": "build-1675",
+    "tags": ["e2e", "performance", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-19T07:28:33.396Z",
+    "endTime": "2025-05-19T07:29:03.601Z",
+    "duration": 30205,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "5f8b071f470d7633b3599cb539abe1ed09819ad3",
+    "buildId": "build-8630",
+    "tags": ["e2e", "critical", "mobile", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-20T00:07:05.396Z",
+    "endTime": "2025-05-20T00:07:23.574Z",
+    "duration": 18178,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "bc2db2907c183cdd693e948dac3cca691646e581",
+    "buildId": "build-7934",
+    "tags": ["e2e", "ui", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-19T06:46:01.396Z",
+    "endTime": "2025-05-19T06:46:26.877Z",
+    "duration": 25481,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "03e910b2ca07e3faee43e92d99ec4be9218ee657",
+    "buildId": "build-2032",
+    "tags": ["e2e", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-18T19:30:55.396Z",
+    "endTime": "2025-05-18T19:31:19.025Z",
+    "duration": 23629,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "682e91175862a314259cc4b288458ad6c9a6043f",
+    "buildId": "build-3336",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-19T02:20:38.396Z",
+    "endTime": "2025-05-19T02:21:07.272Z",
+    "duration": 28876.5,
+    "status": "flaky",
+    "retries": 3,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "757b5cb9062868cd38bac9b9506b896de4561595",
+    "buildId": "build-1247",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-18T05:32:31.396Z",
+    "endTime": "2025-05-18T05:33:02.429Z",
+    "duration": 31033,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "8ad46ccf3b2c04520a504851d69dd2dbdd5f8bf1",
+    "buildId": "build-8162",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-18T04:13:41.396Z",
+    "endTime": "2025-05-18T04:14:44.314Z",
+    "duration": 62918,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "5094c973ad122ed308e5d28f1ea26a5acbfefc48",
+    "buildId": "build-9683",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-18T05:55:58.396Z",
+    "endTime": "2025-05-18T05:56:21.815Z",
+    "duration": 23419,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "7e11168ffedaba9e24095a1cf4c1bb72ab46810f",
+    "buildId": "build-9443",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-19T02:08:10.396Z",
+    "endTime": "2025-05-19T02:08:19.845Z",
+    "duration": 9449,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "82cfdd2f8764a129139cad453df31e5104cff685",
+    "buildId": "build-5569",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-18T21:09:18.396Z",
+    "endTime": "2025-05-18T21:09:39.941Z",
+    "duration": 21545,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "ed77c244c73f9b96e385c412ef8b6bbe4d78528b",
+    "buildId": "build-390",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-18T23:06:18.396Z",
+    "endTime": "2025-05-18T23:07:09.532Z",
+    "duration": 51136.5,
+    "status": "flaky",
+    "retries": 2,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "44e2b93ca98378ddb63b7305545400d2d75176d2",
+    "buildId": "build-903",
+    "tags": ["e2e", "critical", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-17T21:18:21.396Z",
+    "endTime": "2025-05-17T21:18:42.959Z",
+    "duration": 21563,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "31179fda868a605d1b66a98727f4c4d3bde139a8",
+    "buildId": "build-4495",
+    "tags": ["e2e", "mobile", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-18T01:42:21.396Z",
+    "endTime": "2025-05-18T01:42:37.039Z",
+    "duration": 15643,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "4c223058123860ec28f2d5713334a3ab10cac20c",
+    "buildId": "build-9809",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-17T11:05:19.396Z",
+    "endTime": "2025-05-17T11:05:43.668Z",
+    "duration": 24272,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "d822e1effb82e8f594444b7b9c69a5b0ba621a25",
+    "buildId": "build-3356",
+    "tags": ["e2e", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-18T01:13:27.396Z",
+    "endTime": "2025-05-18T01:13:55.104Z",
+    "duration": 27708,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "d96d6f78c2626cffb82b7e2a5c840c632aef6f6d",
+    "buildId": "build-9155",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-18T00:38:20.396Z",
+    "endTime": "2025-05-18T00:38:26.964Z",
+    "duration": 6568,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "709ace075005f2ed6495fe64bc0333bbf70c361d",
+    "buildId": "build-7423",
+    "tags": ["e2e", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-17T23:35:59.396Z",
+    "endTime": "2025-05-17T23:36:33.398Z",
+    "duration": 34002,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "70492e6f7ab6682a6a995c191e2a77b469f27aec",
+    "buildId": "build-5676",
+    "tags": ["e2e", "critical", "performance", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-17T20:20:25.396Z",
+    "endTime": "2025-05-17T20:20:56.161Z",
+    "duration": 30765,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "70640984a5b3167eabc592b5ab87d33fb5b0904a",
+    "buildId": "build-4830",
+    "tags": ["e2e", "desktop", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-17T14:50:22.396Z",
+    "endTime": "2025-05-17T14:50:27.465Z",
+    "duration": 5069.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "ElementNotInteractableError: Element is not clickable",
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "62212c2fda63c24eb666ce2c407af9c8c406a540",
+    "buildId": "build-9169",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-17T06:20:50.396Z",
+    "endTime": "2025-05-17T06:21:00.726Z",
+    "duration": 10330,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "e8a2543738c184d180be3b2682d7389b1e72a7d8",
+    "buildId": "build-7587",
+    "tags": ["e2e", "performance", "ui", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-18T00:05:46.396Z",
+    "endTime": "2025-05-18T00:06:03.343Z",
+    "duration": 16947,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "4793c4635c29d0962933a7f4bc50e680928054f5",
+    "buildId": "build-841",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-17T19:57:03.396Z",
+    "endTime": "2025-05-17T19:57:32.817Z",
+    "duration": 29421,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "f8fbcd6dd555a79cdf2dabfaec34bb71932fdeb0",
+    "buildId": "build-5961",
+    "tags": ["e2e", "critical", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-18T02:38:16.396Z",
+    "endTime": "2025-05-18T02:38:24.442Z",
+    "duration": 8046,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "d8a2534c6440cb9511715cb7470dc6fd6b9924f6",
+    "buildId": "build-3646",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-17T11:53:58.396Z",
+    "endTime": "2025-05-17T11:54:25.086Z",
+    "duration": 26690.3,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "38eb86d0fbc03f507f642d94b2625f3854180221",
+    "buildId": "build-820",
+    "tags": ["e2e", "mobile", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-16T10:10:03.396Z",
+    "endTime": "2025-05-16T10:10:09.856Z",
+    "duration": 6460,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "7cb86bac44bda41c9ede9242ebd26a947cb561a9",
+    "buildId": "build-9915",
+    "tags": ["e2e", "desktop", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-16T17:53:59.396Z",
+    "endTime": "2025-05-16T17:54:59.856Z",
+    "duration": 60460,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "c4e6349206788c26a4d50cfc8aaff06d58613d39",
+    "buildId": "build-7909",
+    "tags": ["e2e", "performance", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-16T22:23:10.396Z",
+    "endTime": "2025-05-16T22:23:37.973Z",
+    "duration": 27577,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "2f08617592dc0acf4c2097fd57ff7b39489b2a03",
+    "buildId": "build-9604",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-16T09:07:33.396Z",
+    "endTime": "2025-05-16T09:07:45.777Z",
+    "duration": 12381,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "c2365a1b5b58069f904e7bc0273c0d87e6a1848c",
+    "buildId": "build-3661",
+    "tags": ["e2e", "api", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-16T12:37:47.396Z",
+    "endTime": "2025-05-16T12:37:53.238Z",
+    "duration": 5842,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "09c21a9a0029c3a9b3e5e544a7dab4fa166e2803",
+    "buildId": "build-4786",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-16T14:33:59.396Z",
+    "endTime": "2025-05-16T14:34:19.027Z",
+    "duration": 19631,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "89f1c3e8f6163f08ad0336fa69af6a338b67470e",
+    "buildId": "build-5370",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-15T05:03:43.396Z",
+    "endTime": "2025-05-15T05:03:55.752Z",
+    "duration": 12356,
+    "status": "failed",
+    "retries": 0,
+    "error": "ElementNotInteractableError: Element is not clickable",
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "676d0f4a1fe97ffe01c0cfc97456eca7e205334b",
+    "buildId": "build-7294",
+    "tags": ["e2e", "critical", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-15T07:31:50.396Z",
+    "endTime": "2025-05-15T07:32:01.111Z",
+    "duration": 10715,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "af4fbb0e125892e6d431e4a54ae8576cf7bd808e",
+    "buildId": "build-6104",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-15T10:34:44.396Z",
+    "endTime": "2025-05-15T10:35:12.058Z",
+    "duration": 27662,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "8cc86bc2505e932b6f766c90300b29b3c8706059",
+    "buildId": "build-7409",
+    "tags": ["e2e", "critical", "desktop", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-15T06:47:09.396Z",
+    "endTime": "2025-05-15T06:47:37.547Z",
+    "duration": 28151,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "c7490abd791524ae96f8e74466b11ac271116d5e",
+    "buildId": "build-5349",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-15T13:48:39.396Z",
+    "endTime": "2025-05-15T13:49:41.144Z",
+    "duration": 61748,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "b65f063e1e1e79ffb993f5a47dd10df7e3b2e4f3",
+    "buildId": "build-9440",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-15T15:04:57.396Z",
+    "endTime": "2025-05-15T15:05:25.145Z",
+    "duration": 27749,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "393b02e9e8f5c4f38a330c32a84c027680d96313",
+    "buildId": "build-897",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-16T02:37:52.396Z",
+    "endTime": "2025-05-16T02:38:30.103Z",
+    "duration": 37707,
+    "status": "flaky",
+    "retries": 1,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "6685ffadec65bd43647c460a6d24dd098834b9f0",
+    "buildId": "build-6204",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-14T09:30:38.396Z",
+    "endTime": "2025-05-14T09:30:53.547Z",
+    "duration": 15151.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "AssertionError: Expected \"Welcome\" to be visible",
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "e9f31e16698f863b5925e38f2ee57fa6f7639769",
+    "buildId": "build-3714",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-14T12:00:00.396Z",
+    "endTime": "2025-05-14T12:00:30.179Z",
+    "duration": 29783,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "cb286199befba759d0009372c89d23502903fa3a",
+    "buildId": "build-8281",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-14T05:49:11.396Z",
+    "endTime": "2025-05-14T05:49:44.808Z",
+    "duration": 33412,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "582701a3bb4b1b30917c6385a571a1dcf4bd3d24",
+    "buildId": "build-4364",
+    "tags": ["e2e", "performance", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-14T08:17:26.396Z",
+    "endTime": "2025-05-14T08:17:56.234Z",
+    "duration": 29838,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "e3d2df82a8d143450d018af0594d270929f9691e",
+    "buildId": "build-6567",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-14T21:40:05.396Z",
+    "endTime": "2025-05-14T21:40:13.639Z",
+    "duration": 8243,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "af409f712c05b101f93ab26b6ebc900c3dd31f25",
+    "buildId": "build-9021",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-14T23:04:05.396Z",
+    "endTime": "2025-05-14T23:04:30.203Z",
+    "duration": 24807,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "330aeb0e11dfe2390d4db4d8741b448da6456a5c",
+    "buildId": "build-5933",
+    "tags": ["e2e", "critical", "desktop", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-13T08:49:46.396Z",
+    "endTime": "2025-05-13T08:50:09.488Z",
+    "duration": 23092,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "b0642be70af813a9708bb0d6680320bc566865c0",
+    "buildId": "build-8428",
+    "tags": ["e2e", "ui", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-14T02:25:53.396Z",
+    "endTime": "2025-05-14T02:25:59.076Z",
+    "duration": 5680.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "TimeoutError: Element not found within 30000ms",
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "aa7b61f57d256be0914a5c0ed049ad566cfd6fb5",
+    "buildId": "build-7999",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-13T09:22:14.396Z",
+    "endTime": "2025-05-13T09:22:34.416Z",
+    "duration": 20020,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "5f4ee628cd59e5e86bdb390882a12380bf9660e9",
+    "buildId": "build-9570",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-13T07:45:05.396Z",
+    "endTime": "2025-05-13T07:45:22.774Z",
+    "duration": 17378,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "78e241f79d06063e9a016d87a00462fa60e4ca82",
+    "buildId": "build-763",
+    "tags": ["e2e", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-13T19:05:24.396Z",
+    "endTime": "2025-05-13T19:06:01.783Z",
+    "duration": 37387.35,
+    "status": "flaky",
+    "retries": 3,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "08f40514b9be6fd3f49fc2eb73a938ed5b9dd152",
+    "buildId": "build-6297",
+    "tags": ["e2e", "mobile", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-13T18:49:01.396Z",
+    "endTime": "2025-05-13T18:49:30.388Z",
+    "duration": 28992,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "171a4cd65918b8be861f85dda5e344bf5a892a9d",
+    "buildId": "build-5084",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-14T01:18:21.396Z",
+    "endTime": "2025-05-14T01:18:35.782Z",
+    "duration": 14386,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "c1d7c852d9cd31c55d00ed5baea04b52b9fef982",
+    "buildId": "build-3791",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-13T11:09:11.396Z",
+    "endTime": "2025-05-13T11:09:30.870Z",
+    "duration": 19474,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "3b56aace96757553991f4bf1c418b06c38652910",
+    "buildId": "build-9052",
+    "tags": ["e2e", "ui", "regression", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-13T11:17:26.396Z",
+    "endTime": "2025-05-13T11:17:46.326Z",
+    "duration": 19930.3,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "43b63d0af4ba596934463dbb525e6c9b26b54b6f",
+    "buildId": "build-7702",
+    "tags": ["e2e", "mobile", "regression", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-14T01:31:07.396Z",
+    "endTime": "2025-05-14T01:31:19.218Z",
+    "duration": 11822,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "feb2d8ed51446e1039ffe0dd926a7933f12dec20",
+    "buildId": "build-8633",
+    "tags": ["e2e", "critical", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-13T15:09:40.396Z",
+    "endTime": "2025-05-13T15:10:02.859Z",
+    "duration": 22463,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "2620a7faedb17fb2ac4a40c08f7822c63b7a73bb",
+    "buildId": "build-4791",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-14T03:32:56.396Z",
+    "endTime": "2025-05-14T03:33:11.030Z",
+    "duration": 14634,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "1889195e6cc1dc7077c81745cb46fc068714f955",
+    "buildId": "build-7566",
+    "tags": ["e2e", "performance", "ui", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-13T10:27:26.396Z",
+    "endTime": "2025-05-13T10:27:34.524Z",
+    "duration": 8128,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "2c4c0276c2f8882839233100aba8878bcfe8f8a8",
+    "buildId": "build-8607",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-12T23:01:25.396Z",
+    "endTime": "2025-05-12T23:01:30.767Z",
+    "duration": 5371,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "d072408d97692a591df4aacdc427353fe5ab6a15",
+    "buildId": "build-2655",
+    "tags": ["e2e", "ui", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-12T09:23:52.396Z",
+    "endTime": "2025-05-12T09:24:16.660Z",
+    "duration": 24264.5,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "6f0cb6574f83f069c9e6adec3b8d49d6e11534ea",
+    "buildId": "build-1889",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-13T02:58:05.396Z",
+    "endTime": "2025-05-13T02:58:31.560Z",
+    "duration": 26164,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "a05eab5740540e4d470e57c279d1d3ef9df87787",
+    "buildId": "build-5264",
+    "tags": ["e2e", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-12T07:10:38.396Z",
+    "endTime": "2025-05-12T07:10:50.288Z",
+    "duration": 11892,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "e5d4e192f9d7bef56d34708ea4ed80ab89f18ab5",
+    "buildId": "build-9275",
+    "tags": ["e2e", "performance", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-12T20:58:57.396Z",
+    "endTime": "2025-05-12T20:59:26.520Z",
+    "duration": 29124,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "65429def66db50ed58926d19008bfb5b06ffe696",
+    "buildId": "build-3019",
+    "tags": ["e2e", "critical", "api", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-12T21:03:55.396Z",
+    "endTime": "2025-05-12T21:04:14.285Z",
+    "duration": 18889,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "dd3b1de665c1bdb33ff7b4529b28c4e87ebc8780",
+    "buildId": "build-3874",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-13T03:52:34.396Z",
+    "endTime": "2025-05-13T03:52:56.626Z",
+    "duration": 22230,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "a7446327e82c4073c45bc9c811e88f9a752ae3ba",
+    "buildId": "build-8360",
+    "tags": ["e2e", "api", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-12T16:27:03.396Z",
+    "endTime": "2025-05-12T16:27:13.604Z",
+    "duration": 10208,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "7b1bbafaeb2daaec1dbbe5c447ddc74bca40e5aa",
+    "buildId": "build-6438",
+    "tags": ["e2e", "mobile", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-12T15:55:25.396Z",
+    "endTime": "2025-05-12T15:55:49.117Z",
+    "duration": 23721,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "c5fd71b9982c94bfb5d365a78b6ecee9f7a3015d",
+    "buildId": "build-9989",
+    "tags": ["e2e", "critical", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-12T21:13:22.396Z",
+    "endTime": "2025-05-12T21:14:22.362Z",
+    "duration": 59966,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/checkout",
+    "commitHash": "f24adf71ad2f10f4cf9c8ccf3a1ecae02dc53125",
+    "buildId": "build-3593",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-12T23:18:08.396Z",
+    "endTime": "2025-05-12T23:18:20.344Z",
+    "duration": 11948.300000000001,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "c1691dfd63ee07b28d73f1a020e4a02eef489309",
+    "buildId": "build-3146",
+    "tags": ["e2e", "mobile", "desktop", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-12T13:57:12.396Z",
+    "endTime": "2025-05-12T13:57:28.897Z",
+    "duration": 16501,
+    "status": "failed",
+    "retries": 0,
+    "error": "ElementNotFoundError: Selector \"button[data-testid=submit]\" not found",
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "4974cb7f8edf3a9312e1ea509a26c3535952acdc",
+    "buildId": "build-7269",
+    "tags": ["e2e", "desktop", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-12T15:00:36.396Z",
+    "endTime": "2025-05-12T15:00:44.640Z",
+    "duration": 8244,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "8befcd136811db82880db6c97cbfca340b9df373",
+    "buildId": "build-2452",
+    "tags": ["e2e", "critical", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-12T01:12:10.396Z",
+    "endTime": "2025-05-12T01:12:10.396Z",
+    "duration": 0,
+    "status": "skipped",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "609e4807a9d40f226be7ee2e9d43c74c0dfecaaf",
+    "buildId": "build-742",
+    "tags": ["e2e", "mobile", "smoke", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-11T05:07:59.396Z",
+    "endTime": "2025-05-11T05:08:25.406Z",
+    "duration": 26010,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "5d38585d55d5cf1f23ad62221b3b359ce67cb23d",
+    "buildId": "build-5671",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-11T13:34:07.396Z",
+    "endTime": "2025-05-11T13:34:19.324Z",
+    "duration": 11928,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "dc8e9835aea4fc8bfdc49883d2719eabc38c9e5a",
+    "buildId": "build-5623",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-11T23:10:18.396Z",
+    "endTime": "2025-05-11T23:10:51.847Z",
+    "duration": 33451,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "e80f0c74c0de312c7fcf2a9e70755babe50e70f2",
+    "buildId": "build-4062",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-11T11:47:05.396Z",
+    "endTime": "2025-05-11T11:47:05.396Z",
+    "duration": 0,
+    "status": "skipped",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "d6003094017df96d153af466510b9913390a1a73",
+    "buildId": "build-2211",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-11T09:21:52.396Z",
+    "endTime": "2025-05-11T09:22:14.821Z",
+    "duration": 22425,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "9562091caf6b0812b509a6e5c9d08645138102b0",
+    "buildId": "build-5612",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-12T01:53:16.396Z",
+    "endTime": "2025-05-12T01:53:42.075Z",
+    "duration": 25679,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "44dad7ff73de74f3984d47418a123ebf601111e6",
+    "buildId": "build-9164",
+    "tags": ["e2e", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-12T02:48:00.396Z",
+    "endTime": "2025-05-12T02:48:00.396Z",
+    "duration": 0,
+    "status": "skipped",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "4b66c3db99d6acb123439cbae1373b4ab728518f",
+    "buildId": "build-6425",
+    "tags": ["e2e", "regression", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-11T20:16:10.396Z",
+    "endTime": "2025-05-11T20:16:22.289Z",
+    "duration": 11893,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "08c4852a187c7ca483a8adc68d4374e63f63d11a",
+    "buildId": "build-4173",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-11T15:44:49.396Z",
+    "endTime": "2025-05-11T15:45:58.064Z",
+    "duration": 68668,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "b7a65861f7ab5047ec8377a7f16c7d5ba8edce6d",
+    "buildId": "build-2256",
+    "tags": ["e2e", "performance", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-11T18:01:57.396Z",
+    "endTime": "2025-05-11T18:02:28.529Z",
+    "duration": 31133,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "310df6ca2ff30aff4eee1e1812b711b548656c74",
+    "buildId": "build-7688",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-11T22:02:36.396Z",
+    "endTime": "2025-05-11T22:02:53.794Z",
+    "duration": 17398,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "5bdf66011a38fb2d2cfa43591039d6aaad679c37",
+    "buildId": "build-9017",
+    "tags": ["e2e", "ui", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-11T10:44:48.396Z",
+    "endTime": "2025-05-11T10:45:43.080Z",
+    "duration": 54684,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "main",
+    "commitHash": "1c5ed6e254052dad1f691e3ae286487dbb316a5e",
+    "buildId": "build-6708",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-12T02:52:44.396Z",
+    "endTime": "2025-05-12T02:53:17.024Z",
+    "duration": 32628,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "135eadfa73245a6b5f4af4383630232dddd64a1f",
+    "buildId": "build-2174",
+    "tags": ["e2e", "performance", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-11T01:32:00.396Z",
+    "endTime": "2025-05-11T01:32:22.863Z",
+    "duration": 22467,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "dd56d33df9ff72e5e18e128632f4d1f0828fa9bf",
+    "buildId": "build-3526",
+    "tags": ["e2e", "ui", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-10T07:52:53.396Z",
+    "endTime": "2025-05-10T07:53:08.988Z",
+    "duration": 15592,
+    "status": "failed",
+    "retries": 0,
+    "error": "ElementNotFoundError: Selector \"button[data-testid=submit]\" not found",
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "8f2bdac855d57dfc1f77a5753bc19bfefdb6bb21",
+    "buildId": "build-5709",
+    "tags": ["e2e", "ui", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-10T23:19:25.396Z",
+    "endTime": "2025-05-10T23:19:33.184Z",
+    "duration": 7788,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "9aedf98e9cef2a8763128d119140f9ead46177b1",
+    "buildId": "build-517",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-10T12:08:48.396Z",
+    "endTime": "2025-05-10T12:09:05.753Z",
+    "duration": 17357,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "develop",
+    "commitHash": "f44a0d1938f6b29edc1dacfc6e56cbadef33e7bb",
+    "buildId": "build-3654",
+    "tags": ["e2e", "ui", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-10T14:00:35.396Z",
+    "endTime": "2025-05-10T14:01:24.238Z",
+    "duration": 48842,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "a4561b65762af8888cd1bb620918ad6552284c36",
+    "buildId": "build-1655",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-10T19:50:02.396Z",
+    "endTime": "2025-05-10T19:50:09.188Z",
+    "duration": 6792,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "4b9d720ffb6f51c1322f0485963a869e83a1061b",
+    "buildId": "build-5392",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-10T09:16:12.396Z",
+    "endTime": "2025-05-10T09:16:43.390Z",
+    "duration": 30994,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "a05b2696b3b5426419e9508b347cde3e1275111b",
+    "buildId": "build-3764",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-10T13:19:42.396Z",
+    "endTime": "2025-05-10T13:20:34.122Z",
+    "duration": 51726,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "2dfdc62e1121e4f3cb8e926a2f3cb5b811112b0d",
+    "buildId": "build-315",
+    "tags": ["e2e", "performance", "api", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-10T10:21:08.396Z",
+    "endTime": "2025-05-10T10:21:27.906Z",
+    "duration": 19510,
+    "status": "failed",
+    "retries": 0,
+    "error": "AssertionError: Expected pass rate to be > 95%, got 87%",
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "ebcc56141c6849272ead9a3195f67c9a009c859f",
+    "buildId": "build-1639",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-11T01:31:14.396Z",
+    "endTime": "2025-05-11T01:31:33.308Z",
+    "duration": 18912.4,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "347789b021a12233b20274ed7960c085db40e0d6",
+    "buildId": "build-3277",
+    "tags": ["e2e", "mobile", "ui", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-09T15:42:55.396Z",
+    "endTime": "2025-05-09T15:43:39.142Z",
+    "duration": 43746,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "5f14c9a4abc8c908fccefa3180ca2d7f96e2929a",
+    "buildId": "build-5787",
+    "tags": ["e2e", "performance", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-09T04:29:16.396Z",
+    "endTime": "2025-05-09T04:29:34.031Z",
+    "duration": 17635,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "ec4eb274106bc98553bcfaafa1e0c7af44fb021a",
+    "buildId": "build-5447",
+    "tags": ["e2e", "critical", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-10T03:15:27.396Z",
+    "endTime": "2025-05-10T03:15:48.197Z",
+    "duration": 20801,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "9c38f810855d9637f850a4a1008e2de34e1da5b6",
+    "buildId": "build-882",
+    "tags": ["e2e", "critical", "regression", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-10T02:55:26.396Z",
+    "endTime": "2025-05-10T02:55:46.683Z",
+    "duration": 20287.8,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "main",
+    "commitHash": "0a174cc4d4caf8931f71d586df36024d530719ea",
+    "buildId": "build-5145",
+    "tags": ["e2e", "mobile"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-10T00:39:59.396Z",
+    "endTime": "2025-05-10T00:40:33.876Z",
+    "duration": 34480,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "752106960e60ab87e106b01b33126f6a8c2ad735",
+    "buildId": "build-6281",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-09T11:59:38.396Z",
+    "endTime": "2025-05-09T12:00:01.272Z",
+    "duration": 22876,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "4c3ce0734e6561d89c1eba3936f94ee353ad43e1",
+    "buildId": "build-210",
+    "tags": ["e2e", "critical", "ui", "regression"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-10T00:11:35.396Z",
+    "endTime": "2025-05-10T00:11:47.800Z",
+    "duration": 12404,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "2d2a6e01d1f10eb49fcb4cd42ea4be844408e3ad",
+    "buildId": "build-5596",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Homepage - Load Performance",
+    "filePath": "e2e/homepage---load-performance.spec.ts",
+    "startTime": "2025-05-09T22:26:04.396Z",
+    "endTime": "2025-05-09T22:26:23.656Z",
+    "duration": 19260,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "64e0973287dec907f50c5503623e7562bc5e5734",
+    "buildId": "build-5510",
+    "tags": ["e2e", "performance", "api", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-09T12:53:19.396Z",
+    "endTime": "2025-05-09T12:53:30.010Z",
+    "duration": 10614,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "0d81274febec96d35a22981cf78614793bc8adc5",
+    "buildId": "build-3197",
+    "tags": ["e2e", "smoke", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-10T02:38:10.396Z",
+    "endTime": "2025-05-10T02:38:33.329Z",
+    "duration": 22933,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "e8a423dc520d292ab965042869d71bd22dd2e042",
+    "buildId": "build-8163",
+    "tags": ["e2e", "regression", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-09T17:16:26.396Z",
+    "endTime": "2025-05-09T17:16:53.688Z",
+    "duration": 27292.2,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "909807a23a9bc406071af10c182cd9169216efe8",
+    "buildId": "build-913",
+    "tags": ["e2e", "mobile", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Mobile - Responsive Design",
+    "filePath": "e2e/mobile---responsive-design.spec.ts",
+    "startTime": "2025-05-09T08:13:03.396Z",
+    "endTime": "2025-05-09T08:13:15.226Z",
+    "duration": 11830,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "e51ffba4109dafdc0ca77a7b6f41b25ef463236b",
+    "buildId": "build-106",
+    "tags": ["e2e", "mobile", "performance", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Profile - Update Information",
+    "filePath": "e2e/user-profile---update-information.spec.ts",
+    "startTime": "2025-05-10T02:35:48.396Z",
+    "endTime": "2025-05-10T02:35:48.396Z",
+    "duration": 0,
+    "status": "skipped",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "develop",
+    "commitHash": "78f4e979616f8125d8f3953ee52ca06e78b4ba6a",
+    "buildId": "build-411",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Form Validation - Error Handling",
+    "filePath": "e2e/form-validation---error-handling.spec.ts",
+    "startTime": "2025-05-09T21:10:18.396Z",
+    "endTime": "2025-05-09T21:10:27.135Z",
+    "duration": 8739.5,
+    "status": "failed",
+    "retries": 0,
+    "error": "TimeoutError: Element not found within 30000ms",
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "527bc2316191e97736c2b8a59740c7a38e7c495c",
+    "buildId": "build-2716",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-08T09:53:02.396Z",
+    "endTime": "2025-05-08T09:53:32.778Z",
+    "duration": 30382,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "17898f313a600ff0c0b573c10c5b5356f47e4599",
+    "buildId": "build-7568",
+    "tags": ["e2e", "critical", "regression", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-08T17:56:43.396Z",
+    "endTime": "2025-05-08T17:57:11.608Z",
+    "duration": 28212,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "main",
+    "commitHash": "c0d1935ac85061661e7c15de57c5f2b3ca394318",
+    "buildId": "build-983",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-08T15:22:18.396Z",
+    "endTime": "2025-05-08T15:22:36.753Z",
+    "duration": 18357,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/search",
+    "commitHash": "a29c35280e5f6cd749c89d3401081e170f7f3519",
+    "buildId": "build-6430",
+    "tags": ["e2e"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-08T23:40:54.396Z",
+    "endTime": "2025-05-08T23:41:26.935Z",
+    "duration": 32539,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "472b0b93a764cc8cd121f7c1b6f53cc1e6906168",
+    "buildId": "build-3594",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-08T21:29:08.396Z",
+    "endTime": "2025-05-08T21:29:33.572Z",
+    "duration": 25176,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "feature/search",
+    "commitHash": "5f3dc37b3a4962c878b96924e10e211dee4c1386",
+    "buildId": "build-7331",
+    "tags": ["e2e", "critical", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Checkout Process - Payment",
+    "filePath": "e2e/checkout-process---payment.spec.ts",
+    "startTime": "2025-05-09T03:11:39.396Z",
+    "endTime": "2025-05-09T03:11:45.401Z",
+    "duration": 6005,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "389a0be81f174e802c323621c30031a1e91525c6",
+    "buildId": "build-6956",
+    "tags": ["e2e", "critical", "performance", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-09T01:57:22.396Z",
+    "endTime": "2025-05-09T01:57:50.672Z",
+    "duration": 28276,
+    "status": "passed",
+    "retries": 0,
+    "browser": "firefox",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "833f8246b2af3aeb103a943916655411ae8fe51d",
+    "buildId": "build-1517",
+    "tags": ["e2e", "critical", "smoke"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Search - Filter Results",
+    "filePath": "e2e/product-search---filter-results.spec.ts",
+    "startTime": "2025-05-08T07:31:45.396Z",
+    "endTime": "2025-05-08T07:31:56.468Z",
+    "duration": 11072,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "production",
+    "branch": "feature/checkout",
+    "commitHash": "48c8c4ca0705b64ead6c64f2fdff2919839b6109",
+    "buildId": "build-8200",
+    "tags": ["e2e", "api"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Product Detail - Load Images",
+    "filePath": "e2e/product-detail---load-images.spec.ts",
+    "startTime": "2025-05-08T09:44:11.396Z",
+    "endTime": "2025-05-08T09:44:59.126Z",
+    "duration": 47730,
+    "status": "passed",
+    "retries": 0,
+    "browser": "webkit",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "972df58418d9909bb7ff38e4f862b7192b58d00a",
+    "buildId": "build-168",
+    "tags": ["e2e", "performance"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Shopping Cart - Add Items",
+    "filePath": "e2e/shopping-cart---add-items.spec.ts",
+    "startTime": "2025-05-09T01:22:13.396Z",
+    "endTime": "2025-05-09T01:22:44.601Z",
+    "duration": 31205,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "development",
+    "branch": "develop",
+    "commitHash": "67913d839eba133f72b903a9608be09f688cf7b9",
+    "buildId": "build-5994",
+    "tags": ["e2e", "regression", "desktop"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "Navigation - Menu Interaction",
+    "filePath": "e2e/navigation---menu-interaction.spec.ts",
+    "startTime": "2025-05-08T23:58:31.396Z",
+    "endTime": "2025-05-08T23:58:41.257Z",
+    "duration": 9861,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/search",
+    "commitHash": "41ee0f720346d8c950de435c4e963438529c761c",
+    "buildId": "build-4738",
+    "tags": ["e2e", "ui"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  },
+  {
+    "testName": "User Authentication - Sign In",
+    "filePath": "e2e/user-authentication---sign-in.spec.ts",
+    "startTime": "2025-05-08T12:55:47.396Z",
+    "endTime": "2025-05-08T12:56:20.551Z",
+    "duration": 33155,
+    "status": "passed",
+    "retries": 0,
+    "browser": "chromium",
+    "environment": "staging",
+    "branch": "feature/checkout",
+    "commitHash": "084836b42cc24562ccf36cacaaf6330af8c205af",
+    "buildId": "build-2775",
+    "tags": ["e2e", "critical"],
+    "metadata": {
+      "os": "linux",
+      "nodeVersion": "22.0.0",
+      "playwrightVersion": "1.40.0"
+    }
+  }
+]

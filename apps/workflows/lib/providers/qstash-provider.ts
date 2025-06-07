@@ -1,12 +1,18 @@
-import { wsServer } from '@/lib/realtime/websocket-server'
-import { memoryStore } from '@/lib/storage/memory-store'
-import { type WorkflowExecution } from '@/types'
-import { Client } from '@upstash/qstash'
+import { wsServer } from '@/lib/realtime/websocket-server';
+import { memoryStore } from '@/lib/storage/memory-store';
+import { type WorkflowExecution } from '@/types';
+import { Client } from '@upstash/qstash';
 
-import { BaseWorkflowProvider, type ExecutionOptions, type ProviderCapabilities, type QueueStats, type ScheduleOptions } from './base-provider'
+import {
+  BaseWorkflowProvider,
+  type ExecutionOptions,
+  type ProviderCapabilities,
+  type QueueStats,
+  type ScheduleOptions,
+} from './base-provider';
 
 export class QStashProvider extends BaseWorkflowProvider {
-  readonly name = 'qstash'
+  readonly name = 'qstash';
   readonly capabilities: ProviderCapabilities = {
     supportsCancellation: true,
     supportsDelay: true,
@@ -14,36 +20,36 @@ export class QStashProvider extends BaseWorkflowProvider {
     supportsPriority: false,
     supportsRetries: true,
     supportsScheduling: true,
-  }
+  };
 
-  private client: Client
-  private baseUrl: string
+  private client: Client;
+  private baseUrl: string;
 
   constructor() {
-    super()
-    
-    const token = process.env.QSTASH_TOKEN
+    super();
+
+    const token = process.env.QSTASH_TOKEN;
     if (!token) {
-      throw new Error('QSTASH_TOKEN environment variable is required')
+      throw new Error('QSTASH_TOKEN environment variable is required');
     }
 
-    this.client = new Client({ token })
-    
+    this.client = new Client({ token });
+
     // Determine base URL for webhook callbacks
     this.baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3100'
+      : 'http://localhost:3100';
   }
 
   async executeWorkflow(
     workflowId: string,
     input: Record<string, any>,
-    options: ExecutionOptions = {}
+    options: ExecutionOptions = {},
   ): Promise<{ executionId: string; messageId: string }> {
-    this.validateOptions(options)
+    this.validateOptions(options);
 
-    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    const startTime = Date.now()
+    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const startTime = Date.now();
 
     // Create execution record
     const execution: WorkflowExecution = {
@@ -57,10 +63,10 @@ export class QStashProvider extends BaseWorkflowProvider {
       triggeredBy: 'qstash',
       version: '1.0.0',
       workflowId,
-    }
+    };
 
     try {
-      memoryStore.setExecution(execution)
+      memoryStore.setExecution(execution);
 
       // Publish to QStash
       const result = await this.client.publishJSON({
@@ -83,7 +89,7 @@ export class QStashProvider extends BaseWorkflowProvider {
           'X-Workflow-ID': workflowId,
         },
         retries: options.retries,
-      })
+      });
 
       // Broadcast workflow started event
       wsServer.broadcastWorkflowEvent({
@@ -96,18 +102,18 @@ export class QStashProvider extends BaseWorkflowProvider {
         executionId,
         timestamp: new Date(),
         workflowId,
-      })
+      });
 
-      console.log(`Workflow ${workflowId} queued via QStash: ${executionId}`)
-      return { executionId, messageId: result.messageId }
+      console.log(`Workflow ${workflowId} queued via QStash: ${executionId}`);
+      return { executionId, messageId: result.messageId };
     } catch (error) {
       // Update execution with error
-      execution.status = 'failed'
-      execution.error = error instanceof Error ? error.message : 'Unknown error'
-      execution.completedAt = new Date()
-      execution.duration = Date.now() - startTime
+      execution.status = 'failed';
+      execution.error = error instanceof Error ? error.message : 'Unknown error';
+      execution.completedAt = new Date();
+      execution.duration = Date.now() - startTime;
 
-      memoryStore.setExecution(execution)
+      memoryStore.setExecution(execution);
 
       // Broadcast failure event
       wsServer.broadcastWorkflowEvent({
@@ -119,19 +125,19 @@ export class QStashProvider extends BaseWorkflowProvider {
         executionId,
         timestamp: new Date(),
         workflowId,
-      })
+      });
 
-      console.error(`Failed to queue workflow ${workflowId}:`, error)
-      throw error
+      console.error(`Failed to queue workflow ${workflowId}:`, error);
+      throw error;
     }
   }
 
   async scheduleWorkflow(
     workflowId: string,
     input: Record<string, any>,
-    options: ScheduleOptions
+    options: ScheduleOptions,
   ): Promise<{ scheduleId: string }> {
-    this.validateOptions(options)
+    this.validateOptions(options);
 
     const result = await this.client.publishJSON({
       url: `${this.baseUrl}/api/workflows/${workflowId}/execute`,
@@ -151,26 +157,24 @@ export class QStashProvider extends BaseWorkflowProvider {
         'X-Workflow-ID': workflowId,
       },
       retries: options.retries,
-    })
+    });
 
-    console.log(`Workflow ${workflowId} scheduled with cron: ${options.cron}`)
-    return { scheduleId: result.messageId }
+    console.log(`Workflow ${workflowId} scheduled with cron: ${options.cron}`);
+    return { scheduleId: result.messageId };
   }
 
   async cancelWorkflow(executionId: string): Promise<void> {
-    const execution = memoryStore.getExecution(executionId)
+    const execution = memoryStore.getExecution(executionId);
     if (!execution) {
-      throw new Error(`Execution not found: ${executionId}`)
+      throw new Error(`Execution not found: ${executionId}`);
     }
 
     // Update execution status
-    execution.status = 'cancelled'
-    execution.completedAt = new Date()
-    execution.duration = execution.startedAt 
-      ? Date.now() - execution.startedAt.getTime() 
-      : 0
+    execution.status = 'cancelled';
+    execution.completedAt = new Date();
+    execution.duration = execution.startedAt ? Date.now() - execution.startedAt.getTime() : 0;
 
-    memoryStore.setExecution(execution)
+    memoryStore.setExecution(execution);
 
     // Broadcast cancellation event
     wsServer.broadcastWorkflowEvent({
@@ -182,32 +186,28 @@ export class QStashProvider extends BaseWorkflowProvider {
       executionId,
       timestamp: new Date(),
       workflowId: execution.workflowId,
-    })
+    });
 
-    console.log(`Execution ${executionId} cancelled`)
+    console.log(`Execution ${executionId} cancelled`);
   }
 
   async getQueueStats(): Promise<QueueStats> {
     // Calculate stats from memory store
-    const allExecutions = memoryStore.getAllExecutions()
-    
-    const pendingCount = allExecutions.filter(e => 
-      e.status === 'pending' || e.status === 'running'
-    ).length
-    
-    const failedCount = allExecutions.filter(e => 
-      e.status === 'failed'
-    ).length
-    
-    const completedCount = allExecutions.filter(e => 
-      e.status === 'completed'
-    ).length
+    const allExecutions = memoryStore.getAllExecutions();
+
+    const pendingCount = allExecutions.filter(
+      (e) => e.status === 'pending' || e.status === 'running',
+    ).length;
+
+    const failedCount = allExecutions.filter((e) => e.status === 'failed').length;
+
+    const completedCount = allExecutions.filter((e) => e.status === 'completed').length;
 
     return {
       dlqMessages: failedCount,
       pendingMessages: pendingCount,
       totalProcessed: completedCount,
-    }
+    };
   }
 
   async healthCheck(): Promise<boolean> {
@@ -217,11 +217,11 @@ export class QStashProvider extends BaseWorkflowProvider {
         url: `${this.baseUrl}/api/health`,
         body: { test: true },
         delay: 1000, // 1 second delay
-      })
-      return true
+      });
+      return true;
     } catch (error) {
-      console.error('QStash health check failed:', error)
-      return false
+      console.error('QStash health check failed:', error);
+      return false;
     }
   }
 }

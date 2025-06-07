@@ -1,33 +1,31 @@
 'use client';
 
-import { 
-  Badge, 
-  Card, 
-  Container, 
-  Grid, 
-  Group, 
-  Stack, 
-  Text, 
-  ThemeIcon, 
-  Title,
-  Progress,
+import {
+  Badge,
+  Card,
+  Container,
+  Grid,
+  Group,
   Paper,
   SimpleGrid,
-  Skeleton
+  Skeleton,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
 } from '@mantine/core';
 import {
+  IconActivity,
   IconChevronRight,
+  IconDatabase,
   IconFileText,
   IconPackage,
   IconRocket,
   IconSettings,
   IconUsers,
-  IconActivity,
-  IconDatabase,
-  IconBrandStripe,
 } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const sections = [
   {
@@ -78,33 +76,33 @@ const adminTools = [
 ];
 
 const statsData = [
-  { 
-    title: 'Active Workflows', 
-    value: '24', 
-    change: '+12%', 
+  {
+    change: '+12%',
+    color: 'blue',
     icon: IconActivity,
-    color: 'blue'
+    title: 'Active Workflows',
+    value: '24',
   },
-  { 
-    title: 'Total Products', 
-    value: '3,456', 
-    change: '+5%', 
+  {
+    change: '+5%',
+    color: 'green',
     icon: IconPackage,
-    color: 'green'
+    title: 'Total Products',
+    value: '3,456',
   },
-  { 
-    title: 'Active Users', 
-    value: '892', 
-    change: '+8%', 
+  {
+    change: '+8%',
+    color: 'violet',
     icon: IconUsers,
-    color: 'violet'
+    title: 'Active Users',
+    value: '892',
   },
-  { 
-    title: 'API Calls Today', 
-    value: '12.5k', 
-    change: '-2%', 
+  {
+    change: '-2%',
+    color: 'orange',
     icon: IconDatabase,
-    color: 'orange'
+    title: 'API Calls Today',
+    value: '12.5k',
   },
 ];
 
@@ -118,7 +116,7 @@ export default function HomePage() {
       category: 'admin_dashboard',
       label: 'backstage_home',
     });
-    
+
     // Simulate loading
     setTimeout(() => setLoading(false), 500);
   }, []);
@@ -136,37 +134,31 @@ export default function HomePage() {
         </div>
 
         {/* Stats Cards */}
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
+        <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
           {statsData.map((stat) => (
-            <Paper 
-              key={stat.title} 
-              shadow="xs" 
-              p="md" 
-              radius="md"
-              withBorder
-            >
+            <Paper key={stat.title} shadow="xs" withBorder p="md" radius="md">
               {loading ? (
                 <Stack gap="xs">
-                  <Skeleton height={40} width={40} radius="md" />
-                  <Skeleton height={16} width="60%" />
-                  <Skeleton height={24} width="40%" />
+                  <Skeleton width={40} height={40} radius="md" />
+                  <Skeleton width="60%" height={16} />
+                  <Skeleton width="40%" height={24} />
                 </Stack>
               ) : (
                 <Stack gap="xs">
-                  <ThemeIcon size="lg" radius="md" variant="light" color={stat.color}>
+                  <ThemeIcon color={stat.color} radius="md" size="lg" variant="light">
                     <stat.icon size={24} />
                   </ThemeIcon>
-                  <Text size="sm" c="dimmed" fw={500}>
+                  <Text c="dimmed" fw={500} size="sm">
                     {stat.title}
                   </Text>
-                  <Group justify="space-between" align="flex-end">
-                    <Text size="xl" fw={700}>
+                  <Group align="flex-end" justify="space-between">
+                    <Text fw={700} size="xl">
                       {stat.value}
                     </Text>
-                    <Badge 
-                      size="sm" 
-                      variant="light"
+                    <Badge
                       color={stat.change.startsWith('+') ? 'green' : 'red'}
+                      size="sm"
+                      variant="light"
                     >
                       {stat.change}
                     </Badge>
@@ -186,23 +178,23 @@ export default function HomePage() {
             {sections.map((section) => (
               <Grid.Col key={section.href} span={{ base: 12, lg: 3, sm: 6 }}>
                 <Card
+                  href={section.href as any}
                   component={Link}
-                  href={section.href}
                   shadow="sm"
                   withBorder
-                  padding="lg"
-                  radius="md"
                   styles={{
                     root: {
-                      height: '100%',
-                      transition: 'all 0.2s ease',
-                      textDecoration: 'none',
                       '&:hover': {
-                        transform: 'translateY(-4px)',
                         boxShadow: 'var(--mantine-shadow-md)',
+                        transform: 'translateY(-4px)',
                       },
+                      height: '100%',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease',
                     },
                   }}
+                  padding="lg"
+                  radius="md"
                 >
                   <Stack style={{ height: '100%' }} gap="md">
                     <Group align="flex-start" justify="space-between">
@@ -248,22 +240,22 @@ export default function HomePage() {
             {adminTools.map((tool) => (
               <Grid.Col key={tool.href} span={{ base: 12, sm: 6 }}>
                 <Card
+                  href={tool.href as any}
                   component={Link}
-                  href={tool.href}
                   shadow="sm"
                   withBorder
-                  padding="md"
-                  radius="md"
                   styles={{
                     root: {
-                      transition: 'all 0.2s ease',
-                      textDecoration: 'none',
                       '&:hover': {
-                        transform: 'translateY(-2px)',
                         boxShadow: 'var(--mantine-shadow-sm)',
+                        transform: 'translateY(-2px)',
                       },
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease',
                     },
                   }}
+                  padding="md"
+                  radius="md"
                 >
                   <Group justify="space-between">
                     <div>

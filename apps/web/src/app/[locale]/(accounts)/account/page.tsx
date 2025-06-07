@@ -22,17 +22,19 @@ import avatarImage from "@repo/design-system/mantine-ciseco/images/users/avatar1
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const dict = await getDictionary(params.locale);
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
   return {
     description: dict.account.accountDescription,
     title: dict.account.accountPage,
   };
 }
 
-const Page = async ({ params }: { params: { locale: string } }) => {
-  const dict = await getDictionary(params.locale);
+const Page = async ({ params }: { params: Promise<{ locale: string }> }) => {
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
       {/* HEADING */}

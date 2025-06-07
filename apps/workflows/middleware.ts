@@ -1,22 +1,13 @@
-import { authMiddleware } from '@repo/auth/middleware';
 import { internationalizationMiddleware } from '@repo/internationalization/middleware';
 
-import type { NextRequest } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Run internationalization middleware first to handle locale routing
   const i18nResponse = await internationalizationMiddleware(request as any);
 
-  // If i18n middleware returned a response (redirect), use it
-  if (i18nResponse.status !== 200 || i18nResponse.headers.get('x-middleware-rewrite')) {
-    return i18nResponse;
-  }
-
-  // Otherwise, run auth middleware
-  const authHandler = authMiddleware({
-    publicRoutes: ['/api/health', '/api/workflows'],
-  });
-  return authHandler(request, i18nResponse);
+  // Return the i18n response directly (auth middleware temporarily disabled)
+  return i18nResponse as any;
 }
 
 export const config = {

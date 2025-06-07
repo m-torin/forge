@@ -14,7 +14,13 @@ export interface SectionHowItWorkProps {
   data?: (typeof DEMO_DATA)[0][];
 }
 
-const DEMO_DATA = [
+const DEMO_DATA: {
+  id: number;
+  desc: string;
+  img: any;
+  imgDark: any;
+  title: string;
+}[] = [
   {
     id: 1,
     desc: 'Smart filtering and suggestions make it easy to find',

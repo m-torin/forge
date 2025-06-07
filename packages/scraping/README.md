@@ -1,4 +1,4 @@
-# @repo/scraping-new
+# @repo/scraping
 
 A modern, multi-provider web scraping system that supports various scraping strategies from
 lightweight HTML parsing to full browser automation and managed scraping services.
@@ -16,7 +16,7 @@ lightweight HTML parsing to full browser automation and managed scraping service
 ## Installation
 
 ```bash
-pnpm add @repo/scraping-new
+pnpm add @repo/scraping
 
 # Install the providers you need:
 pnpm add playwright  # For Playwright provider
@@ -29,7 +29,7 @@ pnpm add cheerio     # For Cheerio HTML parser
 ### Basic Usage
 
 ```typescript
-import { createServerScraping } from '@repo/scraping-new/server';
+import { createServerScraping } from '@repo/scraping/server';
 
 const scraper = await createServerScraping({
   providers: [
@@ -67,7 +67,7 @@ import {
   scrapeMultiple,
   scrapeWithPagination,
   EnhancedScraper,
-} from '@repo/scraping-new/server';
+} from '@repo/scraping/server';
 
 // Scrape with specific provider
 const result = await scraper.scrape('https://spa-app.com', {
@@ -195,7 +195,7 @@ import { createScraper } from '@repo/scraping';
 const scraper = createScraper('playwright', { headless: true });
 
 // New
-import { createServerScraping } from '@repo/scraping-new/server';
+import { createServerScraping } from '@repo/scraping/server';
 const scraper = await createServerScraping({
   providers: [{ name: 'playwright', type: 'browser', config: { headless: true } }],
 });
@@ -205,7 +205,7 @@ const scraper = await createServerScraping({
 
 ```typescript
 // app/api/scrape/route.ts
-import { createServerScraping } from '@repo/scraping-new/server/next';
+import { createServerScraping } from '@repo/scraping/server/next';
 
 export async function POST(request: Request) {
   const { url } = await request.json();

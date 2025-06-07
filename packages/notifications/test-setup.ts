@@ -1,8 +1,5 @@
-import { vi } from 'vitest';
+import '@testing-library/jest-dom';
+import React from 'react';
 
-// Mock environment variables
-vi.mock('./keys', () => ({
-  keys: () => ({
-    KNOCK_SECRET_API_KEY: 'test-knock-key',
-  }),
-}));
+// Make React available globally for JSX
+global.React = React;

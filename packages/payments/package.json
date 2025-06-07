@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
     "@stripe/agent-toolkit": "^0.7.8",
@@ -18,7 +21,9 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@types/eslint": "^9.6.1",
+    "@types/node": "catalog:",
     "eslint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

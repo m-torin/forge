@@ -1,5 +1,6 @@
+import { dedupe, flag } from '@vercel/flags/next';
+
 import type { ReadonlyRequestCookies } from '@vercel/flags';
-import { flag, dedupe } from '@vercel/flags/next';
 
 interface Entities {
   user?: { id: string };
@@ -11,8 +12,6 @@ const identify = dedupe(({ cookies }: { cookies: ReadonlyRequestCookies }): Enti
 });
 
 export const dashboardFlag = flag<boolean, Entities>({
-  key: 'dashboard-flag',
-  identify,
   decide({ entities }) {
     if (!entities?.user) return false;
     // Allowed users could be loaded from Edge Config or elsewhere
@@ -20,4 +19,6 @@ export const dashboardFlag = flag<boolean, Entities>({
 
     return allowedUsers.includes(entities.user.id);
   },
+  identify,
+  key: 'dashboard-flag',
 });

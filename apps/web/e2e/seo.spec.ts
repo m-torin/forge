@@ -1,368 +1,657 @@
 import { expect, test } from "@repo/testing/e2e";
-import { WaitUtils } from "@repo/testing/e2e";
+import { PerformanceUtils, WaitUtils } from "@repo/testing/e2e";
 
-test.describe("SEO and Metadata", () => {
+import { withPerformanceMonitoring } from "./utils/performance-monitor";
+import { createVisualTester } from "./utils/visual-testing";
+
+test.describe("SEO and Metadata - Enhanced", () => {
   let waitUtils: WaitUtils;
+  let perfUtils: PerformanceUtils;
 
   test.beforeEach(async ({ page }) => {
     waitUtils = new WaitUtils(page);
+    perfUtils = new PerformanceUtils(page);
   });
 
-  test("should have proper meta tags on homepage", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Check title
-    const title = await page.title();
-    expect(title).toBeTruthy();
-    expect(title.length).toBeGreaterThan(0);
-    expect(title.length).toBeLessThan(70); // SEO best practice
-
-    // Check meta description
-    const description = await page.getAttribute(
-      'meta[name="description"]',
-      "content",
-    );
-    expect(description).toBeTruthy();
-    expect(description!.length).toBeGreaterThan(50);
-    expect(description!.length).toBeLessThan(160); // SEO best practice
-
-    // Check viewport meta tag
-    const viewport = await page.getAttribute(
-      'meta[name="viewport"]',
-      "content",
-    );
-    expect(viewport).toBeTruthy();
-    expect(viewport).toContain("width=device-width");
-
-    // Check charset
-    const charset = await page.getAttribute("meta[charset]", "charset");
-    expect(charset).toBe("utf-8");
-  });
-
-  test("should have proper Open Graph tags", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Check OG tags
-    const ogTitle = await page.getAttribute(
-      'meta[property="og:title"]',
-      "content",
-    );
-    const ogDescription = await page.getAttribute(
-      'meta[property="og:description"]',
-      "content",
-    );
-    const ogType = await page.getAttribute(
-      'meta[property="og:type"]',
-      "content",
-    );
-    const ogUrl = await page.getAttribute('meta[property="og:url"]', "content");
-    const ogImage = await page.getAttribute(
-      'meta[property="og:image"]',
-      "content",
-    );
-
-    expect(ogTitle).toBeTruthy();
-    expect(ogDescription).toBeTruthy();
-    expect(ogType).toBeTruthy();
-    expect(ogUrl).toBeTruthy();
-
-    if (ogImage) {
-      expect(ogImage).toMatch(/\.(jpg|jpeg|png|webp|gif)$/i);
-    }
-  });
-
-  test("should have proper Twitter Card tags", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Check Twitter Card tags
-    const twitterCard = await page.getAttribute(
-      'meta[name="twitter:card"]',
-      "content",
-    );
-    const twitterTitle = await page.getAttribute(
-      'meta[name="twitter:title"]',
-      "content",
-    );
-    const twitterDescription = await page.getAttribute(
-      'meta[name="twitter:description"]',
-      "content",
-    );
-    const twitterImage = await page.getAttribute(
-      'meta[name="twitter:image"]',
-      "content",
-    );
-
-    if (twitterCard) {
-      expect(["summary", "summary_large_image", "app", "player"]).toContain(
-        twitterCard,
-      );
-    }
-
-    expect(twitterTitle).toBeTruthy();
-    expect(twitterDescription).toBeTruthy();
-
-    if (twitterImage) {
-      expect(twitterImage).toMatch(/\.(jpg|jpeg|png|webp|gif)$/i);
-    }
-  });
-
-  test("should have canonical URL", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    const canonicalUrl = await page.getAttribute(
-      'link[rel="canonical"]',
-      "href",
-    );
-    expect(canonicalUrl).toBeTruthy();
-    expect(canonicalUrl).toMatch(/^https?:\/\//);
-  });
-
-  test("should have proper structured data", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Check for JSON-LD structured data
-    const jsonLdScripts = page.locator('script[type="application/ld+json"]');
-    const count = await jsonLdScripts.count();
-
-    if (count > 0) {
-      for (let i = 0; i < count; i++) {
-        const content = await jsonLdScripts.nth(i).innerHTML();
-        expect(content).toBeTruthy();
-
-        // Should be valid JSON
-        const jsonData = JSON.parse(content);
-        expect(jsonData).toBeTruthy();
-        expect(jsonData["@context"]).toBe("https://schema.org");
-        expect(jsonData["@type"]).toBeTruthy();
-      }
-    }
-  });
-
-  test("should have robots.txt", async ({ page }) => {
-    const response = await page.request.get("/robots.txt");
-    expect(response.ok()).toBeTruthy();
-
-    const content = await response.text();
-    expect(content).toBeTruthy();
-    expect(content).toContain("User-agent");
-  });
-
-  test("should have sitemap.xml", async ({ page }) => {
-    const response = await page.request.get("/sitemap.xml");
-    expect(response.ok()).toBeTruthy();
-
-    const content = await response.text();
-    expect(content).toBeTruthy();
-    expect(content).toContain("<urlset");
-    expect(content).toContain("xmlns");
-  });
-
-  test("should have proper meta tags on product pages", async ({ page }) => {
-    // Navigate to a product page if available
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    const productLink = page
-      .getByRole("link")
-      .filter({ hasText: /product|shop/i })
-      .first();
-
-    if ((await productLink.count()) > 0) {
-      await productLink.click();
-      await waitUtils.forNavigation();
-
-      // Check if we're on a product page
-      if (page.url().includes("/product")) {
-        const title = await page.title();
-        expect(title).toBeTruthy();
-
-        const description = await page.getAttribute(
-          'meta[name="description"]',
-          "content",
-        );
-        expect(description).toBeTruthy();
-
-        // Check product-specific OG tags
-        const ogType = await page.getAttribute(
-          'meta[property="og:type"]',
-          "content",
-        );
-        if (ogType) {
-          expect(["product", "website"]).toContain(ogType);
-        }
-      }
-    }
-  });
-
-  test("should have hreflang tags for internationalization", async ({
+  test("should have proper meta tags on homepage with performance monitoring", async ({
+    context,
     page,
   }) => {
-    await page.goto("/en");
-    await waitUtils.forNavigation();
+    const { report, result } = await withPerformanceMonitoring(
+      page,
+      context,
+      "/",
+      async () => {
+        await waitUtils.forNavigation();
 
-    const hreflangLinks = page.locator('link[rel="alternate"][hreflang]');
-    const count = await hreflangLinks.count();
+        // Comprehensive meta tag analysis
+        const metaAnalysis = await page.evaluate(() => {
+          const title = document.title;
+          const description = document
+            .querySelector('meta[name="description"]')
+            ?.getAttribute("content");
+          const viewport = document
+            .querySelector('meta[name="viewport"]')
+            ?.getAttribute("content");
+          const charset = document
+            .querySelector("meta[charset]")
+            ?.getAttribute("charset");
+          const keywords = document
+            .querySelector('meta[name="keywords"]')
+            ?.getAttribute("content");
+          const author = document
+            .querySelector('meta[name="author"]')
+            ?.getAttribute("content");
+          const robots = document
+            .querySelector('meta[name="robots"]')
+            ?.getAttribute("content");
 
-    if (count > 0) {
-      for (let i = 0; i < count; i++) {
-        const hreflang = await hreflangLinks.nth(i).getAttribute("hreflang");
-        const href = await hreflangLinks.nth(i).getAttribute("href");
+          return {
+            author: { value: author },
+            charset: { value: charset },
+            description: {
+              length: description?.length || 0,
+              value: description,
+            },
+            hasBasicMeta: !!(title && description && viewport && charset),
+            keywords: { value: keywords },
+            robots: { value: robots },
+            title: { length: title.length, value: title },
+            viewport: { value: viewport },
+          };
+        });
 
-        expect(hreflang).toBeTruthy();
-        expect(href).toBeTruthy();
-        expect(href).toMatch(/^https?:\/\//);
-      }
-    }
-  });
+        // SEO validations
+        expect(metaAnalysis.title.value).toBeTruthy();
+        expect(metaAnalysis.title.length).toBeGreaterThan(0);
+        expect(metaAnalysis.title.length).toBeLessThan(70); // SEO best practice
 
-  test("should not have duplicate meta tags", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
+        expect(metaAnalysis.description.value).toBeTruthy();
+        expect(metaAnalysis.description.length).toBeGreaterThan(50);
+        expect(metaAnalysis.description.length).toBeLessThan(160); // SEO best practice
 
-    // Check for duplicate titles
-    const titleTags = await page.$$("title");
-    expect(titleTags.length).toBe(1);
+        expect(metaAnalysis.viewport.value).toBeTruthy();
+        expect(metaAnalysis.viewport.value).toContain("width=device-width");
 
-    // Check for duplicate descriptions
-    const descriptionTags = await page.$$('meta[name="description"]');
-    expect(descriptionTags.length).toBeLessThanOrEqual(1);
+        expect(metaAnalysis.charset.value).toBe("utf-8");
+        expect(metaAnalysis.hasBasicMeta).toBeTruthy();
 
-    // Check for duplicate canonical URLs
-    const canonicalTags = await page.$$('link[rel="canonical"]');
-    expect(canonicalTags.length).toBeLessThanOrEqual(1);
-  });
-
-  test("should have proper favicon links", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Check for favicon
-    const favicon = page.locator('link[rel="icon"], link[rel="shortcut icon"]');
-    const faviconCount = await favicon.count();
-
-    if (faviconCount > 0) {
-      const href = await favicon.first().getAttribute("href");
-      expect(href).toBeTruthy();
-
-      // Check if favicon exists
-      const faviconResponse = await page.request.get(href!);
-      expect(faviconResponse.ok()).toBeTruthy();
-    }
-
-    // Check for apple touch icon
-    const appleTouchIcon = page.locator('link[rel="apple-touch-icon"]');
-    const appleIconCount = await appleTouchIcon.count();
-
-    if (appleIconCount > 0) {
-      const href = await appleTouchIcon.first().getAttribute("href");
-      expect(href).toBeTruthy();
-    }
-  });
-
-  test("should have proper heading hierarchy", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
-
-    // Check H1 tag
-    const h1Tags = page.locator("h1");
-    const h1Count = await h1Tags.count();
-
-    // Should have exactly one H1
-    expect(h1Count).toBe(1);
-
-    if (h1Count > 0) {
-      const h1Text = await h1Tags.first().textContent();
-      expect(h1Text).toBeTruthy();
-      expect(h1Text!.trim().length).toBeGreaterThan(0);
-    }
-
-    // Check heading order
-    const headings = await page.$$eval("h1, h2, h3, h4, h5, h6", (headings) =>
-      headings.map((h) => parseInt(h.tagName.substring(1))),
+        return metaAnalysis;
+      },
+      {
+        fcp: { error: 3000, warning: 1500 },
+        lcp: { error: 4000, warning: 2500 },
+      },
     );
 
-    if (headings.length > 1) {
-      // First heading should be H1
-      expect(headings[0]).toBe(1);
-
-      // Check for proper hierarchy (no skipping levels)
-      for (let i = 1; i < headings.length; i++) {
-        const current = headings[i];
-        const previous = headings[i - 1];
-
-        // Current heading should not skip more than one level
-        expect(current - previous).toBeLessThanOrEqual(1);
-      }
-    }
+    await test.info().attach("meta-tags-analysis", {
+      body: JSON.stringify({ ...result, performance: report }, null, 2),
+      contentType: "application/json",
+    });
   });
 
-  test("should have proper image alt attributes", async ({ page }) => {
-    await page.goto("/");
-    await waitUtils.forNavigation();
+  test("should have comprehensive Open Graph and social media tags", async ({
+    context,
+    page,
+  }) => {
+    const { result } = await withPerformanceMonitoring(
+      page,
+      context,
+      "/",
+      async () => {
+        await waitUtils.forNavigation();
 
-    const images = page.locator("img");
-    const imageCount = await images.count();
+        // Complete social media tags analysis
+        const socialTags = await page.evaluate(() => {
+          const ogTags = {
+            type: document
+              .querySelector('meta[property="og:type"]')
+              ?.getAttribute("content"),
+            url: document
+              .querySelector('meta[property="og:url"]')
+              ?.getAttribute("content"),
+            description: document
+              .querySelector('meta[property="og:description"]')
+              ?.getAttribute("content"),
+            image: document
+              .querySelector('meta[property="og:image"]')
+              ?.getAttribute("content"),
+            locale: document
+              .querySelector('meta[property="og:locale"]')
+              ?.getAttribute("content"),
+            siteName: document
+              .querySelector('meta[property="og:site_name"]')
+              ?.getAttribute("content"),
+            title: document
+              .querySelector('meta[property="og:title"]')
+              ?.getAttribute("content"),
+          };
 
-    if (imageCount > 0) {
-      for (let i = 0; i < Math.min(imageCount, 10); i++) {
-        // Check first 10 images
-        const img = images.nth(i);
-        const alt = await img.getAttribute("alt");
+          const twitterTags = {
+            card: document
+              .querySelector('meta[name="twitter:card"]')
+              ?.getAttribute("content"),
+            creator: document
+              .querySelector('meta[name="twitter:creator"]')
+              ?.getAttribute("content"),
+            description: document
+              .querySelector('meta[name="twitter:description"]')
+              ?.getAttribute("content"),
+            image: document
+              .querySelector('meta[name="twitter:image"]')
+              ?.getAttribute("content"),
+            site: document
+              .querySelector('meta[name="twitter:site"]')
+              ?.getAttribute("content"),
+            title: document
+              .querySelector('meta[name="twitter:title"]')
+              ?.getAttribute("content"),
+          };
 
-        // Alt attribute should exist (can be empty for decorative images)
-        expect(alt).not.toBeNull();
+          return { ogTags, twitterTags };
+        });
 
-        // If alt is not empty, it should be meaningful
-        if (alt && alt.trim().length > 0) {
-          expect(alt.trim().length).toBeGreaterThan(2);
+        // OpenGraph validations
+        expect(socialTags.ogTags.title).toBeTruthy();
+        expect(socialTags.ogTags.description).toBeTruthy();
+        expect(socialTags.ogTags.type).toBeTruthy();
+        expect(socialTags.ogTags.url).toBeTruthy();
+
+        if (socialTags.ogTags.image) {
+          expect(socialTags.ogTags.image).toMatch(
+            /\.(jpg|jpeg|png|webp|gif)$/i,
+          );
         }
-      }
-    }
+
+        // Twitter Card validations
+        if (socialTags.twitterTags.card) {
+          expect(["summary", "summary_large_image", "app", "player"]).toContain(
+            socialTags.twitterTags.card,
+          );
+        }
+
+        expect(socialTags.twitterTags.title).toBeTruthy();
+        expect(socialTags.twitterTags.description).toBeTruthy();
+
+        if (socialTags.twitterTags.image) {
+          expect(socialTags.twitterTags.image).toMatch(
+            /\.(jpg|jpeg|png|webp|gif)$/i,
+          );
+        }
+
+        return socialTags;
+      },
+    );
+
+    await test.info().attach("social-media-tags", {
+      body: JSON.stringify(result, null, 2),
+      contentType: "application/json",
+    });
   });
 
-  test("should load quickly for SEO", async ({ page }) => {
-    const startTime = Date.now();
-
+  test("should have proper canonical URL and link structure", async ({
+    page,
+  }) => {
     await page.goto("/");
     await waitUtils.forNavigation();
 
-    const loadTime = Date.now() - startTime;
+    const linkStructure = await page.evaluate(() => {
+      const canonical = document
+        .querySelector('link[rel="canonical"]')
+        ?.getAttribute("href");
+      const prev = document
+        .querySelector('link[rel="prev"]')
+        ?.getAttribute("href");
+      const next = document
+        .querySelector('link[rel="next"]')
+        ?.getAttribute("href");
+      const alternate = Array.from(
+        document.querySelectorAll('link[rel="alternate"]'),
+      ).map((link) => ({
+        type: link.getAttribute("type"),
+        href: link.getAttribute("href"),
+        hreflang: link.getAttribute("hreflang"),
+      }));
 
-    // Page should load within 3 seconds
-    expect(loadTime).toBeLessThan(3000);
-
-    // Check for Core Web Vitals
-    const vitals = await page.evaluate(() => {
-      return new Promise((resolve) => {
-        new PerformanceObserver((entryList) => {
-          const entries = entryList.getEntries();
-          resolve(
-            entries.map((entry) => ({
-              name: entry.name,
-              value: (entry as any).value || entry.duration,
-            })),
-          );
-        }).observe({ entryTypes: ["navigation", "paint"] });
-
-        // Fallback if no observer data
-        setTimeout(() => {
-          resolve(
-            performance.getEntriesByType("navigation").map((entry) => ({
-              name: entry.name,
-              value:
-                (entry as PerformanceNavigationTiming).loadEventEnd -
-                (entry as PerformanceNavigationTiming).loadEventStart,
-            })),
-          );
-        }, 1000);
-      });
+      return { alternate, canonical, next, prev };
     });
 
-    expect(vitals).toBeTruthy();
+    expect(linkStructure.canonical).toBeTruthy();
+    expect(linkStructure.canonical).toMatch(/^https?:\/\//);
+
+    // Validate alternate links (for internationalization)
+    if (linkStructure.alternate.length > 0) {
+      linkStructure.alternate.forEach((link) => {
+        if (link.hreflang && link.href) {
+          expect(link.href).toMatch(/^https?:\/\//);
+          expect(link.hreflang).toMatch(/^[a-z]{2}(-[A-Z]{2})?$/);
+        }
+      });
+    }
+
+    await test.info().attach("link-structure-analysis", {
+      body: JSON.stringify(linkStructure, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("should have comprehensive structured data and schema markup", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await waitUtils.forNavigation();
+
+    const structuredDataAnalysis = await page.evaluate(() => {
+      // Check for JSON-LD structured data
+      const jsonLdScripts = Array.from(
+        document.querySelectorAll('script[type="application/ld+json"]'),
+      );
+      const jsonLdData = [];
+
+      jsonLdScripts.forEach((script, index) => {
+        try {
+          const content = script.innerHTML;
+          const parsed = JSON.parse(content);
+          jsonLdData.push({
+            valid: !!(parsed["@context"] && parsed["@type"]),
+            type: parsed["@type"],
+            context: parsed["@context"],
+            data: parsed,
+            index,
+          });
+        } catch (error) {
+          jsonLdData.push({
+            valid: false,
+            error: error.message,
+            index,
+          });
+        }
+      });
+
+      // Check for microdata
+      const microdataElements = Array.from(
+        document.querySelectorAll("[itemscope]"),
+      ).map((el) => ({
+        itemtype: el.getAttribute("itemtype"),
+        itemprops: Array.from(el.querySelectorAll("[itemprop]")).map((prop) =>
+          prop.getAttribute("itemprop"),
+        ),
+      }));
+
+      // Check for RDFa
+      const rdfaElements = Array.from(
+        document.querySelectorAll("[typeof]"),
+      ).map((el) => ({
+        typeof: el.getAttribute("typeof"),
+        properties: Array.from(el.querySelectorAll("[property]")).map((prop) =>
+          prop.getAttribute("property"),
+        ),
+      }));
+
+      return {
+        hasStructuredData:
+          jsonLdData.length > 0 ||
+          microdataElements.length > 0 ||
+          rdfaElements.length > 0,
+        jsonLd: { count: jsonLdData.length, data: jsonLdData },
+        microdata: { count: microdataElements.length, data: microdataElements },
+        rdfa: { count: rdfaElements.length, data: rdfaElements },
+      };
+    });
+
+    // Validate JSON-LD structured data
+    if (structuredDataAnalysis.jsonLd.count > 0) {
+      structuredDataAnalysis.jsonLd.data.forEach((item, index) => {
+        if (!item.error) {
+          expect(item.valid).toBeTruthy();
+          expect(item.context).toBe("https://schema.org");
+          expect(item.type).toBeTruthy();
+        }
+      });
+    }
+
+    await test.info().attach("structured-data-analysis", {
+      body: JSON.stringify(structuredDataAnalysis, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("should have proper SEO files and resources", async ({ page }) => {
+    const seoFilesAnalysis = await Promise.all([
+      // Check robots.txt
+      page.request
+        .get("/robots.txt")
+        .then(async (response) => ({
+          content: response.ok() ? await response.text() : null,
+          file: "robots.txt",
+          hasUserAgent: response.ok()
+            ? (await response.text()).includes("User-agent")
+            : false,
+          ok: response.ok(),
+          status: response.status(),
+        }))
+        .catch((error) => ({
+          error: error.message,
+          file: "robots.txt",
+          ok: false,
+        })),
+
+      // Check sitemap.xml
+      page.request
+        .get("/sitemap.xml")
+        .then(async (response) => ({
+          content: response.ok() ? await response.text() : null,
+          file: "sitemap.xml",
+          hasUrlset: response.ok()
+            ? (await response.text()).includes("<urlset")
+            : false,
+          hasXmlns: response.ok()
+            ? (await response.text()).includes("xmlns")
+            : false,
+          ok: response.ok(),
+          status: response.status(),
+        }))
+        .catch((error) => ({
+          error: error.message,
+          file: "sitemap.xml",
+          ok: false,
+        })),
+
+      // Check favicon and icons
+      page
+        .goto("/")
+        .then(async () => {
+          await page.waitForLoadState("networkidle");
+          return page.evaluate(async () => {
+            const favicon = document.querySelector(
+              'link[rel="icon"], link[rel="shortcut icon"]',
+            );
+            const appleTouchIcon = document.querySelector(
+              'link[rel="apple-touch-icon"]',
+            );
+            const manifest = document.querySelector('link[rel="manifest"]');
+
+            const iconTests = [];
+
+            if (favicon) {
+              const href = favicon.getAttribute("href");
+              iconTests.push({ type: "favicon", exists: !!href, href });
+            }
+
+            if (appleTouchIcon) {
+              const href = appleTouchIcon.getAttribute("href");
+              iconTests.push({
+                type: "apple-touch-icon",
+                exists: !!href,
+                href,
+              });
+            }
+
+            if (manifest) {
+              const href = manifest.getAttribute("href");
+              iconTests.push({ type: "manifest", exists: !!href, href });
+            }
+
+            return iconTests;
+          });
+        })
+        .catch((error) => ({
+          error: error.message,
+          icons: [],
+        })),
+    ]);
+
+    // Validate robots.txt
+    const robotsResult = seoFilesAnalysis[0];
+    expect(robotsResult.ok).toBeTruthy();
+    if (robotsResult.content) {
+      expect(robotsResult.hasUserAgent).toBeTruthy();
+    }
+
+    // Validate sitemap.xml
+    const sitemapResult = seoFilesAnalysis[1];
+    expect(sitemapResult.ok).toBeTruthy();
+    if (sitemapResult.content) {
+      expect(sitemapResult.hasUrlset).toBeTruthy();
+      expect(sitemapResult.hasXmlns).toBeTruthy();
+    }
+
+    // Validate icons
+    const iconsResult = seoFilesAnalysis[2];
+    if (Array.isArray(iconsResult) && iconsResult.length > 0) {
+      iconsResult.forEach((icon) => {
+        expect(icon.exists).toBeTruthy();
+        expect(icon.href).toBeTruthy();
+      });
+    }
+
+    await test.info().attach("seo-files-analysis", {
+      body: JSON.stringify(seoFilesAnalysis, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("should have internationalization and content-specific SEO", async ({
+    context,
+    page,
+  }) => {
+    const { result } = await withPerformanceMonitoring(
+      page,
+      context,
+      "/en",
+      async () => {
+        await waitUtils.forNavigation();
+
+        // Check hreflang tags for internationalization
+        const hreflangAnalysis = await page.evaluate(() => {
+          const hreflangLinks = Array.from(
+            document.querySelectorAll('link[rel="alternate"][hreflang]'),
+          );
+          return hreflangLinks.map((link) => ({
+            valid: !!(
+              link.getAttribute("hreflang") && link.getAttribute("href")
+            ),
+            href: link.getAttribute("href"),
+            hreflang: link.getAttribute("hreflang"),
+          }));
+        });
+
+        // Test product page SEO if available
+        const productPageTest = await (async () => {
+          const productLink = page
+            .getByRole("link")
+            .filter({ hasText: /product|shop/i })
+            .first();
+
+          if ((await productLink.count()) > 0) {
+            await productLink.click();
+            await waitUtils.forNavigation();
+
+            if (page.url().includes("/product")) {
+              return page.evaluate(() => {
+                const title = document.title;
+                const description = document
+                  .querySelector('meta[name="description"]')
+                  ?.getAttribute("content");
+                const ogType = document
+                  .querySelector('meta[property="og:type"]')
+                  ?.getAttribute("content");
+                const ogPrice = document
+                  .querySelector('meta[property="product:price"]')
+                  ?.getAttribute("content");
+                const ogCurrency = document
+                  .querySelector('meta[property="product:price:currency"]')
+                  ?.getAttribute("content");
+
+                return {
+                  validProductSEO: !!(title && description && ogType),
+                  description: {
+                    length: description?.length || 0,
+                    value: description,
+                  },
+                  hasProductPage: true,
+                  ogType,
+                  productMeta: { currency: ogCurrency, price: ogPrice },
+                  title: { length: title.length, value: title },
+                };
+              });
+            }
+          }
+
+          return { hasProductPage: false };
+        })();
+
+        // Validate hreflang tags
+        if (hreflangAnalysis.length > 0) {
+          hreflangAnalysis.forEach((link) => {
+            expect(link.valid).toBeTruthy();
+            expect(link.href).toMatch(/^https?:\/\//);
+            expect(link.hreflang).toMatch(/^[a-z]{2}(-[A-Z]{2})?$/);
+          });
+        }
+
+        // Validate product page SEO if available
+        if (productPageTest.hasProductPage) {
+          expect(productPageTest.validProductSEO).toBeTruthy();
+          expect(productPageTest.title.length).toBeGreaterThan(0);
+          expect(productPageTest.description.length).toBeGreaterThan(50);
+
+          if (productPageTest.ogType) {
+            expect(["product", "website"]).toContain(productPageTest.ogType);
+          }
+        }
+
+        return { hreflang: hreflangAnalysis, productPage: productPageTest };
+      },
+    );
+
+    await test.info().attach("internationalization-content-seo", {
+      body: JSON.stringify(result, null, 2),
+      contentType: "application/json",
+    });
+  });
+
+  test("should have valid content structure and accessibility for SEO", async ({
+    context,
+    page,
+  }) => {
+    const visualTester = createVisualTester(page);
+
+    const { report, result } = await withPerformanceMonitoring(
+      page,
+      context,
+      "/",
+      async () => {
+        await waitUtils.forNavigation();
+
+        // Comprehensive content structure analysis
+        const contentAnalysis = await page.evaluate(() => {
+          // Check for duplicate tags
+          const duplicates = {
+            canonicals: document.querySelectorAll('link[rel="canonical"]')
+              .length,
+            descriptions: document.querySelectorAll('meta[name="description"]')
+              .length,
+            titles: document.querySelectorAll("title").length,
+          };
+
+          // Check heading hierarchy
+          const headings = Array.from(
+            document.querySelectorAll("h1, h2, h3, h4, h5, h6"),
+          ).map((h) => ({
+            hasContent: !!h.textContent?.trim(),
+            level: parseInt(h.tagName.substring(1)),
+            text: h.textContent?.trim() || "",
+          }));
+
+          const h1Count = headings.filter((h) => h.level === 1).length;
+          const headingLevels = headings.map((h) => h.level);
+
+          // Check heading hierarchy validity
+          let hierarchyValid = true;
+          if (headingLevels.length > 1) {
+            for (let i = 1; i < headingLevels.length; i++) {
+              if (headingLevels[i] - headingLevels[i - 1] > 1) {
+                hierarchyValid = false;
+                break;
+              }
+            }
+          }
+
+          // Check images alt attributes
+          const images = Array.from(document.querySelectorAll("img"))
+            .slice(0, 10)
+            .map((img) => ({
+              alt: img.getAttribute("alt"),
+              altLength: img.getAttribute("alt")?.length || 0,
+              hasAlt: img.hasAttribute("alt"),
+              hasLazyLoading: img.getAttribute("loading") === "lazy",
+              loading: img.getAttribute("loading"),
+              src: img.getAttribute("src"),
+            }));
+
+          const imagesWithoutAlt = images.filter((img) => !img.hasAlt).length;
+          const imagesWithLazyLoading = images.filter(
+            (img) => img.hasLazyLoading,
+          ).length;
+
+          return {
+            duplicates,
+            headings: {
+              hierarchyValid,
+              allHaveContent: headings.every((h) => h.hasContent),
+              h1Count,
+              hierarchy: headingLevels,
+              total: headings.length,
+            },
+            images: {
+              altOptimizationScore:
+                images.length > 0
+                  ? (images.length - imagesWithoutAlt) / images.length
+                  : 1,
+              total: images.length,
+              withLazyLoading: imagesWithLazyLoading,
+              withoutAlt: imagesWithoutAlt,
+            },
+          };
+        });
+
+        // Validate duplicate tags
+        expect(contentAnalysis.duplicates.titles).toBe(1);
+        expect(contentAnalysis.duplicates.descriptions).toBeLessThanOrEqual(1);
+        expect(contentAnalysis.duplicates.canonicals).toBeLessThanOrEqual(1);
+
+        // Validate heading hierarchy
+        expect(contentAnalysis.headings.h1Count).toBe(1);
+        expect(contentAnalysis.headings.hierarchyValid).toBeTruthy();
+        expect(contentAnalysis.headings.allHaveContent).toBeTruthy();
+
+        // Validate image accessibility
+        expect(contentAnalysis.images.altOptimizationScore).toBeGreaterThan(
+          0.8,
+        );
+
+        // Take visual regression screenshot for SEO layout
+        await visualTester.comparePageState(page, "homepage-seo-structure", {
+          animations: "disabled",
+          fullPage: true,
+        });
+
+        return contentAnalysis;
+      },
+      {
+        fcp: { error: 3000, warning: 1500 },
+        lcp: { error: 4000, warning: 2500 },
+      },
+    );
+
+    // SEO performance validation
+    expect(report.fcp).toBeLessThan(3000);
+    expect(report.lcp).toBeLessThan(4000);
+
+    await test.info().attach("content-structure-seo-analysis", {
+      body: JSON.stringify({ ...result, performance: report }, null, 2),
+      contentType: "application/json",
+    });
   });
 });

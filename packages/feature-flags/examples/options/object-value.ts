@@ -1,34 +1,34 @@
 import { flag } from '@vercel/flags/next';
 
 interface GreetingConfig {
-  message: string;
   locale: string;
+  message: string;
   style?: string;
 }
 
 export const greetingFlag = flag<GreetingConfig>({
+  decide: () => ({
+    locale: 'en',
+    message: 'Hello world',
+    style: 'friendly',
+  }),
   key: 'greeting',
   options: [
     {
       label: 'Hello world',
       value: {
-        message: 'Hello world',
         locale: 'en',
+        message: 'Hello world',
         style: 'friendly',
       },
     },
     {
       label: 'Hola mundo',
       value: {
-        message: 'Hola mundo',
         locale: 'es',
+        message: 'Hola mundo',
         style: 'formal',
       },
     },
   ],
-  decide: () => ({
-    message: 'Hello world',
-    locale: 'en',
-    style: 'friendly',
-  }),
 });

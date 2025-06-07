@@ -1,5 +1,6 @@
-import { marketingFlags, heroTestFlag, newFeatureFlag } from './flags';
-import { generatePermutations } from '../src/server';
+import { generatePermutations } from '../src/server-next';
+
+import { heroTestFlag, marketingFlags, newFeatureFlag } from './flags';
 
 type PageParams = Promise<{ code: string }>;
 

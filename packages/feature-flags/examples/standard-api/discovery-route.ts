@@ -2,21 +2,20 @@
  * Standard discovery endpoint following Vercel documentation
  * Place this at: app/.well-known/vercel/flags/route.ts
  */
-import { getProviderData, createFlagsDiscoveryEndpoint } from '@repo/feature-flags/server/next';
-import * as flags from './flags'; // Import all your flags
-
-// Standard usage - returns metadata for all flags
-export const GET = createFlagsDiscoveryEndpoint(async () => {
-  return getProviderData(flags);
-});
+import { createFlagsDiscoveryEndpoint, getProviderData } from '@repo/feature-flags/server/next';
+// For custom providers (PostHog, Edge Config), you can combine multiple sources:
+import { getEdgeConfigProviderData, getPostHogProviderData } from '@repo/feature-flags/server/next'; // Import all your flags
 
 // The createFlagsDiscoveryEndpoint automatically:
 // 1. Calls verifyAccess to check Authorization header
 // 2. Adds x-flags-sdk-version response header
 // 3. Returns 401 for unauthorized requests
+import * as flags from './flags';
 
-// For custom providers (PostHog, Edge Config), you can combine multiple sources:
-import { getPostHogProviderData, getEdgeConfigProviderData } from '@repo/feature-flags/server/next';
+// Standard usage - returns metadata for all flags
+export const GET = createFlagsDiscoveryEndpoint(async () => {
+  return getProviderData(flags);
+});
 
 export const GET_MULTI_PROVIDER = createFlagsDiscoveryEndpoint(async () => {
   // Get flags from code
@@ -24,13 +23,21 @@ export const GET_MULTI_PROVIDER = createFlagsDiscoveryEndpoint(async () => {
 
   // Get flags from providers
   const [postHogFlags, edgeConfigFlags] = await Promise.all([
-    getPostHogProviderData().catch(() => ({ flags: [] })),
+    getPostHogProviderData({
+      personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY,
+      projectId: process.env.POSTHOG_PROJECT_ID,
+    }).catch(() => ({ flags: [] })),
     getEdgeConfigProviderData().catch(() => ({ flags: [] })),
   ]);
 
   // Combine all flags
   return {
     provider: 'multi',
-    flags: [...codeFlags.flags, ...postHogFlags.flags, ...edgeConfigFlags.flags],
+    // @ts-ignore - flags property might not exist in all cases
+    flags: [
+      ...((codeFlags as any).flags || []),
+      ...((postHogFlags as any).flags || []),
+      ...((edgeConfigFlags as any).flags || []),
+    ],
   };
 });

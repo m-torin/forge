@@ -11,15 +11,12 @@ type Charge = {
   success: boolean
 }
 
-let counter = 0
-const attemptCharge = (invoice: Invoice) => {
-  counter += 1
-  if (counter === 3) {
+const attemptCharge = (invoice: Invoice, attemptCount: number) => {
+  if (attemptCount === 3) {
     console.log(' charge success', invoice)
-    counter = 0
     return true
   }
-  console.log(' charge failed', invoice)
+  console.log(' charge failed', invoice, `attempt ${attemptCount}`)
   return false
 }
 
@@ -28,8 +25,8 @@ export const { POST } = serve<Invoice>(async (context) => {
   const invoice = context.requestPayload
 
   for (let index = 0; index < 3; index++) {
-    const charge = await context.run('attemptCharge', async () => {
-      const success = attemptCharge(invoice)
+    const charge = await context.run(`attemptCharge-${index + 1}`, async () => {
+      const success = attemptCharge(invoice, index + 1)
       const charge: Charge = { invoice, success }
       return charge
     })

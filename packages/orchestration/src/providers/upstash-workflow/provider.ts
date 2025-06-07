@@ -27,8 +27,6 @@ export interface UpstashWorkflowProviderOptions {
   debug?: boolean;
   /** Environment name */
   env?: string;
-  /** Webhook URL pattern - defaults to '/api/workflows/{id}/execute' */
-  webhookUrlPattern?: string;
   /** QStash client configuration */
   qstash: {
     token: string;
@@ -39,6 +37,8 @@ export interface UpstashWorkflowProviderOptions {
     url: string;
     token?: string;
   };
+  /** Webhook URL pattern - defaults to '/api/workflows/{id}/execute' */
+  webhookUrlPattern?: string;
 }
 
 export class UpstashWorkflowProvider implements WorkflowProvider {
@@ -73,7 +73,6 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   static fromConfig(config: UpstashWorkflowConfig): UpstashWorkflowProvider {
     return new UpstashWorkflowProvider({
       baseUrl: config.config.baseUrl,
-      webhookUrlPattern: config.config.webhookUrlPattern,
       qstash: {
         token: config.config.qstashToken,
       },
@@ -83,6 +82,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
             token: config.config.redisToken,
           }
         : undefined,
+      webhookUrlPattern: config.config.webhookUrlPattern,
     });
   }
 

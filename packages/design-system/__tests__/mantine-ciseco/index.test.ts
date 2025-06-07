@@ -265,6 +265,27 @@ export const testStats = {
   accessibilityCompliance: 'WCAG 2.1 AA',
 };
 
+// Simple test to verify test suite initialization
+import { describe, expect, it } from 'vitest';
+
+describe('Mantine Ciseco Test Suite', () => {
+  it('should export test categories', () => {
+    expect(testCategories).toBeDefined();
+    expect(Object.keys(testCategories).length).toBeGreaterThan(0);
+  });
+
+  it('should export test statistics', () => {
+    expect(testStats).toBeDefined();
+    expect(testStats.totalComponents).toBeGreaterThan(0);
+    expect(testStats.categoriesCount).toBeGreaterThan(0);
+  });
+
+  it('should have correct component count', () => {
+    const actualCount = Object.values(testCategories).flat().length;
+    expect(testStats.totalComponents).toBe(actualCount);
+  });
+});
+
 console.log(`Mantine Ciseco Test Suite initialized:
 - ${testStats.totalComponents} components across ${testStats.categoriesCount} categories
 - Target coverage: ${testStats.coverageTarget}%

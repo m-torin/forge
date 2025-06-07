@@ -63,7 +63,7 @@ Extensible provider architecture:
 ### Basic Workflow
 
 ```typescript
-import { createOrchestration } from '@repo/orchestration-new/server';
+import { createOrchestration } from '@repo/orchestration/server';
 
 const orchestration = await createOrchestration({
   providers: {
@@ -98,7 +98,7 @@ const workflow = orchestration.createWorkflow('process-orders', async (ctx) => {
 ### With Rate Limiting
 
 ```typescript
-import { withRateLimit } from '@repo/orchestration-new/patterns';
+import { withRateLimit } from '@repo/orchestration/patterns';
 
 const workflow = orchestration.createWorkflow(
   'api-calls',
@@ -122,7 +122,7 @@ const workflow = orchestration.createWorkflow(
 ### Using Patterns
 
 ```typescript
-import { batch, retry, circuitBreaker } from '@repo/orchestration-new/patterns';
+import { batch, retry, circuitBreaker } from '@repo/orchestration/patterns';
 
 // Batch processing
 const processBatch = batch({
@@ -151,7 +151,7 @@ const protectedCall = circuitBreaker({
 ## Installation
 
 ```bash
-pnpm add @repo/orchestration-new
+pnpm add @repo/orchestration
 ```
 
 ## Configuration
@@ -218,6 +218,6 @@ This package is designed to coexist with the existing orchestration package. Key
 
 To migrate:
 
-1. Update imports to `@repo/orchestration-new`
+1. Update imports to `@repo/orchestration`
 2. Update configuration to use provider system
 3. Apply new patterns where applicable

@@ -356,7 +356,18 @@ export async function getShopData() {
   };
 }
 
-export async function getProductReviews(handle: string) {
+export async function getProductReviews(handle: string): Promise<
+  {
+    id: string;
+    author: string;
+    authorAvatar: any;
+    content: string;
+    date: string;
+    datetime: string;
+    rating: number;
+    title: string;
+  }[]
+> {
   return [
     {
       id: '1',
@@ -708,7 +719,7 @@ export async function getCollections() {
       count: 77,
       description:
         'Excoolent new arrivals for every occasion, from casual to formal. Explore our collection of trendy jackets that elevate your outfit.',
-      handle: 'explore-new-arrivals',
+      handle: 'explore-arrivals',
       image: createImageObject(collectionImage5, 'Explore new arrivals'),
       sortDescription: 'Shop the latest <br /> from top brands',
       title: 'Explore new arrivals',

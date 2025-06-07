@@ -18,28 +18,39 @@ const requireLogtailInProduction = isProduction && hasLogtailVars;
 
 export const keys = () =>
   createEnv({
-    runtimeEnv: {
-      SENTRY_DSN: process.env.SENTRY_DSN || undefined,
-      SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN || undefined,
-      SENTRY_ORG: process.env.SENTRY_ORG || undefined,
-      SENTRY_PROJECT: process.env.SENTRY_PROJECT || undefined,
-      LOGTAIL_SOURCE_TOKEN: process.env.LOGTAIL_SOURCE_TOKEN || undefined,
-    },
-    server: {
-      SENTRY_DSN: requireSentryInProduction
+    client: {
+      NEXT_PUBLIC_SENTRY_DSN: requireSentryInProduction
         ? z.string().url()
         : z.string().url().optional().or(z.literal('')),
+    },
+    runtimeEnv: {
+      LOGTAIL_SOURCE_TOKEN: process.env.LOGTAIL_SOURCE_TOKEN || undefined,
+      NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN || undefined,
+      NODE_ENV: process.env.NODE_ENV || 'development',
+      SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN || undefined,
+      SENTRY_DSN: process.env.SENTRY_DSN || undefined,
+      SENTRY_ORG: process.env.SENTRY_ORG || undefined,
+      SENTRY_PROJECT: process.env.SENTRY_PROJECT || undefined,
+    },
+    server: {
+      LOGTAIL_SOURCE_TOKEN: requireLogtailInProduction
+        ? z.string().min(1)
+        : z.string().optional().or(z.literal('')),
+      NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
       SENTRY_AUTH_TOKEN: requireSentryInProduction
         ? z.string().min(1)
         : z.string().optional().or(z.literal('')),
+      SENTRY_DSN: requireSentryInProduction
+        ? z.string().url()
+        : z.string().url().optional().or(z.literal('')),
       SENTRY_ORG: requireSentryInProduction
         ? z.string().min(1)
         : z.string().optional().or(z.literal('')),
       SENTRY_PROJECT: requireSentryInProduction
         ? z.string().min(1)
         : z.string().optional().or(z.literal('')),
-      LOGTAIL_SOURCE_TOKEN: requireLogtailInProduction
-        ? z.string().min(1)
-        : z.string().optional().or(z.literal('')),
     },
   });
+
+// Export the keys instance for tests
+export const observabilityKeys = keys();

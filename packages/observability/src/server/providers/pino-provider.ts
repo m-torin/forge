@@ -1,28 +1,91 @@
 /**
- * Pino logging provider skeleton
+ * Pino logging provider for server-side logging
  */
 
+import type { LogEntry } from '../../shared/types/logger-types';
 import type {
   ObservabilityContext,
   ObservabilityProvider,
   ObservabilityProviderConfig,
 } from '../../shared/types/types';
 
-export class PinoProvider implements ObservabilityProvider {
-  readonly name = 'pino';
-  private logger: any;
-  private isInitialized = false;
+// Dynamic import type for pino
+type PinoLogger = any;
+type PinoOptions = any;
 
-  async initialize(config: ObservabilityProviderConfig): Promise<void> {
-    // TODO: Implement Pino initialization
-    console.log('[Pino] Initializing with config:', config);
-    this.isInitialized = true;
+export interface ServerLoggingProvider extends ObservabilityProvider {
+  flush(timeout?: number): Promise<void>;
+  identify(userId: string, traits?: any): Promise<void>;
+  isEnabled(): boolean;
+  log(entry: LogEntry): Promise<void>;
+  setContext(context: Record<string, any>): Promise<void>;
+}
+
+export class PinoProvider implements ServerLoggingProvider {
+  readonly name = 'pino';
+  private logger: PinoLogger;
+  private options: PinoOptions;
+  private childLogger: PinoLogger | null = null;
+
+  constructor(options: PinoOptions = {}) {
+    this.options = {
+      level: 'info',
+      ...options,
+    };
+
+    // Initialize pino synchronously
+    try {
+      // In test environment, require will be mocked by vitest
+      const pino = require('pino');
+      // Use default export if available (for ES modules)
+      const pinoConstructor = pino.default || pino;
+      this.logger = pinoConstructor(this.options);
+    } catch (error) {
+      // Fallback to console if pino not available
+      this.logger = console;
+    }
   }
 
-  async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
-    if (!this.isInitialized) return;
-    // TODO: Implement exception logging
-    console.error('[Pino] Logging exception:', error, context);
+  isEnabled(): boolean {
+    return true;
+  }
+
+  async initialize(config: ObservabilityProviderConfig): Promise<void> {
+    // Pino is initialized in constructor, this is for compatibility
+  }
+
+  async log(entry: LogEntry): Promise<void> {
+    const currentLogger = this.childLogger || this.logger;
+    const metadata = entry.metadata || {};
+
+    switch (entry.level) {
+      case 'debug':
+        currentLogger.debug(metadata, entry.message);
+        break;
+      case 'info':
+        currentLogger.info(metadata, entry.message);
+        break;
+      case 'warn':
+        currentLogger.warn(metadata, entry.message);
+        break;
+      case 'error':
+        currentLogger.error(metadata, entry.message);
+        break;
+      default:
+        currentLogger.info(metadata, entry.message);
+    }
+  }
+
+  async captureException(error: Error | any, context?: ObservabilityContext): Promise<void> {
+    const currentLogger = this.childLogger || this.logger;
+    const metadata = {
+      err: error,
+      ...context,
+    };
+
+    const message = typeof error === 'string' ? error : error?.message || 'Unknown error';
+
+    currentLogger.error(metadata, message);
   }
 
   async captureMessage(
@@ -30,16 +93,42 @@ export class PinoProvider implements ObservabilityProvider {
     level: 'info' | 'warning' | 'error',
     context?: ObservabilityContext,
   ): Promise<void> {
-    if (!this.isInitialized) return;
-    // TODO: Implement message logging
-    console.log('[Pino] Logging message:', { context, level, message });
+    await this.log({
+      level: level === 'warning' ? 'warn' : level,
+      message,
+      metadata: context,
+      timestamp: new Date().toISOString(),
+    });
   }
 
-  async log(level: string, message: string, metadata?: any): Promise<void> {
-    if (!this.isInitialized) return;
-    // TODO: Implement logging
-    console.log(`[Pino] ${level}:`, message, metadata);
+  async identify(userId: string, traits?: any): Promise<void> {
+    const userContext: any = {
+      userId,
+    };
+
+    if (traits) {
+      userContext.user = traits;
+    }
+
+    this.childLogger = this.logger.child(userContext);
   }
 
-  // TODO: Implement remaining methods
+  async setContext(context: Record<string, any>): Promise<void> {
+    this.childLogger = (this.childLogger || this.logger).child(context);
+  }
+
+  async flush(timeout = 5000): Promise<void> {
+    if (this.logger.flush) {
+      return new Promise<void>((resolve) => {
+        const timer = setTimeout(() => {
+          resolve();
+        }, timeout);
+
+        this.logger.flush((error?: Error) => {
+          clearTimeout(timer);
+          resolve();
+        });
+      });
+    }
+  }
 }

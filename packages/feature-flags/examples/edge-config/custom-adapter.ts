@@ -1,6 +1,7 @@
-import { flag } from '@vercel/flags/next';
-import { createEdgeConfigAdapter } from '@repo/feature-flags/server/next';
 import { createClient } from '@vercel/edge-config';
+import { flag } from '@vercel/flags/next';
+
+import { createEdgeConfigAdapter, edgeConfigAdapter } from '@repo/feature-flags/server/next';
 
 /**
  * Custom Edge Config adapter examples
@@ -16,9 +17,9 @@ const customAdapter = createEdgeConfigAdapter({
 });
 
 export const customFlag = flag({
-  key: 'custom-feature',
   adapter: customAdapter(),
   description: 'Flag from custom Edge Config',
+  key: 'custom-feature',
 });
 
 // Example 2: Using a pre-configured Edge Config client
@@ -32,9 +33,9 @@ const clientAdapter = createEdgeConfigAdapter({
 });
 
 export const appFlag = flag({
-  key: 'app-feature',
   adapter: clientAdapter(),
   description: 'Flag using custom Edge Config client',
+  key: 'app-feature',
 });
 
 // Example 3: Multiple Edge Configs for different environments
@@ -59,41 +60,41 @@ const environmentAdapter =
   process.env.NODE_ENV === 'production' ? productionAdapter : stagingAdapter;
 
 export const environmentFlag = flag({
-  key: 'environment-feature',
   adapter: environmentAdapter(),
   description: 'Flag that uses different Edge Config based on environment',
+  key: 'environment-feature',
 });
 
 // Example 4: Typed Edge Config flags
 interface EdgeConfigFlags {
   'beta-feature': boolean;
   'experiment-variant': 'control' | 'test-a' | 'test-b';
-  'rollout-percentage': number;
   'feature-settings': {
     maxItems: number;
     enableCache: boolean;
     regions: string[];
   };
+  'rollout-percentage': number;
 }
 
 // Type-safe flag definitions
 export const betaFeature = flag<EdgeConfigFlags['beta-feature']>({
-  key: 'beta-feature',
   adapter: edgeConfigAdapter(),
+  key: 'beta-feature',
 });
 
 export const experimentVariant = flag<EdgeConfigFlags['experiment-variant']>({
-  key: 'experiment-variant',
   adapter: edgeConfigAdapter(),
   defaultValue: 'control',
+  key: 'experiment-variant',
 });
 
 export const featureSettings = flag<EdgeConfigFlags['feature-settings']>({
-  key: 'feature-settings',
   adapter: edgeConfigAdapter(),
   defaultValue: {
-    maxItems: 10,
     enableCache: false,
+    maxItems: 10,
     regions: ['us-east-1'],
   },
+  key: 'feature-settings',
 });

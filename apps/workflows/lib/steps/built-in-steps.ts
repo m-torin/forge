@@ -1,4 +1,4 @@
-import { type StepContext, type StepDefinition, type StepResult } from './step-registry'
+import { type StepContext, type StepDefinition, type StepResult } from './step-registry';
 
 // Utility steps
 export const delayStep: StepDefinition = {
@@ -7,33 +7,33 @@ export const delayStep: StepDefinition = {
   category: 'utility',
   description: 'Wait for a specified amount of time',
   async handler(context: StepContext): Promise<StepResult> {
-    const { duration } = context.input
-    
+    const { duration } = context.input;
+
     if (typeof duration !== 'number' || duration < 0) {
       return {
         error: 'Duration must be a non-negative number',
-        success: false
-      }
+        success: false,
+      };
     }
 
-    await new Promise(resolve => setTimeout(resolve, duration))
-    
+    await new Promise((resolve) => setTimeout(resolve, duration));
+
     return {
       metadata: { delayDuration: duration },
       output: { delayed: duration },
-      success: true
-    }
+      success: true,
+    };
   },
   inputSchema: {
     type: 'object',
     properties: {
-      duration: { type: 'number', description: 'Delay duration in milliseconds', minimum: 0 }
+      duration: { type: 'number', description: 'Delay duration in milliseconds', minimum: 0 },
     },
-    required: ['duration']
+    required: ['duration'],
   },
   tags: ['delay', 'wait', 'timing'],
-  version: '1.0.0'
-}
+  version: '1.0.0',
+};
 
 export const logStep: StepDefinition = {
   id: 'log',
@@ -41,49 +41,49 @@ export const logStep: StepDefinition = {
   category: 'utility',
   description: 'Log a message with specified level',
   async handler(context: StepContext): Promise<StepResult> {
-    const { data, level = 'info', message } = context.input
-    
+    const { data, level = 'info', message } = context.input;
+
     const logData = {
       data,
       executionId: context.executionId,
       message,
       stepId: context.stepId,
       timestamp: new Date().toISOString(),
-      workflowId: context.workflowId
-    }
+      workflowId: context.workflowId,
+    };
 
     switch (level) {
       case 'debug':
-        console.debug('[WORKFLOW]', logData)
-        break
+        console.debug('[WORKFLOW]', logData);
+        break;
       case 'warn':
-        console.warn('[WORKFLOW]', logData)
-        break
+        console.warn('[WORKFLOW]', logData);
+        break;
       case 'error':
-        console.error('[WORKFLOW]', logData)
-        break
+        console.error('[WORKFLOW]', logData);
+        break;
       default:
-        console.log('[WORKFLOW]', logData)
+        console.log('[WORKFLOW]', logData);
     }
 
     return {
       metadata: { logLevel: level },
       output: { level, logged: true, message },
-      success: true
-    }
+      success: true,
+    };
   },
   inputSchema: {
     type: 'object',
     properties: {
       data: { type: 'object', description: 'Additional data to log' },
       level: { type: 'string', default: 'info', enum: ['debug', 'info', 'warn', 'error'] },
-      message: { type: 'string', description: 'Message to log' }
+      message: { type: 'string', description: 'Message to log' },
     },
-    required: ['message']
+    required: ['message'],
   },
   tags: ['logging', 'debug', 'monitoring'],
-  version: '1.0.0'
-}
+  version: '1.0.0',
+};
 
 // Data transformation steps
 export const transformDataStep: StepDefinition = {
@@ -92,35 +92,35 @@ export const transformDataStep: StepDefinition = {
   category: 'data',
   description: 'Transform input data using JavaScript expressions',
   async handler(context: StepContext): Promise<StepResult> {
-    const { sourceData = context.input, transformations } = context.input
-    const output: Record<string, any> = {}
+    const { sourceData = context.input, transformations } = context.input;
+    const output: Record<string, any> = {};
 
     try {
       for (const [key, expression] of Object.entries(transformations)) {
         if (typeof expression === 'string') {
           // Simple property access or literal value
           if (expression.startsWith('$.')) {
-            const path = expression.substring(2)
-            output[key] = getNestedProperty(sourceData, path)
+            const path = expression.substring(2);
+            output[key] = getNestedProperty(sourceData, path);
           } else {
-            output[key] = expression
+            output[key] = expression;
           }
         } else {
           // Direct value assignment
-          output[key] = expression
+          output[key] = expression;
         }
       }
 
       return {
         metadata: { transformedKeys: Object.keys(output) },
         output,
-        success: true
-      }
+        success: true,
+      };
     } catch (error) {
       return {
         error: `Data transformation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        success: false
-      }
+        success: false,
+      };
     }
   },
   inputSchema: {
@@ -128,18 +128,18 @@ export const transformDataStep: StepDefinition = {
     properties: {
       sourceData: {
         type: 'object',
-        description: 'Source data to transform'
+        description: 'Source data to transform',
       },
       transformations: {
         type: 'object',
-        description: 'Object mapping output keys to transformation expressions'
-      }
+        description: 'Object mapping output keys to transformation expressions',
+      },
     },
-    required: ['transformations']
+    required: ['transformations'],
   },
   tags: ['transform', 'data', 'mapping'],
-  version: '1.0.0'
-}
+  version: '1.0.0',
+};
 
 export const filterDataStep: StepDefinition = {
   id: 'filter-data',
@@ -147,53 +147,53 @@ export const filterDataStep: StepDefinition = {
   category: 'data',
   description: 'Filter arrays or objects based on conditions',
   async handler(context: StepContext): Promise<StepResult> {
-    const { condition, data } = context.input
+    const { condition, data } = context.input;
 
     try {
-      let filtered: any
+      let filtered: any;
 
       if (Array.isArray(data)) {
-        filtered = data.filter(item => evaluateCondition(item, condition))
+        filtered = data.filter((item) => evaluateCondition(item, condition));
       } else if (typeof data === 'object' && data !== null) {
-        filtered = {}
+        filtered = {};
         for (const [key, value] of Object.entries(data)) {
           if (evaluateCondition({ key, value }, condition)) {
-            filtered[key] = value
+            filtered[key] = value;
           }
         }
       } else {
         return {
           error: 'Data must be an array or object',
-          success: false
-        }
+          success: false,
+        };
       }
 
       return {
-        metadata: { 
+        metadata: {
           filteredLength: Array.isArray(filtered) ? filtered.length : Object.keys(filtered).length,
-          originalLength: Array.isArray(data) ? data.length : Object.keys(data).length
+          originalLength: Array.isArray(data) ? data.length : Object.keys(data).length,
         },
         output: filtered,
-        success: true
-      }
+        success: true,
+      };
     } catch (error) {
       return {
         error: `Filter operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        success: false
-      }
+        success: false,
+      };
     }
   },
   inputSchema: {
     type: 'object',
     properties: {
       condition: { type: 'string', description: 'Filter condition' },
-      data: { description: 'Data to filter (array or object)' }
+      data: { description: 'Data to filter (array or object)' },
     },
-    required: ['data', 'condition']
+    required: ['data', 'condition'],
   },
   tags: ['filter', 'data', 'array'],
-  version: '1.0.0'
-}
+  version: '1.0.0',
+};
 
 // HTTP steps
 export const httpRequestStep: StepDefinition = {
@@ -202,29 +202,29 @@ export const httpRequestStep: StepDefinition = {
   category: 'http',
   description: 'Make HTTP requests to external APIs',
   async handler(context: StepContext): Promise<StepResult> {
-    const { url, body, headers = {}, method = 'GET', timeout = 30000 } = context.input
+    const { url, body, headers = {}, method = 'GET', timeout = 30000 } = context.input;
 
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), timeout)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(url, {
         body: body ? JSON.stringify(body) : undefined,
         headers: {
           'Content-Type': 'application/json',
-          ...headers
+          ...headers,
         },
         method,
-        signal: controller.signal
-      })
+        signal: controller.signal,
+      });
 
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
 
-      const responseData = await response.text()
-      let parsedData: any = responseData
+      const responseData = await response.text();
+      let parsedData: any = responseData;
 
       try {
-        parsedData = JSON.parse(responseData)
+        parsedData = JSON.parse(responseData);
       } catch {
         // Keep as text if not valid JSON
       }
@@ -235,22 +235,22 @@ export const httpRequestStep: StepDefinition = {
           url,
           method,
           responseTime: Date.now() - context.metadata.startTime,
-          status: response.status
+          status: response.status,
         },
         output: {
           data: parsedData,
           headers: Object.fromEntries(response.headers.entries()),
           status: response.status,
-          statusText: response.statusText
+          statusText: response.statusText,
         },
-        success: response.ok
-      }
+        success: response.ok,
+      };
     } catch (error) {
       return {
         error: `HTTP request failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         metadata: { url, method },
-        success: false
-      }
+        success: false,
+      };
     }
   },
   inputSchema: {
@@ -260,15 +260,15 @@ export const httpRequestStep: StepDefinition = {
       body: { description: 'Request body' },
       headers: { type: 'object' },
       method: { type: 'string', default: 'GET', enum: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] },
-      timeout: { type: 'number', default: 30000, maximum: 60000, minimum: 1000 }
+      timeout: { type: 'number', default: 30000, maximum: 60000, minimum: 1000 },
     },
-    required: ['url']
+    required: ['url'],
   },
   retries: 2,
   tags: ['http', 'api', 'request', 'external'],
   timeout: 30000, // 30 second timeout
-  version: '1.0.0'
-}
+  version: '1.0.0',
+};
 
 // Conditional steps
 export const conditionalStep: StepDefinition = {
@@ -277,25 +277,25 @@ export const conditionalStep: StepDefinition = {
   category: 'control',
   description: 'Execute different paths based on conditions',
   async handler(context: StepContext): Promise<StepResult> {
-    const { condition, data, ifFalse, ifTrue } = context.input
+    const { condition, data, ifFalse, ifTrue } = context.input;
 
     try {
-      const result = evaluateCondition(data, condition)
-      
+      const result = evaluateCondition(data, condition);
+
       return {
-        metadata: { 
+        metadata: {
           condition,
-          conditionResult: result 
+          conditionResult: result,
         },
         nextSteps: result && ifTrue ? ['true-branch'] : ['false-branch'],
         output: result ? ifTrue : ifFalse,
-        success: true
-      }
+        success: true,
+      };
     } catch (error) {
       return {
         error: `Condition evaluation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        success: false
-      }
+        success: false,
+      };
     }
   },
   inputSchema: {
@@ -304,19 +304,19 @@ export const conditionalStep: StepDefinition = {
       condition: { type: 'string', description: 'Condition to evaluate' },
       data: { description: 'Data to evaluate condition against' },
       ifFalse: { description: 'Value to return if condition is false' },
-      ifTrue: { description: 'Value to return if condition is true' }
+      ifTrue: { description: 'Value to return if condition is true' },
     },
-    required: ['condition', 'data']
+    required: ['condition', 'data'],
   },
   tags: ['conditional', 'if', 'branch', 'logic'],
-  version: '1.0.0'
-}
+  version: '1.0.0',
+};
 
 // Helper functions
 function getNestedProperty(obj: any, path: string): any {
   return path.split('.').reduce((current, key) => {
-    return current && current[key] !== undefined ? current[key] : undefined
-  }, obj)
+    return current && current[key] !== undefined ? current[key] : undefined;
+  }, obj);
 }
 
 function evaluateCondition(data: any, condition: string): boolean {
@@ -324,42 +324,54 @@ function evaluateCondition(data: any, condition: string): boolean {
   try {
     // Support basic comparisons
     if (condition.includes('==')) {
-      const [left, right] = condition.split('==').map(s => s.trim())
-      const leftValue = left.startsWith('$.') ? getNestedProperty(data, left.substring(2)) : left
-      const rightValue = right.startsWith('$.') ? getNestedProperty(data, right.substring(2)) : right
-      return leftValue == rightValue
+      const [left, right] = condition.split('==').map((s) => s.trim());
+      const leftValue = left.startsWith('$.') ? getNestedProperty(data, left.substring(2)) : left;
+      const rightValue = right.startsWith('$.')
+        ? getNestedProperty(data, right.substring(2))
+        : right;
+      return leftValue == rightValue;
     }
-    
+
     if (condition.includes('!=')) {
-      const [left, right] = condition.split('!=').map(s => s.trim())
-      const leftValue = left.startsWith('$.') ? getNestedProperty(data, left.substring(2)) : left
-      const rightValue = right.startsWith('$.') ? getNestedProperty(data, right.substring(2)) : right
-      return leftValue != rightValue
+      const [left, right] = condition.split('!=').map((s) => s.trim());
+      const leftValue = left.startsWith('$.') ? getNestedProperty(data, left.substring(2)) : left;
+      const rightValue = right.startsWith('$.')
+        ? getNestedProperty(data, right.substring(2))
+        : right;
+      return leftValue != rightValue;
     }
-    
+
     if (condition.includes('>')) {
-      const [left, right] = condition.split('>').map(s => s.trim())
-      const leftValue = left.startsWith('$.') ? getNestedProperty(data, left.substring(2)) : parseFloat(left)
-      const rightValue = right.startsWith('$.') ? getNestedProperty(data, right.substring(2)) : parseFloat(right)
-      return leftValue > rightValue
+      const [left, right] = condition.split('>').map((s) => s.trim());
+      const leftValue = left.startsWith('$.')
+        ? getNestedProperty(data, left.substring(2))
+        : parseFloat(left);
+      const rightValue = right.startsWith('$.')
+        ? getNestedProperty(data, right.substring(2))
+        : parseFloat(right);
+      return leftValue > rightValue;
     }
-    
+
     if (condition.includes('<')) {
-      const [left, right] = condition.split('<').map(s => s.trim())
-      const leftValue = left.startsWith('$.') ? getNestedProperty(data, left.substring(2)) : parseFloat(left)
-      const rightValue = right.startsWith('$.') ? getNestedProperty(data, right.substring(2)) : parseFloat(right)
-      return leftValue < rightValue
+      const [left, right] = condition.split('<').map((s) => s.trim());
+      const leftValue = left.startsWith('$.')
+        ? getNestedProperty(data, left.substring(2))
+        : parseFloat(left);
+      const rightValue = right.startsWith('$.')
+        ? getNestedProperty(data, right.substring(2))
+        : parseFloat(right);
+      return leftValue < rightValue;
     }
 
     // Default: check if property exists and is truthy
     if (condition.startsWith('$.')) {
-      const value = getNestedProperty(data, condition.substring(2))
-      return !!value
+      const value = getNestedProperty(data, condition.substring(2));
+      return !!value;
     }
 
-    return false
+    return false;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -370,5 +382,5 @@ export const builtInSteps: StepDefinition[] = [
   transformDataStep,
   filterDataStep,
   httpRequestStep,
-  conditionalStep
-]
+  conditionalStep,
+];

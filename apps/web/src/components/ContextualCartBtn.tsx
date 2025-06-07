@@ -1,7 +1,8 @@
 "use client";
 
-import { CartBtn } from "@repo/design-system/mantine-ciseco";
 import { useAppLayout } from "@/contexts/AppLayoutContext";
+
+import { CartBtn } from "@repo/design-system/mantine-ciseco";
 
 interface ContextualCartBtnProps {
   numberItems?: number;

@@ -4,20 +4,17 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getCurrentUser, getSession } from '../server/auth';
-
-// Mock the auth instance
-const mockAuth = {
-  api: {
-    getSession: vi.fn(),
-  },
-};
+import { auth, getCurrentUser, getSession } from '../server/auth';
 
 vi.mock('../server/auth', async () => {
   const actual = await vi.importActual('../server/auth');
   return {
     ...actual,
-    auth: mockAuth,
+    auth: {
+      api: {
+        getSession: vi.fn(),
+      },
+    },
   };
 });
 
@@ -34,7 +31,7 @@ describe('Server Authentication', () => {
         email: 'test@example.com',
       };
 
-      mockAuth.api.getSession.mockResolvedValue({
+      vi.mocked(auth.api.getSession).mockResolvedValue({
         session: { id: 'session-1' },
         user: mockUser,
       });
@@ -44,7 +41,7 @@ describe('Server Authentication', () => {
     });
 
     it('should return null when no session', async () => {
-      mockAuth.api.getSession.mockResolvedValue(null);
+      vi.mocked(auth.api.getSession).mockResolvedValue(null);
 
       const user = await getCurrentUser();
       expect(user).toBeNull();
@@ -65,7 +62,7 @@ describe('Server Authentication', () => {
         },
       };
 
-      mockAuth.api.getSession.mockResolvedValue(mockSession);
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
 
       const session = await getSession();
       expect(session).toEqual({
@@ -76,7 +73,7 @@ describe('Server Authentication', () => {
     });
 
     it('should return null when not authenticated', async () => {
-      mockAuth.api.getSession.mockResolvedValue(null);
+      vi.mocked(auth.api.getSession).mockResolvedValue(null);
 
       const session = await getSession();
       expect(session).toBeNull();

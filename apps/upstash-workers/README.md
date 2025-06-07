@@ -41,9 +41,11 @@ This project is configured for local development with the QStash CLI. Follow the
 ### Prerequisites
 
 1. **Start QStash CLI server** (required for local development):
+
    ```bash
    pnpm qstash:dev
    ```
+
    This starts the QStash CLI server on `http://localhost:8080`
 
 2. **Start the Next.js development server** (in another terminal):
@@ -54,6 +56,7 @@ This project is configured for local development with the QStash CLI. Follow the
 ### One-Command Setup
 
 Alternatively, you can start both servers at once:
+
 ```bash
 pnpm dev:full
 ```

@@ -1,4 +1,5 @@
 import posthog from 'posthog-js';
+
 import type { Adapter } from '@vercel/flags';
 
 export interface PostHogClientAdapterOptions {
@@ -45,9 +46,7 @@ export function createPostHogClientAdapter(
   return {
     isFeatureEnabled<E = any>(): Adapter<boolean, E> {
       return {
-        origin: { provider: 'posthog' },
-        config: { reportValue: true },
-        decide: async ({ key, entities }) => {
+        decide: async ({ entities, key }) => {
           if (typeof window === 'undefined') {
             throw new Error('PostHog client adapter only works in browser environments');
           }
@@ -61,14 +60,14 @@ export function createPostHogClientAdapter(
 
           return posthog.isFeatureEnabled(key) || false;
         },
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
       };
     },
 
     featureFlagValue<E = any>(): Adapter<boolean | string, E> {
       return {
-        origin: { provider: 'posthog' },
-        config: { reportValue: true },
-        decide: async ({ key, entities }) => {
+        decide: async ({ entities, key }) => {
           if (typeof window === 'undefined') {
             throw new Error('PostHog client adapter only works in browser environments');
           }
@@ -83,14 +82,14 @@ export function createPostHogClientAdapter(
           const value = posthog.getFeatureFlag(key);
           return value !== undefined ? value : false;
         },
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
       };
     },
 
     featureFlagPayload<T = any, E = any>(transform?: (value: any) => T): Adapter<T, E> {
       return {
-        origin: { provider: 'posthog' },
-        config: { reportValue: true },
-        decide: async ({ key, entities }) => {
+        decide: async ({ entities, key }) => {
           if (typeof window === 'undefined') {
             throw new Error('PostHog client adapter only works in browser environments');
           }
@@ -109,6 +108,8 @@ export function createPostHogClientAdapter(
           }
           return (payload as T) || defaultPayload;
         },
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
       };
     },
   };

@@ -3,12 +3,12 @@
 import { CartContent } from "@/components/CartContent";
 import "rc-slider/assets/index.css";
 import { SidebarNavigationWrapper } from "@/components/SidebarNavigationWrapper";
+import { AppLayoutProvider, useAppLayout } from "@/contexts/AppLayoutContext";
 import { Drawer, ScrollArea } from "@mantine/core";
 import React, { type ReactNode, useEffect, useState } from "react";
 
 import { Footer, Logo } from "@repo/design-system/mantine-ciseco";
 import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
-import { AppLayoutProvider, useAppLayout } from "@/contexts/AppLayoutContext";
 
 interface ComponentProps {
   children: ReactNode;
@@ -17,7 +17,7 @@ interface ComponentProps {
 }
 
 function ApplicationLayoutInner({ children, footer, header }: ComponentProps) {
-  const { cartOpened, navOpened, closeCart, closeNav } = useAppLayout();
+  const { cartOpened, closeCart, closeNav, navOpened } = useAppLayout();
   const [navigationData, setNavigationData] = useState<any[]>([]);
 
   useEffect(() => {

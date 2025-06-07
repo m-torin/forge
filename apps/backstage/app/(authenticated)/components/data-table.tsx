@@ -1,133 +1,134 @@
 'use client';
 
 import {
-  Table,
-  ScrollArea,
-  TextInput,
-  Select,
-  Group,
   ActionIcon,
-  Text,
-  Badge,
-  Checkbox,
-  Menu,
   Button,
+  Center,
+  Checkbox,
+  Group,
+  Menu,
+  Pagination,
+  Paper,
+  ScrollArea,
   Skeleton,
   Stack,
-  Paper,
-  Pagination,
-  Center,
+  Table,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import {
-  IconSearch,
-  IconFilter,
-  IconSortAscending,
-  IconSortDescending,
   IconDots,
   IconEdit,
-  IconTrash,
   IconEye,
+  IconSearch,
+  IconSortAscending,
+  IconSortDescending,
+  IconTrash,
 } from '@tabler/icons-react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
 import { EmptyState } from './empty-state';
 
 interface Column<T> {
   key: keyof T | string;
   label: string;
-  sortable?: boolean;
   render?: (value: any, row: T) => React.ReactNode;
+  sortable?: boolean;
   width?: number;
 }
 
 interface DataTableProps<T> {
-  data: T[];
+  actions?: {
+    onView?: (row: T) => void;
+    onEdit?: (row: T) => void;
+    onDelete?: (row: T) => void;
+    custom?: {
+      label: string;
+      icon?: React.ReactNode;
+      onClick: (row: T) => void;
+      color?: string;
+    }[];
+  };
+  bulkActions?: {
+    label: string;
+    icon?: React.ReactNode;
+    onClick: (selectedRows: T[]) => void;
+    color?: string;
+  }[];
   columns: Column<T>[];
-  loading?: boolean;
-  selectable?: boolean;
-  searchable?: boolean;
-  searchPlaceholder?: string;
+  data: T[];
   emptyState?: {
     title: string;
     description: string;
     icon: any;
   };
-  actions?: {
-    onView?: (row: T) => void;
-    onEdit?: (row: T) => void;
-    onDelete?: (row: T) => void;
-    custom?: Array<{
-      label: string;
-      icon?: React.ReactNode;
-      onClick: (row: T) => void;
-      color?: string;
-    }>;
-  };
-  bulkActions?: Array<{
-    label: string;
-    icon?: React.ReactNode;
-    onClick: (selectedRows: T[]) => void;
-    color?: string;
-  }>;
+  loading?: boolean;
   pagination?: {
     total: number;
     pageSize?: number;
   };
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  selectable?: boolean;
 }
 
+const SKELETON_ROWS = ['skeleton-1', 'skeleton-2', 'skeleton-3', 'skeleton-4', 'skeleton-5'];
+
 export function DataTable<T extends { id: string | number }>({
-  data,
-  columns,
-  loading = false,
-  selectable = false,
-  searchable = true,
-  searchPlaceholder = 'Search...',
-  emptyState,
   actions,
   bulkActions,
+  columns,
+  data,
+  emptyState,
+  loading = false,
   pagination,
+  searchable = true,
+  searchPlaceholder = 'Search...',
+  selectable = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<keyof T | string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
   const [page, setPage] = useState(1);
-  
+
   const pageSize = pagination?.pageSize || 10;
 
   const filteredData = useMemo(() => {
     let filtered = [...data];
-    
+
     // Search
     if (search) {
       filtered = filtered.filter((row) =>
         Object.values(row).some((value) =>
-          String(value).toLowerCase().includes(search.toLowerCase())
-        )
+          String(value).toLowerCase().includes(search.toLowerCase()),
+        ),
       );
     }
-    
+
     // Sort
     if (sortBy) {
       filtered.sort((a, b) => {
-        const aVal = sortBy.includes('.') 
-          ? sortBy.split('.').reduce((obj: any, key) => obj?.[key], a)
-          : (a as any)[sortBy];
-        const bVal = sortBy.includes('.') 
-          ? sortBy.split('.').reduce((obj: any, key) => obj?.[key], b)
-          : (b as any)[sortBy];
-        
+        const sortKey = String(sortBy);
+        const aVal = sortKey.includes('.')
+          ? sortKey.split('.').reduce((obj: any, key) => obj?.[key], a)
+          : (a as any)[sortKey];
+        const bVal = sortKey.includes('.')
+          ? sortKey.split('.').reduce((obj: any, key) => obj?.[key], b)
+          : (b as any)[sortKey];
+
         if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
         return 0;
       });
     }
-    
+
     return filtered;
   }, [data, search, sortBy, sortOrder]);
 
   const paginatedData = useMemo(() => {
     if (!pagination) return filteredData;
-    
+
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     return filteredData.slice(start, end);
@@ -146,7 +147,7 @@ export function DataTable<T extends { id: string | number }>({
     if (selectedRows.size === paginatedData.length) {
       setSelectedRows(new Set());
     } else {
-      setSelectedRows(new Set(paginatedData.map(row => row.id)));
+      setSelectedRows(new Set(paginatedData.map((row) => row.id)));
     }
   };
 
@@ -171,10 +172,10 @@ export function DataTable<T extends { id: string | number }>({
     return (
       <Stack gap="md">
         <Skeleton height={40} />
-        <Paper shadow="xs" radius="md" withBorder>
+        <Paper shadow="xs" withBorder radius="md">
           <Stack gap={0}>
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} height={60} />
+            {SKELETON_ROWS.map((rowId) => (
+              <Skeleton key={rowId} height={60} />
             ))}
           </Stack>
         </Paper>
@@ -187,31 +188,31 @@ export function DataTable<T extends { id: string | number }>({
       <Group justify="space-between">
         {searchable && (
           <TextInput
-            placeholder={searchPlaceholder}
             leftSection={<IconSearch size={16} />}
-            value={search}
             onChange={(e) => setSearch(e.target.value)}
+            placeholder={searchPlaceholder}
             style={{ width: 300 }}
+            value={search}
           />
         )}
-        
+
         {bulkActions && selectedRows.size > 0 && (
           <Group>
-            <Text size="sm" c="dimmed">
+            <Text c="dimmed" size="sm">
               {selectedRows.size} selected
             </Text>
-            {bulkActions.map((action, index) => (
+            {bulkActions.map((action) => (
               <Button
-                key={index}
-                size="sm"
-                variant="subtle"
+                key={action.label}
                 color={action.color}
                 leftSection={action.icon}
                 onClick={() => {
-                  const selected = paginatedData.filter(row => selectedRows.has(row.id));
+                  const selected = paginatedData.filter((row) => selectedRows.has(row.id));
                   action.onClick(selected);
                   setSelectedRows(new Set());
                 }}
+                size="sm"
+                variant="subtle"
               >
                 {action.label}
               </Button>
@@ -220,25 +221,29 @@ export function DataTable<T extends { id: string | number }>({
         )}
       </Group>
 
-      <Paper shadow="xs" radius="md" withBorder>
+      <Paper shadow="xs" withBorder radius="md">
         <ScrollArea>
-          <Table horizontalSpacing="md" verticalSpacing="sm" striped highlightOnHover>
+          <Table highlightOnHover horizontalSpacing="md" striped verticalSpacing="sm">
             <Table.Thead>
               <Table.Tr>
                 {selectable && (
                   <Table.Th style={{ width: 40 }}>
                     <Checkbox
-                      checked={selectedRows.size === paginatedData.length && paginatedData.length > 0}
-                      indeterminate={selectedRows.size > 0 && selectedRows.size < paginatedData.length}
                       onChange={handleSelectAll}
+                      checked={
+                        selectedRows.size === paginatedData.length && paginatedData.length > 0
+                      }
+                      indeterminate={
+                        selectedRows.size > 0 && selectedRows.size < paginatedData.length
+                      }
                     />
                   </Table.Th>
                 )}
                 {columns.map((column) => (
                   <Table.Th
                     key={String(column.key)}
-                    style={{ width: column.width, cursor: column.sortable ? 'pointer' : 'default' }}
                     onClick={() => column.sortable && handleSort(column.key)}
+                    style={{ width: column.width, cursor: column.sortable ? 'pointer' : 'default' }}
                   >
                     <Group gap="xs" wrap="nowrap">
                       <Text fw={500}>{column.label}</Text>
@@ -264,9 +269,9 @@ export function DataTable<T extends { id: string | number }>({
                     <Center py="xl">
                       {emptyState ? (
                         <EmptyState
-                          title={emptyState.title}
                           description={emptyState.description}
                           icon={emptyState.icon}
+                          title={emptyState.title}
                         />
                       ) : (
                         <Text c="dimmed">No data available</Text>
@@ -280,8 +285,8 @@ export function DataTable<T extends { id: string | number }>({
                     {selectable && (
                       <Table.Td>
                         <Checkbox
-                          checked={selectedRows.has(row.id)}
                           onChange={() => handleSelectRow(row.id)}
+                          checked={selectedRows.has(row.id)}
                         />
                       </Table.Td>
                     )}
@@ -296,7 +301,7 @@ export function DataTable<T extends { id: string | number }>({
                       <Table.Td>
                         <Menu position="bottom-end" withinPortal>
                           <Menu.Target>
-                            <ActionIcon variant="subtle" color="gray">
+                            <ActionIcon color="gray" variant="subtle">
                               <IconDots size={16} />
                             </ActionIcon>
                           </Menu.Target>
@@ -317,11 +322,11 @@ export function DataTable<T extends { id: string | number }>({
                                 Edit
                               </Menu.Item>
                             )}
-                            {actions.custom?.map((action, index) => (
+                            {actions.custom?.map((action) => (
                               <Menu.Item
-                                key={index}
-                                leftSection={action.icon}
+                                key={action.label}
                                 color={action.color}
+                                leftSection={action.icon}
                                 onClick={() => action.onClick(row)}
                               >
                                 {action.label}
@@ -349,14 +354,18 @@ export function DataTable<T extends { id: string | number }>({
             </Table.Tbody>
           </Table>
         </ScrollArea>
-        
+
         {pagination && filteredData.length > pageSize && (
-          <Group justify="center" p="md" style={{ borderTop: '1px solid var(--mantine-color-gray-2)' }}>
+          <Group
+            style={{ borderTop: '1px solid var(--mantine-color-gray-2)' }}
+            justify="center"
+            p="md"
+          >
             <Pagination
-              value={page}
               onChange={setPage}
               total={Math.ceil(filteredData.length / pageSize)}
               size="sm"
+              value={page}
             />
           </Group>
         )}

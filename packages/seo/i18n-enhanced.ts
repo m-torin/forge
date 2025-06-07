@@ -106,7 +106,7 @@ export class I18nSEOManager extends SEOManager {
   }
 
   // Generate hreflang tags for international SEO
-  generateHreflangTags(currentPath: string, currentLocale: string): Record<string, string> {
+  generateHreflangTags(currentPath: string, _currentLocale: string): Record<string, string> {
     const hreflangTags: Record<string, string> = {};
 
     // Add x-default for default locale

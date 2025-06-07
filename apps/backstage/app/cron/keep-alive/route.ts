@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 const adapter = createPrismaAdapter();
 
-export const GET = async (request: NextRequest) => {
+export const GET = async (_request: NextRequest) => {
   // No auth validation in demo mode
   await adapter.initialize();
   const database = await adapter.raw('client', {});

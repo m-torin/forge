@@ -107,19 +107,19 @@ export default function PIMOverviewPage() {
                 component={Link}
                 shadow="sm"
                 withBorder
-                padding="lg"
-                radius="md"
                 styles={{
                   root: {
-                    height: '100%',
-                    transition: 'all 0.2s ease',
-                    textDecoration: 'none',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
                       boxShadow: 'var(--mantine-shadow-md)',
+                      transform: 'translateY(-4px)',
                     },
+                    height: '100%',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s ease',
                   },
                 }}
+                padding="lg"
+                radius="md"
               >
                 <Stack style={{ height: '100%' }} gap="md">
                   <Group justify="space-between">

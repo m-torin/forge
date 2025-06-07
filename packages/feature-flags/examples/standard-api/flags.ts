@@ -4,21 +4,24 @@
  */
 import { flag } from '@vercel/flags/next';
 
+// Using with an adapter (e.g., PostHog)
+import { postHogServerAdapter as postHogAdapter } from '@repo/feature-flags/server/next';
+
 // Basic flag with all standard properties
 export const showSummerSale = flag<boolean>({
-  key: 'summer-sale',
   async decide() {
     // Your logic here - could check user, time, random percentage, etc.
     return false;
   },
-  origin: 'https://example.com/flags/summer-sale/',
-  description: 'Show Summer Holiday Sale Banner, 20% off',
   defaultValue: false,
+  description: 'Show Summer Holiday Sale Banner, 20% off',
+  key: 'summer-sale',
   options: [
     // Customize labels for boolean values
-    { value: false, label: 'Hide' },
-    { value: true, label: 'Show' },
+    { label: 'Hide', value: false },
+    { label: 'Show', value: true },
   ],
+  origin: 'https://example.com/flags/summer-sale/',
 });
 
 // Flag with evaluation context using identify
@@ -27,7 +30,11 @@ interface Entities {
 }
 
 export const premiumFeature = flag<boolean, Entities>({
-  key: 'premium-feature',
+  async decide({ entities }) {
+    // Use entities in decision logic
+    if (!entities?.user) return false;
+    return entities.user.plan === 'premium' || entities.user.plan === 'enterprise';
+  },
   identify({ cookies }) {
     // Extract user context from cookies
     const userId = cookies.get('user-id')?.value;
@@ -36,18 +43,13 @@ export const premiumFeature = flag<boolean, Entities>({
       user: userId ? { id: userId, plan: userPlan } : undefined,
     };
   },
-  async decide({ entities }) {
-    // Use entities in decision logic
-    if (!entities?.user) return false;
-    return entities.user.plan === 'premium' || entities.user.plan === 'enterprise';
-  },
   defaultValue: false,
   description: 'Enable premium features for paid users',
+  key: 'premium-feature',
 });
 
 // Multivariate flag with string options
 export const homepageVariant = flag<string>({
-  key: 'homepage-variant',
   async decide() {
     // Could use random selection, user cohorts, etc.
     const random = Math.random();
@@ -56,12 +58,13 @@ export const homepageVariant = flag<string>({
     return 'variant-b';
   },
   defaultValue: 'control',
-  options: [
-    { value: 'control', label: 'Control' },
-    { value: 'variant-a', label: 'Variant A - New Hero' },
-    { value: 'variant-b', label: 'Variant B - Video Background' },
-  ],
   description: 'Homepage A/B test variants',
+  key: 'homepage-variant',
+  options: [
+    { label: 'Control', value: 'control' },
+    { label: 'Variant A - New Hero', value: 'variant-a' },
+    { label: 'Variant B - Video Background', value: 'variant-b' },
+  ],
 });
 
 // Complex object flag
@@ -72,7 +75,6 @@ interface FeatureConfig {
 }
 
 export const featureConfig = flag<FeatureConfig>({
-  key: 'feature-config',
   async decide() {
     // Could fetch from database, API, etc.
     return {
@@ -87,18 +89,16 @@ export const featureConfig = flag<FeatureConfig>({
     regions: ['us-east'],
   },
   description: 'Complex feature configuration object',
+  key: 'feature-config',
 });
 
-// Using with an adapter (e.g., PostHog)
-import { postHogAdapter } from '@repo/feature-flags/server/next';
-
 export const adapterFlag = flag({
-  key: 'posthog-feature',
-  adapter: postHogAdapter.isFeatureEnabled(),
   // identify is passed to the adapter
   identify({ cookies }) {
     const userId = cookies.get('user-id')?.value;
     return { user: userId ? { id: userId } : undefined };
   },
+  adapter: postHogAdapter.isFeatureEnabled(),
   description: 'Feature flag powered by PostHog',
+  key: 'posthog-feature',
 });

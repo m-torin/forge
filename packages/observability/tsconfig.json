@@ -4,6 +4,6 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["src/**/*", "__tests__/**/*", "vitest.config.ts", "eslint.config.ts"],
+  "include": ["src/**/*", "__tests__/**/*", "vitest.config.ts", "eslint.config.ts", "keys.ts"],
   "exclude": ["node_modules", "dist"]
 }

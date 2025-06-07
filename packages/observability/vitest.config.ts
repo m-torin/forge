@@ -1,13 +1,14 @@
 import { defineConfig } from 'vitest/config';
 
-import baseConfig from '@repo/testing/config/node';
-
 export default defineConfig({
-  ...baseConfig,
   test: {
-    ...baseConfig.test,
     environment: 'node',
+    // Use jsdom for React component tests
+    environmentMatchGlobs: [
+      ['**/__tests__/hooks/**', 'jsdom'],
+      ['**/*.test.tsx', 'jsdom'],
+    ],
     globals: true,
-    setupFiles: [],
+    setupFiles: ['./src/__tests__/setup.ts'],
   },
 });

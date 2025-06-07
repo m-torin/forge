@@ -1,13 +1,13 @@
 import clsx from "clsx";
 
-import { getCollections } from "@repo/design-system/mantine-ciseco/data/data";
-import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
 import {
-  Logo,
   AvatarDropdown,
+  Logo,
   Navigation,
   SearchBtnPopover,
 } from "@repo/design-system/mantine-ciseco";
+import { getCollections } from "@repo/design-system/mantine-ciseco/data/data";
+import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
 
 import ContextualCartBtn from "./ContextualCartBtn";
 import ContextualHamburgerBtn from "./ContextualHamburgerBtn";

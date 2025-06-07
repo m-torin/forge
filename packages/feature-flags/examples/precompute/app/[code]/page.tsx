@@ -1,4 +1,4 @@
-import { marketingFlags, showSummerSale, showBanner } from '../../flags';
+import { marketingFlags, showBanner, showSummerSale } from '../../flags';
 
 type Params = Promise<{ code: string }>;
 

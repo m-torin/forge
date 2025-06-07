@@ -87,14 +87,14 @@ export class WorkflowWebSocketServer {
     // Close WebSocket server
     if (this.wss) {
       await new Promise<void>((resolve) => {
-        this.wss!.close(resolve);
+        this.wss!.close(() => resolve());
       });
     }
 
     // Close HTTP server
     if (this.server) {
       await new Promise<void>((resolve, reject) => {
-        this.server.close((err) => {
+        this.server.close((err?: Error) => {
           if (err) {
             reject(err);
           } else {

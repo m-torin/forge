@@ -41,7 +41,7 @@ export {
 // Next.js specific - additional exports
 export * from './server/flags';
 export { createFlagsDiscoveryEndpoint } from './discovery';
-export { verifyAccess } from '@vercel/flags/next';
+// export { verifyAccess } from '@vercel/flags/next';
 
 // Next.js specific types
 export type { ReadonlyHeaders, ReadonlyRequestCookies } from '@vercel/flags';

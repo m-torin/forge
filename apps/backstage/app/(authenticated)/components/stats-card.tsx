@@ -1,52 +1,45 @@
 'use client';
 
-import { Paper, Stack, Group, Text, ThemeIcon, RingProgress, Badge, Skeleton } from '@mantine/core';
-import { IconTrendingUp, IconTrendingDown } from '@tabler/icons-react';
-import type { TablerIconsProps } from '@tabler/icons-react';
+import { Badge, Group, Paper, RingProgress, Skeleton, Stack, Text, ThemeIcon } from '@mantine/core';
+import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
 
 interface StatsCardProps {
-  title: string;
-  value: string | number;
-  icon: React.FC<TablerIconsProps>;
-  color?: string;
   change?: {
     value: number;
     label?: string;
   };
+  color?: string;
+  icon: React.FC<{ size?: string | number; stroke?: string | number }>;
+  loading?: boolean;
+  onClick?: () => void;
   progress?: {
     value: number;
     label?: string;
   };
-  loading?: boolean;
-  onClick?: () => void;
+  title: string;
+  value: string | number;
 }
 
 export function StatsCard({
-  title,
-  value,
-  icon: Icon,
-  color = 'blue',
   change,
-  progress,
+  color = 'blue',
+  icon: Icon,
   loading = false,
   onClick,
+  progress,
+  title,
+  value,
 }: StatsCardProps) {
   if (loading) {
     return (
-      <Paper
-        shadow="xs"
-        p="md"
-        radius="md"
-        withBorder
-        style={{ height: '100%' }}
-      >
+      <Paper shadow="xs" withBorder style={{ height: '100%' }} p="md" radius="md">
         <Stack gap="xs">
           <Group justify="space-between">
-            <Skeleton height={40} width={40} radius="md" />
-            <Skeleton height={20} width={60} />
+            <Skeleton width={40} height={40} radius="md" />
+            <Skeleton width={60} height={20} />
           </Group>
-          <Skeleton height={16} width="60%" />
-          <Skeleton height={24} width="40%" />
+          <Skeleton width="60%" height={16} />
+          <Skeleton width="40%" height={24} />
         </Stack>
       </Paper>
     );
@@ -54,74 +47,72 @@ export function StatsCard({
 
   return (
     <Paper
+      onClick={onClick}
       shadow="xs"
-      p="md"
-      radius="md"
       withBorder
       style={{
-        height: '100%',
         cursor: onClick ? 'pointer' : 'default',
+        height: '100%',
         transition: 'all 0.2s ease',
       }}
       styles={{
-        root: onClick ? {
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: 'var(--mantine-shadow-sm)',
-          },
-        } : undefined,
+        root: onClick
+          ? {
+              '&:hover': {
+                boxShadow: 'var(--mantine-shadow-sm)',
+                transform: 'translateY(-2px)',
+              },
+            }
+          : undefined,
       }}
-      onClick={onClick}
+      p="md"
+      radius="md"
     >
-      <Stack gap="xs" style={{ height: '100%' }}>
-        <Group justify="space-between" align="flex-start">
-          <ThemeIcon size="lg" radius="md" variant="light" color={color}>
+      <Stack style={{ height: '100%' }} gap="xs">
+        <Group align="flex-start" justify="space-between">
+          <ThemeIcon color={color} radius="md" size="lg" variant="light">
             <Icon size={24} />
           </ThemeIcon>
-          
+
           {progress && (
             <RingProgress
-              size={40}
-              thickness={4}
-              sections={[{ value: progress.value, color }]}
+              sections={[{ color, value: progress.value }]}
               label={
-                <Text size="xs" ta="center" fw={700}>
+                <Text fw={700} size="xs" ta="center">
                   {progress.value}%
                 </Text>
               }
+              size={40}
+              thickness={4}
             />
           )}
-          
+
           {change && !progress && (
             <Badge
-              size="sm"
-              variant="light"
               color={change.value >= 0 ? 'green' : 'red'}
               leftSection={
-                change.value >= 0 ? (
-                  <IconTrendingUp size={12} />
-                ) : (
-                  <IconTrendingDown size={12} />
-                )
+                change.value >= 0 ? <IconTrendingUp size={12} /> : <IconTrendingDown size={12} />
               }
+              size="sm"
+              variant="light"
             >
-              {change.value >= 0 ? '+' : ''}{change.value}%
-              {change.label && ` ${change.label}`}
+              {change.value >= 0 ? '+' : ''}
+              {change.value}%{change.label && ` ${change.label}`}
             </Badge>
           )}
         </Group>
-        
+
         <div style={{ flex: 1 }}>
-          <Text size="sm" c="dimmed" fw={500}>
+          <Text c="dimmed" fw={500} size="sm">
             {title}
           </Text>
-          <Text size="xl" fw={700} mt={4}>
+          <Text fw={700} mt={4} size="xl">
             {value}
           </Text>
         </div>
-        
+
         {progress?.label && (
-          <Text size="xs" c="dimmed">
+          <Text c="dimmed" size="xs">
             {progress.label}
           </Text>
         )}

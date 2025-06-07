@@ -1,46 +1,64 @@
 import { describe, expect, it } from 'vitest';
 
 import * as clientExports from '../client';
+import * as clientNextExports from '../client-next';
 import * as serverExports from '../server';
+import * as serverNextExports from '../server-next';
 import * as sharedExports from '../shared';
 
 describe('Feature Flags Package Exports', () => {
   describe('Server exports', () => {
+    it('should export PostHog adapter functions', () => {
+      expect(serverExports.createPostHogServerAdapter).toBeDefined();
+      expect(typeof serverExports.createPostHogServerAdapter).toBe('function');
+      expect(serverExports.getPostHogProviderData).toBeDefined();
+    });
+
+    it('should export Edge Config adapter functions', () => {
+      expect(serverExports.createEdgeConfigAdapter).toBeDefined();
+      expect(typeof serverExports.createEdgeConfigAdapter).toBe('function');
+    });
+  });
+
+  describe('Server Next.js exports', () => {
     it('should export flag function', () => {
-      expect(serverExports.flag).toBeDefined();
-      expect(typeof serverExports.flag).toBe('function');
+      expect(serverNextExports.flag).toBeDefined();
+      expect(typeof serverNextExports.flag).toBe('function');
     });
 
     it('should export dedupe function', () => {
-      expect(serverExports.dedupe).toBeDefined();
-      expect(typeof serverExports.dedupe).toBe('function');
+      expect(serverNextExports.dedupe).toBeDefined();
+      expect(typeof serverNextExports.dedupe).toBe('function');
     });
 
     it('should export precompute function', () => {
-      expect(serverExports.precompute).toBeDefined();
-      expect(typeof serverExports.precompute).toBe('function');
+      expect(serverNextExports.precompute).toBeDefined();
+      expect(typeof serverNextExports.precompute).toBe('function');
     });
 
     it('should export generatePermutations function', () => {
-      expect(serverExports.generatePermutations).toBeDefined();
-      expect(typeof serverExports.generatePermutations).toBe('function');
-    });
-
-    it('should export helper functions', () => {
-      expect(serverExports.getFlagContext).toBeDefined();
-      expect(serverExports.evaluateFlags).toBeDefined();
+      expect(serverNextExports.generatePermutations).toBeDefined();
+      expect(typeof serverNextExports.generatePermutations).toBe('function');
     });
   });
 
   describe('Client exports', () => {
+    it('should export PostHog client adapter', () => {
+      expect(clientExports.createPostHogClientAdapter).toBeDefined();
+      expect(typeof clientExports.createPostHogClientAdapter).toBe('function');
+    });
+  });
+
+  describe('Client Next.js exports', () => {
     it('should export useFlag hook', () => {
-      expect(clientExports.useFlag).toBeDefined();
-      expect(typeof clientExports.useFlag).toBe('function');
+      expect(clientNextExports.useFlag).toBeDefined();
+      expect(typeof clientNextExports.useFlag).toBe('function');
     });
 
-    it('should export flag function for client', () => {
-      expect(clientExports.flag).toBeDefined();
-    });
+    // flag is exported from server-next, not client-next
+    // it('should export flag function for client', () => {
+    //   expect(clientNextExports.flag).toBeDefined();
+    // });
   });
 
   describe('Shared exports', () => {

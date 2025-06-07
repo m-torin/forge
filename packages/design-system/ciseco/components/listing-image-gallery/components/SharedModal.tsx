@@ -129,7 +129,11 @@ export default function SharedModal({
               <div className="absolute top-0 right-0 flex items-center gap-2 p-3 text-white">
                 {navigation ? (
                   <a
-                    href={currentImage?.url || '#'}
+                    href={
+                      typeof currentImage?.url === 'string'
+                        ? currentImage.url
+                        : currentImage?.url?.src || '#'
+                    }
                     className="rounded-full bg-black/50 p-2 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white"
                     rel="noreferrer"
                     target="_blank"

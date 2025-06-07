@@ -763,7 +763,7 @@ export async function getCollections() {
     {
       id: 'gid://8',
       title: 'Explore new arrivals',
-      handle: 'explore-new-arrivals',
+      handle: 'explore-arrivals',
       sortDescription: 'Shop the latest <br /> from top brands',
       description:
         'Excoolent new arrivals for every occasion, from casual to formal. Explore our collection of trendy jackets that elevate your outfit.',

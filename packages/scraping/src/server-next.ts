@@ -4,7 +4,7 @@
  *
  * @example
  * ```typescript
- * import { createServerScraping, handleScrapeRequest } from '@repo/scraping-new/server/next';
+ * import { createServerScraping, handleScrapeRequest } from '@repo/scraping/server/next';
  *
  * // In API routes
  * export const POST = handleScrapeRequest;

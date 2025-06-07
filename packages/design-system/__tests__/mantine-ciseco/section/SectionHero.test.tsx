@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '../test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, mockScrollTo } from '../test-utils';
 import { SectionHero } from '../../../mantine-ciseco';
 
 describe('SectionHero', () => {
@@ -8,6 +8,10 @@ describe('SectionHero', () => {
     subheading: 'Discover amazing products',
     backgroundImage: '/hero-bg.jpg',
   };
+
+  beforeEach(() => {
+    mockScrollTo();
+  });
 
   it('renders hero section with heading and subheading', () => {
     render(<SectionHero {...defaultProps} />);

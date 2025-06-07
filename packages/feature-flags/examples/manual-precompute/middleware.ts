@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import { homeFlag } from './flags';
 
 export const config = { matcher: ['/'] };

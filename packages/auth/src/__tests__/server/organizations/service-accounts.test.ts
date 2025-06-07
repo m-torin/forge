@@ -1,0 +1,499 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  createServiceAccount,
+  getServiceAccount,
+  listServiceAccounts,
+  regenerateServiceAccountToken,
+  revokeServiceAccount,
+  updateServiceAccount,
+} from '../../../server/organizations/service-accounts';
+
+import type { ServiceAuthResult } from '../../../shared/api-keys/types';
+
+// Mock database
+const mockApiKeyCreate = vi.fn();
+const mockApiKeyFindMany = vi.fn();
+const mockApiKeyFindFirst = vi.fn();
+const mockApiKeyUpdate = vi.fn();
+const mockApiKeyDelete = vi.fn();
+
+vi.mock('@repo/database/prisma', () => ({
+  prisma: {
+    apiKey: {
+      create: mockApiKeyCreate,
+      delete: mockApiKeyDelete,
+      findFirst: mockApiKeyFindFirst,
+      findMany: mockApiKeyFindMany,
+      update: mockApiKeyUpdate,
+    },
+  },
+}));
+
+// Mock headers
+vi.mock('next/headers', () => ({
+  headers: vi.fn().mockResolvedValue({}),
+}));
+
+// Mock auth
+const mockGetSession = vi.fn();
+vi.mock('../../auth', () => ({
+  auth: {
+    api: {
+      getSession: mockGetSession,
+    },
+  },
+}));
+
+// Mock permissions
+const mockCheckPermission = vi.fn();
+vi.mock('../permissions', () => ({
+  checkPermission: mockCheckPermission,
+}));
+
+// Mock service auth
+const mockCreateServiceAuth = vi.fn();
+vi.mock('../../api-keys/service-auth', () => ({
+  createServiceAuth: mockCreateServiceAuth,
+}));
+
+describe('Service Accounts', () => {
+  const createMockSession = (overrides = {}) => ({
+    session: {
+      id: 'session-123',
+      activeOrganizationId: 'org-123',
+      userId: 'user-123',
+      ...overrides,
+    },
+    user: {
+      id: 'user-123',
+      email: 'test@example.com',
+    },
+  });
+
+  const createMockServiceAuthResult = (overrides = {}): ServiceAuthResult => ({
+    expiresAt: new Date('2024-01-01'),
+    success: true,
+    token: 'service-token-123',
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCheckPermission.mockResolvedValue(true);
+  });
+
+  describe('createServiceAccount', () => {
+    it('should create service account successfully', async () => {
+      const mockSession = createMockSession();
+      const mockAuthResult = createMockServiceAuthResult();
+      const mockApiKey = {
+        id: 'apikey_123',
+        name: 'Test Service Account',
+        createdAt: new Date(),
+      };
+
+      mockGetSession.mockResolvedValue(mockSession);
+      mockCreateServiceAuth.mockResolvedValue(mockAuthResult);
+      mockApiKeyCreate.mockResolvedValue(mockApiKey);
+
+      const result = await createServiceAccount({
+        name: 'Test Service Account',
+        description: 'Test description',
+        expiresIn: '30d',
+        organizationId: 'org-123',
+        permissions: ['read:data', 'write:data'],
+      });
+
+      expect(result).toEqual({
+        ...mockAuthResult,
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(mockCheckPermission).toHaveBeenCalledWith('api-keys:create', 'org-123');
+
+      expect(mockCreateServiceAuth).toHaveBeenCalledWith({
+        expiresIn: '30d',
+        permissions: ['read:data', 'write:data'],
+        serviceId: 'org-123-Test Service Account',
+      });
+
+      expect(mockApiKeyCreate).toHaveBeenCalledWith({
+        data: {
+          id: expect.stringMatching(/^apikey_/),
+          name: 'Test Service Account',
+          createdAt: expect.any(Date),
+          expiresAt: new Date('2024-01-01'),
+          key: 'service-token-123',
+          metadata: {
+            type: 'service-account',
+            description: 'Test description',
+            serviceId: 'org-123-Test Service Account',
+          },
+          organizationId: 'org-123',
+          permissions: JSON.stringify(['read:data', 'write:data']),
+          updatedAt: expect.any(Date),
+          userId: 'user-123',
+        },
+      });
+    });
+
+    it('should require authentication', async () => {
+      mockGetSession.mockResolvedValue(null);
+
+      const result = await createServiceAccount({
+        name: 'Test',
+        organizationId: 'org-123',
+        permissions: [],
+      });
+
+      expect(result).toEqual({
+        error: 'Authentication required',
+        success: false,
+      });
+    });
+
+    it('should check permissions', async () => {
+      const mockSession = createMockSession();
+
+      mockGetSession.mockResolvedValue(mockSession);
+      mockCheckPermission.mockResolvedValue(false);
+
+      const result = await createServiceAccount({
+        name: 'Test',
+        organizationId: 'org-123',
+        permissions: [],
+      });
+
+      expect(result).toEqual({
+        error: 'Insufficient permissions to create service accounts',
+        success: false,
+      });
+    });
+
+    it('should handle service auth failure', async () => {
+      const mockSession = createMockSession();
+
+      mockGetSession.mockResolvedValue(mockSession);
+      mockCreateServiceAuth.mockResolvedValue({
+        error: 'Failed to create token',
+        success: false,
+      });
+
+      const result = await createServiceAccount({
+        name: 'Test',
+        organizationId: 'org-123',
+        permissions: [],
+      });
+
+      expect(result).toEqual({
+        error: 'Failed to create token',
+        success: false,
+      });
+    });
+  });
+
+  describe('listServiceAccounts', () => {
+    it('should list service accounts successfully', async () => {
+      const mockApiKeys = [
+        {
+          id: 'apikey_1',
+          name: 'Service Account 1',
+          createdAt: new Date('2023-01-01'),
+          expiresAt: new Date('2024-01-01'),
+          metadata: {
+            type: 'service-account',
+            description: 'Description 1',
+          },
+          permissions: JSON.stringify(['read:data']),
+        },
+        {
+          id: 'apikey_2',
+          name: 'Service Account 2',
+          createdAt: new Date('2023-01-02'),
+          expiresAt: null,
+          metadata: {
+            type: 'service-account',
+          },
+          permissions: JSON.stringify(['write:data']),
+        },
+      ];
+
+      mockApiKeyFindMany.mockResolvedValue(mockApiKeys);
+
+      const result = await listServiceAccounts('org-123');
+
+      expect(result).toEqual({
+        serviceAccounts: [
+          {
+            id: 'apikey_1',
+            name: 'Service Account 1',
+            createdAt: new Date('2023-01-01'),
+            description: 'Description 1',
+            expiresAt: new Date('2024-01-01'),
+            isActive: true,
+            permissions: ['read:data'],
+          },
+          {
+            id: 'apikey_2',
+            name: 'Service Account 2',
+            createdAt: new Date('2023-01-02'),
+            description: undefined,
+            expiresAt: null,
+            isActive: true,
+            permissions: ['write:data'],
+          },
+        ],
+        success: true,
+      });
+
+      expect(mockApiKeyFindMany).toHaveBeenCalledWith({
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where: {
+          metadata: {
+            equals: 'service-account',
+            path: ['type'],
+          },
+          organizationId: 'org-123',
+        },
+      });
+    });
+
+    it('should check permissions', async () => {
+      mockCheckPermission.mockResolvedValue(false);
+
+      const result = await listServiceAccounts('org-123');
+
+      expect(result).toEqual({
+        error: 'Insufficient permissions to list service accounts',
+        success: false,
+      });
+    });
+
+    it('should identify expired service accounts', async () => {
+      const mockApiKeys = [
+        {
+          id: 'apikey_1',
+          name: 'Expired Account',
+          createdAt: new Date('2023-01-01'),
+          expiresAt: new Date('2020-01-01'), // Expired
+          metadata: { type: 'service-account' },
+          permissions: null,
+        },
+      ];
+
+      mockApiKeyFindMany.mockResolvedValue(mockApiKeys);
+
+      const result = await listServiceAccounts('org-123');
+
+      expect(result.serviceAccounts?.[0].isActive).toBe(false);
+    });
+  });
+
+  describe('updateServiceAccount', () => {
+    it('should update service account successfully', async () => {
+      mockApiKeyUpdate.mockResolvedValue({});
+
+      const result = await updateServiceAccount({
+        name: 'Updated Name',
+        description: 'Updated description',
+        organizationId: 'org-123',
+        permissions: ['read:all'],
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual({ success: true });
+
+      expect(mockApiKeyUpdate).toHaveBeenCalledWith({
+        data: {
+          name: 'Updated Name',
+          metadata: {
+            type: 'service-account',
+            description: 'Updated description',
+          },
+          permissions: JSON.stringify(['read:all']),
+        },
+        where: {
+          id: 'apikey_123',
+          organizationId: 'org-123',
+        },
+      });
+    });
+
+    it('should allow partial updates', async () => {
+      mockApiKeyUpdate.mockResolvedValue({});
+
+      await updateServiceAccount({
+        name: 'New Name Only',
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(mockApiKeyUpdate).toHaveBeenCalledWith({
+        data: {
+          name: 'New Name Only',
+        },
+        where: {
+          id: 'apikey_123',
+          organizationId: 'org-123',
+        },
+      });
+    });
+
+    it('should check permissions', async () => {
+      mockCheckPermission.mockResolvedValue(false);
+
+      const result = await updateServiceAccount({
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual({
+        error: 'Insufficient permissions to update service accounts',
+        success: false,
+      });
+    });
+  });
+
+  describe('revokeServiceAccount', () => {
+    it('should revoke service account successfully', async () => {
+      mockApiKeyDelete.mockResolvedValue({});
+
+      const result = await revokeServiceAccount({
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual({ success: true });
+
+      expect(mockApiKeyDelete).toHaveBeenCalledWith({
+        where: {
+          id: 'apikey_123',
+          organizationId: 'org-123',
+        },
+      });
+    });
+
+    it('should check permissions', async () => {
+      mockCheckPermission.mockResolvedValue(false);
+
+      const result = await revokeServiceAccount({
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual({
+        error: 'Insufficient permissions to revoke service accounts',
+        success: false,
+      });
+    });
+  });
+
+  describe('getServiceAccount', () => {
+    it('should get service account details successfully', async () => {
+      const mockApiKey = {
+        id: 'apikey_123',
+        name: 'Test Service Account',
+        createdAt: new Date('2023-01-01'),
+        expiresAt: new Date('2024-01-01'),
+        lastUsedAt: new Date('2023-06-01'),
+        metadata: {
+          type: 'service-account',
+          description: 'Test description',
+        },
+        permissions: JSON.stringify(['read:data']),
+      };
+
+      mockApiKeyFindFirst.mockResolvedValue(mockApiKey);
+
+      const result = await getServiceAccount({
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual({
+        serviceAccount: {
+          id: 'apikey_123',
+          name: 'Test Service Account',
+          createdAt: new Date('2023-01-01'),
+          description: 'Test description',
+          expiresAt: new Date('2024-01-01'),
+          isActive: true,
+          lastUsedAt: new Date('2023-06-01'),
+          permissions: ['read:data'],
+        },
+        success: true,
+      });
+    });
+
+    it('should return error when not found', async () => {
+      mockApiKeyFindFirst.mockResolvedValue(null);
+
+      const result = await getServiceAccount({
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual({
+        error: 'Service account not found',
+        success: false,
+      });
+    });
+  });
+
+  describe('regenerateServiceAccountToken', () => {
+    it('should regenerate token successfully', async () => {
+      const mockApiKey = {
+        id: 'apikey_123',
+        name: 'Test Service Account',
+        metadata: {
+          type: 'service-account',
+          serviceId: 'org-123-test',
+        },
+        permissions: JSON.stringify(['read:data']),
+      };
+      const mockAuthResult = createMockServiceAuthResult();
+
+      mockApiKeyFindFirst.mockResolvedValue(mockApiKey);
+      mockCreateServiceAuth.mockResolvedValue(mockAuthResult);
+      mockApiKeyUpdate.mockResolvedValue({});
+
+      const result = await regenerateServiceAccountToken({
+        expiresIn: '60d',
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual(mockAuthResult);
+
+      expect(mockCreateServiceAuth).toHaveBeenCalledWith({
+        expiresIn: '60d',
+        permissions: ['read:data'],
+        serviceId: 'org-123-test',
+      });
+
+      expect(mockApiKeyUpdate).toHaveBeenCalledWith({
+        data: {
+          expiresAt: new Date('2024-01-01'),
+        },
+        where: { id: 'apikey_123' },
+      });
+    });
+
+    it('should return error when not found', async () => {
+      mockApiKeyFindFirst.mockResolvedValue(null);
+
+      const result = await regenerateServiceAccountToken({
+        organizationId: 'org-123',
+        serviceAccountId: 'apikey_123',
+      });
+
+      expect(result).toEqual({
+        error: 'Service account not found',
+        success: false,
+      });
+    });
+  });
+});

@@ -203,7 +203,7 @@ export function AppLayoutControls({
               Close All
             </Button>
             <Button
-              onClick={toggleAside}
+              onClick={_toggleAside}
               disabled={!asideEnabled}
               size="xs"
               variant="light"

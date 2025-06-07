@@ -102,6 +102,18 @@ const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
           transitionProps: { duration: 200, transition: 'pop' },
         }}
         onChange={handleChange}
+        renderOption={
+          showSummary && multiple
+            ? ({ option }) => (
+                <div className="flex items-center gap-1">
+                  <span>{option.label}</span>
+                  {showCounts && option.count && (
+                    <span className="text-neutral-500">({option.count})</span>
+                  )}
+                </div>
+              )
+            : undefined
+        }
         rightSection={<CheckIcon className="h-4 w-4" />}
         classNames={{
           dropdown:
@@ -122,15 +134,6 @@ const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
         multiple={multiple}
         searchable={searchable}
         value={multiple ? undefined : (selected as string)}
-        {...(showSummary && multiple
-          ? {
-              valueComponent: ({ value }: { value: string[] }) => (
-                <div className="flex items-center gap-1">
-                  <span>{value.length} selected</span>
-                </div>
-              ),
-            }
-          : {})}
       />
     </div>
   );

@@ -93,7 +93,7 @@ export default function OrganizationDetailPage() {
 
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, _setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [editedOrg, setEditedOrg] = useState({
@@ -188,12 +188,12 @@ export default function OrganizationDetailPage() {
     } catch (error) {
       console.error('Failed to load invitations:', error);
     }
-  }, [organizationId]);
+  }, []);
 
   const loadTeams = useCallback(async () => {
     // TODO: Implement team listing functionality
     console.log('Team listing not implemented yet');
-  }, [organizationId]);
+  }, []);
 
   // Only one useEffect after all useCallbacks are defined
   useEffect(() => {

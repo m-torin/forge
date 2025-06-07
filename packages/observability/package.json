@@ -11,8 +11,10 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@t3-oss/env-nextjs": "catalog:",
     "react": "catalog:",
-    "next": "catalog:"
+    "next": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "@sentry/node": "^8.0.0",
@@ -84,6 +86,7 @@
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
     "./server/next": "./src/server-next.ts",
+    "./next/config-wrappers": "./src/next/config-wrappers.ts",
     "./error": "./src/shared/utils/error.ts"
   }
 }

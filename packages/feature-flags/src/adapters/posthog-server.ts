@@ -1,4 +1,5 @@
 import { PostHog } from 'posthog-node';
+
 import type { Adapter } from '@vercel/flags';
 
 export interface PostHogServerAdapterOptions {
@@ -43,9 +44,7 @@ export function createPostHogServerAdapter(
   return {
     isFeatureEnabled<E = any>(): Adapter<boolean, E> {
       return {
-        origin: { provider: 'posthog' },
-        config: { reportValue: true },
-        decide: async ({ key, entities }) => {
+        decide: async ({ entities, key }) => {
           if (typeof window !== 'undefined') {
             throw new Error('PostHog server adapter only works in Node.js/server environments');
           }
@@ -61,14 +60,14 @@ export function createPostHogServerAdapter(
             return false;
           }
         },
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
       };
     },
 
     featureFlagValue<E = any>(): Adapter<boolean | string, E> {
       return {
-        origin: { provider: 'posthog' },
-        config: { reportValue: true },
-        decide: async ({ key, entities }) => {
+        decide: async ({ entities, key }) => {
           if (typeof window !== 'undefined') {
             throw new Error('PostHog server adapter only works in Node.js/server environments');
           }
@@ -84,14 +83,14 @@ export function createPostHogServerAdapter(
             return false;
           }
         },
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
       };
     },
 
     featureFlagPayload<T = any, E = any>(transform?: (value: any) => T): Adapter<T, E> {
       return {
-        origin: { provider: 'posthog' },
-        config: { reportValue: true },
-        decide: async ({ key, entities }) => {
+        decide: async ({ entities, key }) => {
           if (typeof window !== 'undefined') {
             throw new Error('PostHog server adapter only works in Node.js/server environments');
           }
@@ -111,6 +110,8 @@ export function createPostHogServerAdapter(
             return defaultPayload;
           }
         },
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
       };
     },
   };

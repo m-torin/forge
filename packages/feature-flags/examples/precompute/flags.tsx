@@ -1,13 +1,13 @@
 import { flag } from '@vercel/flags/next';
 
 export const showSummerSale = flag({
-  key: 'summer-sale',
   decide: () => false,
+  key: 'summer-sale',
 });
 
 export const showBanner = flag({
-  key: 'banner',
   decide: () => false,
+  key: 'banner',
 });
 
 // a group of feature flags to be precomputed

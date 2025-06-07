@@ -17,5 +17,5 @@
     "declarationMap": false
   },
   "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"],
-  "exclude": ["node_modules", "gluestack/**/*"]
+  "exclude": ["node_modules", "gluestack/**/*", "**/*.test.tsx", "**/*.test.ts", "__tests__/**/*"]
 }

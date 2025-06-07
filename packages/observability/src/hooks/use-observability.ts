@@ -148,8 +148,59 @@ export function useObservability() {
     [manager],
   );
 
+  // Direct access methods for compatibility with tests
+  const log = useCallback(
+    (level: string, message: string, metadata?: any) => {
+      return manager?.log(level, message, metadata);
+    },
+    [manager],
+  );
+
+  const captureException = useCallback(
+    (error: Error, context?: ObsContext) => {
+      return manager?.captureException(error, context);
+    },
+    [manager],
+  );
+
+  const identify = useCallback(
+    (userId: string, traits?: any) => {
+      if (!manager) return;
+      manager.setUser({ id: userId, ...traits });
+    },
+    [manager],
+  );
+
+  const setContext = useCallback(
+    (context: Record<string, any>) => {
+      if (!manager) return;
+      for (const [key, value] of Object.entries(context)) {
+        manager.setContext(key, value);
+      }
+    },
+    [manager],
+  );
+
+  const debug = useCallback(
+    (message: string, metadata?: any) => {
+      return log('debug', message, metadata);
+    },
+    [log],
+  );
+
+  // Throw error if used outside provider
+  if (manager === null) {
+    throw new Error('useObservability must be used within an ObservabilityProvider');
+  }
+
   return {
+    identify,
+    captureException,
+    debug,
+    // Direct manager method access
+    log,
     manager, // Expose manager for direct access
+    setContext,
     trackError,
     trackEvent,
     trackPerformance,

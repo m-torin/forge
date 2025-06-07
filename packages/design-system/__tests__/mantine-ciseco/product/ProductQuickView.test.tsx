@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '../test-utils';
+import { render, screen, fireEvent, waitFor, act } from '../test-utils';
 import ProductQuickView from '../../../mantine-ciseco/components/ProductQuickView';
 import { mockProduct } from '../test-utils';
 
@@ -15,31 +15,46 @@ describe('ProductQuickView', () => {
     mockOnViewDetails.mockClear();
   });
 
-  it('renders quick view modal when open', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('renders quick view modal when open', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(defaultProduct.name)).toBeInTheDocument();
   });
 
-  it('does not render when closed', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen={false} onClose={mockOnClose} />);
+  it('does not render when closed', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen={false} onClose={mockOnClose} />);
+    });
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('calls onClose when close button is clicked', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('calls onClose when close button is clicked', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     const closeButton = screen.getByLabelText('Close');
-    fireEvent.click(closeButton);
+
+    await act(async () => {
+      fireEvent.click(closeButton);
+    });
+
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  it('calls onClose when escape key is pressed', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('calls onClose when escape key is pressed', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
-    fireEvent.keyDown(document, { key: 'Escape' });
+    await act(async () => {
+      fireEvent.keyDown(document, { key: 'Escape' });
+    });
+
     expect(mockOnClose).toHaveBeenCalled();
   });
 

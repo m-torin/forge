@@ -1,7 +1,10 @@
 import { type ExecutionContext, executionContextManager } from '@/lib/execution/execution-context';
 import { stepFactory } from '@/lib/factories/step-factory';
 import { registerBuiltInTemplates } from '@/lib/factories/step-templates';
-import { registerBuiltInWorkflowTemplates, workflowFactory } from '@/lib/factories/workflow-factory';
+import {
+  registerBuiltInWorkflowTemplates,
+  workflowFactory,
+} from '@/lib/factories/workflow-factory';
 import { performanceMonitor } from '@/lib/monitoring/performance-monitor';
 import { providerManager, type ProviderType } from '@/lib/providers/provider-manager';
 import { wsServer } from '@/lib/realtime/websocket-server';
@@ -10,7 +13,12 @@ import { RetryManager } from '@/lib/reliability/retry-manager';
 import { builtInSteps } from '@/lib/steps/built-in-steps';
 import { stepRegistry } from '@/lib/steps/step-registry';
 import { memoryStore } from '@/lib/storage/memory-store';
-import { type WorkflowDefinition, type WorkflowExecution, type WorkflowStatus, type WorkflowTrigger } from '@/types';
+import {
+  type WorkflowDefinition,
+  type WorkflowExecution,
+  type WorkflowStatus,
+  type WorkflowTrigger,
+} from '@/types';
 
 import { workflowRegistry } from './registry';
 
@@ -54,7 +62,7 @@ export class WorkflowService {
 
       // Register step templates
       registerBuiltInTemplates();
-      
+
       // Register workflow templates
       registerBuiltInWorkflowTemplates();
 
@@ -68,7 +76,7 @@ export class WorkflowService {
         bulkhead: {
           maxConcurrent: 10,
           maxWaiting: 50,
-          timeout: 180000 // 3 minutes queue timeout
+          timeout: 180000, // 3 minutes queue timeout
         },
         circuitBreaker: {
           failureThreshold: 5,
@@ -76,20 +84,20 @@ export class WorkflowService {
           monitoringPeriod: 300000,
           resetTimeout: 60000,
           successThreshold: 2,
-          timeout: 120000 // 2 minutes for workflows
+          timeout: 120000, // 2 minutes for workflows
         },
         healthCheck: {
           enabled: true,
-          interval: 60000
+          interval: 60000,
         },
         retry: {
           backoffMultiplier: 2,
           baseDelay: 2000,
           jitter: true,
           maxAttempts: 3,
-          maxDelay: 30000
+          maxDelay: 30000,
         },
-        timeout: 300000 // 5 minutes overall timeout
+        timeout: 300000, // 5 minutes overall timeout
       });
 
       console.log('Reliability patterns initialized');
@@ -107,7 +115,7 @@ export class WorkflowService {
               context,
               stepId,
               stepMetrics.stepDuration || 0,
-              result && !result.error
+              result && !result.error,
             );
           }
         },
@@ -122,9 +130,9 @@ export class WorkflowService {
           context.metadata.errorDetails = {
             message: error.message,
             stack: error.stack,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           };
-        }
+        },
       });
 
       console.log('Workflow service fully initialized');
@@ -172,14 +180,14 @@ export class WorkflowService {
         ...options.metadata,
         provider: options.provider,
         trigger,
-        workflowVersion: workflow.version
+        workflowVersion: workflow.version,
       },
       organizationId: options.organizationId,
       priority: options.priority,
       retries: options.retries || workflow.retries,
       tags: options.tags,
       timeout: options.timeout || workflow.timeout,
-      userId: options.userId
+      userId: options.userId,
     });
 
     try {
@@ -189,26 +197,27 @@ export class WorkflowService {
       // Use provider manager for distributed execution with reliability patterns
       const result = await reliabilityManager.execute(
         'workflow-execution',
-        () => providerManager.executeWorkflow(workflowId, input, {
-          provider: options.provider,
-          delay: options.delay,
-          metadata: {
-            ...options.metadata,
-            executionId: context.executionId
-          },
-          priority: options.priority,
-          retries: options.retries || workflow.retries,
-          tags: options.tags,
-          timeout: options.timeout || workflow.timeout,
-        }),
+        () =>
+          providerManager.executeWorkflow(workflowId, input, {
+            provider: options.provider,
+            delay: options.delay,
+            metadata: {
+              ...options.metadata,
+              executionId: context.executionId,
+            },
+            priority: options.priority,
+            retries: options.retries || workflow.retries,
+            tags: options.tags,
+            timeout: options.timeout || workflow.timeout,
+          }),
         {
           context: {
             executionId: context.executionId,
             trigger: options.metadata?.trigger,
-            workflowId
+            workflowId,
           },
-          timeout: options.timeout || workflow.timeout
-        }
+          timeout: options.timeout || workflow.timeout,
+        },
       );
 
       // Update context with provider result
@@ -216,25 +225,27 @@ export class WorkflowService {
         metadata: {
           ...context.metadata,
           providerId: result.provider,
-          messageId: result.messageId
-        }
+          messageId: result.messageId,
+        },
       });
 
-      console.log(`Workflow ${workflowId} queued for execution: ${result.executionId} (provider: ${result.provider})`);
+      console.log(
+        `Workflow ${workflowId} queued for execution: ${result.executionId} (provider: ${result.provider})`,
+      );
 
       return {
         context,
         executionId: result.executionId,
-        status: 'pending'
+        status: 'pending',
       };
     } catch (error) {
       // Track execution failure
       await executionContextManager.finishExecution(
-        context.executionId, 
-        undefined, 
-        error instanceof Error ? error : new Error('Unknown error')
+        context.executionId,
+        undefined,
+        error instanceof Error ? error : new Error('Unknown error'),
       );
-      
+
       console.error(`Failed to execute workflow ${workflowId}:`, error);
       throw error;
     }
@@ -255,14 +266,14 @@ export class WorkflowService {
       metadata: {
         ...options.metadata,
         trigger: 'sync',
-        workflowVersion: workflow.version
+        workflowVersion: workflow.version,
       },
       organizationId: options.organizationId,
       priority: options.priority,
       retries: options.retries || workflow.retries,
       tags: options.tags,
       timeout: options.timeout || workflow.timeout,
-      userId: options.userId
+      userId: options.userId,
     });
 
     const executionId = context.executionId;
@@ -333,9 +344,9 @@ export class WorkflowService {
 
       // Track execution failure
       await executionContextManager.finishExecution(
-        context.executionId, 
-        undefined, 
-        error instanceof Error ? error : new Error('Unknown error')
+        context.executionId,
+        undefined,
+        error instanceof Error ? error : new Error('Unknown error'),
       );
 
       // Broadcast workflow failed event
@@ -364,7 +375,7 @@ export class WorkflowService {
     }
 
     try {
-      const result = await RetryManager.withStandardRetry(() => 
+      const result = await RetryManager.withStandardRetry(() =>
         providerManager.scheduleWorkflow(workflowId, input, {
           provider: options.provider,
           cron: options.cron,
@@ -376,10 +387,12 @@ export class WorkflowService {
           tags: options.tags,
           timeout: options.timeout || workflow.timeout,
           timezone: options.timezone,
-        })
+        }),
       );
 
-      console.log(`Workflow ${workflowId} scheduled with cron: ${options.cron} (provider: ${result.provider})`);
+      console.log(
+        `Workflow ${workflowId} scheduled with cron: ${options.cron} (provider: ${result.provider})`,
+      );
       return { scheduleId: result.scheduleId };
     } catch (error) {
       console.error(`Failed to schedule workflow ${workflowId}:`, error);
@@ -428,9 +441,7 @@ export class WorkflowService {
     }
 
     try {
-      await RetryManager.withQuickRetry(() => 
-        providerManager.cancelWorkflow(executionId)
-      );
+      await RetryManager.withQuickRetry(() => providerManager.cancelWorkflow(executionId));
       console.log(`Execution ${executionId} cancelled`);
     } catch (error) {
       console.error(`Failed to cancel execution ${executionId}:`, error);
@@ -548,7 +559,8 @@ export class WorkflowService {
     // Check WebSocket
     const wsHealthy = wsServer.getConnectedClients() >= 0;
 
-    const allHealthy = registryHealthy && storeHealth.healthy && providerHealth.overall && wsHealthy;
+    const allHealthy =
+      registryHealthy && storeHealth.healthy && providerHealth.overall && wsHealthy;
 
     return {
       healthy: allHealthy,
@@ -684,7 +696,12 @@ export class WorkflowService {
     return performanceMonitor.getThresholds();
   }
 
-  recordCustomMetric(executionId: string, key: string, value: number | string | boolean, stepId?: string) {
+  recordCustomMetric(
+    executionId: string,
+    key: string,
+    value: number | string | boolean,
+    stepId?: string,
+  ) {
     return executionContextManager.recordCustomMetric(executionId, key, value, stepId);
   }
 
@@ -695,19 +712,21 @@ export class WorkflowService {
     const recentAlerts = performanceMonitor.getRecentAlerts(50);
 
     // Calculate performance metrics
-    const completedExecutions = executionHistory.filter(e => e.status === 'completed');
-    const failedExecutions = executionHistory.filter(e => e.status === 'failed');
-    
-    const successRate = executionHistory.length > 0 
-      ? (completedExecutions.length / executionHistory.length) * 100 
-      : 0;
+    const completedExecutions = executionHistory.filter((e) => e.status === 'completed');
+    const failedExecutions = executionHistory.filter((e) => e.status === 'failed');
 
-    const averageExecutionTime = completedExecutions.length > 0
-      ? completedExecutions.reduce((sum, e) => sum + e.duration, 0) / completedExecutions.length
-      : 0;
+    const successRate =
+      executionHistory.length > 0
+        ? (completedExecutions.length / executionHistory.length) * 100
+        : 0;
+
+    const averageExecutionTime =
+      completedExecutions.length > 0
+        ? completedExecutions.reduce((sum, e) => sum + e.duration, 0) / completedExecutions.length
+        : 0;
 
     // Get percentiles
-    const sortedDurations = completedExecutions.map(e => e.duration).sort((a, b) => a - b);
+    const sortedDurations = completedExecutions.map((e) => e.duration).sort((a, b) => a - b);
     const p50 = this.calculatePercentile(sortedDurations, 50);
     const p95 = this.calculatePercentile(sortedDurations, 95);
     const p99 = this.calculatePercentile(sortedDurations, 99);
@@ -715,53 +734,53 @@ export class WorkflowService {
     // Calculate throughput trends
     const now = Date.now();
     const hourlyThroughput = executionHistory.filter(
-      e => now - e.timestamp.getTime() < 3600000
+      (e) => now - e.timestamp.getTime() < 3600000,
     ).length;
-    
+
     const dailyThroughput = executionHistory.filter(
-      e => now - e.timestamp.getTime() < 86400000
+      (e) => now - e.timestamp.getTime() < 86400000,
     ).length;
 
     return {
       alerts: {
         byType: this.groupAlertsByType(recentAlerts),
-        critical: recentAlerts.filter(a => a.severity === 'critical').length,
-        total: recentAlerts.length
+        critical: recentAlerts.filter((a) => a.severity === 'critical').length,
+        total: recentAlerts.length,
       },
       performance: {
         hourlyThroughput,
         dailyThroughput,
         p50ExecutionTime: p50,
         p95ExecutionTime: p95,
-        p99ExecutionTime: p99
+        p99ExecutionTime: p99,
       },
       summary: {
         averageExecutionTime,
         completedExecutions: completedExecutions.length,
         failedExecutions: failedExecutions.length,
         successRate,
-        totalExecutions: executionHistory.length
+        totalExecutions: executionHistory.length,
       },
       trends: {
-        cpuUsage: recentSnapshots.slice(-20).map(s => ({
+        cpuUsage: recentSnapshots.slice(-20).map((s) => ({
           timestamp: s.timestamp,
-          usage: s.resources.cpuUsagePercent
+          usage: s.resources.cpuUsagePercent,
         })),
-        executionTimes: completedExecutions.slice(-20).map(e => ({
+        executionTimes: completedExecutions.slice(-20).map((e) => ({
           duration: e.duration,
-          timestamp: e.timestamp
+          timestamp: e.timestamp,
         })),
-        memoryUsage: recentSnapshots.slice(-20).map(s => ({
+        memoryUsage: recentSnapshots.slice(-20).map((s) => ({
           timestamp: s.timestamp,
-          usage: s.resources.memoryUsagePercent
-        }))
-      }
+          usage: s.resources.memoryUsagePercent,
+        })),
+      },
     };
   }
 
   private calculatePercentile(values: number[], percentile: number): number {
     if (values.length === 0) return 0;
-    
+
     const index = Math.ceil(values.length * (percentile / 100)) - 1;
     return values[Math.max(0, index)];
   }
@@ -789,12 +808,12 @@ export class WorkflowService {
   getReliabilityHealthReport() {
     const healthyPatterns = reliabilityManager.getHealthyPatterns();
     const unhealthyPatterns = reliabilityManager.getUnhealthyPatterns();
-    
+
     return {
       healthyPatterns,
       overall: unhealthyPatterns.length === 0,
       totalPatterns: healthyPatterns.length + unhealthyPatterns.length,
-      unhealthyPatterns
+      unhealthyPatterns,
     };
   }
 
@@ -804,16 +823,15 @@ export class WorkflowService {
 
   async testReliabilityPattern(patternName = 'workflow-execution') {
     try {
-      await reliabilityManager.execute(
-        patternName,
-        () => Promise.resolve('test-success'),
-        { context: { test: true }, timeout: 5000 }
-      );
+      await reliabilityManager.execute(patternName, () => Promise.resolve('test-success'), {
+        context: { test: true },
+        timeout: 5000,
+      });
       return { message: 'Reliability pattern test passed', success: true };
     } catch (error) {
-      return { 
-        message: `Reliability pattern test failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 
-        success: false 
+      return {
+        message: `Reliability pattern test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        success: false,
       };
     }
   }
@@ -824,7 +842,7 @@ export class WorkflowService {
   }
 
   getStepTemplate(templateId: string) {
-    return stepFactory.getAllTemplates().find(t => t.id === templateId);
+    return stepFactory.getAllTemplates().find((t) => t.id === templateId);
   }
 
   createStepFromTemplate(config: any) {
@@ -845,15 +863,15 @@ export class WorkflowService {
   }
 
   getWorkflowTemplate(templateId: string) {
-    return workflowFactory.getAllTemplates().find(t => t.id === templateId);
+    return workflowFactory.getAllTemplates().find((t) => t.id === templateId);
   }
 
   async createWorkflowFromTemplate(config: any): Promise<WorkflowDefinition> {
     const workflow = workflowFactory.createWorkflow(config);
-    
+
     // Register the workflow with the registry
     await workflowRegistry.registerWorkflow(workflow);
-    
+
     return workflow;
   }
 
@@ -871,7 +889,7 @@ export class WorkflowService {
       parallel?: boolean;
       continueOnError?: boolean;
       aggregateResults?: boolean;
-    }
+    },
   ) {
     return stepFactory.composeSteps(id, name, stepIds, options);
   }
@@ -885,9 +903,16 @@ export class WorkflowService {
     options?: {
       description?: string;
       tags?: string[];
-    }
+    },
   ) {
-    return stepFactory.createConditionalStep(id, name, condition, ifTrueStepId, ifFalseStepId, options);
+    return stepFactory.createConditionalStep(
+      id,
+      name,
+      condition,
+      ifTrueStepId,
+      ifFalseStepId,
+      options,
+    );
   }
 
   createLoopStep(
@@ -901,7 +926,7 @@ export class WorkflowService {
       continueOnError?: boolean;
       itemsPath?: string;
       tags?: string[];
-    }
+    },
   ) {
     return stepFactory.createLoopStep(id, name, stepId, options);
   }
@@ -912,11 +937,13 @@ export class WorkflowService {
       createdSteps: stepFactory.getAllSteps().length,
       createdWorkflows: workflowFactory.getAllWorkflows().length,
       stepTemplates: stepFactory.getAllTemplates().length,
-      templateCategories: Array.from(new Set([
-        ...stepFactory.getAllTemplates().map(t => t.category),
-        ...workflowFactory.getAllTemplates().map(t => t.category)
-      ])),
-      workflowTemplates: workflowFactory.getAllTemplates().length
+      templateCategories: Array.from(
+        new Set([
+          ...stepFactory.getAllTemplates().map((t) => t.category),
+          ...workflowFactory.getAllTemplates().map((t) => t.category),
+        ]),
+      ),
+      workflowTemplates: workflowFactory.getAllTemplates().length,
     };
   }
 }

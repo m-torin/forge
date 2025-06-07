@@ -7,10 +7,13 @@ import { useState } from 'react';
 
 interface ProgressiveImageProps extends Omit<ImageProps, 'src' | 'placeholder'> {
   blurDataURL?: string;
+  height: number;
   placeholder?: string;
   rootMargin?: string;
   src: string | { small: string; medium: string; large: string };
   threshold?: number;
+  // Ensure width and height are required for Next.js Image
+  width: number;
 }
 
 export function ProgressiveImage({
@@ -49,6 +52,7 @@ export function ProgressiveImage({
       {/* Blur placeholder */}
       {(placeholder || blurDataURL) && !imageLoaded && (
         <div
+          data-testid="placeholder"
           className="absolute inset-0 animate-pulse bg-neutral-200 dark:bg-neutral-800"
           style={{
             backgroundImage: blurDataURL ? `url(${blurDataURL})` : undefined,
@@ -63,6 +67,7 @@ export function ProgressiveImage({
       {isVisible && !hasError && (
         <Image
           {...props}
+          width={props.width || 800}
           onError={() => setHasError(true)}
           onLoad={() => setImageLoaded(true)}
           className={clsx(
@@ -71,6 +76,7 @@ export function ProgressiveImage({
             props.fill && 'object-cover',
           )}
           alt={alt}
+          height={props.height || 600}
           src={imageSrc}
         />
       )}

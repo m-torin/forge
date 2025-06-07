@@ -1,42 +1,65 @@
 'use client'
 
-import { Container, Stack, Title, Text, Card, Button, Textarea, Alert, Group, Badge, Code, NumberInput, Select } from '@mantine/core'
-import { IconServer, IconPlayerPlay, IconAlertCircle, IconCode } from '@tabler/icons-react'
+import {
+  Container,
+  Stack,
+  Title,
+  Text,
+  Card,
+  Button,
+  Textarea,
+  Alert,
+  Group,
+  Badge,
+  Code,
+  NumberInput,
+  Select,
+} from '@mantine/core'
+import {
+  IconServer,
+  IconPlayerPlay,
+  IconAlertCircle,
+  IconCode,
+} from '@tabler/icons-react'
 import { useState } from 'react'
 
 export default function ServeManyWorkflowPage() {
   const [batchSize, setBatchSize] = useState(5)
   const [workflowType, setWorkflowType] = useState('parallel')
-  const [dataPayload, setDataPayload] = useState('[{"id": 1, "data": "item1"}, {"id": 2, "data": "item2"}]')
+  const [dataPayload, setDataPayload] = useState(
+    '[{"id": 1, "data": "item1"}, {"id": 2, "data": "item2"}]',
+  )
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
 
   const triggerWorkflow = async () => {
     setLoading(true)
     setResult(null)
-    
+
     try {
       const parsedData = JSON.parse(dataPayload)
       const payload = {
         batchSize,
         workflowType,
         items: parsedData,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
-      
+
       const response = await fetch('/-call-qstash', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           route: 'serve-many',
-          payload
-        })
+          payload,
+        }),
       })
-      
+
       const data = await response.json()
       setResult(data)
     } catch (error) {
-      setResult({ error: error instanceof Error ? error.message : 'Unknown error' })
+      setResult({
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
     } finally {
       setLoading(false)
     }
@@ -50,34 +73,52 @@ export default function ServeManyWorkflowPage() {
             <IconServer size={32} color="var(--mantine-color-teal-6)" />
             <div>
               <Title order={1}>Serve Many Workflow</Title>
-              <Badge variant="light" color="teal">Multiple workflow management</Badge>
+              <Badge variant="light" color="teal">
+                Multiple workflow management
+              </Badge>
             </div>
           </Group>
           <Text c="dimmed">
-            This workflow demonstrates how to manage and execute multiple workflows in parallel or sequence, handling batch processing efficiently.
+            This workflow demonstrates how to manage and execute multiple
+            workflows in parallel or sequence, handling batch processing
+            efficiently.
           </Text>
         </div>
 
         <Card shadow="sm" padding="lg" withBorder>
-          <Title order={3} mb="md">Workflow Details</Title>
+          <Title order={3} mb="md">
+            Workflow Details
+          </Title>
           <Stack gap="sm">
             <Group>
-              <Text fw={500} size="sm">Endpoint:</Text>
+              <Text fw={500} size="sm">
+                Endpoint:
+              </Text>
               <Code>/serve-many</Code>
             </Group>
             <Group>
-              <Text fw={500} size="sm">Method:</Text>
+              <Text fw={500} size="sm">
+                Method:
+              </Text>
               <Code>POST</Code>
             </Group>
             <Group>
-              <Text fw={500} size="sm">Expected Payload:</Text>
-              <Code>{'{"batchSize": number, "workflowType": string, "items": array}'}</Code>
+              <Text fw={500} size="sm">
+                Expected Payload:
+              </Text>
+              <Code>
+                {
+                  '{"batchSize": number, "workflowType": string, "items": array}'
+                }
+              </Code>
             </Group>
           </Stack>
         </Card>
 
         <Card shadow="sm" padding="lg" withBorder>
-          <Title order={3} mb="md">Test Workflow</Title>
+          <Title order={3} mb="md">
+            Test Workflow
+          </Title>
           <Stack gap="md">
             <NumberInput
               label="Batch Size"
@@ -87,7 +128,7 @@ export default function ServeManyWorkflowPage() {
               max={20}
               placeholder="Number of items per batch"
             />
-            
+
             <Select
               label="Workflow Type"
               value={workflowType}
@@ -95,10 +136,10 @@ export default function ServeManyWorkflowPage() {
               data={[
                 { value: 'parallel', label: 'Parallel Execution' },
                 { value: 'sequential', label: 'Sequential Execution' },
-                { value: 'batched', label: 'Batched Processing' }
+                { value: 'batched', label: 'Batched Processing' },
               ]}
             />
-            
+
             <Textarea
               label="Data Items (JSON Array)"
               value={dataPayload}
@@ -106,7 +147,7 @@ export default function ServeManyWorkflowPage() {
               rows={4}
               placeholder="Enter JSON array of items to process"
             />
-            
+
             <Button
               onClick={triggerWorkflow}
               loading={loading}
@@ -115,10 +156,16 @@ export default function ServeManyWorkflowPage() {
             >
               {loading ? 'Triggering...' : 'Trigger Serve Many Workflow'}
             </Button>
-            
+
             {result && (
               <Alert
-                icon={result.error ? <IconAlertCircle size={16} /> : <IconCode size={16} />}
+                icon={
+                  result.error ? (
+                    <IconAlertCircle size={16} />
+                  ) : (
+                    <IconCode size={16} />
+                  )
+                }
                 color={result.error ? 'red' : 'green'}
                 title={result.error ? 'Error' : 'Success'}
               >
@@ -129,9 +176,12 @@ export default function ServeManyWorkflowPage() {
         </Card>
 
         <Card shadow="sm" padding="lg" withBorder>
-          <Title order={3} mb="md">Implementation</Title>
+          <Title order={3} mb="md">
+            Implementation
+          </Title>
           <Text c="dimmed" mb="md">
-            This workflow handles multiple items with configurable execution patterns: parallel, sequential, or batched processing.
+            This workflow handles multiple items with configurable execution
+            patterns: parallel, sequential, or batched processing.
           </Text>
           <Code block>{`// Example workflow implementation
 export async function serveManyWorkflow(payload: { batchSize: number, workflowType: string, items: any[] }) {

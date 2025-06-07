@@ -1,69 +1,61 @@
 'use client';
 
 import {
-  Modal,
-  TextInput,
-  Stack,
-  Text,
-  Group,
-  UnstyledButton,
   Badge,
-  rem,
-  ThemeIcon,
   Box,
   Divider,
+  Group,
+  Modal,
+  rem,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  UnstyledButton,
 } from '@mantine/core';
-import {
-  IconSearch,
-  IconFileText,
-  IconPackage,
-  IconRocket,
-  IconUsers,
-  IconSettings,
-  IconFlag,
-} from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
+import { IconPackage, IconRocket, IconSearch, IconSettings } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const searchResults = [
   {
     category: 'Workflows',
-    icon: IconRocket,
     color: 'blue',
+    icon: IconRocket,
     items: [
-      { title: 'Product Classification', href: '/workflows/product-classification' },
-      { title: 'Batch Processing', href: '/workflows/batch-processing' },
-      { title: 'Schedules', href: '/workflows/schedules' },
+      { href: '/workflows/product-classification', title: 'Product Classification' },
+      { href: '/workflows/batch-processing', title: 'Batch Processing' },
+      { href: '/workflows/schedules', title: 'Schedules' },
     ],
   },
   {
     category: 'PIM',
-    icon: IconPackage,
     color: 'green',
+    icon: IconPackage,
     items: [
-      { title: 'Product Catalog', href: '/pim' },
-      { title: 'Taxonomy', href: '/pim/taxonomy' },
+      { href: '/pim', title: 'Product Catalog' },
+      { href: '/pim/taxonomy', title: 'Taxonomy' },
     ],
   },
   {
     category: 'Settings',
-    icon: IconSettings,
     color: 'gray',
+    icon: IconSettings,
     items: [
-      { title: 'General Settings', href: '/settings' },
-      { title: 'Security', href: '/settings/security' },
+      { href: '/settings', title: 'General Settings' },
+      { href: '/settings/security', title: 'Security' },
     ],
   },
 ];
 
 interface SearchModalProps {
-  opened: boolean;
   onClose: () => void;
+  opened: boolean;
 }
 
-export function SearchModal({ opened, onClose }: SearchModalProps) {
+export function SearchModal({ onClose, opened }: SearchModalProps) {
   const [search, setSearch] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [_selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -77,60 +69,60 @@ export function SearchModal({ opened, onClose }: SearchModalProps) {
     .map((category) => ({
       ...category,
       items: category.items.filter((item) =>
-        item.title.toLowerCase().includes(search.toLowerCase())
+        item.title.toLowerCase().includes(search.toLowerCase()),
       ),
     }))
     .filter((category) => category.items.length > 0);
 
   const handleSelect = (href: string) => {
-    router.push(href);
+    router.push(href as any);
     onClose();
   };
 
   return (
     <Modal
-      opened={opened}
       onClose={onClose}
-      title={null}
-      size="lg"
-      padding={0}
-      radius="md"
+      opened={opened}
       withCloseButton={false}
       styles={{
         body: { padding: 0 },
         header: { padding: 0 },
       }}
+      padding={0}
+      radius="md"
+      size="lg"
+      title={null}
     >
       <Box>
         <TextInput
-          placeholder="Search for anything..."
+          autoFocus
           leftSection={<IconSearch size={20} />}
-          value={search}
           onChange={(e) => setSearch(e.target.value)}
-          size="lg"
+          placeholder="Search for anything..."
           styles={{
             input: {
               border: 'none',
-              borderRadius: 0,
               borderBottom: '1px solid var(--mantine-color-gray-2)',
+              borderRadius: 0,
             },
           }}
-          autoFocus
+          size="lg"
+          value={search}
         />
-        
-        <Box p="md" style={{ maxHeight: rem(400), overflowY: 'auto' }}>
+
+        <Box style={{ maxHeight: rem(400), overflowY: 'auto' }} p="md">
           {search === '' ? (
             <Stack gap="lg">
-              <Text size="sm" c="dimmed">
+              <Text c="dimmed" size="sm">
                 Quick actions
               </Text>
               {searchResults.map((category) => (
                 <div key={category.category}>
                   <Group gap="xs" mb="sm">
-                    <ThemeIcon size="sm" variant="light" color={category.color}>
+                    <ThemeIcon color={category.color} size="sm" variant="light">
                       <category.icon size={14} />
                     </ThemeIcon>
-                    <Text size="sm" fw={500}>
+                    <Text fw={500} size="sm">
                       {category.category}
                     </Text>
                   </Group>
@@ -139,15 +131,15 @@ export function SearchModal({ opened, onClose }: SearchModalProps) {
                       <UnstyledButton
                         key={item.href}
                         onClick={() => handleSelect(item.href)}
-                        p="xs"
                         styles={{
                           root: {
-                            borderRadius: rem(6),
                             '&:hover': {
                               backgroundColor: 'var(--mantine-color-gray-0)',
                             },
+                            borderRadius: rem(6),
                           },
                         }}
+                        p="xs"
                       >
                         <Text size="sm">{item.title}</Text>
                       </UnstyledButton>
@@ -161,10 +153,10 @@ export function SearchModal({ opened, onClose }: SearchModalProps) {
               {filteredResults.map((category) => (
                 <div key={category.category}>
                   <Group gap="xs" mb="sm">
-                    <ThemeIcon size="sm" variant="light" color={category.color}>
+                    <ThemeIcon color={category.color} size="sm" variant="light">
                       <category.icon size={14} />
                     </ThemeIcon>
-                    <Text size="sm" fw={500}>
+                    <Text fw={500} size="sm">
                       {category.category}
                     </Text>
                   </Group>
@@ -173,15 +165,15 @@ export function SearchModal({ opened, onClose }: SearchModalProps) {
                       <UnstyledButton
                         key={item.href}
                         onClick={() => handleSelect(item.href)}
-                        p="xs"
                         styles={{
                           root: {
-                            borderRadius: rem(6),
                             '&:hover': {
                               backgroundColor: 'var(--mantine-color-gray-0)',
                             },
+                            borderRadius: rem(6),
                           },
                         }}
+                        p="xs"
                       >
                         <Text size="sm">{item.title}</Text>
                       </UnstyledButton>
@@ -191,30 +183,36 @@ export function SearchModal({ opened, onClose }: SearchModalProps) {
               ))}
             </Stack>
           ) : (
-            <Text c="dimmed" ta="center" py="xl">
+            <Text c="dimmed" py="xl" ta="center">
               No results found for "{search}"
             </Text>
           )}
         </Box>
-        
+
         <Divider />
-        
-        <Group justify="space-between" p="sm" gap="xs">
+
+        <Group gap="xs" justify="space-between" p="sm">
           <Group gap="xs">
-            <Badge size="xs" variant="light" color="gray">
+            <Badge color="gray" size="xs" variant="light">
               ESC
             </Badge>
-            <Text size="xs" c="dimmed">to close</Text>
+            <Text c="dimmed" size="xs">
+              to close
+            </Text>
           </Group>
           <Group gap="xs">
-            <Badge size="xs" variant="light" color="gray">
+            <Badge color="gray" size="xs" variant="light">
               ↑↓
             </Badge>
-            <Text size="xs" c="dimmed">to navigate</Text>
-            <Badge size="xs" variant="light" color="gray">
+            <Text c="dimmed" size="xs">
+              to navigate
+            </Text>
+            <Badge color="gray" size="xs" variant="light">
               Enter
             </Badge>
-            <Text size="xs" c="dimmed">to select</Text>
+            <Text c="dimmed" size="xs">
+              to select
+            </Text>
           </Group>
         </Group>
       </Box>

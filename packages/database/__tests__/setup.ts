@@ -17,8 +17,51 @@ vi.mock('firebase-admin', () => ({
   firestore: vi.fn(),
 }));
 
+vi.mock('@prisma/extension-accelerate', () => ({
+  withAccelerate: vi.fn(() => ({
+    name: 'accelerate',
+    extendClient: vi.fn((client) => client),
+  })),
+}));
+
+const createMockPrismaClient = () => ({
+  $connect: vi.fn(),
+  $disconnect: vi.fn(),
+  $extends: vi.fn(function (extension) {
+    // Return a new client with the same structure
+    return createMockPrismaClient();
+  }),
+  $transaction: vi.fn(),
+  user: {
+    create: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+  organization: {
+    create: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+  member: {
+    create: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+});
+
 vi.mock('@prisma/client', () => ({
-  PrismaClient: vi.fn(),
+  PrismaClient: vi.fn(() => createMockPrismaClient()),
+}));
+
+// Also mock the generated client
+vi.mock('../generated/client', () => ({
+  PrismaClient: vi.fn(() => createMockPrismaClient()),
 }));
 
 // Setup environment variables

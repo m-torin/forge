@@ -12,7 +12,7 @@ const I18nMiddleware = createI18nMiddleware({
   urlMappingStrategy: 'rewriteDefault',
   defaultLocale: 'en',
   locales,
-  resolveLocaleFromRequest: (request: NextRequest) => {
+  resolveLocaleFromRequest: (request: any) => {
     const headers = Object.fromEntries(request.headers.entries());
     const negotiator = new Negotiator({ headers });
     const acceptedLanguages = negotiator.languages();
@@ -23,8 +23,8 @@ const I18nMiddleware = createI18nMiddleware({
   },
 });
 
-export function internationalizationMiddleware(request: NextRequest) {
-  return I18nMiddleware(request);
+export function internationalizationMiddleware(request: NextRequest): any {
+  return I18nMiddleware(request as any);
 }
 
 export const config = {
