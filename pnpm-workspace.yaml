@@ -1,33 +1,35 @@
 packages:
   - apps/*
-  - "!apps/workers-backup"
+  - '!apps/workers-backup'
   - packages/*
   - functions/*
   - infrastructure/*
 catalog:
-  "@mantine/core": ^8.0.2
-  "@mantine/form": ^8.0.2
-  "@mantine/hooks": ^8.0.2
-  "@mantine/modals": ^8.0.2
-  "@mantine/notifications": ^8.0.2
-  "@next/eslint-plugin-next": ^15.3.3
-  "@playwright/test": ^1.52.0
-  "@prisma/client": ^6.9.0
-  "@t3-oss/env-core": ^0.13.6
-  "@t3-oss/env-nextjs": ^0.13.6
-  "@tabler/icons-react": ^3.34.0
-  "@tailwindcss/postcss": ^4.1.8
-  "@testing-library/jest-dom": ^6.6.3
-  "@testing-library/react-hooks": ^8.0.1
-  "@testing-library/react": ^16.3.0
-  "@types/node": ^22.15.29
-  "@types/react-dom": ^19.1.6
-  "@types/react": ^19.1.6
-  "@vercel/flags": ^3.1.1
-  "@vercel/style-guide": ^6.0.0
-  "@vercel/toolbar": ^0.1.27
-  "@vitest/coverage-v8": ^3.2.1
-  "@vitest/ui": ^3.2.1
+  '@mantine/core': ^8.0.2
+  '@mantine/form': ^8.0.2
+  '@mantine/hooks': ^8.0.2
+  '@mantine/modals': ^8.0.2
+  '@mantine/notifications': ^8.0.2
+  '@next/eslint-plugin-next': ^15.3.3
+  '@playwright/test': ^1.52.0
+  '@prisma/client': ^6.9.0
+  '@t3-oss/env-core': ^0.13.6
+  '@t3-oss/env-nextjs': ^0.13.6
+  '@tabler/icons-react': ^3.34.0
+  '@tailwindcss/postcss': ^4.1.8
+  '@testing-library/jest-dom': ^6.6.3
+  '@testing-library/react-hooks': ^8.0.1
+  '@testing-library/react': ^16.3.0
+  '@types/node': ^22.15.29
+  '@types/react-dom': ^19.1.6
+  '@types/react': ^19.1.6
+  '@vercel/flags': ^3.1.1
+  '@vercel/style-guide': ^6.0.0
+  '@vercel/toolbar': ^0.1.27
+  '@vitest/coverage-v8': ^3.2.1
+  '@vitest/ui': ^3.2.1
+  chokidar: ^4.0.1
+  nodemon: ^3.1.9
   next-themes: ^0.4.6
   server-only: ^0.0.1
   autoprefixer: ^10.4.21
@@ -53,26 +55,17 @@ catalog:
   vitest: ^3.2.1
   zod-prisma-types: ^3.2.4
   zod: ^3.25.51
-
-overrides:
-  node-fetch@<2.6.7: ">=2.6.7"
-  ws@>=8.0.0 <8.17.1: ">=8.17.1"
-  "@sentry/browser@<7.119.1": ">=7.119.1"
-  path-to-regexp@>=4.0.0 <6.3.0: ">=6.3.0"
-  "@octokit/request-error@>=1.0.0 <5.1.1": ">=5.1.1"
-  "@octokit/request@>=1.0.0 <8.4.1": ">=8.4.1"
-  "@octokit/plugin-paginate-rest@>=1.0.0 <9.2.2": ">=9.2.2"
-  cookie@<0.7.0: ">=0.7.0"
-  tar-fs@>=3.0.0 <3.0.7: ">=3.0.7"
-
 onlyBuiltDependencies:
-  - "@firebase/util"
-  - "@parcel/watcher"
-  - "@prisma/client"
-  - "@prisma/engines"
-  - "@sentry/cli"
-  - "@tailwindcss/oxide"
-  - "@upstash/qstash-cli"
+  - '@firebase/util'
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@sentry/cli'
+  - '@tailwindcss/oxide'
+  - '@ulixee/chrome-136-0'
+  - '@ulixee/unblocked-agent-mitm-socket'
+  - '@upstash/qstash-cli'
+  - better-sqlite3
   - core-js
   - core-js-pure
   - esbuild
@@ -81,3 +74,13 @@ onlyBuiltDependencies:
   - puppeteer
   - sharp
   - unrs-resolver
+overrides:
+  node-fetch@<2.6.7: '>=2.6.7'
+  ws@>=8.0.0 <8.17.1: '>=8.17.1'
+  '@sentry/browser@<7.119.1': '>=7.119.1'
+  path-to-regexp@>=4.0.0 <6.3.0: '>=6.3.0'
+  '@octokit/request-error@>=1.0.0 <5.1.1': '>=5.1.1'
+  '@octokit/request@>=1.0.0 <8.4.1': '>=8.4.1'
+  '@octokit/plugin-paginate-rest@>=1.0.0 <9.2.2': '>=9.2.2'
+  cookie@<0.7.0: '>=0.7.0'
+  tar-fs@>=3.0.0 <3.0.7: '>=3.0.7'

@@ -13,9 +13,7 @@ import {
   updateOrganization,
 } from '../../../server/organizations/management';
 
-import type {
-  Organization,
-} from '../../../shared/types';
+import type { Organization } from '../../../shared/types';
 
 // Mock database
 const mockFindFirst = vi.fn();

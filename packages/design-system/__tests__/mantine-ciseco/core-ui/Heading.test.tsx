@@ -35,8 +35,10 @@ describe('Heading', () => {
   });
 
   it('renders with custom className', () => {
-    render(<Heading className="custom-heading">Test</Heading>);
-    expect(screen.getByRole('heading').parentElement).toHaveClass('custom-heading');
+    const { container } = render(<Heading className="custom-heading">Test</Heading>);
+    // The className is applied to the wrapper div
+    const wrapper = container.querySelector('.custom-heading');
+    expect(wrapper).toBeInTheDocument();
   });
 
   it('renders with description', () => {
@@ -74,25 +76,24 @@ describe('Heading', () => {
   it('renders with next/prev buttons', () => {
     const onClickNext = () => {};
     const onClickPrev = () => {};
-    render(
+    const { container } = render(
       <Heading hasNextPrev onClickNext={onClickNext} onClickPrev={onClickPrev}>
         Heading with Navigation
       </Heading>,
     );
-    expect(
-      screen.getByRole('heading').parentElement?.querySelector('.flex.shrink-0'),
-    ).toBeInTheDocument();
+    const buttons = container.querySelectorAll('button');
+    expect(buttons.length).toBe(2);
   });
 
   it('disables next/prev buttons', () => {
-    render(
+    const { container } = render(
       <Heading hasNextPrev nextBtnDisabled prevBtnDisabled>
         Heading with Disabled Navigation
       </Heading>,
     );
-    const buttons = screen.getByRole('heading').parentElement?.querySelectorAll('button');
-    expect(buttons?.[0]).toBeDisabled();
-    expect(buttons?.[1]).toBeDisabled();
+    const buttons = container.querySelectorAll('button');
+    expect(buttons[0]).toBeDisabled();
+    expect(buttons[1]).toBeDisabled();
   });
 
   it('renders children components', () => {

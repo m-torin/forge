@@ -32,12 +32,14 @@ export const mockProduct = (overrides = {}) => ({
 });
 
 export const mockCollection = (overrides = {}) => ({
-  id: '1',
-  name: 'Test Collection',
+  id: 'gid://1',
+  title: 'Test Collection',
   description: 'Test collection description',
+  sortDescription: 'Test description',
   image: { width: 400, height: 400, alt: 'Test Collection', src: '/test-collection.jpg' },
   handle: 'test-collection',
-  productCount: 25,
+  count: 25,
+  color: 'bg-indigo-50',
   ...overrides,
 });
 

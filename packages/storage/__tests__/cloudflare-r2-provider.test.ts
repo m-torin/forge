@@ -384,7 +384,9 @@ describe('CloudflareR2Provider', () => {
     it('should return false when object does not exist (404 status)', async () => {
       const { CloudflareR2Provider } = await import('../providers/cloudflare-r2');
 
-      const notFoundError = new Error('Not found');
+      const notFoundError = new Error('Not found') as Error & {
+        $metadata: { httpStatusCode: number };
+      };
       notFoundError.$metadata = { httpStatusCode: 404 };
       mockSend.mockRejectedValue(notFoundError);
 
@@ -678,7 +680,9 @@ describe('CloudflareR2Provider', () => {
       const provider = new CloudflareR2Provider(mockConfig);
 
       // Test 404 error
-      const notFoundError = new Error('Not found');
+      const notFoundError = new Error('Not found') as Error & {
+        $metadata: { httpStatusCode: number };
+      };
       notFoundError.$metadata = { httpStatusCode: 404 };
       mockSend.mockRejectedValueOnce(notFoundError);
 

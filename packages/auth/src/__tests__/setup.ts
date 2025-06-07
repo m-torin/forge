@@ -2,8 +2,11 @@
  * Test setup file for auth package
  */
 
-import { vi } from 'vitest';
+// Ensure React is available globally for JSX
+import React from 'react';
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+global.React = React;
 
 // Mock server-only module
 vi.mock('server-only', () => ({}));
@@ -66,12 +69,24 @@ vi.mock('better-auth', () => ({
     api: {
       banUser: vi.fn(() => Promise.resolve({ success: true })),
       createApiKey: vi.fn(() => Promise.resolve({ id: 'test-key', key: 'test-key-value' })),
+      createOrganization: vi.fn(() =>
+        Promise.resolve({
+          id: 'org-123',
+          name: 'Test Organization',
+          createdAt: new Date(),
+          slug: 'test-organization',
+          updatedAt: new Date(),
+        }),
+      ),
       deleteApiKey: vi.fn(() => Promise.resolve({ success: true })),
+      deleteOrganization: vi.fn(() => Promise.resolve({ success: true })),
       deleteSession: vi.fn(() => Promise.resolve({ success: true })),
       deleteUser: vi.fn(() => Promise.resolve({ success: true })),
       getSession: vi.fn(() => Promise.resolve(null)),
       impersonateUser: vi.fn(() => Promise.resolve({ success: true })),
+      inviteUser: vi.fn(() => Promise.resolve({ success: true })),
       listApiKeys: vi.fn(() => Promise.resolve([])),
+      listOrganizations: vi.fn(() => Promise.resolve([])),
       listSessions: vi.fn(() => Promise.resolve([])),
       listUsers: vi.fn(() => Promise.resolve([])),
       signIn: vi.fn(() => Promise.resolve({ success: true })),
@@ -79,6 +94,7 @@ vi.mock('better-auth', () => ({
       signUp: vi.fn(() => Promise.resolve({ success: true })),
       unbanUser: vi.fn(() => Promise.resolve({ success: true })),
       updateApiKey: vi.fn(() => Promise.resolve({ success: true })),
+      updateOrganization: vi.fn(() => Promise.resolve({ success: true })),
     },
   })),
 }));
@@ -112,11 +128,14 @@ vi.mock('@repo/database/prisma', () => ({
 // Mock analytics
 vi.mock('@repo/analytics/server', () => ({
   identify: vi.fn(),
-  createServerAnalytics: vi.fn(() => ({
-    identify: vi.fn(),
-    emit: vi.fn(),
-    track: vi.fn(),
-  })),
+  createServerAnalytics: vi.fn(() =>
+    Promise.resolve({
+      identify: vi.fn(),
+      emit: vi.fn(),
+      initialize: vi.fn().mockResolvedValue(undefined),
+      track: vi.fn(),
+    }),
+  ),
   track: vi.fn(),
 }));
 

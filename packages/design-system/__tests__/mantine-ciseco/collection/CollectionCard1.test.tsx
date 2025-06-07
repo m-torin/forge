@@ -1,233 +1,143 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '../test-utils';
+import { render, screen } from '../test-utils';
 import CollectionCard1 from '../../../mantine-ciseco/components/CollectionCard1';
 import { mockCollection } from '../test-utils';
 
+// Mock the Link component
+vi.mock('../../../mantine-ciseco/components/Link', () => ({
+  Link: ({ children, className, href, ...props }: any) => (
+    <a className={className} href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+// Mock the useLocalizeHref hook
+vi.mock('../../../mantine-ciseco/hooks/useLocale', () => ({
+  useLocalizeHref: () => (href: string) => `/en${href}`,
+}));
+
+// Mock NcImage component to avoid Next.js Image issues
+vi.mock('../../../mantine-ciseco/components/shared/NcImage/NcImage', () => ({
+  default: ({ alt, src, containerClassName, fill, sizes, ...props }: any) => (
+    <div className={containerClassName}>
+      <img alt={alt} src={typeof src === 'object' ? src.src : src} {...props} />
+    </div>
+  ),
+}));
+
 describe('CollectionCard1', () => {
   const defaultCollection = mockCollection();
-  const mockOnClick = vi.fn();
-
-  beforeEach(() => {
-    mockOnClick.mockClear();
-  });
 
   it('renders collection card with basic info', () => {
     render(<CollectionCard1 collection={defaultCollection} />);
 
-    expect(screen.getByText(defaultCollection.name)).toBeInTheDocument();
-    expect(screen.getByText(defaultCollection.description)).toBeInTheDocument();
-    expect(screen.getByRole('img')).toHaveAttribute('alt', defaultCollection.name);
+    expect(screen.getByText(defaultCollection.title!)).toBeInTheDocument();
+    expect(screen.getByText(defaultCollection.sortDescription!)).toBeInTheDocument();
+    expect(screen.getByAltText(defaultCollection.image!.alt)).toBeInTheDocument();
   });
 
-  it('renders collection image', () => {
+  it('renders collection image with correct src and alt', () => {
     render(<CollectionCard1 collection={defaultCollection} />);
-    const image = screen.getByRole('img');
+    const image = screen.getByAltText(defaultCollection.image!.alt);
 
-    expect(image).toHaveAttribute('src', defaultCollection.image);
-    expect(image).toHaveAttribute('alt', defaultCollection.name);
+    expect(image).toHaveAttribute('src', defaultCollection.image!.src);
+    expect(image).toHaveAttribute('alt', defaultCollection.image!.alt);
   });
 
-  it('handles click on card', () => {
-    render(<CollectionCard1 collection={defaultCollection} onClick={mockOnClick} />);
-    const card = screen.getByTestId('collection-card');
+  it('renders as a link with correct href', () => {
+    render(<CollectionCard1 collection={defaultCollection} />);
+    const link = screen.getByRole('link');
 
-    fireEvent.click(card);
-    expect(mockOnClick).toHaveBeenCalledWith(defaultCollection);
-  });
-
-  it('shows product count', () => {
-    render(<CollectionCard1 collection={defaultCollection} showProductCount />);
-    expect(screen.getByText(`${defaultCollection.productCount} items`)).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', `/en/collections/${defaultCollection.handle}`);
   });
 
   it('renders with custom className', () => {
-    render(<CollectionCard1 collection={defaultCollection} className="custom-collection-card" />);
-    expect(screen.getByTestId('collection-card')).toHaveClass('custom-collection-card');
+    render(<CollectionCard1 collection={defaultCollection} className="custom-class" />);
+    const link = screen.getByRole('link');
+
+    expect(link).toHaveClass('custom-class');
   });
 
-  it('renders with different sizes', () => {
-    const { rerender } = render(<CollectionCard1 collection={defaultCollection} size="sm" />);
-    expect(screen.getByTestId('collection-card')).toHaveClass('size-sm');
+  it('renders with large size', () => {
+    render(<CollectionCard1 collection={defaultCollection} size="large" />);
 
-    rerender(<CollectionCard1 collection={defaultCollection} size="md" />);
-    expect(screen.getByTestId('collection-card')).toHaveClass('size-md');
+    const title = screen.getByText(defaultCollection.title!);
+    const description = screen.getByText(defaultCollection.sortDescription!);
 
-    rerender(<CollectionCard1 collection={defaultCollection} size="lg" />);
-    expect(screen.getByTestId('collection-card')).toHaveClass('size-lg');
+    expect(title).toHaveClass('text-lg');
+    expect(description).toHaveClass('text-sm');
   });
 
-  it('renders with overlay text', () => {
-    render(<CollectionCard1 collection={defaultCollection} overlay />);
-    const textOverlay = screen.getByTestId('text-overlay');
-    expect(textOverlay).toBeInTheDocument();
-    expect(textOverlay).toHaveClass('overlay-style');
+  it('renders with normal size (default)', () => {
+    render(<CollectionCard1 collection={defaultCollection} size="normal" />);
+
+    const title = screen.getByText(defaultCollection.title!);
+    const description = screen.getByText(defaultCollection.sortDescription!);
+
+    expect(title).toHaveClass('text-base');
+    expect(description).toHaveClass('text-xs');
   });
 
-  it('shows hover effects', () => {
+  it('renders title with proper styling', () => {
     render(<CollectionCard1 collection={defaultCollection} />);
-    const card = screen.getByTestId('collection-card');
 
-    fireEvent.mouseEnter(card);
-    expect(card).toHaveClass('hover-effect');
-
-    fireEvent.mouseLeave(card);
-    expect(card).not.toHaveClass('hover-effect');
+    const title = screen.getByText(defaultCollection.title!);
+    expect(title).toHaveClass(
+      'font-semibold',
+      'nc-card-title',
+      'text-neutral-900',
+      'dark:text-neutral-100',
+    );
   });
 
-  it('renders with aspect ratio', () => {
-    render(<CollectionCard1 collection={defaultCollection} aspectRatio="4/3" />);
-    const imageContainer = screen.getByRole('img').parentElement;
-    expect(imageContainer).toHaveStyle({ aspectRatio: '4/3' });
-  });
-
-  it('handles keyboard navigation', () => {
-    render(<CollectionCard1 collection={defaultCollection} onClick={mockOnClick} />);
-    const card = screen.getByTestId('collection-card');
-
-    card.focus();
-    expect(card).toHaveFocus();
-
-    fireEvent.keyDown(card, { key: 'Enter' });
-    expect(mockOnClick).toHaveBeenCalledWith(defaultCollection);
-
-    fireEvent.keyDown(card, { key: ' ' });
-    expect(mockOnClick).toHaveBeenCalledTimes(2);
-  });
-
-  it('renders loading state', () => {
-    render(<CollectionCard1 loading />);
-
-    expect(screen.getByTestId('collection-card-skeleton')).toBeInTheDocument();
-    expect(screen.queryByText(defaultCollection.name)).not.toBeInTheDocument();
-  });
-
-  it('lazy loads images', () => {
-    render(<CollectionCard1 collection={defaultCollection} lazyLoad />);
-    const image = screen.getByRole('img');
-
-    expect(image).toHaveAttribute('loading', 'lazy');
-  });
-
-  it('renders with badge when featured', () => {
-    const featuredCollection = mockCollection({ featured: true });
-    render(<CollectionCard1 collection={featuredCollection} />);
-
-    expect(screen.getByText('Featured')).toBeInTheDocument();
-  });
-
-  it('renders with custom badge', () => {
-    render(<CollectionCard1 collection={defaultCollection} badge="New Collection" />);
-    expect(screen.getByText('New Collection')).toBeInTheDocument();
-  });
-
-  it('shows collection stats', () => {
-    const collectionWithStats = mockCollection({
-      productCount: 25,
-      averagePrice: 99.99,
-      rating: 4.5,
-    });
-
-    render(<CollectionCard1 collection={collectionWithStats} showStats />);
-
-    expect(screen.getByText('25 items')).toBeInTheDocument();
-    expect(screen.getByText('Avg $99.99')).toBeInTheDocument();
-    expect(screen.getByText('4.5')).toBeInTheDocument();
-  });
-
-  it('renders with gradient overlay', () => {
-    render(<CollectionCard1 collection={defaultCollection} gradient />);
-    const overlay = screen.getByTestId('gradient-overlay');
-    expect(overlay).toBeInTheDocument();
-  });
-
-  it('handles image loading error', () => {
+  it('renders description with proper styling', () => {
     render(<CollectionCard1 collection={defaultCollection} />);
-    const image = screen.getByRole('img');
 
-    fireEvent.error(image);
-    expect(image).toHaveAttribute('src', '/placeholder-collection.png');
-  });
-
-  it('renders with custom image aspect ratio', () => {
-    render(<CollectionCard1 collection={defaultCollection} imageAspectRatio="16/9" />);
-    const imageContainer = screen.getByRole('img').parentElement;
-    expect(imageContainer).toHaveClass('aspect-video');
-  });
-
-  it('shows "Explore" button on hover', async () => {
-    render(<CollectionCard1 collection={defaultCollection} showExploreButton />);
-    const card = screen.getByTestId('collection-card');
-
-    fireEvent.mouseEnter(card);
-
-    await waitFor(() => {
-      expect(screen.getByText('Explore Collection')).toBeInTheDocument();
-    });
-  });
-
-  it('renders with price range', () => {
-    const collectionWithPrices = mockCollection({
-      minPrice: 29.99,
-      maxPrice: 199.99,
-    });
-
-    render(<CollectionCard1 collection={collectionWithPrices} showPriceRange />);
-
-    expect(screen.getByText('$29.99 - $199.99')).toBeInTheDocument();
-  });
-
-  it('has proper ARIA attributes', () => {
-    render(<CollectionCard1 collection={defaultCollection} onClick={mockOnClick} />);
-    const card = screen.getByTestId('collection-card');
-
-    expect(card).toHaveAttribute('role', 'button');
-    expect(card).toHaveAttribute('tabindex', '0');
-    expect(card).toHaveAttribute('aria-label', `View ${defaultCollection.name} collection`);
-  });
-
-  it('renders with custom colors', () => {
-    render(
-      <CollectionCard1
-        collection={defaultCollection}
-        colors={{
-          background: 'bg-blue-100',
-          text: 'text-blue-900',
-        }}
-      />,
+    const description = screen.getByText(defaultCollection.sortDescription!);
+    expect(description).toHaveClass(
+      'mt-[2px]',
+      'block',
+      'text-neutral-500',
+      'dark:text-neutral-400',
     );
-    const card = screen.getByTestId('collection-card');
-    expect(card).toHaveClass('bg-blue-100', 'text-blue-900');
   });
 
-  it('supports responsive design', () => {
-    render(
-      <CollectionCard1
-        collection={defaultCollection}
-        responsive={{
-          showProductCount: { base: false, md: true },
-          showStats: { base: false, lg: true },
-        }}
-      />,
-    );
+  it('returns null when collection has no handle', () => {
+    const collectionWithoutHandle = mockCollection({ handle: null });
+    render(<CollectionCard1 collection={collectionWithoutHandle} />);
 
-    const card = screen.getByTestId('collection-card');
-    expect(card).toHaveClass('responsive-collection-card');
+    // Should not render a link or any collection content
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.queryByText(defaultCollection.title!)).not.toBeInTheDocument();
   });
 
-  it('renders with animation on mount', () => {
-    render(<CollectionCard1 collection={defaultCollection} animate />);
-    const card = screen.getByTestId('collection-card');
+  it('renders without image when image is not provided', () => {
+    const collectionWithoutImage = mockCollection({ image: null });
+    render(<CollectionCard1 collection={collectionWithoutImage} />);
 
-    expect(card).toHaveClass('animate-fade-in');
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByText(collectionWithoutImage.title!)).toBeInTheDocument();
   });
 
-  it('renders with discount badge', () => {
-    const saleCollection = mockCollection({
-      onSale: true,
-      discount: 20,
-    });
+  it('has proper link structure and classes', () => {
+    render(<CollectionCard1 collection={defaultCollection} />);
 
-    render(<CollectionCard1 collection={saleCollection} />);
-    expect(screen.getByText('20% OFF')).toBeInTheDocument();
+    const link = screen.getByRole('link');
+    expect(link).toHaveClass('flex', 'items-center');
+  });
+
+  it('positions image correctly based on size', () => {
+    const { rerender } = render(<CollectionCard1 collection={defaultCollection} size="large" />);
+
+    // For large size, the image container should have size-20 class
+    const imageContainer = screen.getByAltText(defaultCollection.image!.alt).parentElement;
+    expect(imageContainer).toHaveClass('size-20');
+
+    rerender(<CollectionCard1 collection={defaultCollection} size="normal" />);
+
+    // For normal size, the image container should have size-12 class
+    const imageContainerNormal = screen.getByAltText(defaultCollection.image!.alt).parentElement;
+    expect(imageContainerNormal).toHaveClass('size-12');
   });
 });

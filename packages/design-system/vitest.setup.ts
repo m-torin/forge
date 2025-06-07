@@ -96,5 +96,18 @@ vi.mock('@repo/notifications/mantine-notifications', () => ({
     error: vi.fn(),
     info: vi.fn(),
     warning: vi.fn(),
+    custom: vi.fn(),
   },
 }));
+
+// Mock analytics package
+vi.mock('@repo/analytics', () => ({
+  track: vi.fn(),
+  identify: vi.fn(),
+  useFlag: vi.fn(() => false),
+  flag: vi.fn(() => false),
+}));
+
+// Mock CSS imports to prevent PostCSS issues
+vi.mock('*.css', () => ({}));
+vi.mock('./styles/index.css', () => ({}));

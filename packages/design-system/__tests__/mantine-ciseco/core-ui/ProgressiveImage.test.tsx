@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
 import { ProgressiveImage } from '../../../mantine-ciseco/components/ProgressiveImage';
 
@@ -34,28 +34,27 @@ describe('ProgressiveImage', () => {
     render(<ProgressiveImage {...defaultProps} />);
 
     await waitFor(() => {
-      const image = screen.getByRole('img');
-      expect(image).toHaveAttribute('src', defaultProps.src);
+      const image = screen.getByAltText(defaultProps.alt);
+      expect(image).toHaveAttribute('src', expect.stringContaining(defaultProps.src));
     });
   });
 
   it('renders with alt text', () => {
     render(<ProgressiveImage {...defaultProps} />);
-    const image = screen.getByRole('img');
+    const image = screen.getByAltText(defaultProps.alt);
     expect(image).toHaveAttribute('alt', defaultProps.alt);
   });
 
   it('handles image load error', () => {
     render(<ProgressiveImage {...defaultProps} />);
-    const image = screen.getByRole('img');
+    const image = screen.getByAltText(defaultProps.alt);
     fireEvent.error(image);
     expect(screen.getByText('Failed to load image')).toBeInTheDocument();
   });
 
   it('renders with custom className', () => {
-    render(<ProgressiveImage {...defaultProps} className="custom-image" />);
-    const container = screen.getByRole('img').parentElement;
-    expect(container).toHaveClass('custom-image');
+    const { container } = render(<ProgressiveImage {...defaultProps} className="custom-image" />);
+    expect(container.firstChild).toHaveClass('custom-image');
   });
 
   it('handles responsive image sources', () => {
@@ -65,7 +64,7 @@ describe('ProgressiveImage', () => {
       large: '/large.jpg',
     };
     render(<ProgressiveImage {...defaultProps} src={responsiveSrc} />);
-    const image = screen.getByRole('img');
-    expect(image).toHaveAttribute('src', responsiveSrc.large);
+    const image = screen.getByAltText(defaultProps.alt);
+    expect(image).toHaveAttribute('src', expect.stringContaining(responsiveSrc.large));
   });
 });

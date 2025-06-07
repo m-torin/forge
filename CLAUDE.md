@@ -99,6 +99,286 @@ pnpm prettier          # Format all code files
 # Type checking
 pnpm typecheck         # Run TypeScript type checking
 
+## Fully Automated Workflow Development
+
+**IMPORTANT**: For AI agent step flow development, use these fully automated commands that can
+detect issues, fix them automatically, and repeat until all tests pass:
+
+### Backstage Workflow Automation Commands
+
+These commands are available in the `apps/backstage` directory and provide complete automation for
+workflow development with continuous fixing and testing:
+
+```bash
+# Single-run automated fixing and testing
+pnpm workflow:ai-fix        # AI-powered automatic error fixing
+pnpm workflow:full-auto     # Run AI fixes + feedback cycle
+pnpm workflow:ultimate      # Complete automation: AI fix + cycle + test
+
+# Continuous automated development
+pnpm workflow:auto-repeat   # Continuously retry until all tests pass
+pnpm workflow:auto-dev      # Run dev server + continuous auto-fixing
+
+# Development cycle commands
+pnpm workflow:cycle         # Manual feedback loop (check → fix → test)
+pnpm workflow:cycle:watch   # Watch files and run feedback loop on changes
+
+# Monitoring and reporting
+pnpm workflow:test          # Run workflow-specific e2e tests
+pnpm workflow:report        # Generate detailed test reports
+pnpm workflow:feedback      # Run cycle with success/failure feedback
+```
+
+### How Full Automation Works
+
+The fully automated system uses AI-powered analysis and fixing:
+
+1. **AI Error Analysis**: Uses `@repo/ai` package to intelligently analyze TypeScript errors,
+   eslint issues, and test failures
+2. **Automatic Code Fixing**: Applies intelligent fixes using pattern recognition and AI suggestions
+3. **Continuous Feedback Loop**: Repeats the cycle until all tests pass or maximum retries reached
+4. **Real-time Monitoring**: Watches files for changes and triggers automated fixing
+
+### Automation Flow
+
+```
+Code Change → TypeScript Check → AI Analysis → Auto Fix → Lint → Test → ✅ Success
+     ↑                                                                      ↓
+     ← ← ← ← ← ← ← ← ← ← ← Retry if Failed ← ← ← ← ← ← ← ← ← ← ← ← ← ← ←
+```
+
+### Usage Examples
+
+```bash
+# Start fully automated development with live server
+cd apps/backstage
+pnpm workflow:auto-dev
+
+# Single automated fix and test cycle
+pnpm workflow:ultimate
+
+# Continuous retry until everything passes (for CI/CD)
+pnpm workflow:auto-repeat
+```
+
+The system automatically handles:
+- TypeScript compilation errors
+- Missing type definitions
+- API compatibility issues
+- Test assertion failures
+- Code style violations
+
+## Autonomous Workflow Development and Repair System
+
+The backstage app includes a comprehensive autonomous workflow development system that can generate, test, and repair Upstash workflow code without human intervention. This system leverages Claude CLI for intelligent code generation and repair.
+
+### Autonomous System Commands
+
+```bash
+# Core autonomous commands (run from apps/backstage)
+pnpm autonomous              # Show help and available commands
+pnpm autonomous:process      # Process workflow with standard loop
+pnpm autonomous:zhi          # Execute Zero-Human-Intervention protocol
+pnpm autonomous:zhi:rapid    # Quick prototype generation
+pnpm autonomous:zhi:reliable # High-reliability workflow generation
+pnpm autonomous:protocols    # List available protocols
+pnpm autonomous:metrics      # View system learning metrics
+```
+
+### Zero-Human-Intervention (ZHI) Protocols
+
+The system provides three ZHI protocols for different use cases:
+
+1. **Standard Workflow** (`standard-workflow`)
+   - Complete autonomous development from specification to deployment
+   - Includes code generation, testing, repair, Git commits, and PR creation
+   - Maximum 15 iterations, 30-minute timeout
+   - Best for production-ready workflows
+
+2. **Rapid Prototype** (`rapid-prototype`)
+   - Quick workflow generation with relaxed validation
+   - Basic functionality testing only
+   - Single repair attempt if needed
+   - 15-minute timeout
+   - Best for proof-of-concepts and demos
+
+3. **High Reliability** (`high-reliability`)
+   - Extensive validation and testing for critical workflows
+   - Security scanning and performance benchmarks
+   - Quality gates and staging deployment
+   - 60-minute timeout
+   - Best for mission-critical workflows
+
+### Workflow Specification Format
+
+To use the autonomous system, define a workflow specification:
+
+```typescript
+const workflowSpec = {
+  name: 'my-workflow',
+  description: 'Process customer orders',
+  type: 'data-processing', // optional: general|data-processing|api-integration|notification|scheduled
+  inputContract: {
+    type: 'object',
+    properties: {
+      orderId: { type: 'string' },
+      items: { type: 'array' }
+    },
+    required: ['orderId', 'items']
+  },
+  outputContract: {
+    type: 'object',
+    properties: {
+      status: { type: 'string' },
+      processedAt: { type: 'string' }
+    }
+  },
+  businessLogic: [
+    'Validate order data',
+    'Check inventory availability',
+    'Process payment',
+    'Update order status',
+    'Send confirmation email'
+  ],
+  errorHandling: [
+    'Retry failed operations up to 3 times',
+    'Send to dead letter queue on permanent failure',
+    'Alert operations team for critical errors'
+  ],
+  performance: {
+    timeout: 300000, // 5 minutes
+    retries: 3
+  }
+};
+```
+
+### Autonomous Development Process
+
+The autonomous system follows this process:
+
+1. **Specification Validation**: Ensures the workflow spec is complete
+2. **Code Generation**: Uses Claude CLI to generate implementation and tests
+3. **Test Execution**: Runs Vitest unit tests and Playwright E2E tests
+4. **Error Analysis**: Categorizes failures and determines repair strategies
+5. **AI-Powered Repair**: Applies targeted fixes using Claude CLI
+6. **Iteration**: Repeats until tests pass or limits reached
+7. **Git Operations**: Commits code and creates pull requests
+8. **CI/CD Integration**: Triggers deployment pipelines
+
+### Self-Learning Capabilities
+
+The system includes machine learning features:
+
+- **Pattern Recognition**: Identifies common error patterns
+- **Strategy Optimization**: Learns which repair strategies work best
+- **Success Prediction**: Estimates likelihood of successful generation
+- **Performance Tracking**: Monitors improvement over time
+
+Learning data is stored in `data/autonomous-learning/` and includes:
+- Error patterns and successful fixes
+- Repair strategy performance metrics
+- Workflow complexity analysis
+- Time-to-completion statistics
+
+### Claude CLI Integration
+
+The system uses Claude CLI programmatically:
+
+- **Non-interactive mode**: Uses `-p` flag with prompt files
+- **Model selection**: Uses Claude Opus for highest quality
+- **Temperature control**: Lower temperature (0.2) for consistent code
+- **Output management**: Parses generated files automatically
+
+### Example Usage
+
+```bash
+# Generate a simple workflow
+cd apps/backstage
+cat > workflow-spec.json << EOF
+{
+  "name": "hello-workflow",
+  "description": "Simple greeting workflow",
+  "inputContract": {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string" }
+    },
+    "required": ["name"]
+  },
+  "outputContract": {
+    "type": "object",
+    "properties": {
+      "greeting": { "type": "string" }
+    }
+  },
+  "businessLogic": [
+    "Validate input name",
+    "Generate personalized greeting",
+    "Return greeting message"
+  ]
+}
+EOF
+
+# Process with standard protocol
+pnpm autonomous:zhi < workflow-spec.json
+
+# Or use rapid prototyping
+pnpm autonomous:zhi:rapid < workflow-spec.json
+```
+
+### Monitoring and Metrics
+
+View system performance and learning progress:
+
+```bash
+pnpm autonomous:metrics
+```
+
+This shows:
+- Total workflows processed
+- Success rate trends
+- Common error patterns
+- Strategy effectiveness
+- Learning rate improvements
+
+### CI/CD Integration
+
+The autonomous system can be integrated into CI/CD pipelines:
+
+```yaml
+# .github/workflows/autonomous-workflow.yml
+name: Autonomous Workflow Generation
+on:
+  workflow_dispatch:
+    inputs:
+      specification:
+        description: 'Workflow specification JSON'
+        required: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run autonomous generation
+        run: |
+          echo '${{ github.event.inputs.specification }}' > spec.json
+          cd apps/backstage
+          pnpm autonomous:zhi < spec.json
+```
+
+### Best Practices
+
+1. **Start with simple specifications** and gradually add complexity
+2. **Use rapid prototype mode** for initial development
+3. **Switch to high-reliability mode** for production workflows
+4. **Monitor learning metrics** to track system improvement
+5. **Review generated code** before production deployment
+6. **Contribute patterns** back to the learning system
+
 # CLI Usage Notes:
 # - ESLint: Use `eslint . --fix` in apps/packages (the . is required, --fix auto-fixes issues)
 # - TypeScript: Use `tsc --noEmit --emitDeclarationOnly false` for type checking

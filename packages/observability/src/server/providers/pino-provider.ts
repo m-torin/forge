@@ -17,8 +17,7 @@ export interface ServerLoggingProvider extends ObservabilityProvider {
   flush(timeout?: number): Promise<void>;
   identify(userId: string, traits?: any): Promise<void>;
   isEnabled(): boolean;
-  log(entry: LogEntry): Promise<void>;
-  setContext(context: Record<string, any>): Promise<void>;
+  logEntry(entry: LogEntry): Promise<void>;
 }
 
 export class PinoProvider implements ServerLoggingProvider {
@@ -54,7 +53,11 @@ export class PinoProvider implements ServerLoggingProvider {
     // Pino is initialized in constructor, this is for compatibility
   }
 
-  async log(entry: LogEntry): Promise<void> {
+  async log(level: string, message: string, metadata?: any): Promise<void> {
+    await this.logEntry({ level, message, metadata });
+  }
+
+  async logEntry(entry: LogEntry): Promise<void> {
     const currentLogger = this.childLogger || this.logger;
     const metadata = entry.metadata || {};
 
@@ -93,7 +96,7 @@ export class PinoProvider implements ServerLoggingProvider {
     level: 'info' | 'warning' | 'error',
     context?: ObservabilityContext,
   ): Promise<void> {
-    await this.log({
+    await this.logEntry({
       level: level === 'warning' ? 'warn' : level,
       message,
       metadata: context,
@@ -113,8 +116,8 @@ export class PinoProvider implements ServerLoggingProvider {
     this.childLogger = this.logger.child(userContext);
   }
 
-  async setContext(context: Record<string, any>): Promise<void> {
-    this.childLogger = (this.childLogger || this.logger).child(context);
+  setContext(key: string, context: Record<string, any>): void {
+    this.childLogger = (this.childLogger || this.logger).child({ [key]: context });
   }
 
   async flush(timeout = 5000): Promise<void> {

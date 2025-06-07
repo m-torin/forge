@@ -1,72 +1,127 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '../test-utils';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen } from '../test-utils';
 import CollectionCard2 from '../../../mantine-ciseco/components/CollectionCard2';
 import { mockCollection } from '../test-utils';
 
+// Mock next/image
+vi.mock('next/image', () => ({
+  default: ({ src, alt, 'data-testid': testId, ...props }: any) => (
+    <img src={src} alt={alt} data-testid={testId} {...props} />
+  ),
+}));
+
+// Mock useLocalizeHref hook
+vi.mock('../../../mantine-ciseco/hooks/useLocale', () => ({
+  useLocalizeHref: () => (href: string) => `/en${href}`,
+}));
+
 describe('CollectionCard2', () => {
-  const defaultCollection = mockCollection();
-  const mockOnClick = vi.fn();
+  const defaultCollection = mockCollection({
+    title: 'Test Collection',
+    handle: 'test-collection',
+    sortDescription: 'Test collection description',
+    image: { src: '/test-collection.jpg', alt: 'Test Collection' },
+    color: 'bg-indigo-50',
+  });
 
   beforeEach(() => {
-    mockOnClick.mockClear();
+    vi.clearAllMocks();
   });
 
-  it('renders collection card with variant 2 styling', () => {
+  it('renders collection card with basic information', () => {
     render(<CollectionCard2 collection={defaultCollection} />);
 
-    expect(screen.getByText(defaultCollection.name)).toBeInTheDocument();
-    expect(screen.getByTestId('collection-card-2')).toHaveClass('variant-2');
+    expect(screen.getByTestId('collection-card-2')).toBeInTheDocument();
+    expect(screen.getByText(defaultCollection.title)).toBeInTheDocument();
   });
 
-  it('renders with horizontal layout', () => {
+  it('renders as a link to the collection', () => {
     render(<CollectionCard2 collection={defaultCollection} />);
+
     const card = screen.getByTestId('collection-card-2');
-    expect(card).toHaveClass('flex-row', 'horizontal-layout');
+    expect(card).toHaveAttribute('href', `/en/collections/${defaultCollection.handle}`);
   });
 
-  it('shows collection image on the side', () => {
-    render(<CollectionCard2 collection={defaultCollection} />);
-    const image = screen.getByRole('img');
-    const imageContainer = image.parentElement;
-
-    expect(image).toHaveAttribute('src', defaultCollection.image);
-    expect(imageContainer).toHaveClass('flex-shrink-0');
-  });
-
-  it('displays content in main area', () => {
+  it('displays collection image when provided', () => {
     render(<CollectionCard2 collection={defaultCollection} />);
 
-    const contentArea = screen.getByTestId('collection-content');
-    expect(contentArea).toHaveClass('flex-1');
-    expect(contentArea).toContainElement(screen.getByText(defaultCollection.name));
+    const image = screen.getByTestId('collection-card-2-image');
+    expect(image).toHaveAttribute('src', defaultCollection.image.src);
+    expect(image).toHaveAttribute('alt', defaultCollection.image.alt);
   });
 
-  it('handles click events', () => {
-    render(<CollectionCard2 collection={defaultCollection} onClick={mockOnClick} />);
+  it('displays collection title', () => {
+    render(<CollectionCard2 collection={defaultCollection} />);
+
+    const title = screen.getByTestId('collection-card-2-title');
+    expect(title).toHaveTextContent(defaultCollection.title);
+  });
+
+  it('displays collection description using dangerouslySetInnerHTML', () => {
+    render(<CollectionCard2 collection={defaultCollection} />);
+
+    const description = screen.getByTestId('collection-card-2-description');
+    expect(description).toBeInTheDocument();
+  });
+
+  it('applies the collection color class', () => {
+    render(<CollectionCard2 collection={defaultCollection} />);
+
+    const imageContainer = screen.getByTestId('collection-card-2-image-container');
+    expect(imageContainer).toHaveClass(defaultCollection.color);
+  });
+
+  it('renders with custom className', () => {
+    const customClass = 'custom-collection-card';
+    render(<CollectionCard2 collection={defaultCollection} className={customClass} />);
+
     const card = screen.getByTestId('collection-card-2');
-
-    fireEvent.click(card);
-    expect(mockOnClick).toHaveBeenCalledWith(defaultCollection);
+    expect(card).toHaveClass(customClass);
   });
 
-  it('shows explore button in content area', () => {
-    render(<CollectionCard2 collection={defaultCollection} showExploreButton />);
-    expect(screen.getByText('Explore Collection')).toBeInTheDocument();
+  it('renders with custom ratioClass', () => {
+    const customRatio = 'aspect-video';
+    render(<CollectionCard2 collection={defaultCollection} ratioClass={customRatio} />);
+
+    const imageContainer = screen.getByTestId('collection-card-2-image-container');
+    expect(imageContainer).toHaveClass(customRatio);
   });
 
-  it('renders with different image positions', () => {
-    const { rerender } = render(
-      <CollectionCard2 collection={defaultCollection} imagePosition="left" />,
-    );
-    expect(screen.getByTestId('collection-card-2')).toHaveClass('image-left');
+  it('renders with default aspect-square ratio', () => {
+    render(<CollectionCard2 collection={defaultCollection} />);
 
-    rerender(<CollectionCard2 collection={defaultCollection} imagePosition="right" />);
-    expect(screen.getByTestId('collection-card-2')).toHaveClass('image-right');
+    const imageContainer = screen.getByTestId('collection-card-2-image-container');
+    expect(imageContainer).toHaveClass('aspect-square');
   });
 
-  it('supports compact mode', () => {
-    render(<CollectionCard2 collection={defaultCollection} compact />);
-    const card = screen.getByTestId('collection-card-2');
-    expect(card).toHaveClass('compact-mode');
+  it('renders with custom testId', () => {
+    const customTestId = 'custom-collection-card';
+    render(<CollectionCard2 collection={defaultCollection} testId={customTestId} />);
+
+    expect(screen.getByTestId(customTestId)).toBeInTheDocument();
+    expect(screen.getByTestId(`${customTestId}-title`)).toBeInTheDocument();
+    expect(screen.getByTestId(`${customTestId}-image`)).toBeInTheDocument();
+  });
+
+  it('returns null when collection has no handle', () => {
+    const collectionWithoutHandle = mockCollection({
+      ...defaultCollection,
+      handle: '',
+    });
+
+    render(<CollectionCard2 collection={collectionWithoutHandle} />);
+    expect(screen.queryByTestId('collection-card-2')).not.toBeInTheDocument();
+  });
+
+  it('handles collections without images gracefully', () => {
+    const collectionWithoutImage = mockCollection({
+      ...defaultCollection,
+      image: null,
+    });
+
+    render(<CollectionCard2 collection={collectionWithoutImage} />);
+
+    expect(screen.getByTestId('collection-card-2')).toBeInTheDocument();
+    expect(screen.queryByTestId('collection-card-2-image')).not.toBeInTheDocument();
   });
 });

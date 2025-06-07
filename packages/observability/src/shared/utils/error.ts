@@ -6,21 +6,182 @@
 import type { ObservabilityManager } from '../types/types';
 
 /**
+ * Error codes for standardized error handling
+ */
+export enum ErrorCode {
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  NOT_FOUND = 'NOT_FOUND',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+  RATE_LIMITED = 'RATE_LIMITED',
+  PROVIDER_ERROR = 'PROVIDER_ERROR',
+  CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
+}
+
+/**
+ * Extended error interface with code and data
+ */
+export interface ExtendedError extends Error {
+  code?: ErrorCode | string;
+  data?: any;
+}
+
+/**
+ * Create an error with a code and optional data
+ */
+export function createError(
+  message: string,
+  code: ErrorCode | string,
+  data?: any
+): ExtendedError {
+  const error = new Error(message) as ExtendedError;
+  error.code = code;
+  if (data !== undefined) {
+    error.data = data;
+  }
+  return error;
+}
+
+/**
+ * Check if a value is an Error or Error-like object
+ */
+export function isError(value: unknown): value is Error {
+  if (value instanceof Error) {
+    return true;
+  }
+  
+  // Check for Error-like objects
+  if (
+    value &&
+    typeof value === 'object' &&
+    'name' in value &&
+    'message' in value &&
+    'stack' in value
+  ) {
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * Get error message from unknown value
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error === null || error === undefined) {
+    return 'Unknown error';
+  }
+  
+  if (typeof error === 'string') {
+    return error;
+  }
+  
+  if (typeof error === 'number') {
+    return error.toString();
+  }
+  
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  
+  // Try to stringify the object
+  try {
+    return JSON.stringify(error);
+  } catch {
+    // Fallback for circular references
+    return String(error);
+  }
+}
+
+/**
+ * Get error stack trace
+ */
+export function getErrorStack(error: unknown): string | undefined {
+  if (error instanceof Error) {
+    return error.stack;
+  }
+  
+  if (error && typeof error === 'object' && 'stack' in error) {
+    return String(error.stack);
+  }
+  
+  return undefined;
+}
+
+/**
+ * Normalize an error to a consistent format
+ */
+export function normalizeError(error: unknown): Record<string, any> {
+  if (error === null || error === undefined) {
+    return {
+      name: 'Error',
+      message: 'Unknown error',
+    };
+  }
+  
+  if (typeof error === 'string') {
+    return {
+      name: 'Error',
+      message: error,
+    };
+  }
+  
+  if (typeof error === 'number') {
+    return {
+      name: 'Error',
+      message: error.toString(),
+    };
+  }
+  
+  if (error instanceof Error) {
+    const normalized: Record<string, any> = {
+      name: error.name,
+      message: error.message,
+    };
+    
+    if (error.stack) {
+      normalized.stack = error.stack;
+    }
+    
+    // Include extended error properties
+    if ('code' in error) {
+      normalized.code = (error as any).code;
+    }
+    
+    if ('data' in error) {
+      normalized.data = (error as any).data;
+    }
+    
+    return normalized;
+  }
+  
+  if (typeof error === 'object') {
+    const message = getErrorMessage(error);
+    return {
+      name: 'Error',
+      message,
+      ...error,
+    };
+  }
+  
+  return {
+    name: 'Error',
+    message: String(error),
+  };
+}
+
+/**
  * Parse an unknown error into a string message
  * This is useful for displaying error messages to users
+ * Alias for getErrorMessage for backward compatibility
  */
 export function parseError(error: unknown): string {
-  let message = 'An error occurred';
-
-  if (error instanceof Error) {
-    message = error.message;
-  } else if (error && typeof error === 'object' && 'message' in error) {
-    message = error.message as string;
-  } else {
-    message = String(error);
-  }
-
-  return message;
+  return getErrorMessage(error);
 }
 
 /**

@@ -49,13 +49,16 @@ export interface ProductCardProps {
   showSizes?: boolean;
   showVariants?: boolean;
   showWishlist?: boolean;
+  testId?: string;
 }
 
 const ProductCard: FC<ProductCardProps> = ({
   className = '',
   data,
   isLiked,
+  loading,
   product,
+  testId = 'product-card',
   ...props
 }) => {
   const localizeHref = useLocalizeHref();
@@ -76,6 +79,31 @@ const ProductCard: FC<ProductCardProps> = ({
     title,
   } = product || data || {};
   const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
+
+  // Show skeleton loading state
+  if (loading) {
+    return (
+      <div
+        data-testid={`${testId}-skeleton`}
+        className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}
+      >
+        <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
+          <div
+            data-testid="placeholder"
+            className="flex aspect-[11/12] w-full animate-pulse bg-gray-200 dark:bg-gray-700"
+          />
+        </div>
+        <div className="space-y-4 px-2.5 pt-5 pb-2.5">
+          <div className="h-4 bg-gray-200 rounded dark:bg-gray-700 animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded dark:bg-gray-700 animate-pulse w-3/4" />
+          <div className="flex justify-between">
+            <div className="h-4 bg-gray-200 rounded dark:bg-gray-700 animate-pulse w-1/4" />
+            <div className="h-4 bg-gray-200 rounded dark:bg-gray-700 animate-pulse w-1/3" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Reset scroll position when drawer opens
   useEffect(() => {
@@ -112,7 +140,9 @@ const ProductCard: FC<ProductCardProps> = ({
         {optionColorValues.map((color) => (
           <div
             key={color.name}
+            data-testid={`${testId}-color-option-${color.name.toLowerCase().replace(/\s+/g, '-')}`}
             className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full"
+            aria-label={`Color: ${color.name}`}
           >
             <div
               className="absolute inset-0.5 z-0 rounded-full"
@@ -131,6 +161,7 @@ const ProductCard: FC<ProductCardProps> = ({
     return (
       <div className="invisible absolute inset-x-1 bottom-0 flex justify-center opacity-0 transition-all group-hover:visible group-hover:bottom-4 group-hover:opacity-100">
         <AddToCardButton
+          data-testid={`${testId}-add-to-cart-button`}
           color={selectedOptions?.find((option) => option.name === 'Color')?.value}
           fontSize="text-xs"
           className="shadow-lg"
@@ -153,9 +184,11 @@ const ProductCard: FC<ProductCardProps> = ({
         </AddToCardButton>
 
         <ButtonSecondary
+          data-testid={`${testId}-quick-view-button`}
           fontSize="text-xs"
           onClick={openQuickView}
           className="ms-1.5 bg-white shadow-lg transition-colors hover:bg-gray-100! hover:text-neutral-900"
+          aria-label="Quick view"
           sizeClass="py-2 px-4"
         >
           <ArrowsPointingOutIcon className="size-3.5" />
@@ -169,13 +202,25 @@ const ProductCard: FC<ProductCardProps> = ({
 
   return (
     <>
-      <div className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}>
+      <div
+        data-testid={testId}
+        onClick={props.onClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && props.onClick) {
+            props.onClick();
+          }
+        }}
+        className={`nc-ProductCard relative flex flex-col bg-transparent ${className} ${props.layout ? `layout-${props.layout}` : ''} ${status === 'out-of-stock' ? 'opacity-75' : ''}`}
+        tabIndex={props.onClick ? 0 : undefined}
+      >
         <Link href={productUrl as any} className="absolute inset-0" />
 
         <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
           <Link href={productUrl as any} className="block">
-            {featuredImage?.src && (
+            {featuredImage?.src ? (
               <ProgressiveImage
+                data-testid={`${testId}-image`}
+                loading={props.lazyLoad ? 'lazy' : 'eager'}
                 placeholder={featuredImage.alt}
                 priority={false}
                 className="flex aspect-[11/12] w-full relative"
@@ -184,11 +229,27 @@ const ProductCard: FC<ProductCardProps> = ({
                 sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
                 src={featuredImage.src}
               />
+            ) : (
+              <div
+                data-testid="placeholder"
+                className="flex aspect-[11/12] w-full bg-gray-200 dark:bg-gray-700"
+              />
             )}
           </Link>
-          <ProductStatus status={status} />
-          <LikeButton className="absolute end-3 top-3 z-10" liked={isLiked} />
+          <ProductStatus data-testid={`${testId}-status`} status={status} />
+          <LikeButton
+            data-testid={`${testId}-like-button`}
+            onClick={props.onLike}
+            className="absolute end-3 top-3 z-10"
+            aria-label="Like product"
+            liked={isLiked}
+          />
           {renderGroupButtons()}
+          {status === 'out-of-stock' && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-3xl">
+              <span className="text-white font-semibold">Out of Stock</span>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">
@@ -201,14 +262,56 @@ const ProductCard: FC<ProductCardProps> = ({
           </div>
 
           <div className="flex items-end justify-between">
-            <Prices price={price ?? 1} />
-            <div className="mb-0.5 flex items-center">
-              <StarIcon className="h-5 w-5 pb-px text-amber-400" />
-              <span className="ms-1 text-sm text-neutral-500 dark:text-neutral-400">
-                {rating || ''} ({reviewNumber || 0} reviews)
+            <Prices
+              data-testid={`${testId}-price`}
+              priceFormatter={props.priceFormatter}
+              price={price ?? 1}
+              salePrice={props.product?.salePrice}
+            />
+            {props.showRating && (
+              <div className="mb-0.5 flex items-center">
+                <StarIcon className="h-5 w-5 pb-px text-amber-400" />
+                <span className="ms-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  {rating || ''} ({reviewNumber || 0})
+                </span>
+              </div>
+            )}
+            {props.showDiscount && price && props.product?.salePrice && (
+              <span className="text-sm font-medium text-green-600">
+                {Math.round(((price - props.product.salePrice) / price) * 100)}% OFF
               </span>
-            </div>
+            )}
           </div>
+
+          {props.showCompare && (
+            <div className="flex items-center">
+              <input
+                data-testid={`${testId}-compare-checkbox`}
+                id={`compare-${id}`}
+                onChange={props.onCompare}
+                className="mr-2"
+                aria-label="Compare"
+                type="checkbox"
+              />
+              <label htmlFor={`compare-${id}`} className="text-sm">
+                Compare
+              </label>
+            </div>
+          )}
+
+          {props.product?.badges && (
+            <div className="flex gap-2 flex-wrap">
+              {props.product.badges.map((badge, index) => (
+                <span
+                  key={index}
+                  data-testid={`${testId}-badge-${index}`}
+                  className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                >
+                  {badge}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

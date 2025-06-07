@@ -3,34 +3,36 @@
  * Central registry for all workflow definitions
  */
 
-import { productClassificationWorkflow } from './product-classification';
-import { dataSyncWorkflow } from './data-sync';
-import { emailCampaignWorkflow } from './email-campaign';
-import { imageProcessingWorkflow } from './image-processing';
-import { userOnboardingWorkflow } from './user-onboarding';
+import { affiliateProductSyncWorkflow } from './affiliate-product-sync';
 import { analyticsPipelineWorkflow } from './analytics-pipeline';
-import { orderProcessingWorkflow } from './order-processing';
-import { imageDeduplicationWorkflow } from './image-deduplication';
-import { distributedComputationWorkflow } from './distributed-computation';
 import { analyticsVectorizationWorkflow } from './analytics-vectorization';
+import { dataSyncWorkflow } from './data-sync';
+import { distributedComputationWorkflow } from './distributed-computation';
+import { emailCampaignWorkflow } from './email-campaign';
+import { imageDeduplicationWorkflow } from './image-deduplication';
+import { imageProcessingWorkflow } from './image-processing';
+import { orderProcessingWorkflow } from './order-processing';
+import { priceMonitoringWorkflow } from './price-monitoring';
+import { productClassificationWorkflow } from './product-classification';
 import { sitemapParserWorkflow } from './sitemap-parser';
 import { universalRegistryWorkflow } from './universal-registry';
+import { userOnboardingWorkflow } from './user-onboarding';
 
 export interface WorkflowRegistryEntry {
+  category: string;
+  createdAt: string;
+  description: string;
+  enabled: boolean;
   id: string;
   name: string;
-  description: string;
-  version: string;
-  category: string;
   tags: string[];
-  workflow: any; // The actual workflow definition
-  enabled: boolean;
-  createdAt: string;
   updatedAt: string;
+  version: string;
+  workflow: any; // The actual workflow definition
 }
 
 class WorkflowRegistry {
-  private workflows: Map<string, WorkflowRegistryEntry> = new Map();
+  private workflows = new Map<string, WorkflowRegistryEntry>();
 
   constructor() {
     this.registerDefaults();
@@ -39,97 +41,104 @@ class WorkflowRegistry {
   private registerDefaults() {
     // Register all built-in workflows
     this.register({
-      workflow: productClassificationWorkflow,
       category: 'ai',
       tags: ['ai', 'classification', 'products', 'machine-learning'],
+      workflow: productClassificationWorkflow,
     });
 
     this.register({
-      workflow: dataSyncWorkflow,
       category: 'integration',
       tags: ['sync', 'data', 'etl', 'batch', 'integration'],
+      workflow: dataSyncWorkflow,
     });
 
     this.register({
-      workflow: emailCampaignWorkflow,
       category: 'marketing',
       tags: ['email', 'campaign', 'marketing', 'batch', 'personalization'],
+      workflow: emailCampaignWorkflow,
     });
 
     this.register({
-      workflow: imageProcessingWorkflow,
       category: 'media',
       tags: ['image', 'media', 'cdn', 'optimization', 'processing'],
+      workflow: imageProcessingWorkflow,
     });
 
     this.register({
-      workflow: userOnboardingWorkflow,
       category: 'user',
       tags: ['user', 'onboarding', 'lifecycle', 'conditional'],
+      workflow: userOnboardingWorkflow,
     });
 
     this.register({
-      workflow: analyticsPipelineWorkflow,
       category: 'analytics',
       tags: ['analytics', 'etl', 'pipeline', 'aggregation', 'insights'],
+      workflow: analyticsPipelineWorkflow,
     });
 
     this.register({
-      workflow: orderProcessingWorkflow,
       category: 'ecommerce',
       tags: ['order', 'payment', 'fulfillment', 'ecommerce', 'transaction'],
+      workflow: orderProcessingWorkflow,
     });
 
     this.register({
-      workflow: imageDeduplicationWorkflow,
       category: 'media',
       tags: ['image', 'deduplication', 'hashing', 'perceptual', 'streaming'],
+      workflow: imageDeduplicationWorkflow,
     });
 
     this.register({
-      workflow: distributedComputationWorkflow,
       category: 'compute',
       tags: ['distributed', 'map-reduce', 'parallel', 'computation', 'dynamic'],
+      workflow: distributedComputationWorkflow,
     });
 
     this.register({
-      workflow: analyticsVectorizationWorkflow,
       category: 'ml',
       tags: ['analytics', 'vectorization', 'ml', 'embeddings', 'recommendation'],
+      workflow: analyticsVectorizationWorkflow,
     });
 
     this.register({
-      workflow: sitemapParserWorkflow,
       category: 'data',
       tags: ['sitemap', 'parser', 'crawler', 'seo', 'tracking'],
+      workflow: sitemapParserWorkflow,
     });
 
     this.register({
-      workflow: universalRegistryWorkflow,
       category: 'catalog',
       tags: ['registry', 'catalog', 'product', 'normalization', 'universal'],
+      workflow: universalRegistryWorkflow,
+    });
+
+    this.register({
+      category: 'ecommerce',
+      tags: ['affiliate', 'sync', 'product', 'marketplace', 'integration', 'multi-network'],
+      workflow: affiliateProductSyncWorkflow,
+    });
+
+    this.register({
+      category: 'ecommerce',
+      tags: ['price', 'monitoring', 'alerts', 'tracking', 'affiliate', 'real-time'],
+      workflow: priceMonitoringWorkflow,
     });
   }
 
-  register(options: {
-    workflow: any;
-    category: string;
-    tags: string[];
-    enabled?: boolean;
-  }) {
-    const { workflow, category, tags, enabled = true } = options;
-    
+  register(options: { workflow: any; category: string; tags: string[]; enabled?: boolean }) {
+    const { category, enabled = true, tags, workflow } = options;
+
     const entry: WorkflowRegistryEntry = {
       id: workflow.id,
       name: workflow.name,
-      description: workflow.description,
-      version: workflow.version,
       category,
-      tags,
-      workflow,
-      enabled,
       createdAt: new Date().toISOString(),
+      description: workflow.description,
+      enabled,
+      tags,
       updatedAt: new Date().toISOString(),
+      version: workflow.version,
+      workflow,
     };
 
     this.workflows.set(workflow.id, entry);
@@ -144,28 +153,29 @@ class WorkflowRegistry {
   }
 
   getByCategory(category: string): WorkflowRegistryEntry[] {
-    return this.getAll().filter(w => w.category === category);
+    return this.getAll().filter((w) => w.category === category);
   }
 
   getByTag(tag: string): WorkflowRegistryEntry[] {
-    return this.getAll().filter(w => w.tags.includes(tag));
+    return this.getAll().filter((w) => w.tags.includes(tag));
   }
 
   search(query: string): WorkflowRegistryEntry[] {
     const lowerQuery = query.toLowerCase();
-    return this.getAll().filter(w => 
-      w.name.toLowerCase().includes(lowerQuery) ||
-      w.description.toLowerCase().includes(lowerQuery) ||
-      w.tags.some(t => t.toLowerCase().includes(lowerQuery))
+    return this.getAll().filter(
+      (w) =>
+        w.name.toLowerCase().includes(lowerQuery) ||
+        w.description.toLowerCase().includes(lowerQuery) ||
+        w.tags.some((t) => t.toLowerCase().includes(lowerQuery)),
     );
   }
 
   getCategories(): string[] {
-    return [...new Set(this.getAll().map(w => w.category))];
+    return [...new Set(this.getAll().map((w) => w.category))];
   }
 
   getTags(): string[] {
-    const allTags = this.getAll().flatMap(w => w.tags);
+    const allTags = this.getAll().flatMap((w) => w.tags);
     return [...new Set(allTags)];
   }
 
@@ -175,28 +185,31 @@ class WorkflowRegistry {
     const tags = this.getTags();
 
     return {
-      totalWorkflows: workflows.length,
-      enabledWorkflows: workflows.filter(w => w.enabled).length,
+      byCategory: categories.reduce(
+        (acc, cat) => {
+          acc[cat] = this.getByCategory(cat).length;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
       categories: categories.length,
-      tags: tags.length,
-      byCategory: categories.reduce((acc, cat) => {
-        acc[cat] = this.getByCategory(cat).length;
-        return acc;
-      }, {} as Record<string, number>),
+      enabledWorkflows: workflows.filter((w) => w.enabled).length,
       popularTags: tags
-        .map(tag => ({
-          tag,
+        .map((tag) => ({
           count: this.getByTag(tag).length,
+          tag,
         }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 10),
+      tags: tags.length,
+      totalWorkflows: workflows.length,
     };
   }
 
   export(): string {
     const data = {
-      version: '1.0.0',
       exportedAt: new Date().toISOString(),
+      version: '1.0.0',
       workflows: this.getAll(),
     };
     return JSON.stringify(data, null, 2);

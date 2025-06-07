@@ -218,7 +218,7 @@ describe('Feature Flag Hooks', () => {
       };
 
       renderHook(() => null, {
-        wrapper: ({ children }) => (
+        wrapper: ({ children }: { children: React.ReactNode }) => (
           <FeatureFlagProvider adapter={mockAdapter as any}>
             <TestComponent />
             {children}

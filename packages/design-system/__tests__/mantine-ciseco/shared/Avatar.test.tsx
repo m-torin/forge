@@ -5,8 +5,9 @@ import Avatar from '../../../mantine-ciseco/components/shared/Avatar/Avatar';
 describe('Avatar', () => {
   it('renders avatar with image', () => {
     render(<Avatar imgUrl="/avatar.jpg" userName="John Doe" />);
-    const image = screen.getByRole('img');
-    expect(image).toHaveAttribute('src', '/avatar.jpg');
+    const image = screen.getByAltText('John Doe');
+    // Next.js Image component optimizes the URL
+    expect(image).toHaveAttribute('src', expect.stringContaining('avatar.jpg'));
     expect(image).toHaveAttribute('alt', 'John Doe');
   });
 

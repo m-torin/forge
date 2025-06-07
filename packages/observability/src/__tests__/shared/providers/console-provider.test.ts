@@ -35,7 +35,7 @@ describe('ConsoleProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[INFO]', 'Test info message');
     });
@@ -47,7 +47,7 @@ describe('ConsoleProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN]', 'Test warning');
     });
@@ -59,7 +59,7 @@ describe('ConsoleProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR]', 'Test error');
     });
@@ -71,7 +71,7 @@ describe('ConsoleProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(consoleDebugSpy).toHaveBeenCalledWith('[DEBUG]', 'Test debug');
     });
@@ -87,7 +87,7 @@ describe('ConsoleProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[INFO]', 'Test with metadata', {
         action: 'login',
@@ -102,7 +102,7 @@ describe('ConsoleProvider', () => {
         timestamp: new Date().toISOString(),
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[INFO]', 'Test without metadata');
       expect(consoleLogSpy).toHaveBeenCalledTimes(1);

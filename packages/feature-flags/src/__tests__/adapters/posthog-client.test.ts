@@ -1,284 +1,262 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PostHogClientAdapter } from '../../adapters/posthog-client';
+import { createPostHogClientAdapter } from '../../adapters/posthog-client';
 
 // Mock PostHog client
 const mockIsFeatureEnabled = vi.fn();
+const mockGetFeatureFlag = vi.fn();
 const mockGetFeatureFlagPayload = vi.fn();
 const mockOnFeatureFlags = vi.fn();
 const mockReloadFeatureFlags = vi.fn();
 const mockCapture = vi.fn();
 const mockIdentify = vi.fn();
+const mockGetDistinctId = vi.fn();
 
 const mockPosthog = {
   identify: mockIdentify,
   capture: mockCapture,
+  getFeatureFlag: mockGetFeatureFlag,
   getFeatureFlagPayload: mockGetFeatureFlagPayload,
   isFeatureEnabled: mockIsFeatureEnabled,
   onFeatureFlags: mockOnFeatureFlags,
   reloadFeatureFlags: mockReloadFeatureFlags,
+  get_distinct_id: mockGetDistinctId,
+  __loaded: true,
 };
 
 vi.mock('posthog-js', () => ({
   default: mockPosthog,
 }));
 
+// Mock environment variables
+vi.stubEnv('NEXT_PUBLIC_POSTHOG_KEY', 'test-key');
+vi.stubEnv('NEXT_PUBLIC_POSTHOG_HOST', 'https://app.posthog.com');
+
+// Mock window object
+Object.defineProperty(global, 'window', {
+  value: {},
+  writable: true,
+});
+
 describe('PostHogClientAdapter', () => {
-  let adapter: PostHogClientAdapter;
+  let adapter: ReturnType<typeof createPostHogClientAdapter>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    adapter = new PostHogClientAdapter(mockPosthog as any);
+    mockGetDistinctId.mockReturnValue('test-user');
+    adapter = createPostHogClientAdapter({
+      postHogKey: 'test-key',
+    });
   });
 
-  describe('getFlag', () => {
-    it('should return flag value when enabled', async () => {
+  describe('isFeatureEnabled adapter', () => {
+    it('should return true when flag is enabled', async () => {
       mockIsFeatureEnabled.mockReturnValue(true);
-      mockGetFeatureFlagPayload.mockReturnValue({ variant: 'A' });
 
-      const result = await adapter.getFlag('test-flag');
-
-      expect(result).toEqual({ variant: 'A' });
-      expect(mockIsFeatureEnabled).toHaveBeenCalledWith('test-flag');
-      expect(mockGetFeatureFlagPayload).toHaveBeenCalledWith('test-flag');
-    });
-
-    it('should return boolean true when enabled without payload', async () => {
-      mockIsFeatureEnabled.mockReturnValue(true);
-      mockGetFeatureFlagPayload.mockReturnValue(undefined);
-
-      const result = await adapter.getFlag('test-flag');
+      const flagAdapter = adapter.isFeatureEnabled();
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
+      });
 
       expect(result).toBe(true);
+      expect(mockIsFeatureEnabled).toHaveBeenCalledWith('test-flag');
     });
 
     it('should return false when flag is disabled', async () => {
       mockIsFeatureEnabled.mockReturnValue(false);
 
-      const result = await adapter.getFlag('test-flag');
+      const flagAdapter = adapter.isFeatureEnabled();
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
+      });
 
       expect(result).toBe(false);
-      expect(mockGetFeatureFlagPayload).not.toHaveBeenCalled();
     });
 
-    it('should return default value when flag is disabled', async () => {
+    it('should identify user when different from current', async () => {
+      mockGetDistinctId.mockReturnValue('different-user');
+      mockIsFeatureEnabled.mockReturnValue(true);
+
+      const flagAdapter = adapter.isFeatureEnabled();
+      await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
+      });
+
+      expect(mockIdentify).toHaveBeenCalledWith('user-123');
+    });
+
+    it('should handle anonymous users', async () => {
       mockIsFeatureEnabled.mockReturnValue(false);
 
-      const result = await adapter.getFlag('test-flag', 'default');
+      const flagAdapter = adapter.isFeatureEnabled();
+      const result = await flagAdapter.decide({
+        entities: {},
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
+      });
 
-      expect(result).toBe('default');
+      expect(result).toBe(false);
+      expect(mockIdentify).not.toHaveBeenCalled();
     });
 
-    it('should return default value when flag is undefined', async () => {
-      mockIsFeatureEnabled.mockReturnValue(undefined);
+    it('should throw error when used outside browser', async () => {
+      const originalWindow = global.window;
+      delete (global as any).window;
 
-      const result = await adapter.getFlag('test-flag', { defaultVariant: 'B' });
+      const flagAdapter = adapter.isFeatureEnabled();
 
-      expect(result).toEqual({ defaultVariant: 'B' });
+      await expect(
+        flagAdapter.decide({
+          entities: { user: { id: 'user-123' } },
+          key: 'test-flag',
+          headers: new Headers(),
+          cookies: {} as any,
+        }),
+      ).rejects.toThrow('PostHog client adapter only works in browser environments');
+
+      global.window = originalWindow;
     });
+  });
 
-    it('should handle string payloads', async () => {
-      mockIsFeatureEnabled.mockReturnValue(true);
-      mockGetFeatureFlagPayload.mockReturnValue('variant-a');
+  describe('featureFlagValue adapter', () => {
+    it('should return flag value when available', async () => {
+      mockGetFeatureFlag.mockReturnValue('variant-a');
 
-      const result = await adapter.getFlag('string-flag');
+      const flagAdapter = adapter.featureFlagValue();
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
+      });
 
       expect(result).toBe('variant-a');
+      expect(mockGetFeatureFlag).toHaveBeenCalledWith('test-flag');
     });
 
-    it('should handle numeric payloads', async () => {
-      mockIsFeatureEnabled.mockReturnValue(true);
-      mockGetFeatureFlagPayload.mockReturnValue(42);
+    it('should return false when flag is undefined', async () => {
+      mockGetFeatureFlag.mockReturnValue(undefined);
 
-      const result = await adapter.getFlag('number-flag');
-
-      expect(result).toBe(42);
-    });
-  });
-
-  describe('getAllFlags', () => {
-    it('should wait for flags to load and return all flags', async () => {
-      const mockFlags = {
-        'flag-1': true,
-        'flag-2': 'variant-a',
-        'flag-3': { config: 'value' },
-      };
-
-      mockOnFeatureFlags.mockImplementation((callback) => {
-        // Simulate async flag loading
-        setTimeout(() => callback(mockFlags), 10);
+      const flagAdapter = adapter.featureFlagValue();
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
       });
 
-      const result = await adapter.getAllFlags();
-
-      expect(result).toEqual(mockFlags);
-      expect(mockOnFeatureFlags).toHaveBeenCalled();
+      expect(result).toBe(false);
     });
 
-    it('should handle empty flags', async () => {
-      mockOnFeatureFlags.mockImplementation((callback) => {
-        callback({});
+    it('should return boolean values', async () => {
+      mockGetFeatureFlag.mockReturnValue(true);
+
+      const flagAdapter = adapter.featureFlagValue();
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'bool-flag',
+        headers: new Headers(),
+        cookies: {} as any,
       });
-
-      const result = await adapter.getAllFlags();
-
-      expect(result).toEqual({});
-    });
-
-    it('should handle null flags response', async () => {
-      mockOnFeatureFlags.mockImplementation((callback) => {
-        callback(null);
-      });
-
-      const result = await adapter.getAllFlags();
-
-      expect(result).toEqual({});
-    });
-
-    it('should timeout if flags never load', async () => {
-      mockOnFeatureFlags.mockImplementation(() => {
-        // Never call the callback
-      });
-
-      const promise = adapter.getAllFlags();
-
-      // Should eventually timeout (implementation dependent)
-      await expect(promise).resolves.toBeDefined();
-    });
-  });
-
-  describe('isEnabled', () => {
-    it('should return true for enabled flags', async () => {
-      mockIsFeatureEnabled.mockReturnValue(true);
-
-      const result = await adapter.isEnabled('test-flag');
 
       expect(result).toBe(true);
-      expect(mockIsFeatureEnabled).toHaveBeenCalledWith('test-flag');
-    });
-
-    it('should return false for disabled flags', async () => {
-      mockIsFeatureEnabled.mockReturnValue(false);
-
-      const result = await adapter.isEnabled('test-flag');
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false for undefined flags', async () => {
-      mockIsFeatureEnabled.mockReturnValue(undefined);
-
-      const result = await adapter.isEnabled('test-flag');
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false for null flags', async () => {
-      mockIsFeatureEnabled.mockReturnValue(null);
-
-      const result = await adapter.isEnabled('test-flag');
-
-      expect(result).toBe(false);
     });
   });
 
-  describe('reload', () => {
-    it('should reload feature flags', async () => {
-      await adapter.reload();
+  describe('featureFlagPayload adapter', () => {
+    it('should return payload when available', async () => {
+      const payload = { variant: 'A', config: { timeout: 5000 } };
+      mockGetFeatureFlagPayload.mockReturnValue(payload);
 
-      expect(mockReloadFeatureFlags).toHaveBeenCalled();
-    });
-
-    it('should handle reload errors gracefully', async () => {
-      mockReloadFeatureFlags.mockImplementation(() => {
-        throw new Error('Reload failed');
+      const flagAdapter = adapter.featureFlagPayload();
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
       });
 
-      // Should not throw
-      await expect(adapter.reload()).resolves.toBeUndefined();
-    });
-  });
-
-  describe('identify', () => {
-    it('should identify user with properties', async () => {
-      await adapter.identify('user-123', {
-        email: 'test@example.com',
-        plan: 'pro',
-      });
-
-      expect(mockIdentify).toHaveBeenCalledWith('user-123', {
-        email: 'test@example.com',
-        plan: 'pro',
-      });
+      expect(result).toEqual(payload);
+      expect(mockGetFeatureFlagPayload).toHaveBeenCalledWith('test-flag');
     });
 
-    it('should identify user without properties', async () => {
-      await adapter.identify('user-456');
+    it('should transform payload when transform function provided', async () => {
+      const payload = { value: 'raw' };
+      mockGetFeatureFlagPayload.mockReturnValue(payload);
 
-      expect(mockIdentify).toHaveBeenCalledWith('user-456', undefined);
-    });
-  });
-
-  describe('track', () => {
-    it('should track flag evaluation event', async () => {
-      await adapter.track('flag_evaluated', {
-        flag: 'test-flag',
-        value: true,
+      const transform = (data: any) => ({ transformed: data.value });
+      const flagAdapter = adapter.featureFlagPayload(transform);
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
       });
 
-      expect(mockCapture).toHaveBeenCalledWith('flag_evaluated', {
-        flag: 'test-flag',
-        value: true,
-      });
+      expect(result).toEqual({ transformed: 'raw' });
     });
 
-    it('should track events without properties', async () => {
-      await adapter.track('app_loaded');
+    it('should return default payload when no payload available', async () => {
+      mockGetFeatureFlagPayload.mockReturnValue(null);
 
-      expect(mockCapture).toHaveBeenCalledWith('app_loaded', undefined);
-    });
-  });
-
-  describe('error handling', () => {
-    it('should handle PostHog errors in getFlag', async () => {
-      mockIsFeatureEnabled.mockImplementation(() => {
-        throw new Error('PostHog error');
+      const flagAdapter = adapter.featureFlagPayload();
+      const result = await flagAdapter.decide({
+        entities: { user: { id: 'user-123' } },
+        key: 'test-flag',
+        headers: new Headers(),
+        cookies: {} as any,
       });
-
-      const result = await adapter.getFlag('test-flag', 'fallback');
-
-      expect(result).toBe('fallback');
-    });
-
-    it('should handle PostHog errors in getAllFlags', async () => {
-      mockOnFeatureFlags.mockImplementation(() => {
-        throw new Error('PostHog error');
-      });
-
-      const result = await adapter.getAllFlags();
 
       expect(result).toEqual({});
     });
+  });
 
-    it('should handle PostHog errors in isEnabled', async () => {
-      mockIsFeatureEnabled.mockImplementation(() => {
-        throw new Error('PostHog error');
-      });
+  describe('adapter configuration', () => {
+    it('should have correct adapter configuration', () => {
+      const flagAdapter = adapter.isFeatureEnabled();
 
-      const result = await adapter.isEnabled('test-flag');
-
-      expect(result).toBe(false);
+      expect(flagAdapter.config).toEqual({ reportValue: true });
+      expect(flagAdapter.origin).toEqual({ provider: 'posthog' });
     });
   });
 
-  describe('constructor', () => {
-    it('should throw if PostHog client is not provided', () => {
-      expect(() => new PostHogClientAdapter(null as any)).toThrow();
-      expect(() => new PostHogClientAdapter(undefined as any)).toThrow();
+  describe('createPostHogClientAdapter', () => {
+    it('should throw error when no API key provided', () => {
+      vi.stubEnv('NEXT_PUBLIC_POSTHOG_KEY', '');
+
+      expect(() => createPostHogClientAdapter()).toThrow(
+        'PostHog API key is required. Set NEXT_PUBLIC_POSTHOG_KEY or pass postHogKey option.',
+      );
     });
 
-    it('should accept valid PostHog client', () => {
-      const adapter = new PostHogClientAdapter(mockPosthog as any);
+    it('should use provided options', () => {
+      const adapter = createPostHogClientAdapter({
+        postHogKey: 'custom-key',
+        postHogOptions: {
+          host: 'https://custom.posthog.com',
+          debug: true,
+        },
+      });
+
+      expect(adapter).toBeDefined();
+    });
+
+    it('should use environment variables when no options provided', () => {
+      vi.stubEnv('NEXT_PUBLIC_POSTHOG_KEY', 'env-key');
+      vi.stubEnv('NEXT_PUBLIC_POSTHOG_HOST', 'https://env.posthog.com');
+
+      const adapter = createPostHogClientAdapter();
+
       expect(adapter).toBeDefined();
     });
   });

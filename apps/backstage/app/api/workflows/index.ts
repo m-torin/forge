@@ -15,6 +15,8 @@ export * from './distributed-computation';
 export * from './analytics-vectorization';
 export * from './sitemap-parser';
 export * from './universal-registry';
+export * from './affiliate-product-sync';
+export * from './price-monitoring';
 
 // Workflow registry for easy access
 export { workflowRegistry } from './registry';

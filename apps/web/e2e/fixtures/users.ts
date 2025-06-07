@@ -1,4 +1,3 @@
-
 export interface TestUser {
   email: string;
   emailVerified: boolean;

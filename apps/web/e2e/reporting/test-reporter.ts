@@ -2,7 +2,6 @@ import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-
 /**
  * Test execution summary
  */
@@ -829,9 +828,7 @@ export class TestReporter {
   /**
    * Find slowest tests
    */
-  private findSlowestTests(
-    results: any,
-  ): { name: string; duration: number }[] {
+  private findSlowestTests(results: any): { name: string; duration: number }[] {
     // Implementation would analyze test durations
     return [];
   }
@@ -839,9 +836,7 @@ export class TestReporter {
   /**
    * Find flaky tests
    */
-  private findFlakyTests(
-    results: any,
-  ): { name: string; flakyScore: number }[] {
+  private findFlakyTests(results: any): { name: string; flakyScore: number }[] {
     // Implementation would analyze test reliability
     return [];
   }

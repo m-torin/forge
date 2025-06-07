@@ -32,12 +32,15 @@ const createMockPrismaClient = () => ({
     return createMockPrismaClient();
   }),
   $transaction: vi.fn(),
+  $queryRaw: vi.fn(),
+  $executeRaw: vi.fn(),
   user: {
     create: vi.fn(),
     findUnique: vi.fn(),
     findMany: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    count: vi.fn(),
   },
   organization: {
     create: vi.fn(),
@@ -45,6 +48,7 @@ const createMockPrismaClient = () => ({
     findMany: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    count: vi.fn(),
   },
   member: {
     create: vi.fn(),
@@ -52,6 +56,15 @@ const createMockPrismaClient = () => ({
     findMany: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    count: vi.fn(),
+  },
+  product: {
+    create: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn(),
   },
 });
 

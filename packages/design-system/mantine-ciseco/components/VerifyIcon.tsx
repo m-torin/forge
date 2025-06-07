@@ -28,19 +28,13 @@ const VerifyIcon: FC<VerifyIconProps> = ({
       <svg
         preserveAspectRatio={preserveAspectRatio}
         viewBox={viewBox}
-        className={iconClass}
+        className={`${iconClass} ${
+          size && typeof size === 'object'
+            ? `sm:w-[${size.sm}px] sm:h-[${size.sm}px] md:w-[${size.md}px] md:h-[${size.md}px] lg:w-[${size.lg}px] lg:h-[${size.lg}px]`
+            : ''
+        }`}
         style={{
-          ...(size && typeof size === 'object'
-            ? {
-                '@media (min-width: 640px)': { width: size.sm, height: size.sm },
-                '@media (min-width: 768px)': { width: size.md, height: size.md },
-                '@media (min-width: 1024px)': { width: size.lg, height: size.lg },
-                width: size.base,
-                height: size.base,
-              }
-            : size
-              ? { width: size, height: size }
-              : {}),
+          ...(size && typeof size === 'number' ? { width: size, height: size } : {}),
           ...(animate ? { animation: animate } : {}),
           ...(gradient
             ? {

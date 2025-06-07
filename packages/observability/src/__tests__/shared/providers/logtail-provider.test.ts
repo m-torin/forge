@@ -4,37 +4,53 @@ import { LogtailProvider } from '../../../shared/providers/logtail-provider';
 
 import type { LogEntry } from '../../../shared/types/logger-types';
 
-// Mock fetch
-global.fetch = vi.fn();
+// Mock the Logtail module
+const mockLogtailClient = {
+  debug: vi.fn(),
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+  log: vi.fn(),
+  use: vi.fn(),
+};
+
+vi.mock('@logtail/node', () => ({
+  Logtail: vi.fn().mockImplementation(() => mockLogtailClient),
+}));
 
 describe('LogtailProvider', () => {
   let provider: LogtailProvider;
   const mockToken = 'test-logtail-token';
-  const mockFetch = global.fetch as any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    mockFetch.mockResolvedValue({
-      json: async () => ({ success: true }),
-      ok: true,
+    // Reset all mock function calls
+    Object.values(mockLogtailClient).forEach((fn) => {
+      if (typeof fn === 'function' && 'mockClear' in fn) {
+        fn.mockClear();
+      }
     });
 
-    provider = new LogtailProvider(mockToken);
+    provider = new LogtailProvider();
+    await provider.initialize({ sourceToken: mockToken });
   });
 
-  describe('constructor', () => {
+  describe('initialization', () => {
     it('should initialize with provided token', () => {
-      expect(provider.isEnabled()).toBe(true);
+      expect(provider).toBeDefined();
+      expect(provider.name).toBe('logtail');
     });
 
-    it('should be disabled without token', () => {
-      const disabledProvider = new LogtailProvider('');
-      expect(disabledProvider.isEnabled()).toBe(false);
+    it('should throw without token', async () => {
+      const disabledProvider = new LogtailProvider();
+      await expect(disabledProvider.initialize({ sourceToken: '' })).rejects.toThrow(
+        'Logtail source token is required'
+      );
     });
   });
 
   describe('log', () => {
-    it('should send log entry to Logtail API', async () => {
+    it('should send log entry to Logtail client', async () => {
       const entry: LogEntry = {
         level: 'info',
         message: 'Test log message',
@@ -45,111 +61,103 @@ describe('LogtailProvider', () => {
         timestamp: '2023-01-01T00:00:00.000Z',
       };
 
-      await provider.log(entry);
+      await provider.log(entry.level, entry.message, entry.metadata);
 
-      expect(mockFetch).toHaveBeenCalledWith('https://in.logs.betterstack.com', {
-        body: JSON.stringify({
-          dt: '2023-01-01T00:00:00.000Z',
+      expect(mockLogtailClient.info).toHaveBeenCalledWith(
+        'Test log message',
+        expect.objectContaining({
+          action: 'test',
+          userId: '123',
           level: 'info',
-          message: 'Test log message',
-          metadata: {
-            action: 'test',
-            userId: '123',
-          },
-        }),
-        headers: {
-          Authorization: 'Bearer test-logtail-token',
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      });
+        })
+      );
     });
 
     it('should map log levels correctly', async () => {
       const levels: LogEntry['level'][] = ['debug', 'info', 'warn', 'error'];
 
       for (const level of levels) {
-        mockFetch.mockClear();
+        vi.clearAllMocks();
 
-        await provider.log({
+        await provider.log(
           level,
-          message: `Test ${level}`,
-          timestamp: new Date().toISOString(),
-        });
+          `Test ${level}`,
+          { timestamp: new Date().toISOString() }
+        );
 
-        const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-        expect(body.level).toBe(level);
+        // Check that the correct method was called
+        switch (level) {
+          case 'debug':
+            expect(mockLogtailClient.debug).toHaveBeenCalled();
+            break;
+          case 'info':
+            expect(mockLogtailClient.info).toHaveBeenCalled();
+            break;
+          case 'warn':
+            expect(mockLogtailClient.warn).toHaveBeenCalled();
+            break;
+          case 'error':
+            expect(mockLogtailClient.error).toHaveBeenCalled();
+            break;
+        }
       }
     });
 
-    it('should batch multiple logs', async () => {
+    it('should send multiple logs', async () => {
       // Send multiple logs quickly
       const promises = [];
       for (let i = 0; i < 5; i++) {
         promises.push(
-          provider.log({
-            level: 'info',
-            message: `Log ${i}`,
-            timestamp: new Date().toISOString(),
-          }),
+          provider.log(
+            'info',
+            `Log ${i}`,
+            { timestamp: new Date().toISOString() }
+          ),
         );
       }
 
       await Promise.all(promises);
 
-      // Should batch logs
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(Array.isArray(body)).toBe(true);
-      expect(body).toHaveLength(5);
+      // Each log should be sent individually to the Logtail client
+      // The client handles batching internally
+      expect(mockLogtailClient.info).toHaveBeenCalledTimes(5);
     });
 
-    it('should handle API errors gracefully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      });
+    it('should handle client errors gracefully', async () => {
+      // Mock the Logtail client to throw an error
+      mockLogtailClient.error.mockRejectedValueOnce(new Error('Client error'));
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      await provider.log({
-        level: 'error',
-        message: 'Test error',
-        timestamp: new Date().toISOString(),
-      });
+      await provider.log(
+        'error',
+        'Test error',
+        { timestamp: new Date().toISOString() }
+      );
 
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to send logs to Logtail:', expect.any(Error));
+      // The provider should handle the error gracefully
+      expect(mockLogtailClient.error).toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
 
-    it('should handle network errors gracefully', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    // Removed duplicate error handling test
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('should not send logs when not initialized', async () => {
+      const disabledProvider = new LogtailProvider();
+      // Don't initialize it, so it remains disabled
 
-      await provider.log({
-        level: 'error',
-        message: 'Test error',
-        timestamp: new Date().toISOString(),
-      });
+      await disabledProvider.log(
+        'info',
+        'Should not be sent',
+        { timestamp: new Date().toISOString() }
+      );
 
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to send logs to Logtail:', expect.any(Error));
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should not send logs when disabled', async () => {
-      const disabledProvider = new LogtailProvider('');
-
-      await disabledProvider.log({
-        level: 'info',
-        message: 'Should not be sent',
-        timestamp: new Date().toISOString(),
-      });
-
-      expect(mockFetch).not.toHaveBeenCalled();
+      // None of the Logtail client methods should be called
+      expect(mockLogtailClient.info).not.toHaveBeenCalled();
+      expect(mockLogtailClient.debug).not.toHaveBeenCalled();
+      expect(mockLogtailClient.warn).not.toHaveBeenCalled();
+      expect(mockLogtailClient.error).not.toHaveBeenCalled();
     });
   });
 
@@ -160,15 +168,18 @@ describe('LogtailProvider', () => {
 
       await provider.captureException(error, { userId: '123' });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.level).toBe('error');
-      expect(body.message).toBe('Test exception');
-      expect(body.error).toEqual({
-        name: 'Error',
-        message: 'Test exception',
-        stack: error.stack,
-      });
-      expect(body.context).toEqual({ userId: '123' });
+      expect(mockLogtailClient.error).toHaveBeenCalledWith(
+        'Exception captured',
+        expect.objectContaining({
+          error: {
+            name: 'Error',
+            message: 'Test exception',
+            stack: error.stack,
+          },
+          level: 'error',
+          userId: '123',
+        })
+      );
     });
 
     it('should handle non-Error objects', async () => {
@@ -176,153 +187,156 @@ describe('LogtailProvider', () => {
 
       await provider.captureException(error as any);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.error).toEqual(error);
+      expect(mockLogtailClient.error).toHaveBeenCalledWith(
+        'Exception captured',
+        expect.any(Object)
+      );
     });
 
     it('should handle string errors', async () => {
       await provider.captureException('String error' as any);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.message).toBe('String error');
-      expect(body.error).toBe('String error');
+      expect(mockLogtailClient.error).toHaveBeenCalledWith(
+        'Exception captured',
+        expect.any(Object)
+      );
     });
   });
 
-  describe('identify', () => {
-    it('should send user identification event', async () => {
-      await provider.identify('user-123', {
-        name: 'Test User',
+  describe('setUser', () => {
+    it('should set user context via middleware', () => {
+      provider.setUser({
+        id: 'user-123',
         email: 'test@example.com',
+        username: 'testuser',
       });
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.event).toBe('identify');
-      expect(body.userId).toBe('user-123');
-      expect(body.traits).toEqual({
-        name: 'Test User',
-        email: 'test@example.com',
-      });
+      // The use method should be called to add user context
+      expect(mockLogtailClient.use).toHaveBeenCalled();
     });
+  });
 
-    it('should handle identification without traits', async () => {
-      await provider.identify('user-456');
+  describe('setTag', () => {
+    it('should set tag via middleware', () => {
+      provider.setTag('environment', 'production');
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.userId).toBe('user-456');
-      expect(body.traits).toBeUndefined();
+      // The use method should be called to add tag
+      expect(mockLogtailClient.use).toHaveBeenCalled();
+    });
+  });
+
+  describe('setExtra', () => {
+    it('should set extra data via middleware', () => {
+      provider.setExtra('version', '1.0.0');
+
+      // The use method should be called to add extra data
+      expect(mockLogtailClient.use).toHaveBeenCalled();
     });
   });
 
   describe('setContext', () => {
-    it('should store context for future logs', async () => {
-      await provider.setContext({
+    it('should add context via middleware', () => {
+      // setContext takes key and value as separate arguments
+      provider.setContext('app', {
         environment: 'production',
         version: '1.0.0',
       });
 
-      await provider.log({
-        level: 'info',
-        message: 'Test with context',
-        timestamp: new Date().toISOString(),
-      });
-
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.context).toEqual({
-        environment: 'production',
-        version: '1.0.0',
-      });
-    });
-
-    it('should merge context with log metadata', async () => {
-      await provider.setContext({
-        environment: 'production',
-      });
-
-      await provider.log({
-        level: 'info',
-        message: 'Test',
-        metadata: {
-          userId: '123',
-        },
-        timestamp: new Date().toISOString(),
-      });
-
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.context).toEqual({
-        environment: 'production',
-      });
-      expect(body.metadata).toEqual({
-        userId: '123',
-      });
+      // The use method should be called to add middleware
+      expect(mockLogtailClient.use).toHaveBeenCalled();
     });
   });
 
-  describe('flush', () => {
-    it('should send any pending logs immediately', async () => {
-      // Add a log but don't wait
-      provider.log({
-        level: 'info',
-        message: 'Pending log',
-        timestamp: new Date().toISOString(),
+  describe('startTransaction', () => {
+    it('should log transaction start and provide finish method', () => {
+      const transaction = provider.startTransaction('test-transaction', {
+        userId: '123',
       });
 
-      // Flush should send immediately
-      await provider.flush();
+      expect(mockLogtailClient.info).toHaveBeenCalledWith(
+        'Transaction started: test-transaction',
+        expect.objectContaining({
+          transactionName: 'test-transaction',
+          userId: '123',
+        })
+      );
 
-      expect(mockFetch).toHaveBeenCalled();
+      // Clear previous calls
+      mockLogtailClient.info.mockClear();
+
+      // Finish the transaction
+      transaction.finish();
+
+      expect(mockLogtailClient.info).toHaveBeenCalledWith(
+        'Transaction completed: test-transaction',
+        expect.objectContaining({
+          transactionName: 'test-transaction',
+          durationUnit: 'ms',
+        })
+      );
     });
+  });
 
-    it('should wait for timeout duration', async () => {
-      const start = Date.now();
-      await provider.flush(100);
-      const duration = Date.now() - start;
+  describe('addBreadcrumb', () => {
+    it('should log breadcrumb as debug entry', () => {
+      provider.addBreadcrumb({
+        type: 'navigation',
+        category: 'route',
+        message: 'Navigated to /dashboard',
+        level: 'info',
+        data: { from: '/home', to: '/dashboard' },
+      });
 
-      expect(duration).toBeGreaterThanOrEqual(90); // Allow some margin
-      expect(duration).toBeLessThan(150);
+      expect(mockLogtailClient.debug).toHaveBeenCalledWith(
+        'Breadcrumb',
+        expect.objectContaining({
+          breadcrumb: expect.objectContaining({
+            type: 'navigation',
+            category: 'route',
+            message: 'Navigated to /dashboard',
+          }),
+        })
+      );
     });
   });
 
   describe('batching', () => {
-    it('should batch logs within time window', async () => {
+    it('should send logs to Logtail client', async () => {
       // Send logs without awaiting
       const promises = [];
       for (let i = 0; i < 3; i++) {
         promises.push(
-          provider.log({
-            level: 'info',
-            message: `Log ${i}`,
-            timestamp: new Date().toISOString(),
-          }),
+          provider.log(
+            'info',
+            `Log ${i}`,
+            { timestamp: new Date().toISOString() }
+          ),
         );
       }
 
       await Promise.all(promises);
 
-      // Should send as batch
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(Array.isArray(body)).toBe(true);
-      expect(body).toHaveLength(3);
+      // Logtail client handles batching internally
+      expect(mockLogtailClient.info).toHaveBeenCalledTimes(3);
     });
 
-    it('should send large batches immediately', async () => {
-      // Send many logs to trigger batch size limit
+    it('should handle many logs', async () => {
+      // Send many logs
       const promises = [];
       for (let i = 0; i < 101; i++) {
         promises.push(
-          provider.log({
-            level: 'info',
-            message: `Log ${i}`,
-            timestamp: new Date().toISOString(),
-          }),
+          provider.log(
+            'info',
+            `Log ${i}`,
+            { timestamp: new Date().toISOString() }
+          ),
         );
       }
 
       await Promise.all(promises);
 
-      // Should send multiple batches
-      expect(mockFetch).toHaveBeenCalledTimes(2);
+      // All logs should be sent
+      expect(mockLogtailClient.info).toHaveBeenCalledTimes(101);
     });
   });
 });

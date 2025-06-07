@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
 import MySwitch from '../../../mantine-ciseco/components/MySwitch';
 
@@ -27,7 +27,7 @@ describe('MySwitch', () => {
   it('handles enabled state', () => {
     render(<MySwitch enabled onChange={mockOnChange} />);
     const switchElement = screen.getByRole('switch');
-    expect(switchElement).toHaveAttribute('aria-checked', 'true');
+    expect(switchElement).toHaveAttribute('data-checked');
   });
 
   it('handles disabled state (not supported, should not crash)', () => {
@@ -45,6 +45,7 @@ describe('MySwitch', () => {
 
   it('renders with custom className', () => {
     render(<MySwitch className="custom-switch" />);
-    expect(screen.getByRole('switch').parentElement).toHaveClass('custom-switch');
+    const container = screen.getByRole('switch').closest('.MySwitch');
+    expect(container).toHaveClass('custom-switch');
   });
 });

@@ -31,9 +31,10 @@ export const getNewParam = ({
 interface Props {
   images: ListingGalleryImage[];
   onClose?: () => void;
+  testId?: string;
 }
 
-const ListingImageGallery: FC<Props> = ({ images, onClose }) => {
+const ListingImageGallery: FC<Props> = ({ images, onClose, testId = 'listing-image-gallery' }) => {
   const searchParams = useSearchParams();
   const isShowModal = searchParams?.get('modal');
   const photoId = searchParams?.get('photoId');
@@ -56,7 +57,7 @@ const ListingImageGallery: FC<Props> = ({ images, onClose }) => {
 
   const renderContent = () => {
     return (
-      <div className=" ">
+      <div data-testid={`${testId}-content`} className=" ">
         {photoId && (
           <Modal
             onClose={() => {
@@ -67,13 +68,15 @@ const ListingImageGallery: FC<Props> = ({ images, onClose }) => {
               router.push(`${thisPathname}/?${params.toString()}` as Route);
             }}
             images={images}
+            testId={`${testId}-modal`}
           />
         )}
 
-        <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
+        <div data-testid={`${testId}-grid`} className="columns-1 gap-4 sm:columns-2 xl:columns-3">
           {images.map(({ id, url }) => (
             <div
               key={id}
+              data-testid={`${testId}-image-${id}`}
               ref={id === Number(lastViewedPhoto) ? lastViewedPhotoRef : null}
               onClick={() => {
                 const newPathname = getNewParam({ value: id });
@@ -82,12 +85,13 @@ const ListingImageGallery: FC<Props> = ({ images, onClose }) => {
               className="after:content group relative mb-5 block w-full cursor-zoom-in after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight focus:outline-hidden"
             >
               <Image
+                data-testid={`${testId}-image-${id}-img`}
                 width={720}
                 className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110 focus:outline-hidden"
                 style={{
                   transform: 'translate3d(0, 0, 0)',
                 }}
-                alt="chisfis listing gallery "
+                alt="chisfis listing gallery"
                 height={480}
                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 350px"
                 src={url}

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
 import Button from '../../../mantine-ciseco/components/shared/Button/Button';
 
@@ -58,10 +58,13 @@ describe('Button', () => {
   });
 
   it('renders loading state', () => {
-    render(<Button loading>Loading</Button>);
+    const { container } = render(<Button loading>Loading</Button>);
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    expect(screen.getByRole('img')).toBeInTheDocument();
+    
+    const loadingSvg = container.querySelector('svg');
+    expect(loadingSvg).toBeInTheDocument();
+    expect(loadingSvg).toHaveClass('animate-spin');
   });
 
   it('renders disabled state', () => {

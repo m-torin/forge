@@ -2,6 +2,8 @@
  * Core types for the multi-provider observability system
  */
 
+export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+
 export interface ObservabilityProviderConfig {
   apiKey?: string; // General API key
   // Provider-specific required fields

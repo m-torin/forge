@@ -1,112 +1,108 @@
-// @ts-nocheck - Test file with component prop compatibility issues
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
 import LikeSaveBtns from '../../../mantine-ciseco/components/LikeSaveBtns';
 
 describe('LikeSaveBtns', () => {
-  const mockOnLike = vi.fn();
-  const mockOnSave = vi.fn();
+  it('renders both share and save buttons', () => {
+    render(<LikeSaveBtns />);
 
-  beforeEach(() => {
-    mockOnLike.mockClear();
-    mockOnSave.mockClear();
-  });
-
-  it('renders both like and save buttons', () => {
-    render(<LikeSaveBtns onLike={mockOnLike} onSave={mockOnSave} />);
-
-    expect(screen.getByLabelText('Like')).toBeInTheDocument();
+    expect(screen.getByLabelText('Share')).toBeInTheDocument();
     expect(screen.getByLabelText('Save')).toBeInTheDocument();
   });
 
-  it('handles like button click', () => {
-    render(<LikeSaveBtns onLike={mockOnLike} onSave={mockOnSave} />);
-
-    const likeButton = screen.getByLabelText('Like');
-    fireEvent.click(likeButton);
-
-    expect(mockOnLike).toHaveBeenCalledWith(true);
+  it('shows share button with text', () => {
+    render(<LikeSaveBtns />);
+    expect(screen.getByText('Share')).toBeInTheDocument();
   });
 
-  it('handles save button click', () => {
-    render(<LikeSaveBtns onLike={mockOnLike} onSave={mockOnSave} />);
+  it('shows save button with text', () => {
+    render(<LikeSaveBtns />);
+    expect(screen.getByText('Save')).toBeInTheDocument();
+  });
+
+  it('handles save button toggle', () => {
+    render(<LikeSaveBtns />);
 
     const saveButton = screen.getByLabelText('Save');
+    expect(saveButton).toHaveAttribute('aria-pressed', 'false');
+
     fireEvent.click(saveButton);
-
-    expect(mockOnSave).toHaveBeenCalledWith(true);
-  });
-
-  it('shows liked state', () => {
-    render(<LikeSaveBtns liked onLike={mockOnLike} onSave={mockOnSave} />);
-
-    const likeButton = screen.getByLabelText('Like');
-    expect(likeButton).toHaveAttribute('aria-pressed', 'true');
-    expect(likeButton).toHaveClass('liked');
-  });
-
-  it('shows saved state', () => {
-    render(<LikeSaveBtns saved onLike={mockOnLike} onSave={mockOnSave} />);
-
-    const saveButton = screen.getByLabelText('Save');
     expect(saveButton).toHaveAttribute('aria-pressed', 'true');
-    expect(saveButton).toHaveClass('saved');
+    expect(saveButton).toHaveAttribute('aria-label', 'Remove from saved');
+
+    fireEvent.click(saveButton);
+    expect(saveButton).toHaveAttribute('aria-pressed', 'false');
+    expect(saveButton).toHaveAttribute('aria-label', 'Save');
   });
 
-  it('displays like count', () => {
-    render(<LikeSaveBtns likeCount={42} showCounts onLike={mockOnLike} onSave={mockOnSave} />);
-    expect(screen.getByText('42')).toBeInTheDocument();
-  });
+  it('shows different icons for save states', () => {
+    render(<LikeSaveBtns />);
 
-  it('displays save count', () => {
-    render(<LikeSaveBtns saveCount={15} showCounts onLike={mockOnLike} onSave={mockOnSave} />);
-    expect(screen.getByText('15')).toBeInTheDocument();
-  });
-
-  it('renders with different sizes', () => {
-    const { rerender } = render(<LikeSaveBtns size="sm" onLike={mockOnLike} onSave={mockOnSave} />);
-    expect(screen.getByLabelText('Like')).toHaveClass('size-sm');
-
-    rerender(<LikeSaveBtns size="lg" onLike={mockOnLike} onSave={mockOnSave} />);
-    expect(screen.getByLabelText('Like')).toHaveClass('size-lg');
-  });
-
-  it('handles disabled state', () => {
-    render(<LikeSaveBtns disabled onLike={mockOnLike} onSave={mockOnSave} />);
-
-    const likeButton = screen.getByLabelText('Like');
     const saveButton = screen.getByLabelText('Save');
+    const saveIcon = saveButton.querySelector('svg');
 
-    expect(likeButton).toBeDisabled();
-    expect(saveButton).toBeDisabled();
+    // Initially not filled
+    expect(saveIcon).toHaveAttribute('fill', 'none');
 
-    fireEvent.click(likeButton);
     fireEvent.click(saveButton);
 
-    expect(mockOnLike).not.toHaveBeenCalled();
-    expect(mockOnSave).not.toHaveBeenCalled();
+    // After clicking, should be filled
+    expect(saveIcon).toHaveAttribute('fill', 'currentColor');
   });
 
-  it('renders with custom className', () => {
-    render(<LikeSaveBtns className="custom-buttons" onLike={mockOnLike} onSave={mockOnSave} />);
-    const container = screen.getByLabelText('Like').parentElement;
-    expect(container).toHaveClass('custom-buttons');
+  it('renders with proper button structure', () => {
+    render(<LikeSaveBtns />);
+
+    const container = screen.getByLabelText('Share').closest('.flow-root');
+    expect(container).toBeInTheDocument();
+
+    const buttonsContainer = container?.querySelector('.flex');
+    expect(buttonsContainer).toHaveClass('text-neutral-700', 'dark:text-neutral-300');
   });
 
-  it('supports vertical layout', () => {
-    render(<LikeSaveBtns vertical onLike={mockOnLike} onSave={mockOnSave} />);
-    const container = screen.getByLabelText('Like').parentElement;
-    expect(container).toHaveClass('flex-col');
+  it('both buttons have proper hover styles', () => {
+    render(<LikeSaveBtns />);
+
+    const shareButton = screen.getByLabelText('Share');
+    const saveButton = screen.getByLabelText('Save');
+
+    expect(shareButton).toHaveClass('hover:bg-neutral-100', 'dark:hover:bg-neutral-800');
+    expect(saveButton).toHaveClass('hover:bg-neutral-100', 'dark:hover:bg-neutral-800');
   });
 
-  it('shows tooltips on hover', async () => {
-    render(<LikeSaveBtns showTooltips onLike={mockOnLike} onSave={mockOnSave} />);
+  it('both buttons are type button', () => {
+    render(<LikeSaveBtns />);
 
-    const likeButton = screen.getByLabelText('Like');
-    fireEvent.mouseEnter(likeButton);
+    const shareButton = screen.getByLabelText('Share');
+    const saveButton = screen.getByLabelText('Save');
 
-    await waitFor(() => {
-      expect(screen.getByRole('tooltip')).toHaveTextContent('Like this item');
-    });
+    expect(shareButton).toHaveAttribute('type', 'button');
+    expect(saveButton).toHaveAttribute('type', 'button');
+  });
+
+  it('renders SVG icons correctly', () => {
+    render(<LikeSaveBtns />);
+
+    const shareButton = screen.getByLabelText('Share');
+    const saveButton = screen.getByLabelText('Save');
+
+    const shareIcon = shareButton.querySelector('svg');
+    const saveIcon = saveButton.querySelector('svg');
+
+    expect(shareIcon).toHaveAttribute('aria-hidden', 'true');
+    expect(shareIcon).toHaveClass('h-5', 'w-5');
+
+    expect(saveIcon).toHaveAttribute('aria-hidden', 'true');
+    expect(saveIcon).toHaveClass('h-5', 'w-5');
+  });
+
+  it('shows responsive text visibility', () => {
+    render(<LikeSaveBtns />);
+
+    const shareText = screen.getByText('Share');
+    const saveText = screen.getByText('Save');
+
+    expect(shareText).toHaveClass('hidden', 'sm:block', 'ml-2');
+    expect(saveText).toHaveClass('hidden', 'sm:block', 'ml-2');
   });
 });

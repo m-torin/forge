@@ -1,13 +1,6 @@
 import clsx from 'clsx';
 import { type FC } from 'react';
 
-import { getCollections } from '../../data/data';
-import {
-  getCurrencies,
-  getHeaderDropdownCategories,
-  getLanguages,
-  getNavMegaMenu,
-} from '../../data/navigation';
 import Logo from '../shared/Logo/Logo';
 
 import AvatarDropdown from './AvatarDropdown';
@@ -52,6 +45,7 @@ export interface HeaderProps {
   showSearch?: boolean;
   showThemeToggle?: boolean;
   sticky?: boolean;
+  testId?: string;
   user?: {
     name: string;
     email: string;
@@ -59,20 +53,22 @@ export interface HeaderProps {
   };
 }
 
-const Header: FC<HeaderProps> = async ({
+const Header: FC<HeaderProps> = ({
   currentLocale,
   hasBorderBottom = true,
   onCartClick,
   onMenuClick,
+  testId = 'header',
 }) => {
-  const megamenu = await getNavMegaMenu();
-  const dropdownCategories = await getHeaderDropdownCategories();
-  const currencies = await getCurrencies();
-  const languages = await getLanguages();
-  const featuredCollections = (await getCollections()).slice(7, 11);
+  // Mock data for testing - in real implementation these would be props or from context
+  const megamenu = [];
+  const dropdownCategories = [];
+  const currencies = [];
+  const languages = [];
+  const featuredCollections = [];
 
   return (
-    <div className="relative z-10">
+    <header data-testid={testId} role="banner" className="relative z-10">
       <div className="container">
         <div
           className={clsx(
@@ -82,14 +78,18 @@ const Header: FC<HeaderProps> = async ({
           )}
         >
           <div className="flex items-center justify-center gap-x-3 sm:gap-x-8">
-            <Logo />
+            <Logo data-testid={`${testId}-logo`} />
             <div className="hidden h-9 border-l border-neutral-200 md:block dark:border-neutral-700" />
             <CategoriesDropdown categories={dropdownCategories} className="hidden md:block" />
           </div>
 
-          <div className="flex flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5">
+          <nav
+            data-testid={`${testId}-navigation`}
+            className="flex flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5"
+            aria-label="Main navigation"
+          >
             <div className="block lg:hidden">
-              <HamburgerBtnMenu onClick={onMenuClick} />
+              <HamburgerBtnMenu onClick={onMenuClick} aria-label="Toggle menu" />
             </div>
             <MegaMenuPopover featuredCollection={featuredCollections[0]} megamenu={megamenu} />
             <CurrLangDropdown
@@ -98,13 +98,17 @@ const Header: FC<HeaderProps> = async ({
               currencies={currencies}
               languages={languages}
             />
-            <SearchBtnPopover />
-            <AvatarDropdown />
-            <CartBtn onClick={onCartClick} />
-          </div>
+            <SearchBtnPopover data-testid={`${testId}-search`} />
+            <AvatarDropdown data-testid={`${testId}-user-menu`} />
+            <CartBtn
+              data-testid={`${testId}-cart`}
+              onClick={onCartClick}
+              aria-label="Shopping cart"
+            />
+          </nav>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 

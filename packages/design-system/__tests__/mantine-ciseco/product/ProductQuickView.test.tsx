@@ -58,48 +58,64 @@ describe('ProductQuickView', () => {
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  it('calls onClose when backdrop is clicked', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('calls onClose when backdrop is clicked', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     const backdrop = screen.getByTestId('modal-backdrop');
-    fireEvent.click(backdrop);
+
+    await act(async () => {
+      fireEvent.click(backdrop);
+    });
+
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  it('renders product image gallery', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('renders product image gallery', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     const images = screen.getAllByRole('img');
     expect(images.length).toBeGreaterThan(0);
     expect(images[0]).toHaveAttribute('alt', defaultProduct.name);
   });
 
-  it('shows product price', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('shows product price', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByText(`$${defaultProduct.price}`)).toBeInTheDocument();
   });
 
-  it('shows sale price when available', () => {
+  it('shows sale price when available', async () => {
     const productWithSale = mockProduct({
       price: 100,
       salePrice: 75,
     });
 
-    render(<ProductQuickView product={productWithSale} isOpen onClose={mockOnClose} />);
+    await act(async () => {
+      render(<ProductQuickView product={productWithSale} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByText('$75')).toBeInTheDocument();
     expect(screen.getByText('$100')).toHaveClass('line-through');
   });
 
-  it('renders product description', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('renders product description', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByText(defaultProduct.description)).toBeInTheDocument();
   });
 
-  it('renders size selector when sizes available', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('renders size selector when sizes available', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByText('Size')).toBeInTheDocument();
     defaultProduct.sizes.forEach((size) => {
@@ -107,8 +123,10 @@ describe('ProductQuickView', () => {
     });
   });
 
-  it('renders color selector when colors available', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('renders color selector when colors available', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByText('Color')).toBeInTheDocument();
     defaultProduct.colors.forEach((color) => {
@@ -116,53 +134,75 @@ describe('ProductQuickView', () => {
     });
   });
 
-  it('handles size selection', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('handles size selection', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     const sizeButton = screen.getByText('M');
-    fireEvent.click(sizeButton);
+
+    await act(async () => {
+      fireEvent.click(sizeButton);
+    });
 
     expect(sizeButton).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('handles color selection', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('handles color selection', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     const colorButton = screen.getByLabelText('Color: red');
-    fireEvent.click(colorButton);
+
+    await act(async () => {
+      fireEvent.click(colorButton);
+    });
 
     expect(colorButton).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('renders quantity selector', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('renders quantity selector', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByText('Quantity')).toBeInTheDocument();
     expect(screen.getByRole('spinbutton')).toBeInTheDocument();
   });
 
-  it('handles quantity changes', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('handles quantity changes', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     const quantityInput = screen.getByRole('spinbutton');
     const increaseButton = screen.getByLabelText('Increase quantity');
 
-    fireEvent.click(increaseButton);
+    await act(async () => {
+      fireEvent.click(increaseButton);
+    });
+
     expect(quantityInput).toHaveValue(2);
   });
 
-  it('renders add to cart button', () => {
-    render(
-      <ProductQuickView
-        product={defaultProduct}
-        isOpen
-        onClose={mockOnClose}
-        onAddToCart={mockOnAddToCart}
-      />,
-    );
+  it('renders add to cart button', async () => {
+    await act(async () => {
+      render(
+        <ProductQuickView
+          product={defaultProduct}
+          isOpen
+          onClose={mockOnClose}
+          onAddToCart={mockOnAddToCart}
+        />,
+      );
+    });
 
     const addToCartButton = screen.getByText('Add to Cart');
-    fireEvent.click(addToCartButton);
+
+    await act(async () => {
+      fireEvent.click(addToCartButton);
+    });
 
     expect(mockOnAddToCart).toHaveBeenCalledWith({
       product: defaultProduct,
@@ -172,24 +212,31 @@ describe('ProductQuickView', () => {
     });
   });
 
-  it('renders view details button', () => {
-    render(
-      <ProductQuickView
-        product={defaultProduct}
-        isOpen
-        onClose={mockOnClose}
-        onViewDetails={mockOnViewDetails}
-      />,
-    );
+  it('renders view details button', async () => {
+    await act(async () => {
+      render(
+        <ProductQuickView
+          product={defaultProduct}
+          isOpen
+          onClose={mockOnClose}
+          onViewDetails={mockOnViewDetails}
+        />,
+      );
+    });
 
     const viewDetailsButton = screen.getByText('View Details');
-    fireEvent.click(viewDetailsButton);
+
+    await act(async () => {
+      fireEvent.click(viewDetailsButton);
+    });
 
     expect(mockOnViewDetails).toHaveBeenCalledWith(defaultProduct);
   });
 
-  it('shows product rating', () => {
-    render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+  it('shows product rating', async () => {
+    await act(async () => {
+      render(<ProductQuickView product={defaultProduct} isOpen onClose={mockOnClose} />);
+    });
 
     expect(screen.getByText(defaultProduct.rating.toString())).toBeInTheDocument();
     expect(screen.getByText(`(${defaultProduct.reviews} reviews)`)).toBeInTheDocument();

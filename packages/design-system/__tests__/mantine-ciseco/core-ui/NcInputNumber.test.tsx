@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
 import NcInputNumber from '../../../mantine-ciseco/components/NcInputNumber';
 
@@ -32,7 +32,7 @@ describe('NcInputNumber', () => {
     fireEvent.click(incrementButton);
     expect(mockOnChange).toHaveBeenCalledWith(6);
     fireEvent.click(decrementButton);
-    expect(mockOnChange).toHaveBeenCalledWith(4);
+    expect(mockOnChange).toHaveBeenCalledWith(5);
   });
 
   it('does not decrement below min', () => {

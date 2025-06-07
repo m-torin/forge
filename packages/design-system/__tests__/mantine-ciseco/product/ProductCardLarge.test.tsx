@@ -1,5 +1,5 @@
 // @ts-nocheck - Test file with component prop compatibility issues
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
 import ProductCardLarge from '../../../mantine-ciseco/components/ProductCardLarge';
 import { mockProduct } from '../test-utils';
@@ -23,7 +23,7 @@ describe('ProductCardLarge', () => {
 
     expect(screen.getByText(defaultProduct.name)).toBeInTheDocument();
     expect(screen.getByText(`$${defaultProduct.price}`)).toBeInTheDocument();
-    expect(screen.getByRole('img')).toHaveAttribute('alt', defaultProduct.name);
+    expect(screen.getByAltText(defaultProduct.name)).toBeInTheDocument();
     expect(screen.getByTestId('product-card-large')).toHaveClass('large-layout');
   });
 

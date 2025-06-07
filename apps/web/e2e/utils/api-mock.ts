@@ -24,8 +24,7 @@ export class ApiMocker {
   private page: Page;
   private options: ApiMockOptions;
   private rules = new Map<string, MockRule>();
-  private requestLog: { url: string; method: string; timestamp: Date }[] =
-    [];
+  private requestLog: { url: string; method: string; timestamp: Date }[] = [];
   private usageCount = new Map<string, number>();
 
   constructor(page: Page, options: ApiMockOptions = {}) {

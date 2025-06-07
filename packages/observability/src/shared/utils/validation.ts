@@ -2,11 +2,7 @@
  * Configuration validation utilities
  */
 
-import type {
-  LogLevel,
-  ObservabilityConfig,
-  ObservabilityProviderConfig,
-} from '../types/types';
+import type { LogLevel, ObservabilityConfig, ObservabilityProviderConfig } from '../types/types';
 
 export interface ValidationError {
   field?: string;
@@ -101,7 +97,7 @@ export function validateProviderConfig(
  * Validate log level
  */
 export function validateLogLevel(level: LogLevel): void {
-  const validLevels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
+  const validLevels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
   if (!validLevels.includes(level)) {
     throw new Error(`Invalid log level: ${level}. Valid levels are: ${validLevels.join(', ')}`);
   }

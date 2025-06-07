@@ -3,10 +3,12 @@
 import React from 'react';
 
 export interface LikeButtonProps {
+  'aria-label'?: string;
   ariaLabel?: string;
   className?: string;
   color?: string;
   count?: number;
+  'data-testid'?: string;
   debounce?: boolean;
   disabled?: boolean;
   doubleClickToLike?: boolean;
@@ -26,7 +28,13 @@ export interface LikeButtonProps {
   variant?: 'filled' | 'outline' | 'ghost';
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false, onClick }) => {
+const LikeButton: React.FC<LikeButtonProps> = ({
+  'data-testid': testId,
+  'aria-label': ariaLabel,
+  className = '',
+  liked = false,
+  onClick,
+}) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,9 +43,10 @@ const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false, 
 
   return (
     <button
+      data-testid={testId}
       onClick={handleClick}
       className={`flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg transition-all hover:scale-110 dark:bg-neutral-900 dark:text-neutral-200 ${className}`}
-      aria-label={liked ? 'Remove from favorites' : 'Add to favorites'}
+      aria-label={ariaLabel || (liked ? 'Remove from favorites' : 'Add to favorites')}
     >
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
         <path

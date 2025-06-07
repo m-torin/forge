@@ -4,12 +4,14 @@ import { Link } from '../../Link';
 
 export interface LogoProps extends React.ComponentPropsWithoutRef<'svg'> {
   className?: string;
+  'data-testid'?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ className = 'shrink-0', ...props }) => {
+const Logo: React.FC<LogoProps> = ({ 'data-testid': testId, className = 'shrink-0', ...props }) => {
   return (
     <Link href="/" className={`flex text-neutral-950 dark:text-neutral-50 ${className}`}>
       <svg
+        data-testid={testId}
         width="112"
         viewBox="0 0 112 44"
         fill="none"

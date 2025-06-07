@@ -247,3 +247,174 @@ function validateType(value: any, type: string): boolean {
       return false;
   }
 }
+
+/**
+ * Extract plain text from HTML
+ */
+export function extractText(html: string): string {
+  // Remove script and style tags
+  const cleanHtml = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  
+  // Replace tags with spaces
+  const text = cleanHtml
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+  
+  // Clean up whitespace
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Extract links from HTML
+ */
+export function extractLinks(html: string, baseUrl?: string): { href: string; text: string }[] {
+  const linkRegex = /<a\s+(?:[^>]*?\s+)?href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi;
+  const links: { href: string; text: string }[] = [];
+  let match;
+
+  while ((match = linkRegex.exec(html)) !== null) {
+    const href = match[1];
+    const text = extractText(match[2]);
+    
+    if (href && href.trim()) {
+      let resolvedHref = href;
+      
+      // Resolve relative URLs
+      if (baseUrl && !href.startsWith('http') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+        try {
+          const url = new URL(href, baseUrl);
+          resolvedHref = url.href;
+        } catch {
+          resolvedHref = href;
+        }
+      }
+      
+      links.push({ href: resolvedHref, text });
+    }
+  }
+
+  return links;
+}
+
+/**
+ * Extract images from HTML
+ */
+export function extractImages(html: string, baseUrl?: string): { src: string; alt: string }[] {
+  const imgRegex = /<img\s+(?:[^>]*?\s+)?src=["']([^"']*)["'](?:\s+[^>]*?\s+alt=["']([^"']*)["'])?[^>]*>/gi;
+  const images: { src: string; alt: string }[] = [];
+  let match;
+
+  while ((match = imgRegex.exec(html)) !== null) {
+    const src = match[1];
+    const alt = match[2] || '';
+    
+    if (src && src.trim()) {
+      let resolvedSrc = src;
+      
+      // Resolve relative URLs
+      if (baseUrl && !src.startsWith('http') && !src.startsWith('data:')) {
+        try {
+          const url = new URL(src, baseUrl);
+          resolvedSrc = url.href;
+        } catch {
+          resolvedSrc = src;
+        }
+      }
+      
+      images.push({ src: resolvedSrc, alt });
+    }
+  }
+
+  return images;
+}
+
+/**
+ * Extract metadata from HTML
+ */
+export function extractMetadata(html: string): Record<string, string> {
+  const metadata: Record<string, string> = {};
+  
+  // Extract title
+  const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
+  metadata.title = titleMatch ? titleMatch[1].trim() : '';
+  
+  // Extract meta tags
+  const metaRegex = /<meta\s+(?:(?:name|property)=["']([^"']*)["']\s+content=["']([^"']*)["']|content=["']([^"']*)["']\s+(?:name|property)=["']([^"']*)["'])[^>]*>/gi;
+  let match;
+  
+  while ((match = metaRegex.exec(html)) !== null) {
+    const name = match[1] || match[4];
+    const content = match[2] || match[3];
+    
+    if (name && content) {
+      metadata[name] = content;
+    }
+  }
+  
+  return metadata;
+}
+
+/**
+ * Extract structured data (JSON-LD)
+ */
+export function extractStructuredData(html: string): any[] {
+  const scriptRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  const structuredData: any[] = [];
+  let match;
+
+  while ((match = scriptRegex.exec(html)) !== null) {
+    try {
+      const json = JSON.parse(match[1]);
+      structuredData.push(json);
+    } catch {
+      // Invalid JSON, skip
+    }
+  }
+
+  return structuredData;
+}
+
+/**
+ * Extract email addresses from text
+ */
+export function extractEmails(text: string): string[] {
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const matches = text.match(emailRegex) || [];
+  return [...new Set(matches)]; // Remove duplicates
+}
+
+/**
+ * Extract phone numbers from text
+ */
+export function extractPhoneNumbers(text: string): string[] {
+  const phoneRegex = /(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\d{10}/g;
+  const matches = text.match(phoneRegex) || [];
+  
+  // Filter out numbers that are too short or don't look like phone numbers
+  return matches.filter(phone => {
+    const digits = phone.replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 11;
+  });
+}
+
+/**
+ * Clean text by removing extra whitespace and HTML entities
+ */
+export function cleanText(text: string): string {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
