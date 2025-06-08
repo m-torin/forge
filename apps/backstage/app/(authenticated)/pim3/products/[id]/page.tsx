@@ -10,7 +10,9 @@ import {
   Divider,
   Group,
   Image,
+  NumberInput,
   ScrollArea,
+  Select,
   SimpleGrid,
   Stack,
   Table,
@@ -20,6 +22,9 @@ import {
   Textarea,
   Tooltip,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
+import { useDebouncedCallback } from "@mantine/hooks";
 import {
   IconBarcode,
   IconBox,
@@ -183,8 +188,67 @@ interface ProductDetailPageProps {
 
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [product] = useState(mockProduct);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedProduct, setEditedProduct] = useState(product);
+  
+  // Initialize form with Mantine form hook
+  const form = useForm({
+    initialValues: {
+      name: product.name,
+      sku: product.sku,
+      description: product.description || "",
+      category: product.category,
+      status: product.status,
+      brand: product.brand || "",
+      price: product.price || 0,
+      currency: product.currency || "USD",
+      type: product.type,
+      attributes: product.attributes || {},
+    },
+    validate: {
+      name: (value) => (!value ? "Product name is required" : null),
+      sku: (value) => {
+        if (!value) return "SKU is required";
+        if (!/^[A-Z0-9-]+$/.test(value)) return "SKU must contain only uppercase letters, numbers, and hyphens";
+        return null;
+      },
+      price: (value) => {
+        if (value <= 0) return "Price must be greater than 0";
+        if (value > 999999) return "Price seems too high";
+        return null;
+      },
+      category: (value) => (!value ? "Category is required" : null),
+      description: (value) => {
+        if (value && value.length > 5000) return "Description is too long (max 5000 characters)";
+        return null;
+      },
+    },
+    validateInputOnChange: true,
+    validateInputOnBlur: true,
+  });
+
+  // Auto-save functionality with debounce
+  const autoSave = useDebouncedCallback(async (values) => {
+    try {
+      // In real app, this would call an API
+      console.log("Auto-saving product:", values);
+      notifications.show({
+        message: "Changes saved",
+        color: "green",
+        autoClose: 2000,
+      });
+    } catch (error) {
+      notifications.show({
+        message: "Failed to save changes",
+        color: "red",
+      });
+    }
+  }, 1000);
+
+  // Watch for form changes and auto-save
+  form.watch((values) => {
+    if (form.isDirty()) {
+      autoSave(values);
+    }
+  });
   
   // Modal states for advanced features
   const [pdpModalOpened, setPdpModalOpened] = useState(false);
@@ -228,16 +292,13 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     }
   };
 
-  const handleSave = () => {
-    // In real app, this would call an API to save the changes
-    console.log("Saving product:", editedProduct);
-    setIsEditing(false);
+  // Check if any form section has errors
+  const getSectionErrors = (fields: string[]) => {
+    return fields.some(field => form.errors[field]);
   };
 
-  const handleCancel = () => {
-    setEditedProduct(product);
-    setIsEditing(false);
-  };
+  const basicInfoErrors = getSectionErrors(['name', 'sku', 'category', 'brand', 'price']);
+  const hasAnyErrors = Object.keys(form.errors).length > 0;
 
   return (
     <ScrollArea h="100vh">

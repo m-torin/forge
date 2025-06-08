@@ -1,5 +1,5 @@
 {
-  "name": "ciseco-nextjs",
+  "name": "@labs/ciseco-nextjs",
   "version": "2.0.0",
   "private": true,
   "scripts": {

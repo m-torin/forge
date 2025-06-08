@@ -8,8 +8,6 @@
   ],
   "exports": {
     "./uix": "./uix/index.tsx",
-    "./ciseco": "./ciseco/index.ts",
-    "./ciseco/*": "./ciseco/*",
     "./mantine-ciseco": "./mantine-ciseco/index.ts",
     "./mantine-ciseco/*": "./mantine-ciseco/*",
     "./algolia": "./algolia/index.ts",
