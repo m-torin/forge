@@ -1,19 +1,20 @@
 #!/usr/bin/env tsx
 
-// Simulation of the autonomous workflow system (without requiring Claude CLI)
-import { WorkflowSpecification } from '../src/autonomous/types';
 import { readFileSync } from 'fs';
+
+// Simulation of the autonomous workflow system (without requiring Claude CLI)
+import { type WorkflowSpecification } from '../src/autonomous/types';
 
 // Console colors
 const colors = {
-  reset: '\x1b[0m',
+  blue: '\x1b[34m',
   bright: '\x1b[1m',
   cyan: '\x1b[36m',
+  gray: '\x1b[90m',
   green: '\x1b[32m',
   red: '\x1b[31m',
+  reset: '\x1b[0m',
   yellow: '\x1b[33m',
-  gray: '\x1b[90m',
-  blue: '\x1b[34m'
 };
 
 function log(color: string, message: string) {
@@ -27,11 +28,11 @@ function logBold(color: string, message: string) {
 // Simulate the autonomous development process
 async function simulateAutonomousDevelopment() {
   logBold(colors.cyan, '\n🤖 Autonomous Workflow Development System - Simulation\n');
-  
+
   // Load workflow specification
   const specPath = 'test-workflow-spec.json';
   let spec: WorkflowSpecification;
-  
+
   try {
     const specContent = readFileSync(specPath, 'utf-8');
     spec = JSON.parse(specContent);
@@ -108,7 +109,7 @@ async function simulateAutonomousDevelopment() {
     await simulateStep(`Test Execution - Iteration ${iteration}`, async () => {
       log(colors.gray, '   🧪 Running tests again...');
       await sleep(500);
-      
+
       if (iteration === 3) {
         log(colors.green, '   ✓ All unit tests passing');
         log(colors.green, '   ✓ All E2E tests passing');
@@ -161,7 +162,9 @@ async function simulateAutonomousDevelopment() {
 
   // Generated code preview
   logBold(colors.cyan, '\n📝 Generated Code Preview\n');
-  console.log(colors.gray + `// src/workflows/user-notification.ts
+  console.log(
+    colors.gray +
+      `// src/workflows/user-notification.ts
 import { serve } from '@upstash/workflow/nextjs';
 import { z } from 'zod';
 
@@ -180,7 +183,9 @@ export const { POST } = serve(async (context) => {
   });
   
   // ... rest of implementation
-});` + colors.reset);
+});` +
+      colors.reset,
+  );
 }
 
 async function simulateStep(name: string, action: () => Promise<boolean>): Promise<boolean> {
@@ -195,11 +200,11 @@ async function simulateStep(name: string, action: () => Promise<boolean>): Promi
 }
 
 async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Run the simulation
-simulateAutonomousDevelopment().catch(error => {
+simulateAutonomousDevelopment().catch((error) => {
   log(colors.red, `\n❌ Simulation error: ${error.message}`);
   process.exit(1);
 });

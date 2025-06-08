@@ -7,7 +7,6 @@ import {
   getUserOrganizations,
 } from '../../../server/organizations/helpers';
 
-import type { BetterAuthClient } from 'better-auth/types';
 
 // Mock auth instance
 const mockGetSession = vi.fn();
@@ -24,7 +23,7 @@ const mockAuth = {
     getFullOrganization: mockGetFullOrganization,
     listOrganizations: mockListOrganizations,
   },
-} as unknown as BetterAuthClient;
+} as any;
 
 // Mock the auth module
 vi.mock('../../auth', () => ({
@@ -180,6 +179,8 @@ describe('Organization Helpers', () => {
             createdAt: new Date(),
             organizationId: 'org-123',
             role: 'owner',
+            teamId: null,
+            updatedAt: null,
             userId: 'user-1',
           },
           {
@@ -187,6 +188,8 @@ describe('Organization Helpers', () => {
             createdAt: new Date(),
             organizationId: 'org-123',
             role: 'member',
+            teamId: null,
+            updatedAt: null,
             userId: 'user-2',
           },
         ],
@@ -239,7 +242,7 @@ describe('Organization Helpers', () => {
 
       mockCreateOrganization.mockResolvedValue(mockCreatedOrg);
 
-      const result = await createDefaultOrganization(mockUser);
+      const result = await createDefaultOrganization(mockUser.id, mockUser.name);
 
       expect(result).toEqual(mockCreatedOrg);
       expect(mockCreateOrganization).toHaveBeenCalledWith({
@@ -251,7 +254,7 @@ describe('Organization Helpers', () => {
     it('should handle user without name', async () => {
       const mockUser = {
         id: 'user-123',
-        name: null,
+        name: undefined,
         email: 'user@example.com',
       };
 
@@ -265,7 +268,7 @@ describe('Organization Helpers', () => {
 
       mockCreateOrganization.mockResolvedValue(mockCreatedOrg);
 
-      const result = await createDefaultOrganization(mockUser);
+      const result = await createDefaultOrganization(mockUser.id, mockUser.name);
 
       expect(result).toEqual(mockCreatedOrg);
       expect(mockCreateOrganization).toHaveBeenCalledWith({
@@ -287,7 +290,7 @@ describe('Organization Helpers', () => {
         slug: 'tests-organization',
       });
 
-      await createDefaultOrganization(mockUser);
+      await createDefaultOrganization(mockUser.id, mockUser.name);
 
       expect(mockCreateOrganization).toHaveBeenCalledWith({
         name: "Test's Organization",
@@ -304,7 +307,7 @@ describe('Organization Helpers', () => {
 
       mockCreateOrganization.mockRejectedValue(new Error('Creation failed'));
 
-      await expect(createDefaultOrganization(mockUser)).rejects.toThrow('Creation failed');
+      await expect(createDefaultOrganization(mockUser.id)).rejects.toThrow('Creation failed');
     });
   });
 });

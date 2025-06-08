@@ -107,7 +107,7 @@ export async function ServerTestComponent() {
 }
 
 // Client Component Example
-('use client');
+void ('use client');
 
 export function ClientTestComponent() {
   const booleanValue = useFlag(testBooleanFlag, false);

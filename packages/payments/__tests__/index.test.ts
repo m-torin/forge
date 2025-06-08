@@ -214,8 +214,8 @@ describe('Stripe Payment Service', () => {
       const { stripe } = await import('../index');
 
       // Access a property to trigger the warning
-      stripe.customers;
-      stripe.customers; // Second access should not log again
+      void stripe.customers;
+      void stripe.customers; // Second access should not log again
 
       expect(consoleSpy).toHaveBeenCalledTimes(1);
       expect(consoleSpy).toHaveBeenCalledWith(
@@ -379,7 +379,7 @@ describe('Stripe Payment Service', () => {
       expect(Stripe).not.toHaveBeenCalled();
 
       // Access a property to trigger initialization
-      stripe.customers;
+      void stripe.customers;
 
       expect(Stripe).toHaveBeenCalledWith('sk_test_123456789', {
         apiVersion: '2025-05-28.basil',
@@ -392,9 +392,9 @@ describe('Stripe Payment Service', () => {
       const { stripe } = await import('../index');
 
       // Access multiple properties
-      stripe.customers;
-      stripe.products;
-      stripe.paymentIntents;
+      void stripe.customers;
+      void stripe.products;
+      void stripe.paymentIntents;
 
       expect(Stripe).toHaveBeenCalledTimes(1);
     });

@@ -218,3 +218,44 @@ export async function listServiceAuth(): Promise<{
     };
   }
 }
+
+/**
+ * Parses a service token from headers
+ */
+export function parseServiceToken(headers: Headers): string | null {
+  // Check Authorization header first
+  const authHeader = headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+
+  // Check x-api-key header
+  const apiKey = headers.get('x-api-key');
+  if (apiKey) {
+    return apiKey;
+  }
+
+  return null;
+}
+
+/**
+ * Verifies a service authentication token
+ * Can accept either a string token or Headers object
+ */
+export async function verifyServiceAuth(tokenOrHeaders: string | Headers) {
+  let token: string | null;
+
+  if (typeof tokenOrHeaders === 'string') {
+    token = tokenOrHeaders;
+  } else {
+    token = parseServiceToken(tokenOrHeaders);
+    if (!token) {
+      return {
+        isValid: false,
+        error: 'No service token provided',
+      };
+    }
+  }
+
+  return validateServiceAuth(token);
+}

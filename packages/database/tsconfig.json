@@ -12,6 +12,7 @@
     "__tests__/upstash-vector.test.skip.ts",
     "__tests__/firestore.test.skip.ts",
     "__tests__/integration.test.skip.ts",
-    "redis/**"
+    "redis/**",
+    "prisma/seed*.ts"
   ]
 }

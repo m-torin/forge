@@ -89,7 +89,7 @@ export class APITestUtils {
   /**
    * Create a mock API response
    */
-  async mockResponse(pattern: string | RegExp, response: any) {
+  async mockResponse(_pattern: string | RegExp, _response: any) {
     // This would integrate with Playwright's route mocking
     // Implementation depends on the specific test context
     console.warn('Mock response setup - implement in test context');

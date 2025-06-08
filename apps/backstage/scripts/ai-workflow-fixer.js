@@ -29,7 +29,7 @@ class AIWorkflowFixer {
       const child = spawn(command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         shell: true,
-        cwd: join(__dirname, '..')
+        cwd: join(__dirname, '..'),
       });
 
       let stdout = '';
@@ -56,7 +56,7 @@ class AIWorkflowFixer {
   async analyzeErrors(output) {
     const errors = [];
     const lines = output.split('\n');
-    
+
     for (const line of lines) {
       // TypeScript errors
       if (line.includes(': error TS')) {
@@ -69,36 +69,36 @@ class AIWorkflowFixer {
             column: parseInt(match[3]),
             code: match[4],
             message: match[5],
-            rawLine: line
+            rawLine: line,
           });
         }
       }
-      
+
       // ESLint errors
       if (line.includes('error') && (line.includes('.ts') || line.includes('.tsx'))) {
         errors.push({
           type: 'eslint',
           message: line,
-          rawLine: line
+          rawLine: line,
         });
       }
-      
+
       // Test failures
       if (line.includes('FAIL') || line.includes('AssertionError')) {
         errors.push({
           type: 'test',
           message: line,
-          rawLine: line
+          rawLine: line,
         });
       }
     }
-    
+
     return errors;
   }
 
   async generateFixes(errors) {
     const fixes = [];
-    
+
     // Use AI package if available for intelligent fix generation
     if (aiManager) {
       console.log('🤖 Using AI-powered fix generation...');
@@ -113,7 +113,7 @@ class AIWorkflowFixer {
         console.warn('⚠️  AI fix generation failed, falling back to pattern-based fixes');
       }
     }
-    
+
     // Fallback to pattern-based fixes
     for (const error of errors) {
       switch (error.type) {
@@ -128,8 +128,8 @@ class AIWorkflowFixer {
           break;
       }
     }
-    
-    return fixes.filter(fix => fix !== null);
+
+    return fixes.filter((fix) => fix !== null);
   }
 
   async generateAIFix(error) {
@@ -140,7 +140,7 @@ class AIWorkflowFixer {
         error: error,
         file: error.file ? readFileSync(error.file, 'utf-8') : null,
         projectType: 'nextjs-workflow-system',
-        framework: 'typescript-next-mantine'
+        framework: 'typescript-next-mantine',
       };
 
       const fixSuggestion = await aiManager.analyzeAndFix({
@@ -149,8 +149,8 @@ class AIWorkflowFixer {
         options: {
           maxSuggestions: 1,
           applyFix: true,
-          preserveLogic: true
-        }
+          preserveLogic: true,
+        },
       });
 
       if (fixSuggestion && fixSuggestion.fixApplied) {
@@ -161,7 +161,7 @@ class AIWorkflowFixer {
           description: `AI fix: ${fixSuggestion.description}`,
           action: 'ai_intelligent_fix',
           success: true,
-          aiConfidence: fixSuggestion.confidence
+          aiConfidence: fixSuggestion.confidence,
         };
       }
     } catch (error) {
@@ -173,17 +173,17 @@ class AIWorkflowFixer {
 
   async generateTypeScriptFix(error) {
     const { file, line, column, code, message } = error;
-    
+
     // Common TypeScript error patterns and fixes
     const fixPatterns = {
-      'TS2345': () => this.fixArgumentTypeError(file, line, message),
-      'TS2353': () => this.fixUnknownProperty(file, line, message),
-      'TS7053': () => this.fixImplicitAny(file, line, message),
-      'TS7034': () => this.fixImplicitAnyArray(file, line, message),
-      'TS2571': () => this.fixUnknownObjectType(file, line, message),
-      'TS7005': () => this.fixImplicitAnyVariable(file, line, message),
-      'TS7006': () => this.fixImplicitAnyParameter(file, line, message),
-      'TS18046': () => this.fixUnknownErrorType(file, line, message),
+      TS2345: () => this.fixArgumentTypeError(file, line, message),
+      TS2353: () => this.fixUnknownProperty(file, line, message),
+      TS7053: () => this.fixImplicitAny(file, line, message),
+      TS7034: () => this.fixImplicitAnyArray(file, line, message),
+      TS2571: () => this.fixUnknownObjectType(file, line, message),
+      TS7005: () => this.fixImplicitAnyVariable(file, line, message),
+      TS7006: () => this.fixImplicitAnyParameter(file, line, message),
+      TS18046: () => this.fixUnknownErrorType(file, line, message),
     };
 
     const fixFunction = fixPatterns[code];
@@ -197,21 +197,21 @@ class AIWorkflowFixer {
       line,
       description: `Auto-fix for ${code}: ${message}`,
       action: 'comment_out_or_type_any',
-      success: false
+      success: false,
     };
   }
 
   async fixArgumentTypeError(file, line, message) {
     if (!existsSync(file)) return null;
-    
+
     try {
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
-      
+
       // Add type assertions or modify the problematic line
       if (lines[line - 1]) {
         const originalLine = lines[line - 1];
-        
+
         // Common fixes for argument type errors
         if (originalLine.includes('execution:')) {
           lines[line - 1] = originalLine.replace('execution: number', 'execution: any');
@@ -222,7 +222,7 @@ class AIWorkflowFixer {
           // Generic fix: add type assertion
           lines[line - 1] = originalLine.replace(/(\w+)(\s*[=:]\s*)([^;,}\n]+)/, '$1$2($3 as any)');
         }
-        
+
         writeFileSync(file, lines.join('\n'));
         return {
           type: 'typescript',
@@ -230,26 +230,26 @@ class AIWorkflowFixer {
           line,
           description: `Fixed argument type error`,
           action: 'type_assertion_or_property_removal',
-          success: true
+          success: true,
         };
       }
     } catch (error) {
       console.error(`Error fixing file ${file}:`, error.message);
     }
-    
+
     return null;
   }
 
   async fixUnknownProperty(file, line, message) {
     if (!existsSync(file)) return null;
-    
+
     try {
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
-      
+
       if (lines[line - 1]) {
         const originalLine = lines[line - 1];
-        
+
         // Extract property name from error message
         const propertyMatch = message.match(/'([^']+)' does not exist/);
         if (propertyMatch) {
@@ -257,7 +257,7 @@ class AIWorkflowFixer {
           // Remove the problematic property
           lines[line - 1] = originalLine.replace(new RegExp(`,?\\s*${property}[^,}]*`, 'g'), '');
         }
-        
+
         writeFileSync(file, lines.join('\n'));
         return {
           type: 'typescript',
@@ -265,33 +265,33 @@ class AIWorkflowFixer {
           line,
           description: `Removed unknown property`,
           action: 'property_removal',
-          success: true
+          success: true,
         };
       }
     } catch (error) {
       console.error(`Error fixing file ${file}:`, error.message);
     }
-    
+
     return null;
   }
 
   async fixImplicitAny(file, line, message) {
     if (!existsSync(file)) return null;
-    
+
     try {
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
-      
+
       if (lines[line - 1]) {
         const originalLine = lines[line - 1];
-        
+
         // Add explicit any type
         if (originalLine.includes('[') && originalLine.includes(']')) {
           lines[line - 1] = originalLine.replace(/\[([^\]]+)\]/, '[($1 as any)]');
         } else {
           lines[line - 1] = originalLine.replace(/(\w+)(\s*=)/, '$1: any$2');
         }
-        
+
         writeFileSync(file, lines.join('\n'));
         return {
           type: 'typescript',
@@ -299,29 +299,29 @@ class AIWorkflowFixer {
           line,
           description: `Added explicit any type`,
           action: 'add_any_type',
-          success: true
+          success: true,
         };
       }
     } catch (error) {
       console.error(`Error fixing file ${file}:`, error.message);
     }
-    
+
     return null;
   }
 
   async fixImplicitAnyArray(file, line, message) {
     if (!existsSync(file)) return null;
-    
+
     try {
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
-      
+
       if (lines[line - 1]) {
         const originalLine = lines[line - 1];
-        
+
         // Add explicit any[] type
         lines[line - 1] = originalLine.replace(/(\w+)(\s*=\s*\[)/, '$1: any[]$2');
-        
+
         writeFileSync(file, lines.join('\n'));
         return {
           type: 'typescript',
@@ -329,29 +329,29 @@ class AIWorkflowFixer {
           line,
           description: `Added explicit any[] type`,
           action: 'add_any_array_type',
-          success: true
+          success: true,
         };
       }
     } catch (error) {
       console.error(`Error fixing file ${file}:`, error.message);
     }
-    
+
     return null;
   }
 
   async fixUnknownObjectType(file, line, message) {
     if (!existsSync(file)) return null;
-    
+
     try {
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
-      
+
       if (lines[line - 1]) {
         const originalLine = lines[line - 1];
-        
+
         // Add type assertion for unknown objects
         lines[line - 1] = originalLine.replace(/(\w+)\.(\w+)/, '($1 as any).$2');
-        
+
         writeFileSync(file, lines.join('\n'));
         return {
           type: 'typescript',
@@ -359,13 +359,13 @@ class AIWorkflowFixer {
           line,
           description: `Added type assertion for unknown object`,
           action: 'object_type_assertion',
-          success: true
+          success: true,
         };
       }
     } catch (error) {
       console.error(`Error fixing file ${file}:`, error.message);
     }
-    
+
     return null;
   }
 
@@ -375,19 +375,19 @@ class AIWorkflowFixer {
 
   async fixImplicitAnyParameter(file, line, message) {
     if (!existsSync(file)) return null;
-    
+
     try {
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
-      
+
       if (lines[line - 1]) {
         const originalLine = lines[line - 1];
-        
+
         // Add any type to parameters
         lines[line - 1] = originalLine.replace(/\(([^)]+)\)/, (match, params) => {
           return '(' + params.replace(/(\w+)(?!\s*:)/g, '$1: any') + ')';
         });
-        
+
         writeFileSync(file, lines.join('\n'));
         return {
           type: 'typescript',
@@ -395,29 +395,29 @@ class AIWorkflowFixer {
           line,
           description: `Added any type to parameters`,
           action: 'parameter_any_type',
-          success: true
+          success: true,
         };
       }
     } catch (error) {
       console.error(`Error fixing file ${file}:`, error.message);
     }
-    
+
     return null;
   }
 
   async fixUnknownErrorType(file, line, message) {
     if (!existsSync(file)) return null;
-    
+
     try {
       const content = readFileSync(file, 'utf-8');
       const lines = content.split('\n');
-      
+
       if (lines[line - 1]) {
         const originalLine = lines[line - 1];
-        
+
         // Cast error to Error type
         lines[line - 1] = originalLine.replace(/error/g, '(error as Error)');
-        
+
         writeFileSync(file, lines.join('\n'));
         return {
           type: 'typescript',
@@ -425,13 +425,13 @@ class AIWorkflowFixer {
           line,
           description: `Cast error to Error type`,
           action: 'error_type_cast',
-          success: true
+          success: true,
         };
       }
     } catch (error) {
       console.error(`Error fixing file ${file}:`, error.message);
     }
-    
+
     return null;
   }
 
@@ -441,7 +441,7 @@ class AIWorkflowFixer {
       type: 'eslint',
       description: 'Run eslint --fix',
       action: 'eslint_autofix',
-      success: false
+      success: false,
     };
   }
 
@@ -451,13 +451,13 @@ class AIWorkflowFixer {
       type: 'test',
       description: 'Manual test fix required',
       action: 'manual_review',
-      success: false
+      success: false,
     };
   }
 
   async applyFixes(fixes) {
     let appliedCount = 0;
-    
+
     for (const fix of fixes) {
       if (fix.success) {
         appliedCount++;
@@ -467,7 +467,7 @@ class AIWorkflowFixer {
         console.log(`⚠️  Skipped fix: ${fix.description}`);
       }
     }
-    
+
     return appliedCount;
   }
 
@@ -480,14 +480,14 @@ class AIWorkflowFixer {
       // Step 1: Run type checking
       console.log('🔍 Running TypeScript analysis...');
       const typecheck = await this.runCommand('pnpm', ['typecheck']);
-      
+
       if (typecheck.code === 0) {
         console.log('✅ TypeScript checks passed!');
-        
+
         // Step 2: Run tests
         console.log('🧪 Running workflow tests...');
         const tests = await this.runCommand('pnpm', ['workflow:test']);
-        
+
         if (tests.code === 0) {
           console.log('✅ All tests passed!');
           console.log('\n🎉 Workflow fully automated and fixed!');
@@ -497,7 +497,7 @@ class AIWorkflowFixer {
           const testErrors = await this.analyzeErrors(tests.stderr + tests.stdout);
           console.log(`Found ${testErrors.length} test issues`);
         }
-        
+
         return false;
       }
 
@@ -531,7 +531,7 @@ class AIWorkflowFixer {
       await this.runCommand('pnpm', ['lint']);
 
       this.currentRetry++;
-      
+
       if (this.currentRetry < this.maxRetries) {
         console.log(`\n🔄 Retrying cycle ${this.currentRetry + 1}/${this.maxRetries}...\n`);
       }
@@ -549,7 +549,7 @@ class AIWorkflowFixer {
     console.log('\n📊 Manual Fix Report:');
     console.log('=====================================');
     console.log(`Total fixes attempted: ${this.fixHistory.length}`);
-    console.log(`Successful fixes: ${this.fixHistory.filter(f => f.success).length}`);
+    console.log(`Successful fixes: ${this.fixHistory.filter((f) => f.success).length}`);
     console.log('\nRemaining issues require manual review:');
     console.log('• Complex type mismatches');
     console.log('• Architecture-level changes');
@@ -563,9 +563,12 @@ class AIWorkflowFixer {
 
 // Run the AI fixer
 const fixer = new AIWorkflowFixer();
-fixer.runFullCycle().then(success => {
-  process.exit(success ? 0 : 1);
-}).catch(error => {
-  console.error('❌ AI Fixer crashed:', error);
-  process.exit(1);
-});
+fixer
+  .runFullCycle()
+  .then((success) => {
+    process.exit(success ? 0 : 1);
+  })
+  .catch((error) => {
+    console.error('❌ AI Fixer crashed:', error);
+    process.exit(1);
+  });

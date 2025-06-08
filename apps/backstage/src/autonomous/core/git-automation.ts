@@ -1,16 +1,22 @@
 // Git automation for version control and CI/CD integration
-import { execSync, exec } from 'child_process';
-import { promisify } from 'util';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { exec, execSync } from 'child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { WorkflowSpecification, RepairAttempt, ErrorAnalysis, RepairOutcome } from '../types';
+import { promisify } from 'util';
+
+import {
+  type ErrorAnalysis,
+  type RepairAttempt,
+  type RepairOutcome,
+  type WorkflowSpecification,
+} from '../types';
 
 const execAsync = promisify(exec);
 
 export class GitAutomation {
-  private currentBranch: string = '';
-  private baseBranch: string = 'main';
-  private remoteUrl: string = '';
+  private currentBranch = '';
+  private baseBranch = 'main';
+  private remoteUrl = '';
   private githubToken: string = process.env.GITHUB_TOKEN || '';
 
   constructor() {
@@ -20,11 +26,13 @@ export class GitAutomation {
   private initialize(): void {
     try {
       // Get current branch
-      this.currentBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim();
-      
+      this.currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
+        encoding: 'utf-8',
+      }).trim();
+
       // Get remote URL
       this.remoteUrl = execSync('git config --get remote.origin.url', { encoding: 'utf-8' }).trim();
-      
+
       // Configure git for autonomous commits
       execSync('git config user.email "autonomous-system@company.com"');
       execSync('git config user.name "Autonomous Development System"');
@@ -35,19 +43,19 @@ export class GitAutomation {
 
   async createFeatureBranch(workflowName: string): Promise<string> {
     const branchName = `autonomous/${workflowName}-${Date.now()}`;
-    
+
     try {
       // Ensure we're on the latest main
       await execAsync(`git fetch origin ${this.baseBranch}`);
       await execAsync(`git checkout ${this.baseBranch}`);
       await execAsync(`git pull origin ${this.baseBranch}`);
-      
+
       // Create and checkout new branch
       await execAsync(`git checkout -b ${branchName}`);
-      
+
       console.log(`✅ Created feature branch: ${branchName}`);
       this.currentBranch = branchName;
-      
+
       return branchName;
     } catch (error) {
       console.error('Failed to create feature branch:', error);
@@ -55,23 +63,27 @@ export class GitAutomation {
     }
   }
 
-  async commitIteration(spec: WorkflowSpecification, iteration: number, errorAnalysis: ErrorAnalysis): Promise<void> {
+  async commitIteration(
+    spec: WorkflowSpecification,
+    iteration: number,
+    errorAnalysis: ErrorAnalysis,
+  ): Promise<void> {
     const message = this.generateIterationCommitMessage(spec, iteration, errorAnalysis);
-    
+
     try {
       // Stage all changes
       await execAsync('git add -A');
-      
+
       // Check if there are changes to commit
       const status = await execAsync('git status --porcelain');
       if (status.stdout.trim() === '') {
         console.log('No changes to commit');
         return;
       }
-      
+
       // Commit with detailed message
       await execAsync(`git commit -m "${message}"`);
-      
+
       console.log(`✅ Committed iteration ${iteration} for ${spec.name}`);
     } catch (error) {
       console.warn(`Failed to commit iteration ${iteration}:`, error.message);
@@ -80,20 +92,20 @@ export class GitAutomation {
 
   async commitSuccess(spec: WorkflowSpecification, iterations: number): Promise<void> {
     const message = this.generateSuccessCommitMessage(spec, iterations);
-    
+
     try {
       // Stage all changes
       await execAsync('git add -A');
-      
+
       // Commit
       await execAsync(`git commit -m "${message}"`);
-      
+
       // Create a tag for successful completion
       const tag = `autonomous-${spec.name}-v${Date.now()}`;
       await execAsync(`git tag -a ${tag} -m "Autonomous completion of ${spec.name}"`);
-      
+
       console.log(`🎉 Successfully committed and tagged: ${tag}`);
-      
+
       // Push to remote if configured
       if (this.shouldPushToRemote()) {
         await this.pushToRemote();
@@ -103,58 +115,74 @@ export class GitAutomation {
     }
   }
 
-  async createFailureReport(spec: WorkflowSpecification, learningData: RepairAttempt[]): Promise<void> {
+  async createFailureReport(
+    spec: WorkflowSpecification,
+    learningData: RepairAttempt[],
+  ): Promise<void> {
     const report = this.generateFailureReport(spec, learningData);
     await this.createReport(spec.name, 'failure', report);
   }
 
-  async createReport(workflowName: string, type: 'success' | 'failure', content: string): Promise<void> {
+  async createReport(
+    workflowName: string,
+    type: 'success' | 'failure',
+    content: string,
+  ): Promise<void> {
     const reportsDir = 'reports/autonomous';
     const timestamp = new Date().toISOString().replace(/:/g, '-');
     const filename = `${type}-${workflowName}-${timestamp}.md`;
     const filepath = join(reportsDir, filename);
-    
+
     try {
       // Ensure reports directory exists
       if (!existsSync(reportsDir)) {
         mkdirSync(reportsDir, { recursive: true });
       }
-      
+
       // Write report
       writeFileSync(filepath, content);
-      
+
       // Stage and commit the report
       await execAsync(`git add ${filepath}`);
-      await execAsync(`git commit -m "📋 ${type === 'success' ? '✅' : '❌'} Autonomous report: ${workflowName}"`);
-      
+      await execAsync(
+        `git commit -m "📋 ${type === 'success' ? '✅' : '❌'} Autonomous report: ${workflowName}"`,
+      );
+
       console.log(`📋 Report created: ${filepath}`);
     } catch (error) {
       console.error('Failed to create report:', error);
     }
   }
 
-  async createAutonomousPR(spec: WorkflowSpecification, outcome: RepairOutcome): Promise<string | null> {
+  async createAutonomousPR(
+    spec: WorkflowSpecification,
+    outcome: RepairOutcome,
+  ): Promise<string | null> {
     if (!this.githubToken) {
       console.warn('GitHub token not configured, skipping PR creation');
       return null;
     }
-    
+
     try {
       // Push current branch to remote
       await this.pushToRemote();
-      
+
       // Create PR using GitHub CLI
       const prTitle = `🤖 Autonomous: ${spec.name} - ${new Date().toISOString()}`;
       const prBody = this.generatePRDescription(spec, outcome);
-      
-      const { stdout } = await execAsync(`gh pr create --title "${prTitle}" --body "${prBody}" --base ${this.baseBranch}`);
-      
+
+      const { stdout } = await execAsync(
+        `gh pr create --title "${prTitle}" --body "${prBody}" --base ${this.baseBranch}`,
+      );
+
       const prUrl = stdout.trim();
       console.log(`✅ Pull request created: ${prUrl}`);
-      
+
       // Add labels to the PR
-      await execAsync(`gh pr edit ${prUrl} --add-label "autonomous,ready-for-review,auto-generated"`);
-      
+      await execAsync(
+        `gh pr edit ${prUrl} --add-label "autonomous,ready-for-review,auto-generated"`,
+      );
+
       return prUrl;
     } catch (error) {
       console.error('Failed to create PR:', error);
@@ -167,7 +195,7 @@ export class GitAutomation {
       console.warn('GitHub token not configured, skipping workflow trigger');
       return;
     }
-    
+
     try {
       const inputsJson = JSON.stringify(inputs);
       await execAsync(`gh workflow run ${workflowName} --json '${inputsJson}'`);
@@ -192,7 +220,11 @@ export class GitAutomation {
     return process.env.CI === 'true' || process.env.AUTO_PUSH === 'true';
   }
 
-  private generateIterationCommitMessage(spec: WorkflowSpecification, iteration: number, errorAnalysis: ErrorAnalysis): string {
+  private generateIterationCommitMessage(
+    spec: WorkflowSpecification,
+    iteration: number,
+    errorAnalysis: ErrorAnalysis,
+  ): string {
     return `🔄 Iteration ${iteration}: ${spec.name} - ${errorAnalysis.categories.join(', ')}
 
 Autonomous development iteration for workflow: ${spec.name}
@@ -206,11 +238,14 @@ Autonomous development iteration for workflow: ${spec.name}
 - **Estimated Fix Time**: ${errorAnalysis.estimatedFixTime} minutes
 
 ## Errors Fixed
-${errorAnalysis.errors.slice(0, 5).map(e => `- ${e.message}`).join('\n')}
+${errorAnalysis.errors
+  .slice(0, 5)
+  .map((e) => `- ${e.message}`)
+  .join('\n')}
 ${errorAnalysis.errors.length > 5 ? `\n... and ${errorAnalysis.errors.length - 5} more` : ''}
 
 ## Root Causes
-${errorAnalysis.rootCauses?.map(rc => `- ${rc}`).join('\n') || 'No specific root causes identified'}
+${errorAnalysis.rootCauses?.map((rc) => `- ${rc}`).join('\n') || 'No specific root causes identified'}
 
 [autonomous-dev][iteration-${iteration}]`;
   }
@@ -312,9 +347,12 @@ ${this.generateMetricsTable(outcome)}
 | Test Count | ${outcome.testCount || 'N/A'} |`;
   }
 
-  private generateFailureReport(spec: WorkflowSpecification, learningData: RepairAttempt[]): string {
+  private generateFailureReport(
+    spec: WorkflowSpecification,
+    learningData: RepairAttempt[],
+  ): string {
     const lastAttempt = learningData[learningData.length - 1];
-    
+
     return `# Autonomous Development Failure Report
 
 ## Workflow: ${spec.name}
@@ -330,26 +368,31 @@ ${this.generateMetricsTable(outcome)}
 - **Complexity**: ${lastAttempt.complexity || 'unknown'}
 
 ## Iteration History
-${learningData.map((attempt, index) => `
+${learningData
+  .map(
+    (attempt, index) => `
 ### Iteration ${attempt.iteration}
 - **Timestamp**: ${attempt.timestamp.toISOString()}
 - **Error Categories**: ${attempt.errorAnalysis.categories.join(', ')}
 - **Repair Strategy**: ${attempt.repairStrategy}
 - **Confidence**: ${(attempt.errorAnalysis.confidence * 100).toFixed(1)}%
 - **Errors**: ${attempt.errorAnalysis.errors.length}
-`).join('\n')}
+`,
+  )
+  .join('\n')}
 
 ## Final Error Analysis
 ### Error Categories
-${lastAttempt.errorAnalysis.categories.map(cat => `- ${cat}`).join('\n')}
+${lastAttempt.errorAnalysis.categories.map((cat) => `- ${cat}`).join('\n')}
 
 ### Root Causes
-${lastAttempt.errorAnalysis.rootCauses?.map(rc => `- ${rc}`).join('\n') || 'No specific root causes identified'}
+${lastAttempt.errorAnalysis.rootCauses?.map((rc) => `- ${rc}`).join('\n') || 'No specific root causes identified'}
 
 ### Top Errors
-${lastAttempt.errorAnalysis.errors.slice(0, 10).map((e, i) => 
-  `${i + 1}. ${e.message} (${e.file}:${e.line})`
-).join('\n')}
+${lastAttempt.errorAnalysis.errors
+  .slice(0, 10)
+  .map((e, i) => `${i + 1}. ${e.message} (${e.file}:${e.line})`)
+  .join('\n')}
 
 ## Learning Insights
 - **Most Common Error**: ${this.getMostCommonError(learningData)}
@@ -389,16 +432,16 @@ ${lastAttempt.errorAnalysis.errors.slice(0, 10).map((e, i) =>
 
   private getMostCommonError(learningData: RepairAttempt[]): string {
     const errorCounts = new Map<string, number>();
-    
-    learningData.forEach(attempt => {
-      attempt.errorAnalysis.categories.forEach(category => {
+
+    learningData.forEach((attempt) => {
+      attempt.errorAnalysis.categories.forEach((category) => {
         errorCounts.set(category, (errorCounts.get(category) || 0) + 1);
       });
     });
 
     let maxCount = 0;
     let mostCommon = 'Unknown';
-    
+
     for (const [error, count] of errorCounts.entries()) {
       if (count > maxCount) {
         maxCount = count;
@@ -411,35 +454,35 @@ ${lastAttempt.errorAnalysis.errors.slice(0, 10).map((e, i) =>
 
   private getAverageConfidence(learningData: RepairAttempt[]): string {
     if (learningData.length === 0) return '0';
-    
+
     const totalConfidence = learningData.reduce(
-      (sum, attempt) => sum + attempt.errorAnalysis.confidence, 
-      0
+      (sum, attempt) => sum + attempt.errorAnalysis.confidence,
+      0,
     );
-    
-    return (totalConfidence / learningData.length * 100).toFixed(1);
+
+    return ((totalConfidence / learningData.length) * 100).toFixed(1);
   }
 
   private getUniqueStrategies(learningData: RepairAttempt[]): string[] {
     const strategies = new Set<string>();
-    learningData.forEach(attempt => strategies.add(attempt.repairStrategy));
+    learningData.forEach((attempt) => strategies.add(attempt.repairStrategy));
     return Array.from(strategies);
   }
 
   private getComplexityTrend(learningData: RepairAttempt[]): string {
-    const complexities = learningData.map(a => a.complexity).filter(Boolean);
+    const complexities = learningData.map((a) => a.complexity).filter(Boolean);
     if (complexities.length === 0) return 'Unknown';
-    
+
     const first = complexities[0];
     const last = complexities[complexities.length - 1];
-    
+
     if (first === last) return `Stable (${first})`;
     return `${first} → ${last}`;
   }
 
   private getRecommendedFocusAreas(errorAnalysis: ErrorAnalysis): string {
     const areas = [];
-    
+
     if (errorAnalysis.categories.includes('type-error')) {
       areas.push('   - Type definitions and contracts alignment');
     }
@@ -449,29 +492,30 @@ ${lastAttempt.errorAnalysis.errors.slice(0, 10).map((e, i) =>
     if (errorAnalysis.categories.includes('performance-issue')) {
       areas.push('   - Performance optimization and timeouts');
     }
-    
+
     return areas.join('\n') || '   - General code review';
   }
 
   private calculateTotalDuration(learningData: RepairAttempt[]): string {
     if (learningData.length === 0) return '0s';
-    
+
     const first = learningData[0].timestamp;
     const last = learningData[learningData.length - 1].timestamp;
     const duration = last.getTime() - first.getTime();
-    
+
     return this.formatDuration(duration);
   }
 
   private calculateAverageIterationTime(learningData: RepairAttempt[]): string {
     if (learningData.length <= 1) return 'N/A';
-    
+
     const durations = [];
     for (let i = 1; i < learningData.length; i++) {
-      const duration = learningData[i].timestamp.getTime() - learningData[i-1].timestamp.getTime();
+      const duration =
+        learningData[i].timestamp.getTime() - learningData[i - 1].timestamp.getTime();
       durations.push(duration);
     }
-    
+
     const average = durations.reduce((sum, d) => sum + d, 0) / durations.length;
     return this.formatDuration(average);
   }

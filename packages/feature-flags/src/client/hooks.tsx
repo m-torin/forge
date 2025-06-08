@@ -22,11 +22,11 @@ export function useFlag<T>(flagFunction: () => Promise<T>, initialValue?: T): T 
 
 // Adapter interface for feature flag providers
 export interface FeatureFlagAdapter {
-  getFlag<T = any>(key: string, defaultValue?: T): Promise<T>;
   getAllFlags(): Promise<Record<string, any>>;
+  getFlag<T = any>(key: string, defaultValue?: T): Promise<T>;
+  identify?(userId: string, properties?: Record<string, any>): Promise<void>;
   isEnabled(key: string): Promise<boolean>;
   reload?(): Promise<void>;
-  identify?(userId: string, properties?: Record<string, any>): Promise<void>;
   track?(event: string, properties?: Record<string, any>): Promise<void>;
 }
 

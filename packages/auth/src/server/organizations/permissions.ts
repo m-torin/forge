@@ -320,3 +320,68 @@ export function getRequiredPermissionLevel(permission: string): number {
 
   return permissionLevels[permission] || 0;
 }
+
+// Helper functions for specific permissions
+export async function canInviteMembers(organizationId?: string): Promise<boolean> {
+  return checkPermission(ORGANIZATION_PERMISSIONS.MEMBERS.INVITE, organizationId);
+}
+
+export async function canRemoveMembers(organizationId?: string): Promise<boolean> {
+  return checkPermission(ORGANIZATION_PERMISSIONS.MEMBERS.REMOVE, organizationId);
+}
+
+export async function canUpdateMemberRoles(organizationId?: string): Promise<boolean> {
+  return checkPermission(ORGANIZATION_PERMISSIONS.MEMBERS.MANAGE, organizationId);
+}
+
+export async function canManageOrganization(organizationId?: string): Promise<boolean> {
+  return checkPermission(ORGANIZATION_PERMISSIONS.ORGANIZATION.MANAGE, organizationId);
+}
+
+export async function canDeleteOrganization(organizationId?: string): Promise<boolean> {
+  return checkPermission(ORGANIZATION_PERMISSIONS.ORGANIZATION.DELETE, organizationId);
+}
+
+export async function canManageAPIKeys(organizationId?: string): Promise<boolean> {
+  return checkPermission(ORGANIZATION_PERMISSIONS.API_KEYS.MANAGE, organizationId);
+}
+
+export async function canUpdateBilling(organizationId?: string): Promise<boolean> {
+  return checkPermission('billing:write', organizationId);
+}
+
+export async function canViewBilling(organizationId?: string): Promise<boolean> {
+  return checkPermission('billing:read', organizationId);
+}
+
+export async function hasOrganizationAccess(organizationId: string): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session) return false;
+
+    const role = await getUserRoleInOrganization(session.user.id, organizationId);
+    return !!role;
+  } catch (error) {
+    console.error('Has organization access error:', error);
+    return false;
+  }
+}
+
+export async function hasOrganizationRole(organizationId: string, role: string): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session) return false;
+
+    const userRole = await getUserRoleInOrganization(session.user.id, organizationId);
+    return userRole === role;
+  } catch (error) {
+    console.error('Has organization role error:', error);
+    return false;
+  }
+}
+
+export { isOrganizationAdmin, isOrganizationOwner } from './helpers';

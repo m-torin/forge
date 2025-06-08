@@ -2,7 +2,9 @@
 
 ## Overview
 
-This directory contains a fully autonomous workflow development system that can generate, test, and repair Upstash workflow code without any human intervention. The system leverages Claude CLI for intelligent code generation and includes self-learning capabilities that improve over time.
+This directory contains a fully autonomous workflow development system that can generate, test, and
+repair Upstash workflow code without any human intervention. The system leverages Claude CLI for
+intelligent code generation and includes self-learning capabilities that improve over time.
 
 ## Key Features
 
@@ -59,42 +61,54 @@ pnpm autonomous:zhi
 ## Core Components
 
 ### 1. Autonomous Loop (`autonomous-loop.ts`)
+
 The main orchestrator that manages the entire development lifecycle:
+
 - Validates workflow specifications
 - Coordinates code generation, testing, and repair
 - Manages iteration limits and timeouts
 - Integrates with Git for version control
 
 ### 2. Claude Wrapper (`claude-wrapper.ts`)
+
 Programmatic interface to Claude CLI:
+
 - Generates initial workflow implementations
 - Creates comprehensive test suites
 - Performs targeted code repairs
 - Uses optimized prompts for consistent results
 
 ### 3. Test Runner (`test-runner.ts`)
+
 Executes and analyzes test results:
+
 - Runs Vitest unit tests in parallel
 - Executes Playwright E2E tests
 - Provides detailed failure analysis
 - Tracks performance metrics
 
 ### 4. Error Analyzer (`error-analyzer.ts`)
+
 Intelligent error categorization and analysis:
+
 - Pattern recognition for common errors
 - Root cause analysis
 - Repair strategy suggestions
 - Confidence scoring
 
 ### 5. Learning System (`learning-system.ts`)
+
 Machine learning for continuous improvement:
+
 - Tracks success/failure patterns
 - Optimizes repair strategies
 - Predicts best approaches
 - Maintains historical metrics
 
 ### 6. Git Automation (`git-automation.ts`)
+
 Version control and CI/CD integration:
+
 - Automated branching and commits
 - Pull request creation
 - CI/CD pipeline triggering
@@ -103,19 +117,25 @@ Version control and CI/CD integration:
 ## Zero-Human-Intervention Protocols
 
 ### Standard Workflow (30 min timeout)
+
 Best for production-ready workflows:
+
 ```bash
 pnpm autonomous:zhi
 ```
 
 ### Rapid Prototype (15 min timeout)
+
 Quick generation for demos:
+
 ```bash
 pnpm autonomous:zhi:rapid
 ```
 
 ### High Reliability (60 min timeout)
+
 Extensive validation for critical workflows:
+
 ```bash
 pnpm autonomous:zhi:reliable
 ```
@@ -158,23 +178,23 @@ const spec: WorkflowSpecification = {
     type: 'object',
     properties: {
       userId: { type: 'string' },
-      email: { type: 'string' }
+      email: { type: 'string' },
     },
-    required: ['userId', 'email']
+    required: ['userId', 'email'],
   },
   outputContract: {
     type: 'object',
     properties: {
       sent: { type: 'boolean' },
-      messageId: { type: 'string' }
-    }
+      messageId: { type: 'string' },
+    },
   },
   businessLogic: [
     'Validate email format',
     'Generate personalized content',
     'Send email via provider',
-    'Log email event'
-  ]
+    'Log email event',
+  ],
 };
 
 // Generate the workflow
@@ -193,32 +213,32 @@ const pipelineSpec: WorkflowSpecification = {
     type: 'object',
     properties: {
       sourceUrl: { type: 'string', format: 'uri' },
-      format: { type: 'string', enum: ['csv', 'json'] }
-    }
+      format: { type: 'string', enum: ['csv', 'json'] },
+    },
   },
   outputContract: {
     type: 'object',
     properties: {
       recordsProcessed: { type: 'number' },
-      outputLocation: { type: 'string' }
-    }
+      outputLocation: { type: 'string' },
+    },
   },
   businessLogic: [
     'Download data from source',
     'Parse and validate format',
     'Apply transformation rules',
     'Load into data warehouse',
-    'Generate summary report'
+    'Generate summary report',
   ],
   errorHandling: [
     'Retry downloads on network failure',
     'Skip invalid records with logging',
-    'Rollback on critical errors'
+    'Rollback on critical errors',
   ],
   performance: {
     timeout: 3600000, // 1 hour
-    retries: 3
-  }
+    retries: 3,
+  },
 };
 
 // Use high-reliability protocol
@@ -230,11 +250,13 @@ await system.executeZHIProtocol(pipelineSpec, 'high-reliability');
 The system learns from every execution:
 
 1. **Error Pattern Recognition**
+
    - Identifies recurring error types
    - Builds a database of successful fixes
    - Improves accuracy over time
 
 2. **Strategy Optimization**
+
    - Tracks which repair strategies work best
    - Adjusts confidence scores based on outcomes
    - Predicts optimal approaches for new workflows
@@ -247,11 +269,13 @@ The system learns from every execution:
 ## Monitoring and Metrics
 
 View system performance:
+
 ```bash
 pnpm autonomous:metrics
 ```
 
 Output includes:
+
 - Total workflows processed
 - Success rate (currently 87%)
 - Average iterations needed
@@ -287,6 +311,7 @@ jobs:
 ### Automated PR Creation
 
 The system automatically:
+
 1. Creates feature branches
 2. Commits generated code
 3. Opens pull requests
@@ -298,10 +323,12 @@ The system automatically:
 ### Common Issues
 
 1. **Claude CLI not found**
+
    - Ensure Claude CLI is installed globally
    - Check PATH environment variable
 
 2. **Test timeouts**
+
    - Increase timeout in workflow specification
    - Check for infinite loops in business logic
 
@@ -312,6 +339,7 @@ The system automatically:
 ### Debug Mode
 
 Enable verbose logging:
+
 ```bash
 DEBUG=autonomous:* pnpm autonomous:process
 ```
@@ -319,16 +347,19 @@ DEBUG=autonomous:* pnpm autonomous:process
 ## Best Practices
 
 1. **Start Simple**
+
    - Begin with basic workflows
    - Gradually add complexity
    - Use rapid prototype mode for experiments
 
 2. **Clear Specifications**
+
    - Provide detailed business logic steps
    - Include comprehensive error handling
    - Define performance requirements
 
 3. **Monitor Learning**
+
    - Check metrics regularly
    - Review failure patterns
    - Contribute improvements back

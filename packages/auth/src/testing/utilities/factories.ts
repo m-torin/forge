@@ -184,7 +184,6 @@ export function createMockOrganizationStructure() {
   const members = Object.entries(users).map(([role, user]) =>
     createMockTeamMember({
       role,
-      teamId: teams[0].id,
       userId: user.id,
     }),
   );

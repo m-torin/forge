@@ -1,7 +1,7 @@
 // Main entry point for the autonomous workflow development system
 import { AutonomousLoop } from './core/autonomous-loop';
 import { ZeroHumanInterventionProtocol } from './protocols/zero-human-intervention';
-import { WorkflowSpecification, AutonomousConfig } from './types';
+import { type AutonomousConfig, type WorkflowSpecification } from './types';
 
 // Export all core components
 export { AutonomousLoop } from './core/autonomous-loop';
@@ -35,10 +35,7 @@ export class AutonomousWorkflowSystem {
   /**
    * Execute a zero-human-intervention protocol
    */
-  async executeZHIProtocol(
-    specification: WorkflowSpecification,
-    protocolName?: string
-  ) {
+  async executeZHIProtocol(specification: WorkflowSpecification, protocolName?: string) {
     return this.zhiProtocol.executeProtocol(specification, protocolName);
   }
 
@@ -67,34 +64,27 @@ if (require.main === module) {
     // Example workflow specification
     const exampleSpec: WorkflowSpecification = {
       name: 'example-workflow',
+      businessLogic: ['Validate input message', 'Process message', 'Return result with timestamp'],
       description: 'Example autonomous workflow',
+      errorHandling: ['Retry on failure', 'Log errors'],
       inputContract: {
         type: 'object',
         properties: {
-          message: { type: 'string' }
+          message: { type: 'string' },
         },
-        required: ['message']
+        required: ['message'],
       },
       outputContract: {
         type: 'object',
         properties: {
           result: { type: 'string' },
-          timestamp: { type: 'string' }
-        }
+          timestamp: { type: 'string' },
+        },
       },
-      businessLogic: [
-        'Validate input message',
-        'Process message',
-        'Return result with timestamp'
-      ],
-      errorHandling: [
-        'Retry on failure',
-        'Log errors'
-      ]
     };
 
     const system = new AutonomousWorkflowSystem();
-    
+
     // Check command line arguments
     const args = process.argv.slice(2);
     const command = args[0];
@@ -118,7 +108,7 @@ if (require.main === module) {
       case 'protocols':
         console.log('Available ZHI Protocols:');
         const protocols = system.getAvailableProtocols();
-        protocols.forEach(p => console.log(`  - ${p}`));
+        protocols.forEach((p) => console.log(`  - ${p}`));
         break;
 
       case 'metrics':
@@ -139,7 +129,7 @@ if (require.main === module) {
     process.exit(0);
   };
 
-  main().catch(error => {
+  main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

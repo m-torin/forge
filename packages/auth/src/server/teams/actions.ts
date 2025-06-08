@@ -64,11 +64,8 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
         name,
         createdAt: new Date(),
         description,
-        members: {
+        teamMembers: {
           create: {
-            id: `member_${Math.random().toString(36).substr(2, 9)}`,
-            createdAt: new Date(),
-            organizationId: teamOrganizationId,
             role: 'owner',
             userId: session.user.id,
           },
@@ -76,7 +73,7 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
         organizationId: teamOrganizationId,
       },
       include: {
-        members: {
+        teamMembers: {
           include: {
             user: {
               select: {
@@ -102,7 +99,6 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
             email: member.email,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
             invitedById: session.user.id,
-            inviterId: session.user.id,
             organizationId: teamOrganizationId,
             role: member.role,
             status: 'pending',
@@ -115,8 +111,8 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
     const teamWithMembers: TeamWithMembers = {
       ...team,
       description: team.description || undefined,
-      memberCount: team.members.length,
-      members: team.members.map((member: any) => ({
+      memberCount: team.teamMembers.length,
+      teamMembers: team.teamMembers.map((member: any) => ({
         id: member.id,
         joinedAt: member.createdAt,
         role: member.role,
@@ -166,7 +162,7 @@ export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<
         ...(data.description !== undefined && { description: data.description }),
       },
       include: {
-        members: {
+        teamMembers: {
           include: {
             user: {
               select: {
@@ -185,8 +181,8 @@ export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<
     const teamWithMembers: TeamWithMembers = {
       ...team,
       description: team.description || undefined,
-      memberCount: team.members.length,
-      members: team.members.map((member: any) => ({
+      memberCount: team.teamMembers.length,
+      teamMembers: team.teamMembers.map((member: any) => ({
         id: member.id,
         joinedAt: member.createdAt,
         role: member.role,
@@ -255,7 +251,7 @@ export async function getTeam(teamId: string): Promise<GetTeamResult> {
 
     const team = await database.team.findFirst({
       include: {
-        members: {
+        teamMembers: {
           include: {
             user: {
               select: {
@@ -270,7 +266,7 @@ export async function getTeam(teamId: string): Promise<GetTeamResult> {
       },
       where: {
         id: teamId,
-        members: {
+        teamMembers: {
           some: {
             userId: session.user.id,
           },
@@ -285,8 +281,8 @@ export async function getTeam(teamId: string): Promise<GetTeamResult> {
     const teamWithMembers: TeamWithMembers = {
       ...team,
       description: team.description || undefined,
-      memberCount: team.members.length,
-      members: team.members.map((member: any) => ({
+      memberCount: team.teamMembers.length,
+      teamMembers: team.teamMembers.map((member: any) => ({
         id: member.id,
         joinedAt: member.createdAt,
         role: member.role,
@@ -322,7 +318,7 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
 
     const teams = await database.team.findMany({
       include: {
-        members: {
+        teamMembers: {
           include: {
             user: {
               select: {
@@ -340,7 +336,7 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
       },
       where: {
         ...(targetOrgId && { organizationId: targetOrgId }),
-        members: {
+        teamMembers: {
           some: {
             userId: session.user.id,
           },
@@ -351,8 +347,8 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
     const teamsWithMembers: TeamWithMembers[] = teams.map((team: any) => ({
       ...team,
       description: team.description || undefined,
-      memberCount: team.members.length,
-      members: team.members.map((member: any) => ({
+      memberCount: team.teamMembers.length,
+      teamMembers: team.teamMembers.map((member: any) => ({
         id: member.id,
         joinedAt: member.createdAt,
         role: member.role,
@@ -400,7 +396,7 @@ export async function updateTeamMember(
       },
     });
 
-    if (!currentUserMembership || !roleHasPermission(currentUserMembership.role, 'members:write')) {
+    if (!currentUserMembership || !roleHasPermission(currentUserMembership.role, 'teamMembers:write')) {
       return { error: 'Insufficient permissions', success: false };
     }
 
@@ -417,7 +413,7 @@ export async function updateTeamMember(
     }
 
     // Check if current user can act on target user
-    if (!canActOnUser(currentUserMembership.role, targetMembership.role, 'members:write')) {
+    if (!canActOnUser(currentUserMembership.role, targetMembership.role, 'teamMembers:write')) {
       return { error: 'Cannot modify user with equal or higher role', success: false };
     }
 
@@ -484,7 +480,7 @@ export async function removeTeamMember(
 
     if (
       !currentUserMembership ||
-      !roleHasPermission(currentUserMembership.role, 'members:remove')
+      !roleHasPermission(currentUserMembership.role, 'teamMembers:remove')
     ) {
       return { error: 'Insufficient permissions', success: false };
     }
@@ -510,7 +506,7 @@ export async function removeTeamMember(
     }
 
     // Check if current user can act on target user
-    if (!canActOnUser(currentUserMembership.role, targetMembership.role, 'members:remove')) {
+    if (!canActOnUser(currentUserMembership.role, targetMembership.role, 'teamMembers:remove')) {
       return { error: 'Cannot remove user with equal or higher role', success: false };
     }
 

@@ -380,3 +380,8 @@ export async function getOrganizationMembers(organizationId: string): Promise<{
     };
   }
 }
+
+// Aliases for backward compatibility
+export { inviteUser as inviteMember } from './management';
+export { cancelInvitation as revokeInvitation } from './management';
+export { getOrganizationStats } from './helpers';

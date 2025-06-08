@@ -1,9 +1,10 @@
 // Claude CLI wrapper for programmatic code generation and repair
 import { spawn } from 'child_process';
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { WorkflowSpecification, ErrorAnalysis, RepairStrategy } from '../types';
+
+import { type ErrorAnalysis, type RepairStrategy, type WorkflowSpecification } from '../types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,24 +19,33 @@ export class ClaudeWrapper {
     this.ensureTempDir();
   }
 
-  async generateWorkflowCode(spec: WorkflowSpecification, strategy?: RepairStrategy): Promise<boolean> {
+  async generateWorkflowCode(
+    spec: WorkflowSpecification,
+    strategy?: RepairStrategy,
+  ): Promise<boolean> {
     const prompt = this.buildGenerationPrompt(spec, strategy);
     return await this.executeClaude(prompt, 'generate', spec.name);
   }
 
-  async repairCode(spec: WorkflowSpecification, errorAnalysis: ErrorAnalysis, strategy?: RepairStrategy): Promise<boolean> {
+  async repairCode(
+    spec: WorkflowSpecification,
+    errorAnalysis: ErrorAnalysis,
+    strategy?: RepairStrategy,
+  ): Promise<boolean> {
     const prompt = this.buildRepairPrompt(spec, errorAnalysis, strategy);
     return await this.executeClaude(prompt, 'repair', spec.name);
   }
 
   private buildGenerationPrompt(spec: WorkflowSpecification, strategy?: RepairStrategy): string {
-    const strategyGuidance = strategy ? `
+    const strategyGuidance = strategy
+      ? `
 ## Code Generation Strategy
 Based on learning data, use the following approach:
 - **Pattern**: ${strategy.pattern}
 - **Success Rate**: ${(strategy.successRate * 100).toFixed(1)}%
 - **Key Considerations**: ${strategy.considerations.join(', ')}
-` : '';
+`
+      : '';
 
     return `# Autonomous Workflow Code Generation
 
@@ -63,11 +73,15 @@ ${spec.businessLogic.map((logic, i) => `${i + 1}. ${logic}`).join('\n')}
 ${spec.errorHandling?.map((handler, i) => `${i + 1}. ${handler}`).join('\n') || 'Standard error handling with retries'}
 
 ## Performance Requirements
-${spec.performance ? `
+${
+  spec.performance
+    ? `
 - **Timeout**: ${spec.performance.timeout || 120000}ms
 - **Retries**: ${spec.performance.retries || 3}
 - **Rate Limit**: ${spec.performance.rateLimit || 'None'}
-` : 'Default performance settings'}
+`
+    : 'Default performance settings'
+}
 
 ${strategyGuidance}
 
@@ -145,15 +159,21 @@ Generate Playwright end-to-end tests:
 Generate all files with complete, production-ready implementations.`;
   }
 
-  private buildRepairPrompt(spec: WorkflowSpecification, errorAnalysis: ErrorAnalysis, strategy?: RepairStrategy): string {
-    const strategyGuidance = strategy ? `
+  private buildRepairPrompt(
+    spec: WorkflowSpecification,
+    errorAnalysis: ErrorAnalysis,
+    strategy?: RepairStrategy,
+  ): string {
+    const strategyGuidance = strategy
+      ? `
 ## Repair Strategy
 Based on learning data, apply this repair approach:
 - **Pattern**: ${strategy.pattern}
 - **Success Rate**: ${(strategy.successRate * 100).toFixed(1)}%
 - **Risk Level**: ${strategy.riskLevel}
 - **Key Focus Areas**: ${strategy.considerations.join(', ')}
-` : '';
+`
+      : '';
 
     return `# Autonomous Code Repair
 
@@ -163,7 +183,7 @@ Fix the failing tests for workflow: ${spec.name}
 - **Error Categories**: ${errorAnalysis.categories.join(', ')}
 - **Confidence Level**: ${(errorAnalysis.confidence * 100).toFixed(1)}%
 - **Primary Errors**: 
-${errorAnalysis.errors.map(error => `  - ${error.message} (${error.file}:${error.line})`).join('\n')}
+${errorAnalysis.errors.map((error) => `  - ${error.message} (${error.file}:${error.line})`).join('\n')}
 
 ## Suggested Repair Strategy
 ${errorAnalysis.suggestedStrategy}
@@ -171,7 +191,9 @@ ${errorAnalysis.suggestedStrategy}
 ${strategyGuidance}
 
 ## Test Failures
-${errorAnalysis.testFailures.map((failure, i) => `
+${errorAnalysis.testFailures
+  .map(
+    (failure, i) => `
 ### ${i + 1}. ${failure.testName}
 - **Error**: ${failure.error}
 - **Expected**: ${failure.expected}
@@ -180,7 +202,9 @@ ${errorAnalysis.testFailures.map((failure, i) => `
 \`\`\`
 ${failure.stack}
 \`\`\`
-`).join('\n')}
+`,
+  )
+  .join('\n')}
 
 ## Root Cause Analysis
 ${this.performRootCauseAnalysis(errorAnalysis)}
@@ -223,54 +247,68 @@ Focus on fixing the specific errors identified in the test failures.`;
 
   private performRootCauseAnalysis(errorAnalysis: ErrorAnalysis): string {
     const analysis: string[] = [];
-    
+
     // Analyze error patterns
     if (errorAnalysis.categories.includes('type-error')) {
-      analysis.push('- **Type Mismatches**: Check schema definitions and ensure consistency between contracts and implementation');
+      analysis.push(
+        '- **Type Mismatches**: Check schema definitions and ensure consistency between contracts and implementation',
+      );
     }
-    
+
     if (errorAnalysis.categories.includes('contract-violation')) {
-      analysis.push('- **Contract Issues**: Implementation doesn\'t match specified input/output contracts');
+      analysis.push(
+        "- **Contract Issues**: Implementation doesn't match specified input/output contracts",
+      );
     }
-    
+
     if (errorAnalysis.categories.includes('logic-error')) {
-      analysis.push('- **Logic Problems**: Business logic steps may be in wrong order or missing critical operations');
+      analysis.push(
+        '- **Logic Problems**: Business logic steps may be in wrong order or missing critical operations',
+      );
     }
-    
+
     if (errorAnalysis.categories.includes('performance-issue')) {
-      analysis.push('- **Performance**: Operations taking too long, consider optimization or timeout adjustments');
+      analysis.push(
+        '- **Performance**: Operations taking too long, consider optimization or timeout adjustments',
+      );
     }
-    
+
     // Add pattern-specific analysis
     const commonPatterns = this.identifyCommonPatterns(errorAnalysis.errors);
     if (commonPatterns.length > 0) {
       analysis.push(`- **Common Patterns**: ${commonPatterns.join(', ')}`);
     }
-    
-    return analysis.length > 0 ? analysis.join('\n') : 'No clear root cause identified, manual investigation required';
+
+    return analysis.length > 0
+      ? analysis.join('\n')
+      : 'No clear root cause identified, manual investigation required';
   }
 
   private identifyCommonPatterns(errors: any[]): string[] {
     const patterns: string[] = [];
-    
+
     // Count error types
     const errorCounts = new Map<string, number>();
-    errors.forEach(error => {
+    errors.forEach((error) => {
       const key = error.message.split(':')[0];
       errorCounts.set(key, (errorCounts.get(key) || 0) + 1);
     });
-    
+
     // Identify patterns
     errorCounts.forEach((count, errorType) => {
       if (count >= 3) {
         patterns.push(`Multiple ${errorType} errors (${count} occurrences)`);
       }
     });
-    
+
     return patterns;
   }
 
-  private async executeClaude(prompt: string, type: string, workflowName: string): Promise<boolean> {
+  private async executeClaude(
+    prompt: string,
+    type: string,
+    workflowName: string,
+  ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       // Write prompt to temp file
       const promptFile = join(this.tempDir, `${type}-${workflowName}-${Date.now()}.md`);
@@ -280,12 +318,17 @@ Focus on fixing the specific errors identified in the test failures.`;
 
       // Execute Claude CLI with proper flags
       const claudeArgs = [
-        '-p', promptFile,
-        '--max-tokens', '8192',
-        '--temperature', '0.2', // Lower temperature for more consistent code
-        '--model', this.claudeModel,
+        '-p',
+        promptFile,
+        '--max-tokens',
+        '8192',
+        '--temperature',
+        '0.2', // Lower temperature for more consistent code
+        '--model',
+        this.claudeModel,
         '--no-cache', // Ensure fresh generation
-        '--output-dir', this.outputDir
+        '--output-dir',
+        this.outputDir,
       ];
 
       // Add additional flags for repair operations
@@ -294,12 +337,12 @@ Focus on fixing the specific errors identified in the test failures.`;
       }
 
       const claude = spawn('claude', claudeArgs, {
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: { 
-          ...process.env, 
+        env: {
+          ...process.env,
+          CLAUDE_AUTO_CONFIRM: 'true', // Auto-confirm file operations
           CLAUDE_SKIP_PERMISSIONS: 'true',
-          CLAUDE_AUTO_CONFIRM: 'true' // Auto-confirm file operations
-        }
+        },
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       let output = '';
@@ -320,10 +363,10 @@ Focus on fixing the specific errors identified in the test failures.`;
 
       claude.on('close', (code) => {
         console.log(''); // New line after progress dots
-        
+
         if (code === 0) {
           console.log(`✅ Claude ${type} completed successfully`);
-          
+
           // Verify files were created
           const filesCreated = this.verifyGeneratedFiles(workflowName);
           if (filesCreated) {
@@ -348,11 +391,14 @@ Focus on fixing the specific errors identified in the test failures.`;
       });
 
       // Set timeout for long-running operations
-      setTimeout(() => {
-        claude.kill('SIGTERM');
-        console.error('⏱️ Claude operation timed out after 5 minutes');
-        resolve(false);
-      }, 5 * 60 * 1000);
+      setTimeout(
+        () => {
+          claude.kill('SIGTERM');
+          console.error('⏱️ Claude operation timed out after 5 minutes');
+          resolve(false);
+        },
+        5 * 60 * 1000,
+      );
     });
   }
 
@@ -360,10 +406,10 @@ Focus on fixing the specific errors identified in the test failures.`;
     const requiredFiles = [
       join(this.outputDir, 'src/workflows', `${workflowName}.ts`),
       join(this.outputDir, 'tests/unit', `${workflowName}.test.ts`),
-      join(this.outputDir, 'tests/e2e', `${workflowName}.e2e.ts`)
+      join(this.outputDir, 'tests/e2e', `${workflowName}.e2e.ts`),
     ];
 
-    return requiredFiles.every(file => {
+    return requiredFiles.every((file) => {
       const exists = existsSync(file);
       if (!exists) {
         console.warn(`⚠️ Missing expected file: ${file}`);
@@ -394,9 +440,9 @@ Focus on fixing the specific errors identified in the test failures.`;
       }
 
       return {
-        workflow: readFileSync(workflowPath, 'utf-8'),
+        e2eTests: readFileSync(e2eTestPath, 'utf-8'),
         unitTests: readFileSync(unitTestPath, 'utf-8'),
-        e2eTests: readFileSync(e2eTestPath, 'utf-8')
+        workflow: readFileSync(workflowPath, 'utf-8'),
       };
     } catch (error) {
       console.error('Error reading generated files:', error);

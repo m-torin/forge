@@ -9,14 +9,14 @@ import type { ObservabilityManager } from '../types/types';
  * Error codes for standardized error handling
  */
 export enum ErrorCode {
-  INTERNAL_ERROR = 'INTERNAL_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  NOT_FOUND = 'NOT_FOUND',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  FORBIDDEN = 'FORBIDDEN',
-  RATE_LIMITED = 'RATE_LIMITED',
-  PROVIDER_ERROR = 'PROVIDER_ERROR',
   CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
+  FORBIDDEN = 'FORBIDDEN',
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  NOT_FOUND = 'NOT_FOUND',
+  PROVIDER_ERROR = 'PROVIDER_ERROR',
+  RATE_LIMITED = 'RATE_LIMITED',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
 }
 
 /**
@@ -30,11 +30,7 @@ export interface ExtendedError extends Error {
 /**
  * Create an error with a code and optional data
  */
-export function createError(
-  message: string,
-  code: ErrorCode | string,
-  data?: any
-): ExtendedError {
+export function createError(message: string, code: ErrorCode | string, data?: any): ExtendedError {
   const error = new Error(message) as ExtendedError;
   error.code = code;
   if (data !== undefined) {
@@ -50,7 +46,7 @@ export function isError(value: unknown): value is Error {
   if (value instanceof Error) {
     return true;
   }
-  
+
   // Check for Error-like objects
   if (
     value &&
@@ -61,7 +57,7 @@ export function isError(value: unknown): value is Error {
   ) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -72,23 +68,23 @@ export function getErrorMessage(error: unknown): string {
   if (error === null || error === undefined) {
     return 'Unknown error';
   }
-  
+
   if (typeof error === 'string') {
     return error;
   }
-  
+
   if (typeof error === 'number') {
     return error.toString();
   }
-  
+
   if (error instanceof Error) {
     return error.message;
   }
-  
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
-  
+
   // Try to stringify the object
   try {
     return JSON.stringify(error);
@@ -105,11 +101,11 @@ export function getErrorStack(error: unknown): string | undefined {
   if (error instanceof Error) {
     return error.stack;
   }
-  
+
   if (error && typeof error === 'object' && 'stack' in error) {
     return String(error.stack);
   }
-  
+
   return undefined;
 }
 
@@ -123,43 +119,43 @@ export function normalizeError(error: unknown): Record<string, any> {
       message: 'Unknown error',
     };
   }
-  
+
   if (typeof error === 'string') {
     return {
       name: 'Error',
       message: error,
     };
   }
-  
+
   if (typeof error === 'number') {
     return {
       name: 'Error',
       message: error.toString(),
     };
   }
-  
+
   if (error instanceof Error) {
     const normalized: Record<string, any> = {
       name: error.name,
       message: error.message,
     };
-    
+
     if (error.stack) {
       normalized.stack = error.stack;
     }
-    
+
     // Include extended error properties
     if ('code' in error) {
       normalized.code = (error as any).code;
     }
-    
+
     if ('data' in error) {
       normalized.data = (error as any).data;
     }
-    
+
     return normalized;
   }
-  
+
   if (typeof error === 'object') {
     const message = getErrorMessage(error);
     return {
@@ -168,7 +164,7 @@ export function normalizeError(error: unknown): Record<string, any> {
       ...error,
     };
   }
-  
+
   return {
     name: 'Error',
     message: String(error),

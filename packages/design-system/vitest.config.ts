@@ -9,8 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './'),
-      '@repo/design-system': resolve(__dirname, './'),
       '@repo/analytics': resolve(__dirname, '../analytics'),
+      '@repo/design-system': resolve(__dirname, './'),
       '@repo/notifications': resolve(__dirname, '../notifications'),
       geist: resolve(__dirname, './mocks/geist.ts'),
       'geist/font/mono': resolve(__dirname, './mocks/geist-mono.ts'),

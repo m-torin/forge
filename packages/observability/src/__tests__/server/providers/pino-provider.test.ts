@@ -209,34 +209,32 @@ describe('PinoProvider', () => {
       mockPino.child.mockReturnValue(childLogger);
 
       await provider.identify('user-789');
-      await provider.log({
-        level: 'info',
-        message: 'User action',
-        timestamp: new Date().toISOString(),
-      });
+      await provider.log('info', 'User action');
 
       expect(childLogger.info).toHaveBeenCalledWith({}, 'User action');
     });
   });
 
   describe('setContext', () => {
-    it('should create child logger with context', async () => {
-      await provider.setContext({
+    it('should create child logger with context', () => {
+      provider.setContext('app', {
         environment: 'production',
         region: 'us-east-1',
         version: '1.0.0',
       });
 
       expect(mockPino.child).toHaveBeenCalledWith({
-        environment: 'production',
-        region: 'us-east-1',
-        version: '1.0.0',
+        app: {
+          environment: 'production',
+          region: 'us-east-1',
+          version: '1.0.0',
+        },
       });
     });
 
-    it('should merge multiple context calls', async () => {
-      await provider.setContext({ env: 'prod' });
-      await provider.setContext({ version: '1.0' });
+    it('should merge multiple context calls', () => {
+      provider.setContext('env', { environment: 'prod' });
+      provider.setContext('version', { number: '1.0' });
 
       expect(mockPino.child).toHaveBeenCalledTimes(2);
     });

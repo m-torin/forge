@@ -13,15 +13,15 @@ const mockIdentify = vi.fn();
 const mockGetDistinctId = vi.fn();
 
 const mockPosthog = {
+  get_distinct_id: mockGetDistinctId,
   identify: mockIdentify,
+  __loaded: true,
   capture: mockCapture,
   getFeatureFlag: mockGetFeatureFlag,
   getFeatureFlagPayload: mockGetFeatureFlagPayload,
   isFeatureEnabled: mockIsFeatureEnabled,
   onFeatureFlags: mockOnFeatureFlags,
   reloadFeatureFlags: mockReloadFeatureFlags,
-  get_distinct_id: mockGetDistinctId,
-  __loaded: true,
 };
 
 vi.mock('posthog-js', () => ({
@@ -55,10 +55,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.isFeatureEnabled();
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toBe(true);
@@ -70,10 +70,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.isFeatureEnabled();
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toBe(false);
@@ -85,10 +85,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.isFeatureEnabled();
       await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(mockIdentify).toHaveBeenCalledWith('user-123');
@@ -99,10 +99,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.isFeatureEnabled();
       const result = await flagAdapter.decide({
-        entities: {},
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: {},
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toBe(false);
@@ -117,10 +117,10 @@ describe('PostHogClientAdapter', () => {
 
       await expect(
         flagAdapter.decide({
-          entities: { user: { id: 'user-123' } },
-          key: 'test-flag',
-          headers: new Headers(),
           cookies: {} as any,
+          entities: { user: { id: 'user-123' } },
+          headers: new Headers(),
+          key: 'test-flag',
         }),
       ).rejects.toThrow('PostHog client adapter only works in browser environments');
 
@@ -134,10 +134,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.featureFlagValue();
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toBe('variant-a');
@@ -149,10 +149,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.featureFlagValue();
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toBe(false);
@@ -163,10 +163,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.featureFlagValue();
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'bool-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'bool-flag',
       });
 
       expect(result).toBe(true);
@@ -175,15 +175,15 @@ describe('PostHogClientAdapter', () => {
 
   describe('featureFlagPayload adapter', () => {
     it('should return payload when available', async () => {
-      const payload = { variant: 'A', config: { timeout: 5000 } };
+      const payload = { config: { timeout: 5000 }, variant: 'A' };
       mockGetFeatureFlagPayload.mockReturnValue(payload);
 
       const flagAdapter = adapter.featureFlagPayload();
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toEqual(payload);
@@ -197,10 +197,10 @@ describe('PostHogClientAdapter', () => {
       const transform = (data: any) => ({ transformed: data.value });
       const flagAdapter = adapter.featureFlagPayload(transform);
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toEqual({ transformed: 'raw' });
@@ -211,10 +211,10 @@ describe('PostHogClientAdapter', () => {
 
       const flagAdapter = adapter.featureFlagPayload();
       const result = await flagAdapter.decide({
-        entities: { user: { id: 'user-123' } },
-        key: 'test-flag',
-        headers: new Headers(),
         cookies: {} as any,
+        entities: { user: { id: 'user-123' } },
+        headers: new Headers(),
+        key: 'test-flag',
       });
 
       expect(result).toEqual({});
@@ -243,8 +243,8 @@ describe('PostHogClientAdapter', () => {
       const adapter = createPostHogClientAdapter({
         postHogKey: 'custom-key',
         postHogOptions: {
-          host: 'https://custom.posthog.com',
           debug: true,
+          host: 'https://custom.posthog.com',
         },
       });
 

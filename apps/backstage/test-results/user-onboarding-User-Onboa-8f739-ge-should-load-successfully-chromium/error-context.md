@@ -17,99 +17,99 @@ Time to First Byte: 2806.089999973774 ms
 
 ```yaml
 - banner:
-  - heading "Backstage Admin" [level=3]
-  - button "Dashboard" [expanded]:
-    - img
-    - paragraph: Dashboard
-  - button "Workflows":
-    - img
-    - paragraph: Workflows
-    - img
-  - button "PIM":
-    - img
-    - paragraph: PIM
-    - img
-  - button "CMS":
-    - img
-    - paragraph: CMS
-    - img
-  - button "Guests":
-    - img
-    - paragraph: Guests
-    - img
-  - button:
-    - img
-  - button:
-    - img
-  - button:
-    - img
-  - separator
-  - button "Admin":
-    - text: Admin
-    - img
+    - heading "Backstage Admin" [level=3]
+    - button "Dashboard" [expanded]:
+        - img
+        - paragraph: Dashboard
+    - button "Workflows":
+        - img
+        - paragraph: Workflows
+        - img
+    - button "PIM":
+        - img
+        - paragraph: PIM
+        - img
+    - button "CMS":
+        - img
+        - paragraph: CMS
+        - img
+    - button "Guests":
+        - img
+        - paragraph: Guests
+        - img
+    - button:
+        - img
+    - button:
+        - img
+    - button:
+        - img
+    - separator
+    - button "Admin":
+        - text: Admin
+        - img
 - main:
-  - link "Home":
-    - /url: /
-  - text: ›
-  - link "Workflows":
-    - /url: /workflows
-  - text: ›
-  - link "User onboarding":
-    - /url: /workflows/user-onboarding
-  - heading "User Onboarding Workflow" [level=1]
-  - paragraph: Test and manage the automated user onboarding process
-  - heading "Workflow Configuration" [level=3]
-  - text: User ID
-  - textbox "User ID"
-  - text: Email Address
-  - textbox "Email Address"
-  - text: Signup Source
-  - textbox "Signup Source": Organic
-  - img
-  - text: Referral Code (Optional)
-  - textbox "Referral Code (Optional)"
-  - paragraph: Email Preferences
-  - switch "Newsletter subscription" [checked]
-  - text: Newsletter subscription
-  - switch "Product updates" [checked]
-  - text: Product updates
-  - switch "Marketing emails"
-  - text: Marketing emails
-  - heading "Workflow Progress" [level=3]
-  - button:
+    - link "Home":
+        - /url: /
+    - text: ›
+    - link "Workflows":
+        - /url: /workflows
+    - text: ›
+    - link "User onboarding":
+        - /url: /workflows/user-onboarding
+    - heading "User Onboarding Workflow" [level=1]
+    - paragraph: Test and manage the automated user onboarding process
+    - heading "Workflow Configuration" [level=3]
+    - text: User ID
+    - textbox "User ID"
+    - text: Email Address
+    - textbox "Email Address"
+    - text: Signup Source
+    - textbox "Signup Source": Organic
     - img
-  - button "Start Onboarding" [disabled]
-  - progressbar
-  - img
-  - paragraph: Create Profile
-  - text: pending
-  - paragraph: Initialize user profile with defaults
-  - img
-  - paragraph: Welcome Email
-  - text: pending
-  - paragraph: Send personalized welcome email
-  - img
-  - paragraph: Check Referral
-  - text: pending
-  - paragraph: Validate referral code if provided
-  - img
-  - paragraph: Setup Workspace
-  - text: pending
-  - paragraph: Create initial workspace and project
-  - img
-  - paragraph: Complete Setup
-  - text: pending
-  - paragraph: Finalize onboarding process
-  - separator
-  - heading "Workflow Details" [level=4]
-  - paragraph: Workflow ID
-  - paragraph: user-onboarding
-  - paragraph: Version
-  - paragraph: 1.0.0
-  - paragraph: Max Duration
-  - paragraph: 2 minutes
-  - paragraph: Critical Steps
-  - paragraph: create-user-profile, create-workspace
+    - text: Referral Code (Optional)
+    - textbox "Referral Code (Optional)"
+    - paragraph: Email Preferences
+    - switch "Newsletter subscription" [checked]
+    - text: Newsletter subscription
+    - switch "Product updates" [checked]
+    - text: Product updates
+    - switch "Marketing emails"
+    - text: Marketing emails
+    - heading "Workflow Progress" [level=3]
+    - button:
+        - img
+    - button "Start Onboarding" [disabled]
+    - progressbar
+    - img
+    - paragraph: Create Profile
+    - text: pending
+    - paragraph: Initialize user profile with defaults
+    - img
+    - paragraph: Welcome Email
+    - text: pending
+    - paragraph: Send personalized welcome email
+    - img
+    - paragraph: Check Referral
+    - text: pending
+    - paragraph: Validate referral code if provided
+    - img
+    - paragraph: Setup Workspace
+    - text: pending
+    - paragraph: Create initial workspace and project
+    - img
+    - paragraph: Complete Setup
+    - text: pending
+    - paragraph: Finalize onboarding process
+    - separator
+    - heading "Workflow Details" [level=4]
+    - paragraph: Workflow ID
+    - paragraph: user-onboarding
+    - paragraph: Version
+    - paragraph: 1.0.0
+    - paragraph: Max Duration
+    - paragraph: 2 minutes
+    - paragraph: Critical Steps
+    - paragraph: create-user-profile, create-workspace
 - alert
 ```
 

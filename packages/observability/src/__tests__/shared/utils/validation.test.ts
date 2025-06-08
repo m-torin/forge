@@ -1,54 +1,99 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
+  debugConfig,
   isValidEmail,
   isValidUrl,
   validateConfig,
   validateLogLevel,
+  validateObservabilityConfig,
   validateProvider,
+  validateProviderConfig,
 } from '../../../shared/utils/validation';
 
-import type {
-  LogLevel,
-  ObservabilityConfig,
-  ObservabilityProvider,
-} from '../../../shared/types/types';
+import type { LogLevel, ObservabilityConfig } from '../../../shared/types/types';
 
 describe('Validation Utilities', () => {
-  describe('validateLogLevel', () => {
-    it('should validate correct log levels', () => {
-      const validLevels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
+  describe('validateObservabilityConfig', () => {
+    it('should validate empty providers', () => {
+      const config: ObservabilityConfig = {
+        providers: {},
+      };
 
-      validLevels.forEach((level) => {
-        expect(() => validateLogLevel(level)).not.toThrow();
+      const result = validateObservabilityConfig(config);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should validate Sentry config', () => {
+      const config: ObservabilityConfig = {
+        providers: {
+          sentry: {
+            dsn: 'https://key@sentry.io/123',
+          },
+        },
+      };
+
+      const result = validateObservabilityConfig(config);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should require DSN for Sentry', () => {
+      const config: ObservabilityConfig = {
+        providers: {
+          sentry: {},
+        },
+      };
+
+      const result = validateObservabilityConfig(config);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]).toMatchObject({
+        provider: 'sentry',
+        field: 'dsn',
+        message: 'Sentry DSN is required',
       });
     });
 
-    it('should throw for invalid log levels', () => {
-      const invalidLevels = ['trace', 'fatal', 'verbose', 'warning', ''];
+    it('should require service name for OpenTelemetry', () => {
+      const config: ObservabilityConfig = {
+        providers: {
+          opentelemetry: {},
+        },
+      };
 
-      invalidLevels.forEach((level) => {
-        expect(() => validateLogLevel(level as LogLevel)).toThrow('Invalid log level');
+      const result = validateObservabilityConfig(config);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]).toMatchObject({
+        provider: 'opentelemetry',
+        field: 'serviceName',
+        message: 'Service name is required for OpenTelemetry',
       });
     });
 
-    it('should throw for non-string values', () => {
-      expect(() => validateLogLevel(null as any)).toThrow();
-      expect(() => validateLogLevel(undefined as any)).toThrow();
-      expect(() => validateLogLevel(123 as any)).toThrow();
-      expect(() => validateLogLevel({} as any)).toThrow();
+    it('should validate console provider without required fields', () => {
+      const config: ObservabilityConfig = {
+        providers: {
+          console: {},
+        },
+      };
+
+      const result = validateObservabilityConfig(config);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
     });
   });
 
   describe('validateProvider', () => {
     it('should validate provider with required methods', () => {
-      const validProvider: ObservabilityProvider = {
-        identify: async () => {},
+      const validProvider = {
+        name: 'test',
         captureException: async () => {},
-        flush: async () => {},
-        isEnabled: () => true,
+        captureMessage: async () => {},
+        initialize: async () => {},
         log: async () => {},
-        setContext: async () => {},
       };
 
       expect(() => validateProvider(validProvider)).not.toThrow();
@@ -56,48 +101,34 @@ describe('Validation Utilities', () => {
 
     it('should throw for missing log method', () => {
       const provider = {
-        identify: async () => {},
+        name: 'test',
         captureException: async () => {},
-        flush: async () => {},
-        isEnabled: () => true,
-        setContext: async () => {},
-      } as any;
+        captureMessage: async () => {},
+        initialize: async () => {},
+      };
 
       expect(() => validateProvider(provider)).toThrow('Provider must implement log method');
     });
 
     it('should throw for missing captureException method', () => {
       const provider = {
-        identify: async () => {},
-        flush: async () => {},
-        isEnabled: () => true,
+        name: 'test',
+        captureMessage: async () => {},
+        initialize: async () => {},
         log: async () => {},
-        setContext: async () => {},
-      } as any;
+      };
 
       expect(() => validateProvider(provider)).toThrow(
         'Provider must implement captureException method',
       );
     });
 
-    it('should throw for non-function methods', () => {
-      const provider = {
-        identify: async () => {},
-        captureException: async () => {},
-        flush: async () => {},
-        isEnabled: () => true,
-        log: 'not a function',
-        setContext: async () => {},
-      } as any;
-
-      expect(() => validateProvider(provider)).toThrow('Provider must implement log method');
+    it('should throw for null provider', () => {
+      expect(() => validateProvider(null)).toThrow('Provider cannot be null or undefined');
     });
 
-    it('should throw for null or undefined provider', () => {
-      expect(() => validateProvider(null as any)).toThrow('Provider cannot be null or undefined');
-      expect(() => validateProvider(undefined as any)).toThrow(
-        'Provider cannot be null or undefined',
-      );
+    it('should throw for undefined provider', () => {
+      expect(() => validateProvider(undefined)).toThrow('Provider cannot be null or undefined');
     });
 
     it('should throw for non-object provider', () => {
@@ -108,7 +139,7 @@ describe('Validation Utilities', () => {
 
   describe('validateConfig', () => {
     it('should validate minimal config', () => {
-      const config: ObservabilityConfig = {
+      const config = {
         providers: [],
       };
 
@@ -116,9 +147,9 @@ describe('Validation Utilities', () => {
     });
 
     it('should validate config with all options', () => {
-      const config: ObservabilityConfig = {
+      const config = {
         providers: [],
-        defaultLogLevel: 'info',
+        defaultLogLevel: 'info' as LogLevel,
         enableConsoleInDev: true,
         enabledEnvironments: ['production', 'staging'],
       };
@@ -161,50 +192,85 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).toThrow('enabledEnvironments must be an array');
     });
 
-    it('should throw for non-string environment values', () => {
+    it('should throw for non-string environments', () => {
       const config = {
         providers: [],
-        enabledEnvironments: ['production', 123, 'staging'],
+        enabledEnvironments: ['production', 123],
       } as any;
 
       expect(() => validateConfig(config)).toThrow('All environments must be strings');
+    });
+
+    it('should throw for missing config', () => {
+      expect(() => validateConfig(null)).toThrow('Configuration is required');
+      expect(() => validateConfig(undefined)).toThrow('Configuration is required');
+    });
+  });
+
+  describe('validateLogLevel', () => {
+    it('should validate all valid levels', () => {
+      const validLevels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
+
+      for (const level of validLevels) {
+        expect(() => validateLogLevel(level)).not.toThrow();
+      }
+    });
+
+    it('should throw for invalid level', () => {
+      expect(() => validateLogLevel('invalid' as any)).toThrow('Invalid log level: invalid');
+    });
+  });
+
+  describe('isValidEmail', () => {
+    it('should validate correct emails', () => {
+      expect(isValidEmail('test@example.com')).toBe(true);
+      expect(isValidEmail('user.name@domain.co.uk')).toBe(true);
+      expect(isValidEmail('user+tag@example.org')).toBe(true);
+      expect(isValidEmail('123@456.com')).toBe(true);
+    });
+
+    it('should reject invalid emails', () => {
+      expect(isValidEmail('not-an-email')).toBe(false);
+      expect(isValidEmail('@example.com')).toBe(false);
+      expect(isValidEmail('user@')).toBe(false);
+      expect(isValidEmail('user@.com')).toBe(false);
+      expect(isValidEmail('user@domain')).toBe(false);
+      expect(isValidEmail('user @example.com')).toBe(false);
+      expect(isValidEmail('user@example .com')).toBe(false);
+      expect(isValidEmail('.user@example.com')).toBe(false);
+      expect(isValidEmail('user.@example.com')).toBe(false);
+      expect(isValidEmail('user@.example.com')).toBe(false);
+      expect(isValidEmail('user@example.com.')).toBe(false);
+    });
+
+    it('should reject non-string inputs', () => {
+      expect(isValidEmail(null as any)).toBe(false);
+      expect(isValidEmail(undefined as any)).toBe(false);
+      expect(isValidEmail(123 as any)).toBe(false);
+      expect(isValidEmail({} as any)).toBe(false);
     });
   });
 
   describe('isValidUrl', () => {
     it('should validate correct URLs', () => {
-      const validUrls = [
-        'https://example.com',
-        'http://localhost:3000',
-        'https://sub.domain.com/path',
-        'https://example.com:8080/path?query=value',
-        'https://192.168.1.1',
-        'http://example.com/#hash',
-      ];
-
-      validUrls.forEach((url) => {
-        expect(isValidUrl(url)).toBe(true);
-      });
+      expect(isValidUrl('http://example.com')).toBe(true);
+      expect(isValidUrl('https://example.com')).toBe(true);
+      expect(isValidUrl('https://subdomain.example.com')).toBe(true);
+      expect(isValidUrl('https://example.com/path')).toBe(true);
+      expect(isValidUrl('https://example.com/path?query=value')).toBe(true);
+      expect(isValidUrl('https://example.com:8080')).toBe(true);
+      expect(isValidUrl('https://user:pass@example.com')).toBe(true);
     });
 
     it('should reject invalid URLs', () => {
-      const invalidUrls = [
-        'not a url',
-        'ftp://example.com',
-        'example.com',
-        '//example.com',
-        'http://',
-        'https://',
-        '',
-        'javascript:alert(1)',
-      ];
-
-      invalidUrls.forEach((url) => {
-        expect(isValidUrl(url)).toBe(false);
-      });
+      expect(isValidUrl('not-a-url')).toBe(false);
+      expect(isValidUrl('ftp://example.com')).toBe(false); // Only HTTP/HTTPS allowed
+      expect(isValidUrl('javascript:alert(1)')).toBe(false);
+      expect(isValidUrl('//example.com')).toBe(false);
+      expect(isValidUrl('example.com')).toBe(false);
     });
 
-    it('should handle non-string values', () => {
+    it('should reject non-string inputs', () => {
       expect(isValidUrl(null as any)).toBe(false);
       expect(isValidUrl(undefined as any)).toBe(false);
       expect(isValidUrl(123 as any)).toBe(false);
@@ -212,46 +278,57 @@ describe('Validation Utilities', () => {
     });
   });
 
-  describe('isValidEmail', () => {
-    it('should validate correct email addresses', () => {
-      const validEmails = [
-        'test@example.com',
-        'user.name@domain.com',
-        'user+tag@example.co.uk',
-        'test123@sub.domain.com',
-        'a@b.c',
-      ];
-
-      validEmails.forEach((email) => {
-        expect(isValidEmail(email)).toBe(true);
-      });
+  describe('validateProviderConfig', () => {
+    it('should validate unknown providers', () => {
+      const errors = validateProviderConfig('custom', { apiKey: 'test' });
+      expect(errors).toHaveLength(0);
     });
 
-    it('should reject invalid email addresses', () => {
-      const invalidEmails = [
-        'not-an-email',
-        '@example.com',
-        'user@',
-        'user@@example.com',
-        'user@example',
-        'user @example.com',
-        'user@exam ple.com',
-        '',
-        'user@.com',
-        '.user@example.com',
-        'user.@example.com',
-      ];
-
-      invalidEmails.forEach((email) => {
-        expect(isValidEmail(email)).toBe(false);
-      });
+    it('should validate pino provider', () => {
+      const errors = validateProviderConfig('pino', {});
+      expect(errors).toHaveLength(0);
     });
 
-    it('should handle non-string values', () => {
-      expect(isValidEmail(null as any)).toBe(false);
-      expect(isValidEmail(undefined as any)).toBe(false);
-      expect(isValidEmail(123 as any)).toBe(false);
-      expect(isValidEmail({} as any)).toBe(false);
+    it('should validate winston provider', () => {
+      const errors = validateProviderConfig('winston', {});
+      expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe('debugConfig', () => {
+    it('should log valid config', () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const config: ObservabilityConfig = {
+        providers: {
+          console: {},
+          sentry: { dsn: 'https://test@sentry.io/123' },
+        },
+      };
+
+      debugConfig(config);
+
+      expect(consoleSpy).toHaveBeenCalledWith('[Observability] Configuration is valid');
+      expect(consoleSpy).toHaveBeenCalledWith('[Observability] Providers:', 'console, sentry');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should log config errors', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const config: ObservabilityConfig = {
+        providers: {
+          sentry: {}, // Missing DSN
+        },
+      };
+
+      debugConfig(config);
+
+      expect(consoleSpy).toHaveBeenCalledWith('[Observability] Configuration errors:');
+      expect(consoleSpy).toHaveBeenCalledWith('  [sentry] dsn: Sentry DSN is required');
+
+      consoleSpy.mockRestore();
     });
   });
 });

@@ -124,7 +124,7 @@ export default async function ExamplePage() {
 }
 
 // Example usage in a Client Component
-('use client');
+void ('use client');
 
 export function ClientExample() {
   const betaFeature = useFlag(betaFeatureFlag, false);

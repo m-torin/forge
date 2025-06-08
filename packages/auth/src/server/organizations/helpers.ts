@@ -67,10 +67,26 @@ export async function getOrganizationBySlug(slug: string): Promise<Organization 
 }
 
 /**
- * Gets current user's organizations
+ * Gets user's organizations
  */
-export async function getUserOrganizations(): Promise<Organization[]> {
+export async function getUserOrganizations(
+  userId?: string,
+  options?: { limit?: number; offset?: number },
+): Promise<Organization[]> {
   try {
+    // If userId is provided, use organization.listOrganizations
+    if (userId) {
+      const organizations = await (auth as any).organization.listOrganizations({
+        query: {
+          limit: options?.limit || 100,
+          userId,
+          ...(options?.offset && { offset: options.offset }),
+        },
+      });
+      return organizations || [];
+    }
+
+    // Otherwise get current user's organizations
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -254,7 +270,7 @@ export async function isOrganizationAdmin(
 /**
  * Gets organization statistics
  */
-export async function getOrganizationStats(organizationId?: string): Promise<{
+export async function getOrganizationStats(organizationId: string): Promise<{
   memberCount: number;
   teamCount: number;
   apiKeyCount: number;
@@ -269,16 +285,10 @@ export async function getOrganizationStats(organizationId?: string): Promise<{
       return null;
     }
 
-    const targetOrgId = organizationId || session.session.activeOrganizationId;
-
-    if (!targetOrgId) {
-      return null;
-    }
-
     // Check if user has access to this organization
     const membership = await database.member.findFirst({
       where: {
-        organizationId: targetOrgId,
+        organizationId,
         userId: session.user.id,
       },
     });
@@ -289,17 +299,17 @@ export async function getOrganizationStats(organizationId?: string): Promise<{
 
     const [memberCount, teamCount, apiKeyCount, invitationCount] = await Promise.all([
       database.member.count({
-        where: { organizationId: targetOrgId },
+        where: { organizationId },
       }),
       database.team.count({
-        where: { organizationId: targetOrgId },
+        where: { organizationId },
       }),
       database.apiKey.count({
-        where: { organizationId: targetOrgId },
+        where: { organizationId },
       }),
       database.invitation.count({
         where: {
-          organizationId: targetOrgId,
+          organizationId,
           status: 'pending',
         },
       }),
@@ -353,4 +363,71 @@ export async function switchOrganization(organizationId: string): Promise<boolea
     console.error('Switch organization error:', error);
     return false;
   }
+}
+
+/**
+ * Creates a default organization for a user
+ */
+export async function createDefaultOrganization(
+  userId: string,
+  name?: string,
+): Promise<Organization | null> {
+  try {
+    const orgName = name || `${userId}'s Organization`;
+    const result = await auth.api.createOrganization({
+      body: {
+        name: orgName,
+        slug: orgName.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      },
+      headers: await headers(),
+    });
+
+    if (!result.organization) {
+      return null;
+    }
+
+    // Add user as owner
+    await database.member.create({
+      data: {
+        id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: new Date(),
+        organizationId: result.organization.id,
+        role: 'owner',
+        userId,
+      },
+    });
+
+    return result.organization;
+  } catch (error) {
+    console.error('Create default organization error:', error);
+    return null;
+  }
+}
+
+/**
+ * Ensures the user has an active organization
+ */
+export async function ensureActiveOrganization(options?: { headers?: any }): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession({
+      headers: options?.headers || (await headers()),
+    });
+
+    if (!session?.session.activeOrganizationId) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Ensure active organization error:', error);
+    return false;
+  }
+}
+
+/**
+ * Gets organization details with additional information
+ * This is an alias for getOrganizationWithMembers for backward compatibility
+ */
+export async function getOrganizationDetails(organizationId: string) {
+  return getOrganizationWithMembers(organizationId);
 }

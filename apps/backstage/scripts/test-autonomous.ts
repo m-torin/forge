@@ -1,15 +1,16 @@
 #!/usr/bin/env tsx
 
-import { AutonomousWorkflowSystem } from '../src/autonomous';
-import { WorkflowSpecification } from '../src/autonomous/types';
 import { readFileSync } from 'fs';
+
+import { AutonomousWorkflowSystem } from '../src/autonomous';
+import { type WorkflowSpecification } from '../src/autonomous/types';
 // Using console colors instead of chalk for simplicity
 const chalk = {
   cyan: { bold: (str: string) => `\x1b[36m\x1b[1m${str}\x1b[0m` },
+  gray: (str: string) => `\x1b[90m${str}\x1b[0m`,
   green: (str: string) => `\x1b[32m${str}\x1b[0m`,
   red: (str: string) => `\x1b[31m${str}\x1b[0m`,
   yellow: (str: string) => `\x1b[33m${str}\x1b[0m`,
-  gray: (str: string) => `\x1b[90m${str}\x1b[0m`
 };
 
 async function testAutonomousSystem() {
@@ -18,7 +19,7 @@ async function testAutonomousSystem() {
   // Load the workflow specification
   const specPath = process.argv[2] || 'test-workflow-spec.json';
   const protocol = process.argv[3] || 'standard-workflow';
-  
+
   let spec: WorkflowSpecification;
   try {
     const specContent = readFileSync(specPath, 'utf-8');
@@ -34,11 +35,11 @@ async function testAutonomousSystem() {
 
   // Create the autonomous system
   const system = new AutonomousWorkflowSystem({
-    maxIterations: 10,
-    enableLearning: true,
     commitOnSuccess: false, // Disable Git operations for demo
+    enableLearning: true,
     generateReports: true,
-    useCICD: false // Disable CI/CD for demo
+    maxIterations: 10,
+    useCICD: false, // Disable CI/CD for demo
   });
 
   console.log(chalk.yellow(`\n⏳ Starting autonomous development with protocol: ${protocol}\n`));
@@ -47,7 +48,7 @@ async function testAutonomousSystem() {
     // Show available protocols
     const protocols = system.getAvailableProtocols();
     console.log(chalk.cyan('Available protocols:'));
-    protocols.forEach(p => console.log(`  - ${p}`));
+    protocols.forEach((p) => console.log(`  - ${p}`));
     console.log();
 
     // Execute the autonomous protocol
@@ -58,7 +59,9 @@ async function testAutonomousSystem() {
     // Display results
     console.log(chalk.cyan.bold('\n📊 Execution Summary:\n'));
     console.log(`Session ID: ${chalk.gray(session.id)}`);
-    console.log(`Status: ${session.status === 'succeeded' ? chalk.green(session.status) : chalk.red(session.status)}`);
+    console.log(
+      `Status: ${session.status === 'succeeded' ? chalk.green(session.status) : chalk.red(session.status)}`,
+    );
     console.log(`Duration: ${chalk.yellow(Math.round(duration / 1000) + ' seconds')}`);
     console.log(`Iterations: ${chalk.yellow(session.iterations.toString())}`);
     console.log(`Commits: ${chalk.yellow(session.commits.length.toString())}`);
@@ -66,7 +69,7 @@ async function testAutonomousSystem() {
     // Show execution logs
     console.log(chalk.cyan.bold('\n📜 Execution Log:\n'));
     const recentLogs = session.logs.slice(-20); // Show last 20 log entries
-    recentLogs.forEach(log => {
+    recentLogs.forEach((log) => {
       if (log.includes('✅') || log.includes('Success')) {
         console.log(chalk.green(log));
       } else if (log.includes('❌') || log.includes('Failed')) {
@@ -106,7 +109,7 @@ async function testAutonomousSystem() {
 }
 
 // Run the test
-testAutonomousSystem().catch(error => {
+testAutonomousSystem().catch((error) => {
   console.error(chalk.red('Unhandled error:'), error);
   process.exit(1);
 });

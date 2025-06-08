@@ -11,7 +11,14 @@ import type { Session, User } from 'better-auth';
 export type { Session, User } from 'better-auth';
 
 // Re-export database types
-export type { ApiKey, Invitation, Member, Organization, Team } from '@repo/database/prisma';
+export type {
+  ApiKey,
+  Invitation,
+  Member,
+  Organization,
+  Team,
+  TeamMember,
+} from '@repo/database/prisma';
 
 // Auth configuration
 export interface AuthConfig {
@@ -132,6 +139,9 @@ export interface TeamInvitation {
   status: 'pending' | 'accepted' | 'declined' | 'expired';
   teamId: string;
 }
+
+// Alias for compatibility (Member is already exported above)
+export type { Member as OrganizationMember } from '@repo/database/prisma';
 
 // Organization types
 export interface OrganizationWithMembers {

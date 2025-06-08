@@ -1,4 +1,4 @@
-// @ts-nocheck - This test file uses mocked Knock SDK that doesn't match exact types
+// @ts-nocheck - Test file with mocked Knock SDK that doesn't exactly match types
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock Knock SDK with proper structure to match the actual SDK API
@@ -223,7 +223,7 @@ describe('Knock Integration', () => {
       const { notifications } = await import('../index');
 
       // Access a property to trigger potential warning
-      notifications.notify;
+      void notifications.notify;
 
       expect(consoleSpy).not.toHaveBeenCalled();
 
@@ -272,8 +272,8 @@ describe('Knock Integration', () => {
       expect(MockKnockConstructor).toHaveBeenCalledTimes(1);
 
       // Accessing properties should not create new instances
-      notifications.notify;
-      notifications.users;
+      void notifications.notify;
+      void notifications.users;
 
       expect(MockKnockConstructor).toHaveBeenCalledTimes(1);
     });

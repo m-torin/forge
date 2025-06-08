@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ConsoleProvider } from '../../../shared/providers/console-provider';
 
@@ -69,14 +69,15 @@ describe('ConsoleProvider', () => {
         consoleLogSpy.mockClear();
         consoleWarnSpy.mockClear();
         consoleErrorSpy.mockClear();
-        
+
         await provider.log(level, `Test ${level}`, {});
 
         // At least one console method should have been called
-        const anyCalled = consoleInfoSpy.mock.calls.length > 0 ||
-                         consoleLogSpy.mock.calls.length > 0 ||
-                         consoleWarnSpy.mock.calls.length > 0 ||
-                         consoleErrorSpy.mock.calls.length > 0;
+        const anyCalled =
+          consoleInfoSpy.mock.calls.length > 0 ||
+          consoleLogSpy.mock.calls.length > 0 ||
+          consoleWarnSpy.mock.calls.length > 0 ||
+          consoleErrorSpy.mock.calls.length > 0;
         expect(anyCalled).toBe(true);
       }
     });
@@ -95,15 +96,15 @@ describe('ConsoleProvider', () => {
           name: 'Error',
           message: 'Test exception',
           stack: error.stack,
-        })
+        }),
       );
     });
 
     it('should include context when provided', async () => {
       const error = new Error('Test error');
       const context = {
-        userId: '123',
         action: 'login',
+        userId: '123',
       };
 
       await provider.captureException(error, context);
@@ -112,10 +113,10 @@ describe('ConsoleProvider', () => {
         '[OBS] Exception captured:',
         expect.objectContaining({
           context: expect.objectContaining({
-            userId: '123',
             action: 'login',
+            userId: '123',
           }),
-        })
+        }),
       );
     });
   });
@@ -129,7 +130,7 @@ describe('ConsoleProvider', () => {
         expect.objectContaining({
           level: 'info',
           message: 'Info message',
-        })
+        }),
       );
     });
 
@@ -141,7 +142,7 @@ describe('ConsoleProvider', () => {
         expect.objectContaining({
           level: 'warning',
           message: 'Warning message',
-        })
+        }),
       );
     });
 
@@ -153,7 +154,7 @@ describe('ConsoleProvider', () => {
         expect.objectContaining({
           level: 'error',
           message: 'Error message',
-        })
+        }),
       );
     });
   });
@@ -204,11 +205,11 @@ describe('ConsoleProvider', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[OBS] Context set:', {
-        key: 'app',
         context: {
           environment: 'production',
           version: '1.0.0',
         },
+        key: 'app',
       });
     });
   });
@@ -216,15 +217,15 @@ describe('ConsoleProvider', () => {
   describe('addBreadcrumb', () => {
     it('should log breadcrumb', () => {
       provider.addBreadcrumb({
-        message: 'User clicked button',
         category: 'ui',
         level: 'info',
+        message: 'User clicked button',
       });
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[OBS] Breadcrumb:', {
-        message: 'User clicked button',
         category: 'ui',
         level: 'info',
+        message: 'User clicked button',
       });
     });
   });
@@ -237,7 +238,7 @@ describe('ConsoleProvider', () => {
         '[OBS] Transaction started:',
         expect.objectContaining({
           name: 'test-transaction',
-        })
+        }),
       );
 
       consoleLogSpy.mockClear();
@@ -247,7 +248,7 @@ describe('ConsoleProvider', () => {
         '[OBS] Transaction finished:',
         expect.objectContaining({
           name: 'test-transaction',
-        })
+        }),
       );
     });
   });
@@ -260,7 +261,7 @@ describe('ConsoleProvider', () => {
         '[OBS] Span started:',
         expect.objectContaining({
           name: 'test-span',
-        })
+        }),
       );
 
       consoleLogSpy.mockClear();
@@ -270,7 +271,7 @@ describe('ConsoleProvider', () => {
         '[OBS] Span finished:',
         expect.objectContaining({
           name: 'test-span',
-        })
+        }),
       );
     });
   });
@@ -283,7 +284,7 @@ describe('ConsoleProvider', () => {
         '[OBS] Session started',
         expect.objectContaining({
           timestamp: expect.any(String),
-        })
+        }),
       );
     });
 
@@ -294,7 +295,7 @@ describe('ConsoleProvider', () => {
         '[OBS] Session ended',
         expect.objectContaining({
           timestamp: expect.any(String),
-        })
+        }),
       );
     });
   });

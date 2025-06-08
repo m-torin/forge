@@ -1,0 +1,46 @@
+{
+  "name": "autonomous",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3900",
+    "build": "next build",
+    "build:local": "next build",
+    "start": "next start -p 3900",
+    "lint": "eslint . --fix",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "autonomous": "tsx src/autonomous/index.ts",
+    "autonomous:process": "tsx src/autonomous/index.ts process",
+    "autonomous:zhi": "tsx src/autonomous/index.ts zhi",
+    "autonomous:demo": "tsx scripts/demo-autonomous.ts",
+    "autonomous:test": "tsx scripts/test-autonomous.ts"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "next": "catalog:",
+    "@repo/ai": "workspace:*",
+    "@repo/auth": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/observability": "workspace:*",
+    "@repo/orchestration": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@upstash/workflow": "latest",
+    "zod": "catalog:",
+    "nanoid": "catalog:",
+    "@anthropic-ai/sdk": "^0.25.0",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4",
+    "eslint": "catalog:",
+    "@repo/eslint-config": "workspace:*",
+    "vitest": "catalog:",
+    "@playwright/test": "catalog:"
+  }
+}

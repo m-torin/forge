@@ -44,15 +44,15 @@ export function AppLayoutControls() {
     toggleMobileNavbar,
     toggleNavbar,
 
-    setAsideEnabled,
     toggleAsideEnabled,
+    setAsideEnabled,
+    toggleFooterEnabled,
+    toggleHeaderEnabled,
+    toggleNavbarEnabled,
     setFooterEnabled,
     // Enable/disable controls
     setHeaderEnabled,
     setNavbarEnabled,
-    toggleFooterEnabled,
-    toggleHeaderEnabled,
-    toggleNavbarEnabled,
 
     // Dimension controls
     setAsideWidth,

@@ -7,11 +7,11 @@ import type { LogEntry } from '../../../shared/types/logger-types';
 // Mock the Logtail module
 const mockLogtailClient = {
   debug: vi.fn(),
-  info: vi.fn(),
-  warn: vi.fn(),
   error: vi.fn(),
+  info: vi.fn(),
   log: vi.fn(),
   use: vi.fn(),
+  warn: vi.fn(),
 };
 
 vi.mock('@logtail/node', () => ({
@@ -44,7 +44,7 @@ describe('LogtailProvider', () => {
     it('should throw without token', async () => {
       const disabledProvider = new LogtailProvider();
       await expect(disabledProvider.initialize({ sourceToken: '' })).rejects.toThrow(
-        'Logtail source token is required'
+        'Logtail source token is required',
       );
     });
   });
@@ -67,9 +67,9 @@ describe('LogtailProvider', () => {
         'Test log message',
         expect.objectContaining({
           action: 'test',
-          userId: '123',
           level: 'info',
-        })
+          userId: '123',
+        }),
       );
     });
 
@@ -79,11 +79,7 @@ describe('LogtailProvider', () => {
       for (const level of levels) {
         vi.clearAllMocks();
 
-        await provider.log(
-          level,
-          `Test ${level}`,
-          { timestamp: new Date().toISOString() }
-        );
+        await provider.log(level, `Test ${level}`, { timestamp: new Date().toISOString() });
 
         // Check that the correct method was called
         switch (level) {
@@ -107,13 +103,7 @@ describe('LogtailProvider', () => {
       // Send multiple logs quickly
       const promises = [];
       for (let i = 0; i < 5; i++) {
-        promises.push(
-          provider.log(
-            'info',
-            `Log ${i}`,
-            { timestamp: new Date().toISOString() }
-          ),
-        );
+        promises.push(provider.log('info', `Log ${i}`, { timestamp: new Date().toISOString() }));
       }
 
       await Promise.all(promises);
@@ -129,11 +119,7 @@ describe('LogtailProvider', () => {
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      await provider.log(
-        'error',
-        'Test error',
-        { timestamp: new Date().toISOString() }
-      );
+      await provider.log('error', 'Test error', { timestamp: new Date().toISOString() });
 
       // The provider should handle the error gracefully
       expect(mockLogtailClient.error).toHaveBeenCalled();
@@ -147,11 +133,9 @@ describe('LogtailProvider', () => {
       const disabledProvider = new LogtailProvider();
       // Don't initialize it, so it remains disabled
 
-      await disabledProvider.log(
-        'info',
-        'Should not be sent',
-        { timestamp: new Date().toISOString() }
-      );
+      await disabledProvider.log('info', 'Should not be sent', {
+        timestamp: new Date().toISOString(),
+      });
 
       // None of the Logtail client methods should be called
       expect(mockLogtailClient.info).not.toHaveBeenCalled();
@@ -178,7 +162,7 @@ describe('LogtailProvider', () => {
           },
           level: 'error',
           userId: '123',
-        })
+        }),
       );
     });
 
@@ -189,7 +173,7 @@ describe('LogtailProvider', () => {
 
       expect(mockLogtailClient.error).toHaveBeenCalledWith(
         'Exception captured',
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -198,7 +182,7 @@ describe('LogtailProvider', () => {
 
       expect(mockLogtailClient.error).toHaveBeenCalledWith(
         'Exception captured',
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -207,8 +191,8 @@ describe('LogtailProvider', () => {
     it('should set user context via middleware', () => {
       provider.setUser({
         id: 'user-123',
-        email: 'test@example.com',
         username: 'testuser',
+        email: 'test@example.com',
       });
 
       // The use method should be called to add user context
@@ -258,7 +242,7 @@ describe('LogtailProvider', () => {
         expect.objectContaining({
           transactionName: 'test-transaction',
           userId: '123',
-        })
+        }),
       );
 
       // Clear previous calls
@@ -270,9 +254,9 @@ describe('LogtailProvider', () => {
       expect(mockLogtailClient.info).toHaveBeenCalledWith(
         'Transaction completed: test-transaction',
         expect.objectContaining({
-          transactionName: 'test-transaction',
           durationUnit: 'ms',
-        })
+          transactionName: 'test-transaction',
+        }),
       );
     });
   });
@@ -282,9 +266,9 @@ describe('LogtailProvider', () => {
       provider.addBreadcrumb({
         type: 'navigation',
         category: 'route',
-        message: 'Navigated to /dashboard',
-        level: 'info',
         data: { from: '/home', to: '/dashboard' },
+        level: 'info',
+        message: 'Navigated to /dashboard',
       });
 
       expect(mockLogtailClient.debug).toHaveBeenCalledWith(
@@ -295,7 +279,7 @@ describe('LogtailProvider', () => {
             category: 'route',
             message: 'Navigated to /dashboard',
           }),
-        })
+        }),
       );
     });
   });
@@ -305,13 +289,7 @@ describe('LogtailProvider', () => {
       // Send logs without awaiting
       const promises = [];
       for (let i = 0; i < 3; i++) {
-        promises.push(
-          provider.log(
-            'info',
-            `Log ${i}`,
-            { timestamp: new Date().toISOString() }
-          ),
-        );
+        promises.push(provider.log('info', `Log ${i}`, { timestamp: new Date().toISOString() }));
       }
 
       await Promise.all(promises);
@@ -324,13 +302,7 @@ describe('LogtailProvider', () => {
       // Send many logs
       const promises = [];
       for (let i = 0; i < 101; i++) {
-        promises.push(
-          provider.log(
-            'info',
-            `Log ${i}`,
-            { timestamp: new Date().toISOString() }
-          ),
-        );
+        promises.push(provider.log('info', `Log ${i}`, { timestamp: new Date().toISOString() }));
       }
 
       await Promise.all(promises);

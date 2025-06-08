@@ -1582,7 +1582,10 @@ export async function getProductDetailByHandle(handle: string) {
 
 // COMMON Types ------------------------------------------------------------------------
 export type TCollection = Partial<Awaited<ReturnType<typeof getCollections>>[number]>;
-export type TProductItem = Partial<Awaited<ReturnType<typeof getProducts>>[number]>;
+export type TProductItem = Partial<Awaited<ReturnType<typeof getProducts>>[number]> & {
+  salePrice?: number;
+  badges?: string[];
+};
 export type TProductDetail = Partial<Awaited<ReturnType<typeof getProductDetailByHandle>>>;
 export type TCardProduct = Partial<Awaited<ReturnType<typeof getCart>['lines'][number]>>;
 export type TBlogPost = Partial<Awaited<ReturnType<typeof getBlogPosts>>[number]>;

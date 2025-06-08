@@ -23,8 +23,24 @@ const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
 const mockCount = vi.fn();
 
-vi.mock('@repo/database', () => ({
-  database: {
+vi.mock('@repo/database/prisma', () => ({
+  prisma: {
+    invitation: {
+      create: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+      update: vi.fn(),
+    },
+    member: {
+      create: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+      update: vi.fn(),
+    },
     organization: {
       count: mockCount,
       create: mockCreate,
@@ -32,22 +48,6 @@ vi.mock('@repo/database', () => ({
       findFirst: mockFindFirst,
       findMany: mockFindMany,
       update: mockUpdate,
-    },
-    organizationInvitation: {
-      create: vi.fn(),
-      delete: vi.fn(),
-      deleteMany: vi.fn(),
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-    },
-    organizationMember: {
-      create: vi.fn(),
-      delete: vi.fn(),
-      deleteMany: vi.fn(),
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
     },
   },
 }));
@@ -91,8 +91,11 @@ describe('Organization Management', () => {
     id: 'org-123',
     name: 'Test Organization',
     createdAt: new Date('2023-01-01'),
+    description: null,
+    logo: null,
     metadata: {},
     slug: 'test-org',
+    updatedAt: null,
     ...overrides,
   });
 
@@ -108,9 +111,8 @@ describe('Organization Management', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockCreate.mockResolvedValue(mockOrg);
 
-      const result = await createOrganization(mockHeaders, {
+      const result = await createOrganization({
         name: 'New Organization',
-        metadata: { plan: 'starter' },
         slug: 'new-org',
       });
 
@@ -137,7 +139,7 @@ describe('Organization Management', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockCreate.mockResolvedValue(mockOrg);
 
-      await createOrganization(mockHeaders, {
+      await createOrganization({
         name: 'New Organization',
       });
 
@@ -153,7 +155,7 @@ describe('Organization Management', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockCreate.mockResolvedValue(createMockOrganization());
 
-      await createOrganization(mockHeaders, {
+      await createOrganization({
         name: 'Test & Co. Ltd!',
       });
 
@@ -167,9 +169,7 @@ describe('Organization Management', () => {
     it('should throw error when session is missing', async () => {
       mockGetSession.mockResolvedValue(null);
 
-      await expect(createOrganization(mockHeaders, { name: 'Test' })).rejects.toThrow(
-        'Unauthorized',
-      );
+      await expect(createOrganization({ name: 'Test' })).rejects.toThrow('Unauthorized');
     });
   });
 
@@ -181,9 +181,9 @@ describe('Organization Management', () => {
 
       mockUpdate.mockResolvedValue(mockOrg);
 
-      const result = await updateOrganization(mockHeaders, 'org-123', {
+      const result = await updateOrganization({
         name: 'Updated Organization',
-        metadata: { plan: 'pro' },
+        organizationId: 'org-123',
       });
 
       expect(result).toEqual(mockOrg);
@@ -200,8 +200,9 @@ describe('Organization Management', () => {
       const mockOrg = createMockOrganization();
       mockUpdate.mockResolvedValue(mockOrg);
 
-      await updateOrganization(mockHeaders, 'org-123', {
+      await updateOrganization({
         name: 'New Name Only',
+        organizationId: 'org-123',
       });
 
       expect(mockUpdate).toHaveBeenCalledWith({
@@ -216,7 +217,8 @@ describe('Organization Management', () => {
       const mockOrg = createMockOrganization();
       mockUpdate.mockResolvedValue(mockOrg);
 
-      await updateOrganization(mockHeaders, 'org-123', {
+      await updateOrganization({
+        organizationId: 'org-123',
         slug: 'new-slug',
       });
 
@@ -231,18 +233,18 @@ describe('Organization Management', () => {
 
   describe('deleteOrganization', () => {
     it('should delete organization and all related data', async () => {
-      const { database } = await import('@repo/database');
+      const { prisma: database } = await import('@repo/database/prisma');
 
       mockDelete.mockResolvedValue({});
 
-      await deleteOrganization(mockHeaders, 'org-123');
+      await deleteOrganization('org-123');
 
       // Should delete all related data in order
-      expect(database.organizationInvitation.deleteMany).toHaveBeenCalledWith({
+      expect(database.invitation.deleteMany).toHaveBeenCalledWith({
         where: { organizationId: 'org-123' },
       });
 
-      expect(database.organizationMember.deleteMany).toHaveBeenCalledWith({
+      expect(database.member.deleteMany).toHaveBeenCalledWith({
         where: { organizationId: 'org-123' },
       });
 
@@ -254,14 +256,14 @@ describe('Organization Management', () => {
     it('should handle deletion errors', async () => {
       mockDelete.mockRejectedValue(new Error('Deletion failed'));
 
-      await expect(deleteOrganization(mockHeaders, 'org-123')).rejects.toThrow('Deletion failed');
+      await expect(deleteOrganization('org-123')).rejects.toThrow('Deletion failed');
     });
   });
 
   describe('Member Management', () => {
     describe('inviteMember', () => {
       it('should create invitation successfully', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
         const mockInvitation = {
           id: 'invite-123',
           email: 'newuser@example.com',
@@ -272,15 +274,16 @@ describe('Organization Management', () => {
           status: 'pending',
         };
 
-        database.organizationInvitation.create = vi.fn().mockResolvedValue(mockInvitation);
+        database.invitation.create = vi.fn().mockResolvedValue(mockInvitation);
 
-        const result = await inviteMember(mockHeaders, 'org-123', {
+        const result = await inviteMember({
           email: 'newuser@example.com',
+          organizationId: 'org-123',
           role: 'member',
         });
 
         expect(result).toEqual(mockInvitation);
-        expect(database.organizationInvitation.create).toHaveBeenCalledWith({
+        expect(database.invitation.create).toHaveBeenCalledWith({
           data: {
             email: 'newuser@example.com',
             expiresAt: expect.any(Date),
@@ -293,9 +296,9 @@ describe('Organization Management', () => {
       });
 
       it('should set default expiration to 7 days', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
 
-        database.organizationInvitation.create = vi.fn().mockImplementation((args) => {
+        database.invitation.create = vi.fn().mockImplementation((args) => {
           const expiresAt = args.data.expiresAt;
           const now = new Date();
           const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -307,8 +310,9 @@ describe('Organization Management', () => {
           return Promise.resolve({ id: 'invite-123' });
         });
 
-        await inviteMember(mockHeaders, 'org-123', {
+        await inviteMember({
           email: 'test@example.com',
+          organizationId: 'org-123',
           role: 'member',
         });
       });
@@ -316,13 +320,13 @@ describe('Organization Management', () => {
 
     describe('removeMember', () => {
       it('should remove member successfully', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
 
-        database.organizationMember.delete = vi.fn().mockResolvedValue({});
+        database.member.delete = vi.fn().mockResolvedValue({});
 
-        await removeMember(mockHeaders, 'org-123', 'user-456');
+        await removeMember({ organizationId: 'org-123', userId: 'user-456' });
 
-        expect(database.organizationMember.delete).toHaveBeenCalledWith({
+        expect(database.member.delete).toHaveBeenCalledWith({
           where: {
             userId_organizationId: {
               organizationId: 'org-123',
@@ -333,27 +337,27 @@ describe('Organization Management', () => {
       });
 
       it('should prevent removing the last owner', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
 
         // Mock that this is the only owner
-        database.organizationMember.findMany = vi
+        database.member.findMany = vi
           .fn()
           .mockResolvedValue([{ role: 'owner', userId: 'user-456' }]);
 
-        database.organizationMember.findFirst = vi.fn().mockResolvedValue({
+        database.member.findFirst = vi.fn().mockResolvedValue({
           role: 'owner',
           userId: 'user-456',
         });
 
-        await expect(removeMember(mockHeaders, 'org-123', 'user-456')).rejects.toThrow(
-          'Cannot remove the last owner',
-        );
+        await expect(
+          removeMember({ organizationId: 'org-123', userId: 'user-456' }),
+        ).rejects.toThrow('Cannot remove the last owner');
       });
     });
 
     describe('updateMemberRole', () => {
       it('should update member role successfully', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
         const mockUpdatedMember = {
           id: 'member-123',
           organizationId: 'org-123',
@@ -361,12 +365,16 @@ describe('Organization Management', () => {
           userId: 'user-456',
         };
 
-        database.organizationMember.update = vi.fn().mockResolvedValue(mockUpdatedMember);
+        database.member.update = vi.fn().mockResolvedValue(mockUpdatedMember);
 
-        const result = await updateMemberRole(mockHeaders, 'org-123', 'user-456', 'admin');
+        const result = await updateMemberRole({
+          organizationId: 'org-123',
+          role: 'admin',
+          userId: 'user-456',
+        });
 
         expect(result).toEqual(mockUpdatedMember);
-        expect(database.organizationMember.update).toHaveBeenCalledWith({
+        expect(database.member.update).toHaveBeenCalledWith({
           data: { role: 'admin' },
           where: {
             userId_organizationId: {
@@ -378,15 +386,15 @@ describe('Organization Management', () => {
       });
 
       it('should prevent changing role of last owner', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
 
         // Mock that this is the only owner
-        database.organizationMember.findMany = vi
+        database.member.findMany = vi
           .fn()
           .mockResolvedValue([{ role: 'owner', userId: 'user-456' }]);
 
         await expect(
-          updateMemberRole(mockHeaders, 'org-123', 'user-456', 'member'),
+          updateMemberRole({ organizationId: 'org-123', role: 'member', userId: 'user-456' }),
         ).rejects.toThrow('Cannot change role of the last owner');
       });
     });
@@ -395,7 +403,7 @@ describe('Organization Management', () => {
   describe('Invitation Management', () => {
     describe('acceptInvitation', () => {
       it('should accept invitation and create membership', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
         const mockInvitation = {
           id: 'invite-123',
           email: 'user@example.com',
@@ -413,25 +421,25 @@ describe('Organization Management', () => {
         };
 
         mockGetSession.mockResolvedValue(createMockSession());
-        database.organizationInvitation.findFirst = vi.fn().mockResolvedValue(mockInvitation);
-        database.organizationInvitation.update = vi.fn().mockResolvedValue({
+        database.invitation.findFirst = vi.fn().mockResolvedValue(mockInvitation);
+        database.invitation.update = vi.fn().mockResolvedValue({
           ...mockInvitation,
           status: 'accepted',
         });
-        database.organizationMember.create = vi.fn().mockResolvedValue(mockMember);
+        database.member.create = vi.fn().mockResolvedValue(mockMember);
 
-        const result = await acceptInvitation(mockHeaders, 'invite-123');
+        const result = await acceptInvitation('invite-123');
 
         expect(result).toEqual(mockMember);
 
         // Should update invitation status
-        expect(database.organizationInvitation.update).toHaveBeenCalledWith({
+        expect(database.invitation.update).toHaveBeenCalledWith({
           data: { status: 'accepted' },
           where: { id: 'invite-123' },
         });
 
         // Should create membership
-        expect(database.organizationMember.create).toHaveBeenCalledWith({
+        expect(database.member.create).toHaveBeenCalledWith({
           data: {
             organizationId: 'org-123',
             role: 'member',
@@ -441,7 +449,7 @@ describe('Organization Management', () => {
       });
 
       it('should reject expired invitations', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
         const mockInvitation = {
           id: 'invite-123',
           email: 'user@example.com',
@@ -452,15 +460,13 @@ describe('Organization Management', () => {
         };
 
         mockGetSession.mockResolvedValue(createMockSession());
-        database.organizationInvitation.findFirst = vi.fn().mockResolvedValue(mockInvitation);
+        database.invitation.findFirst = vi.fn().mockResolvedValue(mockInvitation);
 
-        await expect(acceptInvitation(mockHeaders, 'invite-123')).rejects.toThrow(
-          'Invitation has expired',
-        );
+        await expect(acceptInvitation('invite-123')).rejects.toThrow('Invitation has expired');
       });
 
       it('should reject if email does not match', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
         const mockInvitation = {
           id: 'invite-123',
           email: 'other@example.com',
@@ -470,17 +476,13 @@ describe('Organization Management', () => {
           status: 'pending',
         };
 
-        mockGetSession.mockResolvedValue(
-          createMockSession(
-            {},
-            {
-              user: { email: 'user@example.com' },
-            },
-          ),
-        );
-        database.organizationInvitation.findFirst = vi.fn().mockResolvedValue(mockInvitation);
+        mockGetSession.mockResolvedValue({
+          ...createMockSession(),
+          user: { id: 'user-123', email: 'user@example.com' },
+        });
+        database.invitation.findFirst = vi.fn().mockResolvedValue(mockInvitation);
 
-        await expect(acceptInvitation(mockHeaders, 'invite-123')).rejects.toThrow(
+        await expect(acceptInvitation('invite-123')).rejects.toThrow(
           'Invitation email does not match',
         );
       });
@@ -488,16 +490,16 @@ describe('Organization Management', () => {
 
     describe('declineInvitation', () => {
       it('should decline invitation', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
 
-        database.organizationInvitation.update = vi.fn().mockResolvedValue({
+        database.invitation.update = vi.fn().mockResolvedValue({
           id: 'invite-123',
           status: 'declined',
         });
 
-        await declineInvitation(mockHeaders, 'invite-123');
+        await declineInvitation('invite-123');
 
-        expect(database.organizationInvitation.update).toHaveBeenCalledWith({
+        expect(database.invitation.update).toHaveBeenCalledWith({
           data: { status: 'declined' },
           where: { id: 'invite-123' },
         });
@@ -506,13 +508,13 @@ describe('Organization Management', () => {
 
     describe('revokeInvitation', () => {
       it('should delete invitation', async () => {
-        const { database } = await import('@repo/database');
+        const { prisma: database } = await import('@repo/database/prisma');
 
-        database.organizationInvitation.delete = vi.fn().mockResolvedValue({});
+        database.invitation.delete = vi.fn().mockResolvedValue({});
 
-        await revokeInvitation(mockHeaders, 'org-123', 'invite-123');
+        await revokeInvitation('invite-123');
 
-        expect(database.organizationInvitation.delete).toHaveBeenCalledWith({
+        expect(database.invitation.delete).toHaveBeenCalledWith({
           where: {
             id: 'invite-123',
             organizationId: 'org-123',
@@ -524,10 +526,10 @@ describe('Organization Management', () => {
 
   describe('getOrganizationStats', () => {
     it('should return organization statistics', async () => {
-      const { database } = await import('@repo/database');
+      const { prisma: database } = await import('@repo/database/prisma');
 
-      database.organizationMember.count = vi.fn().mockResolvedValue(10);
-      database.organizationInvitation.count = vi.fn().mockResolvedValue(3);
+      database.member.count = vi.fn().mockResolvedValue(10);
+      database.invitation.count = vi.fn().mockResolvedValue(3);
 
       // Mock for API keys count
       vi.doMock('@repo/database', () => ({
@@ -546,11 +548,11 @@ describe('Organization Management', () => {
         pendingInvitations: 3,
       });
 
-      expect(database.organizationMember.count).toHaveBeenCalledWith({
+      expect(database.member.count).toHaveBeenCalledWith({
         where: { organizationId: 'org-123' },
       });
 
-      expect(database.organizationInvitation.count).toHaveBeenCalledWith({
+      expect(database.invitation.count).toHaveBeenCalledWith({
         where: {
           organizationId: 'org-123',
           status: 'pending',

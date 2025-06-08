@@ -5,7 +5,9 @@ import type { ScrapingProvider } from '../../../shared/types/scraping-types';
 
 // Mock the server/client scraper creation
 vi.mock('../../../shared/factories/scraper-factory', async () => {
-  const actual = await vi.importActual<typeof import('../../../shared/factories/scraper-factory')>('../../../shared/factories/scraper-factory');
+  const actual = await vi.importActual<typeof import('../../../shared/factories/scraper-factory')>(
+    '../../../shared/factories/scraper-factory',
+  );
   return {
     ...actual,
     createServerScraper: vi.fn(),
@@ -46,7 +48,7 @@ describe('createScraper', () => {
       (createServerScraper as any).mockResolvedValue(mockProvider);
 
       const scraper = await createScraper();
-      
+
       expect(createServerScraper).toHaveBeenCalled();
     });
 
@@ -55,7 +57,7 @@ describe('createScraper', () => {
       (createClientScraper as any).mockResolvedValue(mockProvider);
 
       const scraper = await createScraper(undefined, { environment: 'client' });
-      
+
       expect(createClientScraper).toHaveBeenCalled();
     });
   });
@@ -66,7 +68,7 @@ describe('createScraper', () => {
       (createServerScraper as any).mockResolvedValue(mockProvider);
 
       await createScraper(undefined, { provider: 'playwright' });
-      
+
       expect(createServerScraper).toHaveBeenCalledWith('playwright', expect.any(Object));
     });
 
@@ -76,7 +78,7 @@ describe('createScraper', () => {
 
       const config = { timeout: 5000 };
       await createScraper(undefined, { config });
-      
+
       expect(createServerScraper).toHaveBeenCalledWith('auto', config);
     });
   });

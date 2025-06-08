@@ -1,5 +1,8 @@
 import { PrismaClient } from '../generated/client';
 
+import { seedEcommerce } from './seed-ecommerce';
+import { seedProducts } from './seed-products';
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -38,6 +41,40 @@ async function main() {
     console.log('✅ Created default organization:', org.name);
   } else {
     console.log('ℹ️  Default organization already exists');
+  }
+
+  // Check if we have users to determine what to seed
+  const userCount = await prisma.user.count();
+
+  if (userCount === 0) {
+    console.log('');
+    console.log('⚠️  No users found. Please create users first before running additional seeds.');
+    console.log('');
+    console.log('After creating users, you can run:');
+    console.log('- pnpm --filter @repo/database seed:products   # Basic product data');
+    console.log('- pnpm --filter @repo/database seed:ecommerce  # Full e-commerce data');
+  } else {
+    console.log('');
+    console.log(`📊 Found ${userCount} users in the database.`);
+    console.log('');
+    console.log('Additional seeding options:');
+    console.log('- pnpm --filter @repo/database seed:products   # Basic product data');
+    console.log('- pnpm --filter @repo/database seed:ecommerce  # Full e-commerce data');
+
+    // Check if we should run product seeding
+    const productCount = await prisma.product.count();
+    if (productCount === 0) {
+      console.log('');
+      console.log('📦 No products found. Running basic product seeding...');
+      await seedProducts();
+    }
+
+    // Check if this is a full seed run (SEED_ALL environment variable)
+    if (process.env.SEED_ALL === 'true') {
+      console.log('');
+      console.log('🛍️ Running full e-commerce seeding...');
+      await seedEcommerce();
+    }
   }
 
   console.log('');

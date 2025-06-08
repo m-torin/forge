@@ -97,7 +97,6 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
         email,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         invitedById: session.user.id,
-        inviterId: session.user.id,
         organizationId: team.organizationId,
         role,
         status: 'pending',

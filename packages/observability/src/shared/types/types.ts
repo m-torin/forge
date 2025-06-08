@@ -22,7 +22,8 @@ export interface ObservabilityProviderConfig {
   release?: string;
   tracesSampleRate?: number;
 
-  // No 'enabled' field - presence = enabled
+  // Allow any other properties for provider-specific config
+  [key: string]: any;
 }
 
 export interface ObservabilityProvider {

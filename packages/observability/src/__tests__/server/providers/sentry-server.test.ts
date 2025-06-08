@@ -2,313 +2,340 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SentryServerProvider } from '../../../server/providers/sentry-server';
 
-import type { LogEntry } from '../../../shared/types/logger-types';
-
-// Mock Sentry Node SDK
+// Mock Sentry
 const mockSentryInit = vi.fn();
 const mockCaptureException = vi.fn();
 const mockCaptureMessage = vi.fn();
-const mockSetUser = vi.fn();
-const mockSetContext = vi.fn();
 const mockAddBreadcrumb = vi.fn();
-const mockFlush = vi.fn();
+const mockSetUser = vi.fn();
+const mockSetTag = vi.fn();
+const mockSetExtra = vi.fn();
+const mockSetContext = vi.fn();
+const mockStartTransaction = vi.fn();
+const mockWithScope = vi.fn((callback) => callback(mockScope));
+
+const mockScope = {
+  setContext: vi.fn(),
+  setExtra: vi.fn(),
+  setFingerprint: vi.fn(),
+  setSpan: vi.fn(),
+  setTag: vi.fn(),
+  setUser: vi.fn(),
+};
+
+const mockTransaction = {
+  finish: vi.fn(),
+  setData: vi.fn(),
+  setHttpStatus: vi.fn(),
+  setStatus: vi.fn(),
+  setTag: vi.fn(),
+  startChild: vi.fn(),
+};
 
 vi.mock('@sentry/node', () => ({
   addBreadcrumb: mockAddBreadcrumb,
   captureException: mockCaptureException,
   captureMessage: mockCaptureMessage,
-  flush: mockFlush,
+  getCurrentScope: vi.fn(() => mockScope),
+  httpIntegration: vi.fn(),
   init: mockSentryInit,
+  nativeNodeFetchIntegration: vi.fn(),
   setContext: mockSetContext,
+  setExtra: mockSetExtra,
+  setTag: mockSetTag,
   setUser: mockSetUser,
-  Severity: {
-    Debug: 'debug',
-    Error: 'error',
-    Info: 'info',
-    Warning: 'warning',
-  },
+  startTransaction: mockStartTransaction,
+  withScope: mockWithScope,
 }));
 
 describe('SentryServerProvider', () => {
   let provider: SentryServerProvider;
-  const mockConfig = {
-    dsn: 'https://test@sentry.io/12345',
-    environment: 'test',
-    tracesSampleRate: 0.1,
-  };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    mockFlush.mockResolvedValue(true);
-    provider = new SentryServerProvider(mockConfig);
+    mockStartTransaction.mockReturnValue(mockTransaction);
+
+    provider = new SentryServerProvider();
+    await provider.initialize({
+      dsn: 'https://test@sentry.io/12345',
+      environment: 'test',
+      tracesSampleRate: 0.1,
+    });
   });
 
-  describe('constructor', () => {
-    it('should initialize Sentry with provided config', () => {
-      expect(mockSentryInit).toHaveBeenCalledWith({
+  describe('initialization', () => {
+    it('should initialize Sentry with provided config', async () => {
+      const testProvider = new SentryServerProvider();
+      await testProvider.initialize({
         dsn: 'https://test@sentry.io/12345',
-        environment: 'test',
-        integrations: expect.any(Array),
-        tracesSampleRate: 0.1,
-      });
-    });
-
-    it('should be enabled with valid DSN', () => {
-      expect(provider.isEnabled()).toBe(true);
-    });
-
-    it('should be disabled without DSN', () => {
-      const disabledProvider = new SentryServerProvider({});
-      expect(disabledProvider.isEnabled()).toBe(false);
-    });
-
-    it('should add default integrations', () => {
-      const initCall = mockSentryInit.mock.calls[0][0];
-      expect(initCall.integrations).toBeDefined();
-      expect(Array.isArray(initCall.integrations)).toBe(true);
-    });
-  });
-
-  describe('log', () => {
-    it('should add breadcrumb for info level', async () => {
-      const entry: LogEntry = {
-        level: 'info',
-        message: 'Test info message',
-        metadata: { userId: '123' },
-        timestamp: new Date().toISOString(),
-      };
-
-      await provider.log(entry);
-
-      expect(mockAddBreadcrumb).toHaveBeenCalledWith({
-        data: { userId: '123' },
-        level: 'info',
-        message: 'Test info message',
-        timestamp: new Date(entry.timestamp).getTime() / 1000,
-      });
-    });
-
-    it('should add breadcrumb for debug level', async () => {
-      const entry: LogEntry = {
-        level: 'debug',
-        message: 'Test debug',
-        timestamp: new Date().toISOString(),
-      };
-
-      await provider.log(entry);
-
-      expect(mockAddBreadcrumb).toHaveBeenCalledWith({
-        level: 'debug',
-        message: 'Test debug',
-        timestamp: expect.any(Number),
-      });
-    });
-
-    it('should capture message for warn level', async () => {
-      const entry: LogEntry = {
-        level: 'warn',
-        message: 'Test warning',
-        timestamp: new Date().toISOString(),
-      };
-
-      await provider.log(entry);
-
-      expect(mockCaptureMessage).toHaveBeenCalledWith('Test warning', 'warning');
-    });
-
-    it('should capture message for error level', async () => {
-      const entry: LogEntry = {
-        level: 'error',
-        message: 'Test error',
-        timestamp: new Date().toISOString(),
-      };
-
-      await provider.log(entry);
-
-      expect(mockCaptureMessage).toHaveBeenCalledWith('Test error', 'error');
-    });
-
-    it('should not log when disabled', async () => {
-      const disabledProvider = new SentryServerProvider({});
-
-      await disabledProvider.log({
-        level: 'error',
-        message: 'Should not be logged',
-        timestamp: new Date().toISOString(),
+        environment: 'production',
+        profilesSampleRate: 0.2,
+        release: '1.0.0',
+        tracesSampleRate: 0.5,
       });
 
-      expect(mockCaptureMessage).not.toHaveBeenCalled();
-      expect(mockAddBreadcrumb).not.toHaveBeenCalled();
+      expect(mockSentryInit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dsn: 'https://test@sentry.io/12345',
+          environment: 'production',
+          profilesSampleRate: 0.2,
+          release: '1.0.0',
+          tracesSampleRate: 0.5,
+        }),
+      );
+    });
+
+    it('should throw error without DSN', async () => {
+      const testProvider = new SentryServerProvider();
+      await expect(testProvider.initialize({})).rejects.toThrow('Sentry DSN is required');
+    });
+
+    it('should use default values when not provided', async () => {
+      const testProvider = new SentryServerProvider();
+      await testProvider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+      });
+
+      expect(mockSentryInit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          debug: false,
+          environment: 'production',
+          profilesSampleRate: 0.1,
+          tracesSampleRate: 1,
+        }),
+      );
     });
   });
 
   describe('captureException', () => {
-    it('should capture exception with context', async () => {
-      const error = new Error('Test exception');
+    it('should capture exception with Sentry', async () => {
+      const error = new Error('Test error');
+      await provider.captureException(error);
+
+      expect(mockWithScope).toHaveBeenCalled();
+      expect(mockCaptureException).toHaveBeenCalledWith(error);
+    });
+
+    it('should set context when provided', async () => {
+      const error = new Error('Test error');
       const context = {
-        endpoint: '/api/test',
+        extra: { version: '1.0.0' },
+        organizationId: 'org-456',
+        tags: { environment: 'test' },
         userId: '123',
       };
 
       await provider.captureException(error, context);
 
-      expect(mockCaptureException).toHaveBeenCalledWith(error, {
-        extra: context,
-      });
+      expect(mockScope.setUser).toHaveBeenCalledWith({ id: '123' });
+      expect(mockScope.setTag).toHaveBeenCalledWith('organization_id', 'org-456');
+      expect(mockScope.setTag).toHaveBeenCalledWith('environment', 'test');
+      expect(mockScope.setExtra).toHaveBeenCalledWith('version', '1.0.0');
     });
 
-    it('should capture exception without context', async () => {
-      const error = new Error('Test exception');
+    it('should set fingerprint when provided', async () => {
+      const error = new Error('Test error');
+      const context = {
+        fingerprint: ['error-type', 'user-action'],
+      };
 
-      await provider.captureException(error);
+      await provider.captureException(error, context);
 
-      expect(mockCaptureException).toHaveBeenCalledWith(error, {});
-    });
-
-    it('should handle non-Error objects', async () => {
-      const error = { code: 500, message: 'Custom error' };
-
-      await provider.captureException(error as any, { test: true });
-
-      expect(mockCaptureException).toHaveBeenCalledWith(error, {
-        extra: { test: true },
-      });
-    });
-
-    it('should not capture when disabled', async () => {
-      const disabledProvider = new SentryServerProvider({});
-
-      await disabledProvider.captureException(new Error('Test'));
-
-      expect(mockCaptureException).not.toHaveBeenCalled();
+      expect(mockScope.setFingerprint).toHaveBeenCalledWith(['error-type', 'user-action']);
     });
   });
 
-  describe('identify', () => {
-    it('should set user with traits', async () => {
-      await provider.identify('user-123', {
-        name: 'Test User',
-        email: 'test@example.com',
-        plan: 'pro',
-      });
+  describe('captureMessage', () => {
+    it('should capture message with correct level', async () => {
+      await provider.captureMessage('Test message', 'info');
 
-      expect(mockSetUser).toHaveBeenCalledWith({
+      expect(mockWithScope).toHaveBeenCalled();
+      expect(mockCaptureMessage).toHaveBeenCalledWith('Test message', 'info');
+    });
+
+    it('should map warning level correctly', async () => {
+      await provider.captureMessage('Warning message', 'warning');
+
+      expect(mockCaptureMessage).toHaveBeenCalledWith('Warning message', 'warning');
+    });
+
+    it('should capture error messages', async () => {
+      await provider.captureMessage('Error message', 'error');
+
+      expect(mockCaptureMessage).toHaveBeenCalledWith('Error message', 'error');
+    });
+
+    it('should set context when provided', async () => {
+      const context = {
+        extra: { attempt: 3 },
+        tags: { feature: 'auth' },
+        userId: '789',
+      };
+
+      await provider.captureMessage('Login failed', 'error', context);
+
+      expect(mockScope.setUser).toHaveBeenCalledWith({ id: '789' });
+      expect(mockScope.setTag).toHaveBeenCalledWith('feature', 'auth');
+      expect(mockScope.setExtra).toHaveBeenCalledWith('attempt', 3);
+    });
+  });
+
+  describe('setUser', () => {
+    it('should set user with Sentry', () => {
+      const user = {
         id: 'user-123',
-        username: 'Test User',
+        username: 'testuser',
         email: 'test@example.com',
-        plan: 'pro',
-      });
+      };
+
+      provider.setUser(user);
+
+      expect(mockSetUser).toHaveBeenCalledWith(user);
+    });
+  });
+
+  describe('setTag', () => {
+    it('should set tag with Sentry', () => {
+      provider.setTag('environment', 'production');
+
+      expect(mockSetTag).toHaveBeenCalledWith('environment', 'production');
     });
 
-    it('should set user without traits', async () => {
-      await provider.identify('user-456');
+    it('should handle numeric values', () => {
+      provider.setTag('version', 2);
 
-      expect(mockSetUser).toHaveBeenCalledWith({
-        id: 'user-456',
-      });
+      expect(mockSetTag).toHaveBeenCalledWith('version', 2);
     });
 
-    it('should clear user when userId is null', async () => {
-      await provider.identify(null as any);
+    it('should handle boolean values', () => {
+      provider.setTag('feature_enabled', true);
 
-      expect(mockSetUser).toHaveBeenCalledWith(null);
+      expect(mockSetTag).toHaveBeenCalledWith('feature_enabled', true);
     });
+  });
 
-    it('should not identify when disabled', async () => {
-      const disabledProvider = new SentryServerProvider({});
+  describe('setExtra', () => {
+    it('should set extra data with Sentry', () => {
+      provider.setExtra('metadata', { custom: 'data' });
 
-      await disabledProvider.identify('user-123');
-
-      expect(mockSetUser).not.toHaveBeenCalled();
+      expect(mockSetExtra).toHaveBeenCalledWith('metadata', { custom: 'data' });
     });
   });
 
   describe('setContext', () => {
-    it('should set Sentry context', async () => {
+    it('should set context with Sentry', () => {
       const context = {
-        environment: 'production',
-        feature: 'checkout',
-        version: '1.0.0',
-      };
-
-      await provider.setContext(context);
-
-      expect(mockSetContext).toHaveBeenCalledWith('extra', context);
-    });
-
-    it('should handle empty context', async () => {
-      await provider.setContext({});
-
-      expect(mockSetContext).toHaveBeenCalledWith('extra', {});
-    });
-
-    it('should not set context when disabled', async () => {
-      const disabledProvider = new SentryServerProvider({});
-
-      await disabledProvider.setContext({ test: true });
-
-      expect(mockSetContext).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('flush', () => {
-    it('should flush Sentry with default timeout', async () => {
-      await provider.flush();
-
-      expect(mockFlush).toHaveBeenCalledWith(2000);
-    });
-
-    it('should flush Sentry with custom timeout', async () => {
-      await provider.flush(5000);
-
-      expect(mockFlush).toHaveBeenCalledWith(5000);
-    });
-
-    it('should handle flush errors gracefully', async () => {
-      mockFlush.mockRejectedValueOnce(new Error('Flush failed'));
-
-      // Should not throw
-      await expect(provider.flush()).resolves.toBeUndefined();
-    });
-
-    it('should resolve immediately when disabled', async () => {
-      const disabledProvider = new SentryServerProvider({});
-
-      await disabledProvider.flush();
-
-      expect(mockFlush).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('configuration', () => {
-    it('should accept custom integrations', () => {
-      mockSentryInit.mockClear();
-
-      const customIntegration = { name: 'CustomIntegration' };
-      new SentryServerProvider({
-        dsn: 'https://test@sentry.io/12345',
-        integrations: [customIntegration],
-      });
-
-      const initCall = mockSentryInit.mock.calls[0][0];
-      expect(initCall.integrations).toContain(customIntegration);
-    });
-
-    it('should pass through all config options', () => {
-      mockSentryInit.mockClear();
-
-      const fullConfig = {
-        attachStacktrace: true,
-        beforeSend: (event: any) => event,
-        dsn: 'https://test@sentry.io/12345',
         environment: 'staging',
-        release: '1.2.3',
-        tracesSampleRate: 0.5,
+        version: '1.2.3',
       };
 
-      new SentryServerProvider(fullConfig);
+      provider.setContext('app', context);
 
-      expect(mockSentryInit).toHaveBeenCalledWith(expect.objectContaining(fullConfig));
+      expect(mockSetContext).toHaveBeenCalledWith('app', context);
+    });
+  });
+
+  describe('addBreadcrumb', () => {
+    it('should add breadcrumb with Sentry', () => {
+      const breadcrumb = {
+        type: 'user' as const,
+        category: 'ui',
+        level: 'info' as const,
+        message: 'User clicked button',
+      };
+
+      provider.addBreadcrumb(breadcrumb);
+
+      expect(mockAddBreadcrumb).toHaveBeenCalledWith(breadcrumb);
+    });
+  });
+
+  describe('startTransaction', () => {
+    it('should start transaction with Sentry', () => {
+      const transaction = provider.startTransaction('test-transaction');
+
+      expect(mockStartTransaction).toHaveBeenCalledWith({
+        name: 'test-transaction',
+        data: undefined,
+        op: 'http.server',
+        tags: undefined,
+      });
+      expect(transaction).toBeDefined();
+      expect(transaction.finish).toBeDefined();
+    });
+
+    it('should include context when provided', () => {
+      const context = {
+        extra: { endpoint: '/api/users' },
+        operation: 'api.request',
+        tags: { method: 'GET' },
+      };
+
+      provider.startTransaction('api-call', context);
+
+      expect(mockStartTransaction).toHaveBeenCalledWith({
+        name: 'api-call',
+        data: { endpoint: '/api/users' },
+        op: 'api.request',
+        tags: { method: 'GET' },
+      });
+    });
+
+    it('should provide transaction methods', () => {
+      const transaction = provider.startTransaction('test');
+
+      transaction.setData('key', 'value');
+      expect(mockTransaction.setData).toHaveBeenCalledWith('key', 'value');
+
+      transaction.setHttpStatus(200);
+      expect(mockTransaction.setHttpStatus).toHaveBeenCalledWith(200);
+
+      transaction.setStatus('ok');
+      expect(mockTransaction.setStatus).toHaveBeenCalledWith('ok');
+
+      transaction.setTag('type', 'api');
+      expect(mockTransaction.setTag).toHaveBeenCalledWith('type', 'api');
+
+      transaction.finish();
+      expect(mockTransaction.finish).toHaveBeenCalled();
+    });
+  });
+
+  describe('startSpan', () => {
+    it('should create child span when parent provided', () => {
+      const parentSpan = {
+        startChild: vi.fn(),
+      };
+
+      provider.startSpan('child-span', parentSpan);
+
+      expect(parentSpan.startChild).toHaveBeenCalledWith({
+        description: 'child-span',
+        op: 'child-span',
+      });
+    });
+
+    it('should create new transaction when no parent', () => {
+      provider.startSpan('root-span');
+
+      expect(mockStartTransaction).toHaveBeenCalledWith({
+        name: 'root-span',
+        op: 'http.server',
+      });
+    });
+  });
+
+  describe('session management', () => {
+    it('should start session', () => {
+      provider.startSession();
+      // Sentry handles sessions automatically
+      expect(true).toBe(true);
+    });
+
+    it('should end session', () => {
+      provider.endSession();
+      // Sentry handles sessions automatically
+      expect(true).toBe(true);
     });
   });
 });

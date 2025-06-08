@@ -53,6 +53,7 @@ describe('Organization Permissions', () => {
     createdAt: new Date(),
     organizationId: 'org-123',
     role,
+    updatedAt: null,
     userId: 'user-123',
     ...overrides,
   });
@@ -69,7 +70,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(mockMember);
 
-      const result = await hasOrganizationAccess(mockHeaders, 'org-123');
+      const result = await hasOrganizationAccess('org-123');
 
       expect(result).toBe(true);
       expect(mockGetMember).toHaveBeenCalledWith({
@@ -86,7 +87,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(null);
 
-      const result = await hasOrganizationAccess(mockHeaders, 'org-123');
+      const result = await hasOrganizationAccess('org-123');
 
       expect(result).toBe(false);
     });
@@ -94,7 +95,7 @@ describe('Organization Permissions', () => {
     it('should return false when session is missing', async () => {
       mockGetSession.mockResolvedValue(null);
 
-      const result = await hasOrganizationAccess(mockHeaders, 'org-123');
+      const result = await hasOrganizationAccess('org-123');
 
       expect(result).toBe(false);
     });
@@ -108,7 +109,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(mockMember);
 
-      const result = await hasOrganizationRole(mockHeaders, 'org-123', ['admin']);
+      const result = await hasOrganizationRole('org-123', 'admin');
 
       expect(result).toBe(true);
     });
@@ -120,7 +121,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(mockMember);
 
-      const result = await hasOrganizationRole(mockHeaders, 'org-123', ['admin', 'owner']);
+      const result = await hasOrganizationRole('org-123', 'owner');
 
       expect(result).toBe(true);
     });
@@ -132,7 +133,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(mockMember);
 
-      const result = await hasOrganizationRole(mockHeaders, 'org-123', ['admin', 'owner']);
+      const result = await hasOrganizationRole('org-123', 'admin');
 
       expect(result).toBe(false);
     });
@@ -146,7 +147,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(mockMember);
 
-      const result = await isOrganizationOwner(mockHeaders, 'org-123');
+      const result = await isOrganizationOwner('org-123');
 
       expect(result).toBe(true);
     });
@@ -158,7 +159,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(mockMember);
 
-      const result = await isOrganizationAdmin(mockHeaders, 'org-123');
+      const result = await isOrganizationAdmin('org-123');
 
       expect(result).toBe(true);
     });
@@ -170,7 +171,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockResolvedValue(mockMember);
 
-      const result = await isOrganizationAdmin(mockHeaders, 'org-123');
+      const result = await isOrganizationAdmin('org-123');
 
       expect(result).toBe(true);
     });
@@ -185,7 +186,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canManageOrganization(mockHeaders, 'org-123');
+        const result = await canManageOrganization('org-123');
 
         expect(result).toBe(true);
       });
@@ -197,7 +198,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canManageOrganization(mockHeaders, 'org-123');
+        const result = await canManageOrganization('org-123');
 
         expect(result).toBe(true);
       });
@@ -209,7 +210,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canManageOrganization(mockHeaders, 'org-123');
+        const result = await canManageOrganization('org-123');
 
         expect(result).toBe(false);
       });
@@ -223,7 +224,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canInviteMembers(mockHeaders, 'org-123');
+        const result = await canInviteMembers('org-123');
 
         expect(result).toBe(true);
       });
@@ -237,7 +238,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canRemoveMembers(mockHeaders, 'org-123');
+        const result = await canRemoveMembers('org-123');
 
         expect(result).toBe(true);
       });
@@ -251,7 +252,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canUpdateMemberRoles(mockHeaders, 'org-123');
+        const result = await canUpdateMemberRoles('org-123');
 
         expect(result).toBe(true);
       });
@@ -263,7 +264,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canUpdateMemberRoles(mockHeaders, 'org-123');
+        const result = await canUpdateMemberRoles('org-123');
 
         expect(result).toBe(false);
       });
@@ -277,7 +278,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canDeleteOrganization(mockHeaders, 'org-123');
+        const result = await canDeleteOrganization('org-123');
 
         expect(result).toBe(true);
       });
@@ -291,7 +292,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canManageAPIKeys(mockHeaders, 'org-123');
+        const result = await canManageAPIKeys('org-123');
 
         expect(result).toBe(true);
       });
@@ -305,7 +306,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canViewBilling(mockHeaders, 'org-123');
+        const result = await canViewBilling('org-123');
 
         expect(result).toBe(true);
       });
@@ -317,7 +318,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canUpdateBilling(mockHeaders, 'org-123');
+        const result = await canUpdateBilling('org-123');
 
         expect(result).toBe(true);
       });
@@ -329,7 +330,7 @@ describe('Organization Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetMember.mockResolvedValue(mockMember);
 
-        const result = await canUpdateBilling(mockHeaders, 'org-123');
+        const result = await canUpdateBilling('org-123');
 
         expect(result).toBe(false);
       });
@@ -340,7 +341,7 @@ describe('Organization Permissions', () => {
     it('should handle API errors gracefully', async () => {
       mockGetSession.mockRejectedValue(new Error('API error'));
 
-      const result = await hasOrganizationAccess(mockHeaders, 'org-123');
+      const result = await hasOrganizationAccess('org-123');
 
       expect(result).toBe(false);
     });
@@ -348,7 +349,7 @@ describe('Organization Permissions', () => {
     it('should handle missing session gracefully', async () => {
       mockGetSession.mockResolvedValue(null);
 
-      const result = await canManageOrganization(mockHeaders, 'org-123');
+      const result = await canManageOrganization('org-123');
 
       expect(result).toBe(false);
     });
@@ -359,7 +360,7 @@ describe('Organization Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetMember.mockRejectedValue(new Error('Database error'));
 
-      const result = await isOrganizationOwner(mockHeaders, 'org-123');
+      const result = await isOrganizationOwner('org-123');
 
       expect(result).toBe(false);
     });

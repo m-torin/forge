@@ -53,6 +53,7 @@ describe('Team Permissions', () => {
     createdAt: new Date(),
     role,
     teamId: 'team-123',
+    updatedAt: new Date(),
     userId: 'user-123',
     ...overrides,
   });
@@ -69,7 +70,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(mockMember);
 
-      const result = await hasTeamAccess(mockHeaders, 'team-123');
+      const result = await hasTeamAccess('team-123');
 
       expect(result).toBe(true);
       expect(mockGetTeamMember).toHaveBeenCalledWith({
@@ -86,7 +87,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(null);
 
-      const result = await hasTeamAccess(mockHeaders, 'team-123');
+      const result = await hasTeamAccess('team-123');
 
       expect(result).toBe(false);
     });
@@ -94,7 +95,7 @@ describe('Team Permissions', () => {
     it('should return false when session is missing', async () => {
       mockGetSession.mockResolvedValue(null);
 
-      const result = await hasTeamAccess(mockHeaders, 'team-123');
+      const result = await hasTeamAccess('team-123');
 
       expect(result).toBe(false);
     });
@@ -108,7 +109,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(mockMember);
 
-      const result = await hasTeamRole(mockHeaders, 'team-123', ['admin']);
+      const result = await hasTeamRole('team-123', 'admin');
 
       expect(result).toBe(true);
     });
@@ -120,7 +121,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(mockMember);
 
-      const result = await hasTeamRole(mockHeaders, 'team-123', ['admin', 'owner']);
+      const result = await hasTeamRole('team-123', 'owner');
 
       expect(result).toBe(true);
     });
@@ -132,7 +133,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(mockMember);
 
-      const result = await hasTeamRole(mockHeaders, 'team-123', ['admin', 'owner']);
+      const result = await hasTeamRole('team-123', 'owner');
 
       expect(result).toBe(false);
     });
@@ -146,7 +147,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(mockMember);
 
-      const result = await isTeamOwner(mockHeaders, 'team-123');
+      const result = await isTeamOwner('team-123');
 
       expect(result).toBe(true);
     });
@@ -158,7 +159,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(mockMember);
 
-      const result = await isTeamAdmin(mockHeaders, 'team-123');
+      const result = await isTeamAdmin('team-123');
 
       expect(result).toBe(true);
     });
@@ -170,7 +171,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockResolvedValue(mockMember);
 
-      const result = await isTeamAdmin(mockHeaders, 'team-123');
+      const result = await isTeamAdmin('team-123');
 
       expect(result).toBe(true);
     });
@@ -185,7 +186,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canManageTeam(mockHeaders, 'team-123');
+        const result = await canManageTeam('team-123');
 
         expect(result).toBe(true);
       });
@@ -197,7 +198,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canManageTeam(mockHeaders, 'team-123');
+        const result = await canManageTeam('team-123');
 
         expect(result).toBe(true);
       });
@@ -209,7 +210,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canManageTeam(mockHeaders, 'team-123');
+        const result = await canManageTeam('team-123');
 
         expect(result).toBe(false);
       });
@@ -223,7 +224,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canInviteTeamMembers(mockHeaders, 'team-123');
+        const result = await canInviteTeamMembers('team-123');
 
         expect(result).toBe(true);
       });
@@ -237,7 +238,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canRemoveTeamMembers(mockHeaders, 'team-123');
+        const result = await canRemoveTeamMembers('team-123');
 
         expect(result).toBe(true);
       });
@@ -251,7 +252,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canUpdateTeamMemberRoles(mockHeaders, 'team-123');
+        const result = await canUpdateTeamMemberRoles('team-123');
 
         expect(result).toBe(true);
       });
@@ -263,7 +264,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canUpdateTeamMemberRoles(mockHeaders, 'team-123');
+        const result = await canUpdateTeamMemberRoles('team-123');
 
         expect(result).toBe(false);
       });
@@ -277,7 +278,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canDeleteTeam(mockHeaders, 'team-123');
+        const result = await canDeleteTeam('team-123');
 
         expect(result).toBe(true);
       });
@@ -291,7 +292,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canViewTeamMembers(mockHeaders, 'team-123');
+        const result = await canViewTeamMembers('team-123');
 
         expect(result).toBe(true);
       });
@@ -305,7 +306,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canManageTeamSettings(mockHeaders, 'team-123');
+        const result = await canManageTeamSettings('team-123');
 
         expect(result).toBe(true);
       });
@@ -319,7 +320,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canManageTeamBilling(mockHeaders, 'team-123');
+        const result = await canManageTeamBilling('team-123');
 
         expect(result).toBe(true);
       });
@@ -331,7 +332,7 @@ describe('Team Permissions', () => {
         mockGetSession.mockResolvedValue(mockSession);
         mockGetTeamMember.mockResolvedValue(mockMember);
 
-        const result = await canManageTeamBilling(mockHeaders, 'team-123');
+        const result = await canManageTeamBilling('team-123');
 
         expect(result).toBe(false);
       });
@@ -342,7 +343,7 @@ describe('Team Permissions', () => {
     it('should handle API errors gracefully', async () => {
       mockGetSession.mockRejectedValue(new Error('API error'));
 
-      const result = await hasTeamAccess(mockHeaders, 'team-123');
+      const result = await hasTeamAccess('team-123');
 
       expect(result).toBe(false);
     });
@@ -350,7 +351,7 @@ describe('Team Permissions', () => {
     it('should handle missing session gracefully', async () => {
       mockGetSession.mockResolvedValue(null);
 
-      const result = await canManageTeam(mockHeaders, 'team-123');
+      const result = await canManageTeam('team-123');
 
       expect(result).toBe(false);
     });
@@ -361,7 +362,7 @@ describe('Team Permissions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockGetTeamMember.mockRejectedValue(new Error('Database error'));
 
-      const result = await isTeamOwner(mockHeaders, 'team-123');
+      const result = await isTeamOwner('team-123');
 
       expect(result).toBe(false);
     });

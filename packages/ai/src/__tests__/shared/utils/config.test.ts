@@ -41,9 +41,9 @@ describe('Config Utilities', () => {
       expect(config.providers).toHaveProperty('anthropic');
       expect(config.providers).toHaveProperty('google');
       expect(config.providers).toHaveProperty('openai');
-      expect(config.providers.anthropic?.apiKey).toBe('test-anthropic-key');
-      expect(config.providers.google?.apiKey).toBe('test-google-key');
-      expect(config.providers.openai?.apiKey).toBe('test-openai-key');
+      expect(config.providers?.anthropic?.apiKey).toBe('test-anthropic-key');
+      expect(config.providers?.google?.apiKey).toBe('test-google-key');
+      expect(config.providers?.openai?.apiKey).toBe('test-openai-key');
       expect(typeof config.enableLogging).toBe('boolean');
       expect(typeof config.enableRateLimit).toBe('boolean');
     });

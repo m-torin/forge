@@ -44,7 +44,7 @@ describe('Stripe AI Agent Toolkit', () => {
     });
 
     it('should create StripeAgentToolkit when secret key is available', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       expect(MockStripeAgentToolkit).toHaveBeenCalledWith({
         configuration: {
@@ -63,12 +63,12 @@ describe('Stripe AI Agent Toolkit', () => {
         secretKey: 'sk_test_123456789',
       });
 
-      expect(paymentsAgentToolkit).toBeDefined();
-      expect(paymentsAgentToolkit).not.toBeNull();
+      expect(_paymentsAgentToolkit).toBeDefined();
+      expect(_paymentsAgentToolkit).not.toBeNull();
     });
 
     it('should configure toolkit with correct actions', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
 
@@ -86,28 +86,28 @@ describe('Stripe AI Agent Toolkit', () => {
     });
 
     it('should pass secret key to toolkit', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       expect(toolkitCall.secretKey).toBe('sk_test_123456789');
     });
 
     it('should support payment link creation action', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       expect(toolkitCall.configuration.actions.paymentLinks.create).toBe(true);
     });
 
     it('should support price creation action', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       expect(toolkitCall.configuration.actions.prices.create).toBe(true);
     });
 
     it('should support product creation action', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       expect(toolkitCall.configuration.actions.products.create).toBe(true);
@@ -123,16 +123,16 @@ describe('Stripe AI Agent Toolkit', () => {
     });
 
     it('should return null when secret key is not available', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
-      expect(paymentsAgentToolkit).toBeNull();
+      expect(_paymentsAgentToolkit).toBeNull();
     });
 
     it('should not create toolkit instance when key is missing', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
-      expect(paymentsAgentToolkit).toBeNull();
+      expect(_paymentsAgentToolkit).toBeNull();
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
     });
   });
@@ -146,10 +146,10 @@ describe('Stripe AI Agent Toolkit', () => {
     });
 
     it('should return null when secret key is empty string', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
-      expect(paymentsAgentToolkit).toBeNull();
+      expect(_paymentsAgentToolkit).toBeNull();
     });
   });
 
@@ -160,9 +160,9 @@ describe('Stripe AI Agent Toolkit', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
-      expect(paymentsAgentToolkit).not.toBeNull();
+      expect(_paymentsAgentToolkit).not.toBeNull();
       expect(MockStripeAgentToolkit).toHaveBeenCalled();
     });
 
@@ -172,9 +172,9 @@ describe('Stripe AI Agent Toolkit', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
-      expect(paymentsAgentToolkit).toBeNull();
+      expect(_paymentsAgentToolkit).toBeNull();
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
     });
 
@@ -184,9 +184,9 @@ describe('Stripe AI Agent Toolkit', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
-      expect(paymentsAgentToolkit).toBeNull();
+      expect(_paymentsAgentToolkit).toBeNull();
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
     });
   });
@@ -200,7 +200,7 @@ describe('Stripe AI Agent Toolkit', () => {
     });
 
     it('should have correct configuration structure', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const expectedConfig = {
         configuration: {
@@ -223,7 +223,7 @@ describe('Stripe AI Agent Toolkit', () => {
     });
 
     it('should only enable create actions', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       const actions = toolkitCall.configuration.actions;
@@ -240,7 +240,7 @@ describe('Stripe AI Agent Toolkit', () => {
     });
 
     it('should not include other Stripe resource actions', async () => {
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       const actions = toolkitCall.configuration.actions;
@@ -275,7 +275,7 @@ describe('Stripe AI Agent Toolkit', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       expect(toolkitCall.secretKey).toBe(testKey);

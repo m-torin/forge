@@ -31,6 +31,7 @@ import {
   IconRocket,
   IconSearch,
   IconSettings,
+  IconShield,
   IconSun,
   IconUsers,
 } from '@tabler/icons-react';
@@ -62,14 +63,27 @@ const navigationItems = [
   },
   {
     color: 'green',
-    href: '/pim',
+    href: '/pim-power',
     icon: IconPackage,
     items: [
-      { href: '/pim', label: 'Product Catalog' },
-      { href: '/pim/taxonomy', label: 'Taxonomy' },
-      { href: '/pim/classification', label: 'Classification' },
+      { href: '/pim-power', label: 'Product Catalog' },
+      { href: '/pim-power/taxonomy', label: 'Taxonomy' },
+      { href: '/pim-power/classification', label: 'Classification' },
     ],
-    label: 'PIM',
+    label: 'PIM Power',
+  },
+  {
+    color: 'teal',
+    href: '/pim3',
+    icon: IconPackage,
+    items: [
+      { href: '/pim3', label: 'Dashboard' },
+      { href: '/pim3/products', label: 'Products' },
+      { href: '/pim3/assets', label: 'Assets' },
+      { href: '/pim3/barcodes', label: 'Barcodes' },
+      { href: '/pim3/scan-history', label: 'Scan History' },
+    ],
+    label: 'PIM3',
   },
   {
     color: 'orange',
@@ -99,6 +113,12 @@ const adminItems = [
     href: '/feature-flags',
     icon: IconFlag,
     label: 'Feature Flags',
+  },
+  {
+    color: 'red',
+    href: '/admin/security',
+    icon: IconShield,
+    label: 'Security Dashboard',
   },
   {
     color: 'gray',

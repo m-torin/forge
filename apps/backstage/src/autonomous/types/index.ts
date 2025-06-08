@@ -1,55 +1,52 @@
 // Type definitions for the autonomous workflow system
 
 export interface WorkflowSpecification {
-  name: string;
+  businessLogic: string[];
   description: string;
-  type?: 'general' | 'data-processing' | 'api-integration' | 'notification' | 'scheduled';
+  errorHandling?: string[];
   inputContract: {
     type?: string;
     properties?: Record<string, any>;
     required?: string[];
     $schema?: string;
   };
+  metadata?: {
+    author?: string;
+    version?: string;
+    tags?: string[];
+  };
+  name: string;
   outputContract: {
     type?: string;
     properties?: Record<string, any>;
     required?: string[];
     $schema?: string;
   };
-  businessLogic: string[];
-  errorHandling?: string[];
   performance?: {
     timeout?: number;
     retries?: number;
     rateLimit?: string;
   };
-  metadata?: {
-    author?: string;
-    version?: string;
-    tags?: string[];
-  };
+  type?: 'general' | 'data-processing' | 'api-integration' | 'notification' | 'scheduled';
 }
 
 export interface AutonomousConfig {
-  maxIterations: number;
-  enableLearning: boolean;
-  commitOnSuccess: boolean;
-  generateReports: boolean;
-  useCICD: boolean;
-  timeoutMs?: number;
   claudeModel?: string;
+  commitOnSuccess: boolean;
+  enableLearning: boolean;
+  generateReports: boolean;
+  maxIterations: number;
+  timeoutMs?: number;
+  useCICD: boolean;
 }
 
 export interface TestResult {
   allPassed: boolean;
-  vitest: TestFramework;
-  playwright: TestFramework;
-  summary: {
-    totalTests: number;
-    passedTests: number;
-    failedTests: number;
-    skippedTests: number;
-    duration: number;
+  coverage?: {
+    lines: number;
+    statements: number;
+    functions: number;
+    branches: number;
   };
   performanceMetrics?: {
     unitTestDuration: number;
@@ -58,39 +55,42 @@ export interface TestResult {
     averageTestDuration: number;
     slowestTests: any[];
   };
-  coverage?: {
-    lines: number;
-    statements: number;
-    functions: number;
-    branches: number;
+  playwright: TestFramework;
+  summary: {
+    totalTests: number;
+    passedTests: number;
+    failedTests: number;
+    skippedTests: number;
+    duration: number;
   };
+  vitest: TestFramework;
 }
 
 export interface TestFramework {
+  duration: number;
+  failedTests: number;
+  failures: TestFailure[];
   framework: 'vitest' | 'playwright';
   passed: boolean;
-  totalTests: number;
   passedTests: number;
-  failedTests: number;
-  skippedTests: number;
-  duration: number;
-  failures: TestFailure[];
   rawOutput: string;
   screenshots?: string[];
+  skippedTests: number;
+  totalTests: number;
 }
 
 export interface TestFailure {
-  testName: string;
-  error: string;
-  message?: string;
-  expected: string;
   actual: string;
-  stack: string;
   duration?: number;
+  error: string;
+  expected: string;
   file?: string;
+  message?: string;
+  stack: string;
+  testName: string;
 }
 
-export type ErrorCategory = 
+export type ErrorCategory =
   | 'syntax-error'
   | 'type-error'
   | 'reference-error'
@@ -102,73 +102,77 @@ export type ErrorCategory =
   | 'async-error';
 
 export interface ErrorAnalysis {
-  errors: Array<{
+  aiInsights?: any;
+  categories: ErrorCategory[];
+  confidence: number;
+  errors: {
     message: string;
     file: string;
     line: number;
     category?: ErrorCategory;
     confidence?: number;
-  }>;
-  categories: ErrorCategory[];
+  }[];
+  estimatedFixTime?: number; // in minutes
+  repairComplexity?: 'low' | 'medium' | 'high';
+  rootCauses?: string[];
   suggestedStrategy: string;
   testFailures: TestFailure[];
-  confidence: number;
-  rootCauses?: string[];
-  aiInsights?: any;
-  repairComplexity?: 'low' | 'medium' | 'high';
-  estimatedFixTime?: number; // in minutes
 }
 
 export interface RepairStrategy {
+  confidence?: number;
+  considerations: string[];
   name: string;
   pattern: string;
-  successRate: number;
   riskLevel: 'low' | 'medium' | 'high';
-  considerations: string[];
-  confidence?: number;
+  successRate: number;
 }
 
 export interface RepairAttempt {
-  workflowName: string;
-  iteration: number;
-  errorAnalysis: ErrorAnalysis;
-  timestamp: Date;
-  repairStrategy: string;
   complexity?: 'low' | 'medium' | 'high';
+  errorAnalysis: ErrorAnalysis;
+  iteration: number;
+  repairStrategy: string;
+  timestamp: Date;
+  workflowName: string;
 }
 
 export interface RepairOutcome {
-  success: boolean;
-  iterations: number;
-  finalCode?: string;
-  error?: string;
-  fixesApplied: string[];
-  testPassRate: number;
-  successRate: number;
-  totalTime: number;
   coverage?: {
     lines: number;
     statements: number;
     functions: number;
     branches: number;
   };
+  error?: string;
+  finalCode?: string;
+  fixesApplied: string[];
+  iterations: number;
   linesOfCode?: number;
+  success: boolean;
+  successRate: number;
   testCount?: number;
+  testPassRate: number;
+  totalTime: number;
 }
 
 export interface LearningEvent {
-  timestamp: Date;
-  workflowType: string;
-  errorCategories: ErrorCategory[];
-  repairStrategy: string;
-  success: boolean;
-  iterations: number;
-  timeToFix: number; // milliseconds
   codeComplexity: number;
   confidence: number;
+  errorCategories: ErrorCategory[];
+  iterations: number;
+  repairStrategy: string;
+  success: boolean;
+  timestamp: Date;
+  timeToFix: number; // milliseconds
+  workflowType: string;
 }
 
 export interface WorkflowContract {
+  errors: {
+    types: string[];
+    handling: Record<string, string>;
+  };
   input: {
     schema: any;
     examples: any[];
@@ -182,15 +186,9 @@ export interface WorkflowContract {
     guarantees: string[];
     format: string;
   };
-  errors: {
-    types: string[];
-    handling: Record<string, string>;
-  };
 }
 
 export interface AutonomousMetrics {
-  totalWorkflows: number;
-  successfulCompletions: number;
   averageIterations: number;
   averageTimeToCompletion: number;
   errorCategories: Record<ErrorCategory, number>;
@@ -199,52 +197,54 @@ export interface AutonomousMetrics {
     successRate: number;
     confidence: number;
   }[];
+  successfulCompletions: number;
+  totalWorkflows: number;
 }
 
 export interface GitCommitInfo {
   branch: string;
+  filesChanged: string[];
   hash: string;
   message: string;
   timestamp: Date;
-  filesChanged: string[];
 }
 
 export interface PRInfo {
-  url: string;
-  number: number;
-  title: string;
-  status: 'open' | 'closed' | 'merged';
   labels: string[];
+  number: number;
+  status: 'open' | 'closed' | 'merged';
+  title: string;
+  url: string;
 }
 
 // Zero-Human-Intervention specific types
 export interface ZHIProtocol {
-  name: string;
   description: string;
-  steps: ProtocolStep[];
-  successCriteria: string[];
   failureCriteria: string[];
   maxDuration: number;
+  name: string;
+  steps: ProtocolStep[];
+  successCriteria: string[];
 }
 
 export interface ProtocolStep {
-  name: string;
   action: string;
-  validation: string;
-  onSuccess: string;
+  name: string;
   onFailure: string;
+  onSuccess: string;
   timeout?: number;
+  validation: string;
 }
 
 export interface AutonomousSession {
-  id: string;
-  startTime: Date;
-  endTime?: Date;
-  workflow: WorkflowSpecification;
-  status: 'running' | 'succeeded' | 'failed' | 'timeout';
-  iterations: number;
   commits: GitCommitInfo[];
-  pullRequest?: PRInfo;
-  metrics: AutonomousMetrics;
+  endTime?: Date;
+  id: string;
+  iterations: number;
   logs: string[];
+  metrics: AutonomousMetrics;
+  pullRequest?: PRInfo;
+  startTime: Date;
+  status: 'running' | 'succeeded' | 'failed' | 'timeout';
+  workflow: WorkflowSpecification;
 }

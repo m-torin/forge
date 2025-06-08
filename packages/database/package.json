@@ -19,6 +19,14 @@
     "test:performance": "vitest run __tests__/performance.test.ts",
     "seed": "doppler run -- tsx prisma/seed.ts",
     "seed:local": "tsx prisma/seed.ts",
+    "seed:products": "doppler run -- tsx prisma/seed-products.ts",
+    "seed:products:local": "tsx prisma/seed-products.ts",
+    "seed:ecommerce": "doppler run -- tsx prisma/seed-ecommerce.ts",
+    "seed:ecommerce:local": "tsx prisma/seed-ecommerce.ts",
+    "seed:ecommerce:dry": "doppler run -- tsx prisma/seed-ecommerce-dry.ts",
+    "seed:ecommerce:dry:local": "tsx prisma/seed-ecommerce-dry.ts",
+    "seed:all": "doppler run -- SEED_ALL=true tsx prisma/seed.ts",
+    "seed:all:local": "SEED_ALL=true tsx prisma/seed.ts",
     "create-users": "doppler run -- tsx scripts/create-users.ts",
     "create-users:local": "tsx scripts/create-users.ts",
     "doppler:secrets": "doppler secrets",
@@ -39,6 +47,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.0.0",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",

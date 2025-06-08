@@ -227,3 +227,78 @@ export async function getTeamRoleHierarchy(): Promise<
     role: role.id,
   }));
 }
+
+// Helper functions for specific permissions
+export async function canViewTeamMembers(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'members:read', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function canInviteTeamMembers(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'members:write', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function canRemoveTeamMembers(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'members:write', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function canUpdateTeamMemberRoles(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'members:write', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function canManageTeam(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'team:write', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function canDeleteTeam(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'team:delete', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function canManageTeamSettings(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'settings:write', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function canManageTeamBilling(teamId: string, userId?: string): Promise<boolean> {
+  const result = await checkTeamPermission({ permission: 'billing:write', teamId, userId });
+  return result.hasPermission;
+}
+
+export async function hasTeamAccess(teamId: string, userId?: string): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession();
+    if (!session) return false;
+
+    const targetUserId = userId || session.user.id;
+    const membership = await database.teamMember.findFirst({
+      where: { teamId, userId: targetUserId },
+    });
+
+    return !!membership;
+  } catch (error) {
+    console.error('Has team access error:', error);
+    return false;
+  }
+}
+
+export async function hasTeamRole(teamId: string, role: string, userId?: string): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession();
+    if (!session) return false;
+
+    const targetUserId = userId || session.user.id;
+    const membership = await database.teamMember.findFirst({
+      where: { teamId, userId: targetUserId },
+    });
+
+    return membership?.role === role;
+  } catch (error) {
+    console.error('Has team role error:', error);
+    return false;
+  }
+}

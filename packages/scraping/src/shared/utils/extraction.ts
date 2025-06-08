@@ -256,7 +256,7 @@ export function extractText(html: string): string {
   const cleanHtml = html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-  
+
   // Replace tags with spaces
   const text = cleanHtml
     .replace(/<[^>]+>/g, ' ')
@@ -266,7 +266,7 @@ export function extractText(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ');
-  
+
   // Clean up whitespace
   return text.replace(/\s+/g, ' ').trim();
 }
@@ -282,12 +282,17 @@ export function extractLinks(html: string, baseUrl?: string): { href: string; te
   while ((match = linkRegex.exec(html)) !== null) {
     const href = match[1];
     const text = extractText(match[2]);
-    
+
     if (href && href.trim()) {
       let resolvedHref = href;
-      
+
       // Resolve relative URLs
-      if (baseUrl && !href.startsWith('http') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+      if (
+        baseUrl &&
+        !href.startsWith('http') &&
+        !href.startsWith('mailto:') &&
+        !href.startsWith('tel:')
+      ) {
         try {
           const url = new URL(href, baseUrl);
           resolvedHref = url.href;
@@ -295,7 +300,7 @@ export function extractLinks(html: string, baseUrl?: string): { href: string; te
           resolvedHref = href;
         }
       }
-      
+
       links.push({ href: resolvedHref, text });
     }
   }
@@ -307,17 +312,18 @@ export function extractLinks(html: string, baseUrl?: string): { href: string; te
  * Extract images from HTML
  */
 export function extractImages(html: string, baseUrl?: string): { src: string; alt: string }[] {
-  const imgRegex = /<img\s+(?:[^>]*?\s+)?src=["']([^"']*)["'](?:\s+[^>]*?\s+alt=["']([^"']*)["'])?[^>]*>/gi;
+  const imgRegex =
+    /<img\s+(?:[^>]*?\s+)?src=["']([^"']*)["'](?:\s+[^>]*?\s+alt=["']([^"']*)["'])?[^>]*>/gi;
   const images: { src: string; alt: string }[] = [];
   let match;
 
   while ((match = imgRegex.exec(html)) !== null) {
     const src = match[1];
     const alt = match[2] || '';
-    
+
     if (src && src.trim()) {
       let resolvedSrc = src;
-      
+
       // Resolve relative URLs
       if (baseUrl && !src.startsWith('http') && !src.startsWith('data:')) {
         try {
@@ -327,7 +333,7 @@ export function extractImages(html: string, baseUrl?: string): { src: string; al
           resolvedSrc = src;
         }
       }
-      
+
       images.push({ src: resolvedSrc, alt });
     }
   }
@@ -340,24 +346,25 @@ export function extractImages(html: string, baseUrl?: string): { src: string; al
  */
 export function extractMetadata(html: string): Record<string, string> {
   const metadata: Record<string, string> = {};
-  
+
   // Extract title
   const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
   metadata.title = titleMatch ? titleMatch[1].trim() : '';
-  
+
   // Extract meta tags
-  const metaRegex = /<meta\s+(?:(?:name|property)=["']([^"']*)["']\s+content=["']([^"']*)["']|content=["']([^"']*)["']\s+(?:name|property)=["']([^"']*)["'])[^>]*>/gi;
+  const metaRegex =
+    /<meta\s+(?:(?:name|property)=["']([^"']*)["']\s+content=["']([^"']*)["']|content=["']([^"']*)["']\s+(?:name|property)=["']([^"']*)["'])[^>]*>/gi;
   let match;
-  
+
   while ((match = metaRegex.exec(html)) !== null) {
     const name = match[1] || match[4];
     const content = match[2] || match[3];
-    
+
     if (name && content) {
       metadata[name] = content;
     }
   }
-  
+
   return metadata;
 }
 
@@ -396,9 +403,9 @@ export function extractEmails(text: string): string[] {
 export function extractPhoneNumbers(text: string): string[] {
   const phoneRegex = /(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\d{10}/g;
   const matches = text.match(phoneRegex) || [];
-  
+
   // Filter out numbers that are too short or don't look like phone numbers
-  return matches.filter(phone => {
+  return matches.filter((phone) => {
     const digits = phone.replace(/\D/g, '');
     return digits.length >= 10 && digits.length <= 11;
   });

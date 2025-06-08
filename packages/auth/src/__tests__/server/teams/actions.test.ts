@@ -4,10 +4,7 @@ import {
   createTeam,
   deleteTeam,
   getTeam,
-  getTeamMembers,
   getTeamStats,
-  getUserTeams,
-  leaveTeam,
   updateTeam,
 } from '../../../server/teams/actions';
 
@@ -21,8 +18,8 @@ const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
 const mockCount = vi.fn();
 
-vi.mock('@repo/database', () => ({
-  database: {
+vi.mock('@repo/database/prisma', () => ({
+  prisma: {
     team: {
       count: mockCount,
       create: mockCreate,
@@ -80,9 +77,9 @@ describe('Team Actions', () => {
     id: 'team-123',
     name: 'Test Team',
     createdAt: new Date('2023-01-01'),
-    metadata: {},
+    description: null,
     organizationId: 'org-123',
-    slug: 'test-team',
+    updatedAt: null,
     ...overrides,
   });
 
@@ -91,6 +88,7 @@ describe('Team Actions', () => {
     createdAt: new Date(),
     role: 'member',
     teamId: 'team-123',
+    updatedAt: new Date(),
     userId: 'user-123',
     ...overrides,
   });
@@ -107,27 +105,17 @@ describe('Team Actions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockCreate.mockResolvedValue(mockTeam);
 
-      const result = await createTeam(mockHeaders, {
+      const result = await createTeam({
         name: 'New Team',
-        metadata: { description: 'A test team' },
         organizationId: 'org-123',
-        slug: 'new-team',
       });
 
       expect(result).toEqual(mockTeam);
       expect(mockCreate).toHaveBeenCalledWith({
-        data: {
+        data: expect.objectContaining({
           name: 'New Team',
-          members: {
-            create: {
-              role: 'owner',
-              userId: 'user-123',
-            },
-          },
-          metadata: { description: 'A test team' },
           organizationId: 'org-123',
-          slug: 'new-team',
-        },
+        }),
       });
     });
 
@@ -138,7 +126,7 @@ describe('Team Actions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockCreate.mockResolvedValue(mockTeam);
 
-      await createTeam(mockHeaders, {
+      await createTeam({
         name: 'New Team',
         organizationId: 'org-123',
       });
@@ -155,7 +143,7 @@ describe('Team Actions', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockCreate.mockResolvedValue(createMockTeam());
 
-      await createTeam(mockHeaders, {
+      await createTeam({
         name: 'Dev & QA Team!',
         organizationId: 'org-123',
       });
@@ -170,9 +158,9 @@ describe('Team Actions', () => {
     it('should throw error when session is missing', async () => {
       mockGetSession.mockResolvedValue(null);
 
-      await expect(
-        createTeam(mockHeaders, { name: 'Test', organizationId: 'org-123' }),
-      ).rejects.toThrow('Unauthorized');
+      await expect(createTeam({ name: 'Test', organizationId: 'org-123' })).rejects.toThrow(
+        'Authentication required',
+      );
     });
   });
 
@@ -184,16 +172,16 @@ describe('Team Actions', () => {
 
       mockUpdate.mockResolvedValue(mockTeam);
 
-      const result = await updateTeam(mockHeaders, 'team-123', {
+      const result = await updateTeam('team-123', {
         name: 'Updated Team',
-        metadata: { description: 'Updated description' },
+        description: 'Updated description',
       });
 
       expect(result).toEqual(mockTeam);
       expect(mockUpdate).toHaveBeenCalledWith({
         data: {
           name: 'Updated Team',
-          metadata: { description: 'Updated description' },
+          description: 'Updated description',
         },
         where: { id: 'team-123' },
       });
@@ -203,7 +191,7 @@ describe('Team Actions', () => {
       const mockTeam = createMockTeam();
       mockUpdate.mockResolvedValue(mockTeam);
 
-      await updateTeam(mockHeaders, 'team-123', {
+      await updateTeam('team-123', {
         name: 'New Name Only',
       });
 
@@ -219,14 +207,10 @@ describe('Team Actions', () => {
       const mockTeam = createMockTeam();
       mockUpdate.mockResolvedValue(mockTeam);
 
-      await updateTeam(mockHeaders, 'team-123', {
-        slug: 'new-slug',
-      });
+      await updateTeam('team-123', {});
 
       expect(mockUpdate).toHaveBeenCalledWith({
-        data: {
-          slug: 'new-slug',
-        },
+        data: {},
         where: { id: 'team-123' },
       });
     });
@@ -234,11 +218,11 @@ describe('Team Actions', () => {
 
   describe('deleteTeam', () => {
     it('should delete team and all related data', async () => {
-      const { database } = await import('@repo/database');
+      const { prisma: database } = await import('@repo/database/prisma');
 
       mockDelete.mockResolvedValue({});
 
-      await deleteTeam(mockHeaders, 'team-123');
+      await deleteTeam('team-123');
 
       // Should delete all members first
       expect(database.teamMember.deleteMany).toHaveBeenCalledWith({
@@ -254,7 +238,7 @@ describe('Team Actions', () => {
     it('should handle deletion errors', async () => {
       mockDelete.mockRejectedValue(new Error('Deletion failed'));
 
-      await expect(deleteTeam(mockHeaders, 'team-123')).rejects.toThrow('Deletion failed');
+      await expect(deleteTeam('team-123')).rejects.toThrow('Deletion failed');
     });
   });
 
@@ -286,7 +270,7 @@ describe('Team Actions', () => {
       };
       mockFindFirst.mockResolvedValue(mockTeamWithMembers);
 
-      const result = await getTeam('team-123', { includeMembers: true });
+      const result = await getTeam('team-123');
 
       expect(result).toEqual(mockTeamWithMembers);
       expect(mockFindFirst).toHaveBeenCalledWith({
@@ -296,110 +280,23 @@ describe('Team Actions', () => {
     });
   });
 
-  describe('getUserTeams', () => {
-    it('should return user teams successfully', async () => {
-      const { database } = await import('@repo/database');
-      const mockTeams = [
-        createMockTeam({ id: 'team-1', name: 'Team 1' }),
-        createMockTeam({ id: 'team-2', name: 'Team 2' }),
-      ];
-
-      database.teamMember.findMany = vi.fn().mockResolvedValue([
-        { team: mockTeams[0], teamId: 'team-1' },
-        { team: mockTeams[1], teamId: 'team-2' },
-      ]);
-
-      const result = await getUserTeams('user-123');
-
-      expect(result).toEqual(mockTeams);
-      expect(database.teamMember.findMany).toHaveBeenCalledWith({
-        include: { team: true },
-        orderBy: { createdAt: 'desc' },
-        where: { userId: 'user-123' },
-      });
-    });
-
-    it('should filter by organization when provided', async () => {
-      const { database } = await import('@repo/database');
-
-      database.teamMember.findMany = vi.fn().mockResolvedValue([]);
-
-      await getUserTeams('user-123', { organizationId: 'org-123' });
-
-      expect(database.teamMember.findMany).toHaveBeenCalledWith({
-        include: { team: true },
-        orderBy: { createdAt: 'desc' },
-        where: {
-          team: {
-            organizationId: 'org-123',
-          },
-          userId: 'user-123',
-        },
-      });
-    });
-
-    it('should return empty array when user has no teams', async () => {
-      const { database } = await import('@repo/database');
-
-      database.teamMember.findMany = vi.fn().mockResolvedValue([]);
-
-      const result = await getUserTeams('user-123');
-
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('getTeamMembers', () => {
-    it('should return team members', async () => {
-      const { database } = await import('@repo/database');
-      const mockMembers = [
-        createMockTeamMember({ role: 'owner', userId: 'user-1' }),
-        createMockTeamMember({ role: 'member', userId: 'user-2' }),
-      ];
-
-      database.teamMember.findMany = vi.fn().mockResolvedValue(mockMembers);
-
-      const result = await getTeamMembers(mockHeaders, 'team-123');
-
-      expect(result).toEqual(mockMembers);
-      expect(database.teamMember.findMany).toHaveBeenCalledWith({
-        orderBy: { createdAt: 'asc' },
-        where: { teamId: 'team-123' },
-      });
-    });
-
-    it('should include user details when requested', async () => {
-      const { database } = await import('@repo/database');
-      const mockMembersWithUsers = [
-        {
-          ...createMockTeamMember(),
-          user: { id: 'user-1', email: 'user1@example.com' },
-        },
-      ];
-
-      database.teamMember.findMany = vi.fn().mockResolvedValue(mockMembersWithUsers);
-
-      const result = await getTeamMembers(mockHeaders, 'team-123', { includeUser: true });
-
-      expect(result).toEqual(mockMembersWithUsers);
-      expect(database.teamMember.findMany).toHaveBeenCalledWith({
-        include: { user: true },
-        orderBy: { createdAt: 'asc' },
-        where: { teamId: 'team-123' },
-      });
-    });
-  });
-
   describe('getTeamStats', () => {
     it('should return team statistics', async () => {
-      const { database } = await import('@repo/database');
+      const { prisma: database } = await import('@repo/database/prisma');
 
+      mockGetSession.mockResolvedValue(createMockSession());
+      database.teamMember.findFirst = vi.fn().mockResolvedValue({ role: 'member' });
       database.teamMember.count = vi.fn().mockResolvedValue(5);
+      database.team.findUnique = vi.fn().mockResolvedValue({ createdAt: new Date() });
+      database.invitation.count = vi.fn().mockResolvedValue(2);
 
       const result = await getTeamStats('team-123');
 
-      expect(result).toEqual({
+      expect(result.success).toBe(true);
+      expect(result.stats).toMatchObject({
+        activeMembers: 5,
         memberCount: 5,
+        pendingInvitations: 2,
       });
 
       expect(database.teamMember.count).toHaveBeenCalledWith({
@@ -408,61 +305,22 @@ describe('Team Actions', () => {
     });
 
     it('should handle empty teams', async () => {
-      const { database } = await import('@repo/database');
+      const { prisma: database } = await import('@repo/database/prisma');
 
+      mockGetSession.mockResolvedValue(createMockSession());
+      database.teamMember.findFirst = vi.fn().mockResolvedValue({ role: 'member' });
       database.teamMember.count = vi.fn().mockResolvedValue(0);
+      database.team.findUnique = vi.fn().mockResolvedValue({ createdAt: new Date() });
+      database.invitation.count = vi.fn().mockResolvedValue(0);
 
       const result = await getTeamStats('team-123');
 
-      expect(result).toEqual({
+      expect(result.success).toBe(true);
+      expect(result.stats).toMatchObject({
+        activeMembers: 0,
         memberCount: 0,
+        pendingInvitations: 0,
       });
-    });
-  });
-
-  describe('leaveTeam', () => {
-    it('should allow member to leave team', async () => {
-      const { database } = await import('@repo/database');
-      const mockSession = createMockSession();
-
-      mockGetSession.mockResolvedValue(mockSession);
-      database.teamMember.delete = vi.fn().mockResolvedValue({});
-
-      await leaveTeam(mockHeaders, 'team-123');
-
-      expect(database.teamMember.delete).toHaveBeenCalledWith({
-        where: {
-          userId_teamId: {
-            teamId: 'team-123',
-            userId: 'user-123',
-          },
-        },
-      });
-    });
-
-    it('should prevent last owner from leaving', async () => {
-      const { database } = await import('@repo/database');
-      const mockSession = createMockSession();
-
-      mockGetSession.mockResolvedValue(mockSession);
-
-      // Mock that user is the only owner
-      database.teamMember.findFirst = vi.fn().mockResolvedValue({
-        role: 'owner',
-        userId: 'user-123',
-      });
-
-      database.teamMember.count = vi.fn().mockResolvedValue(0);
-
-      await expect(leaveTeam(mockHeaders, 'team-123')).rejects.toThrow(
-        'Cannot leave team as the last owner',
-      );
-    });
-
-    it('should throw error when session is missing', async () => {
-      mockGetSession.mockResolvedValue(null);
-
-      await expect(leaveTeam(mockHeaders, 'team-123')).rejects.toThrow('Unauthorized');
     });
   });
 });

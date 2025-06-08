@@ -35,11 +35,12 @@ export class PinoProvider implements ServerLoggingProvider {
     // Initialize pino synchronously
     try {
       // In test environment, require will be mocked by vitest
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const pino = require('pino');
       // Use default export if available (for ES modules)
       const pinoConstructor = pino.default || pino;
       this.logger = pinoConstructor(this.options);
-    } catch (error) {
+    } catch (_error) {
       // Fallback to console if pino not available
       this.logger = console;
     }
@@ -49,7 +50,7 @@ export class PinoProvider implements ServerLoggingProvider {
     return true;
   }
 
-  async initialize(config: ObservabilityProviderConfig): Promise<void> {
+  async initialize(_config: ObservabilityProviderConfig): Promise<void> {
     // Pino is initialized in constructor, this is for compatibility
   }
 
@@ -127,7 +128,7 @@ export class PinoProvider implements ServerLoggingProvider {
           resolve();
         }, timeout);
 
-        this.logger.flush((error?: Error) => {
+        this.logger.flush((_error?: Error) => {
           clearTimeout(timer);
           resolve();
         });

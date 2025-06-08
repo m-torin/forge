@@ -214,7 +214,6 @@ describe('PlaywrightProvider', () => {
     });
   });
 
-
   describe('browser management', () => {
     it('should launch browser on first use', async () => {
       await provider.scrape('https://example.com');
@@ -285,9 +284,7 @@ describe('PlaywrightProvider', () => {
   describe('advanced features', () => {
     it('should handle cookies', async () => {
       await provider.scrape('https://example.com', {
-        cookies: [
-          { name: 'session', value: 'abc123' },
-        ],
+        cookies: [{ name: 'session', value: 'abc123' }],
       });
 
       expect(mockContext.addCookies).toHaveBeenCalled();
