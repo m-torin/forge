@@ -8,9 +8,9 @@ import {
   Code,
   CopyButton,
   Divider,
+  Drawer,
   Group,
   Image,
-  Modal,
   ScrollArea,
   SimpleGrid,
   Stack,
@@ -40,6 +40,7 @@ import { InventoryManagementModal } from "./InventoryManagementModal";
 import { PDPManagementModal } from "./PDPManagementModal";
 import { PriceHistoryModal } from "./PriceHistoryModal";
 import { ProductBundlingModal } from "./ProductBundlingModal";
+import { ProductLifecycleModal } from "./ProductLifecycleModal";
 import { ProductVariantsModal } from "./ProductVariantsModal";
 import { SupplierProcurementModal } from "./SupplierProcurementModal";
 
@@ -88,19 +89,19 @@ interface ProductWithRelations extends Product {
   }[];
 }
 
-interface ProductDetailsModalProps {
+interface ProductDetailsDrawerProps {
   onClose: () => void;
   onUpdate?: () => void;
   opened: boolean;
   product: ProductWithRelations | null;
 }
 
-export function ProductDetailsModal({
+export function ProductDetailsDrawer({
   onClose,
   onUpdate,
   opened,
   product,
-}: ProductDetailsModalProps) {
+}: ProductDetailsDrawerProps) {
   const [pdpModalOpened, setPdpModalOpened] = useState(false);
   const [inventoryModalOpened, setInventoryModalOpened] = useState(false);
   const [variantsModalOpened, setVariantsModalOpened] = useState(false);
@@ -144,12 +145,13 @@ export function ProductDetailsModal({
   };
 
   return (
-    <Modal
+    <Drawer
       onClose={onClose}
       opened={opened}
-      scrollAreaComponent={ScrollArea.Autosize}
+      position="right"
       size="xl"
-      title={product.name}
+      title={`Edit Product: ${product.name}`}
+      scrollAreaComponent={ScrollArea.Autosize}
     >
       <Stack>
         {/* Basic Information */}
@@ -1545,6 +1547,6 @@ export function ProductDetailsModal({
         productId={product.id}
         productName={product.name}
       />
-    </Modal>
+    </Drawer>
   );
 }

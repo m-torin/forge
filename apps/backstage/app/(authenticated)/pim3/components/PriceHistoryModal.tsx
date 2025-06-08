@@ -5,8 +5,8 @@ import {
   Badge,
   Button,
   Card,
+  Drawer,
   Group,
-  Modal,
   NumberInput,
   ScrollArea,
   Select,
@@ -401,9 +401,10 @@ export function PriceHistoryModal({
   };
 
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={onClose}
+      position="right"
       size="xl"
       title={`Price History & Promotions - ${productName}`}
       scrollAreaComponent={ScrollArea.Autosize}
@@ -839,6 +840,6 @@ export function PriceHistoryModal({
           </Stack>
         )}
       </Stack>
-    </Modal>
+    </Drawer>
   );
 }

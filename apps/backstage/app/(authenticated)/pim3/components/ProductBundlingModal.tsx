@@ -6,8 +6,8 @@ import {
   Button,
   Card,
   Checkbox,
+  Drawer,
   Group,
-  Modal,
   NumberInput,
   Progress,
   ScrollArea,
@@ -622,9 +622,10 @@ export function ProductBundlingModal({
   };
 
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={onClose}
+      position="right"
       size="xl"
       title={`Product Bundling & Recommendations - ${productName}`}
       scrollAreaComponent={ScrollArea.Autosize}
@@ -1125,6 +1126,6 @@ export function ProductBundlingModal({
           </Stack>
         )}
       </Stack>
-    </Modal>
+    </Drawer>
   );
 }

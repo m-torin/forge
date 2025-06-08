@@ -1,5 +1,5 @@
 {
-  "name": "@repo/pckg-new",
+  "name": "@labs/pckg-new",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "react": "catalog:"
   },
   "devDependencies": {
-    "@repo/config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
