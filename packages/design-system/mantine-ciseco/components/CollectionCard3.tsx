@@ -12,9 +12,10 @@ import ButtonSecondary from './shared/Button/ButtonSecondary';
 interface Props {
   className?: string;
   collection: TCollection;
+  'data-testid'?: string;
 }
 
-const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
+const CollectionCard3: FC<Props> = ({ className = '', collection, 'data-testid': testId = 'collection-card-3' }) => {
   const localizeHref = useLocalizeHref();
 
   if (!collection.handle) {
@@ -25,6 +26,7 @@ const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
     <Link
       href={localizeHref(`/collections/${collection.handle}`) as any}
       className={`block ${className}`}
+      data-testid={testId}
     >
       <div
         className={`group aspect-[16/11] sm:aspect-[16/9] relative w-full overflow-hidden rounded-2xl ${collection.color}`}

@@ -23,6 +23,7 @@ import ButtonPrimary from './shared/Button/ButtonPrimary';
 
 export interface ProductQuickViewProps {
   className?: string;
+  'data-testid'?: string;
   isOpen?: boolean;
   loading?: boolean;
   onAddToCart?: () => void;
@@ -35,6 +36,7 @@ export interface ProductQuickViewProps {
 
 const ProductQuickView: FC<ProductQuickViewProps> = ({
   className,
+  'data-testid': testId = 'quick-view-modal',
   isOpen,
   loading,
   onAddToCart,
@@ -338,13 +340,14 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
   };
 
   return (
-    <div className={className}>
+    <div data-testid={testId} className={className}>
       <div className="lg:flex">
         <div className="w-full lg:w-[50%]">
           <div className="relative">
             <div className="aspect-square relative">
               {images?.[0] && (
                 <Image
+                  data-testid="product-image"
                   className="rounded-xl object-cover"
                   alt={images[0].alt}
                   fill
@@ -378,7 +381,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         </div>
 
         {/* SIDEBAR */}
-        <div className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8">
+        <div data-testid="product-details" className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8">
           {renderSectionContent()}
         </div>
       </div>

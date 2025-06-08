@@ -12,6 +12,7 @@ import NcImage from './shared/NcImage/NcImage';
 
 export interface Props {
   className?: string;
+  'data-testid'?: string;
   onAddToCart?: () => void;
   onCompare?: () => void;
   onLike?: () => void;
@@ -42,17 +43,18 @@ export interface Props {
   showWishlist?: boolean;
 }
 
-const ProductCardLarge: FC<Props> = ({ className, product }) => {
+const ProductCardLarge: FC<Props> = ({ className, 'data-testid': testId = 'product-card-large', product }) => {
   const localizeHref = useLocalizeHref();
   const { handle, images, price, rating, reviewNumber, selectedOptions, title } = product;
 
   const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
 
   return (
-    <div className={`CollectionCard2 group relative ${className}`}>
+    <div data-testid={testId} className={`CollectionCard2 group relative ${className}`}>
       <div className="relative flex flex-col">
         {images?.[0] && (
           <NcImage
+            data-testid="product-image"
             containerClassName="aspect-8/5 bg-neutral-100 rounded-2xl overflow-hidden relative"
             className="rounded-2xl object-contain"
             alt=""
@@ -98,7 +100,7 @@ const ProductCardLarge: FC<Props> = ({ className, product }) => {
       <div className="relative mt-5 flex justify-between gap-4">
         {/* TITLE */}
         <div className="flex-1">
-          <h2 className="text-lg font-semibold sm:text-xl">{title}</h2>
+          <h2 data-testid="product-title" className="text-lg font-semibold sm:text-xl">{title}</h2>
           <div className="mt-3 flex flex-wrap items-center gap-1 text-neutral-500 dark:text-neutral-400">
             <span className="text-sm">
               <span className="line-clamp-1">{color}</span>

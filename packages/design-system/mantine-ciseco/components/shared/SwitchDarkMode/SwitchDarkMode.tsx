@@ -6,13 +6,15 @@ import { useThemeMode } from '../../../hooks/useThemeMode';
 
 export interface SwitchDarkModeProps {
   className?: string;
+  'data-testid'?: string;
 }
-const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '' }) => {
+const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '', 'data-testid': testId = 'switch-dark-mode' }) => {
   const { _toogleDarkMode, isDarkMode } = useThemeMode();
 
   return (
     <button
       onClick={_toogleDarkMode}
+      data-testid={testId}
       className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl text-neutral-700 hover:bg-neutral-100 focus:outline-hidden md:text-3xl dark:text-neutral-300 dark:hover:bg-neutral-800 ${className}`}
     >
       <span className="sr-only">Enable dark mode</span>

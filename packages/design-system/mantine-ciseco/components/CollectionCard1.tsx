@@ -12,10 +12,11 @@ import NcImage from './shared/NcImage/NcImage';
 interface Props {
   className?: string;
   collection: TCollection;
+  'data-testid'?: string;
   size?: 'large' | 'normal';
 }
 
-const CollectionCard1: FC<Props> = ({ className = '', collection, size = 'normal' }) => {
+const CollectionCard1: FC<Props> = ({ className = '', collection, 'data-testid': testId = 'collection-card', size = 'normal' }) => {
   const localizeHref = useLocalizeHref();
 
   if (!collection.handle) {
@@ -23,11 +24,13 @@ const CollectionCard1: FC<Props> = ({ className = '', collection, size = 'normal
   }
   return (
     <Link
+      data-testid={testId}
       href={localizeHref(`/collections/${collection.handle}`) as any}
       className={`flex items-center ${className}`}
     >
       {collection.image?.src && (
         <NcImage
+          data-testid="collection-image"
           containerClassName={clsx(
             'relative mr-4 shrink-0 overflow-hidden rounded-lg',
             size === 'large' ? 'size-20' : 'size-12',
@@ -40,6 +43,7 @@ const CollectionCard1: FC<Props> = ({ className = '', collection, size = 'normal
       )}
       <div>
         <h2
+          data-testid="collection-title"
           className={clsx(
             'font-semibold nc-card-title text-neutral-900 dark:text-neutral-100',
             size === 'large' ? 'text-lg' : 'text-base',

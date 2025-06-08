@@ -14,9 +14,10 @@ interface CollectionCard6Props {
   bgSvgUrl?: string;
   className?: string;
   collection: TCollection;
+  'data-testid'?: string;
 }
 
-const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', collection }) => {
+const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', collection, 'data-testid': testId = 'collection-card-6' }) => {
   const localizeHref = useLocalizeHref();
 
   if (!collection.handle) {
@@ -26,6 +27,7 @@ const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', c
   return (
     <div
       className={`group aspect-square relative w-full overflow-hidden rounded-3xl bg-white transition-shadow hover:nc-shadow-lg dark:bg-neutral-900 ${className}`}
+      data-testid={testId}
     >
       <div>
         <div className="absolute inset-0 opacity-10">

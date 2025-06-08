@@ -6,12 +6,12 @@ import { ProgressiveImage } from '../../../mantine-ciseco/components/Progressive
 vi.mock('@mantine/hooks', () => ({
   useIntersection: () => ({
     ref: vi.fn(),
-    entry: { isIntersecting: true }
+    entry: { isIntersecting: true },
   }),
   useViewportSize: () => ({
     width: 1920,
-    height: 1080
-  })
+    height: 1080,
+  }),
 }));
 
 describe('ProgressiveImage', () => {
@@ -42,7 +42,7 @@ describe('ProgressiveImage', () => {
 
   it('loads image when in viewport', () => {
     render(<ProgressiveImage {...defaultProps} />);
-    
+
     const image = screen.getByAltText(defaultProps.alt);
     expect(image).toHaveAttribute('src', expect.stringContaining('high-res-image.jpg'));
   });

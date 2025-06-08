@@ -2,6 +2,7 @@ import { type FC } from 'react';
 
 export interface RadioProps {
   className?: string;
+  'data-testid'?: string;
   defaultChecked?: boolean;
   id: string;
   label?: string;
@@ -11,11 +12,12 @@ export interface RadioProps {
 }
 
 const Radio: FC<RadioProps> = ({
-  id,
-  name,
   className = '',
+  'data-testid': testId = 'radio',
   defaultChecked,
+  id,
   label,
+  name,
   onChange,
   sizeClassName = 'w-6 h-6',
 }) => {
@@ -23,6 +25,7 @@ const Radio: FC<RadioProps> = ({
     <div className={`flex items-center text-sm sm:text-base ${className}`}>
       <input
         id={id}
+        data-testid={testId}
         onChange={(e) => onChange && onChange(e.target.value)}
         className={`focus:ring-action-primary rounded-full border-neutral-400 bg-transparent text-primary-500 hover:border-neutral-700 focus:ring-primary-500 dark:border-neutral-700 dark:checked:bg-primary-500 dark:hover:border-neutral-500 ${sizeClassName}`}
         defaultChecked={defaultChecked}

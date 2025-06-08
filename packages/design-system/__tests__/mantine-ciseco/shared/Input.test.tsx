@@ -6,33 +6,33 @@ import Input from '../../../mantine-ciseco/components/shared/Input/Input';
 describe('Input', () => {
   it('renders input with default props', () => {
     render(<Input />);
-    const input = screen.getByRole('textbox');
+    const input = screen.getByTestId('input-field');
     expect(input).toHaveClass('text-sm', 'font-normal', 'rounded-full', 'h-11', 'px-4', 'py-3');
   });
 
   it('renders with custom className', () => {
     render(<Input className="custom-input" />);
-    expect(screen.getByRole('textbox')).toHaveClass('custom-input');
+    expect(screen.getByTestId('input-field')).toHaveClass('custom-input');
   });
 
   it('renders with custom font class', () => {
     render(<Input fontClass="text-lg font-bold" />);
-    expect(screen.getByRole('textbox')).toHaveClass('text-lg', 'font-bold');
+    expect(screen.getByTestId('input-field')).toHaveClass('text-lg', 'font-bold');
   });
 
   it('renders with custom rounded class', () => {
     render(<Input rounded="rounded-lg" />);
-    expect(screen.getByRole('textbox')).toHaveClass('rounded-lg');
+    expect(screen.getByTestId('input-field')).toHaveClass('rounded-lg');
   });
 
   it('renders with custom size class', () => {
     render(<Input sizeClass="h-14 px-6 py-4" />);
-    expect(screen.getByRole('textbox')).toHaveClass('h-14', 'px-6', 'py-4');
+    expect(screen.getByTestId('input-field')).toHaveClass('h-14', 'px-6', 'py-4');
   });
 
   it('handles user input', () => {
     render(<Input />);
-    const input = screen.getByRole('textbox');
+    const input = screen.getByTestId('input-field');
     fireEvent.change(input, { target: { value: 'test input' } });
     expect(input).toHaveValue('test input');
   });
@@ -51,7 +51,7 @@ describe('Input', () => {
 
   it('handles disabled state', () => {
     render(<Input disabled />);
-    const input = screen.getByRole('textbox');
+    const input = screen.getByTestId('input-field');
     expect(input).toBeDisabled();
     expect(input).toHaveClass('disabled:bg-neutral-200', 'dark:disabled:bg-neutral-800');
   });
@@ -70,9 +70,10 @@ describe('Input', () => {
         placeholder="Enter text"
         required
         aria-label="Test input"
+        data-testid="test-input"
       />,
     );
-    const input = screen.getByRole('textbox');
+    const input = screen.getByTestId('test-input');
     expect(input).toHaveAttribute('id', 'test-input');
     expect(input).toHaveAttribute('name', 'test');
     expect(input).toHaveAttribute('placeholder', 'Enter text');

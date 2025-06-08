@@ -5,6 +5,7 @@ import { type FC } from 'react';
 
 export interface CheckboxProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'className'> {
+  'data-testid'?: string;
   description?: string;
   label?: string;
   labelClassName?: string;
@@ -13,6 +14,7 @@ export interface CheckboxProps
 }
 
 const Checkbox: FC<CheckboxProps> = ({
+  'data-testid': testId = 'checkbox',
   id,
   name,
   description,
@@ -28,6 +30,7 @@ const Checkbox: FC<CheckboxProps> = ({
         <div className="group grid size-6 grid-cols-1">
           <input
             id={id || name + '-checkbox'}
+            data-testid={testId}
             onChange={(e) => onChange?.(e.target.checked)}
             className={clsx(
               'col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-primary-600 checked:bg-primary-600 indeterminate:border-primary-600 indeterminate:bg-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto',

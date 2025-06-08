@@ -14,6 +14,7 @@ const Lv1MenuItem = ({ menuItem }: { menuItem: TNavigationItem }) => {
   const localizeHref = useLocalizeHref();
   return (
     <Link
+      data-testid="nav-item"
       href={(menuItem.href ? localizeHref(menuItem.href) : '#') as any}
       className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 lg:text-[15px] xl:px-5 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
     >
@@ -51,7 +52,7 @@ const MegaMenu = ({
       <Lv1MenuItem menuItem={menuItem} />
 
       {menuItem.children?.length && menuItem.type === 'mega-menu' ? (
-        <div className="absolute inset-x-0 top-full z-10 sub-menu">
+        <div data-testid="mega-menu" className="absolute inset-x-0 top-full z-10 sub-menu">
           <div className="bg-white shadow-lg dark:bg-neutral-900">
             <div className="container">
               <div className="flex border-t border-neutral-200 py-12 text-sm dark:border-neutral-700">
@@ -124,7 +125,7 @@ const DropdownMenu = ({ menuItem }: { menuItem: TNavigationItem }) => {
       <Lv1MenuItem menuItem={menuItem} />
 
       {menuItem.children?.length && menuItem.type === 'dropdown' ? (
-        <div className="absolute top-full left-0 z-10 sub-menu w-56">
+        <div data-testid="dropdown-menu" className="absolute top-full left-0 z-10 sub-menu w-56">
           <ul className="relative grid space-y-1 rounded-lg bg-white py-4 text-sm shadow-lg ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-white/10">
             {menuItem.children?.map((childItem) => {
               if (childItem.type === 'dropdown' && childItem.children?.length) {
@@ -146,6 +147,7 @@ const DropdownMenu = ({ menuItem }: { menuItem: TNavigationItem }) => {
 export interface Props {
   className?: string;
   currentPath?: string;
+  'data-testid'?: string;
   featuredCollection: TCollection;
   items?: {
     label: string;
@@ -181,9 +183,9 @@ export interface Props {
     dropdown: string;
   };
 }
-const Navigation: FC<Props> = ({ className, featuredCollection, menu }) => {
+const Navigation: FC<Props> = ({ className, 'data-testid': testId = 'main-navigation', featuredCollection, menu }) => {
   return (
-    <ul className={clsx('flex', className)}>
+    <ul data-testid={testId} className={clsx('flex', className)}>
       {menu.map((menuItem) => {
         if (menuItem.type === 'dropdown') {
           return <DropdownMenu key={menuItem.id} menuItem={menuItem} />;

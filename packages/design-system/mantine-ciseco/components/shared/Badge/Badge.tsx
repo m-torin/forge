@@ -7,11 +7,12 @@ import { type Route } from '../../../routers/types';
 export interface BadgeProps {
   className?: string;
   color?: TwMainColor;
+  'data-testid'?: string;
   href?: Route;
   name: ReactNode;
 }
 
-const Badge: FC<BadgeProps> = ({ name, className = 'relative', color = 'blue', href }) => {
+const Badge: FC<BadgeProps> = ({ name, className = 'relative', color = 'blue', 'data-testid': testId = 'badge', href }) => {
   const getColorClass = (hasHover = true) => {
     switch (color) {
       case 'pink':
@@ -38,13 +39,14 @@ const Badge: FC<BadgeProps> = ({ name, className = 'relative', color = 'blue', h
   const CLASSES = 'nc-Badge inline-flex px-2.5 py-1 rounded-full font-medium text-xs ' + className;
   return href ? (
     <Link
+      data-testid={testId}
       href={href || ''}
       className={`transition-colors hover:text-white duration-300 ${CLASSES} ${getColorClass()}`}
     >
       {name}
     </Link>
   ) : (
-    <span className={`${CLASSES} ${getColorClass(false)} ${className}`}>{name}</span>
+    <span data-testid={testId} className={`${CLASSES} ${getColorClass(false)} ${className}`}>{name}</span>
   );
 };
 

@@ -10,6 +10,7 @@ import { vi } from 'vitest';
 export const mockProduct = (overrides = {}) => ({
   id: '1',
   name: 'Test Product',
+  title: 'Test Product', // ProductCardLarge uses title
   description: 'Test product description',
   price: 99.99,
   handle: 'test-product',
@@ -22,12 +23,14 @@ export const mockProduct = (overrides = {}) => ({
   status: 'available',
   rating: 4.5,
   reviews: 120,
+  reviewNumber: 120, // ProductCardLarge uses reviewNumber
   sizes: ['S', 'M', 'L', 'XL'],
   colors: ['red', 'blue', 'green'],
   variants: [
     { id: '1', name: 'Red - S', price: 99.99, available: true },
     { id: '2', name: 'Blue - M', price: 99.99, available: true },
   ],
+  selectedOptions: [], // ProductCardLarge uses selectedOptions
   ...overrides,
 });
 

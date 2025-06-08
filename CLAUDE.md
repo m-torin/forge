@@ -76,7 +76,7 @@ Always run these commands from the repository root:
 **IMPORTANT**: Do not use the `rg` (ripgrep) command directly. Use the Grep tool instead for
 searching file contents.
 
-```bash
+````bash
 # Install dependencies
 pnpm install
 
@@ -127,14 +127,14 @@ pnpm workflow:cycle:watch   # Watch files and run feedback loop on changes
 pnpm workflow:test          # Run workflow-specific e2e tests
 pnpm workflow:report        # Generate detailed test reports
 pnpm workflow:feedback      # Run cycle with success/failure feedback
-```
+````
 
 ### How Full Automation Works
 
 The fully automated system uses AI-powered analysis and fixing:
 
-1. **AI Error Analysis**: Uses `@repo/ai` package to intelligently analyze TypeScript errors,
-   eslint issues, and test failures
+1. **AI Error Analysis**: Uses `@repo/ai` package to intelligently analyze TypeScript errors, eslint
+   issues, and test failures
 2. **Automatic Code Fixing**: Applies intelligent fixes using pattern recognition and AI suggestions
 3. **Continuous Feedback Loop**: Repeats the cycle until all tests pass or maximum retries reached
 4. **Real-time Monitoring**: Watches files for changes and triggers automated fixing
@@ -162,6 +162,7 @@ pnpm workflow:auto-repeat
 ```
 
 The system automatically handles:
+
 - TypeScript compilation errors
 - Missing type definitions
 - API compatibility issues
@@ -170,7 +171,9 @@ The system automatically handles:
 
 ## Autonomous Workflow Development and Repair System
 
-The backstage app includes a comprehensive autonomous workflow development system that can generate, test, and repair Upstash workflow code without human intervention. This system leverages Claude CLI for intelligent code generation and repair.
+The backstage app includes a comprehensive autonomous workflow development system that can generate,
+test, and repair Upstash workflow code without human intervention. This system leverages Claude CLI
+for intelligent code generation and repair.
 
 ### Autonomous System Commands
 
@@ -190,12 +193,14 @@ pnpm autonomous:metrics      # View system learning metrics
 The system provides three ZHI protocols for different use cases:
 
 1. **Standard Workflow** (`standard-workflow`)
+
    - Complete autonomous development from specification to deployment
    - Includes code generation, testing, repair, Git commits, and PR creation
    - Maximum 15 iterations, 30-minute timeout
    - Best for production-ready workflows
 
 2. **Rapid Prototype** (`rapid-prototype`)
+
    - Quick workflow generation with relaxed validation
    - Basic functionality testing only
    - Single repair attempt if needed
@@ -222,33 +227,33 @@ const workflowSpec = {
     type: 'object',
     properties: {
       orderId: { type: 'string' },
-      items: { type: 'array' }
+      items: { type: 'array' },
     },
-    required: ['orderId', 'items']
+    required: ['orderId', 'items'],
   },
   outputContract: {
     type: 'object',
     properties: {
       status: { type: 'string' },
-      processedAt: { type: 'string' }
-    }
+      processedAt: { type: 'string' },
+    },
   },
   businessLogic: [
     'Validate order data',
     'Check inventory availability',
     'Process payment',
     'Update order status',
-    'Send confirmation email'
+    'Send confirmation email',
   ],
   errorHandling: [
     'Retry failed operations up to 3 times',
     'Send to dead letter queue on permanent failure',
-    'Alert operations team for critical errors'
+    'Alert operations team for critical errors',
   ],
   performance: {
     timeout: 300000, // 5 minutes
-    retries: 3
-  }
+    retries: 3,
+  },
 };
 ```
 
@@ -275,6 +280,7 @@ The system includes machine learning features:
 - **Performance Tracking**: Monitors improvement over time
 
 Learning data is stored in `data/autonomous-learning/` and includes:
+
 - Error patterns and successful fixes
 - Repair strategy performance metrics
 - Workflow complexity analysis
@@ -335,6 +341,7 @@ pnpm autonomous:metrics
 ```
 
 This shows:
+
 - Total workflows processed
 - Success rate trends
 - Common error patterns
@@ -380,30 +387,33 @@ jobs:
 6. **Contribute patterns** back to the learning system
 
 # CLI Usage Notes:
+
 # - ESLint: Use `eslint . --fix` in apps/packages (the . is required, --fix auto-fixes issues)
+
 # - TypeScript: Use `tsc --noEmit --emitDeclarationOnly false` for type checking
+
 # - Prettier: Run at repo root only with `pnpm prettier`
 
 # Building (see Environment Variables section for Doppler details)
-pnpm build             # Production build with Doppler
-pnpm build:local       # Local build using .env.local files
+
+pnpm build # Production build with Doppler pnpm build:local # Local build using .env.local files
 pnpm build --filter=app # Build specific app
 
 # Database operations
-pnpm migrate           # Run Prisma migrations (uses Doppler)
-pnpm --filter @repo/database generate # Regenerate Prisma client
-pnpm studio            # Open Prisma Studio (port 3600)
+
+pnpm migrate # Run Prisma migrations (uses Doppler) pnpm --filter @repo/database generate #
+Regenerate Prisma client pnpm studio # Open Prisma Studio (port 3600)
 
 # Dependency management
-pnpm bump-deps         # Update all dependencies
-pnpm madge --circular  # Check for circular dependencies
+
+pnpm bump-deps # Update all dependencies pnpm madge --circular # Check for circular dependencies
 
 # Other utilities
-pnpm clean             # Clean all build artifacts (./clean-everything.sh)
-pnpm translate         # Run translations
-pnpm analyze           # Analyze bundles
-pnpm boundaries        # Check module boundaries
-```
+
+pnpm clean # Clean all build artifacts (./clean-everything.sh) pnpm translate # Run translations
+pnpm analyze # Analyze bundles pnpm boundaries # Check module boundaries
+
+````
 
 ## Configuration Standards
 
@@ -420,7 +430,7 @@ number (check root package.json or other apps for the version to use).
    {
      "extends": "@repo/typescript-config/base.json" // or nextjs.json, react-library.json, etc.
    }
-   ```
+````
 
 2. **ESLint**: Extend from `@repo/eslint-config` - choose the right config:
 
@@ -534,6 +544,38 @@ settings.
   - Integration tests for API routes
   - Component tests with user interactions and Storybook integration
   - Mock external services (database, auth, email)
+
+### Data-TestID Standards
+
+All components in the design system now implement standardized `data-testid` attributes for reliable testing:
+
+- **Component Interface**: Every component includes `'data-testid'?: string` in its props interface
+- **Default Values**: Components provide descriptive default testid values (e.g., `'add-to-cart-button'`, `'product-card-large'`)
+- **Naming Convention**: Use kebab-case naming that describes the component's function
+- **Testing Pattern**: Prefer `getByTestId()` over role-based or text-based selectors for reliability
+- **Documentation**: See `/packages/design-system/mantine-ciseco/DATA_TESTID_STANDARDS.md` for complete implementation guide
+
+**Example Implementation:**
+```typescript
+interface ComponentProps {
+  'data-testid'?: string;
+  // ... other props
+}
+
+const Component = ({ 'data-testid': testId = 'component-name', ...props }) => {
+  return <element data-testid={testId} {...props} />
+}
+```
+
+**Testing Usage:**
+```typescript
+// Preferred: Reliable data-testid selector
+const button = screen.getByTestId('add-to-cart-button');
+
+// Avoid: Brittle text/role selectors that can break
+const button = screen.getByRole('button'); // Less reliable
+const button = screen.getByText('Add to Cart'); // Breaks with text changes
+```
 
 ## Git Workflow
 

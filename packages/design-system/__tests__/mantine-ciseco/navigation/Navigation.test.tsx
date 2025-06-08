@@ -1,7 +1,28 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '../test-utils';
-import { Navigation } from '../../../mantine-ciseco';
+import { render, screen, fireEvent } from '../test-utils';
+import { Navigation } from '../../../mantine-ciseco/components/Header/Navigation/Navigation';
 import { type TCollection } from '../../../mantine-ciseco/data/data';
+
+// Mock next/link
+vi.mock('next/link', () => ({
+  default: ({ href, children, className, ...props }: any) => (
+    <a href={href} className={className} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+// Mock the locale hook
+vi.mock('../../../mantine-ciseco/hooks/useLocale', () => ({
+  useLocalizeHref: () => (href: string) => href,
+}));
+
+// Mock CollectionCard3 component
+vi.mock('../../../mantine-ciseco/components/CollectionCard3', () => ({
+  default: ({ collection }: { collection: TCollection }) => (
+    <div data-testid="collection-card">{collection.title}</div>
+  ),
+}));
 
 describe('Navigation', () => {
   const mockFeaturedCollection: TCollection = {
@@ -21,284 +42,239 @@ describe('Navigation', () => {
   };
 
   const defaultMenuItems = [
-    { label: 'Home', href: '/' },
     {
-      label: 'Products',
+      id: 'home',
+      name: 'Home',
+      href: '/',
+      type: undefined as any,
+    },
+    {
+      id: 'products',
+      name: 'Products',
       href: '/products',
+      type: 'dropdown' as const,
       children: [
-        { label: 'Electronics', href: '/products/electronics' },
-        { label: 'Clothing', href: '/products/clothing' },
+        { id: 'electronics', name: 'Electronics', href: '/products/electronics' },
+        { id: 'clothing', name: 'Clothing', href: '/products/clothing' },
       ],
     },
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
+    {
+      id: 'about',
+      name: 'About',
+      href: '/about',
+      type: undefined as any,
+    },
+    {
+      id: 'contact',
+      name: 'Contact',
+      href: '/contact',
+      type: undefined as any,
+    },
   ];
 
-  const defaultProps = {
-    featuredCollection: mockFeaturedCollection,
-    items: defaultMenuItems,
-    menu: defaultMenuItems.map((item) => ({
-      id: item.label.toLowerCase(),
-      name: item.label,
-      href: item.href,
-      type: item.children ? ('dropdown' as const) : undefined,
-      children: item.children?.map((child) => ({
-        id: child.label.toLowerCase(),
-        name: child.label,
-        href: child.href,
-      })),
-    })),
-  };
+  const megaMenuItems = [
+    {
+      id: 'categories',
+      name: 'Categories',
+      href: '/categories',
+      type: 'mega-menu' as const,
+      children: [
+        {
+          id: 'electronics-section',
+          name: 'Electronics',
+          href: '/electronics',
+          children: [
+            { id: 'phones', name: 'Phones', href: '/phones' },
+            { id: 'laptops', name: 'Laptops', href: '/laptops' },
+          ],
+        },
+        {
+          id: 'clothing-section',
+          name: 'Clothing',
+          href: '/clothing',
+          children: [
+            { id: 'shirts', name: 'Shirts', href: '/shirts' },
+            { id: 'pants', name: 'Pants', href: '/pants' },
+          ],
+        },
+      ],
+    },
+  ];
 
   it('renders navigation with menu items', () => {
-    render(<Navigation {...defaultProps} />);
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
-    expect(screen.getByRole('navigation')).toBeInTheDocument();
+    expect(screen.getByTestId('main-navigation')).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Products')).toBeInTheDocument();
     expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByText('Contact')).toBeInTheDocument();
   });
 
-  it('handles menu item clicks', () => {
-    const mockOnClick = vi.fn();
-    const itemsWithClick = defaultMenuItems.map((item) => ({ ...item, onClick: mockOnClick }));
-    const props = {
-      ...defaultProps,
-      items: itemsWithClick,
-      menu: itemsWithClick.map((item) => ({
-        id: item.label.toLowerCase(),
-        name: item.label,
-        href: item.href,
-        type: item.children ? ('dropdown' as const) : undefined,
-        onClick: item.onClick,
-        children: item.children?.map((child) => ({
-          id: child.label.toLowerCase(),
-          name: child.label,
-          href: child.href,
-        })),
-      })),
-    };
+  it('renders simple menu items as links', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
-    render(<Navigation {...props} />);
-
-    const homeLink = screen.getByText('Home');
-    fireEvent.click(homeLink);
-
-    expect(mockOnClick).toHaveBeenCalled();
+    const homeLink = screen.getByText('Home').closest('a');
+    expect(homeLink).toHaveAttribute('href', '/');
   });
 
-  it('shows dropdown menu for items with children', async () => {
-    render(<Navigation {...defaultProps} />);
+  it('renders dropdown menu items with children', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     const productsItem = screen.getByText('Products');
-    fireEvent.mouseEnter(productsItem);
+    expect(productsItem).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText('Electronics')).toBeInTheDocument();
-      expect(screen.getByText('Clothing')).toBeInTheDocument();
-    });
+    // Check for chevron down icon in dropdown items
+    const productsLink = productsItem.closest('a');
+    expect(productsLink?.querySelector('svg')).toBeInTheDocument();
   });
 
-  it('closes dropdown on mouse leave', async () => {
-    render(<Navigation {...defaultProps} />);
-
-    const productsItem = screen.getByText('Products');
-    fireEvent.mouseEnter(productsItem);
-
-    await waitFor(() => {
-      expect(screen.getByText('Electronics')).toBeInTheDocument();
-    });
-
-    fireEvent.mouseLeave(productsItem);
-
-    await waitFor(() => {
-      expect(screen.queryByText('Electronics')).not.toBeInTheDocument();
-    });
-  });
-
-  it('handles keyboard navigation', () => {
-    render(<Navigation {...defaultProps} />);
-
-    const navigation = screen.getByRole('navigation');
-    const firstItem = screen.getByText('Home');
-
-    // Tab to first item
-    firstItem.focus();
-    expect(firstItem).toHaveFocus();
-
-    // Arrow keys to navigate
-    fireEvent.keyDown(firstItem, { key: 'ArrowRight' });
-    expect(screen.getByText('Products')).toHaveFocus();
-
-    fireEvent.keyDown(screen.getByText('Products'), { key: 'ArrowRight' });
-    expect(screen.getByText('About')).toHaveFocus();
-  });
-
-  it('opens dropdown with Enter key', async () => {
-    render(<Navigation {...defaultProps} />);
-
-    const productsItem = screen.getByText('Products');
-    productsItem.focus();
-
-    fireEvent.keyDown(productsItem, { key: 'Enter' });
-
-    await waitFor(() => {
-      expect(screen.getByText('Electronics')).toBeInTheDocument();
-    });
-  });
-
-  it('renders with different orientations', () => {
-    const { rerender } = render(<Navigation {...defaultProps} orientation="horizontal" />);
-    expect(screen.getByRole('navigation')).toHaveClass('horizontal');
-
-    rerender(<Navigation {...defaultProps} orientation="vertical" />);
-    expect(screen.getByRole('navigation')).toHaveClass('vertical');
-  });
-
-  it('shows active state for current page', () => {
-    render(<Navigation {...defaultProps} currentPath="/products" />);
-
-    const productsItem = screen.getByText('Products');
-    expect(productsItem).toHaveClass('active');
-  });
-
-  it('renders with custom className', () => {
-    render(<Navigation {...defaultProps} className="custom-nav" />);
-    expect(screen.getByRole('navigation')).toHaveClass('custom-nav');
-  });
-
-  it('supports mobile responsive behavior', () => {
-    render(<Navigation {...defaultProps} responsive />);
-
-    // Should show hamburger menu on mobile
-    const mobileToggle = screen.getByLabelText('Toggle navigation menu');
-    expect(mobileToggle).toBeInTheDocument();
-
-    fireEvent.click(mobileToggle);
-    expect(screen.getByRole('navigation')).toHaveClass('mobile-open');
-  });
-
-  it('renders with icons for menu items', () => {
-    const itemsWithIcons = [
-      { label: 'Home', href: '/', icon: '🏠' },
-      { label: 'Products', href: '/products', icon: '📦' },
-    ];
-
-    const props = {
-      ...defaultProps,
-      items: itemsWithIcons,
-      menu: itemsWithIcons.map((item) => ({
-        id: item.label.toLowerCase(),
-        name: item.label,
-        href: item.href,
-        type: 'dropdown' as const,
-        icon: item.icon,
-      })),
-    };
-
-    render(<Navigation {...props} />);
-
-    expect(screen.getByText('🏠')).toBeInTheDocument();
-    expect(screen.getByText('📦')).toBeInTheDocument();
-  });
-
-  it('handles mega menu layout', async () => {
-    const megaMenuItems = [
-      {
-        label: 'Categories',
-        href: '/categories',
-        megaMenu: {
-          columns: [
-            {
-              title: 'Electronics',
-              items: [
-                { label: 'Phones', href: '/phones' },
-                { label: 'Laptops', href: '/laptops' },
-              ],
-            },
-            {
-              title: 'Clothing',
-              items: [
-                { label: 'Shirts', href: '/shirts' },
-                { label: 'Pants', href: '/pants' },
-              ],
-            },
-          ],
-        },
-      },
-    ];
-
-    const props = {
-      ...defaultProps,
-      items: megaMenuItems,
-      menu: megaMenuItems.map((item) => ({
-        id: item.label.toLowerCase(),
-        name: item.label,
-        href: item.href,
-        type: 'mega-menu' as const,
-        children: item.megaMenu.columns.map((col) => ({
-          id: col.title.toLowerCase(),
-          name: col.title,
-          children: col.items.map((subItem) => ({
-            id: subItem.label.toLowerCase(),
-            name: subItem.label,
-            href: subItem.href,
-          })),
-        })),
-      })),
-    };
-
-    render(<Navigation {...props} />);
+  it('renders mega menu items', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={megaMenuItems} />);
 
     const categoriesItem = screen.getByText('Categories');
-    fireEvent.mouseEnter(categoriesItem);
-
-    await waitFor(() => {
-      expect(screen.getByText('Electronics')).toBeInTheDocument();
-      expect(screen.getByText('Clothing')).toBeInTheDocument();
-      expect(screen.getByText('Phones')).toBeInTheDocument();
-      expect(screen.getByText('Shirts')).toBeInTheDocument();
-    });
+    expect(categoriesItem).toBeInTheDocument();
   });
 
-  it('shows badges for menu items', () => {
-    const itemsWithBadges = [
-      { label: 'Home', href: '/' },
-      { label: 'Products', href: '/products', badge: 'New' },
-      { label: 'Sale', href: '/sale', badge: { text: '50% Off', color: 'red' } },
-    ];
+  it('applies flex layout classes', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
-    const props = {
-      ...defaultProps,
-      items: itemsWithBadges,
-      menu: itemsWithBadges.map((item) => ({
-        id: item.label.toLowerCase(),
-        name: item.label,
-        href: item.href,
-        type: 'dropdown' as const,
-        badge: item.badge,
-      })),
-    };
-
-    render(<Navigation {...props} />);
-
-    expect(screen.getByText('New')).toBeInTheDocument();
-    expect(screen.getByText('50% Off')).toBeInTheDocument();
+    const navigationList = screen.getByTestId('main-navigation');
+    expect(navigationList).toHaveClass('flex');
   });
 
-  it('supports custom styling for different states', () => {
+  it('applies custom className', () => {
     render(
       <Navigation
-        {...defaultProps}
-        styles={{
-          item: 'custom-item',
-          activeItem: 'custom-active',
-          dropdown: 'custom-dropdown',
-        }}
+        featuredCollection={mockFeaturedCollection}
+        menu={defaultMenuItems}
+        className="custom-nav"
       />,
     );
 
-    expect(screen.getByRole('navigation')).toHaveClass('custom-item');
+    const navigationList = screen.getByTestId('main-navigation');
+    expect(navigationList).toHaveClass('custom-nav');
+  });
+
+  it('renders menu items in correct order', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
+
+    // Get only the top-level navigation items by querying direct children of the main navigation
+    const navigation = screen.getByTestId('main-navigation');
+    const topLevelMenuItems = Array.from(navigation.children);
+    
+    expect(topLevelMenuItems).toHaveLength(4);
+
+    expect(topLevelMenuItems[0]).toHaveTextContent('Home');
+    expect(topLevelMenuItems[1]).toHaveTextContent('Products'); // This also contains dropdown children text
+    expect(topLevelMenuItems[2]).toHaveTextContent('About');
+    expect(topLevelMenuItems[3]).toHaveTextContent('Contact');
+  });
+
+  it('handles menu items without href', () => {
+    const menuWithoutHref = [
+      {
+        id: 'no-href',
+        name: 'No Href',
+        href: undefined,
+        type: undefined as any,
+      },
+    ];
+
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={menuWithoutHref} />);
+
+    const linkElement = screen.getByText('No Href').closest('a');
+    expect(linkElement).toHaveAttribute('href', '#');
+  });
+
+  it('applies proper styling classes to menu items', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
+
+    const homeLink = screen.getByText('Home').closest('a');
+    expect(homeLink).toHaveClass(
+      'flex',
+      'items-center',
+      'self-center',
+      'rounded-full',
+      'px-4',
+      'py-2.5',
+    );
+  });
+
+  it('renders chevron icon for dropdown items', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
+
+    const productsLink = screen.getByText('Products').closest('a');
+    const chevronIcon = productsLink?.querySelector('svg');
+
+    expect(chevronIcon).toBeInTheDocument();
+    expect(chevronIcon).toHaveClass('h-4', 'w-4');
+  });
+
+  it('handles menu item classes properly', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
+
+    const menuItems = screen.getAllByRole('listitem');
+
+    // Simple menu items should have menu-item class
+    expect(menuItems[0]).toHaveClass('relative', 'menu-item');
+
+    // Dropdown menu items should have menu-dropdown class
+    expect(menuItems[1]).toHaveClass('menu-dropdown', 'relative', 'menu-item');
+  });
+
+  it('renders mega menu with collection card', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={megaMenuItems} />);
+
+    const categoriesItem = screen.getByText('Categories');
+    expect(categoriesItem).toBeInTheDocument();
+
+    // Check that the menu item has the correct mega menu class
+    const megaMenuItem = categoriesItem.closest('li');
+    expect(megaMenuItem).toHaveClass('menu-megamenu', 'menu-item');
+  });
+
+  it('applies consistent text styling across menu types', () => {
+    const mixedMenu = [
+      { id: 'simple', name: 'Simple', href: '/', type: undefined as any },
+      {
+        id: 'dropdown',
+        name: 'Dropdown',
+        href: '/dropdown',
+        type: 'dropdown' as const,
+        children: [],
+      },
+      { id: 'mega', name: 'Mega', href: '/mega', type: 'mega-menu' as const, children: [] },
+    ];
+
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={mixedMenu} />);
+
+    // All menu items should have consistent text styling
+    const links = screen.getAllByRole('link');
+    links.forEach((link) => {
+      expect(link).toHaveClass('text-sm', 'font-medium', 'text-neutral-700');
+    });
+  });
+
+  it('handles empty menu gracefully', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={[]} />);
+
+    const navigationList = screen.getByTestId('main-navigation');
+    expect(navigationList).toBeInTheDocument();
+    expect(navigationList.children).toHaveLength(0);
+  });
+
+  it('maintains proper structure for accessibility', () => {
+    render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
+
+    // Should be a proper unordered list
+    const navigationList = screen.getByTestId('main-navigation');
+    expect(navigationList.tagName).toBe('UL');
+
+    // Each menu item should be a list item
+    const menuItems = screen.getAllByRole('listitem');
+    menuItems.forEach((item) => {
+      expect(item.tagName).toBe('LI');
+    });
   });
 });

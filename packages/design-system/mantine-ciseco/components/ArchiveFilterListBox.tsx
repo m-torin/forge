@@ -1,11 +1,12 @@
 'use client';
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { Select } from '@mantine/core';
+import { type ComboboxItem, Select } from '@mantine/core';
 import { type FC, useState } from 'react';
 
 export interface ArchiveFilterListBoxProps {
   className?: string;
   clearable?: boolean;
+  'data-testid'?: string;
   disabled?: boolean;
   groupedOptions?: {
     group: string;
@@ -39,6 +40,7 @@ export interface ArchiveFilterListBoxProps {
 const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
   className = '',
   clearable = false,
+  'data-testid': testId = 'filter-select',
   disabled = false,
   groupedOptions,
   hierarchical = false,
@@ -95,7 +97,7 @@ const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
       }));
 
   return (
-    <div data-nc-id="ArchiveFilterListBox" className={`nc-ArchiveFilterListBox ${className}`}>
+    <div data-testid={testId} data-nc-id="ArchiveFilterListBox" className={`nc-ArchiveFilterListBox ${className}`}>
       <Select
         comboboxProps={{
           shadow: 'lg',
@@ -104,10 +106,10 @@ const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
         onChange={handleChange}
         renderOption={
           showSummary && multiple
-            ? ({ option }) => (
-                <div className="flex items-center gap-1">
+            ? ({ option }: { option: ComboboxItem & { count?: number } }) => (
+                <div data-testid="filter-option" className="flex items-center gap-1">
                   <span>{option.label}</span>
-                  {showCounts && option.count && (
+                  {showCounts && 'count' in option && option.count && (
                     <span className="text-neutral-500">({option.count})</span>
                   )}
                 </div>

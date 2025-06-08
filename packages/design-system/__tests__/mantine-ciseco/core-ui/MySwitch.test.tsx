@@ -11,12 +11,13 @@ describe('MySwitch', () => {
 
   it('renders switch', () => {
     render(<MySwitch />);
+    expect(screen.getByTestId('switch-toggle')).toBeInTheDocument();
     expect(screen.getByRole('switch')).toBeInTheDocument();
   });
 
   it('renders with label', () => {
     render(<MySwitch label="Enable notifications" />);
-    expect(screen.getByText('Enable notifications')).toBeInTheDocument();
+    expect(screen.getByTestId('switch-label')).toHaveTextContent('Enable notifications');
   });
 
   it('renders with description', () => {
@@ -45,7 +46,7 @@ describe('MySwitch', () => {
 
   it('renders with custom className', () => {
     render(<MySwitch className="custom-switch" />);
-    const container = screen.getByRole('switch').closest('.MySwitch');
+    const container = screen.getByTestId('switch-toggle');
     expect(container).toHaveClass('custom-switch');
   });
 });

@@ -11,12 +11,12 @@ describe('Button', () => {
 
   it('renders button with text', () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByRole('button')).toHaveTextContent('Click me');
+    expect(screen.getByTestId('button')).toHaveTextContent('Click me');
   });
 
   it('handles click events', () => {
     render(<Button onClick={mockOnClick}>Click me</Button>);
-    const button = screen.getByRole('button');
+    const button = screen.getByTestId('button');
 
     fireEvent.click(button);
     expect(mockOnClick).toHaveBeenCalledTimes(1);
@@ -24,19 +24,19 @@ describe('Button', () => {
 
   it('renders with custom className', () => {
     render(<Button className="custom-button">Custom</Button>);
-    const button = screen.getByRole('button');
+    const button = screen.getByTestId('button');
     expect(button).toHaveClass('custom-button');
   });
 
   it('renders with custom fontSize', () => {
     render(<Button fontSize="text-lg">Large Text</Button>);
-    const button = screen.getByRole('button');
+    const button = screen.getByTestId('button');
     expect(button).toHaveClass('text-lg');
   });
 
   it('renders with custom sizeClass', () => {
     render(<Button sizeClass="py-2 px-3">Small</Button>);
-    const button = screen.getByRole('button');
+    const button = screen.getByTestId('button');
     expect(button).toHaveClass('py-2 px-3');
   });
 
@@ -58,29 +58,29 @@ describe('Button', () => {
   });
 
   it('renders loading state', () => {
-    const { container } = render(<Button loading>Loading</Button>);
-    const button = screen.getByRole('button');
+    render(<Button loading>Loading</Button>);
+    const button = screen.getByTestId('button');
     expect(button).toBeDisabled();
-    
-    const loadingSvg = container.querySelector('svg');
+
+    const loadingSvg = screen.getByTestId('loading-spinner');
     expect(loadingSvg).toBeInTheDocument();
     expect(loadingSvg).toHaveClass('animate-spin');
   });
 
   it('renders disabled state', () => {
     render(<Button disabled>Disabled</Button>);
-    const button = screen.getByRole('button');
+    const button = screen.getByTestId('button');
     expect(button).toBeDisabled();
   });
 
   it('renders with custom component', () => {
     const CustomComponent = ({ children, ...props }: any) => (
-      <div data-testid="custom-component" {...props}>
+      <div {...props}>
         {children}
       </div>
     );
 
-    render(<Button as={CustomComponent}>Custom Component</Button>);
+    render(<Button as={CustomComponent} data-testid="custom-component">Custom Component</Button>);
     expect(screen.getByTestId('custom-component')).toBeInTheDocument();
   });
 });

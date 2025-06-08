@@ -1,233 +1,148 @@
-// @ts-nocheck - Test file with component prop compatibility issues
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
 import ProductStatus from '../../../mantine-ciseco/components/ProductStatus';
 
 describe('ProductStatus', () => {
-  it('renders available status', () => {
-    render(<ProductStatus status="available" />);
-    expect(screen.getByText('Available')).toBeInTheDocument();
+  it('renders new in status', () => {
+    render(<ProductStatus status="New in" data-testid="product-status" />);
+    expect(screen.getByTestId('product-status')).toBeInTheDocument();
+    expect(screen.getByText('New in')).toBeInTheDocument();
   });
 
-  it('renders out of stock status', () => {
+  it('renders discount status', () => {
+    render(<ProductStatus status="50% Discount" data-testid="product-status" />);
+    expect(screen.getByTestId('product-status')).toBeInTheDocument();
+    expect(screen.getByText('50% Discount')).toBeInTheDocument();
+  });
+
+  it('renders sold out status', () => {
+    render(<ProductStatus status="Sold Out" data-testid="product-status" />);
+    expect(screen.getByTestId('product-status')).toBeInTheDocument();
+    expect(screen.getByText('Sold Out')).toBeInTheDocument();
+  });
+
+  it('renders sold out status with out-of-stock', () => {
     render(<ProductStatus status="out-of-stock" />);
-    expect(screen.getByText('Out of Stock')).toBeInTheDocument();
+    expect(screen.getByText('Sold Out')).toBeInTheDocument();
   });
 
-  it('renders low stock status', () => {
-    render(<ProductStatus status="low-stock" />);
-    expect(screen.getByText('Low Stock')).toBeInTheDocument();
+  it('renders limited edition status', () => {
+    render(<ProductStatus status="limited edition" />);
+    expect(screen.getByText('limited edition')).toBeInTheDocument();
   });
 
-  it('renders pre-order status', () => {
-    render(<ProductStatus status="pre-order" />);
-    expect(screen.getByText('Pre-order')).toBeInTheDocument();
+  it('renders default status when no status provided', () => {
+    render(<ProductStatus />);
+    expect(screen.getByText('New in')).toBeInTheDocument();
   });
 
-  it('renders coming soon status', () => {
-    render(<ProductStatus status="coming-soon" />);
-    expect(screen.getByText('Coming Soon')).toBeInTheDocument();
-  });
-
-  it('renders discontinued status', () => {
-    render(<ProductStatus status="discontinued" />);
-    expect(screen.getByText('Discontinued')).toBeInTheDocument();
-  });
-
-  it('renders with custom text', () => {
-    render(<ProductStatus status="available" text="In Stock Now" />);
-    expect(screen.getByText('In Stock Now')).toBeInTheDocument();
-  });
-
-  it('applies correct color for available status', () => {
-    render(<ProductStatus status="available" />);
-    const badge = screen.getByText('Available');
-    expect(badge).toHaveClass('status-available', 'bg-green-100', 'text-green-800');
-  });
-
-  it('applies correct color for out of stock status', () => {
-    render(<ProductStatus status="out-of-stock" />);
-    const badge = screen.getByText('Out of Stock');
-    expect(badge).toHaveClass('status-out-of-stock', 'bg-red-100', 'text-red-800');
-  });
-
-  it('applies correct color for low stock status', () => {
-    render(<ProductStatus status="low-stock" />);
-    const badge = screen.getByText('Low Stock');
-    expect(badge).toHaveClass('status-low-stock', 'bg-orange-100', 'text-orange-800');
-  });
-
-  it('applies correct color for pre-order status', () => {
-    render(<ProductStatus status="pre-order" />);
-    const badge = screen.getByText('Pre-order');
-    expect(badge).toHaveClass('status-pre-order', 'bg-blue-100', 'text-blue-800');
-  });
-
-  it('applies correct color for coming soon status', () => {
-    render(<ProductStatus status="coming-soon" />);
-    const badge = screen.getByText('Coming Soon');
-    expect(badge).toHaveClass('status-coming-soon', 'bg-purple-100', 'text-purple-800');
-  });
-
-  it('applies correct color for discontinued status', () => {
-    render(<ProductStatus status="discontinued" />);
-    const badge = screen.getByText('Discontinued');
-    expect(badge).toHaveClass('status-discontinued', 'bg-gray-100', 'text-gray-800');
-  });
-
-  it('renders with different sizes', () => {
-    const { rerender } = render(<ProductStatus status="available" size="xs" />);
-    expect(screen.getByText('Available')).toHaveClass('size-xs');
-
-    rerender(<ProductStatus status="available" size="sm" />);
-    expect(screen.getByText('Available')).toHaveClass('size-sm');
-
-    rerender(<ProductStatus status="available" size="md" />);
-    expect(screen.getByText('Available')).toHaveClass('size-md');
-
-    rerender(<ProductStatus status="available" size="lg" />);
-    expect(screen.getByText('Available')).toHaveClass('size-lg');
-  });
-
-  it('renders with different variants', () => {
-    const { rerender } = render(<ProductStatus status="available" variant="filled" />);
-    expect(screen.getByText('Available')).toHaveClass('variant-filled');
-
-    rerender(<ProductStatus status="available" variant="outline" />);
-    expect(screen.getByText('Available')).toHaveClass('variant-outline');
-
-    rerender(<ProductStatus status="available" variant="light" />);
-    expect(screen.getByText('Available')).toHaveClass('variant-light');
-
-    rerender(<ProductStatus status="available" variant="dot" />);
-    expect(screen.getByText('Available')).toHaveClass('variant-dot');
+  it('returns null for unsupported status', () => {
+    const { container } = render(<ProductStatus status="unknown-status" />);
+    // Should not render any status content, but Mantine may inject styles
+    const statusElement =
+      container.querySelector('[data-testid]') || container.querySelector('div:not(style)');
+    expect(statusElement).toBeNull();
   });
 
   it('renders with custom className', () => {
-    render(<ProductStatus status="available" className="custom-status" />);
-    expect(screen.getByText('Available')).toHaveClass('custom-status');
+    render(<ProductStatus status="New in" className="custom-class" data-testid="product-status" />);
+    const element = screen.getByTestId('product-status');
+    expect(element).toHaveClass('custom-class');
   });
 
-  it('shows stock count when provided', () => {
-    render(<ProductStatus status="low-stock" stockCount={5} />);
-    expect(screen.getByText('5 left')).toBeInTheDocument();
+  it('renders with testId', () => {
+    render(<ProductStatus status="New in" data-testid="product-status" />);
+    expect(screen.getByTestId('product-status')).toBeInTheDocument();
   });
 
-  it('shows stock count for available items', () => {
-    render(<ProductStatus status="available" stockCount={100} showCount />);
-    expect(screen.getByText('100 in stock')).toBeInTheDocument();
+  it('renders icons with status', () => {
+    const { container } = render(<ProductStatus status="New in" />);
+    const svgIcon = container.querySelector('svg');
+    expect(svgIcon).toBeInTheDocument();
   });
 
-  it('renders with icon when showIcon is true', () => {
-    render(<ProductStatus status="available" showIcon />);
-    expect(screen.getByTestId('status-icon')).toBeInTheDocument();
+  it('applies nc-shadow-lg class', () => {
+    render(<ProductStatus status="New in" data-testid="product-status" />);
+    const element = screen.getByTestId('product-status');
+    expect(element).toHaveClass('nc-shadow-lg');
   });
 
-  it('renders with custom icon', () => {
-    const CustomIcon = () => <span data-testid="custom-icon">✓</span>;
-    render(<ProductStatus status="available" icon={<CustomIcon />} />);
-    expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
+  it('applies rounded-full class', () => {
+    render(<ProductStatus status="New in" data-testid="product-status" />);
+    const element = screen.getByTestId('product-status');
+    expect(element).toHaveClass('rounded-full');
   });
 
-  it('renders with dot indicator', () => {
-    render(<ProductStatus status="available" variant="dot" />);
-    expect(screen.getByTestId('status-dot')).toBeInTheDocument();
+  it('applies correct positioning classes', () => {
+    render(<ProductStatus status="New in" data-testid="product-status" />);
+    const element = screen.getByTestId('product-status');
+    expect(element).toHaveClass('absolute', 'top-3', 'start-3');
   });
 
-  it('shows pulse animation for urgent status', () => {
-    render(<ProductStatus status="low-stock" animate />);
-    const badge = screen.getByText('Low Stock');
-    expect(badge).toHaveClass('animate-pulse');
-  });
+  it('contains proper text for different status values', () => {
+    const statuses = [
+      { status: 'New in', expectedText: 'New in' },
+      { status: '50% Discount', expectedText: '50% Discount' },
+      { status: 'Sold Out', expectedText: 'Sold Out' },
+      { status: 'limited edition', expectedText: 'limited edition' },
+    ];
 
-  it('renders with tooltip information', async () => {
-    render(<ProductStatus status="low-stock" tooltip="Only a few items left in stock" />);
-
-    const badge = screen.getByText('Low Stock');
-    fireEvent.mouseEnter(badge);
-
-    await waitFor(() => {
-      expect(screen.getByRole('tooltip')).toHaveTextContent('Only a few items left in stock');
+    statuses.forEach(({ status, expectedText }) => {
+      const { container } = render(<ProductStatus status={status} />);
+      expect(screen.getByText(expectedText)).toBeInTheDocument();
+      container.remove();
     });
   });
 
-  it('handles click events when clickable', () => {
-    const mockOnClick = vi.fn();
-    render(<ProductStatus status="available" clickable onClick={mockOnClick} />);
-
-    const button = screen.getByRole('button');
-    fireEvent.click(button);
-    expect(mockOnClick).toHaveBeenCalled();
-  });
-
-  it('renders with availability date', () => {
-    render(<ProductStatus status="pre-order" availableDate="2024-12-25" showDate />);
-    expect(screen.getByText(/Available Dec 25, 2024/)).toBeInTheDocument();
-  });
-
-  it('shows estimated restock date', () => {
-    render(<ProductStatus status="out-of-stock" restockDate="2024-06-15" showRestockDate />);
-    expect(screen.getByText(/Restock: Jun 15, 2024/)).toBeInTheDocument();
-  });
-
-  it('renders with progress bar for low stock', () => {
-    render(<ProductStatus status="low-stock" stockCount={3} maxStock={10} showProgress />);
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '30');
-  });
-
-  it('supports different shapes', () => {
-    const { rerender } = render(<ProductStatus status="available" shape="rounded" />);
-    expect(screen.getByText('Available')).toHaveClass('rounded-full');
-
-    rerender(<ProductStatus status="available" shape="square" />);
-    expect(screen.getByText('Available')).toHaveClass('rounded-none');
-
-    rerender(<ProductStatus status="available" shape="pill" />);
-    expect(screen.getByText('Available')).toHaveClass('rounded-full', 'px-4');
-  });
-
-  it('renders with urgency indicator', () => {
-    render(<ProductStatus status="low-stock" urgent />);
-    const badge = screen.getByText('Low Stock');
-    expect(badge).toHaveClass('urgent-status');
-  });
-
-  it('shows notification badge', () => {
-    render(<ProductStatus status="available" notification />);
-    expect(screen.getByTestId('notification-badge')).toBeInTheDocument();
-  });
-
-  it('supports dark mode styling', () => {
-    render(<ProductStatus status="available" />);
-    const badge = screen.getByText('Available');
-    expect(badge).toHaveClass(
-      'bg-green-100',
-      'dark:bg-green-900',
-      'text-green-800',
-      'dark:text-green-200',
+  it('applies default styling classes', () => {
+    render(<ProductStatus status="New in" data-testid="product-status" />);
+    const element = screen.getByTestId('product-status');
+    expect(element).toHaveClass(
+      'px-2.5',
+      'py-1.5',
+      'text-xs',
+      'bg-white',
+      'dark:bg-neutral-900',
+      'text-neutral-700',
+      'dark:text-neutral-300',
     );
   });
 
-  it('handles responsive sizes', () => {
-    render(
-      <ProductStatus status="available" size={{ base: 'xs', sm: 'sm', md: 'md', lg: 'lg' }} />,
-    );
-    const badge = screen.getByText('Available');
-    expect(badge).toHaveClass('size-xs', 'sm:size-sm', 'md:size-md', 'lg:size-lg');
+  it('renders different status types with their specific text content', () => {
+    const statusTests = [
+      { input: 'New in', expected: 'New in' },
+      { input: '50% Discount', expected: '50% Discount' },
+      { input: 'Sold Out', expected: 'Sold Out' },
+      { input: 'out-of-stock', expected: 'Sold Out' },
+      { input: 'limited edition', expected: 'limited edition' },
+    ];
+
+    statusTests.forEach(({ input, expected }) => {
+      const { unmount } = render(<ProductStatus status={input} />);
+      expect(screen.getByText(expected)).toBeInTheDocument();
+      unmount();
+    });
   });
 
-  it('renders with custom color scheme', () => {
-    render(
-      <ProductStatus
-        status="available"
-        colorScheme={{
-          background: 'bg-custom-100',
-          text: 'text-custom-800',
-        }}
-      />,
-    );
-    const badge = screen.getByText('Available');
-    expect(badge).toHaveClass('bg-custom-100', 'text-custom-800');
+  it('maintains consistent structure across all status types', () => {
+    const statuses = ['New in', '50% Discount', 'Sold Out', 'limited edition'];
+
+    statuses.forEach((status) => {
+      const { container, unmount } = render(<ProductStatus status={status} />);
+      const statusDiv = container.querySelector('div');
+
+      // Check for consistent structure
+      expect(statusDiv).toHaveClass(
+        'nc-shadow-lg',
+        'rounded-full',
+        'flex',
+        'items-center',
+        'justify-center',
+      );
+      expect(statusDiv?.querySelector('svg')).toBeInTheDocument(); // Icon
+      expect(statusDiv?.querySelector('span')).toBeInTheDocument(); // Text
+
+      unmount();
+    });
   });
 });

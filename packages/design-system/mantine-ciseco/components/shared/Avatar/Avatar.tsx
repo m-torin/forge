@@ -11,6 +11,7 @@ export interface AvatarProps {
   imgUrl?: string | StaticImageData;
   radius?: string;
   sizeClass?: string;
+  testId?: string;
   userName?: string;
 }
 
@@ -21,6 +22,7 @@ const Avatar: FC<AvatarProps> = ({
   imgUrl = avatarImage,
   radius = 'rounded-full',
   sizeClass = 'size-6 text-sm',
+  testId,
   userName,
 }) => {
   const url = imgUrl || '';
@@ -33,6 +35,7 @@ const Avatar: FC<AvatarProps> = ({
 
   return (
     <div
+      data-testid={testId}
       className={`wil-avatar relative inline-flex shrink-0 items-center justify-center font-semibold text-neutral-100 uppercase shadow-inner ${radius} ${sizeClass} ${containerClassName}`}
       style={{ backgroundColor: url ? undefined : _setBgColor(name) }}
     >

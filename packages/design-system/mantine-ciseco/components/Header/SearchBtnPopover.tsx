@@ -10,7 +10,11 @@ import { useLocalizeHref } from '../../hooks/useLocale';
 import { Divider } from '../Divider';
 import { Link } from '../Link';
 
-const SearchBtnPopover = () => {
+interface SearchBtnPopoverProps {
+  'data-testid'?: string;
+}
+
+const SearchBtnPopover = ({ 'data-testid': testId = 'search-popover' }: SearchBtnPopoverProps = {}) => {
   const localizeHref = useLocalizeHref();
   const [opened, { close, open }] = useDisclosure(false);
 
@@ -19,6 +23,7 @@ const SearchBtnPopover = () => {
       <button
         onClick={open}
         className="-m-2.5 flex cursor-pointer items-center justify-center rounded-full p-2.5 hover:bg-neutral-100 focus-visible:outline-0 dark:hover:bg-neutral-800"
+        data-testid={testId}
       >
         <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Search01Icon} size={24} />
       </button>
@@ -26,6 +31,7 @@ const SearchBtnPopover = () => {
       <Modal
         onClose={close}
         opened={opened}
+        data-testid="search-modal"
         transitionProps={{
           duration: 200,
           transition: 'slide-down',
@@ -54,6 +60,7 @@ const SearchBtnPopover = () => {
                   redirect(localizeHref('/search'));
                 }}
                 className="flex w-full items-center"
+                data-testid="search-form"
               >
                 <HugeiconsIcon strokeWidth={1} color="currentColor" icon={Search01Icon} size={26} />
                 <input
@@ -68,11 +75,13 @@ const SearchBtnPopover = () => {
                   name="q"
                   spellCheck="false"
                   type="text"
+                  data-testid="search-input"
                 />
                 <button
                   onClick={close}
                   className="-m-2.5 inline-flex cursor-pointer items-center justify-center rounded-md p-2.5 transition-transform duration-300 hover:rotate-90"
                   type="button"
+                  data-testid="search-close-button"
                 >
                   <HugeiconsIcon
                     strokeWidth={1}

@@ -7,6 +7,7 @@ export interface ButtonProps {
   [key: string]: any; // Cho phép bất kỳ props tùy chỉnh nào
   as?: ElementType | ComponentType<any>;
   className?: string;
+  'data-testid'?: string;
   fontSize?: string;
   href?: string;
   loading?: boolean;
@@ -18,6 +19,7 @@ const Button: FC<ButtonProps> = ({
   as,
   children,
   className = 'text-neutral-700 dark:text-neutral-200 disabled:cursor-not-allowed',
+  'data-testid': testId = 'button',
   disabled,
   fontSize = 'text-sm sm:text-base font-nomal',
   href,
@@ -40,6 +42,7 @@ const Button: FC<ButtonProps> = ({
 
   return (
     <Component
+      data-testid={testId}
       className={classes}
       disabled={disabled || loading}
       {...props}
@@ -49,6 +52,7 @@ const Button: FC<ButtonProps> = ({
     >
       {loading && (
         <svg
+          data-testid="loading-spinner"
           viewBox="0 0 24 24"
           className="-ms-1 me-3 size-5 animate-spin"
           fill="none"

@@ -29,13 +29,18 @@ vi.mock('react-hooks-global-state', () => ({
 }));
 
 // Mock useLastViewedPhoto hook
-vi.mock('../../../mantine-ciseco/components/listing-image-gallery/utils/useLastViewedPhoto', () => ({
-  useLastViewedPhoto: () => [null, vi.fn()],
-}));
+vi.mock(
+  '../../../mantine-ciseco/components/listing-image-gallery/utils/useLastViewedPhoto',
+  () => ({
+    useLastViewedPhoto: () => [null, vi.fn()],
+  }),
+);
 
 // Mock LikeSaveBtns
 vi.mock('../../../mantine-ciseco/components/LikeSaveBtns', () => ({
-  default: ({ 'data-testid': testId }: any) => <div data-testid={testId || 'like-save-btns'}>Like Save Buttons</div>,
+  default: ({ 'data-testid': testId }: any) => (
+    <div data-testid={testId || 'like-save-btns'}>Like Save Buttons</div>
+  ),
 }));
 
 describe('ListingImageGallery', () => {
@@ -80,7 +85,10 @@ describe('ListingImageGallery', () => {
     // Check for all images
     defaultImages.forEach((image) => {
       expect(screen.getByTestId(`listing-image-gallery-image-${image.id}`)).toBeInTheDocument();
-      expect(screen.getByTestId(`listing-image-gallery-image-${image.id}-img`)).toHaveAttribute('src', image.url);
+      expect(screen.getByTestId(`listing-image-gallery-image-${image.id}-img`)).toHaveAttribute(
+        'src',
+        image.url,
+      );
     });
   });
 
@@ -160,7 +168,7 @@ describe('ListingImageGallery', () => {
       'mb-5',
       'block',
       'w-full',
-      'cursor-zoom-in'
+      'cursor-zoom-in',
     );
   });
 
@@ -176,7 +184,7 @@ describe('ListingImageGallery', () => {
       'brightness-90',
       'transition',
       'will-change-auto',
-      'group-hover:brightness-110'
+      'group-hover:brightness-110',
     );
   });
 });

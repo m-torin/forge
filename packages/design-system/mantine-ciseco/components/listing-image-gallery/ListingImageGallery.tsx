@@ -68,7 +68,6 @@ const ListingImageGallery: FC<Props> = ({ images, onClose, testId = 'listing-ima
               router.push(`${thisPathname}/?${params.toString()}` as Route);
             }}
             images={images}
-            testId={`${testId}-modal`}
           />
         )}
 
@@ -85,7 +84,6 @@ const ListingImageGallery: FC<Props> = ({ images, onClose, testId = 'listing-ima
               className="after:content group relative mb-5 block w-full cursor-zoom-in after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight focus:outline-hidden"
             >
               <Image
-                data-testid={`${testId}-image-${id}-img`}
                 width={720}
                 className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110 focus:outline-hidden"
                 style={{

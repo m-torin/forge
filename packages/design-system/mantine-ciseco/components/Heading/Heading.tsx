@@ -4,6 +4,7 @@ import React, { type HTMLAttributes, type ReactNode } from 'react';
 import NextPrev from '../shared/NextPrev/NextPrev';
 
 export interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
+  'data-testid'?: string;
   description?: ReactNode | string;
   fontClass?: string;
   hasNextPrev?: boolean;
@@ -19,6 +20,7 @@ export interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
 const Heading: React.FC<HeadingProps> = ({
   children,
   className = 'mb-12 lg:mb-14 text-neutral-900 dark:text-neutral-50',
+  'data-testid': testId = 'heading',
   description,
   fontClass = 'text-3xl md:text-4xl font-semibold',
   hasNextPrev = false,
@@ -33,6 +35,7 @@ const Heading: React.FC<HeadingProps> = ({
 }) => {
   return (
     <div
+      data-testid={testId}
       className={clsx('relative flex flex-col justify-between sm:flex-row sm:items-end', className)}
     >
       <div className={clsx(isCenter && 'mx-auto flex w-full flex-col items-center text-center')}>

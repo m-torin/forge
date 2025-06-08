@@ -220,12 +220,13 @@ const ProductCard: FC<ProductCardProps> = ({
             {featuredImage?.src ? (
               <ProgressiveImage
                 data-testid={`${testId}-image`}
+                width={400}
                 loading={props.lazyLoad ? 'lazy' : 'eager'}
                 placeholder={featuredImage.alt}
                 priority={false}
                 className="flex aspect-[11/12] w-full relative"
                 alt={handle || 'Product image'}
-                fill
+                height={440}
                 sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
                 src={featuredImage.src}
               />
@@ -266,7 +267,7 @@ const ProductCard: FC<ProductCardProps> = ({
               data-testid={`${testId}-price`}
               priceFormatter={props.priceFormatter}
               price={price ?? 1}
-              salePrice={props.product?.salePrice}
+              salePrice={(product || data)?.salePrice}
             />
             {props.showRating && (
               <div className="mb-0.5 flex items-center">
@@ -276,9 +277,9 @@ const ProductCard: FC<ProductCardProps> = ({
                 </span>
               </div>
             )}
-            {props.showDiscount && price && props.product?.salePrice && (
+            {props.showDiscount && price && (product || data)?.salePrice && (
               <span className="text-sm font-medium text-green-600">
-                {Math.round(((price - props.product.salePrice) / price) * 100)}% OFF
+                {Math.round(((price - ((product || data)?.salePrice || 0)) / price) * 100)}% OFF
               </span>
             )}
           </div>
@@ -299,9 +300,9 @@ const ProductCard: FC<ProductCardProps> = ({
             </div>
           )}
 
-          {props.product?.badges && (
+          {(product || data)?.badges && (
             <div className="flex gap-2 flex-wrap">
-              {props.product.badges.map((badge, index) => (
+              {((product || data)?.badges || []).map((badge: string, index: number) => (
                 <span
                   key={index}
                   data-testid={`${testId}-badge-${index}`}

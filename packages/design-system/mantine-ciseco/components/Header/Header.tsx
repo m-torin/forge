@@ -11,6 +11,9 @@ import HamburgerBtnMenu from './HamburgerBtnMenu';
 import MegaMenuPopover from './MegaMenuPopover';
 import SearchBtnPopover from './SearchBtnPopover';
 
+import type { TCollection } from '../../data/data';
+import type { TNavigationItem } from '../../data/navigation';
+
 export interface HeaderProps {
   announcementText?: string;
   breadcrumbs?: {
@@ -61,11 +64,27 @@ const Header: FC<HeaderProps> = ({
   testId = 'header',
 }) => {
   // Mock data for testing - in real implementation these would be props or from context
-  const megamenu = [];
-  const dropdownCategories = [];
-  const currencies = [];
-  const languages = [];
-  const featuredCollections = [];
+  const megamenu: TNavigationItem = {
+    id: '1',
+    name: 'Templates',
+    type: 'mega-menu',
+    children: [],
+  };
+  const dropdownCategories: {
+    name: string;
+    description: string;
+    handle: string;
+    icon: string;
+  }[] = [];
+  const currencies: {
+    id: string;
+    name: string;
+    active?: boolean;
+    href: string;
+    icon: string;
+  }[] = [];
+  const languages: { id: string; name: string; description: string; locale: string }[] = [];
+  const featuredCollections: TCollection[] = [];
 
   return (
     <header data-testid={testId} role="banner" className="relative z-10">

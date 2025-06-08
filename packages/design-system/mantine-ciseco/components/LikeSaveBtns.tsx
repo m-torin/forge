@@ -1,13 +1,18 @@
 'use client';
 import React, { useState } from 'react';
 
-const LikeSaveBtns = () => {
+interface LikeSaveBtnsProps {
+  'data-testid'?: string;
+}
+
+const LikeSaveBtns = ({ 'data-testid': testId = 'like-save-buttons' }: LikeSaveBtnsProps = {}) => {
   const [isLiked, setIsLiked] = useState(false);
 
   return (
-    <div className="flow-root">
+    <div data-testid={testId} className="flow-root">
       <div className="flex text-neutral-700 dark:text-neutral-300 text-sm -mx-3 -my-1.5">
         <button
+          data-testid="share-button"
           className="py-1.5 px-3 flex rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer border-none bg-transparent"
           aria-label="Share"
           type="button"
@@ -30,6 +35,7 @@ const LikeSaveBtns = () => {
           <span className="hidden sm:block ml-2">Share</span>
         </button>
         <button
+          data-testid="save-button"
           onClick={() => setIsLiked(!isLiked)}
           className="py-1.5 px-3 flex rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer border-none bg-transparent"
           aria-label={isLiked ? 'Remove from saved' : 'Save'}

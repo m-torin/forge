@@ -13,11 +13,12 @@ import NcImage from './shared/NcImage/NcImage';
 
 export interface SectionPromo3Props {
   className?: string;
+  'data-testid'?: string;
 }
 
-const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
+const SectionPromo3: FC<SectionPromo3Props> = ({ className, 'data-testid': testId = 'section-promo-3' }) => {
   return (
-    <div className={clsx(className, 'xl:pt-10 2xl:pt-24')}>
+    <div className={clsx(className, 'xl:pt-10 2xl:pt-24')} data-testid={testId}>
       <div className="relative flex flex-col rounded-2xl bg-neutral-50 p-4 pb-0 sm:rounded-[40px] sm:p-5 sm:pb-0 lg:flex-row lg:p-14 xl:px-20 xl:py-24 2xl:py-32 dark:bg-neutral-800">
         <div className="absolute inset-10">
           <Image

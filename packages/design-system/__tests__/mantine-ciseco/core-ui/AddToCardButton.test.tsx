@@ -26,30 +26,38 @@ describe('AddToCardButton', () => {
 
   it('renders as a button by default', () => {
     render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
-    
-    const button = screen.getByRole('button');
+
+    const button = screen.getByTestId('add-to-cart-button');
     expect(button).toBeInTheDocument();
     expect(button).toHaveTextContent('Add to Cart');
   });
 
   it('renders with custom component when as prop is provided', () => {
-    render(<AddToCardButton {...defaultProps} as="div">Add to Cart</AddToCardButton>);
-    
+    render(
+      <AddToCardButton {...defaultProps} as="div">
+        Add to Cart
+      </AddToCardButton>,
+    );
+
     const element = screen.getByText('Add to Cart');
     expect(element.tagName).toBe('DIV');
   });
 
   it('applies custom className', () => {
-    render(<AddToCardButton {...defaultProps} className="custom-class">Add to Cart</AddToCardButton>);
-    
-    const button = screen.getByRole('button');
+    render(
+      <AddToCardButton {...defaultProps} className="custom-class">
+        Add to Cart
+      </AddToCardButton>,
+    );
+
+    const button = screen.getByTestId('add-to-cart-button');
     expect(button).toHaveClass('custom-class');
   });
 
   it('shows notification when clicked', () => {
     render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
-    
-    const button = screen.getByRole('button');
+
+    const button = screen.getByTestId('add-to-cart-button');
     fireEvent.click(button);
 
     expect(notify.custom).toHaveBeenCalledWith({
@@ -71,27 +79,19 @@ describe('AddToCardButton', () => {
 
   it('passes through additional props', () => {
     render(
-      <AddToCardButton 
-        {...defaultProps} 
-        data-testid="add-to-cart" 
-        disabled
-      >
+      <AddToCardButton {...defaultProps} data-testid="add-to-cart" disabled>
         Add to Cart
-      </AddToCardButton>
+      </AddToCardButton>,
     );
-    
+
     const button = screen.getByTestId('add-to-cart');
     expect(button).toBeDisabled();
   });
 
   it('handles click event', () => {
-    render(
-      <AddToCardButton {...defaultProps}>
-        Add to Cart
-      </AddToCardButton>
-    );
-    
-    const button = screen.getByRole('button');
+    render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
+
+    const button = screen.getByTestId('add-to-cart-button');
     fireEvent.click(button);
 
     // The internal notification should be called
@@ -101,14 +101,14 @@ describe('AddToCardButton', () => {
   describe('NotifyAddToCart component', () => {
     it('displays product information in notification', () => {
       render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
-      
-      const button = screen.getByRole('button');
+
+      const button = screen.getByTestId('add-to-cart-button');
       fireEvent.click(button);
 
       // The notification should have been called with a React element containing product info
       const callArgs = (notify.custom as any).mock.calls[0][0];
       expect(callArgs.message).toBeDefined();
-      
+
       // We can't easily test the React element content without rendering it,
       // but we can verify the notification was called with the right structure
       expect(callArgs.id).toBe('nc-product-notify');
@@ -125,8 +125,8 @@ describe('AddToCardButton', () => {
     };
 
     render(<AddToCardButton {...minimalProps}>Add to Cart</AddToCardButton>);
-    
-    const button = screen.getByRole('button');
+
+    const button = screen.getByTestId('add-to-cart-button');
     fireEvent.click(button);
 
     expect(notify.custom).toHaveBeenCalled();

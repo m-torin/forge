@@ -8,8 +8,9 @@ import { useThemeMode } from '../../../hooks/useThemeMode';
 
 export interface SwitchDarkMode2Props {
   className?: string;
+  'data-testid'?: string;
 }
-const SwitchDarkMode2: React.FC<SwitchDarkMode2Props> = ({ className }) => {
+const SwitchDarkMode2: React.FC<SwitchDarkMode2Props> = ({ className, 'data-testid': testId = 'switch-dark-mode-2' }) => {
   const { _toogleDarkMode, isDarkMode } = useThemeMode();
 
   return (
@@ -25,6 +26,7 @@ const SwitchDarkMode2: React.FC<SwitchDarkMode2Props> = ({ className }) => {
         aria-label="Enable dark mode"
         checked={isDarkMode}
         size="sm"
+        data-testid={testId}
       />
     </div>
   );
