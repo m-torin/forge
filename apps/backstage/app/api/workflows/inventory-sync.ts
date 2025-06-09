@@ -143,8 +143,8 @@ export const initializeSyncSessionStep = compose(
   (step) => withStepTimeout(step, { execution: 30000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'networkCount'],
       enableDetailedLogging: true,
+      metricsToTrack: ['productCount', 'networkCount'],
     }),
 );
 
@@ -207,7 +207,7 @@ export const fetchInventoryLevelsStep = compose(
         } catch (error) {
           console.error(`Failed to fetch inventory from ${network.name}:`, error);
           failedChecks.push({
-            (error as Error): (error as Error).message,
+            error: (error as Error).message,
             networkId: network.id,
             products: batch.map((p: any) => p.productId),
             timestamp: new Date().toISOString(),
@@ -231,12 +231,11 @@ export const fetchInventoryLevelsStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
     }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 300000,
+      threshold: 0.5,
       timeout: 60000,
     }),
 );
@@ -523,7 +522,7 @@ export const updateConsolidatedInventoryStep = compose(
       const productUpdates = inventoryUpdates.filter((u: any) => u.productId === product.productId);
 
       productUpdates.forEach((update: any) => {
-        productInventory.networkInventory[(update.networkId as any)] = {
+        productInventory.networkInventory[update.networkId as any] = {
           lastChecked: update.timestamp,
           quantity: update.inventory.quantity,
           status: update.inventory.status,

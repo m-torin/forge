@@ -1,23 +1,23 @@
-import clsx from 'clsx';
-import { type FC } from 'react';
+import clsx from 'clsx'
+import { type FC } from 'react'
 
-import { getCollections } from '../../data/data';
-import { getNavigation } from '../../data/navigation';
-import Logo from '../shared/Logo/Logo';
+import { getCollections } from '../../data/data'
+import { getNavigation } from '../../data/navigation'
+import Logo from '../shared/Logo/Logo'
 
-import AvatarDropdown from './AvatarDropdown';
-import CartBtn from './CartBtn';
-import HamburgerBtnMenu from './HamburgerBtnMenu';
-import Navigation from './Navigation/Navigation';
-import SearchBtnPopover from './SearchBtnPopover';
+import AvatarDropdown from './AvatarDropdown'
+import CartBtn from './CartBtn'
+import HamburgerBtnMenu from './HamburgerBtnMenu'
+import Navigation from './Navigation/Navigation'
+import SearchBtnPopover from './SearchBtnPopover'
 
 export interface Props {
-  hasBorder?: boolean;
+  hasBorder?: boolean
 }
 
 const Header2: FC<Props> = async ({ hasBorder = true }) => {
-  const navigationMenu = await getNavigation();
-  const allCollections = await getCollections();
+  const navigationMenu = await getNavigation()
+  const allCollections = await getCollections()
 
   return (
     <div className="relative z-10 w-full bg-white">
@@ -25,7 +25,7 @@ const Header2: FC<Props> = async ({ hasBorder = true }) => {
         className={clsx(
           'relative border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900',
           hasBorder && 'border-b',
-          !hasBorder && 'has-[.header-popover-full-panel]:border-b',
+          !hasBorder && 'has-[.header-popover-full-panel]:border-b'
         )}
       >
         <div className="container flex h-20 justify-between">
@@ -37,7 +37,7 @@ const Header2: FC<Props> = async ({ hasBorder = true }) => {
             <Logo />
           </div>
 
-          <div className="mx-4 hidden flex-2 justify-center lg:flex">
+          <div className="flex-2 mx-4 hidden justify-center lg:flex">
             <Navigation featuredCollection={allCollections[10]} menu={navigationMenu} />
           </div>
 
@@ -49,7 +49,7 @@ const Header2: FC<Props> = async ({ hasBorder = true }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Header2;
+export default Header2

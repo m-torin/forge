@@ -1,6 +1,6 @@
 import { withAccelerate } from '@prisma/extension-accelerate';
 
-import { PrismaClient } from '../generated/client';
+import { PrismaClient } from './generated/client';
 import { type DatabaseAdapter } from '../types';
 
 export class PrismaAdapter implements DatabaseAdapter {

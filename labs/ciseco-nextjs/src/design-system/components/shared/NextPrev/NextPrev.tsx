@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-import React, { type FC } from 'react';
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
+import React, { type FC } from 'react'
 
 export interface NextPrevProps {
-  btnClassName?: string;
-  className?: string;
-  currentPage?: number;
-  nextDisabled?: boolean;
-  onClickNext?: () => void;
-  onClickPrev?: () => void;
-  onlyNext?: boolean;
-  onlyPrev?: boolean;
-  prevDisabled?: boolean;
-  totalPage?: number;
+  btnClassName?: string
+  className?: string
+  currentPage?: number
+  nextDisabled?: boolean
+  onClickNext?: () => void
+  onClickPrev?: () => void
+  onlyNext?: boolean
+  onlyPrev?: boolean
+  prevDisabled?: boolean
+  totalPage?: number
 }
 
 const NextPrev: FC<NextPrevProps> = ({
@@ -26,17 +26,15 @@ const NextPrev: FC<NextPrevProps> = ({
   onlyPrev = false,
   prevDisabled = false,
 }) => {
-  const [focus, setFocus] = React.useState<'left' | 'right'>('right');
+  const [focus, setFocus] = React.useState<'left' | 'right'>('right')
 
   return (
-    <div
-      className={`nc-NextPrev relative flex items-center text-neutral-500 dark:text-neutral-400 ${className}`}
-    >
+    <div className={`nc-NextPrev relative flex items-center text-neutral-500 dark:text-neutral-400 ${className}`}>
       {!onlyNext && (
         <button
           onClick={(e) => {
-            e.preventDefault();
-            onClickPrev();
+            e.preventDefault()
+            onClickPrev()
           }}
           onMouseEnter={() => setFocus('left')}
           className={`${btnClassName} ${
@@ -54,8 +52,8 @@ const NextPrev: FC<NextPrevProps> = ({
       {!onlyPrev && (
         <button
           onClick={(e) => {
-            e.preventDefault();
-            onClickNext();
+            e.preventDefault()
+            onClickNext()
           }}
           onMouseEnter={() => setFocus('right')}
           className={`${btnClassName} flex items-center justify-center rounded-full border-neutral-200 dark:border-neutral-600 ${
@@ -69,7 +67,7 @@ const NextPrev: FC<NextPrevProps> = ({
         </button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default NextPrev;
+export default NextPrev

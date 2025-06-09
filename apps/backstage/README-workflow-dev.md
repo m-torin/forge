@@ -1,6 +1,6 @@
 # Workflow Development Feedback Loop
 
-This document explains the feedback loop system for developing workflows in the Backstage admin
+This document explains the feedback loop system for developing workflows in the Backstage
 application.
 
 ## Overview

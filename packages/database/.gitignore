@@ -3,7 +3,7 @@ node_modules
 .env
 
 # Generated client
-generated
+prisma/generated
 
 # SQLite database files
 *.db

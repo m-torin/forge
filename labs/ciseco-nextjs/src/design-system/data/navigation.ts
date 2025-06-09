@@ -215,25 +215,25 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
       ],
       href: '/collections/page-style-2/all',
     },
-  ];
+  ]
 }
 
 export async function getNavMegaMenu(): Promise<TNavigationItem> {
-  const navigation = await getNavigation();
+  const navigation = await getNavigation()
 
   // Find the mega menu item in the navigation array
-  return navigation[4];
+  return navigation[4]
 }
 
 // ============ TYPE =============
 export type TNavigationItem = Partial<{
-  id: string;
-  href: string;
-  name: string;
-  type?: 'dropdown' | 'mega-menu';
-  isNew?: boolean;
-  children?: TNavigationItem[];
-}>;
+  id: string
+  href: string
+  name: string
+  type?: 'dropdown' | 'mega-menu'
+  isNew?: boolean
+  children?: TNavigationItem[]
+}>
 
 export const getLanguages = async () => {
   return [
@@ -274,8 +274,8 @@ export const getLanguages = async () => {
       description: 'Canada',
       href: '#',
     },
-  ];
-};
+  ]
+}
 export const getCurrencies = async () => {
   return [
     {
@@ -333,8 +333,8 @@ export const getCurrencies = async () => {
     <path d="M9 7.5C9.2 8.41667 10.08 10.5 12 11.5M12 11.5C13.92 10.5 14.8 8.41667 15 7.5M12 11.5V16.5M14.5 13.5H9.5" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
 </svg>`,
     },
-  ];
-};
+  ]
+}
 
 export const getHeaderDropdownCategories = async () => {
   return [
@@ -394,5 +394,5 @@ export const getHeaderDropdownCategories = async () => {
     </svg>
      `,
     },
-  ];
-};
+  ]
+}

@@ -23,7 +23,7 @@ const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }
     <div className={`relative ${className}`}>
       <Heading>Latest Articles 🎈</Heading>
       <div className="grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 sm:gap-y-16 lg:grid-cols-3">
-        {posts.map((post) => (
+        {posts?.map((post) => (
           <PostCard1 key={post.id} post={post} size="sm" />
         ))}
       </div>

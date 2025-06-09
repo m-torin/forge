@@ -1,5 +1,6 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
 import nextra from 'nextra';
+import { withVercelToolbar } from '@vercel/toolbar/plugins/next';
 
 const withNextra = nextra({
   defaultShowCopyCode: true,
@@ -64,4 +65,4 @@ const nextConfig = withBundleAnalyzer(
   }),
 );
 
-export default nextConfig;
+export default withVercelToolbar()(nextConfig);

@@ -17,17 +17,22 @@ interface CollectionCard6Props {
   'data-testid'?: string;
 }
 
-const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', collection, 'data-testid': testId = 'collection-card-6' }) => {
+const CollectionCard6: FC<CollectionCard6Props> = ({
+  'data-testid': testId = 'collection-card-6',
+  bgSvgUrl,
+  className = '',
+  collection,
+}) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection.handle) {
+  if (!collection || !collection.handle) {
     return null;
   }
 
   return (
     <div
-      className={`group aspect-square relative w-full overflow-hidden rounded-3xl bg-white transition-shadow hover:nc-shadow-lg dark:bg-neutral-900 ${className}`}
       data-testid={testId}
+      className={`group aspect-square relative w-full overflow-hidden rounded-3xl bg-white transition-shadow hover:nc-shadow-lg dark:bg-neutral-900 ${className}`}
     >
       <div>
         <div className="absolute inset-0 opacity-10">

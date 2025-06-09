@@ -15,18 +15,22 @@ interface Props {
   'data-testid'?: string;
 }
 
-const CollectionCard3: FC<Props> = ({ className = '', collection, 'data-testid': testId = 'collection-card-3' }) => {
+const CollectionCard3: FC<Props> = ({
+  'data-testid': testId = 'collection-card-3',
+  className = '',
+  collection,
+}) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection.handle) {
+  if (!collection || !collection.handle) {
     return null;
   }
 
   return (
     <Link
+      data-testid={testId}
       href={localizeHref(`/collections/${collection.handle}`) as any}
       className={`block ${className}`}
-      data-testid={testId}
     >
       <div
         className={`group aspect-[16/11] sm:aspect-[16/9] relative w-full overflow-hidden rounded-2xl ${collection.color}`}

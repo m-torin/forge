@@ -101,8 +101,8 @@ export const fetchRecipientsStep = compose(
   }),
   (step) =>
     withStepMonitoring(step, {
-,
       enableDetailedLogging: true,
+      trackingMetrics: ['templateCount'],
     }),
 );
 
@@ -278,7 +278,6 @@ export const sendEmailBatchesStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
     }),
 );
 
@@ -323,7 +322,7 @@ export const sendCompletionNotificationStep = StepTemplates.notification(
   'campaign-complete',
   'Notify about campaign completion',
   {
-, 'slack'],
+    channels: ['email', 'slack'],
     template: {
       body: 'Sent {{totalSent}} emails with {{successRate}}% success rate',
       subject: 'Campaign {{campaignName}} Complete',

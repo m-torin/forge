@@ -1,10 +1,12 @@
 import { AppLayout, AppLayoutProvider } from "@/components/AppLayout";
-import LocalizedHeader2 from "@/components/LocalizedHeader2";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { GuestActionsProvider } from "@/contexts/GuestActionsContext";
 import { getDictionary } from "@/i18n";
-import { Portal } from "@mantine/core";
+import { getCollections, getNavigation } from "@/lib/data-service";
 
 import type { Metadata } from "next";
+
+import "@repo/design-system/mantine-ciseco/styles.css";
 
 export async function generateMetadata({
   params,
@@ -30,17 +32,24 @@ export default async function LocaleLayout({
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
+  // Fetch navigation data
+  const navigationMenu = await getNavigation();
+  const allCollections = await getCollections();
+  const featuredCollection = allCollections?.[10]; // Using index 10 as before
+
   return (
     <GuestActionsProvider>
       <AppLayoutProvider>
-        <AppLayout locale={locale} dict={dict}>
-          {children}
-        </AppLayout>
-
-        {/* Portal LocalizedHeader2 to the header target */}
-        <Portal target="#header-portal-target">
-          <LocalizedHeader2 locale={locale} />
-        </Portal>
+        <PerformanceMonitor>
+          <AppLayout
+            featuredCollection={featuredCollection}
+            locale={locale}
+            navigationMenu={navigationMenu}
+            dict={dict}
+          >
+            {children}
+          </AppLayout>
+        </PerformanceMonitor>
       </AppLayoutProvider>
     </GuestActionsProvider>
   );

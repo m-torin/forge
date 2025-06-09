@@ -18,29 +18,40 @@ import type { PermissionCheck } from '../../../shared/api-keys/types';
 // Mock server-only module
 vi.mock('server-only', () => ({}));
 
+// Use vi.hoisted for mocks that need to be available during module loading
+const { mockAuth, mockCheckApiKeyPermissions, mockHeaders, mockPermissionsArrayToStructure } =
+  vi.hoisted(() => {
+    const mockHeaders = vi.fn();
+    const mockAuth = {
+      api: {
+        getSession: vi.fn(),
+        verifyApiKey: vi.fn(),
+      },
+    };
+    const mockCheckApiKeyPermissions = vi.fn();
+    const mockPermissionsArrayToStructure = vi.fn();
+
+    return {
+      mockAuth,
+      mockCheckApiKeyPermissions,
+      mockHeaders,
+      mockPermissionsArrayToStructure,
+    };
+  });
+
 // Mock next/headers
-const mockHeaders = vi.fn();
 vi.mock('next/headers', () => ({
   headers: mockHeaders,
 }));
 
 // Mock auth module
-const mockAuth = {
-  api: {
-    getSession: vi.fn(),
-    verifyApiKey: vi.fn(),
-  },
-};
-
-vi.mock('../../auth', () => ({
+vi.mock('../../../server/auth', () => ({
   auth: mockAuth,
 }));
-
-// Mock permissions module
-const mockCheckApiKeyPermissions = vi.fn();
 vi.mock('../../../shared/api-keys/permissions', () => ({
   checkApiKeyPermissions: mockCheckApiKeyPermissions,
   hasPermission: vi.fn(),
+  permissionsArrayToStructure: mockPermissionsArrayToStructure,
 }));
 
 describe('API Key Validation', () => {
@@ -53,7 +64,26 @@ describe('API Key Validation', () => {
     console.error = vi.fn();
 
     // Setup default headers mock
-    mockHeaders.mockResolvedValue(new Headers());
+    mockHeaders.mockImplementation(() => Promise.resolve(new Headers()));
+
+    // Setup default permission conversion mock
+    mockPermissionsArrayToStructure.mockImplementation((permissions) => {
+      const actions = [];
+      const resources = [];
+
+      permissions.forEach((p) => {
+        if (p && p.includes(':')) {
+          const [resource, action] = p.split(':');
+          if (!resources.includes(resource)) resources.push(resource);
+          if (!actions.includes(action)) actions.push(action);
+        } else if (p) {
+          // Handle single permissions without colon
+          if (!actions.includes(p)) actions.push(p);
+        }
+      });
+
+      return { actions, resources };
+    });
   });
 
   afterEach(() => {
@@ -87,7 +117,10 @@ describe('API Key Validation', () => {
           expiresAt: new Date('2024-12-31T23:59:59Z'),
           lastUsedAt: new Date('2024-06-05T12:00:00Z'),
           organizationId: 'org-1',
-          permissions: ['read'],
+          permissions: {
+            actions: ['read'],
+            resources: [],
+          },
         },
       });
 
@@ -154,7 +187,7 @@ describe('API Key Validation', () => {
       const headers = new Headers();
       headers.set('x-api-key', 'test-key');
 
-      const permissions: PermissionCheck = { action: ['read'], resource: ['users'] };
+      const permissions: PermissionCheck = { users: ['read'] };
 
       mockAuth.api.verifyApiKey.mockResolvedValue({
         valid: true,
@@ -162,7 +195,7 @@ describe('API Key Validation', () => {
           id: 'key-1',
           name: 'Test Key',
           organizationId: 'org-1',
-          permissions: ['read'],
+          permissions: ['users:read'],
         },
       });
 
@@ -174,14 +207,17 @@ describe('API Key Validation', () => {
       expect(mockAuth.api.verifyApiKey).toHaveBeenCalledWith({
         body: { key: 'test-key', permissions },
       });
-      expect(mockCheckApiKeyPermissions).toHaveBeenCalledWith(['read'], permissions);
+      expect(mockCheckApiKeyPermissions).toHaveBeenCalledWith(
+        { actions: ['read'], resources: ['users'] },
+        permissions,
+      );
     });
 
     it('should return error for insufficient permissions', async () => {
       const headers = new Headers();
       headers.set('x-api-key', 'test-key');
 
-      const permissions: PermissionCheck = { action: ['write'], resource: ['users'] };
+      const permissions: PermissionCheck = { users: ['write'] };
 
       mockAuth.api.verifyApiKey.mockResolvedValue({
         valid: true,
@@ -189,7 +225,7 @@ describe('API Key Validation', () => {
           id: 'key-1',
           name: 'Test Key',
           organizationId: 'org-1',
-          permissions: ['read'],
+          permissions: ['users:read'], // Only has read permission
         },
       });
 
@@ -307,22 +343,44 @@ describe('API Key Validation', () => {
   });
 
   describe('hasPermissionForRequest', () => {
-    const permissions: PermissionCheck = { action: ['read'], resource: ['users'] };
+    const permissions: PermissionCheck = { users: ['read'] };
 
     it('should return true for valid API key with permissions', async () => {
-      const request = new NextRequest('http://localhost:3000/api/test');
-      request.headers.set('x-api-key', 'valid-key');
+      const headers = new Headers();
+      headers.set('x-api-key', 'valid-key');
 
+      const request = {
+        headers,
+        url: 'http://localhost:3000/api/test',
+        method: 'GET',
+        nextUrl: {
+          pathname: '/api/test',
+          searchParams: new URLSearchParams(),
+        },
+      } as unknown as NextRequest;
+
+      // First mock call - validateApiKey is called with permissions
       mockAuth.api.verifyApiKey.mockResolvedValue({
         valid: true,
-        key: { id: 'key-1', permissions: ['read'] },
+        key: {
+          id: 'key-1',
+          name: 'Test Key',
+          organizationId: 'org-123',
+          permissions: ['users:read'], // Permissions as array
+        },
       });
 
+      // Mock permission check to return true
       mockCheckApiKeyPermissions.mockReturnValue(true);
 
       const result = await hasPermissionForRequest(request, permissions);
 
       expect(result).toBe(true);
+      // Verify that the API was called with the correct parameters
+      expect(mockAuth.api.verifyApiKey).toHaveBeenCalledTimes(1);
+      const callArgs = mockAuth.api.verifyApiKey.mock.calls[0][0];
+      expect(callArgs.body.key).toBe('valid-key');
+      expect(callArgs.body.permissions).toEqual({ users: ['read'] });
     });
 
     it('should return false for invalid API key', async () => {

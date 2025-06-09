@@ -36,6 +36,11 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
     useCarouselArrowButtons(emblaApi);
 
+  // Don't render anything if no products
+  if (!data || data.length === 0) {
+    return null;
+  }
+
   return (
     <div className={`nc-SectionSliderProductCard ${className}`}>
       <Heading
@@ -53,7 +58,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
 
       <div ref={emblaRef} className="embla">
         <div className="-ms-5 embla__container sm:-ms-8">
-          {data.map((product) => (
+          {data?.map((product) => (
             <div
               key={product.id}
               className="embla__slide basis-[86%] ps-5 sm:ps-8 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"

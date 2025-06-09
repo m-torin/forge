@@ -1,6 +1,7 @@
+import { getProducts } from "@/lib/data-service";
 import { Alert, Card, Stack, Text, Title } from "@mantine/core";
 
-import { getProducts, ProductCard } from "@repo/design-system/mantine-ciseco";
+import { ProductCard } from "@repo/design-system/mantine-ciseco";
 
 export default async function TestDrawersManualPage() {
   // Get sample products for testing quick view

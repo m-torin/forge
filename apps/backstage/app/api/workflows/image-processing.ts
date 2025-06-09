@@ -147,8 +147,8 @@ export const generateVariantsStep = compose(
   }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 30000,
+      threshold: 0.5,
       timeout: 5000,
     }),
 );
@@ -228,7 +228,6 @@ export const uploadToCDNStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 5,
-,
     }),
 );
 
@@ -237,7 +236,7 @@ export const invalidateCacheStep = StepTemplates.http(
   'invalidate-cache',
   'Invalidate old image versions in CDN',
   {
-
+    httpConfig: {
       baseHeaders: {
         'X-CDN-Key': 'cdn-secret-key',
       },
@@ -282,7 +281,7 @@ export const sendWebhookStep = StepTemplates.http(
   'webhook-notification',
   'Notify external systems about new images',
   {
-
+    httpConfig: {
       method: 'POST',
       retryConfig: {
         backoff: 'fixed',

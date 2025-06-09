@@ -1,5 +1,3 @@
-import { cookies, headers } from 'next/headers';
-
 import { parseOverrides } from '../shared/utils';
 
 // Re-export getProviderData from Vercel SDK
@@ -9,6 +7,8 @@ export { getProviderData } from '@vercel/flags/next';
  * Get the current flag context from Next.js headers/cookies
  */
 export async function getFlagContext() {
+  // Dynamically import to avoid bundling in client
+  const { cookies, headers } = await import('next/headers');
   const [headerStore, cookieStore] = await Promise.all([headers(), cookies()]);
 
   return {

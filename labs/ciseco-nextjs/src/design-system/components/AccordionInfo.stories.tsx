@@ -1,6 +1,6 @@
-import AccordionInfo from './AccordionInfo';
+import AccordionInfo from './AccordionInfo'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof AccordionInfo> = {
   argTypes: {
@@ -17,17 +17,16 @@ const meta: Meta<typeof AccordionInfo> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'An accordion component for displaying collapsible information sections with HTML content support.',
+        component: 'An accordion component for displaying collapsible information sections with HTML content support.',
       },
     },
     layout: 'centered',
   },
   title: 'Ciseco/AccordionInfo',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const defaultData = [
   {
@@ -60,21 +59,20 @@ const defaultData = [
   </ul>
     `,
   },
-];
+]
 
 export const Default: Story = {
   args: {
     data: defaultData,
   },
-};
+}
 
 export const CustomPanelStyling: Story = {
   args: {
     data: defaultData,
-    panelClassName:
-      'p-6 pt-4 last:pb-0 text-blue-600 text-base leading-7 bg-blue-50 rounded-lg mt-2',
+    panelClassName: 'p-6 pt-4 last:pb-0 text-blue-600 text-base leading-7 bg-blue-50 rounded-lg mt-2',
   },
-};
+}
 
 export const SingleItem: Story = {
   args: {
@@ -85,7 +83,7 @@ export const SingleItem: Story = {
       },
     ],
   },
-};
+}
 
 export const HTMLContent: Story = {
   args: {
@@ -108,7 +106,7 @@ export const HTMLContent: Story = {
       },
     ],
   },
-};
+}
 
 export const ManyItems: Story = {
   args: {
@@ -121,4 +119,4 @@ export const ManyItems: Story = {
       { name: 'Item 6', content: 'Content for the sixth item.' },
     ],
   },
-};
+}

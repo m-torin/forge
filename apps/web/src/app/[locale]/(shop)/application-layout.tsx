@@ -1,14 +1,14 @@
 "use client";
 
-import { CartContent } from "@/components/CartContent";
+import { getNavigationAction } from "@/actions/data-service-actions";
 import "rc-slider/assets/index.css";
+import { CartContent } from "@/components/CartContent";
 import { SidebarNavigationWrapper } from "@/components/SidebarNavigationWrapper";
 import { AppLayoutProvider, useAppLayout } from "@/contexts/AppLayoutContext";
 import { Drawer, ScrollArea } from "@mantine/core";
 import React, { type ReactNode, useEffect, useState } from "react";
 
 import { Footer, Logo } from "@repo/design-system/mantine-ciseco";
-import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
 
 interface ComponentProps {
   children: ReactNode;
@@ -23,7 +23,7 @@ function ApplicationLayoutInner({ children, footer, header }: ComponentProps) {
   useEffect(() => {
     const fetchNavigation = async () => {
       try {
-        const data = await getNavigation();
+        const data = await getNavigationAction();
         setNavigationData(data);
       } catch (error) {
         console.error("Failed to fetch navigation:", error);

@@ -29,9 +29,11 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import { notify } from '@repo/notifications/mantine-notifications';
-import { downloadFile } from './ExportHandler';
-import { DeleteConfirmation } from './DeleteConfirmation';
+
 import { BulkOperations } from './BulkOperations';
+import { DeleteConfirmation } from './DeleteConfirmation';
+import { downloadFile } from './ExportHandler';
+
 import type { ModelConfig } from '../lib/model-config';
 
 interface Column {
@@ -53,9 +55,9 @@ interface DataTableProps {
     pages: number;
   };
   editHref?: (id: string) => string;
-  modelName: string;
   modelConfig?: ModelConfig;
   modelKey?: string; // For fetching cascade info
+  modelName: string;
   onBulkDelete?: (ids: string[]) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
   onExport?: (
@@ -72,9 +74,9 @@ export function DataTable({
   createHref,
   data,
   editHref,
-  modelName,
   modelConfig,
   modelKey,
+  modelName,
   onBulkDelete,
   onDelete,
   onExport,
@@ -102,9 +104,7 @@ export function DataTable({
     if (!onDelete) return;
 
     modals.openConfirmModal({
-      title: `Delete ${modelName}`,
       centered: true,
-      size: 'lg',
       children: modelKey ? (
         <DeleteConfirmation modelName={modelKey} recordId={id} recordName={recordName} />
       ) : (
@@ -114,8 +114,8 @@ export function DataTable({
           undone.
         </Text>
       ),
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
       confirmProps: { color: 'red' },
+      labels: { cancel: 'Cancel', confirm: 'Delete' },
       onConfirm: async () => {
         setDeletingId(id);
         startTransition(async () => {
@@ -130,6 +130,8 @@ export function DataTable({
           }
         });
       },
+      size: 'lg',
+      title: `Delete ${modelName}`,
     });
   };
 
@@ -137,7 +139,6 @@ export function DataTable({
     if (!onBulkDelete || selectedIds.length === 0) return;
 
     modals.openConfirmModal({
-      title: 'Delete Multiple Records',
       centered: true,
       children: (
         <Text size="sm">
@@ -145,8 +146,8 @@ export function DataTable({
           be undone.
         </Text>
       ),
-      labels: { confirm: 'Delete All', cancel: 'Cancel' },
       confirmProps: { color: 'red' },
+      labels: { cancel: 'Cancel', confirm: 'Delete All' },
       onConfirm: async () => {
         startTransition(async () => {
           try {
@@ -158,6 +159,7 @@ export function DataTable({
           }
         });
       },
+      title: 'Delete Multiple Records',
     });
   };
 
@@ -185,207 +187,207 @@ export function DataTable({
   const indeterminate = selectedIds.length > 0 && !allSelected;
 
   // Get selected records for bulk operations
-  const selectedRecords = data.records.filter(record => selectedIds.includes(record.id));
+  const selectedRecords = data.records.filter((record) => selectedIds.includes(record.id));
 
   return (
     <>
       {/* Bulk Operations */}
       {showBulkOperations && modelConfig && (
         <BulkOperations
-          modelName={modelName}
           modelConfig={modelConfig}
-          selectedRecords={selectedRecords}
-          onSelectionChange={setSelectedIds}
+          modelName={modelName}
           onRefresh={onRefresh || (() => window.location.reload())}
+          onSelectionChange={setSelectedIds}
+          selectedRecords={selectedRecords}
         />
       )}
 
       <Card withBorder>
-      <Flex align="center" gap="md" justify="space-between" mb="md" wrap="wrap">
-        <Group>
-          <TextInput
-            leftSection={<IconSearch size={16} />}
-            onChange={(e) => setSearch(e.currentTarget.value)}
-            placeholder={`Search ${modelName}...`}
-            style={{ width: 300 }}
-            value={search}
-          />
-          {selectedIds.length > 0 && (
-            <Badge color="blue" variant="filled">
-              {selectedIds.length} selected
-            </Badge>
-          )}
-        </Group>
+        <Flex align="center" gap="md" justify="space-between" mb="md" wrap="wrap">
+          <Group>
+            <TextInput
+              leftSection={<IconSearch size={16} />}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              placeholder={`Search ${modelName}...`}
+              style={{ width: 300 }}
+              value={search}
+            />
+            {selectedIds.length > 0 && (
+              <Badge color="blue" variant="filled">
+                {selectedIds.length} selected
+              </Badge>
+            )}
+          </Group>
 
-        <Group>
-          {selectedIds.length > 0 && onBulkDelete && (
-            <Button
-              color="red"
-              leftSection={<IconTrash size={16} />}
-              loading={isPending}
-              onClick={handleBulkDelete}
-              size="sm"
-              variant="light"
-            >
-              Delete Selected
-            </Button>
-          )}
+          <Group>
+            {selectedIds.length > 0 && onBulkDelete && (
+              <Button
+                color="red"
+                leftSection={<IconTrash size={16} />}
+                loading={isPending}
+                onClick={handleBulkDelete}
+                size="sm"
+                variant="light"
+              >
+                Delete Selected
+              </Button>
+            )}
 
-          {onExport && (
-            <Menu width={200} shadow="md">
-              <Menu.Target>
-                <Button
-                  leftSection={<IconDownload size={16} />}
-                  loading={isPending}
-                  size="sm"
-                  variant="light"
-                >
-                  Export
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item onClick={() => handleExport('json')}>Export as JSON</Menu.Item>
-                <Menu.Item onClick={() => handleExport('csv')}>Export as CSV</Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
-          )}
+            {onExport && (
+              <Menu width={200} shadow="md">
+                <Menu.Target>
+                  <Button
+                    leftSection={<IconDownload size={16} />}
+                    loading={isPending}
+                    size="sm"
+                    variant="light"
+                  >
+                    Export
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item onClick={() => handleExport('json')}>Export as JSON</Menu.Item>
+                  <Menu.Item onClick={() => handleExport('csv')}>Export as CSV</Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            )}
 
-          {createHref && (
-            <Button
-              href={createHref}
-              component={Link}
-              leftSection={<IconPlus size={16} />}
-              size="sm"
-            >
-              Create {modelName}
-            </Button>
-          )}
-        </Group>
-      </Flex>
+            {createHref && (
+              <Button
+                href={createHref}
+                component={Link}
+                leftSection={<IconPlus size={16} />}
+                size="sm"
+              >
+                Create {modelName}
+              </Button>
+            )}
+          </Group>
+        </Flex>
 
-      <ScrollArea>
-        <Table highlightOnHover striped>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th style={{ width: 40 }}>
-                <Checkbox
-                  onChange={(e) => {
-                    if (e.currentTarget.checked) {
-                      setSelectedIds(filteredRecords.map((r) => r.id));
-                    } else {
-                      setSelectedIds([]);
-                    }
-                  }}
-                  checked={allSelected}
-                  indeterminate={indeterminate}
-                />
-              </Table.Th>
-              {columns.map((column) => (
-                <Table.Th key={column.key} style={{ width: column.width }}>
-                  {column.label}
-                </Table.Th>
-              ))}
-              <Table.Th style={{ width: 100 }}>Actions</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {filteredRecords.length === 0 ? (
+        <ScrollArea>
+          <Table highlightOnHover striped>
+            <Table.Thead>
               <Table.Tr>
-                <Table.Td colSpan={columns.length + 2}>
-                  <Text c="dimmed" py="xl" ta="center">
-                    No records found
-                  </Text>
-                </Table.Td>
+                <Table.Th style={{ width: 40 }}>
+                  <Checkbox
+                    onChange={(e) => {
+                      if (e.currentTarget.checked) {
+                        setSelectedIds(filteredRecords.map((r) => r.id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                    checked={allSelected}
+                    indeterminate={indeterminate}
+                  />
+                </Table.Th>
+                {columns.map((column) => (
+                  <Table.Th key={column.key} style={{ width: column.width }}>
+                    {column.label}
+                  </Table.Th>
+                ))}
+                <Table.Th style={{ width: 100 }}>Actions</Table.Th>
               </Table.Tr>
-            ) : (
-              filteredRecords.map((record) => (
-                <Table.Tr key={record.id}>
-                  <Table.Td>
-                    <Checkbox
-                      onChange={(e) => {
-                        if (e.currentTarget.checked) {
-                          setSelectedIds([...selectedIds, record.id]);
-                        } else {
-                          setSelectedIds(selectedIds.filter((id) => id !== record.id));
-                        }
-                      }}
-                      checked={selectedIds.includes(record.id)}
-                    />
-                  </Table.Td>
-                  {columns.map((column) => (
-                    <Table.Td key={column.key}>
-                      {column.render
-                        ? column.render(record[column.key], record)
-                        : record[column.key] || '-'}
-                    </Table.Td>
-                  ))}
-                  <Table.Td>
-                    <Group gap={4} wrap="nowrap">
-                      {viewHref && (
-                        <ActionIcon
-                          href={viewHref(record.id)}
-                          color="blue"
-                          component={Link}
-                          size="sm"
-                          variant="subtle"
-                        >
-                          <IconEye size={16} />
-                        </ActionIcon>
-                      )}
-                      {editHref && (
-                        <ActionIcon
-                          href={editHref(record.id)}
-                          color="gray"
-                          component={Link}
-                          size="sm"
-                          variant="subtle"
-                        >
-                          <IconEdit size={16} />
-                        </ActionIcon>
-                      )}
-                      {onDelete && (
-                        <ActionIcon
-                          color="red"
-                          loading={deletingId === record.id}
-                          onClick={() => {
-                            const recordName =
-                              record.name ||
-                              record.title ||
-                              record.email ||
-                              record.barcode ||
-                              record.type ||
-                              undefined;
-                            handleDelete(record.id, recordName);
-                          }}
-                          size="sm"
-                          variant="subtle"
-                        >
-                          <IconTrash size={16} />
-                        </ActionIcon>
-                      )}
-                    </Group>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredRecords.length === 0 ? (
+                <Table.Tr>
+                  <Table.Td colSpan={columns.length + 2}>
+                    <Text c="dimmed" py="xl" ta="center">
+                      No records found
+                    </Text>
                   </Table.Td>
                 </Table.Tr>
-              ))
-            )}
-          </Table.Tbody>
-        </Table>
-      </ScrollArea>
+              ) : (
+                filteredRecords.map((record) => (
+                  <Table.Tr key={record.id}>
+                    <Table.Td>
+                      <Checkbox
+                        onChange={(e) => {
+                          if (e.currentTarget.checked) {
+                            setSelectedIds([...selectedIds, record.id]);
+                          } else {
+                            setSelectedIds(selectedIds.filter((id) => id !== record.id));
+                          }
+                        }}
+                        checked={selectedIds.includes(record.id)}
+                      />
+                    </Table.Td>
+                    {columns.map((column) => (
+                      <Table.Td key={column.key}>
+                        {column.render
+                          ? column.render(record[column.key], record)
+                          : record[column.key] || '-'}
+                      </Table.Td>
+                    ))}
+                    <Table.Td>
+                      <Group gap={4} wrap="nowrap">
+                        {viewHref && (
+                          <ActionIcon
+                            href={viewHref(record.id)}
+                            color="blue"
+                            component={Link}
+                            size="sm"
+                            variant="subtle"
+                          >
+                            <IconEye size={16} />
+                          </ActionIcon>
+                        )}
+                        {editHref && (
+                          <ActionIcon
+                            href={editHref(record.id)}
+                            color="gray"
+                            component={Link}
+                            size="sm"
+                            variant="subtle"
+                          >
+                            <IconEdit size={16} />
+                          </ActionIcon>
+                        )}
+                        {onDelete && (
+                          <ActionIcon
+                            color="red"
+                            loading={deletingId === record.id}
+                            onClick={() => {
+                              const recordName =
+                                record.name ||
+                                record.title ||
+                                record.email ||
+                                record.barcode ||
+                                record.type ||
+                                undefined;
+                              handleDelete(record.id, recordName);
+                            }}
+                            size="sm"
+                            variant="subtle"
+                          >
+                            <IconTrash size={16} />
+                          </ActionIcon>
+                        )}
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              )}
+            </Table.Tbody>
+          </Table>
+        </ScrollArea>
 
-      {data.pages > 1 && (
-        <Flex justify="center" mt="xl">
-          <Pagination
-            onChange={(page) => {
-              const params = new URLSearchParams(window.location.search);
-              params.set('page', page.toString());
-              router.push(`${window.location.pathname}?${params.toString()}`);
-            }}
-            total={data.pages}
-            value={data.page}
-          />
-        </Flex>
-      )}
-    </Card>
+        {data.pages > 1 && (
+          <Flex justify="center" mt="xl">
+            <Pagination
+              onChange={(page) => {
+                const params = new URLSearchParams(window.location.search);
+                params.set('page', page.toString());
+                router.push(`${window.location.pathname}?${params.toString()}`);
+              }}
+              total={data.pages}
+              value={data.page}
+            />
+          </Flex>
+        )}
+      </Card>
     </>
   );
 }

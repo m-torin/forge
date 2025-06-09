@@ -4,13 +4,25 @@
  *
  * @example
  * ```typescript
- * import { createNextJSClientObservability } from '@repo/observability/client/next';
+ * import {
+ *   createClientObservability,
+ *   ObservabilityProvider,
+ *   useObservability,
+ *   initializeClient
+ * } from '@repo/observability/client/next';
  *
- * // Create Next.js optimized observability
- * const observability = createNextJSClientObservability({
- *   providers: { sentry: { dsn: 'xxx' } },
- *   nextjs: { tunnelRoute: '/monitoring-tunnel' }
- * });
+ * // In your layout.tsx
+ * export default function RootLayout({ children }) {
+ *   return (
+ *     <ObservabilityProvider config={{
+ *       providers: {
+ *         sentry: { dsn: process.env.NEXT_PUBLIC_SENTRY_DSN }
+ *       }
+ *     }}>
+ *       {children}
+ *     </ObservabilityProvider>
+ *   );
+ * }
  * ```
  */
 
@@ -18,30 +30,44 @@
 // CORE CLIENT OBSERVABILITY (re-export everything from client)
 // ============================================================================
 
-// Re-export everything from client for convenience
 export * from './client';
 
 // ============================================================================
-// NEXT.JS CLIENT INTEGRATION
+// NEXT.JS CLIENT COMPONENTS & HOOKS
 // ============================================================================
 
 export {
-  createNextJSClientObservability,
-  // Next.js client observability manager
-  NextJSClientObservabilityManager,
-} from './next/client';
+  type ErrorContext,
+  ObservabilityContext,
 
-export {
-  createObservabilityConfig,
-  type SentryBuildOptions,
-  withLogging,
+  // Types
+  type ObservabilityEvent,
+  // Context providers
+  ObservabilityProvider,
+  type ObservabilityProviderProps,
+  // React hooks for client components
+  useObservability,
+
+  useObservabilityManager,
+
+  usePerformanceTimer,
+  useWorkflowObservability,
+  // HOCs
   withObservability,
-  // Next.js config wrappers
-  withSentry,
-} from './next/config-wrappers';
+} from './hooks';
 
 // ============================================================================
-// NEXT.JS TYPES
+// NEXT.JS CLIENT INSTRUMENTATION
 // ============================================================================
 
-export type { NextJSClientObservabilityConfig } from './next/client';
+export {
+  initializeClient,
+  default as initializeClientDefault,
+  onRouterTransitionStart,
+} from './next/instrumentation-client';
+
+// ============================================================================
+// NEXT.JS CLIENT CONFIGURATION
+// ============================================================================
+
+export { getObservabilityConfig, mergeObservabilityConfig } from './next/config';

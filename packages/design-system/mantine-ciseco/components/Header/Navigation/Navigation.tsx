@@ -31,7 +31,7 @@ const MegaMenu = ({
   menuItem,
 }: {
   menuItem: TNavigationItem;
-  collection: TCollection;
+  collection?: TCollection;
 }) => {
   const localizeHref = useLocalizeHref();
   const renderNavlink = (item: TNavigationItem) => {
@@ -68,9 +68,11 @@ const MegaMenu = ({
                     </div>
                   ))}
                 </div>
-                <div className="w-2/5 xl:w-5/14">
-                  <CollectionCard3 collection={collection} />
-                </div>
+                {collection && (
+                  <div className="w-2/5 xl:w-5/14">
+                    <CollectionCard3 collection={collection} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -148,7 +150,7 @@ export interface Props {
   className?: string;
   currentPath?: string;
   'data-testid'?: string;
-  featuredCollection: TCollection;
+  featuredCollection?: TCollection;
   items?: {
     label: string;
     href: string;
@@ -183,7 +185,12 @@ export interface Props {
     dropdown: string;
   };
 }
-const Navigation: FC<Props> = ({ className, 'data-testid': testId = 'main-navigation', featuredCollection, menu }) => {
+const Navigation: FC<Props> = ({
+  'data-testid': testId = 'main-navigation',
+  className,
+  featuredCollection,
+  menu,
+}) => {
   return (
     <ul data-testid={testId} className={clsx('flex', className)}>
       {menu.map((menuItem) => {

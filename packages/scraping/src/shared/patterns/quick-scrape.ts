@@ -39,9 +39,11 @@ export async function quickScrape(
     // Server environment - import providers dynamically
     const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
     const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
+    const { NodeFetchProvider } = await import('../../server/providers/node-fetch-provider');
 
     providers.cheerio = (config) => new CheerioProvider();
     providers.playwright = (config) => new PlaywrightProvider();
+    providers['node-fetch'] = (config) => new NodeFetchProvider();
   }
 
   const config: ScrapingConfig = {

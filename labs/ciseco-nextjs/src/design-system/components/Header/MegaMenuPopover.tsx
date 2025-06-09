@@ -1,20 +1,20 @@
-import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/24/solid'
 
-import { type TCollection } from '../../data/data';
-import { type TNavigationItem } from '../../data/navigation';
-import CollectionCard3 from '../CollectionCard3';
-import { Link } from '../Link';
+import { type TCollection } from '../../data/data'
+import { type TNavigationItem } from '../../data/navigation'
+import CollectionCard3 from '../CollectionCard3'
+import { Link } from '../Link'
 
 export default function MegaMenuPopover({
   featuredCollection,
   megamenu,
 }: {
-  megamenu: TNavigationItem;
-  featuredCollection: TCollection;
+  megamenu: TNavigationItem
+  featuredCollection: TCollection
 }) {
   if (megamenu.type !== 'mega-menu') {
-    return null;
+    return null
   }
 
   const renderNavlink = (item: TNavigationItem) => {
@@ -27,15 +27,15 @@ export default function MegaMenuPopover({
           {item.name}
         </Link>
       </li>
-    );
-  };
+    )
+  }
 
   return (
     <div className="hidden lg:block">
       <Popover className="group">
-        <PopoverButton className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 focus:outline-hidden dark:text-neutral-300">
+        <PopoverButton className="focus:outline-hidden -m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 dark:text-neutral-300">
           {megamenu.name}
-          <ChevronDownIcon aria-hidden="true" className="ms-1 size-4 group-data-open:rotate-180" />
+          <ChevronDownIcon aria-hidden="true" className="group-data-open:rotate-180 ms-1 size-4" />
         </PopoverButton>
         <Transition
           enterFrom="opacity-0 translate-y-1"
@@ -52,16 +52,12 @@ export default function MegaMenuPopover({
                   <div className="grid flex-1 grid-cols-4 gap-6 pr-6 xl:gap-8 xl:pr-20">
                     {megamenu.children?.map((menuChild, index) => (
                       <div key={index}>
-                        <p className="font-medium text-neutral-900 dark:text-neutral-200">
-                          {menuChild.name}
-                        </p>
-                        <ul className="mt-4 grid space-y-4">
-                          {menuChild.children?.map(renderNavlink)}
-                        </ul>
+                        <p className="font-medium text-neutral-900 dark:text-neutral-200">{menuChild.name}</p>
+                        <ul className="mt-4 grid space-y-4">{menuChild.children?.map(renderNavlink)}</ul>
                       </div>
                     ))}
                   </div>
-                  <div className="w-2/5 xl:w-5/14">
+                  <div className="xl:w-5/14 w-2/5">
                     <CollectionCard3 collection={featuredCollection} />
                   </div>
                 </div>
@@ -71,5 +67,5 @@ export default function MegaMenuPopover({
         </Transition>
       </Popover>
     </div>
-  );
+  )
 }

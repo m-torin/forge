@@ -10,12 +10,16 @@ export interface SwitchDarkMode2Props {
   className?: string;
   'data-testid'?: string;
 }
-const SwitchDarkMode2: React.FC<SwitchDarkMode2Props> = ({ className, 'data-testid': testId = 'switch-dark-mode-2' }) => {
+const SwitchDarkMode2: React.FC<SwitchDarkMode2Props> = ({
+  'data-testid': testId = 'switch-dark-mode-2',
+  className,
+}) => {
   const { _toogleDarkMode, isDarkMode } = useThemeMode();
 
   return (
     <div className={clsx('inline-flex', className)}>
       <Switch
+        data-testid={testId}
         color={isDarkMode ? 'teal.9' : 'teal.6'}
         onChange={(event) => _toogleDarkMode()}
         classNames={{
@@ -26,7 +30,6 @@ const SwitchDarkMode2: React.FC<SwitchDarkMode2Props> = ({ className, 'data-test
         aria-label="Enable dark mode"
         checked={isDarkMode}
         size="sm"
-        data-testid={testId}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import { getCollections, getNavigation } from "@/lib/data-service";
 import clsx from "clsx";
 
 import {
@@ -6,8 +7,6 @@ import {
   Navigation,
   SearchBtnPopover,
 } from "@repo/design-system/mantine-ciseco";
-import { getCollections } from "@repo/design-system/mantine-ciseco/data/data";
-import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
 
 import ContextualCartBtn from "./ContextualCartBtn";
 import ContextualHamburgerBtn from "./ContextualHamburgerBtn";
@@ -42,7 +41,7 @@ export default async function WebHeader2({
 
           <div className="mx-4 hidden flex-2 justify-center lg:flex">
             <Navigation
-              featuredCollection={allCollections[10]}
+              featuredCollection={allCollections?.[10]}
               menu={navigationMenu}
             />
           </div>

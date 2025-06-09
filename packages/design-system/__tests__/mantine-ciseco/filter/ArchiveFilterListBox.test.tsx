@@ -333,15 +333,14 @@ describe('ArchiveFilterListBox', () => {
       <ArchiveFilterListBox options={defaultOptions} value="electronics" />,
     );
 
-    // Check that electronics is selected
-    const electronicsOption = screen.getByDisplayValue('electronics');
-    expect(electronicsOption).toHaveAttribute('value', 'electronics');
+    // Check that electronics is selected - Mantine Select shows label in input
+    const input = screen.getByRole('combobox');
+    expect(input).toHaveValue('electronics');
 
     rerender(<ArchiveFilterListBox options={defaultOptions} value="clothing" />);
 
     // Check that clothing is now selected
-    const clothingOption = screen.getByDisplayValue('clothing');
-    expect(clothingOption).toHaveAttribute('value', 'clothing');
+    expect(input).toHaveValue('clothing');
   });
 
   it('renders search functionality when searchable', () => {

@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -52,13 +55,16 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     // Verify the current result is properly initialized
     expect(result.current).toBeDefined();
-    expect(result.current).not.toBeNull();
     expect(typeof result.current.log).toBe('function');
     expect(typeof result.current.captureException).toBe('function');
     expect(typeof result.current.identify).toBe('function');
@@ -82,12 +88,13 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
-
-    // Verify the result is properly initialized
-    expect(result.current).not.toBeNull();
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     await act(async () => {
       await result.current.log('info', 'Test message', { userId: '123' });
@@ -114,9 +121,13 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     const error = new Error('Test error');
 
@@ -144,9 +155,13 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     await act(async () => {
       await result.current.identify('user-123', { email: 'test@example.com' });
@@ -172,9 +187,13 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     await act(async () => {
       await result.current.setContext({ environment: 'test' });
@@ -200,9 +219,13 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     await act(async () => {
       await result.current.log('info', 'Test message');
@@ -229,9 +252,13 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     // Verify the result is properly initialized
     expect(result.current).not.toBeNull();
@@ -260,9 +287,13 @@ describe('useObservability', () => {
     const { result } = renderHook(() => useObservability(), { wrapper });
 
     // Wait for provider to initialize
-    await waitFor(() => {
-      return isInitialized && result.current !== null;
-    });
+    await waitFor(
+      () => {
+        expect(isInitialized).toBe(true);
+        expect(result.current).not.toBeNull();
+      },
+      { timeout: 2000 },
+    );
 
     // Test debug helper
     await act(async () => {

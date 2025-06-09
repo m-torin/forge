@@ -1,6 +1,6 @@
-import ProductCard from './ProductCard';
+import ProductCard from './ProductCard'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof ProductCard> = {
   argTypes: {
@@ -35,10 +35,10 @@ const meta: Meta<typeof ProductCard> = {
     layout: 'centered',
   },
   title: 'Ciseco/ProductCard',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockProduct = {
   id: 'gid://1',
@@ -94,21 +94,21 @@ const mockProduct = {
   ],
   status: 'New in',
   title: 'Classic Cotton T-Shirt',
-};
+}
 
 export const Default: Story = {
   args: {
     data: mockProduct,
     isLiked: false,
   },
-};
+}
 
 export const Liked: Story = {
   args: {
     data: mockProduct,
     isLiked: true,
   },
-};
+}
 
 export const OnSale: Story = {
   args: {
@@ -118,7 +118,7 @@ export const OnSale: Story = {
       status: '50% Discount',
     },
   },
-};
+}
 
 export const SoldOut: Story = {
   args: {
@@ -127,7 +127,7 @@ export const SoldOut: Story = {
       status: 'Sold Out',
     },
   },
-};
+}
 
 export const HighRating: Story = {
   args: {
@@ -138,7 +138,7 @@ export const HighRating: Story = {
       status: 'Best Seller',
     },
   },
-};
+}
 
 export const LowRating: Story = {
   args: {
@@ -148,7 +148,7 @@ export const LowRating: Story = {
       reviewNumber: 45,
     },
   },
-};
+}
 
 export const ExpensiveItem: Story = {
   args: {
@@ -165,7 +165,7 @@ export const ExpensiveItem: Story = {
       title: 'Premium Designer Jacket',
     },
   },
-};
+}
 
 export const NoColorOptions: Story = {
   args: {
@@ -184,7 +184,7 @@ export const NoColorOptions: Story = {
       selectedOptions: [{ name: 'Size', value: 'M' }],
     },
   },
-};
+}
 
 export const ManyColors: Story = {
   args: {
@@ -207,7 +207,7 @@ export const ManyColors: Story = {
       ],
     },
   },
-};
+}
 
 export const LongTitle: Story = {
   args: {
@@ -216,11 +216,11 @@ export const LongTitle: Story = {
       title: 'Premium Organic Cotton Long-Sleeve Sustainable Fashion T-Shirt',
     },
   },
-};
+}
 
 export const ProductGrid: Story = {
   render: () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
+    <div className="grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {[
         {
           ...mockProduct,
@@ -291,11 +291,11 @@ export const ProductGrid: Story = {
       ))}
     </div>
   ),
-};
+}
 
 export const DifferentStatuses: Story = {
   render: () => (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl">
+    <div className="grid max-w-5xl grid-cols-2 gap-6 lg:grid-cols-4">
       {['New in', '50% Discount', 'Best Seller', 'Sold Out'].map((status, index) => (
         <ProductCard
           key={index}
@@ -309,11 +309,11 @@ export const DifferentStatuses: Story = {
       ))}
     </div>
   ),
-};
+}
 
 export const PriceRange: Story = {
   render: () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl">
+    <div className="grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {[19.99, 49.99, 99.99, 299.99].map((price, index) => (
         <ProductCard
           key={index}
@@ -327,4 +327,4 @@ export const PriceRange: Story = {
       ))}
     </div>
   ),
-};
+}

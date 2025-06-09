@@ -22,7 +22,7 @@ const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }) => 
     <div className="nc-SectionGridFeatureItems relative">
       <HeaderFilterSection heading="Find your favorite products." />
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data.map((item) => (
+        {data?.map((item) => (
           <ProductCard key={item.id} data={item} />
         ))}
       </div>

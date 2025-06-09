@@ -1,8 +1,8 @@
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast'
 
-import AddToCardButton from './AddToCardButton';
+import AddToCardButton from './AddToCardButton'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof AddToCardButton> = {
   argTypes: {
@@ -63,10 +63,10 @@ const meta: Meta<typeof AddToCardButton> = {
     layout: 'centered',
   },
   title: 'Ciseco/AddToCardButton',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -79,7 +79,7 @@ export const Default: Story = {
     size: 'M',
     title: 'Classic T-Shirt',
   },
-};
+}
 
 export const PrimaryButton: Story = {
   args: {
@@ -93,7 +93,7 @@ export const PrimaryButton: Story = {
     size: 'L',
     title: 'Premium Hoodie',
   },
-};
+}
 
 export const SecondaryButton: Story = {
   args: {
@@ -107,13 +107,13 @@ export const SecondaryButton: Story = {
     size: '32',
     title: 'Casual Jeans',
   },
-};
+}
 
 export const WithIcon: Story = {
   args: {
     children: (
       <div className="flex items-center space-x-2">
-        <svg stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+        <svg stroke="currentColor" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
           <path
             strokeWidth={2}
             strokeLinecap="round"
@@ -124,8 +124,7 @@ export const WithIcon: Story = {
         <span>Add to Cart</span>
       </div>
     ),
-    className:
-      'px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium',
+    className: 'px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium',
     color: 'White',
     imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop',
     price: 159.99,
@@ -133,7 +132,7 @@ export const WithIcon: Story = {
     size: '9',
     title: 'Designer Sneakers',
   },
-};
+}
 
 export const LargeQuantity: Story = {
   args: {
@@ -147,7 +146,7 @@ export const LargeQuantity: Story = {
     size: 'One Size',
     title: 'Pack of Socks',
   },
-};
+}
 
 export const ExpensiveItem: Story = {
   args: {
@@ -161,7 +160,7 @@ export const ExpensiveItem: Story = {
     size: '42mm',
     title: 'Luxury Watch',
   },
-};
+}
 
 export const AsDiv: Story = {
   args: {
@@ -176,7 +175,7 @@ export const AsDiv: Story = {
     size: 'S',
     title: 'Custom Component',
   },
-};
+}
 
 export const MinimalStyling: Story = {
   args: {
@@ -189,4 +188,4 @@ export const MinimalStyling: Story = {
     size: 'M',
     title: 'Simple Product',
   },
-};
+}

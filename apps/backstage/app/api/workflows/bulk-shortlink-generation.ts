@@ -154,8 +154,8 @@ export const validateLinksStep = compose(
   (step) => withStepTimeout(step, { execution: 30000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'validationRate'],
       enableDetailedLogging: true,
+      trackingMetrics: ['validationRate'],
     }),
 );
 
@@ -349,7 +349,6 @@ export const createShortlinksStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
     }),
 );
 
@@ -525,7 +524,7 @@ export const sendNotificationsStep = StepTemplates.notification(
   'shortlink-generation-complete',
   'Notify about bulk shortlink generation completion',
   {
-, 'webhook'],
+    channels: ['email', 'webhook'],
     condition: (data: any) => data.createdLinks.length > 0,
   },
 );

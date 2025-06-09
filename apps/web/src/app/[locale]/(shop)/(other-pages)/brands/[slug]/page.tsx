@@ -1,3 +1,4 @@
+import { getBrandBySlug, getProducts } from "@/lib/data-service";
 import { seoManager } from "@/lib/seo-config";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -26,37 +27,8 @@ export async function generateStaticParams() {
   return [];
 }
 
-// Mock data - replace with real API calls
-async function getBrandBySlug(slug: string) {
-  const brands = {
-    adidas: {
-      id: "2",
-      name: "Adidas",
-      description: "Impossible is Nothing",
-      productCount: 980,
-      slug: "adidas",
-    },
-    nike: {
-      id: "1",
-      name: "Nike",
-      description: "Just Do It",
-      productCount: 1250,
-      slug: "nike",
-    },
-    puma: {
-      id: "3",
-      name: "Puma",
-      description: "Forever Faster",
-      productCount: 650,
-      slug: "puma",
-    },
-  };
-  return brands[slug as keyof typeof brands];
-}
-
 async function getBrandProducts(brandSlug: string, page = 1, limit = 20) {
-  // Mock implementation - replace with real API
-  const { getProducts } = await import("@repo/design-system/mantine-ciseco");
+  // Get all products - in a real implementation, this would filter by brand
   const allProducts = await getProducts();
 
   // Simulate pagination

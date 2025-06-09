@@ -31,6 +31,11 @@ const SectionCollectionSlider = ({
   const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
     useCarouselArrowButtons(emblaApi);
 
+  // Don't render anything if no collections
+  if (!collections || collections.length === 0) {
+    return null;
+  }
+
   return (
     <div className={className}>
       <Heading
@@ -47,7 +52,7 @@ const SectionCollectionSlider = ({
 
       <div ref={emblaRef} className="embla pl-container">
         <div className="-ms-5 embla__container">
-          {collections.map((collection) => (
+          {collections?.map((collection) => (
             <div
               key={collection.id}
               className="embla__slide basis-11/12 ps-5 sm:basis-2/3 lg:basis-3/7 xl:basis-2/5 2xl:basis-[34%]"

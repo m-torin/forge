@@ -1,452 +1,452 @@
 "use server";
 
-import { database } from "../index";
+import { prisma } from "../index";
 import type { Prisma } from "../generated/client/index";
 
 //==============================================================================
 // PRODUCT CRUD OPERATIONS
 //==============================================================================
 
-export async function createProduct(data: Prisma.ProductCreateInput) {
-  return database.product.create({ data });
+export async function createProduct(args: Prisma.ProductCreateArgs) {
+  return prisma.product.create(args);
 }
 
 export async function findManyProducts(args?: Prisma.ProductFindManyArgs) {
-  return database.product.findMany(args);
+  return prisma.product.findMany(args);
 }
 
 export async function findUniqueProduct(args: Prisma.ProductFindUniqueArgs) {
-  return database.product.findUnique(args);
+  return prisma.product.findUnique(args);
 }
 
 export async function findFirstProduct(args?: Prisma.ProductFindFirstArgs) {
-  return database.product.findFirst(args);
+  return prisma.product.findFirst(args);
 }
 
 export async function updateProduct(args: Prisma.ProductUpdateArgs) {
-  return database.product.update(args);
+  return prisma.product.update(args);
 }
 
 export async function updateManyProducts(args: Prisma.ProductUpdateManyArgs) {
-  return database.product.updateMany(args);
+  return prisma.product.updateMany(args);
 }
 
 export async function upsertProduct(args: Prisma.ProductUpsertArgs) {
-  return database.product.upsert(args);
+  return prisma.product.upsert(args);
 }
 
 export async function deleteProduct(args: Prisma.ProductDeleteArgs) {
-  return database.product.delete(args);
+  return prisma.product.delete(args);
 }
 
 export async function deleteManyProducts(args?: Prisma.ProductDeleteManyArgs) {
-  return database.product.deleteMany(args);
+  return prisma.product.deleteMany(args);
 }
 
 export async function countProducts(args?: Prisma.ProductCountArgs) {
-  return database.product.count(args);
+  return prisma.product.count(args);
 }
 
-export async function aggregateProducts(args?: Prisma.ProductAggregateArgs) {
-  return database.product.aggregate(args);
+export async function aggregateProducts(args = {}) {
+  return prisma.product.aggregate(args);
 }
 
 export async function groupByProducts(args: Prisma.ProductGroupByArgs) {
-  return database.product.groupBy(args);
+  return prisma.product.groupBy(args);
 }
 
 //==============================================================================
 // PRODUCT BARCODE CRUD OPERATIONS
 //==============================================================================
 
-export async function createProductBarcode(data: Prisma.ProductBarcodeCreateInput) {
-  return database.productBarcode.create({ data });
+export async function createProductBarcode(args: Prisma.ProductBarcodeCreateArgs) {
+  return prisma.productBarcode.create(args);
 }
 
 export async function findManyProductBarcodes(args?: Prisma.ProductBarcodeFindManyArgs) {
-  return database.productBarcode.findMany(args);
+  return prisma.productBarcode.findMany(args);
 }
 
 export async function findUniqueProductBarcode(args: Prisma.ProductBarcodeFindUniqueArgs) {
-  return database.productBarcode.findUnique(args);
+  return prisma.productBarcode.findUnique(args);
 }
 
 export async function findFirstProductBarcode(args?: Prisma.ProductBarcodeFindFirstArgs) {
-  return database.productBarcode.findFirst(args);
+  return prisma.productBarcode.findFirst(args);
 }
 
 export async function updateProductBarcode(args: Prisma.ProductBarcodeUpdateArgs) {
-  return database.productBarcode.update(args);
+  return prisma.productBarcode.update(args);
 }
 
 export async function updateManyProductBarcodes(args: Prisma.ProductBarcodeUpdateManyArgs) {
-  return database.productBarcode.updateMany(args);
+  return prisma.productBarcode.updateMany(args);
 }
 
 export async function upsertProductBarcode(args: Prisma.ProductBarcodeUpsertArgs) {
-  return database.productBarcode.upsert(args);
+  return prisma.productBarcode.upsert(args);
 }
 
 export async function deleteProductBarcode(args: Prisma.ProductBarcodeDeleteArgs) {
-  return database.productBarcode.delete(args);
+  return prisma.productBarcode.delete(args);
 }
 
 export async function deleteManyProductBarcodes(args?: Prisma.ProductBarcodeDeleteManyArgs) {
-  return database.productBarcode.deleteMany(args);
+  return prisma.productBarcode.deleteMany(args);
 }
 
 export async function countProductBarcodes(args?: Prisma.ProductBarcodeCountArgs) {
-  return database.productBarcode.count(args);
+  return prisma.productBarcode.count(args);
 }
 
 //==============================================================================
 // PRODUCT ASSET CRUD OPERATIONS
 //==============================================================================
 
-export async function createProductAsset(data: Prisma.ProductAssetCreateInput) {
-  return database.productAsset.create({ data });
+export async function createProductAsset(args: Prisma.ProductAssetCreateArgs) {
+  return prisma.productAsset.create(args);
 }
 
 export async function findManyProductAssets(args?: Prisma.ProductAssetFindManyArgs) {
-  return database.productAsset.findMany(args);
+  return prisma.productAsset.findMany(args);
 }
 
 export async function findUniqueProductAsset(args: Prisma.ProductAssetFindUniqueArgs) {
-  return database.productAsset.findUnique(args);
+  return prisma.productAsset.findUnique(args);
 }
 
 export async function findFirstProductAsset(args?: Prisma.ProductAssetFindFirstArgs) {
-  return database.productAsset.findFirst(args);
+  return prisma.productAsset.findFirst(args);
 }
 
 export async function updateProductAsset(args: Prisma.ProductAssetUpdateArgs) {
-  return database.productAsset.update(args);
+  return prisma.productAsset.update(args);
 }
 
 export async function updateManyProductAssets(args: Prisma.ProductAssetUpdateManyArgs) {
-  return database.productAsset.updateMany(args);
+  return prisma.productAsset.updateMany(args);
 }
 
 export async function upsertProductAsset(args: Prisma.ProductAssetUpsertArgs) {
-  return database.productAsset.upsert(args);
+  return prisma.productAsset.upsert(args);
 }
 
 export async function deleteProductAsset(args: Prisma.ProductAssetDeleteArgs) {
-  return database.productAsset.delete(args);
+  return prisma.productAsset.delete(args);
 }
 
 export async function deleteManyProductAssets(args?: Prisma.ProductAssetDeleteManyArgs) {
-  return database.productAsset.deleteMany(args);
+  return prisma.productAsset.deleteMany(args);
 }
 
 export async function countProductAssets(args?: Prisma.ProductAssetCountArgs) {
-  return database.productAsset.count(args);
+  return prisma.productAsset.count(args);
 }
 
 //==============================================================================
 // SCAN HISTORY CRUD OPERATIONS
 //==============================================================================
 
-export async function createScanHistory(data: Prisma.ScanHistoryCreateInput) {
-  return database.scanHistory.create({ data });
+export async function createScanHistory(args: Prisma.ScanHistoryCreateArgs) {
+  return prisma.scanHistory.create(args);
 }
 
 export async function findManyScanHistories(args?: Prisma.ScanHistoryFindManyArgs) {
-  return database.scanHistory.findMany(args);
+  return prisma.scanHistory.findMany(args);
 }
 
 export async function findUniqueScanHistory(args: Prisma.ScanHistoryFindUniqueArgs) {
-  return database.scanHistory.findUnique(args);
+  return prisma.scanHistory.findUnique(args);
 }
 
 export async function findFirstScanHistory(args?: Prisma.ScanHistoryFindFirstArgs) {
-  return database.scanHistory.findFirst(args);
+  return prisma.scanHistory.findFirst(args);
 }
 
 export async function updateScanHistory(args: Prisma.ScanHistoryUpdateArgs) {
-  return database.scanHistory.update(args);
+  return prisma.scanHistory.update(args);
 }
 
 export async function updateManyScanHistories(args: Prisma.ScanHistoryUpdateManyArgs) {
-  return database.scanHistory.updateMany(args);
+  return prisma.scanHistory.updateMany(args);
 }
 
 export async function upsertScanHistory(args: Prisma.ScanHistoryUpsertArgs) {
-  return database.scanHistory.upsert(args);
+  return prisma.scanHistory.upsert(args);
 }
 
 export async function deleteScanHistory(args: Prisma.ScanHistoryDeleteArgs) {
-  return database.scanHistory.delete(args);
+  return prisma.scanHistory.delete(args);
 }
 
 export async function deleteManyScanHistories(args?: Prisma.ScanHistoryDeleteManyArgs) {
-  return database.scanHistory.deleteMany(args);
+  return prisma.scanHistory.deleteMany(args);
 }
 
 export async function countScanHistories(args?: Prisma.ScanHistoryCountArgs) {
-  return database.scanHistory.count(args);
+  return prisma.scanHistory.count(args);
 }
 
 //==============================================================================
 // PRODUCT CATEGORY CRUD OPERATIONS
 //==============================================================================
 
-export async function createProductCategory(data: Prisma.ProductCategoryCreateInput) {
-  return database.productCategory.create({ data });
+export async function createProductCategory(args: Prisma.ProductCategoryCreateArgs) {
+  return prisma.productCategory.create(args);
 }
 
 export async function findManyProductCategories(args?: Prisma.ProductCategoryFindManyArgs) {
-  return database.productCategory.findMany(args);
+  return prisma.productCategory.findMany(args);
 }
 
 export async function findUniqueProductCategory(args: Prisma.ProductCategoryFindUniqueArgs) {
-  return database.productCategory.findUnique(args);
+  return prisma.productCategory.findUnique(args);
 }
 
 export async function findFirstProductCategory(args?: Prisma.ProductCategoryFindFirstArgs) {
-  return database.productCategory.findFirst(args);
+  return prisma.productCategory.findFirst(args);
 }
 
 export async function updateProductCategory(args: Prisma.ProductCategoryUpdateArgs) {
-  return database.productCategory.update(args);
+  return prisma.productCategory.update(args);
 }
 
 export async function updateManyProductCategories(args: Prisma.ProductCategoryUpdateManyArgs) {
-  return database.productCategory.updateMany(args);
+  return prisma.productCategory.updateMany(args);
 }
 
 export async function upsertProductCategory(args: Prisma.ProductCategoryUpsertArgs) {
-  return database.productCategory.upsert(args);
+  return prisma.productCategory.upsert(args);
 }
 
 export async function deleteProductCategory(args: Prisma.ProductCategoryDeleteArgs) {
-  return database.productCategory.delete(args);
+  return prisma.productCategory.delete(args);
 }
 
 export async function deleteManyProductCategories(args?: Prisma.ProductCategoryDeleteManyArgs) {
-  return database.productCategory.deleteMany(args);
+  return prisma.productCategory.deleteMany(args);
 }
 
 export async function countProductCategories(args?: Prisma.ProductCategoryCountArgs) {
-  return database.productCategory.count(args);
+  return prisma.productCategory.count(args);
 }
 
 //==============================================================================
 // BRAND CRUD OPERATIONS
 //==============================================================================
 
-export async function createBrand(data: Prisma.BrandCreateInput) {
-  return database.brand.create({ data });
+export async function createBrand(args: Prisma.BrandCreateArgs) {
+  return prisma.brand.create(args);
 }
 
 export async function findManyBrands(args?: Prisma.BrandFindManyArgs) {
-  return database.brand.findMany(args);
+  return prisma.brand.findMany(args);
 }
 
 export async function findUniqueBrand(args: Prisma.BrandFindUniqueArgs) {
-  return database.brand.findUnique(args);
+  return prisma.brand.findUnique(args);
 }
 
 export async function findFirstBrand(args?: Prisma.BrandFindFirstArgs) {
-  return database.brand.findFirst(args);
+  return prisma.brand.findFirst(args);
 }
 
 export async function updateBrand(args: Prisma.BrandUpdateArgs) {
-  return database.brand.update(args);
+  return prisma.brand.update(args);
 }
 
 export async function updateManyBrands(args: Prisma.BrandUpdateManyArgs) {
-  return database.brand.updateMany(args);
+  return prisma.brand.updateMany(args);
 }
 
 export async function upsertBrand(args: Prisma.BrandUpsertArgs) {
-  return database.brand.upsert(args);
+  return prisma.brand.upsert(args);
 }
 
 export async function deleteBrand(args: Prisma.BrandDeleteArgs) {
-  return database.brand.delete(args);
+  return prisma.brand.delete(args);
 }
 
 export async function deleteManyBrands(args?: Prisma.BrandDeleteManyArgs) {
-  return database.brand.deleteMany(args);
+  return prisma.brand.deleteMany(args);
 }
 
 export async function countBrands(args?: Prisma.BrandCountArgs) {
-  return database.brand.count(args);
+  return prisma.brand.count(args);
 }
 
 //==============================================================================
 // COLLECTION CRUD OPERATIONS
 //==============================================================================
 
-export async function createCollection(data: Prisma.CollectionCreateInput) {
-  return database.collection.create({ data });
+export async function createCollection(args: Prisma.CollectionCreateArgs) {
+  return prisma.collection.create(args);
 }
 
 export async function findManyCollections(args?: Prisma.CollectionFindManyArgs) {
-  return database.collection.findMany(args);
+  return prisma.collection.findMany(args);
 }
 
 export async function findUniqueCollection(args: Prisma.CollectionFindUniqueArgs) {
-  return database.collection.findUnique(args);
+  return prisma.collection.findUnique(args);
 }
 
 export async function findFirstCollection(args?: Prisma.CollectionFindFirstArgs) {
-  return database.collection.findFirst(args);
+  return prisma.collection.findFirst(args);
 }
 
 export async function updateCollection(args: Prisma.CollectionUpdateArgs) {
-  return database.collection.update(args);
+  return prisma.collection.update(args);
 }
 
 export async function updateManyCollections(args: Prisma.CollectionUpdateManyArgs) {
-  return database.collection.updateMany(args);
+  return prisma.collection.updateMany(args);
 }
 
 export async function upsertCollection(args: Prisma.CollectionUpsertArgs) {
-  return database.collection.upsert(args);
+  return prisma.collection.upsert(args);
 }
 
 export async function deleteCollection(args: Prisma.CollectionDeleteArgs) {
-  return database.collection.delete(args);
+  return prisma.collection.delete(args);
 }
 
 export async function deleteManyCollections(args?: Prisma.CollectionDeleteManyArgs) {
-  return database.collection.deleteMany(args);
+  return prisma.collection.deleteMany(args);
 }
 
 export async function countCollections(args?: Prisma.CollectionCountArgs) {
-  return database.collection.count(args);
+  return prisma.collection.count(args);
 }
 
 //==============================================================================
 // TAXONOMY CRUD OPERATIONS
 //==============================================================================
 
-export async function createTaxonomy(data: Prisma.TaxonomyCreateInput) {
-  return database.taxonomy.create({ data });
+export async function createTaxonomy(args: Prisma.TaxonomyCreateArgs) {
+  return prisma.taxonomy.create(args);
 }
 
 export async function findManyTaxonomies(args?: Prisma.TaxonomyFindManyArgs) {
-  return database.taxonomy.findMany(args);
+  return prisma.taxonomy.findMany(args);
 }
 
 export async function findUniqueTaxonomy(args: Prisma.TaxonomyFindUniqueArgs) {
-  return database.taxonomy.findUnique(args);
+  return prisma.taxonomy.findUnique(args);
 }
 
 export async function findFirstTaxonomy(args?: Prisma.TaxonomyFindFirstArgs) {
-  return database.taxonomy.findFirst(args);
+  return prisma.taxonomy.findFirst(args);
 }
 
 export async function updateTaxonomy(args: Prisma.TaxonomyUpdateArgs) {
-  return database.taxonomy.update(args);
+  return prisma.taxonomy.update(args);
 }
 
 export async function updateManyTaxonomies(args: Prisma.TaxonomyUpdateManyArgs) {
-  return database.taxonomy.updateMany(args);
+  return prisma.taxonomy.updateMany(args);
 }
 
 export async function upsertTaxonomy(args: Prisma.TaxonomyUpsertArgs) {
-  return database.taxonomy.upsert(args);
+  return prisma.taxonomy.upsert(args);
 }
 
 export async function deleteTaxonomy(args: Prisma.TaxonomyDeleteArgs) {
-  return database.taxonomy.delete(args);
+  return prisma.taxonomy.delete(args);
 }
 
 export async function deleteManyTaxonomies(args?: Prisma.TaxonomyDeleteManyArgs) {
-  return database.taxonomy.deleteMany(args);
+  return prisma.taxonomy.deleteMany(args);
 }
 
 export async function countTaxonomies(args?: Prisma.TaxonomyCountArgs) {
-  return database.taxonomy.count(args);
+  return prisma.taxonomy.count(args);
 }
 
 //==============================================================================
 // MEDIA CRUD OPERATIONS
 //==============================================================================
 
-export async function createMedia(data: Prisma.MediaCreateInput) {
-  return database.media.create({ data });
+export async function createMedia(args: Prisma.MediaCreateArgs) {
+  return prisma.media.create(args);
 }
 
 export async function findManyMedia(args?: Prisma.MediaFindManyArgs) {
-  return database.media.findMany(args);
+  return prisma.media.findMany(args);
 }
 
 export async function findUniqueMedia(args: Prisma.MediaFindUniqueArgs) {
-  return database.media.findUnique(args);
+  return prisma.media.findUnique(args);
 }
 
 export async function findFirstMedia(args?: Prisma.MediaFindFirstArgs) {
-  return database.media.findFirst(args);
+  return prisma.media.findFirst(args);
 }
 
 export async function updateMedia(args: Prisma.MediaUpdateArgs) {
-  return database.media.update(args);
+  return prisma.media.update(args);
 }
 
 export async function updateManyMedia(args: Prisma.MediaUpdateManyArgs) {
-  return database.media.updateMany(args);
+  return prisma.media.updateMany(args);
 }
 
 export async function upsertMedia(args: Prisma.MediaUpsertArgs) {
-  return database.media.upsert(args);
+  return prisma.media.upsert(args);
 }
 
 export async function deleteMedia(args: Prisma.MediaDeleteArgs) {
-  return database.media.delete(args);
+  return prisma.media.delete(args);
 }
 
 export async function deleteManyMedia(args?: Prisma.MediaDeleteManyArgs) {
-  return database.media.deleteMany(args);
+  return prisma.media.deleteMany(args);
 }
 
 export async function countMedia(args?: Prisma.MediaCountArgs) {
-  return database.media.count(args);
+  return prisma.media.count(args);
 }
 
 //==============================================================================
 // PDP JOIN CRUD OPERATIONS
 //==============================================================================
 
-export async function createPdpJoin(data: Prisma.PdpJoinCreateInput) {
-  return database.pdpJoin.create({ data });
+export async function createPdpJoin(args: Prisma.PdpJoinCreateArgs) {
+  return prisma.pdpJoin.create(args);
 }
 
 export async function findManyPdpJoins(args?: Prisma.PdpJoinFindManyArgs) {
-  return database.pdpJoin.findMany(args);
+  return prisma.pdpJoin.findMany(args);
 }
 
 export async function findUniquePdpJoin(args: Prisma.PdpJoinFindUniqueArgs) {
-  return database.pdpJoin.findUnique(args);
+  return prisma.pdpJoin.findUnique(args);
 }
 
 export async function findFirstPdpJoin(args?: Prisma.PdpJoinFindFirstArgs) {
-  return database.pdpJoin.findFirst(args);
+  return prisma.pdpJoin.findFirst(args);
 }
 
 export async function updatePdpJoin(args: Prisma.PdpJoinUpdateArgs) {
-  return database.pdpJoin.update(args);
+  return prisma.pdpJoin.update(args);
 }
 
 export async function updateManyPdpJoins(args: Prisma.PdpJoinUpdateManyArgs) {
-  return database.pdpJoin.updateMany(args);
+  return prisma.pdpJoin.updateMany(args);
 }
 
 export async function upsertPdpJoin(args: Prisma.PdpJoinUpsertArgs) {
-  return database.pdpJoin.upsert(args);
+  return prisma.pdpJoin.upsert(args);
 }
 
 export async function deletePdpJoin(args: Prisma.PdpJoinDeleteArgs) {
-  return database.pdpJoin.delete(args);
+  return prisma.pdpJoin.delete(args);
 }
 
 export async function deleteManyPdpJoins(args?: Prisma.PdpJoinDeleteManyArgs) {
-  return database.pdpJoin.deleteMany(args);
+  return prisma.pdpJoin.deleteMany(args);
 }
 
 export async function countPdpJoins(args?: Prisma.PdpJoinCountArgs) {
-  return database.pdpJoin.count(args);
+  return prisma.pdpJoin.count(args);
 }

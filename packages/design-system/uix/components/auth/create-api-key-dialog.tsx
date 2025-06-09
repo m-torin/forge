@@ -4,7 +4,9 @@ import {
   ActionIcon,
   Button,
   Checkbox,
+  Group,
   Modal,
+  NumberInput,
   Paper,
   Select,
   Stack,
@@ -12,6 +14,7 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core';
+import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconCopy, IconPlus } from '@tabler/icons-react';
@@ -19,88 +22,199 @@ import React, { useState } from 'react';
 
 import { createApiKey } from '@repo/auth/client';
 
+/**
+ * API key creation form data interface.
+ */
+interface ApiKeyFormData {
+  /** Whether rate limiting is enabled */
+  enableRateLimit: boolean;
+  /** Expiration time in seconds, or 'never' */
+  expiresIn: string;
+  /** JSON metadata string */
+  metadata: string;
+  /** Display name for the API key */
+  name: string;
+  /** Key prefix for identification */
+  prefix: string;
+  /** Maximum requests per time window */
+  rateLimitMax: string;
+  /** Rate limit time window in milliseconds */
+  rateLimitTimeWindow: string;
+  /** Refill amount for rate limiting */
+  refillAmount: string;
+  /** Refill interval in milliseconds */
+  refillInterval: string;
+  /** Remaining uses limit */
+  remaining: string;
+  /** User ID for server-side assignment (admin only) */
+  userId: string;
+}
+
+/**
+ * Permission structure for API key access control.
+ */
+interface ApiKeyPermissions {
+  /** Additional permission types (allows indexing) */
+  [action: string]: string[] | undefined;
+  /** Read permissions by resource type */
+  read?: string[];
+  /** Write permissions by resource type */
+  write?: string[];
+}
+
+/**
+ * Props for the CreateApiKeyDialog component.
+ */
 interface CreateApiKeyDialogProps {
+  /** Whether to show advanced server options (admin only) */
   allowServerOptions?: boolean;
+  /** Callback function called on successful API key creation */
   onSuccess?: () => void;
 }
 
+/**
+ * Result of successful API key creation.
+ */
+interface CreatedApiKey {
+  /** Unique identifier for the API key */
+  id: string;
+  /** The actual API key string */
+  key: string;
+}
+
+/**
+ * Dialog component for creating new API keys with comprehensive configuration options.
+ *
+ * @param props - Component props
+ * @returns API key creation dialog with form validation and success display
+ *
+ * @example
+ * ```tsx
+ * <CreateApiKeyDialog
+ *   allowServerOptions={user.isAdmin}
+ *   onSuccess={() => refetch()}
+ * />
+ * ```
+ */
 export function CreateApiKeyDialog({
   allowServerOptions = false,
   onSuccess,
 }: CreateApiKeyDialogProps) {
   const [opened, { close, open }] = useDisclosure(false);
-  const [name, setName] = useState('');
-  const [prefix, setPrefix] = useState('forge');
-  const [expiresIn, setExpiresIn] = useState<string>('never');
-  const [metadata, setMetadata] = useState('');
-  const [enableRateLimit, setEnableRateLimit] = useState(true);
-  const [permissions, setPermissions] = useState<Record<string, string[]>>({
+  const [permissions, setPermissions] = useState<ApiKeyPermissions>({
     read: ['user', 'organization'],
     write: ['user'],
   });
   const [loading, setLoading] = useState(false);
-  const [newApiKey, setNewApiKey] = useState<{ key: string; id: string } | null>(null);
+  const [newApiKey, setNewApiKey] = useState<CreatedApiKey | null>(null);
 
-  // Server options (admin only)
-  const [userId, setUserId] = useState('');
-  const [remaining, setRemaining] = useState<string>('');
-  const [refillAmount, setRefillAmount] = useState<string>('');
-  const [refillInterval, setRefillInterval] = useState<string>('');
-  const [rateLimitTimeWindow, setRateLimitTimeWindow] = useState<string>('86400000');
-  const [rateLimitMax, setRateLimitMax] = useState<string>('100');
+  const form = useForm<ApiKeyFormData>({
+    validate: {
+      name: (value) => {
+        if (!value.trim()) return 'API key name is required';
+        if (value.length < 3) return 'Name must be at least 3 characters';
+        if (value.length > 50) return 'Name must be less than 50 characters';
+        return null;
+      },
+      metadata: (value) => {
+        if (value.trim()) {
+          try {
+            JSON.parse(value);
+          } catch {
+            return 'Metadata must be valid JSON';
+          }
+        }
+        return null;
+      },
+      prefix: (value) => {
+        if (value && value.length > 12) return 'Prefix must be 12 characters or less';
+        if (value && !/^[a-zA-Z0-9-_]+$/.test(value)) {
+          return 'Prefix can only contain letters, numbers, hyphens, and underscores';
+        }
+        return null;
+      },
+      rateLimitMax: (value) => {
+        if (value && (!Number.isInteger(Number(value)) || Number(value) < 1)) {
+          return 'Max requests must be a positive integer';
+        }
+        return null;
+      },
+      rateLimitTimeWindow: (value) => {
+        if (value && (!Number.isInteger(Number(value)) || Number(value) < 1000)) {
+          return 'Time window must be at least 1000ms';
+        }
+        return null;
+      },
+      refillAmount: (value, values) => {
+        if (allowServerOptions && value && !values.refillInterval) {
+          return 'Refill interval is required when refill amount is set';
+        }
+        if (value && (!Number.isInteger(Number(value)) || Number(value) < 1)) {
+          return 'Refill amount must be a positive integer';
+        }
+        return null;
+      },
+      refillInterval: (value, values) => {
+        if (allowServerOptions && value && !values.refillAmount) {
+          return 'Refill amount is required when refill interval is set';
+        }
+        if (value && (!Number.isInteger(Number(value)) || Number(value) < 1)) {
+          return 'Refill interval must be a positive integer';
+        }
+        return null;
+      },
+      remaining: (value) => {
+        if (value && (!Number.isInteger(Number(value)) || Number(value) < 1)) {
+          return 'Remaining uses must be a positive integer';
+        }
+        return null;
+      },
+    },
+    initialValues: {
+      name: '',
+      enableRateLimit: true,
+      expiresIn: 'never',
+      metadata: '',
+      prefix: 'forge',
+      rateLimitMax: '100',
+      rateLimitTimeWindow: '86400000',
+      refillAmount: '',
+      refillInterval: '',
+      remaining: '',
+      userId: '',
+    },
+  });
 
-  const handleCreate = async () => {
-    if (!name.trim()) {
-      notifications.show({
-        color: 'red',
-        message: 'Please enter a name for the API key',
-        title: 'Error',
-      });
-      return;
-    }
-
-    if (allowServerOptions && refillAmount && !refillInterval) {
-      notifications.show({
-        color: 'red',
-        message: 'Please provide refill interval when refill amount is set',
-        title: 'Error',
-      });
-      return;
-    }
-
-    if (allowServerOptions && refillInterval && !refillAmount) {
-      notifications.show({
-        color: 'red',
-        message: 'Please provide refill amount when refill interval is set',
-        title: 'Error',
-      });
-      return;
-    }
-
+  /**
+   * Handles API key creation form submission.
+   *
+   * @param values - Validated form data
+   */
+  const handleCreate = async (values: ApiKeyFormData) => {
     try {
       setLoading(true);
 
-      const metadataObj = metadata.trim() ? JSON.parse(metadata) : undefined;
-      const expiresInSeconds = expiresIn === 'never' ? null : parseInt(expiresIn);
+      const metadataObj = values.metadata.trim() ? JSON.parse(values.metadata) : undefined;
+      const expiresInSeconds = values.expiresIn === 'never' ? null : parseInt(values.expiresIn);
 
       const requestData: any = {
-        name,
+        name: values.name,
         expiresIn: expiresInSeconds,
         metadata: metadataObj,
         permissions,
-        prefix,
+        prefix: values.prefix,
       };
 
       // Add server options if admin mode
       if (allowServerOptions) {
-        if (userId) requestData.userId = userId;
-        if (remaining) requestData.remaining = parseInt(remaining);
-        if (refillAmount) requestData.refillAmount = parseInt(refillAmount);
-        if (refillInterval) requestData.refillInterval = parseInt(refillInterval);
-        if (enableRateLimit) {
+        if (values.userId) requestData.userId = values.userId;
+        if (values.remaining) requestData.remaining = parseInt(values.remaining);
+        if (values.refillAmount) requestData.refillAmount = parseInt(values.refillAmount);
+        if (values.refillInterval) requestData.refillInterval = parseInt(values.refillInterval);
+        if (values.enableRateLimit) {
           requestData.rateLimitEnabled = true;
-          requestData.rateLimitTimeWindow = parseInt(rateLimitTimeWindow);
-          requestData.rateLimitMax = parseInt(rateLimitMax);
+          requestData.rateLimitTimeWindow = parseInt(values.rateLimitTimeWindow);
+          requestData.rateLimitMax = parseInt(values.rateLimitMax);
         } else {
           requestData.rateLimitEnabled = false;
         }
@@ -138,6 +252,11 @@ export function CreateApiKeyDialog({
     }
   };
 
+  /**
+   * Copies text to clipboard and shows success notification.
+   *
+   * @param text - Text to copy to clipboard
+   */
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     notifications.show({
@@ -147,26 +266,26 @@ export function CreateApiKeyDialog({
     });
   };
 
+  /**
+   * Handles dialog close and resets all form state.
+   */
   const handleClose = () => {
     close();
     setNewApiKey(null);
-    setName('');
-    setPrefix('forge');
-    setExpiresIn('never');
-    setMetadata('');
-    setEnableRateLimit(true);
+    form.reset();
     setPermissions({
       read: ['user', 'organization'],
       write: ['user'],
     });
-    setUserId('');
-    setRemaining('');
-    setRefillAmount('');
-    setRefillInterval('');
-    setRateLimitTimeWindow('86400000');
-    setRateLimitMax('100');
   };
 
+  /**
+   * Handles permission changes for API key access control.
+   *
+   * @param action - The permission action type (read/write)
+   * @param resource - The resource type being permissioned
+   * @param checked - Whether the permission is being enabled or disabled
+   */
   const handlePermissionChange = (action: string, resource: string, checked: boolean) => {
     setPermissions((prev) => {
       const newPermissions = { ...prev };
@@ -197,137 +316,135 @@ export function CreateApiKeyDialog({
             <Text color="dimmed" mb="md" size="sm">
               Create a new API key to authenticate requests to your application.
             </Text>
-            <Stack gap="md">
-              <TextInput
-                onChange={(e) => setName(e.currentTarget.value)}
-                placeholder="My API Key"
-                label="Name"
-                required
-                value={name}
-              />
-              <TextInput
-                onChange={(e) => setPrefix(e.currentTarget.value)}
-                placeholder="forge"
-                label="Prefix"
-                maxLength={12}
-                value={prefix}
-              />
-              <Select
-                onChange={(value) => setExpiresIn(value || 'never')}
-                data={[
-                  { label: 'Never', value: 'never' },
-                  { label: '1 hour', value: '3600' },
-                  { label: '1 day', value: '86400' },
-                  { label: '7 days', value: '604800' },
-                  { label: '30 days', value: '2592000' },
-                  { label: '90 days', value: '7776000' },
-                  { label: '1 year', value: '31536000' },
-                ]}
-                label="Expires In"
-                value={expiresIn}
-              />
-              <Textarea
-                onChange={(e) => setMetadata(e.currentTarget.value)}
-                placeholder='{"tier": "premium"}'
-                rows={3}
-                label="Metadata (JSON)"
-                value={metadata}
-              />
-              <Stack gap="xs">
-                <Text fw={500} size="sm">
-                  Permissions
-                </Text>
-                <Checkbox
-                  onChange={(event) =>
-                    handlePermissionChange('read', 'user', event.currentTarget.checked)
-                  }
-                  checked={permissions.read?.includes('user')}
-                  label="Read User Data"
+            <form onSubmit={form.onSubmit(handleCreate)}>
+              <Stack gap="md">
+                <TextInput
+                  {...form.getInputProps('name')}
+                  placeholder="My API Key"
+                  label="Name"
+                  required
                 />
-                <Checkbox
-                  onChange={(event) =>
-                    handlePermissionChange('write', 'user', event.currentTarget.checked)
-                  }
-                  checked={permissions.write?.includes('user')}
-                  label="Write User Data"
+                <TextInput
+                  {...form.getInputProps('prefix')}
+                  placeholder="forge"
+                  label="Prefix"
+                  maxLength={12}
                 />
-                <Checkbox
-                  onChange={(event) =>
-                    handlePermissionChange('read', 'organization', event.currentTarget.checked)
-                  }
-                  checked={permissions.read?.includes('organization')}
-                  label="Read Organization Data"
+                <Select
+                  {...form.getInputProps('expiresIn')}
+                  data={[
+                    { label: 'Never', value: 'never' },
+                    { label: '1 hour', value: '3600' },
+                    { label: '1 day', value: '86400' },
+                    { label: '7 days', value: '604800' },
+                    { label: '30 days', value: '2592000' },
+                    { label: '90 days', value: '7776000' },
+                    { label: '1 year', value: '31536000' },
+                  ]}
+                  label="Expires In"
                 />
-                <Checkbox
-                  onChange={(event) =>
-                    handlePermissionChange('write', 'organization', event.currentTarget.checked)
-                  }
-                  checked={permissions.write?.includes('organization')}
-                  label="Write Organization Data"
+                <Textarea
+                  {...form.getInputProps('metadata')}
+                  placeholder='{"tier": "premium"}'
+                  rows={3}
+                  label="Metadata (JSON)"
                 />
-              </Stack>
-              <Checkbox
-                onChange={(event) => setEnableRateLimit(event.currentTarget.checked)}
-                checked={enableRateLimit}
-                label={`Enable rate limiting ${!allowServerOptions ? '(100 requests/day)' : ''}`}
-              />
-
-              {allowServerOptions && (
-                <Stack gap="md">
-                  <Text fw={600} size="sm">
-                    Server Options (Admin Only)
+                <Stack gap="xs">
+                  <Text fw={500} size="sm">
+                    Permissions
                   </Text>
-                  <TextInput
-                    onChange={(e) => setUserId(e.currentTarget.value)}
-                    placeholder="Leave empty to assign to current user"
-                    label="User ID (optional)"
-                    value={userId}
+                  <Checkbox
+                    onChange={(event) =>
+                      handlePermissionChange('read', 'user', event.currentTarget.checked)
+                    }
+                    checked={permissions.read?.includes('user')}
+                    label="Read User Data"
                   />
-                  <TextInput
-                    onChange={(e) => setRemaining(e.currentTarget.value)}
-                    placeholder="Leave empty for unlimited"
-                    label="Remaining Uses (optional)"
-                    type="number"
-                    value={remaining}
+                  <Checkbox
+                    onChange={(event) =>
+                      handlePermissionChange('write', 'user', event.currentTarget.checked)
+                    }
+                    checked={permissions.write?.includes('user')}
+                    label="Write User Data"
                   />
-                  <div className="grid grid-cols-2 gap-2">
-                    <TextInput
-                      onChange={(e) => setRefillAmount(e.currentTarget.value)}
-                      placeholder="e.g., 1000"
-                      label="Refill Amount"
-                      type="number"
-                      value={refillAmount}
-                    />
-                    <TextInput
-                      onChange={(e) => setRefillInterval(e.currentTarget.value)}
-                      placeholder="e.g., 86400000"
-                      label="Refill Interval (ms)"
-                      type="number"
-                      value={refillInterval}
-                    />
-                  </div>
-                  {enableRateLimit && (
-                    <div className="grid grid-cols-2 gap-2">
-                      <TextInput
-                        onChange={(e) => setRateLimitMax(e.currentTarget.value)}
-                        label="Max Requests"
-                        type="number"
-                        value={rateLimitMax}
-                      />
-                      <TextInput
-                        onChange={(e) => setRateLimitTimeWindow(e.currentTarget.value)}
-                        label="Time Window (ms)"
-                        type="number"
-                        value={rateLimitTimeWindow}
-                      />
-                    </div>
-                  )}
+                  <Checkbox
+                    onChange={(event) =>
+                      handlePermissionChange('read', 'organization', event.currentTarget.checked)
+                    }
+                    checked={permissions.read?.includes('organization')}
+                    label="Read Organization Data"
+                  />
+                  <Checkbox
+                    onChange={(event) =>
+                      handlePermissionChange('write', 'organization', event.currentTarget.checked)
+                    }
+                    checked={permissions.write?.includes('organization')}
+                    label="Write Organization Data"
+                  />
                 </Stack>
-              )}
-            </Stack>
-            <Button fullWidth onClick={handleCreate} disabled={loading || !name.trim()} mt="md">
-              {loading ? 'Creating...' : 'Create API Key'}
-            </Button>
+                <Checkbox
+                  {...form.getInputProps('enableRateLimit', { type: 'checkbox' })}
+                  label={`Enable rate limiting ${!allowServerOptions ? '(100 requests/day)' : ''}`}
+                />
+
+                {allowServerOptions && (
+                  <Stack gap="md">
+                    <Text fw={600} size="sm">
+                      Server Options (Admin Only)
+                    </Text>
+                    <TextInput
+                      {...form.getInputProps('userId')}
+                      placeholder="Leave empty to assign to current user"
+                      label="User ID (optional)"
+                    />
+                    <NumberInput
+                      {...form.getInputProps('remaining')}
+                      placeholder="Leave empty for unlimited"
+                      label="Remaining Uses (optional)"
+                      min={1}
+                    />
+                    <Group grow>
+                      <NumberInput
+                        {...form.getInputProps('refillAmount')}
+                        placeholder="e.g., 1000"
+                        label="Refill Amount"
+                        min={1}
+                      />
+                      <NumberInput
+                        {...form.getInputProps('refillInterval')}
+                        placeholder="e.g., 86400000"
+                        label="Refill Interval (ms)"
+                        min={1}
+                      />
+                    </Group>
+                    {form.values.enableRateLimit && (
+                      <Group grow>
+                        <NumberInput
+                          {...form.getInputProps('rateLimitMax')}
+                          label="Max Requests"
+                          min={1}
+                        />
+                        <NumberInput
+                          {...form.getInputProps('rateLimitTimeWindow')}
+                          label="Time Window (ms)"
+                          min={1000}
+                        />
+                      </Group>
+                    )}
+                  </Stack>
+                )}
+
+                <Button
+                  fullWidth
+                  loading={loading}
+                  disabled={loading || !form.isValid()}
+                  mt="md"
+                  type="submit"
+                >
+                  Create API Key
+                </Button>
+              </Stack>
+            </form>
           </>
         ) : (
           <Stack gap="md">

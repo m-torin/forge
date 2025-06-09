@@ -1,29 +1,23 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
-import { useThemeMode } from '../../../hooks/useThemeMode';
+import { useThemeMode } from '../../../hooks/useThemeMode'
 
 export interface SwitchDarkModeProps {
-  className?: string;
+  className?: string
 }
 const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '' }) => {
-  const { _toogleDarkMode, isDarkMode } = useThemeMode();
+  const { _toogleDarkMode, isDarkMode } = useThemeMode()
 
   return (
     <button
       onClick={_toogleDarkMode}
-      className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl text-neutral-700 hover:bg-neutral-100 focus:outline-hidden md:text-3xl dark:text-neutral-300 dark:hover:bg-neutral-800 ${className}`}
+      className={`focus:outline-hidden flex h-12 w-12 items-center justify-center rounded-full text-2xl text-neutral-700 hover:bg-neutral-100 md:text-3xl dark:text-neutral-300 dark:hover:bg-neutral-800 ${className}`}
     >
       <span className="sr-only">Enable dark mode</span>
       {isDarkMode ? (
-        <svg
-          width="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          height="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="24" viewBox="0 0 24 24" fill="none" height="24" xmlns="http://www.w3.org/2000/svg">
           <path
             strokeWidth="1.5"
             stroke="currentColor"
@@ -33,13 +27,7 @@ const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '' }) => {
           />
         </svg>
       ) : (
-        <svg
-          width="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          height="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="24" viewBox="0 0 24 24" fill="none" height="24" xmlns="http://www.w3.org/2000/svg">
           <path
             strokeWidth="1.5"
             stroke="currentColor"
@@ -57,7 +45,7 @@ const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '' }) => {
         </svg>
       )}
     </button>
-  );
-};
+  )
+}
 
-export default SwitchDarkMode;
+export default SwitchDarkMode

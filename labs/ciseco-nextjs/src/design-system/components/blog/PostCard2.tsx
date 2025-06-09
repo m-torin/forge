@@ -1,31 +1,23 @@
-import Link from 'next/link';
-import { type FC } from 'react';
+import Link from 'next/link'
+import { type FC } from 'react'
 
-import { type TBlogPost } from '../../data/data';
-import NcImage from '../shared/NcImage/NcImage';
+import { type TBlogPost } from '../../data/data'
+import NcImage from '../shared/NcImage/NcImage'
 
-import PostCardMeta from './PostCardMeta';
+import PostCardMeta from './PostCardMeta'
 
 interface Props {
-  className?: string;
-  post: TBlogPost;
+  className?: string
+  post: TBlogPost
 }
 
 const PostCard2: FC<Props> = ({ className, post }) => {
-  const {
-    author,
-    date,
-    excerpt: description,
-    featuredImage: image,
-    handle,
-    timeToRead,
-    title,
-  } = post;
+  const { author, date, excerpt: description, featuredImage: image, handle, timeToRead, title } = post
 
   return (
     <div className={`relative flex justify-between gap-x-8 ${className}`}>
       <div className="flex h-full flex-col py-2">
-        <h2 className="block text-base font-semibold nc-card-title">
+        <h2 className="nc-card-title block text-base font-semibold">
           <Link href={`/blog/${handle}`} className="line-clamp-2 capitalize" title="title">
             {title}
           </Link>
@@ -54,7 +46,7 @@ const PostCard2: FC<Props> = ({ className, post }) => {
         )}
       </Link>
     </div>
-  );
-};
+  )
+}
 
-export default PostCard2;
+export default PostCard2

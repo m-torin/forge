@@ -8,7 +8,7 @@ import CartBtn from './CartBtn';
 import CategoriesDropdown from './CategoriesDropdown';
 import CurrLangDropdown from './CurrLangDropdown';
 import HamburgerBtnMenu from './HamburgerBtnMenu';
-import MegaMenuPopover from './MegaMenuPopover';
+import { MegaMenuPopover } from './MegaMenuPopover';
 import SearchBtnPopover from './SearchBtnPopover';
 
 import type { TCollection } from '../../data/data';
@@ -99,7 +99,9 @@ const Header: FC<HeaderProps> = ({
           <div className="flex items-center justify-center gap-x-3 sm:gap-x-8">
             <Logo data-testid={`${testId}-logo`} />
             <div className="hidden h-9 border-l border-neutral-200 md:block dark:border-neutral-700" />
-            <CategoriesDropdown categories={dropdownCategories} className="hidden md:block" />
+            {dropdownCategories.length > 0 && (
+              <CategoriesDropdown categories={dropdownCategories} className="hidden md:block" />
+            )}
           </div>
 
           <nav
@@ -110,13 +112,17 @@ const Header: FC<HeaderProps> = ({
             <div className="block lg:hidden">
               <HamburgerBtnMenu onClick={onMenuClick} aria-label="Toggle menu" />
             </div>
-            <MegaMenuPopover featuredCollection={featuredCollections[0]} megamenu={megamenu} />
-            <CurrLangDropdown
-              currentLocale={currentLocale}
-              className="hidden md:block"
-              currencies={currencies}
-              languages={languages}
-            />
+            {featuredCollections[0] && megamenu.children && megamenu.children.length > 0 && (
+              <MegaMenuPopover featuredCollection={featuredCollections[0]} megamenu={megamenu} />
+            )}
+            {(currencies.length > 0 || languages.length > 0) && (
+              <CurrLangDropdown
+                currentLocale={currentLocale}
+                className="hidden md:block"
+                currencies={currencies}
+                languages={languages}
+              />
+            )}
             <SearchBtnPopover data-testid={`${testId}-search`} />
             <AvatarDropdown data-testid={`${testId}-user-menu`} />
             <CartBtn

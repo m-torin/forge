@@ -1,11 +1,11 @@
-import { ClockIcon, NoSymbolIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import { type FC } from 'react';
+import { ClockIcon, NoSymbolIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { type FC } from 'react'
 
-import IconDiscount from './IconDiscount';
+import IconDiscount from './IconDiscount'
 
 interface Props {
-  className?: string;
-  status?: string;
+  className?: string
+  status?: string
 }
 
 const ProductStatus: FC<Props> = ({
@@ -14,16 +14,16 @@ const ProductStatus: FC<Props> = ({
 }) => {
   const renderStatus = () => {
     if (!status) {
-      return null;
+      return null
     }
-    const classes = `nc-shadow-lg rounded-full flex items-center justify-center ${className}`;
+    const classes = `nc-shadow-lg rounded-full flex items-center justify-center ${className}`
     if (status === 'New in') {
       return (
         <div className={classes}>
           <SparklesIcon className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
     if (status === '50% Discount') {
       return (
@@ -31,7 +31,7 @@ const ProductStatus: FC<Props> = ({
           <IconDiscount className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
     if (status === 'Sold Out') {
       return (
@@ -39,7 +39,7 @@ const ProductStatus: FC<Props> = ({
           <NoSymbolIcon className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
     if (status === 'limited edition') {
       return (
@@ -47,12 +47,12 @@ const ProductStatus: FC<Props> = ({
           <ClockIcon className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
-  return renderStatus();
-};
+  return renderStatus()
+}
 
-export default ProductStatus;
+export default ProductStatus

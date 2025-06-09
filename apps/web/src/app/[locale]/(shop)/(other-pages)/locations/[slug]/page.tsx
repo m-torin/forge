@@ -1,3 +1,4 @@
+import { getProducts } from "@/lib/data-service";
 import { seoManager } from "@/lib/seo-config";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -96,8 +97,7 @@ async function getLocationBySlug(slug: string) {
 }
 
 async function getLocationProducts(locationSlug: string, page = 1, limit = 20) {
-  // Mock implementation - replace with real API
-  const { getProducts } = await import("@repo/design-system/mantine-ciseco");
+  // Get all products - in a real implementation, this would filter by location
   const allProducts = await getProducts();
 
   // Simulate filtering by location and pagination

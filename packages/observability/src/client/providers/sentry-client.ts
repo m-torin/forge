@@ -19,12 +19,14 @@ export class SentryClientProvider implements ObservabilityProvider {
     const sentryConfig = config as SentryConfig;
 
     if (!sentryConfig.dsn) {
-      throw new Error('Sentry DSN is required');
+      // Silently skip initialization if no DSN is provided
+      console.info('[Sentry] No DSN provided, skipping initialization');
+      return;
     }
 
     try {
       // Dynamically import Sentry to avoid bundling if not used
-      const Sentry = await import('@sentry/react');
+      const Sentry = await import('@sentry/nextjs');
 
       // Initialize with configuration similar to original
       Sentry.init({
@@ -32,21 +34,26 @@ export class SentryClientProvider implements ObservabilityProvider {
         environment: sentryConfig.environment || 'production',
         release: sentryConfig.release,
 
-        replaysOnErrorSampleRate: 1,
-        replaysSessionSampleRate: sentryConfig.profilesSampleRate ?? 0.1,
-        // Sampling rates from original config
+        replaysOnErrorSampleRate: sentryConfig.replaysOnErrorSampleRate ?? 1.0,
+        replaysSessionSampleRate: sentryConfig.replaysSessionSampleRate ?? 0.1,
+        // Sampling rates from config
         tracesSampleRate: sentryConfig.tracesSampleRate ?? 1,
 
-        // Debug mode
-        debug: sentryConfig.debug ?? false,
+        // Debug mode removed to avoid non-debug bundle conflicts
 
-        // Integrations including replay from original
+        // Integrations
         integrations: [
-          Sentry.replayIntegration({
-            blockAllMedia: true,
-            maskAllText: true,
-          }),
-          ...(sentryConfig.integrations || []),
+          ...(sentryConfig.integrations?.includes('replay')
+            ? [
+                Sentry.replayIntegration({
+                  blockAllMedia: sentryConfig.replayBlockAllMedia ?? true,
+                  maskAllText: sentryConfig.replayMaskAllText ?? true,
+                }),
+              ]
+            : []),
+          ...(Array.isArray(sentryConfig.integrations)
+            ? sentryConfig.integrations.filter((i) => typeof i !== 'string')
+            : []),
         ],
 
         // Callbacks

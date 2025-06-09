@@ -1,10 +1,13 @@
+import { config } from '@repo/config/next';
+
 import type { NextConfig } from 'next';
-import config from '@repo/next-config';
 
 const nextConfig: NextConfig = {
+  ...config,
   experimental: {
+    ...config.experimental,
     typedRoutes: true,
   },
 };
 
-export default config(nextConfig);
+export default nextConfig;

@@ -1,219 +1,210 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  Card,
-  Stack,
-  Group,
-  Text,
-  Button,
-  Badge,
-  Modal,
-  Textarea,
-  Select,
-  Alert,
-  Timeline,
-  Avatar,
   ActionIcon,
-  Paper,
+  Alert,
+  Badge,
+  Button,
+  Card,
   Divider,
-  Box,
-  ScrollArea,
-  ThemeIcon,
+  Group,
   Menu,
+  Modal,
+  Paper,
   Progress,
+  ScrollArea,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  ThemeIcon,
+  Timeline,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
-  IconCheck,
-  IconX,
-  IconClock,
-  IconUser,
-  IconMessage,
   IconAlertTriangle,
-  IconEye,
+  IconCheck,
+  IconCircleCheck,
+  IconCircleDot,
+  IconCircleX,
+  IconClock,
+  IconDots,
   IconEdit,
   IconHistory,
-  IconArrowRight,
-  IconCircleCheck,
-  IconCircleX,
-  IconCircleDot,
+  IconMessage,
   IconSend,
-  IconDots,
+  IconX,
 } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 
 interface ApprovalWorkflowStep {
-  id: string;
-  name: string;
-  description: string;
   approverRole: string;
-  requiredApprovals: number;
-  order: number;
-  isParallel?: boolean;
   conditions?: {
     field: string;
     operator: string;
     value: any;
   }[];
+  description: string;
+  id: string;
+  isParallel?: boolean;
+  name: string;
+  order: number;
+  requiredApprovals: number;
 }
 
 interface ApprovalRequest {
+  createdAt: string;
+  currentStep: number;
+  data: any;
+  description: string;
+  dueDate?: string;
   id: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   recordId: string;
   recordType: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   submitterId: string;
   submitterName: string;
-  title: string;
-  description: string;
-  data: any;
-  currentStep: number;
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  createdAt: string;
-  updatedAt: string;
-  dueDate?: string;
   tags?: string[];
+  title: string;
+  updatedAt: string;
 }
 
 interface ApprovalAction {
-  id: string;
-  requestId: string;
-  stepId: string;
+  action: 'approve' | 'reject' | 'request_changes' | 'comment';
   approverId: string;
   approverName: string;
-  action: 'approve' | 'reject' | 'request_changes' | 'comment';
   comment?: string;
   createdAt: string;
+  id: string;
   metadata?: Record<string, any>;
+  requestId: string;
+  stepId: string;
 }
 
 interface ApprovalWorkflowProps {
   modelName: string;
-  recordId?: string;
-  record?: any;
-  workflowType?: 'create' | 'update' | 'delete' | 'publish';
-  onWorkflowComplete?: (approved: boolean) => void;
   onWorkflowCancel?: () => void;
+  onWorkflowComplete?: (approved: boolean) => void;
+  record?: any;
+  recordId?: string;
+  workflowType?: 'create' | 'update' | 'delete' | 'publish';
 }
 
 const DEFAULT_WORKFLOWS: Record<string, ApprovalWorkflowStep[]> = {
-  'user-create': [
+  'high-value-update': [
     {
-      id: 'manager-review',
-      name: 'Manager Review',
-      description: 'Manager must review new user creation',
-      approverRole: 'manager',
-      requiredApprovals: 1,
+      id: 'senior-review',
+      name: 'Senior Review',
+      approverRole: 'senior',
+      conditions: [{ field: 'value', operator: 'gt', value: 10000 }],
+      description: 'Senior team member must review high-value changes',
       order: 1,
+      requiredApprovals: 1,
     },
     {
-      id: 'admin-approval',
-      name: 'Admin Approval',
-      description: 'Admin must approve new user',
-      approverRole: 'admin',
-      requiredApprovals: 1,
+      id: 'director-approval',
+      name: 'Director Approval',
+      approverRole: 'director',
+      conditions: [{ field: 'value', operator: 'gt', value: 50000 }],
+      description: 'Director approval for significant changes',
       order: 2,
-    },
-  ],
-  'user-delete': [
-    {
-      id: 'manager-approval',
-      name: 'Manager Approval',
-      description: 'Manager must approve user deletion',
-      approverRole: 'manager',
       requiredApprovals: 1,
-      order: 1,
-    },
-    {
-      id: 'admin-confirmation',
-      name: 'Admin Confirmation',
-      description: 'Admin must confirm user deletion',
-      approverRole: 'admin',
-      requiredApprovals: 1,
-      order: 2,
     },
   ],
   'product-publish': [
     {
       id: 'content-review',
       name: 'Content Review',
-      description: 'Content team reviews product information',
       approverRole: 'content_reviewer',
-      requiredApprovals: 1,
+      description: 'Content team reviews product information',
       order: 1,
+      requiredApprovals: 1,
     },
     {
       id: 'legal-compliance',
       name: 'Legal Compliance',
-      description: 'Legal team ensures compliance',
       approverRole: 'legal',
-      requiredApprovals: 1,
-      order: 2,
+      description: 'Legal team ensures compliance',
       isParallel: true,
+      order: 2,
+      requiredApprovals: 1,
     },
     {
       id: 'marketing-approval',
       name: 'Marketing Approval',
-      description: 'Marketing team approves for publication',
       approverRole: 'marketing',
-      requiredApprovals: 1,
-      order: 2,
+      description: 'Marketing team approves for publication',
       isParallel: true,
+      order: 2,
+      requiredApprovals: 1,
     },
     {
       id: 'final-approval',
       name: 'Final Approval',
-      description: 'Final approval before publication',
       approverRole: 'admin',
-      requiredApprovals: 1,
+      description: 'Final approval before publication',
       order: 3,
+      requiredApprovals: 1,
     },
   ],
-  'high-value-update': [
+  'user-create': [
     {
-      id: 'senior-review',
-      name: 'Senior Review',
-      description: 'Senior team member must review high-value changes',
-      approverRole: 'senior',
-      requiredApprovals: 1,
+      id: 'manager-review',
+      name: 'Manager Review',
+      approverRole: 'manager',
+      description: 'Manager must review new user creation',
       order: 1,
-      conditions: [
-        { field: 'value', operator: 'gt', value: 10000 },
-      ],
+      requiredApprovals: 1,
     },
     {
-      id: 'director-approval',
-      name: 'Director Approval',
-      description: 'Director approval for significant changes',
-      approverRole: 'director',
-      requiredApprovals: 1,
+      id: 'admin-approval',
+      name: 'Admin Approval',
+      approverRole: 'admin',
+      description: 'Admin must approve new user',
       order: 2,
-      conditions: [
-        { field: 'value', operator: 'gt', value: 50000 },
-      ],
+      requiredApprovals: 1,
+    },
+  ],
+  'user-delete': [
+    {
+      id: 'manager-approval',
+      name: 'Manager Approval',
+      approverRole: 'manager',
+      description: 'Manager must approve user deletion',
+      order: 1,
+      requiredApprovals: 1,
+    },
+    {
+      id: 'admin-confirmation',
+      name: 'Admin Confirmation',
+      approverRole: 'admin',
+      description: 'Admin must confirm user deletion',
+      order: 2,
+      requiredApprovals: 1,
     },
   ],
 };
 
 export function ApprovalWorkflow({
   modelName,
-  recordId,
-  record,
-  workflowType = 'update',
-  onWorkflowComplete,
   onWorkflowCancel,
+  onWorkflowComplete,
+  record,
+  recordId,
+  workflowType = 'update',
 }: ApprovalWorkflowProps) {
   const [currentRequest, setCurrentRequest] = useState<ApprovalRequest | null>(null);
   const [workflowSteps, setWorkflowSteps] = useState<ApprovalWorkflowStep[]>([]);
   const [approvalHistory, setApprovalHistory] = useState<ApprovalAction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Modal states
-  const [approvalOpened, { open: openApproval, close: closeApproval }] = useDisclosure(false);
-  const [rejectionOpened, { open: openRejection, close: closeRejection }] = useDisclosure(false);
-  const [commentOpened, { open: openComment, close: closeComment }] = useDisclosure(false);
-  
+  const [approvalOpened, { close: closeApproval, open: openApproval }] = useDisclosure(false);
+  const [rejectionOpened, { close: closeRejection, open: openRejection }] = useDisclosure(false);
+  const [commentOpened, { close: closeComment, open: openComment }] = useDisclosure(false);
+
   // Form states
   const [approvalComment, setApprovalComment] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
@@ -227,18 +218,18 @@ export function ApprovalWorkflow({
 
   const initializeWorkflow = async () => {
     setIsLoading(true);
-    
+
     try {
       // Determine workflow based on model and type
       const workflowKey = `${modelName}-${workflowType}`;
       let steps = DEFAULT_WORKFLOWS[workflowKey] || DEFAULT_WORKFLOWS['high-value-update'];
-      
+
       // Filter steps based on conditions
       if (record) {
-        steps = steps.filter(step => {
+        steps = steps.filter((step) => {
           if (!step.conditions) return true;
-          
-          return step.conditions.every(condition => {
+
+          return step.conditions.every((condition) => {
             const fieldValue = record[condition.field];
             switch (condition.operator) {
               case 'gt':
@@ -255,20 +246,19 @@ export function ApprovalWorkflow({
           });
         });
       }
-      
+
       setWorkflowSteps(steps);
-      
+
       // Check if there's an existing approval request
       if (recordId) {
         await loadExistingRequest();
       }
-      
     } catch (error) {
       console.error('Failed to initialize workflow:', error);
       notifications.show({
-        title: 'Workflow Error',
-        message: 'Failed to initialize approval workflow',
         color: 'red',
+        message: 'Failed to initialize approval workflow',
+        title: 'Workflow Error',
       });
     } finally {
       setIsLoading(false);
@@ -283,7 +273,7 @@ export function ApprovalWorkflow({
       if (stored) {
         const request = JSON.parse(stored);
         setCurrentRequest(request);
-        
+
         // Load approval history
         const historyStored = localStorage.getItem(`approval-history-${request.id}`);
         if (historyStored) {
@@ -298,78 +288,80 @@ export function ApprovalWorkflow({
   const submitForApproval = async () => {
     if (!recordId || !record) {
       notifications.show({
-        title: 'Error',
-        message: 'Record information is required',
         color: 'red',
+        message: 'Record information is required',
+        title: 'Error',
       });
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       const newRequest: ApprovalRequest = {
         id: `approval-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        currentStep: 0,
+        data: record,
+        description: `Request to ${workflowType} ${modelName} record`,
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+        priority: 'medium',
         recordId,
         recordType: modelName,
+        status: 'pending',
         submitterId: 'current-user-id', // In real app, get from session
         submitterName: 'Current User', // In real app, get from session
         title: `${workflowType} ${modelName} - ${record.name || record.title || recordId}`,
-        description: `Request to ${workflowType} ${modelName} record`,
-        data: record,
-        currentStep: 0,
-        status: 'pending',
-        priority: 'medium',
-        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
       };
 
       // Save to localStorage (in real app, save to database)
       localStorage.setItem(`approval-request-${recordId}`, JSON.stringify(newRequest));
-      
+
       setCurrentRequest(newRequest);
-      
+
       notifications.show({
-        title: 'Approval Requested',
-        message: 'Your request has been submitted for approval',
         color: 'green',
+        message: 'Your request has been submitted for approval',
+        title: 'Approval Requested',
       });
-      
     } catch (error) {
       notifications.show({
-        title: 'Submission Failed',
-        message: 'Failed to submit approval request',
         color: 'red',
+        message: 'Failed to submit approval request',
+        title: 'Submission Failed',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleApprovalAction = async (action: 'approve' | 'reject' | 'request_changes', comment: string) => {
+  const handleApprovalAction = async (
+    action: 'approve' | 'reject' | 'request_changes',
+    comment: string,
+  ) => {
     if (!currentRequest) return;
 
     setIsLoading(true);
-    
+
     try {
       const newAction: ApprovalAction = {
         id: `action-${Date.now()}`,
-        requestId: currentRequest.id,
-        stepId: workflowSteps[currentRequest.currentStep]?.id || '',
+        action,
         approverId: 'current-user-id', // In real app, get from session
         approverName: 'Current User', // In real app, get from session
-        action,
         comment,
         createdAt: new Date().toISOString(),
+        requestId: currentRequest.id,
+        stepId: workflowSteps[currentRequest.currentStep]?.id || '',
       };
 
       const updatedHistory = [...approvalHistory, newAction];
       setApprovalHistory(updatedHistory);
 
       // Update request status
-      let updatedRequest = { ...currentRequest };
-      
+      const updatedRequest = { ...currentRequest };
+
       if (action === 'approve') {
         if (currentRequest.currentStep < workflowSteps.length - 1) {
           updatedRequest.currentStep += 1;
@@ -382,31 +374,30 @@ export function ApprovalWorkflow({
         updatedRequest.status = 'rejected';
         onWorkflowComplete?.(false);
       }
-      
+
       updatedRequest.updatedAt = new Date().toISOString();
-      
+
       setCurrentRequest(updatedRequest);
-      
+
       // Save to localStorage
       localStorage.setItem(`approval-request-${recordId}`, JSON.stringify(updatedRequest));
       localStorage.setItem(`approval-history-${currentRequest.id}`, JSON.stringify(updatedHistory));
-      
+
       notifications.show({
-        title: 'Action Recorded',
-        message: `${action.charAt(0).toUpperCase() + action.slice(1)} action has been recorded`,
         color: action === 'approve' ? 'green' : 'red',
+        message: `${action.charAt(0).toUpperCase() + action.slice(1)} action has been recorded`,
+        title: 'Action Recorded',
       });
-      
+
       // Close modals
       closeApproval();
       closeRejection();
       closeComment();
-      
     } catch (error) {
       notifications.show({
-        title: 'Action Failed',
-        message: 'Failed to record approval action',
         color: 'red',
+        message: 'Failed to record approval action',
+        title: 'Action Failed',
       });
     } finally {
       setIsLoading(false);
@@ -422,20 +413,22 @@ export function ApprovalWorkflow({
 
   const getStepStatus = (stepIndex: number) => {
     if (!currentRequest) return 'pending';
-    
+
     if (stepIndex < currentRequest.currentStep) return 'completed';
-    if (stepIndex === currentRequest.currentStep && currentRequest.status === 'approved') return 'completed';
-    if (stepIndex === currentRequest.currentStep && currentRequest.status === 'rejected') return 'rejected';
+    if (stepIndex === currentRequest.currentStep && currentRequest.status === 'approved')
+      return 'completed';
+    if (stepIndex === currentRequest.currentStep && currentRequest.status === 'rejected')
+      return 'rejected';
     if (stepIndex === currentRequest.currentStep) return 'active';
     return 'pending';
   };
 
   const getProgressPercentage = () => {
     if (!currentRequest || workflowSteps.length === 0) return 0;
-    
+
     if (currentRequest.status === 'approved') return 100;
     if (currentRequest.status === 'rejected') return 0;
-    
+
     return Math.round((currentRequest.currentStep / workflowSteps.length) * 100);
   };
 
@@ -447,16 +440,20 @@ export function ApprovalWorkflow({
       <Stack gap="md">
         <Group justify="space-between">
           <Group gap="xs">
-            <ThemeIcon size="sm" variant="light" color="blue">
+            <ThemeIcon color="blue" size="sm" variant="light">
               <IconHistory size={16} />
             </ThemeIcon>
             <Text fw={600}>Approval Workflow</Text>
             {currentRequest && (
-              <Badge 
+              <Badge
                 color={
-                  currentRequest.status === 'approved' ? 'green' :
-                  currentRequest.status === 'rejected' ? 'red' :
-                  currentRequest.status === 'pending' ? 'orange' : 'gray'
+                  currentRequest.status === 'approved'
+                    ? 'green'
+                    : currentRequest.status === 'rejected'
+                      ? 'red'
+                      : currentRequest.status === 'pending'
+                        ? 'orange'
+                        : 'gray'
                 }
                 variant="light"
               >
@@ -468,14 +465,14 @@ export function ApprovalWorkflow({
           {!currentRequest ? (
             <Button
               leftSection={<IconSend size={14} />}
-              onClick={submitForApproval}
               loading={isLoading}
+              onClick={submitForApproval}
               size="sm"
             >
               Submit for Approval
             </Button>
           ) : (
-            <Menu shadow="md" width={200}>
+            <Menu width={200} shadow="md">
               <Menu.Target>
                 <ActionIcon variant="subtle">
                   <IconDots size={16} />
@@ -484,32 +481,23 @@ export function ApprovalWorkflow({
               <Menu.Dropdown>
                 {canApprove && (
                   <>
-                    <Menu.Item
-                      leftSection={<IconCheck size={14} />}
-                      onClick={openApproval}
-                    >
+                    <Menu.Item leftSection={<IconCheck size={14} />} onClick={openApproval}>
                       Approve
                     </Menu.Item>
                     <Menu.Item
+                      color="red"
                       leftSection={<IconX size={14} />}
                       onClick={openRejection}
-                      color="red"
                     >
                       Reject
                     </Menu.Item>
-                    <Menu.Item
-                      leftSection={<IconEdit size={14} />}
-                      onClick={openComment}
-                    >
+                    <Menu.Item leftSection={<IconEdit size={14} />} onClick={openComment}>
                       Request Changes
                     </Menu.Item>
                     <Menu.Divider />
                   </>
                 )}
-                <Menu.Item
-                  leftSection={<IconMessage size={14} />}
-                  onClick={openComment}
-                >
+                <Menu.Item leftSection={<IconMessage size={14} />} onClick={openComment}>
                   Add Comment
                 </Menu.Item>
               </Menu.Dropdown>
@@ -522,26 +510,33 @@ export function ApprovalWorkflow({
             {/* Progress */}
             <Stack gap="xs">
               <Group justify="space-between">
-                <Text size="sm" fw={500}>Progress</Text>
-                <Text size="sm" c="dimmed">
+                <Text fw={500} size="sm">
+                  Progress
+                </Text>
+                <Text c="dimmed" size="sm">
                   Step {currentRequest.currentStep + 1} of {workflowSteps.length}
                 </Text>
               </Group>
-              <Progress 
-                value={getProgressPercentage()} 
+              <Progress
                 color={
-                  currentRequest.status === 'approved' ? 'green' :
-                  currentRequest.status === 'rejected' ? 'red' : 'blue'
+                  currentRequest.status === 'approved'
+                    ? 'green'
+                    : currentRequest.status === 'rejected'
+                      ? 'red'
+                      : 'blue'
                 }
+                value={getProgressPercentage()}
               />
             </Stack>
 
             {/* Current Step Info */}
             {currentStep && currentRequest.status === 'pending' && (
               <Alert color="blue" icon={<IconClock size={16} />}>
-                <Text fw={500} mb="xs">{currentStep.name}</Text>
+                <Text fw={500} mb="xs">
+                  {currentStep.name}
+                </Text>
                 <Text size="sm">{currentStep.description}</Text>
-                <Text size="xs" c="dimmed" mt="xs">
+                <Text c="dimmed" mt="xs" size="xs">
                   Waiting for {currentStep.approverRole} approval
                 </Text>
               </Alert>
@@ -549,7 +544,9 @@ export function ApprovalWorkflow({
 
             {/* Workflow Steps */}
             <Stack gap="sm">
-              <Text size="sm" fw={500}>Workflow Steps</Text>
+              <Text fw={500} size="sm">
+                Workflow Steps
+              </Text>
               <ScrollArea h={200}>
                 <Timeline>
                   {workflowSteps.map((step, index) => {
@@ -561,7 +558,9 @@ export function ApprovalWorkflow({
                     return (
                       <Timeline.Item
                         key={step.id}
-                        title={step.name}
+                        color={
+                          isCompleted ? 'green' : isRejected ? 'red' : isActive ? 'blue' : 'gray'
+                        }
                         bullet={
                           isCompleted ? (
                             <IconCircleCheck size={16} />
@@ -573,16 +572,12 @@ export function ApprovalWorkflow({
                             <IconClock size={16} />
                           )
                         }
-                        color={
-                          isCompleted ? 'green' :
-                          isRejected ? 'red' :
-                          isActive ? 'blue' : 'gray'
-                        }
+                        title={step.name}
                       >
-                        <Text size="sm" c="dimmed" mb="xs">
+                        <Text c="dimmed" mb="xs" size="sm">
                           {step.description}
                         </Text>
-                        <Text size="xs" c="dimmed">
+                        <Text c="dimmed" size="xs">
                           Approver: {step.approverRole}
                         </Text>
                       </Timeline.Item>
@@ -599,15 +594,18 @@ export function ApprovalWorkflow({
                 <ScrollArea h={150}>
                   <Stack gap="xs">
                     {approvalHistory.map((action) => (
-                      <Paper key={action.id} p="sm" withBorder>
+                      <Paper key={action.id} withBorder p="sm">
                         <Group justify="space-between">
                           <Group gap="xs">
                             <ThemeIcon
-                              size="sm"
                               color={
-                                action.action === 'approve' ? 'green' :
-                                action.action === 'reject' ? 'red' : 'blue'
+                                action.action === 'approve'
+                                  ? 'green'
+                                  : action.action === 'reject'
+                                    ? 'red'
+                                    : 'blue'
                               }
+                              size="sm"
                               variant="light"
                             >
                               {action.action === 'approve' ? (
@@ -619,17 +617,17 @@ export function ApprovalWorkflow({
                               )}
                             </ThemeIcon>
                             <Stack gap={0}>
-                              <Text size="sm" fw={500}>
+                              <Text fw={500} size="sm">
                                 {action.approverName} {action.action}d
                               </Text>
                               {action.comment && (
-                                <Text size="xs" c="dimmed">
+                                <Text c="dimmed" size="xs">
                                   "{action.comment}"
                                 </Text>
                               )}
                             </Stack>
                           </Group>
-                          <Text size="xs" c="dimmed">
+                          <Text c="dimmed" size="xs">
                             {new Date(action.createdAt).toLocaleDateString()}
                           </Text>
                         </Group>
@@ -650,28 +648,26 @@ export function ApprovalWorkflow({
       </Stack>
 
       {/* Approval Modal */}
-      <Modal opened={approvalOpened} onClose={closeApproval} title="Approve Request">
+      <Modal onClose={closeApproval} opened={approvalOpened} title="Approve Request">
         <Stack gap="md">
-          <Text size="sm">
-            Are you sure you want to approve this request?
-          </Text>
-          
+          <Text size="sm">Are you sure you want to approve this request?</Text>
+
           <Textarea
-            label="Comment (optional)"
-            placeholder="Add any comments about your approval..."
-            value={approvalComment}
             onChange={(e) => setApprovalComment(e.target.value)}
+            placeholder="Add any comments about your approval..."
             rows={3}
+            label="Comment (optional)"
+            value={approvalComment}
           />
 
           <Group justify="flex-end">
-            <Button variant="light" onClick={closeApproval}>
+            <Button onClick={closeApproval} variant="light">
               Cancel
             </Button>
             <Button
               color="green"
-              onClick={() => handleApprovalAction('approve', approvalComment)}
               loading={isLoading}
+              onClick={() => handleApprovalAction('approve', approvalComment)}
             >
               Approve
             </Button>
@@ -680,29 +676,27 @@ export function ApprovalWorkflow({
       </Modal>
 
       {/* Rejection Modal */}
-      <Modal opened={rejectionOpened} onClose={closeRejection} title="Reject Request">
+      <Modal onClose={closeRejection} opened={rejectionOpened} title="Reject Request">
         <Stack gap="md">
-          <Text size="sm">
-            Please provide a reason for rejecting this request:
-          </Text>
-          
+          <Text size="sm">Please provide a reason for rejecting this request:</Text>
+
           <Textarea
-            label="Rejection Reason"
-            placeholder="Explain why you're rejecting this request..."
-            value={rejectionReason}
             onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Explain why you're rejecting this request..."
             rows={4}
+            label="Rejection Reason"
             required
+            value={rejectionReason}
           />
 
           <Group justify="flex-end">
-            <Button variant="light" onClick={closeRejection}>
+            <Button onClick={closeRejection} variant="light">
               Cancel
             </Button>
             <Button
               color="red"
-              onClick={() => handleApprovalAction('reject', rejectionReason)}
               loading={isLoading}
+              onClick={() => handleApprovalAction('reject', rejectionReason)}
               disabled={!rejectionReason.trim()}
             >
               Reject
@@ -712,35 +706,35 @@ export function ApprovalWorkflow({
       </Modal>
 
       {/* Comment Modal */}
-      <Modal opened={commentOpened} onClose={closeComment} title="Add Comment">
+      <Modal onClose={closeComment} opened={commentOpened} title="Add Comment">
         <Stack gap="md">
           <Select
-            label="Action Type"
-            value={actionType}
             onChange={(value) => setActionType(value as any)}
             data={[
-              { value: 'approve', label: 'Approve' },
-              { value: 'request_changes', label: 'Request Changes' },
-              { value: 'reject', label: 'Reject' },
+              { label: 'Approve', value: 'approve' },
+              { label: 'Request Changes', value: 'request_changes' },
+              { label: 'Reject', value: 'reject' },
             ]}
+            label="Action Type"
+            value={actionType}
           />
-          
+
           <Textarea
-            label="Comment"
-            placeholder="Add your comment..."
-            value={generalComment}
             onChange={(e) => setGeneralComment(e.target.value)}
+            placeholder="Add your comment..."
             rows={4}
+            label="Comment"
             required
+            value={generalComment}
           />
 
           <Group justify="flex-end">
-            <Button variant="light" onClick={closeComment}>
+            <Button onClick={closeComment} variant="light">
               Cancel
             </Button>
             <Button
-              onClick={() => handleApprovalAction(actionType, generalComment)}
               loading={isLoading}
+              onClick={() => handleApprovalAction(actionType, generalComment)}
               disabled={!generalComment.trim()}
             >
               Submit

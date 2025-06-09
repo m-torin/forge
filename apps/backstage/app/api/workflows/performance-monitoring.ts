@@ -197,7 +197,7 @@ function generateLatencyMetric(service: string, index: number): number {
     workers: 200,
   };
 
-  const base = baseLatency[(service as any)] || 50;
+  const base = baseLatency[service as any] || 50;
   const variation = Math.sin(index / 10) * base * 0.3;
   const spike = index % 20 === 0 ? base * 2 : 0;
 
@@ -215,7 +215,7 @@ function generateThroughputMetric(service: string, index: number): number {
     workers: 100,
   };
 
-  const base = baseThroughput[(service as any)] || 500;
+  const base = baseThroughput[service as any] || 500;
   const dayPattern = Math.sin((index / 60) * Math.PI * 2) * base * 0.4;
 
   return Math.max(10, base + dayPattern + Math.random() * base * 0.1);
@@ -239,7 +239,7 @@ function generateSaturationMetric(service: string, index: number): number {
     workers: 70,
   };
 
-  const base = baseSaturation[(service as any)] || 50;
+  const base = baseSaturation[service as any] || 50;
   const trend = index * 0.1;
 
   return Math.min(100, base + trend + Math.random() * 20);
@@ -320,8 +320,8 @@ export const collectPerformanceMetricsStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'serviceCount'],
       enableDetailedLogging: true,
+      metricsToTrack: ['serviceCount'],
     }),
 );
 

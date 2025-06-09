@@ -1,24 +1,24 @@
-'use client';
+'use client'
 
-import useEmblaCarousel from 'embla-carousel-react';
-import { type FC } from 'react';
+import useEmblaCarousel from 'embla-carousel-react'
+import { type FC } from 'react'
 
-import { type TProductItem } from '../data/data';
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
+import { type TProductItem } from '../data/data'
+import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons'
 
-import Heading from './Heading/Heading';
-import ProductCard from './ProductCard';
+import Heading from './Heading/Heading'
+import ProductCard from './ProductCard'
 
-import type { EmblaOptionsType } from 'embla-carousel';
+import type { EmblaOptionsType } from 'embla-carousel'
 
 export interface SectionSliderProductCardProps {
-  className?: string;
-  data: TProductItem[];
-  emblaOptions?: EmblaOptionsType;
-  heading?: string;
-  headingClassName?: string;
-  headingFontClassName?: string;
-  subHeading?: string;
+  className?: string
+  data: TProductItem[]
+  emblaOptions?: EmblaOptionsType
+  heading?: string
+  headingClassName?: string
+  headingFontClassName?: string
+  subHeading?: string
 }
 
 const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
@@ -32,9 +32,8 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   headingFontClassName,
   subHeading = 'REY backpacks & bags',
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
+  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } = useCarouselArrowButtons(emblaApi)
 
   return (
     <div className={`nc-SectionSliderProductCard ${className}`}>
@@ -52,7 +51,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
       </Heading>
 
       <div ref={emblaRef} className="embla">
-        <div className="-ms-5 embla__container sm:-ms-8">
+        <div className="embla__container -ms-5 sm:-ms-8">
           {data.map((product) => (
             <div
               key={product.id}
@@ -64,7 +63,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionSliderProductCard;
+export default SectionSliderProductCard

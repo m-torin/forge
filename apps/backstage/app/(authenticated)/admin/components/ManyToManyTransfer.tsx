@@ -1,47 +1,47 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  TransferList,
-  TransferListData,
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Checkbox,
+  Group,
+  Loader,
   Stack,
   Text,
-  Badge,
-  Group,
   TextInput,
-  Loader,
-  Card,
-  Button,
-  Checkbox,
-  ActionIcon,
   Tooltip,
-  Box,
+  TransferList,
+  type TransferListData,
 } from '@mantine/core';
-import { IconSearch, IconRefresh, IconFilter } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
+import { IconRefresh, IconSearch } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+
 import { notify } from '@repo/notifications/mantine-notifications';
 
 interface ManyToManyTransferProps {
+  onChange: (value: string[]) => void;
   // Core props
   value: string[];
-  onChange: (value: string[]) => void;
 
+  description?: string;
   // Configuration
   label: string;
-  description?: string;
   leftTitle?: string;
   rightTitle?: string;
 
+  displayField?: string;
   // Data configuration
   modelName: string;
-  displayField?: string;
   searchFields?: string[];
 
-  // Features
-  showSearch?: boolean;
+  height?: number;
   showCount?: boolean;
   showRefresh?: boolean;
-  height?: number;
+  // Features
+  showSearch?: boolean;
 
   // Data fetching
   fetchAvailable: () => Promise<any[]>;
@@ -50,22 +50,22 @@ interface ManyToManyTransferProps {
 }
 
 export function ManyToManyTransfer({
-  value,
-  onChange,
-  label,
   description,
-  leftTitle = 'Available',
-  rightTitle = 'Selected',
-  modelName,
   displayField = 'name',
-  searchFields = ['name', 'email'],
-  showSearch = true,
-  showCount = true,
-  showRefresh = true,
-  height = 300,
   fetchAvailable,
   fetchSelected,
+  height = 300,
+  label,
+  leftTitle = 'Available',
+  modelName,
+  onChange,
   onSave,
+  rightTitle = 'Selected',
+  searchFields = ['name', 'email'],
+  showCount = true,
+  showRefresh = true,
+  showSearch = true,
+  value,
 }: ManyToManyTransferProps) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -101,15 +101,15 @@ export function ManyToManyTransfer({
       const availableItems = available
         .filter((record) => !value.includes(record.id))
         .map((record) => ({
-          value: record.id,
           label: record[displayField] || record.id,
           record, // Store the full record for searching
+          value: record.id,
         }));
 
       const selectedItems = selected.map((record) => ({
-        value: record.id,
         label: record[displayField] || record.id,
         record,
+        value: record.id,
       }));
 
       setData([availableItems, selectedItems]);
@@ -127,9 +127,9 @@ export function ManyToManyTransfer({
 
       // Update only the selected side
       const selectedItems = selected.map((record) => ({
-        value: record.id,
         label: record[displayField] || record.id,
         record,
+        value: record.id,
       }));
 
       setData((current) => [current[0], selectedItems]);
@@ -181,20 +181,20 @@ export function ManyToManyTransfer({
     <Card withBorder>
       <Stack>
         <div>
-          <Group justify="space-between" align="flex-start">
+          <Group align="flex-start" justify="space-between">
             <div>
               <Text fw={500} size="lg">
                 {label}
               </Text>
               {description && (
-                <Text size="sm" c="dimmed" mt={4}>
+                <Text c="dimmed" mt={4} size="sm">
                   {description}
                 </Text>
               )}
             </div>
             {showRefresh && (
               <Tooltip label="Refresh data">
-                <ActionIcon variant="subtle" onClick={loadData} loading={loading}>
+                <ActionIcon loading={loading} onClick={loadData} variant="subtle">
                   <IconRefresh size={18} />
                 </ActionIcon>
               </Tooltip>
@@ -204,10 +204,10 @@ export function ManyToManyTransfer({
 
         {showSearch && (
           <TextInput
-            placeholder={`Search ${modelName}...`}
             leftSection={<IconSearch size={16} />}
-            value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
+            placeholder={`Search ${modelName}...`}
+            value={search}
           />
         )}
 
@@ -218,49 +218,49 @@ export function ManyToManyTransfer({
         ) : (
           <Box>
             <TransferList
-              value={filteredData}
-              onChange={handleChange}
-              searchPlaceholder="Search..."
-              nothingFound="No records found"
-              titles={[
-                showCount ? `${leftTitle} (${filteredData[0].length})` : leftTitle,
-                showCount ? `${rightTitle} (${filteredData[1].length})` : rightTitle,
-              ]}
-              listHeight={height}
-              showTransferAll
-              searchValues={['', '']}
               // Custom item component for better display
               itemComponent={({ data, selected }) => (
-                <Group gap="xs" style={{ width: '100%' }}>
+                <Group style={{ width: '100%' }} gap="xs">
                   <Checkbox
-                    checked={selected}
-                    onChange={() => {}}
                     aria-hidden
-                    tabIndex={-1}
+                    onChange={() => {}}
                     style={{ pointerEvents: 'none' }}
+                    checked={selected}
+                    tabIndex={-1}
                   />
                   <div style={{ flex: 1 }}>
                     <Text size="sm" truncate>
                       {data.label}
                     </Text>
                     {(data as any).record?.email && (
-                      <Text size="xs" c="dimmed" truncate>
+                      <Text c="dimmed" size="xs" truncate>
                         {(data as any).record.email}
                       </Text>
                     )}
                   </div>
                 </Group>
               )}
+              nothingFound="No records found"
+              onChange={handleChange}
+              searchPlaceholder="Search..."
+              showTransferAll
+              listHeight={height}
+              searchValues={['', '']}
+              titles={[
+                showCount ? `${leftTitle} (${filteredData[0].length})` : leftTitle,
+                showCount ? `${rightTitle} (${filteredData[1].length})` : rightTitle,
+              ]}
+              value={filteredData}
             />
           </Box>
         )}
 
         {onSave && (
           <Group justify="flex-end">
-            <Text size="xs" c="dimmed">
+            <Text c="dimmed" size="xs">
               {data[1].length} {modelName}s selected
             </Text>
-            <Button onClick={handleSave} loading={saving} disabled={loading}>
+            <Button loading={saving} onClick={handleSave} disabled={loading}>
               Save Changes
             </Button>
           </Group>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Center, Container, MantineProvider, Stack, Text, Title } from '@mantine/core';
+import { useObservability } from '@repo/observability/client/next';
 import React, { useEffect } from 'react';
 
 import type NextError from 'next/error';
@@ -11,9 +12,20 @@ interface GlobalErrorProperties {
 }
 
 export default function GlobalError({ error, reset }: GlobalErrorProperties): React.ReactElement {
+  const observability = useObservability();
+
   useEffect(() => {
     console.error('Global error:', error);
-  }, [error]);
+    
+    // Send error to Sentry
+    observability?.captureException(error, {
+      tags: {
+        type: 'global_error',
+        digest: error.digest,
+      },
+      level: 'fatal',
+    });
+  }, [error, observability]);
 
   return (
     <html lang="en">

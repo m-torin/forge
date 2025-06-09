@@ -17,9 +17,9 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
-    "@sentry/node": "^8.0.0",
-    "@sentry/react": "^8.0.0",
-    "@sentry/nextjs": "^8.0.0",
+    "@sentry/node": "^9.27.0",
+    "@sentry/react": "^9.27.0",
+    "@sentry/nextjs": "^9.27.0",
     "@logtail/node": "^0.5.0",
     "@logtail/next": "^0.2.0",
     "@opentelemetry/api": "^1.7.0",
@@ -71,9 +71,9 @@
     "jsdom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "@sentry/node": "^8.0.0",
-    "@sentry/react": "^8.0.0",
-    "@sentry/nextjs": "^8.0.0",
+    "@sentry/node": "^9.27.0",
+    "@sentry/react": "^9.27.0",
+    "@sentry/nextjs": "^9.27.0",
     "@logtail/node": "^0.5.0",
     "@logtail/next": "^0.2.0",
     "@opentelemetry/api": "^1.7.0",
@@ -84,9 +84,7 @@
   "exports": {
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
-    "./client/next": "./src/client-next.ts",
-    "./server/next": "./src/server-next.ts",
-    "./next/config-wrappers": "./src/next/config-wrappers.ts",
-    "./error": "./src/shared/utils/error.ts"
+    "./client/next": "./client/next.ts",
+    "./server/next": "./server/next.ts"
   }
 }

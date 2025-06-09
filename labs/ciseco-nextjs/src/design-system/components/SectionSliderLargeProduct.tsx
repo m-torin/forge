@@ -1,26 +1,26 @@
-'use client';
+'use client'
 
-import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import useEmblaCarousel from 'embla-carousel-react';
-import Link from 'next/link';
-import { type FC } from 'react';
+import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import useEmblaCarousel from 'embla-carousel-react'
+import Link from 'next/link'
+import { type FC } from 'react'
 
-import { type TProductItem } from '../data/data';
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
+import { type TProductItem } from '../data/data'
+import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons'
 
-import Heading from './Heading/Heading';
-import ProductCardLarge from './ProductCardLarge';
+import Heading from './Heading/Heading'
+import ProductCardLarge from './ProductCardLarge'
 
-import type { EmblaOptionsType } from 'embla-carousel';
+import type { EmblaOptionsType } from 'embla-carousel'
 
 export interface SectionSliderLargeProductProps {
-  className?: string;
-  emblaOptions?: EmblaOptionsType;
-  heading?: string;
-  headingDim?: string;
-  itemClassName?: string;
-  products: TProductItem[];
+  className?: string
+  emblaOptions?: EmblaOptionsType
+  heading?: string
+  headingDim?: string
+  itemClassName?: string
+  products: TProductItem[]
 }
 
 const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
@@ -32,9 +32,8 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
   headingDim = 'Featured of the week',
   products,
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
+  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } = useCarouselArrowButtons(emblaApi)
   return (
     <div className={`nc-SectionSliderLargeProduct ${className}`}>
       <Heading
@@ -50,7 +49,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
       </Heading>
 
       <div ref={emblaRef} className="embla">
-        <div className="-ms-5 embla__container sm:-ms-8">
+        <div className="embla__container -ms-5 sm:-ms-8">
           {products.map((product) => (
             <div
               key={product.id}
@@ -62,7 +61,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
 
           <Link
             href="/collections/all"
-            className="group relative block embla__slide basis-full ps-5 sm:basis-2/3 sm:ps-8 lg:basis-1/2 xl:basis-2/5 2xl:basis-1/3"
+            className="embla__slide group relative block basis-full ps-5 sm:basis-2/3 sm:ps-8 lg:basis-1/2 xl:basis-2/5 2xl:basis-1/3"
           >
             <div className="relative h-[410px] overflow-hidden rounded-2xl">
               <div className="h-[410px] bg-black/5 dark:bg-neutral-800" />
@@ -84,7 +83,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionSliderLargeProduct;
+export default SectionSliderLargeProduct

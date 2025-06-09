@@ -1,53 +1,53 @@
-import collectionImage1 from '../images/collections/1.png';
-import collectionImage2 from '../images/collections/2.png';
-import collectionImage3 from '../images/collections/3.png';
-import collectionImage4 from '../images/collections/4.png';
-import collectionImage5 from '../images/collections/5.png';
-import collectionImage6 from '../images/collections/6.png';
-import collectionImage7 from '../images/collections/7.png';
-import boothImage1 from '../images/collections/booth1.png';
-import boothImage2 from '../images/collections/booth2.png';
-import boothImage3 from '../images/collections/booth3.png';
-import boothImage4 from '../images/collections/booth4.png';
-import productImage1_1 from '../images/products/p1-1.jpg';
-import productImage1_2 from '../images/products/p1-2.jpg';
-import productImage1_3 from '../images/products/p1-3.jpg';
-import productImage1 from '../images/products/p1.jpg';
-import productImage2_1 from '../images/products/p2-1.jpg';
-import productImage2_2 from '../images/products/p2-2.jpg';
-import productImage2_3 from '../images/products/p2-3.jpg';
-import productImage2 from '../images/products/p2.jpg';
-import productImage3_1 from '../images/products/p3-1.jpg';
-import productImage3_2 from '../images/products/p3-2.jpg';
-import productImage3_3 from '../images/products/p3-3.jpg';
-import productImage3 from '../images/products/p3.jpg';
-import productImage4_1 from '../images/products/p4-1.jpg';
-import productImage4_2 from '../images/products/p4-2.jpg';
-import productImage4_3 from '../images/products/p4-3.jpg';
-import productImage4 from '../images/products/p4.jpg';
-import productImage5_1 from '../images/products/p5-1.jpg';
-import productImage5_2 from '../images/products/p5-2.jpg';
-import productImage5_3 from '../images/products/p5-3.jpg';
-import productImage5 from '../images/products/p5.jpg';
-import productImage6_1 from '../images/products/p6-1.jpg';
-import productImage6_2 from '../images/products/p6-2.jpg';
-import productImage6_3 from '../images/products/p6-3.jpg';
-import productImage6 from '../images/products/p6.jpg';
-import productImage7_1 from '../images/products/p7-1.jpg';
-import productImage7_2 from '../images/products/p7-2.jpg';
-import productImage7_3 from '../images/products/p7-3.jpg';
-import productImage7 from '../images/products/p7.jpg';
-import productImage8_1 from '../images/products/p8-1.jpg';
-import productImage8_2 from '../images/products/p8-2.jpg';
-import productImage8_3 from '../images/products/p8-3.jpg';
-import productImage8 from '../images/products/p8.jpg';
-import avatarImage1 from '../images/users/avatar1.jpg';
-import avatarImage2 from '../images/users/avatar2.jpg';
-import avatarImage3 from '../images/users/avatar3.jpg';
-import avatarImage4 from '../images/users/avatar4.jpg';
-import { shuffleArray } from '../utils/shuffleArray';
+import collectionImage1 from '../images/collections/1.png'
+import collectionImage2 from '../images/collections/2.png'
+import collectionImage3 from '../images/collections/3.png'
+import collectionImage4 from '../images/collections/4.png'
+import collectionImage5 from '../images/collections/5.png'
+import collectionImage6 from '../images/collections/6.png'
+import collectionImage7 from '../images/collections/7.png'
+import boothImage1 from '../images/collections/booth1.png'
+import boothImage2 from '../images/collections/booth2.png'
+import boothImage3 from '../images/collections/booth3.png'
+import boothImage4 from '../images/collections/booth4.png'
+import productImage1_1 from '../images/products/p1-1.jpg'
+import productImage1_2 from '../images/products/p1-2.jpg'
+import productImage1_3 from '../images/products/p1-3.jpg'
+import productImage1 from '../images/products/p1.jpg'
+import productImage2_1 from '../images/products/p2-1.jpg'
+import productImage2_2 from '../images/products/p2-2.jpg'
+import productImage2_3 from '../images/products/p2-3.jpg'
+import productImage2 from '../images/products/p2.jpg'
+import productImage3_1 from '../images/products/p3-1.jpg'
+import productImage3_2 from '../images/products/p3-2.jpg'
+import productImage3_3 from '../images/products/p3-3.jpg'
+import productImage3 from '../images/products/p3.jpg'
+import productImage4_1 from '../images/products/p4-1.jpg'
+import productImage4_2 from '../images/products/p4-2.jpg'
+import productImage4_3 from '../images/products/p4-3.jpg'
+import productImage4 from '../images/products/p4.jpg'
+import productImage5_1 from '../images/products/p5-1.jpg'
+import productImage5_2 from '../images/products/p5-2.jpg'
+import productImage5_3 from '../images/products/p5-3.jpg'
+import productImage5 from '../images/products/p5.jpg'
+import productImage6_1 from '../images/products/p6-1.jpg'
+import productImage6_2 from '../images/products/p6-2.jpg'
+import productImage6_3 from '../images/products/p6-3.jpg'
+import productImage6 from '../images/products/p6.jpg'
+import productImage7_1 from '../images/products/p7-1.jpg'
+import productImage7_2 from '../images/products/p7-2.jpg'
+import productImage7_3 from '../images/products/p7-3.jpg'
+import productImage7 from '../images/products/p7.jpg'
+import productImage8_1 from '../images/products/p8-1.jpg'
+import productImage8_2 from '../images/products/p8-2.jpg'
+import productImage8_3 from '../images/products/p8-3.jpg'
+import productImage8 from '../images/products/p8.jpg'
+import avatarImage1 from '../images/users/avatar1.jpg'
+import avatarImage2 from '../images/users/avatar2.jpg'
+import avatarImage3 from '../images/users/avatar3.jpg'
+import avatarImage4 from '../images/users/avatar4.jpg'
+import { shuffleArray } from '../utils/shuffleArray'
 
-import type { StaticImageData } from 'next/image';
+import type { StaticImageData } from 'next/image'
 
 // Helper function to convert image imports to image objects with default dimensions
 function createImageObject(src: string | StaticImageData, alt: string, width = 400, height = 400) {
@@ -57,7 +57,7 @@ function createImageObject(src: string | StaticImageData, alt: string, width = 4
       alt,
       height,
       src,
-    };
+    }
   }
 
   // Handle Next.js StaticImageData objects
@@ -66,11 +66,11 @@ function createImageObject(src: string | StaticImageData, alt: string, width = 4
     alt,
     height: src.height || height,
     src: src.src,
-  };
+  }
 }
 
 export async function getOrder(number: string) {
-  return (await getOrders()).find((order) => order.number.toString() === number);
+  return (await getOrders()).find((order) => order.number.toString() === number)
 }
 export async function getOrders() {
   return [
@@ -95,10 +95,7 @@ export async function getOrders() {
           description:
             'This durable and portable insulated tumbler will keep your beverage at the perfect temperature during your next adventure.',
           email: 'f•••@example.com',
-          featuredImage: createImageObject(
-            productImage2,
-            'Insulated bottle with white base and black snap lid.',
-          ),
+          featuredImage: createImageObject(productImage2, 'Insulated bottle with white base and black snap lid.'),
           handle: 'nomad-tumbler',
           href: '#',
           phone: '1•••••••••40',
@@ -115,13 +112,9 @@ export async function getOrders() {
           color: 'White',
           date: 'March 23, 2021',
           datetime: '2021-03-23',
-          description:
-            'This contemporary wristwatch has a clean, minimalist look and high quality components.',
+          description: 'This contemporary wristwatch has a clean, minimalist look and high quality components.',
           email: 'f•••@example.com',
-          featuredImage: createImageObject(
-            productImage4,
-            'Insulated bottle with white base and black snap lid.',
-          ),
+          featuredImage: createImageObject(productImage4, 'Insulated bottle with white base and black snap lid.'),
           handle: 'minimalist-wristwatch',
           href: '#',
           phone: '1•••••••••40',
@@ -157,10 +150,7 @@ export async function getOrders() {
           description:
             'This durable and portable insulated tumbler will keep your beverage at the perfect temperature during your next adventure.',
           email: 'f•••@example.com',
-          featuredImage: createImageObject(
-            productImage1,
-            'Insulated bottle with white base and black snap lid.',
-          ),
+          featuredImage: createImageObject(productImage1, 'Insulated bottle with white base and black snap lid.'),
           handle: 'nomad-tumbler',
           href: '#',
           phone: '1•••••••••40',
@@ -175,7 +165,7 @@ export async function getOrders() {
       status: 'Delivered on January 08, 2028',
       totalQuantity: 4,
     },
-  ];
+  ]
 }
 
 export async function getCountries() {
@@ -308,7 +298,7 @@ export async function getCountries() {
         'Armed Forces Pacific',
       ],
     },
-  ];
+  ]
 }
 
 export async function getShopData() {
@@ -353,7 +343,7 @@ export async function getShopData() {
       handle: 'terms-of-service',
       title: 'Terms of Service',
     },
-  };
+  }
 }
 
 export async function getProductReviews(handle: string) {
@@ -410,7 +400,7 @@ export async function getProductReviews(handle: string) {
       rating: 5,
       title: 'Very nice feeling sweater!',
     },
-  ];
+  ]
 }
 
 export async function getBlogPosts() {
@@ -553,19 +543,19 @@ export async function getBlogPosts() {
       timeToRead: '3 min read',
       title: 'Graduation Dresses: A Style Guide',
     },
-  ];
+  ]
 }
 export async function getBlogPostsByHandle(handle: string) {
   // lower case the handle
-  handle = handle.toLowerCase();
+  handle = handle.toLowerCase()
 
-  const posts = await getBlogPosts();
-  const post = posts.find((post) => post.handle === handle);
+  const posts = await getBlogPosts()
+  const post = posts.find((post) => post.handle === handle)
   return {
     ...post,
     content: 'Lorem ipsum dolor ...',
     tags: ['fashion', 'style', 'trends'],
-  };
+  }
 }
 
 export function getCart(id: string) {
@@ -617,7 +607,7 @@ export function getCart(id: string) {
     ],
     note: 'This is a note',
     totalQuantity: 4,
-  };
+  }
 }
 
 // ------------------------  DATA ------------------------
@@ -639,8 +629,7 @@ export async function getCollections() {
       id: 'gid://2',
       color: 'bg-indigo-50',
       count: 155,
-      description:
-        'Casual t-shirts for everyday wear, combining comfort and style effortlessly. Find your fit.',
+      description: 'Casual t-shirts for everyday wear, combining comfort and style effortlessly. Find your fit.',
       handle: 't-shirts',
       image: createImageObject(collectionImage2, 'Explore new arrivals'),
       sortDescription: 'Best sellers',
@@ -650,8 +639,7 @@ export async function getCollections() {
       id: 'gid://3',
       color: 'bg-indigo-50',
       count: 35,
-      description:
-        'Trendy jeans for a casual yet stylish look. Perfect for any occasion. Find your fit.',
+      description: 'Trendy jeans for a casual yet stylish look. Perfect for any occasion. Find your fit.',
       handle: 'jeans',
       image: createImageObject(collectionImage3, 'Explore new arrivals'),
       sortDescription: 'Best sellers',
@@ -661,8 +649,7 @@ export async function getCollections() {
       id: 'gid://4',
       color: 'bg-indigo-50',
       count: 87,
-      description:
-        'Elegant coats for every season, combining warmth and style. Find your perfect outerwear.',
+      description: 'Elegant coats for every season, combining warmth and style. Find your perfect outerwear.',
       handle: 'coats',
       image: createImageObject(collectionImage4, 'Explore new arrivals'),
       sortDescription: 'Best seasonal',
@@ -672,8 +659,7 @@ export async function getCollections() {
       id: 'gid://5',
       color: 'bg-indigo-50',
       count: 114,
-      description:
-        'Trendy shoes for every occasion, from casual to formal. Find your perfect pair.',
+      description: 'Trendy shoes for every occasion, from casual to formal. Find your perfect pair.',
       handle: 'shoes',
       image: createImageObject(collectionImage5, 'Explore new arrivals'),
       sortDescription: 'Top rated',
@@ -683,8 +669,7 @@ export async function getCollections() {
       id: 'gid://6',
       color: 'bg-indigo-50',
       count: 55,
-      description:
-        'Stylish accessories to complete your look. Explore our collection of trendy accessories.',
+      description: 'Stylish accessories to complete your look. Explore our collection of trendy accessories.',
       handle: 'accessories',
       image: createImageObject(collectionImage6, 'Explore new arrivals'),
       sortDescription: 'Top transparent',
@@ -792,12 +777,12 @@ export async function getCollections() {
       sortDescription: '44+ categories',
       title: 'Pets Food',
     },
-  ];
+  ]
 }
 
 export async function getGroupCollections() {
-  const allCollections = await getCollections();
-  const collections = allCollections.slice(0, 6);
+  const allCollections = await getCollections()
+  const collections = allCollections.slice(0, 6)
   return [
     {
       id: '1',
@@ -873,29 +858,28 @@ export async function getGroupCollections() {
               </svg>`,
       title: 'Beauty',
     },
-  ];
+  ]
 }
 
 export async function getCollectionByHandle(handle: string) {
   // lowercase handle
-  handle = handle.toLowerCase();
+  handle = handle.toLowerCase()
   // const all products slug: /collections/all
   if (handle === 'all') {
     return {
       id: 'gid://all',
       color: 'bg-indigo-50',
       count: 77,
-      description:
-        'Explore our entire collection of products, from clothing to accessories. Find your perfect style.',
+      description: 'Explore our entire collection of products, from clothing to accessories. Find your perfect style.',
       handle: 'all',
       image: createImageObject(collectionImage1, 'Explore new arrivals'),
       sortDescription: 'All products',
       title: 'All Products',
-    };
+    }
   }
 
-  const allCollections = await getCollections();
-  return allCollections?.find((collection) => collection?.handle === handle);
+  const allCollections = await getCollections()
+  return allCollections?.find((collection) => collection?.handle === handle)
 }
 
 export async function getProducts() {
@@ -1522,23 +1506,23 @@ export async function getProducts() {
       title: 'Cotton Shirt',
       vendor: 'CasualVibe',
     },
-  ];
+  ]
 }
 
 export async function getProductByHandle(handle: string) {
   // lowercase handle
-  handle = handle.toLowerCase();
+  handle = handle.toLowerCase()
 
-  const products = await getProducts();
-  return products.find((product) => product.handle === handle);
+  const products = await getProducts()
+  return products.find((product) => product.handle === handle)
 }
 // get product by handle
 export async function getProductDetailByHandle(handle: string) {
   // lowercase handle
-  handle = handle.toLowerCase();
+  handle = handle.toLowerCase()
 
   // for demo purposes, we are using a static product detail
-  const product = await getProductByHandle(handle);
+  const product = await getProductByHandle(handle)
 
   return {
     ...product,
@@ -1566,14 +1550,14 @@ export async function getProductDetailByHandle(handle: string) {
     shippingAndReturn:
       'We offer free shipping on all orders over $50. If you are not satisfied with your purchase, you can return it within 30 days for a full refund.',
     status: 'In Stock',
-  };
+  }
 }
 
 // COMMON Types ------------------------------------------------------------------------
-export type TCollection = Partial<Awaited<ReturnType<typeof getCollections>>[number]>;
-export type TProductItem = Partial<Awaited<ReturnType<typeof getProducts>>[number]>;
-export type TProductDetail = Partial<Awaited<ReturnType<typeof getProductDetailByHandle>>>;
-export type TCardProduct = Partial<Awaited<ReturnType<typeof getCart>['lines'][number]>>;
-export type TBlogPost = Partial<Awaited<ReturnType<typeof getBlogPosts>>[number]>;
-export type TReview = Partial<Awaited<ReturnType<typeof getProductReviews>>[number]>;
-export type TOrder = Partial<Awaited<ReturnType<typeof getOrders>>[number]>;
+export type TCollection = Partial<Awaited<ReturnType<typeof getCollections>>[number]>
+export type TProductItem = Partial<Awaited<ReturnType<typeof getProducts>>[number]>
+export type TProductDetail = Partial<Awaited<ReturnType<typeof getProductDetailByHandle>>>
+export type TCardProduct = Partial<Awaited<ReturnType<typeof getCart>['lines'][number]>>
+export type TBlogPost = Partial<Awaited<ReturnType<typeof getBlogPosts>>[number]>
+export type TReview = Partial<Awaited<ReturnType<typeof getProductReviews>>[number]>
+export type TOrder = Partial<Awaited<ReturnType<typeof getOrders>>[number]>

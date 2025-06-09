@@ -1,23 +1,23 @@
-import { type FC } from 'react';
+import { type FC } from 'react'
 
-import rightLargeImgDark from '../images/promo1-dark.png';
-import rightImgDemo from '../images/promo1.png';
+import rightLargeImgDark from '../images/promo1-dark.png'
+import rightImgDemo from '../images/promo1.png'
 
-import ButtonPrimary from './shared/Button/ButtonPrimary';
-import ButtonSecondary from './shared/Button/ButtonSecondary';
-import Logo from './shared/Logo/Logo';
-import NcImage from './shared/NcImage/NcImage';
+import ButtonPrimary from './shared/Button/ButtonPrimary'
+import ButtonSecondary from './shared/Button/ButtonSecondary'
+import Logo from './shared/Logo/Logo'
+import NcImage from './shared/NcImage/NcImage'
 
 export interface SectionPromo1Props {
-  className?: string;
+  className?: string
 }
 
 const SectionPromo1: FC<SectionPromo1Props> = ({ className = '' }) => {
   return (
     <div className={`relative flex flex-col items-center lg:flex-row ${className}`}>
-      <div className="relative mb-16 shrink-0 lg:mr-10 lg:mb-0 lg:w-2/5">
+      <div className="relative mb-16 shrink-0 lg:mb-0 lg:mr-10 lg:w-2/5">
         <Logo className="w-28" />
-        <h2 className="mt-6 text-3xl leading-[1.2]! font-semibold tracking-tight sm:mt-10 sm:text-4xl xl:text-5xl 2xl:text-6xl">
+        <h2 className="leading-[1.2]! mt-6 text-3xl font-semibold tracking-tight sm:mt-10 sm:text-4xl xl:text-5xl 2xl:text-6xl">
           Earn free money <br /> with Ciseco.
         </h2>
         <span className="mt-6 block text-neutral-500 dark:text-neutral-400">
@@ -27,10 +27,7 @@ const SectionPromo1: FC<SectionPromo1Props> = ({ className = '' }) => {
           <ButtonPrimary href="/collection" className="">
             Savings combo
           </ButtonPrimary>
-          <ButtonSecondary
-            href="/search"
-            className="border border-neutral-100 dark:border-neutral-700"
-          >
+          <ButtonSecondary href="/search" className="border border-neutral-100 dark:border-neutral-700">
             Discover more
           </ButtonSecondary>
         </div>
@@ -52,7 +49,7 @@ const SectionPromo1: FC<SectionPromo1Props> = ({ className = '' }) => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionPromo1;
+export default SectionPromo1

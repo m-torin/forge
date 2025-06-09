@@ -265,8 +265,8 @@ export const fetchDataToIndexStep = compose(
   (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
   (step) =>
     withStepMonitoring(step, {
-, 'indexTypes'],
       enableDetailedLogging: true,
+      metricsToTrack: ['recordCount', 'indexTypes'],
     }),
 );
 
@@ -398,7 +398,7 @@ export const processDocumentsStep = compose(
           errors.push({
             batch: i / processingConfig.batchSize,
             documentIds: batch.map((d: any) => d.id),
-            (error as Error): (error as Error).message,
+            error: (error as Error).message,
           });
         }
 
@@ -564,13 +564,13 @@ function buildFacets(documents: any[]): any {
   for (let i = 0; i < 5; i++) {
     const min = facets.price.min + i * rangeSize;
     const max = Math.min(facets.price.min + (i + 1) * rangeSize, facets.price.max);
-    facets.price.ranges.push({ label: (`$${min as any)} - $${max}`, max, min });
+    facets.price.ranges.push({ label: `$${min} - $${max}`, max, min });
   }
 
   return {
     attributes: Array.from(facets.attributes.entries()).map(([attr, values]) => ({
       attribute: attr,
-      values: (Array.from(values.entries()).map(([value as any), count]) => ({ count, value })),
+      values: Array.from(values.entries()).map(([value, count]) => ({ count, value })),
     })),
     brand: Array.from(facets.brand.entries()).map(([name, count]) => ({ name, count })),
     category: Array.from(facets.category.entries()).map(([name, count]) => ({ name, count })),
@@ -783,8 +783,8 @@ export const bulkIndexDocumentsStep = compose(
     }),
   (step) =>
     withStepMonitoring(step, {
-, 'indexingRate'],
       enableDetailedLogging: true,
+      metricsToTrack: ['documentCount', 'indexingRate'],
     }),
 );
 

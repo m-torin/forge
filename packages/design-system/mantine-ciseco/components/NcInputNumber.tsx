@@ -15,8 +15,8 @@ export interface NcInputNumberProps {
 }
 
 const NcInputNumber: FC<NcInputNumberProps> = ({
-  className = 'w-full',
   'data-testid': testId = 'number-input',
+  className = 'w-full',
   defaultValue = 1,
   desc,
   label,
@@ -57,7 +57,10 @@ const NcInputNumber: FC<NcInputNumberProps> = ({
   };
 
   return (
-    <div data-testid={testId} className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}>
+    <div
+      data-testid={testId}
+      className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
+    >
       {label && renderLabel()}
 
       <div className="nc-NcInputNumber__content flex items-center justify-between w-[104px] sm:w-28">

@@ -1,47 +1,43 @@
-import { Suspense } from 'react';
 import {
-  Container,
-  Stack,
-  Text,
-  Grid,
-  Card,
-  Group,
-  Badge,
   Alert,
+  Badge,
+  Box,
+  Card,
+  Container,
+  Group,
   LoadingOverlay,
   Paper,
   SimpleGrid,
-  ThemeIcon,
-  Box,
+  Stack,
   Tabs,
+  Text,
+  ThemeIcon,
 } from '@mantine/core';
 import {
-  IconShield,
-  IconKey,
-  IconUsers,
-  IconDatabase,
-  IconAlertTriangle,
   IconActivity,
-  IconLock,
+  IconAlertTriangle,
+  IconDatabase,
   IconEye,
+  IconKey,
+  IconLock,
+  IconShield,
+  IconUsers,
 } from '@tabler/icons-react';
-import { AuditLogViewer } from '../components/AuditLogViewer';
+import { Suspense } from 'react';
+
 import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
+import { database } from '@repo/database/prisma';
+
+import { AuditLogViewer } from '../components/AuditLogViewer';
 import { Security } from '../lib/security-middleware';
 
 async function getSecurityStats() {
   try {
     // Get recent audit logs for statistics
     const auditLogs = Security.getRecentAuditLogs(500);
-    
+
     // Get database stats
-    const [
-      apiKeyCount,
-      twoFactorCount,
-      sessionCount,
-      userCount,
-    ] = await Promise.all([
+    const [apiKeyCount, twoFactorCount, sessionCount, userCount] = await Promise.all([
       database.apiKey.count(),
       database.twoFactor.count(),
       database.session.count({ where: { expiresAt: { gt: new Date() } } }),
@@ -49,98 +45,121 @@ async function getSecurityStats() {
     ]);
 
     // Calculate security metrics
-    const failedLogins = auditLogs.filter(log => 
-      log.action === 'login' && !log.success
+    const failedLogins = auditLogs.filter((log) => log.action === 'login' && !log.success).length;
+
+    const highSeverityEvents = auditLogs.filter((log) => log.severity === 'high').length;
+
+    const sensitiveFieldAccess = auditLogs.filter(
+      (log) =>
+        log.fieldName &&
+        ['key', 'secret', 'token', 'password'].some((sensitive) =>
+          log.fieldName?.toLowerCase().includes(sensitive),
+        ),
     ).length;
-    
-    const highSeverityEvents = auditLogs.filter(log => 
-      log.severity === 'high'
-    ).length;
-    
-    const sensitiveFieldAccess = auditLogs.filter(log => 
-      log.fieldName && ['key', 'secret', 'token', 'password'].some(sensitive => 
-        log.fieldName?.toLowerCase().includes(sensitive)
-      )
-    ).length;
-    
-    const uniqueUsers = new Set(auditLogs.map(log => log.userId)).size;
-    
-    const recentEvents = auditLogs.filter(log => 
-      new Date(log.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+
+    const uniqueUsers = new Set(auditLogs.map((log) => log.userId)).size;
+
+    const recentEvents = auditLogs.filter(
+      (log) => new Date(log.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000),
     ).length;
 
     return {
-      database: {
-        apiKeys: apiKeyCount,
-        twoFactor: twoFactorCount,
-        activeSessions: sessionCount,
-        users: userCount,
-      },
+      alerts: [
+        ...(failedLogins > 10
+          ? [
+              {
+                type: 'warning' as const,
+                icon: IconAlertTriangle,
+                message: `${failedLogins} failed login attempts detected`,
+                title: 'Multiple Failed Logins',
+              },
+            ]
+          : []),
+        ...(highSeverityEvents > 5
+          ? [
+              {
+                type: 'error' as const,
+                icon: IconShield,
+                message: `${highSeverityEvents} high severity security events`,
+                title: 'High Severity Events',
+              },
+            ]
+          : []),
+        ...(sensitiveFieldAccess > 20
+          ? [
+              {
+                type: 'info' as const,
+                icon: IconEye,
+                message: `${sensitiveFieldAccess} sensitive field access events`,
+                title: 'Sensitive Data Access',
+              },
+            ]
+          : []),
+      ],
       audit: {
-        totalEvents: auditLogs.length,
         failedLogins,
         highSeverityEvents,
-        sensitiveFieldAccess,
-        uniqueUsers,
         recentEvents,
+        sensitiveFieldAccess,
+        totalEvents: auditLogs.length,
+        uniqueUsers,
       },
-      alerts: [
-        ...(failedLogins > 10 ? [{
-          type: 'warning' as const,
-          title: 'Multiple Failed Logins',
-          message: `${failedLogins} failed login attempts detected`,
-          icon: IconAlertTriangle,
-        }] : []),
-        ...(highSeverityEvents > 5 ? [{
-          type: 'error' as const,
-          title: 'High Severity Events',
-          message: `${highSeverityEvents} high severity security events`,
-          icon: IconShield,
-        }] : []),
-        ...(sensitiveFieldAccess > 20 ? [{
-          type: 'info' as const,
-          title: 'Sensitive Data Access',
-          message: `${sensitiveFieldAccess} sensitive field access events`,
-          icon: IconEye,
-        }] : []),
-      ],
+      database: {
+        activeSessions: sessionCount,
+        apiKeys: apiKeyCount,
+        twoFactor: twoFactorCount,
+        users: userCount,
+      },
     };
   } catch (error) {
     console.error('Failed to get security stats:', error);
     return {
-      database: { apiKeys: 0, twoFactor: 0, activeSessions: 0, users: 0 },
-      audit: { totalEvents: 0, failedLogins: 0, highSeverityEvents: 0, sensitiveFieldAccess: 0, uniqueUsers: 0, recentEvents: 0 },
       alerts: [],
+      audit: {
+        failedLogins: 0,
+        highSeverityEvents: 0,
+        recentEvents: 0,
+        sensitiveFieldAccess: 0,
+        totalEvents: 0,
+        uniqueUsers: 0,
+      },
+      database: { activeSessions: 0, apiKeys: 0, twoFactor: 0, users: 0 },
     };
   }
 }
 
 interface SecurityStatsCardProps {
-  title: string;
-  value: number;
-  icon: React.ComponentType<{ size?: number }>;
   color: string;
   description?: string;
+  icon: React.ComponentType<{ size?: number }>;
+  title: string;
+  value: number;
 }
 
-function SecurityStatsCard({ title, value, icon: Icon, color, description }: SecurityStatsCardProps) {
+function SecurityStatsCard({
+  color,
+  description,
+  icon: Icon,
+  title,
+  value,
+}: SecurityStatsCardProps) {
   return (
     <Card withBorder p="lg">
       <Group justify="space-between">
         <Box>
-          <Text size="xl" fw={700} c={color}>
+          <Text c={color} fw={700} size="xl">
             {value.toLocaleString()}
           </Text>
-          <Text size="sm" fw={500} mt={4}>
+          <Text fw={500} mt={4} size="sm">
             {title}
           </Text>
           {description && (
-            <Text size="xs" c="dimmed" mt={2}>
+            <Text c="dimmed" mt={2} size="xs">
               {description}
             </Text>
           )}
         </Box>
-        <ThemeIcon size="lg" variant="light" color={color}>
+        <ThemeIcon color={color} size="lg" variant="light">
           <Icon size={24} />
         </ThemeIcon>
       </Group>
@@ -150,7 +169,7 @@ function SecurityStatsCard({ title, value, icon: Icon, color, description }: Sec
 
 async function SecurityDashboard() {
   const session = await auth.api.getSession();
-  
+
   if (!session) {
     return (
       <Alert color="red" title="Access Denied">
@@ -161,7 +180,7 @@ async function SecurityDashboard() {
 
   // Check if user has admin permissions
   const hasAdminAccess = session.user.role === 'admin';
-  
+
   if (!hasAdminAccess) {
     return (
       <Alert color="orange" title="Insufficient Permissions">
@@ -173,19 +192,19 @@ async function SecurityDashboard() {
   const stats = await getSecurityStats();
 
   return (
-    <Container size="xl" py="xl">
+    <Container py="xl" size="xl">
       <Stack gap="xl">
         {/* Header */}
         <Group justify="space-between">
           <Box>
-            <Text size="xl" fw={700}>
+            <Text fw={700} size="xl">
               Security Dashboard
             </Text>
-            <Text size="sm" c="dimmed" mt={4}>
+            <Text c="dimmed" mt={4} size="sm">
               Monitor security events and system access
             </Text>
           </Box>
-          <Badge size="lg" variant="light" color="green">
+          <Badge color="green" size="lg" variant="light">
             Real-time
           </Badge>
         </Group>
@@ -193,13 +212,17 @@ async function SecurityDashboard() {
         {/* Security Alerts */}
         {stats.alerts.length > 0 && (
           <Stack gap="sm">
-            <Text size="lg" fw={600}>Security Alerts</Text>
+            <Text fw={600} size="lg">
+              Security Alerts
+            </Text>
             {stats.alerts.map((alert, index) => (
               <Alert
                 key={index}
+                color={
+                  alert.type === 'error' ? 'red' : alert.type === 'warning' ? 'orange' : 'blue'
+                }
                 icon={<alert.icon size={16} />}
                 title={alert.title}
-                color={alert.type === 'error' ? 'red' : alert.type === 'warning' ? 'orange' : 'blue'}
               >
                 {alert.message}
               </Alert>
@@ -209,83 +232,87 @@ async function SecurityDashboard() {
 
         {/* Statistics Grid */}
         <Stack gap="md">
-          <Text size="lg" fw={600}>Database Security</Text>
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
+          <Text fw={600} size="lg">
+            Database Security
+          </Text>
+          <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="md">
             <SecurityStatsCard
-              title="API Keys"
-              value={stats.database.apiKeys}
-              icon={IconKey}
               color="blue"
               description="Total API keys in system"
+              icon={IconKey}
+              title="API Keys"
+              value={stats.database.apiKeys}
             />
             <SecurityStatsCard
-              title="2FA Enabled"
-              value={stats.database.twoFactor}
-              icon={IconLock}
               color="green"
               description="Users with two-factor auth"
+              icon={IconLock}
+              title="2FA Enabled"
+              value={stats.database.twoFactor}
             />
             <SecurityStatsCard
-              title="Active Sessions"
-              value={stats.database.activeSessions}
-              icon={IconActivity}
               color="orange"
               description="Currently active user sessions"
+              icon={IconActivity}
+              title="Active Sessions"
+              value={stats.database.activeSessions}
             />
             <SecurityStatsCard
-              title="Total Users"
-              value={stats.database.users}
-              icon={IconUsers}
               color="violet"
               description="Registered users in system"
+              icon={IconUsers}
+              title="Total Users"
+              value={stats.database.users}
             />
           </SimpleGrid>
         </Stack>
 
         <Stack gap="md">
-          <Text size="lg" fw={600}>Audit Statistics</Text>
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+          <Text fw={600} size="lg">
+            Audit Statistics
+          </Text>
+          <SimpleGrid cols={{ base: 1, lg: 3, sm: 2 }} spacing="md">
             <SecurityStatsCard
-              title="Total Events"
-              value={stats.audit.totalEvents}
-              icon={IconDatabase}
               color="blue"
               description="All recorded audit events"
+              icon={IconDatabase}
+              title="Total Events"
+              value={stats.audit.totalEvents}
             />
             <SecurityStatsCard
-              title="Failed Logins"
-              value={stats.audit.failedLogins}
-              icon={IconAlertTriangle}
               color="red"
               description="Failed authentication attempts"
+              icon={IconAlertTriangle}
+              title="Failed Logins"
+              value={stats.audit.failedLogins}
             />
             <SecurityStatsCard
-              title="High Severity"
-              value={stats.audit.highSeverityEvents}
-              icon={IconShield}
               color="red"
               description="Critical security events"
+              icon={IconShield}
+              title="High Severity"
+              value={stats.audit.highSeverityEvents}
             />
             <SecurityStatsCard
-              title="Sensitive Access"
-              value={stats.audit.sensitiveFieldAccess}
-              icon={IconEye}
               color="orange"
               description="Sensitive field access events"
+              icon={IconEye}
+              title="Sensitive Access"
+              value={stats.audit.sensitiveFieldAccess}
             />
             <SecurityStatsCard
-              title="Active Users"
-              value={stats.audit.uniqueUsers}
-              icon={IconUsers}
               color="green"
               description="Users with recent activity"
+              icon={IconUsers}
+              title="Active Users"
+              value={stats.audit.uniqueUsers}
             />
             <SecurityStatsCard
-              title="Recent Events"
-              value={stats.audit.recentEvents}
-              icon={IconActivity}
               color="blue"
               description="Events in last 24 hours"
+              icon={IconActivity}
+              title="Recent Events"
+              value={stats.audit.recentEvents}
             />
           </SimpleGrid>
         </Stack>
@@ -294,40 +321,32 @@ async function SecurityDashboard() {
         <Paper withBorder>
           <Tabs defaultValue="all">
             <Tabs.List>
-              <Tabs.Tab value="all">
-                All Events
-              </Tabs.Tab>
-              <Tabs.Tab value="failed">
-                Failed Actions
-              </Tabs.Tab>
-              <Tabs.Tab value="high-severity">
-                High Severity
-              </Tabs.Tab>
-              <Tabs.Tab value="sensitive">
-                Sensitive Data
-              </Tabs.Tab>
+              <Tabs.Tab value="all">All Events</Tabs.Tab>
+              <Tabs.Tab value="failed">Failed Actions</Tabs.Tab>
+              <Tabs.Tab value="high-severity">High Severity</Tabs.Tab>
+              <Tabs.Tab value="sensitive">Sensitive Data</Tabs.Tab>
             </Tabs.List>
 
-            <Tabs.Panel value="all" pt="md">
+            <Tabs.Panel pt="md" value="all">
               <AuditLogViewer />
             </Tabs.Panel>
 
-            <Tabs.Panel value="failed" pt="md">
-              <Alert icon={<IconAlertTriangle size={16} />} color="red" mb="md">
+            <Tabs.Panel pt="md" value="failed">
+              <Alert color="red" icon={<IconAlertTriangle size={16} />} mb="md">
                 Showing only failed security actions
               </Alert>
               <AuditLogViewer />
             </Tabs.Panel>
 
-            <Tabs.Panel value="high-severity" pt="md">
-              <Alert icon={<IconShield size={16} />} color="orange" mb="md">
+            <Tabs.Panel pt="md" value="high-severity">
+              <Alert color="orange" icon={<IconShield size={16} />} mb="md">
                 Showing only high severity security events
               </Alert>
               <AuditLogViewer />
             </Tabs.Panel>
 
-            <Tabs.Panel value="sensitive" pt="md">
-              <Alert icon={<IconEye size={16} />} color="blue" mb="md">
+            <Tabs.Panel pt="md" value="sensitive">
+              <Alert color="blue" icon={<IconEye size={16} />} mb="md">
                 Showing only sensitive data access events
               </Alert>
               <AuditLogViewer />

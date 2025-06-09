@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ActionIcon,
@@ -23,10 +23,8 @@ import {
   TextInput,
   Tooltip,
   UnstyledButton,
-} from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
+} from '@mantine/core';
+import { useForm } from '@mantine/form';
 import {
   IconCheck,
   IconChevronDown,
@@ -39,12 +37,18 @@ import {
   IconStar,
   IconStarFilled,
   IconTrash,
-} from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+} from '@tabler/icons-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { createBarcode, deleteBarcode, getBarcodes } from "../actions";
+import { createBarcode, deleteBarcode, getBarcodes } from '../actions';
+import {
+  BARCODE_TYPE_LABELS,
+  convertToFormData,
+  showErrorNotification,
+  showSuccessNotification,
+} from '../utils/pim-helpers';
 
-import type { BarcodeType, ProductBarcode } from "@repo/database/prisma";
+import type { BarcodeType, ProductBarcode } from '@repo/database/prisma';
 
 interface ProductBarcodeWithProduct extends ProductBarcode {
   product: {
@@ -62,14 +66,10 @@ interface ThProps {
 }
 
 function Th({ children, onSort, reversed, sorted }: ThProps) {
-  const Icon = sorted
-    ? reversed
-      ? IconChevronUp
-      : IconChevronDown
-    : IconSelector;
+  const Icon = sorted ? (reversed ? IconChevronUp : IconChevronDown) : IconSelector;
   return (
     <Table.Th>
-      <UnstyledButton onClick={onSort} style={{ width: "100%" }}>
+      <UnstyledButton onClick={onSort} style={{ width: '100%' }}>
         <Group justify="space-between">
           <Text fw={500} fz="sm">
             {children}
@@ -89,23 +89,19 @@ interface BarcodeFormModalProps {
   opened: boolean;
 }
 
-function BarcodeFormModal({
-  onClose,
-  onSuccess,
-  opened,
-}: BarcodeFormModalProps) {
+function BarcodeFormModal({ onClose, onSuccess, opened }: BarcodeFormModalProps) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm({
     validate: {
-      barcode: (value) => (!value ? "Barcode is required" : null),
-      productId: (value) => (!value ? "Product is required" : null),
+      barcode: (value) => (!value ? 'Barcode is required' : null),
+      productId: (value) => (!value ? 'Product is required' : null),
     },
     initialValues: {
-      type: "UPC_A" as BarcodeType,
-      barcode: "",
+      type: 'UPC_A' as BarcodeType,
+      barcode: '',
       isPrimary: false,
-      productId: "",
+      productId: '',
     },
   });
 
@@ -113,36 +109,18 @@ function BarcodeFormModal({
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      Object.entries(values).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          formData.append(key, value.toString());
-        }
-      });
-
+      const formData = convertToFormData(values);
       const result = await createBarcode(formData);
 
       if (result.success) {
-        notifications.show({
-          color: "green",
-          message: "Barcode created successfully",
-          title: "Success",
-        });
+        showSuccessNotification('Barcode created successfully');
         onSuccess();
         form.reset();
       } else {
-        notifications.show({
-          color: "red",
-          message: result.error || "Failed to create barcode",
-          title: "Error",
-        });
+        showErrorNotification(result.error || 'Failed to create barcode');
       }
     } catch (error) {
-      notifications.show({
-        color: "red",
-        message: "Failed to create barcode",
-        title: "Error",
-      });
+      showErrorNotification('Failed to create barcode');
     } finally {
       setLoading(false);
     }
@@ -156,41 +134,30 @@ function BarcodeFormModal({
             placeholder="Enter product ID"
             label="Product ID"
             required
-            {...form.getInputProps("productId")}
+            {...form.getInputProps('productId')}
           />
 
           <TextInput
             placeholder="Enter barcode value"
             label="Barcode"
             required
-            {...form.getInputProps("barcode")}
+            {...form.getInputProps('barcode')}
           />
 
           <Select
-            data={[
-              { label: "UPC-A", value: "UPC_A" },
-              { label: "UPC-E", value: "UPC_E" },
-              { label: "EAN-13", value: "EAN_13" },
-              { label: "EAN-8", value: "EAN_8" },
-              { label: "Code 128", value: "CODE_128" },
-              { label: "Code 39", value: "CODE_39" },
-              { label: "QR Code", value: "QR_CODE" },
-              { label: "PDF417", value: "PDF417" },
-              { label: "Aztec", value: "AZTEC" },
-              { label: "Data Matrix", value: "DATA_MATRIX" },
-              { label: "ITF-14", value: "ITF14" },
-              { label: "Codabar", value: "CODABAR" },
-              { label: "Other", value: "OTHER" },
-            ]}
+            data={Object.entries(BARCODE_TYPE_LABELS).map(([value, label]) => ({
+              label,
+              value,
+            }))}
             label="Barcode Type"
             required
-            {...form.getInputProps("type")}
+            {...form.getInputProps('type')}
           />
 
           <Switch
             description="Primary barcodes are used as the default for product identification"
             label="Set as Primary Barcode"
-            {...form.getInputProps("isPrimary", { type: "checkbox" })}
+            {...form.getInputProps('isPrimary', { type: 'checkbox' })}
           />
 
           <Group justify="flex-end" mt="md">
@@ -210,11 +177,9 @@ function BarcodeFormModal({
 export function BarcodesTable() {
   const [barcodes, setBarcodes] = useState<ProductBarcodeWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<BarcodeType | "">("");
-  const [primaryFilter, setPrimaryFilter] = useState<
-    "all" | "primary" | "secondary"
-  >("all");
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<BarcodeType | ''>('');
+  const [primaryFilter, setPrimaryFilter] = useState<'all' | 'primary' | 'secondary'>('all');
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
   const [page, setPage] = useState(1);
@@ -227,8 +192,7 @@ export function BarcodesTable() {
     try {
       const result = await getBarcodes({
         type: (typeFilter as BarcodeType) || undefined,
-        isPrimary:
-          primaryFilter === "all" ? undefined : primaryFilter === "primary",
+        isPrimary: primaryFilter === 'all' ? undefined : primaryFilter === 'primary',
         limit: 10,
         page,
         search,
@@ -241,16 +205,16 @@ export function BarcodesTable() {
         }
       } else {
         notifications.show({
-          color: "red",
-          message: result.error || "Failed to load barcodes",
-          title: "Error",
+          color: 'red',
+          message: result.error || 'Failed to load barcodes',
+          title: 'Error',
         });
       }
     } catch (error) {
       notifications.show({
-        color: "red",
-        message: "Failed to load barcodes",
-        title: "Error",
+        color: 'red',
+        message: 'Failed to load barcodes',
+        title: 'Error',
       });
     } finally {
       setLoading(false);
@@ -272,59 +236,58 @@ export function BarcodesTable() {
       centered: true,
       children: (
         <Text size="sm">
-          Are you sure you want to delete this barcode? This action is
-          irreversible.
+          Are you sure you want to delete this barcode? This action is irreversible.
         </Text>
       ),
-      confirmProps: { color: "red" },
-      labels: { cancel: "Cancel", confirm: "Delete" },
+      confirmProps: { color: 'red' },
+      labels: { cancel: 'Cancel', confirm: 'Delete' },
       onCancel: () => {},
       onConfirm: async () => {
         const result = await deleteBarcode(id);
         if (result.success) {
           notifications.show({
-            color: "green",
-            message: "Barcode deleted successfully",
-            title: "Success",
+            color: 'green',
+            message: 'Barcode deleted successfully',
+            title: 'Success',
           });
           loadBarcodes();
         } else {
           notifications.show({
-            color: "red",
-            message: result.error || "Failed to delete barcode",
-            title: "Error",
+            color: 'red',
+            message: result.error || 'Failed to delete barcode',
+            title: 'Error',
           });
         }
       },
-      title: "Delete Barcode",
+      title: 'Delete Barcode',
     });
   };
 
   const getBarcodeTypeColor = (type: BarcodeType) => {
     switch (type) {
-      case "UPC_A":
-      case "UPC_E":
-        return "blue";
-      case "EAN_13":
-      case "EAN_8":
-        return "green";
-      case "QR_CODE":
-        return "violet";
-      case "CODE_128":
-      case "CODE_39":
-        return "orange";
+      case 'UPC_A':
+      case 'UPC_E':
+        return 'blue';
+      case 'EAN_13':
+      case 'EAN_8':
+        return 'green';
+      case 'QR_CODE':
+        return 'violet';
+      case 'CODE_128':
+      case 'CODE_39':
+        return 'orange';
       default:
-        return "gray";
+        return 'gray';
     }
   };
 
   const formatDate = (date: Date | string) => {
-    return new Intl.DateTimeFormat("en-US", {
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      month: "short",
-      year: "numeric",
+    return new Intl.DateTimeFormat('en-US', {
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      month: 'short',
+      year: 'numeric',
     }).format(new Date(date));
   };
 
@@ -334,13 +297,11 @@ export function BarcodesTable() {
         const aValue = (a as any)[sortBy];
         const bValue = (b as any)[sortBy];
 
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return reverseSortDirection
-            ? bValue.localeCompare(aValue)
-            : aValue.localeCompare(bValue);
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return reverseSortDirection ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
         }
 
-        if (typeof aValue === "boolean" && typeof bValue === "boolean") {
+        if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
           return reverseSortDirection
             ? (bValue ? 1 : 0) - (aValue ? 1 : 0)
             : (aValue ? 1 : 0) - (bValue ? 1 : 0);
@@ -359,7 +320,7 @@ export function BarcodesTable() {
   const rows = sortedData.map((barcode) => {
     const selected = selectedRows.includes(barcode.id);
     return (
-      <Table.Tr key={barcode.id} bg={selected ? "blue.0" : undefined}>
+      <Table.Tr key={barcode.id} bg={selected ? 'blue.0' : undefined}>
         <Table.Td>
           <Checkbox
             onChange={(event) => {
@@ -379,9 +340,9 @@ export function BarcodesTable() {
             </Code>
             <CopyButton value={barcode.barcode}>
               {({ copied, copy }) => (
-                <Tooltip label={copied ? "Copied" : "Copy barcode"}>
+                <Tooltip label={copied ? 'Copied' : 'Copy barcode'}>
                   <ActionIcon
-                    color={copied ? "teal" : "gray"}
+                    color={copied ? 'teal' : 'gray'}
                     onClick={copy}
                     size="xs"
                     variant="subtle"
@@ -395,7 +356,7 @@ export function BarcodesTable() {
         </Table.Td>
         <Table.Td>
           <Badge color={getBarcodeTypeColor(barcode.type)} variant="light">
-            {barcode.type.replace("_", "-")}
+            {barcode.type.replace('_', '-')}
           </Badge>
         </Table.Td>
         <Table.Td>
@@ -412,11 +373,7 @@ export function BarcodesTable() {
         </Table.Td>
         <Table.Td>
           {barcode.isPrimary ? (
-            <Badge
-              color="blue"
-              leftSection={<IconStarFilled size={12} />}
-              variant="filled"
-            >
+            <Badge color="blue" leftSection={<IconStarFilled size={12} />} variant="filled">
               Primary
             </Badge>
           ) : (
@@ -452,9 +409,7 @@ export function BarcodesTable() {
 
               <Menu.Dropdown>
                 <Menu.Item
-                  leftSection={
-                    <IconStar style={{ width: rem(14), height: rem(14) }} />
-                  }
+                  leftSection={<IconStar style={{ width: rem(14), height: rem(14) }} />}
                   onClick={() => {
                     // Implement set as primary
                   }}
@@ -464,9 +419,7 @@ export function BarcodesTable() {
                 </Menu.Item>
                 <Menu.Item
                   color="red"
-                  leftSection={
-                    <IconTrash style={{ width: rem(14), height: rem(14) }} />
-                  }
+                  leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
                   onClick={() => handleDelete(barcode.id)}
                 >
                   Delete
@@ -484,42 +437,38 @@ export function BarcodesTable() {
       <Group justify="space-between">
         <Group>
           <TextInput
-            leftSection={
-              <IconSearch style={{ width: rem(16), height: rem(16) }} />
-            }
+            leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} />}
             onChange={(e) => setSearch(e.currentTarget.value)}
             placeholder="Search barcodes..."
             style={{ width: rem(250) }}
             value={search}
           />
           <Select
-            onChange={(value) => setTypeFilter(value as BarcodeType | "")}
+            onChange={(value) => setTypeFilter(value as BarcodeType | '')}
             placeholder="Filter by type"
             style={{ width: rem(150) }}
             clearable
             data={[
-              { label: "All types", value: "" },
-              { label: "UPC-A", value: "UPC_A" },
-              { label: "UPC-E", value: "UPC_E" },
-              { label: "EAN-13", value: "EAN_13" },
-              { label: "EAN-8", value: "EAN_8" },
-              { label: "Code 128", value: "CODE_128" },
-              { label: "Code 39", value: "CODE_39" },
-              { label: "QR Code", value: "QR_CODE" },
-              { label: "Other", value: "OTHER" },
+              { label: 'All types', value: '' },
+              { label: 'UPC-A', value: 'UPC_A' },
+              { label: 'UPC-E', value: 'UPC_E' },
+              { label: 'EAN-13', value: 'EAN_13' },
+              { label: 'EAN-8', value: 'EAN_8' },
+              { label: 'Code 128', value: 'CODE_128' },
+              { label: 'Code 39', value: 'CODE_39' },
+              { label: 'QR Code', value: 'QR_CODE' },
+              { label: 'Other', value: 'OTHER' },
             ]}
             value={typeFilter}
           />
           <Select
-            onChange={(value) =>
-              setPrimaryFilter(value as "all" | "primary" | "secondary")
-            }
+            onChange={(value) => setPrimaryFilter(value as 'all' | 'primary' | 'secondary')}
             placeholder="Filter by primary"
             style={{ width: rem(150) }}
             data={[
-              { label: "All barcodes", value: "all" },
-              { label: "Primary only", value: "primary" },
-              { label: "Secondary only", value: "secondary" },
+              { label: 'All barcodes', value: 'all' },
+              { label: 'Primary only', value: 'primary' },
+              { label: 'Secondary only', value: 'secondary' },
             ]}
             value={primaryFilter}
           />
@@ -543,10 +492,7 @@ export function BarcodesTable() {
               </Button>
             </Group>
           )}
-          <Button
-            leftSection={<IconPlus size={16} />}
-            onClick={() => setBarcodeModalOpened(true)}
-          >
+          <Button leftSection={<IconPlus size={16} />} onClick={() => setBarcodeModalOpened(true)}>
             Add Barcode
           </Button>
         </Group>
@@ -565,41 +511,35 @@ export function BarcodesTable() {
                       setSelectedRows([]);
                     }
                   }}
-                  checked={
-                    selectedRows.length === barcodes.length &&
-                    barcodes.length > 0
-                  }
-                  indeterminate={
-                    selectedRows.length > 0 &&
-                    selectedRows.length < barcodes.length
-                  }
+                  checked={selectedRows.length === barcodes.length && barcodes.length > 0}
+                  indeterminate={selectedRows.length > 0 && selectedRows.length < barcodes.length}
                 />
               </Table.Th>
               <Th
-                onSort={() => setSorting("barcode")}
-                sorted={sortBy === "barcode"}
+                onSort={() => setSorting('barcode')}
+                sorted={sortBy === 'barcode'}
                 reversed={reverseSortDirection}
               >
                 Barcode
               </Th>
               <Th
-                onSort={() => setSorting("type")}
-                sorted={sortBy === "type"}
+                onSort={() => setSorting('type')}
+                sorted={sortBy === 'type'}
                 reversed={reverseSortDirection}
               >
                 Type
               </Th>
               <Table.Th>Product</Table.Th>
               <Th
-                onSort={() => setSorting("isPrimary")}
-                sorted={sortBy === "isPrimary"}
+                onSort={() => setSorting('isPrimary')}
+                sorted={sortBy === 'isPrimary'}
                 reversed={reverseSortDirection}
               >
                 Status
               </Th>
               <Th
-                onSort={() => setSorting("createdAt")}
-                sorted={sortBy === "createdAt"}
+                onSort={() => setSorting('createdAt')}
+                sorted={sortBy === 'createdAt'}
                 reversed={reverseSortDirection}
               >
                 Created

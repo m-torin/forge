@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import useEmblaCarousel from 'embla-carousel-react';
+import useEmblaCarousel from 'embla-carousel-react'
 
-import { type TCollection } from '../data/data';
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
+import { type TCollection } from '../data/data'
+import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons'
 
-import CollectionCard3 from './CollectionCard3';
-import Heading from './Heading/Heading';
+import CollectionCard3 from './CollectionCard3'
+import Heading from './Heading/Heading'
 
-import type { EmblaOptionsType } from 'embla-carousel';
+import type { EmblaOptionsType } from 'embla-carousel'
 
 interface Props {
-  className?: string;
-  collections: TCollection[];
-  emblaOptions?: EmblaOptionsType;
-  heading?: string;
-  headingDim?: string;
+  className?: string
+  collections: TCollection[]
+  emblaOptions?: EmblaOptionsType
+  heading?: string
+  headingDim?: string
 }
 
 const SectionCollectionSlider = ({
@@ -27,9 +27,8 @@ const SectionCollectionSlider = ({
   heading = 'Discover more',
   headingDim = 'Good things are waiting for you',
 }: Props) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
+  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } = useCarouselArrowButtons(emblaApi)
 
   return (
     <div className={className}>
@@ -46,11 +45,11 @@ const SectionCollectionSlider = ({
       </Heading>
 
       <div ref={emblaRef} className="embla pl-container">
-        <div className="-ms-5 embla__container">
+        <div className="embla__container -ms-5">
           {collections.map((collection) => (
             <div
               key={collection.id}
-              className="embla__slide basis-11/12 ps-5 sm:basis-2/3 lg:basis-3/7 xl:basis-2/5 2xl:basis-[34%]"
+              className="embla__slide lg:basis-3/7 basis-11/12 ps-5 sm:basis-2/3 xl:basis-2/5 2xl:basis-[34%]"
             >
               <CollectionCard3 collection={collection} />
             </div>
@@ -58,7 +57,7 @@ const SectionCollectionSlider = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionCollectionSlider;
+export default SectionCollectionSlider

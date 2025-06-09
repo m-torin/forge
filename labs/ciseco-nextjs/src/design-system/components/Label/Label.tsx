@@ -1,8 +1,8 @@
-import React, { type FC } from 'react';
+import React, { type FC } from 'react'
 
 export interface LabelProps {
-  children?: React.ReactNode;
-  className?: string;
+  children?: React.ReactNode
+  className?: string
 }
 
 const Label: FC<LabelProps> = ({ children, className = '' }) => {
@@ -13,7 +13,7 @@ const Label: FC<LabelProps> = ({ children, className = '' }) => {
     >
       {children}
     </label>
-  );
-};
+  )
+}
 
-export default Label;
+export default Label

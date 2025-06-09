@@ -2,35 +2,65 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SentryServerProvider } from '../../../server/providers/sentry-server';
 
-// Mock Sentry
-const mockSentryInit = vi.fn();
-const mockCaptureException = vi.fn();
-const mockCaptureMessage = vi.fn();
-const mockAddBreadcrumb = vi.fn();
-const mockSetUser = vi.fn();
-const mockSetTag = vi.fn();
-const mockSetExtra = vi.fn();
-const mockSetContext = vi.fn();
-const mockStartTransaction = vi.fn();
-const mockWithScope = vi.fn((callback) => callback(mockScope));
+// Use vi.hoisted for mocks
+const {
+  mockAddBreadcrumb,
+  mockCaptureException,
+  mockCaptureMessage,
+  mockScope,
+  mockSentryInit,
+  mockSetContext,
+  mockSetExtra,
+  mockSetTag,
+  mockSetUser,
+  mockStartTransaction,
+  mockTransaction,
+  mockWithScope,
+} = vi.hoisted(() => {
+  const mockScope = {
+    setContext: vi.fn(),
+    setExtra: vi.fn(),
+    setFingerprint: vi.fn(),
+    setSpan: vi.fn(),
+    setTag: vi.fn(),
+    setUser: vi.fn(),
+  };
 
-const mockScope = {
-  setContext: vi.fn(),
-  setExtra: vi.fn(),
-  setFingerprint: vi.fn(),
-  setSpan: vi.fn(),
-  setTag: vi.fn(),
-  setUser: vi.fn(),
-};
+  const mockTransaction = {
+    finish: vi.fn(),
+    setData: vi.fn(),
+    setHttpStatus: vi.fn(),
+    setStatus: vi.fn(),
+    setTag: vi.fn(),
+    startChild: vi.fn(),
+  };
 
-const mockTransaction = {
-  finish: vi.fn(),
-  setData: vi.fn(),
-  setHttpStatus: vi.fn(),
-  setStatus: vi.fn(),
-  setTag: vi.fn(),
-  startChild: vi.fn(),
-};
+  const mockSentryInit = vi.fn();
+  const mockCaptureException = vi.fn();
+  const mockCaptureMessage = vi.fn();
+  const mockAddBreadcrumb = vi.fn();
+  const mockSetUser = vi.fn();
+  const mockSetTag = vi.fn();
+  const mockSetExtra = vi.fn();
+  const mockSetContext = vi.fn();
+  const mockStartTransaction = vi.fn();
+  const mockWithScope = vi.fn((callback) => callback(mockScope));
+
+  return {
+    mockAddBreadcrumb,
+    mockCaptureException,
+    mockCaptureMessage,
+    mockScope,
+    mockSentryInit,
+    mockSetContext,
+    mockSetExtra,
+    mockSetTag,
+    mockSetUser,
+    mockStartTransaction,
+    mockTransaction,
+    mockWithScope,
+  };
+});
 
 vi.mock('@sentry/node', () => ({
   addBreadcrumb: mockAddBreadcrumb,
@@ -128,8 +158,10 @@ describe('SentryServerProvider', () => {
       await provider.captureException(error, context);
 
       expect(mockScope.setUser).toHaveBeenCalledWith({ id: '123' });
-      expect(mockScope.setTag).toHaveBeenCalledWith('organization_id', 'org-456');
+      // Check that both tags were set (order doesn't matter)
       expect(mockScope.setTag).toHaveBeenCalledWith('environment', 'test');
+      expect(mockScope.setTag).toHaveBeenCalledWith('organization_id', 'org-456');
+      expect(mockScope.setTag).toHaveBeenCalledTimes(2);
       expect(mockScope.setExtra).toHaveBeenCalledWith('version', '1.0.0');
     });
 

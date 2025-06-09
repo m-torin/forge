@@ -1,22 +1,17 @@
-'use client';
-import { Listbox, Transition } from '@headlessui/react';
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
-import { type FC, Fragment, useState } from 'react';
+'use client'
+import { Listbox, Transition } from '@headlessui/react'
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
+import { type FC, Fragment, useState } from 'react'
 
-const DEMO_DATA = [
-  { name: 'Sort order' },
-  { name: 'Today' },
-  { name: 'Last 7 days' },
-  { name: 'Last 30 days' },
-];
+const DEMO_DATA = [{ name: 'Sort order' }, { name: 'Today' }, { name: 'Last 7 days' }, { name: 'Last 30 days' }]
 
 interface Props {
-  className?: string;
-  data?: { name: string }[];
+  className?: string
+  data?: { name: string }[]
 }
 
 const SortOrderFilter: FC<Props> = ({ className = '', data = DEMO_DATA }) => {
-  const [selected, setSelected] = useState(data[0]);
+  const [selected, setSelected] = useState(data[0])
 
   return (
     <div className={className}>
@@ -80,22 +75,20 @@ const SortOrderFilter: FC<Props> = ({ className = '', data = DEMO_DATA }) => {
             enter="transition ease-out duration-100 "
             leave="transition ease-in duration-75"
           >
-            <Listbox.Options className="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-2xl bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-hidden sm:text-sm">
+            <Listbox.Options className="focus:outline-hidden absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-2xl bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm">
               {data.map((person, personIdx) => (
                 <Listbox.Option
                   key={personIdx}
                   className={({ active }) =>
                     `${
                       active ? 'bg-amber-100 text-amber-900' : 'text-gray-900'
-                    } relative cursor-default py-2 pr-4 pl-10 select-none`
+                    } relative cursor-default select-none py-2 pl-10 pr-4`
                   }
                   value={person}
                 >
                   {({ active, selected }) => (
                     <>
-                      <span
-                        className={`${selected ? 'font-medium' : 'font-normal'} block truncate`}
-                      >
+                      <span className={`${selected ? 'font-medium' : 'font-normal'} block truncate`}>
                         {person.name}
                       </span>
                       {selected ? (
@@ -116,7 +109,7 @@ const SortOrderFilter: FC<Props> = ({ className = '', data = DEMO_DATA }) => {
         </div>
       </Listbox>
     </div>
-  );
-};
+  )
+}
 
-export default SortOrderFilter;
+export default SortOrderFilter

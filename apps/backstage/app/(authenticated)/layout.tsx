@@ -39,6 +39,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 
+import { ErrorBoundary } from '../components/error-boundary';
+import { PerformanceMonitor } from '../components/performance-monitor';
 import { SearchModal } from './components/search-modal';
 
 const navigationItems = [
@@ -62,26 +64,22 @@ const navigationItems = [
     label: 'Workflows',
   },
   {
-    color: 'green',
-    href: '/pim-power',
-    icon: IconPackage,
-    items: [
-      { href: '/pim-power', label: 'Product Catalog' },
-      { href: '/pim-power/taxonomy', label: 'Taxonomy' },
-      { href: '/pim-power/classification', label: 'Classification' },
-    ],
-    label: 'PIM Power',
-  },
-  {
     color: 'teal',
     href: '/pim3',
     icon: IconPackage,
     items: [
       { href: '/pim3', label: 'Dashboard' },
       { href: '/pim3/products', label: 'Products' },
+      { href: '/pim3/categories', label: 'Categories' },
+      { href: '/pim3/taxonomies', label: 'Taxonomies' },
+      { href: '/pim3/brands', label: 'Brands' },
+      { href: '/pim3/collections', label: 'Collections' },
       { href: '/pim3/assets', label: 'Assets' },
       { href: '/pim3/barcodes', label: 'Barcodes' },
       { href: '/pim3/scan-history', label: 'Scan History' },
+      { href: '/pim3/registries', label: 'Registries' },
+      { href: '/pim3/reviews', label: 'Reviews' },
+      { href: '/pim3/media', label: 'Media' },
     ],
     label: 'PIM3',
   },
@@ -163,7 +161,9 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
   };
 
   return (
-    <AppShell
+    <ErrorBoundary>
+      <PerformanceMonitor />
+      <AppShell
       styles={{
         main: {
           background:
@@ -178,7 +178,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
       >
         <Group h="100%" justify="space-between" px="md">
           <Group>
-            <Title order={3}>Backstage Admin</Title>
+            <Title order={3}>Backstage</Title>
 
             <Group gap={0}>
               {navigationItems.map((item) => (
@@ -373,5 +373,6 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
 
       <SearchModal onClose={() => setSearchOpened(false)} opened={searchOpened} />
     </AppShell>
+    </ErrorBoundary>
   );
 }

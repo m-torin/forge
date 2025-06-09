@@ -1,15 +1,15 @@
-import { database } from '@repo/database';
+import { database } from '@repo/database/prisma';
 
 // Map of model names to their display field preferences
 const MODEL_DISPLAY_FIELDS: Record<string, string[]> = {
-  product: ['name', 'sku', 'brand'],
-  user: ['name', 'email'],
-  organization: ['name', 'slug'],
-  team: ['name'],
   apiKey: ['name', 'prefix'],
-  workflowConfig: ['name', 'type'],
-  productBarcode: ['barcode', 'type'],
+  organization: ['name', 'slug'],
+  product: ['name', 'sku', 'brand'],
   productAsset: ['name', 'type'],
+  productBarcode: ['barcode', 'type'],
+  team: ['name'],
+  user: ['name', 'email'],
+  workflowConfig: ['name', 'type'],
 };
 
 // Map of relationships that need special handling
@@ -22,35 +22,35 @@ export const RELATIONSHIP_MAP: Record<
     orderBy?: Record<string, any>;
   }
 > = {
+  barcodeId: {
+    model: 'productBarcode',
+    orderBy: { barcode: 'asc' },
+  },
+  createdById: {
+    displayField: ['name', 'email'],
+    model: 'user',
+  },
+  organizationId: {
+    model: 'organization',
+    orderBy: { name: 'asc' },
+  },
   productId: {
     model: 'product',
+    orderBy: { name: 'asc' },
     where: { status: 'ACTIVE' },
+  },
+  teamId: {
+    model: 'team',
     orderBy: { name: 'asc' },
   },
   userId: {
     model: 'user',
     orderBy: { name: 'asc' },
   },
-  organizationId: {
-    model: 'organization',
-    orderBy: { name: 'asc' },
-  },
-  teamId: {
-    model: 'team',
-    orderBy: { name: 'asc' },
-  },
-  createdById: {
-    model: 'user',
-    displayField: ['name', 'email'],
-  },
   workflowId: {
     model: 'workflowConfig',
-    where: { isActive: true },
     orderBy: { name: 'asc' },
-  },
-  barcodeId: {
-    model: 'productBarcode',
-    orderBy: { barcode: 'asc' },
+    where: { isActive: true },
   },
 };
 
@@ -89,8 +89,8 @@ export async function fetchRelationshipOptions(fieldName: string, currentValue?:
   return fetchModelOptions(
     config.model,
     {
-      where: config.where,
       orderBy: config.orderBy,
+      where: config.where,
     },
     currentValue,
   );
@@ -108,9 +108,9 @@ async function fetchModelOptions(
 
     // Fetch records with a reasonable limit
     const records = await delegate.findMany({
-      where: options.where,
       orderBy: options.orderBy || { createdAt: 'desc' },
       take: 100,
+      where: options.where,
     });
 
     // If current value is not in the list, fetch it separately
@@ -128,8 +128,8 @@ async function fetchModelOptions(
     }
 
     return records.map((record: any) => ({
-      value: record.id,
       label: getRecordDisplayValue(record, modelName),
+      value: record.id,
     }));
   } catch (error) {
     console.error(`Failed to fetch options for ${modelName}:`, error);
@@ -139,45 +139,45 @@ async function fetchModelOptions(
 
 // Get cascade information for a model
 export async function getCascadeInfo(modelName: string, recordId: string) {
-  const cascadeInfo: Array<{
+  const cascadeInfo: {
     model: string;
     count: number;
     action: 'delete' | 'nullify' | 'restrict';
-  }> = [];
+  }[] = [];
 
   // Define cascade relationships based on Prisma schema
   const cascadeRelationships: Record<
     string,
-    Array<{
+    {
       model: string;
       field: string;
       action: 'delete' | 'nullify' | 'restrict';
-    }>
+    }[]
   > = {
-    product: [
-      { model: 'productBarcode', field: 'productId', action: 'delete' },
-      { model: 'productAsset', field: 'productId', action: 'delete' },
-      { model: 'scanHistory', field: 'productId', action: 'nullify' },
-    ],
     organization: [
-      { model: 'member', field: 'organizationId', action: 'delete' },
-      { model: 'team', field: 'organizationId', action: 'delete' },
-      { model: 'invitation', field: 'organizationId', action: 'delete' },
-      { model: 'apiKey', field: 'organizationId', action: 'delete' },
+      { action: 'delete', field: 'organizationId', model: 'member' },
+      { action: 'delete', field: 'organizationId', model: 'team' },
+      { action: 'delete', field: 'organizationId', model: 'invitation' },
+      { action: 'delete', field: 'organizationId', model: 'apiKey' },
     ],
-    user: [
-      { model: 'session', field: 'userId', action: 'delete' },
-      { model: 'account', field: 'userId', action: 'delete' },
-      { model: 'member', field: 'userId', action: 'delete' },
-      { model: 'apiKey', field: 'userId', action: 'delete' },
+    product: [
+      { action: 'delete', field: 'productId', model: 'productBarcode' },
+      { action: 'delete', field: 'productId', model: 'productAsset' },
+      { action: 'nullify', field: 'productId', model: 'scanHistory' },
     ],
     team: [
-      { model: 'teamMember', field: 'teamId', action: 'delete' },
-      { model: 'member', field: 'teamId', action: 'nullify' },
+      { action: 'delete', field: 'teamId', model: 'teamMember' },
+      { action: 'nullify', field: 'teamId', model: 'member' },
+    ],
+    user: [
+      { action: 'delete', field: 'userId', model: 'session' },
+      { action: 'delete', field: 'userId', model: 'account' },
+      { action: 'delete', field: 'userId', model: 'member' },
+      { action: 'delete', field: 'userId', model: 'apiKey' },
     ],
     workflowConfig: [
-      { model: 'workflowExecution', field: 'workflowId', action: 'delete' },
-      { model: 'workflowSchedule', field: 'workflowId', action: 'delete' },
+      { action: 'delete', field: 'workflowId', model: 'workflowExecution' },
+      { action: 'delete', field: 'workflowId', model: 'workflowSchedule' },
     ],
   };
 
@@ -193,9 +193,9 @@ export async function getCascadeInfo(modelName: string, recordId: string) {
 
         if (count > 0) {
           cascadeInfo.push({
-            model: rel.model,
-            count,
             action: rel.action,
+            count,
+            model: rel.model,
           });
         }
       }

@@ -13,33 +13,60 @@ import {
 
 import type { AuthConfig } from '../../shared/types';
 
-// Mock the middleware modules
-const mockCreateApiMiddleware = vi.fn();
-const mockCreateWebMiddleware = vi.fn();
-const mockCreateNodeMiddleware = vi.fn();
+// Mock the middleware modules using vi.hoisted
+const { mockCreateApiMiddleware, mockCreateNodeMiddleware, mockCreateWebMiddleware } = vi.hoisted(
+  () => {
+    const mockCreateApiMiddleware = vi.fn();
+    const mockCreateWebMiddleware = vi.fn();
+    const mockCreateNodeMiddleware = vi.fn();
 
-vi.mock('../api', () => ({
+    return {
+      mockCreateApiMiddleware,
+      mockCreateNodeMiddleware,
+      mockCreateWebMiddleware,
+    };
+  },
+);
+
+vi.mock('../../middleware/api', () => ({
   createApiMiddleware: mockCreateApiMiddleware,
 }));
 
-vi.mock('../web', () => ({
+vi.mock('../../middleware/web', () => ({
   createWebMiddleware: mockCreateWebMiddleware,
 }));
 
-vi.mock('../node', () => ({
+vi.mock('../../middleware/node', () => ({
   createNodeMiddleware: mockCreateNodeMiddleware,
 }));
 
-vi.mock('next/server', () => ({
-  NextResponse: {
-    json: vi.fn((data, init) => ({
-      body: JSON.stringify(data),
-      headers: new Map(),
-      status: init?.status || 200,
+vi.mock('next/server', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    NextRequest: vi.fn().mockImplementation((url, init) => ({
+      url,
+      headers: new Headers(init?.headers || {}),
+      method: init?.method || 'GET',
+      nextUrl: {
+        pathname: new URL(url).pathname,
+        searchParams: new URL(url).searchParams,
+      },
     })),
-    next: vi.fn(() => ({ headers: new Map() })),
-  },
-}));
+    NextResponse: {
+      json: vi.fn((data, init) => ({
+        body: JSON.stringify(data),
+        headers: new Map(Object.entries(init?.headers || {})),
+        status: init?.status || 200,
+      })),
+      next: vi.fn(() => {
+        const headers = new Map();
+        headers.set = vi.fn();
+        return { headers };
+      }),
+    },
+  };
+});
 
 describe('Middleware Factory', () => {
   const mockAuthConfig: AuthConfig = {

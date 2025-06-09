@@ -99,6 +99,64 @@ pnpm prettier          # Format all code files
 # Type checking
 pnpm typecheck         # Run TypeScript type checking
 
+## Vercel Toolbar & Feature Flags
+
+The project includes Vercel Toolbar integration for development with feature flags powered by PostHog:
+
+### Setup
+
+1. **Link to Vercel** (run once):
+   ```bash
+   vercel link
+   ```
+
+2. **Environment Variables** (add to `.env.local` files):
+   ```bash
+   # PostHog configuration (required for feature flags)
+   NEXT_PUBLIC_POSTHOG_KEY=your-project-api-key
+   POSTHOG_KEY=your-project-api-key
+   POSTHOG_PERSONAL_API_KEY=your-personal-api-key
+   POSTHOG_PROJECT_ID=your-project-id
+   
+   # Optional (defaults to https://app.posthog.com)
+   NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+   POSTHOG_HOST=https://app.posthog.com
+   ```
+
+### Features
+
+- **Development-only**: Toolbar only appears when `NODE_ENV === 'development'`
+- **Feature flag management**: Toggle flags in real-time via the toolbar
+- **PostHog integration**: Flags are synced with your PostHog project
+- **Type-safe**: Full TypeScript support with the `@repo/feature-flags` package
+
+### Integrated Apps
+
+The following apps have Vercel Toolbar enabled:
+
+- **Backstage** (`/apps/backstage`) - Admin panel with feature flag demo
+- **Web** (`/apps/web`) - Marketing site with A/B testing examples  
+- **Documentation** (`/apps/documentation`) - Documentation site
+
+### Usage
+
+1. Start any app in development mode: `pnpm dev`
+2. The Vercel Toolbar appears at the bottom of the page
+3. Click the toolbar to open the feature flags panel
+4. Toggle flags to see real-time changes in the UI
+
+### Discovery Endpoints
+
+Each app exposes a feature flags discovery endpoint at:
+- `/.well-known/vercel/flags` - Lists available flags from PostHog
+
+### Example Feature Flags
+
+See example implementations in:
+- `/apps/backstage/app/lib/feature-flags.ts` - Admin panel flags
+- `/apps/web/src/app/lib/feature-flags.ts` - Marketing site flags
+- Demo components show real-time flag updates
+
 ## Fully Automated Workflow Development
 
 **IMPORTANT**: For AI agent step flow development, use these fully automated commands that can
@@ -547,15 +605,20 @@ settings.
 
 ### Data-TestID Standards
 
-All components in the design system now implement standardized `data-testid` attributes for reliable testing:
+All components in the design system now implement standardized `data-testid` attributes for reliable
+testing:
 
 - **Component Interface**: Every component includes `'data-testid'?: string` in its props interface
-- **Default Values**: Components provide descriptive default testid values (e.g., `'add-to-cart-button'`, `'product-card-large'`)
+- **Default Values**: Components provide descriptive default testid values (e.g.,
+  `'add-to-cart-button'`, `'product-card-large'`)
 - **Naming Convention**: Use kebab-case naming that describes the component's function
-- **Testing Pattern**: Prefer `getByTestId()` over role-based or text-based selectors for reliability
-- **Documentation**: See `/packages/design-system/mantine-ciseco/DATA_TESTID_STANDARDS.md` for complete implementation guide
+- **Testing Pattern**: Prefer `getByTestId()` over role-based or text-based selectors for
+  reliability
+- **Documentation**: See `/packages/design-system/mantine-ciseco/DATA_TESTID_STANDARDS.md` for
+  complete implementation guide
 
 **Example Implementation:**
+
 ```typescript
 interface ComponentProps {
   'data-testid'?: string;
@@ -568,6 +631,7 @@ const Component = ({ 'data-testid': testId = 'component-name', ...props }) => {
 ```
 
 **Testing Usage:**
+
 ```typescript
 // Preferred: Reliable data-testid selector
 const button = screen.getByTestId('add-to-cart-button');

@@ -1,24 +1,24 @@
+import {
+  getBlogPosts,
+  getCollections,
+  getGroupCollections,
+  getProducts,
+} from "@/lib/data-service";
 import { type Metadata } from "next";
 
 import {
   BackgroundSection,
   ButtonSecondary,
   Divider,
-  getBlogPosts,
-  getCollections,
-  getGroupCollections,
-  getProducts,
   Heading,
-  SectionClientSay,
   SectionCollectionSlider,
-  SectionCollectionSlider2,
   SectionGridFeatureItems,
   SectionGridMoreExplore,
-  SectionHero2,
+  SectionHero3,
   SectionHowItWork,
   SectionMagazine5,
   SectionPromo1,
-  SectionPromo2,
+  SectionPromo3,
   SectionSliderLargeProduct,
   SectionSliderProductCard,
 } from "@repo/design-system/mantine-ciseco";
@@ -36,44 +36,37 @@ export default async function Home({
   const { locale: _locale } = await params;
 
   const allCollections = await getCollections();
-  const departmentCollections = allCollections.slice(11, 15);
   const featuredCollections = allCollections.slice(7, 11);
   const groupCollections = await getGroupCollections();
   const products = await getProducts();
-  const carouselProducts1 = products.slice(0, 5);
   const carouselProducts2 = products.slice(3, 10);
-  const carouselProducts3 = products.slice(1, 5);
+  const carouselProducts3 = products.slice(2, 6);
   const blogPosts = await getBlogPosts();
 
   return (
-    <div className="nc-PageHome relative overflow-hidden">
-      <SectionHero2 />
-      <SectionCollectionSlider
-        collections={featuredCollections}
-        className="mt-24 lg:mt-32"
-      />
+    <div className="nc-PageHome2 relative overflow-hidden">
+      <div className="container">
+        <SectionHero3 />
+      </div>
 
-      <div className="container relative my-24 flex flex-col gap-y-24 lg:my-32 lg:gap-y-32">
-        <SectionSliderProductCard data={carouselProducts1} />
-        <Divider />
-        <div className="pb-16">
-          <SectionHowItWork />
-        </div>
-        <SectionPromo1 />
+      <div className="container relative my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
+        <SectionHowItWork />
+        <SectionSliderProductCard
+          data={carouselProducts2}
+          subHeading="New Sports equipment"
+        />
+        <SectionPromo3 />
+        <SectionSliderLargeProduct products={carouselProducts3} />
         <div className="relative pb-20 pt-24 lg:pt-28">
           <BackgroundSection />
           <SectionGridMoreExplore groupCollections={groupCollections} />
         </div>
-        <SectionSliderProductCard
-          data={carouselProducts2}
-          heading="Best Sellers"
-          subHeading="Best selling of the month"
-        />
-        <SectionPromo2 />
-        <SectionSliderLargeProduct products={carouselProducts3} />
+      </div>
+
+      <SectionCollectionSlider collections={featuredCollections} />
+
+      <div className="container relative my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
         <SectionGridFeatureItems data={products} />
-        <Divider />
-        <SectionCollectionSlider2 collections={departmentCollections} />
         <Divider />
         <div>
           <Heading headingDim="From the Ciseco blog">The latest news</Heading>
@@ -84,9 +77,8 @@ export default async function Home({
             </ButtonSecondary>
           </div>
         </div>
-
         <Divider />
-        <SectionClientSay />
+        <SectionPromo1 />
       </div>
     </div>
   );

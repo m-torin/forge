@@ -1,178 +1,192 @@
 'use client';
 
-import { Avatar, Badge, Container, Group, SimpleGrid, Stack, Text } from '@mantine/core';
-import {
+import { 
+  Container, 
+  Stack, 
+  SimpleGrid, 
+  Card, 
+  Text, 
+  Group, 
+  ThemeIcon,
+  Button,
+  Badge,
+  ActionIcon,
+  Tooltip,
+} from '@mantine/core';
+import { 
+  IconUsers, 
+  IconBuilding, 
+  IconKey, 
+  IconChevronRight,
+  IconPlus,
+  IconSettings,
   IconActivity,
-  IconBuilding,
-  IconKey,
-  IconUserCheck,
-  IconUserPlus,
-  IconUsers,
+  IconShield,
 } from '@tabler/icons-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { DataTable } from '../components/data-table';
 import { PageHeader } from '../components/page-header';
 import { StatsCard } from '../components/stats-card';
 
-// Mock data for demo
-const mockUsers = [
-  {
-    id: '1',
-    name: 'John Doe',
-    createdAt: '2023-12-01T00:00:00',
-    email: 'john.doe@example.com',
-    lastActive: '2024-01-10T10:30:00',
-    organization: 'Acme Corp',
-    role: 'Admin',
-    status: 'active',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    createdAt: '2023-12-15T00:00:00',
-    email: 'jane.smith@example.com',
-    lastActive: '2024-01-10T09:15:00',
-    organization: 'Tech Solutions',
-    role: 'Member',
-    status: 'active',
-  },
-  {
-    id: '3',
-    name: 'Bob Wilson',
-    createdAt: '2023-11-20T00:00:00',
-    email: 'bob.wilson@example.com',
-    lastActive: '2024-01-05T14:20:00',
-    organization: 'Acme Corp',
-    role: 'Viewer',
-    status: 'inactive',
-  },
-  {
-    id: '4',
-    name: 'Alice Brown',
-    createdAt: '2024-01-08T00:00:00',
-    email: 'alice.brown@example.com',
-    lastActive: null,
-    organization: 'StartupXYZ',
-    role: 'Admin',
-    status: 'pending',
-  },
-];
+interface DashboardStats {
+  users: {
+    total: number;
+    active: number;
+    banned: number;
+    admins: number;
+  };
+  companies: {
+    total: number;
+    totalMembers: number;
+    pendingInvitations: number;
+    averageMembers: number;
+  };
+  apiKeys: {
+    total: number;
+    active: number;
+    expired: number;
+    totalRequests: number;
+  };
+}
 
-const statsData = [
-  {
-    change: { value: 12 },
-    color: 'blue',
-    icon: IconUsers,
-    title: 'Total Users',
-    value: '892',
-  },
-  {
-    color: 'green',
-    icon: IconUserCheck,
-    progress: { label: 'of total users', value: 85 },
-    title: 'Active Users',
-    value: '756',
-  },
-  {
-    change: { value: 8 },
-    color: 'violet',
-    icon: IconUserPlus,
-    title: 'New This Month',
-    value: '124',
-  },
-  {
-    change: { value: 3 },
-    color: 'orange',
-    icon: IconBuilding,
-    title: 'Organizations',
-    value: '43',
-  },
-];
-
-export default function UsersPage() {
+export default function GuestsPage() {
+  const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats>({
+    users: { total: 0, active: 0, banned: 0, admins: 0 },
+    companies: { total: 0, totalMembers: 0, pendingInvitations: 0, averageMembers: 0 },
+    apiKeys: { total: 0, active: 0, expired: 0, totalRequests: 0 },
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate data loading
-    setTimeout(() => setLoading(false), 1000);
+    loadDashboardStats();
   }, []);
 
-  const columns = [
+  const loadDashboardStats = async () => {
+    setLoading(true);
+    try {
+      const [usersRes, companiesRes, apiKeysRes] = await Promise.all([
+        fetch('/api/admin/users'),
+        fetch('/api/admin/organizations'),
+        fetch('/api/admin/api-keys'),
+      ]);
+
+      const usersData = usersRes.ok ? await usersRes.json() : { users: [] };
+      const companiesData = companiesRes.ok ? await companiesRes.json() : { organizations: [] };
+      const apiKeysData = apiKeysRes.ok ? await apiKeysRes.json() : { apiKeys: [] };
+
+      const users = usersData.users || [];
+      const companies = companiesData.organizations || [];
+      const apiKeys = apiKeysData.apiKeys || [];
+
+      setStats({
+        users: {
+          total: users.length,
+          active: users.filter((u: any) => !u.banned).length,
+          banned: users.filter((u: any) => u.banned).length,
+          admins: users.filter((u: any) => u.role === 'admin' || u.role === 'super-admin').length,
+        },
+        companies: {
+          total: companies.length,
+          totalMembers: companies.reduce((acc: number, org: any) => acc + (org._count?.members || 0), 0),
+          pendingInvitations: companies.reduce((acc: number, org: any) => acc + (org._count?.invitations || 0), 0),
+          averageMembers: companies.length > 0 
+            ? Math.round(companies.reduce((acc: number, org: any) => acc + (org._count?.members || 0), 0) / companies.length)
+            : 0,
+        },
+        apiKeys: {
+          total: apiKeys.length,
+          active: apiKeys.filter((k: any) => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date())).length,
+          expired: apiKeys.filter((k: any) => k.expiresAt && new Date(k.expiresAt) < new Date()).length,
+          totalRequests: apiKeys.reduce((acc: number, key: any) => acc + (key.requestCount || 0), 0),
+        },
+      });
+    } catch (error) {
+      console.error('Failed to load dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const managementSections = [
     {
-      key: 'name',
-      label: 'User',
-      render: (value: string, row: any) => (
-        <Group gap="sm">
-          <Avatar radius="xl" size="sm">
-            {value
-              .split(' ')
-              .map((n: string) => n[0])
-              .join('')}
-          </Avatar>
-          <div>
-            <Text fw={500} size="sm">
-              {value}
-            </Text>
-            <Text c="dimmed" size="xs">
-              {row.email}
-            </Text>
-          </div>
-        </Group>
-      ),
-      sortable: true,
+      title: 'People Management',
+      description: 'Manage users, roles, permissions, and authentication',
+      icon: IconUsers,
+      color: 'blue',
+      path: '/guests/people',
+      stats: [
+        { label: 'Total Users', value: stats.users.total.toString() },
+        { label: 'Active Users', value: stats.users.active.toString() },
+        { label: 'Admin Users', value: stats.users.admins.toString() },
+      ],
+      actions: [
+        { icon: IconPlus, label: 'Create User', onClick: () => router.push('/guests/people/new') },
+        { icon: IconShield, label: 'Manage Roles', onClick: () => router.push('/guests/people') },
+      ],
     },
     {
-      key: 'organization',
-      label: 'Organization',
-      sortable: true,
+      title: 'Companies Management',
+      description: 'Manage organizations, members, and invitations',
+      icon: IconBuilding,
+      color: 'green',
+      path: '/guests/organizations',
+      stats: [
+        { label: 'Organizations', value: stats.companies.total.toString() },
+        { label: 'Total Members', value: stats.companies.totalMembers.toString() },
+        { label: 'Pending Invites', value: stats.companies.pendingInvitations.toString() },
+      ],
+      actions: [
+        { icon: IconPlus, label: 'Create Organization', onClick: () => router.push('/guests/organizations/new') },
+        { icon: IconUsers, label: 'Manage Members', onClick: () => router.push('/guests/organizations') },
+      ],
     },
     {
-      key: 'role',
-      label: 'Role',
-      render: (value: string) => (
-        <Badge
-          color={value === 'Admin' ? 'red' : value === 'Member' ? 'blue' : 'gray'}
-          variant="light"
-        >
-          {value}
-        </Badge>
-      ),
-      sortable: true,
+      title: 'API Keys Management',
+      description: 'Manage API keys, permissions, and service authentication',
+      icon: IconKey,
+      color: 'orange',
+      path: '/guests/api-keys',
+      stats: [
+        { label: 'Total Keys', value: stats.apiKeys.total.toString() },
+        { label: 'Active Keys', value: stats.apiKeys.active.toString() },
+        { label: 'Total Requests', value: stats.apiKeys.totalRequests.toLocaleString() },
+      ],
+      actions: [
+        { icon: IconPlus, label: 'Create API Key', onClick: () => router.push('/guests/api-keys/new') },
+        { icon: IconActivity, label: 'View Usage', onClick: () => router.push('/guests/api-keys') },
+      ],
+    },
+  ];
+
+  const overallStats = [
+    {
+      title: 'Total Users',
+      value: stats.users.total.toString(),
+      color: 'blue',
+      icon: IconUsers,
+      change: { value: 12 },
     },
     {
-      key: 'status',
-      label: 'Status',
-      render: (value: string) => (
-        <Badge
-          color={value === 'active' ? 'green' : value === 'inactive' ? 'gray' : 'yellow'}
-          variant="dot"
-        >
-          {value}
-        </Badge>
-      ),
-      sortable: true,
+      title: 'Active Organizations',
+      value: stats.companies.total.toString(),
+      color: 'green',
+      icon: IconBuilding,
+      change: { value: 8 },
     },
     {
-      key: 'lastActive',
-      label: 'Last Active',
-      render: (value: string) => {
-        if (!value)
-          return (
-            <Text c="dimmed" size="sm">
-              Never
-            </Text>
-          );
-        const date = new Date(value);
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        if (hours < 1) return <Text size="sm">Just now</Text>;
-        if (hours < 24) return <Text size="sm">{hours}h ago</Text>;
-        const days = Math.floor(hours / 24);
-        return <Text size="sm">{days}d ago</Text>;
-      },
-      sortable: true,
+      title: 'API Keys',
+      value: stats.apiKeys.total.toString(),
+      color: 'orange',
+      icon: IconKey,
+      change: { value: 5 },
+    },
+    {
+      title: 'Total API Requests',
+      value: stats.apiKeys.totalRequests.toLocaleString(),
+      color: 'violet',
+      icon: IconActivity,
     },
   ];
 
@@ -182,78 +196,98 @@ export default function UsersPage() {
         <PageHeader
           actions={{
             primary: {
-              icon: <IconUserPlus size={16} />,
-              label: 'Invite User',
-              onClick: () => console.log('Invite user'),
+              icon: <IconSettings size={16} />,
+              label: 'System Settings',
+              onClick: () => console.log('System settings'),
             },
-            secondary: [
-              {
-                label: 'Export',
-                onClick: () => console.log('Export users'),
-              },
-            ],
           }}
-          description="Manage users, organizations, and access permissions"
-          onRefresh={() => setLoading(true)}
-          badge={{ color: 'blue', label: 'Beta' }}
-          title="User Management"
+          description="Comprehensive management dashboard for users, organizations, and API keys"
+          title="System Management Dashboard"
+          onRefresh={loadDashboardStats}
         />
 
+        {/* Overall Statistics */}
         <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
-          {statsData.map((stat) => (
+          {overallStats.map((stat) => (
             <StatsCard
               key={stat.title}
               {...stat}
               loading={loading}
-              onClick={() => console.log(`View ${stat.title}`)}
             />
           ))}
         </SimpleGrid>
 
-        <DataTable
-          actions={{
-            custom: [
-              {
-                icon: <IconKey size={14} />,
-                label: 'Reset Password',
-                onClick: (row) => console.log('Reset password', row),
-              },
-              {
-                icon: <IconActivity size={14} />,
-                label: 'View Activity',
-                onClick: (row) => console.log('View activity', row),
-              },
-            ],
-            onDelete: (row) => console.log('Delete user', row),
-            onEdit: (row) => console.log('Edit user', row),
-            onView: (row) => console.log('View user', row),
-          }}
-          bulkActions={[
-            {
-              color: 'red',
-              label: 'Delete',
-              onClick: (rows) => console.log('Delete users', rows),
-            },
-            {
-              label: 'Export',
-              onClick: (rows) => console.log('Export users', rows),
-            },
-          ]}
-          columns={columns}
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            total: mockUsers.length,
-          }}
-          searchPlaceholder="Search users..."
-          data={mockUsers}
-          emptyState={{
-            description: 'Invite your first user to get started',
-            icon: IconUsers,
-            title: 'No users found',
-          }}
-          selectable
-        />
+        {/* Management Sections */}
+        <SimpleGrid cols={{ base: 1, lg: 3, md: 2 }} spacing="lg">
+          {managementSections.map((section) => (
+            <Card key={section.title} shadow="sm" padding="lg" radius="md" withBorder>
+              <Stack gap="md">
+                <Group justify="space-between">
+                  <Group gap="sm">
+                    <ThemeIcon color={section.color} size="lg" radius="md">
+                      <section.icon size={20} />
+                    </ThemeIcon>
+                    <div>
+                      <Text fw={600} size="lg">
+                        {section.title}
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {section.description}
+                      </Text>
+                    </div>
+                  </Group>
+                  <ActionIcon
+                    variant="light"
+                    color={section.color}
+                    onClick={() => router.push(section.path)}
+                  >
+                    <IconChevronRight size={16} />
+                  </ActionIcon>
+                </Group>
+
+                {/* Quick Stats */}
+                <SimpleGrid cols={3} spacing="xs">
+                  {section.stats.map((stat, index) => (
+                    <div key={index} style={{ textAlign: 'center' }}>
+                      <Text fw={700} size="lg">
+                        {stat.value}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {stat.label}
+                      </Text>
+                    </div>
+                  ))}
+                </SimpleGrid>
+
+                {/* Quick Actions */}
+                <Group gap="xs">
+                  {section.actions.map((action, index) => (
+                    <Tooltip key={index} label={action.label}>
+                      <ActionIcon
+                        variant="light"
+                        color={section.color}
+                        onClick={action.onClick}
+                        size="sm"
+                      >
+                        <action.icon size={14} />
+                      </ActionIcon>
+                    </Tooltip>
+                  ))}
+                  <Button
+                    variant="light"
+                    color={section.color}
+                    size="xs"
+                    rightSection={<IconChevronRight size={14} />}
+                    onClick={() => router.push(section.path)}
+                    style={{ marginLeft: 'auto' }}
+                  >
+                    Manage
+                  </Button>
+                </Group>
+              </Stack>
+            </Card>
+          ))}
+        </SimpleGrid>
       </Stack>
     </Container>
   );

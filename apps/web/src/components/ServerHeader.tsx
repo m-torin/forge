@@ -1,5 +1,4 @@
-import { getCollections } from "@repo/design-system/mantine-ciseco/data/data";
-import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
+import { getCollections, getNavigation } from "@/lib/data-service";
 
 import ClientHeaderWithData from "./ClientHeaderWithData";
 
@@ -22,7 +21,7 @@ const ServerHeader = async ({
   return (
     <ClientHeaderWithData
       cartCount={cartCount}
-      featuredCollection={allCollections[10]}
+      featuredCollection={allCollections?.[10]}
       hasBorder={hasBorder}
       navigationMenu={navigationMenu}
       onCartClick={onCartClick}

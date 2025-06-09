@@ -23,7 +23,8 @@
 
 import { SentryServerProvider } from './server/providers/sentry-server';
 import { ConsoleProvider } from './shared/providers/console-provider';
-import { BetterStackProvider } from './shared/providers/better-stack-provider';
+// TODO: Re-enable BetterStackProvider once bundling issues are resolved
+// import { BetterStackProvider } from './shared/providers/better-stack-provider';
 import { createObservabilityManager } from './shared/utils/manager';
 
 import type {
@@ -32,13 +33,13 @@ import type {
   ProviderRegistry,
 } from './shared/types/types';
 
-// Server-specific provider registry - minimal, essential providers only
+// Server-specific provider registry - minimal working providers
 const SERVER_PROVIDERS: ProviderRegistry = {
   console: () => new ConsoleProvider(),
   sentry: () => new SentryServerProvider(),
-  'better-stack': () => new BetterStackProvider(),
-  // Backward compatibility alias
-  logtail: () => new BetterStackProvider(),
+  // TODO: Re-enable Better Stack providers once bundling issues are resolved
+  // 'better-stack': () => new BetterStackProvider(),
+  // logtail: () => new BetterStackProvider(),
 };
 
 // ============================================================================
@@ -84,7 +85,8 @@ export type {
 // Provider-specific types
 export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
 export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-export type { BetterStackConfig, BetterStackOptions, BetterStackMetrics, BetterStackTrace, BetterStackSpan, BetterStackEvent } from './shared/types/better-stack-types';
+// TODO: Re-enable Better Stack types once bundling issues are resolved
+// export type { BetterStackConfig, BetterStackOptions, BetterStackMetrics, BetterStackTrace, BetterStackSpan, BetterStackEvent } from './shared/types/better-stack-types';
 // Legacy Logtail types for backward compatibility
 export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
 

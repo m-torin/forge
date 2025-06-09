@@ -12,7 +12,13 @@ export interface BadgeProps {
   name: ReactNode;
 }
 
-const Badge: FC<BadgeProps> = ({ name, className = 'relative', color = 'blue', 'data-testid': testId = 'badge', href }) => {
+const Badge: FC<BadgeProps> = ({
+  'data-testid': testId = 'badge',
+  name,
+  className = 'relative',
+  color = 'blue',
+  href,
+}) => {
   const getColorClass = (hasHover = true) => {
     switch (color) {
       case 'pink':
@@ -46,7 +52,9 @@ const Badge: FC<BadgeProps> = ({ name, className = 'relative', color = 'blue', '
       {name}
     </Link>
   ) : (
-    <span data-testid={testId} className={`${CLASSES} ${getColorClass(false)} ${className}`}>{name}</span>
+    <span data-testid={testId} className={`${CLASSES} ${getColorClass(false)} ${className}`}>
+      {name}
+    </span>
   );
 };
 

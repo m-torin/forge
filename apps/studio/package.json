@@ -2,7 +2,7 @@
   "name": "studio",
   "scripts": {
     "predev": "pnpm --filter=@repo/database build",
-    "dev": "prisma studio --schema ../../packages/database/prisma/schema.prisma --port 3600",
+    "dev": "prisma studio --schema ../../packages/database/prisma/schema.prisma --port 3600 --browser none",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix",
     "doppler:secrets": "doppler secrets",

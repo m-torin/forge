@@ -2,59 +2,57 @@
 
 import {
   ActionIcon,
-  Badge,
+  Box,
   Button,
   Card,
   Checkbox,
-  Flex,
+  Collapse,
+  Divider,
+  Grid,
   Group,
   Menu,
   Pagination,
+  Paper,
   ScrollArea,
+  SegmentedControl,
+  Stack,
   Table,
   Text,
   TextInput,
-  Stack,
-  Box,
-  Paper,
-  Collapse,
-  Grid,
   Title,
-  Divider,
-  SegmentedControl,
-  Container,
 } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import {
-  IconDownload,
-  IconEdit,
-  IconEye,
-  IconPlus,
-  IconSearch,
-  IconTrash,
-  IconLayoutGrid,
-  IconLayoutList,
   IconChevronDown,
   IconChevronUp,
   IconDots,
+  IconDownload,
+  IconEdit,
+  IconEye,
+  IconLayoutGrid,
+  IconLayoutList,
+  IconPlus,
+  IconSearch,
+  IconTrash,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { useMediaQuery, useDisclosure } from '@mantine/hooks';
 
 import { notify } from '@repo/notifications/mantine-notifications';
-import { downloadFile } from './ExportHandler';
+
 import { DeleteConfirmation } from './DeleteConfirmation';
+import { downloadFile } from './ExportHandler';
 
 interface Column {
+  hiddenBelow?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'; // Hide on small screens
   key: string;
   label: string;
+  priority?: 'high' | 'medium' | 'low'; // For responsive hiding
   render?: (value: any, record: any) => React.ReactNode;
   sortable?: boolean;
   width?: string | number;
-  priority?: 'high' | 'medium' | 'low'; // For responsive hiding
-  hiddenBelow?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'; // Hide on small screens
 }
 
 interface ResponsiveDataTableProps {
@@ -66,41 +64,41 @@ interface ResponsiveDataTableProps {
     page: number;
     limit: number;
   };
+  editHref?: (id: string) => string;
+  enableBulkEdit?: boolean;
   loading?: boolean;
+  // Mobile-specific props
+  mobileView?: 'cards' | 'list' | 'table';
   modelKey?: string;
-  onDelete?: (id: string) => Promise<void>;
   onBulkDelete?: (ids: string[]) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
   onExport?: (ids: string[]) => Promise<any[]>;
   onPageChange?: (page: number) => void;
   onSearch?: (query: string) => void;
   onSort?: (key: string, direction: 'asc' | 'desc') => void;
+  searchPlaceholder?: string;
   title: string;
   viewHref?: (id: string) => string;
-  editHref?: (id: string) => string;
-  // Mobile-specific props
-  mobileView?: 'cards' | 'list' | 'table';
-  enableBulkEdit?: boolean;
-  searchPlaceholder?: string;
 }
 
 export function ResponsiveDataTable({
   columns,
   createHref,
   data,
+  editHref,
+  enableBulkEdit = false,
   loading = false,
+  mobileView = 'cards',
   modelKey,
-  onDelete,
   onBulkDelete,
+  onDelete,
   onExport,
   onPageChange,
   onSearch,
   onSort,
+  searchPlaceholder = 'Search...',
   title,
   viewHref,
-  editHref,
-  mobileView = 'cards',
-  enableBulkEdit = false,
-  searchPlaceholder = 'Search...',
 }: ResponsiveDataTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -122,7 +120,7 @@ export function ResponsiveDataTable({
   // Filter columns based on screen size
   const visibleColumns = columns.filter((col) => {
     if (!col.hiddenBelow) return true;
-    const breakpoints = { xs: 576, sm: 768, md: 992, lg: 1200, xl: 1400 };
+    const breakpoints = { lg: 1200, md: 992, sm: 768, xl: 1400, xs: 576 };
     const screenWidth = window.innerWidth;
     return screenWidth >= (breakpoints[col.hiddenBelow] || 0);
   });
@@ -206,30 +204,30 @@ export function ResponsiveDataTable({
           <Paper
             key={record.id}
             shadow="xs"
-            p={{ base: 'xs', sm: 'md' }}
             withBorder
             style={{
-              borderColor: isSelected ? 'var(--mantine-color-blue-6)' : undefined,
               backgroundColor: isSelected ? 'var(--mantine-color-blue-0)' : undefined,
+              borderColor: isSelected ? 'var(--mantine-color-blue-6)' : undefined,
             }}
+            p={{ base: 'xs', sm: 'md' }}
           >
             <Stack gap="xs">
               {/* Card Header */}
               <Group justify="space-between" wrap="nowrap">
-                <Group gap="xs" style={{ flex: 1, minWidth: 0 }}>
+                <Group style={{ minWidth: 0, flex: 1 }} gap="xs">
                   {(onBulkDelete || enableBulkEdit) && (
                     <Checkbox
-                      checked={isSelected}
                       onChange={() => handleSelect(record.id)}
                       aria-label={`Select ${record.name || record.id}`}
+                      checked={isSelected}
                     />
                   )}
-                  <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Box style={{ minWidth: 0, flex: 1 }}>
                     {primaryColumns.map((col) => (
                       <Text
                         key={col.key}
-                        size={col === primaryColumns[0] ? 'sm' : 'xs'}
                         fw={col === primaryColumns[0] ? 600 : 400}
+                        size={col === primaryColumns[0] ? 'sm' : 'xs'}
                         truncate
                       >
                         {col.render ? col.render(record[col.key], record) : record[col.key]}
@@ -241,9 +239,9 @@ export function ResponsiveDataTable({
                 <Group gap={4} wrap="nowrap">
                   {secondaryColumns.length > 0 && (
                     <ActionIcon
-                      variant="subtle"
-                      size="sm"
                       onClick={() => toggleCardExpansion(record.id)}
+                      size="sm"
+                      variant="subtle"
                     >
                       {isExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
                     </ActionIcon>
@@ -251,7 +249,7 @@ export function ResponsiveDataTable({
 
                   <Menu position="bottom-end" withinPortal>
                     <Menu.Target>
-                      <ActionIcon variant="subtle" size="sm">
+                      <ActionIcon size="sm" variant="subtle">
                         <IconDots size={16} />
                       </ActionIcon>
                     </Menu.Target>
@@ -280,19 +278,19 @@ export function ResponsiveDataTable({
                             leftSection={<IconTrash size={14} />}
                             onClick={() => {
                               modals.open({
-                                title: 'Confirm Delete',
                                 children: (
                                   <DeleteConfirmation
                                     modelKey={modelKey}
-                                    recordId={record.id}
-                                    recordName={record.name || record.title || record.id}
+                                    onCancel={() => modals.closeAll()}
                                     onConfirm={async () => {
                                       await onDelete(record.id);
                                       modals.closeAll();
                                     }}
-                                    onCancel={() => modals.closeAll()}
+                                    recordId={record.id}
+                                    recordName={record.name || record.title || record.id}
                                   />
                                 ),
+                                title: 'Confirm Delete',
                               });
                             }}
                           >
@@ -311,7 +309,7 @@ export function ResponsiveDataTable({
                 <Grid gutter="xs">
                   {secondaryColumns.map((col) => (
                     <Grid.Col key={col.key} span={{ base: 12, xs: 6 }}>
-                      <Text size="xs" c="dimmed">
+                      <Text c="dimmed" size="xs">
                         {col.label}
                       </Text>
                       <Text size="sm">
@@ -331,26 +329,26 @@ export function ResponsiveDataTable({
   // Render desktop table view
   const renderTableView = () => (
     <ScrollArea>
-      <Table striped highlightOnHover withTableBorder withColumnBorders={isDesktop}>
+      <Table highlightOnHover withColumnBorders={isDesktop} withTableBorder striped>
         <Table.Thead>
           <Table.Tr>
             {(onBulkDelete || enableBulkEdit) && (
               <Table.Th style={{ width: 40 }}>
                 <Checkbox
+                  onChange={handleSelectAll}
                   checked={selectedIds.length === data.records.length && data.records.length > 0}
                   indeterminate={selectedIds.length > 0 && selectedIds.length < data.records.length}
-                  onChange={handleSelectAll}
                 />
               </Table.Th>
             )}
             {visibleColumns.map((column) => (
               <Table.Th
                 key={column.key}
-                style={{ width: column.width, cursor: column.sortable ? 'pointer' : undefined }}
                 onClick={() => column.sortable && handleSort(column.key)}
+                style={{ width: column.width, cursor: column.sortable ? 'pointer' : undefined }}
               >
                 <Group gap="xs" wrap="nowrap">
-                  <Text size="sm" fw={600}>
+                  <Text fw={600} size="sm">
                     {column.label}
                   </Text>
                   {column.sortable && sortKey === column.key && (
@@ -374,8 +372,8 @@ export function ResponsiveDataTable({
               {(onBulkDelete || enableBulkEdit) && (
                 <Table.Td>
                   <Checkbox
-                    checked={selectedIds.includes(record.id)}
                     onChange={() => handleSelect(record.id)}
+                    checked={selectedIds.includes(record.id)}
                   />
                 </Table.Td>
               )}
@@ -388,44 +386,44 @@ export function ResponsiveDataTable({
                 <Group gap={4} wrap="nowrap">
                   {viewHref && (
                     <ActionIcon
-                      variant="subtle"
-                      size="sm"
                       onClick={() => router.push(viewHref(record.id))}
+                      size="sm"
+                      variant="subtle"
                     >
                       <IconEye size={16} />
                     </ActionIcon>
                   )}
                   {editHref && (
                     <ActionIcon
-                      variant="subtle"
-                      size="sm"
                       onClick={() => router.push(editHref(record.id))}
+                      size="sm"
+                      variant="subtle"
                     >
                       <IconEdit size={16} />
                     </ActionIcon>
                   )}
                   {onDelete && (
                     <ActionIcon
-                      variant="subtle"
-                      size="sm"
                       color="red"
                       onClick={() => {
                         modals.open({
-                          title: 'Confirm Delete',
                           children: (
                             <DeleteConfirmation
                               modelKey={modelKey}
-                              recordId={record.id}
-                              recordName={record.name || record.title || record.id}
+                              onCancel={() => modals.closeAll()}
                               onConfirm={async () => {
                                 await onDelete(record.id);
                                 modals.closeAll();
                               }}
-                              onCancel={() => modals.closeAll()}
+                              recordId={record.id}
+                              recordName={record.name || record.title || record.id}
                             />
                           ),
+                          title: 'Confirm Delete',
                         });
                       }}
+                      size="sm"
+                      variant="subtle"
                     >
                       <IconTrash size={16} />
                     </ActionIcon>
@@ -444,14 +442,14 @@ export function ResponsiveDataTable({
       <Stack gap="md">
         {/* Header */}
         <Box>
-          <Group justify="space-between" mb="md" wrap="wrap" gap="xs">
+          <Group gap="xs" justify="space-between" mb="md" wrap="wrap">
             <Title order={3} size="h4">
               {title}
             </Title>
             {createHref && (
               <Button
-                component={Link}
                 href={createHref}
+                component={Link}
                 leftSection={<IconPlus size={16} />}
                 size={isMobile ? 'xs' : 'sm'}
               >
@@ -461,29 +459,29 @@ export function ResponsiveDataTable({
           </Group>
 
           {/* Search and filters */}
-          <Group gap="xs" grow preventGrowOverflow={false}>
+          <Group grow preventGrowOverflow={false} gap="xs">
             <TextInput
-              placeholder={searchPlaceholder}
               leftSection={<IconSearch size={16} />}
-              value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.currentTarget.value);
                 onSearch?.(e.currentTarget.value);
               }}
-              size={isMobile ? 'xs' : 'sm'}
+              placeholder={searchPlaceholder}
               style={{ flex: 1 }}
+              size={isMobile ? 'xs' : 'sm'}
+              value={searchQuery}
             />
 
             {!isMobile && (
               <SegmentedControl
-                value={viewMode}
                 onChange={(value) => setViewMode(value as any)}
+                style={{ width: 'auto' }}
                 data={[
-                  { value: 'cards', label: <IconLayoutGrid size={16} /> },
-                  { value: 'table', label: <IconLayoutList size={16} /> },
+                  { label: <IconLayoutGrid size={16} />, value: 'cards' },
+                  { label: <IconLayoutList size={16} />, value: 'table' },
                 ]}
                 size="xs"
-                style={{ width: 'auto' }}
+                value={viewMode}
               />
             )}
           </Group>
@@ -491,42 +489,42 @@ export function ResponsiveDataTable({
 
         {/* Bulk actions */}
         {selectedIds.length > 0 && (
-          <Paper p="xs" withBorder bg="blue.0">
-            <Group justify="space-between" wrap="wrap" gap="xs">
-              <Text size="sm" fw={500}>
+          <Paper withBorder bg="blue.0" p="xs">
+            <Group gap="xs" justify="space-between" wrap="wrap">
+              <Text fw={500} size="sm">
                 {selectedIds.length} item{selectedIds.length !== 1 ? 's' : ''} selected
               </Text>
               <Group gap="xs">
                 {onExport && (
                   <Button
-                    size="xs"
-                    variant="subtle"
                     leftSection={<IconDownload size={14} />}
                     onClick={handleExport}
+                    size="xs"
+                    variant="subtle"
                   >
                     Export
                   </Button>
                 )}
                 {onBulkDelete && (
                   <Button
-                    size="xs"
                     color="red"
-                    variant="subtle"
                     leftSection={<IconTrash size={14} />}
                     onClick={() => {
                       modals.openConfirmModal({
-                        title: 'Delete selected items',
                         children: (
                           <Text size="sm">
                             Are you sure you want to delete {selectedIds.length} selected items?
                             This action cannot be undone.
                           </Text>
                         ),
-                        labels: { confirm: 'Delete', cancel: 'Cancel' },
                         confirmProps: { color: 'red' },
+                        labels: { cancel: 'Cancel', confirm: 'Delete' },
                         onConfirm: handleBulkDelete,
+                        title: 'Delete selected items',
                       });
                     }}
+                    size="xs"
+                    variant="subtle"
                   >
                     Delete
                   </Button>
@@ -539,12 +537,12 @@ export function ResponsiveDataTable({
         {/* Data display */}
         {loading ? (
           <Group justify="center" py="xl">
-            <Text size="sm" c="dimmed">
+            <Text c="dimmed" size="sm">
               Loading...
             </Text>
           </Group>
         ) : data.records.length === 0 ? (
-          <Paper p="xl" withBorder style={{ textAlign: 'center' }}>
+          <Paper withBorder style={{ textAlign: 'center' }} p="xl">
             <Text c="dimmed">No records found</Text>
           </Paper>
         ) : effectiveView === 'cards' ? (
@@ -557,12 +555,12 @@ export function ResponsiveDataTable({
         {data.total > data.limit && (
           <Group justify="center" mt="md">
             <Pagination
-              value={data.page}
+              boundaries={isMobile ? 0 : 1}
               onChange={(page) => onPageChange?.(page)}
               total={Math.ceil(data.total / data.limit)}
-              size={isMobile ? 'sm' : 'md'}
               siblings={isMobile ? 0 : 1}
-              boundaries={isMobile ? 0 : 1}
+              size={isMobile ? 'sm' : 'md'}
+              value={data.page}
             />
           </Group>
         )}

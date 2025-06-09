@@ -1,44 +1,26 @@
-import clsx from 'clsx';
-import Image from 'next/image';
-import Link from 'next/link';
-import { type FC } from 'react';
+import clsx from 'clsx'
+import Image from 'next/image'
+import Link from 'next/link'
+import { type FC } from 'react'
 
-import { type TBlogPost } from '../../data/data';
+import { type TBlogPost } from '../../data/data'
 
-import PostCardMeta from './PostCardMeta';
+import PostCardMeta from './PostCardMeta'
 
 interface Props {
-  className?: string;
-  post: TBlogPost;
-  size?: 'sm' | 'md';
+  className?: string
+  post: TBlogPost
+  size?: 'sm' | 'md'
 }
 
 const PostCard1: FC<Props> = ({ className = 'h-full', post, size = 'md' }) => {
-  const {
-    author,
-    date,
-    excerpt: description,
-    featuredImage: image,
-    handle,
-    timeToRead,
-    title,
-  } = post;
+  const { author, date, excerpt: description, featuredImage: image, handle, timeToRead, title } = post
 
   return (
     <div className={clsx(className, 'flex flex-col gap-y-10')}>
-      <Link
-        href={`/blog/${handle}`}
-        className="relative block aspect-4/3 overflow-hidden rounded-3xl"
-        title={title}
-      >
+      <Link href={`/blog/${handle}`} className="aspect-4/3 relative block overflow-hidden rounded-3xl" title={title}>
         {image?.src && (
-          <Image
-            className="object-cover"
-            alt={title || ''}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            src={image}
-          />
+          <Image className="object-cover" alt={title || ''} fill sizes="(max-width: 768px) 100vw, 50vw" src={image} />
         )}
       </Link>
 
@@ -47,7 +29,7 @@ const PostCard1: FC<Props> = ({ className = 'h-full', post, size = 'md' }) => {
           className={clsx(
             'block font-semibold text-neutral-900 dark:text-neutral-100',
             size === 'sm' && 'text-base sm:text-xl',
-            size === 'md' && 'text-lg sm:text-2xl',
+            size === 'md' && 'text-lg sm:text-2xl'
           )}
         >
           <Link href={`/blog/${handle}`} className="line-clamp-1">
@@ -58,7 +40,7 @@ const PostCard1: FC<Props> = ({ className = 'h-full', post, size = 'md' }) => {
         <PostCardMeta author={author} className="mt-5" date={date || ''} />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PostCard1;
+export default PostCard1

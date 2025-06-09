@@ -121,8 +121,8 @@ export const fetchProductsToMonitorStep = compose(
   (step) => withStepTimeout(step, { execution: 30000 }),
   (step) =>
     withStepMonitoring(step, {
-,
       enableDetailedLogging: true,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -229,7 +229,7 @@ export const checkCurrentPricesStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -477,7 +477,7 @@ export const sendAlertsStep = compose(
         } catch (error) {
           sendResults.failed.push({
             ...alert,
-            (error as Error): (error as Error).message,
+            error: (error as Error).message,
           });
         }
       }
@@ -494,7 +494,7 @@ export const sendAlertsStep = compose(
       } catch (error) {
         sendResults.failed.push({
           ...alert,
-          (error as Error): (error as Error).message,
+          error: (error as Error).message,
         });
       }
     }

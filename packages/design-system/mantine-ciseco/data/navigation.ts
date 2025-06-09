@@ -212,6 +212,11 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
           ],
           href: '/blog',
         },
+        {
+          id: '11',
+          name: 'Sitemap',
+          href: '/sitemap',
+        },
       ],
       href: '/collections/page-style-2/all',
     },

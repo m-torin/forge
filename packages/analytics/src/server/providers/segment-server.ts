@@ -29,7 +29,10 @@ export class SegmentServerProvider implements AnalyticsProvider {
     try {
       // Dynamically import Segment Analytics Next
       // analytics-next supports Node.js runtime with flushAt: 1 for server environments
-      const { Analytics } = await import('@segment/analytics-next');
+      const { Analytics } = await import(
+      /* webpackChunkName: "segment-analytics" */
+      '@segment/analytics-next'
+    );
 
       this.analytics = new Analytics({
         writeKey: this.config.writeKey,

@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import * as Headless from '@headlessui/react';
-import NextLink, { type LinkProps } from 'next/link';
-import React, { forwardRef } from 'react';
+import * as Headless from '@headlessui/react'
+import NextLink, { type LinkProps } from 'next/link'
+import React, { forwardRef } from 'react'
 
 export const Link = forwardRef(function Link(
   props: LinkProps<string> & React.ComponentPropsWithoutRef<'a'>,
-  ref: React.ForwardedRef<HTMLAnchorElement>,
+  ref: React.ForwardedRef<HTMLAnchorElement>
 ) {
-  const closeHeadless = Headless.useClose();
+  const closeHeadless = Headless.useClose()
 
   return (
     <Headless.DataInteractive>
@@ -18,21 +18,21 @@ export const Link = forwardRef(function Link(
         ref={ref}
         onClick={(e) => {
           if (props.onClick) {
-            props.onClick(e);
+            props.onClick(e)
           }
           // Prevent default if the link is not a valid URL
           if (e.defaultPrevented) {
-            return;
+            return
           }
           // Prevent default if the link is a hash link
           if (props.href && typeof props.href === 'string' && props.href.startsWith('#')) {
-            return;
+            return
           }
 
           // Close the headlessui menu and aside
-          closeHeadless();
+          closeHeadless()
         }}
       />
     </Headless.DataInteractive>
-  );
-});
+  )
+})

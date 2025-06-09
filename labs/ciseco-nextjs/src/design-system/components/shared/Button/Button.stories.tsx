@@ -1,6 +1,6 @@
-import Button from './Button';
+import Button from './Button'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof Button> = {
   argTypes: {
@@ -45,44 +45,43 @@ const meta: Meta<typeof Button> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'A flexible button component that can render as different elements and supports loading states.',
+        component: 'A flexible button component that can render as different elements and supports loading states.',
       },
     },
     layout: 'centered',
   },
   title: 'Ciseco/Shared/Button',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
     children: 'Default Button',
   },
-};
+}
 
 export const Disabled: Story = {
   args: {
     children: 'Disabled Button',
     disabled: true,
   },
-};
+}
 
 export const Loading: Story = {
   args: {
     children: 'Loading Button',
     loading: true,
   },
-};
+}
 
 export const AsLink: Story = {
   args: {
     children: 'Link Button',
     href: 'https://example.com',
   },
-};
+}
 
 export const ExternalLink: Story = {
   args: {
@@ -90,7 +89,7 @@ export const ExternalLink: Story = {
     href: 'https://example.com',
     targetBlank: true,
   },
-};
+}
 
 export const CustomSizing: Story = {
   args: {
@@ -98,7 +97,7 @@ export const CustomSizing: Story = {
     fontSize: 'text-lg font-medium',
     sizeClass: 'py-4 px-8',
   },
-};
+}
 
 export const SmallButton: Story = {
   args: {
@@ -106,35 +105,35 @@ export const SmallButton: Story = {
     fontSize: 'text-sm',
     sizeClass: 'py-2 px-3',
   },
-};
+}
 
 export const CustomStyling: Story = {
   args: {
     children: 'Custom Styled',
     className: 'bg-blue-600 text-white hover:bg-blue-700 border border-blue-600',
   },
-};
+}
 
 export const PrimaryVariant: Story = {
   args: {
     children: 'Primary Button',
     className: 'bg-primary-600 text-white hover:bg-primary-700 border border-primary-600',
   },
-};
+}
 
 export const SecondaryVariant: Story = {
   args: {
     children: 'Secondary Button',
     className: 'bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300',
   },
-};
+}
 
 export const OutlineVariant: Story = {
   args: {
     children: 'Outline Button',
     className: 'border border-gray-300 text-gray-700 hover:bg-gray-50',
   },
-};
+}
 
 export const DifferentSizes: Story = {
   render: () => (
@@ -154,7 +153,7 @@ export const DifferentSizes: Story = {
       </Button>
     </div>
   ),
-};
+}
 
 export const ButtonStates: Story = {
   render: () => (
@@ -175,7 +174,7 @@ export const ButtonStates: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const PolymorphicUsage: Story = {
   render: () => (
@@ -187,14 +186,12 @@ export const PolymorphicUsage: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const FullWidth: Story = {
   render: () => (
     <div className="w-64">
-      <Button className="w-full justify-center bg-blue-600 text-white hover:bg-blue-700">
-        Full Width Button
-      </Button>
+      <Button className="w-full justify-center bg-blue-600 text-white hover:bg-blue-700">Full Width Button</Button>
     </div>
   ),
-};
+}

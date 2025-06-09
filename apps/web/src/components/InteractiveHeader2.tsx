@@ -1,3 +1,6 @@
+"use client";
+
+import { type TCollection, type TNavigationItem } from "@/lib/data-service";
 import clsx from "clsx";
 import { type FC } from "react";
 
@@ -9,25 +12,24 @@ import {
   Navigation,
   SearchBtnPopover,
 } from "@repo/design-system/mantine-ciseco";
-import { getCollections } from "@repo/design-system/mantine-ciseco/data/data";
-import { getNavigation } from "@repo/design-system/mantine-ciseco/data/navigation";
 
 export interface InteractiveHeader2Props {
   cartCount?: number;
+  featuredCollection?: TCollection;
   hasBorder?: boolean;
+  navigationMenu: TNavigationItem[];
   onCartClick?: () => void;
   onMenuClick?: () => void;
 }
 
-const InteractiveHeader2: FC<InteractiveHeader2Props> = async ({
+const InteractiveHeader2: FC<InteractiveHeader2Props> = ({
   cartCount = 0,
+  featuredCollection,
   hasBorder = true,
+  navigationMenu,
   onCartClick,
   onMenuClick,
 }) => {
-  const navigationMenu = await getNavigation();
-  const allCollections = await getCollections();
-
   return (
     <div className="relative z-10 w-full bg-white">
       <div
@@ -48,7 +50,7 @@ const InteractiveHeader2: FC<InteractiveHeader2Props> = async ({
 
           <div className="mx-4 hidden flex-2 justify-center lg:flex">
             <Navigation
-              featuredCollection={allCollections[10]}
+              featuredCollection={featuredCollection}
               menu={navigationMenu}
             />
           </div>

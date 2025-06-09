@@ -2,54 +2,25 @@
 
 // Demo script for the autonomous workflow development system
 import { AutonomousWorkflowSystem } from '../src/autonomous';
-import { WorkflowSpecification } from '../src/autonomous/types';
+import { type WorkflowSpecification } from '../src/autonomous/types';
 
 // Using console colors instead of chalk for simplicity
 const chalk = {
+  blue: (str: string) => `\x1b[34m${str}\x1b[0m`,
   cyan: Object.assign((str: string) => `\x1b[36m${str}\x1b[0m`, {
     bold: (str: string) => `\x1b[36m\x1b[1m${str}\x1b[0m`,
   }),
+  gray: (str: string) => `\x1b[90m${str}\x1b[0m`,
   green: (str: string) => `\x1b[32m${str}\x1b[0m`,
   red: (str: string) => `\x1b[31m${str}\x1b[0m`,
   yellow: (str: string) => `\x1b[33m${str}\x1b[0m`,
-  gray: (str: string) => `\x1b[90m${str}\x1b[0m`,
-  blue: (str: string) => `\x1b[34m${str}\x1b[0m`,
 };
 
 // Example workflow specifications
 const workflowExamples: Record<string, WorkflowSpecification> = {
   'customer-onboarding': {
     name: 'customer-onboarding',
-    description: 'Automated customer onboarding workflow with email sequences',
     type: 'notification',
-    inputContract: {
-      type: 'object',
-      properties: {
-        userId: { type: 'string' },
-        email: { type: 'string', format: 'email' },
-        name: { type: 'string' },
-        plan: { type: 'string', enum: ['free', 'pro', 'enterprise'] },
-      },
-      required: ['userId', 'email', 'name', 'plan'],
-    },
-    outputContract: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' },
-        onboardingSteps: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              step: { type: 'string' },
-              completed: { type: 'boolean' },
-              timestamp: { type: 'string', format: 'date-time' },
-            },
-          },
-        },
-        nextActions: { type: 'array', items: { type: 'string' } },
-      },
-    },
     businessLogic: [
       'Create user profile with default settings',
       'Send welcome email immediately',
@@ -63,53 +34,50 @@ const workflowExamples: Record<string, WorkflowSpecification> = {
       'Send feedback survey',
       'Mark onboarding as complete',
     ],
+    description: 'Automated customer onboarding workflow with email sequences',
     errorHandling: [
       'Retry email sending up to 3 times with exponential backoff',
       'Log failed email attempts to monitoring system',
       'Continue workflow even if individual emails fail',
       'Send daily summary of failed onboardings to ops team',
     ],
+    inputContract: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        plan: { type: 'string', enum: ['free', 'pro', 'enterprise'] },
+        userId: { type: 'string' },
+      },
+      required: ['userId', 'email', 'name', 'plan'],
+    },
+    outputContract: {
+      type: 'object',
+      properties: {
+        nextActions: { type: 'array', items: { type: 'string' } },
+        onboardingSteps: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              completed: { type: 'boolean' },
+              step: { type: 'string' },
+              timestamp: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+        success: { type: 'boolean' },
+      },
+    },
     performance: {
-      timeout: 14 * 24 * 60 * 60 * 1000, // 14 days
       retries: 3,
+      timeout: 14 * 24 * 60 * 60 * 1000, // 14 days
     },
   },
 
   'data-pipeline': {
     name: 'data-pipeline',
-    description: 'ETL pipeline for processing sales data',
     type: 'data-processing',
-    inputContract: {
-      type: 'object',
-      properties: {
-        sourceUrl: { type: 'string', format: 'uri' },
-        format: { type: 'string', enum: ['csv', 'json', 'xml'] },
-        dateRange: {
-          type: 'object',
-          properties: {
-            start: { type: 'string', format: 'date' },
-            end: { type: 'string', format: 'date' },
-          },
-        },
-      },
-      required: ['sourceUrl', 'format'],
-    },
-    outputContract: {
-      type: 'object',
-      properties: {
-        recordsProcessed: { type: 'number' },
-        recordsFailed: { type: 'number' },
-        outputLocation: { type: 'string' },
-        summary: {
-          type: 'object',
-          properties: {
-            totalRevenue: { type: 'number' },
-            topProducts: { type: 'array', items: { type: 'string' } },
-            processingTime: { type: 'number' },
-          },
-        },
-      },
-    },
     businessLogic: [
       'Validate source URL accessibility',
       'Download data file with progress tracking',
@@ -122,6 +90,7 @@ const workflowExamples: Record<string, WorkflowSpecification> = {
       'Generate summary report',
       'Send completion notification',
     ],
+    description: 'ETL pipeline for processing sales data',
     errorHandling: [
       'Implement checkpoint/restart capability',
       'Handle partial file downloads',
@@ -129,44 +98,47 @@ const workflowExamples: Record<string, WorkflowSpecification> = {
       'Alert on >10% failure rate',
       'Automatic rollback on critical errors',
     ],
+    inputContract: {
+      type: 'object',
+      properties: {
+        dateRange: {
+          type: 'object',
+          properties: {
+            end: { type: 'string', format: 'date' },
+            start: { type: 'string', format: 'date' },
+          },
+        },
+        format: { type: 'string', enum: ['csv', 'json', 'xml'] },
+        sourceUrl: { type: 'string', format: 'uri' },
+      },
+      required: ['sourceUrl', 'format'],
+    },
+    outputContract: {
+      type: 'object',
+      properties: {
+        outputLocation: { type: 'string' },
+        recordsFailed: { type: 'number' },
+        recordsProcessed: { type: 'number' },
+        summary: {
+          type: 'object',
+          properties: {
+            processingTime: { type: 'number' },
+            topProducts: { type: 'array', items: { type: 'string' } },
+            totalRevenue: { type: 'number' },
+          },
+        },
+      },
+    },
     performance: {
-      timeout: 3600000, // 1 hour
-      retries: 2,
       rateLimit: '1000 records/second',
+      retries: 2,
+      timeout: 3600000, // 1 hour
     },
   },
 
   'api-integration': {
     name: 'api-integration',
-    description: 'Sync data between CRM and email marketing platform',
     type: 'api-integration',
-    inputContract: {
-      type: 'object',
-      properties: {
-        syncType: { type: 'string', enum: ['full', 'incremental'] },
-        lastSyncTimestamp: { type: 'string', format: 'date-time' },
-        entityTypes: {
-          type: 'array',
-          items: { type: 'string', enum: ['contacts', 'companies', 'deals'] },
-        },
-      },
-      required: ['syncType', 'entityTypes'],
-    },
-    outputContract: {
-      type: 'object',
-      properties: {
-        syncedEntities: {
-          type: 'object',
-          properties: {
-            contacts: { type: 'number' },
-            companies: { type: 'number' },
-            deals: { type: 'number' },
-          },
-        },
-        errors: { type: 'array', items: { type: 'object' } },
-        nextSyncTimestamp: { type: 'string', format: 'date-time' },
-      },
-    },
     businessLogic: [
       'Authenticate with CRM API',
       'Authenticate with email marketing API',
@@ -179,6 +151,7 @@ const workflowExamples: Record<string, WorkflowSpecification> = {
       'Update sync metadata',
       'Generate sync report',
     ],
+    description: 'Sync data between CRM and email marketing platform',
     errorHandling: [
       'Implement OAuth token refresh',
       'Handle API rate limits gracefully',
@@ -186,6 +159,33 @@ const workflowExamples: Record<string, WorkflowSpecification> = {
       'Log all API errors with request/response details',
       'Fallback to batch processing on streaming API failure',
     ],
+    inputContract: {
+      type: 'object',
+      properties: {
+        entityTypes: {
+          type: 'array',
+          items: { type: 'string', enum: ['contacts', 'companies', 'deals'] },
+        },
+        lastSyncTimestamp: { type: 'string', format: 'date-time' },
+        syncType: { type: 'string', enum: ['full', 'incremental'] },
+      },
+      required: ['syncType', 'entityTypes'],
+    },
+    outputContract: {
+      type: 'object',
+      properties: {
+        errors: { type: 'array', items: { type: 'object' } },
+        nextSyncTimestamp: { type: 'string', format: 'date-time' },
+        syncedEntities: {
+          type: 'object',
+          properties: {
+            companies: { type: 'number' },
+            contacts: { type: 'number' },
+            deals: { type: 'number' },
+          },
+        },
+      },
+    },
   },
 };
 

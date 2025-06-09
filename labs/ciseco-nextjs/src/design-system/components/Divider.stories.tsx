@@ -1,6 +1,6 @@
-import { Divider } from './Divider';
+import { Divider } from './Divider'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof Divider> = {
   argTypes: {
@@ -23,10 +23,10 @@ const meta: Meta<typeof Divider> = {
     layout: 'centered',
   },
   title: 'Ciseco/Divider',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -34,12 +34,12 @@ export const Default: Story = {
   },
   render: (args) => (
     <div className="w-64">
-      <p className="text-sm text-gray-600 mb-4">Content above divider</p>
+      <p className="mb-4 text-sm text-gray-600">Content above divider</p>
       <Divider {...args} />
-      <p className="text-sm text-gray-600 mt-4">Content below divider</p>
+      <p className="mt-4 text-sm text-gray-600">Content below divider</p>
     </div>
   ),
-};
+}
 
 export const Soft: Story = {
   args: {
@@ -47,12 +47,12 @@ export const Soft: Story = {
   },
   render: (args) => (
     <div className="w-64">
-      <p className="text-sm text-gray-600 mb-4">Content above divider</p>
+      <p className="mb-4 text-sm text-gray-600">Content above divider</p>
       <Divider {...args} />
-      <p className="text-sm text-gray-600 mt-4">Content below divider</p>
+      <p className="mt-4 text-sm text-gray-600">Content below divider</p>
     </div>
   ),
-};
+}
 
 export const WithCustomStyling: Story = {
   args: {
@@ -61,52 +61,50 @@ export const WithCustomStyling: Story = {
   },
   render: (args) => (
     <div className="w-64">
-      <p className="text-sm text-gray-600 mb-4">Content above divider</p>
+      <p className="mb-4 text-sm text-gray-600">Content above divider</p>
       <Divider {...args} />
-      <p className="text-sm text-gray-600 mt-4">Content below divider</p>
+      <p className="mt-4 text-sm text-gray-600">Content below divider</p>
     </div>
   ),
-};
+}
 
 export const Comparison: Story = {
   render: () => (
     <div className="w-80 space-y-8">
       <div>
-        <h3 className="text-sm font-medium mb-4">Regular Divider</h3>
-        <p className="text-sm text-gray-600 mb-4">Some content here</p>
+        <h3 className="mb-4 text-sm font-medium">Regular Divider</h3>
+        <p className="mb-4 text-sm text-gray-600">Some content here</p>
         <Divider soft={false} />
-        <p className="text-sm text-gray-600 mt-4">More content here</p>
+        <p className="mt-4 text-sm text-gray-600">More content here</p>
       </div>
 
       <div>
-        <h3 className="text-sm font-medium mb-4">Soft Divider</h3>
-        <p className="text-sm text-gray-600 mb-4">Some content here</p>
+        <h3 className="mb-4 text-sm font-medium">Soft Divider</h3>
+        <p className="mb-4 text-sm text-gray-600">Some content here</p>
         <Divider soft={true} />
-        <p className="text-sm text-gray-600 mt-4">More content here</p>
+        <p className="mt-4 text-sm text-gray-600">More content here</p>
       </div>
     </div>
   ),
-};
+}
 
 export const InCard: Story = {
   render: () => (
-    <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-      <h2 className="text-lg font-semibold mb-4">Card Title</h2>
-      <p className="text-sm text-gray-600 mb-4">
+    <div className="w-80 rounded-lg bg-white p-6 shadow-lg">
+      <h2 className="mb-4 text-lg font-semibold">Card Title</h2>
+      <p className="mb-4 text-sm text-gray-600">
         This is some content in a card component. The divider helps separate different sections.
       </p>
       <Divider />
-      <p className="text-sm text-gray-600 mt-4">
-        This is content in another section after the divider.
-      </p>
+      <p className="mt-4 text-sm text-gray-600">This is content in another section after the divider.</p>
       <Divider soft />
-      <div className="mt-4 flex justify-between items-center text-sm">
+      <div className="mt-4 flex items-center justify-between text-sm">
         <span className="text-gray-500">Footer content</span>
         <button className="text-blue-600 hover:text-blue-700">Action</button>
       </div>
     </div>
   ),
-};
+}
 
 export const MultipleDividers: Story = {
   render: () => (
@@ -132,7 +130,7 @@ export const MultipleDividers: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const WithMargin: Story = {
   render: () => (
@@ -142,4 +140,4 @@ export const WithMargin: Story = {
       <p className="text-sm text-gray-600">Content below with more space</p>
     </div>
   ),
-};
+}

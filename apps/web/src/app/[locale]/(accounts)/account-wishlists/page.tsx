@@ -1,6 +1,5 @@
+import { getProducts } from "@/lib/data-service";
 import { type Metadata } from "next";
-
-import { getProducts } from "@repo/design-system/mantine-ciseco";
 
 import { FavoritesClient } from "./FavoritesClient";
 

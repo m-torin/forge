@@ -6,7 +6,7 @@ import { type TNavigationItem } from '../../data/navigation';
 import CollectionCard3 from '../CollectionCard3';
 import { Link } from '../Link';
 
-export default function MegaMenuPopover({
+export function MegaMenuPopover({
   featuredCollection,
   megamenu,
 }: {

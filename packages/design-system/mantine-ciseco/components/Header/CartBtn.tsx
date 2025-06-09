@@ -4,13 +4,19 @@ import { ShoppingCart02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
 interface CartBtnProps {
+  'data-testid'?: string;
   numberItems?: number;
   onClick?: () => void;
 }
 
-export default function CartBtn({ numberItems = 0, onClick }: CartBtnProps) {
+export default function CartBtn({
+  'data-testid': testId = 'cart-button',
+  numberItems = 0,
+  onClick,
+}: CartBtnProps) {
   return (
     <button
+      data-testid={testId}
       onClick={onClick}
       className="relative -m-2.5 flex cursor-pointer items-center justify-center rounded-full p-2.5 hover:bg-neutral-100 focus-visible:outline-0 dark:hover:bg-neutral-800"
     >

@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import { CloseButton, Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
-import { Cancel01Icon, Search01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { redirect } from 'next/navigation';
+import { CloseButton, Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
+import { Cancel01Icon, Search01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { redirect } from 'next/navigation'
 
-import { Divider } from '../Divider';
-import { Link } from '../Link';
+import { Divider } from '../Divider'
+import { Link } from '../Link'
 
 const SearchBtnPopover = () => {
   return (
@@ -17,15 +17,15 @@ const SearchBtnPopover = () => {
 
       <PopoverPanel
         transition
-        className="header-popover-full-panel absolute inset-x-0 top-0 -z-10 bg-white pt-20 text-neutral-950 shadow-xl transition duration-200 ease-in-out data-closed:translate-y-1 data-closed:opacity-0 dark:border-b dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100"
+        className="header-popover-full-panel data-closed:translate-y-1 data-closed:opacity-0 absolute inset-x-0 top-0 -z-10 bg-white pt-20 text-neutral-950 shadow-xl transition duration-200 ease-in-out dark:border-b dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100"
       >
         <div className="container">
           <div className="mx-auto flex w-full max-w-xl flex-col py-4">
             <form
               action="#"
               onSubmit={(e) => {
-                e.preventDefault();
-                redirect('/search');
+                e.preventDefault()
+                redirect('/search')
               }}
               className="flex w-full items-center"
             >
@@ -50,7 +50,7 @@ const SearchBtnPopover = () => {
               <input hidden type="submit" value="" />
             </form>
             <Divider className="my-4 block md:hidden" />
-            <div className="block text-xs/6 text-neutral-500 uppercase md:hidden">
+            <div className="block text-xs/6 uppercase text-neutral-500 md:hidden">
               Press{' '}
               <Link
                 href="/search"
@@ -68,7 +68,7 @@ const SearchBtnPopover = () => {
         </div>
       </PopoverPanel>
     </Popover>
-  );
-};
+  )
+}
 
-export default SearchBtnPopover;
+export default SearchBtnPopover

@@ -1,33 +1,30 @@
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
-import clsx from 'clsx';
-import Image from 'next/image';
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import clsx from 'clsx'
+import Image from 'next/image'
 
-import { getCart, type TCardProduct } from '../data/data';
+import { getCart, type TCardProduct } from '../data/data'
 
-import { Aside } from './aside/aside';
-import { Link } from './Link';
-import Prices from './Prices';
-import ButtonPrimary from './shared/Button/ButtonPrimary';
-import ButtonSecondary from './shared/Button/ButtonSecondary';
+import { Aside } from './aside/aside'
+import { Link } from './Link'
+import Prices from './Prices'
+import ButtonPrimary from './shared/Button/ButtonPrimary'
+import ButtonSecondary from './shared/Button/ButtonSecondary'
 
 interface Props {
-  className?: string;
+  className?: string
 }
 
 const AsideSidebarCart = async ({ className = '' }: Props) => {
-  const cart = await getCart('id://1');
+  const cart = await getCart('id://1')
 
   return (
     <Aside openFrom="right" heading="Shopping Cart" type="cart">
       <div className={clsx('flex h-full flex-col', className)}>
         {/* CONTENT */}
 
-        <div className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6">
+        <div className="hidden-scrollbar flex-1 overflow-y-auto overflow-x-hidden py-6">
           <div className="flow-root">
-            <ul
-              role="list"
-              className="-my-6 divide-y divide-neutral-900/10 dark:divide-neutral-100/10"
-            >
+            <ul role="list" className="-my-6 divide-y divide-neutral-900/10 dark:divide-neutral-100/10">
               {cart.lines.map((product) => (
                 <CartProduct key={product.id} product={product} />
               ))}
@@ -67,23 +64,16 @@ const AsideSidebarCart = async ({ className = '' }: Props) => {
         </section>
       </div>
     </Aside>
-  );
-};
+  )
+}
 
 const CartProduct = ({ product }: { product: TCardProduct }) => {
-  const { name, color, handle, image, price, quantity, size } = product;
+  const { name, color, handle, image, price, quantity, size } = product
 
   return (
     <div className="flex py-5 last:pb-0">
       <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-        {image && (
-          <Image
-            className="h-full w-full object-contain object-center"
-            alt={image.alt}
-            fill
-            src={image}
-          />
-        )}
+        {image && <Image className="h-full w-full object-contain object-center" alt={image.alt} fill src={image} />}
         <Link href={`/products/${handle}` as any} className="absolute inset-0" />
       </div>
 
@@ -106,7 +96,7 @@ const CartProduct = ({ product }: { product: TCardProduct }) => {
         <div className="flex flex-1 items-end justify-between text-sm">
           <div className="inline-grid w-full max-w-16 grid-cols-1">
             <select
-              className="col-start-1 row-start-1 appearance-none rounded-md py-0.5 ps-3 pe-8 text-xs/6 outline-1 -outline-offset-1 outline-neutral-900/10 focus:outline-1 dark:outline-white/15"
+              className="col-start-1 row-start-1 appearance-none rounded-md py-0.5 pe-8 ps-3 text-xs/6 outline-1 -outline-offset-1 outline-neutral-900/10 focus:outline-1 dark:outline-white/15"
               aria-label={`Quantity, ${product.name}`}
               defaultValue={quantity}
               name={`quantity-${product.id}`}
@@ -127,14 +117,14 @@ const CartProduct = ({ product }: { product: TCardProduct }) => {
           </div>
 
           <div className="flex">
-            <button className="font-medium text-primary-600 dark:text-primary-500" type="button">
+            <button className="text-primary-600 dark:text-primary-500 font-medium" type="button">
               Remove
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AsideSidebarCart;
+export default AsideSidebarCart

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { extractFromHtml } from '../shared/patterns';
+import { extractFromHtml } from '../shared/patterns/quick-scrape';
 import { validateConfigOrThrow } from '../shared/utils/validation';
 import type { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
 
 describe('Shared Scraping Utilities', () => {
   describe('extractFromHtml', () => {
-    it('should extract data from HTML string', () => {
+    it('should extract data from HTML string', async () => {
       const html = `
         <html>
           <head>
@@ -25,7 +25,7 @@ describe('Shared Scraping Utilities', () => {
         content: { selector: '.content' },
       };
 
-      const result = extractFromHtml(html, selectors);
+      const result = await extractFromHtml(html, selectors);
 
       expect(result).toEqual({
         title: 'Test Heading',
@@ -34,14 +34,14 @@ describe('Shared Scraping Utilities', () => {
       });
     });
 
-    it('should handle missing elements', () => {
+    it('should handle missing elements', async () => {
       const html = '<div>Test</div>';
       const selectors: SelectorMap = {
         title: { selector: 'h1' },
         content: { selector: '.content' },
       };
 
-      const result = extractFromHtml(html, selectors);
+      const result = await extractFromHtml(html, selectors);
 
       expect(result).toEqual({
         title: null,
@@ -62,9 +62,11 @@ describe('Shared Scraping Utilities', () => {
     });
 
     it('should reject an invalid config', () => {
-      const config: ScrapingConfig = {
+      const config = {
         providers: {
-          'invalid-provider': {},
+          'node-fetch': {
+            timeout: 'invalid-number', // This should cause validation to fail
+          },
         },
       };
 

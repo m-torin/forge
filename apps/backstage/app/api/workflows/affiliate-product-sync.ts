@@ -135,7 +135,7 @@ export const fetchFromNetworksStep = compose(
         });
       } catch (error) {
         networkResults.push({
-          (error as Error): (error as Error).message,
+          error: (error as Error).message,
           fetchedAt: new Date().toISOString(),
           fetchedCount: 0,
           networkId: network.id,
@@ -156,18 +156,18 @@ export const fetchFromNetworksStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
     }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 300000, // 5 minutes
+      threshold: 0.5,
+      threshold: 0.5,
       timeout: 30000,
     }),
   (step) =>
     withStepMonitoring(step, {
-, 'networksProcessed'],
       enableDetailedLogging: true,
+      metrics: ['totalProductsFetched', 'networksProcessed'],
     }),
 );
 
@@ -604,7 +604,7 @@ export const sendNotificationsStep = StepTemplates.notification(
   'sync-complete',
   'Notify about affiliate product sync completion',
   {
-, 'webhook'],
+    channels: ['email', 'webhook'],
     condition: (data: any) => data.report.summary.totalProductsFetched > 0,
   },
 );

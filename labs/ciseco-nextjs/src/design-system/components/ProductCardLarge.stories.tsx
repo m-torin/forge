@@ -1,6 +1,6 @@
-import ProductCardLarge from './ProductCardLarge';
+import ProductCardLarge from './ProductCardLarge'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof ProductCardLarge> = {
   argTypes: {
@@ -31,10 +31,10 @@ const meta: Meta<typeof ProductCardLarge> = {
     layout: 'centered',
   },
   title: 'Ciseco/ProductCardLarge',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockProduct = {
   id: 'gid://1',
@@ -73,13 +73,13 @@ const mockProduct = {
     { name: 'Size', value: 'L' },
   ],
   title: 'Premium Cotton Hoodie',
-};
+}
 
 export const Default: Story = {
   args: {
     product: mockProduct,
   },
-};
+}
 
 export const HighRating: Story = {
   args: {
@@ -89,7 +89,7 @@ export const HighRating: Story = {
       reviewNumber: 342,
     },
   },
-};
+}
 
 export const LowRating: Story = {
   args: {
@@ -99,7 +99,7 @@ export const LowRating: Story = {
       reviewNumber: 28,
     },
   },
-};
+}
 
 export const ExpensiveItem: Story = {
   args: {
@@ -141,7 +141,7 @@ export const ExpensiveItem: Story = {
       title: 'Designer Leather Jacket',
     },
   },
-};
+}
 
 export const BudgetItem: Story = {
   args: {
@@ -183,7 +183,7 @@ export const BudgetItem: Story = {
       title: 'Basic Cotton T-Shirt',
     },
   },
-};
+}
 
 export const OnlyMainImage: Story = {
   args: {
@@ -199,7 +199,7 @@ export const OnlyMainImage: Story = {
       ],
     },
   },
-};
+}
 
 export const TwoImages: Story = {
   args: {
@@ -221,17 +221,16 @@ export const TwoImages: Story = {
       ],
     },
   },
-};
+}
 
 export const LongTitle: Story = {
   args: {
     product: {
       ...mockProduct,
-      title:
-        'Premium Organic Cotton Sustainable Fashion Long-Sleeve Hoodie with Eco-Friendly Materials',
+      title: 'Premium Organic Cotton Sustainable Fashion Long-Sleeve Hoodie with Eco-Friendly Materials',
     },
   },
-};
+}
 
 export const NoColorOption: Story = {
   args: {
@@ -240,11 +239,11 @@ export const NoColorOption: Story = {
       selectedOptions: [{ name: 'Size', value: 'L' }],
     },
   },
-};
+}
 
 export const ProductGrid: Story = {
   render: () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl">
+    <div className="grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-2">
       {[
         {
           color: 'Gray',
@@ -319,4 +318,4 @@ export const ProductGrid: Story = {
       ))}
     </div>
   ),
-};
+}

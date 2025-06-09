@@ -1,6 +1,12 @@
-// Advanced error analysis engine with pattern recognition and root cause analysis
-import { TestResult, ErrorAnalysis, ErrorCategory, TestFailure } from '../types';
 import { AIManager } from '@repo/ai';
+
+// Advanced error analysis engine with pattern recognition and root cause analysis
+import {
+  type ErrorAnalysis,
+  type ErrorCategory,
+  type TestFailure,
+  type TestResult,
+} from '../types';
 
 export class ErrorAnalyzer {
   private aiManager: AIManager | null = null;
@@ -11,64 +17,64 @@ export class ErrorAnalyzer {
     { category: ErrorCategory; priority: number; confidence: number }
   >([
     // TypeScript errors
-    [/TypeError.*is not a function/, { category: 'type-error', priority: 1, confidence: 0.95 }],
+    [/TypeError.*is not a function/, { confidence: 0.95, category: 'type-error', priority: 1 }],
     [
       /ReferenceError.*is not defined/,
-      { category: 'reference-error', priority: 1, confidence: 0.98 },
+      { confidence: 0.98, category: 'reference-error', priority: 1 },
     ],
-    [/SyntaxError/, { category: 'syntax-error', priority: 1, confidence: 1.0 }],
+    [/SyntaxError/, { confidence: 1.0, category: 'syntax-error', priority: 1 }],
     [
       /Type '.*' is not assignable to type/,
-      { category: 'type-error', priority: 2, confidence: 0.95 },
+      { confidence: 0.95, category: 'type-error', priority: 2 },
     ],
     [
       /Property '.*' does not exist on type/,
-      { category: 'type-error', priority: 2, confidence: 0.95 },
+      { confidence: 0.95, category: 'type-error', priority: 2 },
     ],
-    [/Cannot find module/, { category: 'import-error', priority: 1, confidence: 0.98 }],
-    [/Cannot find name/, { category: 'reference-error', priority: 1, confidence: 0.95 }],
+    [/Cannot find module/, { confidence: 0.98, category: 'import-error', priority: 1 }],
+    [/Cannot find name/, { confidence: 0.95, category: 'reference-error', priority: 1 }],
 
     // Contract violations
     [
       /Expected.*but got|Expected.*Received/,
-      { category: 'contract-violation', priority: 2, confidence: 0.9 },
+      { confidence: 0.9, category: 'contract-violation', priority: 2 },
     ],
-    [/Schema validation failed/, { category: 'contract-violation', priority: 1, confidence: 0.95 }],
+    [/Schema validation failed/, { confidence: 0.95, category: 'contract-violation', priority: 1 }],
     [
       /Invalid input|Invalid output/,
-      { category: 'contract-violation', priority: 1, confidence: 0.9 },
+      { confidence: 0.9, category: 'contract-violation', priority: 1 },
     ],
 
     // Logic errors
-    [/Assertion failed|AssertionError/, { category: 'logic-error', priority: 3, confidence: 0.85 }],
-    [/Test failed/, { category: 'logic-error', priority: 3, confidence: 0.8 }],
-    [/Expected behavior not found/, { category: 'logic-error', priority: 3, confidence: 0.85 }],
+    [/Assertion failed|AssertionError/, { confidence: 0.85, category: 'logic-error', priority: 3 }],
+    [/Test failed/, { confidence: 0.8, category: 'logic-error', priority: 3 }],
+    [/Expected behavior not found/, { confidence: 0.85, category: 'logic-error', priority: 3 }],
 
     // Performance issues
     [
       /Timeout|TimedOut|exceeded.*timeout/,
-      { category: 'performance-issue', priority: 4, confidence: 0.95 },
+      { confidence: 0.95, category: 'performance-issue', priority: 4 },
     ],
     [
       /Performance budget exceeded/,
-      { category: 'performance-issue', priority: 4, confidence: 0.9 },
+      { confidence: 0.9, category: 'performance-issue', priority: 4 },
     ],
-    [/Slow test detected/, { category: 'performance-issue', priority: 5, confidence: 0.85 }],
+    [/Slow test detected/, { confidence: 0.85, category: 'performance-issue', priority: 5 }],
 
     // Network/Infrastructure
     [
       /Network|fetch|ECONNREFUSED|ETIMEDOUT/,
-      { category: 'network-error', priority: 3, confidence: 0.9 },
+      { confidence: 0.9, category: 'network-error', priority: 3 },
     ],
     [
       /Connection refused|Connection timeout/,
-      { category: 'network-error', priority: 3, confidence: 0.95 },
+      { confidence: 0.95, category: 'network-error', priority: 3 },
     ],
 
     // Async/Promise errors
-    [/UnhandledPromiseRejection/, { category: 'async-error', priority: 2, confidence: 0.95 }],
-    [/Promise rejected/, { category: 'async-error', priority: 2, confidence: 0.9 }],
-    [/await is only valid in async/, { category: 'async-error', priority: 1, confidence: 1.0 }],
+    [/UnhandledPromiseRejection/, { confidence: 0.95, category: 'async-error', priority: 2 }],
+    [/Promise rejected/, { confidence: 0.9, category: 'async-error', priority: 2 }],
+    [/await is only valid in async/, { confidence: 1.0, category: 'async-error', priority: 1 }],
   ]);
 
   // Repair strategies mapped to error categories
@@ -144,33 +150,33 @@ export class ErrorAnalyzer {
     }
 
     return {
-      errors,
+      confidence,
+      aiInsights,
       categories: Array.from(new Set(categories)),
+      errors,
+      estimatedFixTime: this.estimateFixTime(categories),
+      repairComplexity: this.estimateRepairComplexity(categories, rootCauses),
+      rootCauses,
       suggestedStrategy,
       testFailures: allFailures.map((failure) => this.normalizeTestFailure(failure)),
-      confidence,
-      rootCauses,
-      aiInsights,
-      repairComplexity: this.estimateRepairComplexity(categories, rootCauses),
-      estimatedFixTime: this.estimateFixTime(categories),
     };
   }
 
-  private extractErrors(failures: TestFailure[]): Array<{
+  private extractErrors(failures: TestFailure[]): {
     message: string;
     file: string;
     line: number;
     category?: ErrorCategory;
     confidence?: number;
-  }> {
+  }[] {
     return failures.map((failure) => {
       const errorInfo = this.parseErrorDetails(failure);
       return {
-        message: failure.error || failure.message || 'Unknown error',
+        confidence: errorInfo.confidence,
+        category: errorInfo.category,
         file: errorInfo.file,
         line: errorInfo.line,
-        category: errorInfo.category,
-        confidence: errorInfo.confidence,
+        message: failure.error || failure.message || 'Unknown error',
       };
     });
   }
@@ -201,7 +207,7 @@ export class ErrorAnalyzer {
       }
     }
 
-    return { file, line, category, confidence };
+    return { confidence, category, file, line };
   }
 
   private categorizeErrors(errors: any[]): ErrorCategory[] {
@@ -385,19 +391,43 @@ export class ErrorAnalyzer {
     try {
       const context = {
         errors: errors.slice(0, 10), // Limit to first 10 errors
-        testSummary: testResult.summary,
         performance: testResult.performanceMetrics,
+        testSummary: testResult.summary,
       };
 
-      const insights = await this.aiManager.analyze({
-        type: 'test_failure_analysis',
-        data: context,
-        options: {
-          includeFixSuggestions: true,
-          analyzeDependencies: true,
-          checkBestPractices: true,
-        },
+      const prompt = `Analyze the following test failures and provide insights:
+
+Errors (first 10):
+${JSON.stringify(context.errors, null, 2)}
+
+Test Summary:
+${JSON.stringify(context.testSummary, null, 2)}
+
+Performance Metrics:
+${JSON.stringify(context.performance, null, 2)}
+
+Please provide:
+1. Root cause analysis
+2. Fix suggestions for each error
+3. Dependency analysis if relevant
+4. Best practice recommendations
+
+Format the response as JSON with the following structure:
+{
+  "rootCauses": ["..."],
+  "fixSuggestions": ["..."],
+  "dependencies": ["..."],
+  "bestPractices": ["..."]
+}`;
+
+      const response = await this.aiManager.complete({
+        maxTokens: 2000,
+        model: 'claude-3-opus-20240229',
+        prompt,
+        temperature: 0.2,
       });
+
+      const insights = JSON.parse(response.text);
 
       return insights;
     } catch (error) {
@@ -448,27 +478,27 @@ export class ErrorAnalyzer {
 
   private normalizeTestFailure(failure: TestFailure): TestFailure {
     return {
-      testName: failure.testName || 'Unknown test',
+      actual: failure.actual || 'Not specified',
+      duration: failure.duration,
       error: failure.error || failure.message || 'Unknown error',
       expected: failure.expected || 'Not specified',
-      actual: failure.actual || 'Not specified',
-      stack: failure.stack || '',
-      duration: failure.duration,
       file: this.extractFileFromFailure(failure),
+      stack: failure.stack || '',
+      testName: failure.testName || 'Unknown test',
     };
   }
 
   private createSuccessAnalysis(): ErrorAnalysis {
     return {
-      errors: [],
+      confidence: 1.0,
+      aiInsights: null,
       categories: [],
+      errors: [],
+      estimatedFixTime: 0,
+      repairComplexity: 'low',
+      rootCauses: [],
       suggestedStrategy: 'All tests passing - no repairs needed',
       testFailures: [],
-      confidence: 1.0,
-      rootCauses: [],
-      aiInsights: null,
-      repairComplexity: 'low',
-      estimatedFixTime: 0,
     };
   }
 
@@ -476,9 +506,9 @@ export class ErrorAnalyzer {
   async getRepairHistoryInsights(workflowType: string): Promise<any> {
     // This would connect to the learning system to get historical repair data
     return {
+      averageRepairTime: 0,
       commonErrors: [],
       successfulStrategies: [],
-      averageRepairTime: 0,
       successRate: 0,
     };
   }

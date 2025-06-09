@@ -1,7 +1,7 @@
-import React, { type FC } from 'react';
+import { type FC } from 'react'
 
 export interface BgGlassmorphismProps {
-  className?: string;
+  className?: string
 }
 
 const BgGlassmorphism: FC<BgGlassmorphismProps> = ({
@@ -9,10 +9,10 @@ const BgGlassmorphism: FC<BgGlassmorphismProps> = ({
 }) => {
   return (
     <div data-nc-id="BgGlassmorphism" className={`nc-BgGlassmorphism ${className}`}>
-      <span className="block bg-[#ef233c] w-72 h-72 rounded-full mix-blend-multiply blur-3xl opacity-10 lg:w-96 lg:h-96" />
-      <span className="block bg-[#04868b] w-72 h-72 -ml-20 mt-40 rounded-full mix-blend-multiply blur-3xl opacity-10 lg:w-96 lg:h-96 nc-animation-delay-2000" />
+      <span className="block h-72 w-72 rounded-full bg-[#ef233c] opacity-10 mix-blend-multiply blur-3xl lg:h-96 lg:w-96" />
+      <span className="nc-animation-delay-2000 -ml-20 mt-40 block h-72 w-72 rounded-full bg-[#04868b] opacity-10 mix-blend-multiply blur-3xl lg:h-96 lg:w-96" />
     </div>
-  );
-};
+  )
+}
 
-export default BgGlassmorphism;
+export default BgGlassmorphism

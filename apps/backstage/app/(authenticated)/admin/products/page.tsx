@@ -103,8 +103,8 @@ async function ProductsTable({ searchParams }: PageProps) {
       editHref={(id) => `/admin/products/${id}/edit`}
       viewHref={(id) => `/admin/products/${id}`}
       columns={columns}
-      modelName="Product"
       modelKey="product"
+      modelName="Product"
       onBulkDelete={async (ids) => {
         'use server';
         await bulkDeleteRecords('product', ids);

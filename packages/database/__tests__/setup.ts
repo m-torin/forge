@@ -73,7 +73,7 @@ vi.mock('@prisma/client', () => ({
 }));
 
 // Also mock the generated client
-vi.mock('../generated/client', () => ({
+vi.mock('../prisma/generated/client', () => ({
   PrismaClient: vi.fn(() => createMockPrismaClient()),
 }));
 

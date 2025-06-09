@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
-import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { type FC } from 'react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
+import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { type FC } from 'react'
 
 const DEMO_DATA = [
   {
@@ -48,11 +48,11 @@ const DEMO_DATA = [
   </ul>
     `,
   },
-];
+]
 
 interface Props {
-  data?: typeof DEMO_DATA;
-  panelClassName?: string;
+  data?: typeof DEMO_DATA
+  panelClassName?: string
 }
 
 const AccordionInfo: FC<Props> = ({
@@ -67,7 +67,7 @@ const AccordionInfo: FC<Props> = ({
           <Disclosure key={`${item.name}-${index}`} defaultOpen={index < 2}>
             {({ open }) => (
               <div>
-                <DisclosureButton className="flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-neutral-500/75 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+                <DisclosureButton className="focus:outline-hidden focus-visible:ring-3 flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus-visible:ring-neutral-500/75 dark:bg-neutral-800 dark:hover:bg-neutral-700">
                   <span>{item.name}</span>
                   {!open ? (
                     <PlusIcon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
@@ -81,12 +81,12 @@ const AccordionInfo: FC<Props> = ({
               </div>
             )}
           </Disclosure>
-        );
+        )
       })}
 
       {/* ============ */}
     </div>
-  );
-};
+  )
+}
 
-export default AccordionInfo;
+export default AccordionInfo

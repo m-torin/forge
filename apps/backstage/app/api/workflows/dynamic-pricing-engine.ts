@@ -292,8 +292,8 @@ export const collectProductsStep = compose(
   (step) => withStepTimeout(step, { execution: 30000 }),
   (step) =>
     withStepMonitoring(step, {
-,
       enableDetailedLogging: true,
+      trackingMetrics: ['processingTime'],
     }),
 );
 
@@ -375,7 +375,6 @@ export const gatherMarketIntelligenceStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
     }),
 );
 
@@ -471,7 +470,7 @@ function analyzeSeasonality(product: any): any {
     Home: { fall: 1.0, spring: 1.0, summer: 0.9, winter: 1.1 },
   };
 
-  const factor = seasonalFactors[(product.category as any)]?.[season] || 1.0;
+  const factor = seasonalFactors[product.category as any]?.[season] || 1.0;
 
   return {
     currentSeason: season,
@@ -554,7 +553,7 @@ async function calculatePriceElasticity(product: any, marketData: any): Promise<
     return {
       confidence: 0.5,
       method: 'category_default',
-      value: categoryElasticity[(product.category as any)] || -1.0,
+      value: categoryElasticity[product.category as any] || -1.0,
     };
   }
 
@@ -610,8 +609,8 @@ export const runMLPricingModelsStep = compose(
   }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 300000,
+      threshold: 0.5,
       timeout: 60000,
     }),
 );
@@ -1152,7 +1151,7 @@ function analyzeDemandTrends(marketIntelligence: any[]): any {
 
   const trends = { decreasing: 0, increasing: 0, stable: 0 };
   demandData.forEach((d) => {
-    trends[(d.trend as any)]++;
+    trends[d.trend as any]++;
   });
 
   return {

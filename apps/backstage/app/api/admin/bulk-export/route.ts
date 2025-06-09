@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
+import { database } from '@repo/database/prisma';
+
 import { modelConfigs } from '../../../(authenticated)/admin/lib/prisma-model-config';
 
 export async function POST(request: NextRequest) {
@@ -16,14 +18,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { modelName, format, selectedIds } = body;
+    const { format, modelName, selectedIds } = body;
 
     if (!modelName || !format) {
       return NextResponse.json({ error: 'Missing model name or format' }, { status: 400 });
     }
 
     // Validate model exists
-    const modelConfig = modelConfigs.find(config => config.name === modelName);
+    const modelConfig = modelConfigs.find((config) => config.name === modelName);
     if (!modelConfig) {
       return NextResponse.json({ error: 'Invalid model name' }, { status: 400 });
     }
@@ -35,14 +37,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Build query
-    const where = selectedIds && selectedIds.length > 0 
-      ? { id: { in: selectedIds } }
-      : {};
+    const where = selectedIds && selectedIds.length > 0 ? { id: { in: selectedIds } } : {};
 
     // Fetch records
     const records = await delegate.findMany({
-      where,
       orderBy: { createdAt: 'desc' },
+      where,
     });
 
     if (records.length === 0) {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
             }
             return stringValue;
           })
-          .join(',')
+          .join(','),
       );
       content = [csvHeaders, ...csvRows].join('\n');
       mimeType = 'text/csv';
@@ -90,15 +90,12 @@ export async function POST(request: NextRequest) {
     // Return file
     return new NextResponse(content, {
       headers: {
-        'Content-Type': mimeType,
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Type': mimeType,
       },
     });
   } catch (error) {
     console.error('Bulk export error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

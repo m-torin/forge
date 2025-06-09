@@ -5,6 +5,7 @@ This directory contains experimental projects, prototypes, and research initiati
 ## Purpose
 
 The `labs/` directory is dedicated to:
+
 - 🧪 **Experimental Features** - Test new ideas before integrating into main apps
 - 🔬 **Research Projects** - Explore new technologies and patterns
 - 🚀 **Prototypes** - Rapid proof-of-concepts
@@ -13,6 +14,7 @@ The `labs/` directory is dedicated to:
 ## Structure
 
 Each lab project should:
+
 - Be a standalone pnpm workspace package
 - Include its own README with purpose and findings
 - Follow the monorepo's configuration standards where applicable

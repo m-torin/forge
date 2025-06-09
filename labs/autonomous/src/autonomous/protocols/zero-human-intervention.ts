@@ -1,29 +1,27 @@
+import { nanoid } from 'nanoid';
+
 // Zero-Human-Intervention Protocol Implementation
 import { AutonomousLoop } from '../core/autonomous-loop';
 import {
-  WorkflowSpecification,
-  ZHIProtocol,
-  ProtocolStep,
-  AutonomousSession,
-  AutonomousConfig,
-  ErrorCategory,
+  type AutonomousSession,
+  type ErrorCategory,
+  type WorkflowSpecification,
+  type ZHIProtocol,
 } from '../types';
-import { spawn } from 'child_process';
-import { nanoid } from 'nanoid';
 
 export class ZeroHumanInterventionProtocol {
   private autonomousLoop: AutonomousLoop;
-  private activeSessions: Map<string, AutonomousSession> = new Map();
-  private protocols: Map<string, ZHIProtocol> = new Map();
+  private activeSessions = new Map<string, AutonomousSession>();
+  private protocols = new Map<string, ZHIProtocol>();
 
   constructor() {
     this.autonomousLoop = new AutonomousLoop({
-      maxIterations: 15,
-      enableLearning: true,
       commitOnSuccess: true,
+      enableLearning: true,
       generateReports: true,
-      useCICD: true,
+      maxIterations: 15,
       timeoutMs: 30 * 60 * 1000, // 30 minutes
+      useCICD: true,
     });
 
     this.initializeProtocols();
@@ -34,62 +32,69 @@ export class ZeroHumanInterventionProtocol {
     this.protocols.set('standard-workflow', {
       name: 'Standard Workflow Development',
       description: 'Complete autonomous workflow development from specification to deployment',
+      failureCriteria: [
+        'Maximum iterations exceeded',
+        'Timeout reached',
+        'Critical error in code generation',
+        'Git operations failed',
+      ],
+      maxDuration: 30 * 60 * 1000, // 30 minutes
       steps: [
         {
+          validation: 'checkSpecificationCompleteness',
           name: 'Validate Specification',
           action: 'validateWorkflowSpecification',
-          validation: 'checkSpecificationCompleteness',
-          onSuccess: 'Generate Code',
           onFailure: 'Report Incomplete Spec',
+          onSuccess: 'Generate Code',
         },
         {
+          validation: 'checkCodeGeneration',
           name: 'Generate Code',
           action: 'generateInitialCode',
-          validation: 'checkCodeGeneration',
-          onSuccess: 'Run Tests',
           onFailure: 'Retry Generation',
+          onSuccess: 'Run Tests',
         },
         {
+          validation: 'checkTestResults',
           name: 'Run Tests',
           action: 'runComprehensiveTests',
-          validation: 'checkTestResults',
-          onSuccess: 'Commit Success',
           onFailure: 'Analyze Errors',
+          onSuccess: 'Commit Success',
         },
         {
+          validation: 'checkErrorAnalysis',
           name: 'Analyze Errors',
           action: 'analyzeTestFailures',
-          validation: 'checkErrorAnalysis',
-          onSuccess: 'Repair Code',
           onFailure: 'Escalate to Manual',
+          onSuccess: 'Repair Code',
         },
         {
+          validation: 'checkRepairSuccess',
           name: 'Repair Code',
           action: 'repairWithAI',
-          validation: 'checkRepairSuccess',
-          onSuccess: 'Run Tests',
           onFailure: 'Try Alternative Strategy',
+          onSuccess: 'Run Tests',
         },
         {
+          validation: 'checkCommitSuccess',
           name: 'Commit Success',
           action: 'commitAndTag',
-          validation: 'checkCommitSuccess',
-          onSuccess: 'Create PR',
           onFailure: 'Report Git Error',
+          onSuccess: 'Create PR',
         },
         {
+          validation: 'checkPRCreation',
           name: 'Create PR',
           action: 'createPullRequest',
-          validation: 'checkPRCreation',
-          onSuccess: 'Deploy to CI',
           onFailure: 'Manual PR Required',
+          onSuccess: 'Deploy to CI',
         },
         {
+          validation: 'checkCIStatus',
           name: 'Deploy to CI',
           action: 'triggerCICD',
-          validation: 'checkCIStatus',
-          onSuccess: 'Complete',
           onFailure: 'Report CI Failure',
+          onSuccess: 'Complete',
         },
       ],
       successCriteria: [
@@ -98,126 +103,126 @@ export class ZeroHumanInterventionProtocol {
         'Pull request created',
         'CI/CD pipeline triggered',
       ],
-      failureCriteria: [
-        'Maximum iterations exceeded',
-        'Timeout reached',
-        'Critical error in code generation',
-        'Git operations failed',
-      ],
-      maxDuration: 30 * 60 * 1000, // 30 minutes
     });
 
     this.protocols.set('rapid-prototype', {
       name: 'Rapid Prototype Development',
       description: 'Quick workflow generation with relaxed validation',
+      failureCriteria: ['Complete generation failure', 'Timeout (15 minutes)'],
+      maxDuration: 15 * 60 * 1000, // 15 minutes
       steps: [
         {
+          validation: 'checkBasicRequirements',
           name: 'Quick Validate',
           action: 'quickValidateSpec',
-          validation: 'checkBasicRequirements',
-          onSuccess: 'Generate MVP',
           onFailure: 'Use Defaults',
+          onSuccess: 'Generate MVP',
         },
         {
+          validation: 'checkMVPGeneration',
           name: 'Generate MVP',
           action: 'generateMVPCode',
-          validation: 'checkMVPGeneration',
-          onSuccess: 'Basic Tests',
           onFailure: 'Fallback Template',
+          onSuccess: 'Basic Tests',
         },
         {
+          validation: 'checkBasicFunctionality',
           name: 'Basic Tests',
           action: 'runBasicTests',
-          validation: 'checkBasicFunctionality',
-          onSuccess: 'Quick Commit',
           onFailure: 'Single Repair Attempt',
+          onSuccess: 'Quick Commit',
         },
         {
+          validation: 'checkQuickFix',
           name: 'Single Repair Attempt',
           action: 'quickRepair',
-          validation: 'checkQuickFix',
-          onSuccess: 'Quick Commit',
           onFailure: 'Commit As-Is',
+          onSuccess: 'Quick Commit',
         },
         {
+          validation: 'checkCommit',
           name: 'Quick Commit',
           action: 'commitPrototype',
-          validation: 'checkCommit',
-          onSuccess: 'Complete',
           onFailure: 'Complete',
+          onSuccess: 'Complete',
         },
       ],
       successCriteria: ['Basic functionality working', 'Code committed'],
-      failureCriteria: ['Complete generation failure', 'Timeout (15 minutes)'],
-      maxDuration: 15 * 60 * 1000, // 15 minutes
     });
 
     this.protocols.set('high-reliability', {
       name: 'High Reliability Workflow',
       description: 'Extensive validation and testing for critical workflows',
+      failureCriteria: [
+        'Security vulnerability detected',
+        'Performance regression',
+        'Quality gate failure',
+        'Timeout (60 minutes)',
+      ],
+      maxDuration: 60 * 60 * 1000, // 60 minutes
       steps: [
         {
+          validation: 'checkComprehensiveRequirements',
           name: 'Deep Validation',
           action: 'deepValidateSpec',
-          validation: 'checkComprehensiveRequirements',
-          onSuccess: 'Generate with Safety',
           onFailure: 'Abort',
+          onSuccess: 'Generate with Safety',
         },
         {
+          validation: 'checkSafetyRequirements',
           name: 'Generate with Safety',
           action: 'generateSafeCode',
-          validation: 'checkSafetyRequirements',
-          onSuccess: 'Security Scan',
           onFailure: 'Retry with Constraints',
+          onSuccess: 'Security Scan',
         },
         {
+          validation: 'checkSecurityResults',
           name: 'Security Scan',
           action: 'runSecurityAnalysis',
-          validation: 'checkSecurityResults',
-          onSuccess: 'Comprehensive Tests',
           onFailure: 'Fix Security Issues',
+          onSuccess: 'Comprehensive Tests',
         },
         {
+          validation: 'checkAllTestsPassing',
           name: 'Comprehensive Tests',
           action: 'runExtensiveTests',
-          validation: 'checkAllTestsPassing',
-          onSuccess: 'Performance Tests',
           onFailure: 'Iterative Repair',
+          onSuccess: 'Performance Tests',
         },
         {
+          validation: 'checkPerformanceMetrics',
           name: 'Performance Tests',
           action: 'runPerformanceBenchmarks',
-          validation: 'checkPerformanceMetrics',
-          onSuccess: 'Final Validation',
           onFailure: 'Optimize Performance',
+          onSuccess: 'Final Validation',
         },
         {
+          validation: 'checkQualityGates',
           name: 'Final Validation',
           action: 'finalQualityCheck',
-          validation: 'checkQualityGates',
-          onSuccess: 'Secure Commit',
           onFailure: 'Quality Improvement',
+          onSuccess: 'Secure Commit',
         },
         {
+          validation: 'checkSecureCommit',
           name: 'Secure Commit',
           action: 'secureCommitAndSign',
-          validation: 'checkSecureCommit',
-          onSuccess: 'Create Reviewed PR',
           onFailure: 'Report Security Issue',
+          onSuccess: 'Create Reviewed PR',
         },
         {
+          validation: 'checkPRWithReviews',
           name: 'Create Reviewed PR',
           action: 'createReviewedPR',
-          validation: 'checkPRWithReviews',
-          onSuccess: 'Deploy Staging',
           onFailure: 'Manual Review Required',
+          onSuccess: 'Deploy Staging',
         },
         {
+          validation: 'checkStagingDeployment',
           name: 'Deploy Staging',
           action: 'deployToStaging',
-          validation: 'checkStagingDeployment',
-          onSuccess: 'Complete',
           onFailure: 'Rollback',
+          onSuccess: 'Complete',
         },
       ],
       successCriteria: [
@@ -227,19 +232,12 @@ export class ZeroHumanInterventionProtocol {
         'Quality gates passed',
         'Deployed to staging',
       ],
-      failureCriteria: [
-        'Security vulnerability detected',
-        'Performance regression',
-        'Quality gate failure',
-        'Timeout (60 minutes)',
-      ],
-      maxDuration: 60 * 60 * 1000, // 60 minutes
     });
   }
 
   async executeProtocol(
     specification: WorkflowSpecification,
-    protocolName: string = 'standard-workflow',
+    protocolName = 'standard-workflow',
   ): Promise<AutonomousSession> {
     const protocol = this.protocols.get(protocolName);
     if (!protocol) {
@@ -248,30 +246,30 @@ export class ZeroHumanInterventionProtocol {
 
     const session: AutonomousSession = {
       id: nanoid(),
-      startTime: new Date(),
-      workflow: specification,
-      status: 'running',
-      iterations: 0,
       commits: [],
+      iterations: 0,
+      logs: [],
       metrics: {
-        totalWorkflows: 1,
-        successfulCompletions: 0,
         averageIterations: 0,
         averageTimeToCompletion: 0,
         errorCategories: {
-          'syntax-error': 0,
           'type-error': 0,
-          'reference-error': 0,
-          'import-error': 0,
-          'contract-violation': 0,
-          'logic-error': 0,
-          'performance-issue': 0,
-          'network-error': 0,
           'async-error': 0,
+          'contract-violation': 0,
+          'import-error': 0,
+          'logic-error': 0,
+          'network-error': 0,
+          'performance-issue': 0,
+          'reference-error': 0,
+          'syntax-error': 0,
         } as Record<ErrorCategory, number>,
         learningProgress: [],
+        successfulCompletions: 0,
+        totalWorkflows: 1,
       },
-      logs: [],
+      startTime: new Date(),
+      status: 'running',
+      workflow: specification,
     };
 
     this.activeSessions.set(session.id, session);
@@ -444,22 +442,22 @@ export class ZeroHumanInterventionProtocol {
       case 'checkSpecificationCompleteness':
         return actionResult.valid
           ? { success: true }
-          : { success: false, error: actionResult.errors?.join(', ') };
+          : { error: actionResult.errors?.join(', '), success: false };
 
       case 'checkCodeGeneration':
         return actionResult === true
           ? { success: true }
-          : { success: false, error: 'Code generation failed' };
+          : { error: 'Code generation failed', success: false };
 
       case 'checkTestResults':
         return actionResult.allPassed
           ? { success: true }
-          : { success: false, error: `${actionResult.failedTests} tests failed` };
+          : { error: `${actionResult.failedTests} tests failed`, success: false };
 
       case 'checkCommitSuccess':
         return actionResult.success
           ? { success: true }
-          : { success: false, error: 'Commit failed' };
+          : { error: 'Commit failed', success: false };
 
       default:
         return { success: true };
@@ -535,34 +533,34 @@ export class ZeroHumanInterventionProtocol {
   private async repairCode(spec: WorkflowSpecification, session: AutonomousSession): Promise<any> {
     session.iterations++;
     return {
-      repaired: true,
       changedFiles: 3,
+      repaired: true,
     };
   }
 
   private async commitCode(spec: WorkflowSpecification, session: AutonomousSession): Promise<any> {
     const commit = {
       branch: `autonomous/${spec.name}`,
+      filesChanged: ['src/workflows/test.ts'],
       hash: 'abc123',
       message: `✅ Autonomous: ${spec.name}`,
       timestamp: new Date(),
-      filesChanged: ['src/workflows/test.ts'],
     };
 
     session.commits.push(commit);
-    return { success: true, commit };
+    return { commit, success: true };
   }
 
   private async createPR(spec: WorkflowSpecification, session: AutonomousSession): Promise<any> {
     session.pullRequest = {
       url: 'https://github.com/org/repo/pull/123',
-      number: 123,
-      title: `🤖 Autonomous: ${spec.name}`,
-      status: 'open',
       labels: ['autonomous', 'ready-for-review'],
+      number: 123,
+      status: 'open',
+      title: `🤖 Autonomous: ${spec.name}`,
     };
 
-    return { success: true, pr: session.pullRequest };
+    return { pr: session.pullRequest, success: true };
   }
 
   private async triggerCI(spec: WorkflowSpecification, session: AutonomousSession): Promise<any> {
@@ -585,18 +583,18 @@ export class ZeroHumanInterventionProtocol {
 
   private async runSecurityScan(spec: WorkflowSpecification): Promise<any> {
     return {
-      vulnerabilities: 0,
       passed: true,
+      vulnerabilities: 0,
     };
   }
 
   private async runPerformanceTests(spec: WorkflowSpecification): Promise<any> {
     return {
-      passed: true,
       metrics: {
         responseTime: 145,
         throughput: 1000,
       },
+      passed: true,
     };
   }
 

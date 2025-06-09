@@ -1,3 +1,4 @@
+import { getProducts } from "@/lib/data-service";
 import { seoManager } from "@/lib/seo-config";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -72,8 +73,7 @@ async function getEventBySlug(slug: string) {
 }
 
 async function getEventProducts(eventSlug: string, page = 1, limit = 20) {
-  // Mock implementation - replace with real API
-  const { getProducts } = await import("@repo/design-system/mantine-ciseco");
+  // Get all products - in a real implementation, this would filter by event
   const allProducts = await getProducts();
 
   // Simulate filtering by event and pagination

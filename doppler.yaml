@@ -3,15 +3,9 @@
 
 setup:
   # Apps - all apps use the same Doppler project
-  - path: apps/api
-    project: next-apps
-    config: phold
   - path: apps/backstage
     project: next-apps
     config: backstage
-  - path: apps/docs
-    project: next-apps
-    config: phold
   - path: apps/email
     project: next-apps
     config: phold

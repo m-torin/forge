@@ -11,11 +11,15 @@ import {
   unbanUser,
 } from '../../server/admin-management';
 
-// Mock the auth module
-const mockListApiKeys = vi.fn();
-const mockSignOut = vi.fn();
+// Mock the auth module using vi.hoisted
+const { mockListApiKeys, mockSignOut } = vi.hoisted(() => {
+  const mockListApiKeys = vi.fn();
+  const mockSignOut = vi.fn();
 
-vi.mock('../auth', () => ({
+  return { mockListApiKeys, mockSignOut };
+});
+
+vi.mock('../../server/auth', () => ({
   auth: {
     api: {
       listApiKeys: mockListApiKeys,

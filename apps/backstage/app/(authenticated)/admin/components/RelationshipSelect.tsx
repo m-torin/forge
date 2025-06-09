@@ -1,99 +1,97 @@
 'use client';
 
-import { useState, useEffect, forwardRef } from 'react';
 import {
-  Select,
-  Loader,
-  Group,
-  Text,
-  Avatar,
-  Badge,
-  Stack,
   ActionIcon,
-  Tooltip,
-  Modal,
-  Button,
-  TextInput,
-  Combobox,
-  useCombobox,
-  Input,
-  ScrollArea,
   Box,
+  Button,
+  Combobox,
   Divider,
+  Group,
+  Input,
+  Loader,
+  Modal,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+  useCombobox,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
-import { IconPlus, IconSearch, IconX, IconCheck, IconDatabase } from '@tabler/icons-react';
+import { IconDatabase, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
+import { forwardRef, useEffect, useState } from 'react';
+
 import { notify } from '@repo/notifications/mantine-notifications';
 
 interface RelationshipSelectProps {
+  error?: string;
+  onBlur?: () => void;
+  onChange: (value: string | string[] | null) => void;
   // Core props
   value?: string | string[];
-  onChange: (value: string | string[] | null) => void;
-  onBlur?: () => void;
-  error?: string;
 
+  description?: string;
+  disabled?: boolean;
   // Field configuration
   label: string;
-  placeholder?: string;
-  description?: string;
-  required?: boolean;
-  disabled?: boolean;
   multiple?: boolean;
+  placeholder?: string;
+  required?: boolean;
 
+  displayFields?: string[];
+  filterBy?: Record<string, any>;
+  includeRelations?: string[];
   // Relationship configuration
   modelName: string;
-  displayFields?: string[];
-  searchFields?: string[];
-  filterBy?: Record<string, any>;
   orderBy?: Record<string, any>;
-  includeRelations?: string[];
+  searchFields?: string[];
 
+  allowClear?: boolean;
   // Features
   allowCreate?: boolean;
-  allowClear?: boolean;
+  groupBy?: string;
   showPreview?: boolean;
   showRecordCount?: boolean;
-  groupBy?: string;
 
   // Custom rendering
   renderOption?: (record: any) => React.ReactNode;
   renderValue?: (record: any) => React.ReactNode;
 
+  createRecord?: (data: any) => Promise<any>;
   // Data fetching
   fetchRecords: (query: string, options: any) => Promise<any[]>;
-  createRecord?: (data: any) => Promise<any>;
   previewRecord?: (id: string) => Promise<any>;
 }
 
 export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelectProps>(
   (
     {
-      value,
-      onChange,
-      onBlur,
-      error,
-      label,
-      placeholder = 'Search and select...',
-      description,
-      required,
-      disabled,
-      multiple = false,
-      modelName,
-      displayFields = ['name', 'title', 'email'],
-      searchFields = ['name', 'title', 'email'],
-      filterBy,
-      orderBy,
-      includeRelations,
-      allowCreate = false,
       allowClear = true,
-      showPreview = false,
-      showRecordCount = true,
+      allowCreate = false,
+      createRecord,
+      description,
+      disabled,
+      displayFields = ['name', 'title', 'email'],
+      error,
+      fetchRecords,
+      filterBy,
       groupBy,
+      includeRelations,
+      label,
+      modelName,
+      multiple = false,
+      onBlur,
+      onChange,
+      orderBy,
+      placeholder = 'Search and select...',
+      previewRecord,
       renderOption,
       renderValue,
-      fetchRecords,
-      createRecord,
-      previewRecord,
+      required,
+      searchFields = ['name', 'title', 'email'],
+      showPreview = false,
+      showRecordCount = true,
+      value,
     },
     ref,
   ) => {
@@ -133,10 +131,10 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
       setLoading(true);
       try {
         const data = await fetchRecords(query, {
-          where: filterBy,
-          orderBy,
           include: includeRelations,
+          orderBy,
           take: 50,
+          where: filterBy,
         });
         setRecords(data);
         // Assuming the fetch function also returns total count
@@ -246,12 +244,12 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
     const options = filteredRecords.map((record) => (
       <Combobox.Option
         key={record.id}
-        value={record.id}
         className={
           multiple && Array.isArray(value) && value.includes(record.id)
             ? 'mantine-Combobox-option--selected'
             : undefined
         }
+        value={record.id}
       >
         {renderOption ? (
           renderOption(record)
@@ -259,16 +257,16 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
           <Group gap="sm">
             {multiple && (
               <Checkbox
-                checked={Array.isArray(value) && value.includes(record.id)}
-                onChange={() => {}}
                 aria-hidden
+                onChange={() => {}}
                 style={{ pointerEvents: 'none' }}
+                checked={Array.isArray(value) && value.includes(record.id)}
               />
             )}
             <div style={{ flex: 1 }}>
               <Text size="sm">{getRecordDisplay(record)}</Text>
               {record.email && record.email !== getRecordDisplay(record) && (
-                <Text size="xs" c="dimmed">
+                <Text c="dimmed" size="xs">
                   {record.email}
                 </Text>
               )}
@@ -276,12 +274,12 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
             {showPreview && previewRecord && (
               <Tooltip label="Preview record">
                 <ActionIcon
-                  size="xs"
-                  variant="subtle"
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePreview(record.id);
                   }}
+                  size="xs"
+                  variant="subtle"
                 >
                   <IconSearch size={14} />
                 </ActionIcon>
@@ -300,33 +298,32 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
 
     return (
       <>
-        <Combobox store={combobox} onOptionSubmit={handleSelect} withinPortal={false}>
+        <Combobox onOptionSubmit={handleSelect} store={combobox} withinPortal={false}>
           <Combobox.Target>
             <Input.Wrapper
-              label={label}
               description={description}
-              required={required}
               error={error}
+              label={label}
+              required={required}
             >
               <Input
                 ref={ref}
-                placeholder={placeholder}
-                value={search || selectedDisplay}
+                leftSection={<IconDatabase size={16} />}
+                onBlur={onBlur}
                 onChange={(e) => {
                   setSearch(e.currentTarget.value);
                   combobox.openDropdown();
                 }}
                 onClick={() => combobox.openDropdown()}
                 onFocus={() => combobox.openDropdown()}
-                onBlur={onBlur}
-                disabled={disabled}
+                placeholder={placeholder}
                 rightSection={
                   loading ? (
                     <Loader size={18} />
                   ) : (
                     <Group gap={4} wrap="nowrap">
                       {allowClear && value && (
-                        <ActionIcon size="sm" variant="subtle" color="gray" onClick={handleClear}>
+                        <ActionIcon color="gray" onClick={handleClear} size="sm" variant="subtle">
                           <IconX size={14} />
                         </ActionIcon>
                       )}
@@ -335,17 +332,18 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
                   )
                 }
                 rightSectionPointerEvents={value ? 'all' : 'none'}
-                leftSection={<IconDatabase size={16} />}
+                disabled={disabled}
+                value={search || selectedDisplay}
               />
             </Input.Wrapper>
           </Combobox.Target>
 
           <Combobox.Dropdown>
             <Combobox.Search
-              value={search}
+              leftSection={<IconSearch size={14} />}
               onChange={(event) => setSearch(event.currentTarget.value)}
               placeholder={`Search ${modelName}...`}
-              leftSection={<IconSearch size={14} />}
+              value={search}
             />
 
             <ScrollArea.Autosize mah={300} type="scroll">
@@ -357,7 +355,7 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
                 )}
 
                 {!loading && filteredRecords.length === 0 && !allowCreate && (
-                  <Text ta="center" py="xl" c="dimmed" size="sm">
+                  <Text c="dimmed" py="xl" size="sm" ta="center">
                     No records found
                   </Text>
                 )}
@@ -366,7 +364,7 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
                   Object.entries(groupedRecords).map(([group, groupRecords]) => (
                     <div key={group}>
                       {group && (
-                        <Text size="xs" c="dimmed" fw={500} px="sm" py={4}>
+                        <Text c="dimmed" fw={500} px="sm" py={4} size="xs">
                           {group}
                         </Text>
                       )}
@@ -397,7 +395,7 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
                 )}
 
                 {showRecordCount && totalCount > filteredRecords.length && (
-                  <Text size="xs" c="dimmed" ta="center" py="xs">
+                  <Text c="dimmed" py="xs" size="xs" ta="center">
                     Showing {filteredRecords.length} of {totalCount} records
                   </Text>
                 )}
@@ -409,15 +407,15 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
         {/* Create Modal */}
         {allowCreate && (
           <Modal
-            opened={createModalOpen}
             onClose={() => setCreateModalOpen(false)}
+            opened={createModalOpen}
             title={`Create New ${modelName}`}
           >
             {/* This would include your create form */}
             <Stack>
-              <TextInput label="Name" placeholder="Enter name" data-autofocus />
+              <TextInput data-autofocus placeholder="Enter name" label="Name" />
               <Group justify="flex-end">
-                <Button variant="subtle" onClick={() => setCreateModalOpen(false)}>
+                <Button onClick={() => setCreateModalOpen(false)} variant="subtle">
                   Cancel
                 </Button>
                 <Button onClick={() => handleCreate({ name: 'New Record' })}>Create</Button>
@@ -429,10 +427,10 @@ export const RelationshipSelect = forwardRef<HTMLInputElement, RelationshipSelec
         {/* Preview Modal */}
         {showPreview && (
           <Modal
-            opened={previewModalOpen}
             onClose={() => setPreviewModalOpen(false)}
-            title={`${modelName} Details`}
+            opened={previewModalOpen}
             size="lg"
+            title={`${modelName} Details`}
           >
             {previewData ? (
               <Stack>

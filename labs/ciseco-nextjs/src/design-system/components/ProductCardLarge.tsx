@@ -1,21 +1,21 @@
-import { StarIcon } from '@heroicons/react/24/solid';
-import Link from 'next/link';
-import { type FC } from 'react';
+import { StarIcon } from '@heroicons/react/24/solid'
+import Link from 'next/link'
+import { type FC } from 'react'
 
-import { type TProductItem } from '../data/data';
+import { type TProductItem } from '../data/data'
 
-import Prices from './Prices';
-import NcImage from './shared/NcImage/NcImage';
+import Prices from './Prices'
+import NcImage from './shared/NcImage/NcImage'
 
 export interface Props {
-  className?: string;
-  product: TProductItem;
+  className?: string
+  product: TProductItem
 }
 
 const ProductCardLarge: FC<Props> = ({ className, product }) => {
-  const { handle, images, price, rating, reviewNumber, selectedOptions, title } = product;
+  const { handle, images, price, rating, reviewNumber, selectedOptions, title } = product
 
-  const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
+  const color = selectedOptions?.find((option) => option.name === 'Color')?.value
 
   return (
     <div className={`CollectionCard2 group relative ${className}`}>
@@ -85,7 +85,7 @@ const ProductCardLarge: FC<Props> = ({ className, product }) => {
       </div>
       <Link href={`/products/${handle}`} className="absolute inset-0" />
     </div>
-  );
-};
+  )
+}
 
-export default ProductCardLarge;
+export default ProductCardLarge

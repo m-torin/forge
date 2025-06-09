@@ -270,8 +270,8 @@ export const collectProductsStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'categoryCount'],
       enableDetailedLogging: true,
+      metricsToTrack: ['categoryCount'],
     }),
 );
 
@@ -631,6 +631,7 @@ export const applyMLMatchingStep = compose(
     withStepCircuitBreaker(step, {
       errorThresholdPercentage: 10,
       resetTimeout: 300000,
+      threshold: 0.5,
       timeout: 60000,
     }),
 );

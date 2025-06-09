@@ -2,12 +2,16 @@
 
 ## Overview
 
-This document establishes the standards and best practices for implementing `data-testid` attributes across the Mantine-Ciseco design system. These standards ensure consistent, maintainable, and reliable testing selectors for all components.
+This document establishes the standards and best practices for implementing `data-testid` attributes
+across the Mantine-Ciseco design system. These standards ensure consistent, maintainable, and
+reliable testing selectors for all components.
 
 ### Why Data-TestId?
 
-- **Stability**: Unlike CSS selectors or text content, data-testid attributes are explicitly designed for testing and won't break when styling or content changes
-- **Clarity**: Makes test intentions clear and separates testing concerns from implementation details
+- **Stability**: Unlike CSS selectors or text content, data-testid attributes are explicitly
+  designed for testing and won't break when styling or content changes
+- **Clarity**: Makes test intentions clear and separates testing concerns from implementation
+  details
 - **Performance**: More efficient than complex CSS selectors or XPath queries
 - **Maintainability**: Easy to find and update test selectors when refactoring components
 
@@ -45,7 +49,8 @@ data-testid="test1"           // Not descriptive
 
 ### Required Props Pattern
 
-For maximum flexibility, components should accept an optional `testId` prop that allows consumers to override the default data-testid:
+For maximum flexibility, components should accept an optional `testId` prop that allows consumers to
+override the default data-testid:
 
 ```tsx
 interface ComponentProps {
@@ -65,9 +70,9 @@ Components with multiple interactive elements should expose testId props for eac
 
 ```tsx
 interface ComplexComponentProps {
-  testId?: string;           // Root element
-  buttonTestId?: string;     // Button element
-  inputTestId?: string;      // Input element
+  testId?: string; // Root element
+  buttonTestId?: string; // Button element
+  inputTestId?: string; // Input element
 }
 ```
 
@@ -105,17 +110,10 @@ export function AddToCardButton({
 
 ```tsx
 export function Button({ loading, disabled, testId = 'button', ...props }) {
-  const finalTestId = loading ? `${testId}-loading` : 
-                     disabled ? `${testId}-disabled` : 
-                     testId;
-  
+  const finalTestId = loading ? `${testId}-loading` : disabled ? `${testId}-disabled` : testId;
+
   return (
-    <MantineButton 
-      data-testid={finalTestId}
-      loading={loading}
-      disabled={disabled}
-      {...props}
-    />
+    <MantineButton data-testid={finalTestId} loading={loading} disabled={disabled} {...props} />
   );
 }
 ```
@@ -123,27 +121,23 @@ export function Button({ loading, disabled, testId = 'button', ...props }) {
 ### 3. Navigation - Complex Structure
 
 ```tsx
-export function Navigation({ 
+export function Navigation({
   testId = 'navigation',
   mobileMenuTestId = 'navigation-menu-mobile',
   desktopMenuTestId = 'navigation-menu-desktop',
-  ...props 
+  ...props
 }) {
   return (
     <nav data-testid={testId}>
       {/* Desktop navigation */}
       <div data-testid={desktopMenuTestId} className="hidden lg:flex">
         {navItems.map((item) => (
-          <Link 
-            key={item.id} 
-            data-testid={`nav-link-${item.id}`}
-            href={item.href}
-          >
+          <Link key={item.id} data-testid={`nav-link-${item.id}`} href={item.href}>
             {item.label}
           </Link>
         ))}
       </div>
-      
+
       {/* Mobile navigation */}
       <div data-testid={mobileMenuTestId} className="lg:hidden">
         {/* Mobile menu implementation */}
@@ -160,27 +154,15 @@ export function Navigation({
 export function Input({ testId = 'input', error, ...props }) {
   return (
     <div data-testid={`${testId}-wrapper`}>
-      <input 
-        data-testid={testId}
-        aria-invalid={!!error}
-        {...props}
-      />
-      {error && (
-        <span data-testid={`${testId}-error`}>{error}</span>
-      )}
+      <input data-testid={testId} aria-invalid={!!error} {...props} />
+      {error && <span data-testid={`${testId}-error`}>{error}</span>}
     </div>
   );
 }
 
 // Select component
 export function Select({ testId = 'select', options, ...props }) {
-  return (
-    <MantineSelect
-      data-testid={testId}
-      data={options}
-      {...props}
-    />
-  );
+  return <MantineSelect data-testid={testId} data={options} {...props} />;
 }
 ```
 
@@ -228,10 +210,10 @@ export function Pagination({ testId = 'pagination', ...props }) {
 // Good practice - using data-testid
 test('should add item to cart', () => {
   render(<AddToCardButton />);
-  
+
   const button = screen.getByTestId('add-to-cart-button');
   fireEvent.click(button);
-  
+
   const badge = screen.getByTestId('add-to-cart-badge');
   expect(badge).toHaveTextContent('1');
 });
@@ -239,10 +221,10 @@ test('should add item to cart', () => {
 // Bad practice - using implementation details
 test('should add item to cart', () => {
   render(<AddToCardButton />);
-  
+
   const button = screen.getByRole('button', { name: /add to cart/i });
   fireEvent.click(button);
-  
+
   const badge = document.querySelector('.badge-count');
   expect(badge).toHaveTextContent('1');
 });
@@ -280,11 +262,13 @@ const items = data.map((item, index) => ({
 }));
 
 // Less optimal - calculating in render
-{items.map((item, index) => (
-  <div data-testid={`list-item-${index}`} key={item.id}>
-    {item.content}
-  </div>
-))}
+{
+  items.map((item, index) => (
+    <div data-testid={`list-item-${index}`} key={item.id}>
+      {item.content}
+    </div>
+  ));
+}
 ```
 
 ### Accessibility Considerations
@@ -329,7 +313,7 @@ Maintain clear hierarchy in testid naming:
 Include state information in testids when relevant:
 
 ```tsx
-<div 
+<div
   data-testid={`modal-${isOpen ? 'open' : 'closed'}`}
   className={isOpen ? 'modal-open' : 'modal-closed'}
 >
@@ -342,11 +326,9 @@ Include state information in testids when relevant:
 Always provide testids for conditionally rendered elements:
 
 ```tsx
-{showError && (
-  <Alert data-testid="error-alert">
-    {errorMessage}
-  </Alert>
-)}
+{
+  showError && <Alert data-testid="error-alert">{errorMessage}</Alert>;
+}
 ```
 
 ### 4. List Items
@@ -355,18 +337,22 @@ Use stable identifiers for list items:
 
 ```tsx
 // Good - using stable ID
-{items.map((item) => (
-  <li key={item.id} data-testid={`item-${item.id}`}>
-    {item.name}
-  </li>
-))}
+{
+  items.map((item) => (
+    <li key={item.id} data-testid={`item-${item.id}`}>
+      {item.name}
+    </li>
+  ));
+}
 
 // Bad - using index (can change)
-{items.map((item, index) => (
-  <li key={index} data-testid={`item-${index}`}>
-    {item.name}
-  </li>
-))}
+{
+  items.map((item, index) => (
+    <li key={index} data-testid={`item-${index}`}>
+      {item.name}
+    </li>
+  ));
+}
 ```
 
 ## Common Pitfalls to Avoid
@@ -397,11 +383,9 @@ const title = screen.getByTestId('product-title');
 
 ```tsx
 // Always include testids for error states
-{error && (
-  <div data-testid="form-error">
-    {error.message}
-  </div>
-)}
+{
+  error && <div data-testid="form-error">{error.message}</div>;
+}
 ```
 
 ### 4. Inconsistent Naming
@@ -422,21 +406,21 @@ data-testid="buy-button"
 
 ### Component TestId Inventory
 
-| Component | Root TestId | Child TestIds | Notes |
-|-----------|------------|---------------|-------|
-| AddToCardButton | `add-to-cart` | `add-to-cart-button`, `add-to-cart-badge`, `add-to-cart-icon` | Badge only shown when count > 0 |
-| Button | `button` | - | Appends `-loading` or `-disabled` based on state |
-| Navigation | `navigation` | `navigation-menu-mobile`, `navigation-menu-desktop`, `nav-link-{id}` | Responsive menus |
-| Header | `header` | `header-logo`, `header-menu-{position}` | Position: left, center, right |
-| Input | `input` | `input-wrapper`, `input-error` | Error element conditional |
-| Select | `select` | - | Mantine Select handles internal testids |
-| Textarea | `textarea` | `textarea-wrapper`, `textarea-error` | Similar to Input |
-| MySwitch | `switch` | `switch-input`, `switch-label` | Via classNames prop |
-| Pagination | `pagination` | `pagination-page-{n}`, `pagination-{control}` | Controls: first, prev, next, last |
-| ProductCard | `product-card` | `product-card-image`, `product-card-title`, `product-card-price` | - |
-| ListingImageGallery | `listing-gallery` | `listing-gallery-main`, `listing-gallery-thumb-{n}` | - |
-| Footer | `footer` | `footer-section-{name}`, `footer-link-{id}` | - |
-| CollectionCard | `collection-card-{id}` | `collection-card-image-{id}`, `collection-card-content-{id}` | ID from collection data |
+| Component           | Root TestId            | Child TestIds                                                        | Notes                                            |
+| ------------------- | ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------ |
+| AddToCardButton     | `add-to-cart`          | `add-to-cart-button`, `add-to-cart-badge`, `add-to-cart-icon`        | Badge only shown when count > 0                  |
+| Button              | `button`               | -                                                                    | Appends `-loading` or `-disabled` based on state |
+| Navigation          | `navigation`           | `navigation-menu-mobile`, `navigation-menu-desktop`, `nav-link-{id}` | Responsive menus                                 |
+| Header              | `header`               | `header-logo`, `header-menu-{position}`                              | Position: left, center, right                    |
+| Input               | `input`                | `input-wrapper`, `input-error`                                       | Error element conditional                        |
+| Select              | `select`               | -                                                                    | Mantine Select handles internal testids          |
+| Textarea            | `textarea`             | `textarea-wrapper`, `textarea-error`                                 | Similar to Input                                 |
+| MySwitch            | `switch`               | `switch-input`, `switch-label`                                       | Via classNames prop                              |
+| Pagination          | `pagination`           | `pagination-page-{n}`, `pagination-{control}`                        | Controls: first, prev, next, last                |
+| ProductCard         | `product-card`         | `product-card-image`, `product-card-title`, `product-card-price`     | -                                                |
+| ListingImageGallery | `listing-gallery`      | `listing-gallery-main`, `listing-gallery-thumb-{n}`                  | -                                                |
+| Footer              | `footer`               | `footer-section-{name}`, `footer-link-{id}`                          | -                                                |
+| CollectionCard      | `collection-card-{id}` | `collection-card-image-{id}`, `collection-card-content-{id}`         | ID from collection data                          |
 
 ### Testing Utilities
 
@@ -475,21 +459,26 @@ module.exports = {
   plugins: [
     process.env.NODE_ENV === 'production' && [
       'react-remove-properties',
-      { properties: ['data-testid'] }
-    ]
-  ].filter(Boolean)
+      { properties: ['data-testid'] },
+    ],
+  ].filter(Boolean),
 };
 ```
 
 ### Alternative: Keep TestIds
 
 Many teams choose to keep data-testid attributes in production for:
+
 - E2E testing in production
 - Debugging production issues
 - Minimal performance impact
 
 ## Conclusion
 
-Following these data-testid standards ensures our component library remains testable, maintainable, and reliable. By providing consistent patterns and clear guidelines, we enable developers to write robust tests while maintaining clean, accessible components.
+Following these data-testid standards ensures our component library remains testable, maintainable,
+and reliable. By providing consistent patterns and clear guidelines, we enable developers to write
+robust tests while maintaining clean, accessible components.
 
-Remember: data-testid attributes are for testing, not for styling or JavaScript logic. Keep them separate from your application's functionality and use them solely as stable selectors for your test suite.
+Remember: data-testid attributes are for testing, not for styling or JavaScript logic. Keep them
+separate from your application's functionality and use them solely as stable selectors for your test
+suite.

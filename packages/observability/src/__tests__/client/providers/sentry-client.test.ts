@@ -45,6 +45,9 @@ describe('SentryClientProvider', () => {
     // Mock console to avoid noise in tests
     console.error = vi.fn();
 
+    // Reset mockSentry.init to not throw by default
+    mockSentry.init.mockImplementation(() => {});
+
     provider = new SentryClientProvider();
     config = {
       debug: false,

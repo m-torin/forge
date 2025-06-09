@@ -162,7 +162,7 @@ describe('Navigation', () => {
     // Get only the top-level navigation items by querying direct children of the main navigation
     const navigation = screen.getByTestId('main-navigation');
     const topLevelMenuItems = Array.from(navigation.children);
-    
+
     expect(topLevelMenuItems).toHaveLength(4);
 
     expect(topLevelMenuItems[0]).toHaveTextContent('Home');

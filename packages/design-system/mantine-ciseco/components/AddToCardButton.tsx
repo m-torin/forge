@@ -26,7 +26,7 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
   title,
 }) => {
   return (
-    <div 
+    <div
       data-testid="notification-content"
       className="pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10"
     >
@@ -63,9 +63,9 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
             <p className="text-gray-500 dark:text-neutral-400">{`Qty ${quantity}`}</p>
 
             <div className="flex">
-              <button 
+              <button
                 data-testid="view-cart-button"
-                className="font-medium text-primary-600 dark:text-primary-500" 
+                className="font-medium text-primary-600 dark:text-primary-500"
                 type="button"
               >
                 View cart
@@ -93,11 +93,11 @@ interface AddToCardButtonProps {
 }
 
 const AddToCardButton = ({
+  'data-testid': testId = 'add-to-cart-button',
   as,
   children,
   className,
   color,
-  'data-testid': testId = 'add-to-cart-button',
   imageUrl,
   price,
   quantity,

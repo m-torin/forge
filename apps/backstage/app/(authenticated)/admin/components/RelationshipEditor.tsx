@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
+  ActionIcon,
+  Badge,
   Box,
   Button,
   Card,
@@ -10,43 +11,43 @@ import {
   Group,
   Modal,
   MultiSelect,
+  NumberInput,
   Select,
   Stack,
   Table,
   Text,
-  TextInput,
   Textarea,
-  NumberInput,
-  ActionIcon,
-  Badge,
+  TextInput,
   Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconTrash, IconEdit, IconSearch } from '@tabler/icons-react';
+import { IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+
 import type { RelationshipEditorConfig } from '../lib/relationship-editor-config';
 
 interface RelationshipEditorProps {
-  config: RelationshipEditorConfig;
-  primaryEntityId: string;
-  currentRelationships: any[];
   availableEntities: any[];
-  onRelationshipChange: (relationships: any[]) => void;
+  config: RelationshipEditorConfig;
+  currentRelationships: any[];
   onCreateEntity?: (data: any) => Promise<any>;
+  onRelationshipChange: (relationships: any[]) => void;
+  primaryEntityId: string;
 }
 
 export function RelationshipEditor({
-  config,
-  primaryEntityId,
-  currentRelationships,
   availableEntities,
-  onRelationshipChange,
+  config,
+  currentRelationships,
   onCreateEntity,
+  onRelationshipChange,
+  primaryEntityId,
 }: RelationshipEditorProps) {
   const [selectedEntities, setSelectedEntities] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
-  const [opened, { open, close }] = useDisclosure(false);
+  const [opened, { close, open }] = useDisclosure(false);
   const [editingJunction, setEditingJunction] = useState<any>(null);
   const [junctionData, setJunctionData] = useState<Record<string, any>>({});
 
@@ -56,7 +57,7 @@ export function RelationshipEditor({
   }, [currentRelationships]);
 
   // Filter available entities based on search and filters
-  const filteredEntities = availableEntities.filter(entity => {
+  const filteredEntities = availableEntities.filter((entity) => {
     // Search filter
     if (searchTerm) {
       const searchText = [entity.name, entity.title, entity.slug, entity.description]
@@ -89,19 +90,19 @@ export function RelationshipEditor({
       return;
     }
 
-    const isSelected = selectedEntities.some(selected => selected.id === entity.id);
-    
+    const isSelected = selectedEntities.some((selected) => selected.id === entity.id);
+
     if (isSelected) {
-      const updated = selectedEntities.filter(selected => selected.id !== entity.id);
+      const updated = selectedEntities.filter((selected) => selected.id !== entity.id);
       setSelectedEntities(updated);
       onRelationshipChange(updated);
     } else {
       // Check max selections
       if (config.maxSelections && selectedEntities.length >= config.maxSelections) {
         notifications.show({
-          title: 'Selection Limit Reached',
-          message: `Maximum ${config.maxSelections} selections allowed`,
           color: 'yellow',
+          message: `Maximum ${config.maxSelections} selections allowed`,
+          title: 'Selection Limit Reached',
         });
         return;
       }
@@ -115,17 +116,17 @@ export function RelationshipEditor({
   // Handle junction data editing
   const handleJunctionEdit = (entity: any, junctionInfo?: any) => {
     setEditingJunction(entity);
-    
+
     // Initialize junction data with defaults
     const initialData: Record<string, any> = {};
-    config.junctionFields?.forEach(field => {
+    config.junctionFields?.forEach((field) => {
       if (junctionInfo && junctionInfo[field.name] !== undefined) {
         initialData[field.name] = junctionInfo[field.name];
       } else if (field.defaultValue !== undefined) {
         initialData[field.name] = field.defaultValue;
       }
     });
-    
+
     setJunctionData(initialData);
     open();
   };
@@ -135,7 +136,7 @@ export function RelationshipEditor({
     if (!editingJunction) return;
 
     // Update the relationship with junction data
-    const updated = selectedEntities.map(entity => {
+    const updated = selectedEntities.map((entity) => {
       if (entity.id === editingJunction.id) {
         return {
           ...entity,
@@ -161,10 +162,10 @@ export function RelationshipEditor({
         return (
           <TextInput
             key={field.name}
+            onChange={(e) => setJunctionData((prev) => ({ ...prev, [field.name]: e.target.value }))}
             label={field.label}
-            value={value || ''}
-            onChange={(e) => setJunctionData(prev => ({ ...prev, [field.name]: e.target.value }))}
             required={field.required}
+            value={value || ''}
           />
         );
 
@@ -172,10 +173,10 @@ export function RelationshipEditor({
         return (
           <Textarea
             key={field.name}
+            onChange={(e) => setJunctionData((prev) => ({ ...prev, [field.name]: e.target.value }))}
             label={field.label}
-            value={value || ''}
-            onChange={(e) => setJunctionData(prev => ({ ...prev, [field.name]: e.target.value }))}
             required={field.required}
+            value={value || ''}
           />
         );
 
@@ -183,10 +184,10 @@ export function RelationshipEditor({
         return (
           <NumberInput
             key={field.name}
+            onChange={(val) => setJunctionData((prev) => ({ ...prev, [field.name]: val }))}
             label={field.label}
-            value={value || 0}
-            onChange={(val) => setJunctionData(prev => ({ ...prev, [field.name]: val }))}
             required={field.required}
+            value={value || 0}
           />
         );
 
@@ -194,9 +195,11 @@ export function RelationshipEditor({
         return (
           <Checkbox
             key={field.name}
-            label={field.label}
+            onChange={(e) =>
+              setJunctionData((prev) => ({ ...prev, [field.name]: e.target.checked }))
+            }
             checked={value || false}
-            onChange={(e) => setJunctionData(prev => ({ ...prev, [field.name]: e.target.checked }))}
+            label={field.label}
           />
         );
 
@@ -204,11 +207,11 @@ export function RelationshipEditor({
         return (
           <Select
             key={field.name}
-            label={field.label}
-            value={value || ''}
+            onChange={(val) => setJunctionData((prev) => ({ ...prev, [field.name]: val }))}
             data={field.options || []}
-            onChange={(val) => setJunctionData(prev => ({ ...prev, [field.name]: val }))}
+            label={field.label}
             required={field.required}
+            value={value || ''}
           />
         );
 
@@ -216,11 +219,11 @@ export function RelationshipEditor({
         return (
           <MultiSelect
             key={field.name}
-            label={field.label}
-            value={value || []}
+            onChange={(val) => setJunctionData((prev) => ({ ...prev, [field.name]: val }))}
             data={field.options || []}
-            onChange={(val) => setJunctionData(prev => ({ ...prev, [field.name]: val }))}
+            label={field.label}
             required={field.required}
+            value={value || []}
           />
         );
 
@@ -235,12 +238,7 @@ export function RelationshipEditor({
       <Box>
         <Group justify="space-between" mb="sm">
           <Text fw={500}>{config.name}</Text>
-          <Button
-            size="xs"
-            variant="light"
-            leftSection={<IconPlus size={14} />}
-            onClick={open}
-          >
+          <Button leftSection={<IconPlus size={14} />} onClick={open} size="xs" variant="light">
             Add {config.relatedEntity}
           </Button>
         </Group>
@@ -249,19 +247,19 @@ export function RelationshipEditor({
           {selectedEntities.map((entity) => (
             <Chip
               key={entity.id}
+              onChange={() => handleEntitySelect(entity)}
               checked
               variant="filled"
-              onChange={() => handleEntitySelect(entity)}
             >
               {entity.name || entity.title}
               {config.junctionFields && (
                 <ActionIcon
-                  size="xs"
-                  variant="transparent"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleJunctionEdit(entity, entity.junctionData);
                   }}
+                  size="xs"
+                  variant="transparent"
                 >
                   <IconEdit size={10} />
                 </ActionIcon>
@@ -270,14 +268,14 @@ export function RelationshipEditor({
           ))}
         </Group>
 
-        <Modal opened={opened} onClose={close} title={`Select ${config.relatedEntity}`}>
+        <Modal onClose={close} opened={opened} title={`Select ${config.relatedEntity}`}>
           <Stack>
             {config.searchable && (
               <TextInput
+                leftSection={<IconSearch size={16} />}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={`Search ${config.relatedEntity}...`}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                leftSection={<IconSearch size={16} />}
               />
             )}
 
@@ -286,32 +284,32 @@ export function RelationshipEditor({
                 {config.filterFields.map((field) => (
                   <Select
                     key={field}
-                    placeholder={`Filter by ${field}`}
-                    value={filterValues[field] || ''}
                     onChange={(value) =>
-                      setFilterValues(prev => ({ ...prev, [field]: value || '' }))
+                      setFilterValues((prev) => ({ ...prev, [field]: value || '' }))
                     }
+                    placeholder={`Filter by ${field}`}
                     data={[
                       // This would be populated dynamically based on available values
-                      { value: '', label: `All ${field}` },
+                      { label: `All ${field}`, value: '' },
                     ]}
+                    value={filterValues[field] || ''}
                   />
                 ))}
               </Group>
             )}
 
-            <Stack mah={300} style={{ overflow: 'auto' }}>
+            <Stack style={{ overflow: 'auto' }} mah={300}>
               {filteredEntities.map((entity) => (
                 <Card
                   key={entity.id}
-                  p="sm"
-                  style={{ cursor: 'pointer' }}
                   onClick={() => handleEntitySelect(entity)}
-                  withBorder={selectedEntities.some(s => s.id === entity.id)}
+                  withBorder={selectedEntities.some((s) => s.id === entity.id)}
+                  style={{ cursor: 'pointer' }}
+                  p="sm"
                 >
                   <Text fw={500}>{entity.name || entity.title}</Text>
                   {entity.description && (
-                    <Text size="sm" c="dimmed">
+                    <Text c="dimmed" size="sm">
                       {entity.description}
                     </Text>
                   )}
@@ -324,24 +322,22 @@ export function RelationshipEditor({
         {/* Junction Data Editor Modal */}
         {editingJunction && config.junctionFields && (
           <Modal
-            opened={!!editingJunction}
             onClose={() => setEditingJunction(null)}
+            opened={!!editingJunction}
             title={`Edit ${config.name} Details`}
           >
             <Stack>
-              <Text size="sm" c="dimmed">
+              <Text c="dimmed" size="sm">
                 Editing details for: {editingJunction.name || editingJunction.title}
               </Text>
-              
+
               {config.junctionFields.map(renderJunctionField)}
 
               <Group justify="flex-end">
-                <Button variant="light" onClick={() => setEditingJunction(null)}>
+                <Button onClick={() => setEditingJunction(null)} variant="light">
                   Cancel
                 </Button>
-                <Button onClick={handleJunctionSave}>
-                  Save
-                </Button>
+                <Button onClick={handleJunctionSave}>Save</Button>
               </Group>
             </Stack>
           </Modal>
@@ -355,12 +351,7 @@ export function RelationshipEditor({
       <Box>
         <Group justify="space-between" mb="sm">
           <Text fw={500}>{config.name}</Text>
-          <Button
-            size="xs"
-            variant="light"
-            leftSection={<IconPlus size={14} />}
-            onClick={open}
-          >
+          <Button leftSection={<IconPlus size={14} />} onClick={open} size="xs" variant="light">
             Add {config.relatedEntity}
           </Button>
         </Group>
@@ -380,18 +371,16 @@ export function RelationshipEditor({
               <Table.Tr key={entity.id}>
                 <Table.Td>{entity.name || entity.title}</Table.Td>
                 {config.junctionFields?.map((field) => (
-                  <Table.Td key={field.name}>
-                    {entity.junctionData?.[field.name] || '—'}
-                  </Table.Td>
+                  <Table.Td key={field.name}>{entity.junctionData?.[field.name] || '—'}</Table.Td>
                 ))}
                 <Table.Td>
                   <Group gap="xs">
                     {config.junctionFields && (
                       <Tooltip label="Edit details">
                         <ActionIcon
+                          onClick={() => handleJunctionEdit(entity, entity.junctionData)}
                           size="sm"
                           variant="light"
-                          onClick={() => handleJunctionEdit(entity, entity.junctionData)}
                         >
                           <IconEdit size={14} />
                         </ActionIcon>
@@ -399,10 +388,10 @@ export function RelationshipEditor({
                     )}
                     <Tooltip label="Remove">
                       <ActionIcon
-                        size="sm"
-                        variant="light"
                         color="red"
                         onClick={() => handleEntitySelect(entity)}
+                        size="sm"
+                        variant="light"
                       >
                         <IconTrash size={14} />
                       </ActionIcon>
@@ -415,14 +404,14 @@ export function RelationshipEditor({
         </Table>
 
         {/* Entity Selection Modal */}
-        <Modal opened={opened} onClose={close} title={`Select ${config.relatedEntity}`} size="lg">
+        <Modal onClose={close} opened={opened} size="lg" title={`Select ${config.relatedEntity}`}>
           <Stack>
             {config.searchable && (
               <TextInput
+                leftSection={<IconSearch size={16} />}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={`Search ${config.relatedEntity}...`}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                leftSection={<IconSearch size={16} />}
               />
             )}
 
@@ -439,13 +428,13 @@ export function RelationshipEditor({
                   <Table.Tr key={entity.id}>
                     <Table.Td>
                       <Checkbox
-                        checked={selectedEntities.some(s => s.id === entity.id)}
                         onChange={() => handleEntitySelect(entity)}
+                        checked={selectedEntities.some((s) => s.id === entity.id)}
                       />
                     </Table.Td>
                     <Table.Td>{entity.name || entity.title}</Table.Td>
                     <Table.Td>
-                      <Text size="sm" c="dimmed">
+                      <Text c="dimmed" size="sm">
                         {entity.description || entity.status || '—'}
                       </Text>
                     </Table.Td>
@@ -459,24 +448,22 @@ export function RelationshipEditor({
         {/* Junction Data Editor Modal */}
         {editingJunction && config.junctionFields && (
           <Modal
-            opened={!!editingJunction}
             onClose={() => setEditingJunction(null)}
+            opened={!!editingJunction}
             title={`Edit ${config.name} Details`}
           >
             <Stack>
-              <Text size="sm" c="dimmed">
+              <Text c="dimmed" size="sm">
                 Editing details for: {editingJunction.name || editingJunction.title}
               </Text>
-              
+
               {config.junctionFields.map(renderJunctionField)}
 
               <Group justify="flex-end">
-                <Button variant="light" onClick={() => setEditingJunction(null)}>
+                <Button onClick={() => setEditingJunction(null)} variant="light">
                   Cancel
                 </Button>
-                <Button onClick={handleJunctionSave}>
-                  Save
-                </Button>
+                <Button onClick={handleJunctionSave}>Save</Button>
               </Group>
             </Stack>
           </Modal>
@@ -490,19 +477,14 @@ export function RelationshipEditor({
     <Box>
       <Group justify="space-between" mb="sm">
         <Text fw={500}>{config.name}</Text>
-        <Button
-          size="xs"
-          variant="light"
-          leftSection={<IconPlus size={14} />}
-          onClick={open}
-        >
+        <Button leftSection={<IconPlus size={14} />} onClick={open} size="xs" variant="light">
           Add {config.relatedEntity}
         </Button>
       </Group>
 
       <Group>
         {selectedEntities.map((entity) => (
-          <Card key={entity.id} p="sm" withBorder>
+          <Card key={entity.id} withBorder p="sm">
             <Group justify="space-between">
               <Stack gap="xs">
                 <Text fw={500} size="sm">
@@ -525,18 +507,18 @@ export function RelationshipEditor({
               <Group gap="xs">
                 {config.junctionFields && (
                   <ActionIcon
+                    onClick={() => handleJunctionEdit(entity, entity.junctionData)}
                     size="sm"
                     variant="light"
-                    onClick={() => handleJunctionEdit(entity, entity.junctionData)}
                   >
                     <IconEdit size={14} />
                   </ActionIcon>
                 )}
                 <ActionIcon
-                  size="sm"
-                  variant="light"
                   color="red"
                   onClick={() => handleEntitySelect(entity)}
+                  size="sm"
+                  variant="light"
                 >
                   <IconTrash size={14} />
                 </ActionIcon>
@@ -547,39 +529,36 @@ export function RelationshipEditor({
       </Group>
 
       {/* Entity Selection Modal */}
-      <Modal opened={opened} onClose={close} title={`Select ${config.relatedEntity}`} size="lg">
+      <Modal onClose={close} opened={opened} size="lg" title={`Select ${config.relatedEntity}`}>
         <Stack>
           {config.searchable && (
             <TextInput
+              leftSection={<IconSearch size={16} />}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={`Search ${config.relatedEntity}...`}
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              leftSection={<IconSearch size={16} />}
             />
           )}
 
-          <Stack gap="xs" mah={400} style={{ overflow: 'auto' }}>
+          <Stack style={{ overflow: 'auto' }} gap="xs" mah={400}>
             {filteredEntities.map((entity) => (
               <Card
                 key={entity.id}
-                p="sm"
-                style={{ cursor: 'pointer' }}
                 onClick={() => handleEntitySelect(entity)}
-                withBorder={selectedEntities.some(s => s.id === entity.id)}
+                withBorder={selectedEntities.some((s) => s.id === entity.id)}
+                style={{ cursor: 'pointer' }}
+                p="sm"
               >
                 <Group justify="space-between">
                   <Stack gap="xs">
                     <Text fw={500}>{entity.name || entity.title}</Text>
                     {entity.description && (
-                      <Text size="sm" c="dimmed">
+                      <Text c="dimmed" size="sm">
                         {entity.description}
                       </Text>
                     )}
                   </Stack>
-                  <Checkbox
-                    checked={selectedEntities.some(s => s.id === entity.id)}
-                    readOnly
-                  />
+                  <Checkbox checked={selectedEntities.some((s) => s.id === entity.id)} readOnly />
                 </Group>
               </Card>
             ))}
@@ -590,24 +569,22 @@ export function RelationshipEditor({
       {/* Junction Data Editor Modal */}
       {editingJunction && config.junctionFields && (
         <Modal
-          opened={!!editingJunction}
           onClose={() => setEditingJunction(null)}
+          opened={!!editingJunction}
           title={`Edit ${config.name} Details`}
         >
           <Stack>
-            <Text size="sm" c="dimmed">
+            <Text c="dimmed" size="sm">
               Editing details for: {editingJunction.name || editingJunction.title}
             </Text>
-            
+
             {config.junctionFields.map(renderJunctionField)}
 
             <Group justify="flex-end">
-              <Button variant="light" onClick={() => setEditingJunction(null)}>
+              <Button onClick={() => setEditingJunction(null)} variant="light">
                 Cancel
               </Button>
-              <Button onClick={handleJunctionSave}>
-                Save
-              </Button>
+              <Button onClick={handleJunctionSave}>Save</Button>
             </Group>
           </Stack>
         </Modal>

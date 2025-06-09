@@ -312,14 +312,20 @@ export function extractLinks(html: string, baseUrl?: string): { href: string; te
  * Extract images from HTML
  */
 export function extractImages(html: string, baseUrl?: string): { src: string; alt: string }[] {
-  const imgRegex =
-    /<img\s+(?:[^>]*?\s+)?src=["']([^"']*)["'](?:\s+[^>]*?\s+alt=["']([^"']*)["'])?[^>]*>/gi;
+  const imgRegex = /<img\s+[^>]*>/gi;
   const images: { src: string; alt: string }[] = [];
   let match;
 
   while ((match = imgRegex.exec(html)) !== null) {
-    const src = match[1];
-    const alt = match[2] || '';
+    const imgTag = match[0];
+
+    // Extract src attribute
+    const srcMatch = imgTag.match(/src=["']([^"']*)["']/i);
+    const src = srcMatch ? srcMatch[1] : '';
+
+    // Extract alt attribute
+    const altMatch = imgTag.match(/alt=["']([^"']*)["']/i);
+    const alt = altMatch ? altMatch[1] : '';
 
     if (src && src.trim()) {
       let resolvedSrc = src;

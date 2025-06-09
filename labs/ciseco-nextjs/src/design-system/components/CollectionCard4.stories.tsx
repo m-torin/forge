@@ -1,6 +1,6 @@
-import CollectionCard4 from './CollectionCard4';
+import CollectionCard4 from './CollectionCard4'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof CollectionCard4> = {
   argTypes: {
@@ -28,10 +28,10 @@ const meta: Meta<typeof CollectionCard4> = {
     layout: 'centered',
   },
   title: 'Ciseco/CollectionCard4',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockCollection = {
   id: 'gid://1',
@@ -47,21 +47,20 @@ const mockCollection = {
   },
   sortDescription: 'Light & airy fabrics',
   title: 'Summer Collection',
-};
+}
 
 export const Default: Story = {
   args: {
     collection: mockCollection,
   },
-};
+}
 
 export const WithBackgroundSVG: Story = {
   args: {
-    bgSvgUrl:
-      'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&h=300&fit=crop&auto=format',
+    bgSvgUrl: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&h=300&fit=crop&auto=format',
     collection: mockCollection,
   },
-};
+}
 
 export const WinterCollection: Story = {
   args: {
@@ -79,7 +78,7 @@ export const WinterCollection: Story = {
       title: 'Winter Essentials',
     },
   },
-};
+}
 
 export const LuxuryCollection: Story = {
   args: {
@@ -97,7 +96,7 @@ export const LuxuryCollection: Story = {
       title: 'Luxury Line',
     },
   },
-};
+}
 
 export const NoImage: Story = {
   args: {
@@ -106,7 +105,7 @@ export const NoImage: Story = {
       image: undefined,
     },
   },
-};
+}
 
 export const LargeCount: Story = {
   args: {
@@ -115,7 +114,7 @@ export const LargeCount: Story = {
       count: 1250,
     },
   },
-};
+}
 
 export const HTMLContent: Story = {
   args: {
@@ -125,7 +124,7 @@ export const HTMLContent: Story = {
       title: '<strong>Featured</strong> Collection',
     },
   },
-};
+}
 
 export const NoHandle: Story = {
   args: {
@@ -134,11 +133,11 @@ export const NoHandle: Story = {
       handle: undefined,
     },
   },
-};
+}
 
 export const Grid: Story = {
   render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
+    <div className="grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {[
         {
           color: 'bg-blue-50',
@@ -203,35 +202,26 @@ export const Grid: Story = {
       ))}
     </div>
   ),
-};
+}
 
 export const WithCustomStyling: Story = {
   args: {
     className: 'shadow-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50',
     collection: mockCollection,
   },
-};
+}
 
 export const ResponsiveLayout: Story = {
   render: () => (
-    <div className="space-y-4 max-w-5xl">
-      <div className="text-sm text-gray-600 mb-4">
-        Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="max-w-5xl space-y-4">
+      <div className="mb-4 text-sm text-gray-600">Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop</div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
           <CollectionCard4
             key={`collection-card-${i}`}
             collection={{
               id: `gid://${i}`,
-              color: [
-                'bg-blue-50',
-                'bg-green-50',
-                'bg-purple-50',
-                'bg-pink-50',
-                'bg-yellow-50',
-                'bg-indigo-50',
-              ][i],
+              color: ['bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-pink-50', 'bg-yellow-50', 'bg-indigo-50'][i],
               count: Math.floor(Math.random() * 200) + 50,
               handle: `collection-${i + 1}`,
               image: {
@@ -248,4 +238,4 @@ export const ResponsiveLayout: Story = {
       </div>
     </div>
   ),
-};
+}

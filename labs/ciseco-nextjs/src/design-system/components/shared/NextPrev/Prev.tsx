@@ -1,11 +1,11 @@
-'use client';
-import { type FC } from 'react';
+'use client'
+import { type FC } from 'react'
 
 export interface PrevProps {
-  btnClassName?: string;
-  className?: string;
-  onClickPrev?: () => void;
-  svgSize?: string;
+  btnClassName?: string
+  className?: string
+  onClickPrev?: () => void
+  svgSize?: string
 }
 
 const Prev: FC<PrevProps> = ({
@@ -15,10 +15,7 @@ const Prev: FC<PrevProps> = ({
   svgSize = 'w-5 h-5',
 }) => {
   return (
-    <div
-      data-glide-el="controls"
-      className={`nc-Prev text-neutral-500 dark:text-neutral-400 ${className}`}
-    >
+    <div data-glide-el="controls" className={`nc-Prev text-neutral-500 dark:text-neutral-400 ${className}`}>
       <button
         data-glide-dir="<"
         onClick={onClickPrev}
@@ -45,7 +42,7 @@ const Prev: FC<PrevProps> = ({
         </svg>
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default Prev;
+export default Prev

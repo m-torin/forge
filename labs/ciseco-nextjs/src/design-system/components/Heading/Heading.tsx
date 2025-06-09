@@ -1,19 +1,19 @@
-import clsx from 'clsx';
-import React, { type HTMLAttributes, type ReactNode } from 'react';
+import clsx from 'clsx'
+import React, { type HTMLAttributes, type ReactNode } from 'react'
 
-import NextPrev from '../shared/NextPrev/NextPrev';
+import NextPrev from '../shared/NextPrev/NextPrev'
 
 export interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
-  description?: ReactNode | string;
-  fontClass?: string;
-  hasNextPrev?: boolean;
-  headingDim?: ReactNode | string;
-  isCenter?: boolean;
-  level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-  nextBtnDisabled?: boolean;
-  onClickNext?: () => void;
-  onClickPrev?: () => void;
-  prevBtnDisabled?: boolean;
+  description?: ReactNode | string
+  fontClass?: string
+  hasNextPrev?: boolean
+  headingDim?: ReactNode | string
+  isCenter?: boolean
+  level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+  nextBtnDisabled?: boolean
+  onClickNext?: () => void
+  onClickPrev?: () => void
+  prevBtnDisabled?: boolean
 }
 
 const Heading: React.FC<HeadingProps> = ({
@@ -32,9 +32,7 @@ const Heading: React.FC<HeadingProps> = ({
   ...args
 }) => {
   return (
-    <div
-      className={clsx('relative flex flex-col justify-between sm:flex-row sm:items-end', className)}
-    >
+    <div className={clsx('relative flex flex-col justify-between sm:flex-row sm:items-end', className)}>
       <div className={clsx(isCenter && 'mx-auto flex w-full flex-col items-center text-center')}>
         <Level className={clsx(isCenter && 'justify-center', fontClass)} {...args}>
           {children}
@@ -46,9 +44,7 @@ const Heading: React.FC<HeadingProps> = ({
           ) : null}
         </Level>
         {description ? (
-          <p className="mt-3 block max-w-xl text-base/normal text-neutral-500 dark:text-neutral-400">
-            {description}
-          </p>
+          <p className="mt-3 block max-w-xl text-base/normal text-neutral-500 dark:text-neutral-400">{description}</p>
         ) : null}
       </div>
       {hasNextPrev && !isCenter && (
@@ -62,7 +58,7 @@ const Heading: React.FC<HeadingProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Heading;
+export default Heading

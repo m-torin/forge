@@ -1,21 +1,27 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LogtailProvider } from '../../../shared/providers/logtail-provider';
 
 import type { LogEntry } from '../../../shared/types/logger-types';
 
-// Mock the Logtail module
-const mockLogtailClient = {
-  debug: vi.fn(),
-  error: vi.fn(),
-  info: vi.fn(),
-  log: vi.fn(),
-  use: vi.fn(),
-  warn: vi.fn(),
-};
+// Use vi.hoisted for mocks
+const { mockLogtail, mockLogtailClient } = vi.hoisted(() => {
+  const mockLogtailClient = {
+    debug: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    log: vi.fn(),
+    use: vi.fn(),
+    warn: vi.fn(),
+  };
+
+  const mockLogtail = vi.fn().mockImplementation(() => mockLogtailClient);
+
+  return { mockLogtail, mockLogtailClient };
+});
 
 vi.mock('@logtail/node', () => ({
-  Logtail: vi.fn().mockImplementation(() => mockLogtailClient),
+  Logtail: mockLogtail,
 }));
 
 describe('LogtailProvider', () => {
@@ -31,8 +37,16 @@ describe('LogtailProvider', () => {
       }
     });
 
+    // Set environment to production using vi.stubEnv
+    vi.stubEnv('NODE_ENV', 'production');
+
     provider = new LogtailProvider();
     await provider.initialize({ sourceToken: mockToken });
+  });
+
+  afterEach(() => {
+    // Restore environment after each test
+    vi.unstubAllEnvs();
   });
 
   describe('initialization', () => {
@@ -113,18 +127,17 @@ describe('LogtailProvider', () => {
       expect(mockLogtailClient.info).toHaveBeenCalledTimes(5);
     });
 
-    it('should handle client errors gracefully', async () => {
+    it('should propagate client errors', async () => {
       // Mock the Logtail client to throw an error
       mockLogtailClient.error.mockRejectedValueOnce(new Error('Client error'));
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      // The provider should propagate the error from the client
+      await expect(
+        provider.log('error', 'Test error', { timestamp: new Date().toISOString() }),
+      ).rejects.toThrow('Client error');
 
-      await provider.log('error', 'Test error', { timestamp: new Date().toISOString() });
-
-      // The provider should handle the error gracefully
+      // The provider should have attempted to call the client
       expect(mockLogtailClient.error).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
     });
 
     // Removed duplicate error handling test

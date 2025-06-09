@@ -1,54 +1,51 @@
-'use client';
+'use client'
 
-import { StarIcon } from '@heroicons/react/24/solid';
-import clsx from 'clsx';
-import Autoplay from 'embla-carousel-autoplay';
-import useEmblaCarousel from 'embla-carousel-react';
-import Image from 'next/image';
-import { type FC } from 'react';
+import { StarIcon } from '@heroicons/react/24/solid'
+import clsx from 'clsx'
+import Autoplay from 'embla-carousel-autoplay'
+import useEmblaCarousel from 'embla-carousel-react'
+import Image from 'next/image'
+import { type FC } from 'react'
 
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
-import { useCarouselDotButton } from '../hooks/use-carousel-dot-buttons';
-import userImage1 from '../images/users/1.png';
-import userImage2 from '../images/users/2.png';
-import userImage3 from '../images/users/3.png';
-import userImage4 from '../images/users/4.png';
-import userImage5 from '../images/users/5.png';
-import userImage6 from '../images/users/6.png';
-import userImage7 from '../images/users/7.png';
-import qlImage from '../images/users/ql.png';
-import qrImage from '../images/users/qr.png';
+import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons'
+import { useCarouselDotButton } from '../hooks/use-carousel-dot-buttons'
+import userImage1 from '../images/users/1.png'
+import userImage2 from '../images/users/2.png'
+import userImage3 from '../images/users/3.png'
+import userImage4 from '../images/users/4.png'
+import userImage5 from '../images/users/5.png'
+import userImage6 from '../images/users/6.png'
+import userImage7 from '../images/users/7.png'
+import qlImage from '../images/users/ql.png'
+import qrImage from '../images/users/qr.png'
 
-import Heading from './Heading/Heading';
+import Heading from './Heading/Heading'
 
-import type { EmblaOptionsType } from 'embla-carousel';
+import type { EmblaOptionsType } from 'embla-carousel'
 
 export const DEMO_DATA = [
   {
     id: 1,
     clientName: 'Tiana Abie',
-    content:
-      'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
+    content: 'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
   },
   {
     id: 2,
     clientName: 'Lennie Swiffan',
-    content:
-      'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
+    content: 'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
   },
   {
     id: 3,
     clientName: 'Berta Emili',
-    content:
-      'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
+    content: 'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
   },
-];
+]
 
 export interface SectionClientSayProps {
-  className?: string;
-  emblaOptions?: EmblaOptionsType;
-  heading?: string;
-  subHeading?: string;
+  className?: string
+  emblaOptions?: EmblaOptionsType
+  heading?: string
+  subHeading?: string
 }
 
 const SectionClientSay: FC<SectionClientSayProps> = ({
@@ -60,12 +57,9 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
   heading = 'Good news from far away 🥇',
   subHeading = "Let's see what people think of Ciseco",
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions, [
-    Autoplay({ delay: 2000, playOnInit: true }),
-  ]);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
-  const { onDotButtonClick, scrollSnaps, selectedIndex } = useCarouselDotButton(emblaApi);
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions, [Autoplay({ delay: 2000, playOnInit: true })])
+  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } = useCarouselArrowButtons(emblaApi)
+  const { onDotButtonClick, scrollSnaps, selectedIndex } = useCarouselDotButton(emblaApi)
 
   return (
     <div className={clsx('relative flow-root', className)}>
@@ -82,17 +76,10 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
       <div className="relative mx-auto max-w-2xl md:mb-16">
         {/* BACKGROUND USER IMAGES */}
         <div className="hidden md:block">
+          <Image width={60} className="absolute -left-20 top-9" alt="" height={60} sizes="100px" src={userImage2} />
           <Image
             width={60}
-            className="absolute top-9 -left-20"
-            alt=""
-            height={60}
-            sizes="100px"
-            src={userImage2}
-          />
-          <Image
-            width={60}
-            className="absolute right-full bottom-[100px] mr-40"
+            className="absolute bottom-[100px] right-full mr-40"
             alt=""
             height={60}
             sizes="100px"
@@ -100,7 +87,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
           />
           <Image
             width={60}
-            className="absolute top-full left-[140px]"
+            className="absolute left-[140px] top-full"
             alt=""
             height={60}
             sizes="100px"
@@ -108,7 +95,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
           />
           <Image
             width={60}
-            className="absolute right-[140px] -bottom-10"
+            className="absolute -bottom-10 right-[140px]"
             alt=""
             height={60}
             sizes="100px"
@@ -122,14 +109,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
             sizes="100px"
             src={userImage6}
           />
-          <Image
-            width={60}
-            className="absolute top-10 -right-10"
-            alt=""
-            height={60}
-            sizes="100px"
-            src={userImage7}
-          />
+          <Image width={60} className="absolute -right-10 top-10" alt="" height={60} sizes="100px" src={userImage7} />
         </div>
 
         {/* MAIN USER IMAGE */}
@@ -139,14 +119,14 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
         <div className="relative mt-12 lg:mt-16">
           <Image
             width={50}
-            className="absolute top-1 right-full -mr-16 opacity-50 md:opacity-100 lg:mr-3"
+            className="absolute right-full top-1 -mr-16 opacity-50 md:opacity-100 lg:mr-3"
             alt=""
             height={44}
             src={qlImage}
           />
           <Image
             width={50}
-            className="absolute top-1 left-full -ml-16 opacity-50 md:opacity-100 lg:ml-3"
+            className="absolute left-full top-1 -ml-16 opacity-50 md:opacity-100 lg:ml-3"
             alt=""
             height={44}
             src={qrImage}
@@ -154,10 +134,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
           <div ref={emblaRef} className="embla">
             <ul className="embla__container">
               {DEMO_DATA.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex embla__slide basis-full flex-col items-center text-center"
-                >
+                <li key={item.id} className="embla__slide flex basis-full flex-col items-center text-center">
                   <span className="block text-2xl">{item.content}</span>
                   <span className="mt-8 block text-2xl font-semibold">{item.clientName}</span>
                   <div className="mt-3.5 flex items-center space-x-0.5 text-yellow-500">
@@ -178,7 +155,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
                   onClick={() => onDotButtonClick(index)}
                   className={clsx(
                     index === selectedIndex ? 'bg-neutral-700' : 'bg-neutral-300',
-                    'mx-1 size-2 rounded-full focus:outline-none',
+                    'mx-1 size-2 rounded-full focus:outline-none'
                   )}
                   type="button"
                 />
@@ -188,7 +165,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionClientSay;
+export default SectionClientSay

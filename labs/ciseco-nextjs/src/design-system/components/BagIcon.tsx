@@ -1,7 +1,7 @@
-import React, { type FC } from 'react';
+import { type FC } from 'react'
 
 interface BagIconProps {
-  className?: string;
+  className?: string
 }
 
 const BagIcon: FC<BagIconProps> = ({ className = 'w-5 h-5' }) => {
@@ -18,7 +18,7 @@ const BagIcon: FC<BagIconProps> = ({ className = 'w-5 h-5' }) => {
         fillRule="evenodd"
       />
     </svg>
-  );
-};
+  )
+}
 
-export default BagIcon;
+export default BagIcon

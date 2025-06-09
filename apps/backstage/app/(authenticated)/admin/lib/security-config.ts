@@ -3,19 +3,19 @@
  */
 
 export interface SecurityRule {
-  fieldName: string;
-  sensitivity: 'high' | 'medium' | 'low';
-  maskingStrategy: 'partial' | 'full' | 'hash' | 'none';
-  requiresPermission?: string;
   auditLog?: boolean;
   description?: string;
+  fieldName: string;
+  maskingStrategy: 'partial' | 'full' | 'hash' | 'none';
+  requiresPermission?: string;
+  sensitivity: 'high' | 'medium' | 'low';
 }
 
 export interface ModelSecurityConfig {
-  modelName: string;
-  rules: SecurityRule[];
-  requiresPermission?: string;
   auditAllChanges?: boolean;
+  modelName: string;
+  requiresPermission?: string;
+  rules: SecurityRule[];
 }
 
 /**
@@ -24,182 +24,182 @@ export interface ModelSecurityConfig {
 export const securityConfigs: ModelSecurityConfig[] = [
   // API Key Security
   {
+    auditAllChanges: true,
     modelName: 'apiKey',
+    requiresPermission: 'manage_api_keys',
     rules: [
       {
-        fieldName: 'key',
-        sensitivity: 'high',
-        maskingStrategy: 'partial',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'Full API key - extremely sensitive',
+        fieldName: 'key',
+        maskingStrategy: 'partial',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
       {
-        fieldName: 'keyHash',
-        sensitivity: 'high', 
-        maskingStrategy: 'hash',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'API key hash - for verification only',
+        fieldName: 'keyHash',
+        maskingStrategy: 'hash',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
       {
-        fieldName: 'start',
-        sensitivity: 'low',
-        maskingStrategy: 'none',
         description: 'API key prefix - safe to display',
+        fieldName: 'start',
+        maskingStrategy: 'none',
+        sensitivity: 'low',
       },
       {
-        fieldName: 'prefix',
-        sensitivity: 'low',
-        maskingStrategy: 'none',
         description: 'API key identifier prefix',
+        fieldName: 'prefix',
+        maskingStrategy: 'none',
+        sensitivity: 'low',
       },
     ],
-    requiresPermission: 'manage_api_keys',
-    auditAllChanges: true,
   },
 
   // Two-Factor Authentication Security
   {
+    auditAllChanges: true,
     modelName: 'twoFactor',
+    requiresPermission: 'manage_security',
     rules: [
       {
-        fieldName: 'secret',
-        sensitivity: 'high',
-        maskingStrategy: 'full',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'TOTP secret - must never be exposed',
+        fieldName: 'secret',
+        maskingStrategy: 'full',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
       {
-        fieldName: 'secretHash',
-        sensitivity: 'high',
-        maskingStrategy: 'hash',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'Secret hash for verification',
+        fieldName: 'secretHash',
+        maskingStrategy: 'hash',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
     ],
-    requiresPermission: 'manage_security',
-    auditAllChanges: true,
   },
 
   // Backup Codes Security
   {
+    auditAllChanges: true,
     modelName: 'backupCode',
+    requiresPermission: 'manage_security',
     rules: [
       {
-        fieldName: 'code',
-        sensitivity: 'high',
-        maskingStrategy: 'full',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'Backup recovery code - single use',
+        fieldName: 'code',
+        maskingStrategy: 'full',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
       {
-        fieldName: 'codeHash',
-        sensitivity: 'high',
-        maskingStrategy: 'hash',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'Code hash for verification',
+        fieldName: 'codeHash',
+        maskingStrategy: 'hash',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
     ],
-    requiresPermission: 'manage_security',
-    auditAllChanges: true,
   },
 
   // Passkey Security
   {
+    auditAllChanges: true,
     modelName: 'passkey',
+    requiresPermission: 'manage_security',
     rules: [
       {
-        fieldName: 'publicKey',
-        sensitivity: 'medium',
-        maskingStrategy: 'partial',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'WebAuthn public key data',
+        fieldName: 'publicKey',
+        maskingStrategy: 'partial',
+        requiresPermission: 'admin',
+        sensitivity: 'medium',
       },
       {
-        fieldName: 'credentialId',
-        sensitivity: 'medium',
-        maskingStrategy: 'partial',
         auditLog: true,
         description: 'Credential identifier',
+        fieldName: 'credentialId',
+        maskingStrategy: 'partial',
+        sensitivity: 'medium',
       },
     ],
-    requiresPermission: 'manage_security',
-    auditAllChanges: true,
   },
 
   // Account Security (OAuth tokens)
   {
+    auditAllChanges: true,
     modelName: 'account',
+    requiresPermission: 'manage_accounts',
     rules: [
       {
-        fieldName: 'accessToken',
-        sensitivity: 'high',
-        maskingStrategy: 'full',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'OAuth access token',
-      },
-      {
-        fieldName: 'refreshToken',
-        sensitivity: 'high',
+        fieldName: 'accessToken',
         maskingStrategy: 'full',
         requiresPermission: 'admin',
+        sensitivity: 'high',
+      },
+      {
         auditLog: true,
         description: 'OAuth refresh token',
-      },
-      {
-        fieldName: 'idToken',
-        sensitivity: 'high',
+        fieldName: 'refreshToken',
         maskingStrategy: 'full',
         requiresPermission: 'admin',
+        sensitivity: 'high',
+      },
+      {
         auditLog: true,
         description: 'OAuth ID token',
-      },
-      {
-        fieldName: 'password',
-        sensitivity: 'high',
+        fieldName: 'idToken',
         maskingStrategy: 'full',
         requiresPermission: 'admin',
+        sensitivity: 'high',
+      },
+      {
         auditLog: true,
         description: 'User password hash',
+        fieldName: 'password',
+        maskingStrategy: 'full',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
     ],
-    requiresPermission: 'manage_accounts',
-    auditAllChanges: true,
   },
 
   // Session Security
   {
+    auditAllChanges: true,
     modelName: 'session',
     rules: [
       {
-        fieldName: 'token',
-        sensitivity: 'high',
-        maskingStrategy: 'partial',
-        requiresPermission: 'admin',
         auditLog: true,
         description: 'Session token',
-      },
-      {
-        fieldName: 'ipAddress',
-        sensitivity: 'medium',
+        fieldName: 'token',
         maskingStrategy: 'partial',
-        description: 'User IP address - privacy sensitive',
+        requiresPermission: 'admin',
+        sensitivity: 'high',
       },
       {
-        fieldName: 'userAgent',
-        sensitivity: 'low',
-        maskingStrategy: 'none',
+        description: 'User IP address - privacy sensitive',
+        fieldName: 'ipAddress',
+        maskingStrategy: 'partial',
+        sensitivity: 'medium',
+      },
+      {
         description: 'Browser user agent string',
+        fieldName: 'userAgent',
+        maskingStrategy: 'none',
+        sensitivity: 'low',
       },
     ],
-    auditAllChanges: true,
   },
 
   // User Security
@@ -207,23 +207,23 @@ export const securityConfigs: ModelSecurityConfig[] = [
     modelName: 'user',
     rules: [
       {
-        fieldName: 'email',
-        sensitivity: 'medium',
-        maskingStrategy: 'partial',
         description: 'User email address - PII',
-      },
-      {
-        fieldName: 'phoneNumber',
-        sensitivity: 'medium',
+        fieldName: 'email',
         maskingStrategy: 'partial',
-        description: 'User phone number - PII',
+        sensitivity: 'medium',
       },
       {
-        fieldName: 'suspensionDetails',
+        description: 'User phone number - PII',
+        fieldName: 'phoneNumber',
+        maskingStrategy: 'partial',
         sensitivity: 'medium',
+      },
+      {
+        description: 'User suspension information',
+        fieldName: 'suspensionDetails',
         maskingStrategy: 'none',
         requiresPermission: 'admin',
-        description: 'User suspension information',
+        sensitivity: 'medium',
       },
     ],
   },
@@ -233,10 +233,10 @@ export const securityConfigs: ModelSecurityConfig[] = [
     modelName: 'organization',
     rules: [
       {
-        fieldName: 'metadata',
-        sensitivity: 'low',
-        maskingStrategy: 'none',
         description: 'Organization metadata - may contain sensitive info',
+        fieldName: 'metadata',
+        maskingStrategy: 'none',
+        sensitivity: 'low',
       },
     ],
   },
@@ -246,18 +246,18 @@ export const securityConfigs: ModelSecurityConfig[] = [
     modelName: 'workflowConfig',
     rules: [
       {
+        description: 'Workflow configuration data',
         fieldName: 'customPayload',
-        sensitivity: 'medium',
         maskingStrategy: 'none',
         requiresPermission: 'admin',
-        description: 'Workflow configuration data',
+        sensitivity: 'medium',
       },
       {
+        description: 'Workflow metadata',
         fieldName: 'metadata',
-        sensitivity: 'medium',
         maskingStrategy: 'none',
         requiresPermission: 'admin',
-        description: 'Workflow metadata',
+        sensitivity: 'medium',
       },
     ],
   },
@@ -267,7 +267,7 @@ export const securityConfigs: ModelSecurityConfig[] = [
  * Get security rules for a specific model
  */
 export function getModelSecurityConfig(modelName: string): ModelSecurityConfig | null {
-  return securityConfigs.find(config => config.modelName === modelName) || null;
+  return securityConfigs.find((config) => config.modelName === modelName) || null;
 }
 
 /**
@@ -276,8 +276,8 @@ export function getModelSecurityConfig(modelName: string): ModelSecurityConfig |
 export function getFieldSecurityRule(modelName: string, fieldName: string): SecurityRule | null {
   const modelConfig = getModelSecurityConfig(modelName);
   if (!modelConfig) return null;
-  
-  return modelConfig.rules.find(rule => rule.fieldName === fieldName) || null;
+
+  return modelConfig.rules.find((rule) => rule.fieldName === fieldName) || null;
 }
 
 /**
@@ -292,13 +292,13 @@ export function isFieldSensitive(modelName: string, fieldName: string): boolean 
  * Check if user has permission to view a field
  */
 export function hasFieldPermission(
-  modelName: string, 
-  fieldName: string, 
-  userPermissions: string[]
+  modelName: string,
+  fieldName: string,
+  userPermissions: string[],
 ): boolean {
   const rule = getFieldSecurityRule(modelName, fieldName);
   if (!rule || !rule.requiresPermission) return true;
-  
+
   return userPermissions.includes(rule.requiresPermission);
 }
 
@@ -306,27 +306,27 @@ export function hasFieldPermission(
  * Mask sensitive data based on masking strategy
  */
 export function maskSensitiveData(
-  value: any, 
-  maskingStrategy: SecurityRule['maskingStrategy']
+  value: any,
+  maskingStrategy: SecurityRule['maskingStrategy'],
 ): string {
   if (!value) return '';
-  
+
   const stringValue = String(value);
-  
+
   switch (maskingStrategy) {
     case 'full':
       return '••••••••••••••••';
-    
+
     case 'partial':
       if (stringValue.length <= 4) return '••••';
       const start = stringValue.substring(0, 2);
       const end = stringValue.substring(stringValue.length - 2);
       const middle = '•'.repeat(Math.max(4, stringValue.length - 4));
       return `${start}${middle}${end}`;
-    
+
     case 'hash':
       return `[HASH:${stringValue.substring(0, 8)}...]`;
-    
+
     case 'none':
     default:
       return stringValue;
@@ -339,14 +339,17 @@ export function maskSensitiveData(
 export function shouldAuditField(modelName: string, fieldName: string): boolean {
   const rule = getFieldSecurityRule(modelName, fieldName);
   const modelConfig = getModelSecurityConfig(modelName);
-  
-  return (rule?.auditLog === true) || (modelConfig?.auditAllChanges === true);
+
+  return rule?.auditLog === true || modelConfig?.auditAllChanges === true;
 }
 
 /**
  * Get field sensitivity level
  */
-export function getFieldSensitivity(modelName: string, fieldName: string): SecurityRule['sensitivity'] | null {
+export function getFieldSensitivity(
+  modelName: string,
+  fieldName: string,
+): SecurityRule['sensitivity'] | null {
   const rule = getFieldSecurityRule(modelName, fieldName);
   return rule?.sensitivity || null;
 }
@@ -360,21 +363,21 @@ export const SecurityHelpers = {
    */
   detectSensitivePatterns(value: string): string[] {
     const patterns = [
-      { pattern: /sk_[a-zA-Z0-9]{24,}/, type: 'API Key (Stripe)' },
-      { pattern: /pk_[a-zA-Z0-9]{24,}/, type: 'Public Key (Stripe)' },
-      { pattern: /[A-Za-z0-9]{32,}/, type: 'Potential Token' },
-      { pattern: /-----BEGIN.*PRIVATE KEY-----/, type: 'Private Key' },
-      { pattern: /[a-f0-9]{40,}/, type: 'Hash/Token' },
-      { pattern: /Bearer\s+[A-Za-z0-9\-._~+\/]+/, type: 'Bearer Token' },
+      { type: 'API Key (Stripe)', pattern: /sk_[a-zA-Z0-9]{24,}/ },
+      { type: 'Public Key (Stripe)', pattern: /pk_[a-zA-Z0-9]{24,}/ },
+      { type: 'Potential Token', pattern: /[A-Za-z0-9]{32,}/ },
+      { type: 'Private Key', pattern: /-----BEGIN.*PRIVATE KEY-----/ },
+      { type: 'Hash/Token', pattern: /[a-f0-9]{40,}/ },
+      { type: 'Bearer Token', pattern: /Bearer\s+[A-Za-z0-9\-._~+\/]+/ },
     ];
-    
+
     const detected: string[] = [];
-    patterns.forEach(({ pattern, type }) => {
+    patterns.forEach(({ type, pattern }) => {
       if (pattern.test(value)) {
         detected.push(type);
       }
     });
-    
+
     return detected;
   },
 
@@ -384,15 +387,15 @@ export const SecurityHelpers = {
   sanitizeForLogging(data: Record<string, any>, modelName: string): Record<string, any> {
     const sanitized = { ...data };
     const modelConfig = getModelSecurityConfig(modelName);
-    
+
     if (modelConfig) {
-      modelConfig.rules.forEach(rule => {
+      modelConfig.rules.forEach((rule) => {
         if (rule.sensitivity === 'high' && sanitized[rule.fieldName]) {
           sanitized[rule.fieldName] = maskSensitiveData(sanitized[rule.fieldName], 'full');
         }
       });
     }
-    
+
     return sanitized;
   },
 
@@ -403,26 +406,30 @@ export const SecurityHelpers = {
     modelName: string,
     fieldName: string,
     userPermissions: string[],
-    operation: 'read' | 'write'
+    operation: 'read' | 'write',
   ): { allowed: boolean; reason?: string } {
     const rule = getFieldSecurityRule(modelName, fieldName);
-    
+
     if (!rule) return { allowed: true };
-    
+
     if (rule.requiresPermission && !userPermissions.includes(rule.requiresPermission)) {
       return {
         allowed: false,
         reason: `Missing required permission: ${rule.requiresPermission}`,
       };
     }
-    
-    if (rule.sensitivity === 'high' && operation === 'write' && !userPermissions.includes('admin')) {
+
+    if (
+      rule.sensitivity === 'high' &&
+      operation === 'write' &&
+      !userPermissions.includes('admin')
+    ) {
       return {
         allowed: false,
         reason: 'High-sensitivity field requires admin permission',
       };
     }
-    
+
     return { allowed: true };
   },
 };
@@ -450,5 +457,5 @@ export const SENSITIVE_FIELD_PATTERNS = [
  * Check if field name matches sensitive patterns
  */
 export function matchesSensitivePattern(fieldName: string): boolean {
-  return SENSITIVE_FIELD_PATTERNS.some(pattern => pattern.test(fieldName));
+  return SENSITIVE_FIELD_PATTERNS.some((pattern) => pattern.test(fieldName));
 }

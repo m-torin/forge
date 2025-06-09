@@ -1,14 +1,14 @@
-import Image from 'next/image';
-import React, { type FC } from 'react';
+import Image from 'next/image'
+import { type FC } from 'react'
 
-import facebook from '../../../images/socials/facebook.svg';
-import telegram from '../../../images/socials/telegram.svg';
-import twitter from '../../../images/socials/twitter.svg';
-import youtube from '../../../images/socials/youtube.svg';
-import { type SocialType } from '../SocialsShare/SocialsShare';
+import facebook from '../../../images/socials/facebook.svg'
+import telegram from '../../../images/socials/telegram.svg'
+import twitter from '../../../images/socials/twitter.svg'
+import youtube from '../../../images/socials/youtube.svg'
+import { type SocialType } from '../SocialsShare/SocialsShare'
 
 export interface SocialsList1Props {
-  className?: string;
+  className?: string
 }
 
 const socials: SocialType[] = [
@@ -16,7 +16,7 @@ const socials: SocialType[] = [
   { name: 'Youtube', href: '#', icon: youtube },
   { name: 'Telegram', href: '#', icon: telegram },
   { name: 'Twitter', href: '#', icon: twitter },
-];
+]
 
 const SocialsList1: FC<SocialsList1Props> = ({ className = 'space-y-3' }) => {
   const renderItem = (item: SocialType, index: number) => {
@@ -24,21 +24,21 @@ const SocialsList1: FC<SocialsList1Props> = ({ className = 'space-y-3' }) => {
       <a
         key={index}
         href={item.href}
-        className="flex items-center text-2xl text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white leading-none space-x-2 group"
+        className="group flex items-center space-x-2 text-2xl leading-none text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white"
       >
-        <div className="shrink-0 w-5 ">
+        <div className="w-5 shrink-0">
           <Image alt="" sizes="40px" src={item.icon} />
         </div>
-        <span className="hidden lg:block text-sm">{item.name}</span>
+        <span className="hidden text-sm lg:block">{item.name}</span>
       </a>
-    );
-  };
+    )
+  }
 
   return (
     <div data-nc-id="SocialsList1" className={`nc-SocialsList1 ${className}`}>
       {socials.map(renderItem)}
     </div>
-  );
-};
+  )
+}
 
-export default SocialsList1;
+export default SocialsList1

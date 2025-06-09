@@ -1,16 +1,22 @@
 // Git automation for version control and CI/CD integration
-import { execSync, exec } from 'child_process';
-import { promisify } from 'util';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { exec, execSync } from 'child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { WorkflowSpecification, RepairAttempt, ErrorAnalysis, RepairOutcome } from '../types';
+import { promisify } from 'util';
+
+import {
+  type ErrorAnalysis,
+  type RepairAttempt,
+  type RepairOutcome,
+  type WorkflowSpecification,
+} from '../types';
 
 const execAsync = promisify(exec);
 
 export class GitAutomation {
-  private currentBranch: string = '';
-  private baseBranch: string = 'main';
-  private remoteUrl: string = '';
+  private currentBranch = '';
+  private baseBranch = 'main';
+  private remoteUrl = '';
   private githubToken: string = process.env.GITHUB_TOKEN || '';
 
   constructor() {

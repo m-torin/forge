@@ -1,24 +1,24 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 
 export interface LikeButtonProps {
-  className?: string;
-  liked?: boolean;
+  className?: string
+  liked?: boolean
 }
 
 const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false }) => {
-  const [isLiked, setIsLiked] = useState(liked);
+  const [isLiked, setIsLiked] = useState(liked)
 
   // make random for demo
   useEffect(() => {
-    setIsLiked(Math.random() > 0.5);
-  }, []);
+    setIsLiked(Math.random() > 0.5)
+  }, [])
 
   return (
     <button
       onClick={() => setIsLiked(!isLiked)}
-      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 ${className}`}
+      className={`nc-shadow-lg flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 ${className}`}
     >
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
         <path
@@ -31,7 +31,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ className = '', liked = false }
         />
       </svg>
     </button>
-  );
-};
+  )
+}
 
-export default LikeButton;
+export default LikeButton

@@ -1,4 +1,5 @@
-import { getProducts } from "@/data/data";
+import { getCollectionByHandle, getProductsByCollection } from "@/lib/data-service";
+import { type Metadata } from "next";
 
 import {
   Pagination,
@@ -12,13 +13,28 @@ import {
 
 import { CollectionStyle2Client } from "./CollectionStyle2Client";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle } = await params;
+  const collection = await getCollectionByHandle(handle);
+
+  return {
+    description: `Browse our ${collection?.title || handle} collection with ${collection?.count || 0} products`,
+    title: `${collection?.title || handle} | Collections`,
+  };
+}
+
 export default async function Page({
   params,
 }: {
   params: Promise<{ handle: string }>;
 }) {
-  const { handle: _handle } = await params;
-  const products = await getProducts();
+  const { handle } = await params;
+  const collection = await getCollectionByHandle(handle);
+  const products = await getProductsByCollection(handle);
 
   return (
     <main>

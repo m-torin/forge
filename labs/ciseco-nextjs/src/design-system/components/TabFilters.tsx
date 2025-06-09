@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import { Popover, PopoverButton, PopoverPanel, type PopoverPanelProps } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { Popover, PopoverButton, PopoverPanel, type PopoverPanelProps } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import {
   Cancel01Icon,
   DollarCircleIcon,
@@ -10,16 +10,16 @@ import {
   PercentCircleIcon,
   ResizeFieldRectangleIcon,
   SortingAZ02Icon,
-} from '@hugeicons/core-free-icons';
-import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
-import Slider from 'rc-slider';
-import { useState } from 'react';
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
+import Slider from 'rc-slider'
+import { useState } from 'react'
 
-import ButtonPrimary from './shared/Button/ButtonPrimary';
-import ButtonThird from './shared/Button/ButtonThird';
-import Checkbox from './shared/Checkbox/Checkbox';
-import Input from './shared/Input/Input';
-import Radio from './shared/Radio/Radio';
+import ButtonPrimary from './shared/Button/ButtonPrimary'
+import ButtonThird from './shared/Button/ButtonThird'
+import Checkbox from './shared/Checkbox/Checkbox'
+import Input from './shared/Input/Input'
+import Radio from './shared/Radio/Radio'
 
 // DEMO DATA
 const DATA_categories = [
@@ -35,50 +35,40 @@ const DATA_categories = [
   {
     name: 'Accessories',
   },
-];
-const DATA_colors = [
-  { name: 'Beige' },
-  { name: 'Blue' },
-  { name: 'Black' },
-  { name: 'Brown' },
-  { name: 'Green' },
-];
-const DATA_sizes = [{ name: 'XS' }, { name: 'S' }, { name: 'M' }, { name: 'L' }, { name: 'XL' }];
+]
+const DATA_colors = [{ name: 'Beige' }, { name: 'Blue' }, { name: 'Black' }, { name: 'Brown' }, { name: 'Green' }]
+const DATA_sizes = [{ name: 'XS' }, { name: 'S' }, { name: 'M' }, { name: 'L' }, { name: 'XL' }]
 const DATA_sortOrderRadios = [
   { id: 'Most-Popular', name: 'Most Popular' },
   { id: 'Best-Rating', name: 'Best Rating' },
   { id: 'Newest', name: 'Newest' },
   { id: 'Price-low-hight', name: 'Price Low - Hight' },
   { id: 'Price-hight-low', name: 'Price Hight - Low' },
-];
-const PRICE_RANGE = [1, 500];
+]
+const PRICE_RANGE = [1, 500]
 //
 const TabFilters = ({ className }: { className?: string }) => {
-  const [isOnSale, setIsIsOnSale] = useState<boolean>();
-  const [rangePrices, setRangePrices] = useState<number[]>([100, 500]);
-  const [categoriesState, setCategoriesState] = useState<string[]>();
-  const [colorsState, setColorsState] = useState<string[]>();
-  const [sizesState, setSizesState] = useState<string[]>();
-  const [sortOrderStates, setSortOrderStates] = useState<string>();
+  const [isOnSale, setIsIsOnSale] = useState<boolean>()
+  const [rangePrices, setRangePrices] = useState<number[]>([100, 500])
+  const [categoriesState, setCategoriesState] = useState<string[]>()
+  const [colorsState, setColorsState] = useState<string[]>()
+  const [sizesState, setSizesState] = useState<string[]>()
+  const [sortOrderStates, setSortOrderStates] = useState<string>()
 
   //
   const handleChangeCategories = (checked: boolean, name: string) => {
     checked
       ? setCategoriesState([...(categoriesState || []), name])
-      : setCategoriesState(categoriesState?.filter((i) => i !== name));
-  };
+      : setCategoriesState(categoriesState?.filter((i) => i !== name))
+  }
 
   const handleChangeColors = (checked: boolean, name: string) => {
-    checked
-      ? setColorsState([...(colorsState || []), name])
-      : setColorsState(colorsState?.filter((i) => i !== name));
-  };
+    checked ? setColorsState([...(colorsState || []), name]) : setColorsState(colorsState?.filter((i) => i !== name))
+  }
 
   const handleChangeSizes = (checked: boolean, name: string) => {
-    checked
-      ? setSizesState([...(sizesState || []), name])
-      : setSizesState(sizesState?.filter((i) => i !== name));
-  };
+    checked ? setSizesState([...(sizesState || []), name]) : setSizesState(sizesState?.filter((i) => i !== name))
+  }
 
   // OK
   const renderTabsCategories = () => {
@@ -110,8 +100,8 @@ const TabFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </FieldPopover>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsSortOrder = () => {
@@ -136,8 +126,8 @@ const TabFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </FieldPopover>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsColor = () => {
@@ -162,8 +152,8 @@ const TabFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </FieldPopover>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsSize = () => {
@@ -188,8 +178,8 @@ const TabFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </FieldPopover>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsPriceRage = () => {
@@ -217,10 +207,7 @@ const TabFilters = ({ className }: { className?: string }) => {
 
           <div className="flex justify-between gap-x-5">
             <div>
-              <label
-                htmlFor="minPrice"
-                className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-              >
+              <label htmlFor="minPrice" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Min price
               </label>
               <div className="relative mt-1 rounded-md">
@@ -240,10 +227,7 @@ const TabFilters = ({ className }: { className?: string }) => {
               </div>
             </div>
             <div>
-              <label
-                htmlFor="maxPrice"
-                className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-              >
+              <label htmlFor="maxPrice" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Max price
               </label>
               <div className="relative mt-1 rounded-md">
@@ -264,15 +248,15 @@ const TabFilters = ({ className }: { className?: string }) => {
           </div>
         </div>
       </FieldPopover>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabIsOnsale = () => {
     return (
       <button
         onClick={() => setIsIsOnSale(!isOnSale)}
-        className={`flex cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-sm select-none focus:outline-hidden ${
+        className={`focus:outline-hidden flex cursor-pointer select-none items-center justify-center rounded-full border px-4 py-2 text-sm ${
           isOnSale
             ? 'border-primary-500 bg-primary-50 text-primary-900'
             : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500'
@@ -286,17 +270,17 @@ const TabFilters = ({ className }: { className?: string }) => {
         {isOnSale && (
           <span
             onClick={(e) => {
-              e.stopPropagation();
-              setIsIsOnSale(false);
+              e.stopPropagation()
+              setIsIsOnSale(false)
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
-                e.stopPropagation();
-                setIsIsOnSale(false);
+                e.stopPropagation()
+                setIsIsOnSale(false)
               }
             }}
             role="button"
-            className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white"
+            className="bg-primary-500 ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full text-white"
             aria-label="Clear on sale filter"
             tabIndex={0}
           >
@@ -304,8 +288,8 @@ const TabFilters = ({ className }: { className?: string }) => {
           </span>
         )}
       </button>
-    );
-  };
+    )
+  }
 
   return (
     <div className={className}>
@@ -318,8 +302,8 @@ const TabFilters = ({ className }: { className?: string }) => {
         <div className="ml-auto">{renderTabsSortOrder()}</div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const FieldPopover = ({
   anchor = 'bottom start',
@@ -329,17 +313,17 @@ const FieldPopover = ({
   fieldState,
   onClickClear,
 }: {
-  fieldState: any[] | string | undefined;
-  onClickClear: () => void;
-  children?: React.ReactNode;
-  anchor?: PopoverPanelProps['anchor'];
-  buttonText: string;
-  buttonIcon: IconSvgElement;
+  fieldState: any[] | string | undefined
+  onClickClear: () => void
+  children?: React.ReactNode
+  anchor?: PopoverPanelProps['anchor']
+  buttonText: string
+  buttonIcon: IconSvgElement
 }) => {
   return (
     <Popover className="group relative">
       <PopoverButton
-        className={`flex items-center justify-center rounded-full border px-4 py-2 text-sm select-none group-data-open:border-primary-500 focus:outline-hidden ${
+        className={`group-data-open:border-primary-500 focus:outline-hidden flex select-none items-center justify-center rounded-full border px-4 py-2 text-sm ${
           fieldState?.length
             ? 'border-primary-500 bg-primary-50 text-primary-900'
             : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500'
@@ -352,7 +336,7 @@ const FieldPopover = ({
         ) : (
           <span
             onClick={onClickClear}
-            className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white"
+            className="bg-primary-500 ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full text-white"
           >
             <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Cancel01Icon} size={10} />
           </span>
@@ -362,7 +346,7 @@ const FieldPopover = ({
       <PopoverPanel
         anchor={anchor}
         transition
-        className="z-10 mt-3 w-96 rounded-2xl border border-neutral-200 bg-white px-4 shadow-xl transition duration-200 ease-out data-closed:translate-y-1 data-closed:opacity-0 sm:px-0 dark:border-neutral-700 dark:bg-neutral-900"
+        className="data-closed:translate-y-1 data-closed:opacity-0 z-10 mt-3 w-96 rounded-2xl border border-neutral-200 bg-white px-4 shadow-xl transition duration-200 ease-out sm:px-0 dark:border-neutral-700 dark:bg-neutral-900"
       >
         {({ close }) => (
           <>
@@ -370,9 +354,9 @@ const FieldPopover = ({
             <div className="flex items-center justify-between bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900">
               <ButtonThird
                 onClick={() => {
-                  onClickClear();
-                  close();
-                  console.log('clear');
+                  onClickClear()
+                  close()
+                  console.log('clear')
                 }}
                 sizeClass="px-4 py-2 sm:px-5"
               >
@@ -386,7 +370,7 @@ const FieldPopover = ({
         )}
       </PopoverPanel>
     </Popover>
-  );
-};
+  )
+}
 
-export default TabFilters;
+export default TabFilters

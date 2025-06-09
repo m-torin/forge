@@ -1,6 +1,6 @@
-import CollectionCard3 from './CollectionCard3';
+import CollectionCard3 from './CollectionCard3'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof CollectionCard3> = {
   argTypes: {
@@ -24,10 +24,10 @@ const meta: Meta<typeof CollectionCard3> = {
     layout: 'centered',
   },
   title: 'Ciseco/CollectionCard3',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockCollection = {
   id: 'gid://1',
@@ -43,13 +43,13 @@ const mockCollection = {
   },
   sortDescription: 'Fresh styles for the modern wardrobe',
   title: 'New Arrivals',
-};
+}
 
 export const Default: Story = {
   args: {
     collection: mockCollection,
   },
-};
+}
 
 export const SummerCollection: Story = {
   args: {
@@ -66,7 +66,7 @@ export const SummerCollection: Story = {
       title: 'Summer Essentials',
     },
   },
-};
+}
 
 export const WinterCollection: Story = {
   args: {
@@ -83,7 +83,7 @@ export const WinterCollection: Story = {
       title: 'Winter Warmth',
     },
   },
-};
+}
 
 export const NoImage: Story = {
   args: {
@@ -92,7 +92,7 @@ export const NoImage: Story = {
       image: undefined,
     },
   },
-};
+}
 
 export const LongTitle: Story = {
   args: {
@@ -102,7 +102,7 @@ export const LongTitle: Story = {
       title: 'Premium Designer Collection',
     },
   },
-};
+}
 
 export const HTMLDescription: Story = {
   args: {
@@ -111,7 +111,7 @@ export const HTMLDescription: Story = {
       sortDescription: '<strong>Limited Edition</strong> items with <em>exclusive</em> designs',
     },
   },
-};
+}
 
 export const NoHandle: Story = {
   args: {
@@ -120,11 +120,11 @@ export const NoHandle: Story = {
       handle: undefined,
     },
   },
-};
+}
 
 export const DifferentBackgrounds: Story = {
   render: () => (
-    <div className="space-y-6 max-w-2xl">
+    <div className="max-w-2xl space-y-6">
       <CollectionCard3
         collection={{
           ...mockCollection,
@@ -151,11 +151,11 @@ export const DifferentBackgrounds: Story = {
       />
     </div>
   ),
-};
+}
 
 export const Grid: Story = {
   render: () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
+    <div className="grid max-w-6xl grid-cols-1 gap-6 lg:grid-cols-2">
       {[
         {
           color: 'bg-blue-50',
@@ -201,15 +201,15 @@ export const Grid: Story = {
       ))}
     </div>
   ),
-};
+}
 
 export const ResponsiveLayout: Story = {
   render: () => (
-    <div className="space-y-4 max-w-4xl">
-      <div className="text-sm text-gray-600 mb-4">
+    <div className="max-w-4xl space-y-4">
+      <div className="mb-4 text-sm text-gray-600">
         Responsive: Single column on mobile, side-by-side on larger screens
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <CollectionCard3 collection={mockCollection} />
         <CollectionCard3
           collection={{
@@ -222,4 +222,4 @@ export const ResponsiveLayout: Story = {
       </div>
     </div>
   ),
-};
+}

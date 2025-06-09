@@ -3,7 +3,7 @@
  * Migrated from the original observability package
  */
 
-import { withLogtail } from '@logtail/next';
+import { withLogtail as withBetterStack } from '@logtail/next';
 import { withSentryConfig } from '@sentry/nextjs';
 
 import type { NextConfig } from 'next';
@@ -15,12 +15,18 @@ export interface SentryBuildOptions {
   authToken?: string;
   automaticVercelMonitors?: boolean;
   disableLogger?: boolean;
-  hideSourceMaps?: boolean;
   org?: string;
   project?: string;
   silent?: boolean;
   tunnelRoute?: string;
   widenClientFileUpload?: boolean;
+  sourcemaps?: {
+    disable?: boolean;
+    deleteSourcemapsAfterUpload?: boolean;
+  };
+  release?: {
+    name?: string;
+  };
 }
 
 /**
@@ -52,8 +58,14 @@ export function withSentry(
     // Enable automatic Vercel Cron monitoring
     automaticVercelMonitors: sentryBuildOptions?.automaticVercelMonitors ?? true,
 
-    // Hide source maps from public access
-    hideSourceMaps: sentryBuildOptions?.hideSourceMaps ?? true,
+    // Source maps configuration
+    sourcemaps: sentryBuildOptions?.sourcemaps || {
+      disable: false,
+      deleteSourcemapsAfterUpload: true, // Default in v9
+    },
+
+    // Release configuration
+    release: sentryBuildOptions?.release,
   };
 
   // Add transpilePackages for Sentry
@@ -66,11 +78,11 @@ export function withSentry(
 }
 
 /**
- * Wrap Next.js config with Logtail
- * This adds Logtail's logging capabilities
+ * Wrap Next.js config with Better Stack (Logtail)
+ * This adds Better Stack's optimized logging capabilities for Next.js
  */
 export function withLogging(nextConfig: NextConfig): NextConfig {
-  return withLogtail(nextConfig);
+  return withBetterStack(nextConfig);
 }
 
 /**
@@ -80,7 +92,7 @@ export function withLogging(nextConfig: NextConfig): NextConfig {
  * @example
  * ```js
  * // next.config.js
- * import { withObservability } from '@repo/observability/next/config';
+ * import { withObservability } from '@repo/observability/server/next';
  *
  * export default withObservability({
  *   // Your Next.js config
@@ -89,7 +101,7 @@ export function withLogging(nextConfig: NextConfig): NextConfig {
  *     org: 'my-org',
  *     project: 'my-project'
  *   },
- *   logtail: true
+ *   logtail: true // Enables Better Stack integration
  * });
  * ```
  */
@@ -97,7 +109,7 @@ export function withObservability(
   nextConfig: NextConfig,
   options?: {
     sentry?: SentryBuildOptions | boolean;
-    logtail?: boolean;
+    logtail?: boolean; // Enables Better Stack (Logtail) integration
   },
 ): NextConfig {
   let config = nextConfig;

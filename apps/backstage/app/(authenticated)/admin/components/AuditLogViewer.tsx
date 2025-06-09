@@ -1,68 +1,69 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  Card,
-  Text,
-  Table,
-  Badge,
-  Stack,
-  Group,
-  Select,
-  TextInput,
-  Button,
   ActionIcon,
-  Tooltip,
   Alert,
-  Pagination,
+  Badge,
   Box,
-  ScrollArea,
-  Paper,
-  Divider,
+  Button,
+  Card,
+  Group,
   LoadingOverlay,
+  Pagination,
+  Paper,
+  ScrollArea,
+  Select,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Tooltip,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import {
-  IconSearch,
-  IconRefresh,
-  IconEye,
-  IconDownload,
-  IconShield,
   IconAlertTriangle,
+  IconDownload,
+  IconEye,
   IconInfoCircle,
+  IconRefresh,
+  IconSearch,
+  IconShield,
 } from '@tabler/icons-react';
-import { Security } from '../lib/security-middleware';
+import { useEffect, useState } from 'react';
+
+// TODO: Replace with API route or server action
+// import { Security } from '../lib/security-middleware';
 
 interface AuditEntry {
-  timestamp: string;
-  userId: string;
   action: string;
-  modelName: string;
-  recordId?: string;
+  error?: string;
   fieldName?: string;
-  oldValue?: any;
-  newValue?: any;
   ipAddress?: string;
-  userAgent?: string;
+  modelName: string;
+  newValue?: any;
+  oldValue?: any;
+  recordId?: string;
   sessionId: string;
   severity: 'low' | 'medium' | 'high';
   success: boolean;
-  error?: string;
+  timestamp: string;
+  userAgent?: string;
+  userId: string;
 }
 
 interface AuditLogViewerProps {
-  userId?: string; // If provided, shows logs for specific user
-  modelName?: string; // If provided, shows logs for specific model
   className?: string;
+  modelName?: string; // If provided, shows logs for specific model
+  userId?: string; // If provided, shows logs for specific user
 }
 
-export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerProps) {
+export function AuditLogViewer({ className, modelName, userId }: AuditLogViewerProps) {
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
-  
+
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState<string>('');
@@ -75,20 +76,22 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
     setLoading(true);
     try {
       // In a real implementation, this would be an API call
-      const auditLogs = Security.getRecentAuditLogs(1000);
-      
+      // TODO: Replace with API route or server action
+      // const auditLogs = Security.getRecentAuditLogs(1000);
+      const auditLogs: AuditEntry[] = [];
+
       let filtered = auditLogs;
-      
+
       // Apply user filter if provided
       if (userId) {
-        filtered = filtered.filter(log => log.userId === userId);
+        filtered = filtered.filter((log) => log.userId === userId);
       }
-      
+
       // Apply model filter if provided
       if (modelName) {
-        filtered = filtered.filter(log => log.modelName === modelName);
+        filtered = filtered.filter((log) => log.modelName === modelName);
       }
-      
+
       setLogs(filtered);
       setFilteredLogs(filtered);
     } catch (error) {
@@ -101,53 +104,54 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
   // Apply filters
   useEffect(() => {
     let filtered = [...logs];
-    
+
     // Search filter
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(log =>
-        log.action.toLowerCase().includes(search) ||
-        log.modelName.toLowerCase().includes(search) ||
-        log.fieldName?.toLowerCase().includes(search) ||
-        log.userId.toLowerCase().includes(search) ||
-        log.recordId?.toLowerCase().includes(search)
+      filtered = filtered.filter(
+        (log) =>
+          log.action.toLowerCase().includes(search) ||
+          log.modelName.toLowerCase().includes(search) ||
+          log.fieldName?.toLowerCase().includes(search) ||
+          log.userId.toLowerCase().includes(search) ||
+          log.recordId?.toLowerCase().includes(search),
       );
     }
-    
+
     // Severity filter
     if (severityFilter) {
-      filtered = filtered.filter(log => log.severity === severityFilter);
+      filtered = filtered.filter((log) => log.severity === severityFilter);
     }
-    
+
     // Action filter
     if (actionFilter) {
-      filtered = filtered.filter(log => log.action === actionFilter);
+      filtered = filtered.filter((log) => log.action === actionFilter);
     }
-    
+
     // Success filter
     if (successFilter) {
       const isSuccess = successFilter === 'true';
-      filtered = filtered.filter(log => log.success === isSuccess);
+      filtered = filtered.filter((log) => log.success === isSuccess);
     }
-    
+
     // Date range filter
     const [startDate, endDate] = dateRange;
     if (startDate) {
-      filtered = filtered.filter(log => new Date(log.timestamp) >= startDate);
+      filtered = filtered.filter((log) => new Date(log.timestamp) >= startDate);
     }
     if (endDate) {
-      filtered = filtered.filter(log => new Date(log.timestamp) <= endDate);
+      filtered = filtered.filter((log) => new Date(log.timestamp) <= endDate);
     }
-    
+
     // Sort by timestamp (newest first)
     filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    
+
     setFilteredLogs(filtered);
     setCurrentPage(1);
   }, [logs, searchTerm, severityFilter, actionFilter, successFilter, dateRange]);
 
   // Get unique actions for filter
-  const uniqueActions = [...new Set(logs.map(log => log.action))];
+  const uniqueActions = [...new Set(logs.map((log) => log.action))];
 
   // Get paginated logs
   const startIndex = (currentPage - 1) * pageSize;
@@ -157,15 +161,19 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
   // Severity color mapping
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'high': return 'red';
-      case 'medium': return 'orange';
-      case 'low': return 'blue';
-      default: return 'gray';
+      case 'high':
+        return 'red';
+      case 'medium':
+        return 'orange';
+      case 'low':
+        return 'blue';
+      default:
+        return 'gray';
     }
   };
 
   // Success badge color
-  const getSuccessColor = (success: boolean) => success ? 'green' : 'red';
+  const getSuccessColor = (success: boolean) => (success ? 'green' : 'red');
 
   // Format timestamp
   const formatTimestamp = (timestamp: string) => {
@@ -176,7 +184,7 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
   const exportLogs = () => {
     const headers = [
       'Timestamp',
-      'User ID', 
+      'User ID',
       'Action',
       'Model',
       'Record ID',
@@ -184,10 +192,10 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
       'Severity',
       'Success',
       'IP Address',
-      'Error'
+      'Error',
     ];
-    
-    const csvData = filteredLogs.map(log => [
+
+    const csvData = filteredLogs.map((log) => [
       log.timestamp,
       log.userId,
       log.action,
@@ -197,14 +205,14 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
       log.severity,
       log.success ? 'Success' : 'Failed',
       log.ipAddress || '',
-      log.error || ''
+      log.error || '',
     ]);
-    
+
     const csvContent = [
       headers.join(','),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+      ...csvData.map((row) => row.map((cell) => `"${cell}"`).join(',')),
     ].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -221,36 +229,28 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
   return (
     <Card className={className} p="lg">
       <LoadingOverlay visible={loading} />
-      
+
       <Stack gap="md">
         {/* Header */}
         <Group justify="space-between">
           <Group gap="xs">
             <IconShield size={20} />
-            <Text size="lg" fw={600}>
+            <Text fw={600} size="lg">
               Security Audit Log
               {userId && ` - User: ${userId}`}
               {modelName && ` - Model: ${modelName}`}
             </Text>
           </Group>
-          
+
           <Group gap="xs">
             <Tooltip label="Refresh logs">
-              <ActionIcon
-                variant="light"
-                onClick={loadAuditLogs}
-                loading={loading}
-              >
+              <ActionIcon loading={loading} onClick={loadAuditLogs} variant="light">
                 <IconRefresh size={16} />
               </ActionIcon>
             </Tooltip>
-            
+
             <Tooltip label="Export to CSV">
-              <ActionIcon
-                variant="light"
-                onClick={exportLogs}
-                disabled={filteredLogs.length === 0}
-              >
+              <ActionIcon onClick={exportLogs} disabled={filteredLogs.length === 0} variant="light">
                 <IconDownload size={16} />
               </ActionIcon>
             </Tooltip>
@@ -258,100 +258,113 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
         </Group>
 
         {/* Summary Stats */}
-        <Paper p="md" withBorder>
+        <Paper withBorder p="md">
           <Group gap="xl">
             <Box>
-              <Text size="xl" fw={700} c="blue">
+              <Text c="blue" fw={700} size="xl">
                 {filteredLogs.length}
               </Text>
-              <Text size="sm" c="dimmed">Total Events</Text>
-            </Box>
-            
-            <Box>
-              <Text size="xl" fw={700} c="red">
-                {filteredLogs.filter(log => log.severity === 'high').length}
+              <Text c="dimmed" size="sm">
+                Total Events
               </Text>
-              <Text size="sm" c="dimmed">High Severity</Text>
             </Box>
-            
+
             <Box>
-              <Text size="xl" fw={700} c="red">
-                {filteredLogs.filter(log => !log.success).length}
+              <Text c="red" fw={700} size="xl">
+                {filteredLogs.filter((log) => log.severity === 'high').length}
               </Text>
-              <Text size="sm" c="dimmed">Failed Actions</Text>
+              <Text c="dimmed" size="sm">
+                High Severity
+              </Text>
             </Box>
-            
+
             <Box>
-              <Text size="xl" fw={700} c="green">
-                {Math.round((filteredLogs.filter(log => log.success).length / Math.max(filteredLogs.length, 1)) * 100)}%
+              <Text c="red" fw={700} size="xl">
+                {filteredLogs.filter((log) => !log.success).length}
               </Text>
-              <Text size="sm" c="dimmed">Success Rate</Text>
+              <Text c="dimmed" size="sm">
+                Failed Actions
+              </Text>
+            </Box>
+
+            <Box>
+              <Text c="green" fw={700} size="xl">
+                {Math.round(
+                  (filteredLogs.filter((log) => log.success).length /
+                    Math.max(filteredLogs.length, 1)) *
+                    100,
+                )}
+                %
+              </Text>
+              <Text c="dimmed" size="sm">
+                Success Rate
+              </Text>
             </Box>
           </Group>
         </Paper>
 
         {/* Filters */}
-        <Paper p="md" withBorder>
+        <Paper withBorder p="md">
           <Stack gap="md">
-            <Text size="sm" fw={500}>Filters</Text>
-            
-            <Group gap="md" grow>
+            <Text fw={500} size="sm">
+              Filters
+            </Text>
+
+            <Group grow gap="md">
               <TextInput
+                leftSection={<IconSearch size={16} />}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search logs..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                leftSection={<IconSearch size={16} />}
               />
-              
+
               <Select
-                placeholder="Severity"
-                value={severityFilter}
                 onChange={(value) => setSeverityFilter(value || '')}
-                data={[
-                  { value: '', label: 'All Severities' },
-                  { value: 'high', label: 'High' },
-                  { value: 'medium', label: 'Medium' },
-                  { value: 'low', label: 'Low' },
-                ]}
+                placeholder="Severity"
                 clearable
+                data={[
+                  { label: 'All Severities', value: '' },
+                  { label: 'High', value: 'high' },
+                  { label: 'Medium', value: 'medium' },
+                  { label: 'Low', value: 'low' },
+                ]}
+                value={severityFilter}
               />
-              
+
               <Select
-                placeholder="Action"
-                value={actionFilter}
                 onChange={(value) => setActionFilter(value || '')}
-                data={[
-                  { value: '', label: 'All Actions' },
-                  ...uniqueActions.map(action => ({ value: action, label: action }))
-                ]}
+                placeholder="Action"
                 clearable
+                data={[
+                  { label: 'All Actions', value: '' },
+                  ...uniqueActions.map((action) => ({ label: action, value: action })),
+                ]}
+                value={actionFilter}
               />
-              
+
               <Select
-                placeholder="Status"
-                value={successFilter}
                 onChange={(value) => setSuccessFilter(value || '')}
-                data={[
-                  { value: '', label: 'All' },
-                  { value: 'true', label: 'Success' },
-                  { value: 'false', label: 'Failed' },
-                ]}
+                placeholder="Status"
                 clearable
+                data={[
+                  { label: 'All', value: '' },
+                  { label: 'Success', value: 'true' },
+                  { label: 'Failed', value: 'false' },
+                ]}
+                value={successFilter}
               />
             </Group>
-            
+
             <Group gap="md">
               <DatePickerInput
-                type="range"
-                placeholder="Date range"
-                value={dateRange}
                 onChange={setDateRange}
+                placeholder="Date range"
                 clearable
+                type="range"
+                value={dateRange}
               />
-              
+
               <Button
-                variant="light"
-                size="sm"
                 onClick={() => {
                   setSearchTerm('');
                   setSeverityFilter('');
@@ -359,6 +372,8 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
                   setSuccessFilter('');
                   setDateRange([null, null]);
                 }}
+                size="sm"
+                variant="light"
               >
                 Clear Filters
               </Button>
@@ -368,13 +383,13 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
 
         {/* Audit Log Table */}
         {filteredLogs.length === 0 ? (
-          <Alert icon={<IconInfoCircle size={16} />} color="blue">
+          <Alert color="blue" icon={<IconInfoCircle size={16} />}>
             No audit logs found matching the current filters.
           </Alert>
         ) : (
           <>
             <ScrollArea>
-              <Table striped highlightOnHover>
+              <Table highlightOnHover striped>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Timestamp</Table.Th>
@@ -392,77 +407,69 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
                   {paginatedLogs.map((log, index) => (
                     <Table.Tr key={`${log.timestamp}-${index}`}>
                       <Table.Td>
-                        <Text size="xs" family="monospace">
+                        <Text family="monospace" size="xs">
                           {formatTimestamp(log.timestamp)}
                         </Text>
                       </Table.Td>
-                      
+
                       <Table.Td>
-                        <Badge
-                          size="sm"
-                          color={getSeverityColor(log.severity)}
-                          variant="light"
-                        >
+                        <Badge color={getSeverityColor(log.severity)} size="sm" variant="light">
                           {log.severity.toUpperCase()}
                         </Badge>
                       </Table.Td>
-                      
+
                       <Table.Td>
-                        <Text size="sm" fw={500}>
+                        <Text fw={500} size="sm">
                           {log.action}
                         </Text>
                       </Table.Td>
-                      
+
                       <Table.Td>
                         <Text size="sm">{log.modelName}</Text>
                         {log.recordId && (
-                          <Text size="xs" c="dimmed">
+                          <Text c="dimmed" size="xs">
                             ID: {log.recordId}
                           </Text>
                         )}
                       </Table.Td>
-                      
+
                       <Table.Td>
                         {log.fieldName && (
-                          <Text size="sm" family="monospace">
+                          <Text family="monospace" size="sm">
                             {log.fieldName}
                           </Text>
                         )}
                       </Table.Td>
-                      
+
                       <Table.Td>
-                        <Text size="sm" family="monospace">
+                        <Text family="monospace" size="sm">
                           {log.userId}
                         </Text>
                       </Table.Td>
-                      
+
                       <Table.Td>
-                        <Badge
-                          size="sm"
-                          color={getSuccessColor(log.success)}
-                          variant="light"
-                        >
+                        <Badge color={getSuccessColor(log.success)} size="sm" variant="light">
                           {log.success ? 'Success' : 'Failed'}
                         </Badge>
                       </Table.Td>
-                      
+
                       <Table.Td>
-                        <Text size="xs" family="monospace">
+                        <Text family="monospace" size="xs">
                           {log.ipAddress || '-'}
                         </Text>
                       </Table.Td>
-                      
+
                       <Table.Td>
                         {log.error && (
                           <Tooltip label={log.error}>
-                            <ActionIcon size="sm" variant="light" color="red">
+                            <ActionIcon color="red" size="sm" variant="light">
                               <IconAlertTriangle size={12} />
                             </ActionIcon>
                           </Tooltip>
                         )}
                         {(log.oldValue || log.newValue) && (
                           <Tooltip label="Value changed">
-                            <ActionIcon size="sm" variant="light" color="blue">
+                            <ActionIcon color="blue" size="sm" variant="light">
                               <IconEye size={12} />
                             </ActionIcon>
                           </Tooltip>
@@ -478,16 +485,17 @@ export function AuditLogViewer({ userId, modelName, className }: AuditLogViewerP
             {totalPages > 1 && (
               <Group justify="center">
                 <Pagination
-                  value={currentPage}
                   onChange={setCurrentPage}
                   total={totalPages}
                   size="sm"
+                  value={currentPage}
                 />
               </Group>
             )}
 
-            <Text size="xs" c="dimmed" ta="center">
-              Showing {startIndex + 1}-{Math.min(startIndex + pageSize, filteredLogs.length)} of {filteredLogs.length} events
+            <Text c="dimmed" size="xs" ta="center">
+              Showing {startIndex + 1}-{Math.min(startIndex + pageSize, filteredLogs.length)} of{' '}
+              {filteredLogs.length} events
             </Text>
           </>
         )}

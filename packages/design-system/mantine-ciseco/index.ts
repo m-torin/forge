@@ -68,7 +68,7 @@ export { default as CurrLangDropdown } from './components/Header/CurrLangDropdow
 export { default as HamburgerBtnMenu } from './components/Header/HamburgerBtnMenu';
 export { default as Header } from './components/Header/Header';
 export { default as Header2 } from './components/Header/Header2';
-export { default as MegaMenuPopover } from './components/Header/MegaMenuPopover';
+export { MegaMenuPopover } from './components/Header/MegaMenuPopover';
 export { default as SearchBtnPopover } from './components/Header/SearchBtnPopover';
 
 // Header Navigation Components

@@ -178,7 +178,7 @@ export const executeWorkersStep = compose(
     // Execute all workers in parallel
     const startTime = Date.now();
     const results = await Promise.all(
-      workerSteps.map((ste: anyp: any: any, inde: anyx: any: any) =>
+      workerSteps.map((step: any, index: any) =>
         step.execute({
           executionId: `exec_${Date.now()}_${index}`,
           input: {
@@ -211,8 +211,8 @@ export const executeWorkersStep = compose(
   }),
   (step) =>
     withStepMonitoring(step, {
-, 'processingTime', 'memoryUsage'],
       enableDetailedLogging: true,
+      metricsToTrack: ['workerCount', 'processingTime', 'memoryUsage'],
     }),
 );
 
@@ -318,7 +318,6 @@ export const cacheResultsStep = StepTemplates.conditional(
   'cache-results',
   'Cache computation results for future use',
   {
-,
     trueStep: createStep('store-cache', async (data: any) => {
       const cacheKey = `computation_${data.computation.type}_${Date.now()}`;
       const ttl = 3600; // 1 hour

@@ -27,7 +27,10 @@ export class SegmentClientProvider implements AnalyticsProvider {
 
     try {
       // Dynamically import Segment Analytics Next
-      const { AnalyticsBrowser } = await import('@segment/analytics-next');
+      const { AnalyticsBrowser } = await import(
+      /* webpackChunkName: "segment-analytics-browser" */
+      '@segment/analytics-next'
+    );
 
       // Initialize Analytics Browser
       this.analytics = AnalyticsBrowser.load({

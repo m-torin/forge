@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ActionIcon,
@@ -24,8 +24,8 @@ import {
   TextInput,
   ThemeIcon,
   UnstyledButton,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+} from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import {
   IconCalendar,
   IconCheck,
@@ -39,12 +39,12 @@ import {
   IconSelector,
   IconUsers,
   IconX,
-} from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+} from '@tabler/icons-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { getScanHistory } from "../actions";
+import { getScanHistory } from '../actions';
 
-import type { ScanHistory } from "@repo/database/prisma";
+import type { ScanHistory } from '@repo/database/prisma';
 
 interface ScanHistoryWithRelations extends ScanHistory {
   product: {
@@ -67,14 +67,10 @@ interface ThProps {
 }
 
 function Th({ children, onSort, reversed, sorted }: ThProps) {
-  const Icon = sorted
-    ? reversed
-      ? IconChevronUp
-      : IconChevronDown
-    : IconSelector;
+  const Icon = sorted ? (reversed ? IconChevronUp : IconChevronDown) : IconSelector;
   return (
     <Table.Th>
-      <UnstyledButton onClick={onSort} style={{ width: "100%" }}>
+      <UnstyledButton onClick={onSort} style={{ width: '100%' }}>
         <Group justify="space-between">
           <Text fw={500} fz="sm">
             {children}
@@ -91,16 +87,12 @@ function Th({ children, onSort, reversed, sorted }: ThProps) {
 export function ScanHistoryTable() {
   const [scans, setScans] = useState<ScanHistoryWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [successFilter, setSuccessFilter] = useState<
-    "all" | "success" | "failed"
-  >("all");
-  const [platformFilter, setPlatformFilter] = useState("");
+  const [search, setSearch] = useState('');
+  const [successFilter, setSuccessFilter] = useState<'all' | 'success' | 'failed'>('all');
+  const [platformFilter, setPlatformFilter] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [sortBy, setSortBy] = useState<keyof ScanHistoryWithRelations | null>(
-    null,
-  );
+  const [sortBy, setSortBy] = useState<keyof ScanHistoryWithRelations | null>(null);
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -124,8 +116,7 @@ export function ScanHistoryTable() {
         limit: 20,
         page,
         startDate: startDate || undefined,
-        success:
-          successFilter === "all" ? undefined : successFilter === "success",
+        success: successFilter === 'all' ? undefined : successFilter === 'success',
       });
 
       if (result.success && result.data) {
@@ -136,36 +127,30 @@ export function ScanHistoryTable() {
 
         // Calculate stats
         const totalScans = result.data.length;
-        const successfulScans = result.data.filter(
-          (scan) => scan.success,
-        ).length;
-        const uniqueUsers = new Set(
-          result.data.map((scan) => scan.userId).filter(Boolean),
-        ).size;
-        const uniquePlatforms = new Set(
-          result.data.map((scan) => scan.platform).filter(Boolean),
-        ).size;
+        const successfulScans = result.data.filter((scan) => scan.success).length;
+        const uniqueUsers = new Set(result.data.map((scan) => scan.userId).filter(Boolean)).size;
+        const uniquePlatforms = new Set(result.data.map((scan) => scan.platform).filter(Boolean))
+          .size;
 
         setStats({
           successfulScans,
-          successRate:
-            totalScans > 0 ? (successfulScans / totalScans) * 100 : 0,
+          successRate: totalScans > 0 ? (successfulScans / totalScans) * 100 : 0,
           totalScans,
           uniquePlatforms,
           uniqueUsers,
         });
       } else {
         notifications.show({
-          color: "red",
-          message: result.error || "Failed to load scan history",
-          title: "Error",
+          color: 'red',
+          message: result.error || 'Failed to load scan history',
+          title: 'Error',
         });
       }
     } catch (error) {
       notifications.show({
-        color: "red",
-        message: "Failed to load scan history",
-        title: "Error",
+        color: 'red',
+        message: 'Failed to load scan history',
+        title: 'Error',
       });
     } finally {
       setLoading(false);
@@ -183,28 +168,28 @@ export function ScanHistoryTable() {
   };
 
   const formatDate = (date: Date | string) => {
-    return new Intl.DateTimeFormat("en-US", {
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      month: "short",
-      second: "2-digit",
-      year: "numeric",
+    return new Intl.DateTimeFormat('en-US', {
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      month: 'short',
+      second: '2-digit',
+      year: 'numeric',
     }).format(new Date(date));
   };
 
   const getPlatformColor = (platform?: string | null) => {
     switch (platform?.toLowerCase()) {
-      case "ios":
-        return "blue";
-      case "android":
-        return "green";
-      case "web":
-        return "violet";
-      case "api":
-        return "orange";
+      case 'ios':
+        return 'blue';
+      case 'android':
+        return 'green';
+      case 'web':
+        return 'violet';
+      case 'api':
+        return 'orange';
       default:
-        return "gray";
+        return 'gray';
     }
   };
 
@@ -214,13 +199,11 @@ export function ScanHistoryTable() {
         const aValue = a[sortBy];
         const bValue = b[sortBy];
 
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return reverseSortDirection
-            ? bValue.localeCompare(aValue)
-            : aValue.localeCompare(bValue);
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return reverseSortDirection ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
         }
 
-        if (typeof aValue === "boolean" && typeof bValue === "boolean") {
+        if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
           return reverseSortDirection
             ? (bValue ? 1 : 0) - (aValue ? 1 : 0)
             : (aValue ? 1 : 0) - (bValue ? 1 : 0);
@@ -239,7 +222,7 @@ export function ScanHistoryTable() {
   const rows = sortedData.map((scan) => {
     const selected = selectedRows.includes(scan.id);
     return (
-      <Table.Tr key={scan.id} bg={selected ? "blue.0" : undefined}>
+      <Table.Tr key={scan.id} bg={selected ? 'blue.0' : undefined}>
         <Table.Td>
           <Checkbox
             onChange={(event) => {
@@ -300,13 +283,11 @@ export function ScanHistoryTable() {
         </Table.Td>
         <Table.Td>
           <Badge
-            color={scan.success ? "green" : "red"}
-            leftSection={
-              scan.success ? <IconCheck size={12} /> : <IconX size={12} />
-            }
+            color={scan.success ? 'green' : 'red'}
+            leftSection={scan.success ? <IconCheck size={12} /> : <IconX size={12} />}
             variant="light"
           >
-            {scan.success ? "Success" : "Failed"}
+            {scan.success ? 'Success' : 'Failed'}
           </Badge>
         </Table.Td>
         <Table.Td>
@@ -334,9 +315,7 @@ export function ScanHistoryTable() {
 
               <Menu.Dropdown>
                 <Menu.Item
-                  leftSection={
-                    <IconEye style={{ width: rem(14), height: rem(14) }} />
-                  }
+                  leftSection={<IconEye style={{ width: rem(14), height: rem(14) }} />}
                   onClick={() => {
                     // View scan details
                   }}
@@ -382,7 +361,7 @@ export function ScanHistoryTable() {
               </Text>
             </div>
             <RingProgress
-              sections={[{ color: "green", value: stats.successRate }]}
+              sections={[{ color: 'green', value: stats.successRate }]}
               size={60}
               thickness={8}
             />
@@ -426,24 +405,20 @@ export function ScanHistoryTable() {
       <Group justify="space-between">
         <Group>
           <TextInput
-            leftSection={
-              <IconSearch style={{ width: rem(16), height: rem(16) }} />
-            }
+            leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} />}
             onChange={(e) => setSearch(e.currentTarget.value)}
             placeholder="Search barcodes..."
             style={{ width: rem(250) }}
             value={search}
           />
           <Select
-            onChange={(value) =>
-              setSuccessFilter(value as "all" | "success" | "failed")
-            }
+            onChange={(value) => setSuccessFilter(value as 'all' | 'success' | 'failed')}
             placeholder="Filter by status"
             style={{ width: rem(150) }}
             data={[
-              { label: "All scans", value: "all" },
-              { label: "Successful only", value: "success" },
-              { label: "Failed only", value: "failed" },
+              { label: 'All scans', value: 'all' },
+              { label: 'Successful only', value: 'success' },
+              { label: 'Failed only', value: 'failed' },
             ]}
             value={successFilter}
           />
@@ -489,9 +464,9 @@ export function ScanHistoryTable() {
           )}
           <Button
             onClick={() => {
-              setSearch("");
-              setSuccessFilter("all");
-              setPlatformFilter("");
+              setSearch('');
+              setSuccessFilter('all');
+              setPlatformFilter('');
               setStartDate(null);
               setEndDate(null);
               setPage(1);
@@ -516,18 +491,13 @@ export function ScanHistoryTable() {
                       setSelectedRows([]);
                     }
                   }}
-                  checked={
-                    selectedRows.length === scans.length && scans.length > 0
-                  }
-                  indeterminate={
-                    selectedRows.length > 0 &&
-                    selectedRows.length < scans.length
-                  }
+                  checked={selectedRows.length === scans.length && scans.length > 0}
+                  indeterminate={selectedRows.length > 0 && selectedRows.length < scans.length}
                 />
               </Table.Th>
               <Th
-                onSort={() => setSorting("barcode")}
-                sorted={sortBy === "barcode"}
+                onSort={() => setSorting('barcode')}
+                sorted={sortBy === 'barcode'}
                 reversed={reverseSortDirection}
               >
                 Barcode
@@ -535,22 +505,22 @@ export function ScanHistoryTable() {
               <Table.Th>Product</Table.Th>
               <Table.Th>User</Table.Th>
               <Th
-                onSort={() => setSorting("platform")}
-                sorted={sortBy === "platform"}
+                onSort={() => setSorting('platform')}
+                sorted={sortBy === 'platform'}
                 reversed={reverseSortDirection}
               >
                 Platform
               </Th>
               <Th
-                onSort={() => setSorting("success")}
-                sorted={sortBy === "success"}
+                onSort={() => setSorting('success')}
+                sorted={sortBy === 'success'}
                 reversed={reverseSortDirection}
               >
                 Status
               </Th>
               <Th
-                onSort={() => setSorting("scannedAt")}
-                sorted={sortBy === "scannedAt"}
+                onSort={() => setSorting('scannedAt')}
+                sorted={sortBy === 'scannedAt'}
                 reversed={reverseSortDirection}
               >
                 Scanned At

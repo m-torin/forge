@@ -1,17 +1,18 @@
-import { Suspense } from 'react';
+import { rem, Skeleton, Stack, Tabs, Text, Title } from '@mantine/core';
+import { IconLayoutGrid, IconSearch, IconTable } from '@tabler/icons-react';
 import { notFound } from 'next/navigation';
-import { Title, Text, Stack, Skeleton, Tabs, rem } from '@mantine/core';
-import { IconTable, IconLayoutGrid, IconEdit, IconSearch } from '@tabler/icons-react';
-import { ResponsiveDataTable } from '../components/ResponsiveDataTable';
-import { BulkEditGrid } from '../components/BulkEditGrid';
-import { AdvancedSearch } from '../components/AdvancedSearch';
+import { Suspense } from 'react';
+
 import {
-  listRecords,
-  deleteRecord,
   bulkDeleteRecords,
+  deleteRecord,
   exportRecords,
+  listRecords,
   updateRecord,
 } from '../actions';
+import { AdvancedSearch } from '../components/AdvancedSearch';
+import { BulkEditGrid } from '../components/BulkEditGrid';
+import { ResponsiveDataTable } from '../components/ResponsiveDataTable';
 import { getModelConfig } from '../lib/model-config';
 import { modelConfigs } from '../lib/prisma-model-config';
 
@@ -22,7 +23,7 @@ function buildAdvancedWhere(filters: any[]): any {
   }
 
   const conditions: any[] = [];
-  
+
   for (const filter of filters) {
     const condition = buildFilterCondition(filter);
     if (condition) {
@@ -42,7 +43,7 @@ function buildAdvancedWhere(filters: any[]): any {
 }
 
 function buildFilterCondition(filter: any): any {
-  const { field, operator, value, type } = filter;
+  const { type, field, operator, value } = filter;
 
   if (!field || !operator) {
     return null;
@@ -54,7 +55,7 @@ function buildFilterCondition(filter: any): any {
     case 'contains':
       return { [field]: { contains: value, mode: 'insensitive' } };
     case 'startsWith':
-      return { [field]: { startsWith: value, mode: 'insensitive' } };
+      return { [field]: { mode: 'insensitive', startsWith: value } };
     case 'gt':
       return { [field]: { gt: convertValue(value, type) } };
     case 'lt':
@@ -90,8 +91,8 @@ function convertValue(value: any, type: string): any {
 
 interface PageProps {
   params: { model: string };
-  searchParams: { 
-    page?: string; 
+  searchParams: {
+    page?: string;
     limit?: string;
     filters?: string;
     sortBy?: string;
@@ -107,7 +108,7 @@ async function ModelTable({ params, searchParams }: PageProps) {
 
   const page = Number(searchParams.page) || 1;
   const limit = Number(searchParams.limit) || 20;
-  
+
   // Parse advanced search filters
   let filters = [];
   try {
@@ -120,54 +121,54 @@ async function ModelTable({ params, searchParams }: PageProps) {
 
   // Build where clause from filters
   const where = buildAdvancedWhere(filters);
-  
+
   // Build order by from search params
-  const orderBy = searchParams.sortBy 
-    ? { [searchParams.sortBy]: searchParams.sortOrder || 'desc' }
-    : config.defaultOrderBy || { createdAt: 'desc' };
+  const orderBy = searchParams.sortBy
+    ? { [searchParams.sortBy]: (searchParams.sortOrder || 'desc') as 'asc' | 'desc' }
+    : config.defaultOrderBy || { createdAt: 'desc' as 'asc' | 'desc' };
 
   const data = await listRecords(params.model, {
-    page,
-    limit,
-    where,
-    orderBy,
     include: config.includes,
+    limit,
+    orderBy,
+    page,
+    where,
   });
 
   // Convert columns for responsive table
   const responsiveColumns = config.listColumns.map((col, index) => ({
+    hiddenBelow: (index > 3 ? 'sm' : undefined) as 'xs' | 'sm' | 'md' | 'lg' | 'xl' | undefined,
+    width: col.width,
     key: col.key,
     label: col.label,
+    priority: (index === 0 ? 'high' : index < 3 ? 'medium' : 'low') as 'high' | 'medium' | 'low',
     render: col.render,
     sortable: col.sortable,
-    width: col.width,
-    priority: index === 0 ? 'high' : index < 3 ? 'medium' : 'low',
-    hiddenBelow: index > 3 ? 'sm' : undefined,
   }));
 
   return (
     <ResponsiveDataTable
-      title={config.pluralName}
-      modelKey={params.model}
-      columns={responsiveColumns}
-      data={data}
       createHref={`/admin/${params.model}/new`}
       editHref={(id) => `/admin/${params.model}/${id}/edit`}
       viewHref={(id) => `/admin/${params.model}/${id}`}
-      onDelete={async (id) => {
-        'use server';
-        await deleteRecord(params.model, id);
-      }}
+      columns={responsiveColumns}
+      modelKey={params.model}
       onBulkDelete={async (ids) => {
         'use server';
         await bulkDeleteRecords(params.model, ids);
+      }}
+      onDelete={async (id) => {
+        'use server';
+        await deleteRecord(params.model, id);
       }}
       onExport={async (ids) => {
         'use server';
         return await exportRecords(params.model, 'json');
       }}
       searchPlaceholder={`Search ${config.pluralName.toLowerCase()}...`}
+      data={data}
       enableBulkEdit={true}
+      title={config.pluralName}
     />
   );
 }
@@ -179,59 +180,69 @@ async function ModelGrid({ params }: { params: { model: string } }) {
   }
 
   const data = await listRecords(params.model, {
-    page: 1,
+    include: config.includes,
     limit: 100, // Load more for grid editing
     orderBy: config.defaultOrderBy || { createdAt: 'desc' },
-    include: config.includes,
+    page: 1,
   });
 
   // Convert columns for bulk edit grid
   const gridColumns = config.listColumns.map((col) => ({
+    width: col.width || 150,
+    type: (col.type || 'text') as
+      | 'text'
+      | 'number'
+      | 'select'
+      | 'multiselect'
+      | 'boolean'
+      | 'date'
+      | 'readonly',
+    editable: col.editable !== false,
+    format: col.render,
     key: col.key,
     label: col.label,
-    type: col.type || 'text',
-    width: col.width || 150,
-    editable: col.editable !== false,
-    required: col.required,
     options: col.options,
-    format: col.render,
+    required: col.required,
   }));
 
   return (
     <BulkEditGrid
-      title={`Edit ${config.pluralName}`}
       columns={gridColumns}
-      data={data.records}
+      enableColumnFilter={true}
+      enableCopy={true}
+      enableExport={true}
+      enableUndo={true}
+      onDelete={async (ids) => {
+        'use server';
+        await bulkDeleteRecords(params.model, ids);
+      }}
       onSave={async (changes) => {
         'use server';
         // Update multiple records
         await Promise.all(changes.map((record) => updateRecord(params.model, record.id, record)));
       }}
-      onDelete={async (ids) => {
-        'use server';
-        await bulkDeleteRecords(params.model, ids);
-      }}
-      enableCopy={true}
+      data={data.records}
       enablePaste={true}
-      enableUndo={true}
-      enableColumnFilter={true}
-      enableExport={true}
+      title={`Edit ${config.pluralName}`}
     />
   );
 }
 
 function ModelSearch({ params }: { params: { model: string } }) {
   const config = getModelConfig(params.model);
-  const modelConfig = modelConfigs.find(m => m.name === params.model);
-  
+  const modelConfig = modelConfigs.find((m) => m.name === params.model);
+
   if (!config || !modelConfig) {
     notFound();
   }
 
   return (
     <AdvancedSearch
-      modelName={params.model}
       modelConfig={modelConfig}
+      modelName={params.model}
+      onReset={() => {
+        window.location.href = `/admin/${params.model}?tab=table`;
+      }}
       onSearch={(filters, sortBy, sortOrder) => {
         const searchParams = new URLSearchParams();
         if (filters.length > 0) {
@@ -242,13 +253,10 @@ function ModelSearch({ params }: { params: { model: string } }) {
           searchParams.set('sortOrder', sortOrder || 'desc');
         }
         searchParams.set('page', '1'); // Reset to first page
-        
+
         // Navigate to table view with search results
         const url = `/admin/${params.model}?tab=table&${searchParams.toString()}`;
         window.location.href = url;
-      }}
-      onReset={() => {
-        window.location.href = `/admin/${params.model}?tab=table`;
       }}
     />
   );
@@ -272,38 +280,38 @@ export default function ModelPage({ params, searchParams }: PageProps) {
       <Tabs defaultValue="table" variant="outline">
         <Tabs.List>
           <Tabs.Tab
-            value="table"
             leftSection={<IconTable style={{ width: rem(16), height: rem(16) }} />}
+            value="table"
           >
             Table View
           </Tabs.Tab>
           <Tabs.Tab
-            value="search"
             leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} />}
+            value="search"
           >
             Advanced Search
           </Tabs.Tab>
           <Tabs.Tab
-            value="grid"
             leftSection={<IconLayoutGrid style={{ width: rem(16), height: rem(16) }} />}
+            value="grid"
           >
             Bulk Edit
           </Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="table" pt="md">
+        <Tabs.Panel pt="md" value="table">
           <Suspense fallback={<Skeleton height={400} />}>
             <ModelTable params={params} searchParams={searchParams} />
           </Suspense>
         </Tabs.Panel>
 
-        <Tabs.Panel value="search" pt="md">
+        <Tabs.Panel pt="md" value="search">
           <Suspense fallback={<Skeleton height={400} />}>
             <ModelSearch params={params} />
           </Suspense>
         </Tabs.Panel>
 
-        <Tabs.Panel value="grid" pt="md">
+        <Tabs.Panel pt="md" value="grid">
           <Suspense fallback={<Skeleton height={400} />}>
             <ModelGrid params={params} />
           </Suspense>

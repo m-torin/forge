@@ -1,13 +1,6 @@
-import React from 'react';
-
 const PlaceIcon = () => {
   return (
-    <svg
-      viewBox="0 0 197 193"
-      className="w-full h-full"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg viewBox="0 0 197 193" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M145.828 48.9822C134.953 48.9822 126.105 57.8301 126.105 68.7051C126.105 79.5801 134.953 88.428 145.828 88.428C156.703 88.428 165.551 79.5805 165.551 68.7051C165.551 57.8293 156.704 48.9822 145.828 48.9822ZM145.828 80.7741C139.173 80.7741 133.759 75.3602 133.759 68.7051C133.759 62.0501 139.173 56.6361 145.828 56.6361C152.483 56.6361 157.897 62.0501 157.897 68.7051C157.897 75.3594 152.483 80.7741 145.828 80.7741Z"
         fill="currentColor"
@@ -25,7 +18,7 @@ const PlaceIcon = () => {
         fill="currentColor"
       />
     </svg>
-  );
-};
+  )
+}
 
-export default PlaceIcon;
+export default PlaceIcon

@@ -5,7 +5,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const _isDevelopment = process.env.NODE_ENV === 'development';
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasSentryVars = Boolean(
-  process.env.SENTRY_DSN ||
+  process.env.NEXT_PUBLIC_SENTRY_DSN ||
     process.env.SENTRY_AUTH_TOKEN ||
     process.env.SENTRY_ORG ||
     process.env.SENTRY_PROJECT,
@@ -28,7 +28,6 @@ export const keys = () =>
       NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN || undefined,
       NODE_ENV: process.env.NODE_ENV || 'development',
       SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN || undefined,
-      SENTRY_DSN: process.env.SENTRY_DSN || undefined,
       SENTRY_ORG: process.env.SENTRY_ORG || undefined,
       SENTRY_PROJECT: process.env.SENTRY_PROJECT || undefined,
     },
@@ -40,9 +39,6 @@ export const keys = () =>
       SENTRY_AUTH_TOKEN: requireSentryInProduction
         ? z.string().min(1)
         : z.string().optional().or(z.literal('')),
-      SENTRY_DSN: requireSentryInProduction
-        ? z.string().url()
-        : z.string().url().optional().or(z.literal('')),
       SENTRY_ORG: requireSentryInProduction
         ? z.string().min(1)
         : z.string().optional().or(z.literal('')),

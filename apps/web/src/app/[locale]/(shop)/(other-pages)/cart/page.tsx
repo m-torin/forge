@@ -154,10 +154,49 @@ const CartPage = async ({ params }: { params: { locale: string } }) => {
 
         <hr className="my-10 border-neutral-200 xl:my-12 dark:border-neutral-700" />
 
-        <div className="flex flex-col lg:flex-row">
-          <div className="w-full divide-y divide-neutral-200 lg:w-[60%] xl:w-[55%] dark:divide-neutral-700">
-            {cart.lines.map(renderProduct)}
+        {cart.lines.length === 0 ? (
+          // Empty cart state
+          <div className="text-center py-16">
+            <div className="mx-auto max-w-md">
+              <div className="mx-auto h-24 w-24 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-6">
+                <svg 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24" 
+                  className="h-12 w-12 text-neutral-400 dark:text-neutral-500" 
+                  fill="none"
+                >
+                  <path 
+                    strokeWidth={1.5} 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9M6 19a1 1 0 100 2 1 1 0 000-2zm10 0a1 1 0 100 2 1 1 0 000-2z" 
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
+                {dict.cart.emptyTitle || "Your cart is empty"}
+              </h3>
+              <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+                {dict.cart.emptyDescription || "Add some products to your cart to get started."}
+              </p>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                <ButtonPrimary href="/en/collections">
+                  {dict.cart.browseCatalog || "Browse Collections"}
+                </ButtonPrimary>
+                <Link 
+                  href="/en"
+                  className="inline-flex items-center px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-sm font-medium rounded-md text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  {dict.cart.backToHome || "Back to Home"}
+                </Link>
+              </div>
+            </div>
           </div>
+        ) : (
+          <div className="flex flex-col lg:flex-row">
+            <div className="w-full divide-y divide-neutral-200 lg:w-[60%] xl:w-[55%] dark:divide-neutral-700">
+              {cart.lines.map(renderProduct)}
+            </div>
           <div className="my-10 shrink-0 border-t border-neutral-200 lg:mx-10 lg:my-0 lg:border-l lg:border-t-0 xl:mx-16 2xl:mx-20 dark:border-neutral-700" />
           <div className="flex-1">
             <div className="sticky top-28">
@@ -229,6 +268,7 @@ const CartPage = async ({ params }: { params: { locale: string } }) => {
             </div>
           </div>
         </div>
+        )}
       </main>
     </div>
   );

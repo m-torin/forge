@@ -1,7 +1,7 @@
 // Main entry point for the autonomous workflow development system
 import { AutonomousLoop } from './core/autonomous-loop';
 import { ZeroHumanInterventionProtocol } from './protocols/zero-human-intervention';
-import { WorkflowSpecification, AutonomousConfig } from './types';
+import { type AutonomousConfig, type WorkflowSpecification } from './types';
 
 // Export all core components
 export { AutonomousLoop } from './core/autonomous-loop';
@@ -64,7 +64,9 @@ if (require.main === module) {
     // Example workflow specification
     const exampleSpec: WorkflowSpecification = {
       name: 'example-workflow',
+      businessLogic: ['Validate input message', 'Process message', 'Return result with timestamp'],
       description: 'Example autonomous workflow',
+      errorHandling: ['Retry on failure', 'Log errors'],
       inputContract: {
         type: 'object',
         properties: {
@@ -79,8 +81,6 @@ if (require.main === module) {
           timestamp: { type: 'string' },
         },
       },
-      businessLogic: ['Validate input message', 'Process message', 'Return result with timestamp'],
-      errorHandling: ['Retry on failure', 'Log errors'],
     };
 
     const system = new AutonomousWorkflowSystem();

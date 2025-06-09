@@ -1,6 +1,6 @@
-import ButtonDropdown from './ButtonDropdown';
+import ButtonDropdown from './ButtonDropdown'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof ButtonDropdown> = {
   argTypes: {
@@ -25,42 +25,41 @@ const meta: Meta<typeof ButtonDropdown> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'A button component styled for dropdown usage with chevron icon and custom styling.',
+        component: 'A button component styled for dropdown usage with chevron icon and custom styling.',
       },
     },
     layout: 'centered',
   },
   title: 'Ciseco/ButtonDropdown',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
     children: 'Select Option',
   },
-};
+}
 
 export const WithLongText: Story = {
   args: {
     children: 'This is a very long dropdown option text',
   },
-};
+}
 
 export const Disabled: Story = {
   args: {
     children: 'Disabled Dropdown',
     disabled: true,
   },
-};
+}
 
 export const ShortText: Story = {
   args: {
     children: 'Sort',
   },
-};
+}
 
 export const FilterOptions: Story = {
   render: () => (
@@ -72,19 +71,17 @@ export const FilterOptions: Story = {
       <ButtonDropdown>Best Rating</ButtonDropdown>
     </div>
   ),
-};
+}
 
 export const DifferentStates: Story = {
   render: () => (
     <div className="space-y-3">
       <ButtonDropdown>Normal State</ButtonDropdown>
       <ButtonDropdown disabled>Disabled State</ButtonDropdown>
-      <ButtonDropdown className="bg-blue-50 border-blue-300 text-blue-700">
-        Custom Styling
-      </ButtonDropdown>
+      <ButtonDropdown className="border-blue-300 bg-blue-50 text-blue-700">Custom Styling</ButtonDropdown>
     </div>
   ),
-};
+}
 
 export const ResponsiveWidth: Story = {
   render: () => (
@@ -103,30 +100,30 @@ export const ResponsiveWidth: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const InForm: Story = {
   render: () => (
-    <form className="space-y-4 p-4 bg-gray-50 rounded-lg">
+    <form className="space-y-4 rounded-lg bg-gray-50 p-4">
       <div>
-        <label className="block text-sm font-medium mb-2">Category</label>
+        <label className="mb-2 block text-sm font-medium">Category</label>
         <ButtonDropdown>Select Category</ButtonDropdown>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-2">Sort By</label>
+        <label className="mb-2 block text-sm font-medium">Sort By</label>
         <ButtonDropdown>Choose sorting option</ButtonDropdown>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-2">Status</label>
+        <label className="mb-2 block text-sm font-medium">Status</label>
         <ButtonDropdown>All Statuses</ButtonDropdown>
       </div>
     </form>
   ),
-};
+}
 
 export const InToolbar: Story = {
   render: () => (
-    <div className="flex items-center justify-between p-4 bg-white border rounded-lg">
+    <div className="flex items-center justify-between rounded-lg border bg-white p-4">
       <h3 className="text-lg font-semibold">Product List</h3>
       <div className="flex items-center space-x-3">
         <span className="text-sm text-gray-600">View:</span>
@@ -136,4 +133,4 @@ export const InToolbar: Story = {
       </div>
     </div>
   ),
-};
+}

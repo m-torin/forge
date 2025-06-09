@@ -40,7 +40,7 @@ export class PinoProvider implements ServerLoggingProvider {
       // Use default export if available (for ES modules)
       const pinoConstructor = pino.default || pino;
       this.logger = pinoConstructor(this.options);
-    } catch (_error) {
+    } catch {
       // Fallback to console if pino not available
       this.logger = console;
     }

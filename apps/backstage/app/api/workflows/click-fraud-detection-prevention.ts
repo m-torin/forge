@@ -431,8 +431,8 @@ export const collectClickEventsStep = compose(
   (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
   (step) =>
     withStepMonitoring(step, {
-, 'timeRangeHours'],
       enableDetailedLogging: true,
+      trackingMetrics: ['timeRangeHours'],
     }),
 );
 
@@ -549,7 +549,7 @@ function generateUserAgent(deviceType: string): string {
     ],
   };
 
-  const agentList = userAgents[(deviceType as any)] || userAgents.desktop;
+  const agentList = userAgents[deviceType as any] || userAgents.desktop;
   return agentList[Math.floor(Math.random() * agentList.length)];
 }
 
@@ -560,7 +560,7 @@ function generateScreenResolution(deviceType: string): string {
     tablet: ['768x1024', '820x1180', '834x1194', '1024x768'],
   };
 
-  const resList = resolutions[(deviceType as any)] || resolutions.desktop;
+  const resList = resolutions[deviceType as any] || resolutions.desktop;
   return resList[Math.floor(Math.random() * resList.length)];
 }
 
@@ -582,7 +582,7 @@ function generateTimezone(country: string): string {
     US: 'America/New_York',
   };
 
-  return timezones[(country as any)] || 'UTC';
+  return timezones[country as any] || 'UTC';
 }
 
 // Step 2: Perform statistical analysis
@@ -902,8 +902,8 @@ export const runMLFraudDetectionStep = compose(
     }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 300000, // 5 minutes
+      threshold: 0.5,
       timeout: 600000, // 10 minutes
     }),
 );
@@ -952,18 +952,18 @@ function analyzeUserJourneys(events: any[]): any {
   const journeyStats: any[] = [];
   userJourneys.forEach((journey, userId) => {
     const sortedJourney = journey.sort(
-      (a: any: any, b: any: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     journeyStats.push({
       avgTimeOnPage:
-        journey.reduce((su: anym: any: any, e: any: any) => sum + e.clickDetails.timeOnPage, 0) / journey.length,
+        journey.reduce((sum: any, e: any) => sum + e.clickDetails.timeOnPage, 0) / journey.length,
       clickCount: journey.length,
       conversionCount: journey.filter((e: any) => e.conversion?.occurred).length,
       sessionDuration:
         new Date(sortedJourney[sortedJourney.length - 1].timestamp).getTime() -
         new Date(sortedJourney[0].timestamp).getTime(),
-      uniqueCampaigns: new Set(journey: any.map: any((e: any) => e.campaignId)).size,
+      uniqueCampaigns: new Set(journey.map((e: any) => e.campaignId)).size,
       userId,
     });
   });
@@ -1000,7 +1000,7 @@ function analyzeClickSequences(events: any[]): any {
   sessionGroups.forEach((session, sessionId) => {
     if (session.length > 1) {
       const sortedSession = session.sort(
-        (a: any: any, b: any: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
       );
 
       // Analyze click timing intervals
@@ -1070,7 +1070,7 @@ function analyzeSessionBehavior(events: any[]): any {
   const behaviorAnalysis: any[] = [];
   sessionStats.forEach((session, sessionId) => {
     const events = session.events.sort(
-      (a: any: any, b: any: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     behaviorAnalysis.push({

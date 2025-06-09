@@ -1,0 +1,161 @@
+// registry.prisma - Registry and Wishlist Models
+
+//==============================================================================
+// REGISTRY MODELS
+//==============================================================================
+
+model Registry {
+  id          String       @id @default(cuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?        @relation("DeletedRegistries", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // Basic information
+  title       String
+  description String?
+  type        RegistryType @default(WISHLIST)
+  isPublic    Boolean      @default(false)
+
+  // Event information (for gift registries)
+  eventDate   DateTime?
+
+  // Creator tracking (optional)
+  createdByUserId String?
+  createdByUser   User?     @relation("CreatedRegistries", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  // Items in the registry
+  items       RegistryItem[]
+
+  // User access
+  users       RegistryUserJoin[]
+
+  @@index([createdByUserId])
+  @@index([type])
+  @@index([isPublic])
+  @@index([eventDate])
+  @@index([deletedAt])
+  @@index([deletedById])
+}
+
+model RegistryItem {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?    @relation("DeletedRegistryItems", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // Item metadata
+  quantity    Int      @default(1)
+  priority    Int      @default(0)
+  notes       String?
+  purchased   Boolean  @default(false)
+
+  // Registry relationship
+  registryId  String
+  registry    Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+
+  // Item relationships (only one should be set)
+  productId    String?
+  product      Product?    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  // Purchases
+  purchases    RegistryPurchaseJoin[]
+
+  @@unique([registryId, productId, collectionId])
+  @@index([registryId])
+  @@index([productId])
+  @@index([collectionId])
+  @@index([purchased])
+  @@index([priority])
+  @@index([deletedAt])
+  @@index([deletedById])
+}
+
+model RegistryPurchaseJoin {
+  id              String         @id @default(cuid())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Purchase metadata
+  purchaseDate    DateTime       @default(now())
+  quantity        Int            @default(1)
+  status          PurchaseStatus @default(PENDING)
+
+  // Transaction information
+  transactionId   String?        // External transaction ID
+  orderNumber     String?        // Order number for reference
+  price           Float?         // Price at time of purchase
+  currency        String?        // Currency code (e.g., USD, EUR)
+
+  // Shipping information
+  trackingNumber  String?
+  trackingUrl     String?
+  estimatedDelivery DateTime?
+  actualDelivery   DateTime?
+
+  // Gift information
+  isGift          Boolean        @default(false)
+  giftMessage     String?        @db.Text
+  giftWrapped     Boolean        @default(false)
+
+  // Thank you tracking
+  thankYouSent    Boolean        @default(false)
+  thankYouSentAt  DateTime?
+  thankYouMessage String?        @db.Text
+
+  // Notes
+  notes           String?
+
+  // Purchaser relationship
+  purchaserId     String
+  purchaser       User           @relation("UserPurchases", fields: [purchaserId], references: [id], onDelete: Cascade)
+
+  // Registry item relationship
+  registryItemId  String
+  registryItem    RegistryItem   @relation(fields: [registryItemId], references: [id], onDelete: Cascade)
+
+  // Notification status
+  notifiedOwner   Boolean        @default(false)
+  notifiedDate    DateTime?
+
+  @@index([purchaserId])
+  @@index([registryItemId])
+  @@index([status])
+  @@index([purchaseDate])
+  @@index([transactionId])
+  @@index([orderNumber])
+  @@index([isGift])
+  @@index([notifiedOwner])
+  @@index([thankYouSent])
+}
+
+model RegistryUserJoin {
+  id        String           @id @default(cuid())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Role information
+  role      RegistryUserRole @default(VIEWER)
+
+  // Relationships
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  registryId String
+  registry   Registry        @relation(fields: [registryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, registryId])
+  @@index([userId])
+  @@index([registryId])
+  @@index([role])
+}

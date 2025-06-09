@@ -1,31 +1,32 @@
 // Self-learning system with pattern recognition and strategy optimization
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+
 import {
-  WorkflowSpecification,
-  ErrorAnalysis,
-  RepairAttempt,
-  RepairStrategy,
-  LearningEvent,
-  ErrorCategory,
+  type ErrorAnalysis,
+  type ErrorCategory,
+  type LearningEvent,
+  type RepairAttempt,
+  type RepairStrategy,
+  type WorkflowSpecification,
 } from '../types';
 
 interface StrategyPerformance {
-  strategy: string;
-  successCount: number;
-  failureCount: number;
   averageIterations: number;
   averageTime: number;
   confidence: number;
+  failureCount: number;
+  strategy: string;
+  successCount: number;
 }
 
 interface ErrorPattern {
-  pattern: string;
   category: ErrorCategory;
-  frequency: number;
-  successfulFixes: string[];
   confidence: number;
+  frequency: number;
   lastSeen: Date;
+  pattern: string;
+  successfulFixes: string[];
 }
 
 export class LearningSystem {
@@ -34,8 +35,8 @@ export class LearningSystem {
   private patternsPath = join(this.learningDataPath, 'patterns.json');
   private eventsPath = join(this.learningDataPath, 'events.json');
 
-  private strategies: Map<string, StrategyPerformance> = new Map();
-  private patterns: Map<string, ErrorPattern> = new Map();
+  private strategies = new Map<string, StrategyPerformance>();
+  private patterns = new Map<string, ErrorPattern>();
   private events: LearningEvent[] = [];
 
   private readonly MIN_CONFIDENCE_THRESHOLD = 0.7;
@@ -121,49 +122,49 @@ export class LearningSystem {
   }
 
   private initializeDefaultStrategies(): void {
-    const defaultStrategies: Array<[string, StrategyPerformance]> = [
+    const defaultStrategies: [string, StrategyPerformance][] = [
       [
         'syntax-first',
         {
-          strategy: 'syntax-first',
-          successCount: 0,
-          failureCount: 0,
+          confidence: 0.8,
           averageIterations: 0,
           averageTime: 0,
-          confidence: 0.8,
+          failureCount: 0,
+          strategy: 'syntax-first',
+          successCount: 0,
         },
       ],
       [
         'type-focused',
         {
-          strategy: 'type-focused',
-          successCount: 0,
-          failureCount: 0,
+          confidence: 0.75,
           averageIterations: 0,
           averageTime: 0,
-          confidence: 0.75,
+          failureCount: 0,
+          strategy: 'type-focused',
+          successCount: 0,
         },
       ],
       [
         'contract-alignment',
         {
-          strategy: 'contract-alignment',
-          successCount: 0,
-          failureCount: 0,
+          confidence: 0.85,
           averageIterations: 0,
           averageTime: 0,
-          confidence: 0.85,
+          failureCount: 0,
+          strategy: 'contract-alignment',
+          successCount: 0,
         },
       ],
       [
         'incremental-fix',
         {
-          strategy: 'incremental-fix',
-          successCount: 0,
-          failureCount: 0,
+          confidence: 0.7,
           averageIterations: 0,
           averageTime: 0,
-          confidence: 0.7,
+          failureCount: 0,
+          strategy: 'incremental-fix',
+          successCount: 0,
         },
       ],
     ];
@@ -178,15 +179,15 @@ export class LearningSystem {
     attempts: RepairAttempt[],
   ): Promise<void> {
     const event: LearningEvent = {
-      timestamp: new Date(),
-      workflowType: spec.type || 'general',
+      confidence: 1.0,
+      codeComplexity: this.calculateComplexity(spec),
       errorCategories: [],
+      iterations,
       repairStrategy: 'initial-generation',
       success: true,
-      iterations,
+      timestamp: new Date(),
       timeToFix: this.calculateTotalTime(attempts),
-      codeComplexity: this.calculateComplexity(spec),
-      confidence: 1.0,
+      workflowType: spec.type || 'general',
     };
 
     // If there were repair attempts, analyze them
@@ -209,12 +210,12 @@ export class LearningSystem {
     errorAnalysis.errors.forEach((error) => {
       const patternKey = this.extractPatternKey(error);
       const pattern = this.patterns.get(patternKey) || {
-        pattern: patternKey,
+        confidence: 0.5,
         category: errorAnalysis.categories[0] || 'unknown',
         frequency: 0,
-        successfulFixes: [],
-        confidence: 0.5,
         lastSeen: new Date(),
+        pattern: patternKey,
+        successfulFixes: [],
       };
 
       pattern.frequency++;
@@ -247,12 +248,12 @@ export class LearningSystem {
     const strategyData = this.strategies.get(bestStrategy)!;
 
     return {
+      confidence: strategyData.confidence,
+      considerations: this.getStrategyConsiderations(bestStrategy, context),
       name: bestStrategy,
       pattern: this.getStrategyPattern(bestStrategy),
-      successRate: this.calculateSuccessRate(strategyData),
       riskLevel: this.calculateRiskLevel(strategyData),
-      considerations: this.getStrategyConsiderations(bestStrategy, context),
-      confidence: strategyData.confidence,
+      successRate: this.calculateSuccessRate(strategyData),
     };
   }
 
@@ -263,7 +264,7 @@ export class LearningSystem {
     // Score strategies based on error categories
     errorAnalysis.categories.forEach((category) => {
       const strategies = this.getStrategiesForCategory(category);
-      strategies.forEach(({ strategy, score }) => {
+      strategies.forEach(({ score, strategy }) => {
         categoryScores.set(strategy, (categoryScores.get(strategy) || 0) + score);
       });
     });
@@ -283,12 +284,12 @@ export class LearningSystem {
       this.strategies.get(bestStrategy) || this.strategies.get('incremental-fix')!;
 
     return {
+      confidence: strategyData.confidence * errorAnalysis.confidence,
+      considerations: this.getRepairConsiderations(errorAnalysis),
       name: bestStrategy,
       pattern: this.getStrategyPattern(bestStrategy),
-      successRate: this.calculateSuccessRate(strategyData),
       riskLevel: this.calculateRiskLevel(strategyData),
-      considerations: this.getRepairConsiderations(errorAnalysis),
-      confidence: strategyData.confidence * errorAnalysis.confidence,
+      successRate: this.calculateSuccessRate(strategyData),
     };
   }
 
@@ -336,10 +337,10 @@ export class LearningSystem {
     const confidenceScore = perf.confidence;
 
     // Weight factors based on context
-    let weights = { success: 0.5, efficiency: 0.3, confidence: 0.2 };
+    let weights = { confidence: 0.2, efficiency: 0.3, success: 0.5 };
 
     if (context.complexity === 'high') {
-      weights = { success: 0.7, efficiency: 0.1, confidence: 0.2 };
+      weights = { confidence: 0.2, efficiency: 0.1, success: 0.7 };
     }
 
     return (
@@ -367,12 +368,12 @@ export class LearningSystem {
 
   private getStrategyPattern(strategy: string): string {
     const patterns: Record<string, string> = {
-      'syntax-first': 'Fix syntax and import errors before addressing logic',
       'type-focused': 'Resolve all TypeScript type errors systematically',
       'contract-alignment': 'Ensure implementation matches input/output contracts exactly',
       'incremental-fix': 'Address errors one category at a time',
-      'test-driven': 'Fix test assertions to match correct behavior',
       'performance-optimization': 'Focus on timeout and performance issues',
+      'syntax-first': 'Fix syntax and import errors before addressing logic',
+      'test-driven': 'Fix test assertions to match correct behavior',
     };
 
     return patterns[strategy] || 'Standard incremental repair approach';
@@ -422,38 +423,36 @@ export class LearningSystem {
     return considerations;
   }
 
-  private getStrategiesForCategory(
-    category: ErrorCategory,
-  ): Array<{ strategy: string; score: number }> {
-    const categoryStrategies: Record<ErrorCategory, Array<{ strategy: string; score: number }>> = {
-      'syntax-error': [{ strategy: 'syntax-first', score: 1.0 }],
+  private getStrategiesForCategory(category: ErrorCategory): { strategy: string; score: number }[] {
+    const categoryStrategies: Record<ErrorCategory, { strategy: string; score: number }[]> = {
       'type-error': [
-        { strategy: 'type-focused', score: 0.9 },
-        { strategy: 'contract-alignment', score: 0.7 },
+        { score: 0.9, strategy: 'type-focused' },
+        { score: 0.7, strategy: 'contract-alignment' },
       ],
-      'reference-error': [{ strategy: 'syntax-first', score: 0.8 }],
-      'import-error': [{ strategy: 'syntax-first', score: 0.9 }],
-      'contract-violation': [{ strategy: 'contract-alignment', score: 1.0 }],
+      'async-error': [{ score: 0.8, strategy: 'type-focused' }],
+      'contract-violation': [{ score: 1.0, strategy: 'contract-alignment' }],
+      'import-error': [{ score: 0.9, strategy: 'syntax-first' }],
       'logic-error': [
-        { strategy: 'incremental-fix', score: 0.8 },
-        { strategy: 'test-driven', score: 0.6 },
+        { score: 0.8, strategy: 'incremental-fix' },
+        { score: 0.6, strategy: 'test-driven' },
       ],
-      'performance-issue': [{ strategy: 'performance-optimization', score: 1.0 }],
-      'network-error': [{ strategy: 'incremental-fix', score: 0.7 }],
-      'async-error': [{ strategy: 'type-focused', score: 0.8 }],
+      'network-error': [{ score: 0.7, strategy: 'incremental-fix' }],
+      'performance-issue': [{ score: 1.0, strategy: 'performance-optimization' }],
+      'reference-error': [{ score: 0.8, strategy: 'syntax-first' }],
+      'syntax-error': [{ score: 1.0, strategy: 'syntax-first' }],
     };
 
-    return categoryStrategies[category] || [{ strategy: 'incremental-fix', score: 0.5 }];
+    return categoryStrategies[category] || [{ score: 0.5, strategy: 'incremental-fix' }];
   }
 
   private updateStrategies(event: LearningEvent): void {
     const strategy = this.strategies.get(event.repairStrategy) || {
-      strategy: event.repairStrategy,
-      successCount: 0,
-      failureCount: 0,
+      confidence: 0.5,
       averageIterations: 0,
       averageTime: 0,
-      confidence: 0.5,
+      failureCount: 0,
+      strategy: event.repairStrategy,
+      successCount: 0,
     };
 
     if (event.success) {
@@ -520,12 +519,12 @@ export class LearningSystem {
     patterns.forEach((p) => p.successfulFixes.forEach((f) => allFixes.add(f)));
 
     const metaPattern: ErrorPattern = {
-      pattern: `META:${group}`,
+      confidence: patterns.reduce((sum, p) => sum + p.confidence, 0) / patterns.length,
       category: patterns[0].category,
       frequency: patterns.reduce((sum, p) => sum + p.frequency, 0),
-      successfulFixes: Array.from(allFixes),
-      confidence: patterns.reduce((sum, p) => sum + p.confidence, 0) / patterns.length,
       lastSeen: new Date(),
+      pattern: `META:${group}`,
+      successfulFixes: Array.from(allFixes),
     };
 
     this.patterns.set(metaPattern.pattern, metaPattern);
@@ -558,9 +557,9 @@ export class LearningSystem {
     // Simple complexity metric
     const factors = {
       businessLogicSteps: spec.businessLogic.length,
+      errorHandlers: spec.errorHandling?.length || 0,
       inputProperties: Object.keys(spec.inputContract.properties || {}).length,
       outputProperties: Object.keys(spec.outputContract.properties || {}).length,
-      errorHandlers: spec.errorHandling?.length || 0,
     };
 
     return (
@@ -627,17 +626,17 @@ export class LearningSystem {
     const successfulEvents = this.events.filter((e) => e.success).length;
 
     return {
-      totalWorkflows: totalEvents,
-      successRate: totalEvents > 0 ? successfulEvents / totalEvents : 0,
       averageIterations:
         this.events.reduce((sum, e) => sum + e.iterations, 0) / Math.max(totalEvents, 1),
       knownPatterns: this.patterns.size,
+      learningRate: this.calculateLearningRate(),
       strategies: Array.from(this.strategies.entries()).map(([name, perf]) => ({
+        confidence: perf.confidence,
         name,
         successRate: this.calculateSuccessRate(perf),
-        confidence: perf.confidence,
       })),
-      learningRate: this.calculateLearningRate(),
+      successRate: totalEvents > 0 ? successfulEvents / totalEvents : 0,
+      totalWorkflows: totalEvents,
     };
   }
 }

@@ -25,10 +25,12 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
       'members:read',
       'members:write',
       'members:remove',
+      // Note: members:manage (role updates) reserved for owner
       'invitations:create',
       'invitations:cancel',
       'settings:read',
       'settings:write',
+      'billing:read', // Can view billing but not manage
     ],
   },
   guest: {
@@ -63,7 +65,14 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
     name: 'Owner',
     description: 'Full access to team management and settings',
     level: 100,
-    permissions: ['team:*', 'members:*', 'invitations:*', 'settings:*', 'permissions:*'],
+    permissions: [
+      'team:*',
+      'members:*',
+      'invitations:*',
+      'settings:*',
+      'permissions:*',
+      'billing:*',
+    ],
   },
 } as const;
 
@@ -71,6 +80,11 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
  * Team permission categories
  */
 export const TEAM_PERMISSIONS = {
+  BILLING: {
+    ALL: 'billing:*',
+    READ: 'billing:read',
+    WRITE: 'billing:write',
+  },
   INVITATIONS: {
     ALL: 'invitations:*',
     CANCEL: 'invitations:cancel',
@@ -79,6 +93,7 @@ export const TEAM_PERMISSIONS = {
   MEMBERS: {
     ALL: 'members:*',
     INVITE: 'members:invite',
+    MANAGE: 'members:manage',
     READ: 'members:read',
     REMOVE: 'members:remove',
     WRITE: 'members:write',

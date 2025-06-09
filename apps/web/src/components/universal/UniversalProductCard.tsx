@@ -25,6 +25,10 @@ export function UniversalProductCard({
   listId: _listId,
   position: _position,
 }: UniversalProductCardProps) {
+  if (!data) {
+    return null;
+  }
+
   const { isFavorite } = useProductFavorite(data.id || "");
 
   return (
@@ -35,9 +39,9 @@ export function UniversalProductCard({
       {/* Using FavoriteButton */}
       <FavoriteButton
         productId={data.id || ""}
-        productName={data.title}
+        productName={data.title || ""}
         className="absolute end-3 top-3 z-20"
-        price={data.price}
+        price={data.price || 0}
       />
     </div>
   );
@@ -52,9 +56,13 @@ export function UniversalProductCardTyped({
   listId: _listId,
   position: _position,
 }: UniversalProductCardProps) {
+  if (!data) {
+    return null;
+  }
+
   const { isFavorite, toggleFavorite } = useProductFavorite(data.id || "", {
-    price: data.price,
-    productName: data.title,
+    price: data.price || 0,
+    productName: data.title || "",
   });
 
   const handleLikeClick = async () => {

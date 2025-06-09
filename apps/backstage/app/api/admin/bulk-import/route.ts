@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
+import { database } from '@repo/database/prisma';
+
 import { modelConfigs } from '../../../(authenticated)/admin/lib/prisma-model-config';
 
 export async function POST(request: NextRequest) {
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate model exists
-    const modelConfig = modelConfigs.find(config => config.name === modelName);
+    const modelConfig = modelConfigs.find((config) => config.name === modelName);
     if (!modelConfig) {
       return NextResponse.json({ error: 'Invalid model name' }, { status: 400 });
     }
@@ -45,14 +47,14 @@ export async function POST(request: NextRequest) {
         records = Array.isArray(parsed) ? parsed : [parsed];
       } else if (file.name.endsWith('.csv')) {
         // Simple CSV parser (for production, use a proper CSV library)
-        const lines = fileContent.split('\n').filter(line => line.trim());
+        const lines = fileContent.split('\n').filter((line) => line.trim());
         if (lines.length === 0) {
           return NextResponse.json({ error: 'Empty CSV file' }, { status: 400 });
         }
 
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-        records = lines.slice(1).map(line => {
-          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+        const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));
+        records = lines.slice(1).map((line) => {
+          const values = line.split(',').map((v) => v.trim().replace(/"/g, ''));
           const record: any = {};
           headers.forEach((header, index) => {
             record[header] = values[index] || null;
@@ -67,9 +69,9 @@ export async function POST(request: NextRequest) {
     }
 
     const results = {
-      success: 0,
-      failed: 0,
       errors: [] as string[],
+      failed: 0,
+      success: 0,
       warnings: [] as string[],
     };
 
@@ -77,7 +79,7 @@ export async function POST(request: NextRequest) {
     const batchSize = 100;
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
-      
+
       for (const record of batch) {
         try {
           // Remove undefined/null values and validate
@@ -88,9 +90,13 @@ export async function POST(request: NextRequest) {
                 acc[key] = value;
               } else if (key === 'createdAt' || key === 'updatedAt') {
                 acc[key] = new Date(value as string);
-              } else if (typeof value === 'string' && !isNaN(Number(value)) && !isNaN(parseFloat(value))) {
+              } else if (
+                typeof value === 'string' &&
+                !isNaN(Number(value)) &&
+                !isNaN(parseFloat(value))
+              ) {
                 // Check if it should be a number based on model config
-                const field = modelConfig.fields.find(f => f.name === key);
+                const field = modelConfig.fields.find((f) => f.name === key);
                 if (field?.type === 'number') {
                   acc[key] = Number(value);
                 } else {
@@ -109,12 +115,18 @@ export async function POST(request: NextRequest) {
           }
 
           // Add organization context if needed
-          if (modelConfig.fields.some(f => f.name === 'organizationId') && !cleanRecord.organizationId) {
+          if (
+            modelConfig.fields.some((f) => f.name === 'organizationId') &&
+            !cleanRecord.organizationId
+          ) {
             cleanRecord.organizationId = session.session.activeOrganizationId;
           }
 
           // Add user context if needed
-          if (modelConfig.fields.some(f => f.name === 'createdById') && !cleanRecord.createdById) {
+          if (
+            modelConfig.fields.some((f) => f.name === 'createdById') &&
+            !cleanRecord.createdById
+          ) {
             cleanRecord.createdById = session.user.id;
           }
 
@@ -127,7 +139,7 @@ export async function POST(request: NextRequest) {
           results.failed++;
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           results.errors.push(`Row ${i + results.success + results.failed}: ${errorMessage}`);
-          
+
           // Stop if too many errors
           if (results.errors.length > 50) {
             results.warnings.push('Too many errors, stopping import...');
@@ -140,9 +152,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(results);
   } catch (error) {
     console.error('Bulk import error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,9 +1,9 @@
+import { getDictionary } from "@/i18n";
 import {
   getProductDetailByHandle,
   getProductReviews,
   getProducts,
-} from "@/data/data";
-import { getDictionary } from "@/i18n";
+} from "@/lib/data-service";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { ShoppingBag03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";

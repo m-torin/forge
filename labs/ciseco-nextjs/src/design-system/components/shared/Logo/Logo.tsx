@@ -1,22 +1,15 @@
-import React from 'react';
+import React from 'react'
 
-import { Link } from '../../Link';
+import { Link } from '../../Link'
 
 export interface LogoProps extends React.ComponentPropsWithoutRef<'svg'> {
-  className?: string;
+  className?: string
 }
 
 const Logo: React.FC<LogoProps> = ({ className = 'shrink-0', ...props }) => {
   return (
     <Link href="/" className={`flex text-neutral-950 dark:text-neutral-50 ${className}`}>
-      <svg
-        width="112"
-        viewBox="0 0 112 44"
-        fill="none"
-        height="44"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-      >
+      <svg width="112" viewBox="0 0 112 44" fill="none" height="44" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
           d="M15 37C23.2843 37 30 30.2843 30 22C30 13.7157 23.2843 7 15 7C6.71573 7 0 13.7157 0 22C0 30.2843 6.71573 37 15 37Z"
           fill="black"
@@ -45,7 +38,7 @@ const Logo: React.FC<LogoProps> = ({ className = 'shrink-0', ...props }) => {
         />
       </svg>
     </Link>
-  );
-};
+  )
+}
 
-export default Logo;
+export default Logo

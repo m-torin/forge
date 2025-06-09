@@ -32,9 +32,15 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
   const teamSlug = options.options?.teamSlug;
 
   if (!connectionString) {
-    throw new Error(
-      'Edge Config connection string is required. Set EDGE_CONFIG environment variable or pass connectionString option.',
-    );
+    console.warn('Edge Config connection string not configured - feature flags will return undefined');
+    // Return a no-op adapter that returns undefined for all flags
+    return function edgeConfigAdapter<T = any, E = any>(): Adapter<T, E> {
+      return {
+        decide: async () => undefined as any,
+        config: { reportValue: true },
+        origin: { provider: 'edge-config' },
+      };
+    };
   }
 
   // Create or use provided Edge Config client
@@ -82,6 +88,7 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
 
 /**
  * Default Edge Config adapter using environment variables
+ * This will be a no-op adapter if EDGE_CONFIG is not configured
  *
  * Expects:
  * - EDGE_CONFIG environment variable with connection string
@@ -97,7 +104,11 @@ export async function getEdgeConfigProviderData(options: EdgeConfigAdapterOption
   const edgeConfigItemKey = options.options?.edgeConfigItemKey || 'flags';
 
   if (!connectionString) {
-    throw new Error('Edge Config connection string is required');
+    console.warn('Edge Config connection string not configured - returning empty flags');
+    return {
+      provider: 'edge-config',
+      flags: []
+    };
   }
 
   const client =

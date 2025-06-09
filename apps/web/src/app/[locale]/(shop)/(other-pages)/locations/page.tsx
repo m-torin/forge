@@ -110,7 +110,7 @@ export default async function LocationsPage({
 
         {/* Locations grouped by country */}
         <div className="space-y-12">
-          {Object.entries(locationsByCountry).map(
+          {Object.entries(locationsByCountry || {}).map(
             ([country, countryLocations]) => (
               <div key={country}>
                 <h2 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">

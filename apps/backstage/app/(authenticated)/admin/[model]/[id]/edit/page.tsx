@@ -1,7 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
-import { ResponsiveModelForm } from '../../../components/ResponsiveModelForm';
-import { type FormFieldV2 } from '../../../components/ModelFormV2';
+
 import { getRecord, updateRecord } from '../../../actions';
+import { type FormFieldV2 } from '../../../components/ModelFormV2';
+import { ResponsiveModelForm } from '../../../components/ResponsiveModelForm';
 import { getModelConfig } from '../../../lib/model-config';
 import { fetchRelationshipOptions } from '../../../lib/relationship-utils';
 
@@ -27,6 +28,8 @@ export default async function EditModelPage({ params }: PageProps) {
       const enhancedField: FormFieldV2 = {
         ...field,
         type: field.type as any,
+        // Set columns for grid layout on desktop
+        columns: field.type === 'textarea' || field.type === 'json' ? 12 : 6,
         // Add fieldset based on field type or name
         fieldset: field.name.includes('meta')
           ? 'Metadata'
@@ -35,8 +38,6 @@ export default async function EditModelPage({ params }: PageProps) {
             : field.name.endsWith('At')
               ? 'System Fields'
               : 'default',
-        // Set columns for grid layout on desktop
-        columns: field.type === 'textarea' || field.type === 'json' ? 12 : 6,
       };
 
       // Handle relationship fields
@@ -46,13 +47,13 @@ export default async function EditModelPage({ params }: PageProps) {
           const options = await fetchRelationshipOptions(field.name, currentValue);
           return {
             ...enhancedField,
-            options,
             type: 'relationship' as const,
+            options,
             relationshipConfig: {
+              allowCreate: false,
+              displayKey: 'name',
               model: field.name.slice(0, -2),
               searchKey: 'name',
-              displayKey: 'name',
-              allowCreate: false,
             },
           };
         } catch {
@@ -122,20 +123,20 @@ export default async function EditModelPage({ params }: PageProps) {
 
   return (
     <ResponsiveModelForm
-      title={`Edit ${config.name}`}
-      fields={fieldsWithOptions}
-      initialValues={initialValues}
-      onSubmit={handleSubmit}
-      submitLabel={`Update ${config.name}`}
       cancelHref={`/admin/${params.model}`}
+      autoSave={true}
+      collapsibleSections={true}
+      confirmCancel={true}
+      floatingActionButton={true}
       // Mobile-first settings
       layout="vertical"
-      showProgress={true}
-      autoSave={true}
-      confirmCancel={true}
       mobileLayout="accordion"
-      collapsibleSections={true}
-      floatingActionButton={true}
+      onSubmit={handleSubmit}
+      showProgress={true}
+      fields={fieldsWithOptions}
+      initialValues={initialValues}
+      submitLabel={`Update ${config.name}`}
+      title={`Edit ${config.name}`}
     />
   );
 }

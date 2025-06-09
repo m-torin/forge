@@ -1,11 +1,11 @@
-'use client';
-import { type FC } from 'react';
+'use client'
+import { type FC } from 'react'
 
 export interface NextProps {
-  btnClassName?: string;
-  className?: string;
-  onClickNext?: () => void;
-  svgSize?: string;
+  btnClassName?: string
+  className?: string
+  onClickNext?: () => void
+  svgSize?: string
 }
 
 const Next: FC<NextProps> = ({
@@ -15,10 +15,7 @@ const Next: FC<NextProps> = ({
   svgSize = 'w-5 h-5',
 }) => {
   return (
-    <div
-      data-glide-el="controls"
-      className={`nc-Next text-neutral-500 dark:text-neutral-400 ${className}`}
-    >
+    <div data-glide-el="controls" className={`nc-Next text-neutral-500 dark:text-neutral-400 ${className}`}>
       <button
         data-glide-dir=">"
         onClick={onClickNext}
@@ -45,7 +42,7 @@ const Next: FC<NextProps> = ({
         </svg>
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default Next;
+export default Next

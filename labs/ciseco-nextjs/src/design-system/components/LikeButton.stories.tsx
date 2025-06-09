@@ -1,6 +1,6 @@
-import LikeButton from './LikeButton';
+import LikeButton from './LikeButton'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof LikeButton> = {
   argTypes: {
@@ -23,29 +23,29 @@ const meta: Meta<typeof LikeButton> = {
     layout: 'centered',
   },
   title: 'Ciseco/LikeButton',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
     liked: false,
   },
-};
+}
 
 export const Liked: Story = {
   args: {
     liked: true,
   },
-};
+}
 
 export const CustomStyling: Story = {
   args: {
     className: 'hover:scale-110 transition-transform',
     liked: false,
   },
-};
+}
 
 export const MultipleButtons: Story = {
   render: () => (
@@ -56,18 +56,18 @@ export const MultipleButtons: Story = {
       <LikeButton liked={true} />
     </div>
   ),
-};
+}
 
 export const InProductCard: Story = {
   render: () => (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-xs">
+    <div className="max-w-xs overflow-hidden rounded-lg bg-white shadow-lg">
       <div className="relative">
         <img
-          className="w-full h-48 object-cover"
+          className="h-48 w-full object-cover"
           alt="Product"
           src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop"
         />
-        <div className="absolute top-3 right-3">
+        <div className="absolute right-3 top-3">
           <LikeButton />
         </div>
       </div>
@@ -77,15 +77,15 @@ export const InProductCard: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const DifferentPositions: Story = {
   render: () => (
     <div className="space-y-6">
       <div className="flex items-center space-x-3">
         <span className="text-sm">Top Left:</span>
-        <div className="relative w-32 h-24 bg-gray-200 rounded">
-          <div className="absolute top-2 left-2">
+        <div className="relative h-24 w-32 rounded bg-gray-200">
+          <div className="absolute left-2 top-2">
             <LikeButton />
           </div>
         </div>
@@ -93,8 +93,8 @@ export const DifferentPositions: Story = {
 
       <div className="flex items-center space-x-3">
         <span className="text-sm">Top Right:</span>
-        <div className="relative w-32 h-24 bg-gray-200 rounded">
-          <div className="absolute top-2 right-2">
+        <div className="relative h-24 w-32 rounded bg-gray-200">
+          <div className="absolute right-2 top-2">
             <LikeButton />
           </div>
         </div>
@@ -102,7 +102,7 @@ export const DifferentPositions: Story = {
 
       <div className="flex items-center space-x-3">
         <span className="text-sm">Bottom Right:</span>
-        <div className="relative w-32 h-24 bg-gray-200 rounded">
+        <div className="relative h-24 w-32 rounded bg-gray-200">
           <div className="absolute bottom-2 right-2">
             <LikeButton />
           </div>
@@ -110,7 +110,7 @@ export const DifferentPositions: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const Grid: Story = {
   render: () => (
@@ -120,4 +120,4 @@ export const Grid: Story = {
       ))}
     </div>
   ),
-};
+}

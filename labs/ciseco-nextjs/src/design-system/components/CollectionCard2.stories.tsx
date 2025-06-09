@@ -1,6 +1,6 @@
-import CollectionCard2 from './CollectionCard2';
+import CollectionCard2 from './CollectionCard2'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof CollectionCard2> = {
   argTypes: {
@@ -21,17 +21,16 @@ const meta: Meta<typeof CollectionCard2> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'A vertical collection card with large image, background color, and centered text layout.',
+        component: 'A vertical collection card with large image, background color, and centered text layout.',
       },
     },
     layout: 'centered',
   },
   title: 'Ciseco/CollectionCard2',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockCollection = {
   id: 'gid://1',
@@ -47,38 +46,38 @@ const mockCollection = {
   },
   sortDescription: 'Newest arrivals',
   title: 'Jackets',
-};
+}
 
 export const Default: Story = {
   args: {
     collection: mockCollection,
   },
-};
+}
 
 export const SquareRatio: Story = {
   args: {
     collection: mockCollection,
     ratioClass: 'aspect-square',
   },
-};
+}
 
 export const RectangleRatio: Story = {
   args: {
     collection: mockCollection,
     ratioClass: 'aspect-[4/3]',
   },
-};
+}
 
 export const TallRatio: Story = {
   args: {
     collection: mockCollection,
     ratioClass: 'aspect-[3/4]',
   },
-};
+}
 
 export const DifferentColors: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-6 w-96">
+    <div className="grid w-96 grid-cols-2 gap-6">
       <CollectionCard2
         collection={{
           ...mockCollection,
@@ -113,7 +112,7 @@ export const DifferentColors: Story = {
       />
     </div>
   ),
-};
+}
 
 export const NoImage: Story = {
   args: {
@@ -122,7 +121,7 @@ export const NoImage: Story = {
       image: undefined,
     },
   },
-};
+}
 
 export const LongTitle: Story = {
   args: {
@@ -132,7 +131,7 @@ export const LongTitle: Story = {
       title: 'Premium Winter Outerwear Collection',
     },
   },
-};
+}
 
 export const HTMLDescription: Story = {
   args: {
@@ -141,7 +140,7 @@ export const HTMLDescription: Story = {
       sortDescription: '<strong>Featured</strong> items with <em>special</em> pricing',
     },
   },
-};
+}
 
 export const NoHandle: Story = {
   args: {
@@ -150,11 +149,11 @@ export const NoHandle: Story = {
       handle: undefined,
     },
   },
-};
+}
 
 export const Grid: Story = {
   render: () => (
-    <div className="grid grid-cols-3 gap-6 max-w-4xl">
+    <div className="grid max-w-4xl grid-cols-3 gap-6">
       {[
         {
           color: 'bg-blue-50',
@@ -212,24 +211,17 @@ export const Grid: Story = {
       ))}
     </div>
   ),
-};
+}
 
 export const ResponsiveGrid: Story = {
   render: () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
+    <div className="grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }, (_, i) => (
         <CollectionCard2
           key={`collection-${i}`}
           collection={{
             id: `gid://${i}`,
-            color: [
-              'bg-blue-50',
-              'bg-green-50',
-              'bg-purple-50',
-              'bg-pink-50',
-              'bg-yellow-50',
-              'bg-indigo-50',
-            ][i],
+            color: ['bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-pink-50', 'bg-yellow-50', 'bg-indigo-50'][i],
             handle: `collection-${i + 1}`,
             image: {
               width: 300,
@@ -244,4 +236,4 @@ export const ResponsiveGrid: Story = {
       ))}
     </div>
   ),
-};
+}

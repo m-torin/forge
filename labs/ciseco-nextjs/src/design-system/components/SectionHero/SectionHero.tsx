@@ -1,15 +1,15 @@
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import { type FC, type ReactNode } from 'react';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
+import { type FC, type ReactNode } from 'react'
 
-import rightImg from '../../images/hero-right-1.png';
-import ButtonPrimary from '../shared/Button/ButtonPrimary';
-import ButtonSecondary from '../shared/Button/ButtonSecondary';
+import rightImg from '../../images/hero-right-1.png'
+import ButtonPrimary from '../shared/Button/ButtonPrimary'
+import ButtonSecondary from '../shared/Button/ButtonSecondary'
 
 export interface SectionHeroProps {
-  className?: string;
-  heading?: ReactNode;
-  subHeading?: string;
+  className?: string
+  heading?: ReactNode
+  subHeading?: string
 }
 
 const SectionHero: FC<SectionHeroProps> = ({
@@ -19,9 +19,9 @@ const SectionHero: FC<SectionHeroProps> = ({
 }) => {
   return (
     <div className={`relative ${className}`}>
-      <div className="relative flex flex-col space-y-14 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-10">
+      <div className="relative flex flex-col space-y-14 lg:flex-row lg:items-center lg:space-x-10 lg:space-y-0">
         <div className="w-screen max-w-full space-y-5 lg:space-y-7 xl:max-w-xl">
-          <h2 className="text-3xl leading-tight! font-semibold text-neutral-900 md:text-4xl xl:text-5xl dark:text-neutral-100">
+          <h2 className="leading-tight! text-3xl font-semibold text-neutral-900 md:text-4xl xl:text-5xl dark:text-neutral-100">
             {heading}
           </h2>
           <span className="block max-w-lg text-base text-neutral-600 xl:text-lg dark:text-neutral-400">
@@ -64,17 +64,11 @@ const SectionHero: FC<SectionHeroProps> = ({
           </div>
         </div>
         <div className="grow">
-          <Image
-            priority
-            className="w-full"
-            alt=""
-            sizes="(max-width: 768px) 100vw, 50vw"
-            src={rightImg}
-          />
+          <Image priority className="w-full" alt="" sizes="(max-width: 768px) 100vw, 50vw" src={rightImg} />
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionHero;
+export default SectionHero

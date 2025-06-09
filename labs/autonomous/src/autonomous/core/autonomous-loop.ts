@@ -1,17 +1,17 @@
+import {
+  type AutonomousConfig,
+  type ErrorCategory,
+  type RepairAttempt,
+  type WorkflowSpecification,
+} from '../types';
+
+import { ClaudeAIWrapper } from './claude-ai-wrapper';
 // Core autonomous development loop orchestrator
 import { ClaudeWrapper } from './claude-wrapper';
-import { ClaudeAIWrapper } from './claude-ai-wrapper';
-import { TestRunner } from './test-runner';
 import { ErrorAnalyzer } from './error-analyzer';
 import { GitAutomation } from './git-automation';
 import { LearningSystem } from './learning-system';
-import {
-  WorkflowSpecification,
-  RepairAttempt,
-  TestResult,
-  AutonomousConfig,
-  ErrorCategory,
-} from '../types';
+import { TestRunner } from './test-runner';
 
 export class AutonomousLoop {
   private claudeWrapper: ClaudeWrapper | ClaudeAIWrapper;
@@ -24,10 +24,10 @@ export class AutonomousLoop {
 
   constructor(config?: Partial<AutonomousConfig>) {
     this.config = {
-      maxIterations: 10,
-      enableLearning: true,
       commitOnSuccess: process.env.ENABLE_GIT_OPERATIONS === 'true',
+      enableLearning: true,
       generateReports: true,
+      maxIterations: 10,
       useCICD: process.env.ENABLE_CI_CD_INTEGRATION === 'true',
       ...config,
     };
@@ -129,11 +129,11 @@ export class AutonomousLoop {
     // Create pull request if successful
     if (allTestsPassed && this.config.commitOnSuccess && this.config.useCICD) {
       await this.gitAutomation.createAutonomousPR(specification, {
-        success: true,
-        iterations: iteration,
-        testPassRate: 100,
         fixesApplied: this.learningData.map((d) => d.errorAnalysis.suggestedStrategy),
+        iterations: iteration,
+        success: true,
         successRate: 100,
+        testPassRate: 100,
         totalTime: Date.now(),
       });
     }
@@ -146,8 +146,8 @@ export class AutonomousLoop {
 
     // Get optimal strategy from learning system
     const strategy = await this.learningSystem.getPredictedStrategy({
-      workflowType: spec.type || 'general',
       complexity: this.calculateComplexity(spec),
+      workflowType: spec.type || 'general',
     });
 
     return await this.claudeWrapper.generateWorkflowCode(spec, strategy);
@@ -198,10 +198,10 @@ export class AutonomousLoop {
   private calculateComplexity(spec: WorkflowSpecification): 'low' | 'medium' | 'high' {
     const factors = {
       businessLogicSteps: spec.businessLogic.length,
-      inputProperties: Object.keys(spec.inputContract.properties || {}).length,
-      outputProperties: Object.keys(spec.outputContract.properties || {}).length,
       hasErrorHandling: spec.errorHandling && spec.errorHandling.length > 0,
       hasPerformanceReqs: spec.performance !== undefined,
+      inputProperties: Object.keys(spec.inputContract.properties || {}).length,
+      outputProperties: Object.keys(spec.outputContract.properties || {}).length,
     };
 
     const score =
@@ -222,37 +222,37 @@ export class AutonomousLoop {
     iteration: number,
   ): void {
     this.learningData.push({
-      workflowName: spec.name,
-      iteration,
-      errorAnalysis,
-      timestamp: new Date(),
-      repairStrategy: errorAnalysis.suggestedStrategy,
       complexity: this.calculateComplexity(spec),
+      errorAnalysis,
+      iteration,
+      repairStrategy: errorAnalysis.suggestedStrategy,
+      timestamp: new Date(),
+      workflowName: spec.name,
     });
   }
 
   private recordFailure(spec: WorkflowSpecification, error: any, iteration: number): void {
     this.learningData.push({
-      workflowName: spec.name,
-      iteration,
+      complexity: this.calculateComplexity(spec),
       errorAnalysis: {
+        confidence: 0,
+        categories: ['logic-error' as ErrorCategory],
         errors: [
           {
-            message: error instanceof Error ? error.message : String(error),
+            confidence: 0,
+            category: 'logic-error' as ErrorCategory,
             file: 'unknown',
             line: 0,
-            category: 'logic-error' as ErrorCategory,
-            confidence: 0,
+            message: error instanceof Error ? error.message : String(error),
           },
         ],
-        categories: ['logic-error' as ErrorCategory],
         suggestedStrategy: 'manual-intervention-required',
         testFailures: [],
-        confidence: 0,
       },
-      timestamp: new Date(),
+      iteration,
       repairStrategy: 'manual-intervention-required',
-      complexity: this.calculateComplexity(spec),
+      timestamp: new Date(),
+      workflowName: spec.name,
     });
   }
 
@@ -296,8 +296,8 @@ ${await this.learningSystem.generateInsights(spec, this.learningData)}
   async triggerCICDPipeline(workflowName: string): Promise<void> {
     if (this.config.useCICD) {
       await this.gitAutomation.triggerGitHubAction('autonomous-deploy', {
-        workflow: workflowName,
         environment: 'production',
+        workflow: workflowName,
       });
     }
   }

@@ -64,13 +64,13 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
         name,
         createdAt: new Date(),
         description,
+        organizationId: teamOrganizationId,
         teamMembers: {
           create: {
             role: 'owner',
             userId: session.user.id,
           },
         },
-        organizationId: teamOrganizationId,
       },
       include: {
         teamMembers: {
@@ -396,7 +396,10 @@ export async function updateTeamMember(
       },
     });
 
-    if (!currentUserMembership || !roleHasPermission(currentUserMembership.role, 'teamMembers:write')) {
+    if (
+      !currentUserMembership ||
+      !roleHasPermission(currentUserMembership.role, 'teamMembers:write')
+    ) {
       return { error: 'Insufficient permissions', success: false };
     }
 

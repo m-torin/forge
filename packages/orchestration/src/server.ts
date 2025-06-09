@@ -141,5 +141,5 @@ export const workflowEngine = createWorkflowEngine();
 // Re-export Upstash packages for direct usage in workflow routes
 export { Client as QStashClient, QStashWorkflowAbort } from '@upstash/qstash';
 export { Redis } from '@upstash/redis';
-export { createWorkflow, serveMany, serve as upstashServe } from '@upstash/workflow/nextjs';
-export type { WorkflowContext } from '@upstash/workflow';
+// Removed blocking script imports from @upstash/workflow/nextjs
+// These were causing blocking script loading and were not being used

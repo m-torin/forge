@@ -1,3 +1,4 @@
+import { getBrands } from "@/lib/data-service";
 import { type Metadata } from "next";
 import Link from "next/link";
 
@@ -8,17 +9,6 @@ export const metadata: Metadata = {
   title: "Brands",
 };
 
-// Mock data - replace with real API calls
-async function getBrands() {
-  return [
-    { id: "1", name: "Nike", productCount: 1250, slug: "nike" },
-    { id: "2", name: "Adidas", productCount: 980, slug: "adidas" },
-    { id: "3", name: "Puma", productCount: 650, slug: "puma" },
-    { id: "4", name: "New Balance", productCount: 450, slug: "new-balance" },
-    { id: "5", name: "Under Armour", productCount: 380, slug: "under-armour" },
-    { id: "6", name: "Reebok", productCount: 320, slug: "reebok" },
-  ];
-}
 
 export default async function BrandsPage({
   params,
@@ -45,7 +35,7 @@ export default async function BrandsPage({
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {brands.map((brand) => (
+          {brands?.map((brand) => (
             <Link
               key={brand.id}
               href={`/${locale}/brands/${brand.slug}`}
@@ -56,7 +46,7 @@ export default async function BrandsPage({
                   {brand.name}
                 </h3>
                 <span className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-                  {brand.productCount} products
+                  {brand.productCount || 0} products
                 </span>
               </div>
             </Link>

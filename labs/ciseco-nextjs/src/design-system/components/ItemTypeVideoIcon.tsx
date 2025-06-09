@@ -1,17 +1,13 @@
-import React from 'react';
+import React from 'react'
 
 export interface ItemTypeVideoIconProps {
-  className?: string;
+  className?: string
 }
 
-const ItemTypeVideoIcon: React.FC<ItemTypeVideoIconProps> = ({
-  className = 'w-8 h-8 md:w-10 md:h-10',
-}) => {
+const ItemTypeVideoIcon: React.FC<ItemTypeVideoIconProps> = ({ className = 'w-8 h-8 md:w-10 md:h-10' }) => {
   return (
-    <div
-      className={`bg-black/50  flex items-center justify-center rounded-full text-white ${className}`}
-    >
-      <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5" fill="none">
+    <div className={`flex items-center justify-center rounded-full bg-black/50 text-white ${className}`}>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 md:h-5 md:w-5" fill="none">
         <path
           strokeWidth="1.5"
           stroke="currentColor"
@@ -35,7 +31,7 @@ const ItemTypeVideoIcon: React.FC<ItemTypeVideoIconProps> = ({
         />
       </svg>
     </div>
-  );
-};
+  )
+}
 
-export default ItemTypeVideoIcon;
+export default ItemTypeVideoIcon

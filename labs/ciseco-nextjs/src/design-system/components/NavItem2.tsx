@@ -1,12 +1,12 @@
-import React, { type FC, type ReactNode } from 'react';
+import React, { type FC, type ReactNode } from 'react'
 
 export interface NavItem2Props {
-  children?: React.ReactNode;
-  className?: string;
-  isActive?: boolean;
-  onClick?: () => void;
-  radius?: string;
-  renderX?: ReactNode;
+  children?: React.ReactNode
+  className?: string
+  isActive?: boolean
+  onClick?: () => void
+  radius?: string
+  renderX?: ReactNode
 }
 
 const NavItem2: FC<NavItem2Props> = ({
@@ -22,9 +22,9 @@ const NavItem2: FC<NavItem2Props> = ({
       {renderX && renderX}
       <button
         onClick={() => {
-          onClick && onClick();
+          onClick && onClick()
         }}
-        className={`block font-medium whitespace-nowrap ${className} ${radius} ${
+        className={`block whitespace-nowrap font-medium ${className} ${radius} ${
           isActive
             ? 'bg-neutral-900 text-neutral-50'
             : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
@@ -33,7 +33,7 @@ const NavItem2: FC<NavItem2Props> = ({
         {children}
       </button>
     </li>
-  );
-};
+  )
+}
 
-export default NavItem2;
+export default NavItem2

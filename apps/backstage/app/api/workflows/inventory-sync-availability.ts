@@ -235,8 +235,8 @@ export const collectInventorySourcesStep = compose(
   (step) => withStepTimeout(step, { execution: 120000 }), // 2 minutes
   (step) =>
     withStepMonitoring(step, {
-, 'sourceCount'],
       enableDetailedLogging: true,
+      metricsToTrack: ['itemsRetrieved', 'sourceCount'],
     }),
 );
 
@@ -656,7 +656,7 @@ export const synchronizeInventoryStep = compose(
       } catch (error) {
         errors.push({
           batchIndex: Math.floor(i / batchSize),
-          (error as Error): (error as Error).message,
+          error: (error as Error).message,
           itemCount: batch.length,
         });
       }
@@ -680,8 +680,8 @@ export const synchronizeInventoryStep = compose(
     }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 600000, // 10 minutes
+      threshold: 0.5,
       timeout: 300000, // 5 minutes
     }),
 );
@@ -699,7 +699,7 @@ function calculateSyncStatistics(syncResults: any[]): any {
   };
 
   syncResults.forEach((result) => {
-    stats[(result.status as any)]++;
+    stats[result.status as any]++;
     if (result.discrepancy) {
       stats.totalDiscrepancy += result.discrepancy;
     }
@@ -784,7 +784,8 @@ function resolveBySourcePriority(conflict: any): any {
   };
 
   const sortedItems = conflict.items.sort(
-    (a: any, b: any) => (sourcePriority[((a.source as any) as any)] || 999) - (sourcePriority[b.source] || 999),
+    (a: any, b: any) =>
+      (sourcePriority[a.source as any as any] || 999) - (sourcePriority[b.source] || 999),
   );
 
   return {
@@ -872,7 +873,7 @@ function calculateProductAvailability(updates: any[], config: any): any {
 
   productGroups.forEach((items, productId) => {
     const availability = calculateProductAvailabilityLogic(items, config);
-    productAvailability[(productId as any)] = availability;
+    productAvailability[productId as any] = availability;
   });
 
   return productAvailability;
@@ -962,7 +963,9 @@ export const generateInventoryAlertsStep = createStep('generate-alerts', async (
 
   // Stock-out alerts
   if (alertConfig.stockoutAlerts) {
-    const outOfStockItems = availabilityUpdates.filter((item: any) => item.status === 'out_of_stock');
+    const outOfStockItems = availabilityUpdates.filter(
+      (item: any) => item.status === 'out_of_stock',
+    );
 
     if (outOfStockItems.length > 0) {
       alerts.push({

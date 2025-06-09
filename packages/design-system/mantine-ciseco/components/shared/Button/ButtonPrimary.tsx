@@ -6,7 +6,11 @@ export interface ButtonPrimaryProps extends ButtonProps {
   'data-testid'?: string;
 }
 
-function ButtonPrimary({ className = '', 'data-testid': testId = 'button-primary', ...props }: ButtonPrimaryProps) {
+function ButtonPrimary({
+  'data-testid': testId = 'button-primary',
+  className = '',
+  ...props
+}: ButtonPrimaryProps) {
   return (
     <Button
       data-testid={testId}

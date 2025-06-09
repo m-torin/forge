@@ -1,15 +1,15 @@
-import { ArrowRightIcon } from '@heroicons/react/24/solid';
-import { type FC } from 'react';
+import { ArrowRightIcon } from '@heroicons/react/24/solid'
+import { type FC } from 'react'
 
-import { type TProductItem } from '../data/data';
+import { type TProductItem } from '../data/data'
 
-import HeaderFilterSection from './HeaderFilterSection';
-import ProductCard from './ProductCard';
-import ButtonPrimary from './shared/Button/ButtonPrimary';
+import HeaderFilterSection from './HeaderFilterSection'
+import ProductCard from './ProductCard'
+import ButtonPrimary from './shared/Button/ButtonPrimary'
 
 //
 export interface SectionGridFeatureItemsProps {
-  data: TProductItem[];
+  data: TProductItem[]
 }
 
 const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }) => {
@@ -28,7 +28,7 @@ const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }) => 
         </ButtonPrimary>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionGridFeatureItems;
+export default SectionGridFeatureItems

@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import { Search01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import clsx from 'clsx';
-import Image from 'next/image';
-import { type FC, useEffect, useState } from 'react';
-import { useSwipeable } from 'react-swipeable';
-import { useInterval } from 'react-use';
+import { Search01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import clsx from 'clsx'
+import Image from 'next/image'
+import { type FC, useEffect, useState } from 'react'
+import { useSwipeable } from 'react-swipeable'
+import { useInterval } from 'react-use'
 
-import heroImage1 from '../../images/hero-right-1.png';
-import heroImage2 from '../../images/hero-right-2.png';
-import heroImage3 from '../../images/hero-right-3.png';
-import backgroundLineSvg from '../../images/Moon.svg';
-import ButtonPrimary from '../shared/Button/ButtonPrimary';
+import heroImage1 from '../../images/hero-right-1.png'
+import heroImage2 from '../../images/hero-right-2.png'
+import heroImage3 from '../../images/hero-right-3.png'
+import backgroundLineSvg from '../../images/Moon.svg'
+import ButtonPrimary from '../shared/Button/ButtonPrimary'
 
 // DEMO DATA
 const data = [
@@ -40,95 +40,95 @@ const data = [
     imageUrl: heroImage3,
     subHeading: 'In this season, find the best 🔥',
   },
-];
+]
 
 export interface SectionHero2Props {
-  className?: string;
+  className?: string
 }
 
-let TIME_OUT: NodeJS.Timeout | null = null;
+let TIME_OUT: NodeJS.Timeout | null = null
 const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
   // =================
 
-  const [isSlided, setIsSlided] = useState(false);
-  const [indexActive, setIndexActive] = useState(0);
-  const [isRunning, toggleIsRunning] = useState(true);
+  const [isSlided, setIsSlided] = useState(false)
+  const [indexActive, setIndexActive] = useState(0)
+  const [isRunning, toggleIsRunning] = useState(true)
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
-      handleClickNext();
+      handleClickNext()
     },
     onSwipedRight: () => {
-      handleClickPrev();
+      handleClickPrev()
     },
     trackMouse: true,
-  });
+  })
 
   useEffect(() => {
     if (isSlided || !indexActive) {
-      return;
+      return
     }
-    setIsSlided(true);
-  }, [indexActive, isSlided]);
+    setIsSlided(true)
+  }, [indexActive, isSlided])
 
   useInterval(
     () => {
-      handleAutoNext();
+      handleAutoNext()
     },
-    isRunning ? 5000 : 999999,
-  );
+    isRunning ? 5000 : 999999
+  )
 
   const handleAutoNext = () => {
     setIndexActive((state) => {
       if (state >= data.length - 1) {
-        return 0;
+        return 0
       }
-      return state + 1;
-    });
-  };
+      return state + 1
+    })
+  }
 
   const handleClickNext = () => {
     setIndexActive((state) => {
       if (state >= data.length - 1) {
-        return 0;
+        return 0
       }
-      return state + 1;
-    });
-    handleAfterClick();
-  };
+      return state + 1
+    })
+    handleAfterClick()
+  }
 
   const handleClickPrev = () => {
     setIndexActive((state) => {
       if (state === 0) {
-        return data.length - 1;
+        return data.length - 1
       }
-      return state - 1;
-    });
-    handleAfterClick();
-  };
+      return state - 1
+    })
+    handleAfterClick()
+  }
 
   const handleAfterClick = () => {
-    toggleIsRunning(false);
+    toggleIsRunning(false)
     if (TIME_OUT) {
-      clearTimeout(TIME_OUT);
+      clearTimeout(TIME_OUT)
     }
     TIME_OUT = setTimeout(() => {
-      toggleIsRunning(true);
-    }, 1000);
-  };
+      toggleIsRunning(true)
+    }, 1000)
+  }
 
   // ===================================================
 
   const renderItem = (index: number) => {
-    const isActive = indexActive === index;
-    const item = data[index];
+    const isActive = indexActive === index
+    const item = data[index]
 
     return (
       <div
         key={index}
         className={clsx(
-          'fade--animation relative flex flex-col gap-10 overflow-hidden py-14 pl-container sm:min-h-[calc(100vh-5rem)] lg:flex-row lg:items-center',
-          isActive ? 'flex' : 'hidden',
+          'fade--animation pl-container relative flex flex-col gap-10 overflow-hidden py-14 sm:min-h-[calc(100vh-5rem)] lg:flex-row lg:items-center',
+          isActive ? 'flex' : 'hidden'
         )}
       >
         {/* BG */}
@@ -143,58 +143,50 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
         </div>
 
         {/* DOTS */}
-        <div className="absolute start-1/2 bottom-4 flex -translate-x-1/2 justify-center rtl:translate-x-1/2">
+        <div className="absolute bottom-4 start-1/2 flex -translate-x-1/2 justify-center rtl:translate-x-1/2">
           {data.map((_, index) => {
-            const isActive = indexActive === index;
+            const isActive = indexActive === index
             return (
               <div
                 key={index}
                 onClick={() => {
-                  setIndexActive(index);
-                  handleAfterClick();
+                  setIndexActive(index)
+                  handleAfterClick()
                 }}
                 className="relative cursor-pointer px-1 py-1.5"
               >
-                <div className="relative h-1 w-20 rounded-md bg-white shadow-xs">
-                  {isActive && (
-                    <div className="absolute inset-0 rounded-md bg-neutral-900 fade--animation__dot" />
-                  )}
+                <div className="shadow-xs relative h-1 w-20 rounded-md bg-white">
+                  {isActive && <div className="fade--animation__dot absolute inset-0 rounded-md bg-neutral-900" />}
                 </div>
               </div>
-            );
+            )
           })}
         </div>
 
-        <div className="relative flex flex-1/2 flex-col items-start fade--animation__left">
-          <span className="block text-base font-medium text-neutral-700 fade--animation__subheading md:text-xl">
+        <div className="flex-1/2 fade--animation__left relative flex flex-col items-start">
+          <span className="fade--animation__subheading block text-base font-medium text-neutral-700 md:text-xl">
             {item.subHeading}
           </span>
           <h2
             dangerouslySetInnerHTML={{ __html: item.heading }}
-            className="mt-5 text-4xl font-semibold text-neutral-900 fade--animation__heading sm:mt-6 md:text-5xl xl:text-6xl xl:leading-[1.2] 2xl:text-7xl"
+            className="fade--animation__heading mt-5 text-4xl font-semibold text-neutral-900 sm:mt-6 md:text-5xl xl:text-6xl xl:leading-[1.2] 2xl:text-7xl"
           />
 
           <ButtonPrimary
             href={item.btnHref || '#'}
-            className="mt-10 fade--animation__button sm:mt-20 dark:bg-neutral-900 dark:text-white"
+            className="fade--animation__button mt-10 sm:mt-20 dark:bg-neutral-900 dark:text-white"
             sizeClass="py-3 px-6 sm:py-5 sm:px-9 "
           >
             <span>{item.btnText}</span>
-            <HugeiconsIcon
-              strokeWidth={1.5}
-              color="currentColor"
-              icon={Search01Icon}
-              className="ms-2.5"
-              size={20}
-            />
+            <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Search01Icon} className="ms-2.5" size={20} />
           </ButtonPrimary>
         </div>
 
-        <div className="relative -z-10 flex-1/2 lg:pr-10">
+        <div className="flex-1/2 relative -z-10 lg:pr-10">
           <Image
             width={790}
             priority
-            className="object-contain fade--animation__image select-none"
+            className="fade--animation__image select-none object-contain"
             alt={item.heading}
             height={790}
             sizes="(max-width: 768px) 100vw, 50vw"
@@ -202,8 +194,8 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
           />
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className={clsx('relative z-[1]', className)} {...handlers}>
@@ -242,7 +234,7 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
         </svg>
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default SectionHero2;
+export default SectionHero2

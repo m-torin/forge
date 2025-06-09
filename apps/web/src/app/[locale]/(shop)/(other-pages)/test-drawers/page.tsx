@@ -1,14 +1,15 @@
 "use client";
 
+import { getProductsAction } from "@/actions/data-service-actions";
+import { type TProductItem } from "@/lib/data-service";
 import { Badge, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
 import { useState } from "react";
 import { useEffect } from "react";
 
 import { ProductCard } from "@repo/design-system/mantine-ciseco";
-import { getProducts } from "@repo/design-system/mantine-ciseco/data/data";
 
 export default function TestDrawersPage() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<TProductItem[]>([]);
   const [testResults, setTestResults] = useState<{
     cartDrawer: any;
     navigationDrawer: any;
@@ -21,7 +22,7 @@ export default function TestDrawersPage() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const data = await getProducts();
+      const data = await getProductsAction();
       setProducts(data.slice(0, 3)); // Get first 3 products for testing
     };
     fetchProducts();
@@ -30,10 +31,7 @@ export default function TestDrawersPage() {
   const testCartDrawer = () => {
     try {
       // Click the cart icon in the header
-      const cartButton =
-        document.querySelector('[aria-label*="Cart"]') ||
-        document.querySelector('button[class*="cart"]') ||
-        document.querySelector('[data-testid="cart-button"]');
+      const cartButton = document.querySelector('[data-testid="cart-button"]');
 
       if (cartButton) {
         (cartButton as HTMLElement).click();
@@ -97,10 +95,9 @@ export default function TestDrawersPage() {
   const testNavigationDrawer = () => {
     try {
       // Click the menu icon in the header
-      const menuButton =
-        document.querySelector('[aria-label*="Menu"]') ||
-        document.querySelector('button[class*="menu"]') ||
-        document.querySelector('[data-testid="menu-button"]');
+      const menuButton = document.querySelector(
+        '[data-testid="hamburger-menu"]',
+      );
 
       if (menuButton) {
         (menuButton as HTMLElement).click();
@@ -161,58 +158,82 @@ export default function TestDrawersPage() {
 
   const testProductQuickView = () => {
     try {
-      // Click the quick view button on the first product card
-      const quickViewButton =
-        document.querySelector(
-          'button:has(svg[class*="ArrowsPointingOutIcon"])',
-        ) ||
-        document.querySelector('button:contains("Quick view")') ||
-        document.querySelector('[class*="ProductCard"] button:last-child');
+      // First, hover over the product card to reveal the quick view button
+      const productCard = document.querySelector(
+        '[data-testid="product-card"]',
+      );
 
-      if (quickViewButton) {
-        (quickViewButton as HTMLElement).click();
+      if (productCard) {
+        // Trigger hover event to show the quick view button
+        const hoverEvent = new MouseEvent("mouseenter", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        });
+        productCard.dispatchEvent(hoverEvent);
+
+        // Wait a bit for the hover effect to show the button
         setTimeout(() => {
-          // Check if drawer opened and has product details
-          const drawer = document.querySelector('[role="dialog"]');
-          const hasTitle = drawer?.textContent?.includes("Product Details");
-          const hasProductInfo =
-            drawer?.querySelector('[class*="AccordionInfo"]') ||
-            drawer?.querySelector('h2[class*="ProductCard__title"]');
-          const hasAddToCart = drawer
-            ?.querySelector("button")
-            ?.textContent?.includes("Add to");
-
-          setTestResults((prev) => ({
-            ...prev,
-            productQuickView: {
-              details: {
-                addToCartFound: Boolean(hasAddToCart),
-                drawerFound: Boolean(drawer),
-                productInfoFound: Boolean(hasProductInfo),
-                titleFound: Boolean(hasTitle),
-              },
-              message:
-                drawer && (hasTitle || hasProductInfo) && hasAddToCart
-                  ? "Product quick view drawer opened successfully with product details"
-                  : "Product quick view drawer failed to open or show content",
-              success: Boolean(
-                drawer && (hasTitle || hasProductInfo) && hasAddToCart,
-              ),
-            },
-          }));
-
-          // Close the drawer
-          const closeButton = drawer?.querySelector(
-            'button[aria-label*="Close"]',
+          // Click the quick view button
+          const quickViewButton = document.querySelector(
+            '[data-testid="product-card-quick-view-button"]',
           );
-          if (closeButton) (closeButton as HTMLElement).click();
-        }, 500);
+
+          if (quickViewButton) {
+            (quickViewButton as HTMLElement).click();
+            setTimeout(() => {
+              // Check if drawer opened and has product details
+              const drawer = document.querySelector('[role="dialog"]');
+              const hasTitle = drawer?.textContent?.includes("Product Details");
+              const hasProductInfo =
+                drawer?.querySelector('[class*="AccordionInfo"]') ||
+                drawer?.querySelector('h2[class*="ProductCard__title"]');
+              const hasAddToCart = drawer
+                ?.querySelector("button")
+                ?.textContent?.includes("Add to");
+
+              setTestResults((prev) => ({
+                ...prev,
+                productQuickView: {
+                  details: {
+                    addToCartFound: Boolean(hasAddToCart),
+                    drawerFound: Boolean(drawer),
+                    productInfoFound: Boolean(hasProductInfo),
+                    titleFound: Boolean(hasTitle),
+                  },
+                  message:
+                    drawer && (hasTitle || hasProductInfo) && hasAddToCart
+                      ? "Product quick view drawer opened successfully with product details"
+                      : "Product quick view drawer failed to open or show content",
+                  success: Boolean(
+                    drawer && (hasTitle || hasProductInfo) && hasAddToCart,
+                  ),
+                },
+              }));
+
+              // Close the drawer
+              const closeButton = drawer?.querySelector(
+                'button[aria-label*="Close"]',
+              );
+              if (closeButton) (closeButton as HTMLElement).click();
+            }, 500);
+          } else {
+            setTestResults((prev) => ({
+              ...prev,
+              productQuickView: {
+                details: { quickViewButtonFound: false },
+                message: "Quick view button not found on product card",
+                success: false,
+              },
+            }));
+          }
+        }, 300); // Wait for hover effect
       } else {
         setTestResults((prev) => ({
           ...prev,
           productQuickView: {
-            details: { quickViewButtonFound: false },
-            message: "Quick view button not found on product card",
+            details: { productCardFound: false },
+            message: "Product card not found on page",
             success: false,
           },
         }));

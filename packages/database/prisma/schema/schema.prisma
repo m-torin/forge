@@ -1,0 +1,14 @@
+// schema.prisma - Main configuration file
+// This file contains the generator and datasource configuration
+// Model definitions are split across multiple files in this directory
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../generated/client"
+  binaryTargets = ["native", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

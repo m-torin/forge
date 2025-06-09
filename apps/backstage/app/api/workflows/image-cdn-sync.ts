@@ -181,8 +181,8 @@ export const fetchImagesToSyncStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'sourceCount'],
       enableDetailedLogging: true,
+      metricsToTrack: ['imageCount', 'sourceCount'],
     }),
 );
 

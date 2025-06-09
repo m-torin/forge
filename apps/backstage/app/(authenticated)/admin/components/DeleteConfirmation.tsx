@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Text, Stack, Alert, Loader, Badge, Group } from '@mantine/core';
+import { Alert, Badge, Group, Loader, Stack, Text } from '@mantine/core';
+import { useEffect, useState } from 'react';
+
 import { getCascadeInfo } from '../lib/relationship-utils';
 
 interface DeleteConfirmationProps {
@@ -12,11 +13,11 @@ interface DeleteConfirmationProps {
 
 export function DeleteConfirmation({ modelName, recordId, recordName }: DeleteConfirmationProps) {
   const [cascadeInfo, setCascadeInfo] = useState<
-    Array<{
+    {
       model: string;
       count: number;
       action: 'delete' | 'nullify' | 'restrict';
-    }>
+    }[]
   >([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,7 @@ export function DeleteConfirmation({ modelName, recordId, recordName }: DeleteCo
     return (
       <Stack align="center" py="md">
         <Loader size="sm" />
-        <Text size="sm" c="dimmed">
+        <Text c="dimmed" size="sm">
           Checking dependencies...
         </Text>
       </Stack>
@@ -59,7 +60,7 @@ export function DeleteConfirmation({ modelName, recordId, recordName }: DeleteCo
                 <Group key={info.model} gap="xs">
                   <Text size="sm">•</Text>
                   <Text size="sm">
-                    <Badge color="red" variant="light" size="sm">
+                    <Badge color="red" size="sm" variant="light">
                       {info.count}
                     </Badge>{' '}
                     {info.model} record{info.count !== 1 ? 's' : ''}
@@ -80,7 +81,7 @@ export function DeleteConfirmation({ modelName, recordId, recordName }: DeleteCo
                 <Group key={info.model} gap="xs">
                   <Text size="sm">•</Text>
                   <Text size="sm">
-                    <Badge color="yellow" variant="light" size="sm">
+                    <Badge color="yellow" size="sm" variant="light">
                       {info.count}
                     </Badge>{' '}
                     {info.model} record{info.count !== 1 ? 's' : ''}
@@ -92,7 +93,7 @@ export function DeleteConfirmation({ modelName, recordId, recordName }: DeleteCo
       )}
 
       {!hasDestructiveCascades && !hasNullifications && cascadeInfo.length === 0 && (
-        <Text size="sm" c="dimmed">
+        <Text c="dimmed" size="sm">
           No related records will be affected.
         </Text>
       )}

@@ -16,10 +16,15 @@ interface Props {
   size?: 'large' | 'normal';
 }
 
-const CollectionCard1: FC<Props> = ({ className = '', collection, 'data-testid': testId = 'collection-card', size = 'normal' }) => {
+const CollectionCard1: FC<Props> = ({
+  'data-testid': testId = 'collection-card',
+  className = '',
+  collection,
+  size = 'normal',
+}) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection.handle) {
+  if (!collection || !collection.handle) {
     return null;
   }
   return (

@@ -82,10 +82,11 @@ export const classifyProductStep = StepTemplates.http(
   'classify-product',
   'Call AI classification service',
   {
-
+    httpConfig: {
       baseHeaders: {
         'Content-Type': 'application/json',
       },
+      baseUrl: 'https://api.classification.example.com',
       method: 'POST',
     },
   },
@@ -133,7 +134,7 @@ export const notifyStep = StepTemplates.notification(
   'notify-classification',
   'Send classification complete notification',
   {
-, 'webhook'],
+    channels: ['email', 'webhook'],
   },
 );
 

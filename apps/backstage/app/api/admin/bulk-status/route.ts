@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
+import { database } from '@repo/database/prisma';
+
 import { modelConfigs } from '../../../(authenticated)/admin/lib/prisma-model-config';
 import { auditFieldAccess } from '../../../(authenticated)/admin/lib/security-middleware';
 
@@ -24,14 +26,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate model exists
-    const modelConfig = modelConfigs.find(config => config.name === modelName);
+    const modelConfig = modelConfigs.find((config) => config.name === modelName);
     if (!modelConfig) {
       return NextResponse.json({ error: 'Invalid model name' }, { status: 400 });
     }
 
     // Check if model has a status field
-    const statusField = modelConfig.fields.find(field => 
-      field.name === 'status' || field.name === 'state' || field.name === 'isActive'
+    const statusField = modelConfig.fields.find(
+      (field) => field.name === 'status' || field.name === 'state' || field.name === 'isActive',
     );
 
     if (!statusField) {
@@ -46,23 +48,25 @@ export async function POST(request: NextRequest) {
 
     // Create security context
     const securityContext = {
-      userId: session.user.id,
-      userRole: session.user.role || 'user',
       permissions: [
         session.user.role,
-        ...(session.user.role === 'admin' ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts'] : []),
+        ...(session.user.role === 'admin'
+          ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts']
+          : []),
       ],
       sessionId: session.session.id,
+      userId: session.user.id,
+      userRole: session.user.role || 'user',
     };
 
     const results = {
-      success: 0,
-      failed: 0,
       errors: [] as string[],
+      failed: 0,
+      success: 0,
     };
 
     // Determine the correct field name and value
-    let updateData: any = {};
+    const updateData: any = {};
     if (statusField.name === 'isActive') {
       // Handle boolean status field
       updateData[statusField.name] = status === 'active';
@@ -89,8 +93,8 @@ export async function POST(request: NextRequest) {
 
         // Perform update
         await delegate.update({
-          where: { id: recordId },
           data: updateData,
+          where: { id: recordId },
         });
 
         // Audit the status change
@@ -102,7 +106,7 @@ export async function POST(request: NextRequest) {
           recordId,
           oldValue,
           updateData[statusField.name],
-          true
+          true,
         );
 
         results.success++;
@@ -110,7 +114,7 @@ export async function POST(request: NextRequest) {
         results.failed++;
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         results.errors.push(`Record ${recordId}: ${errorMessage}`);
-        
+
         // Audit failed status change
         await auditFieldAccess(
           'write',
@@ -121,9 +125,9 @@ export async function POST(request: NextRequest) {
           undefined,
           updateData[statusField.name],
           false,
-          errorMessage
+          errorMessage,
         );
-        
+
         // Stop if too many errors
         if (results.errors.length > 20) {
           results.errors.push('Too many errors, stopping status update...');
@@ -135,9 +139,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(results);
   } catch (error) {
     console.error('Bulk status update error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

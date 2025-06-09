@@ -2,7 +2,7 @@
  * Next.js server-side observability integration
  */
 
-import { createServerObservability } from '../server';
+import { createServerObservability } from '../server-next';
 
 import type { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
 

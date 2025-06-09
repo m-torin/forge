@@ -2,7 +2,8 @@
 import { spawn } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { WorkflowSpecification, TestResult, TestFramework } from '../types';
+
+import { type TestFramework, type TestResult, type WorkflowSpecification } from '../types';
 
 export class TestRunner {
   private vitestConfig = 'vitest.config.ts';
@@ -20,11 +21,11 @@ export class TestRunner {
 
     // Calculate combined metrics
     const summary = {
-      totalTests: vitestResults.totalTests + playwrightResults.totalTests,
-      passedTests: vitestResults.passedTests + playwrightResults.passedTests,
-      failedTests: vitestResults.failedTests + playwrightResults.failedTests,
-      skippedTests: vitestResults.skippedTests + playwrightResults.skippedTests,
       duration: Math.max(vitestResults.duration, playwrightResults.duration),
+      failedTests: vitestResults.failedTests + playwrightResults.failedTests,
+      passedTests: vitestResults.passedTests + playwrightResults.passedTests,
+      skippedTests: vitestResults.skippedTests + playwrightResults.skippedTests,
+      totalTests: vitestResults.totalTests + playwrightResults.totalTests,
     };
 
     const allPassed = vitestResults.passed && playwrightResults.passed;
@@ -34,11 +35,11 @@ export class TestRunner {
 
     return {
       allPassed,
-      vitest: vitestResults,
+      coverage: await this.getCoverageReport(),
+      performanceMetrics,
       playwright: playwrightResults,
       summary,
-      performanceMetrics,
-      coverage: await this.getCoverageReport(),
+      vitest: vitestResults,
     };
   }
 
@@ -59,12 +60,12 @@ export class TestRunner {
       console.log('🔬 Running Vitest unit tests...');
 
       const vitest = spawn('pnpm', vitestArgs, {
-        stdio: ['pipe', 'pipe', 'pipe'],
         env: {
           ...process.env,
-          NODE_ENV: 'test',
           CI: 'true',
+          NODE_ENV: 'test',
         },
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       let output = '';
@@ -100,23 +101,23 @@ export class TestRunner {
         } catch (error) {
           console.error('Error parsing Vitest output:', error);
           resolve({
-            framework: 'vitest',
-            passed: false,
-            totalTests: 0,
-            passedTests: 0,
-            failedTests: 1,
-            skippedTests: 0,
             duration,
+            failedTests: 1,
             failures: [
               {
-                testName: 'Vitest execution',
+                actual: error instanceof Error ? error.message : String(error),
                 error: 'Failed to parse test output',
                 expected: 'Valid test results',
-                actual: error instanceof Error ? error.message : String(error),
                 stack: errorOutput,
+                testName: 'Vitest execution',
               },
             ],
+            framework: 'vitest',
+            passed: false,
+            passedTests: 0,
             rawOutput: output + errorOutput,
+            skippedTests: 0,
+            totalTests: 0,
           });
         }
       });
@@ -125,23 +126,23 @@ export class TestRunner {
       setTimeout(() => {
         vitest.kill('SIGTERM');
         resolve({
-          framework: 'vitest',
-          passed: false,
-          totalTests: 0,
-          passedTests: 0,
-          failedTests: 1,
-          skippedTests: 0,
           duration: this.maxTestTimeout,
+          failedTests: 1,
           failures: [
             {
-              testName: 'Vitest execution',
+              actual: 'Timeout exceeded',
               error: 'Test timeout',
               expected: `Complete within ${this.maxTestTimeout}ms`,
-              actual: 'Timeout exceeded',
               stack: '',
+              testName: 'Vitest execution',
             },
           ],
+          framework: 'vitest',
+          passed: false,
+          passedTests: 0,
           rawOutput: 'Test execution timed out',
+          skippedTests: 0,
+          totalTests: 0,
         });
       }, this.maxTestTimeout);
     });
@@ -163,12 +164,12 @@ export class TestRunner {
       console.log('🎭 Running Playwright E2E tests...');
 
       const playwright = spawn('pnpm', playwrightArgs, {
-        stdio: ['pipe', 'pipe', 'pipe'],
         env: {
           ...process.env,
           CI: 'true',
           HEADLESS: 'true',
         },
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       let output = '';
@@ -203,23 +204,23 @@ export class TestRunner {
         } catch (error) {
           console.error('Error parsing Playwright output:', error);
           resolve({
-            framework: 'playwright',
-            passed: false,
-            totalTests: 0,
-            passedTests: 0,
-            failedTests: 1,
-            skippedTests: 0,
             duration,
+            failedTests: 1,
             failures: [
               {
-                testName: 'Playwright execution',
+                actual: error instanceof Error ? error.message : String(error),
                 error: 'Failed to parse test output',
                 expected: 'Valid test results',
-                actual: error instanceof Error ? error.message : String(error),
                 stack: errorOutput,
+                testName: 'Playwright execution',
               },
             ],
+            framework: 'playwright',
+            passed: false,
+            passedTests: 0,
             rawOutput: output + errorOutput,
+            skippedTests: 0,
+            totalTests: 0,
           });
         }
       });
@@ -228,23 +229,23 @@ export class TestRunner {
       setTimeout(() => {
         playwright.kill('SIGTERM');
         resolve({
-          framework: 'playwright',
-          passed: false,
-          totalTests: 0,
-          passedTests: 0,
-          failedTests: 1,
-          skippedTests: 0,
           duration: this.maxTestTimeout,
+          failedTests: 1,
           failures: [
             {
-              testName: 'Playwright execution',
+              actual: 'Timeout exceeded',
               error: 'Test timeout',
               expected: `Complete within ${this.maxTestTimeout}ms`,
-              actual: 'Timeout exceeded',
               stack: '',
+              testName: 'Playwright execution',
             },
           ],
+          framework: 'playwright',
+          passed: false,
+          passedTests: 0,
           rawOutput: 'Test execution timed out',
+          skippedTests: 0,
+          totalTests: 0,
         });
       }, this.maxTestTimeout);
     });
@@ -257,25 +258,25 @@ export class TestRunner {
     const failures = allTests
       .filter((test: any) => test.status === 'failed')
       .map((test: any) => ({
-        testName: test.fullName || test.title || 'Unknown test',
+        actual: this.extractActual(test.failureMessages?.[0]),
         error: test.failureMessages?.[0] || 'Unknown error',
         expected: this.extractExpected(test.failureMessages?.[0]),
-        actual: this.extractActual(test.failureMessages?.[0]),
         stack: test.failureMessages?.join('\n') || '',
+        testName: test.fullName || test.title || 'Unknown test',
       }));
 
     return {
+      duration,
+      failedTests: results.numFailedTests || failures.length,
+      failures,
       framework: 'vitest',
       passed: exitCode === 0 && failures.length === 0,
-      totalTests: results.numTotalTests || allTests.length,
       passedTests:
         results.numPassedTests || allTests.filter((t: any) => t.status === 'passed').length,
-      failedTests: results.numFailedTests || failures.length,
+      rawOutput: JSON.stringify(results, null, 2),
       skippedTests:
         results.numPendingTests || allTests.filter((t: any) => t.status === 'skipped').length,
-      duration,
-      failures,
-      rawOutput: JSON.stringify(results, null, 2),
+      totalTests: results.numTotalTests || allTests.length,
     };
   }
 
@@ -301,23 +302,23 @@ export class TestRunner {
     const failureMatches = output.match(failurePattern) || [];
 
     const failures = failureMatches.map((failure) => ({
-      testName: this.extractTestName(failure),
+      actual: 'Test failed',
       error: this.extractErrorMessage(failure),
       expected: 'Test to pass',
-      actual: 'Test failed',
       stack: failure,
+      testName: this.extractTestName(failure),
     }));
 
     return {
+      duration,
+      failedTests: failed,
+      failures,
       framework: 'vitest',
       passed: exitCode === 0 && failed === 0,
-      totalTests: total,
       passedTests: passed,
-      failedTests: failed,
-      skippedTests: skipped,
-      duration,
-      failures,
       rawOutput: output + '\n' + errorOutput,
+      skippedTests: skipped,
+      totalTests: total,
     };
   }
 
@@ -330,11 +331,11 @@ export class TestRunner {
     const failures = allTests
       .filter((test: any) => test.status !== 'passed' && test.status !== 'skipped')
       .map((test: any) => ({
-        testName: test.title || 'Unknown test',
+        actual: test.status,
         error: test.error?.message || test.results?.[0]?.error?.message || 'Unknown error',
         expected: 'Test to pass',
-        actual: test.status,
         stack: test.error?.stack || test.results?.[0]?.error?.stack || '',
+        testName: test.title || 'Unknown test',
       }));
 
     const passed = allTests.filter((t: any) => t.status === 'passed').length;
@@ -342,16 +343,16 @@ export class TestRunner {
     const skipped = allTests.filter((t: any) => t.status === 'skipped').length;
 
     return {
+      duration,
+      failedTests: failed,
+      failures,
       framework: 'playwright',
       passed: exitCode === 0 && failed === 0,
-      totalTests: allTests.length,
       passedTests: passed,
-      failedTests: failed,
-      skippedTests: skipped,
-      duration,
-      failures,
       rawOutput: JSON.stringify(results, null, 2),
       screenshots: this.extractScreenshots(results),
+      skippedTests: skipped,
+      totalTests: allTests.length,
     };
   }
 
@@ -371,26 +372,26 @@ export class TestRunner {
     const skipped = skipMatch ? parseInt(skipMatch[1]) : 0;
 
     return {
+      duration,
+      failedTests: failed,
+      failures: [],
       framework: 'playwright',
       passed: exitCode === 0 && failed === 0,
-      totalTests: passed + failed + skipped,
       passedTests: passed,
-      failedTests: failed,
-      skippedTests: skipped,
-      duration,
-      failures: [],
       rawOutput: output + '\n' + errorOutput,
+      skippedTests: skipped,
+      totalTests: passed + failed + skipped,
     };
   }
 
   private extractPerformanceMetrics(vitest: TestFramework, playwright: TestFramework): any {
     return {
-      unitTestDuration: vitest.duration,
-      e2eTestDuration: playwright.duration,
-      totalDuration: vitest.duration + playwright.duration,
       averageTestDuration:
         (vitest.duration + playwright.duration) / (vitest.totalTests + playwright.totalTests),
+      e2eTestDuration: playwright.duration,
       slowestTests: this.identifySlowTests(vitest, playwright),
+      totalDuration: vitest.duration + playwright.duration,
+      unitTestDuration: vitest.duration,
     };
   }
 
@@ -414,10 +415,10 @@ export class TestRunner {
       if (existsSync(coveragePath)) {
         const coverage = JSON.parse(readFileSync(coveragePath, 'utf-8'));
         return {
+          branches: coverage.total.branches.pct,
+          functions: coverage.total.functions.pct,
           lines: coverage.total.lines.pct,
           statements: coverage.total.statements.pct,
-          functions: coverage.total.functions.pct,
-          branches: coverage.total.branches.pct,
         };
       }
     } catch (error) {

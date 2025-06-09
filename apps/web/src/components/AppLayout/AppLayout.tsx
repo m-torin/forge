@@ -15,6 +15,8 @@ import classes from "./AppLayout.module.css";
 import { useAppLayout } from "./AppLayoutContext";
 import { AppLayoutHeader } from "./AppLayoutHeader";
 
+import type { TCollection, TNavigationItem } from "@/lib/data-service";
+
 interface AppLayoutProps
   extends Omit<
     AppShellProps,
@@ -22,15 +24,19 @@ interface AppLayoutProps
   > {
   children: ReactNode;
   dict?: any; // Using any for now due to type merging issues
+  featuredCollection?: TCollection;
   locale?: string;
+  navigationMenu?: TNavigationItem[];
 }
 
 export function AppLayout({
   children,
   dict,
   disabled = false,
+  featuredCollection,
   layout = "default",
   locale,
+  navigationMenu,
   offsetScrollbars,
   padding = 0,
   transitionDuration = 200,
@@ -97,7 +103,10 @@ export function AppLayout({
         <AppShell.Header className={classes.header}>
           <AppLayoutHeader
             _locale={locale}
+            featuredCollection={featuredCollection}
+            locale={locale}
             mobileNavbarOpened={mobileNavbarOpened}
+            navigationMenu={navigationMenu}
             toggleMobileNavbar={toggleMobileNavbar}
             toggleNavbar={toggleNavbar}
             dict={dict}

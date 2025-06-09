@@ -52,14 +52,19 @@ export const ORGANIZATION_PERMISSIONS = {
  */
 export const ROLE_PERMISSIONS = {
   admin: [
-    // Can manage most things but not delete organization
+    // Can manage most things but not delete organization, update member roles, or update billing
     'organization:read',
     'organization:write',
     'organization:manage',
-    'members:*',
+    'members:read',
+    'members:write',
+    'members:invite',
+    'members:remove',
+    // Note: members:manage (role updates) is owner-only
     'teams:*',
     'api-keys:*',
     'settings:*',
+    'billing:read', // Can view billing but not manage
   ],
   member: [
     // Basic read access and limited actions
@@ -70,6 +75,7 @@ export const ROLE_PERMISSIONS = {
     'api-keys:read',
     'api-keys:create', // Members can create API keys for themselves
     'settings:read',
+    'billing:read', // Can view billing
   ],
   owner: [
     // Full access to everything
@@ -78,6 +84,7 @@ export const ROLE_PERMISSIONS = {
     'teams:*',
     'api-keys:*',
     'settings:*',
+    'billing:*', // Full billing access
   ],
 } as const;
 

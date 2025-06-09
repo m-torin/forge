@@ -104,8 +104,8 @@ export const extractDataStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }), // 1 minute timeout
   (step) =>
     withStepMonitoring(step, {
-, 'extractionTime'],
       enableDetailedLogging: true,
+      trackingMetrics: ['extractionTime'],
     }),
 );
 
@@ -450,14 +450,14 @@ export const sendAlertsStep = StepTemplates.conditional(
   'send-alerts',
   'Send alerts for anomalies or achievements',
   {
-
+    condition: (data: any) => {
       const alerts = data.insights?.filter(
         (i: any) => i.type === 'warning' || (i.type === 'positive' && i.category === 'conversion'),
       );
       return alerts && alerts.length > 0;
     },
     trueStep: StepTemplates.notification('alert-notification', 'Send alert notifications', {
-, 'slack'],
+      channels: ['email', 'slack'],
       priority: 'high',
     }),
   },

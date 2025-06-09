@@ -14,24 +14,26 @@ interface SearchBtnPopoverProps {
   'data-testid'?: string;
 }
 
-const SearchBtnPopover = ({ 'data-testid': testId = 'search-popover' }: SearchBtnPopoverProps = {}) => {
+const SearchBtnPopover = ({
+  'data-testid': testId = 'search-popover',
+}: SearchBtnPopoverProps = {}) => {
   const localizeHref = useLocalizeHref();
   const [opened, { close, open }] = useDisclosure(false);
 
   return (
     <>
       <button
+        data-testid={testId}
         onClick={open}
         className="-m-2.5 flex cursor-pointer items-center justify-center rounded-full p-2.5 hover:bg-neutral-100 focus-visible:outline-0 dark:hover:bg-neutral-800"
-        data-testid={testId}
       >
         <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Search01Icon} size={24} />
       </button>
 
       <Modal
+        data-testid="search-modal"
         onClose={close}
         opened={opened}
-        data-testid="search-modal"
         transitionProps={{
           duration: 200,
           transition: 'slide-down',
@@ -53,6 +55,7 @@ const SearchBtnPopover = ({ 'data-testid': testId = 'search-popover' }: SearchBt
           <div className="container">
             <div className="mx-auto flex w-full max-w-xl flex-col py-4">
               <form
+                data-testid="search-form"
                 action="#"
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -60,10 +63,10 @@ const SearchBtnPopover = ({ 'data-testid': testId = 'search-popover' }: SearchBt
                   redirect(localizeHref('/search'));
                 }}
                 className="flex w-full items-center"
-                data-testid="search-form"
               >
                 <HugeiconsIcon strokeWidth={1} color="currentColor" icon={Search01Icon} size={26} />
                 <input
+                  data-testid="search-input"
                   aria-autocomplete="list"
                   autoCapitalize="off"
                   autoComplete="off"
@@ -75,13 +78,12 @@ const SearchBtnPopover = ({ 'data-testid': testId = 'search-popover' }: SearchBt
                   name="q"
                   spellCheck="false"
                   type="text"
-                  data-testid="search-input"
                 />
                 <button
+                  data-testid="search-close-button"
                   onClick={close}
                   className="-m-2.5 inline-flex cursor-pointer items-center justify-center rounded-md p-2.5 transition-transform duration-300 hover:rotate-90"
                   type="button"
-                  data-testid="search-close-button"
                 >
                   <HugeiconsIcon
                     strokeWidth={1}

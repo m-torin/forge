@@ -136,8 +136,8 @@ export const fetchLinkPerformanceStep = compose(
   (step) => withStepTimeout(step, { execution: 30000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'performanceMetrics'],
       enableDetailedLogging: true,
+      trackingMetrics: ['performanceMetrics'],
     }),
 );
 
@@ -257,7 +257,8 @@ export const healthCheckLinksStep = compose(
     }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
+      threshold: 0.5,
+      threshold: 0.5,
       timeout: 10000,
     }),
 );
@@ -427,7 +428,7 @@ export const optimizeGeographicRoutingStep = createStep(
         return best;
       }, null);
 
-      geoOptimization[(region as any)] = {
+      geoOptimization[region as any] = {
         fallbackNetworks: performances
           .filter((p: any) => p.networkId !== regionBest?.networkId)
           .sort((a: any, b: any) => b.performance.conversionRate - a.performance.conversionRate)

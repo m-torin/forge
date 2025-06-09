@@ -259,3 +259,228 @@ export async function verifyServiceAuth(tokenOrHeaders: string | Headers) {
 
   return validateServiceAuth(token);
 }
+
+/**
+ * Create multiple API keys for an organization
+ */
+export async function bulkCreateApiKeys(data: {
+  keys: Array<{
+    name: string;
+    permissions?: string[];
+    expiresAt?: string;
+    metadata?: any;
+  }>;
+  organizationId?: string;
+}): Promise<{
+  success: boolean;
+  results?: Array<{
+    name: string;
+    success: boolean;
+    apiKey?: string;
+    keyId?: string;
+    error?: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const results = await Promise.allSettled(
+      data.keys.map(async (keyData) => {
+        const result = await auth.api.createApiKey({
+          body: {
+            name: keyData.name,
+            ...(keyData.permissions && { permissions: keyData.permissions }),
+            ...(keyData.expiresAt && { expiresAt: keyData.expiresAt }),
+            ...(keyData.metadata && { metadata: keyData.metadata }),
+            ...(data.organizationId && { organizationId: data.organizationId }),
+          },
+        });
+        return result;
+      })
+    );
+
+    const mappedResults = results.map((result, index) => ({
+      name: data.keys[index].name,
+      success: result.status === 'fulfilled' ? result.value.success : false,
+      apiKey: result.status === 'fulfilled' ? result.value.apiKey : undefined,
+      keyId: result.status === 'fulfilled' ? result.value.keyId : undefined,
+      error: result.status === 'fulfilled' ? result.value.error?.message : 
+             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+    }));
+
+    const successCount = mappedResults.filter(r => r.success).length;
+
+    return {
+      success: successCount > 0,
+      results: mappedResults,
+    };
+  } catch (error) {
+    console.error('Bulk create API keys error:', error);
+    return {
+      error: 'Failed to bulk create API keys',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Revoke multiple API keys
+ */
+export async function bulkRevokeApiKeys(keyIds: string[]): Promise<{
+  success: boolean;
+  results?: Array<{
+    keyId: string;
+    success: boolean;
+    error?: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const results = await Promise.allSettled(
+      keyIds.map(keyId =>
+        auth.api.revokeApiKey({ body: { keyId } })
+      )
+    );
+
+    const mappedResults = results.map((result, index) => ({
+      keyId: keyIds[index],
+      success: result.status === 'fulfilled' ? result.value.success : false,
+      error: result.status === 'fulfilled' ? result.value.error?.message : 
+             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+    }));
+
+    const successCount = mappedResults.filter(r => r.success).length;
+
+    return {
+      success: successCount > 0,
+      results: mappedResults,
+    };
+  } catch (error) {
+    console.error('Bulk revoke API keys error:', error);
+    return {
+      error: 'Failed to bulk revoke API keys',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Update multiple API keys with new settings
+ */
+export async function bulkUpdateApiKeys(updates: Array<{
+  keyId: string;
+  name?: string;
+  enabled?: boolean;
+  permissions?: string[];
+}>): Promise<{
+  success: boolean;
+  results?: Array<{
+    keyId: string;
+    success: boolean;
+    error?: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const results = await Promise.allSettled(
+      updates.map(update =>
+        auth.api.updateApiKey({
+          body: {
+            keyId: update.keyId,
+            ...(update.name && { name: update.name }),
+            ...(update.enabled !== undefined && { enabled: update.enabled }),
+            ...(update.permissions && { permissions: update.permissions }),
+          },
+        })
+      )
+    );
+
+    const mappedResults = results.map((result, index) => ({
+      keyId: updates[index].keyId,
+      success: result.status === 'fulfilled' ? result.value.success : false,
+      error: result.status === 'fulfilled' ? result.value.error?.message : 
+             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+    }));
+
+    const successCount = mappedResults.filter(r => r.success).length;
+
+    return {
+      success: successCount > 0,
+      results: mappedResults,
+    };
+  } catch (error) {
+    console.error('Bulk update API keys error:', error);
+    return {
+      error: 'Failed to bulk update API keys',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Get API key usage statistics
+ */
+export async function getApiKeyStatistics(): Promise<{
+  success: boolean;
+  data?: {
+    totalKeys: number;
+    activeKeys: number;
+    expiredKeys: number;
+    serviceKeys: number;
+    userKeys: number;
+    keysByPermission: Record<string, number>;
+  };
+  error?: string;
+}> {
+  try {
+    const result = await auth.api.listApiKeys();
+
+    if (!result.success) {
+      return {
+        error: result.error?.message || 'Failed to get API keys',
+        success: false,
+      };
+    }
+
+    const keys = result.apiKeys || [];
+    const now = new Date();
+
+    const totalKeys = keys.length;
+    const activeKeys = keys.filter((key: any) => key.enabled).length;
+    const expiredKeys = keys.filter((key: any) => 
+      key.expiresAt && new Date(key.expiresAt) < now
+    ).length;
+    const serviceKeys = keys.filter((key: any) => 
+      key.metadata?.type === 'service'
+    ).length;
+    const userKeys = keys.filter((key: any) => 
+      !key.metadata?.type || key.metadata.type === 'user'
+    ).length;
+
+    // Count keys by permission
+    const keysByPermission = keys.reduce((acc: Record<string, number>, key: any) => {
+      const permissions = key.permissions || [];
+      permissions.forEach((permission: string) => {
+        acc[permission] = (acc[permission] || 0) + 1;
+      });
+      return acc;
+    }, {});
+
+    return {
+      success: true,
+      data: {
+        totalKeys,
+        activeKeys,
+        expiredKeys,
+        serviceKeys,
+        userKeys,
+        keysByPermission,
+      },
+    };
+  } catch (error) {
+    console.error('Get API key statistics error:', error);
+    return {
+      error: 'Failed to get API key statistics',
+      success: false,
+    };
+  }
+}

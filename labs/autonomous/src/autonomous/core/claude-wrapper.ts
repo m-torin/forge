@@ -1,9 +1,10 @@
 // Claude CLI wrapper for programmatic code generation and repair
 import { spawn } from 'child_process';
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { WorkflowSpecification, ErrorAnalysis, RepairStrategy } from '../types';
+
+import { type ErrorAnalysis, type RepairStrategy, type WorkflowSpecification } from '../types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -336,12 +337,12 @@ Focus on fixing the specific errors identified in the test failures.`;
       }
 
       const claude = spawn('claude', claudeArgs, {
-        stdio: ['pipe', 'pipe', 'pipe'],
         env: {
           ...process.env,
-          CLAUDE_SKIP_PERMISSIONS: 'true',
           CLAUDE_AUTO_CONFIRM: 'true', // Auto-confirm file operations
+          CLAUDE_SKIP_PERMISSIONS: 'true',
         },
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       let output = '';
@@ -439,9 +440,9 @@ Focus on fixing the specific errors identified in the test failures.`;
       }
 
       return {
-        workflow: readFileSync(workflowPath, 'utf-8'),
-        unitTests: readFileSync(unitTestPath, 'utf-8'),
         e2eTests: readFileSync(e2eTestPath, 'utf-8'),
+        unitTests: readFileSync(unitTestPath, 'utf-8'),
+        workflow: readFileSync(workflowPath, 'utf-8'),
       };
     } catch (error) {
       console.error('Error reading generated files:', error);

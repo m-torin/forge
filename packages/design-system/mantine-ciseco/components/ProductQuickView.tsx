@@ -7,9 +7,9 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
-import { type FC, useEffect, useState } from 'react';
+import { type FC, useState } from 'react';
 
-import { getProductDetailByHandle, type TProductDetail } from '../data/data';
+import { type TProductDetail, type TProductItem } from '../data/data';
 import { useLocalizeHref } from '../hooks/useLocale';
 
 import AccordionInfo from './AccordionInfo';
@@ -31,12 +31,12 @@ export interface ProductQuickViewProps {
   onLike?: () => void;
   onShare?: () => void;
   onViewDetails?: () => void;
-  product?: TProductDetail;
+  product: TProductItem | TProductDetail; // Accept either type
 }
 
 const ProductQuickView: FC<ProductQuickViewProps> = ({
-  className,
   'data-testid': testId = 'quick-view-modal',
+  className,
   isOpen,
   loading,
   onAddToCart,
@@ -44,37 +44,13 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
   onLike,
   onShare,
   onViewDetails,
-  product: propProduct,
+  product,
 }) => {
   const localizeHref = useLocalizeHref();
 
   const [qualitySelected, setQualitySelected] = useState(1);
-  const [detailedProduct, setDetailedProduct] = useState<TProductDetail | undefined>(propProduct);
 
-  useEffect(() => {
-    if (!propProduct) {
-      return;
-    }
-
-    // If we have a full product object, use it
-    if ('descriptionHtml' in propProduct) {
-      setDetailedProduct(propProduct);
-      return;
-    }
-
-    // Otherwise, fetch the detailed product data
-    const fetchProduct = async () => {
-      if (propProduct.handle) {
-        const response = await getProductDetailByHandle(propProduct.handle);
-        if (response) {
-          setDetailedProduct(response);
-        }
-      }
-    };
-    fetchProduct();
-  }, [propProduct]);
-
-  if (!detailedProduct) {
+  if (!product) {
     return null;
   }
 
@@ -89,7 +65,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
     selectedOptions,
     status,
     title,
-  } = detailedProduct;
+  } = product;
   const sizeSelected = selectedOptions?.find((option) => option.name === 'Size')?.value;
   const colorSelected = selectedOptions?.find((option) => option.name === 'Color')?.value;
 
@@ -291,9 +267,9 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
             {
               name: 'Description',
               content:
-                'descriptionHtml' in detailedProduct &&
-                typeof detailedProduct.descriptionHtml === 'string'
-                  ? detailedProduct.descriptionHtml
+                'descriptionHtml' in product &&
+                typeof product.descriptionHtml === 'string'
+                  ? product.descriptionHtml
                   : 'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
             },
             {
@@ -381,7 +357,10 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         </div>
 
         {/* SIDEBAR */}
-        <div data-testid="product-details" className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8">
+        <div
+          data-testid="product-details"
+          className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8"
+        >
           {renderSectionContent()}
         </div>
       </div>

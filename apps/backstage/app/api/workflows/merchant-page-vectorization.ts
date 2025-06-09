@@ -239,7 +239,7 @@ export const crawlMerchantPagesStep = compose(
   (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
   (step) =>
     withStepCircuitBreaker(step, {
-,
+      threshold: 0.5,
       timeout: 30000,
     }),
 );
@@ -362,8 +362,8 @@ export const generatePageVectorsStep = compose(
   }),
   (step) =>
     withStepMonitoring(step, {
-, 'dimensions'],
       enableDetailedLogging: true,
+      metricsToTrack: ['dimensions'],
     }),
 );
 
@@ -659,7 +659,7 @@ export const generateVectorizationReportStep = createStep('generate-report', asy
       totalPages: crawlStats.success + crawlStats.failed,
     },
     duplicates: {
-      topClusters: duplicateClusters.slice(0: any, 10: any).map((cluster) => ({
+      topClusters: duplicateClusters.slice(0, 10).map((cluster: any) => ({
         avgPrice:
           cluster.products.reduce((sum: number, p: any) => sum + p.features.price, 0) /
           cluster.products.length,

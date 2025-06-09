@@ -16,11 +16,17 @@ export interface SectionPromo1Props {
   'data-testid'?: string;
 }
 
-const SectionPromo1: FC<SectionPromo1Props> = ({ className = '', 'data-testid': testId = 'section-promo-1' }) => {
+const SectionPromo1: FC<SectionPromo1Props> = ({
+  'data-testid': testId = 'section-promo-1',
+  className = '',
+}) => {
   const localizeHref = useLocalizeHref();
 
   return (
-    <div className={`relative flex flex-col items-center lg:flex-row ${className}`} data-testid={testId}>
+    <div
+      data-testid={testId}
+      className={`relative flex flex-col items-center lg:flex-row ${className}`}
+    >
       <div className="relative mb-16 shrink-0 lg:mr-10 lg:mb-0 lg:w-2/5">
         <Logo className="w-28" />
         <h2 className="mt-6 text-3xl leading-[1.2]! font-semibold tracking-tight sm:mt-10 sm:text-4xl xl:text-5xl 2xl:text-6xl">

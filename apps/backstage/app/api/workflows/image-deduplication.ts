@@ -164,8 +164,8 @@ export const streamAndHashImagesStep = compose(
   (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes total
   (step) =>
     withStepMonitoring(step, {
-, 'hashingTime'],
       enableDetailedLogging: true,
+      metricsToTrack: ['imagesProcessed', 'hashingTime'],
     }),
 );
 
@@ -379,7 +379,6 @@ export const cleanupDuplicatesStep = StepTemplates.conditional(
   'cleanup-duplicates',
   'Remove duplicate images if confirmed',
   {
-,
     trueStep: createStep('perform-cleanup', async (data: any) => {
       const { productMappings } = data;
 
@@ -404,7 +403,7 @@ export const sendDeduplicationNotificationStep = StepTemplates.notification(
   'dedup-notification',
   'Notify about deduplication results',
   {
-, 'webhook'],
+    channels: ['email', 'webhook'],
     template: {
       subject: 'Image Deduplication Report - {{totalImages}} processed',
       webhookUrl: 'https://api.example.com/webhooks/deduplication',

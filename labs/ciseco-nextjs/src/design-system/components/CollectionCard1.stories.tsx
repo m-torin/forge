@@ -1,6 +1,6 @@
-import CollectionCard1 from './CollectionCard1';
+import CollectionCard1 from './CollectionCard1'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof CollectionCard1> = {
   argTypes: {
@@ -22,17 +22,16 @@ const meta: Meta<typeof CollectionCard1> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'A horizontal collection card component displaying collection image, title, description and count.',
+        component: 'A horizontal collection card component displaying collection image, title, description and count.',
       },
     },
     layout: 'centered',
   },
   title: 'Ciseco/CollectionCard1',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockCollection = {
   id: 'gid://1',
@@ -49,21 +48,21 @@ const mockCollection = {
   },
   sortDescription: 'Newest arrivals',
   title: 'Jackets',
-};
+}
 
 export const Default: Story = {
   args: {
     collection: mockCollection,
     size: 'normal',
   },
-};
+}
 
 export const LargeSize: Story = {
   args: {
     collection: mockCollection,
     size: 'large',
   },
-};
+}
 
 export const WithoutImage: Story = {
   args: {
@@ -73,7 +72,7 @@ export const WithoutImage: Story = {
     },
     size: 'normal',
   },
-};
+}
 
 export const LongTitle: Story = {
   args: {
@@ -83,7 +82,7 @@ export const LongTitle: Story = {
     },
     size: 'normal',
   },
-};
+}
 
 export const LongDescription: Story = {
   args: {
@@ -94,7 +93,7 @@ export const LongDescription: Story = {
     },
     size: 'normal',
   },
-};
+}
 
 export const HighCount: Story = {
   args: {
@@ -104,7 +103,7 @@ export const HighCount: Story = {
     },
     size: 'normal',
   },
-};
+}
 
 export const NoHandle: Story = {
   args: {
@@ -114,11 +113,11 @@ export const NoHandle: Story = {
     },
     size: 'normal',
   },
-};
+}
 
 export const DifferentCollections: Story = {
   render: () => (
-    <div className="space-y-4 w-full max-w-md">
+    <div className="w-full max-w-md space-y-4">
       <CollectionCard1
         collection={{
           id: 'gid://1',
@@ -169,19 +168,19 @@ export const DifferentCollections: Story = {
       />
     </div>
   ),
-};
+}
 
 export const SizeComparison: Story = {
   render: () => (
-    <div className="space-y-6 w-full max-w-md">
+    <div className="w-full max-w-md space-y-6">
       <div>
-        <h3 className="text-sm font-medium mb-2">Normal Size</h3>
+        <h3 className="mb-2 text-sm font-medium">Normal Size</h3>
         <CollectionCard1 collection={mockCollection} size="normal" />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Large Size</h3>
+        <h3 className="mb-2 text-sm font-medium">Large Size</h3>
         <CollectionCard1 collection={mockCollection} size="large" />
       </div>
     </div>
   ),
-};
+}

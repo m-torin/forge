@@ -126,8 +126,8 @@ export const fetchAnalyticsEventsStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'uniqueUsers'],
       enableDetailedLogging: true,
+      trackingMetrics: ['uniqueUsers'],
     }),
 );
 
@@ -273,7 +273,9 @@ export const extractFeaturesStep = createStep('extract-features', async (data: a
           rawSession: session,
           sequenceFeatures: {
             avgTimeBetweenEvents:
-              timeDeltas.length > 0 ? timeDeltas.reduce((a: any: any, b: any: any) => a + b, 0) / timeDeltas.length : 0,
+              timeDeltas.length > 0
+                ? timeDeltas.reduce((a: any, b: any) => a + b, 0) / timeDeltas.length
+                : 0,
             eventSequence,
             timeDeltas,
           },
@@ -519,7 +521,7 @@ export const sendVectorizationNotificationStep = StepTemplates.notification(
   'vectorization-complete',
   'Notify about analytics vectorization completion',
   {
-,
+    channels: ['webhook'],
     template: {
       webhookUrl: 'https://api.example.com/webhooks/ml-pipeline',
     },

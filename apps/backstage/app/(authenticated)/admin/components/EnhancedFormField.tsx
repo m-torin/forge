@@ -1,53 +1,56 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  TextInput,
-  Textarea,
-  NumberInput,
-  Select,
-  MultiSelect,
-  Checkbox,
-  Switch,
-  DateInput,
-  TimeInput,
-  PasswordInput,
-  JsonInput,
-  TagsInput,
-  Stack,
-  Text,
-  Group,
   Alert,
-  Button,
   Box,
+  Button,
+  Checkbox,
+  DateInput,
+  Group,
+  JsonInput,
+  MultiSelect,
+  NumberInput,
+  PasswordInput,
+  Select,
+  Stack,
+  Switch,
+  TagsInput,
+  Text,
+  Textarea,
+  TextInput,
+  TimeInput,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
-import { IconInfoCircle, IconEye, IconEyeOff } from '@tabler/icons-react';
-import { RelationshipEditor } from './RelationshipEditor';
+import { IconEye, IconEyeOff, IconInfoCircle } from '@tabler/icons-react';
+import { useState } from 'react';
+
 import { getRelationshipConfig } from '../lib/relationship-editor-config';
 import { isFieldSensitive, matchesSensitivePattern } from '../lib/security-config';
+
+import { RelationshipEditor } from './RelationshipEditor';
+
 import type { ModelConfig } from '../lib/model-config';
 
 interface FormFieldProps {
-  field: any;
-  value: any;
-  onChange: (value: any) => void;
-  error?: string;
-  modelConfig?: ModelConfig;
-  entityId?: string;
   availableRelatedData?: Record<string, any[]>;
+  entityId?: string;
+  error?: string;
+  field: any;
+  modelConfig?: ModelConfig;
+  onChange: (value: any) => void;
   onRelationshipChange?: (relationshipName: string, data: any[]) => void;
+  value: any;
 }
 
 export function EnhancedFormField({
-  field,
-  value,
-  onChange,
-  error,
-  modelConfig,
-  entityId,
   availableRelatedData,
+  entityId,
+  error,
+  field,
+  modelConfig,
+  onChange,
   onRelationshipChange,
+  value,
 }: FormFieldProps) {
   const [showSensitive, setShowSensitive] = useState(false);
   const [jsonError, setJsonError] = useState<string>('');
@@ -74,7 +77,7 @@ export function EnhancedFormField({
       const configSensitive = isFieldSensitive(modelName, fieldName);
       if (configSensitive) return true;
     }
-    
+
     // Fallback to pattern matching
     return matchesSensitivePattern(fieldName);
   };
@@ -83,7 +86,7 @@ export function EnhancedFormField({
   if (field.type === 'relation' && modelConfig && entityId) {
     const relationshipConfig = getRelationshipConfig(
       modelConfig.name.toLowerCase().replace(/\s+/g, ''),
-      field.name
+      field.name,
     );
 
     if (relationshipConfig && availableRelatedData) {
@@ -94,18 +97,18 @@ export function EnhancedFormField({
         <Box mb="md">
           <RelationshipEditor
             config={relationshipConfig}
-            primaryEntityId={entityId}
             currentRelationships={currentRelationships}
-            availableEntities={relatedEntities}
             onRelationshipChange={(relationships) => {
               onChange(relationships);
               if (onRelationshipChange) {
                 onRelationshipChange(field.name, relationships);
               }
             }}
+            availableEntities={relatedEntities}
+            primaryEntityId={entityId}
           />
           {error && (
-            <Text size="sm" c="red" mt="xs">
+            <Text c="red" mt="xs" size="sm">
               {error}
             </Text>
           )}
@@ -116,19 +119,21 @@ export function EnhancedFormField({
     // Fallback to simple select for relations without config
     return (
       <Select
-        label={field.label}
-        placeholder={`Select ${field.label}`}
-        value={value || ''}
-        onChange={onChange}
-        data={availableRelatedData?.[field.relationModel]?.map((item: any) => ({
-          value: item.id,
-          label: item.name || item.title || item.email || item.id,
-        })) || []}
-        searchable
-        clearable
-        error={error}
-        required={field.required}
         description={field.description}
+        error={error}
+        onChange={onChange}
+        placeholder={`Select ${field.label}`}
+        clearable
+        data={
+          availableRelatedData?.[field.relationModel]?.map((item: any) => ({
+            label: item.name || item.title || item.email || item.id,
+            value: item.id,
+          })) || []
+        }
+        label={field.label}
+        required={field.required}
+        searchable
+        value={value || ''}
       />
     );
   }
@@ -138,39 +143,44 @@ export function EnhancedFormField({
     return (
       <Stack gap="xs">
         <Group justify="space-between">
-          <Text size="sm" fw={500}>
+          <Text fw={500} size="sm">
             {field.label}
-            {field.required && <Text component="span" c="red"> *</Text>}
+            {field.required && (
+              <Text component="span" c="red">
+                {' '}
+                *
+              </Text>
+            )}
           </Text>
           <Button
-            variant="subtle"
-            size="xs"
             leftSection={showSensitive ? <IconEyeOff size={14} /> : <IconEye size={14} />}
             onClick={() => setShowSensitive(!showSensitive)}
+            size="xs"
+            variant="subtle"
           >
             {showSensitive ? 'Hide' : 'Show'}
           </Button>
         </Group>
-        
-        <Alert icon={<IconInfoCircle size={16} />} color="yellow" variant="light">
+
+        <Alert color="yellow" icon={<IconInfoCircle size={16} />} variant="light">
           Sensitive data - handle with care
         </Alert>
 
         {showSensitive ? (
           <TextInput
-            value={value || ''}
+            description={field.description}
+            error={error}
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder}
-            error={error}
             required={field.required}
-            description={field.description}
+            value={value || ''}
           />
         ) : (
           <TextInput
-            value={value ? '••••••••••••••••' : ''}
-            readOnly
-            placeholder="Hidden for security"
             description="Click 'Show' to view/edit sensitive data"
+            placeholder="Hidden for security"
+            readOnly
+            value={value ? '••••••••••••••••' : ''}
           />
         )}
       </Stack>
@@ -182,184 +192,184 @@ export function EnhancedFormField({
     case 'text':
       return (
         <TextInput
-          label={field.label}
-          value={value || ''}
+          description={field.description}
+          error={error}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          error={error}
-          required={field.required}
-          description={field.description}
+          label={field.label}
           maxLength={field.maxLength}
+          required={field.required}
+          value={value || ''}
         />
       );
 
     case 'email':
       return (
         <TextInput
-          type="email"
-          label={field.label}
-          value={value || ''}
+          description={field.description}
+          error={error}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder || 'user@example.com'}
-          error={error}
+          label={field.label}
           required={field.required}
-          description={field.description}
+          type="email"
+          value={value || ''}
         />
       );
 
     case 'password':
       return (
         <PasswordInput
-          label={field.label}
-          value={value || ''}
+          description={field.description}
+          error={error}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          error={error}
+          label={field.label}
           required={field.required}
-          description={field.description}
+          value={value || ''}
         />
       );
 
     case 'textarea':
       return (
         <Textarea
-          label={field.label}
-          value={value || ''}
+          description={field.description}
+          error={error}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          error={error}
-          required={field.required}
-          description={field.description}
           rows={field.rows || 3}
+          label={field.label}
           maxLength={field.maxLength}
+          required={field.required}
+          value={value || ''}
         />
       );
 
     case 'number':
       return (
         <NumberInput
-          label={field.label}
-          value={value || 0}
+          description={field.description}
+          error={error}
           onChange={onChange}
           placeholder={field.placeholder}
-          error={error}
-          required={field.required}
-          description={field.description}
-          min={field.min}
-          max={field.max}
-          step={field.step}
           precision={field.precision}
+          label={field.label}
+          max={field.max}
+          min={field.min}
+          required={field.required}
+          step={field.step}
+          value={value || 0}
         />
       );
 
     case 'select':
       return (
         <Select
-          label={field.label}
-          value={value || ''}
-          onChange={onChange}
-          data={field.options || []}
-          placeholder={field.placeholder || `Select ${field.label}`}
-          error={error}
-          required={field.required}
           description={field.description}
-          searchable={field.searchable}
+          error={error}
+          onChange={onChange}
+          placeholder={field.placeholder || `Select ${field.label}`}
           clearable={field.clearable}
+          data={field.options || []}
+          label={field.label}
+          required={field.required}
+          searchable={field.searchable}
+          value={value || ''}
         />
       );
 
     case 'multiselect':
       return (
         <MultiSelect
-          label={field.label}
-          value={value || []}
-          onChange={onChange}
-          data={field.options || []}
-          placeholder={field.placeholder || `Select ${field.label}`}
-          error={error}
-          required={field.required}
           description={field.description}
-          searchable={field.searchable}
+          error={error}
+          onChange={onChange}
+          placeholder={field.placeholder || `Select ${field.label}`}
           clearable={field.clearable}
+          data={field.options || []}
+          label={field.label}
           maxValues={field.maxValues}
+          required={field.required}
+          searchable={field.searchable}
+          value={value || []}
         />
       );
 
     case 'tags':
       return (
         <TagsInput
-          label={field.label}
-          value={value || []}
+          description={field.description}
+          error={error}
           onChange={onChange}
           placeholder={field.placeholder || 'Enter tags'}
-          error={error}
-          required={field.required}
-          description={field.description}
+          label={field.label}
           maxTags={field.maxTags}
+          required={field.required}
+          value={value || []}
         />
       );
 
     case 'checkbox':
       return (
         <Checkbox
-          label={field.label}
-          checked={Boolean(value)}
-          onChange={(e) => onChange(e.target.checked)}
-          error={error}
           description={field.description}
+          error={error}
+          onChange={(e) => onChange(e.target.checked)}
+          checked={Boolean(value)}
+          label={field.label}
         />
       );
 
     case 'switch':
       return (
         <Switch
-          label={field.label}
-          checked={Boolean(value)}
-          onChange={(e) => onChange(e.target.checked)}
-          error={error}
           description={field.description}
+          error={error}
+          onChange={(e) => onChange(e.target.checked)}
+          checked={Boolean(value)}
+          label={field.label}
         />
       );
 
     case 'date':
       return (
         <DateInput
-          label={field.label}
-          value={value ? new Date(value) : null}
+          description={field.description}
+          error={error}
           onChange={(date) => onChange(date?.toISOString().split('T')[0])}
           placeholder={field.placeholder || 'Pick date'}
-          error={error}
-          required={field.required}
-          description={field.description}
-          minDate={field.minDate ? new Date(field.minDate) : undefined}
+          label={field.label}
           maxDate={field.maxDate ? new Date(field.maxDate) : undefined}
+          minDate={field.minDate ? new Date(field.minDate) : undefined}
+          required={field.required}
+          value={value ? new Date(value) : null}
         />
       );
 
     case 'datetime':
       return (
         <DateTimePicker
-          label={field.label}
-          value={value ? new Date(value) : null}
+          description={field.description}
+          error={error}
           onChange={(date) => onChange(date?.toISOString())}
           placeholder={field.placeholder || 'Pick date and time'}
-          error={error}
-          required={field.required}
-          description={field.description}
-          minDate={field.minDate ? new Date(field.minDate) : undefined}
+          label={field.label}
           maxDate={field.maxDate ? new Date(field.maxDate) : undefined}
+          minDate={field.minDate ? new Date(field.minDate) : undefined}
+          required={field.required}
+          value={value ? new Date(value) : null}
         />
       );
 
     case 'time':
       return (
         <TimeInput
-          label={field.label}
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
-          error={error}
-          required={field.required}
           description={field.description}
+          error={error}
+          onChange={(e) => onChange(e.target.value)}
+          label={field.label}
+          required={field.required}
+          value={value || ''}
         />
       );
 
@@ -367,22 +377,22 @@ export function EnhancedFormField({
       return (
         <Stack gap="xs">
           <JsonInput
-            label={field.label}
-            value={value || ''}
+            validationError="Invalid JSON"
+            autosize
+            description={field.description}
+            error={error || jsonError}
+            formatOnBlur
+            maxRows={field.maxRows || 10}
+            minRows={field.minRows || 3}
             onChange={handleJsonChange}
             placeholder={field.placeholder || '{}'}
-            error={error || jsonError}
-            required={field.required}
-            description={field.description}
             rows={field.rows || 4}
-            validationError="Invalid JSON"
-            formatOnBlur
-            autosize
-            minRows={field.minRows || 3}
-            maxRows={field.maxRows || 10}
+            label={field.label}
+            required={field.required}
+            value={value || ''}
           />
           {jsonError && (
-            <Text size="sm" c="red">
+            <Text c="red" size="sm">
               {jsonError}
             </Text>
           )}
@@ -392,68 +402,73 @@ export function EnhancedFormField({
     case 'url':
       return (
         <TextInput
-          type="url"
-          label={field.label}
-          value={value || ''}
+          description={field.description}
+          error={error}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder || 'https://example.com'}
-          error={error}
+          label={field.label}
           required={field.required}
-          description={field.description}
+          type="url"
+          value={value || ''}
         />
       );
 
     case 'color':
       return (
         <TextInput
-          type="color"
-          label={field.label}
-          value={value || '#000000'}
-          onChange={(e) => onChange(e.target.value)}
-          error={error}
-          required={field.required}
           description={field.description}
+          error={error}
+          onChange={(e) => onChange(e.target.value)}
+          label={field.label}
+          required={field.required}
+          type="color"
+          value={value || '#000000'}
         />
       );
 
     case 'range':
       return (
         <NumberInput
-          label={field.label}
-          value={value || field.min || 0}
-          onChange={onChange}
-          min={field.min}
-          max={field.max}
-          step={field.step || 1}
-          error={error}
-          required={field.required}
           description={field.description}
+          error={error}
+          onChange={onChange}
+          label={field.label}
+          max={field.max}
+          min={field.min}
+          required={field.required}
+          step={field.step || 1}
+          value={value || field.min || 0}
         />
       );
 
     case 'file':
       return (
         <Stack gap="xs">
-          <Text size="sm" fw={500}>
+          <Text fw={500} size="sm">
             {field.label}
-            {field.required && <Text component="span" c="red"> *</Text>}
+            {field.required && (
+              <Text component="span" c="red">
+                {' '}
+                *
+              </Text>
+            )}
           </Text>
           <input
-            type="file"
-            accept={field.accept}
-            multiple={field.multiple}
             onChange={(e) => {
               const files = Array.from(e.target.files || []);
               onChange(field.multiple ? files : files[0]);
             }}
+            accept={field.accept}
+            multiple={field.multiple}
+            type="file"
           />
           {field.description && (
-            <Text size="xs" c="dimmed">
+            <Text c="dimmed" size="xs">
               {field.description}
             </Text>
           )}
           {error && (
-            <Text size="sm" c="red">
+            <Text c="red" size="sm">
               {error}
             </Text>
           )}
@@ -464,13 +479,13 @@ export function EnhancedFormField({
       // Fallback to text input
       return (
         <TextInput
-          label={field.label}
-          value={value || ''}
+          description={field.description}
+          error={error}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          error={error}
+          label={field.label}
           required={field.required}
-          description={field.description}
+          value={value || ''}
         />
       );
   }

@@ -14,8 +14,8 @@ export interface MySwitchProps {
 }
 
 const MySwitch: FC<MySwitchProps> = ({
-  className = '',
   'data-testid': testId = 'switch-toggle',
+  className = '',
   desc = 'You’ll receive bids on this item',
   enabled = false,
   label = 'Put on sale',
@@ -28,7 +28,10 @@ const MySwitch: FC<MySwitchProps> = ({
   }, [enabled]);
 
   return (
-    <div data-testid={testId} className={`MySwitch flex items-center justify-between space-x-2 ${className}`}>
+    <div
+      data-testid={testId}
+      className={`MySwitch flex items-center justify-between space-x-2 ${className}`}
+    >
       <div>
         <Label data-testid="switch-label">{label}</Label>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">{desc}</p>

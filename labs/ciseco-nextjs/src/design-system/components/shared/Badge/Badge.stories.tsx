@@ -1,6 +1,6 @@
-import Badge from './Badge';
+import Badge from './Badge'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof Badge> = {
   argTypes: {
@@ -26,80 +26,79 @@ const meta: Meta<typeof Badge> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'A badge component with different color variants that can optionally render as a link.',
+        component: 'A badge component with different color variants that can optionally render as a link.',
       },
     },
     layout: 'centered',
   },
   title: 'Ciseco/Shared/Badge',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
     name: 'Default Badge',
     color: 'blue',
   },
-};
+}
 
 export const Blue: Story = {
   args: {
     name: 'Blue Badge',
     color: 'blue',
   },
-};
+}
 
 export const Pink: Story = {
   args: {
     name: 'Pink Badge',
     color: 'pink',
   },
-};
+}
 
 export const Red: Story = {
   args: {
     name: 'Red Badge',
     color: 'red',
   },
-};
+}
 
 export const Gray: Story = {
   args: {
     name: 'Gray Badge',
     color: 'gray',
   },
-};
+}
 
 export const Green: Story = {
   args: {
     name: 'Green Badge',
     color: 'green',
   },
-};
+}
 
 export const Purple: Story = {
   args: {
     name: 'Purple Badge',
     color: 'purple',
   },
-};
+}
 
 export const Indigo: Story = {
   args: {
     name: 'Indigo Badge',
     color: 'indigo',
   },
-};
+}
 
 export const Yellow: Story = {
   args: {
     name: 'Yellow Badge',
     color: 'yellow',
   },
-};
+}
 
 export const AsLink: Story = {
   args: {
@@ -107,7 +106,7 @@ export const AsLink: Story = {
     color: 'blue',
     href: '/example',
   },
-};
+}
 
 export const AllColors: Story = {
   render: () => (
@@ -122,7 +121,7 @@ export const AllColors: Story = {
       <Badge color="yellow" name="Yellow" />
     </div>
   ),
-};
+}
 
 export const WithLinks: Story = {
   render: () => (
@@ -133,7 +132,7 @@ export const WithLinks: Story = {
       <Badge color="gray" name="Regular Badge" />
     </div>
   ),
-};
+}
 
 export const DifferentContent: Story = {
   render: () => (
@@ -148,7 +147,7 @@ export const DifferentContent: Story = {
       <Badge color="green" name="Best Seller" />
     </div>
   ),
-};
+}
 
 export const WithNumbers: Story = {
   render: () => (
@@ -160,7 +159,7 @@ export const WithNumbers: Story = {
       <Badge color="indigo" name="∞" />
     </div>
   ),
-};
+}
 
 export const InContext: Story = {
   render: () => (
@@ -186,7 +185,7 @@ export const InContext: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const CustomStyling: Story = {
   args: {
@@ -194,4 +193,4 @@ export const CustomStyling: Story = {
     className: 'text-sm px-4 py-2 shadow-lg',
     color: 'blue',
   },
-};
+}

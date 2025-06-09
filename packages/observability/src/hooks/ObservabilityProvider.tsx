@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * React provider component for observability
  */
@@ -6,7 +8,6 @@ import React, { type ReactNode, useEffect, useState } from 'react';
 
 import { SentryClientProvider } from '../client/providers/sentry-client';
 import { ConsoleProvider } from '../shared/providers/console-provider';
-import { LogtailProvider } from '../shared/providers/logtail-provider';
 import { createObservabilityManager } from '../shared/utils/manager';
 
 import { ObservabilityContext } from './use-observability';
@@ -28,10 +29,9 @@ export interface ObservabilityProviderProps {
 /**
  * Provider component that initializes and provides observability to the app
  */
-// Client-specific provider registry
+// Client-specific provider registry - minimal, essential providers only
 const CLIENT_PROVIDERS: ProviderRegistry = {
   console: () => new ConsoleProvider(),
-  logtail: () => new LogtailProvider(),
   sentry: () => new SentryClientProvider(),
 };
 

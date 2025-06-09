@@ -17,7 +17,7 @@ Time to First Byte: 2806.089999973774 ms
 
 ```yaml
 - banner:
-    - heading "Backstage Admin" [level=3]
+    - heading "Backstage" [level=3]
     - button "Dashboard" [expanded]:
         - img
         - paragraph: Dashboard

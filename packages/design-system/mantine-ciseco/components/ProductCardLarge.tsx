@@ -43,8 +43,17 @@ export interface Props {
   showWishlist?: boolean;
 }
 
-const ProductCardLarge: FC<Props> = ({ className, 'data-testid': testId = 'product-card-large', product }) => {
+const ProductCardLarge: FC<Props> = ({
+  'data-testid': testId = 'product-card-large',
+  className,
+  product,
+}) => {
   const localizeHref = useLocalizeHref();
+  
+  if (!product) {
+    return null;
+  }
+  
   const { handle, images, price, rating, reviewNumber, selectedOptions, title } = product;
 
   const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
@@ -100,7 +109,9 @@ const ProductCardLarge: FC<Props> = ({ className, 'data-testid': testId = 'produ
       <div className="relative mt-5 flex justify-between gap-4">
         {/* TITLE */}
         <div className="flex-1">
-          <h2 data-testid="product-title" className="text-lg font-semibold sm:text-xl">{title}</h2>
+          <h2 data-testid="product-title" className="text-lg font-semibold sm:text-xl">
+            {title}
+          </h2>
           <div className="mt-3 flex flex-wrap items-center gap-1 text-neutral-500 dark:text-neutral-400">
             <span className="text-sm">
               <span className="line-clamp-1">{color}</span>

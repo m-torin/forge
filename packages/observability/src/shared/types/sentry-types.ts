@@ -8,15 +8,21 @@ export interface SentryConfig {
   debug?: boolean;
   dsn: string;
   environment?: string;
-  integrations?: any[];
+  integrations?: any[] | string[];
   profilesSampleRate?: number;
   release?: string;
   tracesSampleRate?: number;
 
+  replayBlockAllMedia?: boolean;
+  replayMaskAllText?: boolean;
+  replaysOnErrorSampleRate?: number;
+  // Replay integration options
+  replaysSessionSampleRate?: number;
+
+  // Next.js specific build options
   automaticVercelMonitors?: boolean;
   disableLogger?: boolean;
   hideSourceMaps?: boolean;
-  // Next.js specific
   tunnelRoute?: string;
   widenClientFileUpload?: boolean;
 

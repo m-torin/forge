@@ -259,8 +259,8 @@ export const collectFraudDataStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'dataSource'],
       enableDetailedLogging: true,
+      trackingMetrics: ['dataSource'],
     }),
 );
 
@@ -511,8 +511,9 @@ export const runMLFraudDetectionStep = compose(
   }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
+      failureThreshold: 5,
       resetTimeout: 300000,
+      threshold: 0.5,
       timeout: 30000,
     }),
 );

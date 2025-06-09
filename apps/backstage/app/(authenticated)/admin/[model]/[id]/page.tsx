@@ -1,22 +1,11 @@
-import { notFound } from 'next/navigation';
+import { Badge, Button, Card, Code, Divider, Grid, Group, Stack, Text, Title } from '@mantine/core';
+import { IconArrowLeft, IconEdit } from '@tabler/icons-react';
+import { format } from 'date-fns';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
 import { getRecord } from '../../actions';
 import { getModelConfig } from '../../lib/model-config';
-import {
-  Card,
-  Title,
-  Text,
-  Stack,
-  Group,
-  Badge,
-  Button,
-  Divider,
-  Grid,
-  Table,
-  Code,
-} from '@mantine/core';
-import { IconEdit, IconArrowLeft } from '@tabler/icons-react';
-import { format } from 'date-fns';
 
 interface PageProps {
   params: { model: string; id: string };
@@ -69,11 +58,11 @@ export default async function ViewModelPage({ params }: PageProps) {
         <div>
           <Group gap="sm" mb="xs">
             <Button
-              component={Link}
               href={`/admin/${params.model}`}
-              variant="subtle"
-              size="sm"
+              component={Link}
               leftSection={<IconArrowLeft size={16} />}
+              size="sm"
+              variant="subtle"
             >
               Back to {config.pluralName}
             </Button>
@@ -84,8 +73,8 @@ export default async function ViewModelPage({ params }: PageProps) {
           </Text>
         </div>
         <Button
-          component={Link}
           href={`/admin/${params.model}/${record.id}/edit`}
+          component={Link}
           leftSection={<IconEdit size={16} />}
         >
           Edit {config.name}
@@ -102,7 +91,7 @@ export default async function ViewModelPage({ params }: PageProps) {
               <Grid>
                 {config.fields.map((field) => (
                   <Grid.Col key={field.name} span={{ base: 12, sm: 6 }}>
-                    <Text size="sm" c="dimmed">
+                    <Text c="dimmed" size="sm">
                       {field.label}
                     </Text>
                     <div>{formatValue(record[field.name], field.type)}</div>
@@ -114,7 +103,7 @@ export default async function ViewModelPage({ params }: PageProps) {
               {Object.entries(record).filter(
                 ([key]) =>
                   !config.fields.some((f) => f.name === key) &&
-                  !['id', 'createdAt', 'updatedAt', '_count'].includes(key) &&
+                  !['_count', 'createdAt', 'id', 'updatedAt'].includes(key) &&
                   !key.endsWith('Id'),
               ).length > 0 && (
                 <>
@@ -125,12 +114,12 @@ export default async function ViewModelPage({ params }: PageProps) {
                       .filter(
                         ([key]) =>
                           !config.fields.some((f) => f.name === key) &&
-                          !['id', 'createdAt', 'updatedAt', '_count'].includes(key) &&
+                          !['_count', 'createdAt', 'id', 'updatedAt'].includes(key) &&
                           !key.endsWith('Id'),
                       )
                       .map(([key, value]) => (
                         <Grid.Col key={key} span={{ base: 12, sm: 6 }}>
-                          <Text size="sm" c="dimmed">
+                          <Text c="dimmed" size="sm">
                             {key}
                           </Text>
                           <div>{formatValue(value)}</div>
@@ -149,19 +138,19 @@ export default async function ViewModelPage({ params }: PageProps) {
               <Stack gap="sm">
                 <Title order={4}>Metadata</Title>
                 <div>
-                  <Text size="sm" c="dimmed">
+                  <Text c="dimmed" size="sm">
                     ID
                   </Text>
                   <Code>{record.id}</Code>
                 </div>
                 <div>
-                  <Text size="sm" c="dimmed">
+                  <Text c="dimmed" size="sm">
                     Created At
                   </Text>
                   <Text size="sm">{formatValue(record.createdAt)}</Text>
                 </div>
                 <div>
-                  <Text size="sm" c="dimmed">
+                  <Text c="dimmed" size="sm">
                     Updated At
                   </Text>
                   <Text size="sm">{formatValue(record.updatedAt)}</Text>
@@ -176,7 +165,7 @@ export default async function ViewModelPage({ params }: PageProps) {
                   <Title order={4}>Related Records</Title>
                   {Object.entries(record._count).map(([key, count]) => (
                     <Group key={key} justify="space-between">
-                      <Text size="sm" c="dimmed" tt="capitalize">
+                      <Text c="dimmed" size="sm" tt="capitalize">
                         {key.replace(/([A-Z])/g, ' $1').trim()}
                       </Text>
                       <Badge>{count as number}</Badge>
@@ -207,7 +196,7 @@ export default async function ViewModelPage({ params }: PageProps) {
                     )
                     .map(([key, value]: [string, any]) => (
                       <div key={key}>
-                        <Text size="sm" c="dimmed" tt="capitalize" mb={4}>
+                        <Text c="dimmed" mb={4} size="sm" tt="capitalize">
                           {key.replace(/([A-Z])/g, ' $1').trim()}
                         </Text>
                         {Array.isArray(value) ? (

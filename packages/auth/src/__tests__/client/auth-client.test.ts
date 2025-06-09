@@ -4,11 +4,21 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock better-auth before importing
-const mockCreateAuthClient = vi.fn();
-const mockOrganizationClient = vi.fn();
-const mockApiKeyClient = vi.fn();
-const mockAdminClient = vi.fn();
+// Mock better-auth before importing using vi.hoisted
+const { mockAdminClient, mockApiKeyClient, mockCreateAuthClient, mockOrganizationClient } =
+  vi.hoisted(() => {
+    const mockCreateAuthClient = vi.fn();
+    const mockOrganizationClient = vi.fn();
+    const mockApiKeyClient = vi.fn();
+    const mockAdminClient = vi.fn();
+
+    return {
+      mockAdminClient,
+      mockApiKeyClient,
+      mockCreateAuthClient,
+      mockOrganizationClient,
+    };
+  });
 
 vi.mock('better-auth/client', () => ({
   createAuthClient: mockCreateAuthClient,

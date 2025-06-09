@@ -1,11 +1,11 @@
-import Link from 'next/link';
-import { type FC } from 'react';
+import Link from 'next/link'
+import { type FC } from 'react'
 
 export interface TagProps {
-  children?: React.ReactNode;
-  className?: string;
-  count?: number;
-  hideCount?: boolean;
+  children?: React.ReactNode
+  className?: string
+  count?: number
+  hideCount?: boolean
 }
 
 const Tag: FC<TagProps> = ({ hideCount = false, children, className = '', count = 22 }) => {
@@ -19,7 +19,7 @@ const Tag: FC<TagProps> = ({ hideCount = false, children, className = '', count 
       {children}
       {!hideCount && <span className="text-xs font-normal"> ({count} )</span>}
     </Link>
-  );
-};
+  )
+}
 
-export default Tag;
+export default Tag

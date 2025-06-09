@@ -183,7 +183,9 @@ function generateViolationDescription(policy: string, violationType: string): st
     },
   };
 
-  return descriptions[(policy as any)]?.[violationType] || `${violationType} ${policy} violation detected`;
+  return (
+    descriptions[policy as any]?.[violationType] || `${violationType} ${policy} violation detected`
+  );
 }
 
 function generateEvidence(item: any, policy: string): any[] {
@@ -275,8 +277,8 @@ export const collectEntitiesStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'entityTypes'],
       enableDetailedLogging: true,
+      trackingMetrics: ['entityTypes'],
     }),
 );
 
@@ -817,8 +819,8 @@ export const runAIContentAnalysisStep = compose(
   }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 300000,
+      threshold: 0.5,
       timeout: 120000,
     }),
 );

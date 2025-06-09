@@ -38,9 +38,9 @@ export interface ArchiveFilterListBoxProps {
 }
 
 const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
+  'data-testid': testId = 'filter-select',
   className = '',
   clearable = false,
-  'data-testid': testId = 'filter-select',
   disabled = false,
   groupedOptions,
   hierarchical = false,
@@ -97,7 +97,11 @@ const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
       }));
 
   return (
-    <div data-testid={testId} data-nc-id="ArchiveFilterListBox" className={`nc-ArchiveFilterListBox ${className}`}>
+    <div
+      data-nc-id="ArchiveFilterListBox"
+      data-testid={testId}
+      className={`nc-ArchiveFilterListBox ${className}`}
+    >
       <Select
         comboboxProps={{
           shadow: 'lg',

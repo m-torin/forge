@@ -1,7 +1,7 @@
+import { getCollectionByHandle, getProducts } from "@/lib/data-service";
 import { type Metadata } from "next";
 
 import {
-  getProducts,
   Pagination,
   PaginationList,
   PaginationNext,
@@ -26,29 +26,6 @@ export async function generateStaticParams() {
   return [];
 }
 
-// Mock collection data - replace with real API
-async function getCollectionByHandle(handle: string) {
-  const collections = {
-    all: { name: "All Products", handle: "all", productCount: 1250 },
-    "best-sellers": {
-      name: "Best Sellers",
-      handle: "best-sellers",
-      productCount: 320,
-    },
-    "new-arrivals": {
-      name: "New Arrivals",
-      handle: "new-arrivals",
-      productCount: 450,
-    },
-  };
-  return (
-    collections[handle as keyof typeof collections] || {
-      name: handle,
-      handle,
-      productCount: 0,
-    }
-  );
-}
 
 export async function generateMetadata({
   params,
@@ -59,8 +36,8 @@ export async function generateMetadata({
   const collection = await getCollectionByHandle(handle);
 
   return {
-    description: `Browse our ${collection.name} collection with ${collection.productCount} products`,
-    title: `${collection.name} | Collections`,
+    description: `Browse our ${collection?.title || handle} collection with ${collection?.count || 0} products`,
+    title: `${collection?.title || handle} | Collections`,
   };
 }
 

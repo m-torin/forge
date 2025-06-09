@@ -16,10 +16,10 @@ export interface ButtonProps {
 }
 
 const Button: FC<ButtonProps> = ({
+  'data-testid': testId = 'button',
   as,
   children,
   className = 'text-neutral-700 dark:text-neutral-200 disabled:cursor-not-allowed',
-  'data-testid': testId = 'button',
   disabled,
   fontSize = 'text-sm sm:text-base font-nomal',
   href,

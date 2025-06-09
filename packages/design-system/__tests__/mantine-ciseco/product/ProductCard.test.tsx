@@ -80,9 +80,13 @@ vi.mock('@mantine/core', async () => {
 });
 
 // Mock Mantine hooks
-vi.mock('@mantine/hooks', () => ({
-  useDisclosure: () => [false, { close: vi.fn(), open: vi.fn() }],
-}));
+vi.mock('@mantine/hooks', async () => {
+  const actual = await vi.importActual('@mantine/hooks');
+  return {
+    ...actual,
+    useDisclosure: () => [false, { close: vi.fn(), open: vi.fn(), toggle: vi.fn() }],
+  };
+});
 
 // Mock Next.js Link
 vi.mock('next/link', () => ({

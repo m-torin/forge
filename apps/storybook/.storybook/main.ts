@@ -34,7 +34,7 @@ const config: StorybookConfig = {
   staticDirs: ['../public'],
   stories: [
     '../../../packages/design-system/uix/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    '../../../packages/design-system/ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    '../../../packages/design-system/mantine-ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../../../packages/design-system/algolia/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
   webpackFinal: async (config: any) => {
@@ -164,7 +164,7 @@ const config: StorybookConfig = {
     // Log resolved stories
     console.log('Loading stories from:', [
       '../../../packages/design-system/uix/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-      '../../../packages/design-system/ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+      '../../../packages/design-system/mantine-ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
       '../../../packages/design-system/algolia/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     ]);
 

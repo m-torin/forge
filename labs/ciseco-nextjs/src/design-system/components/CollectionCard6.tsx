@@ -1,31 +1,29 @@
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import Link from 'next/link';
-import { type FC } from 'react';
+import { ArrowRightIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
+import Link from 'next/link'
+import { type FC } from 'react'
 
-import { type TCollection } from '../data/data';
+import { type TCollection } from '../data/data'
 
-import NcImage from './shared/NcImage/NcImage';
+import NcImage from './shared/NcImage/NcImage'
 
 interface CollectionCard6Props {
-  bgSvgUrl?: string;
-  className?: string;
-  collection: TCollection;
+  bgSvgUrl?: string
+  className?: string
+  collection: TCollection
 }
 
 const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', collection }) => {
   if (!collection.handle) {
-    return null;
+    return null
   }
 
   return (
     <div
-      className={`group aspect-square relative w-full overflow-hidden rounded-3xl bg-white transition-shadow hover:nc-shadow-lg dark:bg-neutral-900 ${className}`}
+      className={`hover:nc-shadow-lg group relative aspect-square w-full overflow-hidden rounded-3xl bg-white transition-shadow dark:bg-neutral-900 ${className}`}
     >
       <div>
-        <div className="absolute inset-0 opacity-10">
-          {bgSvgUrl && <Image alt="svgbg" fill src={bgSvgUrl} />}
-        </div>
+        <div className="absolute inset-0 opacity-10">{bgSvgUrl && <Image alt="svgbg" fill src={bgSvgUrl} />}</div>
 
         <div className="absolute inset-5 flex flex-col items-center justify-between">
           <div className="flex items-center justify-center">
@@ -48,7 +46,7 @@ const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', c
 
           <Link
             href={`/collections/${collection.handle}`}
-            className="flex items-center text-sm font-medium transition-colors group-hover:text-primary-500"
+            className="group-hover:text-primary-500 flex items-center text-sm font-medium transition-colors"
           >
             <span>See Collection</span>
             <ArrowRightIcon className="ml-2.5 h-4 w-4" />
@@ -56,7 +54,7 @@ const CollectionCard6: FC<CollectionCard6Props> = ({ bgSvgUrl, className = '', c
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CollectionCard6;
+export default CollectionCard6

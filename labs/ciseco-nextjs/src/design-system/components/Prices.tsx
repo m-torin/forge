@@ -1,10 +1,10 @@
-import clsx from 'clsx';
-import { type FC } from 'react';
+import clsx from 'clsx'
+import { type FC } from 'react'
 
 export interface PricesProps {
-  className?: string;
-  contentClass?: string;
-  price: number;
+  className?: string
+  contentClass?: string
+  price: number
 }
 
 const Prices: FC<PricesProps> = ({
@@ -18,7 +18,7 @@ const Prices: FC<PricesProps> = ({
         <span className="leading-none! text-green-500">${price.toFixed(2)}</span>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Prices;
+export default Prices

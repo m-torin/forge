@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ActionIcon,
@@ -14,46 +14,76 @@ import {
   ScrollArea,
   Select,
   Stack,
+  Switch,
   Table,
   Text,
   TextInput,
-  UnstyledButton,
-} from "@mantine/core";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
+  Tooltip,
+} from '@mantine/core';
 import {
   IconArchive,
-  IconChevronDown,
-  IconChevronUp,
   IconDots,
   IconEdit,
   IconEye,
   IconPlus,
+  IconRefresh,
+  IconRobot,
   IconSearch,
-  IconSelector,
   IconTrash,
-} from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+  IconTrashOff,
+} from '@tabler/icons-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useDisclosure } from '@mantine/hooks';
 
 import {
   bulkDeleteProducts,
+  bulkRestoreProducts,
+  bulkSoftDeleteProducts,
+  bulkUpdateAIGenerated,
   bulkUpdateProductStatus,
   deleteProduct,
   getProducts,
-} from "../actions";
+  restoreProduct,
+  softDeleteProduct,
+} from '../actions';
+import {
+  formatCurrency,
+  getStatusColor,
+  showDeleteConfirmModal,
+  showErrorNotification,
+  showSuccessNotification,
+  sortTableData,
+} from '../utils/pim-helpers';
+import {
+  getSelectAllCheckboxProps,
+  setSorting,
+  Th,
+  toggleAllRows,
+  toggleRowSelection,
+  useTableForm,
+} from '../utils/table-helpers';
 
-import { ProductDetailsModal } from "./ProductDetailsModal";
-import { ProductFormModal } from "./ProductFormModal";
+import { ProductDetailsDrawer } from './ProductDetailsDrawer';
+import { ProductFormModal } from './ProductForm';
 
-import type { Product, ProductStatus } from "@repo/database/prisma";
+import type { Product, ProductStatus, ProductType, User } from '@repo/database/prisma';
 
 interface ProductWithRelations extends Product {
   _count: {
     scanHistory: number;
     soldBy: number;
+    children: number;
   };
   barcodes: { id: string; barcode: string; type: string; isPrimary: boolean }[];
+  children: Product[];
+  // Soft delete tracking
+  deletedBy: User | null;
   digitalAssets: { id: string; url: string; type: string }[];
+  // Additional metadata we might want to display
+  media?: { id: string; url: string; type: string; altText: string | null }[];
+  // Parent/child relationships
+  parent: Product | null;
   soldBy: {
     id: string;
     brand: {
@@ -67,62 +97,58 @@ interface ProductWithRelations extends Product {
   }[];
 }
 
-interface ThProps {
-  children: React.ReactNode;
-  onSort(): void;
-  reversed: boolean;
-  sorted: boolean;
+interface ProductTableFilters {
+  aiGeneratedFilter: 'all' | 'ai-only' | 'human-only';
+  categoryFilter: string;
+  page: number;
+  parentFilter: 'all' | 'parent-only' | 'child-only' | 'standalone';
+  reverseSortDirection: boolean;
+  search: string;
+  selectedRows: string[];
+  // New enhanced filters
+  showDeleted: boolean;
+  sortBy: string | null;
+  statusFilter: ProductStatus | '';
+  typeFilter: ProductType | '';
 }
 
-function Th({ children, onSort, reversed, sorted }: ThProps) {
-  const Icon = sorted
-    ? reversed
-      ? IconChevronUp
-      : IconChevronDown
-    : IconSelector;
-  return (
-    <Table.Th>
-      <UnstyledButton onClick={onSort} style={{ width: "100%" }}>
-        <Group justify="space-between">
-          <Text fw={500} fz="sm">
-            {children}
-          </Text>
-          <Center>
-            <Icon stroke={1.5} style={{ width: rem(16), height: rem(16) }} />
-          </Center>
-        </Group>
-      </UnstyledButton>
-    </Table.Th>
-  );
-}
-
+/**
+ * ProductsTable component for managing product inventory
+ * Provides search, filtering, sorting, and bulk operations on products
+ */
 export function ProductsTable() {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ProductStatus | "">("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [sortBy, setSortBy] = useState<string | null>(null);
-  const [reverseSortDirection, setReverseSortDirection] = useState(false);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [productModalOpened, setProductModalOpened] = useState(false);
-  const [detailsModalOpened, setDetailsModalOpened] = useState(false);
-  const [editingProduct, setEditingProduct] =
-    useState<ProductWithRelations | null>(null);
-  const [viewingProduct, setViewingProduct] =
-    useState<ProductWithRelations | null>(null);
+  const [productModalOpened, { open: openProductModal, close: closeProductModal }] = useDisclosure(false);
+  const [detailsModalOpened, { open: openDetailsModal, close: closeDetailsModal }] = useDisclosure(false);
+  const [editingProduct, setEditingProduct] = useState<ProductWithRelations | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<ProductWithRelations | null>(null);
+  const router = useRouter();
+
+  // Consolidate all filter and table state into a single form
+  const form = useTableForm<ProductTableFilters>({
+    typeFilter: '',
+    aiGeneratedFilter: 'all',
+    categoryFilter: '',
+    parentFilter: 'all',
+    showDeleted: false,
+    statusFilter: '',
+  });
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getProducts({
-        category: categoryFilter || undefined,
+        typeFilter: form.values.typeFilter || undefined,
+        aiGeneratedFilter: form.values.aiGeneratedFilter,
+        category: form.values.categoryFilter || undefined,
         limit: 10,
-        page,
-        search,
-        status: (statusFilter as ProductStatus) || undefined,
+        page: form.values.page,
+        parentFilter: form.values.parentFilter,
+        search: form.values.search,
+        showDeleted: form.values.showDeleted,
+        status: (form.values.statusFilter as ProductStatus) || undefined,
       });
 
       if (result.success && result.data) {
@@ -131,156 +157,153 @@ export function ProductsTable() {
           setTotalPages(result.pagination.totalPages);
         }
       } else {
-        notifications.show({
-          color: "red",
-          message: result.error || "Failed to load products",
-          title: "Error",
-        });
+        showErrorNotification(result.error || 'Failed to load products');
       }
     } catch (error) {
-      notifications.show({
-        color: "red",
-        message: "Failed to load products",
-        title: "Error",
-      });
+      showErrorNotification('Failed to load products');
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, categoryFilter, page]);
+  }, [
+    form.values.search,
+    form.values.statusFilter,
+    form.values.categoryFilter,
+    form.values.page,
+    form.values.showDeleted,
+    form.values.aiGeneratedFilter,
+    form.values.typeFilter,
+    form.values.parentFilter,
+  ]);
 
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
-  const setSorting = (field: string) => {
-    const reversed = field === sortBy ? !reverseSortDirection : false;
-    setReverseSortDirection(reversed);
-    setSortBy(field);
-  };
-
   const handleDelete = async (id: string) => {
-    modals.openConfirmModal({
-      centered: true,
-      children: (
-        <Text size="sm">
-          Are you sure you want to delete this product? This action is
-          irreversible and will also delete all related barcodes and assets.
-        </Text>
-      ),
-      confirmProps: { color: "red" },
-      labels: { cancel: "Cancel", confirm: "Delete" },
-      onCancel: () => {},
-      onConfirm: async () => {
-        const result = await deleteProduct(id);
-        if (result.success) {
-          notifications.show({
-            color: "green",
-            message: "Product deleted successfully",
-            title: "Success",
-          });
-          loadProducts();
-        } else {
-          notifications.show({
-            color: "red",
-            message: result.error || "Failed to delete product",
-            title: "Error",
-          });
-        }
-      },
-      title: "Delete Product",
+    showDeleteConfirmModal('product', async () => {
+      const result = await deleteProduct(id);
+      if (result.success) {
+        showSuccessNotification('Product deleted successfully');
+        loadProducts();
+      } else {
+        showErrorNotification(result.error || 'Failed to delete product');
+      }
     });
   };
 
   const handleBulkStatusUpdate = async (status: ProductStatus) => {
-    if (selectedRows.length === 0) return;
+    if (form.values.selectedRows.length === 0) return;
 
-    const result = await bulkUpdateProductStatus(selectedRows, status);
+    const result = await bulkUpdateProductStatus(form.values.selectedRows, status);
     if (result.success) {
-      notifications.show({
-        color: "green",
-        message: `Updated ${selectedRows.length} products`,
-        title: "Success",
-      });
-      setSelectedRows([]);
+      showSuccessNotification(`Updated ${form.values.selectedRows.length} products`);
+      form.setFieldValue('selectedRows', []);
       loadProducts();
     } else {
-      notifications.show({
-        color: "red",
-        message: result.error || "Failed to update products",
-        title: "Error",
-      });
+      showErrorNotification(result.error || 'Failed to update products');
     }
   };
 
   const handleBulkDelete = async () => {
-    if (selectedRows.length === 0) return;
+    if (form.values.selectedRows.length === 0) return;
 
-    modals.openConfirmModal({
-      centered: true,
-      children: (
-        <Text size="sm">
-          Are you sure you want to delete {selectedRows.length} products? This
-          action is irreversible.
-        </Text>
-      ),
-      confirmProps: { color: "red" },
-      labels: { cancel: "Cancel", confirm: "Delete" },
-      onCancel: () => {},
-      onConfirm: async () => {
-        const result = await bulkDeleteProducts(selectedRows);
-        if (result.success) {
-          notifications.show({
-            color: "green",
-            message: `Deleted ${selectedRows.length} products`,
-            title: "Success",
-          });
-          setSelectedRows([]);
-          loadProducts();
-        } else {
-          notifications.show({
-            color: "red",
-            message: result.error || "Failed to delete products",
-            title: "Error",
-          });
-        }
-      },
-      title: "Delete Products",
+    showDeleteConfirmModal(`${form.values.selectedRows.length} products`, async () => {
+      const result = await bulkDeleteProducts(form.values.selectedRows);
+      if (result.success) {
+        showSuccessNotification(`Deleted ${form.values.selectedRows.length} products`);
+        form.setFieldValue('selectedRows', []);
+        loadProducts();
+      } else {
+        showErrorNotification(result.error || 'Failed to delete products');
+      }
     });
   };
 
-  const sortedData = sortBy
-    ? [...products].sort((a, b) => {
-        if (!sortBy) return 0;
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
+  const handleBulkSoftDelete = async () => {
+    if (form.values.selectedRows.length === 0) return;
 
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return reverseSortDirection
-            ? bValue.localeCompare(aValue)
-            : aValue.localeCompare(bValue);
+    showDeleteConfirmModal(
+      `${form.values.selectedRows.length} products (soft delete)`,
+      async () => {
+        const result = await bulkSoftDeleteProducts(form.values.selectedRows);
+        if (result.success) {
+          showSuccessNotification(`Soft deleted ${form.values.selectedRows.length} products`);
+          form.setFieldValue('selectedRows', []);
+          loadProducts();
+        } else {
+          showErrorNotification(result.error || 'Failed to soft delete products');
         }
+      },
+    );
+  };
 
-        if (typeof aValue === "number" && typeof bValue === "number") {
-          return reverseSortDirection ? bValue - aValue : aValue - bValue;
-        }
+  const handleBulkRestore = async () => {
+    if (form.values.selectedRows.length === 0) return;
 
-        return 0;
-      })
-    : products;
+    const result = await bulkRestoreProducts(form.values.selectedRows);
+    if (result.success) {
+      showSuccessNotification(`Restored ${form.values.selectedRows.length} products`);
+      form.setFieldValue('selectedRows', []);
+      loadProducts();
+    } else {
+      showErrorNotification(result.error || 'Failed to restore products');
+    }
+  };
+
+  const handleBulkUpdateAI = async (aiGenerated: boolean) => {
+    if (form.values.selectedRows.length === 0) return;
+
+    const result = await bulkUpdateAIGenerated(form.values.selectedRows, aiGenerated);
+    if (result.success) {
+      showSuccessNotification(`Updated AI flag for ${form.values.selectedRows.length} products`);
+      form.setFieldValue('selectedRows', []);
+      loadProducts();
+    } else {
+      showErrorNotification(result.error || 'Failed to update AI flag');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    const result = await restoreProduct(id);
+    if (result.success) {
+      showSuccessNotification('Product restored successfully');
+      loadProducts();
+    } else {
+      showErrorNotification(result.error || 'Failed to restore product');
+    }
+  };
+
+  const handleSoftDelete = async (id: string) => {
+    showDeleteConfirmModal('product (soft delete)', async () => {
+      const result = await softDeleteProduct(id);
+      if (result.success) {
+        showSuccessNotification('Product soft deleted successfully');
+        loadProducts();
+      } else {
+        showErrorNotification(result.error || 'Failed to soft delete product');
+      }
+    });
+  };
+
+  const sortedData = sortTableData(
+    products,
+    form.values.sortBy as keyof ProductWithRelations,
+    form.values.reverseSortDirection,
+  );
 
   const rows = sortedData.map((product) => {
-    const selected = selectedRows.includes(product.id);
+    const selected = form.values.selectedRows.includes(product.id);
+    const isDeleted = !!product.deletedAt;
+
     return (
-      <Table.Tr key={product.id} bg={selected ? "blue.0" : undefined}>
+      <Table.Tr
+        key={product.id}
+        opacity={isDeleted ? 0.6 : 1}
+        bg={selected ? 'blue.0' : isDeleted ? 'red.0' : undefined}
+      >
         <Table.Td>
           <Checkbox
-            onChange={(event) => {
-              if (event.currentTarget.checked) {
-                setSelectedRows([...selectedRows, product.id]);
-              } else {
-                setSelectedRows(selectedRows.filter((id) => id !== product.id));
-              }
-            }}
+            onChange={(event) => toggleRowSelection(form, product.id, event.currentTarget.checked)}
             checked={selected}
           />
         </Table.Td>
@@ -289,36 +312,43 @@ export function ProductsTable() {
             <div>
               <Text fw={500} fz="sm">
                 {product.name}
+                {isDeleted && (
+                  <Badge color="red" ml="xs" size="xs">
+                    Deleted
+                  </Badge>
+                )}
               </Text>
               <Text c="dimmed" fz="xs">
                 SKU: {product.sku}
               </Text>
+              {product.parent && (
+                <Text c="blue" fz="xs">
+                  Child of: {product.parent.name}
+                </Text>
+              )}
+              {product._count.children > 0 && (
+                <Text c="green" fz="xs">
+                  {product._count.children} variants
+                </Text>
+              )}
             </div>
           </Group>
         </Table.Td>
-        <Table.Td>{product.category}</Table.Td>
         <Table.Td>
-          <Badge
-            color={
-              product.status === "ACTIVE"
-                ? "green"
-                : product.status === "DRAFT"
-                  ? "blue"
-                  : product.status === "ARCHIVED"
-                    ? "gray"
-                    : "red"
-            }
-            variant="light"
-          >
+          <Stack gap={2}>
+            <Text size="sm">{product.category}</Text>
+            <Badge color="blue" size="xs" variant="light">
+              {product.type}
+            </Badge>
+          </Stack>
+        </Table.Td>
+        <Table.Td>
+          <Badge color={getStatusColor(product.status)} variant="light">
             {product.status}
           </Badge>
         </Table.Td>
-        <Table.Td>{product.brand || "-"}</Table.Td>
-        <Table.Td>
-          {product.price
-            ? `${product.currency} ${product.price.toFixed(2)}`
-            : "-"}
-        </Table.Td>
+        <Table.Td>{product.brand || '-'}</Table.Td>
+        <Table.Td>{formatCurrency(product.price, product.currency)}</Table.Td>
         <Table.Td>{product.barcodes.length}</Table.Td>
         <Table.Td>{product.digitalAssets.length}</Table.Td>
         <Table.Td>
@@ -332,7 +362,9 @@ export function ProductsTable() {
                       <Group key={pdp.id} gap="xs" justify="space-between">
                         <Text size="sm">{pdp.brand.name}</Text>
                         <Group gap="xs">
-                          <Text c="green" size="xs">$299.99</Text>
+                          <Text c="green" size="xs">
+                            $299.99
+                          </Text>
                           <Badge color="green" size="xs" variant="dot">
                             In Stock
                           </Badge>
@@ -343,15 +375,18 @@ export function ProductsTable() {
                 }
                 multiline
               >
-                <Badge style={{ cursor: "pointer" }} size="xs" variant="outline">
+                <Badge style={{ cursor: 'pointer' }} size="xs" variant="outline">
                   {product.soldBy.length > 2
-                    ? `${product.soldBy.slice(0, 2).map((pdp) => pdp.brand.name).join(", ")} +${product.soldBy.length - 2}`
-                    : product.soldBy.map((pdp) => pdp.brand.name).join(", ")}
+                    ? `${product.soldBy
+                        .slice(0, 2)
+                        .map((pdp) => pdp.brand.name)
+                        .join(', ')} +${product.soldBy.length - 2}`
+                    : product.soldBy.map((pdp) => pdp.brand.name).join(', ')}
                 </Badge>
               </Tooltip>
             )}
           </Group>
-          
+
           {/* Primary seller indicator */}
           {product.soldBy.length > 0 && (
             <Text c="dimmed" mt={2} size="xs">
@@ -370,15 +405,38 @@ export function ProductsTable() {
               </Text>
             </Stack>
           ) : (
-            <Text c="dimmed" size="sm">No prices</Text>
+            <Text c="dimmed" size="sm">
+              No prices
+            </Text>
           )}
         </Table.Td>
         <Table.Td>{product._count.scanHistory}</Table.Td>
         <Table.Td>
-          {product.aiGenerated && (
-            <Badge color="violet" size="xs" variant="light">
-              AI
-            </Badge>
+          <Group gap="xs">
+            {product.aiGenerated && (
+              <Badge color="violet" leftSection={<IconRobot size={12} />} size="xs" variant="light">
+                AI Generated
+              </Badge>
+            )}
+            {product.aiSources && product.aiSources.length > 0 && (
+              <Tooltip label={`AI Sources: ${product.aiSources.join(', ')}`}>
+                <Badge color="gray" size="xs" variant="outline">
+                  {product.aiSources.length} sources
+                </Badge>
+              </Tooltip>
+            )}
+          </Group>
+        </Table.Td>
+        <Table.Td>
+          {isDeleted && product.deletedBy && (
+            <Stack gap={2}>
+              <Text c="red" size="xs">
+                Deleted by: {product.deletedBy.name}
+              </Text>
+              <Text c="dimmed" size="xs">
+                {new Date(product.deletedAt!).toLocaleDateString()}
+              </Text>
+            </Stack>
           )}
         </Table.Td>
         <Table.Td>
@@ -387,22 +445,23 @@ export function ProductsTable() {
               color="gray"
               onClick={() => {
                 setViewingProduct(product);
-                setDetailsModalOpened(true);
+                openDetailsModal();
               }}
               variant="subtle"
             >
               <IconEye style={{ width: rem(16), height: rem(16) }} />
             </ActionIcon>
-            <ActionIcon
-              color="gray"
-              onClick={() => {
-                setEditingProduct(product);
-                setProductModalOpened(true);
-              }}
-              variant="subtle"
-            >
-              <IconEdit style={{ width: rem(16), height: rem(16) }} />
-            </ActionIcon>
+            {!isDeleted && (
+              <ActionIcon
+                color="gray"
+                onClick={() => {
+                  router.push(`/pim3/products/${product.id}`);
+                }}
+                variant="subtle"
+              >
+                <IconEdit style={{ width: rem(16), height: rem(16) }} />
+              </ActionIcon>
+            )}
             <Menu position="bottom-end" shadow="sm" withinPortal>
               <Menu.Target>
                 <ActionIcon color="gray" variant="subtle">
@@ -411,23 +470,38 @@ export function ProductsTable() {
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={
-                    <IconArchive style={{ width: rem(14), height: rem(14) }} />
-                  }
-                  onClick={() => handleBulkStatusUpdate("ARCHIVED")}
-                >
-                  Archive
-                </Menu.Item>
-                <Menu.Item
-                  color="red"
-                  leftSection={
-                    <IconTrash style={{ width: rem(14), height: rem(14) }} />
-                  }
-                  onClick={() => handleDelete(product.id)}
-                >
-                  Delete
-                </Menu.Item>
+                {isDeleted ? (
+                  <Menu.Item
+                    color="green"
+                    leftSection={<IconRefresh style={{ width: rem(14), height: rem(14) }} />}
+                    onClick={() => handleRestore(product.id)}
+                  >
+                    Restore
+                  </Menu.Item>
+                ) : (
+                  <>
+                    <Menu.Item
+                      leftSection={<IconArchive style={{ width: rem(14), height: rem(14) }} />}
+                      onClick={() => handleBulkStatusUpdate('ARCHIVED')}
+                    >
+                      Archive
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconTrashOff style={{ width: rem(14), height: rem(14) }} />}
+                      onClick={() => handleSoftDelete(product.id)}
+                    >
+                      Soft Delete
+                    </Menu.Item>
+                    <Menu.Divider />
+                    <Menu.Item
+                      color="red"
+                      leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
+                      onClick={() => handleDelete(product.id)}
+                    >
+                      Permanent Delete
+                    </Menu.Item>
+                  </>
+                )}
               </Menu.Dropdown>
             </Menu>
           </Group>
@@ -439,42 +513,85 @@ export function ProductsTable() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Group>
+        <Group wrap="wrap">
           <TextInput
-            leftSection={
-              <IconSearch style={{ width: rem(16), height: rem(16) }} />
-            }
-            onChange={(e) => setSearch(e.currentTarget.value)}
+            leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} />}
+            onChange={(e) => form.setFieldValue('search', e.currentTarget.value)}
             placeholder="Search products..."
             style={{ width: rem(250) }}
-            value={search}
+            value={form.values.search}
           />
           <Select
-            onChange={(value) => setStatusFilter(value as ProductStatus | "")}
-            placeholder="Filter by status"
-            style={{ width: rem(150) }}
+            onChange={(value) => form.setFieldValue('statusFilter', value as ProductStatus | '')}
+            placeholder="Status"
+            style={{ width: rem(120) }}
             clearable
             data={[
-              { label: "All statuses", value: "" },
-              { label: "Draft", value: "DRAFT" },
-              { label: "Active", value: "ACTIVE" },
-              { label: "Archived", value: "ARCHIVED" },
-              { label: "Discontinued", value: "DISCONTINUED" },
+              { label: 'All statuses', value: '' },
+              { label: 'Draft', value: 'DRAFT' },
+              { label: 'Active', value: 'ACTIVE' },
+              { label: 'Archived', value: 'ARCHIVED' },
+              { label: 'Discontinued', value: 'DISCONTINUED' },
             ]}
-            value={statusFilter}
+            value={form.values.statusFilter}
+          />
+          <Select
+            onChange={(value) => form.setFieldValue('typeFilter', value || '')}
+            placeholder="Type"
+            style={{ width: rem(120) }}
+            clearable
+            data={[
+              { label: 'All types', value: '' },
+              { label: 'Physical', value: 'PHYSICAL' },
+              { label: 'Digital', value: 'DIGITAL' },
+              { label: 'Service', value: 'SERVICE' },
+              { label: 'Subscription', value: 'SUBSCRIPTION' },
+              { label: 'Bundle', value: 'BUNDLE' },
+              { label: 'Variant', value: 'VARIANT' },
+            ]}
+            value={form.values.typeFilter}
           />
           <TextInput
-            onChange={(e) => setCategoryFilter(e.currentTarget.value)}
-            placeholder="Filter by category"
-            style={{ width: rem(150) }}
-            value={categoryFilter}
+            onChange={(e) => form.setFieldValue('categoryFilter', e.currentTarget.value)}
+            placeholder="Category"
+            style={{ width: rem(120) }}
+            value={form.values.categoryFilter}
+          />
+          <Select
+            onChange={(value) => form.setFieldValue('parentFilter', value || 'all')}
+            placeholder="Hierarchy"
+            style={{ width: rem(120) }}
+            data={[
+              { label: 'All', value: 'all' },
+              { label: 'Parents only', value: 'parent-only' },
+              { label: 'Children only', value: 'child-only' },
+              { label: 'Standalone', value: 'standalone' },
+            ]}
+            value={form.values.parentFilter}
+          />
+          <Select
+            onChange={(value) => form.setFieldValue('aiGeneratedFilter', value || 'all')}
+            placeholder="AI Content"
+            style={{ width: rem(120) }}
+            data={[
+              { label: 'All content', value: 'all' },
+              { label: 'AI generated', value: 'ai-only' },
+              { label: 'Human created', value: 'human-only' },
+            ]}
+            value={form.values.aiGeneratedFilter}
+          />
+          <Switch
+            onChange={(event) => form.setFieldValue('showDeleted', event.currentTarget.checked)}
+            checked={form.values.showDeleted}
+            label="Show deleted"
+            size="sm"
           />
         </Group>
         <Group>
-          {selectedRows.length > 0 && (
+          {form.values.selectedRows.length > 0 && (
             <Group>
               <Text c="dimmed" size="sm">
-                {selectedRows.length} selected
+                {form.values.selectedRows.length} selected
               </Text>
               <Menu position="bottom-end" shadow="sm" withinPortal>
                 <Menu.Target>
@@ -484,26 +601,48 @@ export function ProductsTable() {
                 </Menu.Target>
                 <Menu.Dropdown>
                   <Menu.Label>Update Status</Menu.Label>
-                  <Menu.Item onClick={() => handleBulkStatusUpdate("ACTIVE")}>
-                    Set Active
-                  </Menu.Item>
-                  <Menu.Item onClick={() => handleBulkStatusUpdate("ARCHIVED")}>
-                    Archive
-                  </Menu.Item>
-                  <Menu.Item
-                    onClick={() => handleBulkStatusUpdate("DISCONTINUED")}
-                  >
+                  <Menu.Item onClick={() => handleBulkStatusUpdate('ACTIVE')}>Set Active</Menu.Item>
+                  <Menu.Item onClick={() => handleBulkStatusUpdate('ARCHIVED')}>Archive</Menu.Item>
+                  <Menu.Item onClick={() => handleBulkStatusUpdate('DISCONTINUED')}>
                     Discontinue
                   </Menu.Item>
+
                   <Menu.Divider />
+                  <Menu.Label>AI Content</Menu.Label>
+                  <Menu.Item
+                    leftSection={<IconRobot style={{ width: rem(14), height: rem(14) }} />}
+                    onClick={() => handleBulkUpdateAI(true)}
+                  >
+                    Mark as AI Generated
+                  </Menu.Item>
+                  <Menu.Item onClick={() => handleBulkUpdateAI(false)}>
+                    Mark as Human Created
+                  </Menu.Item>
+
+                  <Menu.Divider />
+                  <Menu.Label>Actions</Menu.Label>
+                  {form.values.showDeleted ? (
+                    <Menu.Item
+                      color="green"
+                      leftSection={<IconRefresh style={{ width: rem(14), height: rem(14) }} />}
+                      onClick={handleBulkRestore}
+                    >
+                      Restore Selected
+                    </Menu.Item>
+                  ) : (
+                    <Menu.Item
+                      leftSection={<IconTrashOff style={{ width: rem(14), height: rem(14) }} />}
+                      onClick={handleBulkSoftDelete}
+                    >
+                      Soft Delete Selected
+                    </Menu.Item>
+                  )}
                   <Menu.Item
                     color="red"
-                    leftSection={
-                      <IconTrash style={{ width: rem(14), height: rem(14) }} />
-                    }
+                    leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
                     onClick={handleBulkDelete}
                   >
-                    Delete Selected
+                    Permanent Delete
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
@@ -512,8 +651,7 @@ export function ProductsTable() {
           <Button
             leftSection={<IconPlus size={16} />}
             onClick={() => {
-              setEditingProduct(null);
-              setProductModalOpened(true);
+              router.push('/pim3/products/new');
             }}
           >
             Add Product
@@ -527,55 +665,48 @@ export function ProductsTable() {
             <Table.Tr>
               <Table.Th style={{ width: rem(40) }}>
                 <Checkbox
-                  onChange={(event) => {
-                    if (event.currentTarget.checked) {
-                      setSelectedRows(products.map((p) => p.id));
-                    } else {
-                      setSelectedRows([]);
-                    }
-                  }}
-                  checked={
-                    selectedRows.length === products.length &&
-                    products.length > 0
+                  onChange={(event) =>
+                    toggleAllRows(
+                      form,
+                      products.map((p) => p.id),
+                      event.currentTarget.checked,
+                    )
                   }
-                  indeterminate={
-                    selectedRows.length > 0 &&
-                    selectedRows.length < products.length
-                  }
+                  {...getSelectAllCheckboxProps(form, products.length)}
                 />
               </Table.Th>
               <Th
-                onSort={() => setSorting("name")}
-                sorted={sortBy === "name"}
-                reversed={reverseSortDirection}
+                onSort={() => setSorting(form, 'name')}
+                sorted={form.values.sortBy === 'name'}
+                reversed={form.values.reverseSortDirection}
               >
-                Product
+                Product & Hierarchy
               </Th>
               <Th
-                onSort={() => setSorting("category")}
-                sorted={sortBy === "category"}
-                reversed={reverseSortDirection}
+                onSort={() => setSorting(form, 'category')}
+                sorted={form.values.sortBy === 'category'}
+                reversed={form.values.reverseSortDirection}
               >
-                Category
+                Category & Type
               </Th>
               <Th
-                onSort={() => setSorting("status")}
-                sorted={sortBy === "status"}
-                reversed={reverseSortDirection}
+                onSort={() => setSorting(form, 'status')}
+                sorted={form.values.sortBy === 'status'}
+                reversed={form.values.reverseSortDirection}
               >
                 Status
               </Th>
               <Th
-                onSort={() => setSorting("brand")}
-                sorted={sortBy === "brand"}
-                reversed={reverseSortDirection}
+                onSort={() => setSorting(form, 'brand')}
+                sorted={form.values.sortBy === 'brand'}
+                reversed={form.values.reverseSortDirection}
               >
                 Brand
               </Th>
               <Th
-                onSort={() => setSorting("price")}
-                sorted={sortBy === "price"}
-                reversed={reverseSortDirection}
+                onSort={() => setSorting(form, 'price')}
+                sorted={form.values.sortBy === 'price'}
+                reversed={form.values.reverseSortDirection}
               >
                 Price
               </Th>
@@ -584,14 +715,27 @@ export function ProductsTable() {
               <Table.Th>Sellers</Table.Th>
               <Table.Th>Best Price</Table.Th>
               <Table.Th>Scans</Table.Th>
-              <Table.Th>AI</Table.Th>
+              <Th
+                onSort={() => setSorting(form, 'aiGenerated')}
+                sorted={form.values.sortBy === 'aiGenerated'}
+                reversed={form.values.reverseSortDirection}
+              >
+                AI Content
+              </Th>
+              <Th
+                onSort={() => setSorting(form, 'deletedAt')}
+                sorted={form.values.sortBy === 'deletedAt'}
+                reversed={form.values.reverseSortDirection}
+              >
+                Deletion Info
+              </Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {loading ? (
               <Table.Tr>
-                <Table.Td colSpan={13}>
+                <Table.Td colSpan={14}>
                   <Center py="xl">
                     <Loader />
                   </Center>
@@ -601,7 +745,7 @@ export function ProductsTable() {
               rows
             ) : (
               <Table.Tr>
-                <Table.Td colSpan={13}>
+                <Table.Td colSpan={14}>
                   <Text c="dimmed" fw={500} py="xl" ta="center">
                     No products found
                   </Text>
@@ -616,31 +760,31 @@ export function ProductsTable() {
         <Group justify="center" mt="xl">
           <Pagination
             boundaries={1}
-            onChange={setPage}
+            onChange={(value) => form.setFieldValue('page', value)}
             total={totalPages}
             siblings={1}
-            value={page}
+            value={form.values.page}
           />
         </Group>
       )}
 
       <ProductFormModal
         onClose={() => {
-          setProductModalOpened(false);
+          closeProductModal();
           setEditingProduct(null);
         }}
         onSuccess={() => {
           loadProducts();
-          setProductModalOpened(false);
+          closeProductModal();
           setEditingProduct(null);
         }}
         opened={productModalOpened}
         product={editingProduct}
       />
 
-      <ProductDetailsModal
+      <ProductDetailsDrawer
         onClose={() => {
-          setDetailsModalOpened(false);
+          closeDetailsModal();
           setViewingProduct(null);
         }}
         onUpdate={loadProducts}

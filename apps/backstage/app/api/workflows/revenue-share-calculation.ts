@@ -332,8 +332,8 @@ export const collectRevenueTransactionsStep = compose(
   (step) => withStepTimeout(step, { execution: 180000 }), // 3 minutes
   (step) =>
     withStepMonitoring(step, {
-, 'periodDays'],
       enableDetailedLogging: true,
+      metricsToTrack: ['periodDays'],
     }),
 );
 
@@ -416,13 +416,13 @@ export const loadRevenueShareModelsStep = createStep('load-share-models', async 
 
   // Merchant models
   for (const merchantId of merchants) {
-    const model = (await loadMerchantShareModel(merchantId) as any);
+    const model = (await loadMerchantShareModel(merchantId)) as any;
     shareModels.push(model);
   }
 
   // Affiliate models
   for (const affiliateId of affiliates) {
-    const model = (await loadAffiliateShareModel(affiliateId) as any);
+    const model = (await loadAffiliateShareModel(affiliateId)) as any;
     shareModels.push(model);
   }
 
@@ -760,7 +760,7 @@ export const processPayoutInstructionsStep = createStep('process-payouts', async
     } catch (error) {
       failedPayouts.push({
         ...payout,
-        (error as Error): (error as Error).message,
+        error: (error as Error).message,
         failedAt: new Date().toISOString(),
       });
     }
@@ -1114,7 +1114,7 @@ function calculateDistributionByType(shares: Record<string, any>): any {
   const distribution = { affiliate: 0, merchant: 0, platform: 0 };
 
   Object.values(shares).forEach((share: any) => {
-    distribution[(share.entityType as any)] += share.totalAmount;
+    distribution[share.entityType as any] += share.totalAmount;
   });
 
   const total = Object.values(distribution).reduce((sum, amount) => sum + amount, 0);
@@ -1145,7 +1145,7 @@ function analyzePayoutMethods(payouts: any[]): any {
   const methods = { bank_transfer: 0, check: 0, paypal: 0, stripe: 0 };
 
   payouts.forEach((payout) => {
-    methods[((payout.method as any) as any)] = (methods[payout.method] || 0) + 1;
+    methods[payout.method as any as any] = (methods[payout.method] || 0) + 1;
   });
 
   return methods;

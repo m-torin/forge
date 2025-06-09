@@ -1,6 +1,7 @@
 import withBundleAnalyzer from '@next/bundle-analyzer';
 // @ts-expect-error No declaration file
 import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
+import path from 'path';
 
 // Define NextConfig interface to avoid circular imports
 interface NextConfig {
@@ -75,6 +76,13 @@ export const config: NextConfig = {
     }
 
     config.ignoreWarnings = [{ module: otelRegex }, { module: requireInTheMiddleRegex }];
+
+    // Add path aliases
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.join(process.cwd(), 'app'),
+    };
 
     return config;
   },

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ActionIcon,
@@ -22,10 +22,10 @@ import {
   Textarea,
   TextInput,
   UnstyledButton,
-} from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
+} from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
 import {
   IconChevronDown,
   IconChevronUp,
@@ -39,12 +39,12 @@ import {
   IconSelector,
   IconTrash,
   IconVideo,
-} from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+} from '@tabler/icons-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { createAsset, deleteAsset, getAssets } from "../actions";
+import { createAsset, deleteAsset, getAssets } from '../actions';
 
-import type { AssetType, ProductAsset } from "@repo/database/prisma";
+import type { AssetType, ProductAsset } from '@repo/database/prisma';
 
 interface ProductAssetWithProduct extends ProductAsset {
   product: {
@@ -62,14 +62,10 @@ interface ThProps {
 }
 
 function Th({ children, onSort, reversed, sorted }: ThProps) {
-  const Icon = sorted
-    ? reversed
-      ? IconChevronUp
-      : IconChevronDown
-    : IconSelector;
+  const Icon = sorted ? (reversed ? IconChevronUp : IconChevronDown) : IconSelector;
   return (
     <Table.Th>
-      <UnstyledButton onClick={onSort} style={{ width: "100%" }}>
+      <UnstyledButton onClick={onSort} style={{ width: '100%' }}>
         <Group justify="space-between">
           <Text fw={500} fz="sm">
             {children}
@@ -94,20 +90,20 @@ function AssetFormModal({ onClose, onSuccess, opened }: AssetFormModalProps) {
 
   const form = useForm({
     validate: {
-      filename: (value) => (!value ? "Filename is required" : null),
-      url: (value) => (!value ? "URL is required" : null),
-      productId: (value) => (!value ? "Product is required" : null),
+      filename: (value) => (!value ? 'Filename is required' : null),
+      url: (value) => (!value ? 'URL is required' : null),
+      productId: (value) => (!value ? 'Product is required' : null),
     },
     initialValues: {
-      filename: "",
-      type: "IMAGE" as AssetType,
-      url: "",
-      alt: "",
-      description: "",
-      mimeType: "",
-      productId: "",
-      size: "",
-      sortOrder: "0",
+      filename: '',
+      type: 'IMAGE' as AssetType,
+      url: '',
+      alt: '',
+      description: '',
+      mimeType: '',
+      productId: '',
+      size: '',
+      sortOrder: '0',
     },
   });
 
@@ -117,7 +113,7 @@ function AssetFormModal({ onClose, onSuccess, opened }: AssetFormModalProps) {
     try {
       const formData = new FormData();
       Object.entries(values).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== "") {
+        if (value !== null && value !== undefined && value !== '') {
           formData.append(key, value.toString());
         }
       });
@@ -126,24 +122,24 @@ function AssetFormModal({ onClose, onSuccess, opened }: AssetFormModalProps) {
 
       if (result.success) {
         notifications.show({
-          color: "green",
-          message: "Asset created successfully",
-          title: "Success",
+          color: 'green',
+          message: 'Asset created successfully',
+          title: 'Success',
         });
         onSuccess();
         form.reset();
       } else {
         notifications.show({
-          color: "red",
-          message: result.error || "Failed to create asset",
-          title: "Error",
+          color: 'red',
+          message: result.error || 'Failed to create asset',
+          title: 'Error',
         });
       }
     } catch (error) {
       notifications.show({
-        color: "red",
-        message: "Failed to create asset",
-        title: "Error",
+        color: 'red',
+        message: 'Failed to create asset',
+        title: 'Error',
       });
     } finally {
       setLoading(false);
@@ -151,41 +147,36 @@ function AssetFormModal({ onClose, onSuccess, opened }: AssetFormModalProps) {
   };
 
   return (
-    <Modal
-      onClose={onClose}
-      opened={opened}
-      size="lg"
-      title="Add Digital Asset"
-    >
+    <Modal onClose={onClose} opened={opened} size="lg" title="Add Digital Asset">
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           <TextInput
             placeholder="Enter product ID"
             label="Product ID"
             required
-            {...form.getInputProps("productId")}
+            {...form.getInputProps('productId')}
           />
 
           <Select
             data={[
-              { label: "Image", value: "IMAGE" },
-              { label: "Video", value: "VIDEO" },
-              { label: "Document", value: "DOCUMENT" },
-              { label: "Manual", value: "MANUAL" },
-              { label: "Specification", value: "SPECIFICATION" },
-              { label: "Certificate", value: "CERTIFICATE" },
-              { label: "Other", value: "OTHER" },
+              { label: 'Image', value: 'IMAGE' },
+              { label: 'Video', value: 'VIDEO' },
+              { label: 'Document', value: 'DOCUMENT' },
+              { label: 'Manual', value: 'MANUAL' },
+              { label: 'Specification', value: 'SPECIFICATION' },
+              { label: 'Certificate', value: 'CERTIFICATE' },
+              { label: 'Other', value: 'OTHER' },
             ]}
             label="Asset Type"
             required
-            {...form.getInputProps("type")}
+            {...form.getInputProps('type')}
           />
 
           <TextInput
             placeholder="https://example.com/asset.jpg"
             label="URL"
             required
-            {...form.getInputProps("url")}
+            {...form.getInputProps('url')}
           />
 
           <Group grow>
@@ -193,12 +184,12 @@ function AssetFormModal({ onClose, onSuccess, opened }: AssetFormModalProps) {
               placeholder="asset.jpg"
               label="Filename"
               required
-              {...form.getInputProps("filename")}
+              {...form.getInputProps('filename')}
             />
             <TextInput
               placeholder="image/jpeg"
               label="MIME Type"
-              {...form.getInputProps("mimeType")}
+              {...form.getInputProps('mimeType')}
             />
           </Group>
 
@@ -206,26 +197,22 @@ function AssetFormModal({ onClose, onSuccess, opened }: AssetFormModalProps) {
             <NumberInput
               placeholder="1024"
               label="File Size (bytes)"
-              {...form.getInputProps("size")}
+              {...form.getInputProps('size')}
             />
-            <NumberInput
-              placeholder="0"
-              label="Sort Order"
-              {...form.getInputProps("sortOrder")}
-            />
+            <NumberInput placeholder="0" label="Sort Order" {...form.getInputProps('sortOrder')} />
           </Group>
 
           <TextInput
             placeholder="Alternative text for images"
             label="Alt Text"
-            {...form.getInputProps("alt")}
+            {...form.getInputProps('alt')}
           />
 
           <Textarea
             minRows={3}
             placeholder="Asset description"
             label="Description"
-            {...form.getInputProps("description")}
+            {...form.getInputProps('description')}
           />
 
           <Group justify="flex-end" mt="md">
@@ -245,8 +232,8 @@ function AssetFormModal({ onClose, onSuccess, opened }: AssetFormModalProps) {
 export function ProductAssetsTable() {
   const [assets, setAssets] = useState<ProductAssetWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<AssetType | "">("");
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<AssetType | ''>('');
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
   const [page, setPage] = useState(1);
@@ -254,8 +241,7 @@ export function ProductAssetsTable() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [assetModalOpened, setAssetModalOpened] = useState(false);
   const [previewModalOpened, setPreviewModalOpened] = useState(false);
-  const [previewAsset, setPreviewAsset] =
-    useState<ProductAssetWithProduct | null>(null);
+  const [previewAsset, setPreviewAsset] = useState<ProductAssetWithProduct | null>(null);
 
   const loadAssets = useCallback(async () => {
     setLoading(true);
@@ -274,16 +260,16 @@ export function ProductAssetsTable() {
         }
       } else {
         notifications.show({
-          color: "red",
-          message: result.error || "Failed to load assets",
-          title: "Error",
+          color: 'red',
+          message: result.error || 'Failed to load assets',
+          title: 'Error',
         });
       }
     } catch (error) {
       notifications.show({
-        color: "red",
-        message: "Failed to load assets",
-        title: "Error",
+        color: 'red',
+        message: 'Failed to load assets',
+        title: 'Error',
       });
     } finally {
       setLoading(false);
@@ -305,44 +291,43 @@ export function ProductAssetsTable() {
       centered: true,
       children: (
         <Text size="sm">
-          Are you sure you want to delete this asset? This action is
-          irreversible.
+          Are you sure you want to delete this asset? This action is irreversible.
         </Text>
       ),
-      confirmProps: { color: "red" },
-      labels: { cancel: "Cancel", confirm: "Delete" },
+      confirmProps: { color: 'red' },
+      labels: { cancel: 'Cancel', confirm: 'Delete' },
       onCancel: () => {},
       onConfirm: async () => {
         const result = await deleteAsset(id);
         if (result.success) {
           notifications.show({
-            color: "green",
-            message: "Asset deleted successfully",
-            title: "Success",
+            color: 'green',
+            message: 'Asset deleted successfully',
+            title: 'Success',
           });
           loadAssets();
         } else {
           notifications.show({
-            color: "red",
-            message: result.error || "Failed to delete asset",
-            title: "Error",
+            color: 'red',
+            message: result.error || 'Failed to delete asset',
+            title: 'Error',
           });
         }
       },
-      title: "Delete Asset",
+      title: 'Delete Asset',
     });
   };
 
   const getAssetIcon = (type: AssetType) => {
     switch (type) {
-      case "IMAGE":
+      case 'IMAGE':
         return <IconPhoto size={16} />;
-      case "VIDEO":
+      case 'VIDEO':
         return <IconVideo size={16} />;
-      case "DOCUMENT":
-      case "MANUAL":
-      case "SPECIFICATION":
-      case "CERTIFICATE":
+      case 'DOCUMENT':
+      case 'MANUAL':
+      case 'SPECIFICATION':
+      case 'CERTIFICATE':
         return <IconFileText size={16} />;
       default:
         return <IconFile size={16} />;
@@ -350,10 +335,10 @@ export function ProductAssetsTable() {
   };
 
   const formatFileSize = (bytes?: number | null) => {
-    if (!bytes) return "N/A";
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    if (!bytes) return 'N/A';
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   const sortedData = sortBy
@@ -362,13 +347,11 @@ export function ProductAssetsTable() {
         const aValue = a[sortBy];
         const bValue = b[sortBy];
 
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return reverseSortDirection
-            ? bValue.localeCompare(aValue)
-            : aValue.localeCompare(bValue);
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return reverseSortDirection ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
         }
 
-        if (typeof aValue === "number" && typeof bValue === "number") {
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
           return reverseSortDirection ? bValue - aValue : aValue - bValue;
         }
 
@@ -379,7 +362,7 @@ export function ProductAssetsTable() {
   const rows = sortedData.map((asset) => {
     const selected = selectedRows.includes(asset.id);
     return (
-      <Table.Tr key={asset.id} bg={selected ? "blue.0" : undefined}>
+      <Table.Tr key={asset.id} bg={selected ? 'blue.0' : undefined}>
         <Table.Td>
           <Checkbox
             onChange={(event) => {
@@ -394,7 +377,7 @@ export function ProductAssetsTable() {
         </Table.Td>
         <Table.Td>
           <Group gap="sm">
-            {asset.type === "IMAGE" && (
+            {asset.type === 'IMAGE' && (
               <Image
                 alt={asset.alt || asset.filename}
                 fit="cover"
@@ -423,7 +406,7 @@ export function ProductAssetsTable() {
         <Table.Td>{asset.sortOrder}</Table.Td>
         <Table.Td>
           <Text c="dimmed" fz="xs" maw={200} truncate>
-            {asset.description || "-"}
+            {asset.description || '-'}
           </Text>
         </Table.Td>
         <Table.Td>
@@ -448,9 +431,7 @@ export function ProductAssetsTable() {
               <Menu.Dropdown>
                 <Menu.Item
                   color="red"
-                  leftSection={
-                    <IconTrash style={{ width: rem(14), height: rem(14) }} />
-                  }
+                  leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
                   onClick={() => handleDelete(asset.id)}
                 >
                   Delete
@@ -468,28 +449,26 @@ export function ProductAssetsTable() {
       <Group justify="space-between">
         <Group>
           <TextInput
-            leftSection={
-              <IconSearch style={{ width: rem(16), height: rem(16) }} />
-            }
+            leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} />}
             onChange={(e) => setSearch(e.currentTarget.value)}
             placeholder="Search assets..."
             style={{ width: rem(250) }}
             value={search}
           />
           <Select
-            onChange={(value) => setTypeFilter(value as AssetType | "")}
+            onChange={(value) => setTypeFilter(value as AssetType | '')}
             placeholder="Filter by type"
             style={{ width: rem(150) }}
             clearable
             data={[
-              { label: "All types", value: "" },
-              { label: "Image", value: "IMAGE" },
-              { label: "Video", value: "VIDEO" },
-              { label: "Document", value: "DOCUMENT" },
-              { label: "Manual", value: "MANUAL" },
-              { label: "Specification", value: "SPECIFICATION" },
-              { label: "Certificate", value: "CERTIFICATE" },
-              { label: "Other", value: "OTHER" },
+              { label: 'All types', value: '' },
+              { label: 'Image', value: 'IMAGE' },
+              { label: 'Video', value: 'VIDEO' },
+              { label: 'Document', value: 'DOCUMENT' },
+              { label: 'Manual', value: 'MANUAL' },
+              { label: 'Specification', value: 'SPECIFICATION' },
+              { label: 'Certificate', value: 'CERTIFICATE' },
+              { label: 'Other', value: 'OTHER' },
             ]}
             value={typeFilter}
           />
@@ -513,10 +492,7 @@ export function ProductAssetsTable() {
               </Button>
             </Group>
           )}
-          <Button
-            leftSection={<IconPlus size={16} />}
-            onClick={() => setAssetModalOpened(true)}
-          >
+          <Button leftSection={<IconPlus size={16} />} onClick={() => setAssetModalOpened(true)}>
             Add Asset
           </Button>
         </Group>
@@ -535,39 +511,34 @@ export function ProductAssetsTable() {
                       setSelectedRows([]);
                     }
                   }}
-                  checked={
-                    selectedRows.length === assets.length && assets.length > 0
-                  }
-                  indeterminate={
-                    selectedRows.length > 0 &&
-                    selectedRows.length < assets.length
-                  }
+                  checked={selectedRows.length === assets.length && assets.length > 0}
+                  indeterminate={selectedRows.length > 0 && selectedRows.length < assets.length}
                 />
               </Table.Th>
               <Th
-                onSort={() => setSorting("filename")}
-                sorted={sortBy === "filename"}
+                onSort={() => setSorting('filename')}
+                sorted={sortBy === 'filename'}
                 reversed={reverseSortDirection}
               >
                 Asset
               </Th>
               <Th
-                onSort={() => setSorting("type")}
-                sorted={sortBy === "type"}
+                onSort={() => setSorting('type')}
+                sorted={sortBy === 'type'}
                 reversed={reverseSortDirection}
               >
                 Type
               </Th>
               <Th
-                onSort={() => setSorting("size")}
-                sorted={sortBy === "size"}
+                onSort={() => setSorting('size')}
+                sorted={sortBy === 'size'}
                 reversed={reverseSortDirection}
               >
                 Size
               </Th>
               <Th
-                onSort={() => setSorting("sortOrder")}
-                sorted={sortBy === "sortOrder"}
+                onSort={() => setSorting('sortOrder')}
+                sorted={sortBy === 'sortOrder'}
                 reversed={reverseSortDirection}
               >
                 Order
@@ -633,7 +604,7 @@ export function ProductAssetsTable() {
       >
         {previewAsset && (
           <Stack>
-            {previewAsset.type === "IMAGE" && (
+            {previewAsset.type === 'IMAGE' && (
               <Image
                 alt={previewAsset.alt || previewAsset.filename}
                 fit="contain"
@@ -642,22 +613,13 @@ export function ProductAssetsTable() {
               />
             )}
             <Group>
-              <Badge leftSection={getAssetIcon(previewAsset.type)}>
-                {previewAsset.type}
-              </Badge>
+              <Badge leftSection={getAssetIcon(previewAsset.type)}>{previewAsset.type}</Badge>
               <Text c="dimmed" size="sm">
                 {formatFileSize(previewAsset.size)}
               </Text>
             </Group>
-            {previewAsset.description && (
-              <Text size="sm">{previewAsset.description}</Text>
-            )}
-            <Button
-              href={previewAsset.url}
-              component="a"
-              target="_blank"
-              variant="light"
-            >
+            {previewAsset.description && <Text size="sm">{previewAsset.description}</Text>}
+            <Button href={previewAsset.url} component="a" target="_blank" variant="light">
               Open Original
             </Button>
           </Stack>

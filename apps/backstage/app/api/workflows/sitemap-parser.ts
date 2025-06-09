@@ -216,8 +216,9 @@ export const fetchAndParseSitemapsStep = compose(
   }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
+      failureThreshold: 5,
       resetTimeout: 60000,
+      threshold: 0.5,
       timeout: 10000,
     }),
 );
@@ -494,7 +495,6 @@ export const scheduleFollowUpStep = StepTemplates.conditional(
   'schedule-followup',
   'Schedule next sitemap crawl based on update frequency',
   {
-,
     trueStep: createStep('create-schedule', async (data: any) => {
       const { discoveredSitemaps, tracking } = data;
       const schedules: any[] = [];

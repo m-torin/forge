@@ -131,12 +131,11 @@ export const checkInventoryStep = compose(
   (step) =>
     withStepRetry(step, {
       maxAttempts: 3,
-,
     }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 30000,
+      threshold: 0.5,
       timeout: 5000,
     }),
 );
@@ -160,7 +159,7 @@ export const calculatePricingStep = createStep('calculate-pricing', async (data:
     overnight: 29.99,
     standard: 5.99,
   };
-  const shippingCost = shippingRates[(order.shippingMethod as any)];
+  const shippingCost = shippingRates[order.shippingMethod as any];
 
   // Calculate tax (simplified)
   const taxRate = 0.08; // 8%
@@ -228,7 +227,6 @@ export const processPaymentStep = compose(
   (step) =>
     withStepRetry(step, {
       maxAttempts: 2,
-,
     }),
   (step) => withStepTimeout(step, { execution: 30000 }), // 30 second timeout
 );
@@ -283,7 +281,6 @@ export const updateInventoryStep = StepTemplates.database(
 // Step 7: Send order confirmation
 export const sendOrderConfirmationStep = compose(
   StepTemplates.notification('order-confirmation', 'Send order confirmation email to customer', {
-,
     template: {
       subject: 'Order {{orderId}} Confirmed - Thank You!',
       templateId: 'order-confirmation-v2',
@@ -297,7 +294,7 @@ export const notifyWarehouseStep = StepTemplates.http(
   'notify-warehouse',
   'Send fulfillment request to warehouse system',
   {
-
+    httpConfig: {
       baseHeaders: {
         'Content-Type': 'application/json',
         'X-API-Key': 'warehouse-key',
@@ -353,7 +350,6 @@ export const capturePaymentStep = compose(
     'capture-payment',
     'Capture authorized payment after successful fulfillment',
     {
-,
       trueStep: createStep('capture', async (data: any) => {
         // Simulate payment capture
         await new Promise((resolve) => setTimeout(resolve, 500));

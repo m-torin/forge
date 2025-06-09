@@ -1,8 +1,8 @@
-import React, { type FC } from 'react';
+import { type FC } from 'react'
 
 export interface VerifyIconProps {
-  className?: string;
-  iconClass?: string;
+  className?: string
+  iconClass?: string
 }
 
 const VerifyIcon: FC<VerifyIconProps> = ({ className = 'ml-1', iconClass = 'w-5 h-5' }) => {
@@ -26,7 +26,7 @@ const VerifyIcon: FC<VerifyIconProps> = ({ className = 'ml-1', iconClass = 'w-5 
         />
       </svg>
     </span>
-  );
-};
+  )
+}
 
-export default VerifyIcon;
+export default VerifyIcon

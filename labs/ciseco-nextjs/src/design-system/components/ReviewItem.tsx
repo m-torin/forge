@@ -1,14 +1,14 @@
-import { StarIcon } from '@heroicons/react/24/solid';
-import clsx from 'clsx';
-import { type FC } from 'react';
+import { StarIcon } from '@heroicons/react/24/solid'
+import clsx from 'clsx'
+import { type FC } from 'react'
 
-import { type TReview } from '../data/data';
+import { type TReview } from '../data/data'
 
-import Avatar from './shared/Avatar/Avatar';
+import Avatar from './shared/Avatar/Avatar'
 
 export interface ReviewItemProps {
-  className?: string;
-  data: TReview;
+  className?: string
+  data: TReview
 }
 
 const ReviewItem: FC<ReviewItemProps> = ({ className, data }) => {
@@ -27,9 +27,7 @@ const ReviewItem: FC<ReviewItemProps> = ({ className, data }) => {
         <div className="flex flex-1 justify-between">
           <div className="text-sm sm:text-base">
             <span className="block font-semibold">{data.author}</span>
-            <span className="mt-0.5 block text-sm text-neutral-500 dark:text-neutral-400">
-              {data.date}
-            </span>
+            <span className="mt-0.5 block text-sm text-neutral-500 dark:text-neutral-400">{data.date}</span>
           </div>
 
           <div className="mt-0.5 flex text-yellow-500">
@@ -37,23 +35,20 @@ const ReviewItem: FC<ReviewItemProps> = ({ className, data }) => {
               <StarIcon
                 key={rating}
                 aria-hidden="true"
-                className={clsx(
-                  (data.rating || 1) > rating ? 'text-yellow-400' : 'text-gray-200',
-                  'size-5 shrink-0',
-                )}
+                className={clsx((data.rating || 1) > rating ? 'text-yellow-400' : 'text-gray-200', 'size-5 shrink-0')}
               />
             ))}
           </div>
         </div>
       </div>
-      <div className="prose prose-sm mt-4 sm:prose sm:max-w-2xl dark:prose-invert">
+      <div className="prose prose-sm sm:prose dark:prose-invert mt-4 sm:max-w-2xl">
         <div
           dangerouslySetInnerHTML={{ __html: data.content || '' }}
           className="text-neutral-600 dark:text-neutral-300"
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReviewItem;
+export default ReviewItem

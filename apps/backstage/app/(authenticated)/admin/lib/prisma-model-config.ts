@@ -1,34 +1,53 @@
-import { ModelConfig } from './model-config';
-import { maskSensitiveData, getFieldSecurityRule, isFieldSensitive } from './security-config';
+import { type ModelConfig } from './model-config';
 
 // Define configurations for all Prisma models
 export const prismaModelConfigs: Record<string, ModelConfig> = {
   // Content Models
   productCategory: {
     name: 'Product Category',
-    pluralName: 'Product Categories',
-    searchKeys: ['name', 'slug', 'description'],
     defaultOrderBy: { displayOrder: 'asc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Name', required: true },
+      { name: 'slug', type: 'text', label: 'Slug', required: true },
+      {
+        name: 'status',
+        type: 'select',
+        label: 'Status',
+        options: [
+          { label: 'Draft', value: 'DRAFT' },
+          { label: 'Published', value: 'PUBLISHED' },
+          { label: 'Archived', value: 'ARCHIVED' },
+        ],
+        required: true,
+      },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      { name: 'parentId', type: 'select', label: 'Parent Category' },
+      { name: 'displayOrder', type: 'number', defaultValue: 0, label: 'Display Order' },
+      { name: 'metaTitle', type: 'text', label: 'Meta Title' },
+      { name: 'metaDescription', type: 'textarea', label: 'Meta Description' },
+      { name: 'metaKeywords', type: 'text', label: 'Meta Keywords' },
+      { name: 'copy', type: 'json', label: 'Content (JSON)' },
+    ],
     includes: {
-      parent: true,
-      children: true,
-      deletedBy: true,
       _count: {
         select: {
-          products: true,
           children: true,
+          products: true,
         },
       },
+      children: true,
+      deletedBy: true,
+      parent: true,
     },
     listColumns: [
       {
         key: 'name',
         label: 'Name',
-        sortable: true,
         render: (value: string, record: any) => {
           const level = record.parentId ? '└─ ' : '';
           return `${level}${value}`;
         },
+        sortable: true,
       },
       {
         key: 'slug',
@@ -38,19 +57,19 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) =>
           ({
+            ARCHIVED: '📦 Archived',
             DRAFT: '📝 Draft',
             PUBLISHED: '✅ Published',
-            ARCHIVED: '📦 Archived',
           })[value] || value,
+        sortable: true,
       },
       {
+        type: 'number',
         key: 'displayOrder',
         label: 'Order',
         sortable: true,
-        type: 'number',
       },
       {
         key: '_count.products',
@@ -63,43 +82,47 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.children || 0,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
-      { name: 'slug', label: 'Slug', type: 'text', required: true },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'DRAFT', label: 'Draft' },
-          { value: 'PUBLISHED', label: 'Published' },
-          { value: 'ARCHIVED', label: 'Archived' },
-        ],
-      },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'parentId', label: 'Parent Category', type: 'select' },
-      { name: 'displayOrder', label: 'Display Order', type: 'number', defaultValue: 0 },
-      { name: 'metaTitle', label: 'Meta Title', type: 'text' },
-      { name: 'metaDescription', label: 'Meta Description', type: 'textarea' },
-      { name: 'metaKeywords', label: 'Meta Keywords', type: 'text' },
-      { name: 'copy', label: 'Content (JSON)', type: 'json' },
-    ],
+    pluralName: 'Product Categories',
+    searchKeys: ['name', 'slug', 'description'],
   },
 
   article: {
     name: 'Article',
-    pluralName: 'Articles',
-    searchKeys: ['title', 'slug'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'title', type: 'text', label: 'Title', required: true },
+      { name: 'slug', type: 'text', label: 'Slug', required: true },
+      {
+        name: 'status',
+        type: 'select',
+        label: 'Status',
+        options: [
+          { label: 'Draft', value: 'DRAFT' },
+          { label: 'Published', value: 'PUBLISHED' },
+          { label: 'Archived', value: 'ARCHIVED' },
+        ],
+        required: true,
+      },
+      { name: 'content', type: 'json', label: 'Content (JSON)', required: true },
+      { name: 'userId', type: 'select', label: 'Author' },
+
+      // Relationship fields
+      {
+        name: 'media',
+        type: 'relation',
+        label: 'Media Assets',
+        relationModel: 'media',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
-      user: true,
-      deletedBy: true,
       _count: {
         select: {
           media: true,
         },
       },
+      deletedBy: true,
+      user: true,
     },
     listColumns: [
       {
@@ -115,13 +138,13 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) =>
           ({
+            ARCHIVED: '📦 Archived',
             DRAFT: '📝 Draft',
             PUBLISHED: '✅ Published',
-            ARCHIVED: '📦 Archived',
           })[value] || value,
+        sortable: true,
       },
       {
         key: 'user.name',
@@ -136,57 +159,92 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'title', label: 'Title', type: 'text', required: true },
-      { name: 'slug', label: 'Slug', type: 'text', required: true },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'DRAFT', label: 'Draft' },
-          { value: 'PUBLISHED', label: 'Published' },
-          { value: 'ARCHIVED', label: 'Archived' },
-        ],
-      },
-      { name: 'content', label: 'Content (JSON)', type: 'json', required: true },
-      { name: 'userId', label: 'Author', type: 'select' },
-      
-      // Relationship fields
-      { name: 'media', label: 'Media Assets', type: 'relation', relationModel: 'media', relationType: 'hasMany' },
-    ],
+    pluralName: 'Articles',
+    searchKeys: ['title', 'slug'],
   },
 
   brand: {
     name: 'Brand',
-    pluralName: 'Brands',
-    searchKeys: ['name', 'slug', 'baseUrl'],
     defaultOrderBy: { displayOrder: 'asc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Name', required: true },
+      { name: 'slug', type: 'text', label: 'Slug', required: true },
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Type',
+        options: [
+          { label: 'Manufacturer', value: 'MANUFACTURER' },
+          { label: 'Retailer', value: 'RETAILER' },
+          { label: 'Marketplace', value: 'MARKETPLACE' },
+          { label: 'Service', value: 'SERVICE' },
+          { label: 'Other', value: 'OTHER' },
+        ],
+        required: true,
+      },
+      {
+        name: 'status',
+        type: 'select',
+        label: 'Status',
+        options: [
+          { label: 'Draft', value: 'DRAFT' },
+          { label: 'Published', value: 'PUBLISHED' },
+          { label: 'Archived', value: 'ARCHIVED' },
+        ],
+        required: true,
+      },
+      { name: 'baseUrl', type: 'text', label: 'Website URL' },
+      { name: 'parentId', type: 'select', label: 'Parent Brand' },
+      { name: 'displayOrder', type: 'number', defaultValue: 0, label: 'Display Order' },
+      { name: 'copy', type: 'json', label: 'Content (JSON)' },
+
+      // Relationship fields
+      {
+        name: 'products',
+        type: 'relation',
+        label: 'Products',
+        relationModel: 'pdpJoin',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'collections',
+        type: 'relation',
+        label: 'Collections',
+        relationModel: 'collection',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'media',
+        type: 'relation',
+        label: 'Media Assets',
+        relationModel: 'media',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
-      parent: true,
-      deletedBy: true,
       _count: {
         select: {
-          products: true,
-          collections: true,
           children: true,
+          collections: true,
+          products: true,
         },
       },
+      deletedBy: true,
+      parent: true,
     },
     listColumns: [
       {
         key: 'name',
         label: 'Name',
-        sortable: true,
         render: (value: string, record: any) => {
           const level = record.parentId ? '└─ ' : '';
           return `${level}${value}`;
         },
+        sortable: true,
       },
       {
         key: 'slug',
@@ -201,13 +259,13 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) =>
           ({
+            ARCHIVED: '📦 Archived',
             DRAFT: '📝 Draft',
             PUBLISHED: '✅ Published',
-            ARCHIVED: '📦 Archived',
           })[value] || value,
+        sortable: true,
       },
       {
         key: 'baseUrl',
@@ -220,61 +278,106 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.products || 0,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
-      { name: 'slug', label: 'Slug', type: 'text', required: true },
-      {
-        name: 'type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'MANUFACTURER', label: 'Manufacturer' },
-          { value: 'RETAILER', label: 'Retailer' },
-          { value: 'MARKETPLACE', label: 'Marketplace' },
-          { value: 'SERVICE', label: 'Service' },
-          { value: 'OTHER', label: 'Other' },
-        ],
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'DRAFT', label: 'Draft' },
-          { value: 'PUBLISHED', label: 'Published' },
-          { value: 'ARCHIVED', label: 'Archived' },
-        ],
-      },
-      { name: 'baseUrl', label: 'Website URL', type: 'text' },
-      { name: 'parentId', label: 'Parent Brand', type: 'select' },
-      { name: 'displayOrder', label: 'Display Order', type: 'number', defaultValue: 0 },
-      { name: 'copy', label: 'Content (JSON)', type: 'json' },
-      
-      // Relationship fields
-      { name: 'products', label: 'Products', type: 'relation', relationModel: 'pdpJoin', relationType: 'hasMany' },
-      { name: 'collections', label: 'Collections', type: 'relation', relationModel: 'collection', relationType: 'manyToMany' },
-      { name: 'media', label: 'Media Assets', type: 'relation', relationModel: 'media', relationType: 'hasMany' },
-    ],
+    pluralName: 'Brands',
+    searchKeys: ['name', 'slug', 'baseUrl'],
   },
 
   collection: {
     name: 'Collection',
-    pluralName: 'Collections',
-    searchKeys: ['name', 'slug'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Name', required: true },
+      { name: 'slug', type: 'text', label: 'Slug', required: true },
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Type',
+        options: [
+          { label: 'Seasonal', value: 'SEASONAL' },
+          { label: 'Thematic', value: 'THEMATIC' },
+          { label: 'Product Line', value: 'PRODUCT_LINE' },
+          { label: 'Featured', value: 'FEATURED' },
+          { label: 'Promotional', value: 'PROMOTIONAL' },
+          { label: 'Other', value: 'OTHER' },
+        ],
+        required: true,
+      },
+      {
+        name: 'status',
+        type: 'select',
+        label: 'Status',
+        options: [
+          { label: 'Draft', value: 'DRAFT' },
+          { label: 'Published', value: 'PUBLISHED' },
+          { label: 'Archived', value: 'ARCHIVED' },
+        ],
+        required: true,
+      },
+      { name: 'copy', type: 'json', label: 'Content (JSON)' },
+      { name: 'userId', type: 'select', label: 'Owner' },
+
+      // Relationship fields
+      {
+        name: 'products',
+        type: 'relation',
+        label: 'Products',
+        relationModel: 'product',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'brands',
+        type: 'relation',
+        label: 'Brands',
+        relationModel: 'brand',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'taxonomies',
+        type: 'relation',
+        label: 'Taxonomies',
+        relationModel: 'taxonomy',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'categories',
+        type: 'relation',
+        label: 'Categories',
+        relationModel: 'productCategory',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'media',
+        type: 'relation',
+        label: 'Media Assets',
+        relationModel: 'media',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'favorites',
+        type: 'relation',
+        label: 'User Favorites',
+        relationModel: 'favoriteJoin',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'registries',
+        type: 'relation',
+        label: 'Registry Items',
+        relationModel: 'registryItem',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
-      user: true,
-      deletedBy: true,
       _count: {
         select: {
-          products: true,
           brands: true,
-          media: true,
           favorites: true,
+          media: true,
+          products: true,
         },
       },
+      deletedBy: true,
+      user: true,
     },
     listColumns: [
       {
@@ -295,13 +398,13 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) =>
           ({
+            ARCHIVED: '📦 Archived',
             DRAFT: '📝 Draft',
             PUBLISHED: '✅ Published',
-            ARCHIVED: '📦 Archived',
           })[value] || value,
+        sortable: true,
       },
       {
         key: '_count.products',
@@ -314,81 +417,172 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.favorites || 0,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
-      { name: 'slug', label: 'Slug', type: 'text', required: true },
-      {
-        name: 'type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'SEASONAL', label: 'Seasonal' },
-          { value: 'THEMATIC', label: 'Thematic' },
-          { value: 'PRODUCT_LINE', label: 'Product Line' },
-          { value: 'FEATURED', label: 'Featured' },
-          { value: 'PROMOTIONAL', label: 'Promotional' },
-          { value: 'OTHER', label: 'Other' },
-        ],
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'DRAFT', label: 'Draft' },
-          { value: 'PUBLISHED', label: 'Published' },
-          { value: 'ARCHIVED', label: 'Archived' },
-        ],
-      },
-      { name: 'copy', label: 'Content (JSON)', type: 'json' },
-      { name: 'userId', label: 'Owner', type: 'select' },
-      
-      // Relationship fields
-      { name: 'products', label: 'Products', type: 'relation', relationModel: 'product', relationType: 'manyToMany' },
-      { name: 'brands', label: 'Brands', type: 'relation', relationModel: 'brand', relationType: 'manyToMany' },
-      { name: 'taxonomies', label: 'Taxonomies', type: 'relation', relationModel: 'taxonomy', relationType: 'manyToMany' },
-      { name: 'categories', label: 'Categories', type: 'relation', relationModel: 'productCategory', relationType: 'manyToMany' },
-      { name: 'media', label: 'Media Assets', type: 'relation', relationModel: 'media', relationType: 'hasMany' },
-      { name: 'favorites', label: 'User Favorites', type: 'relation', relationModel: 'favoriteJoin', relationType: 'hasMany' },
-      { name: 'registries', label: 'Registry Items', type: 'relation', relationModel: 'registryItem', relationType: 'hasMany' },
-    ],
+    pluralName: 'Collections',
+    searchKeys: ['name', 'slug'],
   },
 
   product: {
     name: 'Product',
-    pluralName: 'Products',
-    searchKeys: ['name', 'sku', 'description', 'brand', 'canonicalUrl'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Product Name', required: true },
+      { name: 'sku', type: 'text', label: 'SKU', required: true },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      { name: 'category', type: 'text', label: 'Category', required: true },
+      { name: 'brand', type: 'text', label: 'Brand' },
+      { name: 'price', type: 'number', label: 'Price', step: 0.01 },
+      { name: 'currency', type: 'text', defaultValue: 'USD', label: 'Currency' },
+      {
+        name: 'type',
+        type: 'select',
+        defaultValue: 'PHYSICAL',
+        label: 'Product Type',
+        options: [
+          { label: 'Physical Product', value: 'PHYSICAL' },
+          { label: 'Digital Product', value: 'DIGITAL' },
+          { label: 'Service', value: 'SERVICE' },
+          { label: 'Subscription', value: 'SUBSCRIPTION' },
+          { label: 'Product Bundle', value: 'BUNDLE' },
+          { label: 'Product Variant', value: 'VARIANT' },
+          { label: 'Other', value: 'OTHER' },
+        ],
+      },
+      {
+        name: 'status',
+        type: 'select',
+        defaultValue: 'DRAFT',
+        label: 'Status',
+        options: [
+          { label: 'Draft', value: 'DRAFT' },
+          { label: 'Active', value: 'ACTIVE' },
+          { label: 'Archived', value: 'ARCHIVED' },
+          { label: 'Discontinued', value: 'DISCONTINUED' },
+        ],
+      },
+      { name: 'canonicalUrl', type: 'text', label: 'Canonical URL' },
+      { name: 'parentId', type: 'select', label: 'Parent Product' },
+      { name: 'copy', type: 'json', label: 'Content (JSON)' },
+      { name: 'attributes', type: 'json', label: 'Product Attributes (JSON)' },
+      { name: 'aiGenerated', type: 'checkbox', label: 'AI Generated' },
+      {
+        name: 'aiConfidence',
+        type: 'number',
+        label: 'AI Confidence (0-1)',
+        max: 1,
+        min: 0,
+        step: 0.01,
+      },
+      { name: 'aiSources', type: 'tags', label: 'AI Sources' },
+      { name: 'createdBy', type: 'select', label: 'Created By' },
+      { name: 'organizationId', type: 'select', label: 'Organization' },
+
+      // Relationship fields
+      {
+        name: 'categories',
+        type: 'relation',
+        label: 'Product Categories',
+        relationModel: 'productCategory',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'taxonomies',
+        type: 'relation',
+        label: 'Taxonomies',
+        relationModel: 'taxonomy',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'collections',
+        type: 'relation',
+        label: 'Collections',
+        relationModel: 'collection',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'soldBy',
+        type: 'relation',
+        label: 'Sold By (Brands)',
+        relationModel: 'pdpJoin',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'barcodes',
+        type: 'relation',
+        label: 'Barcodes',
+        relationModel: 'productBarcode',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'digitalAssets',
+        type: 'relation',
+        label: 'Digital Assets',
+        relationModel: 'productAsset',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'favorites',
+        type: 'relation',
+        label: 'User Favorites',
+        relationModel: 'favoriteJoin',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'reviews',
+        type: 'relation',
+        label: 'Product Reviews',
+        relationModel: 'review',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'registries',
+        type: 'relation',
+        label: 'Registry Items',
+        relationModel: 'registryItem',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'media',
+        type: 'relation',
+        label: 'Product Media',
+        relationModel: 'media',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'scanHistory',
+        type: 'relation',
+        label: 'Scan History',
+        relationModel: 'scanHistory',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
-      parent: true,
-      deletedBy: true,
-      barcodes: true,
-      digitalAssets: true,
       _count: {
         select: {
+          barcodes: true,
           children: true,
-          soldBy: true,
           collections: true,
-          reviews: true,
+          digitalAssets: true,
           favorites: true,
           media: true,
-          barcodes: true,
-          digitalAssets: true,
+          reviews: true,
+          soldBy: true,
         },
       },
+      barcodes: true,
+      deletedBy: true,
+      digitalAssets: true,
+      parent: true,
     },
     listColumns: [
       {
         key: 'name',
         label: 'Name',
-        sortable: true,
         render: (value: string, record: any) => {
           const level = record.parentId ? '└─ ' : '';
           const aiIcon = record.aiGenerated ? ' 🤖' : '';
           return `${level}${value}${aiIcon}`;
         },
+        sortable: true,
       },
       {
         key: 'sku',
@@ -403,20 +597,20 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) =>
           ({
-            DRAFT: '📝 Draft',
             ACTIVE: '✅ Active',
             ARCHIVED: '📦 Archived',
             DISCONTINUED: '🚫 Discontinued',
+            DRAFT: '📝 Draft',
           })[value] || value,
+        sortable: true,
       },
       {
         key: 'brand',
         label: 'Brand',
-        sortable: true,
         render: (value: string) => value || '—',
+        sortable: true,
       },
       {
         key: 'price',
@@ -446,86 +640,74 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.children || 0,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Product Name', type: 'text', required: true },
-      { name: 'sku', label: 'SKU', type: 'text', required: true },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'category', label: 'Category', type: 'text', required: true },
-      { name: 'brand', label: 'Brand', type: 'text' },
-      { name: 'price', label: 'Price', type: 'number', step: 0.01 },
-      { name: 'currency', label: 'Currency', type: 'text', defaultValue: 'USD' },
-      {
-        name: 'type',
-        label: 'Product Type',
-        type: 'select',
-        defaultValue: 'PHYSICAL',
-        options: [
-          { value: 'PHYSICAL', label: 'Physical Product' },
-          { value: 'DIGITAL', label: 'Digital Product' },
-          { value: 'SERVICE', label: 'Service' },
-          { value: 'SUBSCRIPTION', label: 'Subscription' },
-          { value: 'BUNDLE', label: 'Product Bundle' },
-          { value: 'VARIANT', label: 'Product Variant' },
-          { value: 'OTHER', label: 'Other' },
-        ],
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        defaultValue: 'DRAFT',
-        options: [
-          { value: 'DRAFT', label: 'Draft' },
-          { value: 'ACTIVE', label: 'Active' },
-          { value: 'ARCHIVED', label: 'Archived' },
-          { value: 'DISCONTINUED', label: 'Discontinued' },
-        ],
-      },
-      { name: 'canonicalUrl', label: 'Canonical URL', type: 'text' },
-      { name: 'parentId', label: 'Parent Product', type: 'select' },
-      { name: 'copy', label: 'Content (JSON)', type: 'json' },
-      { name: 'attributes', label: 'Product Attributes (JSON)', type: 'json' },
-      { name: 'aiGenerated', label: 'AI Generated', type: 'checkbox' },
-      {
-        name: 'aiConfidence',
-        label: 'AI Confidence (0-1)',
-        type: 'number',
-        step: 0.01,
-        min: 0,
-        max: 1,
-      },
-      { name: 'aiSources', label: 'AI Sources', type: 'tags' },
-      { name: 'createdBy', label: 'Created By', type: 'select' },
-      { name: 'organizationId', label: 'Organization', type: 'select' },
-      
-      // Relationship fields
-      { name: 'categories', label: 'Product Categories', type: 'relation', relationModel: 'productCategory', relationType: 'hasMany' },
-      { name: 'taxonomies', label: 'Taxonomies', type: 'relation', relationModel: 'taxonomy', relationType: 'manyToMany' },
-      { name: 'collections', label: 'Collections', type: 'relation', relationModel: 'collection', relationType: 'manyToMany' },
-      { name: 'soldBy', label: 'Sold By (Brands)', type: 'relation', relationModel: 'pdpJoin', relationType: 'hasMany' },
-      { name: 'barcodes', label: 'Barcodes', type: 'relation', relationModel: 'productBarcode', relationType: 'hasMany' },
-      { name: 'digitalAssets', label: 'Digital Assets', type: 'relation', relationModel: 'productAsset', relationType: 'hasMany' },
-      { name: 'favorites', label: 'User Favorites', type: 'relation', relationModel: 'favoriteJoin', relationType: 'hasMany' },
-      { name: 'reviews', label: 'Product Reviews', type: 'relation', relationModel: 'review', relationType: 'hasMany' },
-      { name: 'registries', label: 'Registry Items', type: 'relation', relationModel: 'registryItem', relationType: 'hasMany' },
-      { name: 'media', label: 'Product Media', type: 'relation', relationModel: 'media', relationType: 'hasMany' },
-      { name: 'scanHistory', label: 'Scan History', type: 'relation', relationModel: 'scanHistory', relationType: 'hasMany' },
-    ],
+    pluralName: 'Products',
+    searchKeys: ['name', 'sku', 'description', 'brand', 'canonicalUrl'],
   },
 
   taxonomy: {
     name: 'Taxonomy',
-    pluralName: 'Taxonomies',
-    searchKeys: ['name', 'slug'],
     defaultOrderBy: { name: 'asc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Name', required: true },
+      { name: 'slug', type: 'text', label: 'Slug', required: true },
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Type',
+        options: [
+          { label: 'Category', value: 'CATEGORY' },
+          { label: 'Tag', value: 'TAG' },
+          { label: 'Attribute', value: 'ATTRIBUTE' },
+          { label: 'Department', value: 'DEPARTMENT' },
+          { label: 'Collection', value: 'COLLECTION' },
+          { label: 'Other', value: 'OTHER' },
+        ],
+        required: true,
+      },
+      {
+        name: 'status',
+        type: 'select',
+        label: 'Status',
+        options: [
+          { label: 'Draft', value: 'DRAFT' },
+          { label: 'Published', value: 'PUBLISHED' },
+          { label: 'Archived', value: 'ARCHIVED' },
+        ],
+        required: true,
+      },
+      { name: 'copy', type: 'json', label: 'Content (JSON)' },
+
+      // Relationship fields
+      {
+        name: 'products',
+        type: 'relation',
+        label: 'Products',
+        relationModel: 'product',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'collections',
+        type: 'relation',
+        label: 'Collections',
+        relationModel: 'collection',
+        relationType: 'manyToMany',
+      },
+      {
+        name: 'media',
+        type: 'relation',
+        label: 'Media Assets',
+        relationModel: 'media',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
-      deletedBy: true,
       _count: {
         select: {
-          products: true,
           collections: true,
+          products: true,
         },
       },
+      deletedBy: true,
     },
     listColumns: [
       {
@@ -546,13 +728,13 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) =>
           ({
+            ARCHIVED: '📦 Archived',
             DRAFT: '📝 Draft',
             PUBLISHED: '✅ Published',
-            ARCHIVED: '📦 Archived',
           })[value] || value,
+        sortable: true,
       },
       {
         key: '_count.products',
@@ -565,72 +747,84 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.collections || 0,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
-      { name: 'slug', label: 'Slug', type: 'text', required: true },
-      {
-        name: 'type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'CATEGORY', label: 'Category' },
-          { value: 'TAG', label: 'Tag' },
-          { value: 'ATTRIBUTE', label: 'Attribute' },
-          { value: 'DEPARTMENT', label: 'Department' },
-          { value: 'COLLECTION', label: 'Collection' },
-          { value: 'OTHER', label: 'Other' },
-        ],
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'DRAFT', label: 'Draft' },
-          { value: 'PUBLISHED', label: 'Published' },
-          { value: 'ARCHIVED', label: 'Archived' },
-        ],
-      },
-      { name: 'copy', label: 'Content (JSON)', type: 'json' },
-      
-      // Relationship fields
-      { name: 'products', label: 'Products', type: 'relation', relationModel: 'product', relationType: 'manyToMany' },
-      { name: 'collections', label: 'Collections', type: 'relation', relationModel: 'collection', relationType: 'manyToMany' },
-      { name: 'media', label: 'Media Assets', type: 'relation', relationModel: 'media', relationType: 'hasMany' },
-    ],
+    pluralName: 'Taxonomies',
+    searchKeys: ['name', 'slug'],
   },
 
   review: {
     name: 'Review',
-    pluralName: 'Reviews',
-    searchKeys: ['title', 'content', 'source'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'title', type: 'text', label: 'Title' },
+      { name: 'content', type: 'textarea', label: 'Content', required: true },
+      { name: 'rating', type: 'number', label: 'Rating (1-5)', max: 5, min: 1, required: true },
+      {
+        name: 'status',
+        type: 'select',
+        label: 'Status',
+        options: [
+          { label: 'Draft', value: 'DRAFT' },
+          { label: 'Published', value: 'PUBLISHED' },
+          { label: 'Archived', value: 'ARCHIVED' },
+        ],
+        required: true,
+      },
+      { name: 'verified', type: 'checkbox', label: 'Verified Purchase' },
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Type',
+        options: [
+          { label: 'Imported', value: 'IMPORTED' },
+          { label: 'Dedicated', value: 'DEDICATED' },
+        ],
+        required: true,
+      },
+      { name: 'source', type: 'text', label: 'Source' },
+      { name: 'sourceId', type: 'text', label: 'Source ID' },
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'productId', type: 'select', label: 'Product' },
+
+      // Relationship fields
+      {
+        name: 'media',
+        type: 'relation',
+        label: 'Media Attachments',
+        relationModel: 'media',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'votes',
+        type: 'relation',
+        label: 'Review Votes',
+        relationModel: 'reviewVoteJoin',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
-      user: true,
-      product: true,
-      deletedBy: true,
       _count: {
         select: {
-          votes: true,
           media: true,
+          votes: true,
         },
       },
+      deletedBy: true,
+      product: true,
+      user: true,
     },
     listColumns: [
       {
         key: 'title',
         label: 'Title',
-        sortable: true,
         render: (value: string) => value || 'Untitled Review',
+        sortable: true,
       },
       {
+        type: 'number',
         key: 'rating',
         label: 'Rating',
-        sortable: true,
-        type: 'number',
         render: (value: number) => '⭐'.repeat(value),
+        sortable: true,
       },
       {
         key: 'user.name',
@@ -643,11 +837,11 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record.product?.name || '—',
       },
       {
+        type: 'boolean',
         key: 'verified',
         label: 'Verified',
-        sortable: true,
-        type: 'boolean',
         render: (value: boolean) => (value ? '✅' : '❌'),
+        sortable: true,
       },
       {
         key: 'type',
@@ -655,63 +849,66 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         sortable: true,
       },
       {
+        type: 'number',
         key: 'helpfulCount',
         label: 'Helpful',
         sortable: true,
-        type: 'number',
       },
     ],
-    fields: [
-      { name: 'title', label: 'Title', type: 'text' },
-      { name: 'content', label: 'Content', type: 'textarea', required: true },
-      { name: 'rating', label: 'Rating (1-5)', type: 'number', required: true, min: 1, max: 5 },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'DRAFT', label: 'Draft' },
-          { value: 'PUBLISHED', label: 'Published' },
-          { value: 'ARCHIVED', label: 'Archived' },
-        ],
-      },
-      { name: 'verified', label: 'Verified Purchase', type: 'checkbox' },
-      {
-        name: 'type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'IMPORTED', label: 'Imported' },
-          { value: 'DEDICATED', label: 'Dedicated' },
-        ],
-      },
-      { name: 'source', label: 'Source', type: 'text' },
-      { name: 'sourceId', label: 'Source ID', type: 'text' },
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'productId', label: 'Product', type: 'select' },
-      
-      // Relationship fields
-      { name: 'media', label: 'Media Attachments', type: 'relation', relationModel: 'media', relationType: 'hasMany' },
-      { name: 'votes', label: 'Review Votes', type: 'relation', relationModel: 'reviewVoteJoin', relationType: 'hasMany' },
-    ],
+    pluralName: 'Reviews',
+    searchKeys: ['title', 'content', 'source'],
   },
 
   registry: {
     name: 'Registry',
-    pluralName: 'Registries',
-    searchKeys: ['title', 'description'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'title', type: 'text', label: 'Title', required: true },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Type',
+        options: [
+          { label: 'Wishlist', value: 'WISHLIST' },
+          { label: 'Gift Registry', value: 'GIFT' },
+          { label: 'Wedding', value: 'WEDDING' },
+          { label: 'Baby', value: 'BABY' },
+          { label: 'Birthday', value: 'BIRTHDAY' },
+          { label: 'Holiday', value: 'HOLIDAY' },
+          { label: 'Other', value: 'OTHER' },
+        ],
+        required: true,
+      },
+      { name: 'isPublic', type: 'checkbox', label: 'Make Public' },
+      { name: 'eventDate', type: 'date', label: 'Event Date' },
+      { name: 'createdByUserId', type: 'select', label: 'Created By' },
+
+      // Relationship fields
+      {
+        name: 'items',
+        type: 'relation',
+        label: 'Registry Items',
+        relationModel: 'registryItem',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'users',
+        type: 'relation',
+        label: 'Shared Users',
+        relationModel: 'registryUserJoin',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
-      createdByUser: true,
-      deletedBy: true,
       _count: {
         select: {
           items: true,
           users: true,
         },
       },
+      createdByUser: true,
+      deletedBy: true,
     },
     listColumns: [
       {
@@ -725,17 +922,17 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         sortable: true,
       },
       {
+        type: 'boolean',
         key: 'isPublic',
         label: 'Public',
-        sortable: true,
-        type: 'boolean',
         render: (value: boolean) => (value ? '🌐' : '🔒'),
+        sortable: true,
       },
       {
         key: 'eventDate',
         label: 'Event Date',
-        sortable: true,
         render: (value: string) => (value ? new Date(value).toLocaleDateString() : '—'),
+        sortable: true,
       },
       {
         key: 'createdByUser.name',
@@ -753,49 +950,51 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.users || 0,
       },
     ],
-    fields: [
-      { name: 'title', label: 'Title', type: 'text', required: true },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      {
-        name: 'type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'WISHLIST', label: 'Wishlist' },
-          { value: 'GIFT', label: 'Gift Registry' },
-          { value: 'WEDDING', label: 'Wedding' },
-          { value: 'BABY', label: 'Baby' },
-          { value: 'BIRTHDAY', label: 'Birthday' },
-          { value: 'HOLIDAY', label: 'Holiday' },
-          { value: 'OTHER', label: 'Other' },
-        ],
-      },
-      { name: 'isPublic', label: 'Make Public', type: 'checkbox' },
-      { name: 'eventDate', label: 'Event Date', type: 'date' },
-      { name: 'createdByUserId', label: 'Created By', type: 'select' },
-      
-      // Relationship fields
-      { name: 'items', label: 'Registry Items', type: 'relation', relationModel: 'registryItem', relationType: 'hasMany' },
-      { name: 'users', label: 'Shared Users', type: 'relation', relationModel: 'registryUserJoin', relationType: 'hasMany' },
-    ],
+    pluralName: 'Registries',
+    searchKeys: ['title', 'description'],
   },
 
   media: {
     name: 'Media',
-    pluralName: 'Media',
-    searchKeys: ['url', 'altText', 'mimeType'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'url', type: 'text', label: 'URL', required: true },
+      { name: 'altText', type: 'text', label: 'Alt Text' },
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Type',
+        options: [
+          { label: 'Image', value: 'IMAGE' },
+          { label: 'Video', value: 'VIDEO' },
+          { label: 'Document', value: 'DOCUMENT' },
+          { label: 'Audio', value: 'AUDIO' },
+        ],
+        required: true,
+      },
+      { name: 'mimeType', type: 'text', label: 'MIME Type' },
+      { name: 'width', type: 'number', label: 'Width (px)' },
+      { name: 'height', type: 'number', label: 'Height (px)' },
+      { name: 'size', type: 'number', label: 'Size (bytes)' },
+      { name: 'userId', type: 'select', label: 'Uploaded By' },
+      { name: 'articleId', type: 'select', label: 'Article' },
+      { name: 'brandId', type: 'select', label: 'Brand' },
+      { name: 'collectionId', type: 'select', label: 'Collection' },
+      { name: 'productId', type: 'select', label: 'Product' },
+      { name: 'taxonomyId', type: 'select', label: 'Taxonomy' },
+      { name: 'reviewId', type: 'select', label: 'Review' },
+      { name: 'categoryId', type: 'select', label: 'Category' },
+    ],
     includes: {
-      user: true,
-      deletedBy: true,
       article: true,
       brand: true,
-      collection: true,
-      product: true,
-      taxonomy: true,
-      review: true,
       category: true,
+      collection: true,
+      deletedBy: true,
+      product: true,
+      review: true,
+      taxonomy: true,
+      user: true,
     },
     listColumns: [
       {
@@ -817,8 +1016,8 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'altText',
         label: 'Alt Text',
-        sortable: true,
         render: (value: string) => value || '—',
+        sortable: true,
       },
       {
         key: 'type',
@@ -852,53 +1051,111 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         },
       },
     ],
-    fields: [
-      { name: 'url', label: 'URL', type: 'text', required: true },
-      { name: 'altText', label: 'Alt Text', type: 'text' },
-      {
-        name: 'type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'IMAGE', label: 'Image' },
-          { value: 'VIDEO', label: 'Video' },
-          { value: 'DOCUMENT', label: 'Document' },
-          { value: 'AUDIO', label: 'Audio' },
-        ],
-      },
-      { name: 'mimeType', label: 'MIME Type', type: 'text' },
-      { name: 'width', label: 'Width (px)', type: 'number' },
-      { name: 'height', label: 'Height (px)', type: 'number' },
-      { name: 'size', label: 'Size (bytes)', type: 'number' },
-      { name: 'userId', label: 'Uploaded By', type: 'select' },
-      { name: 'articleId', label: 'Article', type: 'select' },
-      { name: 'brandId', label: 'Brand', type: 'select' },
-      { name: 'collectionId', label: 'Collection', type: 'select' },
-      { name: 'productId', label: 'Product', type: 'select' },
-      { name: 'taxonomyId', label: 'Taxonomy', type: 'select' },
-      { name: 'reviewId', label: 'Review', type: 'select' },
-      { name: 'categoryId', label: 'Category', type: 'select' },
-    ],
+    pluralName: 'Media',
+    searchKeys: ['url', 'altText', 'mimeType'],
   },
 
   // Authentication Models - Enhanced
   user: {
     name: 'User',
-    pluralName: 'Users',
-    searchKeys: ['name', 'email', 'bio', 'expertise'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Full Name', required: true },
+      { name: 'email', type: 'email', label: 'Email Address', required: true },
+      { name: 'emailVerified', type: 'checkbox', label: 'Email Verified' },
+      { name: 'image', type: 'text', label: 'Profile Image URL' },
+      { name: 'phoneNumber', type: 'text', label: 'Phone Number' },
+      {
+        name: 'role',
+        type: 'select',
+        defaultValue: 'user',
+        label: 'User Role',
+        options: [
+          { label: 'Administrator', value: 'admin' },
+          { label: 'Moderator', value: 'moderator' },
+          { label: 'Regular User', value: 'user' },
+        ],
+      },
+      { name: 'banned', type: 'checkbox', label: 'Banned' },
+      { name: 'banReason', type: 'textarea', label: 'Ban Reason' },
+      { name: 'banExpires', type: 'datetime', label: 'Ban Expires' },
+      { name: 'bio', type: 'textarea', label: 'Biography' },
+      { name: 'expertise', type: 'tags', label: 'Areas of Expertise' },
+      { name: 'isVerifiedAuthor', type: 'checkbox', label: 'Verified Author' },
+      { name: 'authorSince', type: 'date', label: 'Author Since' },
+      { name: 'isSuspended', type: 'checkbox', label: 'Suspended' },
+      { name: 'suspensionDetails', type: 'json', label: 'Suspension Details (JSON)' },
+      { name: 'preferences', type: 'json', label: 'User Preferences (JSON)' },
+
+      // Relationship fields
+      {
+        name: 'sessions',
+        type: 'relation',
+        label: 'Sessions',
+        relationModel: 'session',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'accounts',
+        type: 'relation',
+        label: 'Connected Accounts',
+        relationModel: 'account',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'members',
+        type: 'relation',
+        label: 'Organization Memberships',
+        relationModel: 'member',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'teamMemberships',
+        type: 'relation',
+        label: 'Team Memberships',
+        relationModel: 'teamMember',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'invitationsSent',
+        type: 'relation',
+        label: 'Invitations Sent',
+        relationModel: 'invitation',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'apiKeys',
+        type: 'relation',
+        label: 'API Keys',
+        relationModel: 'apiKey',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'twoFactor',
+        type: 'relation',
+        label: 'Two-Factor Authentication',
+        relationModel: 'twoFactor',
+        relationType: 'hasOne',
+      },
+      {
+        name: 'passkeys',
+        type: 'relation',
+        label: 'Passkeys',
+        relationModel: 'passkey',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
       _count: {
         select: {
+          accounts: true,
           articles: true,
           collections: true,
-          reviews: true,
           favorites: true,
           registries: true,
-          sessions: true,
-          accounts: true,
+          reviews: true,
           scanHistory: true,
+          sessions: true,
         },
       },
     },
@@ -906,8 +1163,8 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'name',
         label: 'Name',
-        sortable: true,
         render: (value: string) => value || 'Anonymous',
+        sortable: true,
       },
       {
         key: 'email',
@@ -917,30 +1174,29 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'emailVerified',
         label: 'Verified',
-        sortable: true,
         render: (value: boolean) => (value ? '✅' : '❌'),
+        sortable: true,
       },
       {
+        type: 'boolean',
         key: 'isVerifiedAuthor',
         label: 'Author',
-        sortable: true,
-        type: 'boolean',
         render: (value: boolean) => (value ? '✍️' : '—'),
+        sortable: true,
       },
       {
         key: 'isSuspended',
         label: 'Status',
-        sortable: true,
         render: (value: boolean, record: any) => {
           if (value) return '🚫 Suspended';
           if (record.banned) return '🚷 Banned';
           return '✅ Active';
         },
+        sortable: true,
       },
       {
         key: 'role',
         label: 'Role',
-        sortable: true,
         render: (value: string) => {
           const roles: Record<string, string> = {
             admin: '🛡️ Admin',
@@ -949,6 +1205,7 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
           };
           return roles[value] || `🏷️ ${value}`;
         },
+        sortable: true,
       },
       {
         key: '_count.sessions',
@@ -966,55 +1223,21 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.reviews || 0,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Full Name', type: 'text', required: true },
-      { name: 'email', label: 'Email Address', type: 'email', required: true },
-      { name: 'emailVerified', label: 'Email Verified', type: 'checkbox' },
-      { name: 'image', label: 'Profile Image URL', type: 'text' },
-      { name: 'phoneNumber', label: 'Phone Number', type: 'text' },
-      {
-        name: 'role',
-        label: 'User Role',
-        type: 'select',
-        defaultValue: 'user',
-        options: [
-          { value: 'admin', label: 'Administrator' },
-          { value: 'moderator', label: 'Moderator' },
-          { value: 'user', label: 'Regular User' },
-        ],
-      },
-      { name: 'banned', label: 'Banned', type: 'checkbox' },
-      { name: 'banReason', label: 'Ban Reason', type: 'textarea' },
-      { name: 'banExpires', label: 'Ban Expires', type: 'datetime' },
-      { name: 'bio', label: 'Biography', type: 'textarea' },
-      { name: 'expertise', label: 'Areas of Expertise', type: 'tags' },
-      { name: 'isVerifiedAuthor', label: 'Verified Author', type: 'checkbox' },
-      { name: 'authorSince', label: 'Author Since', type: 'date' },
-      { name: 'isSuspended', label: 'Suspended', type: 'checkbox' },
-      { name: 'suspensionDetails', label: 'Suspension Details (JSON)', type: 'json' },
-      { name: 'preferences', label: 'User Preferences (JSON)', type: 'json' },
-      
-      // Relationship fields
-      { name: 'sessions', label: 'Sessions', type: 'relation', relationModel: 'session', relationType: 'hasMany' },
-      { name: 'accounts', label: 'Connected Accounts', type: 'relation', relationModel: 'account', relationType: 'hasMany' },
-      { name: 'members', label: 'Organization Memberships', type: 'relation', relationModel: 'member', relationType: 'hasMany' },
-      { name: 'teamMemberships', label: 'Team Memberships', type: 'relation', relationModel: 'teamMember', relationType: 'hasMany' },
-      { name: 'invitationsSent', label: 'Invitations Sent', type: 'relation', relationModel: 'invitation', relationType: 'hasMany' },
-      { name: 'apiKeys', label: 'API Keys', type: 'relation', relationModel: 'apiKey', relationType: 'hasMany' },
-      { name: 'twoFactor', label: 'Two-Factor Authentication', type: 'relation', relationModel: 'twoFactor', relationType: 'hasOne' },
-      { name: 'passkeys', label: 'Passkeys', type: 'relation', relationModel: 'passkey', relationType: 'hasMany' },
-    ],
+    pluralName: 'Users',
+    searchKeys: ['name', 'email', 'bio', 'expertise'],
   },
 
   // Junction Models
   pdpJoin: {
     name: 'Product-Brand Link',
-    pluralName: 'Product-Brand Links',
-    searchKeys: [],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'productId', type: 'select', label: 'Product', required: true },
+      { name: 'brandId', type: 'select', label: 'Brand', required: true },
+    ],
     includes: {
-      product: true,
       brand: true,
+      product: true,
     },
     listColumns: [
       {
@@ -1030,25 +1253,26 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'productId', label: 'Product', type: 'select', required: true },
-      { name: 'brandId', label: 'Brand', type: 'select', required: true },
-    ],
+    pluralName: 'Product-Brand Links',
+    searchKeys: [],
   },
 
   favoriteJoin: {
     name: 'Favorite',
-    pluralName: 'Favorites',
-    searchKeys: [],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'productId', type: 'select', label: 'Product' },
+      { name: 'collectionId', type: 'select', label: 'Collection' },
+    ],
     includes: {
-      user: true,
-      product: true,
       collection: true,
+      product: true,
+      user: true,
     },
     listColumns: [
       {
@@ -1068,32 +1292,43 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Favorited',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'productId', label: 'Product', type: 'select' },
-      { name: 'collectionId', label: 'Collection', type: 'select' },
-    ],
+    pluralName: 'Favorites',
+    searchKeys: [],
   },
 
   registryItem: {
     name: 'Registry Item',
-    pluralName: 'Registry Items',
-    searchKeys: ['notes'],
     defaultOrderBy: { priority: 'desc' },
+    fields: [
+      { name: 'registryId', type: 'select', label: 'Registry', required: true },
+      { name: 'productId', type: 'select', label: 'Product' },
+      { name: 'collectionId', type: 'select', label: 'Collection' },
+      { name: 'quantity', type: 'number', defaultValue: 1, label: 'Quantity', required: true },
+      {
+        name: 'priority',
+        type: 'number',
+        defaultValue: 0,
+        label: 'Priority (0-5)',
+        max: 5,
+        min: 0,
+      },
+      { name: 'notes', type: 'textarea', label: 'Notes' },
+      { name: 'purchased', type: 'checkbox', label: 'Purchased' },
+    ],
     includes: {
-      registry: true,
-      product: true,
-      collection: true,
-      deletedBy: true,
       _count: {
         select: {
           purchases: true,
         },
       },
+      collection: true,
+      deletedBy: true,
+      product: true,
+      registry: true,
     },
     listColumns: [
       {
@@ -1111,24 +1346,24 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         },
       },
       {
+        type: 'number',
         key: 'quantity',
         label: 'Quantity',
         sortable: true,
-        type: 'number',
       },
       {
+        type: 'number',
         key: 'priority',
         label: 'Priority',
-        sortable: true,
-        type: 'number',
         render: (value: number) => '⭐'.repeat(Math.min(value, 5)),
+        sortable: true,
       },
       {
+        type: 'boolean',
         key: 'purchased',
         label: 'Purchased',
-        sortable: true,
-        type: 'boolean',
         render: (value: boolean) => (value ? '✅' : '⏳'),
+        sortable: true,
       },
       {
         key: '_count.purchases',
@@ -1136,30 +1371,22 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: any, record: any) => record._count?.purchases || 0,
       },
     ],
-    fields: [
-      { name: 'registryId', label: 'Registry', type: 'select', required: true },
-      { name: 'productId', label: 'Product', type: 'select' },
-      { name: 'collectionId', label: 'Collection', type: 'select' },
-      { name: 'quantity', label: 'Quantity', type: 'number', required: true, defaultValue: 1 },
-      {
-        name: 'priority',
-        label: 'Priority (0-5)',
-        type: 'number',
-        defaultValue: 0,
-        min: 0,
-        max: 5,
-      },
-      { name: 'notes', label: 'Notes', type: 'textarea' },
-      { name: 'purchased', label: 'Purchased', type: 'checkbox' },
-    ],
+    pluralName: 'Registry Items',
+    searchKeys: ['notes'],
   },
 
   // Authentication Models
   session: {
     name: 'Session',
-    pluralName: 'Sessions',
-    searchKeys: ['ipAddress', 'userAgent'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'expiresAt', type: 'datetime', label: 'Expires At', required: true },
+      { name: 'ipAddress', type: 'text', label: 'IP Address' },
+      { name: 'userAgent', type: 'textarea', label: 'User Agent' },
+      { name: 'activeOrganizationId', type: 'select', label: 'Active Organization' },
+      { name: 'impersonatedBy', type: 'select', label: 'Impersonated By' },
+    ],
     includes: {
       user: true,
     },
@@ -1203,36 +1430,66 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'expiresAt',
         label: 'Expires',
-        sortable: true,
         render: (value: string) => {
           const date = new Date(value);
           const now = new Date();
           const isExpired = date < now;
           return `${date.toLocaleDateString()} ${isExpired ? '⚠️' : '✅'}`;
         },
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'expiresAt', label: 'Expires At', type: 'datetime', required: true },
-      { name: 'ipAddress', label: 'IP Address', type: 'text' },
-      { name: 'userAgent', label: 'User Agent', type: 'textarea' },
-      { name: 'activeOrganizationId', label: 'Active Organization', type: 'select' },
-      { name: 'impersonatedBy', label: 'Impersonated By', type: 'select' },
-    ],
+    pluralName: 'Sessions',
+    searchKeys: ['ipAddress', 'userAgent'],
   },
 
   account: {
     name: 'Account',
-    pluralName: 'Accounts',
-    searchKeys: ['providerId', 'accountId'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'providerId', type: 'text', label: 'Provider ID', required: true },
+      { name: 'accountId', type: 'text', label: 'Account ID', required: true },
+      { name: 'scope', type: 'text', label: 'Scopes' },
+      { name: 'accessTokenExpiresAt', type: 'datetime', label: 'Access Token Expires' },
+      { name: 'refreshTokenExpiresAt', type: 'datetime', label: 'Refresh Token Expires' },
+
+      // Sensitive OAuth tokens - extremely sensitive
+      {
+        name: 'accessToken',
+        type: 'password',
+        label: 'Access Token',
+        requiresPermission: 'admin',
+        sensitive: true,
+      },
+      {
+        name: 'refreshToken',
+        type: 'password',
+        label: 'Refresh Token',
+        requiresPermission: 'admin',
+        sensitive: true,
+      },
+      {
+        name: 'idToken',
+        type: 'password',
+        label: 'ID Token',
+        requiresPermission: 'admin',
+        sensitive: true,
+      },
+      {
+        name: 'password',
+        type: 'password',
+        label: 'Password Hash',
+        requiresPermission: 'admin',
+        sensitive: true,
+      },
+    ],
     includes: {
       user: true,
     },
@@ -1245,19 +1502,19 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'providerId',
         label: 'Provider',
-        sortable: true,
         render: (value: string) => {
           const providers: Record<string, string> = {
-            google: '🔍 Google',
-            github: '🐙 GitHub',
-            discord: '💬 Discord',
             apple: '🍎 Apple',
-            microsoft: '🏢 Microsoft',
+            discord: '💬 Discord',
             facebook: '📘 Facebook',
+            github: '🐙 GitHub',
+            google: '🔍 Google',
+            microsoft: '🏢 Microsoft',
             twitter: '🐦 Twitter',
           };
           return providers[value.toLowerCase()] || `🔗 ${value}`;
         },
+        sortable: true,
       },
       {
         key: 'accountId',
@@ -1278,37 +1535,27 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Connected',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'providerId', label: 'Provider ID', type: 'text', required: true },
-      { name: 'accountId', label: 'Account ID', type: 'text', required: true },
-      { name: 'scope', label: 'Scopes', type: 'text' },
-      { name: 'accessTokenExpiresAt', label: 'Access Token Expires', type: 'datetime' },
-      { name: 'refreshTokenExpiresAt', label: 'Refresh Token Expires', type: 'datetime' },
-      
-      // Sensitive OAuth tokens - extremely sensitive
-      { name: 'accessToken', label: 'Access Token', type: 'password', sensitive: true, requiresPermission: 'admin' },
-      { name: 'refreshToken', label: 'Refresh Token', type: 'password', sensitive: true, requiresPermission: 'admin' },
-      { name: 'idToken', label: 'ID Token', type: 'password', sensitive: true, requiresPermission: 'admin' },
-      { name: 'password', label: 'Password Hash', type: 'password', sensitive: true, requiresPermission: 'admin' },
-    ],
+    pluralName: 'Accounts',
+    searchKeys: ['providerId', 'accountId'],
   },
 
   verification: {
     name: 'Verification',
-    pluralName: 'Verifications',
-    searchKeys: ['identifier', 'value'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'identifier', type: 'text', label: 'Identifier (email/phone)', required: true },
+      { name: 'value', type: 'text', label: 'Verification Code', required: true },
+      { name: 'expiresAt', type: 'datetime', label: 'Expires At', required: true },
+    ],
     includes: {},
     listColumns: [
       {
         key: 'identifier',
         label: 'Identifier',
-        sortable: true,
         render: (value: string) => {
           // Mask email addresses for privacy
           if (value.includes('@')) {
@@ -1318,6 +1565,7 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
           }
           return value;
         },
+        sortable: true,
       },
       {
         key: 'value',
@@ -1327,41 +1575,41 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'expiresAt',
         label: 'Expires',
-        sortable: true,
         render: (value: string) => {
           const date = new Date(value);
           const now = new Date();
           const isExpired = date < now;
           return `${date.toLocaleDateString()} ${isExpired ? '⚠️' : '✅'}`;
         },
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'identifier', label: 'Identifier (email/phone)', type: 'text', required: true },
-      { name: 'value', label: 'Verification Code', type: 'text', required: true },
-      { name: 'expiresAt', label: 'Expires At', type: 'datetime', required: true },
-    ],
+    pluralName: 'Verifications',
+    searchKeys: ['identifier', 'value'],
   },
 
   // Security Models
   twoFactor: {
     name: 'Two Factor',
-    pluralName: 'Two Factor Authentication',
-    searchKeys: [],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'enabled', type: 'checkbox', label: 'Enabled' },
+      { name: 'verified', type: 'checkbox', label: 'Verified' },
+    ],
     includes: {
-      user: true,
       _count: {
         select: {
           backupCodes: true,
         },
       },
+      user: true,
     },
     listColumns: [
       {
@@ -1372,18 +1620,18 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'enabled',
         label: 'Status',
-        sortable: true,
         render: (value: boolean, record: any) => {
           if (!value) return '❌ Disabled';
           return record.verified ? '✅ Active' : '⚠️ Pending';
         },
+        sortable: true,
       },
       {
+        type: 'boolean',
         key: 'verified',
         label: 'Verified',
-        sortable: true,
-        type: 'boolean',
         render: (value: boolean) => (value ? '✅' : '❌'),
+        sortable: true,
       },
       {
         key: '_count.backupCodes',
@@ -1396,22 +1644,23 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Setup Date',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'enabled', label: 'Enabled', type: 'checkbox' },
-      { name: 'verified', label: 'Verified', type: 'checkbox' },
-    ],
+    pluralName: 'Two Factor Authentication',
+    searchKeys: [],
   },
 
   backupCode: {
     name: 'Backup Code',
-    pluralName: 'Backup Codes',
-    searchKeys: [],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'twoFactorId', type: 'select', label: 'Two Factor Auth', required: true },
+      { name: 'code', type: 'text', label: 'Backup Code', required: true },
+      { name: 'used', type: 'checkbox', label: 'Used' },
+      { name: 'usedAt', type: 'datetime', label: 'Used At' },
+    ],
     includes: {
       twoFactor: {
         include: {
@@ -1433,7 +1682,6 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'used',
         label: 'Status',
-        sortable: true,
         render: (value: boolean, record: any) => {
           if (value) {
             const usedDate = new Date(record.usedAt).toLocaleDateString();
@@ -1441,27 +1689,40 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
           }
           return '⏳ Available';
         },
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'twoFactorId', label: 'Two Factor Auth', type: 'select', required: true },
-      { name: 'code', label: 'Backup Code', type: 'text', required: true },
-      { name: 'used', label: 'Used', type: 'checkbox' },
-      { name: 'usedAt', label: 'Used At', type: 'datetime' },
-    ],
+    pluralName: 'Backup Codes',
+    searchKeys: [],
   },
 
   passkey: {
     name: 'Passkey',
-    pluralName: 'Passkeys',
-    searchKeys: ['name', 'deviceType'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'name', type: 'text', label: 'Passkey Name' },
+      { name: 'credentialId', type: 'text', label: 'Credential ID', required: true },
+      {
+        name: 'deviceType',
+        type: 'select',
+        label: 'Device Type',
+        options: [
+          { label: 'Platform Authenticator', value: 'platform' },
+          { label: 'Cross-platform Authenticator', value: 'cross-platform' },
+          { label: 'Multi-device Authenticator', value: 'multidevice' },
+        ],
+        required: true,
+      },
+      { name: 'backedUp', type: 'checkbox', label: 'Backed Up' },
+      { name: 'transports', type: 'tags', label: 'Transports' },
+    ],
     includes: {
       user: true,
     },
@@ -1474,28 +1735,28 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'name',
         label: 'Name',
-        sortable: true,
         render: (value: string) => value || 'Unnamed Passkey',
+        sortable: true,
       },
       {
         key: 'deviceType',
         label: 'Device Type',
-        sortable: true,
         render: (value: string) => {
           const types: Record<string, string> = {
-            platform: '📱 Platform',
-            'cross-platform': '🔑 Security Key',
             multidevice: '🌐 Multi-device',
+            'cross-platform': '🔑 Security Key',
+            platform: '📱 Platform',
           };
           return types[value] || `🔐 ${value}`;
         },
+        sortable: true,
       },
       {
+        type: 'boolean',
         key: 'backedUp',
         label: 'Backed Up',
-        sortable: true,
-        type: 'boolean',
         render: (value: boolean) => (value ? '☁️ Yes' : '📱 Local'),
+        sortable: true,
       },
       {
         key: 'lastUsedAt',
@@ -1505,39 +1766,37 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Added',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'name', label: 'Passkey Name', type: 'text' },
-      { name: 'credentialId', label: 'Credential ID', type: 'text', required: true },
-      {
-        name: 'deviceType',
-        label: 'Device Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'platform', label: 'Platform Authenticator' },
-          { value: 'cross-platform', label: 'Cross-platform Authenticator' },
-          { value: 'multidevice', label: 'Multi-device Authenticator' },
-        ],
-      },
-      { name: 'backedUp', label: 'Backed Up', type: 'checkbox' },
-      { name: 'transports', label: 'Transports', type: 'tags' },
-    ],
+    pluralName: 'Passkeys',
+    searchKeys: ['name', 'deviceType'],
   },
 
   // Team Management Models
   member: {
     name: 'Member',
-    pluralName: 'Members',
-    searchKeys: ['role'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'organizationId', type: 'select', label: 'Organization', required: true },
+      {
+        name: 'role',
+        type: 'select',
+        label: 'Role',
+        options: [
+          { label: 'Owner', value: 'owner' },
+          { label: 'Admin', value: 'admin' },
+          { label: 'Member', value: 'member' },
+          { label: 'Viewer', value: 'viewer' },
+        ],
+        required: true,
+      },
+    ],
     includes: {
-      user: true,
       organization: true,
+      user: true,
     },
     listColumns: [
       {
@@ -1558,22 +1817,22 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'role',
         label: 'Role',
-        sortable: true,
         render: (value: string) => {
           const roles: Record<string, string> = {
-            owner: '👑 Owner',
             admin: '🛡️ Admin',
             member: '👤 Member',
+            owner: '👑 Owner',
             viewer: '👁️ Viewer',
           };
           return roles[value] || `🏷️ ${value}`;
         },
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Joined',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
       {
         key: 'updatedAt',
@@ -1581,37 +1840,26 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: string) => (value ? new Date(value).toLocaleDateString() : '—'),
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'organizationId', label: 'Organization', type: 'select', required: true },
-      {
-        name: 'role',
-        label: 'Role',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'owner', label: 'Owner' },
-          { value: 'admin', label: 'Admin' },
-          { value: 'member', label: 'Member' },
-          { value: 'viewer', label: 'Viewer' },
-        ],
-      },
-    ],
+    pluralName: 'Members',
+    searchKeys: ['role'],
   },
 
   team: {
     name: 'Team',
-    pluralName: 'Teams',
-    searchKeys: ['name', 'description'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Team Name', required: true },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      { name: 'organizationId', type: 'select', label: 'Organization', required: true },
+    ],
     includes: {
-      organization: true,
       _count: {
         select: {
-          teamMembers: true,
           invitations: true,
+          teamMembers: true,
         },
       },
+      organization: true,
     },
     listColumns: [
       {
@@ -1642,29 +1890,40 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Team Name', type: 'text', required: true },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'organizationId', label: 'Organization', type: 'select', required: true },
-    ],
+    pluralName: 'Teams',
+    searchKeys: ['name', 'description'],
   },
 
   teamMember: {
     name: 'Team Member',
-    pluralName: 'Team Members',
-    searchKeys: ['role'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'teamId', type: 'select', label: 'Team', required: true },
+      {
+        name: 'role',
+        type: 'select',
+        defaultValue: 'member',
+        label: 'Role',
+        options: [
+          { label: 'Team Lead', value: 'lead' },
+          { label: 'Admin', value: 'admin' },
+          { label: 'Member', value: 'member' },
+          { label: 'Contributor', value: 'contributor' },
+        ],
+      },
+    ],
     includes: {
-      user: true,
       team: {
         include: {
           organization: true,
         },
       },
+      user: true,
     },
     listColumns: [
       {
@@ -1685,51 +1944,66 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'role',
         label: 'Role',
-        sortable: true,
         render: (value: string) => {
           const roles: Record<string, string> = {
-            lead: '🎯 Lead',
             admin: '🛡️ Admin',
-            member: '👤 Member',
             contributor: '✏️ Contributor',
+            lead: '🎯 Lead',
+            member: '👤 Member',
           };
           return roles[value] || `🏷️ ${value}`;
         },
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Joined',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'teamId', label: 'Team', type: 'select', required: true },
-      {
-        name: 'role',
-        label: 'Role',
-        type: 'select',
-        defaultValue: 'member',
-        options: [
-          { value: 'lead', label: 'Team Lead' },
-          { value: 'admin', label: 'Admin' },
-          { value: 'member', label: 'Member' },
-          { value: 'contributor', label: 'Contributor' },
-        ],
-      },
-    ],
+    pluralName: 'Team Members',
+    searchKeys: ['role'],
   },
 
   invitation: {
     name: 'Invitation',
-    pluralName: 'Invitations',
-    searchKeys: ['email', 'role', 'status'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'email', type: 'email', label: 'Email Address', required: true },
+      { name: 'organizationId', type: 'select', label: 'Organization', required: true },
+      { name: 'teamId', type: 'select', label: 'Team (Optional)' },
+      {
+        name: 'role',
+        type: 'select',
+        label: 'Role',
+        options: [
+          { label: 'Owner', value: 'owner' },
+          { label: 'Admin', value: 'admin' },
+          { label: 'Member', value: 'member' },
+          { label: 'Viewer', value: 'viewer' },
+        ],
+        required: true,
+      },
+      {
+        name: 'status',
+        type: 'select',
+        defaultValue: 'pending',
+        label: 'Status',
+        options: [
+          { label: 'Pending', value: 'pending' },
+          { label: 'Accepted', value: 'accepted' },
+          { label: 'Declined', value: 'declined' },
+          { label: 'Expired', value: 'expired' },
+        ],
+      },
+      { name: 'expiresAt', type: 'datetime', label: 'Expires At', required: true },
+      { name: 'invitedById', type: 'select', label: 'Invited By', required: true },
+    ],
     includes: {
+      invitedBy: true,
       organization: true,
       team: true,
-      invitedBy: true,
     },
     listColumns: [
       {
@@ -1750,30 +2024,30 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'role',
         label: 'Role',
-        sortable: true,
         render: (value: string) => {
           const roles: Record<string, string> = {
-            owner: '👑 Owner',
             admin: '🛡️ Admin',
             member: '👤 Member',
+            owner: '👑 Owner',
             viewer: '👁️ Viewer',
           };
           return roles[value] || `🏷️ ${value}`;
         },
+        sortable: true,
       },
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) => {
           const statuses: Record<string, string> = {
-            pending: '⏳ Pending',
             accepted: '✅ Accepted',
             declined: '❌ Declined',
             expired: '⏰ Expired',
+            pending: '⏳ Pending',
           };
           return statuses[value] || value;
         },
+        sortable: true,
       },
       {
         key: 'invitedBy.name',
@@ -1783,61 +2057,61 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'expiresAt',
         label: 'Expires',
-        sortable: true,
         render: (value: string) => {
           const date = new Date(value);
           const now = new Date();
           const isExpired = date < now;
           return `${date.toLocaleDateString()} ${isExpired ? '⚠️' : '✅'}`;
         },
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'email', label: 'Email Address', type: 'email', required: true },
-      { name: 'organizationId', label: 'Organization', type: 'select', required: true },
-      { name: 'teamId', label: 'Team (Optional)', type: 'select' },
-      {
-        name: 'role',
-        label: 'Role',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'owner', label: 'Owner' },
-          { value: 'admin', label: 'Admin' },
-          { value: 'member', label: 'Member' },
-          { value: 'viewer', label: 'Viewer' },
-        ],
-      },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        defaultValue: 'pending',
-        options: [
-          { value: 'pending', label: 'Pending' },
-          { value: 'accepted', label: 'Accepted' },
-          { value: 'declined', label: 'Declined' },
-          { value: 'expired', label: 'Expired' },
-        ],
-      },
-      { name: 'expiresAt', label: 'Expires At', type: 'datetime', required: true },
-      { name: 'invitedById', label: 'Invited By', type: 'select', required: true },
-    ],
+    pluralName: 'Invitations',
+    searchKeys: ['email', 'role', 'status'],
   },
 
   // Registry Advanced Models
   registryPurchaseJoin: {
     name: 'Registry Purchase',
-    pluralName: 'Registry Purchases',
-    searchKeys: ['orderNumber', 'transactionId', 'trackingNumber'],
     defaultOrderBy: { purchaseDate: 'desc' },
+    fields: [
+      { name: 'registryItemId', type: 'select', label: 'Registry Item', required: true },
+      { name: 'purchaserId', type: 'select', label: 'Purchaser', required: true },
+      { name: 'quantity', type: 'number', defaultValue: 1, label: 'Quantity', required: true },
+      { name: 'price', type: 'number', label: 'Price', step: 0.01 },
+      { name: 'currency', type: 'text', defaultValue: 'USD', label: 'Currency' },
+      {
+        name: 'status',
+        type: 'select',
+        defaultValue: 'PENDING',
+        label: 'Status',
+        options: [
+          { label: 'Pending', value: 'PENDING' },
+          { label: 'Confirmed', value: 'CONFIRMED' },
+          { label: 'Shipped', value: 'SHIPPED' },
+          { label: 'Delivered', value: 'DELIVERED' },
+          { label: 'Cancelled', value: 'CANCELLED' },
+          { label: 'Returned', value: 'RETURNED' },
+        ],
+      },
+      { name: 'transactionId', type: 'text', label: 'Transaction ID' },
+      { name: 'orderNumber', type: 'text', label: 'Order Number' },
+      { name: 'trackingNumber', type: 'text', label: 'Tracking Number' },
+      { name: 'trackingUrl', type: 'text', label: 'Tracking URL' },
+      { name: 'isGift', type: 'checkbox', label: 'Is Gift' },
+      { name: 'giftMessage', type: 'textarea', label: 'Gift Message' },
+      { name: 'giftWrapped', type: 'checkbox', label: 'Gift Wrapped' },
+      { name: 'estimatedDelivery', type: 'date', label: 'Estimated Delivery' },
+      { name: 'actualDelivery', type: 'date', label: 'Actual Delivery' },
+      { name: 'notes', type: 'textarea', label: 'Notes' },
+    ],
     includes: {
       purchaser: true,
       registryItem: {
         include: {
-          registry: true,
-          product: true,
           collection: true,
+          product: true,
+          registry: true,
         },
       },
     },
@@ -1864,10 +2138,10 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
           record.purchaser?.name || record.purchaser?.email || 'Anonymous',
       },
       {
+        type: 'number',
         key: 'quantity',
         label: 'Quantity',
         sortable: true,
-        type: 'number',
       },
       {
         key: 'price',
@@ -1881,18 +2155,18 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) => {
           const statuses: Record<string, string> = {
-            PENDING: '⏳ Pending',
-            CONFIRMED: '✅ Confirmed',
-            SHIPPED: '📦 Shipped',
-            DELIVERED: '🎉 Delivered',
             CANCELLED: '❌ Cancelled',
+            CONFIRMED: '✅ Confirmed',
+            DELIVERED: '🎉 Delivered',
+            PENDING: '⏳ Pending',
             RETURNED: '↩️ Returned',
+            SHIPPED: '📦 Shipped',
           };
           return statuses[value] || value;
         },
+        sortable: true,
       },
       {
         key: 'isGift',
@@ -1902,51 +2176,35 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'purchaseDate',
         label: 'Purchase Date',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'registryItemId', label: 'Registry Item', type: 'select', required: true },
-      { name: 'purchaserId', label: 'Purchaser', type: 'select', required: true },
-      { name: 'quantity', label: 'Quantity', type: 'number', required: true, defaultValue: 1 },
-      { name: 'price', label: 'Price', type: 'number', step: 0.01 },
-      { name: 'currency', label: 'Currency', type: 'text', defaultValue: 'USD' },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        defaultValue: 'PENDING',
-        options: [
-          { value: 'PENDING', label: 'Pending' },
-          { value: 'CONFIRMED', label: 'Confirmed' },
-          { value: 'SHIPPED', label: 'Shipped' },
-          { value: 'DELIVERED', label: 'Delivered' },
-          { value: 'CANCELLED', label: 'Cancelled' },
-          { value: 'RETURNED', label: 'Returned' },
-        ],
-      },
-      { name: 'transactionId', label: 'Transaction ID', type: 'text' },
-      { name: 'orderNumber', label: 'Order Number', type: 'text' },
-      { name: 'trackingNumber', label: 'Tracking Number', type: 'text' },
-      { name: 'trackingUrl', label: 'Tracking URL', type: 'text' },
-      { name: 'isGift', label: 'Is Gift', type: 'checkbox' },
-      { name: 'giftMessage', label: 'Gift Message', type: 'textarea' },
-      { name: 'giftWrapped', label: 'Gift Wrapped', type: 'checkbox' },
-      { name: 'estimatedDelivery', label: 'Estimated Delivery', type: 'date' },
-      { name: 'actualDelivery', label: 'Actual Delivery', type: 'date' },
-      { name: 'notes', label: 'Notes', type: 'textarea' },
-    ],
+    pluralName: 'Registry Purchases',
+    searchKeys: ['orderNumber', 'transactionId', 'trackingNumber'],
   },
 
   registryUserJoin: {
     name: 'Registry User',
-    pluralName: 'Registry Users',
-    searchKeys: ['role'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'registryId', type: 'select', label: 'Registry', required: true },
+      {
+        name: 'role',
+        type: 'select',
+        defaultValue: 'VIEWER',
+        label: 'Role',
+        options: [
+          { label: 'Owner', value: 'OWNER' },
+          { label: 'Editor', value: 'EDITOR' },
+          { label: 'Viewer', value: 'VIEWER' },
+        ],
+      },
+    ],
     includes: {
-      user: true,
       registry: true,
+      user: true,
     },
     listColumns: [
       {
@@ -1967,54 +2225,53 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'role',
         label: 'Role',
-        sortable: true,
         render: (value: string) => {
           const roles: Record<string, string> = {
-            OWNER: '👑 Owner',
             EDITOR: '✏️ Editor',
+            OWNER: '👑 Owner',
             VIEWER: '👁️ Viewer',
           };
           return roles[value] || value;
         },
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Added',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'registryId', label: 'Registry', type: 'select', required: true },
-      {
-        name: 'role',
-        label: 'Role',
-        type: 'select',
-        defaultValue: 'VIEWER',
-        options: [
-          { value: 'OWNER', label: 'Owner' },
-          { value: 'EDITOR', label: 'Editor' },
-          { value: 'VIEWER', label: 'Viewer' },
-        ],
-      },
-    ],
+    pluralName: 'Registry Users',
+    searchKeys: ['role'],
   },
 
   // Review Enhancement
   reviewVoteJoin: {
     name: 'Review Vote',
-    pluralName: 'Review Votes',
-    searchKeys: [],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'userId', type: 'select', label: 'User', required: true },
+      { name: 'reviewId', type: 'select', label: 'Review', required: true },
+      {
+        name: 'voteType',
+        type: 'select',
+        label: 'Vote Type',
+        options: [
+          { label: 'Helpful', value: 'HELPFUL' },
+          { label: 'Not Helpful', value: 'NOT_HELPFUL' },
+        ],
+        required: true,
+      },
+    ],
     includes: {
-      user: true,
       review: {
         include: {
           product: true,
           user: true,
         },
       },
+      user: true,
     },
     listColumns: [
       {
@@ -2040,40 +2297,38 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'voteType',
         label: 'Vote',
-        sortable: true,
         render: (value: string) => {
           return value === 'HELPFUL' ? '👍 Helpful' : '👎 Not Helpful';
         },
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Voted',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'userId', label: 'User', type: 'select', required: true },
-      { name: 'reviewId', label: 'Review', type: 'select', required: true },
-      {
-        name: 'voteType',
-        label: 'Vote Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'HELPFUL', label: 'Helpful' },
-          { value: 'NOT_HELPFUL', label: 'Not Helpful' },
-        ],
-      },
-    ],
+    pluralName: 'Review Votes',
+    searchKeys: [],
   },
 
   // Workflow Enhancement
   workflowSchedule: {
     name: 'Workflow Schedule',
-    pluralName: 'Workflow Schedules',
-    searchKeys: ['name', 'description', 'cronExpression'],
     defaultOrderBy: { nextRunAt: 'asc' },
+    fields: [
+      { name: 'configId', type: 'select', label: 'Workflow Config', required: true },
+      { name: 'name', type: 'text', label: 'Schedule Name', required: true },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      { name: 'cronExpression', type: 'text', label: 'Cron Expression', required: true },
+      { name: 'timezone', type: 'text', defaultValue: 'UTC', label: 'Timezone' },
+      { name: 'isActive', type: 'checkbox', defaultValue: true, label: 'Active' },
+      { name: 'payload', type: 'json', label: 'Payload (JSON)', required: true },
+      { name: 'validFrom', type: 'datetime', label: 'Valid From' },
+      { name: 'validUntil', type: 'datetime', label: 'Valid Until' },
+      { name: 'createdBy', type: 'select', label: 'Created By' },
+    ],
     includes: {
       config: {
         include: {
@@ -2104,13 +2359,12 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'isActive',
         label: 'Status',
-        sortable: true,
         render: (value: boolean) => (value ? '✅ Active' : '⏸️ Paused'),
+        sortable: true,
       },
       {
         key: 'nextRunAt',
         label: 'Next Run',
-        sortable: true,
         render: (value: string) => {
           if (!value) return '—';
           const date = new Date(value);
@@ -2118,6 +2372,7 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
           const isPast = date < now;
           return `${date.toLocaleString()} ${isPast ? '⚠️' : '⏰'}`;
         },
+        sortable: true,
       },
       {
         key: 'lastRunStatus',
@@ -2125,10 +2380,10 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         render: (value: string) => {
           if (!value) return 'Never run';
           const statuses: Record<string, string> = {
-            success: '✅ Success',
+            cancelled: '⏹️ Cancelled',
             failed: '❌ Failed',
             running: '🔄 Running',
-            cancelled: '⏹️ Cancelled',
+            success: '✅ Success',
           };
           return statuses[value] || value;
         },
@@ -2145,18 +2400,8 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         },
       },
     ],
-    fields: [
-      { name: 'configId', label: 'Workflow Config', type: 'select', required: true },
-      { name: 'name', label: 'Schedule Name', type: 'text', required: true },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'cronExpression', label: 'Cron Expression', type: 'text', required: true },
-      { name: 'timezone', label: 'Timezone', type: 'text', defaultValue: 'UTC' },
-      { name: 'isActive', label: 'Active', type: 'checkbox', defaultValue: true },
-      { name: 'payload', label: 'Payload (JSON)', type: 'json', required: true },
-      { name: 'validFrom', label: 'Valid From', type: 'datetime' },
-      { name: 'validUntil', label: 'Valid Until', type: 'datetime' },
-      { name: 'createdBy', label: 'Created By', type: 'select' },
-    ],
+    pluralName: 'Workflow Schedules',
+    searchKeys: ['name', 'description', 'cronExpression'],
   },
 
   // MISSING MODEL CONFIGURATIONS - Adding the 7 critical models
@@ -2164,15 +2409,43 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
   // Enhanced Organization Model (was missing)
   organization: {
     name: 'Organization',
-    pluralName: 'Organizations',
-    searchKeys: ['name', 'slug', 'description'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'Organization Name', required: true },
+      { name: 'slug', type: 'text', label: 'URL Slug', required: true },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      { name: 'logo', type: 'text', label: 'Logo URL' },
+      { name: 'metadata', type: 'json', label: 'Metadata (JSON)' },
+
+      // Relationship fields
+      {
+        name: 'members',
+        type: 'relation',
+        label: 'Organization Members',
+        relationModel: 'member',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'teams',
+        type: 'relation',
+        label: 'Teams',
+        relationModel: 'team',
+        relationType: 'hasMany',
+      },
+      {
+        name: 'invitations',
+        type: 'relation',
+        label: 'Pending Invitations',
+        relationModel: 'invitation',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
       _count: {
         select: {
+          invitations: true,
           members: true,
           teams: true,
-          invitations: true,
         },
       },
     },
@@ -2210,30 +2483,42 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'name', label: 'Organization Name', type: 'text', required: true },
-      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'logo', label: 'Logo URL', type: 'text' },
-      { name: 'metadata', label: 'Metadata (JSON)', type: 'json' },
-      
-      // Relationship fields
-      { name: 'members', label: 'Organization Members', type: 'relation', relationModel: 'member', relationType: 'hasMany' },
-      { name: 'teams', label: 'Teams', type: 'relation', relationModel: 'team', relationType: 'hasMany' },
-      { name: 'invitations', label: 'Pending Invitations', type: 'relation', relationModel: 'invitation', relationType: 'hasMany' },
-    ],
+    pluralName: 'Organizations',
+    searchKeys: ['name', 'slug', 'description'],
   },
 
   // Enhanced API Key Model (was missing)
   apiKey: {
     name: 'API Key',
-    pluralName: 'API Keys',
-    searchKeys: ['name', 'prefix'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'name', type: 'text', label: 'API Key Name', required: true },
+      { name: 'userId', type: 'select', label: 'Owner', required: true },
+      { name: 'organizationId', type: 'select', label: 'Organization' },
+      { name: 'enabled', type: 'checkbox', defaultValue: true, label: 'Enabled' },
+      { name: 'expiresAt', type: 'datetime', label: 'Expiration Date' },
+      { name: 'rateLimitEnabled', type: 'checkbox', defaultValue: true, label: 'Rate Limiting' },
+      { name: 'rateLimitMax', type: 'number', label: 'Rate Limit (requests)' },
+      { name: 'rateLimitTimeWindow', type: 'number', label: 'Time Window (seconds)' },
+      { name: 'permissions', type: 'json', label: 'Permissions (JSON)' },
+      { name: 'metadata', type: 'json', label: 'Metadata (JSON)' },
+
+      // Sensitive fields - handled with special security
+      {
+        name: 'key',
+        type: 'password',
+        label: 'API Key (Full)',
+        requiresPermission: 'admin',
+        sensitive: true,
+      },
+      { name: 'keyHash', type: 'text', label: 'Key Hash', readonly: true, sensitive: true },
+      { name: 'start', type: 'text', label: 'Key Prefix', readonly: true },
+      { name: 'prefix', type: 'text', label: 'Key Identifier', readonly: true },
+    ],
     includes: {
       user: true,
     },
@@ -2256,13 +2541,13 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'enabled',
         label: 'Status',
-        sortable: true,
         render: (value: boolean, record: any) => {
           if (!value) return '🔴 Disabled';
           const expired = record.expiresAt && new Date(record.expiresAt) < new Date();
           if (expired) return '⚠️ Expired';
           return '✅ Active';
         },
+        sortable: true,
       },
       {
         key: 'lastUsedAt',
@@ -2282,36 +2567,57 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'requestCount',
         label: 'Requests',
-        sortable: true,
         render: (value: number) => value?.toLocaleString() || '0',
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'name', label: 'API Key Name', type: 'text', required: true },
-      { name: 'userId', label: 'Owner', type: 'select', required: true },
-      { name: 'organizationId', label: 'Organization', type: 'select' },
-      { name: 'enabled', label: 'Enabled', type: 'checkbox', defaultValue: true },
-      { name: 'expiresAt', label: 'Expiration Date', type: 'datetime' },
-      { name: 'rateLimitEnabled', label: 'Rate Limiting', type: 'checkbox', defaultValue: true },
-      { name: 'rateLimitMax', label: 'Rate Limit (requests)', type: 'number' },
-      { name: 'rateLimitTimeWindow', label: 'Time Window (seconds)', type: 'number' },
-      { name: 'permissions', label: 'Permissions (JSON)', type: 'json' },
-      { name: 'metadata', label: 'Metadata (JSON)', type: 'json' },
-      
-      // Sensitive fields - handled with special security
-      { name: 'key', label: 'API Key (Full)', type: 'password', sensitive: true, requiresPermission: 'admin' },
-      { name: 'keyHash', label: 'Key Hash', type: 'text', sensitive: true, readonly: true },
-      { name: 'start', label: 'Key Prefix', type: 'text', readonly: true },
-      { name: 'prefix', label: 'Key Identifier', type: 'text', readonly: true },
-    ],
+    pluralName: 'API Keys',
+    searchKeys: ['name', 'prefix'],
   },
 
   // Enhanced Workflow Config Model (was missing)
   workflowConfig: {
     name: 'Workflow Config',
-    pluralName: 'Workflow Configs',
-    searchKeys: ['workflowSlug', 'displayName', 'description'],
     defaultOrderBy: { updatedAt: 'desc' },
+    fields: [
+      { name: 'workflowSlug', type: 'text', label: 'Workflow Slug', required: true },
+      { name: 'organizationId', type: 'select', label: 'Organization' },
+      { name: 'userId', type: 'select', label: 'User' },
+      { name: 'isEnabled', type: 'checkbox', defaultValue: true, label: 'Enabled' },
+      { name: 'displayName', type: 'text', label: 'Display Name' },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      { name: 'category', type: 'text', label: 'Category' },
+      { name: 'tags', type: 'tags', label: 'Tags' },
+      { name: 'notifyOnStart', type: 'checkbox', label: 'Notify on Start' },
+      { name: 'notifyOnComplete', type: 'checkbox', label: 'Notify on Complete' },
+      { name: 'notifyOnFailure', type: 'checkbox', defaultValue: true, label: 'Notify on Failure' },
+      { name: 'notifyOnApproval', type: 'checkbox', label: 'Notify on Approval' },
+      { name: 'notificationEmail', type: 'email', label: 'Notification Email' },
+      { name: 'maxRetries', type: 'number', label: 'Max Retries' },
+      { name: 'timeoutSeconds', type: 'number', label: 'Timeout (seconds)' },
+      { name: 'rateLimitPerHour', type: 'number', label: 'Rate Limit (per hour)' },
+      { name: 'maxConcurrent', type: 'number', label: 'Max Concurrent' },
+      {
+        name: 'priority',
+        type: 'number',
+        defaultValue: 5,
+        label: 'Priority (1-10)',
+        max: 10,
+        min: 1,
+      },
+      { name: 'customPayload', type: 'json', label: 'Custom Payload (JSON)' },
+      { name: 'metadata', type: 'json', label: 'Metadata (JSON)' },
+      { name: 'createdBy', type: 'select', label: 'Created By' },
+
+      // Relationship fields
+      {
+        name: 'schedules',
+        type: 'relation',
+        label: 'Workflow Schedules',
+        relationModel: 'workflowSchedule',
+        relationType: 'hasMany',
+      },
+    ],
     includes: {
       _count: {
         select: {
@@ -2338,14 +2644,14 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'isEnabled',
         label: 'Status',
-        sortable: true,
         render: (value: boolean) => (value ? '✅ Enabled' : '⏸️ Disabled'),
+        sortable: true,
       },
       {
         key: 'category',
         label: 'Category',
-        sortable: true,
         render: (value: string) => value || 'General',
+        sortable: true,
       },
       {
         key: '_count.schedules',
@@ -2355,51 +2661,53 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'priority',
         label: 'Priority',
-        sortable: true,
         render: (value: number) => '⭐'.repeat(value || 5),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'workflowSlug', label: 'Workflow Slug', type: 'text', required: true },
-      { name: 'organizationId', label: 'Organization', type: 'select' },
-      { name: 'userId', label: 'User', type: 'select' },
-      { name: 'isEnabled', label: 'Enabled', type: 'checkbox', defaultValue: true },
-      { name: 'displayName', label: 'Display Name', type: 'text' },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'category', label: 'Category', type: 'text' },
-      { name: 'tags', label: 'Tags', type: 'tags' },
-      { name: 'notifyOnStart', label: 'Notify on Start', type: 'checkbox' },
-      { name: 'notifyOnComplete', label: 'Notify on Complete', type: 'checkbox' },
-      { name: 'notifyOnFailure', label: 'Notify on Failure', type: 'checkbox', defaultValue: true },
-      { name: 'notifyOnApproval', label: 'Notify on Approval', type: 'checkbox' },
-      { name: 'notificationEmail', label: 'Notification Email', type: 'email' },
-      { name: 'maxRetries', label: 'Max Retries', type: 'number' },
-      { name: 'timeoutSeconds', label: 'Timeout (seconds)', type: 'number' },
-      { name: 'rateLimitPerHour', label: 'Rate Limit (per hour)', type: 'number' },
-      { name: 'maxConcurrent', label: 'Max Concurrent', type: 'number' },
-      {
-        name: 'priority',
-        label: 'Priority (1-10)',
-        type: 'number',
-        min: 1,
-        max: 10,
-        defaultValue: 5,
-      },
-      { name: 'customPayload', label: 'Custom Payload (JSON)', type: 'json' },
-      { name: 'metadata', label: 'Metadata (JSON)', type: 'json' },
-      { name: 'createdBy', label: 'Created By', type: 'select' },
-      
-      // Relationship fields
-      { name: 'schedules', label: 'Workflow Schedules', type: 'relation', relationModel: 'workflowSchedule', relationType: 'hasMany' },
-    ],
+    pluralName: 'Workflow Configs',
+    searchKeys: ['workflowSlug', 'displayName', 'description'],
   },
 
   // Enhanced Workflow Execution Model (was missing)
   workflowExecution: {
     name: 'Workflow Execution',
-    pluralName: 'Workflow Executions',
-    searchKeys: ['workflowRunId', 'workflowSlug'],
     defaultOrderBy: { startedAt: 'desc' },
+    fields: [
+      // Executions are typically read-only, but adding key fields for viewing
+      { name: 'workflowSlug', type: 'text', label: 'Workflow', required: true },
+      { name: 'userId', type: 'select', label: 'User' },
+      { name: 'organizationId', type: 'select', label: 'Organization' },
+      {
+        name: 'status',
+        type: 'select',
+        label: 'Status',
+        options: [
+          { label: 'Pending', value: 'pending' },
+          { label: 'Running', value: 'running' },
+          { label: 'Completed', value: 'completed' },
+          { label: 'Failed', value: 'failed' },
+          { label: 'Cancelled', value: 'cancelled' },
+        ],
+      },
+      {
+        name: 'triggeredBy',
+        type: 'select',
+        label: 'Triggered By',
+        options: [
+          { label: 'API', value: 'api' },
+          { label: 'Schedule', value: 'schedule' },
+          { label: 'Webhook', value: 'webhook' },
+          { label: 'Manual', value: 'manual' },
+          { label: 'Chained', value: 'chained' },
+        ],
+      },
+      { name: 'triggerSource', type: 'text', label: 'Trigger Source' },
+      { name: 'parentExecutionId', type: 'select', label: 'Parent Execution' },
+      { name: 'error', type: 'textarea', label: 'Error Message' },
+      { name: 'errorType', type: 'text', label: 'Error Type' },
+      { name: 'tags', type: 'tags', label: 'Tags' },
+    ],
     includes: {},
     listColumns: [
       {
@@ -2415,17 +2723,17 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'status',
         label: 'Status',
-        sortable: true,
         render: (value: string) => {
           const statuses: Record<string, string> = {
-            pending: '⏳ Pending',
-            running: '🔄 Running',
+            cancelled: '⏹️ Cancelled',
             completed: '✅ Completed',
             failed: '❌ Failed',
-            cancelled: '⏹️ Cancelled',
+            pending: '⏳ Pending',
+            running: '🔄 Running',
           };
           return statuses[value] || value;
         },
+        sortable: true,
       },
       {
         key: 'duration',
@@ -2455,68 +2763,59 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'triggeredBy',
         label: 'Trigger',
-        sortable: true,
         render: (value: string) => {
           const triggers: Record<string, string> = {
             api: '🔗 API',
+            chained: '🔗 Chained',
+            manual: '👤 Manual',
             schedule: '⏰ Schedule',
             webhook: '🪝 Webhook',
-            manual: '👤 Manual',
-            chained: '🔗 Chained',
           };
           return triggers[value] || value;
         },
+        sortable: true,
       },
       {
         key: 'startedAt',
         label: 'Started',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleString(),
+        sortable: true,
       },
     ],
-    fields: [
-      // Executions are typically read-only, but adding key fields for viewing
-      { name: 'workflowSlug', label: 'Workflow', type: 'text', required: true },
-      { name: 'userId', label: 'User', type: 'select' },
-      { name: 'organizationId', label: 'Organization', type: 'select' },
-      {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        options: [
-          { value: 'pending', label: 'Pending' },
-          { value: 'running', label: 'Running' },
-          { value: 'completed', label: 'Completed' },
-          { value: 'failed', label: 'Failed' },
-          { value: 'cancelled', label: 'Cancelled' },
-        ],
-      },
-      {
-        name: 'triggeredBy',
-        label: 'Triggered By',
-        type: 'select',
-        options: [
-          { value: 'api', label: 'API' },
-          { value: 'schedule', label: 'Schedule' },
-          { value: 'webhook', label: 'Webhook' },
-          { value: 'manual', label: 'Manual' },
-          { value: 'chained', label: 'Chained' },
-        ],
-      },
-      { name: 'triggerSource', label: 'Trigger Source', type: 'text' },
-      { name: 'parentExecutionId', label: 'Parent Execution', type: 'select' },
-      { name: 'error', label: 'Error Message', type: 'textarea' },
-      { name: 'errorType', label: 'Error Type', type: 'text' },
-      { name: 'tags', label: 'Tags', type: 'tags' },
-    ],
+    pluralName: 'Workflow Executions',
+    searchKeys: ['workflowRunId', 'workflowSlug'],
   },
 
   // Enhanced Product Barcode Model (was missing)
   productBarcode: {
     name: 'Product Barcode',
-    pluralName: 'Product Barcodes',
-    searchKeys: ['barcode'],
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [
+      { name: 'barcode', type: 'text', label: 'Barcode Value', required: true },
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Barcode Type',
+        options: [
+          { label: 'UPC-A', value: 'UPC_A' },
+          { label: 'UPC-E', value: 'UPC_E' },
+          { label: 'EAN-13', value: 'EAN_13' },
+          { label: 'EAN-8', value: 'EAN_8' },
+          { label: 'Code 128', value: 'CODE_128' },
+          { label: 'Code 39', value: 'CODE_39' },
+          { label: 'QR Code', value: 'QR_CODE' },
+          { label: 'PDF417', value: 'PDF417' },
+          { label: 'Aztec', value: 'AZTEC' },
+          { label: 'Data Matrix', value: 'DATA_MATRIX' },
+          { label: 'ITF-14', value: 'ITF14' },
+          { label: 'Codabar', value: 'CODABAR' },
+          { label: 'Other', value: 'OTHER' },
+        ],
+        required: true,
+      },
+      { name: 'productId', type: 'select', label: 'Product', required: true },
+      { name: 'isPrimary', type: 'checkbox', label: 'Primary Barcode' },
+    ],
     includes: {
       product: true,
     },
@@ -2529,21 +2828,21 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'type',
         label: 'Type',
-        sortable: true,
         render: (value: string) => {
           const types: Record<string, string> = {
+            CODE_39: '📊 Code 39',
+            CODE_128: '📊 Code 128',
+            DATA_MATRIX: '⚏ Data Matrix',
+            EAN_8: '🏷️ EAN-8',
+            EAN_13: '🏷️ EAN-13',
+            PDF417: '📄 PDF417',
+            QR_CODE: '📱 QR Code',
             UPC_A: '🏷️ UPC-A',
             UPC_E: '🏷️ UPC-E',
-            EAN_13: '🏷️ EAN-13',
-            EAN_8: '🏷️ EAN-8',
-            CODE_128: '📊 Code 128',
-            CODE_39: '📊 Code 39',
-            QR_CODE: '📱 QR Code',
-            PDF417: '📄 PDF417',
-            DATA_MATRIX: '⚏ Data Matrix',
           };
           return types[value] || value;
         },
+        sortable: true,
       },
       {
         key: 'product.name',
@@ -2558,50 +2857,49 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'isPrimary',
         label: 'Primary',
-        sortable: true,
         render: (value: boolean) => (value ? '⭐ Yes' : '—'),
+        sortable: true,
       },
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'barcode', label: 'Barcode Value', type: 'text', required: true },
-      {
-        name: 'type',
-        label: 'Barcode Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'UPC_A', label: 'UPC-A' },
-          { value: 'UPC_E', label: 'UPC-E' },
-          { value: 'EAN_13', label: 'EAN-13' },
-          { value: 'EAN_8', label: 'EAN-8' },
-          { value: 'CODE_128', label: 'Code 128' },
-          { value: 'CODE_39', label: 'Code 39' },
-          { value: 'QR_CODE', label: 'QR Code' },
-          { value: 'PDF417', label: 'PDF417' },
-          { value: 'AZTEC', label: 'Aztec' },
-          { value: 'DATA_MATRIX', label: 'Data Matrix' },
-          { value: 'ITF14', label: 'ITF-14' },
-          { value: 'CODABAR', label: 'Codabar' },
-          { value: 'OTHER', label: 'Other' },
-        ],
-      },
-      { name: 'productId', label: 'Product', type: 'select', required: true },
-      { name: 'isPrimary', label: 'Primary Barcode', type: 'checkbox' },
-    ],
+    pluralName: 'Product Barcodes',
+    searchKeys: ['barcode'],
   },
 
   // Enhanced Product Asset Model (was missing)
   productAsset: {
     name: 'Product Asset',
-    pluralName: 'Product Assets',
-    searchKeys: ['filename', 'alt', 'description'],
     defaultOrderBy: { sortOrder: 'asc' },
+    fields: [
+      {
+        name: 'type',
+        type: 'select',
+        label: 'Asset Type',
+        options: [
+          { label: 'Image', value: 'IMAGE' },
+          { label: 'Video', value: 'VIDEO' },
+          { label: 'Document', value: 'DOCUMENT' },
+          { label: 'Manual', value: 'MANUAL' },
+          { label: 'Specification', value: 'SPECIFICATION' },
+          { label: 'Certificate', value: 'CERTIFICATE' },
+          { label: 'Other', value: 'OTHER' },
+        ],
+        required: true,
+      },
+      { name: 'url', type: 'text', label: 'Asset URL', required: true },
+      { name: 'filename', type: 'text', label: 'Filename', required: true },
+      { name: 'productId', type: 'select', label: 'Product', required: true },
+      { name: 'mimeType', type: 'text', label: 'MIME Type' },
+      { name: 'size', type: 'number', label: 'File Size (bytes)' },
+      { name: 'alt', type: 'text', label: 'Alt Text' },
+      { name: 'description', type: 'textarea', label: 'Description' },
+      { name: 'sortOrder', type: 'number', defaultValue: 0, label: 'Sort Order' },
+    ],
     includes: {
       product: true,
     },
@@ -2614,19 +2912,19 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'type',
         label: 'Type',
-        sortable: true,
         render: (value: string) => {
           const types: Record<string, string> = {
-            IMAGE: '🖼️ Image',
-            VIDEO: '🎥 Video',
-            DOCUMENT: '📄 Document',
-            MANUAL: '📖 Manual',
-            SPECIFICATION: '📋 Spec',
             CERTIFICATE: '🏆 Certificate',
+            DOCUMENT: '📄 Document',
+            IMAGE: '🖼️ Image',
+            MANUAL: '📖 Manual',
             OTHER: '📎 Other',
+            SPECIFICATION: '📋 Spec',
+            VIDEO: '🎥 Video',
           };
           return types[value] || value;
         },
+        sortable: true,
       },
       {
         key: 'product.name',
@@ -2652,43 +2950,40 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'createdAt',
         label: 'Created',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString(),
+        sortable: true,
       },
     ],
-    fields: [
-      {
-        name: 'type',
-        label: 'Asset Type',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'IMAGE', label: 'Image' },
-          { value: 'VIDEO', label: 'Video' },
-          { value: 'DOCUMENT', label: 'Document' },
-          { value: 'MANUAL', label: 'Manual' },
-          { value: 'SPECIFICATION', label: 'Specification' },
-          { value: 'CERTIFICATE', label: 'Certificate' },
-          { value: 'OTHER', label: 'Other' },
-        ],
-      },
-      { name: 'url', label: 'Asset URL', type: 'text', required: true },
-      { name: 'filename', label: 'Filename', type: 'text', required: true },
-      { name: 'productId', label: 'Product', type: 'select', required: true },
-      { name: 'mimeType', label: 'MIME Type', type: 'text' },
-      { name: 'size', label: 'File Size (bytes)', type: 'number' },
-      { name: 'alt', label: 'Alt Text', type: 'text' },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'sortOrder', label: 'Sort Order', type: 'number', defaultValue: 0 },
-    ],
+    pluralName: 'Product Assets',
+    searchKeys: ['filename', 'alt', 'description'],
   },
 
   // Enhanced Scan History Model (was missing)
   scanHistory: {
     name: 'Scan History',
-    pluralName: 'Scan History',
-    searchKeys: ['barcode', 'rawData', 'note'],
     defaultOrderBy: { scannedAt: 'desc' },
+    fields: [
+      { name: 'barcode', type: 'text', label: 'Barcode', required: true },
+      { name: 'type', type: 'text', label: 'Barcode Type', required: true },
+      { name: 'productId', type: 'select', label: 'Product' },
+      { name: 'userId', type: 'select', label: 'User' },
+      { name: 'sessionId', type: 'text', label: 'Session ID' },
+      {
+        name: 'platform',
+        type: 'select',
+        label: 'Platform',
+        options: [
+          { label: 'iOS', value: 'ios' },
+          { label: 'Android', value: 'android' },
+          { label: 'Web', value: 'web' },
+        ],
+      },
+      { name: 'userAgent', type: 'textarea', label: 'User Agent' },
+      { name: 'ipAddress', type: 'text', label: 'IP Address' },
+      { name: 'success', type: 'checkbox', defaultValue: true, label: 'Successful Scan' },
+      { name: 'rawData', type: 'text', label: 'Raw Scan Data', required: true },
+      { name: 'note', type: 'textarea', label: 'Notes' },
+    ],
     includes: {
       product: true,
       user: true,
@@ -2719,8 +3014,8 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
         label: 'Platform',
         render: (value: string) => {
           const platforms: Record<string, string> = {
-            ios: '📱 iOS',
             android: '🤖 Android',
+            ios: '📱 iOS',
             web: '🌐 Web',
           };
           return platforms[value] || value || '—';
@@ -2729,37 +3024,20 @@ export const prismaModelConfigs: Record<string, ModelConfig> = {
       {
         key: 'success',
         label: 'Status',
-        sortable: true,
         render: (value: boolean) => (value ? '✅ Success' : '❌ Failed'),
+        sortable: true,
       },
       {
         key: 'scannedAt',
         label: 'Scanned',
-        sortable: true,
         render: (value: string) => new Date(value).toLocaleString(),
+        sortable: true,
       },
     ],
-    fields: [
-      { name: 'barcode', label: 'Barcode', type: 'text', required: true },
-      { name: 'type', label: 'Barcode Type', type: 'text', required: true },
-      { name: 'productId', label: 'Product', type: 'select' },
-      { name: 'userId', label: 'User', type: 'select' },
-      { name: 'sessionId', label: 'Session ID', type: 'text' },
-      {
-        name: 'platform',
-        label: 'Platform',
-        type: 'select',
-        options: [
-          { value: 'ios', label: 'iOS' },
-          { value: 'android', label: 'Android' },
-          { value: 'web', label: 'Web' },
-        ],
-      },
-      { name: 'userAgent', label: 'User Agent', type: 'textarea' },
-      { name: 'ipAddress', label: 'IP Address', type: 'text' },
-      { name: 'success', label: 'Successful Scan', type: 'checkbox', defaultValue: true },
-      { name: 'rawData', label: 'Raw Scan Data', type: 'text', required: true },
-      { name: 'note', label: 'Notes', type: 'textarea' },
-    ],
+    pluralName: 'Scan History',
+    searchKeys: ['barcode', 'rawData', 'note'],
   },
 };
+
+// Re-export as modelConfigs for backward compatibility
+export const modelConfigs = prismaModelConfigs;

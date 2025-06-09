@@ -1,6 +1,10 @@
+import { withVercelToolbar } from "@vercel/toolbar/plugins/next";
+
 import { config } from "@repo/config/next";
+import { withObservability } from "@repo/observability/server/next";
 
 import type { NextConfig } from "next";
+import { env } from "./env";
 
 const nextConfig: NextConfig = {
   ...config,
@@ -76,11 +80,35 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ["@repo/database"],
+  serverExternalPackages: [
+    "@repo/database"
+  ],
   transpilePackages: [
     ...(config.transpilePackages || []),
     "@repo/design-system",
   ],
 };
 
-export default nextConfig;
+export default withVercelToolbar()(
+  withObservability(nextConfig, {
+    sentry: {
+      org: env.SENTRY_ORG,
+      project: env.SENTRY_PROJECT,
+
+      // Only print logs for uploading source maps in CI
+      silent: !process.env.CI,
+
+      // Upload a larger set of source maps for prettier stack traces (increases build time)
+      widenClientFileUpload: true,
+
+      // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers
+      tunnelRoute: "/monitoring",
+
+      // Automatically tree-shake Sentry logger statements to reduce bundle size
+      disableLogger: true,
+
+      // Enables automatic instrumentation of Vercel Cron Monitors
+      automaticVercelMonitors: true,
+    },
+  })
+);

@@ -1,12 +1,14 @@
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
 // Alternative Claude wrapper using AI SDK instead of CLI
 import Anthropic from '@anthropic-ai/sdk';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
-import { WorkflowSpecification, ErrorAnalysis, RepairStrategy } from '../types';
+
+import { type ErrorAnalysis, type RepairStrategy, type WorkflowSpecification } from '../types';
 
 export class ClaudeAIWrapper {
   private client: Anthropic;
-  private outputDir: string = 'generated/workflows';
+  private outputDir = 'generated/workflows';
 
   constructor() {
     // Initialize with API key from environment

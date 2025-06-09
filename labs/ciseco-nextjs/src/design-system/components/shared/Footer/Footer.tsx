@@ -1,13 +1,13 @@
-import React from 'react';
+import React from 'react'
 
-import { type CustomLink } from '../../../data/types';
-import Logo from '../Logo/Logo';
-import SocialsList1 from '../SocialsList1/SocialsList1';
+import { type CustomLink } from '../../../data/types'
+import Logo from '../Logo/Logo'
+import SocialsList1 from '../SocialsList1/SocialsList1'
 
 export interface WidgetFooterMenu {
-  id: string;
-  menus: CustomLink[];
-  title: string;
+  id: string
+  menus: CustomLink[]
+  title: string
 }
 
 const widgetMenus: WidgetFooterMenu[] = [
@@ -51,7 +51,7 @@ const widgetMenus: WidgetFooterMenu[] = [
     ],
     title: 'Community',
   },
-];
+]
 
 const Footer: React.FC = () => {
   const renderWidgetMenuItem = (menu: WidgetFooterMenu, index: number) => {
@@ -74,24 +74,24 @@ const Footer: React.FC = () => {
           ))}
         </ul>
       </div>
-    );
-  };
+    )
+  }
 
   return (
-    <div className="nc-Footer relative border-t border-neutral-200 py-20 lg:pt-28 lg:pb-24 dark:border-neutral-700">
+    <div className="nc-Footer relative border-t border-neutral-200 py-20 lg:pb-24 lg:pt-28 dark:border-neutral-700">
       <div className="container grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-x-10">
-        <div className="col-span-2 grid grid-cols-4 gap-5 md:col-span-4 lg:flex lg:flex-col lg:md:col-span-1">
+        <div className="col-span-2 grid grid-cols-4 gap-5 md:col-span-4 lg:md:col-span-1 lg:flex lg:flex-col">
           <div className="col-span-2 md:col-span-1">
             <Logo />
           </div>
           <div className="col-span-2 flex items-center md:col-span-3">
-            <SocialsList1 className="flex items-center space-x-2 lg:flex-col lg:items-start lg:space-y-3 lg:space-x-0" />
+            <SocialsList1 className="flex items-center space-x-2 lg:flex-col lg:items-start lg:space-x-0 lg:space-y-3" />
           </div>
         </div>
         {widgetMenus.map(renderWidgetMenuItem)}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

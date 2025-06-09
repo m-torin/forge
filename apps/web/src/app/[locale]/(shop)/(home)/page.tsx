@@ -1,13 +1,16 @@
+import { FeatureFlagDemo } from "@/components/FeatureFlagDemo";
+import {
+  getBlogPosts,
+  getCollections,
+  getGroupCollections,
+  getProducts,
+} from "@/lib/data-service";
 import { type Metadata } from "next";
 
 import {
   BackgroundSection,
   ButtonSecondary,
   Divider,
-  getBlogPosts,
-  getCollections,
-  getGroupCollections,
-  getProducts,
   Heading,
   SectionClientSay,
   SectionCollectionSlider,
@@ -84,6 +87,8 @@ async function PageHome() {
 
         <Divider />
         <SectionClientSay />
+        
+        <FeatureFlagDemo />
       </div>
     </div>
   );

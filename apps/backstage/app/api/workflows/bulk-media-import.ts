@@ -327,8 +327,8 @@ export const parseImportSourceStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'parseErrors'],
       enableDetailedLogging: true,
+      trackingMetrics: ['parseErrors'],
     }),
 );
 
@@ -536,7 +536,6 @@ export const downloadMediaBatchesStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
     }),
 );
 
@@ -854,7 +853,7 @@ async function uploadToCDN(media: any): Promise<any> {
 
   if (media.processedMedia?.variants) {
     media.processedMedia.variants.forEach((variant: any) => {
-      cdnUrls.variants[(variant.name as any)] =
+      cdnUrls.variants[variant.name as any] =
         `${cdnBaseUrl}/${media.productId}/${variant.name}.${variant.format}`;
     });
   }

@@ -1,18 +1,18 @@
-import { ArrowRightIcon } from '@heroicons/react/24/solid';
-import clsx from 'clsx';
-import Image from 'next/image';
-import { type FC } from 'react';
+import { ArrowRightIcon } from '@heroicons/react/24/solid'
+import clsx from 'clsx'
+import Image from 'next/image'
+import { type FC } from 'react'
 
-import backgroundLineSvg from '../images/BackgroundLine.svg';
-import rightImgDemo from '../images/promo3.png';
+import backgroundLineSvg from '../images/BackgroundLine.svg'
+import rightImgDemo from '../images/promo3.png'
 
-import Badge from './shared/Badge/Badge';
-import ButtonCircle from './shared/Button/ButtonCircle';
-import Input from './shared/Input/Input';
-import NcImage from './shared/NcImage/NcImage';
+import Badge from './shared/Badge/Badge'
+import ButtonCircle from './shared/Button/ButtonCircle'
+import Input from './shared/Input/Input'
+import NcImage from './shared/NcImage/NcImage'
 
 export interface SectionPromo3Props {
-  className?: string;
+  className?: string
 }
 
 const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
@@ -29,7 +29,7 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
         </div>
 
         <div className="relative max-w-lg lg:w-1/2">
-          <h2 className="text-4xl leading-[1.15] font-semibold md:text-5xl">
+          <h2 className="text-4xl font-semibold leading-[1.15] md:text-5xl">
             Don&apos;t miss out on <br /> special offers.
           </h2>
           <p className="mt-7 block text-neutral-500 dark:text-neutral-400">
@@ -38,9 +38,7 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
           <ul className="mt-10 flex flex-col gap-y-4">
             <li className="flex items-center gap-x-4">
               <Badge color="purple" name="01" />
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                Savings combos
-              </span>
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">Savings combos</span>
             </li>
             <li className="flex items-center gap-x-4">
               <Badge name="02" />
@@ -48,23 +46,12 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
             </li>
             <li className="flex items-center gap-x-4">
               <Badge color="red" name="03" />
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                Premium magazines
-              </span>
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">Premium magazines</span>
             </li>
           </ul>
           <form className="relative mt-10 max-w-sm">
-            <Input
-              placeholder="Enter your email"
-              rounded="rounded-full"
-              aria-required
-              required
-              type="email"
-            />
-            <ButtonCircle
-              className="absolute top-1/2 right-1 -translate-y-1/2 transform"
-              type="submit"
-            >
+            <Input placeholder="Enter your email" rounded="rounded-full" aria-required required type="email" />
+            <ButtonCircle className="absolute right-1 top-1/2 -translate-y-1/2 transform" type="submit">
               <ArrowRightIcon className="size-4" />
             </ButtonCircle>
           </form>
@@ -79,7 +66,7 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionPromo3;
+export default SectionPromo3

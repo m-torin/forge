@@ -6,7 +6,10 @@ import 'server-only';
 import { headers } from 'next/headers';
 import { type NextRequest } from 'next/server';
 
-import { checkApiKeyPermissions } from '../../shared/api-keys/permissions';
+import {
+  checkApiKeyPermissions,
+  permissionsArrayToStructure,
+} from '../../shared/api-keys/permissions';
 import { auth } from '../auth';
 
 import type {
@@ -62,7 +65,12 @@ export async function validateApiKey(
 
     // Check permissions if provided
     if (permissions && result.key?.permissions) {
-      const hasRequiredPermissions = checkApiKeyPermissions(result.key.permissions, permissions);
+      // Convert string array to ApiKeyPermissions structure if needed
+      const keyPermissions = Array.isArray(result.key.permissions)
+        ? permissionsArrayToStructure(result.key.permissions)
+        : result.key.permissions;
+
+      const hasRequiredPermissions = checkApiKeyPermissions(keyPermissions, permissions);
 
       if (!hasRequiredPermissions) {
         return {
@@ -72,6 +80,11 @@ export async function validateApiKey(
       }
     }
 
+    // Convert permissions to ApiKeyPermissions structure if needed
+    const finalPermissions = Array.isArray(result.key.permissions)
+      ? permissionsArrayToStructure(result.key.permissions)
+      : result.key.permissions;
+
     return {
       isValid: true,
       keyData: {
@@ -80,7 +93,7 @@ export async function validateApiKey(
         expiresAt: result.key.expiresAt ? new Date(result.key.expiresAt) : undefined,
         lastUsedAt: result.key.lastUsedAt ? new Date(result.key.lastUsedAt) : undefined,
         organizationId: result.key.organizationId,
-        permissions: result.key.permissions,
+        permissions: finalPermissions,
       },
     };
   } catch (error) {

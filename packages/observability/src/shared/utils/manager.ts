@@ -2,6 +2,8 @@
  * Observability Manager - Core orchestration for multi-provider observability
  */
 
+/* eslint-disable promise/no-promise-in-callback */
+
 import type {
   Breadcrumb,
   ObservabilityManager as IObservabilityManager,
@@ -66,6 +68,10 @@ export class ObservabilityManager implements IObservabilityManager {
     // Wait for all providers to initialize
     await Promise.allSettled(initPromises);
 
+    // Set up cross-provider coordination
+    // TODO: Temporarily disabled to resolve bundling issues
+    // this.setupProviderCoordination();
+
     // Set initial context on providers
     this.syncContextToProviders();
 
@@ -118,8 +124,11 @@ export class ObservabilityManager implements IObservabilityManager {
   async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
     const mergedContext = { ...this.context, ...context };
 
-    const promises = Array.from(this.providers.values()).map((provider) =>
-      provider.captureException(error, mergedContext).catch((err) => {
+    const providers = Array.from(this.providers.values());
+    const promises: Promise<any>[] = [];
+
+    for (const provider of providers) {
+      const promise = provider.captureException(error, mergedContext).catch((err) => {
         if (this.config.onError) {
           this.config.onError(err, {
             provider: provider.name,
@@ -127,8 +136,10 @@ export class ObservabilityManager implements IObservabilityManager {
             originalError: error,
           });
         }
-      }),
-    );
+        return undefined; // Explicitly return undefined for caught errors
+      });
+      promises.push(promise);
+    }
 
     await Promise.allSettled(promises);
   }
@@ -140,8 +151,11 @@ export class ObservabilityManager implements IObservabilityManager {
   ): Promise<void> {
     const mergedContext = { ...this.context, ...context };
 
-    const promises = Array.from(this.providers.values()).map((provider) =>
-      provider.captureMessage(message, level, mergedContext).catch((err) => {
+    const providers = Array.from(this.providers.values());
+    const promises: Promise<any>[] = [];
+
+    for (const provider of providers) {
+      const promise = provider.captureMessage(message, level, mergedContext).catch((err) => {
         if (this.config.onError) {
           this.config.onError(err, {
             provider: provider.name,
@@ -150,22 +164,27 @@ export class ObservabilityManager implements IObservabilityManager {
             method: 'captureMessage',
           });
         }
-      }),
-    );
+        return undefined; // Explicitly return undefined for caught errors
+      });
+      promises.push(promise);
+    }
 
     await Promise.allSettled(promises);
   }
 
   async log(level: string, message: string, metadata?: any): Promise<void> {
-    const promises = Array.from(this.providers.values())
-      .filter((provider) => provider.log)
-      .map((provider) =>
-        provider.log!(level, message, metadata).catch((err) => {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, level, message, method: 'log' });
-          }
-        }),
-      );
+    const providersWithLog = Array.from(this.providers.values()).filter((provider) => provider.log);
+    const promises: Promise<any>[] = [];
+
+    for (const provider of providersWithLog) {
+      const promise = provider.log!(level, message, metadata).catch((err) => {
+        if (this.config.onError) {
+          this.config.onError(err, { provider: provider.name, level, message, method: 'log' });
+        }
+        return undefined; // Explicitly return undefined for caught errors
+      });
+      promises.push(promise);
+    }
 
     await Promise.allSettled(promises);
   }
@@ -321,6 +340,37 @@ export class ObservabilityManager implements IObservabilityManager {
           if (this.config.onError) {
             this.config.onError(err, { provider: provider.name, method: 'endSession' });
           }
+        }
+      }
+    }
+  }
+
+  /**
+   * Set up cross-provider coordination for enhanced observability
+   * This allows providers to share context and correlation IDs
+   */
+  private setupProviderCoordination(): void {
+    const sentryProvider = this.providers.get('sentry');
+    const logtailProvider = this.providers.get('logtail') || this.providers.get('better-stack');
+
+    // Enable coordination between Sentry and Better Stack (if both exist)
+    if (sentryProvider && logtailProvider) {
+      // Check if providers support coordination
+      try {
+        if (typeof (logtailProvider as any).setSentryProvider === 'function') {
+          (logtailProvider as any).setSentryProvider(sentryProvider);
+        }
+        if (typeof (sentryProvider as any).setLogtailProvider === 'function') {
+          (sentryProvider as any).setLogtailProvider(logtailProvider);
+        }
+
+        if (this.config.debug && this.config.onInfo) {
+          this.config.onInfo('Cross-provider coordination enabled: Sentry ↔ Better Stack');
+        }
+      } catch (error) {
+        // Silently continue if coordination setup fails
+        if (this.config.debug && this.config.onError) {
+          this.config.onError(error, { provider: 'manager', method: 'setupProviderCoordination' });
         }
       }
     }

@@ -1,46 +1,46 @@
 import {
   Badge,
+  Box,
   Card,
+  Container,
   Group,
+  ScrollArea,
   SimpleGrid,
   Stack,
+  Tabs,
   Text,
   Title,
-  Tabs,
-  ScrollArea,
-  Box,
-  Container,
 } from '@mantine/core';
 import {
+  IconArticle,
   IconBarcode,
+  IconBrandAirtable,
   IconBuilding,
+  IconCategory,
   IconClock,
+  IconDatabase,
+  IconFolder,
+  IconGift,
+  IconHeart,
   IconKey,
+  IconLink,
+  IconList,
+  IconPhoto as IconMedia,
   IconPackage,
   IconPhoto,
   IconScan,
-  IconUsers,
-  IconWorkflow,
-  IconArticle,
-  IconBrandAirtable,
-  IconFolder,
-  IconCategory,
-  IconStars,
-  IconGift,
-  IconTags,
-  IconLink,
-  IconHeart,
-  IconShoppingCart,
-  IconList,
-  IconDatabase,
-  IconUserShield,
   IconSettings,
-  IconPhoto as IconMedia,
+  IconShoppingCart,
+  IconStars,
+  IconTags,
+  IconUsers,
+  IconUserShield,
+  IconWorkflow,
 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useMediaQuery } from '@mantine/hooks';
 
-import { database } from '@repo/database';
+import { database } from '@repo/database/prisma';
+import { FeatureFlagDemo } from '../../components/feature-flag-demo';
 
 async function getModelCounts() {
   const [
@@ -128,46 +128,46 @@ async function getModelCounts() {
   ]);
 
   return {
-    // Content Models
-    productCategories,
-    articles,
-    brands,
-    collections,
-    products,
-    taxonomies,
-    reviews,
-    registries,
-    registryItems,
-    media,
-    // Junction Models
-    pdpJoins,
-    favoriteJoins,
-    registryPurchases,
-    registryUsers,
-    reviewVotes,
-    // Auth & User Models
-    users,
-    sessions,
     accounts,
-    verifications,
-    organizations,
-    members,
-    teams,
-    teamMembers,
-    invitations,
     // Security Models
     apiKeys,
-    twoFactor,
-    backupCodes,
-    passkeys,
-    // Workflow Models
-    workflows,
-    executions,
-    schedules,
+    articles,
     // Legacy PIM Models
     assets,
+    backupCodes,
     barcodes,
+    brands,
+    collections,
+    executions,
+    favoriteJoins,
+    invitations,
+    media,
+    members,
+    organizations,
+    passkeys,
+    // Junction Models
+    pdpJoins,
+    // Content Models
+    productCategories,
+    products,
+    registries,
+    registryItems,
+    registryPurchases,
+    registryUsers,
+    reviews,
+    reviewVotes,
     scans,
+    schedules,
+    sessions,
+    taxonomies,
+    teamMembers,
+    teams,
+    twoFactor,
+    // Auth & User Models
+    users,
+    verifications,
+    // Workflow Models
+    workflows,
   };
 }
 
@@ -502,7 +502,7 @@ const modelCategories = [
 
 function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
   return (
-    <Container size="xl" px={{ base: 'xs', sm: 'md' }}>
+    <Container px={{ base: 'xs', sm: 'md' }} size="xl">
       <Stack gap="lg">
         <div>
           <Title order={1} size={{ base: 'h2', sm: 'h1' }}>
@@ -513,11 +513,13 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
           </Text>
         </div>
 
+        <FeatureFlagDemo />
+
         <Tabs defaultValue="all" variant="outline">
           <Tabs.List>
             <ScrollArea scrollbarSize={4} type="hover">
               <Group gap={0}>
-                <Tabs.Tab value="all" leftSection={<IconList size={16} />}>
+                <Tabs.Tab leftSection={<IconList size={16} />} value="all">
                   All Models
                 </Tabs.Tab>
                 {modelCategories.map((cat) => {
@@ -525,8 +527,8 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
                   return (
                     <Tabs.Tab
                       key={cat.category}
-                      value={cat.category}
                       leftSection={<Icon size={16} />}
+                      value={cat.category}
                     >
                       <Text size={{ base: 'xs', sm: 'sm' }}>{cat.category}</Text>
                     </Tabs.Tab>
@@ -536,7 +538,7 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
             </ScrollArea>
           </Tabs.List>
 
-          <Tabs.Panel value="all" pt="md">
+          <Tabs.Panel pt="md" value="all">
             <Stack gap="xl">
               {modelCategories.map((category) => (
                 <div key={category.category}>
@@ -546,7 +548,7 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
                       {category.category}
                     </Title>
                   </Group>
-                  <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 'sm', sm: 'lg' }}>
+                  <SimpleGrid cols={{ base: 1, lg: 3, sm: 2 }} spacing={{ base: 'sm', sm: 'lg' }}>
                     {category.models.map((model) => {
                       const Icon = model.icon;
                       const count = counts[model.countKey] || 0;
@@ -562,7 +564,7 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
                           p={{ base: 'sm', sm: 'lg' }}
                         >
                           <Group align="flex-start" justify="space-between" wrap="nowrap">
-                            <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ minWidth: 0, flex: 1 }}>
                               <Group gap="xs" mb="xs" wrap="nowrap">
                                 <Box style={{ flexShrink: 0 }}>
                                   <Icon color={`var(--mantine-color-${model.color}-6)`} size={20} />
@@ -577,9 +579,9 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
                             </div>
                             <Badge
                               color={model.color}
+                              style={{ flexShrink: 0 }}
                               size={{ base: 'sm', sm: 'lg' }}
                               variant="light"
-                              style={{ flexShrink: 0 }}
                             >
                               {count.toLocaleString()}
                             </Badge>
@@ -594,8 +596,8 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
           </Tabs.Panel>
 
           {modelCategories.map((category) => (
-            <Tabs.Panel key={category.category} value={category.category} pt="md">
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 'sm', sm: 'lg' }}>
+            <Tabs.Panel key={category.category} pt="md" value={category.category}>
+              <SimpleGrid cols={{ base: 1, lg: 3, sm: 2 }} spacing={{ base: 'sm', sm: 'lg' }}>
                 {category.models.map((model) => {
                   const Icon = model.icon;
                   const count = counts[model.countKey] || 0;
@@ -611,7 +613,7 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
                       p={{ base: 'sm', sm: 'lg' }}
                     >
                       <Group align="flex-start" justify="space-between" wrap="nowrap">
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
                           <Group gap="xs" mb="xs" wrap="nowrap">
                             <Box style={{ flexShrink: 0 }}>
                               <Icon color={`var(--mantine-color-${model.color}-6)`} size={20} />
@@ -626,9 +628,9 @@ function AdminDashboardClient({ counts }: { counts: Record<string, number> }) {
                         </div>
                         <Badge
                           color={model.color}
+                          style={{ flexShrink: 0 }}
                           size={{ base: 'sm', sm: 'lg' }}
                           variant="light"
-                          style={{ flexShrink: 0 }}
                         >
                           {count.toLocaleString()}
                         </Badge>

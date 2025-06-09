@@ -1,30 +1,24 @@
-import clsx from 'clsx';
-import Image from 'next/image';
-import { type FC } from 'react';
+import clsx from 'clsx'
+import Image from 'next/image'
+import { type FC } from 'react'
 
-import { type TCollection } from '../data/data';
+import { type TCollection } from '../data/data'
 
-import { Link } from './Link';
+import { Link } from './Link'
 
 interface Props {
-  className?: string;
-  collection: TCollection;
-  ratioClass?: string;
+  className?: string
+  collection: TCollection
+  ratioClass?: string
 }
 
 const CollectionCard2: FC<Props> = ({ className, collection, ratioClass = 'aspect-square' }) => {
   if (!collection.handle) {
-    return null;
+    return null
   }
   return (
     <Link href={`/collections/${collection.handle}` as any} className={clsx(className, 'block')}>
-      <div
-        className={clsx(
-          'group relative w-full overflow-hidden rounded-2xl',
-          ratioClass,
-          collection.color,
-        )}
-      >
+      <div className={clsx('group relative w-full overflow-hidden rounded-2xl', ratioClass, collection.color)}>
         {collection.image && (
           <div className="absolute inset-5 xl:inset-14">
             <Image
@@ -48,7 +42,7 @@ const CollectionCard2: FC<Props> = ({ className, collection, ratioClass = 'aspec
         />
       </div>
     </Link>
-  );
-};
+  )
+}
 
-export default CollectionCard2;
+export default CollectionCard2

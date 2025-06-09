@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import { Menu01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
+import { Menu01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 
-import { useAside } from '../aside';
+import { useAside } from '../aside'
 
 const HamburgerBtnMenu = () => {
-  const { open: openAside } = useAside();
+  const { open: openAside } = useAside()
 
   return (
     <button
@@ -17,7 +17,7 @@ const HamburgerBtnMenu = () => {
       <span className="sr-only">Open main menu</span>
       <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Menu01Icon} size={24} />
     </button>
-  );
-};
+  )
+}
 
-export default HamburgerBtnMenu;
+export default HamburgerBtnMenu

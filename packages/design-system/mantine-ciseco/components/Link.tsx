@@ -8,7 +8,7 @@ export const Link = forwardRef(function Link(
   ref: React.ForwardedRef<HTMLAnchorElement>,
 ) {
   const { 'data-testid': testId = 'link', ...linkProps } = props;
-  
+
   return (
     <NextLink
       {...linkProps}

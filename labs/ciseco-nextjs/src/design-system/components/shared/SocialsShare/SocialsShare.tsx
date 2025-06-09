@@ -1,14 +1,14 @@
-import { type FC } from 'react';
+import { type FC } from 'react'
 
 export interface SocialsShareProps {
-  className?: string;
-  itemClass?: string;
+  className?: string
+  itemClass?: string
 }
 
 export interface SocialType {
-  href: string;
-  icon: string;
-  name: string;
+  href: string
+  icon: string
+  name: string
 }
 
 const socials: SocialType[] = [
@@ -16,7 +16,7 @@ const socials: SocialType[] = [
   { name: 'Twitter', href: '#', icon: 'lab la-twitter' },
   { name: 'Linkedin', href: '#', icon: 'lab la-linkedin-in' },
   { name: 'Instagram', href: '#', icon: 'lab la-instagram' },
-];
+]
 
 const SocialsShare: FC<SocialsShareProps> = ({
   className = 'grid gap-[6px]',
@@ -32,14 +32,14 @@ const SocialsShare: FC<SocialsShareProps> = ({
       >
         <i className={item.icon} />
       </a>
-    );
-  };
+    )
+  }
 
   return (
     <div data-nc-id="SocialsShare" className={`nc-SocialsShare ${className}`}>
       {socials.map(renderItem)}
     </div>
-  );
-};
+  )
+}
 
-export default SocialsShare;
+export default SocialsShare

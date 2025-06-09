@@ -13,9 +13,44 @@ import type {
   ProviderRegistry,
 } from '../../../shared/types/types';
 
+// Use vi.hoisted for mock providers
+const { mockProvider, mockProvider2 } = vi.hoisted(() => {
+  const mockProvider: ObservabilityProvider = {
+    name: 'mock-provider-1',
+    addBreadcrumb: vi.fn(),
+    captureException: vi.fn().mockResolvedValue(undefined),
+    captureMessage: vi.fn().mockResolvedValue(undefined),
+    endSession: vi.fn(),
+    initialize: vi.fn().mockResolvedValue(undefined),
+    log: vi.fn().mockResolvedValue(undefined),
+    setContext: vi.fn(),
+    setExtra: vi.fn(),
+    setTag: vi.fn(),
+    setUser: vi.fn(),
+    startSession: vi.fn(),
+    startSpan: vi.fn().mockReturnValue({ id: 'span-1' }),
+    startTransaction: vi.fn().mockReturnValue({ id: 'txn-1' }),
+  };
+
+  const mockProvider2: ObservabilityProvider = {
+    name: 'mock-provider-2',
+    addBreadcrumb: vi.fn(),
+    captureException: vi.fn().mockResolvedValue(undefined),
+    captureMessage: vi.fn().mockResolvedValue(undefined),
+    initialize: vi.fn().mockResolvedValue(undefined),
+    setContext: vi.fn(),
+    setExtra: vi.fn(),
+    setTag: vi.fn(),
+    setUser: vi.fn(),
+    startSpan: vi.fn().mockReturnValue({ id: 'span-2' }),
+    startTransaction: vi.fn().mockReturnValue({ id: 'txn-2' }),
+    // Note: Missing log, endSession, startSession methods to test partial implementation
+  };
+
+  return { mockProvider, mockProvider2 };
+});
+
 describe('ObservabilityManager', () => {
-  let mockProvider: ObservabilityProvider;
-  let mockProvider2: ObservabilityProvider;
   let config: ObservabilityConfig;
   let providerRegistry: ProviderRegistry;
   let manager: ObservabilityManager;
@@ -27,35 +62,12 @@ describe('ObservabilityManager', () => {
     console.error = vi.fn();
     console.log = vi.fn();
 
-    // Create mock providers
-    mockProvider = {
-      name: 'mock-provider-1',
-      addBreadcrumb: vi.fn(),
-      captureException: vi.fn().mockResolvedValue(undefined),
-      captureMessage: vi.fn().mockResolvedValue(undefined),
-      endSession: vi.fn(),
-      initialize: vi.fn().mockResolvedValue(undefined),
-      log: vi.fn().mockResolvedValue(undefined),
-      setContext: vi.fn(),
-      setExtra: vi.fn(),
-      setTag: vi.fn(),
-      setUser: vi.fn(),
-      startSession: vi.fn(),
-      startSpan: vi.fn().mockReturnValue({ id: 'span-1' }),
-      startTransaction: vi.fn().mockReturnValue({ id: 'txn-1' }),
-    };
+    // Clear mock provider calls
+    vi.clearAllMocks();
 
-    mockProvider2 = {
-      name: 'mock-provider-2',
-      addBreadcrumb: vi.fn(),
-      captureException: vi.fn().mockResolvedValue(undefined),
-      captureMessage: vi.fn().mockResolvedValue(undefined),
-      initialize: vi.fn().mockResolvedValue(undefined),
-      setContext: vi.fn(),
-      setExtra: vi.fn(),
-      setTag: vi.fn(),
-      setUser: vi.fn(),
-    };
+    // Reset mock implementations to defaults
+    (mockProvider.initialize as any).mockResolvedValue(undefined);
+    (mockProvider2.initialize as any).mockResolvedValue(undefined);
 
     // Create mock provider registry
     providerRegistry = {
@@ -254,7 +266,8 @@ describe('ObservabilityManager', () => {
       const result = manager.startTransaction(name, context);
 
       expect(mockProvider.startTransaction).toHaveBeenCalledWith(name, context);
-      expect(result).toEqual([{ id: 'txn-1' }]);
+      expect(mockProvider2.startTransaction).toHaveBeenCalledWith(name, context);
+      expect(result).toEqual([{ id: 'txn-1' }, { id: 'txn-2' }]);
     });
 
     it('should start spans in providers that support them', () => {
@@ -264,7 +277,8 @@ describe('ObservabilityManager', () => {
       const result = manager.startSpan(name, parentSpan);
 
       expect(mockProvider.startSpan).toHaveBeenCalledWith(name, parentSpan);
-      expect(result).toEqual([{ id: 'span-1' }]);
+      expect(mockProvider2.startSpan).toHaveBeenCalledWith(name, parentSpan);
+      expect(result).toEqual([{ id: 'span-1' }, { id: 'span-2' }]);
     });
 
     it('should handle transaction errors gracefully', () => {
@@ -281,11 +295,13 @@ describe('ObservabilityManager', () => {
         name: 'test-transaction',
         method: 'startTransaction',
       });
-      expect(result).toBeNull();
+      // mockProvider2 still works, so result should contain its transaction
+      expect(result).toEqual([{ id: 'txn-2' }]);
     });
 
     it('should return null when no providers support transactions', () => {
       delete mockProvider.startTransaction;
+      delete mockProvider2.startTransaction;
 
       const result = manager.startTransaction('test-transaction');
 
@@ -452,6 +468,12 @@ describe('ObservabilityManager', () => {
 
   describe('context synchronization during initialization', () => {
     it('should sync context to providers after initialization', async () => {
+      // Reset mocks to ensure no interference from previous tests
+      (mockProvider.setUser as any).mockImplementation(vi.fn());
+      (mockProvider.setTag as any).mockImplementation(vi.fn());
+      (mockProvider.setExtra as any).mockImplementation(vi.fn());
+      (mockProvider.setContext as any).mockImplementation(vi.fn());
+
       // Set context before initialization
       manager.setUser({ id: 'user-123', email: 'test@example.com' });
       manager.setTag('env', 'test');
@@ -460,11 +482,11 @@ describe('ObservabilityManager', () => {
 
       await manager.initialize();
 
-      // Should be called once during setX and once during sync
-      expect(mockProvider.setUser).toHaveBeenCalledTimes(2);
-      expect(mockProvider.setTag).toHaveBeenCalledTimes(2);
-      expect(mockProvider.setExtra).toHaveBeenCalledTimes(2);
-      expect(mockProvider.setContext).toHaveBeenCalledTimes(2);
+      // Should be called once during sync (not during setX since providers aren't initialized yet)
+      expect(mockProvider.setUser).toHaveBeenCalledTimes(1);
+      expect(mockProvider.setTag).toHaveBeenCalledTimes(1);
+      expect(mockProvider.setExtra).toHaveBeenCalledTimes(1);
+      expect(mockProvider.setContext).toHaveBeenCalledTimes(1);
     });
   });
 

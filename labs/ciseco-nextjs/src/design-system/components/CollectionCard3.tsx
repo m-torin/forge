@@ -1,25 +1,25 @@
-import Image from 'next/image';
-import { type FC } from 'react';
+import Image from 'next/image'
+import { type FC } from 'react'
 
-import { type TCollection } from '../data/data';
+import { type TCollection } from '../data/data'
 
-import { Link } from './Link';
-import ButtonSecondary from './shared/Button/ButtonSecondary';
+import { Link } from './Link'
+import ButtonSecondary from './shared/Button/ButtonSecondary'
 
 interface Props {
-  className?: string;
-  collection: TCollection;
+  className?: string
+  collection: TCollection
 }
 
 const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
   if (!collection.handle) {
-    return null;
+    return null
   }
 
   return (
     <Link href={`/collections/${collection.handle}` as any} className={`block ${className}`}>
       <div
-        className={`group aspect-[16/11] sm:aspect-[16/9] relative w-full overflow-hidden rounded-2xl ${collection.color}`}
+        className={`group relative aspect-[16/11] w-full overflow-hidden rounded-2xl sm:aspect-[16/9] ${collection.color}`}
       >
         <div>
           <div className="absolute inset-5 sm:inset-8">
@@ -61,7 +61,7 @@ const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
         </div>
       </div>
     </Link>
-  );
-};
+  )
+}
 
-export default CollectionCard3;
+export default CollectionCard3

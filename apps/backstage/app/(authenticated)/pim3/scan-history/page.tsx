@@ -1,4 +1,4 @@
-import { ScanHistoryTable } from "../components/ScanHistoryTable";
+import { ScanHistoryTable } from '../components/ScanHistoryTable';
 
 export default function ScanHistoryPage() {
   return <ScanHistoryTable />;

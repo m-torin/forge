@@ -562,8 +562,8 @@ export const collectMerchantsStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-,
       enableDetailedLogging: true,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -716,7 +716,7 @@ export const calculatePerformanceScoresStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -916,7 +916,7 @@ function getImprovementAction(category: string, score: number): string {
     sales: 'Focus on conversion optimization and customer acquisition',
   };
 
-  return actions[(category as any)] || 'Implement improvement measures';
+  return actions[category as any] || 'Implement improvement measures';
 }
 
 function getRiskMitigationAction(riskFactor: string): string {
@@ -928,7 +928,7 @@ function getRiskMitigationAction(riskFactor: string): string {
     quality_risk: 'Review product quality control processes',
   };
 
-  return actions[(riskFactor as any)] || 'Address identified risk factors';
+  return actions[riskFactor as any] || 'Address identified risk factors';
 }
 
 function generateMarketplaceInsights(scores: any[], benchmarkData: any[]): any[] {
@@ -1256,7 +1256,7 @@ function analyzeTrendsOverview(scores: any[]): any {
   const trends = { declining: 0, improving: 0, stable: 0 };
 
   scores.forEach((score) => {
-    trends[(score.trends.trend as any)]++;
+    trends[score.trends.trend as any]++;
   });
 
   return {

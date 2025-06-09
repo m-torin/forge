@@ -1,65 +1,58 @@
 'use client';
 
 import {
+  ActionIcon,
+  Alert,
+  Autocomplete,
+  Badge,
   Button,
   Card,
   Checkbox,
-  DateInput,
+  ColorInput,
+  Divider,
   FileInput,
   Group,
   JsonInput,
+  Loader,
   MultiSelect,
   NumberInput,
   PasswordInput,
+  Pill,
+  Radio,
+  Rating,
+  SegmentedControl,
   Select,
+  Slider,
   Stack,
   Switch,
+  TagsInput,
   Text,
   Textarea,
   TextInput,
   Title,
-  Autocomplete,
-  TagsInput,
-  Combobox,
-  useCombobox,
   Tooltip,
-  ActionIcon,
-  Loader,
-  Badge,
-  Pill,
-  rem,
-  SegmentedControl,
-  Radio,
-  Slider,
-  ColorInput,
-  Rating,
-  Fieldset,
-  Alert,
-  Divider,
 } from '@mantine/core';
-import { DateTimePicker, DatePickerInput } from '@mantine/dates';
-import { useForm, zodResolver } from '@mantine/form';
+import { DatePickerInput, DateTimePicker } from '@mantine/dates';
+import { useForm } from '@mantine/form';
+import { useDebouncedValue } from '@mantine/hooks';
 import {
-  IconUpload,
+  IconAlertCircle,
+  IconCheck,
   IconInfoCircle,
   IconPlus,
-  IconX,
-  IconCheck,
-  IconAlertCircle,
   IconSearch,
+  IconUpload,
 } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
-import { useTransition, useState, useEffect } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { z } from 'zod';
-import { useDebouncedValue } from '@mantine/hooks';
 
 import { notify } from '@repo/notifications/mantine-notifications';
-import { useAutoSave } from '../hooks/useAutoSave';
 
 export interface FormFieldV2 {
+  label: string;
   // Basic properties
   name: string;
-  label: string;
   type:
     | 'text'
     | 'email'
@@ -87,34 +80,34 @@ export interface FormFieldV2 {
     | 'relationship'
     | 'async-select';
 
+  defaultValue?: any;
+  description?: string;
+  disabled?: boolean;
   // Field configuration
   placeholder?: string;
-  description?: string;
-  required?: boolean;
-  disabled?: boolean;
   readOnly?: boolean;
-  defaultValue?: any;
+  required?: boolean;
 
   // Validation
   validation?: (value: any) => string | null;
   zodSchema?: z.ZodSchema;
 
+  errorText?: string;
+  helperText?: string;
   // UI customization
   icon?: React.ReactNode;
   rightSection?: React.ReactNode;
   tooltip?: string;
-  helperText?: string;
-  errorText?: string;
 
+  accept?: string;
+  max?: number;
+  maxFileSize?: number;
+  min?: number;
+  multiple?: boolean;
   // Field-specific options
   options?: { value: string; label: string; disabled?: boolean; group?: string }[];
-  min?: number;
-  max?: number;
-  step?: number;
   rows?: number;
-  accept?: string;
-  maxFileSize?: number;
-  multiple?: boolean;
+  step?: number;
 
   // Relationship handling
   relationshipConfig?: {
@@ -136,36 +129,36 @@ export interface FormFieldV2 {
   // Async data loading
   loadOptions?: (query: string) => Promise<{ value: string; label: string }[]>;
 
+  columns?: number; // For grid layout
   // Group fields together
   fieldset?: string;
-  columns?: number; // For grid layout
 }
 
 interface ModelFormV2Props {
-  title: string;
+  autoSave?: boolean;
+  cancelHref?: string;
+  confirmCancel?: boolean;
   fields: FormFieldV2[];
   initialValues?: Record<string, any>;
-  onSubmit: (values: Record<string, any>) => Promise<void>;
-  submitLabel?: string;
-  cancelHref?: string;
   // New props
   layout?: 'vertical' | 'horizontal';
+  onSubmit: (values: Record<string, any>) => Promise<void>;
   showProgress?: boolean;
-  autoSave?: boolean;
-  confirmCancel?: boolean;
+  submitLabel?: string;
+  title: string;
 }
 
 export function ModelFormV2({
-  title,
+  autoSave = false,
+  cancelHref,
+  confirmCancel = true,
   fields,
   initialValues = {},
-  onSubmit,
-  submitLabel = 'Save',
-  cancelHref,
   layout = 'vertical',
+  onSubmit,
   showProgress = true,
-  autoSave = false,
-  confirmCancel = true,
+  submitLabel = 'Save',
+  title,
 }: ModelFormV2Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -254,8 +247,8 @@ export function ModelFormV2({
       try {
         await onSubmit(values);
         notify.success({
-          title: 'Success!',
           message: `${title} has been saved successfully`,
+          title: 'Success!',
         });
         if (cancelHref) {
           router.push(cancelHref);
@@ -263,8 +256,8 @@ export function ModelFormV2({
       } catch (error) {
         if (error instanceof Error) {
           notify.error({
-            title: 'Error',
             message: error.message,
+            title: 'Error',
           });
 
           // Parse field-specific errors if available
@@ -303,24 +296,24 @@ export function ModelFormV2({
     }
 
     const commonProps = {
-      label: field.label,
-      placeholder: field.placeholder,
       description: field.description,
-      required: field.required,
       disabled: field.disabled || isPending,
-      readOnly: field.readOnly,
       error: fieldErrors[field.name] || form.errors[field.name],
+      label: field.label,
       leftSection: field.icon,
+      onBlur: () => handleFieldBlur(field.name),
+      placeholder: field.placeholder,
+      readOnly: field.readOnly,
+      required: field.required,
       rightSection:
         field.rightSection ||
         (field.tooltip && (
-          <Tooltip label={field.tooltip} withArrow>
+          <Tooltip withArrow label={field.tooltip}>
             <ActionIcon size="xs" variant="subtle">
               <IconInfoCircle size={16} />
             </ActionIcon>
           </Tooltip>
         )),
-      onBlur: () => handleFieldBlur(field.name),
       ...form.getInputProps(field.name),
     };
 
@@ -344,39 +337,39 @@ export function ModelFormV2({
         return (
           <NumberInput
             {...commonProps}
-            min={field.min}
-            max={field.max}
-            step={field.step}
-            decimalScale={2}
-            thousandSeparator=","
             hideControls={false}
+            thousandSeparator=","
+            decimalScale={2}
+            max={field.max}
+            min={field.min}
+            step={field.step}
           />
         );
 
       case 'textarea':
         return (
-          <Textarea {...commonProps} rows={field.rows || 4} autosize minRows={2} maxRows={10} />
+          <Textarea {...commonProps} autosize maxRows={10} minRows={2} rows={field.rows || 4} />
         );
 
       case 'select':
         return (
           <Select
             {...commonProps}
-            data={field.options || []}
-            searchable
-            clearable
-            nothingFoundMessage="No options found"
             checkIconPosition="right"
+            nothingFoundMessage="No options found"
             renderOption={({ option }) => (
               <Group gap="xs">
                 <Text size="sm">{option.label}</Text>
                 {option.disabled && (
-                  <Badge size="xs" color="gray">
+                  <Badge color="gray" size="xs">
                     Unavailable
                   </Badge>
                 )}
               </Group>
             )}
+            clearable
+            data={field.options || []}
+            searchable
           />
         );
 
@@ -384,9 +377,9 @@ export function ModelFormV2({
         return (
           <Autocomplete
             {...commonProps}
+            leftSection={<IconSearch size={16} />}
             data={field.options || []}
             limit={10}
-            leftSection={<IconSearch size={16} />}
           />
         );
 
@@ -394,16 +387,16 @@ export function ModelFormV2({
         return (
           <MultiSelect
             {...commonProps}
-            data={field.options || []}
-            searchable
-            clearable
             hidePickedOptions
-            maxValues={field.max}
             renderOption={({ option }) => (
               <Group gap="xs">
                 <Text size="sm">{option.label}</Text>
               </Group>
             )}
+            clearable
+            data={field.options || []}
+            maxValues={field.max}
+            searchable
           />
         );
 
@@ -411,11 +404,11 @@ export function ModelFormV2({
         return (
           <TagsInput
             {...commonProps}
+            allowDuplicates={false}
+            leftSection={<IconPlus size={16} />}
+            clearable
             data={field.options?.map((o) => o.label) || []}
             maxTags={field.max}
-            allowDuplicates={false}
-            clearable
-            leftSection={<IconPlus size={16} />}
             splitChars={[',', ' ', '|']}
           />
         );
@@ -424,8 +417,8 @@ export function ModelFormV2({
         return (
           <Checkbox
             {...form.getInputProps(field.name, { type: 'checkbox' })}
-            label={field.label}
             description={field.description}
+            label={field.label}
           />
         );
 
@@ -433,10 +426,10 @@ export function ModelFormV2({
         return (
           <Switch
             {...form.getInputProps(field.name, { type: 'checkbox' })}
-            label={field.label}
             description={field.description}
-            onLabel="ON"
             offLabel="OFF"
+            onLabel="ON"
+            label={field.label}
           />
         );
 
@@ -447,9 +440,9 @@ export function ModelFormV2({
               {field.options?.map((option) => (
                 <Radio
                   key={option.value}
-                  value={option.value}
-                  label={option.label}
                   disabled={option.disabled}
+                  label={option.label}
+                  value={option.value}
                 />
               ))}
             </Stack>
@@ -459,18 +452,18 @@ export function ModelFormV2({
       case 'segmented':
         return (
           <div>
-            <Text size="sm" fw={500} mb={4}>
+            <Text fw={500} mb={4} size="sm">
               {field.label}
             </Text>
             {field.description && (
-              <Text size="xs" c="dimmed" mb={8}>
+              <Text c="dimmed" mb={8} size="xs">
                 {field.description}
               </Text>
             )}
             <SegmentedControl
               {...form.getInputProps(field.name)}
-              data={field.options || []}
               fullWidth
+              data={field.options || []}
             />
           </div>
         );
@@ -479,25 +472,25 @@ export function ModelFormV2({
         return (
           <div>
             <Group justify="space-between" mb={4}>
-              <Text size="sm" fw={500}>
+              <Text fw={500} size="sm">
                 {field.label}
               </Text>
               <Badge variant="light">{form.values[field.name] || field.min || 0}</Badge>
             </Group>
             {field.description && (
-              <Text size="xs" c="dimmed" mb={8}>
+              <Text c="dimmed" mb={8} size="xs">
                 {field.description}
               </Text>
             )}
             <Slider
               {...form.getInputProps(field.name)}
-              min={field.min || 0}
-              max={field.max || 100}
-              step={field.step || 1}
               marks={[
-                { value: field.min || 0, label: field.min || 0 },
-                { value: field.max || 100, label: field.max || 100 },
+                { label: field.min || 0, value: field.min || 0 },
+                { label: field.max || 100, value: field.max || 100 },
               ]}
+              max={field.max || 100}
+              min={field.min || 0}
+              step={field.step || 1}
             />
           </div>
         );
@@ -505,11 +498,11 @@ export function ModelFormV2({
       case 'rating':
         return (
           <div>
-            <Text size="sm" fw={500} mb={4}>
+            <Text fw={500} mb={4} size="sm">
               {field.label}
             </Text>
             {field.description && (
-              <Text size="xs" c="dimmed" mb={8}>
+              <Text c="dimmed" mb={8} size="xs">
                 {field.description}
               </Text>
             )}
@@ -545,9 +538,9 @@ export function ModelFormV2({
         return (
           <DatePickerInput
             {...commonProps}
-            clearable
-            valueFormat="MMMM DD, YYYY"
             leftSection={undefined}
+            valueFormat="MMMM DD, YYYY"
+            clearable
           />
         );
 
@@ -555,9 +548,9 @@ export function ModelFormV2({
         return (
           <DateTimePicker
             {...commonProps}
-            clearable
-            valueFormat="MMMM DD, YYYY HH:mm"
             leftSection={undefined}
+            valueFormat="MMMM DD, YYYY HH:mm"
+            clearable
           />
         );
 
@@ -565,10 +558,10 @@ export function ModelFormV2({
         return (
           <DatePickerInput
             {...commonProps}
-            type="range"
-            clearable
-            valueFormat="MMM DD"
             leftSection={undefined}
+            valueFormat="MMM DD"
+            clearable
+            type="range"
           />
         );
 
@@ -576,11 +569,11 @@ export function ModelFormV2({
         return (
           <JsonInput
             {...commonProps}
-            formatOnBlur
-            autosize
-            minRows={4}
-            maxRows={15}
             validationError="Invalid JSON"
+            autosize
+            formatOnBlur
+            maxRows={15}
+            minRows={4}
           />
         );
 
@@ -588,10 +581,7 @@ export function ModelFormV2({
         return (
           <FileInput
             {...commonProps}
-            accept={field.accept}
             leftSection={<IconUpload size={16} />}
-            clearable
-            multiple={field.multiple}
             valueComponent={({ value }) => {
               if (Array.isArray(value)) {
                 return (
@@ -606,6 +596,9 @@ export function ModelFormV2({
               }
               return value ? <Pill size="sm">{value.name}</Pill> : null;
             }}
+            accept={field.accept}
+            clearable
+            multiple={field.multiple}
           />
         );
 
@@ -614,23 +607,23 @@ export function ModelFormV2({
         return (
           <Select
             {...commonProps}
-            data={field.options || []}
-            searchable
-            clearable
-            nothingFoundMessage="No records found"
             leftSection={<IconSearch size={16} />}
+            nothingFoundMessage="No records found"
             renderOption={({ option }) => (
               <Group gap="xs">
                 <div style={{ flex: 1 }}>
                   <Text size="sm">{option.label}</Text>
                   {field.relationshipConfig?.displayKey && (
-                    <Text size="xs" c="dimmed">
+                    <Text c="dimmed" size="xs">
                       ID: {option.value}
                     </Text>
                   )}
                 </div>
               </Group>
             )}
+            clearable
+            data={field.options || []}
+            searchable
           />
         );
 
@@ -649,9 +642,9 @@ export function ModelFormV2({
   return (
     <Card withBorder style={{ position: 'relative' }}>
       <form onSubmit={handleSubmit}>
-        <Stack gap="lg" style={{ opacity: isPending ? 0.6 : 1 }}>
+        <Stack style={{ opacity: isPending ? 0.6 : 1 }} gap="lg">
           <div>
-            <Group justify="space-between" align="flex-start">
+            <Group align="flex-start" justify="space-between">
               <div>
                 <Title order={2}>{title}</Title>
                 <Text c="dimmed" mt={4} size="sm">
@@ -662,8 +655,8 @@ export function ModelFormV2({
               </div>
               {showProgress && (
                 <Badge
-                  size="lg"
                   color={completionPercentage === 100 ? 'green' : 'blue'}
+                  size="lg"
                   variant="light"
                 >
                   {completionPercentage}% Complete
@@ -675,9 +668,7 @@ export function ModelFormV2({
           {Object.entries(fieldsets).map(([fieldsetName, fieldsetFields]) => (
             <div key={fieldsetName}>
               {fieldsetName !== 'default' && (
-                <>
-                  <Divider label={fieldsetName} labelPosition="left" mb="md" />
-                </>
+                <Divider labelPosition="left" label={fieldsetName} mb="md" />
               )}
               <Stack gap="md">
                 {fieldsetFields.map((field) => (
@@ -688,7 +679,7 @@ export function ModelFormV2({
           ))}
 
           {autoSave && (
-            <Alert icon={<IconAlertCircle size={16} />} color="blue" variant="light">
+            <Alert color="blue" icon={<IconAlertCircle size={16} />} variant="light">
               Auto-save is enabled. Changes are saved automatically.
             </Alert>
           )}
@@ -696,7 +687,7 @@ export function ModelFormV2({
           <Group justify="space-between" mt="xl">
             <Group gap="xs">
               {form.isDirty() && (
-                <Text size="xs" c="dimmed">
+                <Text c="dimmed" size="xs">
                   You have unsaved changes
                 </Text>
               )}
@@ -709,14 +700,14 @@ export function ModelFormV2({
                 </Button>
               )}
               <Button
-                type="submit"
-                loading={isPending}
-                disabled={!form.isValid() && touchedFields.size > 0}
                 leftSection={
                   form.isValid() && touchedFields.size === fields.length ? (
                     <IconCheck size={16} />
                   ) : undefined
                 }
+                loading={isPending}
+                disabled={!form.isValid() && touchedFields.size > 0}
+                type="submit"
               >
                 {submitLabel}
               </Button>

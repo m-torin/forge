@@ -27,9 +27,9 @@ export interface TeamWithMembers {
   description?: string;
   id: string;
   memberCount: number;
-  teamMembers: TeamMember[];
   name: string;
   organizationId: string;
+  teamMembers: TeamMember[];
   updatedAt: Date;
 }
 

@@ -1,7 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
-import { ResponsiveModelForm } from '../../components/ResponsiveModelForm';
-import { type FormFieldV2 } from '../../components/ModelFormV2';
+
 import { createRecord } from '../../actions';
+import { type FormFieldV2 } from '../../components/ModelFormV2';
+import { ResponsiveModelForm } from '../../components/ResponsiveModelForm';
 import { getModelConfig } from '../../lib/model-config';
 import { fetchRelationshipOptions } from '../../lib/relationship-utils';
 
@@ -22,6 +23,8 @@ export default async function NewModelPage({ params }: PageProps) {
       const enhancedField: FormFieldV2 = {
         ...field,
         type: field.type as any,
+        // Set columns for grid layout on desktop
+        columns: field.type === 'textarea' || field.type === 'json' ? 12 : 6,
         // Add fieldset based on field type or name
         fieldset: field.name.includes('meta')
           ? 'Metadata'
@@ -30,8 +33,6 @@ export default async function NewModelPage({ params }: PageProps) {
             : field.name.endsWith('At')
               ? 'System Fields'
               : 'default',
-        // Set columns for grid layout on desktop
-        columns: field.type === 'textarea' || field.type === 'json' ? 12 : 6,
       };
 
       // Handle relationship fields
@@ -40,13 +41,13 @@ export default async function NewModelPage({ params }: PageProps) {
           const options = await fetchRelationshipOptions(field.name);
           return {
             ...enhancedField,
-            options,
             type: 'relationship' as const,
+            options,
             relationshipConfig: {
+              allowCreate: false,
+              displayKey: 'name',
               model: field.name.slice(0, -2),
               searchKey: 'name',
-              displayKey: 'name',
-              allowCreate: false,
             },
           };
         } catch {
@@ -106,19 +107,19 @@ export default async function NewModelPage({ params }: PageProps) {
 
   return (
     <ResponsiveModelForm
-      title={`Create ${config.name}`}
-      fields={fieldsWithOptions}
-      onSubmit={handleSubmit}
-      submitLabel={`Create ${config.name}`}
       cancelHref={`/admin/${params.model}`}
+      autoSave={false} // Don't auto-save on create
+      collapsibleSections={false}
+      confirmCancel={true}
+      floatingActionButton={true}
       // Mobile-first settings
       layout="vertical"
-      showProgress={true}
-      autoSave={false} // Don't auto-save on create
-      confirmCancel={true}
       mobileLayout="steps" // Use steps for create flow
-      collapsibleSections={false}
-      floatingActionButton={true}
+      onSubmit={handleSubmit}
+      showProgress={true}
+      fields={fieldsWithOptions}
+      submitLabel={`Create ${config.name}`}
+      title={`Create ${config.name}`}
     />
   );
 }

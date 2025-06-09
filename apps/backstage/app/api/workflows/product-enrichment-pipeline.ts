@@ -267,8 +267,8 @@ export const fetchProductsToEnrichStep = compose(
   (step) => withStepTimeout(step, { execution: 30000 }),
   (step) =>
     withStepMonitoring(step, {
-,
       enableDetailedLogging: true,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -316,7 +316,7 @@ export const collectReviewsStep = compose(
       // Collect from each source
       for (const source of reviewSources) {
         const sourceReviews = await fetchReviewsFromSource(product, source);
-        reviews.bySource[(source as any)] = sourceReviews;
+        reviews.bySource[source as any] = sourceReviews;
 
         // Aggregate data
         reviews.aggregated.summary.totalReviews += sourceReviews.count;
@@ -347,7 +347,7 @@ export const collectReviewsStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -407,7 +407,7 @@ export const extractSpecificationsStep = createStep('extract-specifications', as
     Object.entries(specs).forEach(([key, value]: [string, any]) => {
       const normalized = normalizeSpecification(key, value);
       if (normalized) {
-        validatedSpecs[(normalized.key as any)] = {
+        validatedSpecs[normalized.key as any] = {
           source: normalized.source,
           unit: normalized.unit,
           value: normalized.value,
@@ -525,9 +525,10 @@ export const generateAIDescriptionsStep = compose(
   }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
       resetTimeout: 300000,
+      threshold: 0.5,
       timeout: 60000,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -570,7 +571,7 @@ async function classifyProductCategory(product: any): Promise<any> {
   return {
     confidence: 0.85 + Math.random() * 0.15,
     primary,
-    secondary: secondaryMap[(primary as any)].slice(0, 2),
+    secondary: secondaryMap[primary as any].slice(0, 2),
     tags: tags.filter(() => Math.random() > 0.7),
   };
 }

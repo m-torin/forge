@@ -3,14 +3,14 @@
 import { revalidatePath } from 'next/cache';
 
 import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
-import { 
-  filterSensitiveData, 
-  validateSecureFields, 
-  checkRateLimit,
-  auditFieldAccess 
-} from './lib/security-middleware';
+import { database } from '@repo/database/prisma';
+
 import { getModelSecurityConfig } from './lib/security-config';
+import {
+  checkRateLimit,
+  filterSensitiveData,
+  validateSecureFields,
+} from './lib/security-middleware';
 
 import type { Prisma } from '@prisma/client';
 
@@ -27,47 +27,47 @@ interface PrismaDelegate {
 
 // Map model names to their Prisma delegates
 const modelDelegates: Record<string, PrismaDelegate> = {
-  // Content Models
-  productCategory: database.productCategory as any,
   article: database.article as any,
   brand: database.brand as any,
   collection: database.collection as any,
-  taxonomy: database.taxonomy as any,
-  review: database.review as any,
+  media: database.media as any,
+  // Content Models
+  productCategory: database.productCategory as any,
   registry: database.registry as any,
   registryItem: database.registryItem as any,
   registryPurchaseJoin: database.registryPurchaseJoin as any,
-  media: database.media as any,
-  
+  review: database.review as any,
+  taxonomy: database.taxonomy as any,
+
+  favoriteJoin: database.favoriteJoin as any,
   // Junction Models
   pdpJoin: database.pdpJoin as any,
-  favoriteJoin: database.favoriteJoin as any,
-  reviewVoteJoin: database.reviewVoteJoin as any,
   registryUserJoin: database.registryUserJoin as any,
-  
-  // Authentication & Organization Models
-  user: database.user as any,
-  session: database.session as any,
+  reviewVoteJoin: database.reviewVoteJoin as any,
+
   account: database.account as any,
-  verification: database.verification as any,
-  organization: database.organization as any,
+  invitation: database.invitation as any,
   member: database.member as any,
+  organization: database.organization as any,
+  session: database.session as any,
   team: database.team as any,
   teamMember: database.teamMember as any,
-  invitation: database.invitation as any,
-  
+  // Authentication & Organization Models
+  user: database.user as any,
+  verification: database.verification as any,
+
   // Security Models
   apiKey: database.apiKey as any,
-  twoFactor: database.twoFactor as any,
   backupCode: database.backupCode as any,
   passkey: database.passkey as any,
-  
+  twoFactor: database.twoFactor as any,
+
   // Product & PIM Models
   product: database.product as any,
-  productBarcode: database.productBarcode as any,
   productAsset: database.productAsset as any,
+  productBarcode: database.productBarcode as any,
   scanHistory: database.scanHistory as any,
-  
+
   // Workflow Models
   workflowConfig: database.workflowConfig as any,
   workflowExecution: database.workflowExecution as any,
@@ -116,13 +116,15 @@ export async function listRecords(
 
   // Create security context
   const securityContext = {
-    userId: session.user.id,
-    userRole: session.user.role || 'user',
     permissions: [
       session.user.role,
-      ...(session.user.role === 'admin' ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts'] : []),
+      ...(session.user.role === 'admin'
+        ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts']
+        : []),
     ],
     sessionId: session.session.id,
+    userId: session.user.id,
+    userRole: session.user.role || 'user',
   };
 
   // Filter sensitive data from records
@@ -166,13 +168,15 @@ export async function createRecord(
 
   // Create security context
   const securityContext = {
-    userId: session.user.id,
-    userRole: session.user.role || 'user',
     permissions: [
       session.user.role,
-      ...(session.user.role === 'admin' ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts'] : []),
+      ...(session.user.role === 'admin'
+        ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts']
+        : []),
     ],
     sessionId: session.session.id,
+    userId: session.user.id,
+    userRole: session.user.role || 'user',
   };
 
   // Check rate limiting for sensitive models
@@ -264,13 +268,15 @@ export async function updateRecord(
 
   // Create security context
   const securityContext = {
-    userId: session.user.id,
-    userRole: session.user.role || 'user',
     permissions: [
       session.user.role,
-      ...(session.user.role === 'admin' ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts'] : []),
+      ...(session.user.role === 'admin'
+        ? ['admin', 'manage_api_keys', 'manage_security', 'manage_accounts']
+        : []),
     ],
     sessionId: session.session.id,
+    userId: session.user.id,
+    userRole: session.user.role || 'user',
   };
 
   // Check rate limiting for sensitive models
@@ -414,8 +420,8 @@ export async function exportRecords(
   }
 
   return {
+    filename,
     content,
     mimeType,
-    filename,
   };
 }

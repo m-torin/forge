@@ -1,0 +1,1 @@
+export { register, onRequestError } from '@repo/observability/server/next';

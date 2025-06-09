@@ -1,72 +1,62 @@
-'use client';
+'use client'
 
-import { ClockIcon, NoSymbolIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid';
-import { ShoppingBag03Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import clsx from 'clsx';
-import Image from 'next/image';
-import Link from 'next/link';
-import { type FC, useEffect, useState } from 'react';
+import { ClockIcon, NoSymbolIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { StarIcon } from '@heroicons/react/24/solid'
+import { ShoppingBag03Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import clsx from 'clsx'
+import Image from 'next/image'
+import Link from 'next/link'
+import { type FC, useEffect, useState } from 'react'
 
-import { getProductDetailByHandle, type TProductDetail } from '../data/data';
+import { getProductDetailByHandle, type TProductDetail } from '../data/data'
 
-import AccordionInfo from './AccordionInfo';
-import AddToCardButton from './AddToCardButton';
-import { useAside } from './aside';
-import { Divider } from './Divider';
-import IconDiscount from './IconDiscount';
-import LikeButton from './LikeButton';
-import NcInputNumber from './NcInputNumber';
-import Prices from './Prices';
-import ButtonPrimary from './shared/Button/ButtonPrimary';
+import AccordionInfo from './AccordionInfo'
+import AddToCardButton from './AddToCardButton'
+import { useAside } from './aside'
+import { Divider } from './Divider'
+import IconDiscount from './IconDiscount'
+import LikeButton from './LikeButton'
+import NcInputNumber from './NcInputNumber'
+import Prices from './Prices'
+import ButtonPrimary from './shared/Button/ButtonPrimary'
 
 export interface ProductQuickViewProps {
-  className?: string;
+  className?: string
 }
 
 const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
-  const { productQuickViewHandle: handle } = useAside();
+  const { productQuickViewHandle: handle } = useAside()
 
-  const [qualitySelected, setQualitySelected] = useState(1);
-  const [product, setProduct] = useState<TProductDetail>();
+  const [qualitySelected, setQualitySelected] = useState(1)
+  const [product, setProduct] = useState<TProductDetail>()
   useEffect(() => {
     if (!handle) {
-      return;
+      return
     }
 
     const fetchProduct = async () => {
-      const response = await getProductDetailByHandle(handle);
+      const response = await getProductDetailByHandle(handle)
       if (!response) {
-        return;
+        return
       }
-      setProduct(response);
-    };
-    fetchProduct();
-  }, [handle]);
+      setProduct(response)
+    }
+    fetchProduct()
+  }, [handle])
 
   if (!product) {
-    return null;
+    return null
   }
 
-  const {
-    featuredImage,
-    images,
-    options,
-    price,
-    rating,
-    reviewNumber,
-    selectedOptions,
-    status,
-    title,
-  } = product;
-  const sizeSelected = selectedOptions?.find((option) => option.name === 'Size')?.value;
-  const colorSelected = selectedOptions?.find((option) => option.name === 'Color')?.value;
+  const { featuredImage, images, options, price, rating, reviewNumber, selectedOptions, status, title } = product
+  const sizeSelected = selectedOptions?.find((option) => option.name === 'Size')?.value
+  const colorSelected = selectedOptions?.find((option) => option.name === 'Color')?.value
 
   const renderOtherOptions = () => {
-    const otherOptions = options?.filter((option) => option.name !== 'Size');
+    const otherOptions = options?.filter((option) => option.name !== 'Size')
     if (!otherOptions?.length) {
-      return null;
+      return null
     }
 
     return otherOptions.map((option) => {
@@ -78,39 +68,37 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           <div className="mt-2.5 flex gap-x-2.5">
             {option.optionValues.map((value, index) => {
               // for demo purpose
-              const isActive = index === 1;
+              const isActive = index === 1
 
               return (
                 <div
                   key={value.name}
                   className={clsx(
                     'relative size-9 cursor-pointer rounded-full',
-                    isActive && 'ring-2 ring-neutral-900 ring-offset-2',
+                    isActive && 'ring-2 ring-neutral-900 ring-offset-2'
                   )}
                 >
                   <div
                     className="absolute inset-0.5 z-0 overflow-hidden rounded-full bg-cover"
                     style={{
                       backgroundColor: value.swatch?.color,
-                      backgroundImage: value.swatch?.image
-                        ? `url(${value.swatch.image})`
-                        : undefined,
+                      backgroundImage: value.swatch?.image ? `url(${value.swatch.image})` : undefined,
                     }}
                   />
                 </div>
-              );
+              )
             })}
           </div>
         </div>
-      );
-    });
-  };
+      )
+    })
+  }
 
   const renderSizeOptions = () => {
-    const sizeOptionValues = options?.find((option) => option.name === 'Size')?.optionValues;
+    const sizeOptionValues = options?.find((option) => option.name === 'Size')?.optionValues
 
     if (!sizeOptionValues?.length) {
-      return null;
+      return null
     }
 
     return (
@@ -119,44 +107,42 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           <label>
             <span>Size</span>
           </label>
-          <div className="cursor-pointer text-primary-600 hover:text-primary-500">
-            See sizing chart
-          </div>
+          <div className="text-primary-600 hover:text-primary-500 cursor-pointer">See sizing chart</div>
         </div>
         <div className="mt-2.5 grid grid-cols-5 gap-2 sm:grid-cols-7">
           {sizeOptionValues.map((size, index) => {
             // for demo purpose
-            const isActive = index === 0;
+            const isActive = index === 0
             return (
               <div
                 key={size.name}
                 className={clsx(
-                  'relative flex h-10 items-center justify-center overflow-hidden rounded-lg text-sm font-medium text-neutral-900 uppercase ring-1 ring-neutral-200 select-none hover:bg-neutral-50 sm:h-11 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700',
-                  isActive && 'ring-2 ring-neutral-900 dark:ring-neutral-200',
+                  'relative flex h-10 select-none items-center justify-center overflow-hidden rounded-lg text-sm font-medium uppercase text-neutral-900 ring-1 ring-neutral-200 hover:bg-neutral-50 sm:h-11 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700',
+                  isActive && 'ring-2 ring-neutral-900 dark:ring-neutral-200'
                 )}
               >
                 {size.name}
               </div>
-            );
+            )
           })}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   const renderStatus = () => {
     if (!status) {
-      return null;
+      return null
     }
     const CLASSES =
-      'absolute top-3 start-3 px-2.5 py-1.5 text-xs bg-white dark:bg-neutral-900 nc-shadow-lg rounded-full flex items-center justify-center text-neutral-700 text-neutral-900 dark:text-neutral-300';
+      'absolute top-3 start-3 px-2.5 py-1.5 text-xs bg-white dark:bg-neutral-900 nc-shadow-lg rounded-full flex items-center justify-center text-neutral-700 text-neutral-900 dark:text-neutral-300'
     if (status === 'New in') {
       return (
         <div className={CLASSES}>
           <SparklesIcon className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
     if (status === '50% Discount') {
       return (
@@ -164,7 +150,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           <IconDiscount className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
     if (status === 'Sold Out') {
       return (
@@ -172,7 +158,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           <NoSymbolIcon className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
     if (status === 'limited edition') {
       return (
@@ -180,10 +166,10 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           <ClockIcon className="h-3.5 w-3.5" />
           <span className="ms-1 leading-none">{status}</span>
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   const renderSectionContent = () => {
     return (
@@ -195,10 +181,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           </h2>
 
           <div className="mt-5 flex flex-wrap items-center justify-start gap-x-4 gap-y-1.5 sm:gap-x-5 rtl:justify-end">
-            <Prices
-              contentClass="py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold"
-              price={price || 1}
-            />
+            <Prices contentClass="py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold" price={price || 1} />
             <div className="h-6 border-s border-neutral-300 dark:border-neutral-700" />
             <div className="flex items-center">
               <Link href={`/products/${handle}`} className="flex items-center text-sm font-medium">
@@ -206,9 +189,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                 <div className="ms-1.5 flex">
                   <span>{rating}</span>
                   <span className="mx-2 block">·</span>
-                  <span className="text-neutral-600 underline dark:text-neutral-400">
-                    {reviewNumber} reviews
-                  </span>
+                  <span className="text-neutral-600 underline dark:text-neutral-400">{reviewNumber} reviews</span>
                 </div>
               </Link>
               <span className="mx-2.5 hidden sm:block">·</span>
@@ -291,24 +272,21 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
         <div className="mt-6 flex text-sm text-neutral-500">
           <p className="text-xs">
             or{' '}
-            <Link
-              href={`/products/${handle}`}
-              className="text-xs font-medium text-neutral-900 uppercase"
-            >
+            <Link href={`/products/${handle}`} className="text-xs font-medium uppercase text-neutral-900">
               Go to product detail page <span aria-hidden="true"> →</span>
             </Link>
           </p>
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className={className}>
       <div className="lg:flex">
         <div className="w-full lg:w-[50%]">
           <div className="relative">
-            <div className="aspect-square relative">
+            <div className="relative aspect-square">
               {images?.[0] && (
                 <Image
                   className="rounded-xl object-cover"
@@ -326,10 +304,10 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           <div className="mt-3 hidden grid-cols-2 gap-3 sm:mt-6 sm:gap-6 lg:grid xl:mt-5 xl:gap-5">
             {[images?.[1], images?.[2]].map((image, index) => {
               if (!image?.src) {
-                return null;
+                return null
               }
               return (
-                <div key={index} className="aspect-[3/4] relative">
+                <div key={index} className="relative aspect-[3/4]">
                   <Image
                     className="rounded-xl object-cover"
                     alt={image.alt}
@@ -338,18 +316,16 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                     src={image}
                   />
                 </div>
-              );
+              )
             })}
           </div>
         </div>
 
         {/* SIDEBAR */}
-        <div className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8">
-          {renderSectionContent()}
-        </div>
+        <div className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8">{renderSectionContent()}</div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductQuickView;
+export default ProductQuickView

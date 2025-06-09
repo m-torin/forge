@@ -1,60 +1,46 @@
-'use client';
+'use client'
 
-import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid';
-import { ShoppingBag03Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import Link from 'next/link';
-import { type FC } from 'react';
+import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
+import { StarIcon } from '@heroicons/react/24/solid'
+import { ShoppingBag03Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import Link from 'next/link'
+import { type FC } from 'react'
 
-import { type TProductItem } from '../data/data';
+import { type TProductItem } from '../data/data'
 
-import AddToCardButton from './AddToCardButton';
-import { useAside } from './aside';
-import LikeButton from './LikeButton';
-import Prices from './Prices';
-import ProductStatus from './ProductStatus';
-import ButtonPrimary from './shared/Button/ButtonPrimary';
-import ButtonSecondary from './shared/Button/ButtonSecondary';
-import NcImage from './shared/NcImage/NcImage';
+import AddToCardButton from './AddToCardButton'
+import { useAside } from './aside'
+import LikeButton from './LikeButton'
+import Prices from './Prices'
+import ProductStatus from './ProductStatus'
+import ButtonPrimary from './shared/Button/ButtonPrimary'
+import ButtonSecondary from './shared/Button/ButtonSecondary'
+import NcImage from './shared/NcImage/NcImage'
 
 export interface ProductCardProps {
-  className?: string;
-  data: TProductItem;
-  isLiked?: boolean;
+  className?: string
+  data: TProductItem
+  isLiked?: boolean
 }
 
 const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) => {
-  const {
-    featuredImage,
-    handle,
-    images,
-    options,
-    price,
-    rating,
-    reviewNumber,
-    selectedOptions,
-    status,
-    title,
-  } = data;
-  const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
+  const { featuredImage, handle, images, options, price, rating, reviewNumber, selectedOptions, status, title } = data
+  const color = selectedOptions?.find((option) => option.name === 'Color')?.value
 
-  const { open: openAside, setProductQuickViewHandle } = useAside();
+  const { open: openAside, setProductQuickViewHandle } = useAside()
 
   const renderColorOptions = () => {
-    const optionColorValues = options?.find((option) => option.name === 'Color')?.optionValues;
+    const optionColorValues = options?.find((option) => option.name === 'Color')?.optionValues
 
     if (!optionColorValues?.length) {
-      return null;
+      return null
     }
 
     return (
       <div className="flex gap-1.5">
         {optionColorValues.map((color) => (
-          <div
-            key={color.name}
-            className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full"
-          >
+          <div key={color.name} className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full">
             <div
               className="absolute inset-0.5 z-0 rounded-full"
               style={{
@@ -65,8 +51,8 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
           </div>
         ))}
       </div>
-    );
-  };
+    )
+  }
 
   const renderGroupButtons = () => {
     return (
@@ -83,37 +69,31 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
           sizeClass="py-2 px-4"
           title={title || ''}
         >
-          <HugeiconsIcon
-            strokeWidth={2}
-            color="currentColor"
-            icon={ShoppingBag03Icon}
-            className="mb-px"
-            size={12}
-          />
+          <HugeiconsIcon strokeWidth={2} color="currentColor" icon={ShoppingBag03Icon} className="mb-px" size={12} />
           <span className="ms-1">Add to bag</span>
         </AddToCardButton>
 
         <ButtonSecondary
           fontSize="text-xs"
           onClick={() => {
-            setProductQuickViewHandle(handle || '');
-            openAside('product-quick-view');
+            setProductQuickViewHandle(handle || '')
+            openAside('product-quick-view')
           }}
-          className="ms-1.5 bg-white shadow-lg transition-colors hover:bg-gray-100! hover:text-neutral-900"
+          className="hover:bg-gray-100! ms-1.5 bg-white shadow-lg transition-colors hover:text-neutral-900"
           sizeClass="py-2 px-4"
         >
           <ArrowsPointingOutIcon className="size-3.5" />
           <span className="ms-1">Quick view</span>
         </ButtonSecondary>
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}>
       <Link href={`/products/${handle}`} className="absolute inset-0" />
 
-      <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
+      <div className="z-1 group relative shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
         <Link href={`/products/${handle}`} className="block">
           {featuredImage?.src && (
             <NcImage
@@ -131,12 +111,10 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
         {renderGroupButtons()}
       </div>
 
-      <div className="space-y-4 px-2.5 pt-5 pb-2.5">
+      <div className="space-y-4 px-2.5 pb-2.5 pt-5">
         {renderColorOptions()}
         <div>
-          <h2 className="nc-ProductCard__title text-base font-semibold transition-colors">
-            {title}
-          </h2>
+          <h2 className="nc-ProductCard__title text-base font-semibold transition-colors">{title}</h2>
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{color}</p>
         </div>
 
@@ -151,7 +129,7 @@ const ProductCard: FC<ProductCardProps> = ({ className = '', data, isLiked }) =>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductCard;
+export default ProductCard

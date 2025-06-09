@@ -77,7 +77,7 @@ export const createUserProfileStep = compose(
 // Step 2: Send welcome email
 export const sendWelcomeEmailStep = compose(
   StepTemplates.notification('send-welcome-email', 'Send personalized welcome email', {
-,
+    channel: 'email',
     template: {
       subject: 'Welcome to {{appName}}! 🎉',
       templateId: 'welcome-v2',
@@ -134,7 +134,6 @@ export const applyReferralRewardsStep = StepTemplates.conditional(
   'apply-referral-rewards',
   'Apply referral bonuses if valid',
   {
-,
     falseStep: createStep('skip-rewards', async (data: any) => ({
       ...data,
       rewardsApplied: false,
@@ -322,7 +321,6 @@ export const trackAnalyticsStep = compose(
       events.push({
         event: 'referral_completed',
         properties: {
-,
           rewardAmount: data.referral.rewards.referrerBonus,
         },
         timestamp: new Date().toISOString(),
@@ -347,7 +345,6 @@ export const notifyInternalTeamStep = StepTemplates.notification(
   'notify-team',
   'Alert sales/success team about new signup',
   {
-,
     condition: (data: any) =>
       data.signupSource === 'paid' || data.referral?.referrer?.tier === 'premium',
     template: {

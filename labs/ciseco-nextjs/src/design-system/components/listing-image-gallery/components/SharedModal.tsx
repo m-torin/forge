@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
   ArrowTopRightOnSquareIcon,
@@ -6,27 +6,27 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import Image from 'next/image';
-import { useState } from 'react';
-import { useSwipeable } from 'react-swipeable';
+} from '@heroicons/react/24/outline'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import Image from 'next/image'
+import { useState } from 'react'
+import { useSwipeable } from 'react-swipeable'
 
-import { variants } from '../../../utils/animationVariants';
-import { range } from '../utils/range';
+import { variants } from '../../../utils/animationVariants'
+import { range } from '../utils/range'
 
-import Twitter from './Icons/Twitter';
+import Twitter from './Icons/Twitter'
 
-import type { ListingGalleryImage } from '../utils/types';
+import type { ListingGalleryImage } from '../utils/types'
 
 interface SharedModalProps {
-  changePhotoId: (newVal: number) => void;
-  closeModal: () => void;
-  currentPhoto?: ListingGalleryImage;
-  direction?: number;
-  images: ListingGalleryImage[];
-  index: number;
-  navigation: boolean;
+  changePhotoId: (newVal: number) => void
+  closeModal: () => void
+  currentPhoto?: ListingGalleryImage
+  direction?: number
+  images: ListingGalleryImage[]
+  index: number
+  navigation: boolean
 }
 
 export default function SharedModal({
@@ -38,27 +38,25 @@ export default function SharedModal({
   index,
   navigation,
 }: SharedModalProps) {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(false)
 
-  const filteredImages = images?.filter((img: ListingGalleryImage) =>
-    range(index - 15, index + 15).includes(img.id),
-  );
+  const filteredImages = images?.filter((img: ListingGalleryImage) => range(index - 15, index + 15).includes(img.id))
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
       if (index < images?.length - 1) {
-        changePhotoId(index + 1);
+        changePhotoId(index + 1)
       }
     },
     onSwipedRight: () => {
       if (index > 0) {
-        changePhotoId(index - 1);
+        changePhotoId(index - 1)
       }
     },
     trackMouse: true,
-  });
+  })
 
-  const currentImage = images ? images[index] : currentPhoto;
+  const currentImage = images ? images[index] : currentPhoto
 
   return (
     <MotionConfig
@@ -68,12 +66,12 @@ export default function SharedModal({
       }}
     >
       <div
-        className="wide:h-full xl:taller-than-854:h-auto relative z-50 flex aspect-3/2 w-full max-w-7xl items-center"
+        className="wide:h-full xl:taller-than-854:h-auto aspect-3/2 relative z-50 flex w-full max-w-7xl items-center"
         {...handlers}
       >
         {/* Main image */}
         <div className="w-full overflow-hidden">
-          <div className="relative flex aspect-3/2 items-center justify-center">
+          <div className="aspect-3/2 relative flex items-center justify-center">
             <AnimatePresence custom={direction} initial={false}>
               <motion.div
                 key={index}
@@ -103,13 +101,13 @@ export default function SharedModal({
         <div className="absolute inset-0 mx-auto flex max-w-7xl items-center justify-center">
           {/* Buttons */}
           {loaded && (
-            <div className="relative aspect-3/2 max-h-full w-full">
+            <div className="aspect-3/2 relative max-h-full w-full">
               {navigation && (
                 <>
                   {index > 0 && (
                     <button
                       onClick={() => changePhotoId(index - 1)}
-                      className="absolute top-[calc(50%-16px)] left-3 rounded-full bg-black/50 p-3 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white focus:outline-hidden"
+                      className="focus:outline-hidden absolute left-3 top-[calc(50%-16px)] rounded-full bg-black/50 p-3 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white"
                       style={{ transform: 'translate3d(0, 0, 0)' }}
                     >
                       <ChevronLeftIcon className="h-6 w-6" />
@@ -118,7 +116,7 @@ export default function SharedModal({
                   {index + 1 < images.length && (
                     <button
                       onClick={() => changePhotoId(index + 1)}
-                      className="absolute top-[calc(50%-16px)] right-3 rounded-full bg-black/50 p-3 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white focus:outline-hidden"
+                      className="focus:outline-hidden absolute right-3 top-[calc(50%-16px)] rounded-full bg-black/50 p-3 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white"
                       style={{ transform: 'translate3d(0, 0, 0)' }}
                     >
                       <ChevronRightIcon className="h-6 w-6" />
@@ -126,14 +124,10 @@ export default function SharedModal({
                   )}
                 </>
               )}
-              <div className="absolute top-0 right-0 flex items-center gap-2 p-3 text-white">
+              <div className="absolute right-0 top-0 flex items-center gap-2 p-3 text-white">
                 {navigation ? (
                   <a
-                    href={
-                      typeof currentImage?.url === 'string'
-                        ? currentImage.url
-                        : currentImage?.url?.src || '#'
-                    }
+                    href={typeof currentImage?.url === 'string' ? currentImage.url : currentImage?.url?.src || '#'}
                     className="rounded-full bg-black/50 p-2 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white"
                     rel="noreferrer"
                     target="_blank"
@@ -153,24 +147,20 @@ export default function SharedModal({
                   </a>
                 )}
               </div>
-              <div className="absolute top-0 left-0 flex items-center gap-2 p-3 text-white">
+              <div className="absolute left-0 top-0 flex items-center gap-2 p-3 text-white">
                 <button
                   onClick={() => closeModal()}
                   className="rounded-full bg-black/50 p-2 text-white/75 backdrop-blur-lg transition hover:bg-black/75 hover:text-white"
                 >
-                  {navigation ? (
-                    <XMarkIcon className="h-5 w-5" />
-                  ) : (
-                    <ArrowUturnLeftIcon className="h-5 w-5" />
-                  )}
+                  {navigation ? <XMarkIcon className="h-5 w-5" /> : <ArrowUturnLeftIcon className="h-5 w-5" />}
                 </button>
               </div>
             </div>
           )}
           {/* Bottom Nav bar */}
           {navigation && (
-            <div className="fixed inset-x-0 bottom-0 z-40 overflow-hidden bg-linear-to-b from-black/0 to-black/60">
-              <motion.div className="mx-auto mt-6 mb-6 flex aspect-3/2 h-14" initial={false}>
+            <div className="bg-linear-to-b fixed inset-x-0 bottom-0 z-40 overflow-hidden from-black/0 to-black/60">
+              <motion.div className="aspect-3/2 mx-auto mb-6 mt-6 flex h-14" initial={false}>
                 <AnimatePresence initial={false}>
                   {filteredImages.map(({ id, url }) => (
                     <motion.button
@@ -180,7 +170,7 @@ export default function SharedModal({
                         id === index ? 'z-20 rounded-md shadow-sm shadow-black/50' : 'z-10'
                       } ${id === 0 ? 'rounded-l-md' : ''} ${
                         id === images.length - 1 ? 'rounded-r-md' : ''
-                      } relative inline-block w-full shrink-0 transform-gpu overflow-hidden focus:outline-hidden`}
+                      } focus:outline-hidden relative inline-block w-full shrink-0 transform-gpu overflow-hidden`}
                       animate={{
                         width: '100%',
                         scale: id === index ? 1.25 : 1,
@@ -212,5 +202,5 @@ export default function SharedModal({
         </div>
       </div>
     </MotionConfig>
-  );
+  )
 }

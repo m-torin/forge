@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import Slider from 'rc-slider';
-import { useState } from 'react';
+import Slider from 'rc-slider'
+import { useState } from 'react'
 
-import { Divider } from './Divider';
-import MySwitch from './MySwitch';
-import Checkbox from './shared/Checkbox/Checkbox';
-import Input from './shared/Input/Input';
-import Radio from './shared/Radio/Radio';
+import { Divider } from './Divider'
+import MySwitch from './MySwitch'
+import Checkbox from './shared/Checkbox/Checkbox'
+import Input from './shared/Input/Input'
+import Radio from './shared/Radio/Radio'
 
 // DEMO DATA
 const DATA_categories = [
@@ -26,48 +26,38 @@ const DATA_categories = [
   {
     name: 'Accessories',
   },
-];
-const DATA_colors = [
-  { name: 'White' },
-  { name: 'Beige' },
-  { name: 'Blue' },
-  { name: 'Black' },
-  { name: 'Brown' },
-];
-const DATA_sizes = [{ name: 'XS' }, { name: 'S' }, { name: 'M' }, { name: 'L' }, { name: 'XL' }];
+]
+const DATA_colors = [{ name: 'White' }, { name: 'Beige' }, { name: 'Blue' }, { name: 'Black' }, { name: 'Brown' }]
+const DATA_sizes = [{ name: 'XS' }, { name: 'S' }, { name: 'M' }, { name: 'L' }, { name: 'XL' }]
 const DATA_sortOrderRadios = [
   { id: 'Most-Popular', name: 'Most Popular' },
   { id: 'Best-Rating', name: 'Best Rating' },
   { id: 'Newest', name: 'Newest' },
   { id: 'Price-low-hight', name: 'Price Low - Hight' },
   { id: 'Price-hight-low', name: 'Price Hight - Low' },
-];
-const PRICE_RANGE = [1, 500];
+]
+const PRICE_RANGE = [1, 500]
 //
 const SidebarFilters = ({ className }: { className?: string }) => {
-  const [isOnSale, setIsIsOnSale] = useState(true);
-  const [rangePrices, setRangePrices] = useState([100, 500]);
-  const [categoriesState, setCategoriesState] = useState<string[]>([]);
-  const [colorsState, setColorsState] = useState<string[]>([]);
-  const [sizesState, setSizesState] = useState<string[]>([]);
-  const [sortOrderStates, setSortOrderStates] = useState<string>('');
+  const [isOnSale, setIsIsOnSale] = useState(true)
+  const [rangePrices, setRangePrices] = useState([100, 500])
+  const [categoriesState, setCategoriesState] = useState<string[]>([])
+  const [colorsState, setColorsState] = useState<string[]>([])
+  const [sizesState, setSizesState] = useState<string[]>([])
+  const [sortOrderStates, setSortOrderStates] = useState<string>('')
 
   //
   const handleChangeCategories = (checked: boolean, name: string) => {
     checked
       ? setCategoriesState([...categoriesState, name])
-      : setCategoriesState(categoriesState.filter((i) => i !== name));
-  };
+      : setCategoriesState(categoriesState.filter((i) => i !== name))
+  }
   const handleChangeColors = (checked: boolean, name: string) => {
-    checked
-      ? setColorsState([...colorsState, name])
-      : setColorsState(colorsState.filter((i) => i !== name));
-  };
+    checked ? setColorsState([...colorsState, name]) : setColorsState(colorsState.filter((i) => i !== name))
+  }
   const handleChangeSizes = (checked: boolean, name: string) => {
-    checked
-      ? setSizesState([...sizesState, name])
-      : setSizesState(sizesState.filter((i) => i !== name));
-  };
+    checked ? setSizesState([...sizesState, name]) : setSizesState(sizesState.filter((i) => i !== name))
+  }
 
   // OK
   const renderTabsCategories = () => {
@@ -89,8 +79,8 @@ const SidebarFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsColor = () => {
@@ -112,8 +102,8 @@ const SidebarFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsSize = () => {
@@ -135,8 +125,8 @@ const SidebarFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsPriceRage = () => {
@@ -157,10 +147,7 @@ const SidebarFilters = ({ className }: { className?: string }) => {
 
         <div className="flex justify-between gap-x-5">
           <div>
-            <label
-              htmlFor="minPrice"
-              className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-            >
+            <label htmlFor="minPrice" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Min price
             </label>
             <div className="relative mt-1 rounded-md">
@@ -180,10 +167,7 @@ const SidebarFilters = ({ className }: { className?: string }) => {
             </div>
           </div>
           <div>
-            <label
-              htmlFor="maxPrice"
-              className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-            >
+            <label htmlFor="maxPrice" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Max price
             </label>
             <div className="relative mt-1 rounded-md">
@@ -203,8 +187,8 @@ const SidebarFilters = ({ className }: { className?: string }) => {
           </div>
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   // OK
   const renderTabsSortOrder = () => {
@@ -226,8 +210,8 @@ const SidebarFilters = ({ className }: { className?: string }) => {
           ))}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className={className}>
@@ -240,17 +224,12 @@ const SidebarFilters = ({ className }: { className?: string }) => {
         <Divider />
         {renderTabsPriceRage()}
         <Divider />
-        <MySwitch
-          onChange={setIsIsOnSale}
-          desc="Products currently on sale"
-          enabled={isOnSale}
-          label="On sale!"
-        />
+        <MySwitch onChange={setIsIsOnSale} desc="Products currently on sale" enabled={isOnSale} label="On sale!" />
         <Divider />
         {renderTabsSortOrder()}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SidebarFilters;
+export default SidebarFilters

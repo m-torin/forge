@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ActionIcon,
@@ -17,8 +17,8 @@ import {
   Switch,
   Text,
   TextInput,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+} from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import {
   IconChevronDown,
   IconChevronUp,
@@ -26,15 +26,16 @@ import {
   IconPlus,
   IconSearch,
   IconTrash,
-} from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+} from '@tabler/icons-react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { addProductSeller, getBrands, getProductSellers, removeProductSeller } from '../actions';
 import {
-  addProductSeller,
-  getBrands,
-  getProductSellers,
-  removeProductSeller,
-} from "../actions";
+  formatCurrency,
+  formatDate,
+  getAvailabilityColor,
+  getBrandTypeColor,
+} from '../utils/pim-helpers';
 
 // Affiliate marketplace data structure (UI only)
 interface AffiliateData {
@@ -42,34 +43,34 @@ interface AffiliateData {
   // Product URLs
   productUrl?: string;
   sellerSku?: string;
-  
+
   currency?: string;
   originalPrice?: number;
   // Pricing
   price?: number;
   salePrice?: number;
-  
+
   availability?: string;
   // Availability
   inStock?: boolean;
   quantity?: number;
-  
+
   affiliateNetwork?: string;
   commissionAmount?: number;
   // Affiliate Program
   commissionRate?: number;
-  
+
   // Performance (demo data)
   clickCount?: number;
   conversionCount?: number;
   revenue?: number;
-  
+
   // Seller Metadata
   rating?: number;
   reviewCount?: number;
   shippingCost?: number;
   shippingTime?: string;
-  
+
   // Status
   isActive?: boolean;
   isPrimary?: boolean;
@@ -118,10 +119,10 @@ export function PDPManagementModal({
 }: PDPManagementModalProps) {
   const [currentSellers, setCurrentSellers] = useState<ProductSeller[]>([]);
   const [availableBrands, setAvailableBrands] = useState<Brand[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  
+
   // Affiliate data management (UI demo state)
   const [affiliateData, setAffiliateData] = useState<Record<string, AffiliateData>>({});
   const [expandedSellers, setExpandedSellers] = useState<Set<string>>(new Set());
@@ -129,7 +130,7 @@ export function PDPManagementModal({
 
   const loadCurrentSellers = useCallback(async () => {
     if (!productId) return;
-    
+
     const result = await getProductSellers(productId);
     if (result.success) {
       setCurrentSellers(result.data);
@@ -142,18 +143,18 @@ export function PDPManagementModal({
       const result = await getBrands({
         limit: 100,
         search: searchQuery,
-        status: "PUBLISHED",
+        status: 'PUBLISHED',
       });
       if (result.success) {
         // Filter out brands that are already sellers
         const currentSellerBrandIds = currentSellers.map((seller) => seller.brand.id);
         const filteredBrands = result.data.filter(
-          (brand) => !currentSellerBrandIds.includes(brand.id)
+          (brand) => !currentSellerBrandIds.includes(brand.id),
         );
         setAvailableBrands(filteredBrands);
       }
     } catch (error) {
-      console.error("Error loading brands:", error);
+      console.error('Error loading brands:', error);
     } finally {
       setLoading(false);
     }
@@ -176,34 +177,32 @@ export function PDPManagementModal({
 
     setLoading(true);
     try {
-      const promises = selectedBrands.map((brandId) =>
-        addProductSeller(productId, brandId)
-      );
-      
+      const promises = selectedBrands.map((brandId) => addProductSeller(productId, brandId));
+
       const results = await Promise.all(promises);
       const failed = results.filter((result) => !result.success);
-      
+
       if (failed.length === 0) {
         notifications.show({
-          color: "green",
+          color: 'green',
           message: `Added ${selectedBrands.length} seller(s) to product`,
-          title: "Success",
+          title: 'Success',
         });
         setSelectedBrands([]);
         await loadCurrentSellers();
         onUpdate?.();
       } else {
         notifications.show({
-          color: "yellow",
+          color: 'yellow',
           message: `Added ${results.length - failed.length}/${results.length} sellers. ${failed.length} failed.`,
-          title: "Partial Success",
+          title: 'Partial Success',
         });
       }
     } catch (error) {
       notifications.show({
-        color: "red",
-        message: "Failed to add sellers",
-        title: "Error",
+        color: 'red',
+        message: 'Failed to add sellers',
+        title: 'Error',
       });
     } finally {
       setLoading(false);
@@ -216,77 +215,56 @@ export function PDPManagementModal({
       const result = await removeProductSeller(productId, brandId);
       if (result.success) {
         notifications.show({
-          color: "green",
+          color: 'green',
           message: `Removed ${brandName} as seller`,
-          title: "Success",
+          title: 'Success',
         });
         await loadCurrentSellers();
         onUpdate?.();
       } else {
         notifications.show({
-          color: "red",
-          message: result.error || "Failed to remove seller",
-          title: "Error",
+          color: 'red',
+          message: result.error || 'Failed to remove seller',
+          title: 'Error',
         });
       }
     } catch (error) {
       notifications.show({
-        color: "red",
-        message: "Failed to remove seller",
-        title: "Error",
+        color: 'red',
+        message: 'Failed to remove seller',
+        title: 'Error',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (date: Date | string) => {
-    return new Intl.DateTimeFormat("en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }).format(new Date(date));
-  };
-
-  const getBrandTypeColor = (type: string) => {
-    switch (type) {
-      case "MARKETPLACE":
-        return "blue";
-      case "RETAILER":
-        return "green";
-      case "MANUFACTURER":
-        return "violet";
-      case "SERVICE":
-        return "orange";
-      default:
-        return "gray";
-    }
-  };
-
   // Affiliate data utilities
   const getAffiliateData = (brandId: string): AffiliateData => {
-    return affiliateData[brandId] || {
-      availability: "In Stock",
-      clickCount: 0,
-      conversionCount: 0,
-      currency: "USD",
-      inStock: true,
-      isActive: true,
-      isPrimary: false,
-      priority: 0,
-      revenue: 0,
-    };
+    return (
+      affiliateData[brandId] || {
+        availability: 'In Stock',
+        clickCount: 0,
+        conversionCount: 0,
+        currency: 'USD',
+        inStock: true,
+        isActive: true,
+        isPrimary: false,
+        priority: 0,
+        revenue: 0,
+      }
+    );
   };
 
   const updateAffiliateData = (brandId: string, data: Partial<AffiliateData>) => {
-    setAffiliateData(prev => ({
+    setAffiliateData((prev) => ({
       ...prev,
-      [brandId]: { ...getAffiliateData(brandId), ...data }
+      [brandId]: { ...getAffiliateData(brandId), ...data },
     }));
   };
 
   const toggleSellerExpansion = (sellerId: string) => {
-    setExpandedSellers(prev => {
+    setExpandedSellers((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sellerId)) {
         newSet.delete(sellerId);
@@ -295,24 +273,6 @@ export function PDPManagementModal({
       }
       return newSet;
     });
-  };
-
-  const formatPrice = (price?: number, currency = "USD") => {
-    if (!price) return "Not set";
-    return new Intl.NumberFormat("en-US", {
-      currency,
-      style: "currency",
-    }).format(price);
-  };
-
-  const getAvailabilityColor = (availability?: string) => {
-    switch (availability) {
-      case "In Stock": return "green";
-      case "Limited": return "yellow";
-      case "Out of Stock": return "red";
-      case "Backorder": return "blue";
-      default: return "gray";
-    }
   };
 
   return (
@@ -334,7 +294,7 @@ export function PDPManagementModal({
               {currentSellers.map((seller) => {
                 const affiliate = getAffiliateData(seller.brand.id);
                 const isExpanded = expandedSellers.has(seller.id);
-                
+
                 return (
                   <Card key={seller.id} withBorder>
                     <Stack gap="sm">
@@ -350,7 +310,7 @@ export function PDPManagementModal({
                               {seller.brand.type}
                             </Badge>
                             <Badge
-                              color={seller.brand.status === "PUBLISHED" ? "green" : "yellow"}
+                              color={seller.brand.status === 'PUBLISHED' ? 'green' : 'yellow'}
                               size="sm"
                               variant="outline"
                             >
@@ -362,12 +322,12 @@ export function PDPManagementModal({
                               </Badge>
                             )}
                           </Group>
-                          
+
                           {/* Affiliate Quick Info */}
                           <Group gap="sm" mt="xs">
                             {affiliate.price && (
                               <Text c="green" fw={500} size="sm">
-                                {formatPrice(affiliate.price, affiliate.currency)}
+                                {formatCurrency(affiliate.price, affiliate.currency)}
                               </Text>
                             )}
                             <Badge
@@ -375,7 +335,7 @@ export function PDPManagementModal({
                               size="xs"
                               variant="dot"
                             >
-                              {affiliate.availability || "In Stock"}
+                              {affiliate.availability || 'In Stock'}
                             </Badge>
                             {affiliate.commissionRate && (
                               <Text c="dimmed" size="xs">
@@ -383,11 +343,11 @@ export function PDPManagementModal({
                               </Text>
                             )}
                           </Group>
-                          
+
                           <Text c="dimmed" size="sm">
                             Added {formatDate(seller.createdAt)}
                           </Text>
-                          
+
                           {seller.brand.baseUrl && (
                             <Group gap="xs" mt="xs">
                               <Text c="dimmed" size="xs">
@@ -406,14 +366,18 @@ export function PDPManagementModal({
                             </Group>
                           )}
                         </div>
-                        
+
                         <Group gap="xs">
                           <ActionIcon
                             onClick={() => toggleSellerExpansion(seller.id)}
                             title="Toggle affiliate details"
                             variant="subtle"
                           >
-                            {isExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+                            {isExpanded ? (
+                              <IconChevronUp size={16} />
+                            ) : (
+                              <IconChevronDown size={16} />
+                            )}
                           </ActionIcon>
                           <ActionIcon
                             color="red"
@@ -429,14 +393,18 @@ export function PDPManagementModal({
                       {/* Expandable Affiliate Management */}
                       <Collapse in={isExpanded}>
                         <Divider mb="md" />
-                        <Text fw={500} mb="md" size="sm">Affiliate Management</Text>
-                        
+                        <Text fw={500} mb="md" size="sm">
+                          Affiliate Management
+                        </Text>
+
                         <Stack gap="sm">
                           <Group grow>
                             <NumberInput
-                              onChange={(value) => updateAffiliateData(seller.brand.id, { 
-                                price: typeof value === 'number' ? value : undefined 
-                              })}
+                              onChange={(value) =>
+                                updateAffiliateData(seller.brand.id, {
+                                  price: typeof value === 'number' ? value : undefined,
+                                })
+                              }
                               placeholder="0.00"
                               decimalScale={2}
                               label="Price"
@@ -445,20 +413,24 @@ export function PDPManagementModal({
                               value={affiliate.price || ''}
                             />
                             <Select
-                              onChange={(value) => updateAffiliateData(seller.brand.id, { 
-                                availability: value || "In Stock" 
-                              })}
-                              data={["In Stock", "Limited", "Out of Stock", "Backorder"]}
+                              onChange={(value) =>
+                                updateAffiliateData(seller.brand.id, {
+                                  availability: value || 'In Stock',
+                                })
+                              }
+                              data={['In Stock', 'Limited', 'Out of Stock', 'Backorder']}
                               label="Availability"
-                              value={affiliate.availability || "In Stock"}
+                              value={affiliate.availability || 'In Stock'}
                             />
                           </Group>
-                          
+
                           <Group grow>
                             <NumberInput
-                              onChange={(value) => updateAffiliateData(seller.brand.id, { 
-                                commissionRate: typeof value === 'number' ? value : undefined 
-                              })}
+                              onChange={(value) =>
+                                updateAffiliateData(seller.brand.id, {
+                                  commissionRate: typeof value === 'number' ? value : undefined,
+                                })
+                              }
                               label="Commission Rate (%)"
                               max={100}
                               min={0}
@@ -466,71 +438,98 @@ export function PDPManagementModal({
                               value={affiliate.commissionRate || ''}
                             />
                             <Select
-                              onChange={(value) => updateAffiliateData(seller.brand.id, { 
-                                affiliateNetwork: value || undefined 
-                              })}
+                              onChange={(value) =>
+                                updateAffiliateData(seller.brand.id, {
+                                  affiliateNetwork: value || undefined,
+                                })
+                              }
                               clearable
-                              data={["Amazon Associates", "ShareASale", "Commission Junction", "Impact"]}
+                              data={[
+                                'Amazon Associates',
+                                'ShareASale',
+                                'Commission Junction',
+                                'Impact',
+                              ]}
                               label="Affiliate Network"
                               value={affiliate.affiliateNetwork || ''}
                             />
                           </Group>
-                          
+
                           <TextInput
-                            onChange={(e) => updateAffiliateData(seller.brand.id, { 
-                              affiliateUrl: e.currentTarget.value 
-                            })}
+                            onChange={(e) =>
+                              updateAffiliateData(seller.brand.id, {
+                                affiliateUrl: e.currentTarget.value,
+                              })
+                            }
                             placeholder="https://affiliate.example.com/product"
                             label="Affiliate URL"
                             value={affiliate.affiliateUrl || ''}
                           />
-                          
+
                           <Group>
                             <Switch
                               onChange={(e) => {
                                 if (e.currentTarget.checked) {
                                   // Clear other primary sellers
-                                  Object.keys(affiliateData).forEach(brandId => {
+                                  Object.keys(affiliateData).forEach((brandId) => {
                                     if (brandId !== seller.brand.id) {
                                       updateAffiliateData(brandId, { isPrimary: false });
                                     }
                                   });
                                 }
-                                updateAffiliateData(seller.brand.id, { 
-                                  isPrimary: e.currentTarget.checked 
+                                updateAffiliateData(seller.brand.id, {
+                                  isPrimary: e.currentTarget.checked,
                                 });
                               }}
                               checked={affiliate.isPrimary || false}
                               label="Primary Seller"
                             />
                             <Switch
-                              onChange={(e) => updateAffiliateData(seller.brand.id, { 
-                                isActive: e.currentTarget.checked 
-                              })}
+                              onChange={(e) =>
+                                updateAffiliateData(seller.brand.id, {
+                                  isActive: e.currentTarget.checked,
+                                })
+                              }
                               checked={affiliate.isActive !== false}
                               label="Active"
                             />
                           </Group>
-                          
+
                           {/* Performance Demo Data */}
                           <Divider />
-                          <Text fw={500} size="sm">Performance (Demo Data)</Text>
+                          <Text fw={500} size="sm">
+                            Performance (Demo Data)
+                          </Text>
                           <Group gap="md">
                             <Text size="sm">
-                              <Text c="dimmed" span>Clicks:</Text> {affiliate.clickCount || 0}
+                              <Text c="dimmed" span>
+                                Clicks:
+                              </Text>{' '}
+                              {affiliate.clickCount || 0}
                             </Text>
                             <Text size="sm">
-                              <Text c="dimmed" span>Conversions:</Text> {affiliate.conversionCount || 0}
+                              <Text c="dimmed" span>
+                                Conversions:
+                              </Text>{' '}
+                              {affiliate.conversionCount || 0}
                             </Text>
                             <Text size="sm">
-                              <Text c="dimmed" span>Revenue:</Text> ${affiliate.revenue || 0}
+                              <Text c="dimmed" span>
+                                Revenue:
+                              </Text>{' '}
+                              ${affiliate.revenue || 0}
                             </Text>
                             <Text size="sm">
-                              <Text c="dimmed" span>CVR:</Text> {
-                                affiliate.clickCount && affiliate.clickCount > 0 
-                                  ? ((affiliate.conversionCount || 0) / affiliate.clickCount * 100).toFixed(1)
-                                  : 0
-                              }%
+                              <Text c="dimmed" span>
+                                CVR:
+                              </Text>{' '}
+                              {affiliate.clickCount && affiliate.clickCount > 0
+                                ? (
+                                    ((affiliate.conversionCount || 0) / affiliate.clickCount) *
+                                    100
+                                  ).toFixed(1)
+                                : 0}
+                              %
                             </Text>
                           </Group>
                         </Stack>
@@ -552,7 +551,7 @@ export function PDPManagementModal({
           <Text fw={600} mb="md">
             Add New Sellers
           </Text>
-          
+
           <TextInput
             leftSection={<IconSearch size={16} />}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -569,7 +568,7 @@ export function PDPManagementModal({
                   withBorder
                   style={{
                     backgroundColor: selectedBrands.includes(brand.id)
-                      ? "var(--mantine-color-blue-0)"
+                      ? 'var(--mantine-color-blue-0)'
                       : undefined,
                   }}
                 >
@@ -581,9 +580,7 @@ export function PDPManagementModal({
                             if (e.currentTarget.checked) {
                               setSelectedBrands([...selectedBrands, brand.id]);
                             } else {
-                              setSelectedBrands(
-                                selectedBrands.filter((id) => id !== brand.id)
-                              );
+                              setSelectedBrands(selectedBrands.filter((id) => id !== brand.id));
                             }
                           }}
                           checked={selectedBrands.includes(brand.id)}
@@ -591,11 +588,7 @@ export function PDPManagementModal({
                         <div>
                           <Text fw={500}>{brand.name}</Text>
                           <Group gap="xs">
-                            <Badge
-                              color={getBrandTypeColor(brand.type)}
-                              size="xs"
-                              variant="light"
-                            >
+                            <Badge color={getBrandTypeColor(brand.type)} size="xs" variant="light">
                               {brand.type}
                             </Badge>
                             <Text c="dimmed" size="xs">
@@ -628,7 +621,7 @@ export function PDPManagementModal({
             </Stack>
           ) : (
             <Text c="dimmed" py="xl" ta="center">
-              {searchQuery ? "No brands found matching your search" : "No available brands"}
+              {searchQuery ? 'No brands found matching your search' : 'No available brands'}
             </Text>
           )}
 
@@ -638,10 +631,7 @@ export function PDPManagementModal({
                 {selectedBrands.length} brand(s) selected
               </Text>
               <Group>
-                <Button
-                  onClick={() => setSelectedBrands([])}
-                  variant="outline"
-                >
+                <Button onClick={() => setSelectedBrands([])} variant="outline">
                   Clear Selection
                 </Button>
                 <Button

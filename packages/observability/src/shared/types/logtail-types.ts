@@ -19,6 +19,9 @@ export interface LogtailConfig {
   captureRejections?: boolean;
   // Options
   sendLogsToConsoleInDev?: boolean;
+  
+  // Better Stack specific options (passed to Logger constructor)
+  options?: Record<string, any>;
 }
 
 export interface LogtailOptions {

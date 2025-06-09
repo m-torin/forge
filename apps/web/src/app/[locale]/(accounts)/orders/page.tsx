@@ -136,9 +136,55 @@ const Page = async () => {
           similar products.
         </p>
       </div>
-      {orders.map((order) => (
-        <Order key={order.number} order={order} />
-      ))}
+      
+      {orders.length === 0 ? (
+        // Empty orders state
+        <div className="text-center py-16">
+          <div className="mx-auto max-w-md">
+            <div className="mx-auto h-24 w-24 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-6">
+              <svg 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                className="h-12 w-12 text-neutral-400 dark:text-neutral-500" 
+                fill="none"
+              >
+                <path 
+                  strokeWidth={1.5} 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" 
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
+              No orders yet
+            </h3>
+            <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+              When you place your first order, it will appear here. Start shopping to see your order history.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+              <ButtonSecondary 
+                href="/en/collections"
+                fontSize="text-sm font-medium"
+                sizeClass="py-2.5 px-4 sm:px-6"
+              >
+                Start Shopping
+              </ButtonSecondary>
+              <ButtonSecondary 
+                href="/en"
+                fontSize="text-sm font-medium"
+                sizeClass="py-2.5 px-4 sm:px-6"
+              >
+                Back to Home
+              </ButtonSecondary>
+            </div>
+          </div>
+        </div>
+      ) : (
+        orders.map((order) => (
+          <Order key={order.number} order={order} />
+        ))
+      )}
     </div>
   );
 };

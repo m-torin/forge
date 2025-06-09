@@ -1,6 +1,6 @@
-import CollectionCard6 from './CollectionCard6';
+import CollectionCard6 from './CollectionCard6'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof CollectionCard6> = {
   argTypes: {
@@ -28,10 +28,10 @@ const meta: Meta<typeof CollectionCard6> = {
     layout: 'centered',
   },
   title: 'Ciseco/CollectionCard6',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockCollection = {
   id: 'gid://1',
@@ -47,21 +47,20 @@ const mockCollection = {
   },
   sortDescription: 'Bright & colorful',
   title: 'Summer Vibes',
-};
+}
 
 export const Default: Story = {
   args: {
     collection: mockCollection,
   },
-};
+}
 
 export const WithBackgroundSVG: Story = {
   args: {
-    bgSvgUrl:
-      'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=400&fit=crop&auto=format',
+    bgSvgUrl: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=400&fit=crop&auto=format',
     collection: mockCollection,
   },
-};
+}
 
 export const ElegantCollection: Story = {
   args: {
@@ -78,7 +77,7 @@ export const ElegantCollection: Story = {
       title: 'Elegant Evening',
     },
   },
-};
+}
 
 export const CasualCollection: Story = {
   args: {
@@ -95,7 +94,7 @@ export const CasualCollection: Story = {
       title: 'Casual Comfort',
     },
   },
-};
+}
 
 export const NoImage: Story = {
   args: {
@@ -104,7 +103,7 @@ export const NoImage: Story = {
       image: undefined,
     },
   },
-};
+}
 
 export const LongTitle: Story = {
   args: {
@@ -114,7 +113,7 @@ export const LongTitle: Story = {
       title: 'Premium Designer Winter Collection',
     },
   },
-};
+}
 
 export const NoHandle: Story = {
   args: {
@@ -123,11 +122,11 @@ export const NoHandle: Story = {
       handle: undefined,
     },
   },
-};
+}
 
 export const Grid: Story = {
   render: () => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl">
+    <div className="grid max-w-6xl grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
       {[
         {
           color: 'bg-blue-50',
@@ -197,11 +196,11 @@ export const Grid: Story = {
       ))}
     </div>
   ),
-};
+}
 
 export const DifferentSizes: Story = {
   render: () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
+    <div className="grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <div className="space-y-2">
         <h3 className="text-sm font-medium">Small (Mobile)</h3>
         <div className="w-48">
@@ -222,11 +221,11 @@ export const DifferentSizes: Story = {
       </div>
     </div>
   ),
-};
+}
 
 export const SeasonalCollections: Story = {
   render: () => (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl">
+    <div className="grid max-w-5xl grid-cols-2 gap-6 lg:grid-cols-4">
       <CollectionCard6
         collection={{
           id: 'spring',
@@ -289,4 +288,4 @@ export const SeasonalCollections: Story = {
       />
     </div>
   ),
-};
+}

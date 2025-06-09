@@ -11,12 +11,40 @@ import {
 
 import type { ServiceAuthResult } from '../../../shared/api-keys/types';
 
-// Mock database
-const mockApiKeyCreate = vi.fn();
-const mockApiKeyFindMany = vi.fn();
-const mockApiKeyFindFirst = vi.fn();
-const mockApiKeyUpdate = vi.fn();
-const mockApiKeyDelete = vi.fn();
+// Mock all functions using vi.hoisted
+const {
+  mockApiKeyCreate,
+  mockApiKeyDelete,
+  mockApiKeyFindFirst,
+  mockApiKeyFindMany,
+  mockApiKeyUpdate,
+  mockAuthCreateApiKey,
+  mockCheckPermission,
+  mockCreateServiceAuth,
+  mockGetSession,
+} = vi.hoisted(() => {
+  const mockApiKeyCreate = vi.fn();
+  const mockApiKeyFindMany = vi.fn();
+  const mockApiKeyFindFirst = vi.fn();
+  const mockApiKeyUpdate = vi.fn();
+  const mockApiKeyDelete = vi.fn();
+  const mockGetSession = vi.fn();
+  const mockCheckPermission = vi.fn();
+  const mockCreateServiceAuth = vi.fn();
+  const mockAuthCreateApiKey = vi.fn();
+
+  return {
+    mockApiKeyCreate,
+    mockApiKeyDelete,
+    mockApiKeyFindFirst,
+    mockApiKeyFindMany,
+    mockApiKeyUpdate,
+    mockAuthCreateApiKey,
+    mockCheckPermission,
+    mockCreateServiceAuth,
+    mockGetSession,
+  };
+});
 
 vi.mock('@repo/database/prisma', () => ({
   prisma: {
@@ -36,24 +64,22 @@ vi.mock('next/headers', () => ({
 }));
 
 // Mock auth
-const mockGetSession = vi.fn();
-vi.mock('../../auth', () => ({
+vi.mock('../../../server/auth', () => ({
   auth: {
     api: {
+      createApiKey: mockAuthCreateApiKey,
       getSession: mockGetSession,
     },
   },
 }));
 
 // Mock permissions
-const mockCheckPermission = vi.fn();
-vi.mock('../permissions', () => ({
+vi.mock('../../../server/organizations/permissions', () => ({
   checkPermission: mockCheckPermission,
 }));
 
 // Mock service auth
-const mockCreateServiceAuth = vi.fn();
-vi.mock('../../api-keys/service-auth', () => ({
+vi.mock('../../../server/api-keys/service-auth', () => ({
   createServiceAuth: mockCreateServiceAuth,
 }));
 
@@ -81,6 +107,19 @@ describe('Service Accounts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCheckPermission.mockResolvedValue(true);
+
+    // Default auth mock setup
+    mockAuthCreateApiKey.mockResolvedValue({
+      apiKey: 'mock-api-key-12345',
+      success: true,
+    });
+
+    // Default service auth mock setup
+    mockCreateServiceAuth.mockResolvedValue({
+      expiresAt: new Date('2024-01-01'),
+      success: true,
+      token: 'service-token-123',
+    });
   });
 
   describe('createServiceAccount', () => {
@@ -231,7 +270,7 @@ describe('Service Accounts', () => {
             createdAt: new Date('2023-01-01'),
             description: 'Description 1',
             expiresAt: new Date('2024-01-01'),
-            isActive: true,
+            isActive: false,
             permissions: ['read:data'],
           },
           {
@@ -420,7 +459,7 @@ describe('Service Accounts', () => {
           createdAt: new Date('2023-01-01'),
           description: 'Test description',
           expiresAt: new Date('2024-01-01'),
-          isActive: true,
+          isActive: false,
           lastUsedAt: new Date('2023-06-01'),
           permissions: ['read:data'],
         },

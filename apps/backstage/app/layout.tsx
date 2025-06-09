@@ -1,5 +1,7 @@
 import { env } from '@/env';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { ObservabilityProvider } from '@repo/observability/client/next';
+import { VercelToolbar } from '@vercel/toolbar/next';
 import { type Metadata } from 'next';
 import '@mantine/core/styles.css';
 import React, { type ReactNode } from 'react';
@@ -23,7 +25,22 @@ export default function RootLayout({ children }: RootLayoutProperties): React.Re
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <ObservabilityProvider
+          config={{
+            providers: {
+              sentry: {
+                dsn: env.NEXT_PUBLIC_SENTRY_DSN,
+                environment: env.NODE_ENV,
+                replaysSessionSampleRate: env.NODE_ENV === 'production' ? 0.1 : 0,
+                tracesSampleRate: env.NODE_ENV === 'production' ? 0.1 : 0,
+                // Debug mode removed to prevent bundle conflicts
+              },
+            },
+          }}
+        >
+          <MantineProvider>{children}</MantineProvider>
+        </ObservabilityProvider>
+        {process.env.NODE_ENV === 'development' && <VercelToolbar />}
       </body>
     </html>
   );

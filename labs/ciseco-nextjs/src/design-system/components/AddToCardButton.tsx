@@ -1,26 +1,18 @@
-'use client';
+'use client'
 
-import { Transition } from '@headlessui/react';
-import Image from 'next/image';
-import React, { type ComponentType, type ElementType, type FC } from 'react';
-import toast from 'react-hot-toast';
+import { Transition } from '@headlessui/react'
+import Image from 'next/image'
+import React, { type ComponentType, type ElementType, type FC } from 'react'
+import toast from 'react-hot-toast'
 
-import { Divider } from './Divider';
-import Prices from './Prices';
+import { Divider } from './Divider'
+import Prices from './Prices'
 
 interface NotifyAddToCartProps extends AddToCardButtonProps {
-  show: boolean;
+  show: boolean
 }
 
-export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
-  color,
-  imageUrl,
-  price,
-  quantity,
-  show,
-  size,
-  title,
-}) => {
+export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({ color, imageUrl, price, quantity, show, size, title }) => {
   return (
     <Transition
       enterFrom="opacity-0 translate-x-20"
@@ -34,19 +26,13 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
       enter="transition-all duration-150"
       leave="transition-all duration-150"
     >
-      <p className="block text-base leading-none font-semibold">Added to cart!</p>
+      <p className="block text-base font-semibold leading-none">Added to cart!</p>
 
       <Divider className="my-4" />
 
       <div className="flex">
         <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-          <Image
-            className="h-full w-full object-contain object-center"
-            alt={title}
-            fill
-            sizes="100px"
-            src={imageUrl}
-          />
+          <Image className="h-full w-full object-contain object-center" alt={title} fill sizes="100px" src={imageUrl} />
         </div>
 
         <div className="ml-4 flex flex-1 flex-col">
@@ -67,7 +53,7 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
             <p className="text-gray-500 dark:text-neutral-400">{`Qty ${quantity}`}</p>
 
             <div className="flex">
-              <button className="font-medium text-primary-600 dark:text-primary-500" type="button">
+              <button className="text-primary-600 dark:text-primary-500 font-medium" type="button">
                 View cart
               </button>
             </div>
@@ -75,20 +61,20 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
         </div>
       </div>
     </Transition>
-  );
-};
+  )
+}
 
 interface AddToCardButtonProps {
-  [key: string]: any; // Cho phép bất kỳ props tùy chỉnh nào
-  as?: ElementType | ComponentType<any>;
-  children?: React.ReactNode;
-  className?: string;
-  color?: string;
-  imageUrl: string;
-  price: number;
-  quantity: number;
-  size?: string;
-  title: string;
+  [key: string]: any // Cho phép bất kỳ props tùy chỉnh nào
+  as?: ElementType | ComponentType<any>
+  children?: React.ReactNode
+  className?: string
+  color?: string
+  imageUrl: string
+  price: number
+  quantity: number
+  size?: string
+  title: string
 }
 
 const AddToCardButton = ({
@@ -116,17 +102,17 @@ const AddToCardButton = ({
           title={title}
         />
       ),
-      { id: 'nc-product-notify', duration: 4000, position: 'top-right' },
-    );
-  };
+      { id: 'nc-product-notify', duration: 4000, position: 'top-right' }
+    )
+  }
 
-  const Component = as || 'button';
+  const Component = as || 'button'
 
   return (
     <Component onClick={notifyAddTocart} className={className} {...props}>
       {children}
     </Component>
-  );
-};
+  )
+}
 
-export default AddToCardButton;
+export default AddToCardButton

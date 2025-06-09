@@ -1,27 +1,27 @@
-'use client';
+'use client'
 
-import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import clsx from 'clsx';
-import useEmblaCarousel from 'embla-carousel-react';
-import Link from 'next/link';
-import { type FC } from 'react';
+import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import clsx from 'clsx'
+import useEmblaCarousel from 'embla-carousel-react'
+import Link from 'next/link'
+import { type FC } from 'react'
 
-import { type TCollection } from '../data/data';
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
+import { type TCollection } from '../data/data'
+import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons'
 
-import CollectionCard2 from './CollectionCard2';
-import Heading from './Heading/Heading';
+import CollectionCard2 from './CollectionCard2'
+import Heading from './Heading/Heading'
 
-import type { EmblaOptionsType } from 'embla-carousel';
+import type { EmblaOptionsType } from 'embla-carousel'
 
 export interface SectionSliderCategoriesProps {
-  className?: string;
-  collections: TCollection[];
-  emblaOptions?: EmblaOptionsType;
-  heading?: string;
-  headingDim?: string;
-  subHeading?: string;
+  className?: string
+  collections: TCollection[]
+  emblaOptions?: EmblaOptionsType
+  heading?: string
+  headingDim?: string
+  subHeading?: string
 }
 
 const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
@@ -34,9 +34,8 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
   headingDim = 'Explore the absolute',
   subHeading,
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
+  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } = useCarouselArrowButtons(emblaApi)
 
   return (
     <div className={clsx(className)}>
@@ -53,7 +52,7 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
       </Heading>
 
       <div ref={emblaRef} className="embla">
-        <div className="-ms-5 embla__container sm:-ms-8">
+        <div className="embla__container -ms-5 sm:-ms-8">
           {collections.map((collection) => (
             <div
               key={collection.id}
@@ -64,7 +63,7 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
           ))}
 
           <div className="embla__slide basis-[86%] ps-5 sm:ps-8 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-            <div className="group aspect-square relative w-full flex-1 overflow-hidden rounded-2xl bg-neutral-100">
+            <div className="group relative aspect-square w-full flex-1 overflow-hidden rounded-2xl bg-neutral-100">
               <div>
                 <div className="absolute inset-x-10 inset-y-6 flex flex-col justify-center sm:items-center">
                   <div className="relative flex text-neutral-900">
@@ -89,7 +88,7 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionCollectionSlider2;
+export default SectionCollectionSlider2

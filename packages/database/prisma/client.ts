@@ -1,6 +1,6 @@
 import { withAccelerate } from '@prisma/extension-accelerate';
 
-import { PrismaClient } from '../generated/client';
+import { PrismaClient } from './generated/client';
 
 // Create the extended Prisma client type
 const createExtendedPrismaClient = () => {

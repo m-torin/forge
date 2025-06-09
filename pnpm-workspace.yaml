@@ -31,7 +31,6 @@ catalog:
   "@vitest/ui": ^3.2.1
   chokidar: ^4.0.1
   nodemon: ^3.1.9
-  next-themes: ^0.4.6
   server-only: ^0.0.1
   autoprefixer: ^10.4.21
   clsx: ^2.1.1
@@ -41,7 +40,8 @@ catalog:
   jsdom: ^26.1.0
   mantine-form-zod-resolver: ^1.2.1
   nanoid: ^5.0.7
-  next: ^15.4.0-canary.66
+  next-themes: ^0.4.6
+  next: ^15.3.3
   postcss-loader: ^8.1.1
   postcss-preset-mantine: ^1.17.0
   postcss-simple-vars: ^7.0.1
@@ -56,6 +56,7 @@ catalog:
   vitest: ^3.2.1
   zod-prisma-types: ^3.2.4
   zod: ^3.25.51
+
 onlyBuiltDependencies:
   - "@firebase/util"
   - "@parcel/watcher"
@@ -75,13 +76,3 @@ onlyBuiltDependencies:
   - puppeteer
   - sharp
   - unrs-resolver
-overrides:
-  node-fetch@<2.6.7: ">=2.6.7"
-  ws@>=8.0.0 <8.17.1: ">=8.17.1"
-  "@sentry/browser@<7.119.1": ">=7.119.1"
-  path-to-regexp@>=4.0.0 <6.3.0: ">=6.3.0"
-  "@octokit/request-error@>=1.0.0 <5.1.1": ">=5.1.1"
-  "@octokit/request@>=1.0.0 <8.4.1": ">=8.4.1"
-  "@octokit/plugin-paginate-rest@>=1.0.0 <9.2.2": ">=9.2.2"
-  cookie@<0.7.0: ">=0.7.0"
-  tar-fs@>=3.0.0 <3.0.7: ">=3.0.7"

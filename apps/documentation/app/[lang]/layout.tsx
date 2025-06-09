@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Footer, LastUpdated, Layout, Link, LocaleSwitch, Navbar } from 'nextra-theme-docs';
 import { Banner, Head } from 'nextra/components';
 import { getPageMap } from 'nextra/page-map';
+import { VercelToolbar } from '@vercel/toolbar/next';
 import type { FC, ReactNode } from 'react';
 import { getDictionary, getDirection } from '../_dictionaries/get-dictionary';
 import './styles.css';
@@ -124,6 +125,7 @@ const RootLayout: FC<LayoutProps> = async ({ children, params }) => {
         >
           {children}
         </Layout>
+        {process.env.NODE_ENV === 'development' && <VercelToolbar />}
       </body>
     </html>
   );

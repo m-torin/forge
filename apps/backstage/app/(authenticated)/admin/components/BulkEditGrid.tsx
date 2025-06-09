@@ -1,119 +1,106 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
 import {
+  ActionIcon,
+  Badge,
   Box,
   Button,
   Card,
   Checkbox,
   Group,
+  Loader,
+  Menu,
   NumberInput,
   Paper,
   ScrollArea,
   Select,
   Stack,
+  Switch,
   Text,
   TextInput,
   Title,
   Tooltip,
-  ActionIcon,
-  Badge,
-  Loader,
-  Modal,
-  Alert,
-  Progress,
-  Menu,
-  MultiSelect,
-  Textarea,
-  Switch,
 } from '@mantine/core';
-import {
-  IconTableExport,
-  IconTableImport,
-  IconDeviceFloppy,
-  IconX,
-  IconCheck,
-  IconAlertCircle,
-  IconCopy,
-  IconClipboard,
-  IconTrash,
-  IconEdit,
-  IconFilter,
-  IconColumns,
-  IconArrowsSort,
-  IconRefresh,
-} from '@tabler/icons-react';
 import { useHotkeys, useMediaQuery } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
+import {
+  IconClipboard,
+  IconColumns,
+  IconCopy,
+  IconDeviceFloppy,
+  IconRefresh,
+  IconTrash,
+} from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
 
 import { notify } from '@repo/notifications/mantine-notifications';
 
 interface GridColumn {
+  editable?: boolean;
+  format?: (value: any) => string;
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'multiselect' | 'boolean' | 'date' | 'readonly';
-  width?: number;
   options?: { value: string; label: string }[];
-  editable?: boolean;
-  required?: boolean;
-  validation?: (value: any) => string | null;
-  format?: (value: any) => string;
   parse?: (value: string) => any;
+  required?: boolean;
+  type: 'text' | 'number' | 'select' | 'multiselect' | 'boolean' | 'date' | 'readonly';
+  validation?: (value: any) => string | null;
+  width?: number;
 }
 
 interface GridRow {
-  id: string;
   [key: string]: any;
+  id: string;
 }
 
 interface BulkEditGridProps {
-  title: string;
   columns: GridColumn[];
   data: GridRow[];
-  onSave?: (changes: GridRow[]) => Promise<void>;
-  onDelete?: (ids: string[]) => Promise<void>;
-  loading?: boolean;
+  enableColumnFilter?: boolean;
   // Features
   enableCopy?: boolean;
-  enablePaste?: boolean;
-  enableUndo?: boolean;
-  enableColumnFilter?: boolean;
   enableExport?: boolean;
   enableImport?: boolean;
+  enablePaste?: boolean;
+  enableUndo?: boolean;
+  loading?: boolean;
   maxRows?: number;
   // Callbacks
   onCellChange?: (rowId: string, columnKey: string, value: any) => void;
+  onDelete?: (ids: string[]) => Promise<void>;
   onRowSelect?: (selectedIds: string[]) => void;
+  onSave?: (changes: GridRow[]) => Promise<void>;
+  title: string;
 }
 
 interface CellPosition {
-  row: number;
   col: number;
+  row: number;
 }
 
 interface ChangeHistory {
-  rowId: string;
   columnKey: string;
-  oldValue: any;
   newValue: any;
+  oldValue: any;
+  rowId: string;
 }
 
 export function BulkEditGrid({
-  title,
   columns,
   data,
-  onSave,
-  onDelete,
-  loading = false,
-  enableCopy = true,
-  enablePaste = true,
-  enableUndo = true,
   enableColumnFilter = true,
+  enableCopy = true,
   enableExport = true,
   enableImport = true,
+  enablePaste = true,
+  enableUndo = true,
+  loading = false,
   maxRows = 1000,
   onCellChange,
+  onDelete,
   onRowSelect,
+  onSave,
+  title,
 }: BulkEditGridProps) {
   const [gridData, setGridData] = useState<GridRow[]>(data);
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
@@ -182,7 +169,7 @@ export function BulkEditGrid({
     } else {
       // Single select
       setSelectedCells(new Set([cellKey]));
-      setActiveCell({ row: rowIndex, col: colIndex });
+      setActiveCell({ col: colIndex, row: rowIndex });
     }
   };
 
@@ -203,7 +190,7 @@ export function BulkEditGrid({
     if (oldValue === newValue) return;
 
     // Add to history
-    setChangeHistory((prev) => [...prev, { rowId, columnKey, oldValue, newValue }]);
+    setChangeHistory((prev) => [...prev, { columnKey, newValue, oldValue, rowId }]);
     setRedoHistory([]);
 
     // Update data
@@ -380,15 +367,14 @@ export function BulkEditGrid({
     if (!onDelete || selectedRows.size === 0) return;
 
     modals.openConfirmModal({
-      title: 'Delete Selected Rows',
       children: (
         <Text size="sm">
           Are you sure you want to delete {selectedRows.size} selected rows? This action cannot be
           undone.
         </Text>
       ),
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
       confirmProps: { color: 'red' },
+      labels: { cancel: 'Cancel', confirm: 'Delete' },
       onConfirm: async () => {
         setIsPending(true);
         try {
@@ -401,6 +387,7 @@ export function BulkEditGrid({
           setIsPending(false);
         }
       },
+      title: 'Delete Selected Rows',
     });
   };
 
@@ -415,8 +402,6 @@ export function BulkEditGrid({
         case 'text':
           return (
             <TextInput
-              defaultValue={value}
-              size="xs"
               autoFocus
               onBlur={(e) => handleCellValueChange(row.id, column.key, e.currentTarget.value)}
               onKeyDown={(e) => {
@@ -427,38 +412,40 @@ export function BulkEditGrid({
                 }
               }}
               style={{ width: '100%' }}
+              defaultValue={value}
+              size="xs"
             />
           );
 
         case 'number':
           return (
             <NumberInput
-              defaultValue={value}
-              size="xs"
               autoFocus
               onBlur={(e) => handleCellValueChange(row.id, column.key, e.currentTarget.value)}
               style={{ width: '100%' }}
+              defaultValue={value}
+              size="xs"
             />
           );
 
         case 'select':
           return (
             <Select
-              data={column.options || []}
-              defaultValue={value}
-              size="xs"
               autoFocus
               onChange={(val) => handleCellValueChange(row.id, column.key, val)}
               style={{ width: '100%' }}
+              data={column.options || []}
+              defaultValue={value}
+              size="xs"
             />
           );
 
         case 'boolean':
           return (
             <Switch
+              onChange={(e) => handleCellValueChange(row.id, column.key, e.currentTarget.checked)}
               defaultChecked={value}
               size="xs"
-              onChange={(e) => handleCellValueChange(row.id, column.key, e.currentTarget.checked)}
             />
           );
 
@@ -491,7 +478,7 @@ export function BulkEditGrid({
             {enableColumnFilter && (
               <Menu position="bottom-end" withinPortal>
                 <Menu.Target>
-                  <ActionIcon variant="subtle" size="md">
+                  <ActionIcon size="md" variant="subtle">
                     <IconColumns size={18} />
                   </ActionIcon>
                 </Menu.Target>
@@ -527,20 +514,20 @@ export function BulkEditGrid({
               <Group gap={4}>
                 <Tooltip label="Undo (Ctrl+Z)">
                   <ActionIcon
-                    variant="subtle"
-                    size="md"
                     onClick={handleUndo}
                     disabled={changeHistory.length === 0}
+                    size="md"
+                    variant="subtle"
                   >
-                    <IconRefresh size={18} style={{ transform: 'scaleX(-1)' }} />
+                    <IconRefresh style={{ transform: 'scaleX(-1)' }} size={18} />
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label="Redo (Ctrl+Shift+Z)">
                   <ActionIcon
-                    variant="subtle"
-                    size="md"
                     onClick={handleRedo}
                     disabled={redoHistory.length === 0}
+                    size="md"
+                    variant="subtle"
                   >
                     <IconRefresh size={18} />
                   </ActionIcon>
@@ -554,10 +541,10 @@ export function BulkEditGrid({
                 {enableCopy && (
                   <Tooltip label="Copy (Ctrl+C)">
                     <ActionIcon
-                      variant="subtle"
-                      size="md"
                       onClick={handleCopy}
                       disabled={selectedCells.size === 0}
+                      size="md"
+                      variant="subtle"
                     >
                       <IconCopy size={18} />
                     </ActionIcon>
@@ -565,7 +552,7 @@ export function BulkEditGrid({
                 )}
                 {enablePaste && (
                   <Tooltip label="Paste (Ctrl+V)">
-                    <ActionIcon variant="subtle" size="md" onClick={handlePaste}>
+                    <ActionIcon onClick={handlePaste} size="md" variant="subtle">
                       <IconClipboard size={18} />
                     </ActionIcon>
                   </Tooltip>
@@ -576,11 +563,11 @@ export function BulkEditGrid({
             {/* Actions */}
             {onDelete && selectedRows.size > 0 && (
               <Button
-                size="xs"
                 color="red"
-                variant="subtle"
                 leftSection={<IconTrash size={14} />}
                 onClick={handleDeleteRows}
+                size="xs"
+                variant="subtle"
               >
                 Delete ({selectedRows.size})
               </Button>
@@ -588,10 +575,10 @@ export function BulkEditGrid({
 
             {onSave && modifiedCells.size > 0 && (
               <Button
-                size="xs"
                 leftSection={<IconDeviceFloppy size={14} />}
-                onClick={handleSave}
                 loading={isPending}
+                onClick={handleSave}
+                size="xs"
               >
                 Save ({modifiedCells.size} changes)
               </Button>
@@ -601,22 +588,22 @@ export function BulkEditGrid({
 
         {/* Status bar */}
         {(selectedCells.size > 0 || modifiedCells.size > 0) && (
-          <Paper p="xs" withBorder bg="gray.0">
+          <Paper withBorder bg="gray.0" p="xs">
             <Group justify="space-between">
               <Group gap="xs">
                 {selectedCells.size > 0 && (
-                  <Badge variant="dot" size="sm">
+                  <Badge size="sm" variant="dot">
                     {selectedCells.size} cells selected
                   </Badge>
                 )}
                 {selectedRows.size > 0 && (
-                  <Badge variant="dot" size="sm" color="blue">
+                  <Badge color="blue" size="sm" variant="dot">
                     {selectedRows.size} rows selected
                   </Badge>
                 )}
               </Group>
               {modifiedCells.size > 0 && (
-                <Badge variant="filled" size="sm" color="orange">
+                <Badge color="orange" size="sm" variant="filled">
                   {modifiedCells.size} unsaved changes
                 </Badge>
               )}
@@ -629,15 +616,15 @@ export function BulkEditGrid({
           <Box
             ref={gridRef}
             style={{
-              display: 'grid',
               gridTemplateColumns: `40px ${visibleColumnsList
                 .map((col) => `${col.width || (isMobile ? 100 : 150)}px`)
                 .join(' ')}`,
-              gap: 0,
+              minWidth: isMobile ? '100%' : 'auto',
               border: '1px solid var(--mantine-color-gray-3)',
               borderRadius: 'var(--mantine-radius-sm)',
+              display: 'grid',
+              gap: 0,
               overflow: 'hidden',
-              minWidth: isMobile ? '100%' : 'auto',
             }}
           >
             {/* Header row */}
@@ -645,18 +632,15 @@ export function BulkEditGrid({
               style={{
                 gridColumn: '1',
                 backgroundColor: 'var(--mantine-color-gray-1)',
-                borderRight: '1px solid var(--mantine-color-gray-3)',
                 borderBottom: '1px solid var(--mantine-color-gray-3)',
+                borderRight: '1px solid var(--mantine-color-gray-3)',
+                left: 0,
                 padding: '8px',
                 position: 'sticky',
-                left: 0,
                 zIndex: 2,
               }}
             >
               <Checkbox
-                size="xs"
-                checked={selectedRows.size === gridData.length && gridData.length > 0}
-                indeterminate={selectedRows.size > 0 && selectedRows.size < gridData.length}
                 onChange={() => {
                   if (selectedRows.size === gridData.length) {
                     setSelectedRows(new Set());
@@ -664,29 +648,32 @@ export function BulkEditGrid({
                     setSelectedRows(new Set(gridData.map((r) => r.id)));
                   }
                 }}
+                checked={selectedRows.size === gridData.length && gridData.length > 0}
+                indeterminate={selectedRows.size > 0 && selectedRows.size < gridData.length}
+                size="xs"
               />
             </Box>
 
             {visibleColumnsList.map((column, colIndex) => (
               <Box
                 key={column.key}
-                style={{
-                  gridColumn: colIndex + 2,
-                  backgroundColor: 'var(--mantine-color-gray-1)',
-                  borderRight: '1px solid var(--mantine-color-gray-3)',
-                  borderBottom: '1px solid var(--mantine-color-gray-3)',
-                  padding: '8px',
-                  fontWeight: 600,
-                  fontSize: isMobile ? '12px' : '14px',
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 1,
-                  cursor: column.sortable ? 'pointer' : 'default',
-                }}
                 onClick={() => {
                   if (column.sortable) {
                     // Implement sorting
                   }
+                }}
+                style={{
+                  gridColumn: colIndex + 2,
+                  backgroundColor: 'var(--mantine-color-gray-1)',
+                  borderBottom: '1px solid var(--mantine-color-gray-3)',
+                  borderRight: '1px solid var(--mantine-color-gray-3)',
+                  cursor: column.sortable ? 'pointer' : 'default',
+                  fontSize: isMobile ? '12px' : '14px',
+                  fontWeight: 600,
+                  padding: '8px',
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 1,
                 }}
               >
                 <Group gap={4} wrap="nowrap">
@@ -710,17 +697,15 @@ export function BulkEditGrid({
                     backgroundColor: selectedRows.has(row.id)
                       ? 'var(--mantine-color-blue-0)'
                       : 'var(--mantine-color-gray-0)',
-                    borderRight: '1px solid var(--mantine-color-gray-3)',
                     borderBottom: '1px solid var(--mantine-color-gray-3)',
+                    borderRight: '1px solid var(--mantine-color-gray-3)',
+                    left: 0,
                     padding: '8px',
                     position: 'sticky',
-                    left: 0,
                     zIndex: 1,
                   }}
                 >
                   <Checkbox
-                    size="xs"
-                    checked={selectedRows.has(row.id)}
                     onChange={() => {
                       setSelectedRows((prev) => {
                         const newSet = new Set(prev);
@@ -732,6 +717,8 @@ export function BulkEditGrid({
                         return newSet;
                       });
                     }}
+                    checked={selectedRows.has(row.id)}
+                    size="xs"
                   />
                 </Box>
 
@@ -747,6 +734,8 @@ export function BulkEditGrid({
                       ref={(el) => {
                         if (el) cellRefs.current.set(cellKey, el);
                       }}
+                      onClick={(e) => handleCellClick(rowIndex, colIndex, e)}
+                      onDoubleClick={() => handleCellDoubleClick(row.id, column.key)}
                       style={{
                         gridColumn: colIndex + 2,
                         gridRow: rowIndex + 2,
@@ -755,15 +744,13 @@ export function BulkEditGrid({
                           : isModified
                             ? 'var(--mantine-color-yellow-0)'
                             : 'white',
-                        borderRight: '1px solid var(--mantine-color-gray-3)',
                         borderBottom: '1px solid var(--mantine-color-gray-3)',
-                        padding: '8px',
+                        borderRight: '1px solid var(--mantine-color-gray-3)',
                         cursor: column.editable !== false ? 'cell' : 'default',
                         fontSize: isMobile ? '12px' : '14px',
                         overflow: 'hidden',
+                        padding: '8px',
                       }}
-                      onClick={(e) => handleCellClick(rowIndex, colIndex, e)}
-                      onDoubleClick={() => handleCellDoubleClick(row.id, column.key)}
                     >
                       {renderCell(row, column)}
                     </Box>
@@ -776,7 +763,7 @@ export function BulkEditGrid({
 
         {/* Footer info */}
         <Group justify="space-between">
-          <Text size="xs" c="dimmed">
+          <Text c="dimmed" size="xs">
             {gridData.length} rows × {visibleColumnsList.length} columns
           </Text>
           {loading && <Loader size="xs" />}

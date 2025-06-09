@@ -14,7 +14,10 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@formatjs/intl-localematcher": "^0.5.4",
+    "@vercel/toolbar": "catalog:",
     "markdown-to-jsx": "^7.7.6",
+    "negotiator": "^0.6.3",
     "next": "catalog:",
     "nextra": "latest",
     "nextra-theme-docs": "latest",

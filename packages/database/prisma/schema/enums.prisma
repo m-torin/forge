@@ -1,0 +1,137 @@
+// enums.prisma - All enums used across the schema
+
+//==============================================================================
+// E-COMMERCE ENUMS
+//==============================================================================
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum BrandType {
+  MANUFACTURER
+  RETAILER
+  MARKETPLACE
+  SERVICE
+  OTHER
+}
+
+enum CollectionType {
+  SEASONAL
+  THEMATIC
+  PRODUCT_LINE
+  BRAND_LINE
+  PROMOTIONAL
+  CURATED
+  TRENDING
+  FEATURED
+  NEW_ARRIVALS
+  BEST_SELLERS
+  CLEARANCE
+  LIMITED_EDITION
+  COLLABORATION
+  EXCLUSIVE
+  BUNDLE
+  SET
+  OTHER
+}
+
+enum TaxonomyType {
+  CATEGORY
+  TAG
+  ATTRIBUTE
+  DEPARTMENT
+  COLLECTION
+  OTHER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+}
+
+enum ReviewType {
+  IMPORTED   // Reviews imported from external sources
+  DEDICATED  // Reviews created directly on the platform
+}
+
+enum RegistryType {
+  WISHLIST
+  GIFT
+  WEDDING
+  BABY
+  BIRTHDAY
+  HOLIDAY
+  OTHER
+}
+
+enum PurchaseStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum VoteType {
+  HELPFUL
+  NOT_HELPFUL
+}
+
+enum RegistryUserRole {
+  OWNER     // Can edit all aspects of the registry and delete it
+  EDITOR    // Can add/remove items and edit details
+  VIEWER    // Can only view the registry
+}
+
+//==============================================================================
+// PIM ENUMS
+//==============================================================================
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  DISCONTINUED
+}
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+  SERVICE
+  SUBSCRIPTION
+  BUNDLE
+  VARIANT
+  OTHER
+}
+
+enum BarcodeType {
+  UPC_A
+  UPC_E
+  EAN_13
+  EAN_8
+  CODE_128
+  CODE_39
+  QR_CODE
+  PDF417
+  AZTEC
+  DATA_MATRIX
+  ITF14
+  CODABAR
+  OTHER
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  MANUAL
+  SPECIFICATION
+  CERTIFICATE
+  OTHER
+}

@@ -1,3 +1,4 @@
+import { getProducts } from "@/lib/data-service";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -6,7 +7,6 @@ import { type Metadata } from "next";
 import {
   ButtonCircle,
   Divider,
-  getProducts,
   HeaderFilterSection,
   Input,
   Pagination,

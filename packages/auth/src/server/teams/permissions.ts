@@ -245,7 +245,7 @@ export async function canRemoveTeamMembers(teamId: string, userId?: string): Pro
 }
 
 export async function canUpdateTeamMemberRoles(teamId: string, userId?: string): Promise<boolean> {
-  const result = await checkTeamPermission({ permission: 'members:write', teamId, userId });
+  const result = await checkTeamPermission({ permission: 'members:manage', teamId, userId });
   return result.hasPermission;
 }
 

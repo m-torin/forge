@@ -195,10 +195,10 @@ async function analyzeSentiment(review: any, config: any): Promise<any> {
   // Aspect-based sentiment
   const aspects = {};
   if (config.aspects.includes('quality')) {
-    aspects[('quality' as any)] = analyzeAspect(text, ['quality', 'build', 'material', 'durable']);
+    aspects['quality' as any] = analyzeAspect(text, ['quality', 'build', 'material', 'durable']);
   }
   if (config.aspects.includes('value')) {
-    aspects[('value' as any)] = analyzeAspect(text, [
+    aspects['value' as any] = analyzeAspect(text, [
       'price',
       'value',
       'worth',
@@ -208,7 +208,12 @@ async function analyzeSentiment(review: any, config: any): Promise<any> {
     ]);
   }
   if (config.aspects.includes('shipping')) {
-    aspects[('shipping' as any)] = analyzeAspect(text, ['shipping', 'delivery', 'arrived', 'package']);
+    aspects['shipping' as any] = analyzeAspect(text, [
+      'shipping',
+      'delivery',
+      'arrived',
+      'package',
+    ]);
   }
 
   // Emotions
@@ -343,8 +348,8 @@ export const collectReviewsStep = compose(
   (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
   (step) =>
     withStepMonitoring(step, {
-, 'sourceCount'],
       enableDetailedLogging: true,
+      metricsToTrack: ['sourceCount'],
     }),
 );
 
@@ -596,7 +601,7 @@ function calculateAggregateSentiment(sentimentResults: any[]): any {
   let totalScore = 0;
 
   sentimentResults.forEach((result) => {
-    sentimentCounts[(result.overall.sentiment as any)]++;
+    sentimentCounts[result.overall.sentiment as any]++;
     totalScore += result.overall.score;
   });
 
@@ -608,28 +613,28 @@ function calculateAggregateSentiment(sentimentResults: any[]): any {
     Object.entries(result.aspects || {}).forEach(([aspect, data]: [string, any]) => {
       if (!data) return;
 
-      if (!aspectAggregates[(aspect as any)]) {
-        aspectAggregates[(aspect as any)] = { negative: 0, neutral: 0, positive: 0, totalScore: 0 };
-        aspectCounts[(aspect as any)] = 0;
+      if (!aspectAggregates[aspect as any]) {
+        aspectAggregates[aspect as any] = { negative: 0, neutral: 0, positive: 0, totalScore: 0 };
+        aspectCounts[aspect as any] = 0;
       }
 
-      aspectAggregates[(aspect as any)][data.sentiment]++;
-      aspectAggregates[(aspect as any)].totalScore += data.score;
-      aspectCounts[(aspect as any)]++;
+      aspectAggregates[aspect as any][data.sentiment]++;
+      aspectAggregates[aspect as any].totalScore += data.score;
+      aspectCounts[aspect as any]++;
     });
   });
 
   // Calculate aspect averages
   const aspectSummary = {};
   Object.entries(aspectAggregates).forEach(([aspect, data]: [string, any]) => {
-    aspectSummary[(aspect as any)] = {
-      averageScore: data.totalScore / aspectCounts[(aspect as any)],
+    aspectSummary[aspect as any] = {
+      averageScore: data.totalScore / aspectCounts[aspect as any],
       distribution: {
-        negative: data.negative / aspectCounts[(aspect as any)],
-        neutral: data.neutral / aspectCounts[(aspect as any)],
-        positive: data.positive / aspectCounts[(aspect as any)],
+        negative: data.negative / aspectCounts[aspect as any],
+        neutral: data.neutral / aspectCounts[aspect as any],
+        positive: data.positive / aspectCounts[aspect as any],
       },
-      mentionCount: aspectCounts[(aspect as any)],
+      mentionCount: aspectCounts[aspect as any],
     };
   });
 
@@ -641,14 +646,14 @@ function calculateAggregateSentiment(sentimentResults: any[]): any {
     if (result.emotions) {
       emotionCount++;
       Object.entries(result.emotions).forEach(([emotion, value]) => {
-        emotionAverages[((emotion as any) as any)] = (emotionAverages[emotion] || 0) + value;
+        emotionAverages[emotion as any as any] = (emotionAverages[emotion] || 0) + value;
       });
     }
   });
 
   if (emotionCount > 0) {
     Object.keys(emotionAverages).forEach((emotion) => {
-      emotionAverages[(emotion as any)] /= emotionCount;
+      emotionAverages[emotion as any] /= emotionCount;
     });
   }
 
@@ -676,7 +681,7 @@ export const extractTopicsThemesStep = createStep('extract-topics', async (data:
   const allTopics = new Map();
   const themePatterns = new Map();
 
-  sentimentResults.forEach((resul: anyt: any: any, inde: anyx: any: any) => {
+  sentimentResults.forEach((result: any, index: any) => {
     const review = validatedReviews[index];
 
     // Aggregate topics
@@ -736,7 +741,9 @@ export const extractTopicsThemesStep = createStep('extract-topics', async (data:
   const topTopics = Array.from(allTopics.values())
     .map((topic) => ({
       ...topic,
-      dominantSentiment: (Object as any).entries((topic as any).sentimentCounts).sort((a, b) => b[1] - a[1])[0][0],
+      dominantSentiment: (Object as any)
+        .entries((topic as any).sentimentCounts)
+        .sort((a, b) => b[1] - a[1])[0][0],
       products: Array.from(topic.products),
     }))
     .sort((a, b) => b.mentions - a.mentions)
@@ -815,7 +822,7 @@ export const generateSummariesInsightsStep = createStep('generate-summaries', as
     // Generate product summaries
     for (const [productId, productReviews] of reviewsByProduct) {
       if (productReviews.length >= data.aggregationConfig.minimumReviews) {
-        summaries[(productId as any)] = generateProductSummary(productId, productReviews);
+        summaries[productId as any] = generateProductSummary(productId, productReviews);
       }
     }
   }
@@ -841,7 +848,7 @@ function generateProductSummary(productId: string, reviews: any[]): any {
   // Sentiment breakdown
   const sentiments = { negative: 0, neutral: 0, positive: 0 };
   reviews.forEach((r) => {
-    sentiments[(r.sentiment.overall.sentiment as any)]++;
+    sentiments[r.sentiment.overall.sentiment as any]++;
   });
 
   // Common positive and negative points
@@ -1171,7 +1178,7 @@ function analyzeMerchantPatterns(reviews: any[], sentiments: any[]): any {
 
   // Calculate merchant metrics
   const merchantAnalysis = Array.from(merchantStats.values()).map((stats) => ({
-    averageRating: stats.ratings.reduce((su: anym: any: any, r: any: any) => sum + r, 0) / stats.ratings.length,
+    averageRating: stats.ratings.reduce((sum: any, r: any) => sum + r, 0) / stats.ratings.length,
     merchantId: stats.merchantId,
     reviewCount: stats.reviews,
     sentimentScore: (stats.sentiments.positive - stats.sentiments.negative) / stats.reviews,
@@ -1242,7 +1249,7 @@ function compareAspects(ourAspects: any, competitorAspects: any): any {
 
   Object.keys(ourAspects).forEach((aspect) => {
     if (competitorAspects[aspect]) {
-      comparison[(aspect as any)] = {
+      comparison[aspect as any] = {
         advantage: ourAspects[aspect].averageScore - competitorAspects[aspect].averageScore,
         competitorScore: competitorAspects[aspect].averageScore,
         ourScore: ourAspects[aspect].averageScore,

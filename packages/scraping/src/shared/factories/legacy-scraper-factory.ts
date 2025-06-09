@@ -2,7 +2,6 @@
  * Legacy ScraperFactory class for backward compatibility
  */
 
-
 import type { ScrapingConfig, ScrapingProvider } from '../types/scraping-types';
 
 interface ScraperInstance {

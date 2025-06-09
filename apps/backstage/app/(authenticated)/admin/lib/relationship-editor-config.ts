@@ -4,304 +4,303 @@
  */
 
 export interface RelationshipEditorConfig {
-  // Basic configuration
-  name: string;
   description: string;
   junctionModel: string;
+  // Basic configuration
+  name: string;
   primaryEntity: string;
   relatedEntity: string;
-  
+
+  allowInlineCreate: boolean;
+  allowMultiSelect: boolean;
   // UI Configuration
   displayMode: 'table' | 'cards' | 'chips';
-  allowMultiSelect: boolean;
-  allowInlineCreate: boolean;
-  
+
   // Junction table fields
-  junctionFields?: Array<{
+  junctionFields?: {
     name: string;
     label: string;
     type: string;
     required?: boolean;
     defaultValue?: any;
-    options?: Array<{ value: string; label: string }>;
-  }>;
-  
+    options?: { value: string; label: string }[];
+  }[];
+
+  filterFields?: string[];
   // Search and filtering
   searchable: boolean;
-  filterFields?: string[];
-  
+
   // Validation
   maxSelections?: number;
   minSelections?: number;
-  
+
+  customEditor?: string;
   // Custom components
   customRenderer?: string;
-  customEditor?: string;
 }
 
 /**
  * Relationship editor configurations for all many-to-many relationships
  */
 export const relationshipEditorConfigs: Record<string, RelationshipEditorConfig> = {
-  
   // Product ↔ Brand (via PdpJoin)
   'product-brands': {
     name: 'Product Brands',
-    description: 'Manage which brands sell this product',
-    junctionModel: 'pdpJoin',
-    primaryEntity: 'product',
-    relatedEntity: 'brand',
-    displayMode: 'chips',
-    allowMultiSelect: true,
     allowInlineCreate: false,
-    searchable: true,
+    allowMultiSelect: true,
+    description: 'Manage which brands sell this product',
+    displayMode: 'chips',
     filterFields: ['type', 'status'],
     junctionFields: [
       {
         name: 'isPrimary',
-        label: 'Primary Brand',
         type: 'checkbox',
         defaultValue: false,
+        label: 'Primary Brand',
       },
       {
         name: 'sellerType',
-        label: 'Seller Type',
         type: 'select',
+        label: 'Seller Type',
         options: [
-          { value: 'authorized', label: 'Authorized Dealer' },
-          { value: 'official', label: 'Official Store' },
-          { value: 'reseller', label: 'Reseller' },
-          { value: 'marketplace', label: 'Marketplace' },
+          { label: 'Authorized Dealer', value: 'authorized' },
+          { label: 'Official Store', value: 'official' },
+          { label: 'Reseller', value: 'reseller' },
+          { label: 'Marketplace', value: 'marketplace' },
         ],
       },
     ],
+    junctionModel: 'pdpJoin',
+    primaryEntity: 'product',
+    relatedEntity: 'brand',
+    searchable: true,
   },
 
   // User ↔ Product/Collection (via FavoriteJoin)
   'user-favorites': {
     name: 'User Favorites',
-    description: 'Manage user favorite products and collections',
-    junctionModel: 'favoriteJoin',
-    primaryEntity: 'user',
-    relatedEntity: 'mixed', // Can be product or collection
-    displayMode: 'table',
-    allowMultiSelect: true,
     allowInlineCreate: false,
-    searchable: true,
+    allowMultiSelect: true,
+    description: 'Manage user favorite products and collections',
+    displayMode: 'table',
     filterFields: ['type'],
     junctionFields: [
       {
         name: 'itemType',
-        label: 'Item Type',
         type: 'select',
-        required: true,
+        label: 'Item Type',
         options: [
-          { value: 'product', label: 'Product' },
-          { value: 'collection', label: 'Collection' },
+          { label: 'Product', value: 'product' },
+          { label: 'Collection', value: 'collection' },
         ],
+        required: true,
       },
       {
         name: 'priority',
-        label: 'Priority',
         type: 'number',
         defaultValue: 0,
+        label: 'Priority',
       },
     ],
+    junctionModel: 'favoriteJoin',
+    primaryEntity: 'user',
+    relatedEntity: 'mixed', // Can be product or collection
+    searchable: true,
   },
 
   // Product ↔ Taxonomy (many-to-many)
   'product-taxonomies': {
     name: 'Product Taxonomies',
+    allowInlineCreate: true,
+    allowMultiSelect: true,
     description: 'Categorize products with taxonomies and tags',
+    displayMode: 'chips',
+    filterFields: ['type', 'status'],
     junctionModel: 'productToTaxonomy', // Virtual junction
+    maxSelections: 20,
     primaryEntity: 'product',
     relatedEntity: 'taxonomy',
-    displayMode: 'chips',
-    allowMultiSelect: true,
-    allowInlineCreate: true,
     searchable: true,
-    filterFields: ['type', 'status'],
-    maxSelections: 20,
   },
 
   // Product ↔ Collection (many-to-many)
   'product-collections': {
     name: 'Product Collections',
+    allowInlineCreate: false,
+    allowMultiSelect: true,
     description: 'Add products to collections',
+    displayMode: 'cards',
+    filterFields: ['type', 'status'],
     junctionModel: 'productToCollection', // Virtual junction
+    maxSelections: 10,
     primaryEntity: 'product',
     relatedEntity: 'collection',
-    displayMode: 'cards',
-    allowMultiSelect: true,
-    allowInlineCreate: false,
     searchable: true,
-    filterFields: ['type', 'status'],
-    maxSelections: 10,
   },
 
   // Collection ↔ Brand (many-to-many)
   'collection-brands': {
     name: 'Collection Brands',
+    allowInlineCreate: false,
+    allowMultiSelect: true,
     description: 'Associate brands with collections',
+    displayMode: 'chips',
+    filterFields: ['type', 'status'],
     junctionModel: 'brandToCollection', // Virtual junction
     primaryEntity: 'collection',
     relatedEntity: 'brand',
-    displayMode: 'chips',
-    allowMultiSelect: true,
-    allowInlineCreate: false,
     searchable: true,
-    filterFields: ['type', 'status'],
   },
 
-  // Registry ↔ User (via RegistryUserJoin) 
+  // Registry ↔ User (via RegistryUserJoin)
   'registry-users': {
     name: 'Registry Users',
-    description: 'Manage registry sharing and permissions',
-    junctionModel: 'registryUserJoin',
-    primaryEntity: 'registry',
-    relatedEntity: 'user',
-    displayMode: 'table',
-    allowMultiSelect: true,
     allowInlineCreate: false,
-    searchable: true,
+    allowMultiSelect: true,
+    description: 'Manage registry sharing and permissions',
+    displayMode: 'table',
     filterFields: ['role'],
     junctionFields: [
       {
         name: 'role',
-        label: 'Access Level',
         type: 'select',
-        required: true,
         defaultValue: 'VIEWER',
+        label: 'Access Level',
         options: [
-          { value: 'OWNER', label: 'Owner (Full Access)' },
-          { value: 'EDITOR', label: 'Editor (Can Modify)' },
-          { value: 'VIEWER', label: 'Viewer (Read Only)' },
+          { label: 'Owner (Full Access)', value: 'OWNER' },
+          { label: 'Editor (Can Modify)', value: 'EDITOR' },
+          { label: 'Viewer (Read Only)', value: 'VIEWER' },
         ],
+        required: true,
       },
       {
         name: 'canInviteOthers',
-        label: 'Can Invite Others',
         type: 'checkbox',
         defaultValue: false,
+        label: 'Can Invite Others',
       },
       {
         name: 'emailNotifications',
-        label: 'Email Notifications',
         type: 'checkbox',
         defaultValue: true,
+        label: 'Email Notifications',
       },
     ],
+    junctionModel: 'registryUserJoin',
+    primaryEntity: 'registry',
+    relatedEntity: 'user',
+    searchable: true,
   },
 
   // Team ↔ User (via TeamMember)
   'team-members': {
     name: 'Team Members',
-    description: 'Manage team membership and roles',
-    junctionModel: 'teamMember',
-    primaryEntity: 'team',
-    relatedEntity: 'user',
-    displayMode: 'table',
-    allowMultiSelect: true,
     allowInlineCreate: false,
-    searchable: true,
+    allowMultiSelect: true,
+    description: 'Manage team membership and roles',
+    displayMode: 'table',
     filterFields: ['role'],
     junctionFields: [
       {
         name: 'role',
-        label: 'Team Role',
         type: 'select',
-        required: true,
         defaultValue: 'member',
+        label: 'Team Role',
         options: [
-          { value: 'lead', label: 'Team Lead' },
-          { value: 'admin', label: 'Admin' },
-          { value: 'member', label: 'Member' },
-          { value: 'contributor', label: 'Contributor' },
+          { label: 'Team Lead', value: 'lead' },
+          { label: 'Admin', value: 'admin' },
+          { label: 'Member', value: 'member' },
+          { label: 'Contributor', value: 'contributor' },
         ],
+        required: true,
       },
       {
         name: 'permissions',
-        label: 'Permissions',
         type: 'multiselect',
+        label: 'Permissions',
         options: [
-          { value: 'read', label: 'Read' },
-          { value: 'write', label: 'Write' },
-          { value: 'delete', label: 'Delete' },
-          { value: 'admin', label: 'Admin' },
+          { label: 'Read', value: 'read' },
+          { label: 'Write', value: 'write' },
+          { label: 'Delete', value: 'delete' },
+          { label: 'Admin', value: 'admin' },
         ],
       },
     ],
+    junctionModel: 'teamMember',
+    primaryEntity: 'team',
+    relatedEntity: 'user',
+    searchable: true,
   },
 
   // Review ↔ User (via ReviewVoteJoin)
   'review-votes': {
     name: 'Review Votes',
-    description: 'Track helpful/unhelpful votes on reviews',
-    junctionModel: 'reviewVoteJoin',
-    primaryEntity: 'review',
-    relatedEntity: 'user',
-    displayMode: 'table',
-    allowMultiSelect: false, // One vote per user per review
     allowInlineCreate: false,
-    searchable: true,
+    allowMultiSelect: false, // One vote per user per review
+    description: 'Track helpful/unhelpful votes on reviews',
+    displayMode: 'table',
     filterFields: ['voteType'],
     junctionFields: [
       {
         name: 'voteType',
-        label: 'Vote Type',
         type: 'select',
-        required: true,
+        label: 'Vote Type',
         options: [
-          { value: 'HELPFUL', label: '👍 Helpful' },
-          { value: 'NOT_HELPFUL', label: '👎 Not Helpful' },
+          { label: '👍 Helpful', value: 'HELPFUL' },
+          { label: '👎 Not Helpful', value: 'NOT_HELPFUL' },
         ],
+        required: true,
       },
     ],
+    junctionModel: 'reviewVoteJoin',
+    primaryEntity: 'review',
+    relatedEntity: 'user',
+    searchable: true,
   },
 
   // Registry ↔ Product/Collection (via RegistryItem)
   'registry-items': {
     name: 'Registry Items',
-    description: 'Manage items in registries',
-    junctionModel: 'registryItem',
-    primaryEntity: 'registry',
-    relatedEntity: 'mixed', // Can be product or collection
-    displayMode: 'table',
-    allowMultiSelect: true,
     allowInlineCreate: false,
-    searchable: true,
+    allowMultiSelect: true,
+    description: 'Manage items in registries',
+    displayMode: 'table',
     filterFields: ['priority', 'purchased'],
     junctionFields: [
       {
         name: 'quantity',
-        label: 'Quantity',
         type: 'number',
-        required: true,
         defaultValue: 1,
+        label: 'Quantity',
+        required: true,
       },
       {
         name: 'priority',
-        label: 'Priority',
         type: 'select',
         defaultValue: 0,
+        label: 'Priority',
         options: [
-          { value: 0, label: 'Normal' },
-          { value: 1, label: 'High' },
-          { value: 2, label: 'Urgent' },
+          { label: 'Normal', value: 0 },
+          { label: 'High', value: 1 },
+          { label: 'Urgent', value: 2 },
         ],
       },
       {
         name: 'notes',
-        label: 'Notes',
         type: 'textarea',
+        label: 'Notes',
       },
       {
         name: 'purchased',
-        label: 'Purchased',
         type: 'checkbox',
         defaultValue: false,
+        label: 'Purchased',
       },
     ],
+    junctionModel: 'registryItem',
+    primaryEntity: 'registry',
+    relatedEntity: 'mixed', // Can be product or collection
+    searchable: true,
   },
 };
 
@@ -321,8 +320,8 @@ export function getRelationshipConfig(
  */
 export function getModelRelationships(modelName: string): string[] {
   return Object.keys(relationshipEditorConfigs)
-    .filter(key => key.startsWith(`${modelName}-`))
-    .map(key => key.replace(`${modelName}-`, ''));
+    .filter((key) => key.startsWith(`${modelName}-`))
+    .map((key) => key.replace(`${modelName}-`, ''));
 }
 
 /**
@@ -357,18 +356,18 @@ export function getRelationshipDisplayText(
   junctionData?: any,
 ): string {
   const baseText = item.name || item.title || item.slug || item.id;
-  
+
   if (!junctionData || !config.junctionFields?.length) {
     return baseText;
   }
 
   // Add junction field info to display
   const additionalInfo: string[] = [];
-  
-  config.junctionFields.forEach(field => {
+
+  config.junctionFields.forEach((field) => {
     const value = junctionData[field.name];
     if (value && field.type === 'select') {
-      const option = field.options?.find(opt => opt.value === value);
+      const option = field.options?.find((opt) => opt.value === value);
       if (option) {
         additionalInfo.push(option.label);
       }

@@ -16,19 +16,24 @@ interface CollectionCard4Props {
   'data-testid'?: string;
 }
 
-const CollectionCard4: FC<CollectionCard4Props> = ({ bgSvgUrl, className, collection, 'data-testid': testId = 'collection-card-4' }) => {
+const CollectionCard4: FC<CollectionCard4Props> = ({
+  'data-testid': testId = 'collection-card-4',
+  bgSvgUrl,
+  className,
+  collection,
+}) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection.handle) {
+  if (!collection || !collection.handle) {
     return null;
   }
   return (
     <div
+      data-testid={testId}
       className={clsx(
         'group relative overflow-hidden rounded-3xl bg-white p-5 transition-shadow hover:nc-shadow-lg sm:p-8 dark:bg-neutral-900',
         className,
       )}
-      data-testid={testId}
     >
       {bgSvgUrl && (
         <div className="absolute end-0 bottom-0 size-52 sm:size-64 xl:size-72">

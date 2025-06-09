@@ -321,8 +321,8 @@ export const parseFeedDataStep = compose(
   }),
   (step) =>
     withStepMonitoring(step, {
-, 'parseTime'],
       enableDetailedLogging: true,
+      metricsToTrack: ['parseTime'],
     }),
 );
 
@@ -713,8 +713,8 @@ function extractVariants(product: any): any[] {
 
     // Remove undefined attributes
     Object.keys(variant.attributes).forEach((key) => {
-      if (!variant.attributes[(key as any)]) {
-        delete variant.attributes[(key as any)];
+      if (!variant.attributes[key as any]) {
+        delete variant.attributes[key as any];
       }
     });
 
@@ -942,7 +942,7 @@ export const storeNormalizedProductsStep = compose(
       } catch (error) {
         errors.push({
           batch: i / batchSize,
-          (error as Error): (error as Error).message,
+          error: (error as Error).message,
           products: batch.map((p: any) => p.id),
         });
       }

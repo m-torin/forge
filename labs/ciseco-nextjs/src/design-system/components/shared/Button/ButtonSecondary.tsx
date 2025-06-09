@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 
-import Button, { type ButtonProps } from './Button';
+import Button, { type ButtonProps } from './Button'
 
 export interface ButtonSecondaryProps extends ButtonProps {}
 
@@ -13,7 +13,7 @@ const ButtonSecondary: React.FC<ButtonSecondaryProps> = ({
       className={`bg-white text-neutral-700 hover:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 ${className}`}
       {...props}
     />
-  );
-};
+  )
+}
 
-export default ButtonSecondary;
+export default ButtonSecondary

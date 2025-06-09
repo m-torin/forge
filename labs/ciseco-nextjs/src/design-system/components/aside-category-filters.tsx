@@ -1,19 +1,11 @@
-'use client';
+'use client'
 
-import {
-  Checkbox,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Fieldset,
-  Label,
-  Legend,
-} from '@headlessui/react';
-import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
-import clsx from 'clsx';
+import { Checkbox, Disclosure, DisclosureButton, DisclosurePanel, Fieldset, Label, Legend } from '@headlessui/react'
+import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import clsx from 'clsx'
 
-import { Aside } from './aside/aside';
+import { Aside } from './aside/aside'
 
 const filters = [
   {
@@ -51,32 +43,23 @@ const filters = [
       { label: '2XL', value: '2xl' },
     ],
   },
-];
+]
 interface Props {
-  className?: string;
+  className?: string
 }
 
 const AsideCategoryFilters = ({ className = '' }: Props) => {
   return (
-    <Aside
-      contentMaxWidthClassName="max-w-sm"
-      openFrom="right"
-      heading="Filters"
-      type="category-filters"
-    >
+    <Aside contentMaxWidthClassName="max-w-sm" openFrom="right" heading="Filters" type="category-filters">
       <div className={clsx('flex h-full flex-col', className)}>
         {/* CONTENT */}
 
-        <div className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto">
+        <div className="hidden-scrollbar flex-1 overflow-y-auto overflow-x-hidden">
           <div className="flow-root">
             {/* Filters */}
             <form className="">
               {filters.map((section) => (
-                <Disclosure
-                  key={section.name}
-                  className="border-b border-neutral-200 pt-4 pb-4"
-                  as="div"
-                >
+                <Disclosure key={section.name} className="border-b border-neutral-200 pb-4 pt-4" as="div">
                   <Fieldset>
                     <Legend className="w-full">
                       <DisclosureButton className="group flex w-full items-center justify-between p-2 text-neutral-400 hover:text-neutral-500">
@@ -86,13 +69,13 @@ const AsideCategoryFilters = ({ className = '' }: Props) => {
                             strokeWidth={1.5}
                             color="currentColor"
                             icon={ArrowDown01Icon}
-                            className="size-5 shrink-0 group-data-open:-rotate-180"
+                            className="group-data-open:-rotate-180 size-5 shrink-0"
                             size={16}
                           />
                         </span>
                       </DisclosureButton>
                     </Legend>
-                    <DisclosurePanel className="px-4 pt-4 pb-2">
+                    <DisclosurePanel className="px-4 pb-2 pt-4">
                       <div>
                         {section.options.map((option, optionIdx) => (
                           <div key={option.value}>
@@ -112,7 +95,7 @@ const AsideCategoryFilters = ({ className = '' }: Props) => {
         </div>
       </div>
     </Aside>
-  );
-};
+  )
+}
 
-export default AsideCategoryFilters;
+export default AsideCategoryFilters

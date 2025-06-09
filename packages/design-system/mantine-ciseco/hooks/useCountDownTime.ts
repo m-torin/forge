@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useInterval } from '@mantine/hooks';
+import { useState } from 'react';
 
 const calculateTimeLeft = () => {
   const year = new Date().getFullYear();
@@ -29,12 +30,10 @@ const calculateTimeLeft = () => {
 const useCountDownTime = () => {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-    return () => clearTimeout(timer);
-  });
+  // ✅ Use Mantine's useInterval - automatically handles cleanup and prevents infinite loops
+  useInterval(() => {
+    setTimeLeft(calculateTimeLeft());
+  }, 1000);
 
   return timeLeft;
 };

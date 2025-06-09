@@ -35,6 +35,11 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
   const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
     useCarouselArrowButtons(emblaApi);
+
+  // Don't render anything if no products
+  if (!products || products.length === 0) {
+    return null;
+  }
   return (
     <div className={`nc-SectionSliderLargeProduct ${className}`}>
       <Heading
@@ -51,7 +56,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
 
       <div ref={emblaRef} className="embla">
         <div className="-ms-5 embla__container sm:-ms-8">
-          {products.map((product) => (
+          {products?.map((product) => (
             <div
               key={product.id}
               className="embla__slide basis-full ps-5 sm:basis-2/3 sm:ps-8 lg:basis-1/2 xl:basis-2/5 2xl:basis-1/3"

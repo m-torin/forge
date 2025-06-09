@@ -200,8 +200,8 @@ export const fetchProductsStep = compose(
   (step) => withStepRetry(step, { maxAttempts: 3 }),
   (step) =>
     withStepMonitoring(step, {
-, 'sourceCount'],
       enableDetailedLogging: true,
+      metricsToTrack: ['sourceCount'],
     }),
 );
 
@@ -416,7 +416,6 @@ export const enrichProductsStep = StepTemplates.conditional(
   'enrich-products',
   'Enrich products with additional data',
   {
-,
     trueStep: createStep('perform-enrichment', async (data: any) => {
       const { deduplicationResults, options } = data;
       const products = [...deduplicationResults.unique, ...deduplicationResults.mergedProducts];

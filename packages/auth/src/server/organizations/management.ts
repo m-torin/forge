@@ -381,6 +381,230 @@ export async function getOrganizationMembers(organizationId: string): Promise<{
   }
 }
 
+/**
+ * Bulk invite multiple users to an organization
+ */
+export async function bulkInviteUsers(data: {
+  emails: string[];
+  organizationId: string;
+  role: OrganizationRole;
+  teamId?: string;
+  message?: string;
+}): Promise<{
+  success: boolean;
+  results?: Array<{
+    email: string;
+    success: boolean;
+    invitation?: any;
+    error?: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const results = await Promise.allSettled(
+      data.emails.map(email =>
+        inviteUser({
+          email,
+          organizationId: data.organizationId,
+          role: data.role,
+          teamId: data.teamId,
+          message: data.message,
+        })
+      )
+    );
+
+    const mappedResults = results.map((result, index) => ({
+      email: data.emails[index],
+      success: result.status === 'fulfilled' ? result.value.success : false,
+      invitation: result.status === 'fulfilled' ? result.value.invitation : undefined,
+      error: result.status === 'fulfilled' ? result.value.error : 
+             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+    }));
+
+    const successCount = mappedResults.filter(r => r.success).length;
+
+    return {
+      success: successCount > 0,
+      results: mappedResults,
+    };
+  } catch (error) {
+    console.error('Bulk invite users error:', error);
+    return {
+      error: 'Failed to bulk invite users',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Bulk remove members from an organization
+ */
+export async function bulkRemoveMembers(data: {
+  userIds: string[];
+  organizationId: string;
+}): Promise<{
+  success: boolean;
+  results?: Array<{
+    userId: string;
+    success: boolean;
+    error?: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const results = await Promise.allSettled(
+      data.userIds.map(userId =>
+        removeMember({
+          userId,
+          organizationId: data.organizationId,
+        })
+      )
+    );
+
+    const mappedResults = results.map((result, index) => ({
+      userId: data.userIds[index],
+      success: result.status === 'fulfilled' ? result.value.success : false,
+      error: result.status === 'fulfilled' ? result.value.error : 
+             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+    }));
+
+    const successCount = mappedResults.filter(r => r.success).length;
+
+    return {
+      success: successCount > 0,
+      results: mappedResults,
+    };
+  } catch (error) {
+    console.error('Bulk remove members error:', error);
+    return {
+      error: 'Failed to bulk remove members',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Bulk update member roles in an organization
+ */
+export async function bulkUpdateMemberRoles(data: {
+  updates: Array<{
+    userId: string;
+    role: OrganizationRole;
+  }>;
+  organizationId: string;
+}): Promise<{
+  success: boolean;
+  results?: Array<{
+    userId: string;
+    success: boolean;
+    error?: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const results = await Promise.allSettled(
+      data.updates.map(update =>
+        updateMemberRole({
+          userId: update.userId,
+          organizationId: data.organizationId,
+          role: update.role,
+        })
+      )
+    );
+
+    const mappedResults = results.map((result, index) => ({
+      userId: data.updates[index].userId,
+      success: result.status === 'fulfilled' ? result.value.success : false,
+      error: result.status === 'fulfilled' ? result.value.error : 
+             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+    }));
+
+    const successCount = mappedResults.filter(r => r.success).length;
+
+    return {
+      success: successCount > 0,
+      results: mappedResults,
+    };
+  } catch (error) {
+    console.error('Bulk update member roles error:', error);
+    return {
+      error: 'Failed to bulk update member roles',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Get organization statistics
+ */
+export async function getOrganizationStatistics(organizationId: string): Promise<{
+  success: boolean;
+  data?: {
+    totalMembers: number;
+    activeMembers: number;
+    pendingInvitations: number;
+    teams: number;
+    membersByRole: Record<string, number>;
+  };
+  error?: string;
+}> {
+  try {
+    // Get members
+    const membersResult = await getOrganizationMembers(organizationId);
+    if (!membersResult.success) {
+      return {
+        success: false,
+        error: membersResult.error,
+      };
+    }
+
+    // Get invitations
+    const invitationsResult = await listInvitations(organizationId);
+    if (!invitationsResult.success) {
+      return {
+        success: false,
+        error: invitationsResult.error,
+      };
+    }
+
+    const members = membersResult.members || [];
+    const invitations = invitationsResult.invitations || [];
+
+    // Calculate statistics
+    const totalMembers = members.length;
+    const activeMembers = members.filter((member: any) => 
+      member.user && !member.user.banned
+    ).length;
+    const pendingInvitations = invitations.filter((inv: any) => 
+      inv.status === 'pending'
+    ).length;
+
+    // Count members by role
+    const membersByRole = members.reduce((acc: Record<string, number>, member: any) => {
+      const role = member.role || 'member';
+      acc[role] = (acc[role] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      success: true,
+      data: {
+        totalMembers,
+        activeMembers,
+        pendingInvitations,
+        teams: 0, // TODO: Implement team counting when teams are fully supported
+        membersByRole,
+      },
+    };
+  } catch (error) {
+    console.error('Get organization statistics error:', error);
+    return {
+      error: 'Failed to get organization statistics',
+      success: false,
+    };
+  }
+}
+
 // Aliases for backward compatibility
 export { inviteUser as inviteMember } from './management';
 export { cancelInvitation as revokeInvitation } from './management';

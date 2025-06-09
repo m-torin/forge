@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * React hooks for observability
  * Migrated and improved from the original observability package

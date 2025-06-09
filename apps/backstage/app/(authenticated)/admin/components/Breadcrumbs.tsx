@@ -1,12 +1,12 @@
 'use client';
 
-import { Breadcrumbs as MantineBreadcrumbs, Anchor, Text } from '@mantine/core';
-import Link from 'next/link';
+import { Anchor, Breadcrumbs as MantineBreadcrumbs, Text } from '@mantine/core';
 import { IconHome } from '@tabler/icons-react';
+import Link from 'next/link';
 
 interface BreadcrumbItem {
-  title: string;
   href?: string;
+  title: string;
 }
 
 interface BreadcrumbsProps {
@@ -14,7 +14,7 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
-  const allItems = [{ title: 'Admin', href: '/admin', icon: <IconHome size={16} /> }, ...items];
+  const allItems = [{ href: '/admin', icon: <IconHome size={16} />, title: 'Admin' }, ...items];
 
   return (
     <MantineBreadcrumbs separator="→" mb="md">
@@ -33,10 +33,10 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         return (
           <Anchor
             key={index}
-            component={Link}
             href={item.href}
+            component={Link}
+            style={{ alignItems: 'center', display: 'flex', gap: 4 }}
             size="sm"
-            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
           >
             {index === 0 && 'icon' in item && item.icon}
             {item.title}

@@ -2,11 +2,11 @@
 
 import { Search01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { useDocumentVisibility, useInterval } from '@mantine/hooks';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { type FC, useEffect, useState } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { useInterval } from 'react-use';
 
 import heroImage1 from '../../images/hero-right-1.png';
 import heroImage2 from '../../images/hero-right-2.png';
@@ -54,6 +54,9 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
   const [indexActive, setIndexActive] = useState(0);
   const [isRunning, toggleIsRunning] = useState(true);
 
+  // ✅ Use Mantine's useDocumentVisibility for better performance
+  const documentVisibility = useDocumentVisibility();
+
   const handlers = useSwipeable({
     onSwipedLeft: () => {
       handleClickNext();
@@ -71,12 +74,12 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
     setIsSlided(true);
   }, [indexActive, isSlided]);
 
-  useInterval(
-    () => {
-      handleAutoNext();
-    },
-    isRunning ? 5000 : 999999,
-  );
+  // ✅ Use Mantine's useInterval with document visibility check
+  const intervalDelay = isRunning && documentVisibility === 'visible' ? 5000 : 999999; // Large number instead of null
+
+  useInterval(() => {
+    handleAutoNext();
+  }, intervalDelay);
 
   const handleAutoNext = () => {
     setIndexActive((state) => {
@@ -100,7 +103,7 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
   const handleClickPrev = () => {
     setIndexActive((state) => {
       if (state === 0) {
-        return data.length - 1;
+        return (data?.length || 0) - 1;
       }
       return state - 1;
     });
@@ -121,7 +124,9 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
 
   const renderItem = (index: number) => {
     const isActive = indexActive === index;
-    const item = data[index];
+    const item = data?.[index];
+    
+    if (!item) return null;
 
     return (
       <div
@@ -144,7 +149,7 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
 
         {/* DOTS */}
         <div className="absolute start-1/2 bottom-4 flex -translate-x-1/2 justify-center rtl:translate-x-1/2">
-          {data.map((_, index) => {
+          {data?.map((_, index) => {
             const isActive = indexActive === index;
             return (
               <div
@@ -207,7 +212,7 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
 
   return (
     <div className={clsx('relative z-[1]', className)} {...handlers}>
-      {data.map((_, index) => renderItem(index))}
+      {data?.map((_, index) => renderItem(index))}
 
       <button
         onClick={handleClickNext}

@@ -1,9 +1,9 @@
+import { getDictionary } from "@/i18n";
 import {
   getProductDetailByHandle,
   getProductReviews,
   getProducts,
-} from "@/data/data";
-import { getDictionary } from "@/i18n";
+} from "@/lib/data-service";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 

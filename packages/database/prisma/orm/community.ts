@@ -1,56 +1,56 @@
 "use server";
 
-import { database } from "../index";
+import { prisma } from "../index";
 import type { Prisma } from "../generated/client/index";
 
 //==============================================================================
 // ARTICLE CRUD OPERATIONS
 //==============================================================================
 
-export async function createArticle(data: Prisma.ArticleCreateInput) {
-  return database.article.create({ data });
+export async function createArticle(args: Prisma.ArticleCreateArgs) {
+  return prisma.article.create(args);
 }
 
 export async function findManyArticles(args?: Prisma.ArticleFindManyArgs) {
-  return database.article.findMany(args);
+  return prisma.article.findMany(args);
 }
 
 export async function findUniqueArticle(args: Prisma.ArticleFindUniqueArgs) {
-  return database.article.findUnique(args);
+  return prisma.article.findUnique(args);
 }
 
 export async function findFirstArticle(args?: Prisma.ArticleFindFirstArgs) {
-  return database.article.findFirst(args);
+  return prisma.article.findFirst(args);
 }
 
 export async function updateArticle(args: Prisma.ArticleUpdateArgs) {
-  return database.article.update(args);
+  return prisma.article.update(args);
 }
 
 export async function updateManyArticles(args: Prisma.ArticleUpdateManyArgs) {
-  return database.article.updateMany(args);
+  return prisma.article.updateMany(args);
 }
 
 export async function upsertArticle(args: Prisma.ArticleUpsertArgs) {
-  return database.article.upsert(args);
+  return prisma.article.upsert(args);
 }
 
 export async function deleteArticle(args: Prisma.ArticleDeleteArgs) {
-  return database.article.delete(args);
+  return prisma.article.delete(args);
 }
 
 export async function deleteManyArticles(args?: Prisma.ArticleDeleteManyArgs) {
-  return database.article.deleteMany(args);
+  return prisma.article.deleteMany(args);
 }
 
 export async function countArticles(args?: Prisma.ArticleCountArgs) {
-  return database.article.count(args);
+  return prisma.article.count(args);
 }
 
-export async function aggregateArticles(args?: Prisma.ArticleAggregateArgs) {
-  return database.article.aggregate(args);
+export async function aggregateArticles(args = {}) {
+  return prisma.article.aggregate(args);
 }
 
 export async function groupByArticles(args: Prisma.ArticleGroupByArgs) {
-  return database.article.groupBy(args);
+  return prisma.article.groupBy(args);
 }

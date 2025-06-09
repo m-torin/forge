@@ -1,21 +1,21 @@
-import { type FC } from 'react';
+import { type FC } from 'react'
 
-import { type TBlogPost } from '../../data/data';
-import Heading from '../Heading/Heading';
+import { type TBlogPost } from '../../data/data'
+import Heading from '../Heading/Heading'
 import {
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-} from '../shared/Pagination/Pagination';
+} from '../shared/Pagination/Pagination'
 
-import PostCard1 from './PostCard1';
+import PostCard1 from './PostCard1'
 
 //
 export interface SectionLatestPostsProps {
-  className?: string;
-  posts: TBlogPost[];
+  className?: string
+  posts: TBlogPost[]
 }
 
 const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }) => {
@@ -42,7 +42,7 @@ const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }
         </Pagination>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SectionGridPosts;
+export default SectionGridPosts

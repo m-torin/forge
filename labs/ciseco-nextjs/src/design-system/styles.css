@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @source "../components/**/*.{js,ts,jsx,tsx}";
 @source "../**/*.{js,ts,jsx,tsx}";
@@ -12,15 +12,15 @@
   }
 
   .prose h1 {
-    @apply text-4xl font-bold mb-4;
+    @apply mb-4 text-4xl font-bold;
   }
 
   .prose h2 {
-    @apply text-3xl font-semibold mb-3;
+    @apply mb-3 text-3xl font-semibold;
   }
 
   .prose h3 {
-    @apply text-2xl font-medium mb-2;
+    @apply mb-2 text-2xl font-medium;
   }
 
   .prose p {
@@ -32,11 +32,11 @@
   }
 
   .prose ul {
-    @apply list-disc pl-6 mb-4;
+    @apply mb-4 list-disc pl-6;
   }
 
   .prose ol {
-    @apply list-decimal pl-6 mb-4;
+    @apply mb-4 list-decimal pl-6;
   }
 
   .prose li {
@@ -44,15 +44,15 @@
   }
 
   .prose blockquote {
-    @apply border-l-4 border-gray-300 pl-4 italic my-4;
+    @apply my-4 border-l-4 border-gray-300 pl-4 italic;
   }
 
   .prose code {
-    @apply bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm;
+    @apply rounded bg-gray-100 px-1 py-0.5 text-sm dark:bg-gray-800;
   }
 
   .prose pre {
-    @apply bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-x-auto;
+    @apply overflow-x-auto rounded bg-gray-100 p-4 dark:bg-gray-800;
   }
 }
 
@@ -96,7 +96,7 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-primary {
@@ -112,7 +112,7 @@
   }
 
   .btn-link {
-    @apply underline-offset-4 hover:underline text-blue-600;
+    @apply text-blue-600 underline-offset-4 hover:underline;
   }
 
   .input {
@@ -188,10 +188,10 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 
-  [type="button"] {
+  [type='button'] {
     -webkit-appearance: none !important;
   }
-  input[type="time"]::-webkit-calendar-picker-indicator {
+  input[type='time']::-webkit-calendar-picker-indicator {
     @apply rounded-md dark:bg-neutral-500;
   }
 }
@@ -242,7 +242,7 @@ root {
 }
 
 @utility nc-card-title {
-  @apply transition-colors duration-75 hover:text-primary-900 dark:hover:text-primary-300;
+  @apply hover:text-primary-900 dark:hover:text-primary-300 transition-colors duration-75;
 }
 
 @utility menu-item {
@@ -373,7 +373,7 @@ root {
 
 /* MENU */
 .menuIsNew_lv1 > a::before {
-  content: "New!";
+  content: 'New!';
   position: absolute;
   top: -2px;
   right: 0;
@@ -387,7 +387,7 @@ root {
   font-weight: normal;
 }
 .menuIsNew > a::after {
-  content: "New!";
+  content: 'New!';
   display: inline-block;
   padding: 0 5px;
   line-height: 15px;

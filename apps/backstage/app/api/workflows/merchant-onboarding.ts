@@ -362,8 +362,8 @@ export const validateApplicationStep = compose(
   (step) => withStepTimeout(step, { execution: 30000 }),
   (step) =>
     withStepMonitoring(step, {
-,
       enableDetailedLogging: true,
+      trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -531,7 +531,7 @@ function calculateBusinessSizeRisk(employeeCount: string, revenue: string): numb
     '<100k': 0.7,
   };
 
-  return (sizeScore[((employeeCount as any) as any)] + revenueScore[revenue]) / 2;
+  return (sizeScore[employeeCount as any as any] + revenueScore[revenue]) / 2;
 }
 
 function calculateWebsiteRisk(websiteVerification: any): number {
@@ -763,7 +763,7 @@ function generateAccountLimits(tier: string): any {
     },
   };
 
-  return limits[(tier as any)] || limits.basic;
+  return limits[tier as any] || limits.basic;
 }
 
 // Step 6: Generate API credentials

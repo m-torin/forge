@@ -38,7 +38,25 @@ export function createPostHogServerAdapter(
     options.postHogOptions?.host || process.env.POSTHOG_HOST || 'https://app.posthog.com';
 
   if (!postHogKey) {
-    throw new Error('PostHog API key is required. Set POSTHOG_KEY or pass postHogKey option.');
+    console.warn('PostHog API key not configured - feature flags will return false');
+    // Return a no-op adapter that returns false for all flags
+    return {
+      isFeatureEnabled: () => ({
+        decide: async () => false,
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
+      }),
+      featureFlagValue: () => ({
+        decide: async () => false,
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
+      }),
+      featureFlagPayload: (transform?: (value: any) => any) => ({
+        decide: async () => transform ? transform({}) : {},
+        config: { reportValue: true },
+        origin: { provider: 'posthog' },
+      }),
+    };
   }
 
   return {
@@ -119,6 +137,7 @@ export function createPostHogServerAdapter(
 
 /**
  * Default server-side PostHog adapter using environment variables
+ * This will be a no-op adapter if POSTHOG_KEY is not configured
  */
 export const postHogServerAdapter = createPostHogServerAdapter();
 
@@ -130,7 +149,11 @@ export async function getProviderData(options: { personalApiKey?: string; projec
   const projectId = options.projectId || process.env.POSTHOG_PROJECT_ID;
 
   if (!personalApiKey || !projectId) {
-    throw new Error('PostHog personal API key and project ID are required for provider data');
+    console.warn('PostHog personal API key and project ID not configured - returning empty flags');
+    return {
+      provider: 'posthog',
+      flags: []
+    };
   }
 
   try {

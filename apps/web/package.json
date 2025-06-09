@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3200",
-    "build": "next build",
+    "dev": "doppler run -- next dev --port 3200",
+    "dev:local": "next dev --port 3200",
+    "build": "doppler run -- next build",
     "build:local": "next build",
-    "start": "next start",
+    "start": "doppler run -- next start --port 3200",
+    "start:local": "next start --port 3200",
     "lint": "eslint . --fix",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "clean": "rm -rf .next .turbo node_modules",
@@ -36,7 +38,12 @@
     "test:analytics:dashboard": "tsx e2e/analytics/generate-dashboard.ts",
     "test:report": "tsx e2e/reporting/generate-report.ts",
     "test:ci": "tsx e2e/runners/cli.ts run --base-branch main --reporter junit",
-    "test:ci:fast": "tsx e2e/runners/cli.ts run --base-branch main --max-duration 600000"
+    "test:ci:fast": "tsx e2e/runners/cli.ts run --base-branch main --max-duration 600000",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:open": "doppler open"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -52,6 +59,7 @@
     "@repo/database": "workspace:*",
     "@repo/design-system": "workspace:*",
     "@repo/email": "workspace:*",
+    "@repo/feature-flags": "workspace:*",
     "@repo/internationalization": "workspace:*",
     "@repo/notifications": "workspace:*",
     "@repo/observability": "workspace:*",
@@ -61,6 +69,7 @@
     "@repo/seo": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "@tabler/icons-react": "catalog:",
+    "@vercel/toolbar": "catalog:",
     "clsx": "catalog:",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
@@ -81,12 +90,12 @@
     "@types/react-dom": "catalog:",
     "concurrently": "^9.1.2",
     "eslint": "catalog:",
-    "wait-on": "^8.0.2",
     "postcss": "catalog:",
     "schema-dts": "^1.1.5",
     "tailwindcss": "catalog:",
     "tsx": "^4.19.2",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "wait-on": "^8.0.2"
   }
 }

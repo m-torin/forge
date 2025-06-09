@@ -1,11 +1,12 @@
-import type { FormField } from '../components/ModelForm';
 import { prismaModelConfigs } from './prisma-model-config';
 
+import type { FormField } from '../components/ModelForm';
+
 export interface ModelConfig {
-  name: string;
-  pluralName: string;
+  defaultOrderBy?: Record<string, 'asc' | 'desc'>;
   fields: FormField[];
-  listColumns: Array<{
+  includes?: Record<string, any>;
+  listColumns: {
     key: string;
     label: string;
     width?: number | string;
@@ -17,10 +18,10 @@ export interface ModelConfig {
     sortable?: boolean;
     priority?: 'high' | 'medium' | 'low';
     hiddenBelow?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  }>;
+  }[];
+  name: string;
+  pluralName: string;
   searchKeys: string[];
-  includes?: Record<string, any>;
-  defaultOrderBy?: Record<string, 'asc' | 'desc'>;
 }
 
 // Merge existing configs with Prisma model configs
@@ -31,231 +32,223 @@ export const modelConfigs: Record<string, ModelConfig> = {
   // Override or add any custom configurations here
   productBarcode: {
     name: 'Product Barcode',
-    pluralName: 'Product Barcodes',
+    defaultOrderBy: { createdAt: 'desc' },
     fields: [
       {
-        name: 'barcode',
-        label: 'Barcode',
-        type: 'text',
-        required: true,
-        placeholder: 'Enter barcode value',
         validation: (value: string) => {
           if (value && value.length < 8) {
             return 'Barcode must be at least 8 characters';
           }
           return null;
         },
+        name: 'barcode',
+        type: 'text',
+        label: 'Barcode',
+        placeholder: 'Enter barcode value',
+        required: true,
       },
       {
         name: 'type',
-        label: 'Barcode Type',
         type: 'select',
-        required: true,
         defaultValue: 'EAN_13',
+        label: 'Barcode Type',
         options: [
-          { value: 'UPC_A', label: 'UPC-A' },
-          { value: 'UPC_E', label: 'UPC-E' },
-          { value: 'EAN_13', label: 'EAN-13' },
-          { value: 'EAN_8', label: 'EAN-8' },
-          { value: 'CODE_128', label: 'Code 128' },
-          { value: 'CODE_39', label: 'Code 39' },
-          { value: 'ITF', label: 'ITF' },
-          { value: 'QR_CODE', label: 'QR Code' },
-          { value: 'DATA_MATRIX', label: 'Data Matrix' },
-          { value: 'OTHER', label: 'Other' },
+          { label: 'UPC-A', value: 'UPC_A' },
+          { label: 'UPC-E', value: 'UPC_E' },
+          { label: 'EAN-13', value: 'EAN_13' },
+          { label: 'EAN-8', value: 'EAN_8' },
+          { label: 'Code 128', value: 'CODE_128' },
+          { label: 'Code 39', value: 'CODE_39' },
+          { label: 'ITF', value: 'ITF' },
+          { label: 'QR Code', value: 'QR_CODE' },
+          { label: 'Data Matrix', value: 'DATA_MATRIX' },
+          { label: 'Other', value: 'OTHER' },
         ],
+        required: true,
       },
       {
         name: 'productId',
-        label: 'Product',
         type: 'select',
-        required: true,
+        label: 'Product',
         options: [], // Will be populated dynamically
+        required: true,
       },
       {
         name: 'isPrimary',
-        label: 'Primary Barcode',
         type: 'switch',
         description: 'Set as the primary barcode for this product',
+        label: 'Primary Barcode',
       },
     ],
-    listColumns: [
-      { key: 'barcode', label: 'Barcode', width: '30%' },
-      { key: 'type', label: 'Type', width: '15%' },
-      { key: 'product', label: 'Product', width: '25%' },
-      { key: 'isPrimary', label: 'Primary', width: '10%' },
-      { key: 'createdAt', label: 'Created', width: '20%' },
-    ],
-    searchKeys: ['barcode'],
     includes: { product: true },
-    defaultOrderBy: { createdAt: 'desc' },
+    listColumns: [
+      { width: '30%', key: 'barcode', label: 'Barcode' },
+      { width: '15%', key: 'type', label: 'Type' },
+      { width: '25%', key: 'product', label: 'Product' },
+      { width: '10%', key: 'isPrimary', label: 'Primary' },
+      { width: '20%', key: 'createdAt', label: 'Created' },
+    ],
+    pluralName: 'Product Barcodes',
+    searchKeys: ['barcode'],
   },
 
   productAsset: {
     name: 'Product Asset',
-    pluralName: 'Product Assets',
+    defaultOrderBy: { sortOrder: 'asc' },
     fields: [
       {
         name: 'name',
-        label: 'Asset Name',
         type: 'text',
-        required: true,
+        label: 'Asset Name',
         placeholder: 'Enter asset name',
+        required: true,
       },
       {
         name: 'type',
-        label: 'Asset Type',
         type: 'select',
-        required: true,
         defaultValue: 'IMAGE',
+        label: 'Asset Type',
         options: [
-          { value: 'IMAGE', label: 'Image' },
-          { value: 'VIDEO', label: 'Video' },
-          { value: 'DOCUMENT', label: 'Document' },
-          { value: 'MANUAL', label: 'Manual' },
-          { value: 'CERTIFICATE', label: 'Certificate' },
-          { value: 'OTHER', label: 'Other' },
+          { label: 'Image', value: 'IMAGE' },
+          { label: 'Video', value: 'VIDEO' },
+          { label: 'Document', value: 'DOCUMENT' },
+          { label: 'Manual', value: 'MANUAL' },
+          { label: 'Certificate', value: 'CERTIFICATE' },
+          { label: 'Other', value: 'OTHER' },
         ],
+        required: true,
       },
       {
-        name: 'url',
-        label: 'Asset URL',
-        type: 'text',
-        required: true,
-        placeholder: 'https://example.com/asset.jpg',
         validation: (value: string) => {
           if (value && !value.match(/^https?:\/\/.+/)) {
             return 'Please enter a valid URL';
           }
           return null;
         },
+        name: 'url',
+        type: 'text',
+        label: 'Asset URL',
+        placeholder: 'https://example.com/asset.jpg',
+        required: true,
       },
       {
         name: 'productId',
-        label: 'Product',
         type: 'select',
-        required: true,
+        label: 'Product',
         options: [], // Will be populated dynamically
+        required: true,
       },
       {
         name: 'sortOrder',
-        label: 'Sort Order',
         type: 'number',
         defaultValue: 0,
-        min: 0,
         description: 'Lower numbers appear first',
+        label: 'Sort Order',
+        min: 0,
       },
     ],
-    listColumns: [
-      { key: 'name', label: 'Name', width: '25%' },
-      { key: 'type', label: 'Type', width: '15%' },
-      { key: 'product', label: 'Product', width: '25%' },
-      { key: 'sortOrder', label: 'Order', width: '10%' },
-      { key: 'url', label: 'URL', width: '25%' },
-    ],
-    searchKeys: ['name', 'url'],
     includes: { product: true },
-    defaultOrderBy: { sortOrder: 'asc' },
+    listColumns: [
+      { width: '25%', key: 'name', label: 'Name' },
+      { width: '15%', key: 'type', label: 'Type' },
+      { width: '25%', key: 'product', label: 'Product' },
+      { width: '10%', key: 'sortOrder', label: 'Order' },
+      { width: '25%', key: 'url', label: 'URL' },
+    ],
+    pluralName: 'Product Assets',
+    searchKeys: ['name', 'url'],
   },
 
   scanHistory: {
     name: 'Scan History',
-    pluralName: 'Scan History',
-    fields: [], // Scan history is typically read-only
-    listColumns: [
-      { key: 'product', label: 'Product', width: '20%' },
-      { key: 'barcode', label: 'Barcode', width: '15%' },
-      { key: 'platform', label: 'Platform', width: '10%' },
-      { key: 'location', label: 'Location', width: '20%' },
-      { key: 'ipAddress', label: 'IP Address', width: '15%' },
-      { key: 'createdAt', label: 'Scanned', width: '20%' },
-    ],
-    searchKeys: ['ipAddress', 'userAgent'],
-    includes: {
-      product: true,
-      barcode: true,
-    },
     defaultOrderBy: { createdAt: 'desc' },
+    fields: [], // Scan history is typically read-only
+    includes: {
+      barcode: true,
+      product: true,
+    },
+    listColumns: [
+      { width: '20%', key: 'product', label: 'Product' },
+      { width: '15%', key: 'barcode', label: 'Barcode' },
+      { width: '10%', key: 'platform', label: 'Platform' },
+      { width: '20%', key: 'location', label: 'Location' },
+      { width: '15%', key: 'ipAddress', label: 'IP Address' },
+      { width: '20%', key: 'createdAt', label: 'Scanned' },
+    ],
+    pluralName: 'Scan History',
+    searchKeys: ['ipAddress', 'userAgent'],
   },
 
   user: {
     name: 'User',
-    pluralName: 'Users',
+    defaultOrderBy: { createdAt: 'desc' },
     fields: [
       {
         name: 'name',
-        label: 'Name',
         type: 'text',
-        required: true,
+        label: 'Name',
         placeholder: 'Enter user name',
+        required: true,
       },
       {
         name: 'email',
-        label: 'Email',
         type: 'email',
-        required: true,
+        label: 'Email',
         placeholder: 'Enter email address',
+        required: true,
       },
       {
         name: 'emailVerified',
-        label: 'Email Verified',
         type: 'switch',
         description: 'Whether the email has been verified',
+        label: 'Email Verified',
       },
     ],
-    listColumns: [
-      { key: 'name', label: 'Name', width: '25%' },
-      { key: 'email', label: 'Email', width: '30%' },
-      { key: 'emailVerified', label: 'Verified', width: '15%' },
-      { key: 'createdAt', label: 'Created', width: '15%' },
-      { key: 'updatedAt', label: 'Updated', width: '15%' },
-    ],
-    searchKeys: ['name', 'email'],
     includes: {
       _count: {
         select: {
-          sessions: true,
           organizations: true,
+          sessions: true,
         },
       },
     },
-    defaultOrderBy: { createdAt: 'desc' },
+    listColumns: [
+      { width: '25%', key: 'name', label: 'Name' },
+      { width: '30%', key: 'email', label: 'Email' },
+      { width: '15%', key: 'emailVerified', label: 'Verified' },
+      { width: '15%', key: 'createdAt', label: 'Created' },
+      { width: '15%', key: 'updatedAt', label: 'Updated' },
+    ],
+    pluralName: 'Users',
+    searchKeys: ['name', 'email'],
   },
 
   organization: {
     name: 'Organization',
-    pluralName: 'Organizations',
+    defaultOrderBy: { createdAt: 'desc' },
     fields: [
       {
         name: 'name',
-        label: 'Organization Name',
         type: 'text',
-        required: true,
+        label: 'Organization Name',
         placeholder: 'Enter organization name',
+        required: true,
       },
       {
         name: 'slug',
-        label: 'Slug',
         type: 'text',
-        required: true,
-        placeholder: 'organization-slug',
         description: 'URL-friendly identifier',
+        label: 'Slug',
+        placeholder: 'organization-slug',
+        required: true,
       },
       {
         name: 'planId',
-        label: 'Plan ID',
         type: 'text',
+        label: 'Plan ID',
         placeholder: 'Enter plan ID',
       },
     ],
-    listColumns: [
-      { key: 'name', label: 'Name', width: '30%' },
-      { key: 'slug', label: 'Slug', width: '25%' },
-      { key: 'planId', label: 'Plan', width: '15%' },
-      { key: 'memberCount', label: 'Members', width: '15%' },
-      { key: 'createdAt', label: 'Created', width: '15%' },
-    ],
-    searchKeys: ['name', 'slug'],
     includes: {
       _count: {
         select: {
@@ -264,102 +257,101 @@ export const modelConfigs: Record<string, ModelConfig> = {
         },
       },
     },
-    defaultOrderBy: { createdAt: 'desc' },
+    listColumns: [
+      { width: '30%', key: 'name', label: 'Name' },
+      { width: '25%', key: 'slug', label: 'Slug' },
+      { width: '15%', key: 'planId', label: 'Plan' },
+      { width: '15%', key: 'memberCount', label: 'Members' },
+      { width: '15%', key: 'createdAt', label: 'Created' },
+    ],
+    pluralName: 'Organizations',
+    searchKeys: ['name', 'slug'],
   },
 
   apiKey: {
     name: 'API Key',
-    pluralName: 'API Keys',
+    defaultOrderBy: { createdAt: 'desc' },
     fields: [
       {
         name: 'name',
-        label: 'Key Name',
         type: 'text',
-        required: true,
+        label: 'Key Name',
         placeholder: 'Enter API key name',
+        required: true,
       },
       {
         name: 'scopes',
-        label: 'Scopes',
         type: 'multiselect',
+        label: 'Scopes',
         options: [
-          { value: 'read:products', label: 'Read Products' },
-          { value: 'write:products', label: 'Write Products' },
-          { value: 'read:scans', label: 'Read Scans' },
-          { value: 'write:scans', label: 'Write Scans' },
-          { value: 'admin', label: 'Admin Access' },
+          { label: 'Read Products', value: 'read:products' },
+          { label: 'Write Products', value: 'write:products' },
+          { label: 'Read Scans', value: 'read:scans' },
+          { label: 'Write Scans', value: 'write:scans' },
+          { label: 'Admin Access', value: 'admin' },
         ],
       },
       {
         name: 'expiresAt',
-        label: 'Expiration Date',
         type: 'datetime',
         description: 'Optional expiration date',
+        label: 'Expiration Date',
       },
     ],
-    listColumns: [
-      { key: 'name', label: 'Name', width: '25%' },
-      { key: 'prefix', label: 'Key Prefix', width: '20%' },
-      { key: 'lastUsedAt', label: 'Last Used', width: '20%' },
-      { key: 'expiresAt', label: 'Expires', width: '20%' },
-      { key: 'createdAt', label: 'Created', width: '15%' },
-    ],
-    searchKeys: ['name', 'prefix'],
     includes: {
-      user: true,
       organization: true,
+      user: true,
     },
-    defaultOrderBy: { createdAt: 'desc' },
+    listColumns: [
+      { width: '25%', key: 'name', label: 'Name' },
+      { width: '20%', key: 'prefix', label: 'Key Prefix' },
+      { width: '20%', key: 'lastUsedAt', label: 'Last Used' },
+      { width: '20%', key: 'expiresAt', label: 'Expires' },
+      { width: '15%', key: 'createdAt', label: 'Created' },
+    ],
+    pluralName: 'API Keys',
+    searchKeys: ['name', 'prefix'],
   },
 
   workflowConfig: {
     name: 'Workflow Config',
-    pluralName: 'Workflow Configs',
+    defaultOrderBy: { updatedAt: 'desc' },
     fields: [
       {
         name: 'name',
-        label: 'Workflow Name',
         type: 'text',
-        required: true,
+        label: 'Workflow Name',
         placeholder: 'Enter workflow name',
+        required: true,
       },
       {
         name: 'type',
-        label: 'Workflow Type',
         type: 'text',
-        required: true,
+        label: 'Workflow Type',
         placeholder: 'Enter workflow type',
+        required: true,
       },
       {
         name: 'description',
-        label: 'Description',
         type: 'textarea',
+        label: 'Description',
         placeholder: 'Enter workflow description',
         rows: 3,
       },
       {
         name: 'isActive',
-        label: 'Active',
         type: 'switch',
         description: 'Enable or disable this workflow',
+        label: 'Active',
       },
       {
         name: 'config',
-        label: 'Configuration',
         type: 'json',
-        placeholder: '{}',
         description: 'JSON configuration for the workflow',
+        label: 'Configuration',
+        placeholder: '{}',
       },
     ],
-    listColumns: [
-      { key: 'name', label: 'Name', width: '25%' },
-      { key: 'type', label: 'Type', width: '20%' },
-      { key: 'isActive', label: 'Active', width: '10%' },
-      { key: 'version', label: 'Version', width: '10%' },
-      { key: 'executionCount', label: 'Executions', width: '15%' },
-      { key: 'updatedAt', label: 'Updated', width: '20%' },
-    ],
-    searchKeys: ['name', 'type', 'description'],
     includes: {
       _count: {
         select: {
@@ -368,25 +360,34 @@ export const modelConfigs: Record<string, ModelConfig> = {
         },
       },
     },
-    defaultOrderBy: { updatedAt: 'desc' },
+    listColumns: [
+      { width: '25%', key: 'name', label: 'Name' },
+      { width: '20%', key: 'type', label: 'Type' },
+      { width: '10%', key: 'isActive', label: 'Active' },
+      { width: '10%', key: 'version', label: 'Version' },
+      { width: '15%', key: 'executionCount', label: 'Executions' },
+      { width: '20%', key: 'updatedAt', label: 'Updated' },
+    ],
+    pluralName: 'Workflow Configs',
+    searchKeys: ['name', 'type', 'description'],
   },
 
   workflowExecution: {
     name: 'Workflow Execution',
-    pluralName: 'Workflow Executions',
+    defaultOrderBy: { startedAt: 'desc' },
     fields: [], // Executions are typically read-only
-    listColumns: [
-      { key: 'workflow', label: 'Workflow', width: '25%' },
-      { key: 'status', label: 'Status', width: '15%' },
-      { key: 'executionId', label: 'Execution ID', width: '20%' },
-      { key: 'duration', label: 'Duration', width: '15%' },
-      { key: 'startedAt', label: 'Started', width: '25%' },
-    ],
-    searchKeys: ['executionId'],
     includes: {
       workflow: true,
     },
-    defaultOrderBy: { startedAt: 'desc' },
+    listColumns: [
+      { width: '25%', key: 'workflow', label: 'Workflow' },
+      { width: '15%', key: 'status', label: 'Status' },
+      { width: '20%', key: 'executionId', label: 'Execution ID' },
+      { width: '15%', key: 'duration', label: 'Duration' },
+      { width: '25%', key: 'startedAt', label: 'Started' },
+    ],
+    pluralName: 'Workflow Executions',
+    searchKeys: ['executionId'],
   },
 };
 

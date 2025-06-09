@@ -111,16 +111,16 @@ export function ModelForm({
       try {
         await onSubmit(values);
         notify.success({
-          title: 'Success!',
           message: `${title} has been saved successfully`,
+          title: 'Success!',
         });
         if (cancelHref) {
           router.push(cancelHref);
         }
       } catch (error) {
         notify.error({
-          title: 'Error',
           message: error instanceof Error ? error.message : 'Failed to save. Please try again.',
+          title: 'Error',
         });
       }
     });
@@ -209,7 +209,7 @@ export function ModelForm({
   return (
     <Card withBorder style={{ position: 'relative' }}>
       <form onSubmit={handleSubmit}>
-        <Stack gap="lg" style={{ opacity: isPending ? 0.6 : 1 }}>
+        <Stack style={{ opacity: isPending ? 0.6 : 1 }} gap="lg">
           <div>
             <Title order={2}>{title}</Title>
             <Text c="dimmed" mt={4} size="sm">
@@ -226,7 +226,7 @@ export function ModelForm({
           </Stack>
 
           <Group justify="space-between" mt="xl">
-            <Text size="xs" c="dimmed">
+            <Text c="dimmed" size="xs">
               {form.isDirty() ? 'You have unsaved changes' : ''}
             </Text>
             <Group>
@@ -247,7 +247,7 @@ export function ModelForm({
                   Cancel
                 </Button>
               )}
-              <Button loading={isPending} type="submit" disabled={!form.isValid()}>
+              <Button loading={isPending} disabled={!form.isValid()} type="submit">
                 {submitLabel}
               </Button>
             </Group>

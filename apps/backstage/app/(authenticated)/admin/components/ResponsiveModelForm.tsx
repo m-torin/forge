@@ -1,102 +1,91 @@
 'use client';
 
 import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Box,
   Button,
   Card,
   Checkbox,
-  DateInput,
+  Collapse,
+  Container,
+  Divider,
+  Drawer,
   FileInput,
+  Grid,
   Group,
   JsonInput,
+  Loader,
   MultiSelect,
   NumberInput,
+  Paper,
   PasswordInput,
+  Progress,
   Select,
   Stack,
   Switch,
+  TagsInput,
   Text,
   Textarea,
   TextInput,
   Title,
-  Autocomplete,
-  TagsInput,
   Tooltip,
-  ActionIcon,
-  Loader,
-  Badge,
-  Pill,
-  SegmentedControl,
-  Radio,
-  Slider,
-  ColorInput,
-  Rating,
-  Fieldset,
-  Alert,
-  Divider,
-  Container,
-  Grid,
-  Collapse,
-  Paper,
-  Progress,
-  Box,
-  Drawer,
-  ScrollArea,
 } from '@mantine/core';
-import { DateTimePicker, DatePickerInput } from '@mantine/dates';
-import { useForm, zodResolver } from '@mantine/form';
+import { DatePickerInput, DateTimePicker } from '@mantine/dates';
+import { useForm } from '@mantine/form';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
-  IconUpload,
-  IconInfoCircle,
-  IconPlus,
-  IconX,
-  IconCheck,
   IconAlertCircle,
-  IconSearch,
-  IconDeviceFloppy,
+  IconCheck,
   IconChevronDown,
   IconChevronUp,
+  IconDeviceFloppy,
+  IconInfoCircle,
+  IconUpload,
 } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
-import { useTransition, useState, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { z } from 'zod';
-import { useMediaQuery, useDisclosure } from '@mantine/hooks';
 
 import { notify } from '@repo/notifications/mantine-notifications';
+
 import { useAutoSave } from '../hooks/useAutoSave';
+
 import type { FormFieldV2 } from './ModelFormV2';
 
 interface ResponsiveModelFormProps {
-  title: string;
-  fields: FormFieldV2[];
-  initialValues?: Record<string, any>;
-  onSubmit: (values: Record<string, any>) => Promise<void>;
-  submitLabel?: string;
+  autoSave?: boolean;
   cancelHref?: string;
+  collapsibleSections?: boolean;
+  confirmCancel?: boolean;
+  fields: FormFieldV2[];
+  floatingActionButton?: boolean;
+  initialValues?: Record<string, any>;
   // Layout options
   layout?: 'vertical' | 'horizontal' | 'floating';
-  showProgress?: boolean;
-  autoSave?: boolean;
-  confirmCancel?: boolean;
   // Mobile options
   mobileLayout?: 'stacked' | 'accordion' | 'steps';
-  collapsibleSections?: boolean;
-  floatingActionButton?: boolean;
+  onSubmit: (values: Record<string, any>) => Promise<void>;
+  showProgress?: boolean;
+  submitLabel?: string;
+  title: string;
 }
 
 export function ResponsiveModelForm({
-  title,
-  fields,
-  initialValues = {},
-  onSubmit,
-  submitLabel = 'Save',
-  cancelHref,
-  layout = 'vertical',
-  showProgress = true,
   autoSave = false,
-  confirmCancel = true,
-  mobileLayout = 'stacked',
+  cancelHref,
   collapsibleSections = true,
+  confirmCancel = true,
+  fields,
   floatingActionButton = true,
+  initialValues = {},
+  layout = 'vertical',
+  mobileLayout = 'stacked',
+  onSubmit,
+  showProgress = true,
+  submitLabel = 'Save',
+  title,
 }: ResponsiveModelFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -104,7 +93,7 @@ export function ResponsiveModelForm({
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['default']));
   const [currentStep, setCurrentStep] = useState(0);
-  const [actionsDrawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [actionsDrawerOpened, { close: closeDrawer, open: openDrawer }] = useDisclosure(false);
 
   // Responsive breakpoints
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -173,11 +162,11 @@ export function ResponsiveModelForm({
 
   // Auto-save integration
   const {
-    status: autoSaveStatus,
-    lastSaved,
     handleBlur: autoSaveBlur,
-    triggerSave,
     isSaving,
+    lastSaved,
+    status: autoSaveStatus,
+    triggerSave,
   } = useAutoSave(
     form.values,
     form.isDirty(),
@@ -186,8 +175,8 @@ export function ResponsiveModelForm({
       await onSubmit(values);
     },
     {
-      enabled: autoSave,
       delay: 2000,
+      enabled: autoSave,
       showNotifications: isMobile ? false : true, // Reduce notifications on mobile
       showSaveIndicator: true,
     },
@@ -203,8 +192,8 @@ export function ResponsiveModelForm({
       try {
         await onSubmit(values);
         notify.success({
-          title: 'Success!',
           message: `${title} has been saved successfully`,
+          title: 'Success!',
         });
         if (cancelHref) {
           router.push(cancelHref);
@@ -212,8 +201,8 @@ export function ResponsiveModelForm({
       } catch (error) {
         if (error instanceof Error) {
           notify.error({
-            title: 'Error',
             message: error.message,
+            title: 'Error',
           });
 
           try {
@@ -262,24 +251,24 @@ export function ResponsiveModelForm({
     }
 
     const commonProps = {
-      label: field.label,
-      placeholder: field.placeholder,
       description: field.description,
-      required: field.required,
       disabled: field.disabled || isPending,
-      readOnly: field.readOnly,
       error: fieldErrors[field.name] || form.errors[field.name],
+      label: field.label,
       leftSection: field.icon,
+      onBlur: () => handleFieldBlur(field.name),
+      placeholder: field.placeholder,
+      readOnly: field.readOnly,
+      required: field.required,
       rightSection:
         field.rightSection ||
         (field.tooltip && (
-          <Tooltip label={field.tooltip} withArrow>
+          <Tooltip withArrow label={field.tooltip}>
             <ActionIcon size="xs" variant="subtle">
               <IconInfoCircle size={16} />
             </ActionIcon>
           </Tooltip>
         )),
-      onBlur: () => handleFieldBlur(field.name),
       ...form.getInputProps(field.name),
       // Responsive sizing
       size: isMobile ? 'sm' : 'md',
@@ -300,12 +289,12 @@ export function ResponsiveModelForm({
         return (
           <NumberInput
             {...commonProps}
-            min={field.min}
-            max={field.max}
-            step={field.step}
-            decimalScale={2}
-            thousandSeparator=","
             hideControls={isMobile} // Hide controls on mobile for space
+            thousandSeparator=","
+            decimalScale={2}
+            max={field.max}
+            min={field.min}
+            step={field.step}
           />
         );
 
@@ -313,10 +302,10 @@ export function ResponsiveModelForm({
         return (
           <Textarea
             {...commonProps}
-            rows={field.rows || (isMobile ? 3 : 4)}
             autosize
-            minRows={isMobile ? 2 : 3}
             maxRows={isMobile ? 6 : 10}
+            minRows={isMobile ? 2 : 3}
+            rows={field.rows || (isMobile ? 3 : 4)}
           />
         );
 
@@ -324,12 +313,12 @@ export function ResponsiveModelForm({
         return (
           <Select
             {...commonProps}
+            checkIconPosition="right"
+            nothingFoundMessage="No options found"
+            withinPortal={isMobile} // Use portal on mobile to avoid overflow issues
+            clearable
             data={field.options || []}
             searchable={!isMobile} // Disable search on mobile for simplicity
-            clearable
-            nothingFoundMessage="No options found"
-            checkIconPosition="right"
-            withinPortal={isMobile} // Use portal on mobile to avoid overflow issues
           />
         );
 
@@ -337,12 +326,12 @@ export function ResponsiveModelForm({
         return (
           <MultiSelect
             {...commonProps}
-            data={field.options || []}
-            searchable={!isMobile}
-            clearable
             hidePickedOptions
-            maxValues={field.max}
             maxDropdownHeight={isMobile ? 200 : 300}
+            clearable
+            data={field.options || []}
+            maxValues={field.max}
+            searchable={!isMobile}
           />
         );
 
@@ -350,10 +339,10 @@ export function ResponsiveModelForm({
         return (
           <TagsInput
             {...commonProps}
-            data={field.options?.map((o) => o.label) || []}
-            maxTags={field.max}
             allowDuplicates={false}
             clearable
+            data={field.options?.map((o) => o.label) || []}
+            maxTags={field.max}
             splitChars={[',', ' ', '|']}
           />
         );
@@ -362,8 +351,8 @@ export function ResponsiveModelForm({
         return (
           <Checkbox
             {...form.getInputProps(field.name, { type: 'checkbox' })}
-            label={field.label}
             description={field.description}
+            label={field.label}
             size={isMobile ? 'sm' : 'md'}
           />
         );
@@ -372,10 +361,10 @@ export function ResponsiveModelForm({
         return (
           <Switch
             {...form.getInputProps(field.name, { type: 'checkbox' })}
-            label={field.label}
             description={field.description}
-            onLabel="ON"
             offLabel="OFF"
+            onLabel="ON"
+            label={field.label}
             size={isMobile ? 'sm' : 'md'}
           />
         );
@@ -384,10 +373,10 @@ export function ResponsiveModelForm({
         return (
           <DatePickerInput
             {...commonProps}
-            clearable
-            valueFormat="MMMM DD, YYYY"
             leftSection={undefined}
             popoverProps={{ withinPortal: isMobile }}
+            valueFormat="MMMM DD, YYYY"
+            clearable
           />
         );
 
@@ -395,10 +384,10 @@ export function ResponsiveModelForm({
         return (
           <DateTimePicker
             {...commonProps}
-            clearable
-            valueFormat="MMMM DD, YYYY HH:mm"
             leftSection={undefined}
             popoverProps={{ withinPortal: isMobile }}
+            valueFormat="MMMM DD, YYYY HH:mm"
+            clearable
           />
         );
 
@@ -406,11 +395,11 @@ export function ResponsiveModelForm({
         return (
           <JsonInput
             {...commonProps}
-            formatOnBlur
-            autosize
-            minRows={isMobile ? 3 : 4}
-            maxRows={isMobile ? 10 : 15}
             validationError="Invalid JSON"
+            autosize
+            formatOnBlur
+            maxRows={isMobile ? 10 : 15}
+            minRows={isMobile ? 3 : 4}
           />
         );
 
@@ -418,8 +407,8 @@ export function ResponsiveModelForm({
         return (
           <FileInput
             {...commonProps}
-            accept={field.accept}
             leftSection={<IconUpload size={16} />}
+            accept={field.accept}
             clearable
             multiple={field.multiple}
           />
@@ -443,22 +432,22 @@ export function ResponsiveModelForm({
       {Object.entries(fieldsets).map(([fieldsetName, fieldsetFields], index) => (
         <Paper key={fieldsetName} withBorder>
           <Box
-            p="md"
-            style={{ cursor: collapsibleSections ? 'pointer' : undefined }}
             onClick={() => collapsibleSections && toggleSection(fieldsetName)}
+            style={{ cursor: collapsibleSections ? 'pointer' : undefined }}
+            p="md"
           >
             <Group justify="space-between" wrap="nowrap">
               <div>
                 <Text fw={600} size="sm">
                   {fieldsetName === 'default' ? 'General Information' : fieldsetName}
                 </Text>
-                <Text size="xs" c="dimmed">
+                <Text c="dimmed" size="xs">
                   {fieldsetFields.filter((f) => form.values[f.name]).length} of{' '}
                   {fieldsetFields.length} fields completed
                 </Text>
               </div>
               {collapsibleSections && (
-                <ActionIcon variant="subtle" size="sm">
+                <ActionIcon size="sm" variant="subtle">
                   {expandedSections.has(fieldsetName) ? (
                     <IconChevronUp size={16} />
                   ) : (
@@ -491,14 +480,14 @@ export function ResponsiveModelForm({
       <Stack gap="md">
         <Paper withBorder p="xs">
           <Group justify="space-between">
-            <Text size="sm" fw={600}>
+            <Text fw={600} size="sm">
               Step {currentStep + 1} of {fieldsetKeys.length}
             </Text>
-            <Text size="xs" c="dimmed">
+            <Text c="dimmed" size="xs">
               {currentFieldset === 'default' ? 'General' : currentFieldset}
             </Text>
           </Group>
-          <Progress value={((currentStep + 1) / fieldsetKeys.length) * 100} mt="xs" size="xs" />
+          <Progress mt="xs" size="xs" value={((currentStep + 1) / fieldsetKeys.length) * 100} />
         </Paper>
 
         <Stack gap="md">
@@ -509,10 +498,10 @@ export function ResponsiveModelForm({
 
         <Group justify="space-between" mt="md">
           <Button
-            variant="subtle"
             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
             disabled={currentStep === 0}
             size="sm"
+            variant="subtle"
           >
             Previous
           </Button>
@@ -534,13 +523,13 @@ export function ResponsiveModelForm({
       {Object.entries(fieldsets).map(([fieldsetName, fieldsetFields]) => (
         <div key={fieldsetName}>
           {fieldsetName !== 'default' && (
-            <Divider label={fieldsetName} labelPosition="left" mb="md" />
+            <Divider labelPosition="left" label={fieldsetName} mb="md" />
           )}
           <Grid gutter="md">
             {fieldsetFields.map((field) => (
               <Grid.Col
                 key={field.name}
-                span={{ base: 12, sm: field.columns === 2 ? 6 : 12, md: field.columns || 12 }}
+                span={{ base: 12, md: field.columns || 12, sm: field.columns === 2 ? 6 : 12 }}
               >
                 {renderField(field)}
               </Grid.Col>
@@ -557,32 +546,32 @@ export function ResponsiveModelForm({
       {isMobile && floatingActionButton && (
         <Box
           style={{
-            position: 'fixed',
             bottom: 16,
+            position: 'fixed',
             right: 16,
             zIndex: 100,
           }}
         >
-          <ActionIcon size="xl" radius="xl" variant="filled" onClick={openDrawer}>
+          <ActionIcon onClick={openDrawer} radius="xl" size="xl" variant="filled">
             <IconDeviceFloppy size={24} />
           </ActionIcon>
         </Box>
       )}
 
       <Drawer
-        opened={actionsDrawerOpened}
         onClose={closeDrawer}
-        title="Form Actions"
+        opened={actionsDrawerOpened}
         position="bottom"
         size="auto"
+        title="Form Actions"
       >
         <Stack gap="md" p="md">
           {autoSave && (
-            <Alert icon={<IconAlertCircle size={16} />} color="blue" variant="light">
+            <Alert color="blue" icon={<IconAlertCircle size={16} />} variant="light">
               <Group justify="space-between">
                 <Text size="sm">Auto-save is {isSaving ? 'saving...' : 'enabled'}</Text>
                 {lastSaved && (
-                  <Text size="xs" c="dimmed">
+                  <Text c="dimmed" size="xs">
                     Last saved: {new Date(lastSaved).toLocaleTimeString()}
                   </Text>
                 )}
@@ -592,19 +581,19 @@ export function ResponsiveModelForm({
 
           <Group grow>
             {cancelHref && (
-              <Button onClick={handleCancel} disabled={isPending} variant="subtle" size="sm">
+              <Button onClick={handleCancel} disabled={isPending} size="sm" variant="subtle">
                 Cancel
               </Button>
             )}
             <Button
-              onClick={() => handleSubmit()}
-              loading={isPending}
-              disabled={!form.isValid() && touchedFields.size > 0}
               leftSection={
                 form.isValid() && touchedFields.size === fields.length ? (
                   <IconCheck size={16} />
                 ) : undefined
               }
+              loading={isPending}
+              onClick={() => handleSubmit()}
+              disabled={!form.isValid() && touchedFields.size > 0}
               size="sm"
             >
               {submitLabel}
@@ -616,13 +605,13 @@ export function ResponsiveModelForm({
   );
 
   return (
-    <Container size={isDesktop ? 'md' : '100%'} px={isMobile ? 'xs' : 'md'}>
-      <Card withBorder p={{ base: 'xs', sm: 'md', lg: 'lg' }}>
+    <Container px={isMobile ? 'xs' : 'md'} size={isDesktop ? 'md' : '100%'}>
+      <Card withBorder p={{ base: 'xs', lg: 'lg', sm: 'md' }}>
         <form onSubmit={handleSubmit}>
-          <Stack gap={{ base: 'md', sm: 'lg' }} style={{ opacity: isPending ? 0.6 : 1 }}>
+          <Stack style={{ opacity: isPending ? 0.6 : 1 }} gap={{ base: 'md', sm: 'lg' }}>
             {/* Header */}
             <Box>
-              <Group justify="space-between" align="flex-start" mb="md">
+              <Group align="flex-start" justify="space-between" mb="md">
                 <div style={{ flex: 1 }}>
                   <Title order={isMobile ? 3 : 2} size={isMobile ? 'h4' : 'h2'}>
                     {title}
@@ -635,8 +624,8 @@ export function ResponsiveModelForm({
                 </div>
                 {showProgress && !isMobile && (
                   <Badge
-                    size="lg"
                     color={completionPercentage === 100 ? 'green' : 'blue'}
+                    size="lg"
                     variant="light"
                   >
                     {completionPercentage}% Complete
@@ -646,10 +635,10 @@ export function ResponsiveModelForm({
 
               {showProgress && isMobile && (
                 <Progress
-                  value={completionPercentage}
                   color={completionPercentage === 100 ? 'green' : 'blue'}
-                  size="sm"
                   mb="md"
+                  size="sm"
+                  value={completionPercentage}
                 />
               )}
             </Box>
@@ -666,13 +655,13 @@ export function ResponsiveModelForm({
               <Group justify="space-between" mt="xl">
                 <Group gap="xs">
                   {form.isDirty() && (
-                    <Text size="xs" c="dimmed">
+                    <Text c="dimmed" size="xs">
                       You have unsaved changes
                     </Text>
                   )}
                   {(isPending || isSaving) && <Loader size="xs" />}
                   {autoSave && lastSaved && (
-                    <Text size="xs" c="dimmed">
+                    <Text c="dimmed" size="xs">
                       Last saved: {new Date(lastSaved).toLocaleTimeString()}
                     </Text>
                   )}
@@ -684,14 +673,14 @@ export function ResponsiveModelForm({
                     </Button>
                   )}
                   <Button
-                    type="submit"
-                    loading={isPending}
-                    disabled={!form.isValid() && touchedFields.size > 0}
                     leftSection={
                       form.isValid() && touchedFields.size === fields.length ? (
                         <IconCheck size={16} />
                       ) : undefined
                     }
+                    loading={isPending}
+                    disabled={!form.isValid() && touchedFields.size > 0}
+                    type="submit"
                   >
                     {submitLabel}
                   </Button>

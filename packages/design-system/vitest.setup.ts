@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import React from 'react';
 import { vi } from 'vitest';
 
 // Mock geist font imports
@@ -12,6 +13,17 @@ vi.mock('geist', () => ({
     style: {
       fontFamily: 'GeistMono, monospace',
     },
+  },
+}));
+
+// Mock next/image
+vi.mock('next/image', () => ({
+  default: (props: any) => {
+    return React.createElement('img', {
+      src: props.src,
+      alt: props.alt,
+      ...props,
+    });
   },
 }));
 

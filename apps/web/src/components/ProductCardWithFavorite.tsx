@@ -22,6 +22,10 @@ export function ProductCardWithFavorite({
   listId: _listId,
   position: _position,
 }: ProductCardWithFavoriteProps) {
+  if (!data) {
+    return null;
+  }
+
   const { isFavorite } = useProductFavorite(data.id || "");
 
   return (
@@ -30,9 +34,9 @@ export function ProductCardWithFavorite({
       {/* Override the built-in like button with our functional one */}
       <FavoriteButton
         productId={data.id || ""}
-        productName={data.title}
+        productName={data.title || ""}
         className="absolute end-3 top-3 z-20"
-        price={data.price}
+        price={data.price || 0}
       />
     </div>
   );

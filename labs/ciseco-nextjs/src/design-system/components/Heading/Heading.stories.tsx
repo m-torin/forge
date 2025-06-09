@@ -1,6 +1,6 @@
-import Heading from './Heading';
+import Heading from './Heading'
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
 const meta: Meta<typeof Heading> = {
   argTypes: {
@@ -65,31 +65,30 @@ const meta: Meta<typeof Heading> = {
     layout: 'centered',
   },
   title: 'Ciseco/Heading',
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
     children: 'Default Heading',
   },
-};
+}
 
 export const WithDescription: Story = {
   args: {
     children: 'Heading with Description',
-    description:
-      'This is a description that provides additional context about the section or content that follows.',
+    description: 'This is a description that provides additional context about the section or content that follows.',
   },
-};
+}
 
 export const WithDimText: Story = {
   args: {
     children: 'Main Heading',
     headingDim: 'dimmed text',
   },
-};
+}
 
 export const Centered: Story = {
   args: {
@@ -97,7 +96,7 @@ export const Centered: Story = {
     description: 'This heading and description are centered on the page.',
     isCenter: true,
   },
-};
+}
 
 export const WithNavigation: Story = {
   args: {
@@ -105,7 +104,7 @@ export const WithNavigation: Story = {
     description: 'This heading includes next and previous navigation buttons.',
     hasNextPrev: true,
   },
-};
+}
 
 export const H1Level: Story = {
   args: {
@@ -113,7 +112,7 @@ export const H1Level: Story = {
     fontClass: 'text-4xl md:text-5xl font-bold',
     level: 'h1',
   },
-};
+}
 
 export const H3Level: Story = {
   args: {
@@ -121,7 +120,7 @@ export const H3Level: Story = {
     fontClass: 'text-xl md:text-2xl font-semibold',
     level: 'h3',
   },
-};
+}
 
 export const SmallHeading: Story = {
   args: {
@@ -130,7 +129,7 @@ export const SmallHeading: Story = {
     fontClass: 'text-lg font-medium',
     level: 'h4',
   },
-};
+}
 
 export const CustomStyling: Story = {
   args: {
@@ -139,11 +138,11 @@ export const CustomStyling: Story = {
     description: 'This heading has custom colors and styling.',
     fontClass: 'text-2xl font-bold text-blue-600',
   },
-};
+}
 
 export const NavigationStates: Story = {
   render: () => (
-    <div className="space-y-8 w-full max-w-2xl">
+    <div className="w-full max-w-2xl space-y-8">
       <Heading hasNextPrev>Both buttons enabled</Heading>
       <Heading hasNextPrev prevBtnDisabled>
         Previous disabled
@@ -156,11 +155,11 @@ export const NavigationStates: Story = {
       </Heading>
     </div>
   ),
-};
+}
 
 export const DifferentLevels: Story = {
   render: () => (
-    <div className="space-y-6 w-full max-w-2xl">
+    <div className="w-full max-w-2xl space-y-6">
       <Heading fontClass="text-4xl font-bold" level="h1">
         H1 Heading
       </Heading>
@@ -181,7 +180,7 @@ export const DifferentLevels: Story = {
       </Heading>
     </div>
   ),
-};
+}
 
 export const AllFeatures: Story = {
   args: {
@@ -193,27 +192,21 @@ export const AllFeatures: Story = {
     isCenter: false,
     level: 'h2',
   },
-};
+}
 
 export const CenteredWithNavigation: Story = {
   args: {
     children: 'Centered with Description',
-    description:
-      'This is a centered heading with a description. Navigation is not shown when centered.',
+    description: 'This is a centered heading with a description. Navigation is not shown when centered.',
     hasNextPrev: true, // This won't show because isCenter is true
     isCenter: true,
   },
-};
+}
 
 export const SectionHeaders: Story = {
   render: () => (
-    <div className="space-y-12 w-full max-w-4xl">
-      <Heading
-        description="Welcome to our product showcase"
-        fontClass="text-4xl font-bold"
-        isCenter
-        level="h1"
-      >
+    <div className="w-full max-w-4xl space-y-12">
+      <Heading description="Welcome to our product showcase" fontClass="text-4xl font-bold" isCenter level="h1">
         Product Showcase
       </Heading>
 
@@ -230,4 +223,4 @@ export const SectionHeaders: Story = {
       </Heading>
     </div>
   ),
-};
+}

@@ -19,12 +19,14 @@ export class SentryServerProvider implements ObservabilityProvider {
     const sentryConfig = config as SentryConfig;
 
     if (!sentryConfig.dsn) {
-      throw new Error('Sentry DSN is required');
+      // Silently skip initialization if no DSN is provided
+      console.info('[Sentry] No DSN provided, skipping initialization');
+      return;
     }
 
     try {
       // Dynamically import Sentry to avoid bundling if not used
-      const Sentry = await import('@sentry/node');
+      const Sentry = await import('@sentry/nextjs');
 
       // Initialize with configuration similar to original instrumentation.ts
       Sentry.init({
@@ -36,8 +38,7 @@ export class SentryServerProvider implements ObservabilityProvider {
         // Sampling rates
         tracesSampleRate: sentryConfig.tracesSampleRate ?? 1,
 
-        // Debug mode
-        debug: sentryConfig.debug ?? false,
+        // Debug mode removed to avoid non-debug bundle conflicts
 
         // Integrations
         integrations: [
@@ -96,6 +97,9 @@ export class SentryServerProvider implements ObservabilityProvider {
         }
 
         // Server-specific context
+        if (context.organizationId) {
+          scope.setTag('organization_id', context.organizationId);
+        }
         if (context.serverName) {
           scope.setTag('server_name', context.serverName);
         }
@@ -138,6 +142,9 @@ export class SentryServerProvider implements ObservabilityProvider {
         }
         if (context.requestId) {
           scope.setTag('request_id', context.requestId);
+        }
+        if (context.organizationId) {
+          scope.setTag('organization_id', context.organizationId);
         }
       }
 

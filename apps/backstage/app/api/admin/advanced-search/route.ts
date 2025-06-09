@@ -1,13 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
+import { database } from '@repo/database/prisma';
+
 import { modelConfigs } from '../../../(authenticated)/admin/lib/prisma-model-config';
 
 interface SearchFilter {
   field: string;
   operator: string;
-  value: any;
   type: string;
+  value: any;
 }
 
 export async function POST(request: NextRequest) {
@@ -23,14 +25,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { 
-      modelName, 
-      filters = [], 
-      sortBy, 
-      sortOrder = 'desc',
-      page = 1,
+    const {
+      filters = [],
+      include = {},
       limit = 20,
-      include = {}
+      modelName,
+      page = 1,
+      sortBy,
+      sortOrder = 'desc',
     } = body;
 
     if (!modelName) {
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate model exists
-    const modelConfig = modelConfigs.find(config => config.name === modelName);
+    const modelConfig = modelConfigs.find((config) => config.name === modelName);
     if (!modelConfig) {
       return NextResponse.json({ error: 'Invalid model name' }, { status: 400 });
     }
@@ -61,31 +63,27 @@ export async function POST(request: NextRequest) {
     // Execute search
     const [records, total] = await Promise.all([
       delegate.findMany({
-        where,
+        include,
         orderBy,
         skip,
         take: limit,
-        include,
+        where,
       }),
       delegate.count({ where }),
     ]);
 
     return NextResponse.json({
-      records,
-      total,
-      page,
-      limit,
-      pages: Math.ceil(total / limit),
       hasNext: page * limit < total,
       hasPrev: page > 1,
+      limit,
+      page,
+      pages: Math.ceil(total / limit),
+      records,
+      total,
     });
-
   } catch (error) {
     console.error('Advanced search error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -112,7 +110,7 @@ function buildWhereClause(filters: SearchFilter[]): any {
 }
 
 function buildFilterCondition(filter: SearchFilter): any {
-  const { field, operator, value, type } = filter;
+  const { type, field, operator, value } = filter;
 
   if (!field || !operator) {
     return null;
@@ -132,7 +130,7 @@ function buildFilterCondition(filter: SearchFilter): any {
       return { [field]: { not: { contains: value, mode: 'insensitive' } } };
 
     case 'startsWith':
-      return { [field]: { startsWith: value, mode: 'insensitive' } };
+      return { [field]: { mode: 'insensitive', startsWith: value } };
 
     case 'endsWith':
       return { [field]: { endsWith: value, mode: 'insensitive' } };
@@ -179,30 +177,24 @@ function buildFilterCondition(filter: SearchFilter): any {
 
     case 'in':
       if (Array.isArray(value)) {
-        return { [field]: { in: value.map(v => convertValue(v, type)) } };
+        return { [field]: { in: value.map((v) => convertValue(v, type)) } };
       }
       break;
 
     case 'notIn':
       if (Array.isArray(value)) {
-        return { [field]: { notIn: value.map(v => convertValue(v, type)) } };
+        return { [field]: { notIn: value.map((v) => convertValue(v, type)) } };
       }
       break;
 
     case 'isEmpty':
       return {
-        OR: [
-          { [field]: { equals: null } },
-          { [field]: { equals: '' } },
-        ],
+        OR: [{ [field]: { equals: null } }, { [field]: { equals: '' } }],
       };
 
     case 'isNotEmpty':
       return {
-        AND: [
-          { [field]: { not: null } },
-          { [field]: { not: '' } },
-        ],
+        AND: [{ [field]: { not: null } }, { [field]: { not: '' } }],
       };
 
     case 'isNull':
@@ -226,8 +218,16 @@ function buildFilterCondition(filter: SearchFilter): any {
     case 'yesterday':
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const startOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
-      const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate() + 1);
+      const startOfYesterday = new Date(
+        yesterday.getFullYear(),
+        yesterday.getMonth(),
+        yesterday.getDate(),
+      );
+      const endOfYesterday = new Date(
+        yesterday.getFullYear(),
+        yesterday.getMonth(),
+        yesterday.getDate() + 1,
+      );
       return {
         [field]: {
           gte: startOfYesterday,
@@ -238,7 +238,11 @@ function buildFilterCondition(filter: SearchFilter): any {
     case 'thisWeek':
       const now = new Date();
       const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-      const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() + 7);
+      const endOfWeek = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - now.getDay() + 7,
+      );
       return {
         [field]: {
           gte: startOfWeek,
@@ -248,8 +252,16 @@ function buildFilterCondition(filter: SearchFilter): any {
 
     case 'lastWeek':
       const nowLW = new Date();
-      const startOfLastWeek = new Date(nowLW.getFullYear(), nowLW.getMonth(), nowLW.getDate() - nowLW.getDay() - 7);
-      const endOfLastWeek = new Date(nowLW.getFullYear(), nowLW.getMonth(), nowLW.getDate() - nowLW.getDay());
+      const startOfLastWeek = new Date(
+        nowLW.getFullYear(),
+        nowLW.getMonth(),
+        nowLW.getDate() - nowLW.getDay() - 7,
+      );
+      const endOfLastWeek = new Date(
+        nowLW.getFullYear(),
+        nowLW.getMonth(),
+        nowLW.getDate() - nowLW.getDay(),
+      );
       return {
         [field]: {
           gte: startOfLastWeek,
@@ -308,7 +320,11 @@ function buildFilterCondition(filter: SearchFilter): any {
   return null;
 }
 
-function buildOrderByClause(sortBy?: string, sortOrder: 'asc' | 'desc' = 'desc', modelConfig?: any): any {
+function buildOrderByClause(
+  sortBy?: string,
+  sortOrder: 'asc' | 'desc' = 'desc',
+  modelConfig?: any,
+): any {
   if (!sortBy) {
     // Default sorting
     return { createdAt: 'desc' };

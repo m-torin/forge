@@ -238,8 +238,8 @@ export const analyzeCurrentCopyStep = compose(
   (step) => withStepTimeout(step, { execution: 60000 }),
   (step) =>
     withStepMonitoring(step, {
-, 'averageScore'],
       enableDetailedLogging: true,
+      metricsToTrack: ['averageScore'],
     }),
 );
 

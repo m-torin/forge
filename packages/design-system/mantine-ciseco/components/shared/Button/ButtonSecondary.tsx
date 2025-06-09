@@ -7,8 +7,8 @@ export interface ButtonSecondaryProps extends ButtonProps {
 }
 
 const ButtonSecondary: React.FC<ButtonSecondaryProps> = ({
-  className = 'border border-neutral-300 dark:border-neutral-700',
   'data-testid': testId = 'button-secondary',
+  className = 'border border-neutral-300 dark:border-neutral-700',
   ...props
 }) => {
   return (

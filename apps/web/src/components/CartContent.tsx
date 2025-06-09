@@ -1,5 +1,7 @@
 "use client";
 
+import { getCartAction } from "@/actions/data-service-actions";
+import { type TCardProduct } from "@/lib/data-service";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import Image from "next/image";
@@ -11,10 +13,6 @@ import {
   ButtonSecondary,
   Prices,
 } from "@repo/design-system/mantine-ciseco";
-import {
-  getCart,
-  type TCardProduct,
-} from "@repo/design-system/mantine-ciseco/data/data";
 
 interface CartContentProps {
   className?: string;
@@ -22,6 +20,10 @@ interface CartContentProps {
 }
 
 const CartProduct = ({ product }: { product: TCardProduct }) => {
+  if (!product) {
+    return null;
+  }
+  
   const { name, color, handle, image, price, quantity, size } = product;
 
   return (
@@ -101,7 +103,7 @@ export function CartContent({ className = "", onClose }: CartContentProps) {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const cartData = await getCart("id://1");
+        const cartData = await getCartAction("id://1");
         setCart(cartData);
       } catch (error) {
         console.error("Failed to fetch cart:", error);

@@ -13,7 +13,6 @@ import { passkey } from 'better-auth/plugins/passkey';
 import { twoFactor } from 'better-auth/plugins/two-factor';
 import { headers } from 'next/headers';
 
-import { createServerAnalytics } from '@repo/analytics/server';
 import { prisma as database } from '@repo/database/prisma';
 
 import { adminAccessController, adminRoles } from '../shared/admin-permissions';
@@ -31,36 +30,37 @@ import type { AuthSession } from '../shared/types';
 
 const config = createAuthConfig();
 
-// Create analytics instance for auth tracking
-const analyticsInstance = createServerAnalytics({
-  providers: {
-    ...(process.env.POSTHOG_API_KEY
-      ? {
-          posthog: {
-            apiKey: process.env.POSTHOG_API_KEY,
-            config: {
-              apiHost: process.env.POSTHOG_HOST || 'https://app.posthog.com',
-            },
-          } as any,
-        }
-      : {}),
-    ...(process.env.NODE_ENV === 'development'
-      ? {
-          console: {
-            enabled: true,
-          } as any,
-        }
-      : {}),
-  },
-  debug: process.env.NODE_ENV === 'development',
-});
-
 let analytics: any = null;
-(async () => {
-  const instance = await analyticsInstance;
-  await instance.initialize();
-  analytics = instance;
-})();
+async function getAnalytics() {
+  if (!analytics) {
+    const { createServerAnalytics } = await import('@repo/analytics/server');
+    const instance = await createServerAnalytics({
+      providers: {
+        ...(process.env.POSTHOG_API_KEY
+          ? {
+              posthog: {
+                apiKey: process.env.POSTHOG_API_KEY,
+                config: {
+                  apiHost: process.env.POSTHOG_HOST || 'https://app.posthog.com',
+                },
+              } as any,
+            }
+          : {}),
+        ...(process.env.NODE_ENV === 'development'
+          ? {
+              console: {
+                enabled: true,
+              } as any,
+            }
+          : {}),
+      },
+      debug: process.env.NODE_ENV === 'development',
+    });
+    await instance.initialize();
+    analytics = instance;
+  }
+  return analytics;
+}
 
 /**
  * Better Auth instance with full configuration
@@ -142,18 +142,17 @@ export const auth: any = betterAuth({
         if (newSession?.user) {
           const user = newSession.user;
 
-          if (analytics) {
-            await analytics.identify(user.id, {
-              avatar: user.image,
-              createdAt: new Date(user.createdAt),
-              email: user.email,
-              firstName: user.name,
-            });
+          const analytics = await getAnalytics();
+          await analytics.identify(user.id, {
+            avatar: user.image,
+            createdAt: new Date(user.createdAt),
+            email: user.email,
+            firstName: user.name,
+          });
 
-            await analytics.track('User Created', {
-              userId: user.id,
-            });
-          }
+          await analytics.track('User Created', {
+            userId: user.id,
+          });
         }
       }
 
@@ -161,18 +160,17 @@ export const auth: any = betterAuth({
       if (ctx.path?.startsWith('/update-user')) {
         const user = ctx.context?.user;
         if (user) {
-          if (analytics) {
-            await analytics.identify(user.id, {
-              avatar: user.image,
-              createdAt: new Date(user.createdAt),
-              email: user.email,
-              firstName: user.name,
-            });
+          const analytics = await getAnalytics();
+          await analytics.identify(user.id, {
+            avatar: user.image,
+            createdAt: new Date(user.createdAt),
+            email: user.email,
+            firstName: user.name,
+          });
 
-            await analytics.track('User Updated', {
-              userId: user.id,
-            });
-          }
+          await analytics.track('User Updated', {
+            userId: user.id,
+          });
         }
       }
     }),
@@ -206,14 +204,13 @@ export const auth: any = betterAuth({
                   organizationName: organization.name,
                 });
 
-                if (analytics) {
-                  await analytics.track('Organization Created', {
-                    organizationId: organization.id,
-                    organizationName: organization.name,
-                    organizationSlug: organization.slug,
-                    userId: user.id,
-                  });
-                }
+                const analytics = await getAnalytics();
+                await analytics.track('Organization Created', {
+                  organizationId: organization.id,
+                  organizationName: organization.name,
+                  organizationSlug: organization.slug,
+                  userId: user.id,
+                });
               },
 
               beforeCreate: async ({ organization, user }) => {
@@ -232,6 +229,7 @@ export const auth: any = betterAuth({
 
             organizationDeletion: {
               afterDelete: async (data) => {
+                const analytics = await getAnalytics();
                 analytics.capture({
                   distinctId: data.user.id,
                   event: 'Organization Deleted',

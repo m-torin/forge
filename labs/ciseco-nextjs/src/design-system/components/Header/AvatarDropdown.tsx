@@ -1,30 +1,30 @@
-'use client';
+'use client'
 
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
-import { UserCircle02Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
+import { UserCircle02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 
-import avatarImage from '../../images/users/avatar4.jpg';
-import { Divider } from '../Divider';
-import { Link } from '../Link';
-import Avatar from '../shared/Avatar/Avatar';
+import avatarImage from '../../images/users/avatar4.jpg'
+import { Divider } from '../Divider'
+import { Link } from '../Link'
+import Avatar from '../shared/Avatar/Avatar'
 
 interface Props {
-  className?: string;
+  className?: string
 }
 
 export default function AvatarDropdown({ className }: Props) {
   return (
     <div className={className}>
       <Popover>
-        <PopoverButton className="-m-2.5 flex cursor-pointer items-center justify-center rounded-full p-2.5 hover:bg-neutral-100 focus-visible:outline-hidden dark:hover:bg-neutral-800">
+        <PopoverButton className="focus-visible:outline-hidden -m-2.5 flex cursor-pointer items-center justify-center rounded-full p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-800">
           <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={UserCircle02Icon} size={24} />
         </PopoverButton>
 
         <PopoverPanel
           anchor="bottom end"
           transition
-          className="z-10 mt-3 w-80 rounded-3xl px-4 shadow-lg ring-1 ring-black/5 transition duration-200 ease-in-out data-closed:translate-y-1 data-closed:opacity-0 sm:px-0"
+          className="data-closed:translate-y-1 data-closed:opacity-0 z-10 mt-3 w-80 rounded-3xl px-4 shadow-lg ring-1 ring-black/5 transition duration-200 ease-in-out sm:px-0"
         >
           <div className="relative grid grid-cols-1 gap-6 bg-white px-6 py-7 dark:bg-neutral-800">
             <div className="flex items-center space-x-3">
@@ -41,16 +41,10 @@ export default function AvatarDropdown({ className }: Props) {
             {/* ------------------ 1 --------------------- */}
             <Link
               href="/account"
-              className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+              className="focus:outline-hidden focus-visible:ring-3 -m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-                <svg
-                  width="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  height="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg width="24" viewBox="0 0 24 24" fill="none" height="24" xmlns="http://www.w3.org/2000/svg">
                   <path
                     strokeWidth="1.5"
                     stroke="currentColor"
@@ -75,7 +69,7 @@ export default function AvatarDropdown({ className }: Props) {
             {/* ------------------ 2 --------------------- */}
             <Link
               href="/orders"
-              className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+              className="focus:outline-hidden focus-visible:ring-3 -m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                 <svg width="24" viewBox="0 0 24 24" fill="none" height="24">
@@ -121,7 +115,7 @@ export default function AvatarDropdown({ className }: Props) {
             {/* ------------------ 2 --------------------- */}
             <Link
               href="/account-wishlists"
-              className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+              className="focus:outline-hidden focus-visible:ring-3 -m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                 <svg width="24" viewBox="0 0 24 24" fill="none" height="24">
@@ -144,16 +138,10 @@ export default function AvatarDropdown({ className }: Props) {
             {/* ------------------ 2 --------------------- */}
             <Link
               href="/help"
-              className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+              className="focus:outline-hidden focus-visible:ring-3 -m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-                <svg
-                  width="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  height="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg width="24" viewBox="0 0 24 24" fill="none" height="24" xmlns="http://www.w3.org/2000/svg">
                   <path
                     strokeWidth="1.5"
                     stroke="currentColor"
@@ -208,17 +196,11 @@ export default function AvatarDropdown({ className }: Props) {
               onClick={() => {
                 // Handle logout
               }}
-              className="-m-3 flex w-full items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+              className="focus:outline-hidden focus-visible:ring-3 -m-3 flex w-full items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
               type="button"
             >
               <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-                <svg
-                  width="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  height="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg width="24" viewBox="0 0 24 24" fill="none" height="24" xmlns="http://www.w3.org/2000/svg">
                   <path
                     strokeWidth="1.5"
                     stroke="currentColor"
@@ -250,5 +232,5 @@ export default function AvatarDropdown({ className }: Props) {
         </PopoverPanel>
       </Popover>
     </div>
-  );
+  )
 }

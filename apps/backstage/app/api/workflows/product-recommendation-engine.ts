@@ -297,8 +297,8 @@ export const collectUserProfilesStep = compose(
   (step) => withStepTimeout(step, { execution: 120000 }), // 2 minutes
   (step) =>
     withStepMonitoring(step, {
-, 'profileEnrichmentRate'],
       enableDetailedLogging: true,
+      metricsToTrack: ['profileEnrichmentRate'],
     }),
 );
 
@@ -414,7 +414,7 @@ function getDeviceCapabilities(device: string): any {
     mobile: { hasKeyboard: false, screenSize: 'small', touchCapable: true },
     tablet: { hasKeyboard: false, screenSize: 'medium', touchCapable: true },
   };
-  return capabilities[(device as any)] || capabilities.desktop;
+  return capabilities[device as any] || capabilities.desktop;
 }
 
 function getLocationInsights(location: string): any {
@@ -425,7 +425,7 @@ function getLocationInsights(location: string): any {
     UK: { currency: 'GBP', shippingRegion: 'Europe', timezone: 'Europe/London' },
     US: { currency: 'USD', shippingRegion: 'North America', timezone: 'America/New_York' },
   };
-  return insights[(location as any)] || insights.US;
+  return insights[location as any] || insights.US;
 }
 
 // Step 2: Fetch product catalog
@@ -949,7 +949,7 @@ function ensembleByStacking(recommendations: any[]): any[] {
   const ensembled: any[] = [];
   grouped.forEach((recs, key) => {
     const weightedScore = recs.reduce((sum: number, rec: any) => {
-      const weight = modelWeights[(rec.algorithm as any)] || 0.25;
+      const weight = modelWeights[rec.algorithm as any] || 0.25;
       return sum + rec.score * weight;
     }, 0);
 
@@ -1044,7 +1044,7 @@ function getTimeContextScore(recommendation: any, profile: any): number {
     night: ['Books', 'Electronics', 'Entertainment'],
   };
 
-  return timePreferences[(timeOfDay as any)]?.includes(category) ? 0.2 : -0.1;
+  return timePreferences[timeOfDay as any]?.includes(category) ? 0.2 : -0.1;
 }
 
 function getLocationContextScore(recommendation: any, profile: any): number {
@@ -1082,7 +1082,7 @@ function getSeasonalityScore(recommendation: any, profile: any): number {
     winter: ['Electronics', 'Home', 'Books'],
   };
 
-  return seasonalCategories[(season as any)]?.includes(category) ? 0.15 : 0;
+  return seasonalCategories[season as any]?.includes(category) ? 0.15 : 0;
 }
 
 function getContextFactors(profile: any, config: any): any[] {
@@ -1185,7 +1185,7 @@ function applyHybridScoring(recommendations: any[], weights: Record<string, numb
 
   return recommendations.map((rec) => ({
     ...rec,
-    finalScore: rec.score * (finalWeights[(rec.algorithm as any)] || 0.1),
+    finalScore: rec.score * (finalWeights[rec.algorithm as any] || 0.1),
   }));
 }
 
@@ -1330,7 +1330,7 @@ export const storeRecommendationsStep = compose(
         errors.push({
           batch: i / batchSize,
           count: batch.length,
-          (error as Error): (error as Error).message,
+          error: (error as Error).message,
         });
       }
     }

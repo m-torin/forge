@@ -83,8 +83,9 @@ export const fetchSourceDataStep = compose(
   (step) => withStepTimeout(step, { execution: 30000, warning: 20000 }),
   (step) =>
     withStepCircuitBreaker(step, {
-,
+      failureThreshold: 5,
       resetTimeout: 30000,
+      threshold: 0.5,
       timeout: 10000,
     }),
 );
@@ -214,7 +215,6 @@ export const syncChunksStep = compose(
     withStepRetry(step, {
       backoff: 'exponential',
       maxAttempts: 3,
-,
     }),
 );
 
@@ -265,7 +265,7 @@ export const sendNotificationStep = StepTemplates.notification(
   'sync-notification',
   'Notify about sync completion',
   {
-, 'slack'],
+    channels: ['email', 'slack'],
     condition: (data: any) => data.report.status !== 'success',
   },
 );

@@ -7,27 +7,69 @@ import {
   getUserOrganizations,
 } from '../../../server/organizations/helpers';
 
+// Use vi.hoisted to ensure mocks are available during module loading
+const {
+  mockAuth,
+  mockCreateOrganization,
+  mockDatabase,
+  mockGetFullOrganization,
+  mockGetSession,
+  mockListOrganizations,
+} = vi.hoisted(() => {
+  const mockGetSession = vi.fn();
+  const mockListOrganizations = vi.fn();
+  const mockGetFullOrganization = vi.fn();
+  const mockCreateOrganization = vi.fn();
 
-// Mock auth instance
-const mockGetSession = vi.fn();
-const mockListOrganizations = vi.fn();
-const mockGetFullOrganization = vi.fn();
-const mockCreateOrganization = vi.fn();
+  const mockDatabase = {
+    member: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+    },
+    organization: {
+      create: vi.fn(),
+      findUnique: vi.fn(),
+    },
+  };
 
-const mockAuth = {
-  api: {
-    getSession: mockGetSession,
-  },
-  organization: {
-    createOrganization: mockCreateOrganization,
-    getFullOrganization: mockGetFullOrganization,
-    listOrganizations: mockListOrganizations,
-  },
-} as any;
+  // The getUserOrganizations function accesses auth.organization.listOrganizations for userId param
+  // and auth.api.listOrganizations for current user
+  const mockAuth = {
+    api: {
+      createOrganization: mockCreateOrganization,
+      getFullOrganization: mockGetFullOrganization,
+      getSession: mockGetSession,
+      listOrganizations: mockListOrganizations,
+    },
+    organization: {
+      listOrganizations: mockListOrganizations,
+    },
+  } as any;
+
+  return {
+    mockAuth,
+    mockCreateOrganization,
+    mockDatabase,
+    mockGetFullOrganization,
+    mockGetSession,
+    mockListOrganizations,
+  };
+});
 
 // Mock the auth module
-vi.mock('../../auth', () => ({
+vi.mock('../../../server/auth', () => ({
   auth: mockAuth,
+}));
+
+// Mock the database
+vi.mock('@repo/database/prisma', () => ({
+  prisma: mockDatabase,
+}));
+
+// Mock Next.js headers
+vi.mock('next/headers', () => ({
+  headers: vi.fn().mockResolvedValue(new Headers()),
 }));
 
 describe('Organization Helpers', () => {
@@ -159,56 +201,85 @@ describe('Organization Helpers', () => {
 
   describe('getOrganizationDetails', () => {
     it('should return full organization details', async () => {
-      const mockOrgDetails = {
+      const mockSession = {
+        session: { id: 'session-123' },
+        user: { id: 'user-123' },
+      };
+
+      const mockOrganization = {
         id: 'org-123',
         name: 'Test Organization',
         createdAt: new Date('2023-01-01'),
-        invitations: [
-          {
-            id: 'invite-1',
-            email: 'invited@example.com',
-            expiresAt: new Date('2024-01-01'),
-            organizationId: 'org-123',
-            role: 'member',
-            status: 'pending',
-          },
-        ],
-        members: [
-          {
-            id: 'member-1',
-            createdAt: new Date(),
-            organizationId: 'org-123',
-            role: 'owner',
-            teamId: null,
-            updatedAt: null,
-            userId: 'user-1',
-          },
-          {
-            id: 'member-2',
-            createdAt: new Date(),
-            organizationId: 'org-123',
-            role: 'member',
-            teamId: null,
-            updatedAt: null,
-            userId: 'user-2',
-          },
-        ],
         metadata: { plan: 'pro' },
         slug: 'test-org',
       };
 
-      mockGetFullOrganization.mockResolvedValue(mockOrgDetails);
+      const mockMembers = [
+        {
+          id: 'member-1',
+          createdAt: new Date(),
+          organizationId: 'org-123',
+          role: 'owner',
+          teamId: null,
+          updatedAt: null,
+          user: { id: 'user-1', name: 'User 1', email: 'user1@example.com' },
+          userId: 'user-1',
+        },
+        {
+          id: 'member-2',
+          createdAt: new Date(),
+          organizationId: 'org-123',
+          role: 'member',
+          teamId: null,
+          updatedAt: null,
+          user: { id: 'user-2', name: 'User 2', email: 'user2@example.com' },
+          userId: 'user-2',
+        },
+      ];
+
+      const expectedResult = {
+        members: mockMembers,
+        organization: mockOrganization,
+      };
+
+      // Mock the session
+      mockGetSession.mockResolvedValue(mockSession);
+
+      // Mock database calls
+      mockDatabase.member.findFirst.mockResolvedValue({
+        organizationId: 'org-123',
+        userId: 'user-123',
+      });
+      mockDatabase.organization.findUnique.mockResolvedValue(mockOrganization);
+      mockDatabase.member.findMany.mockResolvedValue(mockMembers);
 
       const result = await getOrganizationDetails('org-123');
 
-      expect(result).toEqual(mockOrgDetails);
-      expect(mockGetFullOrganization).toHaveBeenCalledWith({
-        query: { id: 'org-123' },
+      expect(result).toEqual(expectedResult);
+      expect(mockGetSession).toHaveBeenCalled();
+      expect(mockDatabase.member.findFirst).toHaveBeenCalledWith({
+        where: {
+          organizationId: 'org-123',
+          userId: 'user-123',
+        },
+      });
+      expect(mockDatabase.organization.findUnique).toHaveBeenCalledWith({
+        where: { id: 'org-123' },
       });
     });
 
     it('should return null when organization not found', async () => {
-      mockGetFullOrganization.mockResolvedValue(null);
+      const mockSession = {
+        session: { id: 'session-123' },
+        user: { id: 'user-123' },
+      };
+
+      mockGetSession.mockResolvedValue(mockSession);
+      mockDatabase.member.findFirst.mockResolvedValue({
+        organizationId: 'org-123',
+        userId: 'user-123',
+      });
+      mockDatabase.organization.findUnique.mockResolvedValue(null);
 
       const result = await getOrganizationDetails('org-123');
 
@@ -216,7 +287,7 @@ describe('Organization Helpers', () => {
     });
 
     it('should handle errors and return null', async () => {
-      mockGetFullOrganization.mockRejectedValue(new Error('Not found'));
+      mockGetSession.mockRejectedValue(new Error('Session error'));
 
       const result = await getOrganizationDetails('org-123');
 
@@ -240,14 +311,18 @@ describe('Organization Helpers', () => {
         slug: 'johns-organization',
       };
 
-      mockCreateOrganization.mockResolvedValue(mockCreatedOrg);
+      mockCreateOrganization.mockResolvedValue({ organization: mockCreatedOrg });
+      mockDatabase.member.create.mockResolvedValue({});
 
       const result = await createDefaultOrganization(mockUser.id, mockUser.name);
 
       expect(result).toEqual(mockCreatedOrg);
       expect(mockCreateOrganization).toHaveBeenCalledWith({
-        name: "John's Organization",
-        slug: 'johns-organization',
+        body: {
+          name: 'John Doe',
+          slug: 'john-doe',
+        },
+        headers: expect.any(Headers),
       });
     });
 
@@ -260,20 +335,24 @@ describe('Organization Helpers', () => {
 
       const mockCreatedOrg = {
         id: 'org-new',
-        name: 'My Organization',
+        name: "user-123's Organization",
         createdAt: new Date(),
         metadata: {},
-        slug: 'my-organization',
+        slug: 'user-123-s-organization',
       };
 
-      mockCreateOrganization.mockResolvedValue(mockCreatedOrg);
+      mockCreateOrganization.mockResolvedValue({ organization: mockCreatedOrg });
+      mockDatabase.member.create.mockResolvedValue({});
 
       const result = await createDefaultOrganization(mockUser.id, mockUser.name);
 
       expect(result).toEqual(mockCreatedOrg);
       expect(mockCreateOrganization).toHaveBeenCalledWith({
-        name: 'My Organization',
-        slug: 'my-organization',
+        body: {
+          name: "user-123's Organization",
+          slug: 'user-123-s-organization',
+        },
+        headers: expect.any(Headers),
       });
     });
 
@@ -284,17 +363,23 @@ describe('Organization Helpers', () => {
         email: 'test@example.com',
       };
 
-      mockCreateOrganization.mockResolvedValue({
+      const mockCreatedOrg = {
         id: 'org-new',
-        name: "Test's Organization",
-        slug: 'tests-organization',
-      });
+        name: 'Test User!@#$%',
+        slug: 'test-user-----',
+      };
 
-      await createDefaultOrganization(mockUser.id, mockUser.name);
+      mockCreateOrganization.mockResolvedValue({ organization: mockCreatedOrg });
+      mockDatabase.member.create.mockResolvedValue({});
+
+      const result = await createDefaultOrganization(mockUser.id, mockUser.name);
 
       expect(mockCreateOrganization).toHaveBeenCalledWith({
-        name: "Test's Organization",
-        slug: 'tests-organization',
+        body: {
+          name: 'Test User!@#$%',
+          slug: 'test-user-----',
+        },
+        headers: expect.any(Headers),
       });
     });
 
@@ -307,7 +392,9 @@ describe('Organization Helpers', () => {
 
       mockCreateOrganization.mockRejectedValue(new Error('Creation failed'));
 
-      await expect(createDefaultOrganization(mockUser.id)).rejects.toThrow('Creation failed');
+      // The function catches errors and returns null instead of throwing
+      const result = await createDefaultOrganization(mockUser.id, mockUser.name);
+      expect(result).toBeNull();
     });
   });
 });
