@@ -21,7 +21,6 @@
 
 import { SentryClientProvider } from './client/providers/sentry-client';
 import { ConsoleProvider } from './shared/providers/console-provider';
-import { LogtailProvider } from './shared/providers/logtail-provider';
 import { createObservabilityManager } from './shared/utils/manager';
 
 import type {
@@ -33,8 +32,8 @@ import type {
 // Client-specific provider registry
 const CLIENT_PROVIDERS: ProviderRegistry = {
   console: () => new ConsoleProvider(),
-  logtail: () => new LogtailProvider(),
   sentry: () => new SentryClientProvider(),
+  // Better Stack/Logtail is not available on client side due to Node.js dependencies
 };
 
 // ============================================================================
@@ -79,10 +78,7 @@ export type {
 
 // Provider-specific types
 export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
-
 export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-
-export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
 
 // ============================================================================
 // CONFIGURATION UTILITIES

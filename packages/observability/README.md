@@ -8,7 +8,7 @@ tracing.
 This package provides a unified interface for integrating multiple observability providers:
 
 - **Sentry** - Error tracking and performance monitoring with session replay
-- **Logtail (BetterStack)** - Production logging service
+- **Better Stack** - Production logging, error tracking, and monitoring service
 - **Pino/Winston** - Structured logging (skeleton - to be implemented)
 - **OpenTelemetry** - Distributed tracing (skeleton - to be implemented)
 - **Console** - Development logging with full feature parity
@@ -64,8 +64,12 @@ import { createServerObservability } from '@repo/observability/server';
 const observability = await createServerObservability({
   providers: {
     sentry: { dsn: process.env.SENTRY_DSN },
-    pino: { level: 'info' },
-    opentelemetry: { serviceName: 'api' },
+    'better-stack': { 
+      sourceToken: process.env.BETTER_STACK_SOURCE_TOKEN,
+      application: 'my-app',
+      environment: 'production'
+    },
+    console: { level: 'info' },
   },
 });
 
@@ -96,6 +100,24 @@ import { createNextJSServerObservability } from '@repo/observability/server/next
     dsn: 'https://...@sentry.io/...',
     environment: 'production',
     tracesSampleRate: 0.1
+  }
+}
+```
+
+### Better Stack
+
+```typescript
+{
+  'better-stack': {
+    sourceToken: 'your-better-stack-source-token',
+    application: 'my-app',
+    environment: 'production',
+    release: '1.0.0',
+    captureErrors: true,
+    captureRejections: true,
+    sampleRate: 0.1, // 10% sampling
+    ignorePatterns: ['health-check', 'heartbeat-.*'],
+    globalTags: { team: 'backend', service: 'api' }
   }
 }
 ```
@@ -135,7 +157,7 @@ import { createNextJSServerObservability } from '@repo/observability/server/next
 2. **Providers**
 
    - Sentry (client & server) - Full implementation with replay integration
-   - Logtail - Production logging with development fallback
+   - Better Stack - Production logging, error tracking, and monitoring with rich features
    - Console - Complete implementation for development
 
 3. **Utilities**
@@ -153,9 +175,18 @@ import { createNextJSServerObservability } from '@repo/observability/server/next
    - Context-based architecture
 
 5. **Next.js Integration**
-   - Configuration wrappers (`withSentry`, `withLogtail`, `withObservability`)
+   - Configuration wrappers (`withSentry`, `withBetterStack`, `withObservability`)
    - Client and server managers
    - Build-time optimizations
+
+6. **Better Stack Features**
+   - Structured logging with rich metadata
+   - Automatic error and rejection capturing
+   - Performance monitoring with transactions and spans
+   - Custom middleware support
+   - Offline buffering and retry logic
+   - Sampling and filtering capabilities
+   - Integration with Vercel and Next.js
 
 ### 🚧 TODO
 

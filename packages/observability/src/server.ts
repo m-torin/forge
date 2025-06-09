@@ -21,12 +21,9 @@
  * ```
  */
 
-import { OpenTelemetryProvider } from './server/providers/opentelemetry-provider';
-import { PinoProvider } from './server/providers/pino-provider';
 import { SentryServerProvider } from './server/providers/sentry-server';
-import { WinstonProvider } from './server/providers/winston-provider';
 import { ConsoleProvider } from './shared/providers/console-provider';
-import { LogtailProvider } from './shared/providers/logtail-provider';
+import { BetterStackProvider } from './shared/providers/better-stack-provider';
 import { createObservabilityManager } from './shared/utils/manager';
 
 import type {
@@ -35,14 +32,13 @@ import type {
   ProviderRegistry,
 } from './shared/types/types';
 
-// Server-specific provider registry
+// Server-specific provider registry - minimal, essential providers only
 const SERVER_PROVIDERS: ProviderRegistry = {
   console: () => new ConsoleProvider(),
-  logtail: () => new LogtailProvider(),
-  opentelemetry: () => new OpenTelemetryProvider(),
-  pino: () => new PinoProvider(),
   sentry: () => new SentryServerProvider(),
-  winston: () => new WinstonProvider(),
+  'better-stack': () => new BetterStackProvider(),
+  // Backward compatibility alias
+  logtail: () => new BetterStackProvider(),
 };
 
 // ============================================================================
@@ -87,19 +83,9 @@ export type {
 
 // Provider-specific types
 export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
-
-export type { OpenTelemetryConfig, OpenTelemetryOptions } from './shared/types/opentelemetry-types';
-
-export type {
-  LogEntry,
-  LoggerConfig,
-  LoggerTransport,
-  PinoConfig,
-  WinstonConfig,
-} from './shared/types/logger-types';
-
 export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-
+export type { BetterStackConfig, BetterStackOptions, BetterStackMetrics, BetterStackTrace, BetterStackSpan, BetterStackEvent } from './shared/types/better-stack-types';
+// Legacy Logtail types for backward compatibility
 export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
 
 // ============================================================================
