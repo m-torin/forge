@@ -6,7 +6,10 @@ import { auth } from '@repo/auth/server';
 import { prisma } from '@repo/database/prisma';
 import { type ContentStatus, type Prisma, type TaxonomyType } from '@repo/database/prisma';
 
-import { generateSlug } from '../utils/pim-helpers';
+import { generateSlug as _generateSlug } from '../utils/pim-helpers';
+
+// Re-export for component use
+export { generateSlug } from '../utils/pim-helpers';
 
 // Get all taxonomies with pagination and filtering
 export async function getTaxonomies(params?: {
