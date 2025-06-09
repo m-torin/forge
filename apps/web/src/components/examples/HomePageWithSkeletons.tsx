@@ -27,7 +27,7 @@ import {
   SectionSliderProductCard,
 } from "@repo/design-system/mantine-ciseco";
 
-import type { TBlogPost, TCardProduct, TCollection } from "@/lib/data-service";
+import type { TBlogPost, TCardProduct, TCollection } from "@/data/data-service";
 
 interface HomePageData {
   blogPosts: TBlogPost[];
@@ -53,7 +53,7 @@ export function useHomePageData(): HomePageData {
         setError(null);
 
         // Simulate staggered loading for different sections
-        const { getBlogPosts, getCollections, getProducts } = await import("@/lib/data-service");
+        const { getBlogPosts, getCollections, getProducts } = await import("@/data/data-service");
 
         // Load data with realistic delays
         const [products, collections, posts] = await Promise.all([
@@ -232,7 +232,7 @@ export function ProgressiveHomePageWithSkeletons() {
   useEffect(() => {
     // Load sections progressively
     const loadSections = async () => {
-      const { getBlogPosts, getCollections, getProducts } = await import("@/lib/data-service");
+      const { getBlogPosts, getCollections, getProducts } = await import("@/data/data-service");
 
       // Hero loads immediately
       setTimeout(() => {

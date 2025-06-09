@@ -1,6 +1,6 @@
 import { ProductDetailFavoriteButton } from "@/components/ProductDetailFavoriteButton";
 import { getDictionary } from "@/i18n";
-import { getProductDetailByHandle, getProducts } from "@/lib/data-service";
+import { getProductDetailByHandle, getProducts } from "@/data/data-service";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { ShoppingBag03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -8,7 +8,6 @@ import { type Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { getProductReviews } from "@repo/design-system/mantine-ciseco";
 import {
   AccordionInfo,
   AddToCardButton,
@@ -19,6 +18,7 @@ import {
   SectionPromo2,
   SectionSliderProductCard,
 } from "@repo/design-system/mantine-ciseco";
+import { getProductReviews } from "@/data/data-service";
 
 import Policy from "../Policy";
 import ProductOptions from "../ProductOptions";

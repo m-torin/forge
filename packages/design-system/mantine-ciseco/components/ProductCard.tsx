@@ -2,14 +2,12 @@
 
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
-import { ShoppingBag03Icon } from '@hugeicons/core-free-icons';
-import { HugeiconsIcon } from '@hugeicons/react';
 import { Drawer, ScrollArea } from '@mantine/core';
-import { useDisclosure, useDidUpdate } from '@mantine/hooks';
+import { useDidUpdate, useDisclosure } from '@mantine/hooks';
 import Link from 'next/link';
-import { type FC, useEffect, useRef, memo, useCallback, useState } from 'react';
+import { type FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
-import { type TProductItem } from '../data/data';
+import { type TProductItem } from '../data/types';
 import { useLocalizeHref } from '../hooks/useLocale';
 
 import AddToCardButton from './AddToCardButton';
@@ -18,8 +16,6 @@ import Prices from './Prices';
 import ProductQuickView from './ProductQuickView';
 import ProductStatus from './ProductStatus';
 import { ProgressiveImage } from './ProgressiveImage';
-import ButtonPrimary from './shared/Button/ButtonPrimary';
-import ButtonSecondary from './shared/Button/ButtonSecondary';
 
 export interface ProductCardProps {
   className?: string;
@@ -68,9 +64,9 @@ const ProductCard: FC<ProductCardProps> = memo(
       images,
       options,
       price,
-      salePrice,
       rating,
       reviewNumber,
+      salePrice,
       selectedOptions,
       status,
       title,
@@ -260,10 +256,10 @@ const ProductCard: FC<ProductCardProps> = memo(
               <div className="flex items-center justify-between">
                 <Prices
                   data-testid={`${testId}-price`}
+                  contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium"
+                  className="text-green-600"
                   price={price || 0}
                   salePrice={salePrice}
-                  className="text-green-600"
-                  contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium"
                 />
 
                 <div className="flex items-center space-x-1">
@@ -278,32 +274,32 @@ const ProductCard: FC<ProductCardProps> = memo(
             <div className="flex w-full space-x-3">
               <AddToCardButton
                 data-testid={`${testId}-add-to-cart`}
+                color={color}
                 onClick={props.onAddToCart}
                 className="flex-1"
                 imageUrl={featuredImage?.src || ''}
                 price={price || 0}
                 quantity={1}
-                title={title || ''}
-                color={color}
                 size={selectedOptions?.find((option) => option.name === 'Size')?.value}
+                title={title || ''}
               />
             </div>
           </div>
         </div>
 
         <Drawer
-          opened={quickViewOpened}
           onClose={closeQuickView}
-          title="Product Quick View"
+          opened={quickViewOpened}
           position="right"
-          size="md"
           styles={{
             body: { padding: 0 },
             header: { paddingBottom: 0 },
           }}
+          size="md"
+          title="Product Quick View"
         >
-          <ScrollArea h="100%" ref={scrollAreaRef}>
-            <ProductQuickView product={product || data} onClose={closeQuickView} />
+          <ScrollArea ref={scrollAreaRef} h="100%">
+            <ProductQuickView onClose={closeQuickView} product={(product || data)!} />
           </ScrollArea>
         </Drawer>
       </>

@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Checkbox,
-  DateInput,
   FileInput,
   Group,
   JsonInput,
@@ -19,6 +18,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { IconUpload } from '@tabler/icons-react';

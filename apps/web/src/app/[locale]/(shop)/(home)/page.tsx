@@ -4,7 +4,7 @@ import {
   getCollections,
   getGroupCollections,
   getProducts,
-} from "@/lib/data-service";
+} from "@/data/data-service";
 import { type Metadata } from "next";
 
 import {

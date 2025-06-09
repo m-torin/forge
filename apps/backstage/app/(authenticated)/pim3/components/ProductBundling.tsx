@@ -16,7 +16,7 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core';
-import { useFormContext } from '@mantine/form';
+import type { UseFormReturnType } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import {
   IconBox,
@@ -137,11 +137,10 @@ interface ProductBundlingProps {
   onUpdate?: () => void;
   productId: string;
   productName: string;
+  form: UseFormReturnType<any>;
 }
 
-export function ProductBundling({ onUpdate, productId, productName }: ProductBundlingProps) {
-  // Get form context
-  const form = useFormContext();
+export function ProductBundling({ onUpdate, productId, productName, form }: ProductBundlingProps) {
 
   // Get data from form context
   const bundles = form.values.bundles || [];

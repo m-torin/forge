@@ -2,7 +2,7 @@ import { AppLayout, AppLayoutProvider } from "@/components/AppLayout";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { GuestActionsProvider } from "@/contexts/GuestActionsContext";
 import { getDictionary } from "@/i18n";
-import { getCollections, getNavigation } from "@/lib/data-service";
+import { getCollections, getNavigation } from "@/data/data-service";
 
 import type { Metadata } from "next";
 

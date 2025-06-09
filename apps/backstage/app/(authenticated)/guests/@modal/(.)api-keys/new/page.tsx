@@ -16,7 +16,7 @@ import {
   Text,
 } from '@mantine/core';
 import {
-  IconExclamationTriangle,
+  IconAlertTriangle,
   IconCopy,
   IconEye,
   IconEyeOff,
@@ -221,7 +221,7 @@ export default function NewApiKeyModal() {
       >
         <Stack gap="md">
           <Alert
-            icon={<IconExclamationTriangle size={16} />}
+            icon={<IconAlertTriangle size={16} />}
             title="Important: Save Your API Key"
             color="orange"
           >

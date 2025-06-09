@@ -3,7 +3,7 @@
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Menu } from '@mantine/core';
 
-import { type getHeaderDropdownCategories } from '../../data/navigation';
+import { type getHeaderDropdownCategories } from '../../data/types';
 import { Link } from '../Link';
 
 interface Props {

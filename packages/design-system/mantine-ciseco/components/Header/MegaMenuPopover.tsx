@@ -1,8 +1,8 @@
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import { HoverCard } from '@mantine/core';
 
-import { type TCollection } from '../../data/data';
-import { type TNavigationItem } from '../../data/navigation';
+import { type TCollection } from '../../data/types';
+import { type TNavigationItem } from '../../data/types';
 import CollectionCard3 from '../CollectionCard3';
 import { Link } from '../Link';
 

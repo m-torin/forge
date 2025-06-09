@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import { type FC } from 'react';
 
-import { type TCollection } from '../data/data';
+import { type TCollection } from '../data/types';
 import { useLocalizeHref } from '../hooks/useLocale';
 
 import { Link } from './Link';

@@ -11,8 +11,8 @@ import HamburgerBtnMenu from './HamburgerBtnMenu';
 import { MegaMenuPopover } from './MegaMenuPopover';
 import SearchBtnPopover from './SearchBtnPopover';
 
-import type { TCollection } from '../../data/data';
-import type { TNavigationItem } from '../../data/navigation';
+import type { TCollection } from '../../data/types';
+import type { TNavigationItem } from '../../data/types';
 
 export interface HeaderProps {
   announcementText?: string;

@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/data-service";
+import { getProducts } from "@/data/data-service";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";

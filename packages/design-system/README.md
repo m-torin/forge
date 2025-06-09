@@ -1,16 +1,16 @@
 # Design System
 
-A comprehensive design system built with React, Tailwind CSS, and Radix UI primitives.
+A comprehensive design system built with Mantine v8 for e-commerce and general web applications.
 
 ## Overview
 
 This package provides a complete design system for the forge-ahead applications, including:
 
-- **UI Components**: A full suite of accessible, customizable components
-- **Theme System**: Dark/light mode support with system preferences
-- **Typography**: Consistent font system using Geist
-- **Utilities**: Helper functions for styling and functionality
-- **Providers**: Context providers for theme, analytics, and authentication
+- **Mantine-Ciseco Components**: Full suite of e-commerce and web components built on Mantine v8
+- **Algolia Search Components**: Specialized search and autocomplete components
+- **Theme System**: Dark/light mode support with Mantine's color scheme system
+- **Typography**: Consistent font system and responsive design
+- **Authentication Integration**: Built-in auth components with @repo/auth integration
 
 ## Installation
 
@@ -23,73 +23,94 @@ pnpm install
 
 ## Usage
 
-### Basic Setup
+### Mantine-Ciseco Components
 
-Wrap your application with the `DesignSystemProvider`:
+Import and use components from the main design system:
 
 ```tsx
-import { DesignSystemProvider } from '@repo/design-system';
+import { ProductCard, Button, Header } from '@repo/design-system/mantine-ciseco';
 
-function App() {
-  return <DesignSystemProvider>{/* Your app content */}</DesignSystemProvider>;
+function EcommerceApp() {
+  return (
+    <>
+      <Header logo="/logo.svg" cartItemCount={3} />
+      <ProductCard 
+        product={product} 
+        onAddToCart={handleAddToCart}
+      />
+      <Button variant="filled">Shop Now</Button>
+    </>
+  );
 }
 ```
 
-### Using Components
+### Algolia Search Components
 
-Import components from the design system:
+Import search components for search functionality:
 
 ```tsx
-import { Button, Card, Dialog } from '@repo/design-system/uix';
+import { SearchProvider, SearchBox, SearchResults } from '@repo/design-system/algolia';
 
-function MyComponent() {
+function SearchApp() {
   return (
-    <Card>
-      <Button variant="primary">Click me</Button>
-    </Card>
+    <SearchProvider searchClient={client} indexName="products">
+      <SearchBox placeholder="Search products..." />
+      <SearchResults hitComponent={ProductHit} />
+    </SearchProvider>
   );
 }
 ```
 
 ### Theme Customization
 
-The design system uses CSS variables for theming. You can customize colors in your global CSS:
+The design system uses Mantine's theme system:
 
-```css
-:root {
-  --primary: 222.2 47.4% 11.2%;
-  --primary-foreground: 210 40% 98%;
-  /* ... other variables */
+```tsx
+import { MantineProvider } from '@repo/design-system/mantine-ciseco';
+
+function App() {
+  return (
+    <MantineProvider
+      theme={{
+        primaryColor: 'blue',
+        fontFamily: 'Inter, sans-serif',
+        colors: {
+          brand: ['#f0f9ff', '#e0f2fe', '#bae6fd', '#7dd3fc', '#38bdf8'],
+        },
+      }}
+    >
+      {/* Your app content */}
+    </MantineProvider>
+  );
 }
 ```
 
-## Components
+## Component Systems
 
-### UI Components
+### Mantine-Ciseco Components
 
-- **Accordion**: Collapsible content sections
-- **Alert**: Informational messages
-- **Badge**: Status indicators
-- **Button**: Interactive buttons with variants
-- **Card**: Content containers
-- **Checkbox**: Checkable inputs
-- **Dialog**: Modal dialogs
-- **Input**: Text inputs
-- **Select**: Dropdown selections
-- **Switch**: Toggle switches
-- **Toast**: Notification messages
-- ...and many more
+- **Product Cards**: Display products with ratings, pricing, and actions
+- **Headers**: Navigation and branding components
+- **Hero Sections**: Promotional and landing page components
+- **Shopping Cart**: Cart management components
+- **Forms**: Enhanced form components with validation
+- **Buttons**: Interactive buttons with Mantine variants
+- **Navigation**: Menu and navigation components
+- **Layout**: Responsive layout components
 
-### Providers
+### Algolia Search Components
 
-- **DesignSystemProvider**: Main provider that includes all necessary contexts
-- **ThemeProvider**: Handles theme switching
-- **TooltipProvider**: Provides tooltip functionality
+- **SearchProvider**: Context provider for Algolia integration
+- **SearchBox**: Search input with autocomplete
+- **SearchResults**: Display search results
+- **Autocomplete**: Quick search functionality
+- **SearchStats**: Display search metrics
 
-### Hooks
+### Available Hooks
 
-- **useToast**: Toast notification management
-- **useMobile**: Mobile breakpoint detection
+- **useMediaQuery**: Responsive breakpoint detection
+- **useColorScheme**: Dark/light mode management
+- **useForm**: Form state management
 
 ## Testing
 
@@ -114,7 +135,7 @@ Tests are located in the `__tests__` directory. Example test:
 
 ```tsx
 import { render, screen } from '@testing-library/react';
-import { Button } from '../components/ui/button';
+import { Button } from '@repo/design-system/mantine-ciseco';
 
 describe('Button', () => {
   it('renders correctly', () => {
@@ -128,38 +149,28 @@ describe('Button', () => {
 
 ```
 __tests__/
-├── components/
-│   ├── ui/           # UI component tests
-│   └── mode-toggle.test.tsx
-├── hooks/            # Hook tests
-├── lib/              # Utility tests
-├── providers/        # Provider tests
-└── index.test.tsx    # Main export tests
+├── mantine-ciseco/   # Mantine-Ciseco component tests
+├── algolia/          # Algolia component tests
+└── shared/           # Shared utility tests
 ```
 
 ## Development
 
 ### Adding New Components
 
-1. Create the component in `components/ui/`
-2. Export it from the component's index file
-3. Add tests in `__tests__/components/ui/`
+1. Create the component in `mantine-ciseco/components/` or `algolia/components/`
+2. Export it from the appropriate subsystem's index file
+3. Add tests in `__tests__/mantine-ciseco/` or `__tests__/algolia/`
 4. Document usage in this README
-
-### Styling Guidelines
-
-- Use Tailwind utility classes
-- Leverage CSS variables for theming
-- Use the `cn` utility for conditional classes
-- Follow accessibility best practices
 
 ### Component Guidelines
 
-- Use Radix UI primitives where available
-- Ensure keyboard navigation support
+- Use Mantine v8 components as the foundation
+- Ensure keyboard navigation and accessibility support
 - Include ARIA labels for accessibility
 - Support both controlled and uncontrolled usage
 - Forward refs when appropriate
+- Follow Mantine's styling patterns
 
 ## Architecture
 
@@ -167,25 +178,24 @@ __tests__/
 
 ```
 packages/design-system/
-├── components/       # React components
-│   ├── ui/          # UI components
-│   └── mode-toggle.tsx
-├── hooks/           # Custom React hooks
-├── lib/             # Utilities and helpers
-├── providers/       # Context providers
-├── styles/          # Global styles
+├── mantine-ciseco/   # Main component system
+│   ├── components/  # E-commerce and web components
+│   ├── hooks/       # Custom hooks
+│   └── styles.css   # Component styles
+├── algolia/         # Search components
+│   ├── components/  # Search UI components
+│   └── index.ts     # Algolia exports
 ├── __tests__/       # Test files
-└── index.tsx        # Main exports
+└── package.json     # Package configuration
 ```
 
 ### Dependencies
 
 - **React**: UI framework
-- **Radix UI**: Unstyled, accessible components
-- **Tailwind CSS**: Utility-first CSS framework
-- **class-variance-authority**: Component variants
-- **next-themes**: Theme management
-- **lucide-react**: Icon library
+- **Mantine v8**: Complete component library
+- **Algolia**: Search and autocomplete
+- **@tabler/icons-react**: Icon library
+- **Embla Carousel**: Carousel functionality
 
 ## Contributing
 

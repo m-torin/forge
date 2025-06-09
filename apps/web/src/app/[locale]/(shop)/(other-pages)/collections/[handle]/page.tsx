@@ -1,4 +1,4 @@
-import { getCollectionByHandle, getProducts } from "@/lib/data-service";
+import { getCollectionByHandle, getProducts } from "@/data/data-service";
 import { type Metadata } from "next";
 
 import {

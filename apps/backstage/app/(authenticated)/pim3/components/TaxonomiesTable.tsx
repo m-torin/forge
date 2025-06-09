@@ -34,7 +34,7 @@ import {
   IconEdit,
   IconEye,
   IconFileTypeCsv,
-  IconFileTypeJson,
+  IconFileText,
   IconFilter,
   IconPackage,
   IconPlus,
@@ -568,7 +568,7 @@ export function TaxonomiesTable() {
                   Export as CSV
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<IconFileTypeJson size={14} />}
+                  leftSection={<IconFileText size={14} />}
                   onClick={() => handleExport('json')}
                 >
                   Export as JSON

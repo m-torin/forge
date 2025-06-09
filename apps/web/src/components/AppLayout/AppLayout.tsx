@@ -15,7 +15,7 @@ import classes from "./AppLayout.module.css";
 import { useAppLayout } from "./AppLayoutContext";
 import { AppLayoutHeader } from "./AppLayoutHeader";
 
-import type { TCollection, TNavigationItem } from "@/lib/data-service";
+import type { TCollection, TNavigationItem } from "@/data/data-service";
 
 interface AppLayoutProps
   extends Omit<

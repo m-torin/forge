@@ -1,5 +1,5 @@
-import React, { type FC } from 'react';
 import clsx from 'clsx';
+import React, { type FC } from 'react';
 
 export interface LabelProps {
   children?: React.ReactNode;
@@ -23,25 +23,25 @@ const Label: FC<LabelProps> = ({
   size = 'md',
 }) => {
   const sizeClasses = {
-    xs: 'text-xs',
-    sm: 'text-sm',
-    md: 'text-base',
     lg: 'text-lg',
+    md: 'text-base',
+    sm: 'text-sm',
+    xs: 'text-xs',
   };
 
   const labelClasses = clsx(
     'nc-Label font-medium',
     sizeClasses[size],
     {
-      'text-red-600 dark:text-red-400': error,
       'text-gray-400 dark:text-gray-600': disabled,
       'text-neutral-900 dark:text-neutral-200': !error && !disabled,
+      'text-red-600 dark:text-red-400': error,
     },
     className,
   );
 
   return (
-    <label data-nc-id="Label" data-testid={testId} className={labelClasses} htmlFor={htmlFor}>
+    <label data-nc-id="Label" data-testid={testId} htmlFor={htmlFor} className={labelClasses}>
       {children}
       {required && <span className="required-indicator text-red-500 ml-1">*</span>}
     </label>

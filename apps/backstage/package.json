@@ -59,6 +59,7 @@
     "@repo/payments": "workspace:*",
     "@repo/security": "workspace:*",
     "@repo/testing": "workspace:*",
+    "@sentry/nextjs": "^9.27.0",
     "@t3-oss/env-nextjs": "catalog:",
     "@tabler/icons-react": "catalog:",
     "@upstash/workflow": "latest",

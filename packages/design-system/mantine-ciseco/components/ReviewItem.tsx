@@ -2,7 +2,7 @@ import { StarIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import { type FC } from 'react';
 
-import { type TReview } from '../data/data';
+import { type TReview } from '../data/types';
 
 import Avatar from './shared/Avatar/Avatar';
 

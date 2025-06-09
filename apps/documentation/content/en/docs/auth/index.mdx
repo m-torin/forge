@@ -189,10 +189,10 @@ analytics.identify(user.email, {
 The design system provides unified auth components:
 
 ```typescript
-// Unified sign-in component
-import { UnifiedSignIn } from '@repo/design-system/uix';
+// Mantine-based auth components
+import { SignInForm, SignUpForm } from '@repo/design-system/mantine-ciseco';
 
-<UnifiedSignIn
+<SignInForm
   redirectTo="/dashboard"
   showMagicLink={true}
   showSocialOptions={true}
@@ -201,10 +201,7 @@ import { UnifiedSignIn } from '@repo/design-system/uix';
   }}
 />
 
-// Unified sign-up component
-import { UnifiedSignUp } from '@repo/design-system/uix';
-
-<UnifiedSignUp
+<SignUpForm
   requireTermsAcceptance={true}
   redirectTo="/onboarding"
   onSuccess={(user) => {

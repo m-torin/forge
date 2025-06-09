@@ -18,7 +18,7 @@ import {
 } from '@mantine/core';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
-import { FormProvider, useForm } from '@mantine/form';
+import { useForm } from '@mantine/form';
 import { useDisclosure, useListState } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
@@ -322,7 +322,6 @@ export function MediaManagement({
       size="xl"
       title={`Media Management - ${productName}`}
     >
-      <FormProvider form={uploadForm}>
         <Stack h="100%">
           {/* Tab Navigation */}
           <Group>
@@ -711,7 +710,6 @@ export function MediaManagement({
             </Stack>
           )}
         </Stack>
-      </FormProvider>
 
       {/* Edit Asset Modal */}
       <Drawer

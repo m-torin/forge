@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/data-service";
+import { getProducts } from "@/data/data-service";
 import { Alert, Card, Stack, Text, Title } from "@mantine/core";
 
 import { ProductCard } from "@repo/design-system/mantine-ciseco";

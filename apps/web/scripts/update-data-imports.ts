@@ -38,7 +38,7 @@ const filesToUpdate = [
   "src/app/[locale]/(shop)/(other-pages)/test-drawers-manual/page.tsx",
 ];
 
-console.log(`Files that need to be updated to use @/lib/data-service:\n`);
+console.log(`Files that need to be updated to use @/data/data-service:\n`);
 
 filesToUpdate.forEach((file, index) => {
   console.log(`${index + 1}. ${file}`);
@@ -51,7 +51,7 @@ console.log(
   `FROM: import { getProducts, getCollections, ... } from "@repo/design-system/mantine-ciseco"`,
 );
 console.log(
-  `TO:   import { getProducts, getCollections, ... } from "@/lib/data-service"`,
+  `TO:   import { getProducts, getCollections, ... } from "@/data/data-service"`,
 );
 
 console.log(

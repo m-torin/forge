@@ -81,8 +81,8 @@ export function TaxonomyBulkAssignModal({
 
   const loadAvailableItems = async () => {
     try {
-      // Load products and collections - using import to avoid circular dependencies
-      const { getProducts } = await import('../products/actions');
+      // Load products and collections from centralized actions
+      const { getProducts } = await import('../actions');
       const { getCollections } = await import('../collections/actions');
 
       // Load products for assignment

@@ -8,7 +8,6 @@ import {
   Center,
   Checkbox,
   Code,
-  DatePickerInput,
   Group,
   Loader,
   Menu,
@@ -25,6 +24,7 @@ import {
   ThemeIcon,
   UnstyledButton,
 } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import {
   IconCalendar,

@@ -5,7 +5,7 @@ import { type FC } from "react";
 import { Header2 } from "@repo/design-system/mantine-ciseco";
 import { LocaleWrapper } from "@repo/design-system/mantine-ciseco/wrappers/withLocale";
 
-import type { TCollection, TNavigationItem } from "@/lib/data-service";
+import type { TCollection, TNavigationItem } from "@/data/data-service";
 
 export interface Props {
   featuredCollection?: TCollection;

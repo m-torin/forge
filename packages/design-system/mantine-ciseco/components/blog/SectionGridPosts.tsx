@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { type TBlogPost } from '../../data/data';
+import { type TBlogPost } from '../../data/types';
 import Heading from '../Heading/Heading';
 import {
   Pagination,

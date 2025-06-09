@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { type FC } from 'react';
 
-import { type TBlogPost } from '../../data/data';
+import { type TBlogPost } from '../../data/types';
 import Avatar from '../shared/Avatar/Avatar';
 
 export interface PostCardMetaProps {

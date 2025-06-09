@@ -8,13 +8,12 @@ import {
   ButtonPrimary,
   ButtonSecondary,
   Divider,
-  getBlogPosts,
-  getBlogPostsByHandle,
   PostCard1,
   SocialsList,
   Tag,
   Textarea,
 } from "@repo/design-system/mantine-ciseco";
+import { getBlogPosts, getBlogPostsByHandle } from "@/data/data-service";
 
 export async function generateMetadata({
   params,

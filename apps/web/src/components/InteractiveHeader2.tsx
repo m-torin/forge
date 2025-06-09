@@ -1,6 +1,6 @@
 "use client";
 
-import { type TCollection, type TNavigationItem } from "@/lib/data-service";
+import { type TCollection, type TNavigationItem } from "@/data/data-service";
 import clsx from "clsx";
 import { type FC } from "react";
 

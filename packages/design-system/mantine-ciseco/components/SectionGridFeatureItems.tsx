@@ -3,7 +3,7 @@
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import { type FC } from 'react';
 
-import { type TProductItem } from '../data/data';
+import { type TProductItem } from '../data/types';
 import { useLocalizeHref } from '../hooks/useLocale';
 
 import HeaderFilterSection from './HeaderFilterSection';

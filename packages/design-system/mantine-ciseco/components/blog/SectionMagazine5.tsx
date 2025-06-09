@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { type FC } from 'react';
 
-import { type TBlogPost } from '../../data/data';
+import { type TBlogPost } from '../../data/types';
 
 import PostCard1 from './PostCard1';
 import PostCard2 from './PostCard2';

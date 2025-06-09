@@ -4,11 +4,10 @@ import React from "react";
 
 import {
   Divider,
-  getCollectionByHandle,
-  getProducts,
   SectionPromo1,
   SectionSliderLargeProduct,
 } from "@repo/design-system/mantine-ciseco";
+import { getCollectionByHandle, getProducts } from "@/data/data-service";
 
 export async function generateMetadata({
   params,

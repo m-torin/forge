@@ -3,11 +3,11 @@ import Image from "next/image";
 
 import {
   ButtonSecondary,
-  getOrders,
   Link,
   Prices,
   type TOrder,
 } from "@repo/design-system/mantine-ciseco";
+import { getOrders } from "@/data/data-service";
 
 export const metadata: Metadata = {
   description: "Orders History page",

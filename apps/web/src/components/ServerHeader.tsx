@@ -1,4 +1,4 @@
-import { getCollections, getNavigation } from "@/lib/data-service";
+import { getCollections, getNavigation } from "@/data/data-service";
 
 import ClientHeaderWithData from "./ClientHeaderWithData";
 

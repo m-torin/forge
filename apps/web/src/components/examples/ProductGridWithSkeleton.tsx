@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 
 import { ProductCard } from "@repo/design-system/mantine-ciseco";
 
-import type { TCardProduct } from "@/lib/data-service";
+import type { TCardProduct } from "@/data/data-service";
 
 interface ProductGridWithSkeletonProps {
   className?: string;
@@ -75,7 +75,7 @@ export function useProductsWithSkeleton() {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Import data service
-        const { getProducts } = await import("@/lib/data-service");
+        const { getProducts } = await import("@/data/data-service");
         const productsData = await getProducts();
         
         setProducts(productsData);

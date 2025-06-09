@@ -7,6 +7,8 @@ export default [
       // Ignore markdown files to prevent TypeScript project issues
       '**/*.md',
       '**/*.mdx',
+      // Ignore Vercel files that may not be in TypeScript project
+      'app/.well-known/**/*',
     ],
   },
   {

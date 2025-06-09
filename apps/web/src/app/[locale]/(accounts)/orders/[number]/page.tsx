@@ -6,9 +6,9 @@ import { notFound } from "next/navigation";
 import {
   ButtonSecondary,
   Divider,
-  getOrder,
   Prices,
 } from "@repo/design-system/mantine-ciseco";
+import { getOrder } from "@/data/data-service";
 
 export async function generateMetadata({
   params,

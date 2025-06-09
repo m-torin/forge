@@ -25,7 +25,7 @@ import {
   IconUserCheck,
   IconUserPlus,
   IconUsers,
-  IconExclamationTriangle,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';

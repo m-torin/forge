@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { type FC, useState } from 'react';
 
-import { type TProductDetail, type TProductItem } from '../data/data';
+import { type TProductDetail, type TProductItem } from '../data/types';
 import { useLocalizeHref } from '../hooks/useLocale';
 
 import AccordionInfo from './AccordionInfo';

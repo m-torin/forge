@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/data-service";
+import { getProducts } from "@/data/data-service";
 import { type Metadata } from "next";
 
 import { FavoritesClient } from "./FavoritesClient";

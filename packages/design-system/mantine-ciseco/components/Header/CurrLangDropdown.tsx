@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { usePathname, useRouter } from 'next/navigation';
 import { type FC } from 'react';
 
-import { type getCurrencies, type getLanguages } from '../../data/navigation';
+import { type getCurrencies, type getLanguages } from '../../data/types';
 import { Link } from '../Link';
 
 const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getCurrencies>> }) => {

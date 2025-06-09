@@ -1,4 +1,4 @@
-import { getBrandBySlug, getProducts } from "@/lib/data-service";
+import { getBrandBySlug, getProducts } from "@/data/data-service";
 import { seoManager } from "@/lib/seo-config";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";

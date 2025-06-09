@@ -3,7 +3,7 @@ import {
   getProductDetailByHandle,
   getProductReviews,
   getProducts,
-} from "@/lib/data-service";
+} from "@/data/data-service";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 

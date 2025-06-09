@@ -19,7 +19,7 @@ import {
   IconEdit,
   IconActivity,
   IconShield,
-  IconExclamationTriangle,
+  IconAlertTriangle,
   IconCopy,
   IconEye,
   IconEyeOff,
@@ -139,7 +139,7 @@ export default function ApiKeyDetailModal({ params }: ApiKeyDetailModalProps) {
         </Group>
 
         {isExpired && (
-          <Alert icon={<IconExclamationTriangle size={16} />} color="red" variant="light">
+          <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
             This API key has expired and is no longer valid.
           </Alert>
         )}

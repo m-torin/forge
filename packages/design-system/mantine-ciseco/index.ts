@@ -137,9 +137,7 @@ export { default as SwitchDarkMode2 } from './components/shared/SwitchDarkMode/S
 export { default as Tag } from './components/shared/Tag/Tag';
 export { default as Textarea } from './components/shared/Textarea/Textarea';
 
-// Data exports
-export * from './data/data';
-export * from './data/navigation';
+// Types exports (for components)
 export * from './data/types';
 
 // Hooks exports

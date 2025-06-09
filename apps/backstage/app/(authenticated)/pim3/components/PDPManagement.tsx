@@ -110,7 +110,7 @@ interface PDPManagementModalProps {
   productName: string;
 }
 
-export function PDPManagementModal({
+export function PDPManagement({
   onClose,
   onUpdate,
   opened,

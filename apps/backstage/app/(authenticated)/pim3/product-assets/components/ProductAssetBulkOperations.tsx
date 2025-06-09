@@ -16,7 +16,7 @@ import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { IconBulkEdit, IconDownload, IconEdit, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconDownload, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { bulkDeleteAssets, bulkUpdateAssets } from '../actions';
@@ -245,7 +245,7 @@ export function ProductAssetBulkOperations({
               <Button onClick={closeBulkEdit} disabled={loading} variant="light">
                 Cancel
               </Button>
-              <Button leftSection={<IconBulkEdit size={16} />} loading={loading} type="submit">
+              <Button leftSection={<IconEdit size={16} />} loading={loading} type="submit">
                 Update {selectedAssets.length} Assets
               </Button>
             </Group>

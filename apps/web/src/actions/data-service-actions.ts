@@ -4,7 +4,7 @@ import {
   getCart as getCartFromService,
   getNavigation as getNavigationFromService,
   getProducts as getProductsFromService,
-} from "@/lib/data-service";
+} from "@/data/data-service";
 
 /**
  * Server action wrapper for getCart

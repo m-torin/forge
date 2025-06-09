@@ -7,13 +7,10 @@
     "**/*.scss"
   ],
   "exports": {
-    "./uix": "./uix/index.tsx",
     "./mantine-ciseco": "./mantine-ciseco/index.ts",
     "./mantine-ciseco/*": "./mantine-ciseco/*",
     "./algolia": "./algolia/index.ts",
-    "./algolia/*": "./algolia/*",
-    "./components": "./components/index.ts",
-    "./components/*": "./components/*"
+    "./algolia/*": "./algolia/*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -49,9 +46,7 @@
     "@repo/observability": "workspace:*",
     "@tabler/icons-react": "catalog:",
     "algoliasearch": "^5.25.0",
-    "class-variance-authority": "^0.7.1",
     "clsx": "catalog:",
-    "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "embla-carousel": "^8.6.0",
@@ -59,23 +54,18 @@
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "catalog:",
     "geist": "^1.4.2",
-    "input-otp": "^1.4.2",
     "next-themes": "catalog:",
     "postcss-preset-mantine": "catalog:",
     "rc-slider": "^11.1.8",
     "react": "catalog:",
-    "react-day-picker": "^9.7.0",
     "react-hooks-global-state": "^2.1.0",
     "react-hot-toast": "^2.5.2",
     "react-instantsearch": "^7.15.8",
     "react-moveable": "^0.56.0",
-    "react-resizable-panels": "^3.0.2",
     "react-swipeable": "^7.0.2",
     "react-use": "^17.6.0",
     "recharts": "^2.15.3",
     "server-only": "catalog:",
-    "tailwind-merge": "^3.3.0",
-    "vaul": "^1.1.2",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { getBlogPosts, getCollections, getProducts } from "@/lib/data-service";
+import { getBlogPosts, getCollections, getProducts } from "@/data/data-service";
 import { type Metadata } from "next";
 import Link from "next/link";
 

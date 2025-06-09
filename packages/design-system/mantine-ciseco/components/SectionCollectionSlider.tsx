@@ -2,7 +2,7 @@
 
 import useEmblaCarousel from 'embla-carousel-react';
 
-import { type TCollection } from '../data/data';
+import { type TCollection } from '../data/types';
 import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
 
 import CollectionCard3 from './CollectionCard3';

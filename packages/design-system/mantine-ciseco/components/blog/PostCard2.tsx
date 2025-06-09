@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { type FC } from 'react';
 
-import { type TBlogPost } from '../../data/data';
+import { type TBlogPost } from '../../data/types';
 import { useLocalizeHref } from '../../hooks/useLocale';
 import NcImage from '../shared/NcImage/NcImage';
 

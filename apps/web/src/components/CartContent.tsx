@@ -1,7 +1,7 @@
 "use client";
 
 import { getCartAction } from "@/actions/data-service-actions";
-import { type TCardProduct } from "@/lib/data-service";
+import { type TCardProduct } from "@/data/data-service";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import Image from "next/image";

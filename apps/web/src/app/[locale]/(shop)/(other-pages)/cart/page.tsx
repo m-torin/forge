@@ -13,11 +13,11 @@ import Link from "next/link";
 import {
   Breadcrumb,
   ButtonPrimary,
-  getCart,
   NcInputNumber,
   Prices,
   type TCardProduct,
 } from "@repo/design-system/mantine-ciseco";
+import { getCart } from "@/data/data-service";
 
 export async function generateMetadata({
   params,

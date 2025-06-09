@@ -12,12 +12,12 @@ import Link from "next/link";
 import {
   Breadcrumb,
   ButtonPrimary,
-  getCart,
   Input,
   Label,
   NcInputNumber,
   Prices,
 } from "@repo/design-system/mantine-ciseco";
+import { getCart } from "@/data/data-service";
 
 import LeftSide from "./LeftSide";
 

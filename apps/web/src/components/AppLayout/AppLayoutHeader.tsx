@@ -3,7 +3,7 @@
 import LocalizedHeader2 from "@/components/LocalizedHeader2";
 import { Burger, Flex } from "@mantine/core";
 
-import type { TCollection, TNavigationItem } from "@/lib/data-service";
+import type { TCollection, TNavigationItem } from "@/data/data-service";
 
 interface AppLayoutHeaderProps {
   _dict?: any;

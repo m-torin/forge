@@ -35,7 +35,7 @@ import {
   IconTags,
   IconUsers,
   IconUserShield,
-  IconWorkflow,
+  IconGitBranch,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 
@@ -440,7 +440,7 @@ const modelCategories = [
   },
   {
     category: 'Workflow Management',
-    icon: IconWorkflow,
+    icon: IconGitBranch,
     models: [
       {
         name: 'Workflow Configs',
@@ -448,7 +448,7 @@ const modelCategories = [
         countKey: 'workflows' as const,
         description: 'Configure automated workflows',
         href: '/admin/workflowConfig',
-        icon: IconWorkflow,
+        icon: IconGitBranch,
       },
       {
         name: 'Workflow Executions',

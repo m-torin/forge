@@ -2,7 +2,7 @@
 
 import { type FC } from 'react';
 
-import { type getCurrencies, type getLanguages } from '../../data/navigation';
+import { type getCurrencies, type getLanguages } from '../../data/types';
 import { useLocale } from '../../hooks/useLocale';
 
 import CurrLangDropdown from './CurrLangDropdown';

@@ -12,7 +12,7 @@ import { SkeletonWrapper } from "@/components/SkeletonWrapper";
 
 import { CollectionCard1 } from "@repo/design-system/mantine-ciseco";
 
-import type { TCollection } from "@/lib/data-service";
+import type { TCollection } from "@/data/data-service";
 
 interface CollectionSliderWithSkeletonProps {
   className?: string;

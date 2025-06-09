@@ -3,7 +3,7 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { type FC } from 'react';
 
-import { type TProductItem } from '../data/data';
+import { type TProductItem } from '../data/types';
 import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
 
 import Heading from './Heading/Heading';

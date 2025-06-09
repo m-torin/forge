@@ -3,7 +3,7 @@ import {
   getProductDetailByHandle,
   getProductReviews,
   getProducts,
-} from "@/lib/data-service";
+} from "@/data/data-service";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { ShoppingBag03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";

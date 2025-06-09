@@ -49,9 +49,9 @@ export function ProgressiveImage({
 
   return (
     <div
+      data-testid="progressive-image-container"
       ref={ref}
       className={clsx('relative overflow-hidden', className)}
-      data-testid="progressive-image-container"
     >
       {/* Blur placeholder */}
       {(placeholder || blurDataURL) && !imageLoaded && (

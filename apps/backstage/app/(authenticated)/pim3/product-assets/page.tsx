@@ -3,7 +3,7 @@
 import { Button, Card, Container, Grid, Group, Stack, Tabs, Text, Title } from '@mantine/core';
 import {
   IconAsset,
-  IconBarChart,
+  IconChartBar,
   IconCertificate,
   IconDownload,
   IconFileText,
@@ -76,7 +76,7 @@ export default function ProductAssetsPage() {
             <Tabs.Tab leftSection={<IconCertificate size={16} />} value="certificates">
               Certificates
             </Tabs.Tab>
-            <Tabs.Tab leftSection={<IconBarChart size={16} />} value="analytics">
+            <Tabs.Tab leftSection={<IconChartBar size={16} />} value="analytics">
               Analytics
             </Tabs.Tab>
             <Tabs.Tab leftSection={<IconTemplate size={16} />} value="templates">

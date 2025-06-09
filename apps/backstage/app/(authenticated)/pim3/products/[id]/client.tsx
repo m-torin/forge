@@ -21,7 +21,7 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core';
-import { FormProvider, useForm } from '@mantine/form';
+import { useForm } from '@mantine/form';
 import { useDebouncedCallback, useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
@@ -38,7 +38,7 @@ import {
   IconPalette,
   IconPhoto,
   IconRocket,
-  IconSave,
+  IconDeviceFloppy,
   IconShoppingCart,
 } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -425,7 +425,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                 Reset
               </Button>
               <Button
-                leftSection={<IconSave size={16} />}
+                leftSection={<IconDeviceFloppy size={16} />}
                 onClick={handleSave}
                 disabled={hasAnyErrors}
                 loading={isSaving}

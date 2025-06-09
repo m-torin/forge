@@ -26,7 +26,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
-  IconBulkOff as IconBulk, // Use IconBulkOff as substitute for IconBulk
+  IconFolders as IconBulk, // Use IconFolders as substitute for IconBulk
   IconCopy,
   IconDownload,
   IconEdit,

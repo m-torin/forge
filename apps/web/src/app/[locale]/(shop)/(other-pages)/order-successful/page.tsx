@@ -5,10 +5,10 @@ import { notFound } from "next/navigation";
 
 import {
   Divider,
-  getOrders,
   Heading,
   Prices,
 } from "@repo/design-system/mantine-ciseco";
+import { getOrders } from "@/data/data-service";
 
 export const metadata: Metadata = {
   description: "Your order has been successfully placed.",

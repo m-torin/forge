@@ -5,14 +5,13 @@ e-commerce library, and search interfaces.
 
 ## Overview
 
-The design system package provides a comprehensive collection of UI components organized into three
+The design system package provides a comprehensive collection of UI components organized into two
 specialized subsystems. Each system serves different use cases while maintaining design consistency
 across web and specialized applications like e-commerce and search.
 
 ## Key Features
 
-- **UIX System (Primary)**: Mantine v8-based components with shadcn/ui naming conventions
-- **Ciseco E-commerce**: Complete e-commerce UI library with 100+ components
+- **Mantine-Ciseco (Primary)**: Mantine v8-based components for e-commerce and general web use
 - **Algolia Search**: Specialized search and autocomplete components
 - **Authentication Integration**: Built-in auth components with @repo/auth integration
 - **Theme System**: Unified theming across all frameworks with dark/light mode
@@ -27,92 +26,9 @@ pnpm add @repo/design-system
 
 ## Component Systems
 
-### UIX System (Primary Web UI)
+### Mantine-Ciseco System (Primary Web & E-commerce UI)
 
-The main design system built on Mantine v8 with shadcn/ui naming conventions:
-
-```typescript
-import {
-  Button,
-  Card,
-  Input,
-  Select,
-  Dialog,
-  Toast
-} from '@repo/design-system/uix';
-
-// Basic components
-<Button variant="default" size="md">
-  Click me
-</Button>
-
-<Card className="p-6">
-  <h3>Card Title</h3>
-  <p>Card content</p>
-</Card>
-
-<Input
-  placeholder="Enter text..."
-  error="This field is required"
-/>
-```
-
-**Key Features:**
-
-- Mantine v8 foundation with modern React patterns
-- Shadcn/ui component naming for familiar developer experience
-- Geist font integration for modern typography
-- Comprehensive form components with validation
-- Modal, drawer, and overlay components
-- Data display components (tables, lists, cards)
-
-### Authentication Components
-
-Built-in authentication UI components integrated with @repo/auth:
-
-```tsx
-import {
-  SignIn,
-  SignUp,
-  UserButton,
-  OrganizationSwitcher,
-  UserList,
-  CreateUserDialog
-} from '@repo/design-system/uix';
-
-// Authentication forms
-<SignIn
-  onSuccess={() => router.push('/dashboard')}
-  enableSocialAuth={true}
-/>
-
-<SignUp
-  onSuccess={(user) => trackSignup(user)}
-  requireEmailVerification={true}
-/>
-
-// User management
-<UserButton
-  user={session.user}
-  showOrganizations={true}
-/>
-
-<OrganizationSwitcher
-  organizations={userOrganizations}
-  onSwitch={(org) => setActiveOrganization(org)}
-/>
-
-// Admin components
-<UserList
-  users={users}
-  onEdit={handleEditUser}
-  onDelete={handleDeleteUser}
-/>
-```
-
-### Ciseco E-commerce System
-
-Complete e-commerce UI library with specialized components:
+The main design system built on Mantine v8 with comprehensive e-commerce components:
 
 ```typescript
 import {
@@ -122,8 +38,12 @@ import {
   MegaMenuPopover,
   SectionHero,
   ProductQuickView,
-  CheckoutForm
-} from '@repo/design-system/ciseco';
+  CheckoutForm,
+  Button,
+  Card,
+  Input,
+  Select
+} from '@repo/design-system/mantine-ciseco';
 
 // Product display
 <ProductCard
@@ -156,14 +76,18 @@ import {
 />
 ```
 
-**E-commerce Features:**
+**Key Features:**
 
+- Mantine v8 foundation with modern React patterns
 - Product cards with ratings, pricing, and quick actions
 - Shopping cart and checkout flow components
 - Category navigation and mega menus
 - Hero sections and promotional banners
 - Blog components for content marketing
 - Search and filtering interfaces
+- Comprehensive form components with validation
+- Modal, drawer, and overlay components
+- Data display components (tables, lists, cards)
 
 ### Algolia Search Components
 
@@ -218,7 +142,7 @@ import {
 ### Unified Theme Configuration
 
 ```typescript
-import { MantineProvider } from '@repo/design-system/uix';
+import { MantineProvider } from '@repo/design-system/mantine-ciseco';
 
 // Theme setup with custom configuration
 <MantineProvider
@@ -238,7 +162,7 @@ import { MantineProvider } from '@repo/design-system/uix';
 ### Dark/Light Mode Support
 
 ```typescript
-import { useColorScheme, toggleColorScheme } from '@repo/design-system/uix';
+import { useColorScheme, toggleColorScheme } from '@repo/design-system/mantine-ciseco';
 
 function ThemeToggle() {
   const { colorScheme } = useColorScheme();
@@ -258,7 +182,7 @@ function ThemeToggle() {
 
 ```typescript
 import { render, screen, userEvent } from '@repo/design-system/test-utils';
-import { Button } from '@repo/design-system/uix';
+import { Button } from '@repo/design-system/mantine-ciseco';
 
 test('button handles click events', async () => {
   const handleClick = vi.fn();
@@ -284,7 +208,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from '../Button';
 
 const meta: Meta<typeof Button> = {
-  title: 'UIX/Button',
+  title: 'Mantine-Ciseco/Button',
   component: Button,
   parameters: {
     layout: 'centered',
@@ -315,7 +239,7 @@ export const WithIcon: StoryObj<typeof Button> = {
 ### Responsive Design
 
 ```typescript
-import { useMediaQuery } from '@repo/design-system/uix';
+import { useMediaQuery } from '@repo/design-system/mantine-ciseco';
 
 function ResponsiveComponent() {
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -335,7 +259,7 @@ function ResponsiveComponent() {
 ### Form Handling
 
 ```typescript
-import { useForm } from '@repo/design-system/uix';
+import { useForm } from '@repo/design-system/mantine-ciseco';
 
 function ContactForm() {
   const form = useForm({
@@ -379,7 +303,7 @@ function ContactForm() {
 
 ```typescript
 // Extending base components
-import { Button, ButtonProps } from '@repo/design-system/uix';
+import { Button, ButtonProps } from '@repo/design-system/mantine-ciseco';
 
 interface LoadingButtonProps extends ButtonProps {
   loading?: boolean;
@@ -407,7 +331,7 @@ export function LoadingButton({ loading, children, ...props }: LoadingButtonProp
 import { Button } from '@mantine/core';
 
 // After
-import { Button } from '@repo/design-system/uix';
+import { Button } from '@repo/design-system/mantine-ciseco';
 
 // API remains the same
 <Button variant="filled" size="md">
@@ -419,8 +343,7 @@ import { Button } from '@repo/design-system/uix';
 
 ```typescript
 // Create in appropriate subsystem
-// For web: /uix/components/
-// For e-commerce: /ciseco/components/
+// For web & e-commerce: /mantine-ciseco/components/
 // For search: /algolia/components/
 
 export { MyCustomComponent } from './MyCustomComponent';
@@ -428,12 +351,11 @@ export { MyCustomComponent } from './MyCustomComponent';
 
 ## Best Practices
 
-1. **Use UIX for general web components** - Primary choice for most web applications
-2. **Use Ciseco for e-commerce** - Specialized components for online stores
-3. **Use Algolia for search** - Search interfaces and autocomplete
-4. **Maintain consistency** - Use the same subsystem throughout an application
-5. **Test components** - All custom components should include tests
-6. **Document in Storybook** - Add stories for reusable components
+1. **Use Mantine-Ciseco for web and e-commerce components** - Primary choice for all applications
+2. **Use Algolia for search** - Search interfaces and autocomplete
+3. **Maintain consistency** - Use the same subsystem throughout an application
+4. **Test components** - All custom components should include tests
+5. **Document in Storybook** - Add stories for reusable components
 
 The design system provides a comprehensive foundation for building consistent, accessible, and
 performant user interfaces across all applications in the Forge platform.

@@ -26,7 +26,7 @@ import {
   IconUsers,
   IconUserPlus,
   IconSettings,
-  IconExclamationTriangle,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
@@ -504,7 +504,7 @@ export default function OrganizationsPage() {
       >
         <Stack gap="md">
           <Alert
-            icon={<IconExclamationTriangle size={16} />}
+            icon={<IconAlertTriangle size={16} />}
             title="Bulk Invitation"
             color="blue"
           >

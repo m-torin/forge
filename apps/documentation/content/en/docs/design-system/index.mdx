@@ -12,14 +12,18 @@ Forge uses **Mantine UI v8** as the primary component library with custom compos
 ## Usage
 
 ```typescript
-import { UnifiedSignIn, AuthLayout } from '@repo/design-system/uix';
+import { SignInForm, ProductCard } from '@repo/design-system/mantine-ciseco';
 
-<AuthLayout title="Welcome Back">
-  <UnifiedSignIn
-    showSocialOptions={true}
-    showMagicLink={true}
-  />
-</AuthLayout>
+<SignInForm
+  showSocialOptions={true}
+  showMagicLink={true}
+  onSuccess={() => router.push('/dashboard')}
+/>
+
+<ProductCard
+  product={product}
+  onAddToCart={handleAddToCart}
+/>
 ```
 
 ## Theme Configuration

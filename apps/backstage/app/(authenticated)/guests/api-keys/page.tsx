@@ -29,7 +29,7 @@ import {
   IconCalendar,
   IconActivity,
   IconShield,
-  IconExclamationTriangle,
+  IconAlertTriangle,
   IconRefresh,
 } from '@tabler/icons-react';
 import { useDisclosure, useClipboard } from '@mantine/hooks';
@@ -573,7 +573,7 @@ export default function ApiKeysPage() {
       >
         <Stack gap="md">
           <Alert
-            icon={<IconExclamationTriangle size={16} />}
+            icon={<IconAlertTriangle size={16} />}
             title="Important: Save Your API Key"
             color="orange"
           >

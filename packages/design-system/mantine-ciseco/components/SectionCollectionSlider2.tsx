@@ -7,7 +7,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Link from 'next/link';
 import { type FC } from 'react';
 
-import { type TCollection } from '../data/data';
+import { type TCollection } from '../data/types';
 import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
 import { useLocalizeHref } from '../hooks/useLocale';
 

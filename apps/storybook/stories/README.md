@@ -6,14 +6,6 @@ Stories are now co-located with their components for better organization:
 
 ## New Story Locations
 
-### UIX Design System Stories
-
-Stories are located in `/packages/design-system/uix/components/ui/[component]/`
-
-- **Core UI components** - buttons, inputs, cards, etc. based on shadcn/ui and Mantine
-- **Authentication components** - sign-in, user-button, etc. in `/auth/`
-- **Admin panel components** - user management, etc. in `/admin/`
-
 ### Ciseco E-commerce Stories
 
 Stories are located in `/packages/design-system/ciseco/components/[component]/`
@@ -36,7 +28,6 @@ Stories are located in `/packages/design-system/algolia/components/[component]/`
 
 Stories maintain their hierarchical organization:
 
-- `uix/ui/Button` - Core UI button component
 - `ciseco/ProductCard` - E-commerce product card
 - `algolia/SearchBox` - Search input component
 
@@ -52,9 +43,6 @@ pnpm dev
 ## Component Import Examples
 
 ```typescript
-// UIX components
-import { Button, Card } from '@repo/design-system/uix';
-
 // Ciseco components
 import { ProductCard, Header } from '@repo/design-system/ciseco';
 

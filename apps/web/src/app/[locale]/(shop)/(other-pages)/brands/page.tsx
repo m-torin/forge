@@ -1,4 +1,4 @@
-import { getBrands } from "@/lib/data-service";
+import { getBrands } from "@/data/data-service";
 import { type Metadata } from "next";
 import Link from "next/link";
 

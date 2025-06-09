@@ -15,7 +15,7 @@ import {
   Text,
   Textarea,
 } from '@mantine/core';
-import { useFormContext } from '@mantine/form';
+import { UseFormReturnType } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import {
   IconBuilding,

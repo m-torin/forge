@@ -4,7 +4,7 @@ import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import React, { type FC, useState } from 'react';
 
-import { type getGroupCollections, type TCollection } from '../../data/data';
+import { type getGroupCollections, type TCollection } from '../../data/types';
 import svgs1 from '../../images/collections/explore1.svg';
 import svgs2 from '../../images/collections/explore2.svg';
 import svgs3 from '../../images/collections/explore3.svg';

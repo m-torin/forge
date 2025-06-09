@@ -9,7 +9,7 @@ import {
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type TProductItem } from '../data/data';
+import { type TProductItem } from '../data/types';
 
 import ProductCard from './ProductCard';
 
