@@ -92,13 +92,6 @@ const modules = [
     title: 'Taxonomies',
   },
   {
-    color: 'lime',
-    description: 'Manage taxonomy hierarchies and relationships',
-    href: '/pim3/taxonomy',
-    icon: IconTag,
-    title: 'Taxonomy',
-  },
-  {
     color: 'yellow',
     description: 'Customer reviews and ratings management',
     href: '/pim3/reviews',

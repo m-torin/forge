@@ -1,6 +1,6 @@
 "use client";
 
-import { getProductsAction } from "@/actions/data-service-actions";
+import { getProductsAction } from "@/actions";
 import { type TProductItem } from "@/data/data-service";
 import { Badge, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
 import { useState } from "react";

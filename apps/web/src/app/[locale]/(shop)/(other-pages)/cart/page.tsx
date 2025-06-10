@@ -154,7 +154,7 @@ const CartPage = async ({ params }: { params: { locale: string } }) => {
 
         <hr className="my-10 border-neutral-200 xl:my-12 dark:border-neutral-700" />
 
-        {cart.lines.length === 0 ? (
+        {!cart || cart.lines.length === 0 ? (
           // Empty cart state
           <div className="text-center py-16">
             <div className="mx-auto max-w-md">
@@ -195,7 +195,7 @@ const CartPage = async ({ params }: { params: { locale: string } }) => {
         ) : (
           <div className="flex flex-col lg:flex-row">
             <div className="w-full divide-y divide-neutral-200 lg:w-[60%] xl:w-[55%] dark:divide-neutral-700">
-              {cart.lines.map(renderProduct)}
+              {cart?.lines.map(renderProduct)}
             </div>
           <div className="my-10 shrink-0 border-t border-neutral-200 lg:mx-10 lg:my-0 lg:border-l lg:border-t-0 xl:mx-16 2xl:mx-20 dark:border-neutral-700" />
           <div className="flex-1">
@@ -207,24 +207,24 @@ const CartPage = async ({ params }: { params: { locale: string } }) => {
                 <div className="flex justify-between pb-4">
                   <span>{dict.cart.subtotal}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                    ${cart.cost.subtotal.toFixed(2)}
+                    ${cart?.cost.subtotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
                   <span>{dict.cart.shippingEstimate}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                    ${cart.cost.shipping.toFixed(2)}
+                    ${cart?.cost.shipping.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
                   <span>{dict.cart.taxEstimate}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                    ${cart.cost.tax.toFixed(2)}
+                    ${cart?.cost.tax.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between pt-4 text-base font-semibold text-neutral-900 dark:text-neutral-200">
                   <span>{dict.cart.orderTotal}</span>
-                  <span>${cart.cost.total.toFixed(2)}</span>
+                  <span>${cart?.cost.total.toFixed(2)}</span>
                 </div>
               </div>
               <ButtonPrimary href="/checkout" className="mt-8 w-full">

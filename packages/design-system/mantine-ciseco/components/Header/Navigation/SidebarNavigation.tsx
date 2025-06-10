@@ -7,7 +7,7 @@ import { Accordion } from '@mantine/core';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { type TNavigationItem } from '../../../data/navigation';
+import { type TNavigationItem } from '../../../data/types';
 import { Divider } from '../../Divider';
 import { Link } from '../../Link';
 import ButtonPrimary from '../../shared/Button/ButtonPrimary';

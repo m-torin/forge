@@ -80,11 +80,12 @@ const productFields: FormField[] = [
 ];
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function EditProductPage({ params }: PageProps) {
-  const product = await getRecord('product', params.id);
+  const { id } = await params;
+  const product = await getRecord('product', id);
 
   if (!product) {
     notFound();
@@ -106,7 +107,7 @@ export default async function EditProductPage({ params }: PageProps) {
       price: values.price ? parseFloat(values.price) : null,
     };
 
-    await updateRecord('product', params.id, data);
+    await updateRecord('product', id, data);
     redirect('/admin/products');
   }
 

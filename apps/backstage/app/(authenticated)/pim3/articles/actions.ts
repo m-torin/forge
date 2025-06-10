@@ -96,7 +96,7 @@ export async function duplicateArticle(id: string) {
 
   return await prisma.article.create({
     data: {
-      content: originalArticle.content,
+      content: originalArticle.content as any,
       slug,
       status: 'DRAFT' as ContentStatus,
       title: `${originalArticle.title} (Copy)`,

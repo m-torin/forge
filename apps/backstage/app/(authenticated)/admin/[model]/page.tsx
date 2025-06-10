@@ -90,30 +90,32 @@ function convertValue(value: any, type: string): any {
 }
 
 interface PageProps {
-  params: { model: string };
-  searchParams: {
+  params: Promise<{ model: string }>;
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     filters?: string;
     sortBy?: string;
     sortOrder?: string;
-  };
+  }>;
 }
 
 async function ModelTable({ params, searchParams }: PageProps) {
-  const config = getModelConfig(params.model);
+  const { model } = await params;
+  const searchParamsData = await searchParams;
+  const config = getModelConfig(model);
   if (!config) {
     notFound();
   }
 
-  const page = Number(searchParams.page) || 1;
-  const limit = Number(searchParams.limit) || 20;
+  const page = Number(searchParamsData.page) || 1;
+  const limit = Number(searchParamsData.limit) || 20;
 
   // Parse advanced search filters
   let filters = [];
   try {
-    if (searchParams.filters) {
-      filters = JSON.parse(decodeURIComponent(searchParams.filters));
+    if (searchParamsData.filters) {
+      filters = JSON.parse(decodeURIComponent(searchParamsData.filters));
     }
   } catch (error) {
     console.error('Failed to parse filters:', error);
@@ -123,11 +125,11 @@ async function ModelTable({ params, searchParams }: PageProps) {
   const where = buildAdvancedWhere(filters);
 
   // Build order by from search params
-  const orderBy = searchParams.sortBy
-    ? { [searchParams.sortBy]: (searchParams.sortOrder || 'desc') as 'asc' | 'desc' }
+  const orderBy = searchParamsData.sortBy
+    ? { [searchParamsData.sortBy]: (searchParamsData.sortOrder || 'desc') as 'asc' | 'desc' }
     : config.defaultOrderBy || { createdAt: 'desc' as 'asc' | 'desc' };
 
-  const data = await listRecords(params.model, {
+  const data = await listRecords(model, {
     include: config.includes,
     limit,
     orderBy,
@@ -148,22 +150,22 @@ async function ModelTable({ params, searchParams }: PageProps) {
 
   return (
     <ResponsiveDataTable
-      createHref={`/admin/${params.model}/new`}
-      editHref={(id) => `/admin/${params.model}/${id}/edit`}
-      viewHref={(id) => `/admin/${params.model}/${id}`}
+      createHref={`/admin/${model}/new`}
+      editHref={(id) => `/admin/${model}/${id}/edit`}
+      viewHref={(id) => `/admin/${model}/${id}`}
       columns={responsiveColumns}
-      modelKey={params.model}
+      modelKey={model}
       onBulkDelete={async (ids) => {
         'use server';
-        await bulkDeleteRecords(params.model, ids);
+        await bulkDeleteRecords(model, ids);
       }}
       onDelete={async (id) => {
         'use server';
-        await deleteRecord(params.model, id);
+        await deleteRecord(model, id);
       }}
       onExport={async (ids) => {
         'use server';
-        return await exportRecords(params.model, 'json');
+        return await exportRecords(model, 'json');
       }}
       searchPlaceholder={`Search ${config.pluralName.toLowerCase()}...`}
       data={data}
@@ -173,13 +175,14 @@ async function ModelTable({ params, searchParams }: PageProps) {
   );
 }
 
-async function ModelGrid({ params }: { params: { model: string } }) {
-  const config = getModelConfig(params.model);
+async function ModelGrid({ params }: { params: Promise<{ model: string }> }) {
+  const { model } = await params;
+  const config = getModelConfig(model);
   if (!config) {
     notFound();
   }
 
-  const data = await listRecords(params.model, {
+  const data = await listRecords(model, {
     include: config.includes,
     limit: 100, // Load more for grid editing
     orderBy: config.defaultOrderBy || { createdAt: 'desc' },
@@ -214,12 +217,12 @@ async function ModelGrid({ params }: { params: { model: string } }) {
       enableUndo={true}
       onDelete={async (ids) => {
         'use server';
-        await bulkDeleteRecords(params.model, ids);
+        await bulkDeleteRecords(model, ids);
       }}
       onSave={async (changes) => {
         'use server';
         // Update multiple records
-        await Promise.all(changes.map((record) => updateRecord(params.model, record.id, record)));
+        await Promise.all(changes.map((record) => updateRecord(model, record.id, record)));
       }}
       data={data.records}
       enablePaste={true}
@@ -228,9 +231,10 @@ async function ModelGrid({ params }: { params: { model: string } }) {
   );
 }
 
-function ModelSearch({ params }: { params: { model: string } }) {
-  const config = getModelConfig(params.model);
-  const modelConfig = modelConfigs.find((m) => m.name === params.model);
+async function ModelSearch({ params }: { params: Promise<{ model: string }> }) {
+  const { model } = await params;
+  const config = getModelConfig(model);
+  const modelConfig = modelConfigs.find((m) => m.name === model);
 
   if (!config || !modelConfig) {
     notFound();
@@ -239,9 +243,9 @@ function ModelSearch({ params }: { params: { model: string } }) {
   return (
     <AdvancedSearch
       modelConfig={modelConfig}
-      modelName={params.model}
+      modelName={model}
       onReset={() => {
-        window.location.href = `/admin/${params.model}?tab=table`;
+        window.location.href = `/admin/${model}?tab=table`;
       }}
       onSearch={(filters, sortBy, sortOrder) => {
         const searchParams = new URLSearchParams();
@@ -255,15 +259,16 @@ function ModelSearch({ params }: { params: { model: string } }) {
         searchParams.set('page', '1'); // Reset to first page
 
         // Navigate to table view with search results
-        const url = `/admin/${params.model}?tab=table&${searchParams.toString()}`;
+        const url = `/admin/${model}?tab=table&${searchParams.toString()}`;
         window.location.href = url;
       }}
     />
   );
 }
 
-export default function ModelPage({ params, searchParams }: PageProps) {
-  const config = getModelConfig(params.model);
+export default async function ModelPage({ params, searchParams }: PageProps) {
+  const { model } = await params;
+  const config = getModelConfig(model);
   if (!config) {
     notFound();
   }

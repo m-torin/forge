@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 
 import { SidebarNavigation } from "@repo/design-system/mantine-ciseco";
 
-import type { TNavigationItem } from "@repo/design-system/mantine-ciseco/data/navigation";
+import type { TNavigationItem } from "@repo/design-system/mantine-ciseco/data/types";
 
 interface SidebarNavigationWrapperProps {
   data: TNavigationItem[];

@@ -5,8 +5,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { type FC } from 'react';
 
-import { type TCollection } from '../../../data/data';
-import { type TNavigationItem } from '../../../data/navigation';
+import { type TCollection, type TNavigationItem } from '../../../data/types';
 import { useLocalizeHref } from '../../../hooks/useLocale';
 import CollectionCard3 from '../../CollectionCard3';
 

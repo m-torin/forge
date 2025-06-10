@@ -54,7 +54,7 @@ export async function generateMetadata({
   const product = await getProductDetailByHandle(handle);
   const title = product?.title || dict.product.productDetail;
   const description =
-    product?.description || dict.product.productDetailDescription;
+    (product as any)?.description || dict.product.productDetailDescription;
   return {
     description,
     title,
@@ -123,15 +123,15 @@ export default async function Page({
                   </div>
                 </a>
                 <span>·</span>
-                <ProductStatus status={status} />
+                <ProductStatus status={status || "In Stock"} />
               </div>
             </div>
           </div>
 
           {/* ---------- 3 VARIANTS AND SIZE LIST ----------  */}
           <div className="flex flex-col gap-y-8">
-            <ProductOptions options={options} />
-            <ProductSizeOption options={options} />
+            <ProductOptions options={options || []} />
+            <ProductSizeOption options={options || []} />
           </div>
 
           {/*  ---------- 4  QTY AND ADD TO CART BUTTON */}

@@ -2,7 +2,7 @@
  * Simple test file to verify data service works
  * Run with: cd apps/web && npx tsx src/lib/test-data-service.ts
  */
-import { getBlogPosts, getCollections, getProducts } from "./data-service";
+import { getBlogPosts, getCollections, getProducts } from "../data/data-service";
 
 async function testDataService() {
   console.log("Testing data service with fallback...\n");

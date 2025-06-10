@@ -158,7 +158,7 @@ const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
           <div className="w-full lg:w-[36%]">
             <h3 className="text-lg font-semibold">Order summary</h3>
             <div className="mt-8 divide-y divide-neutral-200/70 dark:divide-neutral-700">
-              {cart.lines.map(renderProduct)}
+              {cart?.lines.map(renderProduct)}
             </div>
 
             <div className="mt-10 border-t border-neutral-200/70 pt-6 text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
@@ -175,24 +175,24 @@ const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
               <div className="mt-4 flex justify-between py-2.5">
                 <span>Subtotal</span>
                 <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                  ${cart.cost.subtotal.toFixed(2)}
+                  ${cart?.cost.subtotal.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Shipping estimate</span>
                 <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                  ${cart.cost.shipping.toFixed(2)}
+                  ${cart?.cost.shipping.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Tax estimate</span>
                 <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                  ${cart.cost.tax.toFixed(2)}
+                  ${cart?.cost.tax.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between pt-4 text-base font-semibold text-neutral-900 dark:text-neutral-200">
                 <span>Order total</span>
-                <span>${cart.cost.total.toFixed(2)}</span>
+                <span>${cart?.cost.total.toFixed(2)}</span>
               </div>
             </div>
             <ButtonPrimary href="/order-successful" className="mt-8 w-full">

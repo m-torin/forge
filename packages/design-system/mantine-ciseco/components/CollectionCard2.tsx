@@ -46,10 +46,10 @@ const CollectionCard2: FC<Props> = ({
             <Image
               data-testid={`${testId}-image`}
               className="rounded-2xl object-cover object-center"
-              alt={collection.image?.alt}
+              alt={collection.image?.alt || ''}
               fill
               sizes="(max-width: 640px) 100vw, 40vw"
-              src={collection.image.src}
+              src={collection.image?.src || ''}
             />
           </div>
         )}

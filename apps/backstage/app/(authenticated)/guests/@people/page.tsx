@@ -346,7 +346,6 @@ export default function UsersPage() {
               icon: <IconUserPlus size={16} />,
               label: 'Create User',
               onClick: openCreateModal,
-              href: '/guests/people/new',
             },
             secondary: [
               {
@@ -377,13 +376,12 @@ export default function UsersPage() {
                 icon: <IconShield size={14} />,
                 label: 'Impersonate',
                 onClick: (row) => handleImpersonateUser(row.id),
-                condition: (row) => !row.banned,
               },
               {
                 icon: <IconBan size={14} />,
-                label: (row) => (row.banned ? 'Unban' : 'Ban'),
+                label: 'Ban/Unban',
                 onClick: (row) => handleBanUser(row.id, !row.banned),
-                color: (row) => (row.banned ? 'green' : 'red'),
+                color: 'orange',
               },
               {
                 icon: <IconActivity size={14} />,

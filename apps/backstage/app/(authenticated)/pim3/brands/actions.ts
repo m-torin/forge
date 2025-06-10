@@ -4,8 +4,22 @@ import { revalidatePath } from 'next/cache';
 
 import { prisma, orm } from '@repo/database/prisma';
 import { type BrandType, ContentStatus, type Prisma } from '@repo/database/prisma';
+import { auth } from '@repo/auth/server';
 
-// Get all brands with pagination and filtering
+
+/**
+ * PIM3-specific brand actions
+ * 
+ * These actions provide enhanced functionality specific to PIM3:
+ * - Hierarchical brand relationships (parent/child)
+ * - Soft delete/restore capabilities
+ * - Brand tree visualization
+ * - Bulk operations
+ * - Copy generation
+ * - Detailed filtering options
+ */
+
+// Enhanced getBrands with PIM3-specific features (hierarchy, soft delete, etc.)
 export async function getBrands(params?: {
   page?: number;
   limit?: number;
@@ -15,11 +29,10 @@ export async function getBrands(params?: {
   parentId?: string | null;
   includeDeleted?: boolean;
 }) {
-  // Remove auth check for testing
-  // const session = await auth.api.getSession();
-  // if (!session) {
-  //   throw new Error('Unauthorized');
-  // }
+  const session = await auth.api.getSession();
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
 
   const {
     type,

@@ -40,7 +40,7 @@ export default function NewOrganizationPage() {
           message: 'Organization created successfully',
           color: 'green',
         });
-        router.push('/guests?tab=organizations');
+        router.push('/guests?tab=organizations' as any);
       } else {
         const error = await response.json();
         notifications.show({
@@ -113,7 +113,7 @@ export default function NewOrganizationPage() {
               rows={3}
             />
             <Group justify="flex-end" mt="md">
-              <Button variant="light" onClick={() => router.push('/guests?tab=organizations')}>
+              <Button variant="light" onClick={() => router.push('/guests?tab=organizations' as any)}>
                 Cancel
               </Button>
               <Button 

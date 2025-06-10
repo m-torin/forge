@@ -7,10 +7,10 @@ import clsx from 'clsx';
 import { usePathname, useRouter } from 'next/navigation';
 import { type FC } from 'react';
 
-import { type getCurrencies, type getLanguages } from '../../data/types';
+import { type TCurrency, type TLanguage } from '../../data/types';
 import { Link } from '../Link';
 
-const Currencies = ({ currencies }: { currencies: Awaited<ReturnType<typeof getCurrencies>> }) => {
+const Currencies = ({ currencies }: { currencies: TCurrency[] }) => {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {currencies.map((item, index) => (
@@ -34,7 +34,7 @@ const Languages = ({
   currentLocale,
   languages,
 }: {
-  languages: Awaited<ReturnType<typeof getLanguages>>;
+  languages: TLanguage[];
   currentLocale?: string;
 }) => {
   const pathname = usePathname();
@@ -82,9 +82,9 @@ interface Props {
   panelPosition?: 'bottom-end' | 'bottom-start';
 
   className?: string;
-  currencies: Awaited<ReturnType<typeof getCurrencies>>;
+  currencies: TCurrency[];
   currentLocale?: string;
-  languages: Awaited<ReturnType<typeof getLanguages>>;
+  languages: TLanguage[];
 }
 
 const CurrLangDropdown: FC<Props> = ({

@@ -53,23 +53,30 @@ interface ApiKey {
 }
 
 interface ApiKeyDetailModalProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function ApiKeyDetailModal({ params }: ApiKeyDetailModalProps) {
   const [apiKey, setApiKey] = useState<ApiKey | null>(null);
   const [loading, setLoading] = useState(true);
   const [showFullKey, setShowFullKey] = useState(false);
+  const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
   const clipboard = useClipboard({ timeout: 2000 });
 
   useEffect(() => {
-    loadApiKey();
-  }, [params.id]);
+    params.then(p => setParamsData(p));
+  }, [params]);
+
+  useEffect(() => {
+    if (paramsData?.id) {
+      loadApiKey();
+    }
+  }, [paramsData?.id]);
 
   const loadApiKey = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/api-keys/${params.id}`);
+      const response = await fetch(`/api/admin/api-keys/${paramsData?.id}`);
       if (response.ok) {
         const data = await response.json();
         setApiKey(data.apiKey);
@@ -122,7 +129,7 @@ export default function ApiKeyDetailModal({ params }: ApiKeyDetailModalProps) {
                   {apiKey.enabled && !isExpired ? 'Active' : isExpired ? 'Expired' : 'Disabled'}
                 </Badge>
                 {apiKey.start && (
-                  <Code size="xs">
+                  <Code>
                     {apiKey.prefix || 'sk'}-...{apiKey.start}
                   </Code>
                 )}

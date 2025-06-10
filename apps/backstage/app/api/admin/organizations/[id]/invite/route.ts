@@ -5,10 +5,10 @@ import {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: organizationId } = params;
+    const { id: organizationId } = await params;
     const body = await request.json();
     const { emails, role, message } = body;
 

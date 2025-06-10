@@ -31,18 +31,18 @@ const PostCardMeta: FC<PostCardMetaProps> = ({
       >
         {!hiddenAvatar && (
           <Avatar
-            imgUrl={author?.avatar.src}
+            imgUrl={typeof author === 'object' ? author?.avatar : undefined}
             radius="rounded-full"
             sizeClass="h-7 w-7 text-sm"
             testId={`${testId}-avatar`}
-            userName={author?.name}
+            userName={typeof author === 'object' ? author?.name : author}
           />
         )}
         <span
           data-testid={`${testId}-author`}
           className="block font-medium text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
         >
-          {author?.name}
+          {typeof author === 'object' ? author?.name : author}
         </span>
       </Link>
       <span className="mx-[6px] font-medium text-neutral-500 dark:text-neutral-400">·</span>

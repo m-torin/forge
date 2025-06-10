@@ -4,10 +4,10 @@ import { headers } from 'next/headers';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: keyId } = params;
+    const { id: keyId } = await params;
     const body = await request.json();
     const { name, enabled, permissions } = body;
 
@@ -49,10 +49,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: keyId } = params;
+    const { id: keyId } = await params;
 
     if (!keyId) {
       return NextResponse.json(

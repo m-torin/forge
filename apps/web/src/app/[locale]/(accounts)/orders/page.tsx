@@ -5,9 +5,9 @@ import {
   ButtonSecondary,
   Link,
   Prices,
-  type TOrder,
 } from "@repo/design-system/mantine-ciseco";
 import { getOrders } from "@/data/data-service";
+import type { TOrder } from "@/data/hardcoded-data";
 
 export const metadata: Metadata = {
   description: "Orders History page",
@@ -69,10 +69,10 @@ const Order = ({ order }: { order: TOrder }) => {
               <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:w-20">
                 <Image
                   className="h-full w-full object-cover object-center"
-                  alt={featuredImage.alt}
+                  alt={featuredImage?.alt || title || "Product image"}
                   fill
                   sizes="100px"
-                  src={featuredImage}
+                  src={featuredImage?.src || featuredImage || "/placeholder.jpg"}
                 />
               </div>
 

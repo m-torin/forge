@@ -29,16 +29,16 @@ export function TabNavigation() {
     // Navigate to the appropriate route
     switch (value) {
       case 'dashboard':
-        router.push('/guests');
+        router.push('/guests' as any);
         break;
       case 'people':
-        router.push('/guests/people');
+        router.push('/guests/people' as any);
         break;
       case 'organizations':
-        router.push('/guests/organizations');
+        router.push('/guests/organizations' as any);
         break;
       case 'api-keys':
-        router.push('/guests/api-keys');
+        router.push('/guests/api-keys' as any);
         break;
     }
   };

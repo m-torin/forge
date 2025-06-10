@@ -7,12 +7,13 @@ import { bulkDeleteRecords, deleteRecord, exportRecords, listRecords } from '../
 import { DataTable } from '../components/DataTable';
 
 interface PageProps {
-  searchParams: { page?: string; limit?: string };
+  searchParams: Promise<{ page?: string; limit?: string }>;
 }
 
 async function ProductsTable({ searchParams }: PageProps) {
-  const page = Number(searchParams.page) || 1;
-  const limit = Number(searchParams.limit) || 20;
+  const searchParamsData = await searchParams;
+  const page = Number(searchParamsData.page) || 1;
+  const limit = Number(searchParamsData.limit) || 20;
 
   const data = await listRecords('product', {
     include: {

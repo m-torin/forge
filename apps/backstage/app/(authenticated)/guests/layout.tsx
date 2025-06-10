@@ -9,6 +9,9 @@ import { TabNavigation } from './TabNavigation';
 interface GuestsLayoutProperties {
   readonly children: ReactNode;
   readonly modal: ReactNode;
+  readonly api_keys: ReactNode;
+  readonly organizations: ReactNode;
+  readonly people: ReactNode;
 }
 
 export default function GuestsLayout({ 

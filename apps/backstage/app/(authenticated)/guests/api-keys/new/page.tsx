@@ -63,7 +63,7 @@ export default function NewApiKeyPage() {
           message: 'API key created successfully',
           color: 'green',
         });
-        router.push('/guests?tab=api-keys');
+        router.push('/guests?tab=api-keys' as any);
       } else {
         const error = await response.json();
         notifications.show({
@@ -155,7 +155,7 @@ export default function NewApiKeyPage() {
             />
 
             <Group justify="flex-end" mt="md">
-              <Button variant="light" onClick={() => router.push('/guests?tab=api-keys')}>
+              <Button variant="light" onClick={() => router.push('/guests?tab=api-keys' as any)}>
                 Cancel
               </Button>
               <Button 

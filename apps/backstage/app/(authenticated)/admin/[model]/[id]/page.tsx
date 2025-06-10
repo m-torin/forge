@@ -8,16 +8,17 @@ import { getRecord } from '../../actions';
 import { getModelConfig } from '../../lib/model-config';
 
 interface PageProps {
-  params: { model: string; id: string };
+  params: Promise<{ model: string; id: string }>;
 }
 
 export default async function ViewModelPage({ params }: PageProps) {
-  const config = getModelConfig(params.model);
+  const { model, id } = await params;
+  const config = getModelConfig(model);
   if (!config) {
     notFound();
   }
 
-  const record = await getRecord(params.model, params.id, config.includes);
+  const record = await getRecord(model, id, config.includes);
   if (!record) {
     notFound();
   }
@@ -58,7 +59,7 @@ export default async function ViewModelPage({ params }: PageProps) {
         <div>
           <Group gap="sm" mb="xs">
             <Button
-              href={`/admin/${params.model}`}
+              href={`/admin/${model}`}
               component={Link}
               leftSection={<IconArrowLeft size={16} />}
               size="sm"
@@ -73,7 +74,7 @@ export default async function ViewModelPage({ params }: PageProps) {
           </Text>
         </div>
         <Button
-          href={`/admin/${params.model}/${record.id}/edit`}
+          href={`/admin/${model}/${record.id}/edit`}
           component={Link}
           leftSection={<IconEdit size={16} />}
         >

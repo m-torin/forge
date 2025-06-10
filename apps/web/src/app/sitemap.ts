@@ -1,9 +1,5 @@
-import {
-  getBrands,
-  getEvents,
-  getLocations,
-  getProducts,
-} from "@/actions/products";
+import { getEvents, getLocations } from "@/actions/products";
+import { getBrands, getProducts } from "@repo/database/prisma/actions";
 import { type MetadataRoute } from "next";
 
 import { getBlogPosts } from "@repo/design-system/mantine-ciseco";

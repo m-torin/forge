@@ -47,21 +47,28 @@ interface Organization {
 }
 
 interface OrganizationDetailModalProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function OrganizationDetailModal({ params }: OrganizationDetailModalProps) {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
+  const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
 
   useEffect(() => {
-    loadOrganization();
-  }, [params.id]);
+    params.then(p => setParamsData(p));
+  }, [params]);
+
+  useEffect(() => {
+    if (paramsData?.id) {
+      loadOrganization();
+    }
+  }, [paramsData?.id]);
 
   const loadOrganization = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/organizations/${params.id}`);
+      const response = await fetch(`/api/admin/organizations/${paramsData?.id}`);
       if (response.ok) {
         const data = await response.json();
         setOrganization(data.organization);

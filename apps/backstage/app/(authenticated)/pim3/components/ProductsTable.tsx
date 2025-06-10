@@ -43,7 +43,7 @@ import {
   bulkUpdateAIGenerated,
   bulkUpdateProductStatus,
   deleteProduct,
-  getProducts,
+  getProductsWithPIMFilters,
   restoreProduct,
   softDeleteProduct,
 } from '../actions';
@@ -139,7 +139,7 @@ export function ProductsTable() {
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await getProducts({
+      const result = await getProductsWithPIMFilters({
         typeFilter: form.values.typeFilter || undefined,
         aiGeneratedFilter: form.values.aiGeneratedFilter,
         category: form.values.categoryFilter || undefined,

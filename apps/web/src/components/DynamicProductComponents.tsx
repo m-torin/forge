@@ -2,7 +2,7 @@ import {
   getProductInventory,
   getProductPricing,
   trackProductView,
-} from "@/actions/products";
+} from "@repo/database/prisma/actions";
 import { Suspense } from "react";
 
 // Loading skeletons

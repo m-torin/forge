@@ -4,7 +4,7 @@
  */
 import { env } from "@/env";
 
-import { getBlogPosts, getCollections, getProducts } from "./data-service";
+import { getBlogPosts, getCollections, getProducts } from "../data/data-service";
 
 async function testDemoMode() {
   console.log("Testing Demo Mode Configuration...\n");

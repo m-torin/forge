@@ -8,8 +8,10 @@ import { type ContentStatus, type Prisma, type TaxonomyType } from '@repo/databa
 
 import { generateSlug as _generateSlug } from '../utils/pim-helpers';
 
-// Re-export for component use
-export { generateSlug } from '../utils/pim-helpers';
+// Server action wrapper for generateSlug
+export async function generateSlug(text: string): Promise<string> {
+  return _generateSlug(text);
+}
 
 // Get all taxonomies with pagination and filtering
 export async function getTaxonomies(params?: {

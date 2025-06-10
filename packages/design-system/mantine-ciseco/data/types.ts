@@ -98,8 +98,13 @@ export interface TReview {
 
 export interface TCardProduct {
   color?: string;
+  handle?: string;
   id: string;
+  image?: TProductImage;
   imageUrl?: string;
+  inStock?: boolean;
+  leadTime?: string;
+  name?: string;
   price?: number;
   quantity?: number;
   size?: string;
@@ -112,7 +117,38 @@ export interface TNavigationItem {
   id: string;
   isNew?: boolean;
   name: string;
-  type?: 'dropdown' | 'megaMenu' | 'none';
+  type?: 'dropdown' | 'mega-menu' | 'none';
+}
+
+export interface TGroupCollection {
+  collections: TCollection[];
+  description?: string;
+  handle: string;
+  iconSvg: string;
+  id: string;
+  title: string;
+}
+
+export interface TDropdownCategory {
+  description: string;
+  handle: string;
+  icon: string;
+  name: string;
+}
+
+export interface TCurrency {
+  active?: boolean;
+  href: string;
+  icon: string;
+  id: string;
+  name: string;
+}
+
+export interface TLanguage {
+  description: string;
+  id: string;
+  locale: string;
+  name: string;
 }
 
 // Additional types that components need

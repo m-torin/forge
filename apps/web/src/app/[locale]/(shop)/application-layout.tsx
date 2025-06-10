@@ -1,6 +1,6 @@
 "use client";
 
-import { getNavigationAction } from "@/actions/data-service-actions";
+import { getNavigationAction } from "@/actions";
 import "rc-slider/assets/index.css";
 import { CartContent } from "@/components/CartContent";
 import { SidebarNavigationWrapper } from "@/components/SidebarNavigationWrapper";

@@ -1,9 +1,32 @@
 'use server';
 
+/**
+ * PIM3-specific server actions
+ * 
+ * This file contains actions that are specific to PIM3 functionality and not available 
+ * in the centralized database actions.
+ * 
+ * For common e-commerce actions, import directly from @repo/database/prisma/actions:
+ * - Products: getProducts, getProductByHandle, searchProducts, etc.
+ * - Brands: getBrands, getBrandByHandle, getPopularBrands, etc.
+ * - Collections: getCollections, getCollectionByHandle, getFeaturedCollections, etc.
+ * - PDP/Brand associations: createProductBrandAssociation, removeProductBrandAssociation, etc.
+ * 
+ * PIM3-specific features in this file:
+ * - Soft delete/restore functionality
+ * - Parent/child product relationships
+ * - Enhanced PIM filtering (AI-generated, type filters, etc.)
+ * - Barcode management
+ * - Asset management
+ * - Scan history tracking
+ * - Bulk operations specific to PIM workflows
+ */
+
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-import { prisma, orm } from '@repo/database/prisma';
+import { auth } from '@repo/auth/server';
+import { orm } from '@repo/database/prisma';
 
 import type { AssetType, BarcodeType, ProductStatus } from '@repo/database/prisma';
 
@@ -50,7 +73,7 @@ export interface AffiliateData {
   priority?: number;
 }
 
-// Product Actions
+// Product CRUD Actions (wrappers for centralized ORM operations)
 const createProductSchema = z.object({
   aiConfidence: z.number().min(0).max(1).optional(),
   name: z.string().min(1, 'Name is required'),
@@ -72,7 +95,11 @@ const createProductSchema = z.object({
 
 export async function createProduct(input: FormData | any) {
   try {
-    // Handle both FormData and direct object input
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { error: 'Unauthorized', success: false };
+    }
+
     const data = input instanceof FormData ? Object.fromEntries(input) : input;
     const validatedData = createProductSchema.parse({
       ...data,
@@ -87,12 +114,14 @@ export async function createProduct(input: FormData | any) {
     const product = await orm.createProduct({
       data: {
         ...validatedData,
-        createdBy: 'system', // TODO: Get from session
-        organizationId: 'default', // TODO: Get from session
+        slug: validatedData.sku.toLowerCase(),
+        createdById: session.user.id,
+        organizationId: session.session.activeOrganizationId || 'default',
       },
     });
 
     revalidatePath('/admin/cms');
+    revalidatePath('/pim3/products');
     return { data: product, success: true };
   } catch (error) {
     console.error('Error creating product:', error);
@@ -105,7 +134,11 @@ export async function createProduct(input: FormData | any) {
 
 export async function updateProduct(id: string, input: FormData | any) {
   try {
-    // Handle both FormData and direct object input
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { error: 'Unauthorized', success: false };
+    }
+
     const data = input instanceof FormData ? Object.fromEntries(input) : input;
     const validatedData = createProductSchema.parse({
       ...data,
@@ -118,11 +151,16 @@ export async function updateProduct(id: string, input: FormData | any) {
     });
 
     const product = await orm.updateProduct({
-      data: validatedData,
       where: { id },
+      data: {
+        ...validatedData,
+        slug: validatedData.sku.toLowerCase(),
+      },
     });
 
     revalidatePath('/admin/cms');
+    revalidatePath('/pim3/products');
+    revalidatePath(`/pim3/products/${id}`);
     return { data: product, success: true };
   } catch (error) {
     console.error('Error updating product:', error);
@@ -135,11 +173,17 @@ export async function updateProduct(id: string, input: FormData | any) {
 
 export async function deleteProduct(id: string) {
   try {
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { error: 'Unauthorized', success: false };
+    }
+
     await orm.deleteProduct({
       where: { id },
     });
 
     revalidatePath('/admin/cms');
+    revalidatePath('/pim3/products');
     return { success: true };
   } catch (error) {
     console.error('Error deleting product:', error);
@@ -149,6 +193,8 @@ export async function deleteProduct(id: string) {
     };
   }
 }
+
+// PIM-specific Product Actions (soft delete, parent/child relationships, etc.)
 
 // Soft delete product
 export async function softDeleteProduct(id: string, deletedById?: string) {
@@ -233,8 +279,9 @@ export async function getProductHierarchy(productId: string) {
     }
 
     // If this is a child, return the parent hierarchy
-    if (product.parent) {
-      return { data: product.parent, success: true };
+    if (product.parentId) {
+      const parent = await orm.findUniqueProduct({ where: { id: product.parentId } });
+      return { data: parent, success: true };
     }
 
     // If this is a parent or standalone, return as is
@@ -245,7 +292,8 @@ export async function getProductHierarchy(productId: string) {
   }
 }
 
-export async function getProducts(params?: {
+// Enhanced getProducts with PIM-specific filtering
+export async function getProductsWithPIMFilters(params?: {
   search?: string;
   status?: ProductStatus;
   category?: string;
@@ -271,13 +319,13 @@ export async function getProducts(params?: {
     } = params || {};
     const skip = (page - 1) * limit;
 
-    const where = {
+    const where: any = {
       ...(search && {
         OR: [
-          { name: { contains: search, mode: 'insensitive' as const } },
-          { sku: { contains: search, mode: 'insensitive' as const } },
-          { description: { contains: search, mode: 'insensitive' as const } },
-          { brand: { contains: search, mode: 'insensitive' as const } },
+          { name: { contains: search, mode: 'insensitive' } },
+          { sku: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { brand: { contains: search, mode: 'insensitive' } },
         ],
       }),
       ...(status && { status }),
@@ -882,182 +930,11 @@ const affiliateDataSchema = z
   })
   .optional();
 
-// PDP Management Actions
-export async function addProductSeller(
-  productId: string,
-  brandId: string,
-  affiliateData?: AffiliateData,
-) {
-  try {
-    const pdp = await orm.createPdpJoin({
-      data: {
-        brandId,
-        productId,
-      },
-      include: {
-        brand: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            baseUrl: true,
-            slug: true,
-            status: true,
-          },
-        },
-      },
-    });
-
-    revalidatePath('/admin/cms');
-    return { data: pdp, success: true };
-  } catch (error) {
-    console.error('Error adding product seller:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to add seller',
-      success: false,
-    };
-  }
-}
-
-export async function removeProductSeller(productId: string, brandId: string) {
-  try {
-    await orm.deletePdpJoin({
-      where: {
-        productId_brandId: {
-          brandId,
-          productId,
-        },
-      },
-    });
-
-    revalidatePath('/admin/cms');
-    return { success: true };
-  } catch (error) {
-    console.error('Error removing product seller:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to remove seller',
-      success: false,
-    };
-  }
-}
-
-export async function getProductSellers(productId: string) {
-  try {
-    const sellers = await orm.findManyPdpJoins({
-      include: {
-        brand: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            baseUrl: true,
-            slug: true,
-            status: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-      where: { productId },
-    });
-
-    return { data: sellers, success: true };
-  } catch (error) {
-    console.error('Error fetching product sellers:', error);
-    return { error: 'Failed to fetch sellers', success: false };
-  }
-}
-
-export async function bulkUpdateProductSellers(productId: string, brandIds: string[]) {
-  try {
-    // Remove all existing PDPs for this product
-    await orm.deleteManyPdpJoins({
-      where: { productId },
-    });
-
-    // Add new PDPs
-    if (brandIds.length > 0) {
-      await orm.createManyPdpJoins({
-        data: brandIds.map((brandId) => ({
-          brandId,
-          productId,
-        })),
-      });
-    }
-
-    revalidatePath('/admin/cms');
-    return { success: true };
-  } catch (error) {
-    console.error('Error bulk updating product sellers:', error);
-    return {
-      error: 'Failed to update sellers',
-      success: false,
-    };
-  }
-}
-
-// Brand/Seller Management Actions
-export async function getBrands(params?: {
-  search?: string;
-  type?: string;
-  status?: string;
-  page?: number;
-  limit?: number;
-}) {
-  try {
-    const { type, limit = 50, page = 1, search, status } = params || {};
-    const skip = (page - 1) * limit;
-
-    const where = {
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' as const } },
-          { slug: { contains: search, mode: 'insensitive' as const } },
-        ],
-      }),
-      ...(type && { type }),
-      ...(status && { status }),
-      deletedAt: null, // Only active brands
-    };
-
-    const [brands, total] = await Promise.all([
-      orm.findManyBrands({
-        orderBy: { name: 'asc' },
-        select: {
-          id: true,
-          name: true,
-          type: true,
-          _count: {
-            select: {
-              products: true, // Count of products this brand sells
-            },
-          },
-          baseUrl: true,
-          createdAt: true,
-          slug: true,
-          status: true,
-        },
-        skip,
-        take: limit,
-        where,
-      }),
-      orm.countBrands({ where }),
-    ]);
-
-    return {
-      data: brands,
-      pagination: {
-        limit,
-        page,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-      success: true,
-    };
-  } catch (error) {
-    console.error('Error fetching brands:', error);
-    return { error: 'Failed to fetch brands', success: false };
-  }
-}
+// PDP management - Import these directly from @repo/database/prisma/actions when needed:
+// - createProductBrandAssociation (as addProductSeller)
+// - removeProductBrandAssociation (as removeProductSeller)  
+// - getProductBrands (as getProductSellers)
+// - updateProductBrands (as bulkUpdateProductSellers)
 
 // Get single product with all related data
 export async function getProductById(id: string) {

@@ -239,7 +239,7 @@ export default function GuestsPage() {
                   <ActionIcon
                     variant="light"
                     color={section.color}
-                    onClick={() => router.push(section.path)}
+                    onClick={() => router.push(section.path as any)}
                   >
                     <IconChevronRight size={16} />
                   </ActionIcon>
@@ -278,7 +278,7 @@ export default function GuestsPage() {
                     color={section.color}
                     size="xs"
                     rightSection={<IconChevronRight size={14} />}
-                    onClick={() => router.push(section.path)}
+                    onClick={() => router.push(section.path as any)}
                     style={{ marginLeft: 'auto' }}
                   >
                     Manage

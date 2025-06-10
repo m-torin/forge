@@ -22,11 +22,12 @@ import { getRecord } from '../../actions';
 import { ProductPreview } from '../../components/ProductPreview';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ViewProductPage({ params }: PageProps) {
-  const product = await getRecord('product', params.id, {
+  const { id } = await params;
+  const product = await getRecord('product', id, {
     _count: {
       select: {
         assets: true,

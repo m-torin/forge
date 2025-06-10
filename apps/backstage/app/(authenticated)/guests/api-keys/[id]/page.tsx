@@ -56,7 +56,7 @@ interface ApiKey {
 }
 
 interface ApiKeyDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function ApiKeyDetailPage({ params }: ApiKeyDetailPageProps) {
@@ -65,15 +65,22 @@ export default function ApiKeyDetailPage({ params }: ApiKeyDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [showFullKey, setShowFullKey] = useState(false);
   const clipboard = useClipboard({ timeout: 2000 });
+  const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
 
   useEffect(() => {
-    loadApiKey();
-  }, [params.id]);
+    params.then(p => setParamsData(p));
+  }, [params]);
+
+  useEffect(() => {
+    if (paramsData?.id) {
+      loadApiKey();
+    }
+  }, [paramsData?.id]);
 
   const loadApiKey = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/api-keys/${params.id}`);
+      const response = await fetch(`/api/admin/api-keys/${paramsData?.id}`);
       if (response.ok) {
         const data = await response.json();
         setApiKey(data.apiKey);
@@ -135,7 +142,7 @@ export default function ApiKeyDetailPage({ params }: ApiKeyDetailPageProps) {
                       {apiKey.enabled && !isExpired ? 'Active' : isExpired ? 'Expired' : 'Disabled'}
                     </Badge>
                     {apiKey.start && (
-                      <Code size="sm">
+                      <Code>
                         {apiKey.prefix || 'sk'}-...{apiKey.start}
                       </Code>
                     )}

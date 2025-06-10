@@ -46,7 +46,7 @@ import { useRouter } from 'next/navigation';
 
 import { InventoryManagement } from '../../components/InventoryManagement';
 import { MediaManagement } from '../../components/MediaManagement';
-import { PDPManagementModal } from '../../components/PDPManagement';
+import { PDPManagement } from '../../components/PDPManagement';
 import { PriceHistory } from '../../components/PriceHistory';
 import { ProductBundling } from '../../components/ProductBundling';
 import { ProductLifecycle } from '../../components/ProductLifecycle';
@@ -380,7 +380,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
   const hasAnyErrors = Object.keys(form.errors).length > 0;
 
   return (
-    <FormProvider form={form}>
+    <div>
       <ScrollArea h="100vh">
         <Stack p="md">
           {/* Header */}
@@ -1029,7 +1029,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
         </Stack>
 
         {/* Modals for advanced features */}
-        <PDPManagementModal
+        <PDPManagement
           onClose={closePdpModal}
           onUpdate={() => {}}
           opened={pdpModalOpened}
@@ -1045,6 +1045,6 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
           productName={product.name}
         />
       </ScrollArea>
-    </FormProvider>
+    </div>
   );
 }

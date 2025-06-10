@@ -10,6 +10,9 @@ export { prisma, prismaClientSingleton } from './client';
 // Export ORM functions
 export * as orm from './orm/index';
 
+// Export server actions
+export * as actions from './actions/index';
+
 // Export a function to create a new adapter instance
 export function createPrismaAdapter(): PrismaAdapter {
   return new PrismaAdapter();

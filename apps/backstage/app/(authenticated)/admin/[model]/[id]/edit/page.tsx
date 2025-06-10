@@ -7,16 +7,17 @@ import { getModelConfig } from '../../../lib/model-config';
 import { fetchRelationshipOptions } from '../../../lib/relationship-utils';
 
 interface PageProps {
-  params: { model: string; id: string };
+  params: Promise<{ model: string; id: string }>;
 }
 
 export default async function EditModelPage({ params }: PageProps) {
-  const config = getModelConfig(params.model);
+  const { model, id } = await params;
+  const config = getModelConfig(model);
   if (!config) {
     notFound();
   }
 
-  const record = await getRecord(params.model, params.id);
+  const record = await getRecord(model, id);
   if (!record) {
     notFound();
   }

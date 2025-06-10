@@ -1,6 +1,6 @@
 "use client";
 
-import { getCartAction } from "@/actions/data-service-actions";
+import { getCartAction } from "@/actions";
 import { type TCardProduct } from "@/data/data-service";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";

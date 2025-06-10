@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { auth } from '@repo/auth/server';
-import { database } from '@repo/database/prisma';
+import { auth } from '@repo/auth/nextjs';
+import { prisma as database } from '@repo/database/prisma';
 
 import { getModelSecurityConfig } from './lib/security-config';
 import {
@@ -12,7 +12,7 @@ import {
   validateSecureFields,
 } from './lib/security-middleware';
 
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@repo/database/prisma';
 
 // Generic types for CRUD operations
 type ModelName = Prisma.ModelName;

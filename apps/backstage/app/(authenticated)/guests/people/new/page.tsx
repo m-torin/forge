@@ -41,7 +41,7 @@ export default function NewUserPage() {
           message: 'User created successfully',
           color: 'green',
         });
-        router.push('/guests?tab=people');
+        router.push('/guests?tab=people' as any);
       } else {
         const error = await response.json();
         notifications.show({
@@ -109,7 +109,7 @@ export default function NewUserPage() {
               ]}
             />
             <Group justify="flex-end" mt="md">
-              <Button variant="light" onClick={() => router.push('/guests?tab=people')}>
+              <Button variant="light" onClick={() => router.push('/guests?tab=people' as any)}>
                 Cancel
               </Button>
               <Button 

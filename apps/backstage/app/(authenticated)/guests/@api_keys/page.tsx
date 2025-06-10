@@ -312,7 +312,7 @@ export default function ApiKeysPage() {
               {value}
             </Text>
             <Group gap="xs">
-              <Code size="xs">{row.prefix || 'forge'}_****{row.start || '****'}</Code>
+              <Code>{row.prefix || 'forge'}_****{row.start || '****'}</Code>
               {row.metadata?.type && (
                 <Badge size="xs" color={row.metadata.type === 'service' ? 'orange' : 'blue'}>
                   {row.metadata.type}
@@ -409,7 +409,6 @@ export default function ApiKeysPage() {
               icon: <IconPlus size={16} />,
               label: 'Create API Key',
               onClick: openCreateModal,
-              href: '/guests/api-keys/new',
             },
             secondary: [
               {
@@ -437,16 +436,15 @@ export default function ApiKeysPage() {
           actions={{
             custom: [
               {
-                icon: (row) => row.enabled ? <IconEyeOff size={14} /> : <IconEye size={14} />,
-                label: (row) => row.enabled ? 'Disable' : 'Enable',
+                icon: <IconEyeOff size={14} />,
+                label: 'Toggle Status',
                 onClick: (row) => handleToggleKey(row.id, !row.enabled),
-                color: (row) => row.enabled ? 'orange' : 'green',
+                color: 'orange',
               },
               {
                 icon: <IconRefresh size={14} />,
                 label: 'Regenerate',
                 onClick: (row) => console.log('Regenerate key', row),
-                condition: (row) => row.enabled && !isKeyExpired(row.expiresAt),
               },
               {
                 icon: <IconActivity size={14} />,

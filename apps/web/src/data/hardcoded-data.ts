@@ -928,30 +928,34 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'Black',
+              value: 'Black',
               swatch: {
                 color: '#000000',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Pink Yarrow',
+              value: 'Pink Yarrow',
               swatch: {
                 color: 'oklch(42.1% 0.095 57.708)',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'indigo',
+              value: 'indigo',
               swatch: {
                 color: '#D1C9C1',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Stone',
+              value: 'Stone',
               swatch: {
                 color: '#f7e3d4',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -961,22 +965,27 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'XXS',
+              value: 'XXS',
               swatch: null,
             },
             {
               name: 'XS',
+              value: 'XS',
               swatch: null,
             },
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
             {
               name: 'L',
+              value: 'L',
               swatch: null,
             },
             {
               name: 'XL',
+              value: 'XL',
               swatch: null,
             },
           ],
@@ -1016,30 +1025,34 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'Emerald Green',
+              value: 'Emerald Green',
               swatch: {
                 color: '#2E8B57',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Ivory',
+              value: 'Ivory',
               swatch: {
                 color: 'oklch(84.1% 0.238 128.85)',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Navy Blue',
+              value: 'Navy Blue',
               swatch: {
                 color: '#000080',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Coral',
+              value: 'Coral',
               swatch: {
                 color: '#FF7F50',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -1049,18 +1062,22 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'XS',
+              value: 'XS',
               swatch: null,
             },
             {
               name: 'S',
+              value: 'S',
               swatch: null,
             },
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
             {
               name: 'L',
+              value: 'L',
               swatch: null,
             },
           ],
@@ -1100,23 +1117,26 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'Light Blue',
+              value: 'Light Blue',
               swatch: {
                 color: '#ADD8E6',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Dark Blue',
+              value: 'Dark Blue',
               swatch: {
                 color: '#00008B',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Black',
+              value: 'Black',
               swatch: {
                 color: '#000000',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -1126,18 +1146,22 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'S',
+              value: 'S',
               swatch: null,
             },
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
             {
               name: 'L',
+              value: 'L',
               swatch: null,
             },
             {
               name: 'XL',
+              value: 'XL',
               swatch: null,
             },
           ],
@@ -1177,23 +1201,26 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'Charcoal',
+              value: 'Charcoal',
               swatch: {
                 color: '#36454F',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Cream',
+              value: 'Cream',
               swatch: {
                 color: 'oklch(81% 0.117 11.638)',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Burgundy',
+              value: 'Burgundy',
               swatch: {
                 color: '#800020',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -1203,18 +1230,22 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'XS',
+              value: 'XS',
               swatch: null,
             },
             {
               name: 'S',
+              value: 'S',
               swatch: null,
             },
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
             {
               name: 'L',
+              value: 'L',
               swatch: null,
             },
           ],
@@ -1254,23 +1285,26 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'Beige',
+              value: 'Beige',
               swatch: {
                 color: '#F5F5DC',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Navy',
+              value: 'Navy',
               swatch: {
                 color: '#000080',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Olive',
+              value: 'Olive',
               swatch: {
                 color: '#808000',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -1280,14 +1314,17 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
             {
               name: 'L',
+              value: 'L',
               swatch: null,
             },
             {
               name: 'XL',
+              value: 'XL',
               swatch: null,
             },
           ],
@@ -1327,23 +1364,26 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'Midnight Blue',
+              value: 'Midnight Blue',
               swatch: {
                 color: '#191970',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Wine Red',
+              value: 'Wine Red',
               swatch: {
                 color: '#722F37',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Emerald',
+              value: 'Emerald',
               swatch: {
                 color: '#50C878',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -1353,14 +1393,17 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'XS',
+              value: 'XS',
               swatch: null,
             },
             {
               name: 'S',
+              value: 'S',
               swatch: null,
             },
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
           ],
@@ -1400,23 +1443,26 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'Camel',
+              value: 'Camel',
               swatch: {
                 color: '#C19A6B',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Black',
+              value: 'Black',
               swatch: {
                 color: '#000000',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Grey',
+              value: 'Grey',
               swatch: {
                 color: '#808080',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -1426,18 +1472,22 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'S',
+              value: 'S',
               swatch: null,
             },
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
             {
               name: 'L',
+              value: 'L',
               swatch: null,
             },
             {
               name: 'XL',
+              value: 'XL',
               swatch: null,
             },
           ],
@@ -1477,23 +1527,26 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'White',
+              value: 'White',
               swatch: {
                 color: 'oklch(81% 0.117 11.638)',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Light Blue',
+              value: 'Light Blue',
               swatch: {
                 color: '#ADD8E6',
-                image: null,
+                image: undefined,
               },
             },
             {
               name: 'Pink',
+              value: 'Pink',
               swatch: {
                 color: '#FFC1CC',
-                image: null,
+                image: undefined,
               },
             },
           ],
@@ -1503,14 +1556,17 @@ export async function getProducts() {
           optionValues: [
             {
               name: 'S',
+              value: 'S',
               swatch: null,
             },
             {
               name: 'M',
+              value: 'M',
               swatch: null,
             },
             {
               name: 'L',
+              value: 'L',
               swatch: null,
             },
           ],
@@ -1580,14 +1636,18 @@ export async function getProductDetailByHandle(handle: string) {
   };
 }
 
-// COMMON Types ------------------------------------------------------------------------
-export type TCollection = Partial<Awaited<ReturnType<typeof getCollections>>[number]>;
-export type TProductItem = Partial<Awaited<ReturnType<typeof getProducts>>[number]> & {
-  salePrice?: number;
-  badges?: string[];
-};
-export type TProductDetail = Partial<Awaited<ReturnType<typeof getProductDetailByHandle>>>;
-export type TCardProduct = Partial<Awaited<ReturnType<typeof getCart>['lines'][number]>>;
-export type TBlogPost = Partial<Awaited<ReturnType<typeof getBlogPosts>>[number]>;
-export type TReview = Partial<Awaited<ReturnType<typeof getProductReviews>>[number]>;
+// Re-export types from design-system to maintain compatibility
+export type {
+  TCollection,
+  TProductItem,
+  TProductDetail,
+  TCardProduct,
+  TBlogPost,
+  TReview,
+  TProductImage,
+  TNavigationItem,
+  TGroupCollection,
+} from '@repo/design-system/mantine-ciseco/data/types';
+
+// Additional types specific to web app
 export type TOrder = Partial<Awaited<ReturnType<typeof getOrders>>[number]>;

@@ -18,7 +18,8 @@ import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useCallback, useEffect, useState } from 'react';
 
-import { createProduct, getProducts, updateProduct } from '../actions';
+import { getProducts } from '@repo/database/prisma/actions';
+import { createProduct, updateProduct } from '../actions';
 
 import type { Product } from '@repo/database/prisma';
 

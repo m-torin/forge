@@ -29,7 +29,12 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { addProductSeller, getBrands, getProductSellers, removeProductSeller } from '../actions';
+import { 
+  createProductBrandAssociation as addProductSeller,
+  removeProductBrandAssociation as removeProductSeller,
+  getProductBrands as getProductSellers,
+  getBrands 
+} from '@repo/database/prisma/actions';
 import {
   formatCurrency,
   formatDate,

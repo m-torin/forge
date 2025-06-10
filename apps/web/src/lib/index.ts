@@ -1,1 +1,1 @@
-export * from "./data-service";
+export * from "../data/data-service";

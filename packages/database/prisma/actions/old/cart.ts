@@ -11,6 +11,7 @@ export interface CartItem {
   quantity: number;
   size?: string;
   title: string;
+  variantId?: string;
 }
 
 export interface Cart {
@@ -24,7 +25,7 @@ export interface Cart {
   updatedAt: Date;
 }
 
-// Mock cart storage - in production use Redis or database
+// In-memory cart storage - in production use Redis or database
 const carts = new Map<string, Cart>();
 
 async function getOrCreateCart(): Promise<Cart> {
@@ -88,7 +89,8 @@ export async function addToCart(
     (cartItem) =>
       cartItem.productId === item.productId &&
       cartItem.size === item.size &&
-      cartItem.color === item.color,
+      cartItem.color === item.color &&
+      cartItem.variantId === item.variantId,
   );
 
   if (existingItemIndex > -1) {
@@ -107,19 +109,26 @@ export async function addToCart(
 
   // Revalidate cart page
   revalidatePath("/cart");
+  revalidatePath("/[locale]/cart");
 
   return updatedCart;
 }
 
 export async function updateCartItem(
   productId: string,
-  updates: { quantity?: number; size?: string; color?: string },
+  updates: { 
+    quantity?: number; 
+    size?: string; 
+    color?: string;
+    variantId?: string;
+  },
 ) {
   "use server";
 
   const cart = await getOrCreateCart();
   const itemIndex = cart.items.findIndex(
-    (item) => item.productId === productId,
+    (item) => item.productId === productId && 
+              (!updates.variantId || item.variantId === updates.variantId),
   );
 
   if (itemIndex === -1) {
@@ -141,14 +150,33 @@ export async function updateCartItem(
   carts.set(cart.id, updatedCart);
 
   revalidatePath("/cart");
+  revalidatePath("/[locale]/cart");
 
   return updatedCart;
 }
 
-export async function removeFromCart(productId: string) {
+export async function removeFromCart(productId: string, variantId?: string) {
   "use server";
 
-  return updateCartItem(productId, { quantity: 0 });
+  const cart = await getOrCreateCart();
+  const itemIndex = cart.items.findIndex(
+    (item) => item.productId === productId && 
+              (!variantId || item.variantId === variantId),
+  );
+
+  if (itemIndex === -1) {
+    throw new Error("Item not found in cart");
+  }
+
+  cart.items.splice(itemIndex, 1);
+
+  const updatedCart = calculateCartTotals(cart);
+  carts.set(cart.id, updatedCart);
+
+  revalidatePath("/cart");
+  revalidatePath("/[locale]/cart");
+
+  return updatedCart;
 }
 
 export async function getCart() {
@@ -167,6 +195,7 @@ export async function clearCart() {
   carts.set(cart.id, updatedCart);
 
   revalidatePath("/cart");
+  revalidatePath("/[locale]/cart");
 
   return updatedCart;
 }
@@ -177,7 +206,7 @@ export async function applyDiscountCode(code: string) {
 
   const cart = await getOrCreateCart();
 
-  // Mock discount codes
+  // Mock discount codes - in production, validate against database
   const discounts: Record<string, number> = {
     FREESHIP: -1, // Special code for free shipping
     SAVE10: 0.1,
@@ -202,6 +231,7 @@ export async function applyDiscountCode(code: string) {
   carts.set(cart.id, updatedCart);
 
   revalidatePath("/cart");
+  revalidatePath("/[locale]/cart");
 
   return { cart: updatedCart, discountApplied: code };
 }

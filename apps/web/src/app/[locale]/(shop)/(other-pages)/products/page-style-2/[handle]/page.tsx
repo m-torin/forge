@@ -37,7 +37,7 @@ export async function generateMetadata({
   const product = await getProductDetailByHandle(handle);
   const title = product?.title || _dict.product.productDetail;
   const description =
-    product?.description || _dict.product.productDetailDescription;
+    (product as any)?.description || _dict.product.productDetailDescription;
   return {
     description,
     title,

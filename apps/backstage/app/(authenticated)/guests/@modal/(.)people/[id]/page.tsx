@@ -42,21 +42,28 @@ interface User {
 }
 
 interface UserDetailModalProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function UserDetailModal({ params }: UserDetailModalProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
 
   useEffect(() => {
-    loadUser();
-  }, [params.id]);
+    params.then(p => setParamsData(p));
+  }, [params]);
+
+  useEffect(() => {
+    if (paramsData?.id) {
+      loadUser();
+    }
+  }, [paramsData?.id]);
 
   const loadUser = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/users/${params.id}`);
+      const response = await fetch(`/api/admin/users/${paramsData?.id}`);
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);

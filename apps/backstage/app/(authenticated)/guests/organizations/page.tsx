@@ -381,7 +381,6 @@ export default function OrganizationsPage() {
               icon: <IconPlus size={16} />,
               label: 'Create Organization',
               onClick: openCreateModal,
-              href: '/guests/organizations/new',
             },
             secondary: [
               {

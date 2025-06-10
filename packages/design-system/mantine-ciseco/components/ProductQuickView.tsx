@@ -82,7 +82,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
             <span className="text-sm font-medium">{option.name}</span>
           </label>
           <div className="mt-2.5 flex gap-x-2.5">
-            {option.optionValues.map((value, index) => {
+            {option.optionValues?.map((value, index) => {
               // for demo purpose
               const isActive = index === 1;
 
@@ -325,10 +325,10 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
                 <Image
                   data-testid="product-image"
                   className="rounded-xl object-cover"
-                  alt={images[0].alt}
+                  alt={images[0].alt || ''}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  src={images[0]}
+                  src={images[0].src}
                 />
               )}
             </div>
@@ -345,10 +345,10 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
                 <div key={index} className="aspect-[3/4] relative">
                   <Image
                     className="rounded-xl object-cover"
-                    alt={image.alt}
+                    alt={image.alt || ''}
                     fill
+                    src={image.src}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    src={image}
                   />
                 </div>
               );

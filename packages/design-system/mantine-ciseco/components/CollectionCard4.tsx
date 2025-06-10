@@ -55,10 +55,10 @@ const CollectionCard4: FC<CollectionCard4Props> = ({
               <div className="absolute inset-4">
                 <Image
                   className="object-cover"
-                  alt={collection.image?.alt}
+                  alt={collection.image?.alt || ''}
                   fill
                   sizes="80px"
-                  src={collection.image}
+                  src={collection.image?.src || ''}
                 />
               </div>
             </div>

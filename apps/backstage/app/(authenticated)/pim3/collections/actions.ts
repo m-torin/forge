@@ -1,8 +1,23 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { prisma, orm } from '@repo/database/prisma';
+import { auth } from '@repo/auth/server';
 
 import type { CollectionType, ContentStatus } from '@repo/database/prisma';
+
+
+/**
+ * PIM3-specific collection actions
+ * 
+ * These actions provide enhanced functionality specific to PIM3:
+ * - Hierarchical collection relationships (parent/child)
+ * - Soft delete/restore capabilities
+ * - Collection tree visualization
+ * - Bulk operations
+ * - User associations
+ * - Detailed filtering and metadata
+ */
 
 export interface CollectionData {
   copy?: any;
@@ -14,14 +29,13 @@ export interface CollectionData {
   userId?: string;
 }
 
-// Get all collections with hierarchical structure
+// Enhanced getCollections with PIM3-specific features (hierarchy, user tracking, etc.)
 export async function getCollections() {
   try {
-    // Remove auth check for testing
-    // const session = await auth.api.getSession();
-    // if (!session) {
-    //   throw new Error('Unauthorized');
-    // }
+    const session = await auth.api.getSession();
+    if (!session) {
+      throw new Error('Unauthorized');
+    }
 
     const collections = await orm.findManyCollections({
       include: {

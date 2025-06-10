@@ -7,11 +7,12 @@ import { getModelConfig } from '../../lib/model-config';
 import { fetchRelationshipOptions } from '../../lib/relationship-utils';
 
 interface PageProps {
-  params: { model: string };
+  params: Promise<{ model: string }>;
 }
 
 export default async function NewModelPage({ params }: PageProps) {
-  const config = getModelConfig(params.model);
+  const { model } = await params;
+  const config = getModelConfig(model);
   if (!config) {
     notFound();
   }
@@ -101,13 +102,13 @@ export default async function NewModelPage({ params }: PageProps) {
       }
     });
 
-    await createRecord(params.model, data);
-    redirect(`/admin/${params.model}`);
+    await createRecord(model, data);
+    redirect(`/admin/${model}`);
   }
 
   return (
     <ResponsiveModelForm
-      cancelHref={`/admin/${params.model}`}
+      cancelHref={`/admin/${model}`}
       autoSave={false} // Don't auto-save on create
       collapsibleSections={false}
       confirmCancel={true}
