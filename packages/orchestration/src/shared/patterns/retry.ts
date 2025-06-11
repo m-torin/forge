@@ -16,6 +16,71 @@ export interface RetryOptions extends Partial<RetryPattern> {
 }
 
 /**
+ * Calculate delay for a specific attempt using different strategies
+ */
+export function calculateDelay(
+  attempt: number,
+  pattern: Pick<RetryPattern, 'baseDelay' | 'jitter' | 'maxDelay' | 'strategy'>,
+): number {
+  let delay: number;
+
+  switch (pattern.strategy) {
+    case 'fixed':
+      delay = pattern.baseDelay;
+      break;
+
+    case 'linear':
+      delay = pattern.baseDelay * attempt;
+      break;
+
+    case 'exponential':
+    default:
+      delay = pattern.baseDelay * Math.pow(2, attempt - 1);
+      break;
+  }
+
+  // Apply maximum delay cap
+  if (pattern.maxDelay && delay > pattern.maxDelay) {
+    delay = pattern.maxDelay;
+  }
+
+  // Apply jitter if enabled
+  if (pattern.jitter) {
+    // Add ±25% jitter
+    const jitterRange = delay * 0.25;
+    const jitterOffset = (Math.random() - 0.5) * 2 * jitterRange;
+    delay += jitterOffset;
+  }
+
+  return Math.max(0, Math.floor(delay));
+}
+
+/**
+ * Create a retry decorator for class methods
+ */
+export function Retry(options: RetryOptions = {}) {
+  return function <T extends (...args: any[]) => Promise<any>>(
+    target: any,
+    propertyName: string,
+    descriptor: PropertyDescriptor,
+  ) {
+    const method = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const result = await withRetry(() => method.apply(this, args), options);
+
+      if (result.success) {
+        return result.data;
+      } else {
+        throw result.error;
+      }
+    };
+
+    return descriptor;
+  };
+}
+
+/**
  * Execute a function with retry logic
  */
 export async function withRetry<T>(
@@ -115,98 +180,33 @@ export async function withRetry<T>(
 }
 
 /**
- * Create a retry decorator for class methods
- */
-export function Retry(options: RetryOptions = {}) {
-  return function <T extends (...args: any[]) => Promise<any>>(
-    target: any,
-    propertyName: string,
-    descriptor: PropertyDescriptor,
-  ) {
-    const method = descriptor.value;
-
-    descriptor.value = async function (...args: any[]) {
-      const result = await withRetry(() => method.apply(this, args), options);
-
-      if (result.success) {
-        return result.data;
-      } else {
-        throw result.error;
-      }
-    };
-
-    return descriptor;
-  };
-}
-
-/**
- * Calculate delay for a specific attempt using different strategies
- */
-export function calculateDelay(
-  attempt: number,
-  pattern: Pick<RetryPattern, 'strategy' | 'baseDelay' | 'maxDelay' | 'jitter'>,
-): number {
-  let delay: number;
-
-  switch (pattern.strategy) {
-    case 'fixed':
-      delay = pattern.baseDelay;
-      break;
-
-    case 'linear':
-      delay = pattern.baseDelay * attempt;
-      break;
-
-    case 'exponential':
-    default:
-      delay = pattern.baseDelay * Math.pow(2, attempt - 1);
-      break;
-  }
-
-  // Apply maximum delay cap
-  if (pattern.maxDelay && delay > pattern.maxDelay) {
-    delay = pattern.maxDelay;
-  }
-
-  // Apply jitter if enabled
-  if (pattern.jitter) {
-    // Add ±25% jitter
-    const jitterRange = delay * 0.25;
-    const jitterOffset = (Math.random() - 0.5) * 2 * jitterRange;
-    delay += jitterOffset;
-  }
-
-  return Math.max(0, Math.floor(delay));
-}
-
-/**
  * Default retry strategies for common scenarios
  */
 export const RetryStrategies = {
+  /** Database-specific retry */
+  database: {
+    baseDelay: 1000,
+    jitter: true,
+    maxAttempts: 3,
+    maxDelay: 5000,
+    shouldRetry: (error: Error) => {
+      const message = error.message?.toLowerCase() || '';
+      return (
+        message.includes('connection') ||
+        message.includes('timeout') ||
+        message.includes('lock') ||
+        message.includes('deadlock')
+      );
+    },
+    strategy: 'exponential' as const,
+  },
+
   /** Quick retry with exponential backoff */
   fast: {
     baseDelay: 100,
     jitter: true,
     maxAttempts: 3,
     maxDelay: 1000,
-    strategy: 'exponential' as const,
-  },
-
-  /** Standard retry with moderate delays */
-  standard: {
-    baseDelay: 1000,
-    jitter: true,
-    maxAttempts: 3,
-    maxDelay: 10000,
-    strategy: 'exponential' as const,
-  },
-
-  /** Patient retry for long-running operations */
-  patient: {
-    baseDelay: 2000,
-    jitter: true,
-    maxAttempts: 5,
-    maxDelay: 30000,
     strategy: 'exponential' as const,
   },
 
@@ -230,30 +230,30 @@ export const RetryStrategies = {
     strategy: 'exponential' as const,
   },
 
-  /** Database-specific retry */
-  database: {
-    baseDelay: 1000,
-    jitter: true,
-    maxAttempts: 3,
-    maxDelay: 5000,
-    shouldRetry: (error: Error) => {
-      const message = error.message?.toLowerCase() || '';
-      return (
-        message.includes('connection') ||
-        message.includes('timeout') ||
-        message.includes('lock') ||
-        message.includes('deadlock')
-      );
-    },
-    strategy: 'exponential' as const,
-  },
-
   /** No retry - just execute once */
   none: {
     baseDelay: 0,
     jitter: false,
     maxAttempts: 1,
     strategy: 'fixed' as const,
+  },
+
+  /** Patient retry for long-running operations */
+  patient: {
+    baseDelay: 2000,
+    jitter: true,
+    maxAttempts: 5,
+    maxDelay: 30000,
+    strategy: 'exponential' as const,
+  },
+
+  /** Standard retry with moderate delays */
+  standard: {
+    baseDelay: 1000,
+    jitter: true,
+    maxAttempts: 3,
+    maxDelay: 10000,
+    strategy: 'exponential' as const,
   },
 } as const;
 

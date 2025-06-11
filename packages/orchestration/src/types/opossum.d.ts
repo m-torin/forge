@@ -28,22 +28,21 @@ declare module 'opossum' {
     semaphoreRejections: number;
   }
 
-  export default class CircuitBreaker<T extends any[], R> {
-    constructor(fn: (...args: T) => Promise<R>, options?: CircuitBreakerOptions);
-
-    fire(...args: T): Promise<R>;
-
-    get stats(): CircuitBreakerStats;
-    get options(): CircuitBreakerOptions;
+  export default class CircuitBreaker<T extends unknown[], R> {
     get closed(): boolean;
-    get opened(): boolean;
+
     get halfOpen(): boolean;
 
+    get opened(): boolean;
+    get options(): CircuitBreakerOptions;
+    get stats(): CircuitBreakerStats;
+    constructor(fn: (...args: T) => Promise<R>, options?: CircuitBreakerOptions);
     close(): void;
-    open(): void;
-    destroy(): void;
 
-    on(event: 'open' | 'close' | 'halfOpen', listener: () => void): this;
-    on(event: string, listener: (...args: any[]) => void): this;
+    destroy(): void;
+    fire(...args: T): Promise<R>;
+    on(event: 'close' | 'halfOpen' | 'open', listener: () => void): this;
+    on(event: string, listener: (...args: unknown[]) => void): this;
+    open(): void;
   }
 }

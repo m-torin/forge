@@ -1,21 +1,36 @@
 /**
  * Orchestration Package - Main exports
  * This package provides workflow orchestration capabilities using various providers
+ * 
+ * For environment-specific imports, use:
+ * - @repo/orchestration/client - Client-side only
+ * - @repo/orchestration/server - Server-side only
+ * - @repo/orchestration/client/next - Next.js client features
+ * - @repo/orchestration/server/next - Next.js server features
  */
 
-// Re-export everything from shared
-export * from './shared/index';
+// Only export core shared types that are needed across all environments
+export type {
+  WorkflowDefinition,
+  WorkflowExecution,
+  WorkflowExecutionStatus,
+  WorkflowStep,
+  WorkflowStepStatus,
+  WorkflowContext,
+  WorkflowError,
+  WorkflowProvider,
+  OrchestrationError,
+} from './shared/types/index';
 
-// Re-export providers
-export * from './providers/index';
+// Export shared utilities that are environment-agnostic
+export {
+  createOrchestrationError,
+  isOrchestrationError,
+  OrchestrationErrorCodes,
+} from './shared/utils/errors';
 
-// Re-export convenience functions from server
-export { createWorkflowEngine, workflowEngine } from './server';
-
-// Re-export client utilities
-export { createWorkflowClient, WorkflowClient, workflowClient } from './client';
-export type { WorkflowClientConfig } from './client';
-
-// Re-export Next.js integrations
-export * from './client-next';
-export * from './server-next';
+// Export validation utilities
+export {
+  validateWorkflowDefinition,
+  validateWorkflowStep,
+} from './shared/utils/validation';

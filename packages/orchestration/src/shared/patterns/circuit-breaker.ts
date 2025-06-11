@@ -22,6 +22,24 @@ export class CircuitBreakerManager {
   private breakers = new Map<string, OpossumCircuitBreaker<any, any>>();
 
   /**
+   * Remove all circuit breakers
+   */
+  clear(): void {
+    for (const [name, breaker] of this.breakers) {
+      // TODO: Fix circuit breaker destroy method
+      // breaker.destroy();
+    }
+    this.breakers.clear();
+  }
+
+  /**
+   * Get all circuit breaker statistics
+   */
+  getAllStats(): any[] {
+    return Array.from(this.breakers.keys()).map((name) => this.getStats(name));
+  }
+
+  /**
    * Get or create a circuit breaker
    */
   getCircuitBreaker<T extends any[], R>(
@@ -43,12 +61,12 @@ export class CircuitBreakerManager {
     };
 
     const breaker = new OpossumCircuitBreaker(fn, {
-      name,
       capacity: 10,
       errorFilter: options.errorFilter,
       errorThresholdPercentage:
         (pattern.failureThreshold / (pattern.minimumCallsToTrip || 10)) * 100,
       group: 'orchestration',
+      name,
       resetTimeout: pattern.resetTimeout,
       rollingCountBuckets: 10,
       // Additional opossum options
@@ -85,6 +103,67 @@ export class CircuitBreakerManager {
 
     this.breakers.set(name, breaker);
     return breaker;
+  }
+
+  /**
+   * Get circuit breaker statistics
+   */
+  getStats(name: string): any {
+    const breaker = this.breakers.get(name);
+    if (!breaker) {
+      return null;
+    }
+
+    return {
+      name,
+      options: (breaker as any).options,
+      state: breaker.closed ? 'closed' : breaker.opened ? 'open' : 'half-open',
+      stats: breaker.stats,
+    };
+  }
+
+  /**
+   * Remove a circuit breaker
+   */
+  remove(name: string): boolean {
+    const breaker = this.breakers.get(name);
+    if (!breaker) {
+      return false;
+    }
+
+    // TODO: Fix circuit breaker destroy method
+    // breaker.destroy();
+    this.breakers.delete(name);
+    return true;
+  }
+
+  /**
+   * Reset a circuit breaker
+   */
+  reset(name: string): boolean {
+    const breaker = this.breakers.get(name);
+    if (!breaker) {
+      return false;
+    }
+
+    breaker.close();
+    return true;
+  }
+
+  /**
+   * Reset all circuit breakers
+   */
+  resetAll(): void {
+    for (const breaker of this.breakers.values()) {
+      breaker.close();
+    }
+  }
+
+  /**
+   * Get the number of registered circuit breakers
+   */
+  size(): number {
+    return this.breakers.size;
   }
 
   /**
@@ -154,101 +233,10 @@ export class CircuitBreakerManager {
       };
     }
   }
-
-  /**
-   * Get circuit breaker statistics
-   */
-  getStats(name: string): any {
-    const breaker = this.breakers.get(name);
-    if (!breaker) {
-      return null;
-    }
-
-    return {
-      name,
-      options: (breaker as any).options,
-      state: breaker.closed ? 'closed' : breaker.opened ? 'open' : 'half-open',
-      stats: breaker.stats,
-    };
-  }
-
-  /**
-   * Get all circuit breaker statistics
-   */
-  getAllStats(): any[] {
-    return Array.from(this.breakers.keys()).map((name) => this.getStats(name));
-  }
-
-  /**
-   * Reset a circuit breaker
-   */
-  reset(name: string): boolean {
-    const breaker = this.breakers.get(name);
-    if (!breaker) {
-      return false;
-    }
-
-    breaker.close();
-    return true;
-  }
-
-  /**
-   * Reset all circuit breakers
-   */
-  resetAll(): void {
-    for (const breaker of this.breakers.values()) {
-      breaker.close();
-    }
-  }
-
-  /**
-   * Remove a circuit breaker
-   */
-  remove(name: string): boolean {
-    const breaker = this.breakers.get(name);
-    if (!breaker) {
-      return false;
-    }
-
-    // TODO: Fix circuit breaker destroy method
-    // breaker.destroy();
-    this.breakers.delete(name);
-    return true;
-  }
-
-  /**
-   * Remove all circuit breakers
-   */
-  clear(): void {
-    for (const [name, breaker] of this.breakers) {
-      // TODO: Fix circuit breaker destroy method
-      // breaker.destroy();
-    }
-    this.breakers.clear();
-  }
-
-  /**
-   * Get the number of registered circuit breakers
-   */
-  size(): number {
-    return this.breakers.size;
-  }
 }
 
 // Global circuit breaker manager instance
 const globalManager = new CircuitBreakerManager();
-
-/**
- * Execute a function with circuit breaker protection
- */
-export async function withCircuitBreaker<T extends any[], R>(
-  name: string,
-  fn: (...args: T) => Promise<R>,
-  args: T,
-  options: CircuitBreakerOptions = {},
-): Promise<PatternResult<R>> {
-  return globalManager.withCircuitBreaker(name, fn, args, options);
-}
 
 /**
  * Create a circuit breaker decorator
@@ -302,36 +290,21 @@ export function resetCircuitBreaker(name?: string): boolean | void {
 }
 
 /**
+ * Execute a function with circuit breaker protection
+ */
+export async function withCircuitBreaker<T extends any[], R>(
+  name: string,
+  fn: (...args: T) => Promise<R>,
+  args: T,
+  options: CircuitBreakerOptions = {},
+): Promise<PatternResult<R>> {
+  return globalManager.withCircuitBreaker(name, fn, args, options);
+}
+
+/**
  * Predefined circuit breaker configurations
  */
 export const CircuitBreakerConfigs = {
-  /** Fast-failing circuit breaker for quick operations */
-  fast: {
-    failureThreshold: 3,
-    minimumCallsToTrip: 5,
-    resetTimeout: 10000, // 10 seconds
-    rollingCountWindow: 5000, // 5 seconds
-    timeout: 5000, // 5 seconds
-  },
-
-  /** Standard circuit breaker for most operations */
-  standard: {
-    failureThreshold: 5,
-    minimumCallsToTrip: 10,
-    resetTimeout: 30000, // 30 seconds
-    rollingCountWindow: 10000, // 10 seconds
-    timeout: 30000, // 30 seconds
-  },
-
-  /** Patient circuit breaker for slow operations */
-  patient: {
-    failureThreshold: 10,
-    minimumCallsToTrip: 20,
-    resetTimeout: 60000, // 1 minute
-    rollingCountWindow: 30000, // 30 seconds
-    timeout: 60000, // 1 minute
-  },
-
   /** API-specific circuit breaker */
   api: {
     errorFilter: (error: Error) => {
@@ -361,6 +334,33 @@ export const CircuitBreakerConfigs = {
     resetTimeout: 15000, // 15 seconds
     rollingCountWindow: 5000, // 5 seconds
     timeout: 5000, // 5 seconds
+  },
+
+  /** Fast-failing circuit breaker for quick operations */
+  fast: {
+    failureThreshold: 3,
+    minimumCallsToTrip: 5,
+    resetTimeout: 10000, // 10 seconds
+    rollingCountWindow: 5000, // 5 seconds
+    timeout: 5000, // 5 seconds
+  },
+
+  /** Patient circuit breaker for slow operations */
+  patient: {
+    failureThreshold: 10,
+    minimumCallsToTrip: 20,
+    resetTimeout: 60000, // 1 minute
+    rollingCountWindow: 30000, // 30 seconds
+    timeout: 60000, // 1 minute
+  },
+
+  /** Standard circuit breaker for most operations */
+  standard: {
+    failureThreshold: 5,
+    minimumCallsToTrip: 10,
+    resetTimeout: 30000, // 30 seconds
+    rollingCountWindow: 10000, // 10 seconds
+    timeout: 30000, // 30 seconds
   },
 } as const;
 

@@ -12,65 +12,6 @@ import { createValidationError, OrchestrationErrorCodes } from '../../utils/erro
 import type { StepValidationConfig, ValidationResult, WorkflowStepDefinition } from './step-types';
 
 /**
- * Validate step input using the configured validation schema and custom validators
- */
-export async function validateStepInput<TInput>(
-  input: TInput,
-  config?: StepValidationConfig<TInput>,
-): Promise<void> {
-  if (!config) return;
-
-  // Schema validation
-  if (config.input) {
-    const result = config.input.safeParse(input);
-    if (!result.success) {
-      throw createValidationError(
-        `Input validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
-        {
-          validationErrors: result.error.issues,
-          code: OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
-        },
-      );
-    }
-  }
-
-  // Custom validation
-  if (config.customValidation) {
-    const result = await config.customValidation(input);
-    if (!result.valid) {
-      throw createValidationError(
-        `Custom input validation failed: ${result.errors?.join(', ') || 'Unknown validation error'}`,
-        {
-          validationResult: result,
-          code: OrchestrationErrorCodes.STEP_CUSTOM_VALIDATION_ERROR,
-        },
-      );
-    }
-  }
-}
-
-/**
- * Validate step output using the configured validation schema
- */
-export async function validateStepOutput<TOutput>(
-  output: TOutput,
-  schema?: z.ZodSchema<TOutput>,
-): Promise<void> {
-  if (!schema) return;
-
-  const result = schema.safeParse(output);
-  if (!result.success) {
-    throw createValidationError(
-      `Output validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
-      {
-        validationErrors: result.error.issues,
-        code: OrchestrationErrorCodes.STEP_OUTPUT_VALIDATION_ERROR,
-      },
-    );
-  }
-}
-
-/**
  * Validate a workflow step definition to ensure all required fields are present
  * and configuration values are valid
  */
@@ -138,7 +79,66 @@ export function validateStepDefinition<TInput, TOutput>(
   }
 
   return {
-    valid: errors.length === 0,
     errors: errors.length > 0 ? errors : undefined,
+    valid: errors.length === 0,
   };
+}
+
+/**
+ * Validate step input using the configured validation schema and custom validators
+ */
+export async function validateStepInput<TInput>(
+  input: TInput,
+  config?: StepValidationConfig<TInput>,
+): Promise<void> {
+  if (!config) return;
+
+  // Schema validation
+  if (config.input) {
+    const result = config.input.safeParse(input);
+    if (!result.success) {
+      throw createValidationError(
+        `Input validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
+        {
+          code: OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
+          validationErrors: result.error.issues,
+        },
+      );
+    }
+  }
+
+  // Custom validation
+  if (config.customValidation) {
+    const result = await config.customValidation(input);
+    if (!result.valid) {
+      throw createValidationError(
+        `Custom input validation failed: ${result.errors?.join(', ') || 'Unknown validation error'}`,
+        {
+          code: OrchestrationErrorCodes.STEP_CUSTOM_VALIDATION_ERROR,
+          validationResult: result,
+        },
+      );
+    }
+  }
+}
+
+/**
+ * Validate step output using the configured validation schema
+ */
+export async function validateStepOutput<TOutput>(
+  output: TOutput,
+  schema?: z.ZodSchema<TOutput>,
+): Promise<void> {
+  if (!schema) return;
+
+  const result = schema.safeParse(output);
+  if (!result.success) {
+    throw createValidationError(
+      `Output validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
+      {
+        code: OrchestrationErrorCodes.STEP_OUTPUT_VALIDATION_ERROR,
+        validationErrors: result.error.issues,
+      },
+    );
+  }
 }

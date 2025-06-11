@@ -9,7 +9,23 @@ import { validateWorkflowDefinition } from './shared/utils/index';
 
 // Core types (re-export for client usage)
 // Import types for internal use
-import type { ListExecutionsOptions, WorkflowExecution } from './shared/types/index';
+import type { 
+  ListExecutionsOptions, 
+  WorkflowExecution,
+  WorkflowDefinition,
+  WorkflowData
+} from './shared/types/index';
+
+// Client-side patterns (safe for browser usage)
+export {
+  retryFast,
+  retryNetwork,
+  retryStandard,
+  RetryStrategies,
+  withRetry,
+} from './shared/patterns/retry';
+
+export type { RetryOptions } from './shared/patterns/retry';
 
 export type {
   ListExecutionsOptions,
@@ -34,17 +50,6 @@ export {
 
 export type { ValidationError } from './shared/utils/index';
 
-// Client-side patterns (safe for browser usage)
-export {
-  retryFast,
-  retryNetwork,
-  retryStandard,
-  RetryStrategies,
-  withRetry,
-} from './shared/patterns/retry';
-
-export type { RetryOptions } from './shared/patterns/retry';
-
 /**
  * Client configuration
  */
@@ -59,18 +64,6 @@ export interface WorkflowClientConfig {
   headers?: Record<string, string>;
   /** Default timeout for requests */
   timeout?: number;
-}
-
-/**
- * Create abort signal with timeout
- */
-function createTimeoutSignal(timeout: number): AbortSignal | undefined {
-  // Check if AbortSignal.timeout is available (Node.js 16+)
-  if ('timeout' in AbortSignal && typeof AbortSignal.timeout === 'function') {
-    return AbortSignal.timeout(timeout);
-  }
-  // Fallback for older environments or tests
-  return undefined;
 }
 
 /**
@@ -98,35 +91,33 @@ export class WorkflowClient {
   }
 
   /**
-   * Submit a workflow for execution
+   * Cancel a workflow execution
    */
-  async submitWorkflow(
-    definition: any,
-    input?: Record<string, any>,
-  ): Promise<{ executionId: string; status: string }> {
-    // Validate the workflow definition
-    const validatedDefinition = validateWorkflowDefinition(definition);
-
+  async cancelExecution(executionId: string): Promise<boolean> {
     const requestFn = async () => {
-      const response = await fetch(`${this.config.baseUrl}/api/workflows/execute`, {
-        body: JSON.stringify({
-          definition: validatedDefinition,
-          input,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
-          ...this.config.headers,
+      const response = await fetch(
+        `${this.config.baseUrl}/api/workflows/executions/${executionId}/cancel`,
+        {
+          headers: {
+            ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
+            ...this.config.headers,
+          },
+          method: 'POST',
+          signal: createTimeoutSignal(this.config.timeout),
         },
-        method: 'POST',
-        signal: createTimeoutSignal(this.config.timeout),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return response.json();
+      try {
+        const result = await response.json();
+        return result.cancelled || false;
+      } catch (error) {
+        // If JSON parsing fails, assume operation was successful
+        return true;
+      }
     };
 
     if (this.config.enableRetries) {
@@ -144,7 +135,7 @@ export class WorkflowClient {
   /**
    * Get workflow execution status
    */
-  async getExecutionStatus(executionId: string): Promise<WorkflowExecution | null> {
+  async getExecutionStatus(executionId: string): Promise<null | WorkflowExecution> {
     const requestFn = async () => {
       const response = await fetch(
         `${this.config.baseUrl}/api/workflows/executions/${executionId}`,
@@ -166,44 +157,11 @@ export class WorkflowClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return response.json();
-    };
-
-    if (this.config.enableRetries) {
-      const result = await withRetry(requestFn, RetryStrategies.network);
-      if (result.success) {
-        return result.data;
-      } else {
-        throw result.error;
+      try {
+        return await response.json();
+      } catch (error) {
+        throw new Error('Failed to parse response as JSON');
       }
-    } else {
-      return requestFn();
-    }
-  }
-
-  /**
-   * Cancel a workflow execution
-   */
-  async cancelExecution(executionId: string): Promise<boolean> {
-    const requestFn = async () => {
-      const response = await fetch(
-        `${this.config.baseUrl}/api/workflows/executions/${executionId}/cancel`,
-        {
-          headers: {
-            ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
-            ...this.config.headers,
-          },
-          method: 'POST',
-          signal: createTimeoutSignal(this.config.timeout),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      return result.cancelled || false;
     };
 
     if (this.config.enableRetries) {
@@ -247,7 +205,59 @@ export class WorkflowClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return response.json();
+      try {
+        return await response.json();
+      } catch (error) {
+        throw new Error('Failed to parse response as JSON');
+      }
+    };
+
+    if (this.config.enableRetries) {
+      const result = await withRetry(requestFn, RetryStrategies.network);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw result.error;
+      }
+    } else {
+      return requestFn();
+    }
+  }
+
+  /**
+   * Submit a workflow for execution
+   */
+  async submitWorkflow(
+    definition: WorkflowDefinition,
+    input?: WorkflowData,
+  ): Promise<{ executionId: string; status: string }> {
+    // Validate the workflow definition
+    const validatedDefinition = validateWorkflowDefinition(definition);
+
+    const requestFn = async () => {
+      const response = await fetch(`${this.config.baseUrl}/api/workflows/execute`, {
+        body: JSON.stringify({
+          definition: validatedDefinition,
+          input,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
+          ...this.config.headers,
+        },
+        method: 'POST',
+        signal: createTimeoutSignal(this.config.timeout),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      try {
+        return await response.json();
+      } catch (error) {
+        throw new Error('Failed to parse response as JSON');
+      }
     };
 
     if (this.config.enableRetries) {
@@ -268,6 +278,32 @@ export class WorkflowClient {
  */
 export function createWorkflowClient(config: WorkflowClientConfig): WorkflowClient {
   return new WorkflowClient(config);
+}
+
+/**
+ * Create abort signal with timeout
+ */
+function createTimeoutSignal(timeout: number): AbortSignal | undefined {
+  try {
+    // Check if AbortSignal.timeout is available (Node.js 16+)
+    if ('timeout' in AbortSignal && typeof AbortSignal.timeout === 'function') {
+      return AbortSignal.timeout(timeout);
+    }
+    
+    // Fallback: create a manual timeout signal
+    if (typeof AbortController !== 'undefined') {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), timeout);
+      return controller.signal;
+    }
+  } catch (error) {
+    // If anything fails, log warning and return undefined
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[WorkflowClient] Failed to create timeout signal:', error);
+    }
+  }
+  
+  return undefined;
 }
 
 /**

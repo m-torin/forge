@@ -15,7 +15,7 @@ interface ScheduledExecution {
   result?: unknown;
   scheduleId: string;
   startedAt?: Date;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: 'completed' | 'failed' | 'pending' | 'running';
   triggeredManually?: boolean;
 }
 

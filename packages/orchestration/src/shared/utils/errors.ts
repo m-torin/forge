@@ -2,151 +2,6 @@
  * Custom error classes for orchestration
  */
 
-export class OrchestrationError extends Error {
-  public readonly code: string;
-  public readonly retryable: boolean;
-  public readonly context?: Record<string, any>;
-
-  constructor(
-    message: string,
-    code = 'ORCHESTRATION_ERROR',
-    retryable = false,
-    context?: Record<string, any>,
-  ) {
-    super(message);
-    this.name = 'OrchestrationError';
-    this.code = code;
-    this.retryable = retryable;
-    this.context = context;
-
-    // Maintain proper stack trace for where our error was thrown
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, OrchestrationError);
-    }
-  }
-
-  toJSON() {
-    return {
-      name: this.name,
-      code: this.code,
-      context: this.context,
-      message: this.message,
-      retryable: this.retryable,
-      stack: this.stack,
-    };
-  }
-}
-
-export class WorkflowExecutionError extends OrchestrationError {
-  public readonly workflowId: string;
-  public readonly executionId?: string;
-  public readonly stepId?: string;
-
-  constructor(
-    message: string,
-    workflowId: string,
-    code = 'WORKFLOW_EXECUTION_ERROR',
-    retryable = true,
-    context?: {
-      executionId?: string;
-      stepId?: string;
-      [key: string]: any;
-    },
-  ) {
-    super(message, code, retryable, context);
-    this.name = 'WorkflowExecutionError';
-    this.workflowId = workflowId;
-    this.executionId = context?.executionId;
-    this.stepId = context?.stepId;
-  }
-}
-
-export class WorkflowValidationError extends OrchestrationError {
-  public readonly validationErrors: ValidationError[];
-
-  constructor(message: string, validationErrors: ValidationError[], context?: Record<string, any>) {
-    super(message, 'WORKFLOW_VALIDATION_ERROR', false, context);
-    this.name = 'WorkflowValidationError';
-    this.validationErrors = validationErrors;
-  }
-}
-
-export class ProviderError extends OrchestrationError {
-  public readonly providerName: string;
-  public readonly providerType: string;
-
-  constructor(
-    message: string,
-    providerName: string,
-    providerType: string,
-    code = 'PROVIDER_ERROR',
-    retryable = true,
-    context?: Record<string, any>,
-  ) {
-    super(message, code, retryable, context);
-    this.name = 'ProviderError';
-    this.providerName = providerName;
-    this.providerType = providerType;
-  }
-}
-
-export class RateLimitError extends OrchestrationError {
-  public readonly limit: number;
-  public readonly window: number;
-  public readonly retryAfter?: number;
-
-  constructor(
-    message: string,
-    limit: number,
-    window: number,
-    retryAfter?: number,
-    context?: Record<string, any>,
-  ) {
-    super(message, 'RATE_LIMIT_EXCEEDED', true, context);
-    this.name = 'RateLimitError';
-    this.limit = limit;
-    this.window = window;
-    this.retryAfter = retryAfter;
-  }
-}
-
-export class CircuitBreakerError extends OrchestrationError {
-  public readonly circuitName: string;
-  public readonly state: 'open' | 'half-open';
-
-  constructor(
-    message: string,
-    circuitName: string,
-    state: 'open' | 'half-open',
-    context?: Record<string, any>,
-  ) {
-    super(message, 'CIRCUIT_BREAKER_OPEN', true, context);
-    this.name = 'CircuitBreakerError';
-    this.circuitName = circuitName;
-    this.state = state;
-  }
-}
-
-export class TimeoutError extends OrchestrationError {
-  public readonly timeoutMs: number;
-
-  constructor(message: string, timeoutMs: number, context?: Record<string, any>) {
-    super(message, 'OPERATION_TIMEOUT', false, context);
-    this.name = 'TimeoutError';
-    this.timeoutMs = timeoutMs;
-  }
-}
-
-export class ConfigurationError extends OrchestrationError {
-  public readonly configPath?: string;
-
-  constructor(message: string, configPath?: string, context?: Record<string, any>) {
-    super(message, 'CONFIGURATION_ERROR', false, context);
-    this.name = 'ConfigurationError';
-    this.configPath = configPath;
-  }
-}
-
 /**
  * Centralized error codes for consistent error handling across the orchestration package
  */
@@ -205,6 +60,278 @@ export interface ValidationError {
   value?: any;
 }
 
+export class OrchestrationError extends Error {
+  public readonly code: string;
+  public readonly context?: Record<string, any>;
+  public readonly retryable: boolean;
+
+  constructor(
+    message: string,
+    code = 'ORCHESTRATION_ERROR',
+    retryable = false,
+    context?: Record<string, any>,
+  ) {
+    super(message);
+    this.name = 'OrchestrationError';
+    this.code = code;
+    this.retryable = retryable;
+    this.context = context;
+
+    // Maintain proper stack trace for where our error was thrown
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, OrchestrationError);
+    }
+  }
+
+  toJSON() {
+    return {
+      code: this.code,
+      context: this.context,
+      message: this.message,
+      name: this.name,
+      retryable: this.retryable,
+      stack: this.stack,
+    };
+  }
+}
+
+export class CircuitBreakerError extends OrchestrationError {
+  public readonly circuitName: string;
+  public readonly state: 'half-open' | 'open';
+
+  constructor(
+    message: string,
+    circuitName: string,
+    state: 'half-open' | 'open',
+    context?: Record<string, any>,
+  ) {
+    super(message, 'CIRCUIT_BREAKER_OPEN', true, context);
+    this.name = 'CircuitBreakerError';
+    this.circuitName = circuitName;
+    this.state = state;
+  }
+}
+
+export class ConfigurationError extends OrchestrationError {
+  public readonly configPath?: string;
+
+  constructor(message: string, configPath?: string, context?: Record<string, any>) {
+    super(message, 'CONFIGURATION_ERROR', false, context);
+    this.name = 'ConfigurationError';
+    this.configPath = configPath;
+  }
+}
+
+export class ProviderError extends OrchestrationError {
+  public readonly providerName: string;
+  public readonly providerType: string;
+
+  constructor(
+    message: string,
+    providerName: string,
+    providerType: string,
+    code = 'PROVIDER_ERROR',
+    retryable = true,
+    context?: Record<string, any>,
+  ) {
+    super(message, code, retryable, context);
+    this.name = 'ProviderError';
+    this.providerName = providerName;
+    this.providerType = providerType;
+  }
+}
+
+export class RateLimitError extends OrchestrationError {
+  public readonly limit: number;
+  public readonly retryAfter?: number;
+  public readonly window: number;
+
+  constructor(
+    message: string,
+    limit: number,
+    window: number,
+    retryAfter?: number,
+    context?: Record<string, any>,
+  ) {
+    super(message, 'RATE_LIMIT_EXCEEDED', true, context);
+    this.name = 'RateLimitError';
+    this.limit = limit;
+    this.window = window;
+    this.retryAfter = retryAfter;
+  }
+}
+
+export class TimeoutError extends OrchestrationError {
+  public readonly timeoutMs: number;
+
+  constructor(message: string, timeoutMs: number, context?: Record<string, any>) {
+    super(message, 'OPERATION_TIMEOUT', false, context);
+    this.name = 'TimeoutError';
+    this.timeoutMs = timeoutMs;
+  }
+}
+
+export class WorkflowExecutionError extends OrchestrationError {
+  public readonly executionId?: string;
+  public readonly stepId?: string;
+  public readonly workflowId: string;
+
+  constructor(
+    message: string,
+    workflowId: string,
+    code = 'WORKFLOW_EXECUTION_ERROR',
+    retryable = true,
+    context?: {
+      [key: string]: any;
+      executionId?: string;
+      stepId?: string;
+    },
+  ) {
+    super(message, code, retryable, context);
+    this.name = 'WorkflowExecutionError';
+    this.workflowId = workflowId;
+    this.executionId = context?.executionId;
+    this.stepId = context?.stepId;
+  }
+}
+
+export class WorkflowValidationError extends OrchestrationError {
+  public readonly validationErrors: ValidationError[];
+
+  constructor(message: string, validationErrors: ValidationError[], context?: Record<string, any>) {
+    super(message, 'WORKFLOW_VALIDATION_ERROR', false, context);
+    this.name = 'WorkflowValidationError';
+    this.validationErrors = validationErrors;
+  }
+}
+
+/**
+ * Creates a standardized OrchestrationError with centralized error codes
+ */
+export function createOrchestrationError(
+  message: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    context?: Record<string, any>;
+    originalError?: Error;
+    retryable?: boolean;
+  },
+): OrchestrationError {
+  const context: any = { ...options?.context };
+
+  if (options?.originalError) {
+    context.originalError = {
+      message: options.originalError.message,
+      name: options.originalError.name,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new OrchestrationError(
+    message,
+    options?.code || OrchestrationErrorCodes.ORCHESTRATION_ERROR,
+    options?.retryable ?? false,
+    context,
+  );
+}
+
+/**
+ * Creates a provider error with consistent formatting
+ */
+export function createProviderError(
+  message: string,
+  providerName: string,
+  providerType: string,
+  options?: {
+    code?: string;
+    originalError?: Error;
+    retryable?: boolean;
+  },
+): ProviderError {
+  const context: any = {};
+
+  if (options?.originalError) {
+    context.originalError = {
+      message: options.originalError.message,
+      name: options.originalError.name,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new ProviderError(
+    message,
+    providerName,
+    providerType,
+    options?.code || 'PROVIDER_ERROR',
+    options?.retryable ?? true,
+    context,
+  );
+}
+
+/**
+ * Creates a standardized ProviderError with centralized error codes
+ */
+export function createProviderErrorWithCode(
+  message: string,
+  providerName: string,
+  providerType: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    context?: Record<string, any>;
+    originalError?: Error;
+    retryable?: boolean;
+  },
+): ProviderError {
+  const context: any = { ...options?.context };
+
+  if (options?.originalError) {
+    context.originalError = {
+      message: options.originalError.message,
+      name: options.originalError.name,
+      stack: options.originalError.stack,
+    };
+  }
+
+  return new ProviderError(
+    message,
+    providerName,
+    providerType,
+    options?.code || OrchestrationErrorCodes.PROVIDER_ERROR,
+    options?.retryable ?? true,
+    context,
+  );
+}
+
+/**
+ * Creates a validation error with centralized error codes
+ */
+export function createValidationError(
+  message: string,
+  options?: {
+    code?: OrchestrationErrorCodes;
+    context?: Record<string, any>;
+    validationErrors?: any[];
+    validationResult?: any;
+  },
+): OrchestrationError {
+  const context: any = { ...options?.context };
+
+  if (options?.validationErrors) {
+    context.validationErrors = options.validationErrors;
+  }
+
+  if (options?.validationResult) {
+    context.validationResult = options.validationResult;
+  }
+
+  return new OrchestrationError(
+    message,
+    options?.code || OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
+    false, // Validation errors are typically not retryable
+    context,
+  );
+}
+
 /**
  * Creates a workflow execution error with consistent formatting
  */
@@ -212,11 +339,11 @@ export function createWorkflowExecutionError(
   message: string,
   workflowId: string,
   options?: {
+    code?: string;
     executionId?: string;
-    stepId?: string;
     originalError?: Error;
     retryable?: boolean;
-    code?: string;
+    stepId?: string;
   },
 ): WorkflowExecutionError {
   const context: any = {};
@@ -225,8 +352,8 @@ export function createWorkflowExecutionError(
   if (options?.stepId) context.stepId = options.stepId;
   if (options?.originalError) {
     context.originalError = {
-      name: options.originalError.name,
       message: options.originalError.message,
+      name: options.originalError.name,
       stack: options.originalError.stack,
     };
   }
@@ -241,36 +368,68 @@ export function createWorkflowExecutionError(
 }
 
 /**
- * Creates a provider error with consistent formatting
+ * Creates a standardized WorkflowExecutionError with centralized error codes
  */
-export function createProviderError(
+export function createWorkflowExecutionErrorWithCode(
   message: string,
-  providerName: string,
-  providerType: string,
+  workflowId: string,
   options?: {
+    code?: OrchestrationErrorCodes;
+    executionId?: string;
     originalError?: Error;
     retryable?: boolean;
-    code?: string;
+    stepId?: string;
   },
-): ProviderError {
+): WorkflowExecutionError {
   const context: any = {};
 
+  if (options?.executionId) context.executionId = options.executionId;
+  if (options?.stepId) context.stepId = options.stepId;
   if (options?.originalError) {
     context.originalError = {
-      name: options.originalError.name,
       message: options.originalError.message,
+      name: options.originalError.name,
       stack: options.originalError.stack,
     };
   }
 
-  return new ProviderError(
+  return new WorkflowExecutionError(
     message,
-    providerName,
-    providerType,
-    options?.code || 'PROVIDER_ERROR',
+    workflowId,
+    options?.code || OrchestrationErrorCodes.WORKFLOW_EXECUTION_ERROR,
     options?.retryable ?? true,
     context,
   );
+}
+
+/**
+ * Extracts error details for logging/monitoring
+ */
+export function extractErrorDetails(error: Error): Record<string, any> {
+  const details: Record<string, any> = {
+    message: error.message,
+    name: error.name,
+    stack: error.stack,
+  };
+
+  if (error instanceof OrchestrationError) {
+    details.code = error.code;
+    details.retryable = error.retryable;
+    details.context = error.context;
+  }
+
+  if (error instanceof WorkflowExecutionError) {
+    details.workflowId = error.workflowId;
+    details.executionId = error.executionId;
+    details.stepId = error.stepId;
+  }
+
+  if (error instanceof ProviderError) {
+    details.providerName = error.providerName;
+    details.providerType = error.providerType;
+  }
+
+  return details;
 }
 
 /**
@@ -295,163 +454,4 @@ export function isRetryableError(error: Error): boolean {
 
   const errorString = error.message?.toUpperCase() || '';
   return retryablePatterns.some((pattern) => errorString.includes(pattern));
-}
-
-/**
- * Creates a standardized OrchestrationError with centralized error codes
- */
-export function createOrchestrationError(
-  message: string,
-  options?: {
-    code?: OrchestrationErrorCodes;
-    originalError?: Error;
-    retryable?: boolean;
-    context?: Record<string, any>;
-  },
-): OrchestrationError {
-  const context: any = { ...options?.context };
-
-  if (options?.originalError) {
-    context.originalError = {
-      name: options.originalError.name,
-      message: options.originalError.message,
-      stack: options.originalError.stack,
-    };
-  }
-
-  return new OrchestrationError(
-    message,
-    options?.code || OrchestrationErrorCodes.ORCHESTRATION_ERROR,
-    options?.retryable ?? false,
-    context,
-  );
-}
-
-/**
- * Creates a standardized ProviderError with centralized error codes
- */
-export function createProviderErrorWithCode(
-  message: string,
-  providerName: string,
-  providerType: string,
-  options?: {
-    code?: OrchestrationErrorCodes;
-    originalError?: Error;
-    retryable?: boolean;
-    context?: Record<string, any>;
-  },
-): ProviderError {
-  const context: any = { ...options?.context };
-
-  if (options?.originalError) {
-    context.originalError = {
-      name: options.originalError.name,
-      message: options.originalError.message,
-      stack: options.originalError.stack,
-    };
-  }
-
-  return new ProviderError(
-    message,
-    providerName,
-    providerType,
-    options?.code || OrchestrationErrorCodes.PROVIDER_ERROR,
-    options?.retryable ?? true,
-    context,
-  );
-}
-
-/**
- * Creates a standardized WorkflowExecutionError with centralized error codes
- */
-export function createWorkflowExecutionErrorWithCode(
-  message: string,
-  workflowId: string,
-  options?: {
-    executionId?: string;
-    stepId?: string;
-    originalError?: Error;
-    retryable?: boolean;
-    code?: OrchestrationErrorCodes;
-  },
-): WorkflowExecutionError {
-  const context: any = {};
-
-  if (options?.executionId) context.executionId = options.executionId;
-  if (options?.stepId) context.stepId = options.stepId;
-  if (options?.originalError) {
-    context.originalError = {
-      name: options.originalError.name,
-      message: options.originalError.message,
-      stack: options.originalError.stack,
-    };
-  }
-
-  return new WorkflowExecutionError(
-    message,
-    workflowId,
-    options?.code || OrchestrationErrorCodes.WORKFLOW_EXECUTION_ERROR,
-    options?.retryable ?? true,
-    context,
-  );
-}
-
-/**
- * Creates a validation error with centralized error codes
- */
-export function createValidationError(
-  message: string,
-  options?: {
-    code?: OrchestrationErrorCodes;
-    validationErrors?: any[];
-    validationResult?: any;
-    context?: Record<string, any>;
-  },
-): OrchestrationError {
-  const context: any = { ...options?.context };
-
-  if (options?.validationErrors) {
-    context.validationErrors = options.validationErrors;
-  }
-
-  if (options?.validationResult) {
-    context.validationResult = options.validationResult;
-  }
-
-  return new OrchestrationError(
-    message,
-    options?.code || OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
-    false, // Validation errors are typically not retryable
-    context,
-  );
-}
-
-/**
- * Extracts error details for logging/monitoring
- */
-export function extractErrorDetails(error: Error): Record<string, any> {
-  const details: Record<string, any> = {
-    name: error.name,
-    message: error.message,
-    stack: error.stack,
-  };
-
-  if (error instanceof OrchestrationError) {
-    details.code = error.code;
-    details.retryable = error.retryable;
-    details.context = error.context;
-  }
-
-  if (error instanceof WorkflowExecutionError) {
-    details.workflowId = error.workflowId;
-    details.executionId = error.executionId;
-    details.stepId = error.stepId;
-  }
-
-  if (error instanceof ProviderError) {
-    details.providerName = error.providerName;
-    details.providerType = error.providerType;
-  }
-
-  return details;
 }

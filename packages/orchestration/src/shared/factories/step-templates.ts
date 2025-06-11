@@ -19,11 +19,11 @@ import {
   type WorkflowStepDefinition,
 } from './step-factory';
 
+type ContentType = 'application/json' | 'application/octet-stream' | 'text/plain';
 // Modern utility types
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
-type ContentType = 'application/json' | 'text/plain' | 'application/octet-stream';
-type NotificationType = 'email' | 'sms' | 'push' | 'webhook' | 'slack';
-type Priority = 'low' | 'normal' | 'high' | 'urgent';
+type HttpMethod = 'DELETE' | 'GET' | 'HEAD' | 'OPTIONS' | 'PATCH' | 'POST' | 'PUT';
+type NotificationType = 'email' | 'push' | 'slack' | 'sms' | 'webhook';
+type Priority = 'high' | 'low' | 'normal' | 'urgent';
 
 // ===== HTTP REQUEST STEP TEMPLATES =====
 
@@ -32,7 +32,6 @@ type Priority = 'low' | 'normal' | 'high' | 'urgent';
  */
 export const HttpRequestInputSchema = z
   .object({
-    url: z.string().url('Must be a valid URL'),
     body: z.any().optional(),
     cache: z.enum(['default', 'no-store', 'reload', 'no-cache', 'force-cache']).optional(),
     credentials: z.enum(['omit', 'same-origin', 'include']).optional(),
@@ -45,6 +44,7 @@ export const HttpRequestInputSchema = z
     // Modern additions
     signal: z.custom<AbortSignal>().optional(),
     timeout: z.number().positive().default(30000),
+    url: z.string().url('Must be a valid URL'),
   })
   .refine(
     (data) => {
@@ -60,8 +60,6 @@ export const HttpRequestInputSchema = z
  * Output schema for HTTP request steps (enhanced)
  */
 export const HttpRequestOutputSchema = z.object({
-  type: z.enum(['basic', 'cors', 'error', 'opaque', 'opaqueredirect']).optional(),
-  url: z.string(),
   cached: z.boolean().optional(),
   data: z.any(),
   duration: z.number(),
@@ -71,6 +69,8 @@ export const HttpRequestOutputSchema = z.object({
   size: z.number().optional(),
   status: z.number(),
   statusText: z.string(),
+  type: z.enum(['basic', 'cors', 'error', 'opaque', 'opaqueredirect']).optional(),
+  url: z.string(),
 });
 
 export type HttpRequestInput = z.infer<typeof HttpRequestInputSchema>;
@@ -108,20 +108,20 @@ export function createHttpRequestStep(
   name: string,
   description?: string,
   customConfig?: {
-    executionConfig?: StepExecutionConfig;
-    validationConfig?: StepValidationConfig<HttpRequestInput, HttpRequestOutput>;
     baseHeaders?: Record<string, string>;
+    executionConfig?: StepExecutionConfig;
     interceptors?: {
       request?: (input: HttpRequestInput) => HttpRequestInput | Promise<HttpRequestInput>;
       response?: (output: HttpRequestOutput) => HttpRequestOutput | Promise<HttpRequestOutput>;
     };
+    validationConfig?: StepValidationConfig<HttpRequestInput, HttpRequestOutput>;
   },
 ): WorkflowStepDefinition<HttpRequestInput, HttpRequestOutput> {
   return createWorkflowStep(
     {
-      name,
       category: 'http',
       description: description || `HTTP request step: ${name}`,
+      name,
       tags: ['http', 'request', 'api'],
       version: '1.0.0',
     },
@@ -176,8 +176,6 @@ export function createHttpRequestStep(
         await context.reportProgress?.(80, 100, 'Processing response');
 
         let output: HttpRequestOutput = {
-          type: response.type as any,
-          url: response.url,
           data,
           duration,
           headers: Object.fromEntries(response.headers.entries()),
@@ -185,6 +183,8 @@ export function createHttpRequestStep(
           size: parseInt(response.headers.get('content-length') ?? '0') || undefined,
           status: response.status,
           statusText: response.statusText,
+          type: response.type as any,
+          url: response.url,
         };
 
         // Apply response interceptor if provided
@@ -251,13 +251,6 @@ export function createHttpRequestStep(
       }
     },
     {
-      validationConfig: {
-        validateInput: true,
-        validateOutput: true,
-        input: HttpRequestInputSchema as any,
-        output: HttpRequestOutputSchema as any,
-        ...customConfig?.validationConfig,
-      },
       executionConfig: {
         retryConfig: {
           backoff: 'exponential',
@@ -269,6 +262,13 @@ export function createHttpRequestStep(
         },
         timeout: { execution: 60000 },
         ...customConfig?.executionConfig,
+      },
+      validationConfig: {
+        input: HttpRequestInputSchema as any,
+        output: HttpRequestOutputSchema as any,
+        validateInput: true,
+        validateOutput: true,
+        ...customConfig?.validationConfig,
       },
     },
   );
@@ -285,8 +285,8 @@ const validateParameters = (query: string, parameters: any[] = []): boolean => {
 };
 
 const createQueryContext = (query: string, parameters: any[] = []) => ({
-  isValid: validateParameters(query, parameters),
   estimatedComplexity: query.length > 1000 ? 'high' : query.includes('JOIN') ? 'medium' : 'low',
+  isValid: validateParameters(query, parameters),
   parameterCount: parameters.length,
   parameters,
   query: sanitizeQuery(query),
@@ -336,20 +336,20 @@ export function createDatabaseQueryStep(
   name: string,
   description?: string,
   customConfig?: {
+    connectionProvider?: () => Promise<any>;
     executionConfig?: StepExecutionConfig;
-    validationConfig?: StepValidationConfig<DatabaseQueryInput, DatabaseQueryOutput>;
     queryProcessor?: (
       context: ReturnType<typeof createQueryContext>,
     ) => ReturnType<typeof createQueryContext>;
     resultTransformer?: (rows: any[]) => any[];
-    connectionProvider?: () => Promise<any>;
+    validationConfig?: StepValidationConfig<DatabaseQueryInput, DatabaseQueryOutput>;
   },
 ): WorkflowStepDefinition<DatabaseQueryInput, DatabaseQueryOutput> {
   return createWorkflowStep(
     {
-      name,
       category: 'database',
       description: description || `Database query step: ${name}`,
+      name,
       tags: ['database', 'query', 'sql'],
       version: '1.0.0',
     },
@@ -468,13 +468,6 @@ export function createDatabaseQueryStep(
       }
     },
     {
-      validationConfig: {
-        validateInput: true,
-        validateOutput: true,
-        input: DatabaseQueryInputSchema as any,
-        output: DatabaseQueryOutputSchema,
-        ...customConfig?.validationConfig,
-      },
       executionConfig: {
         retryConfig: {
           backoff: 'exponential',
@@ -484,6 +477,13 @@ export function createDatabaseQueryStep(
         },
         timeout: { execution: 30000 },
         ...customConfig?.executionConfig,
+      },
+      validationConfig: {
+        input: DatabaseQueryInputSchema as any,
+        output: DatabaseQueryOutputSchema,
+        validateInput: true,
+        validateOutput: true,
+        ...customConfig?.validationConfig,
       },
     },
   );
@@ -529,9 +529,9 @@ export function createFileProcessingStep(
 ): WorkflowStepDefinition<FileProcessingInput, FileProcessingOutput> {
   return createWorkflowStep(
     {
-      name,
       category: 'file',
       description: description || `File processing step: ${name}`,
+      name,
       tags: ['file', 'processing', 'io'],
       version: '1.0.0',
     },
@@ -575,16 +575,16 @@ export function createFileProcessingStep(
       }
     },
     {
-      validationConfig: {
-        validateInput: true,
-        validateOutput: true,
-        input: FileProcessingInputSchema as any,
-        output: FileProcessingOutputSchema,
-        ...customConfig?.validationConfig,
-      },
       executionConfig: {
         timeout: { execution: 60000 },
         ...customConfig?.executionConfig,
+      },
+      validationConfig: {
+        input: FileProcessingInputSchema as any,
+        output: FileProcessingOutputSchema,
+        validateInput: true,
+        validateOutput: true,
+        ...customConfig?.validationConfig,
       },
     },
   );
@@ -596,13 +596,12 @@ export function createFileProcessingStep(
  * Input schema for notification steps
  */
 export const NotificationInputSchema = z.object({
-  type: z.enum(['email', 'sms', 'push', 'webhook', 'slack']),
   attachments: z
     .array(
       z.object({
+        content: z.string(),
         name: z.string(),
         type: z.string(),
-        content: z.string(),
       }),
     )
     .optional(),
@@ -611,6 +610,7 @@ export const NotificationInputSchema = z.object({
   priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
   recipients: z.array(z.string()).min(1, 'At least one recipient is required'),
   subject: z.string().optional(),
+  type: z.enum(['email', 'sms', 'push', 'webhook', 'slack']),
 });
 
 /**
@@ -640,9 +640,9 @@ export function createNotificationStep(
 ): WorkflowStepDefinition<NotificationInput, NotificationOutput> {
   return createWorkflowStep(
     {
-      name,
       category: 'notification',
       description: description || `Notification step: ${name}`,
+      name,
       tags: ['notification', 'communication', 'alert'],
       version: '1.0.0',
     },
@@ -689,13 +689,6 @@ export function createNotificationStep(
       }
     },
     {
-      validationConfig: {
-        validateInput: true,
-        validateOutput: true,
-        input: NotificationInputSchema as any,
-        output: NotificationOutputSchema,
-        ...customConfig?.validationConfig,
-      },
       executionConfig: {
         retryConfig: {
           backoff: 'exponential',
@@ -704,6 +697,13 @@ export function createNotificationStep(
         },
         timeout: { execution: 30000 },
         ...customConfig?.executionConfig,
+      },
+      validationConfig: {
+        input: NotificationInputSchema as any,
+        output: NotificationOutputSchema,
+        validateInput: true,
+        validateOutput: true,
+        ...customConfig?.validationConfig,
       },
     },
   );
@@ -725,8 +725,8 @@ export const DataTransformationInputSchema = z.object({
     .optional(),
   transformations: z.array(
     z.object({
-      type: z.enum(['map', 'filter', 'reduce', 'sort', 'group', 'validate', 'convert']),
       config: z.record(z.any()),
+      type: z.enum(['map', 'filter', 'reduce', 'sort', 'group', 'validate', 'convert']),
     }),
   ),
 });
@@ -765,9 +765,9 @@ export function createDataTransformationStep(
 ): WorkflowStepDefinition<DataTransformationInput, DataTransformationOutput> {
   return createWorkflowStep(
     {
-      name,
       category: 'transformation',
       description: description || `Data transformation step: ${name}`,
+      name,
       tags: ['data', 'transformation', 'processing'],
       version: '1.0.0',
     },
@@ -786,6 +786,13 @@ export function createDataTransformationStep(
             // Apply transformation based on type
             // Note: This is a template - actual transformation logic would be implemented
             switch (transformation.type) {
+              case 'filter':
+                if (Array.isArray(data)) {
+                  const originalLength = data.length;
+                  data = data.filter((item) => item !== null && item !== undefined);
+                  transformedCount += originalLength - data.length;
+                }
+                break;
               case 'map':
                 if (Array.isArray(data)) {
                   data = data.map((item, index) => ({
@@ -794,13 +801,6 @@ export function createDataTransformationStep(
                     _transformed: true,
                   }));
                   transformedCount += data.length;
-                }
-                break;
-              case 'filter':
-                if (Array.isArray(data)) {
-                  const originalLength = data.length;
-                  data = data.filter((item) => item !== null && item !== undefined);
-                  transformedCount += originalLength - data.length;
                 }
                 break;
               case 'validate':
@@ -865,16 +865,16 @@ export function createDataTransformationStep(
       }
     },
     {
-      validationConfig: {
-        validateInput: true,
-        validateOutput: true,
-        input: DataTransformationInputSchema as any,
-        output: DataTransformationOutputSchema,
-        ...customConfig?.validationConfig,
-      },
       executionConfig: {
         timeout: { execution: 120000 }, // 2 minutes for data processing
         ...customConfig?.executionConfig,
+      },
+      validationConfig: {
+        input: DataTransformationInputSchema as any,
+        output: DataTransformationOutputSchema,
+        validateInput: true,
+        validateOutput: true,
+        ...customConfig?.validationConfig,
       },
     },
   );
@@ -887,6 +887,9 @@ export function createDataTransformationStep(
  */
 export const ConditionalInputSchema = z.object({
   condition: z.object({
+    customFunction: z.string().optional(), // For custom conditions
+    left: z.any(),
+    right: z.any().optional(),
     type: z.enum([
       'equals',
       'not_equals',
@@ -896,9 +899,6 @@ export const ConditionalInputSchema = z.object({
       'exists',
       'custom',
     ]),
-    customFunction: z.string().optional(), // For custom conditions
-    left: z.any(),
-    right: z.any().optional(),
   }),
   falseSteps: z.array(z.string()).optional(),
   metadata: z.record(z.any()).optional(),
@@ -918,196 +918,6 @@ export type ConditionalInput = z.infer<typeof ConditionalInputSchema>;
 export type ConditionalOutput = z.infer<typeof ConditionalOutputSchema>;
 
 /**
- * Create a conditional step
- */
-export function createConditionalStep(
-  name: string,
-  description?: string,
-  customConfig?: {
-    executionConfig?: StepExecutionConfig;
-    validationConfig?: StepValidationConfig<ConditionalInput, ConditionalOutput>;
-  },
-): WorkflowStepDefinition<ConditionalInput, ConditionalOutput> {
-  return createWorkflowStep(
-    {
-      name,
-      category: 'control',
-      description: description || `Conditional step: ${name}`,
-      tags: ['conditional', 'control-flow', 'logic'],
-      version: '1.0.0',
-    },
-    async (
-      context: StepExecutionContext<ConditionalInput>,
-    ): Promise<StepExecutionResult<ConditionalOutput>> => {
-      const { input } = context;
-
-      try {
-        let conditionMet = false;
-        const evaluationDetails: Record<string, any> = {
-          conditionType: input.condition.type,
-          leftValue: input.condition.left,
-          rightValue: input.condition.right,
-        };
-
-        // Evaluate condition based on type
-        switch (input.condition.type) {
-          case 'equals':
-            conditionMet = input.condition.left === input.condition.right;
-            break;
-          case 'not_equals':
-            conditionMet = input.condition.left !== input.condition.right;
-            break;
-          case 'greater_than':
-            conditionMet = Number(input.condition.left) > Number(input.condition.right);
-            break;
-          case 'less_than':
-            conditionMet = Number(input.condition.left) < Number(input.condition.right);
-            break;
-          case 'contains':
-            if (
-              typeof input.condition.left === 'string' &&
-              typeof input.condition.right === 'string'
-            ) {
-              conditionMet = input.condition.left.includes(input.condition.right);
-            } else if (Array.isArray(input.condition.left)) {
-              conditionMet = input.condition.left.includes(input.condition.right);
-            }
-            break;
-          case 'exists':
-            conditionMet = input.condition.left !== null && input.condition.left !== undefined;
-            break;
-          case 'custom':
-            // Note: In real implementation, this would evaluate custom functions safely
-            throw new Error('Custom conditions not implemented in template');
-          default:
-            throw new Error(`Unsupported condition type: ${input.condition.type}`);
-        }
-
-        evaluationDetails.result = conditionMet;
-
-        const nextSteps = conditionMet ? input.trueSteps : input.falseSteps;
-
-        const result: ConditionalOutput = {
-          conditionMet,
-          evaluationDetails,
-          nextSteps,
-        };
-
-        return {
-          context: {
-            conditionResult: conditionMet,
-            nextSteps: nextSteps || [],
-          },
-          metadata: {
-            conditionMet,
-            nextStepCount: nextSteps?.length || 0,
-          },
-          output: result,
-          performance: context.performance,
-          success: true,
-        };
-      } catch (error) {
-        return {
-          error: {
-            code: 'CONDITIONAL_EVALUATION_ERROR',
-            details: { condition: input.condition, originalError: error },
-            message: error instanceof Error ? error.message : 'Condition evaluation failed',
-            retryable: false,
-            timestamp: new Date(),
-          },
-          performance: context.performance,
-          shouldRetry: false,
-          success: false,
-        };
-      }
-    },
-    {
-      validationConfig: {
-        validateInput: true,
-        validateOutput: true,
-        input: ConditionalInputSchema,
-        output: ConditionalOutputSchema,
-        ...customConfig?.validationConfig,
-      },
-      executionConfig: {
-        timeout: { execution: 5000 }, // Quick evaluation
-        ...customConfig?.executionConfig,
-      },
-    },
-  );
-}
-
-// ===== UTILITY FUNCTIONS =====
-
-/**
- * Create a delay/sleep step
- */
-export function createDelayStep(
-  name: string,
-  delayMs: number,
-  description?: string,
-): WorkflowStepDefinition<{ delayMs?: number }, { delayMs: number; actualDelay: number }> {
-  return createWorkflowStep(
-    {
-      name,
-      category: 'utility',
-      description: description || `Delay step: ${name} (${delayMs}ms)`,
-      tags: ['delay', 'sleep', 'wait'],
-      version: '1.0.0',
-    },
-    async (context): Promise<StepExecutionResult<{ delayMs: number; actualDelay: number }>> => {
-      const delay = context.input.delayMs || delayMs;
-      const startTime = Date.now();
-
-      try {
-        await new Promise((resolve, reject) => {
-          const timeout = setTimeout(resolve, delay);
-
-          if (context.abortSignal) {
-            context.abortSignal.addEventListener('abort', () => {
-              clearTimeout(timeout);
-              reject(new Error('Delay aborted'));
-            });
-          }
-        });
-
-        const actualDelay = Date.now() - startTime;
-
-        return {
-          metadata: { actualDelay, plannedDelay: delay },
-          output: { actualDelay, delayMs: delay },
-          performance: context.performance,
-          success: true,
-        };
-      } catch (error) {
-        return {
-          error: {
-            code: 'DELAY_ERROR',
-            details: { originalError: error, plannedDelay: delay },
-            message: error instanceof Error ? error.message : 'Delay failed',
-            retryable: false,
-            timestamp: new Date(),
-          },
-          performance: context.performance,
-          shouldRetry: false,
-          success: false,
-        };
-      }
-    },
-    {
-      validationConfig: {
-        validateInput: true,
-        validateOutput: true,
-        input: z.object({ delayMs: z.number().positive().optional() }),
-        output: z.object({ actualDelay: z.number(), delayMs: z.number() }),
-      },
-    },
-  );
-}
-
-// ===== MODERN PIPELINE UTILITIES =====
-
-/**
  * Create a batch processing step using async generators
  */
 export function createBatchProcessingStep<TInput, TOutput>(
@@ -1123,9 +933,9 @@ export function createBatchProcessingStep<TInput, TOutput>(
 
   return createWorkflowStep(
     {
-      name,
       category: 'batch',
       description: description ?? `Batch processing step: ${name}`,
+      name,
       tags: ['batch', 'processing', 'async'],
       version: '1.0.0',
     },
@@ -1189,24 +999,214 @@ export function createBatchProcessingStep<TInput, TOutput>(
   );
 }
 
+// ===== UTILITY FUNCTIONS =====
+
+/**
+ * Create a conditional step
+ */
+export function createConditionalStep(
+  name: string,
+  description?: string,
+  customConfig?: {
+    executionConfig?: StepExecutionConfig;
+    validationConfig?: StepValidationConfig<ConditionalInput, ConditionalOutput>;
+  },
+): WorkflowStepDefinition<ConditionalInput, ConditionalOutput> {
+  return createWorkflowStep(
+    {
+      category: 'control',
+      description: description || `Conditional step: ${name}`,
+      name,
+      tags: ['conditional', 'control-flow', 'logic'],
+      version: '1.0.0',
+    },
+    async (
+      context: StepExecutionContext<ConditionalInput>,
+    ): Promise<StepExecutionResult<ConditionalOutput>> => {
+      const { input } = context;
+
+      try {
+        let conditionMet = false;
+        const evaluationDetails: Record<string, any> = {
+          conditionType: input.condition.type,
+          leftValue: input.condition.left,
+          rightValue: input.condition.right,
+        };
+
+        // Evaluate condition based on type
+        switch (input.condition.type) {
+          case 'contains':
+            if (
+              typeof input.condition.left === 'string' &&
+              typeof input.condition.right === 'string'
+            ) {
+              conditionMet = input.condition.left.includes(input.condition.right);
+            } else if (Array.isArray(input.condition.left)) {
+              conditionMet = input.condition.left.includes(input.condition.right);
+            }
+            break;
+          case 'equals':
+            conditionMet = input.condition.left === input.condition.right;
+            break;
+          case 'exists':
+            conditionMet = input.condition.left !== null && input.condition.left !== undefined;
+            break;
+          case 'greater_than':
+            conditionMet = Number(input.condition.left) > Number(input.condition.right);
+            break;
+          case 'less_than':
+            conditionMet = Number(input.condition.left) < Number(input.condition.right);
+            break;
+          case 'not_equals':
+            conditionMet = input.condition.left !== input.condition.right;
+            break;
+          case 'custom':
+            // Note: In real implementation, this would evaluate custom functions safely
+            throw new Error('Custom conditions not implemented in template');
+          default:
+            throw new Error(`Unsupported condition type: ${input.condition.type}`);
+        }
+
+        evaluationDetails.result = conditionMet;
+
+        const nextSteps = conditionMet ? input.trueSteps : input.falseSteps;
+
+        const result: ConditionalOutput = {
+          conditionMet,
+          evaluationDetails,
+          nextSteps,
+        };
+
+        return {
+          context: {
+            conditionResult: conditionMet,
+            nextSteps: nextSteps || [],
+          },
+          metadata: {
+            conditionMet,
+            nextStepCount: nextSteps?.length || 0,
+          },
+          output: result,
+          performance: context.performance,
+          success: true,
+        };
+      } catch (error) {
+        return {
+          error: {
+            code: 'CONDITIONAL_EVALUATION_ERROR',
+            details: { condition: input.condition, originalError: error },
+            message: error instanceof Error ? error.message : 'Condition evaluation failed',
+            retryable: false,
+            timestamp: new Date(),
+          },
+          performance: context.performance,
+          shouldRetry: false,
+          success: false,
+        };
+      }
+    },
+    {
+      executionConfig: {
+        timeout: { execution: 5000 }, // Quick evaluation
+        ...customConfig?.executionConfig,
+      },
+      validationConfig: {
+        input: ConditionalInputSchema,
+        output: ConditionalOutputSchema,
+        validateInput: true,
+        validateOutput: true,
+        ...customConfig?.validationConfig,
+      },
+    },
+  );
+}
+
+// ===== MODERN PIPELINE UTILITIES =====
+
+/**
+ * Create a delay/sleep step
+ */
+export function createDelayStep(
+  name: string,
+  delayMs: number,
+  description?: string,
+): WorkflowStepDefinition<{ delayMs?: number }, { actualDelay: number; delayMs: number }> {
+  return createWorkflowStep(
+    {
+      category: 'utility',
+      description: description || `Delay step: ${name} (${delayMs}ms)`,
+      name,
+      tags: ['delay', 'sleep', 'wait'],
+      version: '1.0.0',
+    },
+    async (context): Promise<StepExecutionResult<{ actualDelay: number; delayMs: number }>> => {
+      const delay = context.input.delayMs || delayMs;
+      const startTime = Date.now();
+
+      try {
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(resolve, delay);
+
+          if (context.abortSignal) {
+            context.abortSignal.addEventListener('abort', () => {
+              clearTimeout(timeout);
+              reject(new Error('Delay aborted'));
+            });
+          }
+        });
+
+        const actualDelay = Date.now() - startTime;
+
+        return {
+          metadata: { actualDelay, plannedDelay: delay },
+          output: { actualDelay, delayMs: delay },
+          performance: context.performance,
+          success: true,
+        };
+      } catch (error) {
+        return {
+          error: {
+            code: 'DELAY_ERROR',
+            details: { originalError: error, plannedDelay: delay },
+            message: error instanceof Error ? error.message : 'Delay failed',
+            retryable: false,
+            timestamp: new Date(),
+          },
+          performance: context.performance,
+          shouldRetry: false,
+          success: false,
+        };
+      }
+    },
+    {
+      validationConfig: {
+        input: z.object({ delayMs: z.number().positive().optional() }),
+        output: z.object({ actualDelay: z.number(), delayMs: z.number() }),
+        validateInput: true,
+        validateOutput: true,
+      },
+    },
+  );
+}
+
 /**
  * Create a map-reduce step using functional programming
  */
 export function createMapReduceStep<TInput, TMapped, TOutput>(
   name: string,
-  mapper: (item: TInput) => TMapped | Promise<TMapped>,
+  mapper: (item: TInput) => Promise<TMapped> | TMapped,
   reducer: (accumulator: TOutput, current: TMapped) => TOutput,
   initialValue: TOutput,
   options: {
-    description?: string;
     concurrency?: number;
+    description?: string;
   } = {},
 ): WorkflowStepDefinition<TInput[], TOutput> {
   return createWorkflowStep(
     {
-      name,
       category: 'functional',
       description: options.description ?? `Map-reduce step: ${name}`,
+      name,
       tags: ['map-reduce', 'functional', 'processing'],
       version: '1.0.0',
     },
@@ -1271,18 +1271,18 @@ export function createMapReduceStep<TInput, TMapped, TOutput>(
  * Step template registry with modern functional utilities
  */
 export const StepTemplates = {
+  // Modern functional templates
+  batch: createBatchProcessingStep,
   conditional: createConditionalStep,
   database: createDatabaseQueryStep,
   delay: createDelayStep,
   file: createFileProcessingStep,
   // Core templates
   http: createHttpRequestStep,
+  mapReduce: createMapReduceStep,
+
   notification: createNotificationStep,
   transformation: createDataTransformationStep,
-
-  // Modern functional templates
-  batch: createBatchProcessingStep,
-  mapReduce: createMapReduceStep,
 } as const;
 
 export type StepTemplateType = keyof typeof StepTemplates;

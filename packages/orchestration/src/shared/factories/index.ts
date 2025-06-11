@@ -6,16 +6,7 @@
  */
 
 // Simple function-based API (recommended for new code)
-export { createStep, createStepWithValidation } from './step-factory';
-
-// Enhancer functions from separate module
-export {
-  compose,
-  withStepCircuitBreaker,
-  withStepMonitoring,
-  withStepRetry,
-  withStepTimeout,
-} from './step-factory-enhancers';
+export { createStep, createStepWithValidation, toSimpleStep } from './step-factory';
 
 // Legacy complex API (for backward compatibility)
 export {
@@ -26,9 +17,6 @@ export {
   StepFactory,
   when,
 } from './step-factory';
-
-// Simple API types
-export type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 
 // Legacy API types
 export type {
@@ -48,10 +36,33 @@ export type {
   WorkflowStepDefinition,
 } from './step-factory';
 
+// Enhancer functions from separate module
+export {
+  compose,
+  withStepCircuitBreaker,
+  withStepMonitoring,
+  withStepRetry,
+  withStepTimeout,
+} from './step-factory-enhancers';
+
+export * as StepPerformance from './step-factory/step-performance';
+
+// Simple API types
+export type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 // Export individual modules for granular access
 export * as StepTypes from './step-factory/step-types';
 export * as StepValidation from './step-factory/step-validation';
-export * as StepPerformance from './step-factory/step-performance';
+
+// Step registry exports
+export { defaultStepRegistry, StepRegistry } from './step-registry';
+
+export type {
+  StepCompositionConfig,
+  StepDependencyNode,
+  StepExecutionPlan,
+  StepRegistryEntry,
+  StepSearchFilters,
+} from './step-registry';
 
 // Step templates exports
 export {
@@ -92,14 +103,3 @@ export type {
   NotificationOutput,
   StepTemplateType,
 } from './step-templates';
-
-// Step registry exports
-export { defaultStepRegistry, StepRegistry } from './step-registry';
-
-export type {
-  StepCompositionConfig,
-  StepDependencyNode,
-  StepExecutionPlan,
-  StepRegistryEntry,
-  StepSearchFilters,
-} from './step-registry';

@@ -10,118 +10,35 @@ import { initializePerformanceData, updatePerformanceData } from './step-factory
 import type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 
 /**
- * Add monitoring capabilities to a workflow step
+ * Compose multiple enhancers together
  */
-export function withStepMonitoring<TInput = any, TOutput = any>(
+export function compose<TInput = unknown, TOutput = unknown>(
   step: SimpleWorkflowStep<TInput, TOutput>,
-  options: {
-    enableDetailedLogging?: boolean;
-    trackCustomMetrics?: boolean;
-    enableProgressReporting?: boolean;
-  } = {},
+  ...enhancers: ((
+    step: SimpleWorkflowStep<TInput, TOutput>,
+  ) => SimpleWorkflowStep<TInput, TOutput>)[]
 ): SimpleWorkflowStep<TInput, TOutput> {
-  return {
-    validate: step.validate,
-    execute: async (input: TInput) => {
-      const startTime = Date.now();
-      const performance = initializePerformanceData(true);
-
-      if (options.enableDetailedLogging) {
-        console.log(`[MONITOR] Starting step execution at ${new Date().toISOString()}`);
-      }
-
-      const result = await step.execute(input);
-
-      // Update performance with monitoring data
-      updatePerformanceData(performance, true);
-      result.performance = performance;
-
-      if (options.enableDetailedLogging) {
-        console.log(`[MONITOR] Step completed in ${performance.duration}ms`);
-      }
-
-      return result;
-    },
-  };
-}
-
-/**
- * Add retry capabilities to a workflow step
- */
-export function withStepRetry<TInput = any, TOutput = any>(
-  step: SimpleWorkflowStep<TInput, TOutput>,
-  options: {
-    maxAttempts?: number;
-    delay?: number;
-    backoff?: 'fixed' | 'exponential' | 'linear';
-    jitter?: boolean;
-  } = {},
-): SimpleWorkflowStep<TInput, TOutput> {
-  const { backoff = 'exponential', delay = 1000, jitter = false, maxAttempts = 3 } = options;
-
-  return {
-    validate: step.validate,
-    execute: async (input: TInput) => {
-      let lastError: any;
-
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        const result = await step.execute(input);
-
-        if (result.success) {
-          return result;
-        }
-
-        lastError = result.error;
-
-        // Don't retry on last attempt
-        if (attempt === maxAttempts) {
-          break;
-        }
-
-        // Calculate delay
-        let waitTime = delay;
-        if (backoff === 'exponential') {
-          waitTime = delay * Math.pow(2, attempt - 1);
-        } else if (backoff === 'linear') {
-          waitTime = delay * attempt;
-        }
-
-        if (jitter) {
-          waitTime += Math.random() * 1000;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
-      }
-
-      return {
-        error: lastError,
-        performance: { duration: 0, startTime: Date.now() },
-        shouldRetry: false,
-        success: false,
-      };
-    },
-  };
+  return enhancers.reduce((currentStep, enhancer) => enhancer(currentStep), step);
 }
 
 /**
  * Add circuit breaker protection to a workflow step
  */
-export function withStepCircuitBreaker<TInput = any, TOutput = any>(
+export function withStepCircuitBreaker<TInput = unknown, TOutput = unknown>(
   step: SimpleWorkflowStep<TInput, TOutput>,
   options: {
     failureThreshold?: number;
-    resetTimeout?: number;
     monitoringPeriod?: number;
+    resetTimeout?: number;
   } = {},
 ): SimpleWorkflowStep<TInput, TOutput> {
   const { failureThreshold = 5, resetTimeout = 60000 } = options;
 
   let failures = 0;
   let lastFailureTime = 0;
-  let state: 'closed' | 'open' | 'half-open' = 'closed';
+  let state: 'closed' | 'half-open' | 'open' = 'closed';
 
   return {
-    validate: step.validate,
     execute: async (input: TInput) => {
       const now = Date.now();
 
@@ -164,18 +81,112 @@ export function withStepCircuitBreaker<TInput = any, TOutput = any>(
 
       return result;
     },
+    validate: step.validate,
+  };
+}
+
+/**
+ * Add monitoring capabilities to a workflow step
+ */
+export function withStepMonitoring<TInput = unknown, TOutput = unknown>(
+  step: SimpleWorkflowStep<TInput, TOutput>,
+  options: {
+    enableDetailedLogging?: boolean;
+    enableProgressReporting?: boolean;
+    trackCustomMetrics?: boolean;
+  } = {},
+): SimpleWorkflowStep<TInput, TOutput> {
+  return {
+    execute: async (input: TInput) => {
+      const startTime = Date.now();
+      const performance = initializePerformanceData(true);
+
+      if (options.enableDetailedLogging) {
+        console.log(`[MONITOR] Starting step execution at ${new Date().toISOString()}`);
+      }
+
+      const result = await step.execute(input);
+
+      // Update performance with monitoring data
+      updatePerformanceData(performance, true);
+      result.performance = performance;
+
+      if (options.enableDetailedLogging) {
+        console.log(`[MONITOR] Step completed in ${performance.duration}ms`);
+      }
+
+      return result;
+    },
+    validate: step.validate,
+  };
+}
+
+/**
+ * Add retry capabilities to a workflow step
+ */
+export function withStepRetry<TInput = unknown, TOutput = unknown>(
+  step: SimpleWorkflowStep<TInput, TOutput>,
+  options: {
+    backoff?: 'exponential' | 'fixed' | 'linear';
+    delay?: number;
+    jitter?: boolean;
+    maxAttempts?: number;
+  } = {},
+): SimpleWorkflowStep<TInput, TOutput> {
+  const { backoff = 'exponential', delay = 1000, jitter = false, maxAttempts = 3 } = options;
+
+  return {
+    execute: async (input: TInput) => {
+      let lastError: unknown;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const result = await step.execute(input);
+
+        if (result.success) {
+          return result;
+        }
+
+        lastError = result.error;
+
+        // Don't retry on last attempt
+        if (attempt === maxAttempts) {
+          break;
+        }
+
+        // Calculate delay
+        let waitTime = delay;
+        if (backoff === 'exponential') {
+          waitTime = delay * Math.pow(2, attempt - 1);
+        } else if (backoff === 'linear') {
+          waitTime = delay * attempt;
+        }
+
+        if (jitter) {
+          waitTime += Math.random() * 1000;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+
+      return {
+        error: lastError,
+        performance: { duration: 0, startTime: Date.now() },
+        shouldRetry: false,
+        success: false,
+      };
+    },
+    validate: step.validate,
   };
 }
 
 /**
  * Add timeout protection to a workflow step
  */
-export function withStepTimeout<TInput = any, TOutput = any>(
+export function withStepTimeout<TInput = unknown, TOutput = unknown>(
   step: SimpleWorkflowStep<TInput, TOutput>,
   timeoutMs: number,
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
-    validate: step.validate,
     execute: async (input: TInput) => {
       const timeoutPromise = new Promise<StepExecutionResult<TOutput>>((_, reject) => {
         setTimeout(() => {
@@ -199,17 +210,6 @@ export function withStepTimeout<TInput = any, TOutput = any>(
         };
       }
     },
+    validate: step.validate,
   };
-}
-
-/**
- * Compose multiple enhancers together
- */
-export function compose<TInput = any, TOutput = any>(
-  step: SimpleWorkflowStep<TInput, TOutput>,
-  ...enhancers: ((
-    step: SimpleWorkflowStep<TInput, TOutput>,
-  ) => SimpleWorkflowStep<TInput, TOutput>)[]
-): SimpleWorkflowStep<TInput, TOutput> {
-  return enhancers.reduce((currentStep, enhancer) => enhancer(currentStep), step);
 }

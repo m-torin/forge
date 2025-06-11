@@ -354,7 +354,7 @@ describe('Batch Processing', () => {
     test('should handle partial batch failures', async () => {
       interface FailureData {
         id: number;
-        operation: 'pass' | 'fail' | 'error';
+        operation: 'error' | 'fail' | 'pass';
       }
 
       const processor = createBatchProcessor<FailureData, string>({
@@ -362,17 +362,17 @@ describe('Batch Processing', () => {
         processBatch: async (batch) => {
           return batch.map((item) => {
             switch (item.data.operation) {
-              case 'pass':
-                return {
-                  id: item.id,
-                  result: `Success: ${item.data.id}`,
-                  success: true,
-                };
               case 'fail':
                 return {
                   id: item.id,
                   error: `Business logic failure for ${item.data.id}`,
                   success: false,
+                };
+              case 'pass':
+                return {
+                  id: item.id,
+                  result: `Success: ${item.data.id}`,
+                  success: true,
                 };
               case 'error':
                 throw new Error(`System error for ${item.data.id}`);

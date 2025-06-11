@@ -16,50 +16,6 @@ import {
 import { StepTemplates, type StepTemplateType } from './step-templates';
 
 /**
- * Step registry entry with additional metadata
- */
-export interface StepRegistryEntry<TInput = any, TOutput = any> {
-  /** Whether the step is currently active */
-  active: boolean;
-  /** Step definition */
-  definition: WorkflowStepDefinition<TInput, TOutput>;
-  /** Last time this step was used */
-  lastUsedAt?: Date;
-  /** When the step was registered */
-  registeredAt: Date;
-  /** Who registered the step */
-  registeredBy?: string;
-  /** Number of times this step has been used */
-  usageCount: number;
-  /** Step validation status */
-  validated: boolean;
-  /** Validation result details */
-  validationResult?: ValidationResult;
-}
-
-/**
- * Step search filters
- */
-export interface StepSearchFilters {
-  /** Only active steps */
-  activeOnly?: boolean;
-  /** Filter by author */
-  author?: string;
-  /** Filter by category */
-  category?: string;
-  /** Include deprecated steps */
-  includeDeprecated?: boolean;
-  /** Filter by name pattern */
-  namePattern?: string;
-  /** Filter by tags (all must match) */
-  tags?: string[];
-  /** Only validated steps */
-  validatedOnly?: boolean;
-  /** Filter by version */
-  version?: string;
-}
-
-/**
  * Step composition configuration
  */
 export interface StepCompositionConfig {
@@ -106,16 +62,348 @@ export interface StepExecutionPlan {
 }
 
 /**
+ * Step registry entry with additional metadata
+ */
+export interface StepRegistryEntry<TInput = any, TOutput = any> {
+  /** Whether the step is currently active */
+  active: boolean;
+  /** Step definition */
+  definition: WorkflowStepDefinition<TInput, TOutput>;
+  /** Last time this step was used */
+  lastUsedAt?: Date;
+  /** When the step was registered */
+  registeredAt: Date;
+  /** Who registered the step */
+  registeredBy?: string;
+  /** Number of times this step has been used */
+  usageCount: number;
+  /** Step validation status */
+  validated: boolean;
+  /** Validation result details */
+  validationResult?: ValidationResult;
+}
+
+/**
+ * Step search filters
+ */
+export interface StepSearchFilters {
+  /** Only active steps */
+  activeOnly?: boolean;
+  /** Filter by author */
+  author?: string;
+  /** Filter by category */
+  category?: string;
+  /** Include deprecated steps */
+  includeDeprecated?: boolean;
+  /** Filter by name pattern */
+  namePattern?: string;
+  /** Filter by tags (all must match) */
+  tags?: string[];
+  /** Only validated steps */
+  validatedOnly?: boolean;
+  /** Filter by version */
+  version?: string;
+}
+
+/**
  * Centralized registry for workflow steps
  */
 export class StepRegistry {
-  private steps = new Map<string, StepRegistryEntry>();
-  private factory: StepFactory;
   private categories = new Set<string>();
+  private factory: StepFactory;
+  private steps = new Map<string, StepRegistryEntry>();
   private tags = new Set<string>();
 
   constructor(factory?: StepFactory) {
     this.factory = factory || new StepFactory();
+  }
+
+  /**
+   * Clear all registered steps
+   */
+  clear(): void {
+    this.steps.clear();
+    this.categories.clear();
+    this.tags.clear();
+  }
+
+  /**
+   * Create executable step instance
+   */
+  createExecutableStep<TInput = any, TOutput = any>(
+    stepId: string,
+  ): StandardWorkflowStep<TInput, TOutput> {
+    const definition = this.get(stepId);
+    if (!definition) {
+      throw new OrchestrationError(
+        `Step with ID ${stepId} not found or inactive`,
+        'STEP_NOT_FOUND',
+        false,
+        { stepId },
+      );
+    }
+
+    // Increment usage count
+    const entry = this.steps.get(stepId);
+    if (entry) {
+      entry.usageCount++;
+      entry.lastUsedAt = new Date();
+    }
+
+    return this.factory.createExecutableStep(definition as WorkflowStepDefinition<TInput, TOutput>);
+  }
+
+  /**
+   * Create execution plan for a set of steps
+   */
+  createExecutionPlan(stepIds: string[], config: StepCompositionConfig = {}): StepExecutionPlan {
+    const {
+      detectCycles = true,
+      maxDepth = 10,
+      optimizeOrder = true,
+      validateDependencies = true,
+    } = config;
+
+    const warnings: string[] = [];
+    const dependencyGraph = new Map<string, StepDependencyNode>();
+
+    // Build dependency graph
+    for (const stepId of stepIds) {
+      const definition = this.get(stepId);
+      if (!definition) {
+        warnings.push(`Step ${stepId} not found, skipping`);
+        continue;
+      }
+
+      const dependencies = definition.dependencies || [];
+      const node: StepDependencyNode = {
+        definition,
+        dependencies,
+        dependents: [],
+        depth: 0,
+        stepId,
+      };
+
+      dependencyGraph.set(stepId, node);
+    }
+
+    // Calculate dependents and depths
+    for (const [stepId, node] of dependencyGraph) {
+      for (const depId of node.dependencies) {
+        const depNode = dependencyGraph.get(depId);
+        if (depNode) {
+          depNode.dependents.push(stepId);
+        } else if (validateDependencies) {
+          warnings.push(`Dependency ${depId} for step ${stepId} not found`);
+        }
+      }
+    }
+
+    // Detect cycles if requested
+    if (detectCycles) {
+      for (const stepId of stepIds) {
+        if (this.hasCyclicDependencies(stepId, new Set(), new Set())) {
+          warnings.push(`Circular dependency detected starting from step ${stepId}`);
+        }
+      }
+    }
+
+    // Calculate execution order (topological sort)
+    const executionOrder = this.topologicalSort(
+      Array.from(dependencyGraph.keys()),
+      dependencyGraph,
+    );
+
+    // Create parallel execution groups
+    const parallelGroups = this.createParallelGroups(executionOrder, dependencyGraph);
+
+    return {
+      dependencyGraph,
+      executionOrder,
+      parallelGroups,
+      warnings,
+    };
+  }
+
+  /**
+   * Export step definitions for backup/migration
+   */
+  export(): {
+    definition: WorkflowStepDefinition;
+    metadata: Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>;
+  }[] {
+    return Array.from(this.steps.values()).map((entry) => ({
+      definition: entry.definition,
+      metadata: {
+        registeredAt: entry.registeredAt,
+        registeredBy: entry.registeredBy,
+        usageCount: entry.usageCount,
+      },
+    }));
+  }
+
+  /**
+   * Get a registered step
+   */
+  get(stepId: string): undefined | WorkflowStepDefinition {
+    const entry = this.steps.get(stepId);
+    return entry?.active ? entry.definition : undefined;
+  }
+
+  /**
+   * Get all available categories
+   */
+  getCategories(): string[] {
+    return Array.from(this.categories).sort();
+  }
+
+  /**
+   * Get step registry entry
+   */
+  getEntry(stepId: string): StepRegistryEntry | undefined {
+    return this.steps.get(stepId);
+  }
+
+  /**
+   * Get registry statistics
+   */
+  getStats(): {
+    activeSteps: number;
+    categories: number;
+    inactiveSteps: number;
+    tags: number;
+    totalSteps: number;
+  } {
+    const activeSteps = Array.from(this.steps.values()).filter((entry) => entry.active).length;
+
+    return {
+      activeSteps,
+      categories: this.categories.size,
+      inactiveSteps: this.steps.size - activeSteps,
+      tags: this.tags.size,
+      totalSteps: this.steps.size,
+    };
+  }
+
+  /**
+   * Get all available tags
+   */
+  getTags(): string[] {
+    return Array.from(this.tags).sort();
+  }
+
+  /**
+   * Get step usage statistics
+   */
+  getUsageStatistics(): {
+    activeSteps: number;
+    categories: Record<string, number>;
+    mostUsed: { stepId: string; usageCount: number }[];
+    recentlyUsed: { lastUsedAt: Date; stepId: string }[];
+    totalSteps: number;
+  } {
+    const stats = {
+      activeSteps: 0,
+      categories: {} as Record<string, number>,
+      mostUsed: [] as { stepId: string; usageCount: number }[],
+      recentlyUsed: [] as { lastUsedAt: Date; stepId: string }[],
+      totalSteps: this.steps.size,
+    };
+
+    const allEntries = Array.from(this.steps.entries());
+
+    // Count active steps and categories
+    for (const [stepId, entry] of allEntries) {
+      if (entry.active) {
+        stats.activeSteps++;
+
+        const category = entry.definition.metadata.category || 'uncategorized';
+        stats.categories[category] = (stats.categories[category] || 0) + 1;
+      }
+    }
+
+    // Most used steps
+    stats.mostUsed = allEntries
+      .filter(([, entry]) => entry.active && entry.usageCount > 0)
+      .map(([stepId, entry]) => ({ stepId, usageCount: entry.usageCount }))
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .slice(0, 10);
+
+    // Recently used steps
+    stats.recentlyUsed = allEntries
+      .filter(([, entry]) => entry.active && entry.lastUsedAt)
+      .map(([stepId, entry]) => ({ lastUsedAt: entry.lastUsedAt!, stepId }))
+      .sort((a, b) => b.lastUsedAt.getTime() - a.lastUsedAt.getTime())
+      .slice(0, 10);
+
+    return stats;
+  }
+
+  /**
+   * Import step definitions from backup/migration
+   */
+  import(
+    data: {
+      definition: WorkflowStepDefinition;
+      metadata?: Partial<Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>>;
+    }[],
+    overwrite = false,
+  ): { errors: string[]; imported: number; skipped: number } {
+    const result = { errors: [] as string[], imported: 0, skipped: 0 };
+
+    for (const item of data) {
+      try {
+        if (this.steps.has(item.definition.id) && !overwrite) {
+          result.skipped++;
+          continue;
+        }
+
+        // If overwriting, unregister existing step first
+        if (overwrite && this.steps.has(item.definition.id)) {
+          this.unregister(item.definition.id);
+        }
+
+        this.register(item.definition, item.metadata?.registeredBy);
+
+        // Update usage statistics if provided
+        if (item.metadata) {
+          const entry = this.steps.get(item.definition.id);
+          if (entry) {
+            if (item.metadata.usageCount !== undefined) {
+              entry.usageCount = item.metadata.usageCount;
+            }
+            if (item.metadata.registeredAt) {
+              entry.registeredAt = new Date(item.metadata.registeredAt);
+            }
+          }
+        }
+
+        result.imported++;
+      } catch (error) {
+        result.errors.push(
+          `Failed to import step ${item.definition.id}: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        );
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * List all registered steps
+   */
+  list(activeOnly = true): WorkflowStepDefinition[] {
+    const results: WorkflowStepDefinition[] = [];
+
+    for (const entry of this.steps.values()) {
+      if (!activeOnly || entry.active) {
+        results.push(entry.definition);
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -133,7 +421,7 @@ export class StepRegistry {
         `Cannot register invalid step: ${validationResult.errors?.join(', ')}`,
         'INVALID_STEP_REGISTRATION',
         false,
-        { validationErrors: validationResult.errors, stepId: definition.id },
+        { stepId: definition.id, validationErrors: validationResult.errors },
       );
     }
 
@@ -149,13 +437,13 @@ export class StepRegistry {
 
     // Create registry entry
     const entry: StepRegistryEntry<TInput, TOutput> = {
-      validated: validationResult.valid,
-      validationResult,
       active: true,
       definition,
       registeredAt: new Date(),
       registeredBy,
       usageCount: 0,
+      validated: validationResult.valid,
+      validationResult,
     };
 
     // Update collections
@@ -221,35 +509,6 @@ export class StepRegistry {
   }
 
   /**
-   * Unregister a step
-   */
-  unregister(stepId: string): boolean {
-    const entry = this.steps.get(stepId);
-    if (!entry) {
-      return false;
-    }
-
-    // Mark as inactive instead of removing to preserve history
-    entry.active = false;
-    return true;
-  }
-
-  /**
-   * Get a registered step
-   */
-  get(stepId: string): WorkflowStepDefinition | undefined {
-    const entry = this.steps.get(stepId);
-    return entry?.active ? entry.definition : undefined;
-  }
-
-  /**
-   * Get step registry entry
-   */
-  getEntry(stepId: string): StepRegistryEntry | undefined {
-    return this.steps.get(stepId);
-  }
-
-  /**
    * Search for steps based on filters
    */
   search(filters: StepSearchFilters = {}): WorkflowStepDefinition[] {
@@ -311,58 +570,17 @@ export class StepRegistry {
   }
 
   /**
-   * List all registered steps
+   * Unregister a step
    */
-  list(activeOnly = true): WorkflowStepDefinition[] {
-    const results: WorkflowStepDefinition[] = [];
-
-    for (const entry of this.steps.values()) {
-      if (!activeOnly || entry.active) {
-        results.push(entry.definition);
-      }
-    }
-
-    return results;
-  }
-
-  /**
-   * Get all available categories
-   */
-  getCategories(): string[] {
-    return Array.from(this.categories).sort();
-  }
-
-  /**
-   * Get all available tags
-   */
-  getTags(): string[] {
-    return Array.from(this.tags).sort();
-  }
-
-  /**
-   * Create executable step instance
-   */
-  createExecutableStep<TInput = any, TOutput = any>(
-    stepId: string,
-  ): StandardWorkflowStep<TInput, TOutput> {
-    const definition = this.get(stepId);
-    if (!definition) {
-      throw new OrchestrationError(
-        `Step with ID ${stepId} not found or inactive`,
-        'STEP_NOT_FOUND',
-        false,
-        { stepId },
-      );
-    }
-
-    // Increment usage count
+  unregister(stepId: string): boolean {
     const entry = this.steps.get(stepId);
-    if (entry) {
-      entry.usageCount++;
-      entry.lastUsedAt = new Date();
+    if (!entry) {
+      return false;
     }
 
-    return this.factory.createExecutableStep(definition as WorkflowStepDefinition<TInput, TOutput>);
+    // Mark as inactive instead of removing to preserve history
+    entry.active = false;
+    return true;
   }
 
   /**
@@ -395,197 +613,48 @@ export class StepRegistry {
     }
 
     return {
-      valid: errors.length === 0,
       errors: errors.length > 0 ? errors : undefined,
+      valid: errors.length === 0,
     };
   }
 
   /**
-   * Create execution plan for a set of steps
+   * Create parallel execution groups
    */
-  createExecutionPlan(stepIds: string[], config: StepCompositionConfig = {}): StepExecutionPlan {
-    const {
-      validateDependencies = true,
-      detectCycles = true,
-      maxDepth = 10,
-      optimizeOrder = true,
-    } = config;
+  private createParallelGroups(
+    executionOrder: string[],
+    dependencyGraph: Map<string, StepDependencyNode>,
+  ): string[][] {
+    const groups: string[][] = [];
+    const completed = new Set<string>();
 
-    const warnings: string[] = [];
-    const dependencyGraph = new Map<string, StepDependencyNode>();
+    for (const stepId of executionOrder) {
+      const node = dependencyGraph.get(stepId);
+      if (!node) continue;
 
-    // Build dependency graph
-    for (const stepId of stepIds) {
-      const definition = this.get(stepId);
-      if (!definition) {
-        warnings.push(`Step ${stepId} not found, skipping`);
-        continue;
-      }
+      // Check if all dependencies are completed
+      const canExecute = node.dependencies.every((depId) => completed.has(depId));
 
-      const dependencies = definition.dependencies || [];
-      const node: StepDependencyNode = {
-        definition,
-        dependencies,
-        dependents: [],
-        depth: 0,
-        stepId,
-      };
-
-      dependencyGraph.set(stepId, node);
-    }
-
-    // Calculate dependents and depths
-    for (const [stepId, node] of dependencyGraph) {
-      for (const depId of node.dependencies) {
-        const depNode = dependencyGraph.get(depId);
-        if (depNode) {
-          depNode.dependents.push(stepId);
-        } else if (validateDependencies) {
-          warnings.push(`Dependency ${depId} for step ${stepId} not found`);
-        }
-      }
-    }
-
-    // Detect cycles if requested
-    if (detectCycles) {
-      for (const stepId of stepIds) {
-        if (this.hasCyclicDependencies(stepId, new Set(), new Set())) {
-          warnings.push(`Circular dependency detected starting from step ${stepId}`);
-        }
-      }
-    }
-
-    // Calculate execution order (topological sort)
-    const executionOrder = this.topologicalSort(
-      Array.from(dependencyGraph.keys()),
-      dependencyGraph,
-    );
-
-    // Create parallel execution groups
-    const parallelGroups = this.createParallelGroups(executionOrder, dependencyGraph);
-
-    return {
-      dependencyGraph,
-      executionOrder,
-      parallelGroups,
-      warnings,
-    };
-  }
-
-  /**
-   * Get step usage statistics
-   */
-  getUsageStatistics(): {
-    totalSteps: number;
-    activeSteps: number;
-    categories: Record<string, number>;
-    mostUsed: { stepId: string; usageCount: number }[];
-    recentlyUsed: { stepId: string; lastUsedAt: Date }[];
-  } {
-    const stats = {
-      activeSteps: 0,
-      categories: {} as Record<string, number>,
-      mostUsed: [] as { stepId: string; usageCount: number }[],
-      recentlyUsed: [] as { stepId: string; lastUsedAt: Date }[],
-      totalSteps: this.steps.size,
-    };
-
-    const allEntries = Array.from(this.steps.entries());
-
-    // Count active steps and categories
-    for (const [stepId, entry] of allEntries) {
-      if (entry.active) {
-        stats.activeSteps++;
-
-        const category = entry.definition.metadata.category || 'uncategorized';
-        stats.categories[category] = (stats.categories[category] || 0) + 1;
-      }
-    }
-
-    // Most used steps
-    stats.mostUsed = allEntries
-      .filter(([, entry]) => entry.active && entry.usageCount > 0)
-      .map(([stepId, entry]) => ({ stepId, usageCount: entry.usageCount }))
-      .sort((a, b) => b.usageCount - a.usageCount)
-      .slice(0, 10);
-
-    // Recently used steps
-    stats.recentlyUsed = allEntries
-      .filter(([, entry]) => entry.active && entry.lastUsedAt)
-      .map(([stepId, entry]) => ({ lastUsedAt: entry.lastUsedAt!, stepId }))
-      .sort((a, b) => b.lastUsedAt.getTime() - a.lastUsedAt.getTime())
-      .slice(0, 10);
-
-    return stats;
-  }
-
-  /**
-   * Export step definitions for backup/migration
-   */
-  export(): {
-    definition: WorkflowStepDefinition;
-    metadata: Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>;
-  }[] {
-    return Array.from(this.steps.values()).map((entry) => ({
-      definition: entry.definition,
-      metadata: {
-        registeredAt: entry.registeredAt,
-        registeredBy: entry.registeredBy,
-        usageCount: entry.usageCount,
-      },
-    }));
-  }
-
-  /**
-   * Import step definitions from backup/migration
-   */
-  import(
-    data: {
-      definition: WorkflowStepDefinition;
-      metadata?: Partial<Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>>;
-    }[],
-    overwrite = false,
-  ): { imported: number; skipped: number; errors: string[] } {
-    const result = { errors: [] as string[], imported: 0, skipped: 0 };
-
-    for (const item of data) {
-      try {
-        if (this.steps.has(item.definition.id) && !overwrite) {
-          result.skipped++;
-          continue;
-        }
-
-        // If overwriting, unregister existing step first
-        if (overwrite && this.steps.has(item.definition.id)) {
-          this.unregister(item.definition.id);
-        }
-
-        this.register(item.definition, item.metadata?.registeredBy);
-
-        // Update usage statistics if provided
-        if (item.metadata) {
-          const entry = this.steps.get(item.definition.id);
-          if (entry) {
-            if (item.metadata.usageCount !== undefined) {
-              entry.usageCount = item.metadata.usageCount;
-            }
-            if (item.metadata.registeredAt) {
-              entry.registeredAt = new Date(item.metadata.registeredAt);
-            }
-          }
-        }
-
-        result.imported++;
-      } catch (error) {
-        result.errors.push(
-          `Failed to import step ${item.definition.id}: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
+      if (canExecute) {
+        // Find or create a group for this step
+        const groupIndex = groups.findIndex((group) =>
+          group.every((groupStepId) => {
+            const groupNode = dependencyGraph.get(groupStepId);
+            return groupNode && !groupNode.dependents.includes(stepId);
+          }),
         );
+
+        if (groupIndex === -1) {
+          groups.push([stepId]);
+        } else {
+          groups[groupIndex].push(stepId);
+        }
+
+        completed.add(stepId);
       }
     }
 
-    return result;
+    return groups;
   }
 
   /**
@@ -655,75 +724,6 @@ export class StepRegistry {
     }
 
     return result;
-  }
-
-  /**
-   * Create parallel execution groups
-   */
-  private createParallelGroups(
-    executionOrder: string[],
-    dependencyGraph: Map<string, StepDependencyNode>,
-  ): string[][] {
-    const groups: string[][] = [];
-    const completed = new Set<string>();
-
-    for (const stepId of executionOrder) {
-      const node = dependencyGraph.get(stepId);
-      if (!node) continue;
-
-      // Check if all dependencies are completed
-      const canExecute = node.dependencies.every((depId) => completed.has(depId));
-
-      if (canExecute) {
-        // Find or create a group for this step
-        const groupIndex = groups.findIndex((group) =>
-          group.every((groupStepId) => {
-            const groupNode = dependencyGraph.get(groupStepId);
-            return groupNode && !groupNode.dependents.includes(stepId);
-          }),
-        );
-
-        if (groupIndex === -1) {
-          groups.push([stepId]);
-        } else {
-          groups[groupIndex].push(stepId);
-        }
-
-        completed.add(stepId);
-      }
-    }
-
-    return groups;
-  }
-
-  /**
-   * Clear all registered steps
-   */
-  clear(): void {
-    this.steps.clear();
-    this.categories.clear();
-    this.tags.clear();
-  }
-
-  /**
-   * Get registry statistics
-   */
-  getStats(): {
-    totalSteps: number;
-    activeSteps: number;
-    inactiveSteps: number;
-    categories: number;
-    tags: number;
-  } {
-    const activeSteps = Array.from(this.steps.values()).filter((entry) => entry.active).length;
-
-    return {
-      activeSteps,
-      categories: this.categories.size,
-      inactiveSteps: this.steps.size - activeSteps,
-      tags: this.tags.size,
-      totalSteps: this.steps.size,
-    };
   }
 }
 

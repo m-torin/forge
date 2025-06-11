@@ -2,40 +2,28 @@
  * Shared type definitions for orchestration package
  */
 
-// Core workflow types
+// Common types
 export type {
-  ListExecutionsOptions,
-  ProviderHealth,
-  RetryConfig,
-  WorkflowDefinition,
-  WorkflowError,
-  WorkflowExecution,
-  WorkflowExecutionMetadata,
-  WorkflowExecutionStatus,
-  WorkflowProvider,
-  WorkflowStep,
-  WorkflowStepExecution,
-  WorkflowTrigger,
-} from './workflow';
+  JsonValue,
+  JsonObject,
+  JsonArray,
+  WorkflowData,
+  Metadata,
+  ErrorDetails,
+  OperationContext,
+  StepData,
+  EventPayload,
+  ScheduleData,
+} from './common';
 
-// Scheduler types
-export type { ScheduleConfig } from './scheduler';
-
-// Provider configuration types
+// Saga pattern types
 export type {
-  AnyProviderConfig,
-  CustomProviderConfig,
-  ProviderCapabilities,
-  ProviderConfig,
-  ProviderContext,
-  ProviderFeature,
-  ProviderHealthReport,
-  ProviderMetrics,
-  ProviderRegistry,
-  RateLimitConfig,
-  UpstashQStashConfig,
-  UpstashWorkflowConfig,
-} from './provider';
+  SagaContext,
+  SagaDefinition,
+  SagaExecution,
+  SagaExecutionState,
+  SagaStep,
+} from '../features/saga';
 
 // Reliability pattern types
 export type {
@@ -53,14 +41,40 @@ export type {
   TimeoutPattern,
 } from './patterns';
 
-// Saga pattern types
+// Provider configuration types
 export type {
-  SagaContext,
-  SagaDefinition,
-  SagaExecution,
-  SagaExecutionState,
-  SagaStep,
-} from '../features/saga';
+  AnyProviderConfig,
+  CustomProviderConfig,
+  ProviderCapabilities,
+  ProviderConfig,
+  ProviderContext,
+  ProviderFeature,
+  ProviderHealthReport,
+  ProviderMetrics,
+  ProviderRegistry,
+  RateLimitConfig,
+  UpstashQStashConfig,
+  UpstashWorkflowConfig,
+} from './provider';
+
+// Scheduler types
+export type { ScheduleConfig } from './scheduler';
+
+// Core workflow types
+export type {
+  ListExecutionsOptions,
+  ProviderHealth,
+  RetryConfig,
+  WorkflowDefinition,
+  WorkflowError,
+  WorkflowExecution,
+  WorkflowExecutionMetadata,
+  WorkflowExecutionStatus,
+  WorkflowProvider,
+  WorkflowStep,
+  WorkflowStepExecution,
+  WorkflowTrigger,
+} from './workflow';
 
 export interface ScheduledExecution {
   error?: string;
@@ -68,5 +82,5 @@ export interface ScheduledExecution {
   id: string;
   result?: unknown;
   scheduleId: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: 'completed' | 'failed' | 'pending' | 'running';
 }

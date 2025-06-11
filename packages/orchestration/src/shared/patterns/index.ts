@@ -2,22 +2,6 @@
  * Reliability and resilience patterns for orchestration
  */
 
-// Retry pattern
-export {
-  calculateDelay,
-  createRetryFn,
-  Retry,
-  retryDatabase,
-  retryFast,
-  retryNetwork,
-  retryPatient,
-  retryStandard,
-  RetryStrategies,
-  withRetry,
-} from './retry';
-
-export type { RetryOptions } from './retry';
-
 // Batch pattern
 export { Batch, BatchManager, createBatchProcessor, withBatch } from './batch';
 
@@ -43,3 +27,19 @@ export {
 } from './circuit-breaker';
 
 export type { CircuitBreakerOptions } from './circuit-breaker';
+
+// Retry pattern
+export {
+  calculateDelay,
+  createRetryFn,
+  Retry,
+  retryDatabase,
+  retryFast,
+  retryNetwork,
+  retryPatient,
+  retryStandard,
+  RetryStrategies,
+  withRetry,
+} from './retry';
+
+export type { RetryOptions } from './retry';

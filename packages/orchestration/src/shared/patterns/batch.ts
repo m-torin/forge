@@ -6,9 +6,20 @@ import PQueue from 'p-queue';
 
 import type { BatchPattern, PatternContext } from '../types/patterns';
 
-export interface BatchOptions extends Partial<BatchPattern> {
-  /** Context for the operation */
-  context?: Partial<PatternContext>;
+export interface BatchContext {
+  batchId: string;
+  events: {
+    emit: (event: string, data: any) => Promise<void> | void;
+  };
+  processedCount: number;
+  totalCount: number;
+  updateProgress: (progress: {
+    batchId: string;
+    percentage: number;
+    processed: number;
+    total: number;
+  }) => Promise<void> | void;
+  workflowId: string;
 }
 
 export interface BatchItem<T = any> {
@@ -26,6 +37,17 @@ export interface BatchItem<T = any> {
   resolve?: (value: any) => void;
 }
 
+// Types for test compatibility
+export interface BatchItem<T = any> {
+  data: T;
+  id: string;
+}
+
+export interface BatchOptions extends Partial<BatchPattern> {
+  /** Context for the operation */
+  context?: Partial<PatternContext>;
+}
+
 export interface BatchProcessor<T, R> {
   /** Process a batch of items */
   processBatch(items: T[]): Promise<R[]>;
@@ -33,16 +55,30 @@ export interface BatchProcessor<T, R> {
   processItem?(item: T): Promise<R>;
 }
 
+export interface BatchProcessorDefinition<T, R> {
+  name: string;
+  onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
+  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
+  processBatch: (items: BatchItem<T>[], context: BatchContext) => Promise<BatchResult<R>[]>;
+}
+
+export interface BatchResult<T = any> {
+  error?: string;
+  id: string;
+  result?: T;
+  success: boolean;
+}
+
 /**
  * Batch processor class that accumulates items and processes them in batches
  */
 export class BatchManager<T = any, R = any> {
-  private pattern: Required<BatchPattern>;
-  private processor: BatchProcessor<T, R>;
-  private queue: PQueue;
   private batch: BatchItem<T>[] = [];
   private batchTimer?: NodeJS.Timeout;
+  private pattern: Required<BatchPattern>;
   private processing = false;
+  private processor: BatchProcessor<T, R>;
+  private queue: PQueue;
   private results = new Map<string, Promise<R>>();
 
   constructor(processor: BatchProcessor<T, R>, options: BatchOptions = {}) {
@@ -69,9 +105,9 @@ export class BatchManager<T = any, R = any> {
    */
   async add(data: T, id = `batch_${Date.now()}_${Math.random()}`): Promise<R> {
     const item: BatchItem<T> = {
-      id,
       addedAt: new Date(),
       data,
+      id,
     };
 
     // Create a promise for this item's result
@@ -106,6 +142,20 @@ export class BatchManager<T = any, R = any> {
   }
 
   /**
+   * Clear the current batch (items will be rejected)
+   */
+  clear(): void {
+    for (const item of this.batch) {
+      if (item.reject) {
+        item.reject(new Error('Batch was cleared'));
+      }
+    }
+
+    this.batch = [];
+    this.clearBatchTimer();
+  }
+
+  /**
    * Process the current batch immediately
    */
   async flush(): Promise<void> {
@@ -132,27 +182,6 @@ export class BatchManager<T = any, R = any> {
   }
 
   /**
-   * Wait for all pending operations to complete
-   */
-  async waitForIdle(): Promise<void> {
-    await this.queue.onIdle();
-  }
-
-  /**
-   * Clear the current batch (items will be rejected)
-   */
-  clear(): void {
-    for (const item of this.batch) {
-      if (item.reject) {
-        item.reject(new Error('Batch was cleared'));
-      }
-    }
-
-    this.batch = [];
-    this.clearBatchTimer();
-  }
-
-  /**
    * Shutdown the batch manager
    */
   async shutdown(): Promise<void> {
@@ -163,16 +192,10 @@ export class BatchManager<T = any, R = any> {
   }
 
   /**
-   * Start the batch timer
+   * Wait for all pending operations to complete
    */
-  private startBatchTimer(): void {
-    if (this.batchTimer) {
-      return;
-    }
-
-    this.batchTimer = setTimeout(() => {
-      this.triggerBatchProcessing();
-    }, this.pattern.maxWaitTime);
+  async waitForIdle(): Promise<void> {
+    await this.queue.onIdle();
   }
 
   /**
@@ -186,17 +209,73 @@ export class BatchManager<T = any, R = any> {
   }
 
   /**
-   * Trigger batch processing
+   * Handle batch processing errors
    */
-  private triggerBatchProcessing(): void {
-    if (this.batch.length === 0 || this.processing) {
-      return;
+  private async handleBatchError(batch: BatchItem<T>[], error: Error): Promise<void> {
+    switch (this.pattern.errorHandling) {
+      case 'collect-errors':
+        // Try individual processing and collect errors
+        const errors: Error[] = [];
+
+        if (this.processor.processItem) {
+          for (const item of batch) {
+            try {
+              const result = await this.processor.processItem(item.data);
+              if (item.resolve) {
+                item.resolve(result);
+              }
+            } catch (itemError) {
+              errors.push(itemError as Error);
+              if (item.reject) {
+                item.reject(itemError);
+              }
+            }
+          }
+        } else {
+          // No individual processor, collect the batch error
+          errors.push(error);
+          for (const item of batch) {
+            if (item.reject) {
+              item.reject(error);
+            }
+          }
+        }
+        break;
+
+      case 'continue':
+        // Try to process items individually if processor supports it
+        if (this.processor.processItem) {
+          for (const item of batch) {
+            try {
+              const result = await this.processor.processItem(item.data);
+              if (item.resolve) {
+                item.resolve(result);
+              }
+            } catch (itemError) {
+              if (item.reject) {
+                item.reject(itemError);
+              }
+            }
+          }
+        } else {
+          // No individual processor, reject all
+          for (const item of batch) {
+            if (item.reject) {
+              item.reject(error);
+            }
+          }
+        }
+        break;
+
+      case 'fail-fast':
+        // Reject all items with the same error
+        for (const item of batch) {
+          if (item.reject) {
+            item.reject(error);
+          }
+        }
+        break;
     }
-
-    this.clearBatchTimer();
-
-    // Add batch processing to queue
-    this.queue.add(() => this.processBatch());
   }
 
   /**
@@ -259,86 +338,49 @@ export class BatchManager<T = any, R = any> {
   }
 
   /**
-   * Handle batch processing errors
+   * Start the batch timer
    */
-  private async handleBatchError(batch: BatchItem<T>[], error: Error): Promise<void> {
-    switch (this.pattern.errorHandling) {
-      case 'fail-fast':
-        // Reject all items with the same error
-        for (const item of batch) {
-          if (item.reject) {
-            item.reject(error);
-          }
-        }
-        break;
-
-      case 'continue':
-        // Try to process items individually if processor supports it
-        if (this.processor.processItem) {
-          for (const item of batch) {
-            try {
-              const result = await this.processor.processItem(item.data);
-              if (item.resolve) {
-                item.resolve(result);
-              }
-            } catch (itemError) {
-              if (item.reject) {
-                item.reject(itemError);
-              }
-            }
-          }
-        } else {
-          // No individual processor, reject all
-          for (const item of batch) {
-            if (item.reject) {
-              item.reject(error);
-            }
-          }
-        }
-        break;
-
-      case 'collect-errors':
-        // Try individual processing and collect errors
-        const errors: Error[] = [];
-
-        if (this.processor.processItem) {
-          for (const item of batch) {
-            try {
-              const result = await this.processor.processItem(item.data);
-              if (item.resolve) {
-                item.resolve(result);
-              }
-            } catch (itemError) {
-              errors.push(itemError as Error);
-              if (item.reject) {
-                item.reject(itemError);
-              }
-            }
-          }
-        } else {
-          // No individual processor, collect the batch error
-          errors.push(error);
-          for (const item of batch) {
-            if (item.reject) {
-              item.reject(error);
-            }
-          }
-        }
-        break;
+  private startBatchTimer(): void {
+    if (this.batchTimer) {
+      return;
     }
+
+    this.batchTimer = setTimeout(() => {
+      this.triggerBatchProcessing();
+    }, this.pattern.maxWaitTime);
   }
-}
 
-/**
- * Create a batch processing function
- */
-export function withBatch<T, R>(
-  processor: BatchProcessor<T, R>,
-  options: BatchOptions = {},
-): (item: T, id?: string) => Promise<R> {
-  const manager = new BatchManager(processor, options);
+  /**
+   * Trigger batch processing
+   */
+  private triggerBatchProcessing(): void {
+    if (this.batch.length === 0 || this.processing) {
+      return;
+    }
 
-  return (item: T, id?: string) => manager.add(item, id);
+    this.clearBatchTimer();
+
+    // Add batch processing to queue
+    this.queue.add(() => this.processBatch());
+  }
+
+  /**
+   * Cleanup resources
+   */
+  async cleanup(): Promise<void> {
+    // Clear any pending batch timer
+    this.clearBatchTimer();
+    
+    // Process any remaining items in the batch
+    if (this.batch.length > 0 && !this.processing) {
+      await this.processBatch();
+    }
+    
+    // Clear all data
+    this.batch = [];
+    this.batchIds.clear();
+    this.pendingPromises.clear();
+  }
 }
 
 /**
@@ -364,50 +406,14 @@ export function Batch<T, R>(options: BatchOptions = {}) {
   };
 }
 
-// Types for test compatibility
-export interface BatchItem<T = any> {
-  data: T;
-  id: string;
-}
-
-export interface BatchResult<T = any> {
-  error?: string;
-  id: string;
-  result?: T;
-  success: boolean;
-}
-
-export interface BatchContext {
-  batchId: string;
-  events: {
-    emit: (event: string, data: any) => Promise<void> | void;
-  };
-  processedCount: number;
-  totalCount: number;
-  updateProgress: (progress: {
-    processed: number;
-    total: number;
-    percentage: number;
-    batchId: string;
-  }) => Promise<void> | void;
-  workflowId: string;
-}
-
-export interface BatchProcessorDefinition<T, R> {
-  name: string;
-  onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
-  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
-  processBatch: (items: BatchItem<T>[], context: BatchContext) => Promise<BatchResult<R>[]>;
-}
-
 /**
  * Create a batch processor with the expected interface for tests
  */
 export function createBatchProcessor<T, R>(config: {
   name: string;
-  processBatch: (items: BatchItem<T>[], context?: BatchContext) => Promise<BatchResult<R>[]>;
-  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
   onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
+  onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
+  processBatch: (items: BatchItem<T>[], context?: BatchContext) => Promise<BatchResult<R>[]>;
 }): BatchProcessorDefinition<T, R> {
   return {
     name: config.name,
@@ -428,4 +434,16 @@ export function createSimpleBatchProcessor<T, R>(
     processBatch: batchFn,
     processItem: itemFn,
   };
+}
+
+/**
+ * Create a batch processing function
+ */
+export function withBatch<T, R>(
+  processor: BatchProcessor<T, R>,
+  options: BatchOptions = {},
+): (item: T, id?: string) => Promise<R> {
+  const manager = new BatchManager(processor, options);
+
+  return (item: T, id?: string) => manager.add(item, id);
 }

@@ -15,6 +15,14 @@
       "types": "./src/client.ts",
       "import": "./src/client.ts"
     },
+    "./server/next": {
+      "types": "./src/server-next.ts",
+      "import": "./src/server-next.ts"
+    },
+    "./client/next": {
+      "types": "./src/client-next.ts",
+      "import": "./src/client-next.ts"
+    },
     "./examples": {
       "types": "./src/examples/index.ts",
       "import": "./src/examples/index.ts"
@@ -45,9 +53,9 @@
     "date-fns": "catalog:",
     "nanoid": "catalog:",
     "next": "catalog:",
-    "opossum": "^8.1.4",
-    "p-queue": "^8.0.1",
-    "p-retry": "^6.2.0",
+    "opossum": "^9.0.0",
+    "p-queue": "^8.1.0",
+    "p-retry": "^6.2.1",
     "react": "catalog:",
     "zod": "catalog:"
   },
@@ -55,8 +63,8 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
+    "@types/opossum": "^8.1.8",
     "@types/react": "catalog:",
-    "@types/opossum": "^8.1.4",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

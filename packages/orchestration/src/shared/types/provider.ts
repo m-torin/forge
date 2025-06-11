@@ -4,13 +4,46 @@
 
 import type { WorkflowProvider } from './workflow';
 
+export type AnyProviderConfig =
+  | CustomProviderConfig
+  | RateLimitConfig
+  | UpstashQStashConfig
+  | UpstashWorkflowConfig;
+
+export interface CustomProviderConfig extends ProviderConfig {
+  config: {
+    /** Additional configuration for custom provider */
+    [key: string]: any;
+    /** Custom provider class or factory function */
+    provider: (() => Promise<WorkflowProvider>) | (() => WorkflowProvider) | WorkflowProvider;
+  };
+  type: 'custom';
+}
+
+export interface ProviderCapabilities {
+  /** Maximum concurrent executions */
+  maxConcurrency?: number;
+  /** Maximum execution timeout */
+  maxTimeout?: number;
+  /** Maximum workflow definition size */
+  maxWorkflowSize?: number;
+  /** Supported retry strategies */
+  retryStrategies?: ('exponential' | 'fixed' | 'linear')[];
+  /** Whether provider supports scheduling */
+  supportsScheduling: boolean;
+  /** Whether provider supports state persistence */
+  supportsStatePersistence: boolean;
+  /** Whether provider supports webhooks */
+  supportsWebhooks: boolean;
+}
+
 export interface ProviderConfig {
   /** Provider-specific configuration */
   config: Record<string, any>;
   /** Whether this provider is enabled */
   enabled: boolean;
   /** Environment where this provider should be used */
-  environment?: 'development' | 'staging' | 'production' | 'all';
+  environment?: 'all' | 'development' | 'production' | 'staging';
   /** Features supported by this provider */
   features?: ProviderFeature[];
   /** Provider name/identifier */
@@ -18,91 +51,37 @@ export interface ProviderConfig {
   /** Priority for provider selection (higher = preferred) */
   priority?: number;
   /** Provider type */
-  type: 'upstash-workflow' | 'upstash-qstash' | 'rate-limit' | 'custom';
+  type: 'custom' | 'rate-limit' | 'upstash-qstash' | 'upstash-workflow';
 }
 
-export interface UpstashWorkflowConfig extends ProviderConfig {
-  config: {
-    baseUrl: string;
-    qstashToken: string;
-    redisUrl: string;
-    redisToken: string;
-    webhookUrlPattern?: string;
+export interface ProviderContext {
+  /** Current execution environment */
+  environment: 'development' | 'production' | 'staging';
+  /** Additional context data */
+  metadata?: Record<string, any>;
+  /** Request context (if available) */
+  request?: {
+    headers: Record<string, string>;
+    method: string;
+    url: string;
   };
-  enabled: boolean;
-  name: string;
-  type: 'upstash-workflow';
-}
-
-export interface UpstashQStashConfig extends ProviderConfig {
-  config: {
-    /** QStash token */
-    token: string;
-    /** Current signing key */
-    currentSigningKey?: string;
-    /** Next signing key for rotation */
-    nextSigningKey?: string;
-    /** Base URL for callbacks */
-    baseUrl: string;
-    /** Default retry configuration */
-    retries?: number;
-    /** Default delay in seconds */
-    delay?: number;
+  /** User context (if available) */
+  user?: {
+    id: string;
+    permissions: string[];
   };
-  type: 'upstash-qstash';
 }
 
-export interface RateLimitConfig extends ProviderConfig {
-  config: {
-    /** Redis URL for rate limit storage */
-    redisUrl: string;
-    /** Redis token */
-    redisToken?: string;
-    /** Default rate limit settings */
-    defaultLimit?: {
-      /** Number of requests */
-      requests: number;
-      /** Time window in seconds */
-      window: number;
-    };
-    /** Rate limit algorithm */
-    algorithm?: 'sliding-window' | 'fixed-window' | 'token-bucket';
-  };
-  type: 'rate-limit';
-}
-
-export interface CustomProviderConfig extends ProviderConfig {
-  config: {
-    /** Custom provider class or factory function */
-    provider: WorkflowProvider | (() => WorkflowProvider) | (() => Promise<WorkflowProvider>);
-    /** Additional configuration for custom provider */
-    [key: string]: any;
-  };
-  type: 'custom';
-}
-
-export type AnyProviderConfig =
-  | UpstashWorkflowConfig
-  | UpstashQStashConfig
-  | RateLimitConfig
-  | CustomProviderConfig;
-
-export interface ProviderRegistry {
-  /** Get all registered providers */
-  getAllProviders(): WorkflowProvider[];
-  /** Get the default provider for workflow execution */
-  getDefaultProvider(): WorkflowProvider | null;
-  /** Get a specific provider */
-  getProvider(name: string): WorkflowProvider | null;
-  /** Get providers by type */
-  getProvidersByType(type: ProviderConfig['type']): WorkflowProvider[];
-  /** Health check all providers */
-  healthCheckAll(): Promise<ProviderHealthReport[]>;
-  /** Register a provider */
-  register(config: AnyProviderConfig): Promise<void>;
-  /** Unregister a provider */
-  unregister(name: string): Promise<void>;
-}
+export type ProviderFeature =
+  | 'batch-processing'
+  | 'dead-letter-queue'
+  | 'monitoring'
+  | 'rate-limiting'
+  | 'retries'
+  | 'scheduling'
+  | 'state-management'
+  | 'webhooks'
+  | 'workflow-execution';
 
 export interface ProviderHealthReport {
   /** Additional details */
@@ -114,7 +93,7 @@ export interface ProviderHealthReport {
   /** Response time in milliseconds */
   responseTime: number;
   /** Health status */
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: 'degraded' | 'healthy' | 'unhealthy';
   /** When health check was performed */
   timestamp: Date;
   /** Provider type */
@@ -139,48 +118,69 @@ export interface ProviderMetrics {
   totalExecutions: number;
 }
 
-export type ProviderFeature =
-  | 'workflow-execution'
-  | 'scheduling'
-  | 'rate-limiting'
-  | 'retries'
-  | 'webhooks'
-  | 'batch-processing'
-  | 'state-management'
-  | 'monitoring'
-  | 'dead-letter-queue';
-
-export interface ProviderCapabilities {
-  /** Maximum concurrent executions */
-  maxConcurrency?: number;
-  /** Maximum execution timeout */
-  maxTimeout?: number;
-  /** Maximum workflow definition size */
-  maxWorkflowSize?: number;
-  /** Supported retry strategies */
-  retryStrategies?: ('fixed' | 'exponential' | 'linear')[];
-  /** Whether provider supports scheduling */
-  supportsScheduling: boolean;
-  /** Whether provider supports state persistence */
-  supportsStatePersistence: boolean;
-  /** Whether provider supports webhooks */
-  supportsWebhooks: boolean;
+export interface ProviderRegistry {
+  /** Get all registered providers */
+  getAllProviders(): WorkflowProvider[];
+  /** Get the default provider for workflow execution */
+  getDefaultProvider(): null | WorkflowProvider;
+  /** Get a specific provider */
+  getProvider(name: string): null | WorkflowProvider;
+  /** Get providers by type */
+  getProvidersByType(type: ProviderConfig['type']): WorkflowProvider[];
+  /** Health check all providers */
+  healthCheckAll(): Promise<ProviderHealthReport[]>;
+  /** Register a provider */
+  register(config: AnyProviderConfig): Promise<void>;
+  /** Unregister a provider */
+  unregister(name: string): Promise<void>;
 }
 
-export interface ProviderContext {
-  /** Current execution environment */
-  environment: 'development' | 'staging' | 'production';
-  /** Additional context data */
-  metadata?: Record<string, any>;
-  /** Request context (if available) */
-  request?: {
-    headers: Record<string, string>;
-    url: string;
-    method: string;
+export interface RateLimitConfig extends ProviderConfig {
+  config: {
+    /** Rate limit algorithm */
+    algorithm?: 'fixed-window' | 'sliding-window' | 'token-bucket';
+    /** Default rate limit settings */
+    defaultLimit?: {
+      /** Number of requests */
+      requests: number;
+      /** Time window in seconds */
+      window: number;
+    };
+    /** Redis token */
+    redisToken?: string;
+    /** Redis URL for rate limit storage */
+    redisUrl: string;
   };
-  /** User context (if available) */
-  user?: {
-    id: string;
-    permissions: string[];
+  type: 'rate-limit';
+}
+
+export interface UpstashQStashConfig extends ProviderConfig {
+  config: {
+    /** Base URL for callbacks */
+    baseUrl: string;
+    /** Current signing key */
+    currentSigningKey?: string;
+    /** Default delay in seconds */
+    delay?: number;
+    /** Next signing key for rotation */
+    nextSigningKey?: string;
+    /** Default retry configuration */
+    retries?: number;
+    /** QStash token */
+    token: string;
   };
+  type: 'upstash-qstash';
+}
+
+export interface UpstashWorkflowConfig extends ProviderConfig {
+  config: {
+    baseUrl: string;
+    qstashToken: string;
+    redisToken: string;
+    redisUrl: string;
+    webhookUrlPattern?: string;
+  };
+  enabled: boolean;
+  name: string;
+  type: 'upstash-workflow';
 }

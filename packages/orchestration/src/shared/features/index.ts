@@ -3,17 +3,17 @@
  * All advanced workflow orchestration features
  */
 
-// Scheduler exports
-export * from './scheduler';
-
 // Monitoring exports
 export * from './monitoring';
 
 // Saga pattern exports
 export * from './saga';
 
-// Versioning and composition exports
-export * from './versioning';
+// Scheduler exports
+export * from './scheduler';
 
 // Testing utilities exports
 export * from './testing';
+
+// Versioning and composition exports
+export * from './versioning';

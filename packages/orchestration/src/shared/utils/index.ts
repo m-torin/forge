@@ -24,6 +24,10 @@ export type { ValidationError } from './errors';
 export { OrchestrationManager } from './manager';
 export type { OrchestrationManagerConfig } from './manager';
 
+// Rate limiting utilities
+export { createRateLimiter, withRateLimit, createRateLimitHeaders, createRedisFromEnv } from './rate-limit';
+export type { RateLimitConfig, RateLimitResult } from './rate-limit';
+
 // Validation utilities
 export {
   sanitizeConfig,
@@ -32,4 +36,25 @@ export {
   validateRetryConfig,
   validateScheduleConfig,
   validateWorkflowDefinition,
+  validateWorkflowStep,
 } from './validation';
+
+// Input validation utilities
+export {
+  commonSchemas,
+  apiSchemas,
+  sanitizeInput,
+  validateRequestBody,
+  validateQueryParams,
+  validatePathParams,
+  createValidatedHandler,
+} from './input-validation';
+
+// Data masking utilities
+export {
+  maskSensitiveData,
+  createMaskedError,
+  safeConsole,
+  createSafeLogger,
+  withMaskedErrors,
+} from './data-masking';

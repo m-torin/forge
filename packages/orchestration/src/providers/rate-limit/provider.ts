@@ -4,15 +4,15 @@
  */
 
 import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { redis } from '@repo/database/redis';
 
 import { createProviderError, RateLimitError } from '../../shared/utils/errors';
 
-import type { RateLimitConfig, RateLimitPattern } from '../../shared/types/index';
+import type { RateLimitConfig, RateLimitPattern, JsonObject } from '../../shared/types/index';
 
 export interface RateLimitProviderOptions {
   /** Rate limit algorithm */
-  algorithm?: 'sliding-window' | 'fixed-window' | 'token-bucket';
+  algorithm?: 'fixed-window' | 'sliding-window' | 'token-bucket';
   /** Default rate limit settings */
   defaultLimit?: {
     requests: number;
@@ -20,33 +20,28 @@ export interface RateLimitProviderOptions {
   };
   /** Prefix for Redis keys */
   keyPrefix?: string;
-  /** Redis configuration */
-  redis: {
-    url: string;
-    token?: string;
-  };
+  /** Whether to enable Redis (uses @repo/database/redis) */
+  enableRedis?: boolean;
 }
 
 export class RateLimitProvider {
   public readonly name = 'rate-limit';
   public readonly version = '1.0.0';
 
-  private redis: Redis;
-  private rateLimiters = new Map<string, Ratelimit>();
   private options: RateLimitProviderOptions;
+  private rateLimiters = new Map<string, Ratelimit>();
+  private useRedis: boolean;
 
   constructor(options: RateLimitProviderOptions) {
     this.options = {
       algorithm: 'sliding-window',
       defaultLimit: { requests: 10, window: 60 },
       keyPrefix: 'rl',
+      enableRedis: true,
       ...options,
     };
 
-    this.redis = new Redis({
-      url: options.redis.url,
-      token: options.redis.token,
-    });
+    this.useRedis = this.options.enableRedis !== false;
   }
 
   /**
@@ -57,55 +52,10 @@ export class RateLimitProvider {
       algorithm: config.config.algorithm,
       defaultLimit: config.config.defaultLimit,
       redis: {
-        url: config.config.redisUrl,
         token: config.config.redisToken,
+        url: config.config.redisUrl,
       },
     });
-  }
-
-  /**
-   * Create or get a rate limiter for a specific identifier
-   */
-  private getRateLimiter(pattern: RateLimitPattern): Ratelimit {
-    const key = `${pattern.identifier}-${pattern.tokens}-${pattern.interval}-${pattern.algorithm}`;
-
-    if (this.rateLimiters.has(key)) {
-      return this.rateLimiters.get(key)!;
-    }
-
-    let ratelimit: Ratelimit;
-
-    switch (pattern.algorithm) {
-      case 'sliding-window':
-        ratelimit = new Ratelimit({
-          limiter: Ratelimit.slidingWindow(pattern.tokens, `${pattern.interval}ms`),
-          prefix: this.options.keyPrefix,
-          redis: this.redis,
-        });
-        break;
-
-      case 'fixed-window':
-        ratelimit = new Ratelimit({
-          limiter: Ratelimit.fixedWindow(pattern.tokens, `${pattern.interval}ms`),
-          prefix: this.options.keyPrefix,
-          redis: this.redis,
-        });
-        break;
-
-      case 'token-bucket':
-        ratelimit = new Ratelimit({
-          limiter: Ratelimit.tokenBucket(pattern.tokens, `${pattern.interval}ms`, pattern.tokens),
-          prefix: this.options.keyPrefix,
-          redis: this.redis,
-        });
-        break;
-
-      default:
-        throw new Error(`Unsupported rate limit algorithm: ${pattern.algorithm}`);
-    }
-
-    this.rateLimiters.set(key, ratelimit);
-    return ratelimit;
   }
 
   /**
@@ -113,7 +63,7 @@ export class RateLimitProvider {
    */
   async checkRateLimit(
     pattern: RateLimitPattern,
-    context?: any,
+    context?: JsonObject,
   ): Promise<{
     allowed: boolean;
     limit: number;
@@ -158,51 +108,30 @@ export class RateLimitProvider {
   }
 
   /**
-   * Apply rate limiting to a function
+   * Clear all rate limiters
    */
-  async withRateLimit<T>(
-    pattern: RateLimitPattern,
-    fn: () => Promise<T>,
-    context?: any,
-  ): Promise<T> {
-    const check = await this.checkRateLimit(pattern, context);
-
-    if (!check.allowed) {
-      if (pattern.throwOnLimit) {
-        throw new RateLimitError(
-          `Rate limit exceeded for ${pattern.identifier}`,
-          pattern.tokens,
-          pattern.interval,
-          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
-        );
-      } else {
-        throw new RateLimitError(
-          `Rate limit exceeded for ${pattern.identifier}`,
-          pattern.tokens,
-          pattern.interval,
-          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
-        );
-      }
-    }
-
-    return await fn();
+  clearCache(): void {
+    this.rateLimiters.clear();
   }
 
   /**
-   * Reset rate limit for a specific key
+   * Create a rate limiting decorator
    */
-  async resetRateLimit(identifier: string, key?: string): Promise<void> {
-    try {
-      const fullKey = key || identifier;
-      await this.redis.del(`${this.options.keyPrefix}:${fullKey}`);
-    } catch (error) {
-      throw createProviderError(
-        `Failed to reset rate limit for ${identifier}`,
-        this.name,
-        'rate-limit',
-        { originalError: error as Error },
-      );
-    }
+  createRateLimitDecorator(pattern: RateLimitPattern) {
+    return function rateLimitDecorator<T extends (...args: unknown[]) => Promise<unknown>>(
+      target: unknown,
+      propertyName: string,
+      descriptor: PropertyDescriptor,
+    ) {
+      const method = descriptor.value;
+
+      descriptor.value = async function (this: unknown, ...args: unknown[]) {
+        const provider = new RateLimitProvider((this as { options: RateLimitProviderOptions }).options);
+        return provider.withRateLimit(pattern, () => method.apply(this, args));
+      };
+
+      return descriptor;
+    };
   }
 
   /**
@@ -210,12 +139,12 @@ export class RateLimitProvider {
    */
   async getRateLimitStatus(
     pattern: RateLimitPattern,
-    context?: any,
-  ): Promise<{
+    context?: JsonObject,
+  ): Promise<null | {
     current: number;
     limit: number;
     resetTime: Date;
-  } | null> {
+  }> {
     try {
       const rateLimiter = this.getRateLimiter(pattern);
       const key = pattern.keyGenerator ? pattern.keyGenerator(context) : pattern.identifier;
@@ -240,22 +169,23 @@ export class RateLimitProvider {
   }
 
   /**
-   * Create a rate limiting decorator
+   * Get statistics for all active rate limiters
    */
-  createRateLimitDecorator(pattern: RateLimitPattern) {
-    return function rateLimitDecorator<T extends (...args: any[]) => Promise<any>>(
-      target: any,
-      propertyName: string,
-      descriptor: PropertyDescriptor,
-    ) {
-      const method = descriptor.value;
+  getStats(): {
+    activeLimiters: number;
+    limiterTypes: Record<string, number>;
+  } {
+    const limiterTypes: Record<string, number> = {};
 
-      descriptor.value = async function (this: any, ...args: any[]) {
-        const provider = new RateLimitProvider((this as any).options);
-        return provider.withRateLimit(pattern, () => method.apply(this, args));
-      };
+    for (const [key] of this.rateLimiters) {
+      const parts = key.split('-');
+      const algorithm = parts[parts.length - 1];
+      limiterTypes[algorithm] = (limiterTypes[algorithm] || 0) + 1;
+    }
 
-      return descriptor;
+    return {
+      activeLimiters: this.rateLimiters.size,
+      limiterTypes,
     };
   }
 
@@ -263,10 +193,10 @@ export class RateLimitProvider {
    * Health check
    */
   async healthCheck(): Promise<{
-    status: 'healthy' | 'unhealthy';
+    details?: JsonObject;
     responseTime: number;
+    status: 'healthy' | 'unhealthy';
     timestamp: Date;
-    details?: any;
   }> {
     const startTime = Date.now();
 
@@ -297,30 +227,105 @@ export class RateLimitProvider {
   }
 
   /**
-   * Clear all rate limiters
+   * Reset rate limit for a specific key
    */
-  clearCache(): void {
-    this.rateLimiters.clear();
+  async resetRateLimit(identifier: string, key?: string): Promise<void> {
+    try {
+      const fullKey = key || identifier;
+      await this.redis.del(`${this.options.keyPrefix}:${fullKey}`);
+    } catch (error) {
+      throw createProviderError(
+        `Failed to reset rate limit for ${identifier}`,
+        this.name,
+        'rate-limit',
+        { originalError: error as Error },
+      );
+    }
   }
 
   /**
-   * Get statistics for all active rate limiters
+   * Apply rate limiting to a function
    */
-  getStats(): {
-    activeLimiters: number;
-    limiterTypes: Record<string, number>;
-  } {
-    const limiterTypes: Record<string, number> = {};
+  async withRateLimit<T>(
+    pattern: RateLimitPattern,
+    fn: () => Promise<T>,
+    context?: JsonObject,
+  ): Promise<T> {
+    const check = await this.checkRateLimit(pattern, context);
 
-    for (const [key] of this.rateLimiters) {
-      const parts = key.split('-');
-      const algorithm = parts[parts.length - 1];
-      limiterTypes[algorithm] = (limiterTypes[algorithm] || 0) + 1;
+    if (!check.allowed) {
+      if (pattern.throwOnLimit) {
+        throw new RateLimitError(
+          `Rate limit exceeded for ${pattern.identifier}`,
+          pattern.tokens,
+          pattern.interval,
+          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
+        );
+      } else {
+        throw new RateLimitError(
+          `Rate limit exceeded for ${pattern.identifier}`,
+          pattern.tokens,
+          pattern.interval,
+          Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
+        );
+      }
     }
 
-    return {
-      activeLimiters: this.rateLimiters.size,
-      limiterTypes,
-    };
+    return await fn();
+  }
+
+  /**
+   * Create or get a rate limiter for a specific identifier
+   */
+  private getRateLimiter(pattern: RateLimitPattern): Ratelimit {
+    const key = `${pattern.identifier}-${pattern.tokens}-${pattern.interval}-${pattern.algorithm}`;
+
+    if (this.rateLimiters.has(key)) {
+      return this.rateLimiters.get(key)!;
+    }
+
+    let ratelimit: Ratelimit;
+
+    switch (pattern.algorithm) {
+      case 'fixed-window':
+        ratelimit = new Ratelimit({
+          limiter: Ratelimit.fixedWindow(pattern.tokens, `${pattern.interval}ms`),
+          prefix: this.options.keyPrefix,
+          redis: redis,
+        });
+        break;
+
+      case 'sliding-window':
+        ratelimit = new Ratelimit({
+          limiter: Ratelimit.slidingWindow(pattern.tokens, `${pattern.interval}ms`),
+          prefix: this.options.keyPrefix,
+          redis: redis,
+        });
+        break;
+
+      case 'token-bucket':
+        ratelimit = new Ratelimit({
+          limiter: Ratelimit.tokenBucket(pattern.tokens, `${pattern.interval}ms`, pattern.tokens),
+          prefix: this.options.keyPrefix,
+          redis: redis,
+        });
+        break;
+
+      default:
+        throw new Error(`Unsupported rate limit algorithm: ${pattern.algorithm}`);
+    }
+
+    this.rateLimiters.set(key, ratelimit);
+    return ratelimit;
+  }
+
+  /**
+   * Cleanup resources
+   */
+  async cleanup(): Promise<void> {
+    // Clear rate limiter cache
+    this.rateLimiters.clear();
+    // Redis connections are automatically managed by Upstash
+    return;
   }
 }

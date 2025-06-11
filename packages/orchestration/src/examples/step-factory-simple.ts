@@ -14,14 +14,21 @@ import {
 } from '../shared/index';
 
 /**
+ * Create HTTP request step using template
+ */
+export function createApiStep() {
+  return StepTemplates.http('User Data API', 'Fetch user data from API');
+}
+
+/**
  * Simple greeting step example
  */
 export function createGreetingStep() {
   return createWorkflowStep(
     {
-      name: 'Simple Greeting',
       category: 'utility',
       description: 'Creates a simple greeting message',
+      name: 'Simple Greeting',
       tags: ['greeting', 'simple'],
       version: '1.0.0',
     },
@@ -40,24 +47,17 @@ export function createGreetingStep() {
     },
     {
       validationConfig: {
-        validateInput: true,
-        validateOutput: true,
         input: z.object({
           name: z.string().min(1, 'Name is required'),
         }),
         output: z.object({
           message: z.string(),
         }),
+        validateInput: true,
+        validateOutput: true,
       },
     },
   );
-}
-
-/**
- * Create HTTP request step using template
- */
-export function createApiStep() {
-  return StepTemplates.http('User Data API', 'Fetch user data from API');
 }
 
 /**

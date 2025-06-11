@@ -2,7 +2,7 @@
  * Mock event bus implementation with proper pattern matching
  */
 
-type EventHandler = (event: any) => void | Promise<void>;
+type EventHandler = (event: any) => Promise<void> | void;
 
 interface Subscription {
   handler: EventHandler;

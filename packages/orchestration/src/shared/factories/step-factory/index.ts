@@ -4,6 +4,26 @@
  * Central export point for all step factory components after modularization.
  */
 
+// Re-export everything from the main step-factory module
+export {
+  createWorkflowStep,
+  defaultStepFactory,
+  matchError,
+  StandardWorkflowStep,
+  StepFactory,
+  when,
+} from '../step-factory';
+
+// Export performance monitoring functions
+export {
+  addCustomMetric,
+  calculatePerformanceStats,
+  createProgressReporter,
+  formatPerformanceData,
+  initializePerformanceData,
+  updatePerformanceData,
+} from './step-performance';
+
 // Export types from step-types
 export type {
   ErrorCode,
@@ -25,23 +45,3 @@ export type {
 
 // Export validation functions
 export { validateStepDefinition, validateStepInput, validateStepOutput } from './step-validation';
-
-// Export performance monitoring functions
-export {
-  addCustomMetric,
-  calculatePerformanceStats,
-  createProgressReporter,
-  formatPerformanceData,
-  initializePerformanceData,
-  updatePerformanceData,
-} from './step-performance';
-
-// Re-export everything from the main step-factory module
-export {
-  createWorkflowStep,
-  defaultStepFactory,
-  matchError,
-  StandardWorkflowStep,
-  StepFactory,
-  when,
-} from '../step-factory';

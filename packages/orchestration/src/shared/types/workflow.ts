@@ -2,14 +2,58 @@
  * Core workflow type definitions
  */
 
-import type { StepRegistry } from '../factories/step-registry';
-// import type { EventBus } from '../features/event-bus';
-import type { AdvancedScheduler } from '../features/scheduler';
+import type { WorkflowError } from './errors';
+import type { WorkflowData, Metadata, ErrorDetails, StepData, EventPayload } from './common';
 
-// Temporary EventBus type until event-bus feature is implemented
-type EventBus = any;
-// Type alias for backward compatibility
-type SchedulingService = AdvancedScheduler;
+export interface ListExecutionsOptions {
+  /** Pagination cursor */
+  cursor?: string;
+  endDate?: Date;
+  /** Maximum number of results */
+  limit?: number;
+  /** Filter by date range */
+  startDate?: Date;
+  /** Filter by status */
+  status?: WorkflowExecutionStatus[];
+}
+
+export interface ProviderHealth {
+  /** Additional health details */
+  details?: ErrorDetails;
+  /** Response time in milliseconds */
+  responseTime: number;
+  /** Provider status */
+  status: 'degraded' | 'healthy' | 'unhealthy';
+  /** When health was checked */
+  timestamp: Date;
+}
+export interface RetryConfig {
+  /** Backoff strategy */
+  backoff: 'exponential' | 'fixed' | 'linear';
+  /** Base delay between retries in milliseconds */
+  delay: number;
+  /** Jitter to add randomness to delays */
+  jitter?: boolean;
+  /** Maximum number of retry attempts */
+  maxAttempts: number;
+  /** Maximum delay cap for exponential backoff */
+  maxDelay?: number;
+  /** Conditions that determine if retry should happen */
+  retryIf?: (error: WorkflowError) => boolean;
+}
+
+export interface ScheduleConfig {
+  /** Cron expression for schedule */
+  cron: string;
+  /** Whether schedule is currently active */
+  enabled: boolean;
+  /** When schedule stops being effective */
+  endDate?: Date;
+  /** When schedule starts being effective */
+  startDate?: Date;
+  /** Timezone for schedule evaluation */
+  timezone?: string;
+}
 
 export interface WorkflowDefinition {
   /** Whether this workflow can be triggered manually */
@@ -21,7 +65,7 @@ export interface WorkflowDefinition {
   /** Unique identifier for the workflow */
   id: string;
   /** Workflow metadata */
-  metadata?: Record<string, any>;
+  metadata?: Metadata;
   /** Human-readable name */
   name: string;
   /** Configuration for retry behavior */
@@ -38,25 +82,28 @@ export interface WorkflowDefinition {
   version: string;
 }
 
-export interface WorkflowStep {
-  /** The action/function to execute */
-  action: string;
-  /** Condition to determine if step should execute */
-  condition?: string;
-  /** Dependencies - steps that must complete before this one */
-  dependsOn?: string[];
-  /** Unique identifier within the workflow */
-  id: string;
-  /** Input parameters for the step */
-  input?: Record<string, any>;
-  /** Human-readable name */
-  name: string;
-  /** Whether this step can be skipped on failure */
-  optional?: boolean;
-  /** Retry configuration specific to this step */
-  retryConfig?: RetryConfig;
-  /** Timeout for this step in milliseconds */
-  timeout?: number;
+export interface WorkflowEngineConfig {
+  defaultProvider?: string;
+  events?: {
+    bus?: EventBus;
+    enabled: boolean;
+  };
+  monitoring?: {
+    enabled: boolean;
+    metrics?: {
+      enabled: boolean;
+      interval?: number;
+    };
+  };
+  providers: WorkflowProvider[];
+  scheduling?: {
+    enabled: boolean;
+    service?: SchedulingService;
+  };
+  stepFactory?: {
+    enabled: boolean;
+    registry?: StepRegistry;
+  };
 }
 
 export interface WorkflowExecution {
@@ -67,11 +114,11 @@ export interface WorkflowExecution {
   /** Unique execution identifier */
   id: string;
   /** Input provided to the workflow */
-  input?: Record<string, any>;
+  input?: WorkflowData;
   /** Execution metadata */
   metadata?: WorkflowExecutionMetadata;
   /** Final output (if completed successfully) */
-  output?: Record<string, any>;
+  output?: WorkflowData;
   /** When execution started */
   startedAt: Date;
   /** Current execution status */
@@ -80,6 +127,89 @@ export interface WorkflowExecution {
   steps: WorkflowStepExecution[];
   /** Workflow definition ID */
   workflowId: string;
+}
+
+export interface WorkflowExecutionMetadata {
+  /** Additional context data */
+  context?: ErrorDetails;
+  /** User or system that initiated the execution */
+  initiator?: string;
+  /** Parent execution ID (for sub-workflows) */
+  parentExecutionId?: string;
+  /** Tags applied to this execution */
+  tags?: string[];
+  /** Trigger that started this execution */
+  trigger?: WorkflowTrigger;
+}
+
+export type { WorkflowError };
+
+export type WorkflowExecutionStatus =
+  | 'cancelled'
+  | 'completed'
+  | 'failed'
+  | 'paused'
+  | 'pending'
+  | 'running'
+  | 'skipped'
+  | 'timeout';
+
+export interface WorkflowProvider {
+  /** Cancel a running execution */
+  cancelExecution(executionId: string): Promise<boolean>;
+  /** Create a new workflow definition */
+  createWorkflow?(definition: WorkflowDefinition): Promise<string>;
+  /** Execute a workflow */
+  execute(definition: WorkflowDefinition, input?: WorkflowData): Promise<WorkflowExecution>;
+  /** Execute a workflow by ID */
+  executeWorkflow?(
+    workflowId: string,
+    input?: unknown,
+    options?: Record<string, unknown>,
+  ): Promise<string>;
+  /** Get execution status */
+  getExecution(executionId: string): Promise<null | WorkflowExecution>;
+  /** Get execution status (alternative method name) */
+  getExecutionStatus?(executionId: string): Promise<null | WorkflowExecution>;
+  /** Get a workflow definition */
+  getWorkflow?(workflowId: string): Promise<null | WorkflowDefinition>;
+  /** Health check */
+  healthCheck(): Promise<ProviderHealth>;
+  /** List executions for a workflow */
+  listExecutions(workflowId: string, options?: ListExecutionsOptions): Promise<WorkflowExecution[]>;
+  /** List workflow definitions */
+  listWorkflows?(filter?: { status?: string; tags?: string[] }): Promise<WorkflowDefinition[]>;
+  /** Provider identifier */
+  name: string;
+  /** Schedule a workflow */
+  scheduleWorkflow(definition: WorkflowDefinition): Promise<string>;
+  /** Unschedule a workflow */
+  unscheduleWorkflow(workflowId: string): Promise<boolean>;
+  /** Provider version */
+  version: string;
+  /** Cleanup resources (optional) */
+  cleanup?(): Promise<void>;
+}
+
+export interface WorkflowStep {
+  /** The action/function to execute */
+  action: string;
+  /** Condition to determine if step should execute */
+  condition?: string;
+  /** Dependencies - steps that must complete before this one */
+  dependsOn?: string[];
+  /** Unique identifier within the workflow */
+  id: string;
+  /** Input parameters for the step */
+  input?: WorkflowData;
+  /** Human-readable name */
+  name: string;
+  /** Whether this step can be skipped on failure */
+  optional?: boolean;
+  /** Retry configuration specific to this step */
+  retryConfig?: RetryConfig;
+  /** Timeout for this step in milliseconds */
+  timeout?: number;
 }
 
 export interface WorkflowStepExecution {
@@ -109,163 +239,38 @@ export interface WorkflowStepExecution {
   stepName?: string;
 }
 
-export interface WorkflowExecutionMetadata {
-  /** Additional context data */
-  context?: Record<string, any>;
-  /** User or system that initiated the execution */
-  initiator?: string;
-  /** Parent execution ID (for sub-workflows) */
-  parentExecutionId?: string;
-  /** Tags applied to this execution */
-  tags?: string[];
-  /** Trigger that started this execution */
-  trigger?: WorkflowTrigger;
-}
-
-export interface WorkflowError {
-  /** Error code */
-  code?: string;
-  /** Original error details */
-  details?: any;
-  /** Human-readable message */
-  message: string;
-  /** Whether this error is retryable */
-  retryable?: boolean;
-  /** Stack trace */
-  stack?: string;
-  /** Step ID where error occurred */
-  stepId?: string;
-  /** When the error occurred */
-  timestamp?: Date;
-}
-
-export interface RetryConfig {
-  /** Backoff strategy */
-  backoff: 'fixed' | 'exponential' | 'linear';
-  /** Base delay between retries in milliseconds */
-  delay: number;
-  /** Jitter to add randomness to delays */
-  jitter?: boolean;
-  /** Maximum number of retry attempts */
-  maxAttempts: number;
-  /** Maximum delay cap for exponential backoff */
-  maxDelay?: number;
-  /** Conditions that determine if retry should happen */
-  retryIf?: (error: WorkflowError) => boolean;
-}
-
-export interface ScheduleConfig {
-  /** Cron expression for schedule */
-  cron: string;
-  /** Whether schedule is currently active */
-  enabled: boolean;
-  /** When schedule stops being effective */
-  endDate?: Date;
-  /** When schedule starts being effective */
-  startDate?: Date;
-  /** Timezone for schedule evaluation */
-  timezone?: string;
-}
-
 export interface WorkflowTrigger {
   /** Payload provided by trigger */
-  payload?: Record<string, any>;
+  payload?: EventPayload;
   /** Source of the trigger */
   source?: string;
   /** When trigger was activated */
   timestamp: Date;
   /** Type of trigger */
-  type: 'manual' | 'schedule' | 'webhook' | 'event' | 'api';
+  type: 'api' | 'event' | 'manual' | 'schedule' | 'webhook';
 }
 
-export type WorkflowExecutionStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'cancelled'
-  | 'timeout'
-  | 'paused'
-  | 'skipped';
-
-export interface WorkflowProvider {
-  /** Cancel a running execution */
-  cancelExecution(executionId: string): Promise<boolean>;
-  /** Create a new workflow definition */
-  createWorkflow?(definition: WorkflowDefinition): Promise<string>;
-  /** Execute a workflow */
-  execute(definition: WorkflowDefinition, input?: Record<string, any>): Promise<WorkflowExecution>;
-  /** Execute a workflow by ID */
-  executeWorkflow?(
-    workflowId: string,
-    input?: unknown,
-    options?: Record<string, unknown>,
-  ): Promise<string>;
-  /** Get execution status */
-  getExecution(executionId: string): Promise<WorkflowExecution | null>;
-  /** Get execution status (alternative method name) */
-  getExecutionStatus?(executionId: string): Promise<WorkflowExecution | null>;
-  /** Get a workflow definition */
-  getWorkflow?(workflowId: string): Promise<WorkflowDefinition | null>;
-  /** Health check */
-  healthCheck(): Promise<ProviderHealth>;
-  /** List executions for a workflow */
-  listExecutions(workflowId: string, options?: ListExecutionsOptions): Promise<WorkflowExecution[]>;
-  /** List workflow definitions */
-  listWorkflows?(filter?: { tags?: string[]; status?: string }): Promise<WorkflowDefinition[]>;
-  /** Provider identifier */
-  name: string;
-  /** Schedule a workflow */
-  scheduleWorkflow(definition: WorkflowDefinition): Promise<string>;
-  /** Unschedule a workflow */
-  unscheduleWorkflow(workflowId: string): Promise<boolean>;
-  /** Provider version */
-  version: string;
+// Temporary EventBus type until event-bus feature is implemented
+/**
+ * Event bus interface for workflow events
+ */
+export interface EventBus {
+  emit(event: string, data: EventPayload): void;
+  on(event: string, handler: (data: EventPayload) => void): void;
+  off(event: string, handler: (data: EventPayload) => void): void;
 }
 
-export interface ListExecutionsOptions {
-  /** Pagination cursor */
-  cursor?: string;
-  endDate?: Date;
-  /** Maximum number of results */
-  limit?: number;
-  /** Filter by date range */
-  startDate?: Date;
-  /** Filter by status */
-  status?: WorkflowExecutionStatus[];
+// Type alias for backward compatibility (defined locally to avoid circular import)
+interface SchedulingService {
+  listSchedules(): Promise<ScheduleConfig[]>;
+  scheduleWorkflow(workflowId: string, schedule: ScheduleConfig): Promise<string>;
+  unscheduleWorkflow(scheduleId: string): Promise<boolean>;
 }
 
-export interface ProviderHealth {
-  /** Additional health details */
-  details?: Record<string, any>;
-  /** Response time in milliseconds */
-  responseTime: number;
-  /** Provider status */
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  /** When health was checked */
-  timestamp: Date;
-}
-
-export interface WorkflowEngineConfig {
-  defaultProvider?: string;
-  events?: {
-    enabled: boolean;
-    bus?: EventBus;
-  };
-  monitoring?: {
-    enabled: boolean;
-    metrics?: {
-      enabled: boolean;
-      interval?: number;
-    };
-  };
-  providers: WorkflowProvider[];
-  scheduling?: {
-    enabled: boolean;
-    service?: SchedulingService;
-  };
-  stepFactory?: {
-    enabled: boolean;
-    registry?: StepRegistry;
-  };
+// import type { EventBus } from '../features/event-bus';
+// Define minimal StepRegistry interface to avoid circular dependencies
+interface StepRegistry {
+  get(id: string): WorkflowDefinition | null;
+  list(): WorkflowStep[];
+  register(id: string, step: WorkflowStep): void;
 }

@@ -16,8 +16,8 @@ type WorkflowEvent = any;
 // Mock implementation for testing
 const createEventBus = (options?: {
   enableHistory?: boolean;
-  maxHistorySize?: number;
   enableReplay?: boolean;
+  maxHistorySize?: number;
 }): EventBus & { getHistory?: () => any[]; replayEvents?: (pattern?: string) => Promise<void> } => {
   const handlers = new Map<string, ((event: any) => void)[]>();
   const history: any[] = [];

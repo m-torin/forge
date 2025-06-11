@@ -15,7 +15,7 @@ import type { ExecutionHistory } from './monitoring';
 
 export interface MockWorkflowConfig {
   /** Mock execution behavior */
-  behavior: 'success' | 'failure' | 'timeout' | 'custom';
+  behavior: 'custom' | 'failure' | 'success' | 'timeout';
   /** Execution delay in milliseconds */
   delay?: number;
   /** Custom error for failure behavior */
@@ -26,19 +26,44 @@ export interface MockWorkflowConfig {
   result?: unknown;
   /** Step-by-step execution simulation */
   stepResults?: {
-    stepId: string;
-    result?: unknown;
-    error?: Error;
     delay?: number;
+    error?: Error;
+    result?: unknown;
+    stepId: string;
   }[];
+}
+
+export interface TestExecutionResult {
+  /** Actual output */
+  actualOutput?: unknown;
+  /** Assertion results */
+  assertions?: {
+    message?: string;
+    passed: boolean;
+    type: string;
+  }[];
+  /** Execution duration */
+  duration: number;
+  /** Error information */
+  error?: {
+    message: string;
+    stack?: string;
+    type: 'assertion' | 'execution' | 'timeout';
+  };
+  /** Execution details */
+  execution?: WorkflowExecution;
+  /** Scenario name */
+  scenarioName: string;
+  /** Test status */
+  status: 'failed' | 'passed' | 'skipped' | 'timeout';
 }
 
 export interface TestScenario {
   /** Test assertions */
   assertions?: {
-    type: 'output' | 'error' | 'duration' | 'steps' | 'custom';
     condition: unknown;
     message?: string;
+    type: 'custom' | 'duration' | 'error' | 'output' | 'steps';
   }[];
   /** Scenario description */
   description?: string;
@@ -54,6 +79,27 @@ export interface TestScenario {
   name: string;
   /** Timeout for scenario execution */
   timeout?: number;
+}
+
+export interface TestSuiteResult {
+  /** Total duration */
+  duration: number;
+  /** Suite-level error */
+  error?: string;
+  /** Individual test results */
+  results: TestExecutionResult[];
+  /** Statistics */
+  stats: {
+    failed: number;
+    passed: number;
+    skipped: number;
+    timeout: number;
+    total: number;
+  };
+  /** Overall status */
+  status: 'failed' | 'partial' | 'passed';
+  /** Test suite name */
+  suiteName: string;
 }
 
 export interface WorkflowTestSuite {
@@ -80,73 +126,23 @@ export interface WorkflowTestSuite {
   workflowId: string;
 }
 
-export interface TestExecutionResult {
-  /** Actual output */
-  actualOutput?: unknown;
-  /** Assertion results */
-  assertions?: {
-    type: string;
-    passed: boolean;
-    message?: string;
-  }[];
-  /** Execution duration */
-  duration: number;
-  /** Error information */
-  error?: {
-    message: string;
-    stack?: string;
-    type: 'assertion' | 'execution' | 'timeout';
-  };
-  /** Execution details */
-  execution?: WorkflowExecution;
-  /** Scenario name */
-  scenarioName: string;
-  /** Test status */
-  status: 'passed' | 'failed' | 'skipped' | 'timeout';
-}
-
-export interface TestSuiteResult {
-  /** Total duration */
-  duration: number;
-  /** Suite-level error */
-  error?: string;
-  /** Individual test results */
-  results: TestExecutionResult[];
-  /** Statistics */
-  stats: {
-    total: number;
-    passed: number;
-    failed: number;
-    skipped: number;
-    timeout: number;
-  };
-  /** Overall status */
-  status: 'passed' | 'failed' | 'partial';
-  /** Test suite name */
-  suiteName: string;
-}
-
 export class MockWorkflowProvider implements WorkflowProvider {
-  private workflows = new Map<string, WorkflowDefinition>();
-  private executions = new Map<string, WorkflowExecution>();
-  private mocks = new Map<string, MockWorkflowConfig>();
-  private executionHistory: ExecutionHistory[] = [];
-
   name = 'MockWorkflowProvider';
   version = '1.0.0';
+  private executionHistory: ExecutionHistory[] = [];
+  private executions = new Map<string, WorkflowExecution>();
 
-  /**
-   * Register a workflow for testing
-   */
-  registerWorkflow(workflow: WorkflowDefinition): void {
-    this.workflows.set(workflow.id, workflow);
-  }
+  private mocks = new Map<string, MockWorkflowConfig>();
+  private workflows = new Map<string, WorkflowDefinition>();
 
-  /**
-   * Configure mock behavior for a workflow
-   */
-  configureMock(workflowId: string, config: MockWorkflowConfig): void {
-    this.mocks.set(workflowId, config);
+  async cancelExecution(executionId: string): Promise<boolean> {
+    const execution = this.executions.get(executionId);
+    if (execution && execution.status === 'running') {
+      execution.status = 'cancelled';
+      execution.completedAt = new Date();
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -158,6 +154,13 @@ export class MockWorkflowProvider implements WorkflowProvider {
     this.executionHistory = [];
   }
 
+  /**
+   * Configure mock behavior for a workflow
+   */
+  configureMock(workflowId: string, config: MockWorkflowConfig): void {
+    this.mocks.set(workflowId, config);
+  }
+
   // WorkflowProvider implementation
 
   async createWorkflow(definition: WorkflowDefinition): Promise<string> {
@@ -165,31 +168,16 @@ export class MockWorkflowProvider implements WorkflowProvider {
     return definition.id;
   }
 
-  async getWorkflow(workflowId: string): Promise<WorkflowDefinition | null> {
-    return this.workflows.get(workflowId) || null;
-  }
-
-  async listWorkflows(filter?: {
-    tags?: string[];
-    status?: string;
-  }): Promise<WorkflowDefinition[]> {
-    const workflows = Array.from(this.workflows.values());
-
-    if (!filter) {
-      return workflows;
+  async execute(
+    definition: WorkflowDefinition,
+    input?: Record<string, any>,
+  ): Promise<WorkflowExecution> {
+    const executionId = await this.executeWorkflow(definition.id, input);
+    const execution = this.executions.get(executionId);
+    if (!execution) {
+      throw new Error(`Execution ${executionId} not found`);
     }
-
-    return workflows.filter((workflow) => {
-      if (filter.tags && !filter.tags.every((tag) => workflow.tags?.includes(tag))) {
-        return false;
-      }
-
-      if (filter.status && workflow.metadata?.status !== filter.status) {
-        return false;
-      }
-
-      return true;
-    });
+    return execution;
   }
 
   async executeWorkflow(
@@ -224,39 +212,21 @@ export class MockWorkflowProvider implements WorkflowProvider {
     return executionId;
   }
 
-  async getExecutionStatus(executionId: string): Promise<WorkflowExecution | null> {
+  async getExecution(executionId: string): Promise<null | WorkflowExecution> {
     return this.executions.get(executionId) || null;
   }
 
-  async cancelExecution(executionId: string): Promise<boolean> {
-    const execution = this.executions.get(executionId);
-    if (execution && execution.status === 'running') {
-      execution.status = 'cancelled';
-      execution.completedAt = new Date();
-      return true;
-    }
-    return false;
-  }
-
-  async execute(
-    definition: WorkflowDefinition,
-    input?: Record<string, any>,
-  ): Promise<WorkflowExecution> {
-    const executionId = await this.executeWorkflow(definition.id, input);
-    const execution = this.executions.get(executionId);
-    if (!execution) {
-      throw new Error(`Execution ${executionId} not found`);
-    }
-    return execution;
-  }
-
-  async getExecution(executionId: string): Promise<WorkflowExecution | null> {
+  async getExecutionStatus(executionId: string): Promise<null | WorkflowExecution> {
     return this.executions.get(executionId) || null;
+  }
+
+  async getWorkflow(workflowId: string): Promise<null | WorkflowDefinition> {
+    return this.workflows.get(workflowId) || null;
   }
 
   async healthCheck(): Promise<{
-    status: 'healthy' | 'degraded' | 'unhealthy';
     responseTime: number;
+    status: 'degraded' | 'healthy' | 'unhealthy';
     timestamp: Date;
   }> {
     return {
@@ -281,6 +251,36 @@ export class MockWorkflowProvider implements WorkflowProvider {
     return executions.slice(0, options?.limit || 100);
   }
 
+  async listWorkflows(filter?: {
+    status?: string;
+    tags?: string[];
+  }): Promise<WorkflowDefinition[]> {
+    const workflows = Array.from(this.workflows.values());
+
+    if (!filter) {
+      return workflows;
+    }
+
+    return workflows.filter((workflow) => {
+      if (filter.tags && !filter.tags.every((tag) => workflow.tags?.includes(tag))) {
+        return false;
+      }
+
+      if (filter.status && workflow.metadata?.status !== filter.status) {
+        return false;
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Register a workflow for testing
+   */
+  registerWorkflow(workflow: WorkflowDefinition): void {
+    this.workflows.set(workflow.id, workflow);
+  }
+
   async scheduleWorkflow(definition: WorkflowDefinition): Promise<string> {
     // Mock schedule - just return a schedule ID
     return `schedule_${definition.id}_${Date.now()}`;
@@ -292,6 +292,103 @@ export class MockWorkflowProvider implements WorkflowProvider {
   }
 
   // Mock execution simulation
+
+  private generateExecutionId(): string {
+    return `test_exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async getWorkflowDefinition(
+    provider: WorkflowProvider,
+    workflowId: string,
+  ): Promise<WorkflowDefinition> {
+    if (provider.getWorkflow) {
+      const definition = await provider.getWorkflow(workflowId);
+      if (!definition) {
+        throw new Error(`Workflow ${workflowId} not found`);
+      }
+      return definition;
+    }
+    throw new Error('Provider does not support getWorkflow method');
+  }
+
+  private recordExecutionHistory(execution: WorkflowExecution): void {
+    // Map WorkflowExecutionStatus to ExecutionHistory status
+    const mappedStatus = ['paused', 'timeout'].includes(execution.status)
+      ? ('failed' as const)
+      : execution.status === 'skipped'
+        ? ('cancelled' as const)
+        : (execution.status as 'cancelled' | 'completed' | 'failed' | 'pending' | 'running');
+
+    const history: ExecutionHistory = {
+      completedAt: execution.completedAt,
+      duration: execution.completedAt
+        ? execution.completedAt.getTime() - execution.startedAt.getTime()
+        : undefined,
+      error: execution.error,
+      executionId: execution.id,
+      input: execution.input,
+      metadata: {
+        triggeredBy: 'api',
+      },
+      output: execution.output,
+      startedAt: execution.startedAt,
+      status: mappedStatus,
+      steps: execution.steps.map((step) => {
+        // Map step status to ExecutionHistory step status
+        const mappedStepStatus = ['cancelled', 'paused', 'timeout'].includes(step.status)
+          ? ('failed' as const)
+          : (step.status as 'completed' | 'failed' | 'pending' | 'running' | 'skipped');
+
+        return {
+          completedAt: step.completedAt,
+          duration:
+            step.completedAt && step.startedAt
+              ? step.completedAt.getTime() - step.startedAt.getTime()
+              : undefined,
+          error: step.error?.message,
+          input: step.input,
+          output: step.output,
+          startedAt: step.startedAt,
+          status: mappedStepStatus,
+          stepId: step.stepId,
+          stepName: step.name || step.stepName || '',
+        };
+      }),
+      workflowId: execution.workflowId,
+    };
+
+    this.executionHistory.push(history);
+  }
+
+  private async simulateBasicExecution(
+    execution: WorkflowExecution,
+    config?: MockWorkflowConfig,
+  ): Promise<void> {
+    switch (config?.behavior) {
+      case 'custom':
+        execution.status = 'completed';
+        execution.output = config.result as Record<string, any>;
+        break;
+      case 'failure':
+        execution.status = 'failed';
+        execution.error = config.error || {
+          code: 'MOCK_FAILURE',
+          message: 'Mock execution failed',
+          retryable: false,
+        };
+        break;
+      case 'timeout':
+        // Simulate timeout by not completing
+        return;
+      case 'success':
+      default:
+        execution.status = 'completed';
+        execution.output = (config?.result as Record<string, any>) || { success: true };
+        break;
+    }
+
+    execution.completedAt = new Date();
+  }
 
   private async simulateExecution(
     execution: WorkflowExecution,
@@ -340,11 +437,11 @@ export class MockWorkflowProvider implements WorkflowProvider {
       const stepConfig = stepResults?.find((s) => s.stepId === step.id);
 
       const stepExecution: Partial<WorkflowStepExecution> & {
-        stepId: string;
         status: WorkflowExecutionStatus;
+        stepId: string;
       } = {
-        name: step.name,
         input: execution.input,
+        name: step.name,
         startedAt: new Date(),
         status: 'running',
         stepId: step.id,
@@ -395,114 +492,137 @@ export class MockWorkflowProvider implements WorkflowProvider {
       execution.completedAt = new Date();
     }
   }
+}
 
-  private async simulateBasicExecution(
-    execution: WorkflowExecution,
-    config?: MockWorkflowConfig,
-  ): Promise<void> {
-    switch (config?.behavior) {
-      case 'failure':
-        execution.status = 'failed';
-        execution.error = config.error || {
-          code: 'MOCK_FAILURE',
-          message: 'Mock execution failed',
-          retryable: false,
-        };
-        break;
-      case 'timeout':
-        // Simulate timeout by not completing
-        return;
-      case 'custom':
-        execution.status = 'completed';
-        execution.output = config.result as Record<string, any>;
-        break;
-      case 'success':
-      default:
-        execution.status = 'completed';
-        execution.output = (config?.result as Record<string, any>) || { success: true };
-        break;
+/**
+ * Development server for workflow testing
+ */
+export class WorkflowDevServer {
+  private isRunning = false;
+  private provider: WorkflowProvider;
+  private testRunner: WorkflowTestRunner;
+
+  constructor(provider: WorkflowProvider) {
+    this.provider = provider;
+    this.testRunner = new WorkflowTestRunner(provider, true);
+  }
+
+  /**
+   * Hot reload workflow
+   */
+  async reloadWorkflow(workflowId: string): Promise<void> {
+    // Implementation would reload workflow definition
+    console.log(`Reloading workflow ${workflowId}`);
+  }
+
+  /**
+   * Start development server
+   */
+  async start(port = 3000): Promise<void> {
+    if (this.isRunning) {
+      throw new Error('Development server is already running');
     }
 
-    execution.completedAt = new Date();
+    this.isRunning = true;
+    console.log(`Workflow development server started on port ${port}`);
+
+    // Development server implementation would go here
+    // This could include:
+    // - HTTP server for workflow management
+    // - WebSocket for real-time updates
+    // - File watcher for hot reloading
+    // - Test runner integration
   }
 
-  private recordExecutionHistory(execution: WorkflowExecution): void {
-    // Map WorkflowExecutionStatus to ExecutionHistory status
-    const mappedStatus = ['paused', 'timeout'].includes(execution.status)
-      ? ('failed' as const)
-      : execution.status === 'skipped'
-        ? ('cancelled' as const)
-        : (execution.status as 'pending' | 'running' | 'completed' | 'failed' | 'cancelled');
-
-    const history: ExecutionHistory = {
-      completedAt: execution.completedAt,
-      duration: execution.completedAt
-        ? execution.completedAt.getTime() - execution.startedAt.getTime()
-        : undefined,
-      error: execution.error,
-      executionId: execution.id,
-      input: execution.input,
-      metadata: {
-        triggeredBy: 'api',
-      },
-      output: execution.output,
-      startedAt: execution.startedAt,
-      status: mappedStatus,
-      steps: execution.steps.map((step) => {
-        // Map step status to ExecutionHistory step status
-        const mappedStepStatus = ['cancelled', 'paused', 'timeout'].includes(step.status)
-          ? ('failed' as const)
-          : (step.status as 'pending' | 'running' | 'completed' | 'failed' | 'skipped');
-
-        return {
-          completedAt: step.completedAt,
-          duration:
-            step.completedAt && step.startedAt
-              ? step.completedAt.getTime() - step.startedAt.getTime()
-              : undefined,
-          error: step.error?.message,
-          input: step.input,
-          output: step.output,
-          startedAt: step.startedAt,
-          status: mappedStepStatus,
-          stepId: step.stepId,
-          stepName: step.name || step.stepName || '',
-        };
-      }),
-      workflowId: execution.workflowId,
-    };
-
-    this.executionHistory.push(history);
+  /**
+   * Stop development server
+   */
+  async stop(): Promise<void> {
+    this.isRunning = false;
+    console.log('Workflow development server stopped');
   }
 
-  private generateExecutionId(): string {
-    return `test_exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
+  /**
+   * Run tests in watch mode
+   */
+  async watchTests(testSuites: WorkflowTestSuite[]): Promise<void> {
+    console.log('Starting test watcher...');
 
-  private async getWorkflowDefinition(
-    provider: WorkflowProvider,
-    workflowId: string,
-  ): Promise<WorkflowDefinition> {
-    if (provider.getWorkflow) {
-      const definition = await provider.getWorkflow(workflowId);
-      if (!definition) {
-        throw new Error(`Workflow ${workflowId} not found`);
-      }
-      return definition;
+    // Implementation would watch for changes and re-run tests
+    for (const suite of testSuites) {
+      const result = await this.testRunner.runTestSuite(suite);
+      console.log(`Test suite ${suite.name}: ${result.status}`);
     }
-    throw new Error('Provider does not support getWorkflow method');
   }
 }
 
 export class WorkflowTestRunner {
-  private provider: WorkflowProvider;
   private mockProvider?: MockWorkflowProvider;
+  private provider: WorkflowProvider;
 
   constructor(provider: WorkflowProvider, useMockProvider = false) {
     this.provider = provider;
 
     if (useMockProvider) {
       this.mockProvider = new MockWorkflowProvider();
+    }
+  }
+
+  /**
+   * Run a single test scenario
+   */
+  async runScenario(workflowId: string, scenario: TestScenario): Promise<TestExecutionResult> {
+    const startTime = Date.now();
+
+    try {
+      // Configure mocks if using mock provider
+      if (this.mockProvider && scenario.mocks) {
+        for (const [mockWorkflowId, config] of Object.entries(scenario.mocks)) {
+          this.mockProvider.configureMock(mockWorkflowId, config);
+        }
+      }
+
+      // Execute workflow
+      const provider = this.mockProvider || this.provider;
+      const executionId = await (provider.executeWorkflow
+        ? provider.executeWorkflow(workflowId, scenario.input)
+        : provider.execute(
+            await this.getWorkflowDefinition(provider, workflowId),
+            scenario.input as Record<string, any>,
+          ));
+
+      // Wait for completion
+      const finalExecutionId = typeof executionId === 'string' ? executionId : executionId.id;
+      const execution = await this.waitForCompletion(provider, finalExecutionId, scenario.timeout);
+
+      // Run assertions
+      const assertions = await this.runAssertions(scenario, execution);
+
+      const duration = Date.now() - startTime;
+      const allPassed = assertions.every((a) => a.passed);
+
+      return {
+        actualOutput: execution.output,
+        assertions,
+        duration,
+        execution,
+        scenarioName: scenario.name,
+        status: allPassed ? 'passed' : 'failed',
+      };
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      const isTimeout = error instanceof Error && error.message.includes('timeout');
+
+      return {
+        duration,
+        error: {
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          type: isTimeout ? 'timeout' : 'execution',
+        },
+        scenarioName: scenario.name,
+        status: isTimeout ? 'timeout' : 'failed',
+      };
     }
   }
 
@@ -568,65 +688,106 @@ export class WorkflowTestRunner {
     };
   }
 
-  /**
-   * Run a single test scenario
-   */
-  async runScenario(workflowId: string, scenario: TestScenario): Promise<TestExecutionResult> {
-    const startTime = Date.now();
+  // Private methods
 
-    try {
-      // Configure mocks if using mock provider
-      if (this.mockProvider && scenario.mocks) {
-        for (const [mockWorkflowId, config] of Object.entries(scenario.mocks)) {
-          this.mockProvider.configureMock(mockWorkflowId, config);
+  private async evaluateAssertion(
+    assertion: NonNullable<TestScenario['assertions']>[0],
+    execution: WorkflowExecution,
+  ): Promise<boolean> {
+    switch (assertion.type) {
+      case 'custom':
+        if (typeof assertion.condition === 'function') {
+          return assertion.condition(execution);
         }
-      }
+        return Boolean(assertion.condition);
 
-      // Execute workflow
-      const provider = this.mockProvider || this.provider;
-      const executionId = await (provider.executeWorkflow
-        ? provider.executeWorkflow(workflowId, scenario.input)
-        : provider.execute(
-            await this.getWorkflowDefinition(provider, workflowId),
-            scenario.input as Record<string, any>,
-          ));
+      case 'duration':
+        const duration =
+          execution.completedAt && execution.startedAt
+            ? execution.completedAt.getTime() - execution.startedAt.getTime()
+            : 0;
+        return duration <= (assertion.condition as number);
 
-      // Wait for completion
-      const finalExecutionId = typeof executionId === 'string' ? executionId : executionId.id;
-      const execution = await this.waitForCompletion(provider, finalExecutionId, scenario.timeout);
+      case 'steps':
+        return execution.steps.length === (assertion.condition as number);
 
-      // Run assertions
-      const assertions = await this.runAssertions(scenario, execution);
-
-      const duration = Date.now() - startTime;
-      const allPassed = assertions.every((a) => a.passed);
-
-      return {
-        actualOutput: execution.output,
-        assertions,
-        duration,
-        execution,
-        scenarioName: scenario.name,
-        status: allPassed ? 'passed' : 'failed',
-      };
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      const isTimeout = error instanceof Error && error.message.includes('timeout');
-
-      return {
-        duration,
-        error: {
-          type: isTimeout ? 'timeout' : 'execution',
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        },
-        scenarioName: scenario.name,
-        status: isTimeout ? 'timeout' : 'failed',
-      };
+      default:
+        return true;
     }
   }
 
-  // Private methods
+  private async getWorkflowDefinition(
+    provider: WorkflowProvider,
+    workflowId: string,
+  ): Promise<WorkflowDefinition> {
+    if (provider.getWorkflow) {
+      const definition = await provider.getWorkflow(workflowId);
+      if (!definition) {
+        throw new Error(`Workflow ${workflowId} not found`);
+      }
+      return definition;
+    }
+    throw new Error('Provider does not support getWorkflow method');
+  }
+
+  private async runAssertions(
+    scenario: TestScenario,
+    execution: WorkflowExecution,
+  ): Promise<
+    {
+      message?: string;
+      passed: boolean;
+      type: string;
+    }[]
+  > {
+    const results = [];
+
+    // Default output assertion
+    if (scenario.expectedOutput !== undefined) {
+      const passed = JSON.stringify(execution.output) === JSON.stringify(scenario.expectedOutput);
+      results.push({
+        message: passed
+          ? undefined
+          : `Expected ${JSON.stringify(scenario.expectedOutput)}, got ${JSON.stringify(execution.output)}`,
+        passed,
+        type: 'output',
+      });
+    }
+
+    // Default error assertion
+    if (scenario.expectedError !== undefined) {
+      const hasExpectedError = execution.error?.message === scenario.expectedError;
+      results.push({
+        message: hasExpectedError
+          ? undefined
+          : `Expected error "${scenario.expectedError}", got "${execution.error?.message || 'no error'}"`,
+        passed: hasExpectedError,
+        type: 'error',
+      });
+    }
+
+    // Custom assertions
+    if (scenario.assertions) {
+      for (const assertion of scenario.assertions) {
+        try {
+          const passed = await this.evaluateAssertion(assertion, execution);
+          results.push({
+            message: passed ? undefined : assertion.message,
+            passed,
+            type: assertion.type,
+          });
+        } catch (error) {
+          results.push({
+            message: error instanceof Error ? error.message : String(error),
+            passed: false,
+            type: assertion.type,
+          });
+        }
+      }
+    }
+
+    return results;
+  }
 
   private async waitForCompletion(
     provider: WorkflowProvider,
@@ -656,167 +817,6 @@ export class WorkflowTestRunner {
     }
 
     throw new Error('Execution timeout');
-  }
-
-  private async runAssertions(
-    scenario: TestScenario,
-    execution: WorkflowExecution,
-  ): Promise<
-    {
-      type: string;
-      passed: boolean;
-      message?: string;
-    }[]
-  > {
-    const results = [];
-
-    // Default output assertion
-    if (scenario.expectedOutput !== undefined) {
-      const passed = JSON.stringify(execution.output) === JSON.stringify(scenario.expectedOutput);
-      results.push({
-        type: 'output',
-        message: passed
-          ? undefined
-          : `Expected ${JSON.stringify(scenario.expectedOutput)}, got ${JSON.stringify(execution.output)}`,
-        passed,
-      });
-    }
-
-    // Default error assertion
-    if (scenario.expectedError !== undefined) {
-      const hasExpectedError = execution.error?.message === scenario.expectedError;
-      results.push({
-        type: 'error',
-        message: hasExpectedError
-          ? undefined
-          : `Expected error "${scenario.expectedError}", got "${execution.error?.message || 'no error'}"`,
-        passed: hasExpectedError,
-      });
-    }
-
-    // Custom assertions
-    if (scenario.assertions) {
-      for (const assertion of scenario.assertions) {
-        try {
-          const passed = await this.evaluateAssertion(assertion, execution);
-          results.push({
-            type: assertion.type,
-            message: passed ? undefined : assertion.message,
-            passed,
-          });
-        } catch (error) {
-          results.push({
-            type: assertion.type,
-            message: error instanceof Error ? error.message : String(error),
-            passed: false,
-          });
-        }
-      }
-    }
-
-    return results;
-  }
-
-  private async evaluateAssertion(
-    assertion: NonNullable<TestScenario['assertions']>[0],
-    execution: WorkflowExecution,
-  ): Promise<boolean> {
-    switch (assertion.type) {
-      case 'duration':
-        const duration =
-          execution.completedAt && execution.startedAt
-            ? execution.completedAt.getTime() - execution.startedAt.getTime()
-            : 0;
-        return duration <= (assertion.condition as number);
-
-      case 'steps':
-        return execution.steps.length === (assertion.condition as number);
-
-      case 'custom':
-        if (typeof assertion.condition === 'function') {
-          return assertion.condition(execution);
-        }
-        return Boolean(assertion.condition);
-
-      default:
-        return true;
-    }
-  }
-
-  private async getWorkflowDefinition(
-    provider: WorkflowProvider,
-    workflowId: string,
-  ): Promise<WorkflowDefinition> {
-    if (provider.getWorkflow) {
-      const definition = await provider.getWorkflow(workflowId);
-      if (!definition) {
-        throw new Error(`Workflow ${workflowId} not found`);
-      }
-      return definition;
-    }
-    throw new Error('Provider does not support getWorkflow method');
-  }
-}
-
-/**
- * Development server for workflow testing
- */
-export class WorkflowDevServer {
-  private provider: WorkflowProvider;
-  private testRunner: WorkflowTestRunner;
-  private isRunning = false;
-
-  constructor(provider: WorkflowProvider) {
-    this.provider = provider;
-    this.testRunner = new WorkflowTestRunner(provider, true);
-  }
-
-  /**
-   * Start development server
-   */
-  async start(port = 3000): Promise<void> {
-    if (this.isRunning) {
-      throw new Error('Development server is already running');
-    }
-
-    this.isRunning = true;
-    console.log(`Workflow development server started on port ${port}`);
-
-    // Development server implementation would go here
-    // This could include:
-    // - HTTP server for workflow management
-    // - WebSocket for real-time updates
-    // - File watcher for hot reloading
-    // - Test runner integration
-  }
-
-  /**
-   * Stop development server
-   */
-  async stop(): Promise<void> {
-    this.isRunning = false;
-    console.log('Workflow development server stopped');
-  }
-
-  /**
-   * Hot reload workflow
-   */
-  async reloadWorkflow(workflowId: string): Promise<void> {
-    // Implementation would reload workflow definition
-    console.log(`Reloading workflow ${workflowId}`);
-  }
-
-  /**
-   * Run tests in watch mode
-   */
-  async watchTests(testSuites: WorkflowTestSuite[]): Promise<void> {
-    console.log('Starting test watcher...');
-
-    // Implementation would watch for changes and re-run tests
-    for (const suite of testSuites) {
-      const result = await this.testRunner.runTestSuite(suite);
-      console.log(`Test suite ${suite.name}: ${result.status}`);
-    }
   }
 }
 
@@ -861,6 +861,45 @@ export const WorkflowDebugUtils = {
   },
 
   /**
+   * Generate test scenarios from workflow definition
+   */
+  generateTestScenarios(workflow: WorkflowDefinition): TestScenario[] {
+    const scenarios: TestScenario[] = [];
+
+    // Happy path scenario
+    scenarios.push({
+      description: 'Test successful execution with valid input',
+      expectedOutput: { success: true },
+      input: { test: true },
+      name: 'Happy Path',
+    });
+
+    // Error scenarios
+    scenarios.push({
+      description: 'Test execution with invalid input',
+      expectedError: 'Invalid input',
+      input: null,
+      name: 'Invalid Input',
+    });
+
+    // Timeout scenario
+    scenarios.push({
+      description: 'Test execution timeout',
+      input: { test: true },
+      mocks: {
+        [workflow.id]: {
+          behavior: 'timeout',
+          delay: 2000,
+        },
+      },
+      name: 'Timeout',
+      timeout: 1000,
+    });
+
+    return scenarios;
+  },
+
+  /**
    * Validate workflow definition
    */
   validateWorkflowDefinition(workflow: WorkflowDefinition): string[] {
@@ -897,45 +936,6 @@ export const WorkflowDebugUtils = {
 
     return errors;
   },
-
-  /**
-   * Generate test scenarios from workflow definition
-   */
-  generateTestScenarios(workflow: WorkflowDefinition): TestScenario[] {
-    const scenarios: TestScenario[] = [];
-
-    // Happy path scenario
-    scenarios.push({
-      name: 'Happy Path',
-      description: 'Test successful execution with valid input',
-      expectedOutput: { success: true },
-      input: { test: true },
-    });
-
-    // Error scenarios
-    scenarios.push({
-      name: 'Invalid Input',
-      description: 'Test execution with invalid input',
-      expectedError: 'Invalid input',
-      input: null,
-    });
-
-    // Timeout scenario
-    scenarios.push({
-      name: 'Timeout',
-      description: 'Test execution timeout',
-      input: { test: true },
-      mocks: {
-        [workflow.id]: {
-          behavior: 'timeout',
-          delay: 2000,
-        },
-      },
-      timeout: 1000,
-    });
-
-    return scenarios;
-  },
 };
 
 /**
@@ -946,6 +946,13 @@ export function createMockWorkflowProvider(): MockWorkflowProvider {
 }
 
 /**
+ * Create workflow development server
+ */
+export function createWorkflowDevServer(provider: WorkflowProvider): WorkflowDevServer {
+  return new WorkflowDevServer(provider);
+}
+
+/**
  * Create workflow test runner
  */
 export function createWorkflowTestRunner(
@@ -953,11 +960,4 @@ export function createWorkflowTestRunner(
   useMockProvider = false,
 ): WorkflowTestRunner {
   return new WorkflowTestRunner(provider, useMockProvider);
-}
-
-/**
- * Create workflow development server
- */
-export function createWorkflowDevServer(provider: WorkflowProvider): WorkflowDevServer {
-  return new WorkflowDevServer(provider);
 }

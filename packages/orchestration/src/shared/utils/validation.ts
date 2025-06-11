@@ -38,23 +38,23 @@ const scheduleConfigSchema = z.object({
 });
 
 const workflowStepSchema: z.ZodType<WorkflowStep> = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
   action: z.string().min(1),
   condition: z.string().optional(),
   dependsOn: z.array(z.string()).optional(),
+  id: z.string().min(1),
   input: z.record(z.any()).optional(),
+  name: z.string().min(1),
   optional: z.boolean().optional(),
   retryConfig: retryConfigSchema.optional(),
   timeout: z.number().int().min(1000).optional(), // minimum 1 second
 });
 
 const workflowDefinitionSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
   allowManualTrigger: z.boolean().optional(),
   description: z.string().optional(),
   env: z.record(z.string()).optional(),
+  id: z.string().min(1),
+  name: z.string().min(1),
   retryConfig: retryConfigSchema.optional(),
   schedule: scheduleConfigSchema.optional(),
   steps: z.array(workflowStepSchema).min(1),
@@ -65,8 +65,6 @@ const workflowDefinitionSchema = z.object({
 
 // Provider configuration schemas
 const upstashWorkflowConfigSchema = z.object({
-  name: z.string().min(1),
-  type: z.literal('upstash-workflow'),
   config: z.object({
     baseUrl: z.string().url(),
     debug: z.boolean().optional(),
@@ -92,12 +90,12 @@ const upstashWorkflowConfigSchema = z.object({
       ]),
     )
     .optional(),
+  name: z.string().min(1),
   priority: z.number().optional(),
+  type: z.literal('upstash-workflow'),
 });
 
 const upstashQStashConfigSchema = z.object({
-  name: z.string().min(1),
-  type: z.literal('upstash-qstash'),
   config: z.object({
     baseUrl: z.string().url(),
     currentSigningKey: z.string().optional(),
@@ -123,12 +121,12 @@ const upstashQStashConfigSchema = z.object({
       ]),
     )
     .optional(),
+  name: z.string().min(1),
   priority: z.number().optional(),
+  type: z.literal('upstash-qstash'),
 });
 
 const rateLimitConfigSchema = z.object({
-  name: z.string().min(1),
-  type: z.literal('rate-limit'),
   config: z.object({
     algorithm: z.enum(['sliding-window', 'fixed-window', 'token-bucket']).optional(),
     defaultLimit: z
@@ -157,7 +155,9 @@ const rateLimitConfigSchema = z.object({
       ]),
     )
     .optional(),
+  name: z.string().min(1),
   priority: z.number().optional(),
+  type: z.literal('rate-limit'),
 });
 
 const providerConfigSchema = z.discriminatedUnion('type', [
@@ -165,8 +165,6 @@ const providerConfigSchema = z.discriminatedUnion('type', [
   upstashQStashConfigSchema,
   rateLimitConfigSchema,
   z.object({
-    name: z.string().min(1),
-    type: z.literal('custom'),
     config: z.record(z.any()),
     enabled: z.boolean(),
     environment: z.enum(['development', 'staging', 'production', 'all']).optional(),
@@ -185,9 +183,127 @@ const providerConfigSchema = z.discriminatedUnion('type', [
         ]),
       )
       .optional(),
+    name: z.string().min(1),
     priority: z.number().optional(),
+    type: z.literal('custom'),
   }),
 ]);
+
+/**
+ * Sanitize configuration by removing sensitive data for logging
+ */
+export function sanitizeConfig(config: Record<string, any>): Record<string, any> {
+  const sensitiveKeys = ['token', 'key', 'secret', 'password', 'apikey', 'auth'];
+
+  function sanitizeValue(value: any): any {
+    if (typeof value === 'object' && value !== null) {
+      if (Array.isArray(value)) {
+        return value.map(sanitizeValue);
+      }
+
+      const sanitized: Record<string, any> = {};
+      for (const [key, val] of Object.entries(value)) {
+        const lowerKey = key.toLowerCase();
+        if (sensitiveKeys.some((sensitive) => lowerKey.includes(sensitive))) {
+          sanitized[key] = '[REDACTED]';
+        } else {
+          sanitized[key] = sanitizeValue(val);
+        }
+      }
+      return sanitized;
+    }
+
+    return value;
+  }
+
+  return sanitizeValue(config);
+}
+
+/**
+ * Validate environment variables required by configuration
+ */
+export function validateEnvironmentVariables(requiredVars: string[]): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  for (const varName of requiredVars) {
+    if (!process.env[varName]) {
+      errors.push({
+        message: `Required environment variable ${varName} is not set`,
+        path: `env.${varName}`,
+        rule: 'required-env-var',
+      });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Validate a provider configuration
+ */
+export function validateProviderConfig(config: unknown): AnyProviderConfig {
+  try {
+    return providerConfigSchema.parse(config) as AnyProviderConfig;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const validationErrors: ValidationError[] = error.errors.map((err) => ({
+        message: err.message,
+        path: err.path.join('.'),
+        rule: err.code,
+        value: (err as any).received,
+      }));
+
+      throw new ConfigurationError('Provider configuration validation failed', undefined, {
+        validationErrors,
+      });
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Validate retry configuration
+ */
+export function validateRetryConfig(config: unknown): RetryConfig {
+  try {
+    return retryConfigSchema.parse(config);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ConfigurationError(
+        `Invalid retry configuration: ${error.errors.map((e) => e.message).join(', ')}`,
+        'retryConfig',
+      );
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Validate schedule configuration
+ */
+export function validateScheduleConfig(config: unknown): ScheduleConfig {
+  try {
+    const validated = scheduleConfigSchema.parse(config);
+
+    // Additional cron validation
+    if (validated.cron && !isValidCronExpression(validated.cron)) {
+      throw new ConfigurationError(`Invalid cron expression: ${validated.cron}`, 'schedule.cron');
+    }
+
+    return validated;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ConfigurationError(
+        `Invalid schedule configuration: ${error.errors.map((e) => e.message).join(', ')}`,
+        'schedule',
+      );
+    }
+
+    throw error;
+  }
+}
 
 /**
  * Validate a workflow definition
@@ -253,73 +369,6 @@ export function validateWorkflowDefinition(definition: unknown): WorkflowDefinit
       }));
 
       throw new WorkflowValidationError('Workflow definition validation failed', validationErrors);
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Validate a provider configuration
- */
-export function validateProviderConfig(config: unknown): AnyProviderConfig {
-  try {
-    return providerConfigSchema.parse(config) as AnyProviderConfig;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const validationErrors: ValidationError[] = error.errors.map((err) => ({
-        message: err.message,
-        path: err.path.join('.'),
-        rule: err.code,
-        value: (err as any).received,
-      }));
-
-      throw new ConfigurationError('Provider configuration validation failed', undefined, {
-        validationErrors,
-      });
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Validate retry configuration
- */
-export function validateRetryConfig(config: unknown): RetryConfig {
-  try {
-    return retryConfigSchema.parse(config);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ConfigurationError(
-        `Invalid retry configuration: ${error.errors.map((e) => e.message).join(', ')}`,
-        'retryConfig',
-      );
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Validate schedule configuration
- */
-export function validateScheduleConfig(config: unknown): ScheduleConfig {
-  try {
-    const validated = scheduleConfigSchema.parse(config);
-
-    // Additional cron validation
-    if (validated.cron && !isValidCronExpression(validated.cron)) {
-      throw new ConfigurationError(`Invalid cron expression: ${validated.cron}`, 'schedule.cron');
-    }
-
-    return validated;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ConfigurationError(
-        `Invalid schedule configuration: ${error.errors.map((e) => e.message).join(', ')}`,
-        'schedule',
-      );
     }
 
     throw error;
@@ -411,50 +460,23 @@ function isValidCronExpression(cron: string): boolean {
 }
 
 /**
- * Validate environment variables required by configuration
+ * Validate workflow step definition
  */
-export function validateEnvironmentVariables(requiredVars: string[]): ValidationError[] {
-  const errors: ValidationError[] = [];
+export function validateWorkflowStep(step: unknown): WorkflowStep {
+  try {
+    return workflowStepSchema.parse(step);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const validationErrors: ValidationError[] = error.errors.map((err) => ({
+        message: err.message,
+        path: err.path.join('.'),
+        rule: err.code,
+        value: (err as any).received,
+      }));
 
-  for (const varName of requiredVars) {
-    if (!process.env[varName]) {
-      errors.push({
-        message: `Required environment variable ${varName} is not set`,
-        path: `env.${varName}`,
-        rule: 'required-env-var',
-      });
-    }
-  }
-
-  return errors;
-}
-
-/**
- * Sanitize configuration by removing sensitive data for logging
- */
-export function sanitizeConfig(config: Record<string, any>): Record<string, any> {
-  const sensitiveKeys = ['token', 'key', 'secret', 'password', 'apikey', 'auth'];
-
-  function sanitizeValue(value: any): any {
-    if (typeof value === 'object' && value !== null) {
-      if (Array.isArray(value)) {
-        return value.map(sanitizeValue);
-      }
-
-      const sanitized: Record<string, any> = {};
-      for (const [key, val] of Object.entries(value)) {
-        const lowerKey = key.toLowerCase();
-        if (sensitiveKeys.some((sensitive) => lowerKey.includes(sensitive))) {
-          sanitized[key] = '[REDACTED]';
-        } else {
-          sanitized[key] = sanitizeValue(val);
-        }
-      }
-      return sanitized;
+      throw new WorkflowValidationError('Workflow step validation failed', validationErrors);
     }
 
-    return value;
+    throw error;
   }
-
-  return sanitizeValue(config);
 }

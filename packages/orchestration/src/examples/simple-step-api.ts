@@ -85,8 +85,8 @@ async function demonstrateSimpleAPI() {
   // Example 1: Basic usage
   console.log('1. Basic step execution:');
   const emailResult = await sendEmailStep.execute({
-    name: 'John Doe',
     email: 'user@example.com',
+    name: 'John Doe',
   });
   console.log('Result:', emailResult);
   console.log();
@@ -103,8 +103,8 @@ async function demonstrateSimpleAPI() {
   // Example 3: Enhanced step with monitoring
   console.log('3. Enhanced step with monitoring:');
   const monitoredResult = await monitoredStep.execute({
-    name: 'Jane Smith',
     email: 'monitored@example.com',
+    name: 'Jane Smith',
   });
   console.log('Result:', monitoredResult);
   console.log();
@@ -112,8 +112,8 @@ async function demonstrateSimpleAPI() {
   // Example 4: Robust step with multiple enhancers
   console.log('4. Robust step with multiple enhancers:');
   const robustResult = await robustEmailStep.execute({
-    name: 'Bob Wilson',
     email: 'robust@example.com',
+    name: 'Bob Wilson',
   });
   console.log('Result:', robustResult);
 }

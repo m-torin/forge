@@ -3,61 +3,7 @@
  * Distributed transaction management for complex workflows
  */
 
-import type { WorkflowProvider } from '../types/index';
-
-export interface SagaStep {
-  /** The action to execute */
-  action: (context: SagaContext) => Promise<unknown>;
-  /** The compensation action to execute if saga fails */
-  compensation?: (context: SagaContext) => Promise<unknown>;
-  /** Condition to determine if step should execute */
-  condition?: (context: SagaContext) => boolean;
-  /** Unique step identifier */
-  id: string;
-  /** Step metadata */
-  metadata?: Record<string, unknown>;
-  /** Step name for display */
-  name: string;
-  /** Retry configuration */
-  retry?: {
-    maxAttempts: number;
-    delay: number;
-    backoff?: 'linear' | 'exponential';
-  };
-  /** Step timeout in milliseconds */
-  timeout?: number;
-}
-
-export interface SagaDefinition {
-  /** Saga configuration */
-  config?: {
-    /** Whether to run compensation in reverse order */
-    reverseCompensation?: boolean;
-    /** Whether to continue on compensation failure */
-    continueOnCompensationFailure?: boolean;
-    /** Global retry policy */
-    globalRetry?: {
-      maxAttempts: number;
-      delay: number;
-    };
-    /** Success callback */
-    onSuccess?: (context: SagaContext) => void | Promise<void>;
-    /** Failure callback */
-    onFailure?: (context: SagaContext, error: Error) => void | Promise<void>;
-  };
-  /** Saga description */
-  description?: string;
-  /** Unique saga identifier */
-  id: string;
-  /** Saga metadata */
-  metadata?: Record<string, unknown>;
-  /** Saga name */
-  name: string;
-  /** Ordered list of saga steps */
-  steps: SagaStep[];
-  /** Global saga timeout */
-  timeout?: number;
-}
+import type { WorkflowProvider } from '../types/workflow';
 
 export interface SagaContext {
   /** Current step ID */
@@ -65,8 +11,8 @@ export interface SagaContext {
   /** Event emitter for saga events */
   events?: {
     emit: (event: string, data?: unknown) => void;
-    on: (event: string, listener: (data?: unknown) => void) => void;
     off: (event: string, listener: (data?: unknown) => void) => void;
+    on: (event: string, listener: (data?: unknown) => void) => void;
   };
   /** Execution ID */
   executionId: string;
@@ -75,7 +21,7 @@ export interface SagaContext {
   /** Saga input data */
   input: unknown;
   /** Log message */
-  log: (level: 'info' | 'warn' | 'error', message: string, data?: unknown) => void;
+  log: (level: 'error' | 'info' | 'warn', message: string, data?: unknown) => void;
   /** Execution metadata */
   metadata: Record<string, unknown>;
   /** Accumulated results from previous steps */
@@ -90,50 +36,42 @@ export interface SagaContext {
   state: SagaExecutionState;
   /** Data store for persistent state */
   store?: {
+    clear: () => void;
+    delete: (key: string) => void;
     get: (key: string) => unknown;
     set: (key: string, value: unknown) => void;
-    delete: (key: string) => void;
-    clear: () => void;
   };
 }
 
-export interface SagaExecutionState {
-  /** Steps that need compensation */
-  compensationQueue: string[];
-  /** Execution completion time */
-  completedAt?: Date;
-  /** Completed steps */
-  completedSteps: {
-    stepId: string;
-    status: 'completed' | 'failed' | 'compensated';
-    result?: unknown;
-    error?: string;
-    startedAt: Date;
-    completedAt: Date;
-    duration: number;
-  }[];
-  /** Current step index */
-  currentStepIndex: number;
-  /** Error information */
-  error?: {
-    stepId: string;
-    message: string;
-    stack?: string;
+export interface SagaDefinition {
+  /** Saga configuration */
+  config?: {
+    /** Whether to continue on compensation failure */
+    continueOnCompensationFailure?: boolean;
+    /** Global retry policy */
+    globalRetry?: {
+      delay: number;
+      maxAttempts: number;
+    };
+    /** Failure callback */
+    onFailure?: (context: SagaContext, error: Error) => Promise<void> | void;
+    /** Success callback */
+    onSuccess?: (context: SagaContext) => Promise<void> | void;
+    /** Whether to run compensation in reverse order */
+    reverseCompensation?: boolean;
   };
-  /** Execution logs */
-  logs: {
-    timestamp: Date;
-    level: 'info' | 'warn' | 'error';
-    message: string;
-    stepId?: string;
-    data?: unknown;
-  }[];
-  /** Execution metadata */
+  /** Saga description */
+  description?: string;
+  /** Unique saga identifier */
+  id: string;
+  /** Saga metadata */
   metadata?: Record<string, unknown>;
-  /** Execution start time */
-  startedAt: Date;
-  /** Current saga status */
-  status: 'pending' | 'running' | 'completed' | 'compensating' | 'compensated' | 'failed';
+  /** Saga name */
+  name: string;
+  /** Ordered list of saga steps */
+  steps: SagaStep[];
+  /** Global saga timeout */
+  timeout?: number;
 }
 
 export interface SagaExecution {
@@ -151,20 +89,210 @@ export interface SagaExecution {
   state: SagaExecutionState;
 }
 
+export interface SagaExecutionState {
+  /** Steps that need compensation */
+  compensationQueue: string[];
+  /** Execution completion time */
+  completedAt?: Date;
+  /** Completed steps */
+  completedSteps: {
+    completedAt: Date;
+    duration: number;
+    error?: string;
+    result?: unknown;
+    startedAt: Date;
+    status: 'compensated' | 'completed' | 'failed';
+    stepId: string;
+  }[];
+  /** Current step index */
+  currentStepIndex: number;
+  /** Error information */
+  error?: {
+    message: string;
+    stack?: string;
+    stepId: string;
+  };
+  /** Execution logs */
+  logs: {
+    data?: unknown;
+    level: 'error' | 'info' | 'warn';
+    message: string;
+    stepId?: string;
+    timestamp: Date;
+  }[];
+  /** Execution metadata */
+  metadata?: Record<string, unknown>;
+  /** Execution start time */
+  startedAt: Date;
+  /** Current saga status */
+  status: 'compensated' | 'compensating' | 'completed' | 'failed' | 'pending' | 'running';
+}
+
+export interface SagaStep {
+  /** The action to execute */
+  action: (context: SagaContext) => Promise<unknown>;
+  /** The compensation action to execute if saga fails */
+  compensation?: (context: SagaContext) => Promise<unknown>;
+  /** Condition to determine if step should execute */
+  condition?: (context: SagaContext) => boolean;
+  /** Unique step identifier */
+  id: string;
+  /** Step metadata */
+  metadata?: Record<string, unknown>;
+  /** Step name for display */
+  name: string;
+  /** Retry configuration */
+  retry?: {
+    backoff?: 'exponential' | 'linear';
+    delay: number;
+    maxAttempts: number;
+  };
+  /** Step timeout in milliseconds */
+  timeout?: number;
+}
+
+/**
+ * Saga builder utility for creating saga definitions
+ */
+export class SagaBuilder {
+  private saga: Partial<SagaDefinition> = {
+    steps: [],
+  };
+
+  constructor(id: string, name: string) {
+    this.saga.id = id;
+    this.saga.name = name;
+  }
+
+  /**
+   * Build the saga definition
+   */
+  build(): SagaDefinition {
+    if (!this.saga.id || !this.saga.name || !this.saga.steps?.length) {
+      throw new Error('Saga must have id, name, and at least one step');
+    }
+
+    return this.saga as SagaDefinition;
+  }
+
+  /**
+   * Configure saga options
+   */
+  configure(config: SagaDefinition['config']): this {
+    this.saga.config = config;
+    return this;
+  }
+
+  /**
+   * Set saga description
+   */
+  description(description: string): this {
+    this.saga.description = description;
+    return this;
+  }
+
+  /**
+   * Execute the saga with a provider
+   */
+  async execute(
+    provider: WorkflowProvider,
+    input?: unknown,
+    metadata?: Record<string, unknown>,
+  ): Promise<string> {
+    const definition = this.build();
+    const orchestrator = new SagaOrchestrator(provider);
+    orchestrator.registerSaga(definition);
+    return orchestrator.executeSaga(definition.id, input, metadata);
+  }
+
+  /**
+   * Add metadata
+   */
+  metadata(metadata: Record<string, unknown>): this {
+    this.saga.metadata = metadata;
+    return this;
+  }
+
+  /**
+   * Add failure callback
+   */
+  onFailure(callback: (context: SagaContext, error: Error) => Promise<void> | void): this {
+    if (!this.saga.config) {
+      this.saga.config = {};
+    }
+    this.saga.config.onFailure = callback;
+    return this;
+  }
+
+  /**
+   * Add success callback
+   */
+  onSuccess(callback: (context: SagaContext) => Promise<void> | void): this {
+    if (!this.saga.config) {
+      this.saga.config = {};
+    }
+    this.saga.config.onSuccess = callback;
+    return this;
+  }
+
+  /**
+   * Add a step to the saga
+   */
+  step(
+    id: string,
+    name: string,
+    action: SagaStep['action'],
+    options?: {
+      compensation?: SagaStep['compensation'];
+      condition?: SagaStep['condition'];
+      metadata?: Record<string, unknown>;
+      retry?: SagaStep['retry'];
+      timeout?: number;
+    },
+  ): this {
+    const step: SagaStep = {
+      action,
+      id,
+      name,
+      ...options,
+    };
+
+    this.saga.steps!.push(step);
+    return this;
+  }
+
+  /**
+   * Set global timeout
+   */
+  timeout(milliseconds: number): this {
+    this.saga.timeout = milliseconds;
+    return this;
+  }
+}
+
 export class SagaOrchestrator {
+  private executions = new Map<string, SagaExecution>();
   private provider: WorkflowProvider;
   private sagas = new Map<string, SagaDefinition>();
-  private executions = new Map<string, SagaExecution>();
 
   constructor(provider: WorkflowProvider) {
     this.provider = provider;
   }
 
   /**
-   * Register a saga definition
+   * Cancel saga execution
    */
-  registerSaga(saga: SagaDefinition): void {
-    this.sagas.set(saga.id, saga);
+  async cancelSaga(executionId: string): Promise<void> {
+    const execution = this.executions.get(executionId);
+    if (!execution) {
+      throw new Error(`Saga execution ${executionId} not found`);
+    }
+
+    if (execution.state.status === 'running') {
+      execution.state.status = 'compensating';
+      execution.context.log('info', 'Saga execution cancelled, starting compensation');
+      await this.compensate(execution);
+    }
   }
 
   /**
@@ -216,8 +344,8 @@ export class SagaOrchestrator {
     };
 
     const execution: SagaExecution = {
-      id: executionId,
       context,
+      id: executionId,
       input,
       sagaId,
       state,
@@ -239,19 +367,10 @@ export class SagaOrchestrator {
   }
 
   /**
-   * Cancel saga execution
+   * Register a saga definition
    */
-  async cancelSaga(executionId: string): Promise<void> {
-    const execution = this.executions.get(executionId);
-    if (!execution) {
-      throw new Error(`Saga execution ${executionId} not found`);
-    }
-
-    if (execution.state.status === 'running') {
-      execution.state.status = 'compensating';
-      execution.context.log('info', 'Saga execution cancelled, starting compensation');
-      await this.compensate(execution);
-    }
+  registerSaga(saga: SagaDefinition): void {
+    this.sagas.set(saga.id, saga);
   }
 
   /**
@@ -285,6 +404,106 @@ export class SagaOrchestrator {
   }
 
   // Private methods
+
+  private calculateRetryDelay(retry: NonNullable<SagaStep['retry']>, attempt: number): number {
+    const baseDelay = retry.delay;
+
+    switch (retry.backoff) {
+      case 'exponential':
+        return baseDelay * Math.pow(2, attempt - 1);
+      case 'linear':
+      default:
+        return baseDelay * attempt;
+    }
+  }
+
+  private async compensate(execution: SagaExecution): Promise<void> {
+    const saga = this.sagas.get(execution.sagaId);
+    if (!saga) {
+      throw new Error(`Saga ${execution.sagaId} not found`);
+    }
+
+    execution.context.log('info', 'Starting compensation');
+
+    const compensationOrder =
+      saga.config?.reverseCompensation !== false
+        ? [...execution.state.compensationQueue].reverse()
+        : execution.state.compensationQueue;
+
+    for (const stepId of compensationOrder) {
+      const step = saga.steps.find((s) => s.id === stepId);
+      if (!step?.compensation) {
+        continue;
+      }
+
+      execution.context.currentStepId = stepId;
+      execution.context.log('info', `Compensating step ${stepId}`);
+
+      try {
+        await step.compensation(execution.context);
+
+        // Update completed step status
+        const completedStep = execution.state.completedSteps.find((s) => s.stepId === stepId);
+        if (completedStep) {
+          completedStep.status = 'compensated';
+        }
+
+        execution.context.log('info', `Step ${stepId} compensated successfully`);
+      } catch (error) {
+        execution.context.log('error', `Compensation failed for step ${stepId}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        if (!saga.config?.continueOnCompensationFailure) {
+          execution.state.status = 'failed';
+          execution.state.completedAt = new Date();
+          return;
+        }
+      }
+    }
+
+    execution.state.status = 'compensated';
+    execution.state.completedAt = new Date();
+    execution.context.log('info', 'Compensation completed');
+  }
+
+  private async executeStepWithRetry(step: SagaStep, context: SagaContext): Promise<unknown> {
+    const maxAttempts = step.retry?.maxAttempts || 1;
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        // Set step timeout if configured
+        if (step.timeout) {
+          return await Promise.race([
+            step.action(context),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Step timeout')), step.timeout),
+            ),
+          ]);
+        } else {
+          return await step.action(context);
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (attempt < maxAttempts && step.retry) {
+          const delay = this.calculateRetryDelay(step.retry, attempt);
+          context.log(
+            'warn',
+            `Step ${step.id} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
+  private generateExecutionId(): string {
+    return `saga_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
 
   private async runSaga(execution: SagaExecution): Promise<void> {
     const saga = this.sagas.get(execution.sagaId);
@@ -398,225 +617,6 @@ export class SagaOrchestrator {
       });
     }
   }
-
-  private async executeStepWithRetry(step: SagaStep, context: SagaContext): Promise<unknown> {
-    const maxAttempts = step.retry?.maxAttempts || 1;
-    let lastError: Error | null = null;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        // Set step timeout if configured
-        if (step.timeout) {
-          return await Promise.race([
-            step.action(context),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Step timeout')), step.timeout),
-            ),
-          ]);
-        } else {
-          return await step.action(context);
-        }
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-
-        if (attempt < maxAttempts && step.retry) {
-          const delay = this.calculateRetryDelay(step.retry, attempt);
-          context.log(
-            'warn',
-            `Step ${step.id} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`,
-          );
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-
-    throw lastError;
-  }
-
-  private async compensate(execution: SagaExecution): Promise<void> {
-    const saga = this.sagas.get(execution.sagaId);
-    if (!saga) {
-      throw new Error(`Saga ${execution.sagaId} not found`);
-    }
-
-    execution.context.log('info', 'Starting compensation');
-
-    const compensationOrder =
-      saga.config?.reverseCompensation !== false
-        ? [...execution.state.compensationQueue].reverse()
-        : execution.state.compensationQueue;
-
-    for (const stepId of compensationOrder) {
-      const step = saga.steps.find((s) => s.id === stepId);
-      if (!step || !step.compensation) {
-        continue;
-      }
-
-      execution.context.currentStepId = stepId;
-      execution.context.log('info', `Compensating step ${stepId}`);
-
-      try {
-        await step.compensation(execution.context);
-
-        // Update completed step status
-        const completedStep = execution.state.completedSteps.find((s) => s.stepId === stepId);
-        if (completedStep) {
-          completedStep.status = 'compensated';
-        }
-
-        execution.context.log('info', `Step ${stepId} compensated successfully`);
-      } catch (error) {
-        execution.context.log('error', `Compensation failed for step ${stepId}`, {
-          error: error instanceof Error ? error.message : String(error),
-        });
-
-        if (!saga.config?.continueOnCompensationFailure) {
-          execution.state.status = 'failed';
-          execution.state.completedAt = new Date();
-          return;
-        }
-      }
-    }
-
-    execution.state.status = 'compensated';
-    execution.state.completedAt = new Date();
-    execution.context.log('info', 'Compensation completed');
-  }
-
-  private calculateRetryDelay(retry: NonNullable<SagaStep['retry']>, attempt: number): number {
-    const baseDelay = retry.delay;
-
-    switch (retry.backoff) {
-      case 'exponential':
-        return baseDelay * Math.pow(2, attempt - 1);
-      case 'linear':
-      default:
-        return baseDelay * attempt;
-    }
-  }
-
-  private generateExecutionId(): string {
-    return `saga_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-}
-
-/**
- * Saga builder utility for creating saga definitions
- */
-export class SagaBuilder {
-  private saga: Partial<SagaDefinition> = {
-    steps: [],
-  };
-
-  constructor(id: string, name: string) {
-    this.saga.id = id;
-    this.saga.name = name;
-  }
-
-  /**
-   * Set saga description
-   */
-  description(description: string): this {
-    this.saga.description = description;
-    return this;
-  }
-
-  /**
-   * Set global timeout
-   */
-  timeout(milliseconds: number): this {
-    this.saga.timeout = milliseconds;
-    return this;
-  }
-
-  /**
-   * Configure saga options
-   */
-  configure(config: SagaDefinition['config']): this {
-    this.saga.config = config;
-    return this;
-  }
-
-  /**
-   * Add metadata
-   */
-  metadata(metadata: Record<string, unknown>): this {
-    this.saga.metadata = metadata;
-    return this;
-  }
-
-  /**
-   * Add a step to the saga
-   */
-  step(
-    id: string,
-    name: string,
-    action: SagaStep['action'],
-    options?: {
-      compensation?: SagaStep['compensation'];
-      timeout?: number;
-      retry?: SagaStep['retry'];
-      condition?: SagaStep['condition'];
-      metadata?: Record<string, unknown>;
-    },
-  ): this {
-    const step: SagaStep = {
-      id,
-      name,
-      action,
-      ...options,
-    };
-
-    this.saga.steps!.push(step);
-    return this;
-  }
-
-  /**
-   * Add success callback
-   */
-  onSuccess(callback: (context: SagaContext) => void | Promise<void>): this {
-    if (!this.saga.config) {
-      this.saga.config = {};
-    }
-    this.saga.config.onSuccess = callback;
-    return this;
-  }
-
-  /**
-   * Add failure callback
-   */
-  onFailure(callback: (context: SagaContext, error: Error) => void | Promise<void>): this {
-    if (!this.saga.config) {
-      this.saga.config = {};
-    }
-    this.saga.config.onFailure = callback;
-    return this;
-  }
-
-  /**
-   * Build the saga definition
-   */
-  build(): SagaDefinition {
-    if (!this.saga.id || !this.saga.name || !this.saga.steps?.length) {
-      throw new Error('Saga must have id, name, and at least one step');
-    }
-
-    return this.saga as SagaDefinition;
-  }
-
-  /**
-   * Execute the saga with a provider
-   */
-  async execute(
-    provider: WorkflowProvider,
-    input?: unknown,
-    metadata?: Record<string, unknown>,
-  ): Promise<string> {
-    const definition = this.build();
-    const orchestrator = new SagaOrchestrator(provider);
-    orchestrator.registerSaga(definition);
-    return orchestrator.executeSaga(definition.id, input, metadata);
-  }
 }
 
 /**
@@ -664,17 +664,15 @@ export const SagaUtils = {
     id: string,
     name: string,
     actions: {
-      id: string;
       action: SagaStep['action'];
       compensation?: SagaStep['compensation'];
+      id: string;
     }[],
   ): SagaStep {
     return {
-      id,
-      name,
       action: async (context) => {
         const results = await Promise.all(
-          actions.map(async ({ id: actionId, action }) => ({
+          actions.map(async ({ action, id: actionId }) => ({
             id: actionId,
             result: await action(context),
           })),
@@ -690,13 +688,15 @@ export const SagaUtils = {
       compensation: actions.some((a) => a.compensation)
         ? async (context) => {
             // Compensate in reverse order
-            for (const { id: actionId, compensation } of actions.reverse()) {
+            for (const { compensation, id: actionId } of actions.reverse()) {
               if (compensation) {
                 await compensation(context);
               }
             }
           }
         : undefined,
+      id,
+      name,
     };
   },
 

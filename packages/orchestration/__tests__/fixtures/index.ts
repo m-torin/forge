@@ -12,6 +12,56 @@ import type {
 } from '../../src/shared/types';
 
 /**
+ * Create a valid QStash provider config
+ */
+export function createQStashConfig(
+  overrides: Partial<UpstashQStashConfig> = {},
+): UpstashQStashConfig {
+  return {
+    name: 'test-qstash',
+    type: 'upstash-qstash',
+    config: {
+      baseUrl: 'http://localhost:8080',
+      token: 'test-qstash-token',
+      ...overrides.config,
+    },
+    enabled: true,
+    ...overrides,
+  };
+}
+
+/**
+ * Create a valid rate limit provider config
+ */
+export function createRateLimitConfig(overrides: Partial<RateLimitConfig> = {}): RateLimitConfig {
+  return {
+    name: 'test-rate-limit',
+    type: 'rate-limit',
+    config: {
+      redisToken: 'test-redis-token',
+      redisUrl: 'redis://localhost:6379',
+      ...overrides.config,
+    },
+    enabled: true,
+    ...overrides,
+  };
+}
+
+/**
+ * Create a workflow execution for testing
+ */
+export function createTestExecution(overrides: Partial<WorkflowExecution> = {}): WorkflowExecution {
+  return {
+    id: 'exec_123',
+    startedAt: new Date(),
+    status: 'running',
+    steps: [],
+    workflowId: 'test-workflow',
+    ...overrides,
+  };
+}
+
+/**
  * Create a valid workflow step for testing
  */
 export function createTestStep(overrides: Partial<WorkflowStep> = {}): WorkflowStep {
@@ -39,20 +89,6 @@ export function createTestWorkflow(
 }
 
 /**
- * Create a workflow execution for testing
- */
-export function createTestExecution(overrides: Partial<WorkflowExecution> = {}): WorkflowExecution {
-  return {
-    id: 'exec_123',
-    startedAt: new Date(),
-    status: 'running',
-    steps: [],
-    workflowId: 'test-workflow',
-    ...overrides,
-  };
-}
-
-/**
  * Create a valid Upstash workflow provider config
  */
 export function createUpstashWorkflowConfig(
@@ -64,42 +100,6 @@ export function createUpstashWorkflowConfig(
     config: {
       baseUrl: 'http://localhost:8080',
       qstashToken: 'test-qstash-token',
-      redisToken: 'test-redis-token',
-      redisUrl: 'redis://localhost:6379',
-      ...overrides.config,
-    },
-    enabled: true,
-    ...overrides,
-  };
-}
-
-/**
- * Create a valid QStash provider config
- */
-export function createQStashConfig(
-  overrides: Partial<UpstashQStashConfig> = {},
-): UpstashQStashConfig {
-  return {
-    name: 'test-qstash',
-    type: 'upstash-qstash',
-    config: {
-      baseUrl: 'http://localhost:8080',
-      token: 'test-qstash-token',
-      ...overrides.config,
-    },
-    enabled: true,
-    ...overrides,
-  };
-}
-
-/**
- * Create a valid rate limit provider config
- */
-export function createRateLimitConfig(overrides: Partial<RateLimitConfig> = {}): RateLimitConfig {
-  return {
-    name: 'test-rate-limit',
-    type: 'rate-limit',
-    config: {
       redisToken: 'test-redis-token',
       redisUrl: 'redis://localhost:6379',
       ...overrides.config,
@@ -147,18 +147,11 @@ export const mockResponses = {
 };
 
 /**
- * Wait for async operations in tests
- */
-export async function waitFor(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
  * Create a test timeout with proper cleanup
  */
 export function createTestTimeout(ms = 5000): {
-  promise: Promise<never>;
   cancel: () => void;
+  promise: Promise<never>;
 } {
   let timeoutId: NodeJS.Timeout;
   const promise = new Promise<never>((_, reject) => {
@@ -169,4 +162,11 @@ export function createTestTimeout(ms = 5000): {
     cancel: () => clearTimeout(timeoutId),
     promise,
   };
+}
+
+/**
+ * Wait for async operations in tests
+ */
+export async function waitFor(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

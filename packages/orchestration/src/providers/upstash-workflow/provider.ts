@@ -4,9 +4,9 @@
  */
 
 import { Client } from '@upstash/qstash';
-import { Redis } from '@upstash/redis';
 import { serve } from '@upstash/workflow/nextjs';
 import { nanoid } from 'nanoid';
+import { redis } from '@repo/database/redis';
 
 import { createProviderError, ProviderError } from '../../shared/utils/errors';
 
@@ -18,6 +18,8 @@ import type {
   WorkflowExecution,
   WorkflowExecutionStatus,
   WorkflowProvider,
+  WorkflowStep,
+  WorkflowData,
 } from '../../shared/types/index';
 
 export interface UpstashWorkflowProviderOptions {
@@ -29,14 +31,11 @@ export interface UpstashWorkflowProviderOptions {
   env?: string;
   /** QStash client configuration */
   qstash: {
-    token: string;
     baseUrl?: string;
+    token: string;
   };
-  /** Redis configuration for state management */
-  redis?: {
-    url: string;
-    token?: string;
-  };
+  /** Whether to enable Redis for state management (uses @repo/database/redis) */
+  enableRedis?: boolean;
   /** Webhook URL pattern - defaults to '/api/workflows/{id}/execute' */
   webhookUrlPattern?: string;
 }
@@ -45,9 +44,9 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   public readonly name = 'upstash-workflow';
   public readonly version = '1.0.0';
 
-  private qstash: Client;
-  private redis?: Redis;
   private options: UpstashWorkflowProviderOptions;
+  private qstash: Client;
+  private useRedis: boolean;
 
   constructor(options: UpstashWorkflowProviderOptions) {
     this.options = options;
@@ -58,13 +57,8 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       token: options.qstash.token,
     });
 
-    // Initialize Redis client if configuration provided
-    if (options.redis) {
-      this.redis = new Redis({
-        url: options.redis.url,
-        token: options.redis.token,
-      });
-    }
+    // Use shared Redis client from @repo/database if enabled
+    this.useRedis = options.enableRedis !== false; // Default to true
   }
 
   /**
@@ -76,129 +70,9 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       qstash: {
         token: config.config.qstashToken,
       },
-      redis: config.config.redisUrl
-        ? {
-            url: config.config.redisUrl,
-            token: config.config.redisToken,
-          }
-        : undefined,
+      enableRedis: true, // Use shared Redis from @repo/database
       webhookUrlPattern: config.config.webhookUrlPattern,
     });
-  }
-
-  /**
-   * Execute a workflow
-   */
-  async execute(
-    definition: WorkflowDefinition,
-    input?: Record<string, any>,
-  ): Promise<WorkflowExecution> {
-    try {
-      const executionId = nanoid();
-      const startedAt = new Date();
-
-      // Create execution record
-      const execution: WorkflowExecution = {
-        id: executionId,
-        input,
-        metadata: {
-          trigger: {
-            type: 'manual',
-            payload: input,
-            timestamp: startedAt,
-          },
-        },
-        startedAt,
-        status: 'pending',
-        steps: definition.steps.map((step) => ({
-          attempts: 0,
-          status: 'pending',
-          stepId: step.id,
-        })),
-        workflowId: definition.id,
-      };
-
-      // Store execution state if Redis is available
-      if (this.redis) {
-        await this.redis.set(
-          `workflow:execution:${executionId}`,
-          JSON.stringify(execution),
-          { ex: 24 * 60 * 60 }, // 24 hours TTL
-        );
-      }
-
-      // Queue workflow execution using QStash
-      const webhookUrlPattern = this.options.webhookUrlPattern || '/api/workflows/{id}/execute';
-      const webhookUrl = `${this.options.baseUrl}${webhookUrlPattern.replace('{id}', definition.id)}`;
-
-      await this.qstash.publishJSON({
-        url: webhookUrl,
-        body: {
-          definition,
-          executionId,
-          input,
-          workflowId: definition.id,
-        },
-        delay: definition.retryConfig?.delay || 0,
-        headers: {
-          'X-Execution-ID': executionId,
-          'X-Workflow-ID': definition.id,
-        },
-        retries: definition.retryConfig?.maxAttempts || 3,
-      });
-
-      // Update status to running
-      execution.status = 'running';
-      if (this.redis) {
-        await this.redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
-          ex: 24 * 60 * 60,
-        });
-      }
-
-      return execution;
-    } catch (error) {
-      throw createProviderError(
-        `Failed to execute workflow ${definition.id}`,
-        this.name,
-        'upstash-workflow',
-        { originalError: error as Error },
-      );
-    }
-  }
-
-  /**
-   * Get execution status
-   */
-  async getExecution(executionId: string): Promise<WorkflowExecution | null> {
-    try {
-      if (!this.redis) {
-        throw new ProviderError(
-          'Redis not configured - cannot retrieve execution state',
-          this.name,
-          'upstash-workflow',
-          'REDIS_NOT_CONFIGURED',
-          false,
-        );
-      }
-
-      const data = await this.redis.get(`workflow:execution:${executionId}`);
-      if (!data) {
-        return null;
-      }
-
-      return JSON.parse(data as string);
-    } catch (error) {
-      // Re-throw ProviderError instances without wrapping
-      if (error instanceof ProviderError) {
-        throw error;
-      }
-      throw createProviderError(
-        `Failed to get execution ${executionId}`,
-        this.name,
-        'upstash-workflow',
-        { originalError: error as Error },
-      );
-    }
   }
 
   /**
@@ -221,8 +95,8 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       execution.completedAt = new Date();
 
       // Store updated execution
-      if (this.redis) {
-        await this.redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
+      if (this.useRedis) {
+        await redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
           ex: 24 * 60 * 60,
         });
       }
@@ -242,6 +116,222 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   }
 
   /**
+   * Cancel workflow - alias for cancelExecution for compatibility
+   */
+  async cancelWorkflow(executionId: string): Promise<boolean> {
+    return this.cancelExecution(executionId);
+  }
+
+  /**
+   * Create workflow execution handler for Next.js
+   */
+  createWorkflowHandler() {
+    return serve(async (context) => {
+      const payload = context.requestPayload as {
+        workflowId: string;
+        executionId: string;
+        definition: WorkflowDefinition;
+        input?: WorkflowData;
+      };
+      const { definition, executionId, input, workflowId } = payload;
+
+      try {
+        // Execute workflow steps
+        for (const step of definition.steps) {
+          await this.updateExecutionStatus(executionId, 'running', step.id);
+
+          try {
+            // Step execution logic would go here
+            // For now, this is a placeholder
+            const result = await this.executeStep(step, input);
+
+            await this.updateExecutionStatus(executionId, 'completed', step.id, result);
+          } catch (stepError) {
+            await this.updateExecutionStatus(executionId, 'failed', step.id, undefined, stepError);
+            throw stepError;
+          }
+        }
+
+        await this.updateExecutionStatus(executionId, 'completed');
+      } catch (error) {
+        await this.updateExecutionStatus(executionId, 'failed', undefined, undefined, error);
+        throw error;
+      }
+    });
+  }
+
+  /**
+   * Execute a workflow
+   */
+  async execute(
+    definition: WorkflowDefinition,
+    input?: WorkflowData,
+  ): Promise<WorkflowExecution> {
+    try {
+      const executionId = nanoid();
+      const startedAt = new Date();
+
+      // Create execution record
+      const execution: WorkflowExecution = {
+        id: executionId,
+        input,
+        metadata: {
+          trigger: {
+            payload: input,
+            timestamp: startedAt,
+            type: 'manual',
+          },
+        },
+        startedAt,
+        status: 'pending',
+        steps: definition.steps.map((step) => ({
+          attempts: 0,
+          status: 'pending',
+          stepId: step.id,
+        })),
+        workflowId: definition.id,
+      };
+
+      // Store execution state if Redis is available
+      if (this.useRedis) {
+        // Store the execution data
+        await redis.set(
+          `workflow:execution:${executionId}`,
+          JSON.stringify(execution),
+          { ex: 24 * 60 * 60 }, // 24 hours TTL
+        );
+        
+        // Add to workflow's execution index (sorted by timestamp)
+        await redis.zadd(
+          `workflow:${definition.id}:executions`,
+          startedAt.getTime(),
+          executionId
+        );
+        
+        // Trim old entries to prevent unbounded growth (keep last 1000)
+        await redis.zremrangebyrank(`workflow:${definition.id}:executions`, 0, -1001);
+      }
+
+      // Queue workflow execution using QStash
+      const webhookUrlPattern = this.options.webhookUrlPattern || '/api/workflows/{id}/execute';
+      const webhookUrl = `${this.options.baseUrl}${webhookUrlPattern.replace('{id}', definition.id)}`;
+
+      await this.qstash.publishJSON({
+        body: {
+          definition,
+          executionId,
+          input,
+          workflowId: definition.id,
+        },
+        delay: definition.retryConfig?.delay || 0,
+        headers: {
+          'X-Execution-ID': executionId,
+          'X-Workflow-ID': definition.id,
+        },
+        retries: definition.retryConfig?.maxAttempts || 3,
+        url: webhookUrl,
+      });
+
+      // Update status to running
+      execution.status = 'running';
+      if (this.useRedis) {
+        await redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
+          ex: 24 * 60 * 60,
+        });
+      }
+
+      return execution;
+    } catch (error) {
+      throw createProviderError(
+        `Failed to execute workflow ${definition.id}`,
+        this.name,
+        'upstash-workflow',
+        { originalError: error as Error },
+      );
+    }
+  }
+
+  /**
+   * Get execution status
+   */
+  async getExecution(executionId: string): Promise<null | WorkflowExecution> {
+    try {
+      if (!this.useRedis) {
+        throw new ProviderError(
+          'Redis not configured - cannot retrieve execution state',
+          this.name,
+          'upstash-workflow',
+          'REDIS_NOT_CONFIGURED',
+          false,
+        );
+      }
+
+      const data = await redis.get(`workflow:execution:${executionId}`);
+      if (!data) {
+        return null;
+      }
+
+      return JSON.parse(data as string);
+    } catch (error) {
+      // Re-throw ProviderError instances without wrapping
+      if (error instanceof ProviderError) {
+        throw error;
+      }
+      throw createProviderError(
+        `Failed to get execution ${executionId}`,
+        this.name,
+        'upstash-workflow',
+        { originalError: error as Error },
+      );
+    }
+  }
+
+  /**
+   * Get workflow execution - alias for getExecution for compatibility
+   */
+  async getWorkflowExecution(executionId: string): Promise<null | WorkflowExecution> {
+    return this.getExecution(executionId);
+  }
+
+  /**
+   * Health check
+   */
+  async healthCheck(): Promise<ProviderHealth> {
+    const startTime = Date.now();
+
+    try {
+      // Basic health check - try to access a simple endpoint
+      // Using a simple ping mechanism instead of complex API calls
+
+      // Test Redis connection if configured
+      if (this.useRedis) {
+        await redis.ping();
+      }
+
+      return {
+        details: {
+          qstash: 'healthy',
+          redis: this.useRedis ? 'healthy' : 'not-configured',
+        },
+        responseTime: Date.now() - startTime,
+        status: 'healthy',
+        timestamp: new Date(),
+      };
+    } catch (error) {
+      return {
+        details: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          qstash: 'unknown',
+          redis: this.useRedis ? 'unknown' : 'not-configured',
+        },
+        responseTime: Date.now() - startTime,
+        status: 'unhealthy',
+        timestamp: new Date(),
+      };
+    }
+  }
+
+  /**
    * List executions for a workflow
    */
   async listExecutions(
@@ -249,7 +339,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
     options?: ListExecutionsOptions,
   ): Promise<WorkflowExecution[]> {
     try {
-      if (!this.redis) {
+      if (!this.useRedis) {
         throw new ProviderError(
           'Redis not configured - cannot list executions',
           this.name,
@@ -259,19 +349,31 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         );
       }
 
-      // For now, use a simple pattern search
-      // In production, you'd want a more sophisticated indexing strategy
-      const pattern = `workflow:execution:*`;
-      const keys = await this.redis.keys(pattern);
+      // Use a sorted set to track executions by workflow ID for better performance
+      // This avoids using KEYS command which can block Redis
+      const executionIds = await redis.zrange(
+        `workflow:${workflowId}:executions`,
+        0,
+        -1,
+        { rev: true }
+      );
 
       const executions: WorkflowExecution[] = [];
 
-      for (const key of keys) {
-        const data = await this.redis.get(key);
-        if (data) {
-          const execution = JSON.parse(data as string);
-          if (execution.workflowId === workflowId) {
-            executions.push(execution);
+      // Fetch executions in batches for better performance
+      const batchSize = 50;
+      for (let i = 0; i < executionIds.length; i += batchSize) {
+        const batch = executionIds.slice(i, i + batchSize);
+        const pipeline = redis.pipeline();
+        
+        for (const executionId of batch) {
+          pipeline.get(`workflow:execution:${executionId}`);
+        }
+        
+        const results = await pipeline.exec();
+        for (const result of results) {
+          if (result[1]) {
+            executions.push(JSON.parse(result[1] as string));
           }
         }
       }
@@ -315,242 +417,17 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   }
 
   /**
-   * Schedule a workflow
-   */
-  async scheduleWorkflow(definition: WorkflowDefinition): Promise<string> {
-    try {
-      if (!definition.schedule) {
-        throw new ProviderError(
-          `Workflow ${definition.id} does not include schedule configuration`,
-          this.name,
-          'upstash-workflow',
-          'NO_SCHEDULE_CONFIG',
-          false,
-        );
-      }
-
-      const scheduleId = nanoid();
-      const webhookUrl = `${this.options.baseUrl}/api/workflows/${definition.id}/execute`;
-
-      // Create scheduled job using QStash
-      await this.qstash.schedules.create({
-        body: JSON.stringify({
-          definition,
-          scheduledExecution: true,
-          workflowId: definition.id,
-        }),
-        cron: definition.schedule.cron,
-        destination: webhookUrl,
-        headers: {
-          'X-Schedule-ID': scheduleId,
-          'X-Workflow-ID': definition.id,
-        },
-      });
-
-      // Store schedule metadata if Redis is available
-      if (this.redis) {
-        await this.redis.set(
-          `workflow:schedule:${scheduleId}`,
-          JSON.stringify({
-            createdAt: new Date(),
-            cron: definition.schedule.cron,
-            enabled: definition.schedule.enabled,
-            scheduleId,
-            workflowId: definition.id,
-          }),
-        );
-      }
-
-      return scheduleId;
-    } catch (error) {
-      // Re-throw ProviderError instances without wrapping
-      if (error instanceof ProviderError) {
-        throw error;
-      }
-      throw createProviderError(
-        `Failed to schedule workflow ${definition.id}`,
-        this.name,
-        'upstash-workflow',
-        { originalError: error as Error },
-      );
-    }
-  }
-
-  /**
-   * Unschedule a workflow
-   */
-  async unscheduleWorkflow(workflowId: string): Promise<boolean> {
-    try {
-      // Find schedule for this workflow
-      if (this.redis) {
-        const pattern = 'workflow:schedule:*';
-        const keys = await this.redis.keys(pattern);
-
-        for (const key of keys) {
-          const data = await this.redis.get(key);
-          if (data) {
-            const schedule = JSON.parse(data as string);
-            if (schedule.workflowId === workflowId) {
-              // Delete from QStash (would need schedule ID from QStash)
-              // For now, just remove from Redis
-              await this.redis.del(key);
-              return true;
-            }
-          }
-        }
-      }
-
-      return false;
-    } catch (error) {
-      throw createProviderError(
-        `Failed to unschedule workflow ${workflowId}`,
-        this.name,
-        'upstash-workflow',
-        { originalError: error as Error },
-      );
-    }
-  }
-
-  /**
-   * Health check
-   */
-  async healthCheck(): Promise<ProviderHealth> {
-    const startTime = Date.now();
-
-    try {
-      // Basic health check - try to access a simple endpoint
-      // Using a simple ping mechanism instead of complex API calls
-
-      // Test Redis connection if configured
-      if (this.redis) {
-        await this.redis.ping();
-      }
-
-      return {
-        details: {
-          qstash: 'healthy',
-          redis: this.redis ? 'healthy' : 'not-configured',
-        },
-        responseTime: Date.now() - startTime,
-        status: 'healthy',
-        timestamp: new Date(),
-      };
-    } catch (error) {
-      return {
-        details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          qstash: 'unknown',
-          redis: this.redis ? 'unknown' : 'not-configured',
-        },
-        responseTime: Date.now() - startTime,
-        status: 'unhealthy',
-        timestamp: new Date(),
-      };
-    }
-  }
-
-  /**
-   * Update execution status (called by webhook handlers)
-   */
-  async updateExecutionStatus(
-    executionId: string,
-    status: WorkflowExecutionStatus,
-    stepId?: string,
-    result?: any,
-    error?: any,
-  ): Promise<void> {
-    if (!this.redis) {
-      return; // Cannot update without Redis
-    }
-
-    const execution = await this.getExecution(executionId);
-    if (!execution) {
-      throw new ProviderError(
-        `Execution ${executionId} not found`,
-        this.name,
-        'upstash-workflow',
-        'EXECUTION_NOT_FOUND',
-        false,
-      );
-    }
-
-    // Update execution status
-    execution.status = status;
-    if (status === 'completed' || status === 'failed' || status === 'cancelled') {
-      execution.completedAt = new Date();
-    }
-
-    // Update step status if provided
-    if (stepId) {
-      const step = execution.steps.find((s) => s.stepId === stepId);
-      if (step) {
-        step.status = status;
-        step.completedAt = new Date();
-        if (result !== undefined) step.output = result;
-        if (error) step.error = error;
-      }
-    }
-
-    // Store updated execution
-    await this.redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
-      ex: 24 * 60 * 60,
-    });
-  }
-
-  /**
-   * Create workflow execution handler for Next.js
-   */
-  createWorkflowHandler() {
-    return serve(async (context) => {
-      const payload = context.requestPayload as any;
-      const { definition, executionId, input, workflowId } = payload;
-
-      try {
-        // Execute workflow steps
-        for (const step of definition.steps) {
-          await this.updateExecutionStatus(executionId, 'running', step.id);
-
-          try {
-            // Step execution logic would go here
-            // For now, this is a placeholder
-            const result = await this.executeStep(step, input);
-
-            await this.updateExecutionStatus(executionId, 'completed', step.id, result);
-          } catch (stepError) {
-            await this.updateExecutionStatus(executionId, 'failed', step.id, undefined, stepError);
-            throw stepError;
-          }
-        }
-
-        await this.updateExecutionStatus(executionId, 'completed');
-      } catch (error) {
-        await this.updateExecutionStatus(executionId, 'failed', undefined, undefined, error);
-        throw error;
-      }
-    });
-  }
-
-  /**
-   * Execute a single workflow step
-   */
-  private async executeStep(step: any, input: any): Promise<any> {
-    // This is a placeholder - actual step execution would depend on
-    // the step.action and would integrate with other services
-    return { input, step: step.id, success: true };
-  }
-
-  /**
    * List all workflow executions
    */
   async listWorkflowExecutions(options?: {
+    endDate?: Date;
     limit?: number;
     offset?: number;
-    status?: WorkflowExecutionStatus[];
     startDate?: Date;
-    endDate?: Date;
+    status?: WorkflowExecutionStatus[];
   }): Promise<WorkflowExecution[]> {
     try {
-      if (!this.redis) {
+      if (!this.useRedis) {
         throw new ProviderError(
           'Redis not configured - cannot list workflow executions',
           this.name,
@@ -560,14 +437,20 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         );
       }
 
-      // Get all execution keys
+      // Get all execution keys using a scan operation instead of keys for better performance
       const pattern = `workflow:execution:*`;
-      const keys = await this.redis.keys(pattern);
+      const keys: string[] = [];
+      let cursor = '0';
+      do {
+        const result = await redis.scan(cursor, { match: pattern, count: 100 });
+        cursor = result[0];
+        keys.push(...result[1]);
+      } while (cursor !== '0');
 
       const executions: WorkflowExecution[] = [];
 
       for (const key of keys) {
-        const data = await this.redis.get(key);
+        const data = await redis.get(key);
         if (data) {
           const execution = JSON.parse(data as string);
           executions.push(execution);
@@ -610,16 +493,316 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   }
 
   /**
-   * Get workflow execution - alias for getExecution for compatibility
+   * Schedule a workflow
    */
-  async getWorkflowExecution(executionId: string): Promise<WorkflowExecution | null> {
-    return this.getExecution(executionId);
+  async scheduleWorkflow(definition: WorkflowDefinition): Promise<string> {
+    try {
+      if (!definition.schedule) {
+        throw new ProviderError(
+          `Workflow ${definition.id} does not include schedule configuration`,
+          this.name,
+          'upstash-workflow',
+          'NO_SCHEDULE_CONFIG',
+          false,
+        );
+      }
+
+      const scheduleId = nanoid();
+      const webhookUrl = `${this.options.baseUrl}/api/workflows/${definition.id}/execute`;
+
+      // Create scheduled job using QStash
+      await this.qstash.schedules.create({
+        body: JSON.stringify({
+          definition,
+          scheduledExecution: true,
+          workflowId: definition.id,
+        }),
+        cron: definition.schedule.cron,
+        destination: webhookUrl,
+        headers: {
+          'X-Schedule-ID': scheduleId,
+          'X-Workflow-ID': definition.id,
+        },
+      });
+
+      // Store schedule metadata if Redis is available
+      if (this.useRedis) {
+        await redis.set(
+          `workflow:schedule:${scheduleId}`,
+          JSON.stringify({
+            createdAt: new Date(),
+            cron: definition.schedule.cron,
+            enabled: definition.schedule.enabled,
+            scheduleId,
+            workflowId: definition.id,
+          }),
+        );
+      }
+
+      return scheduleId;
+    } catch (error) {
+      // Re-throw ProviderError instances without wrapping
+      if (error instanceof ProviderError) {
+        throw error;
+      }
+      throw createProviderError(
+        `Failed to schedule workflow ${definition.id}`,
+        this.name,
+        'upstash-workflow',
+        { originalError: error as Error },
+      );
+    }
   }
 
   /**
-   * Cancel workflow - alias for cancelExecution for compatibility
+   * Unschedule a workflow
    */
-  async cancelWorkflow(executionId: string): Promise<boolean> {
-    return this.cancelExecution(executionId);
+  async unscheduleWorkflow(workflowId: string): Promise<boolean> {
+    try {
+      // Find schedule for this workflow
+      if (this.useRedis) {
+        const pattern = 'workflow:schedule:*';
+        const keys = await this.redis.keys(pattern);
+
+        for (const key of keys) {
+          const data = await redis.get(key);
+          if (data) {
+            const schedule = JSON.parse(data as string);
+            if (schedule.workflowId === workflowId) {
+              // Delete from QStash (would need schedule ID from QStash)
+              // For now, just remove from Redis
+              await redis.del(key);
+              return true;
+            }
+          }
+        }
+      }
+
+      return false;
+    } catch (error) {
+      throw createProviderError(
+        `Failed to unschedule workflow ${workflowId}`,
+        this.name,
+        'upstash-workflow',
+        { originalError: error as Error },
+      );
+    }
+  }
+
+  /**
+   * Update execution status (called by webhook handlers)
+   */
+  async updateExecutionStatus(
+    executionId: string,
+    status: WorkflowExecutionStatus,
+    stepId?: string,
+    result?: WorkflowData,
+    error?: Error | unknown,
+  ): Promise<void> {
+    if (!this.redis) {
+      return; // Cannot update without Redis
+    }
+
+    const execution = await this.getExecution(executionId);
+    if (!execution) {
+      throw new ProviderError(
+        `Execution ${executionId} not found`,
+        this.name,
+        'upstash-workflow',
+        'EXECUTION_NOT_FOUND',
+        false,
+      );
+    }
+
+    // Update execution status
+    execution.status = status;
+    if (status === 'completed' || status === 'failed' || status === 'cancelled') {
+      execution.completedAt = new Date();
+    }
+
+    // Update step status if provided
+    if (stepId) {
+      const step = execution.steps.find((s) => s.stepId === stepId);
+      if (step) {
+        step.status = status;
+        step.completedAt = new Date();
+        if (result !== undefined) step.output = result;
+        if (error) step.error = error;
+      }
+    }
+
+    // Store updated execution
+    await this.redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
+      ex: 24 * 60 * 60,
+    });
+  }
+
+  /**
+   * Execute a single workflow step
+   */
+  private async executeStep(step: WorkflowStep, input?: WorkflowData): Promise<WorkflowData> {
+    try {
+      // Log step execution if debug mode is enabled
+      if (this.options.debug) {
+        console.log(`[UpstashWorkflow] Executing step ${step.id} with action ${step.action}`);
+      }
+
+      // Check if step has a condition
+      if (step.condition) {
+        // Simple condition evaluation - check for basic expressions
+        // For security, we don't eval arbitrary code
+        const conditionResult = this.evaluateCondition(step.condition, input);
+        if (!conditionResult) {
+          // Skip this step
+          return {
+            input,
+            output: { skipped: true, reason: 'Condition not met' },
+            stepId: step.id,
+            duration: 0,
+            timestamp: Date.now(),
+            success: true,
+          };
+        }
+      }
+
+      // Apply timeout if specified
+      const timeout = step.timeout || 30000; // Default 30s timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`Step ${step.id} timed out after ${timeout}ms`)), timeout);
+      });
+
+      // Execute the step action
+      const startTime = Date.now();
+      const result = await Promise.race([
+        this.executeStepAction(step, input),
+        timeoutPromise,
+      ]);
+      const endTime = Date.now();
+
+      return {
+        input,
+        output: result,
+        stepId: step.id,
+        duration: endTime - startTime,
+        timestamp: endTime,
+        success: true,
+      };
+    } catch (error) {
+      throw createProviderError(
+        `Failed to execute step ${step.id}`,
+        this.name,
+        'step-execution-failed',
+        { 
+          stepId: step.id,
+          action: step.action,
+          originalError: error as Error,
+        },
+      );
+    }
+  }
+
+  /**
+   * Execute the actual step action
+   * This is where actual step logic would be implemented
+   */
+  private async executeStepAction(
+    step: WorkflowStep,
+    input?: WorkflowData,
+  ): Promise<WorkflowData> {
+    // For now, return a simulated result based on action type
+    switch (step.action) {
+      case 'http':
+        // Simulate HTTP request
+        return { status: 200, body: { success: true } };
+      
+      case 'delay':
+        // Simulate delay
+        const delay = (step.input?.delay as number) || 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return { delayed: delay };
+      
+      case 'transform':
+        // Simulate data transformation
+        return { transformed: true, data: input };
+      
+      default:
+        // For unknown actions, return the input
+        return { action: step.action, result: 'completed' };
+    }
+  }
+
+  /**
+   * Evaluate a step condition
+   * Only supports simple conditions for security
+   */
+  private evaluateCondition(condition: string, input?: WorkflowData): boolean {
+    // Parse simple conditions like "input.value > 10" or "input.status === 'active'"
+    // This is a basic implementation - in production you'd want a safe expression evaluator
+    
+    if (!input) return true;
+    
+    // Check for simple equality/inequality conditions
+    const equalityMatch = condition.match(/^input\.(\w+)\s*(===?|!==?)\s*['"]?(.+?)['"]?$/);
+    if (equalityMatch) {
+      const [, field, operator, value] = equalityMatch;
+      const inputValue = input[field];
+      
+      switch (operator) {
+        case '==':
+        case '===':
+          return String(inputValue) === value;
+        case '!=':
+        case '!==':
+          return String(inputValue) !== value;
+      }
+    }
+    
+    // Check for simple comparison conditions
+    const comparisonMatch = condition.match(/^input\.(\w+)\s*([<>]=?)\s*(\d+)$/);
+    if (comparisonMatch) {
+      const [, field, operator, value] = comparisonMatch;
+      const inputValue = Number(input[field]);
+      const compareValue = Number(value);
+      
+      if (isNaN(inputValue) || isNaN(compareValue)) return false;
+      
+      switch (operator) {
+        case '>':
+          return inputValue > compareValue;
+        case '>=':
+          return inputValue >= compareValue;
+        case '<':
+          return inputValue < compareValue;
+        case '<=':
+          return inputValue <= compareValue;
+      }
+    }
+    
+    // Check for simple boolean conditions
+    if (condition.match(/^input\.(\w+)$/)) {
+      const field = condition.replace('input.', '');
+      return Boolean(input[field]);
+    }
+    
+    // Default to true if we can't parse the condition
+    return true;
+  }
+
+  /**
+   * Clean up resources (close connections)
+   */
+  async cleanup(): Promise<void> {
+    try {
+      // QStash client doesn't need explicit cleanup
+      // Redis client can be cleaned up if needed
+      // Upstash Redis doesn't need explicit cleanup
+      // The connections are automatically managed
+      }
+    } catch (error) {
+      // Log error but don't throw during cleanup
+      if (this.options.debug) {
+        console.error('[UpstashWorkflow] Error during cleanup:', error);
+      }
+    }
   }
 }

@@ -7,22 +7,13 @@ import { RateLimitProvider, UpstashWorkflowProvider } from './providers/index';
 // Core types
 // Import for internal use
 import { OrchestrationManager, validateWorkflowDefinition } from './shared/utils/index';
-
-export type * from './shared/types/index';
-
-// Manager and utilities
-export {
-  createProviderError,
-  createWorkflowExecutionError,
-  OrchestrationError,
-  OrchestrationManager,
-  ProviderError,
-  validateProviderConfig,
-  validateWorkflowDefinition,
-  WorkflowExecutionError,
-} from './shared/utils/index';
-
-export type { OrchestrationManagerConfig, ValidationError } from './shared/utils/index';
+import type {
+  AnyProviderConfig,
+  RateLimitConfig,
+  ListExecutionsOptions,
+  WorkflowDefinition,
+  WorkflowData,
+} from './shared/types/index';
 
 // Providers
 export { RateLimitProvider, UpstashWorkflowProvider } from './providers/index';
@@ -42,20 +33,36 @@ export {
 
 export type { BatchOptions, CircuitBreakerOptions, RetryOptions } from './shared/patterns/index';
 
+export type * from './shared/types/index';
+
+// Manager and utilities
+export {
+  createProviderError,
+  createWorkflowExecutionError,
+  OrchestrationError,
+  OrchestrationManager,
+  ProviderError,
+  validateProviderConfig,
+  validateWorkflowDefinition,
+  WorkflowExecutionError,
+} from './shared/utils/index';
+
+export type { OrchestrationManagerConfig, ValidationError } from './shared/utils/index';
+
 // Convenience functions for common use cases
 
 /**
  * Create a workflow engine with default configuration
  */
 export function createWorkflowEngine(config?: {
-  providers?: {
-    name: string;
-    type: 'upstash-workflow' | 'rate-limit';
-    config: Record<string, any>;
-  }[];
   defaultProvider?: string;
   enableHealthChecks?: boolean;
   enableMetrics?: boolean;
+  providers?: {
+    config: AnyProviderConfig;
+    name: string;
+    type: 'rate-limit' | 'upstash-workflow';
+  }[];
 }) {
   const manager = new OrchestrationManager({
     defaultProvider: config?.defaultProvider,
@@ -64,7 +71,22 @@ export function createWorkflowEngine(config?: {
   });
 
   return {
-    manager,
+    async executeWorkflow(definition: WorkflowDefinition, input?: WorkflowData, providerName?: string) {
+      const validatedDefinition = validateWorkflowDefinition(definition);
+      return manager.executeWorkflow(validatedDefinition, input, providerName);
+    },
+
+    async getExecution(executionId: string, providerName?: string) {
+      return manager.getExecution(executionId, providerName);
+    },
+
+    getStatus() {
+      return manager.getStatus();
+    },
+
+    async healthCheck() {
+      return manager.healthCheckAll();
+    },
 
     async initialize() {
       await manager.initialize();
@@ -75,6 +97,9 @@ export function createWorkflowEngine(config?: {
           let provider;
 
           switch (providerConfig.type) {
+            case 'rate-limit':
+              provider = new RateLimitProvider(providerConfig.config as RateLimitConfig);
+              break;
             case 'upstash-workflow':
               provider = new UpstashWorkflowProvider({
                 baseUrl: providerConfig.config.baseUrl,
@@ -83,48 +108,30 @@ export function createWorkflowEngine(config?: {
                 },
                 redis: providerConfig.config.redisUrl
                   ? {
-                      url: providerConfig.config.redisUrl,
                       token: providerConfig.config.redisToken,
+                      url: providerConfig.config.redisUrl,
                     }
                   : undefined,
               });
-              break;
-            case 'rate-limit':
-              provider = new RateLimitProvider(providerConfig.config as any);
               break;
             default:
               throw new Error(`Unknown provider type: ${providerConfig.type}`);
           }
 
-          await manager.registerProvider(providerConfig.name, provider as any);
+          await manager.registerProvider(providerConfig.name, provider);
         }
       }
     },
 
-    async executeWorkflow(definition: any, input?: Record<string, any>, providerName?: string) {
-      const validatedDefinition = validateWorkflowDefinition(definition);
-      return manager.executeWorkflow(validatedDefinition, input, providerName);
-    },
-
-    async getExecution(executionId: string, providerName?: string) {
-      return manager.getExecution(executionId, providerName);
-    },
-
-    async listExecutions(workflowId: string, options?: any, providerName?: string) {
+    async listExecutions(workflowId: string, options?: ListExecutionsOptions, providerName?: string) {
       return manager.listExecutions(workflowId, options, providerName);
     },
 
-    async scheduleWorkflow(definition: any, providerName?: string) {
+    manager,
+
+    async scheduleWorkflow(definition: WorkflowDefinition, providerName?: string) {
       const validatedDefinition = validateWorkflowDefinition(definition);
       return manager.scheduleWorkflow(validatedDefinition, providerName);
-    },
-
-    async healthCheck() {
-      return manager.healthCheckAll();
-    },
-
-    getStatus() {
-      return manager.getStatus();
     },
 
     async shutdown() {
