@@ -562,7 +562,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       // Find schedule for this workflow
       if (this.useRedis) {
         const pattern = 'workflow:schedule:*';
-        const keys = await this.redis.keys(pattern);
+        const keys = await redis.keys(pattern);
 
         for (const key of keys) {
           const data = await redis.get(key);
@@ -599,7 +599,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
     result?: WorkflowData,
     error?: Error | unknown,
   ): Promise<void> {
-    if (!this.redis) {
+    if (!this.useRedis) {
       return; // Cannot update without Redis
     }
 
@@ -632,7 +632,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
     }
 
     // Store updated execution
-    await this.redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
+    await redis.set(`workflow:execution:${executionId}`, JSON.stringify(execution), {
       ex: 24 * 60 * 60,
     });
   }
@@ -665,40 +665,50 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         }
       }
 
-      // Apply timeout if specified
+      // Apply timeout if specified with proper cleanup
       const timeout = step.timeout || 30000; // Default 30s timeout
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error(`Step ${step.id} timed out after ${timeout}ms`)), timeout);
+      let timeoutId: NodeJS.Timeout;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`Step ${step.id} timed out after ${timeout}ms`));
+        }, timeout);
       });
 
-      // Execute the step action
-      const startTime = Date.now();
-      const result = await Promise.race([
-        this.executeStepAction(step, input),
-        timeoutPromise,
-      ]);
-      const endTime = Date.now();
+      try {
+        // Execute the step action
+        const startTime = Date.now();
+        const result = await Promise.race([
+          this.executeStepAction(step, input),
+          timeoutPromise,
+        ]);
+        const endTime = Date.now();
+        
+        // Clear timeout on successful completion
+        clearTimeout(timeoutId);
 
-      return {
-        input,
-        output: result,
-        stepId: step.id,
-        duration: endTime - startTime,
-        timestamp: endTime,
-        success: true,
-      };
-    } catch (error) {
-      throw createProviderError(
-        `Failed to execute step ${step.id}`,
-        this.name,
-        'step-execution-failed',
-        { 
+        return {
+          input,
+          output: result,
           stepId: step.id,
-          action: step.action,
-          originalError: error as Error,
-        },
-      );
-    }
+          duration: endTime - startTime,
+          timestamp: endTime,
+          success: true,
+        };
+      } catch (error) {
+        // Clear timeout on error
+        clearTimeout(timeoutId);
+        
+        throw createProviderError(
+          `Failed to execute step ${step.id}`,
+          this.name,
+          'step-execution-failed',
+          { 
+            stepId: step.id,
+            action: step.action,
+            originalError: error as Error,
+          },
+        );
+      }
   }
 
   /**

@@ -37,12 +37,6 @@ export interface BatchItem<T = any> {
   resolve?: (value: any) => void;
 }
 
-// Types for test compatibility
-export interface BatchItem<T = any> {
-  data: T;
-  id: string;
-}
-
 export interface BatchOptions extends Partial<BatchPattern> {
   /** Context for the operation */
   context?: Partial<PatternContext>;
@@ -80,6 +74,8 @@ export class BatchManager<T = any, R = any> {
   private processor: BatchProcessor<T, R>;
   private queue: PQueue;
   private results = new Map<string, Promise<R>>();
+  private isShuttingDown = false;
+  private processingLock = false;
 
   constructor(processor: BatchProcessor<T, R>, options: BatchOptions = {}) {
     this.pattern = {
@@ -104,6 +100,10 @@ export class BatchManager<T = any, R = any> {
    * Add an item to the batch for processing
    */
   async add(data: T, id = `batch_${Date.now()}_${Math.random()}`): Promise<R> {
+    if (this.isShuttingDown) {
+      throw new Error('BatchManager is shutting down');
+    }
+    
     const item: BatchItem<T> = {
       addedAt: new Date(),
       data,
@@ -117,7 +117,7 @@ export class BatchManager<T = any, R = any> {
     });
 
     this.results.set(id, resultPromise);
-    this.batch.push(item as any);
+    this.batch.push(item);
 
     // Trigger processing if batch is full
     if (this.batch.length >= this.pattern.maxBatchSize) {
@@ -185,10 +185,20 @@ export class BatchManager<T = any, R = any> {
    * Shutdown the batch manager
    */
   async shutdown(): Promise<void> {
+    this.isShuttingDown = true;
     this.clearBatchTimer();
+    
+    // Pause the queue to prevent new jobs
     this.queue.pause();
-    this.clear();
+    
+    // Wait for current jobs to complete
     await this.queue.onIdle();
+    
+    // Clear remaining items
+    this.clear();
+    
+    // Clear the queue
+    this.queue.clear();
   }
 
   /**
@@ -354,32 +364,46 @@ export class BatchManager<T = any, R = any> {
    * Trigger batch processing
    */
   private triggerBatchProcessing(): void {
-    if (this.batch.length === 0 || this.processing) {
+    if (this.batch.length === 0 || this.processing || this.isShuttingDown || this.processingLock) {
       return;
     }
 
     this.clearBatchTimer();
+    this.processingLock = true;
 
     // Add batch processing to queue
-    this.queue.add(() => this.processBatch());
+    this.queue.add(async () => {
+      try {
+        await this.processBatch();
+      } finally {
+        this.processingLock = false;
+      }
+    });
   }
 
   /**
    * Cleanup resources
    */
   async cleanup(): Promise<void> {
+    this.isShuttingDown = true;
+    
     // Clear any pending batch timer
     this.clearBatchTimer();
     
     // Process any remaining items in the batch
-    if (this.batch.length > 0 && !this.processing) {
-      await this.processBatch();
+    if (this.batch.length > 0 && !this.processing && !this.processingLock) {
+      try {
+        await this.processBatch();
+      } catch (error) {
+        // Log error but continue cleanup
+        console.error('Error during batch cleanup:', error);
+      }
     }
     
     // Clear all data
     this.batch = [];
-    this.batchIds.clear();
-    this.pendingPromises.clear();
+    this.results.clear();
+    this.queue.clear();
   }
 }
 

@@ -154,6 +154,36 @@ export type WorkflowExecutionStatus =
   | 'skipped'
   | 'timeout';
 
+/**
+ * Status of individual workflow steps
+ */
+export type WorkflowStepStatus =
+  | 'cancelled'
+  | 'completed'
+  | 'failed'
+  | 'pending'
+  | 'running'
+  | 'skipped'
+  | 'timeout';
+
+/**
+ * Workflow execution context providing access to execution state and utilities
+ */
+export interface WorkflowContext {
+  /** Current execution ID */
+  executionId: string;
+  /** Input data for the workflow */
+  input?: WorkflowData;
+  /** Metadata about the execution */
+  metadata?: WorkflowExecutionMetadata;
+  /** Previous step outputs by step ID */
+  stepOutputs: Record<string, unknown>;
+  /** Current workflow definition */
+  workflow: WorkflowDefinition;
+  /** Current workflow ID */
+  workflowId: string;
+}
+
 export interface WorkflowProvider {
   /** Cancel a running execution */
   cancelExecution(executionId: string): Promise<boolean>;

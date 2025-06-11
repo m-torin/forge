@@ -26,8 +26,13 @@ export class CircuitBreakerManager {
    */
   clear(): void {
     for (const [name, breaker] of this.breakers) {
-      // TODO: Fix circuit breaker destroy method
-      // breaker.destroy();
+      // Remove all event listeners to prevent memory leaks
+      breaker.removeAllListeners();
+      
+      // If the circuit breaker has a destroy method, call it
+      if (typeof (breaker as any).destroy === 'function') {
+        (breaker as any).destroy();
+      }
     }
     this.breakers.clear();
   }
@@ -131,8 +136,14 @@ export class CircuitBreakerManager {
       return false;
     }
 
-    // TODO: Fix circuit breaker destroy method
-    // breaker.destroy();
+    // Remove all event listeners to prevent memory leaks
+    breaker.removeAllListeners();
+    
+    // If the circuit breaker has a destroy method, call it
+    if (typeof (breaker as any).destroy === 'function') {
+      (breaker as any).destroy();
+    }
+    
     this.breakers.delete(name);
     return true;
   }

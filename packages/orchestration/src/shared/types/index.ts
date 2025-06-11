@@ -73,6 +73,8 @@ export type {
   WorkflowProvider,
   WorkflowStep,
   WorkflowStepExecution,
+  WorkflowStepStatus,
+  WorkflowContext,
   WorkflowTrigger,
 } from './workflow';
 

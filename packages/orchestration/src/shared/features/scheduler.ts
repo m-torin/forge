@@ -524,6 +524,18 @@ export class AdvancedScheduler {
       throw new Error(`Invalid timezone: ${timezone}`);
     }
   }
+
+  /**
+   * Clean up all timers and resources
+   */
+  cleanup(): void {
+    // Clear all active timers
+    for (const [scheduleId, timer] of this.timers) {
+      clearTimeout(timer);
+    }
+    this.timers.clear();
+    this.schedules.clear();
+  }
 }
 
 /**

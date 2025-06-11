@@ -595,9 +595,13 @@ export class OrchestrationManager {
         // Check if provider has cleanup method
         if ('cleanup' in provider && typeof provider.cleanup === 'function') {
           cleanupPromises.push(
-            provider.cleanup().catch(error => {
-              console.error(`Failed to cleanup provider ${name}:`, error);
-            })
+            (async () => {
+              try {
+                await provider.cleanup();
+              } catch (error) {
+                console.error(`Failed to cleanup provider ${name}:`, error);
+              }
+            })()
           );
         }
       }

@@ -212,6 +212,11 @@ export class WorkflowMonitor {
   private performanceData = new Map<string, PerformanceMetrics>();
   private provider: WorkflowProvider;
 
+  // Limits to prevent unbounded growth
+  private readonly MAX_EXECUTION_HISTORY = 10000;
+  private readonly MAX_ACTIVE_ALERTS = 1000;
+  private readonly MAX_PERFORMANCE_DATA = 500;
+
   constructor(provider: WorkflowProvider) {
     this.provider = provider;
   }
@@ -440,6 +445,12 @@ export class WorkflowMonitor {
     };
 
     this.executionHistory.push(execution);
+    
+    // Prevent unbounded growth
+    if (this.executionHistory.length > this.MAX_EXECUTION_HISTORY) {
+      this.executionHistory = this.executionHistory.slice(-this.MAX_EXECUTION_HISTORY);
+    }
+    
     this.updateMetrics(workflowId);
   }
 
@@ -748,6 +759,19 @@ export class WorkflowMonitor {
     };
 
     this.activeAlerts.set(alertId, alert);
+    
+    // Prevent unbounded growth of alerts
+    if (this.activeAlerts.size > this.MAX_ACTIVE_ALERTS) {
+      // Remove oldest alerts first
+      const alertEntries = Array.from(this.activeAlerts.entries());
+      alertEntries.sort((a, b) => a[1].triggeredAt.getTime() - b[1].triggeredAt.getTime());
+      
+      const alertsToRemove = alertEntries.slice(0, alertEntries.length - this.MAX_ACTIVE_ALERTS);
+      for (const [alertId] of alertsToRemove) {
+        this.activeAlerts.delete(alertId);
+      }
+    }
+    
     rule.lastTriggered = new Date();
 
     // Send alert notifications (would integrate with notification service)
@@ -757,6 +781,46 @@ export class WorkflowMonitor {
   private updateMetrics(workflowId: string): void {
     const metrics = this.calculateMetrics(workflowId);
     this.metrics.set(workflowId, metrics);
+  }
+
+  /**
+   * Clean up resources and prevent memory leaks
+   */
+  cleanup(): void {
+    this.activeAlerts.clear();
+    this.alertRules.clear();
+    this.executionHistory = [];
+    this.metrics.clear();
+    this.performanceData.clear();
+  }
+
+  /**
+   * Trim old data to prevent unbounded growth
+   */
+  trimOldData(maxAge: number = 24 * 60 * 60 * 1000): void {
+    const cutoff = new Date(Date.now() - maxAge);
+    
+    // Trim old execution history
+    this.executionHistory = this.executionHistory.filter(
+      execution => execution.startedAt >= cutoff
+    );
+    
+    // Trim old alerts
+    for (const [alertId, alert] of this.activeAlerts) {
+      if (alert.triggeredAt < cutoff && alert.status === 'resolved') {
+        this.activeAlerts.delete(alertId);
+      }
+    }
+    
+    // Trim old performance data
+    if (this.performanceData.size > this.MAX_PERFORMANCE_DATA) {
+      const entries = Array.from(this.performanceData.entries());
+      const toKeep = entries.slice(-this.MAX_PERFORMANCE_DATA);
+      this.performanceData.clear();
+      for (const [key, value] of toKeep) {
+        this.performanceData.set(key, value);
+      }
+    }
   }
 }
 
