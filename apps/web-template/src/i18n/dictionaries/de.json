@@ -1,26 +1,28 @@
 {
   "app": {
-    "welcome": "Willkommen bei",
-    "description": "Dieses Next.js-Starterprojekt enthält eine minimale Konfiguration für Mantine mit TailwindCSS. Um zu beginnen, bearbeiten Sie die Datei page.tsx.",
-    "currentLanguage": "Aktuelle Sprache",
-    "brand": "Neue Web-Anwendung",
-    "appDescription": "Eine moderne Webanwendung mit Internationalisierungsunterstützung",
-    "mantine": "Mantine",
-    "tailwindcss": "TailwindCSS",
-    "l": {
-      "en": "Englisch",
-      "fr": "Französisch",
-      "frCA": "Französisch (Kanada)",
-      "es": "Spanisch",
-      "esMX": "Spanisch (Mexiko)",
-      "ptBR": "Portugiesisch (Brasilien)",
-      "de": "Deutsch"
-    },
+    "welcome": "Willkommen bei Web Template",
+    "description": "Eine moderne Next.js-Vorlage mit Mantine UI und Internationalisierungsunterstützung",
+    "brand": "Web Template",
+    "appDescription": "Eine moderne Webanwendungsvorlage mit Internationalisierung",
     "selectLanguage": "Sprache auswählen",
-    "logoAlt": "Logo",
-    "allRightsReserved": "Alle Rechte vorbehalten",
-    "madeWith": "Erstellt mit",
-    "by": "von",
-    "team": "Team"
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Suchen",
+    "placeholder": "Nach etwas suchen...",
+    "button": "Suchen",
+    "results": "Suchergebnisse",
+    "noResults": "Keine Ergebnisse gefunden",
+    "tryAgain": "Versuchen Sie, nach etwas anderem zu suchen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "search": "Suchen"
   }
 }

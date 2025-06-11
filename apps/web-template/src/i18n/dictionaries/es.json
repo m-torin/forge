@@ -1,26 +1,28 @@
 {
   "app": {
-    "welcome": "Bienvenido a",
-    "description": "Este proyecto inicial de Next.js incluye una configuración mínima para Mantine con TailwindCSS. Para comenzar, edita el archivo page.tsx.",
-    "currentLanguage": "Idioma actual",
-    "brand": "Aplicación Web Nueva",
-    "appDescription": "Una aplicación web moderna con soporte de internacionalización",
-    "mantine": "Mantine",
-    "tailwindcss": "TailwindCSS",
-    "l": {
-      "en": "Inglés",
-      "fr": "Francés",
-      "frCA": "Francés (Canadá)",
-      "es": "Español",
-      "esMX": "Español (México)",
-      "ptBR": "Portugués (Brasil)",
-      "de": "Alemán"
-    },
+    "welcome": "Bienvenido a Web Template",
+    "description": "Una plantilla Next.js moderna con Mantine UI y soporte de internacionalización",
+    "brand": "Web Template",
+    "appDescription": "Una plantilla de aplicación web moderna con internacionalización",
     "selectLanguage": "Seleccionar idioma",
-    "logoAlt": "logo",
-    "allRightsReserved": "Todos los derechos reservados",
-    "madeWith": "Hecho con",
-    "by": "por",
-    "team": "equipo"
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Buscar",
+    "placeholder": "Buscar cualquier cosa...",
+    "button": "Buscar",
+    "results": "Resultados de búsqueda",
+    "noResults": "No se encontraron resultados",
+    "tryAgain": "Intenta buscar otra cosa"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "search": "Buscar"
   }
 }

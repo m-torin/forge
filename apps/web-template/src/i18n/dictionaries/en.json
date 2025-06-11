@@ -1,39 +1,28 @@
 {
   "app": {
-    "welcome": "Welcome to",
-    "description": "This starter Next.js project includes a minimal setup for Mantine with TailwindCSS. To get started edit page.tsx file.",
-    "currentLanguage": "Current language",
-    "brand": "Web New App",
-    "appDescription": "A modern web application with internationalization support",
-    "mantine": "Mantine",
-    "tailwindcss": "TailwindCSS",
+    "welcome": "Welcome to Web Template",
+    "description": "A modern Next.js template with Mantine UI and internationalization support",
+    "brand": "Web Template",
+    "appDescription": "A modern web application template with internationalization",
+    "selectLanguage": "Select language",
     "l": {
       "en": "English",
       "fr": "Français",
-      "frCA": "Français (Canada)",
-      "es": "Spanish",
-      "esMX": "Spanish (Mexico)",
-      "ptBR": "Portuguese (Brazil)",
-      "de": "German"
-    },
-    "selectLanguage": "Select language",
-    "logoAlt": "logo",
-    "about": "About Us",
-    "mission": "Our Mission",
-    "features": "Features",
-    "technology": "Technology",
-    "internationalization": "Internationalization",
-    "contact": "Contact",
-    "contactInfo": "Get in touch with us for more information about our services and solutions.",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search for anything...",
+    "button": "Search",
+    "results": "Search Results",
+    "noResults": "No results found",
+    "tryAgain": "Try searching for something else"
+  },
+  "navigation": {
     "home": "Home",
-    "navigation": "Navigation",
-    "contextualInfo": "Contextual Information",
-    "quickFacts": "Quick Facts",
-    "supportedLanguages": "Supported Languages",
-    "currentLocale": "Current Locale",
-    "allRightsReserved": "All rights reserved.",
-    "madeWith": "Made with",
-    "by": "by",
-    "team": "the team"
+    "search": "Search"
   }
 }

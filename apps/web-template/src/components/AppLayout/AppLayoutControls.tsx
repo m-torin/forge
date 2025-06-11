@@ -1,5 +1,7 @@
 "use client";
 
+import { ColorSchemesSwitcher } from "@/components/color-schemes-switcher";
+import LocaleSwitcher from "@/components/locale-switcher";
 import {
   Box,
   Button,
@@ -12,10 +14,19 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
+import Image from "next/image";
 
 import { useAppLayout } from "./AppLayoutContext";
 
-export function AppLayoutControls() {
+interface AppLayoutControlsProps {
+  dict?: any;
+  locale?: string;
+}
+
+export function AppLayoutControls({
+  dict,
+  locale,
+}: AppLayoutControlsProps = {}) {
   const {
     // Visibility states
     asideOpened,
@@ -36,7 +47,7 @@ export function AppLayoutControls() {
 
     // Visibility controls
     setAside,
-    toggleAside,
+    toggleAside: _toggleAside,
     closeAll,
     openAll,
     setMobileNavbar,
@@ -45,14 +56,14 @@ export function AppLayoutControls() {
     toggleNavbar,
 
     setAsideEnabled,
-    toggleAsideEnabled,
+    toggleAsideEnabled: _toggleAsideEnabled,
     setFooterEnabled,
     // Enable/disable controls
     setHeaderEnabled,
     setNavbarEnabled,
-    toggleFooterEnabled,
-    toggleHeaderEnabled,
-    toggleNavbarEnabled,
+    toggleFooterEnabled: _toggleFooterEnabled,
+    toggleHeaderEnabled: _toggleHeaderEnabled,
+    toggleNavbarEnabled: _toggleNavbarEnabled,
 
     // Dimension controls
     setAsideWidth,
@@ -67,6 +78,44 @@ export function AppLayoutControls() {
         <Text fw={500} size="sm">
           Layout Controls
         </Text>
+
+        {/* Header Settings Section */}
+        <Box>
+          <Text c="dimmed" fw={500} mb="xs" size="xs">
+            Header Settings
+          </Text>
+          <Group justify="space-between" mb="xs">
+            <Group>
+              <Image
+                width={100}
+                className="dark:invert"
+                alt={dict?.app?.logoAlt || "logo"}
+                height={100}
+                src="https://nextjs.org/icons/next.svg"
+              />
+            </Group>
+            <Group>
+              {locale && dict && (
+                <LocaleSwitcher
+                  currentLocale={locale}
+                  selectLanguagePlaceholder={
+                    dict.app?.selectLanguage || "Select language"
+                  }
+                  languages={{
+                    de: dict.app?.l?.de || "German",
+                    en: dict.app?.l?.en || "English",
+                    esMX: dict.app?.l?.esMX || "Spanish (Mexico)",
+                    frCA: dict.app?.l?.frCA || "Français (Canada)",
+                    ptBR: dict.app?.l?.ptBR || "Portuguese (Brazil)",
+                  }}
+                />
+              )}
+              <ColorSchemesSwitcher />
+            </Group>
+          </Group>
+        </Box>
+
+        <Divider />
 
         {/* Enable/Disable Section */}
         <Box>
@@ -152,6 +201,30 @@ export function AppLayoutControls() {
             </Button>
             <Button onClick={closeAll} size="xs" variant="outline">
               Close All
+            </Button>
+            <Button
+              onClick={_toggleAside}
+              disabled={!asideEnabled}
+              size="xs"
+              variant="light"
+            >
+              Toggle Aside
+            </Button>
+            <Button
+              onClick={toggleNavbar}
+              disabled={!navbarEnabled}
+              size="xs"
+              variant="light"
+            >
+              Toggle Navbar
+            </Button>
+            <Button
+              onClick={toggleMobileNavbar}
+              disabled={!navbarEnabled}
+              size="xs"
+              variant="light"
+            >
+              Toggle Mobile Nav
             </Button>
           </Group>
         </Box>

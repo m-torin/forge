@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, Group, useMantineColorScheme } from "@mantine/core";
+import { useMantineColorScheme, Button, Group } from "@mantine/core";
 
 export function ColorSchemesSwitcher() {
-  const { clearColorScheme, setColorScheme } = useMantineColorScheme();
+  const { setColorScheme, clearColorScheme } = useMantineColorScheme();
 
   return (
     <Group>

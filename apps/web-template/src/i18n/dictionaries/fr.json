@@ -1,39 +1,28 @@
 {
   "app": {
-    "welcome": "Bienvenue à",
-    "description": "Ce projet de démarrage Next.js comprend une configuration minimale pour Mantine avec TailwindCSS. Pour commencer, modifiez le fichier page.tsx.",
-    "currentLanguage": "Langue actuelle",
-    "brand": "Application Web Nouvelle",
-    "appDescription": "Une application web moderne avec support d'internationalisation",
-    "mantine": "Mantine",
-    "tailwindcss": "TailwindCSS",
-    "l": {
-      "en": "Anglais",
-      "fr": "Français",
-      "frCA": "Français (Canada)",
-      "es": "Espagnol",
-      "esMX": "Espagnol (Mexique)",
-      "ptBR": "Portugais (Brésil)",
-      "de": "Allemand"
-    },
+    "welcome": "Bienvenue sur Web Template",
+    "description": "Un modèle Next.js moderne avec Mantine UI et support de l'internationalisation",
+    "brand": "Web Template",
+    "appDescription": "Un modèle d'application web moderne avec internationalisation",
     "selectLanguage": "Sélectionner la langue",
-    "logoAlt": "logo",
-    "about": "À propos de nous",
-    "mission": "Notre mission",
-    "features": "Fonctionnalités",
-    "technology": "Technologie",
-    "internationalization": "Internationalisation",
-    "contact": "Contact",
-    "contactInfo": "Contactez-nous pour plus d'informations sur nos services et solutions.",
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Rechercher",
+    "placeholder": "Rechercher quelque chose...",
+    "button": "Rechercher",
+    "results": "Résultats de recherche",
+    "noResults": "Aucun résultat trouvé",
+    "tryAgain": "Essayez de rechercher autre chose"
+  },
+  "navigation": {
     "home": "Accueil",
-    "navigation": "Navigation",
-    "contextualInfo": "Informations contextuelles",
-    "quickFacts": "Faits en bref",
-    "supportedLanguages": "Langues prises en charge",
-    "currentLocale": "Langue actuelle",
-    "allRightsReserved": "Tous droits réservés.",
-    "madeWith": "Fait avec",
-    "by": "par",
-    "team": "l'équipe"
+    "search": "Rechercher"
   }
 }

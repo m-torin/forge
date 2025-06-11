@@ -2,7 +2,7 @@
   "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*", "./*"],
+      "@/*": ["./src/*"],
       "@repo/*": ["../../packages/*"]
     }
   },
@@ -12,9 +12,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/**/*.ts",
-    "src/**/*.tsx",
-    "app/**/*.ts",
-    "app/**/*.tsx"
+    "src/**/*.tsx"
   ],
-  "exclude": ["node_modules", "e2e"]
+  "exclude": ["node_modules", ".next", "**/.next", "dist", "build"]
 }

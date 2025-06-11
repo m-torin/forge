@@ -2,16 +2,12 @@
 
 import { Select } from "@mantine/core";
 import { usePathname, useRouter } from "next/navigation";
+import { locales, type Locale } from "@repo/internationalization/client";
+import { useTransition } from "react";
 
 interface LocaleSwitcherProps {
   currentLocale: string;
-  languages: {
-    en: string;
-    frCA: string;
-    esMX: string;
-    ptBR: string;
-    de: string;
-  };
+  languages: Record<string, string>;
   selectLanguagePlaceholder: string;
 }
 
@@ -20,25 +16,44 @@ export default function LocaleSwitcher({
   languages,
   selectLanguagePlaceholder,
 }: LocaleSwitcherProps) {
-  const languageOptions = [
-    { label: languages.en, value: "en" },
-    { label: languages.frCA, value: "fr-CA" },
-    { label: languages.esMX, value: "es-MX" },
-    { label: languages.ptBR, value: "pt-BR" },
-    { label: languages.de, value: "de" },
-  ];
   const router = useRouter();
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+
+  // Dynamically create language options from available locales
+  const languageOptions = locales.map((locale) => ({
+    label: languages[locale] || locale,
+    value: locale,
+  }));
 
   const handleLocaleChange = (value: string | null) => {
-    if (!value) return;
+    if (!value || !locales.includes(value as Locale)) return;
 
-    // Get the current path without the locale
-    const segments = pathname.split("/");
-    segments[1] = value; // Replace the locale segment
-    const newPath = segments.join("/") || `/${value}`;
+    startTransition(() => {
+      // Get the current path segments
+      const segments = pathname.split("/").filter(Boolean);
+      
+      // Check if the first segment is a locale
+      const hasLocalePrefix = segments.length > 0 && locales.includes(segments[0] as Locale);
+      
+      let newPath: string;
+      
+      if (hasLocalePrefix) {
+        // Replace the existing locale
+        segments[0] = value;
+        newPath = `/${segments.join("/")}`;
+      } else {
+        // Add the new locale prefix
+        newPath = `/${value}${pathname}`;
+      }
+      
+      // Handle the root path case
+      if (newPath === `/${value}/`) {
+        newPath = `/${value}`;
+      }
 
-    router.push(newPath as any);
+      router.push(newPath);
+    });
   };
 
   return (
@@ -49,6 +64,7 @@ export default function LocaleSwitcher({
       size="sm"
       value={currentLocale}
       w={180}
+      disabled={isPending}
     />
   );
 }

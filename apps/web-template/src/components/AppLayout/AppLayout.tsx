@@ -15,6 +15,8 @@ import classes from "./AppLayout.module.css";
 import { useAppLayout } from "./AppLayoutContext";
 import { AppLayoutHeader } from "./AppLayoutHeader";
 
+import type { TCollection, TNavigationItem } from "@/types";
+
 interface AppLayoutProps
   extends Omit<
     AppShellProps,
@@ -22,17 +24,21 @@ interface AppLayoutProps
   > {
   children: ReactNode;
   dict?: any; // Using any for now due to type merging issues
+  featuredCollection?: TCollection;
   locale?: string;
+  navigationMenu?: TNavigationItem[];
 }
 
 export function AppLayout({
   children,
   dict,
   disabled = false,
+  featuredCollection,
   layout = "default",
   locale,
+  navigationMenu,
   offsetScrollbars,
-  padding = "md",
+  padding = 0,
   transitionDuration = 200,
   transitionTimingFunction = "ease",
   withBorder = true,
@@ -45,7 +51,7 @@ export function AppLayout({
     asideOpened,
     asideWidth,
     navbarWidth,
-    toggleAside,
+    toggleAside: _toggleAside,
     footerEnabled,
     footerHeight,
     headerEnabled,
@@ -96,8 +102,11 @@ export function AppLayout({
       {headerEnabled && (
         <AppShell.Header className={classes.header}>
           <AppLayoutHeader
+            _locale={locale}
+            featuredCollection={featuredCollection}
             locale={locale}
             mobileNavbarOpened={mobileNavbarOpened}
+            navigationMenu={navigationMenu}
             toggleMobileNavbar={toggleMobileNavbar}
             toggleNavbar={toggleNavbar}
             dict={dict}
@@ -134,10 +143,6 @@ export function AppLayout({
 
       {asideEnabled && (
         <AppShell.Aside className={classes.aside} p="md">
-          <Text fw={500} mb="md" size="sm">
-            {dict?.app?.contextualInfo || "Contextual Information"}
-          </Text>
-
           <div id="aside-portal-target" className={classes.asidePortalTarget} />
         </AppShell.Aside>
       )}

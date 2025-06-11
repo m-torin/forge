@@ -1,30 +1,42 @@
 "use client";
 
-import { ColorSchemesSwitcher } from "@/components/color-schemes-switcher";
-import LocaleSwitcher from "@/components/locale-switcher";
-import { Burger, Group } from "@mantine/core";
+import { Anchor, Burger, Flex, Group } from "@mantine/core";
 import Image from "next/image";
+import Link from "next/link";
+import LocaleSwitcher from "@/components/locale-switcher";
+import { ColorSchemesSwitcher } from "@/components/color-schemes-switcher";
+
+import type { TCollection, TNavigationItem } from "@/types";
 
 interface AppLayoutHeaderProps {
+  _dict?: any;
+  _locale?: string;
   dict?: any;
+  featuredCollection?: TCollection;
   locale?: string;
   mobileNavbarOpened: boolean;
   navbarOpened: boolean;
+  navigationMenu?: TNavigationItem[];
   toggleMobileNavbar: () => void;
   toggleNavbar: () => void;
 }
 
 export function AppLayoutHeader({
-  dict,
-  locale,
+  _dict: __dict,
+  _locale: __locale,
+  dict: _dict,
+  featuredCollection,
+  locale = "en",
   mobileNavbarOpened,
   navbarOpened,
+  navigationMenu,
   toggleMobileNavbar,
   toggleNavbar,
 }: AppLayoutHeaderProps) {
   return (
-    <Group h="100%" justify="space-between" px="md">
-      <Group>
+    <Flex align="center" h="100%">
+      {/* Navigation Controls - hamburger menus */}
+      <Flex gap="xs" p="md">
         <Burger
           hiddenFrom="sm"
           onClick={toggleMobileNavbar}
@@ -37,32 +49,41 @@ export function AppLayoutHeader({
           visibleFrom="sm"
           size="sm"
         />
-        <Image
-          width={100}
-          className="dark:invert"
-          alt={dict?.app?.logoAlt || "logo"}
-          height={100}
-          src="https://nextjs.org/icons/next.svg"
-        />
-      </Group>
-      <Group>
-        {locale && dict && (
-          <LocaleSwitcher
-            currentLocale={locale}
-            selectLanguagePlaceholder={
-              dict.app?.selectLanguage || "Select language"
-            }
-            languages={{
-              de: dict.app?.l?.de || "German",
-              en: dict.app?.l?.en || "English",
-              esMX: dict.app?.l?.esMX || "Spanish (Mexico)",
-              frCA: dict.app?.l?.frCA || "Français (Canada)",
-              ptBR: dict.app?.l?.ptBR || "Portuguese (Brazil)",
-            }}
+      </Flex>
+
+      {/* Header content - takes remaining space */}
+      <Group className="flex-grow h-full px-md" justify="space-between">
+        <Link href={`/${locale}`}>
+          <Image
+            className="dark:invert"
+            src="https://nextjs.org/icons/next.svg"
+            alt="logo"
+            width={100}
+            height={100}
           />
-        )}
-        <ColorSchemesSwitcher />
+        </Link>
+        
+        <Group>
+          {_dict?.navigation && (
+            <>
+              <Anchor component={Link} href={`/${locale}`} size="sm">
+                {_dict.navigation.home}
+              </Anchor>
+              <Anchor component={Link} href={`/${locale}/search`} size="sm">
+                {_dict.navigation.search}
+              </Anchor>
+            </>
+          )}
+          {_dict?.app && (
+            <LocaleSwitcher
+              currentLocale={locale}
+              languages={_dict.app.l}
+              selectLanguagePlaceholder={_dict.app.selectLanguage}
+            />
+          )}
+          <ColorSchemesSwitcher />
+        </Group>
       </Group>
-    </Group>
+    </Flex>
   );
 }
