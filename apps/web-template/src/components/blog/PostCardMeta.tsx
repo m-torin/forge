@@ -1,0 +1,42 @@
+import { Avatar } from '@mantine/core';
+import Link from 'next/link';
+import { type FC } from 'react';
+
+import type { TBlogPost } from '@/types';
+
+export interface PostCardMetaProps {
+  author: TBlogPost['author'];
+  className?: string;
+  date: string;
+  hiddenAvatar?: boolean;
+}
+
+const PostCardMeta: FC<PostCardMetaProps> = ({ 
+  hiddenAvatar = false, 
+  author, 
+  className = 'leading-none', 
+  date 
+}) => {
+  return (
+    <div className={`inline-flex flex-wrap items-center text-sm text-neutral-800 dark:text-neutral-200 ${className}`}>
+      <Link href="/blog" className="relative flex shrink-0 items-center space-x-2">
+        {!hiddenAvatar && (
+          <Avatar
+            src={author?.avatar || author?.image}
+            alt={author?.name}
+            size="sm"
+            radius="xl"
+            className="h-7 w-7"
+          />
+        )}
+        <span className="block font-medium text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white">
+          {author?.name}
+        </span>
+      </Link>
+      <span className="mx-[6px] font-medium text-neutral-500 dark:text-neutral-400">·</span>
+      <span className="line-clamp-1 font-normal text-neutral-500 dark:text-neutral-400">{date}</span>
+    </div>
+  );
+};
+
+export default PostCardMeta;

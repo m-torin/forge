@@ -1,12 +1,18 @@
-import type { Metadata } from "next";
-import {
-  ColorSchemeScript,
-  mantineHtmlProps,
-} from "@mantine/core";
-import { getDictionary } from "@/i18n";
-import { Providers } from "../providers";
-import { AppLayout, AppLayoutProvider } from "@/components/AppLayout";
-import "@/styles/globals.css";
+import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+
+import { AppLayout, AppLayoutProvider } from '@/components/layout';
+import { getNavigationRoutes } from '@/data/navigation';
+import { getDictionary } from '@/i18n';
+import { createMetadata, viewportPresets } from '@repo/seo/server/next';
+
+import { Providers } from './providers';
+
+import { Metadata, Viewport } from 'next';
+
+import '@/styles/globals.css';
+
+// Export viewport configuration for mobile SEO
+export const viewport: Viewport = viewportPresets.default;
 
 export async function generateMetadata({
   params,
@@ -16,10 +22,29 @@ export async function generateMetadata({
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
-  return {
-    title: dict.app?.brand || "Web Template",
-    description: dict.app?.appDescription || "Web Template Application",
-  };
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com';
+  const currentUrl = `${baseUrl}/${locale}`;
+
+  return createMetadata({
+    title: dict.app?.brand || 'Web Template',
+    description: dict.app?.appDescription || 'Web Template Application',
+    applicationName: dict.app?.brand || 'Web Template',
+    metadataBase: baseUrl ? new URL(baseUrl) : undefined,
+    alternates: {
+      canonical: currentUrl,
+      languages: {
+        en: `${baseUrl}/en`,
+        es: `${baseUrl}/es`,
+        fr: `${baseUrl}/fr`,
+        de: `${baseUrl}/de`,
+        pt: `${baseUrl}/pt`,
+      },
+    },
+    openGraph: {
+      locale: locale,
+      alternateLocale: ['en', 'es', 'fr', 'de', 'pt'].filter((l) => l !== locale),
+    },
+  });
 }
 
 export default async function LocaleLayout({
@@ -30,26 +55,14 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }>) {
   const { locale } = await params;
-  const dict = await getDictionary(locale);
-  
+
   return (
     <html lang={locale} {...mantineHtmlProps}>
       <head>
         <ColorSchemeScript />
       </head>
       <body className="antialiased">
-        <Providers>
-          <AppLayoutProvider>
-            <AppLayout
-              dict={dict}
-              locale={locale}
-              header={{ height: 100 }}
-              padding="md"
-            >
-              {children}
-            </AppLayout>
-          </AppLayoutProvider>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

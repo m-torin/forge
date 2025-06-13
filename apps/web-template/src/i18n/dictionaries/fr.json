@@ -23,6 +23,47 @@
   },
   "navigation": {
     "home": "Accueil",
-    "search": "Rechercher"
+    "search": "Rechercher",
+    "account": "Mon compte",
+    "orders": "Mes commandes",
+    "wishlist": "Liste de souhaits",
+    "help": "Aide",
+    "logout": "Se déconnecter",
+    "login": "Se connecter"
+  },
+  "taxonomy": {
+    "noItems": "Aucun élément trouvé.",
+    "items": "éléments",
+    "backTo": "Retour à",
+    "save": "Enregistrer",
+    "share": "Partager",
+    "relatedItems": "Éléments connexes",
+    "exploreMore": "Explorez plus d'éléments dans cette",
+    "viewAll": "Voir tout",
+    "details": "Détails",
+    "type": "Type",
+    "totalItems": "Total des éléments",
+    "parent": "Parent",
+    "browseItems": "Parcourir les éléments",
+    "brands": {
+      "title": "Marques",
+      "description": "Découvrez les produits de nos marques et partenaires vedettes"
+    },
+    "categories": {
+      "title": "Catégories",
+      "description": "Parcourez les produits par catégorie pour trouver exactement ce dont vous avez besoin"
+    },
+    "collections": {
+      "title": "Collections",
+      "description": "Collections sélectionnées de produits pour des occasions spéciales et des thèmes"
+    },
+    "tags": {
+      "title": "Étiquettes",
+      "description": "Trouvez des produits par étiquettes et labels"
+    },
+    "attributes": {
+      "title": "Attributs",
+      "description": "Filtrez les produits par attributs et propriétés spécifiques"
+    }
   }
 }

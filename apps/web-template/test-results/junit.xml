@@ -1,0 +1,77 @@
+<testsuites id="" name="" tests="6" failures="2" skipped="0" errors="0" time="13.70092">
+<testsuite name="app.spec.ts" timestamp="2025-06-13T03:57:26.062Z" hostname="chromium" tests="6" failures="2" skipped="0" time="38.44" errors="0">
+<testcase name="Web Template App › app should load successfully" classname="app.spec.ts" time="8.381">
+</testcase>
+<testcase name="Web Template App › should display homepage content" classname="app.spec.ts" time="8.406">
+</testcase>
+<testcase name="Web Template App › should handle navigation to different locales" classname="app.spec.ts" time="8.976">
+<failure message="app.spec.ts:23:7 should handle navigation to different locales" type="FAILURE">
+<![CDATA[  [chromium] › app.spec.ts:23:7 › Web Template App › should handle navigation to different locales ─
+
+    Error: expect(received).toMatch(expected)
+
+    Expected pattern: /\/(en|es|fr|de|pt)\/?/
+    Received string:  "http://localhost:3250/"
+
+      28 |     // Should be on a locale-specific URL
+      29 |     const currentUrl = page.url();
+    > 30 |     expect(currentUrl).toMatch(/\/(en|es|fr|de|pt)\/?/);
+         |                        ^
+      31 |   });
+      32 |
+      33 |   test("should load static assets correctly", async ({ page }) => {
+        at /Users/torin/repos/new--/forge/apps/web-template/e2e/app.spec.ts:30:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/app-Web-Template-App-shoul-48cd3-gation-to-different-locales-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/app-Web-Template-App-shoul-48cd3-gation-to-different-locales-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|app-Web-Template-App-shoul-48cd3-gation-to-different-locales-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|app-Web-Template-App-shoul-48cd3-gation-to-different-locales-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Template App › should load static assets correctly" classname="app.spec.ts" time="8.934">
+</testcase>
+<testcase name="Web Template App › should have basic accessibility features" classname="app.spec.ts" time="0.834">
+<failure message="app.spec.ts:49:7 should have basic accessibility features" type="FAILURE">
+<![CDATA[  [chromium] › app.spec.ts:49:7 › Web Template App › should have basic accessibility features ──────
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      56 |     // Check for navigation
+      57 |     const hasNavigation = await page.locator("nav, [role='navigation']").count() > 0;
+    > 58 |     expect(hasNavigation).toBeTruthy();
+         |                           ^
+      59 |   });
+      60 |
+      61 |   test("should handle 404 pages gracefully", async ({ page }) => {
+        at /Users/torin/repos/new--/forge/apps/web-template/e2e/app.spec.ts:58:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/app-Web-Template-App-shoul-8a3e2-asic-accessibility-features-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/app-Web-Template-App-shoul-8a3e2-asic-accessibility-features-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|app-Web-Template-App-shoul-8a3e2-asic-accessibility-features-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|app-Web-Template-App-shoul-8a3e2-asic-accessibility-features-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Template App › should handle 404 pages gracefully" classname="app.spec.ts" time="2.909">
+</testcase>
+</testsuite>
+</testsuites>

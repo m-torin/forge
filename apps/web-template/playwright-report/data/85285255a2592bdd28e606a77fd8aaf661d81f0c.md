@@ -1,0 +1,110 @@
+# Page snapshot
+
+```yaml
+- banner:
+    - button
+    - link "WebApp":
+        - /url: /en
+        - img
+        - paragraph: WebApp
+    - button "Search":
+        - text: Search
+        - img
+    - button "Products":
+        - text: Products
+        - img
+    - button "Catalog":
+        - text: Catalog
+        - img
+    - button "Services":
+        - text: Services
+        - img
+    - link "Blog":
+        - /url: /en/blog
+    - link "Algolia Demo":
+        - /url: /en/algolia-showcase
+    - link "Contact":
+        - /url: /en/contact
+    - button "Account":
+        - text: Account
+        - img
+    - combobox "Submit":
+        - search:
+            - button "Submit":
+                - img
+            - searchbox "Submit"
+    - button:
+        - img
+    - button "Toggle color scheme":
+        - img
+    - button "John Doe John Doe":
+        - img "John Doe"
+        - paragraph: John Doe
+        - img
+    - link "Shopping cart with 0 items":
+        - /url: /en/cart
+        - button "Shopping cart with 0 items":
+            - img
+    - tablist:
+        - tab "Home" [selected]:
+            - link "Home":
+                - /url: /en/
+        - tab "Brands":
+            - link "Brands":
+                - /url: /en/brands
+        - tab "Categories":
+            - link "Categories":
+                - /url: /en/categories
+        - tab "Collections":
+            - link "Collections":
+                - /url: /en/collections
+        - tab "Tags":
+            - link "Tags":
+                - /url: /en/tags
+        - tab "Attributes":
+            - link "Attributes":
+                - /url: /en/attributes
+        - tab "Orders":
+            - link "Orders":
+                - /url: /en/orders
+        - tab "Support":
+            - link "Support":
+                - /url: /en/support
+- main:
+    - img
+    - img
+    - img
+    - img
+    - img
+    - heading "Collect What You Love" [level=1]
+    - paragraph:
+        Create wishlists for your passions. Share your fandoms. Get the perfect gifts from people
+        who truly get you.
+    - img
+    - textbox "Enter your email"
+    - button "Get Early Access"
+    - paragraph: Join fellow collectors and enthusiasts. Be first to build your dream wishlist.
+    - text: 200K+
+    - paragraph: Products
+    - text: 1000s
+    - paragraph: Characters & Films
+    - text: 100s
+    - paragraph: Merchants
+    - text: ∞
+    - paragraph: Fandoms
+    - img
+    - heading "Universal Wishlists" [level=4]
+    - paragraph: From anime figures to vintage vinyl - save anything from any store in one place
+    - img
+    - heading "Fandom Communities" [level=4]
+    - paragraph: Connect with collectors who share your passions and discover new treasures
+    - img
+    - heading "Perfect Gifting" [level=4]
+    - paragraph: No more duplicate gifts - share lists for birthdays, holidays, or just because
+- contentinfo:
+    - paragraph: © 2024 Web Template. All rights reserved.
+    - paragraph: Made with ❤️ by the team
+- alert
+- button "Open Next.js Dev Tools":
+    - img
+```

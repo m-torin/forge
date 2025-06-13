@@ -1,0 +1,63 @@
+import clsx from 'clsx';
+import Image from 'next/image';
+import Link from 'next/link';
+import { type FC } from 'react';
+
+import type { TBlogPost } from '@/types';
+import PostCardMeta from './PostCardMeta';
+
+interface Props {
+  className?: string;
+  post: TBlogPost;
+  size?: 'sm' | 'md';
+}
+
+const PostCard1: FC<Props> = ({ className = 'h-full', post, size = 'md' }) => {
+  const { 
+    author, 
+    date, 
+    excerpt, 
+    featuredImage: image, 
+    handle, 
+    timeToRead, 
+    title 
+  } = post;
+
+  return (
+    <div className={clsx(className, 'flex flex-col gap-y-10')}>
+      <Link 
+        href={`/blog/${handle}`} 
+        className="aspect-4/3 relative block overflow-hidden rounded-3xl" 
+        title={title}
+      >
+        {image?.src && (
+          <Image 
+            className="object-cover" 
+            alt={title || ''} 
+            fill 
+            sizes="(max-width: 768px) 100vw, 50vw" 
+            src={image.src} 
+          />
+        )}
+      </Link>
+
+      <div className="mt-auto flex flex-col">
+        <h2
+          className={clsx(
+            'block font-semibold text-neutral-900 dark:text-neutral-100',
+            size === 'sm' && 'text-base sm:text-xl',
+            size === 'md' && 'text-lg sm:text-2xl'
+          )}
+        >
+          <Link href={`/blog/${handle}`} className="line-clamp-1">
+            {title}
+          </Link>
+        </h2>
+        <p className="mt-4 line-clamp-2 text-neutral-500 dark:text-neutral-400">{excerpt}</p>
+        <PostCardMeta author={author} className="mt-5" date={date || ''} />
+      </div>
+    </div>
+  );
+};
+
+export default PostCard1;
