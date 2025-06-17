@@ -9,6 +9,7 @@ import { AnalyticsProvider } from '@/react/AnalyticsProvider';
 import { GuestActionsProvider } from '@/react/GuestActionsContext';
 import theme from '@/styles/theme';
 import { AuthProvider } from '@repo/auth/client/next';
+import { SessionTimeoutWarning } from '@/components/auth/SessionTimeoutWarning';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -44,6 +45,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         onSignIn={handleSignIn}
         onSignOut={handleSignOut}
       >
+        <SessionTimeoutWarning />
         <AnalyticsProvider>
           <GuestActionsProvider>{children}</GuestActionsProvider>
         </AnalyticsProvider>

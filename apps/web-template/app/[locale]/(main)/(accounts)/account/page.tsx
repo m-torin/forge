@@ -3,7 +3,7 @@ import { type Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth } from '@repo/auth/server/next';
 import { getCurrentUser } from '@/actions/user';
-import { AccountForm } from './account-form';
+import { EnhancedAccountForm } from './enhanced-account-form';
 
 export async function generateMetadata({
   params,
@@ -37,7 +37,7 @@ const Page = async ({ params }: { params: Promise<{ locale: string }> }) => {
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
       {/* HEADING */}
       <h1 className="text-2xl font-semibold sm:text-3xl">{dict.account.personalInfo}</h1>
-      <AccountForm user={user} locale={locale} dict={dict} />
+      <EnhancedAccountForm user={user} locale={locale} dict={dict} />
     </div>
   );
 };

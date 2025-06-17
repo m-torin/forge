@@ -1,9 +1,9 @@
 'use client';
 
-import { Button, PasswordInput, TextInput, Checkbox } from '@mantine/core';
+import { Button, PasswordInput, TextInput, Checkbox, Tabs, Text } from '@mantine/core';
 import { useForm, zodResolver } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconBrandFacebook, IconBrandGoogle, IconBrandTwitter } from '@tabler/icons-react';
+import { IconBrandFacebook, IconBrandGoogle, IconBrandTwitter, IconMail, IconKey } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
@@ -17,7 +17,12 @@ const loginSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 
+const magicLinkSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
 type LoginFormData = z.infer<typeof loginSchema>;
+type MagicLinkFormData = z.infer<typeof magicLinkSchema>;
 
 interface LoginClientProps {
   dict: any;
@@ -28,6 +33,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const form = useForm<LoginFormData>({
     initialValues: {
@@ -36,6 +42,13 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
       rememberMe: false,
     },
     validate: zodResolver(loginSchema),
+  });
+
+  const magicLinkForm = useForm<MagicLinkFormData>({
+    initialValues: {
+      email: '',
+    },
+    validate: zodResolver(magicLinkSchema),
   });
 
   const handleSubmit = async (values: LoginFormData) => {
@@ -110,6 +123,44 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
     }
   };
 
+  const handleMagicLink = async (values: MagicLinkFormData) => {
+    try {
+      setIsLoading(true);
+      
+      const returnUrl = searchParams.get('returnUrl');
+      const callbackURL = returnUrl && isValidRedirect(returnUrl) 
+        ? returnUrl 
+        : `/${locale}/account`;
+
+      await authClient.signIn.magicLink({
+        email: values.email,
+        callbackURL,
+      });
+      
+      setMagicLinkSent(true);
+      notifications.show({
+        title: 'Magic link sent!',
+        message: 'Check your email for the login link.',
+        color: 'green',
+      });
+      
+      // Reset after 60 seconds
+      setTimeout(() => {
+        setMagicLinkSent(false);
+        magicLinkForm.reset();
+      }, 60000);
+    } catch (error) {
+      console.error('Magic link error:', error);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to send magic link. Please try again.',
+        color: 'red',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="container mb-24 lg:mb-32">
@@ -167,50 +218,104 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
             <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border border-neutral-100 dark:border-neutral-800" />
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={form.onSubmit(handleSubmit)} className="grid grid-cols-1 gap-6">
-            <TextInput
-              label={dict.auth?.email || 'Email address'}
-              placeholder={dict.auth?.emailPlaceholder || 'example@email.com'}
-              type="email"
-              size="lg"
-              {...form.getInputProps('email')}
-            />
+          {/* Login Form with Tabs */}
+          <Tabs defaultValue="password" variant="outline">
+            <Tabs.List grow>
+              <Tabs.Tab value="password" leftSection={<IconKey size={16} />}>
+                Password
+              </Tabs.Tab>
+              <Tabs.Tab value="magic-link" leftSection={<IconMail size={16} />}>
+                Magic Link
+              </Tabs.Tab>
+            </Tabs.List>
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                  {dict.auth?.password || 'Password'}
-                </label>
-                <Link
-                  href={`/${locale}/forgot-password`}
-                  className="text-primary-600 text-sm hover:underline"
+            <Tabs.Panel value="password" pt="md">
+              <form onSubmit={form.onSubmit(handleSubmit)} className="grid grid-cols-1 gap-6">
+                <TextInput
+                  label={dict.auth?.email || 'Email address'}
+                  placeholder={dict.auth?.emailPlaceholder || 'example@email.com'}
+                  type="email"
+                  size="lg"
+                  {...form.getInputProps('email')}
+                />
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                      {dict.auth?.password || 'Password'}
+                    </label>
+                    <Link
+                      href={`/${locale}/forgot-password`}
+                      className="text-primary-600 text-sm hover:underline"
+                    >
+                      {dict.auth?.forgotPasswordQuestion || 'Forgot password?'}
+                    </Link>
+                  </div>
+                  <PasswordInput
+                    placeholder="Enter your password"
+                    size="lg"
+                    {...form.getInputProps('password')}
+                  />
+                </div>
+
+                <Checkbox
+                  label={dict.auth?.rememberMe || 'Remember me'}
+                  {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+                />
+
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  fullWidth
+                  loading={isLoading}
+                  disabled={isLoading}
                 >
-                  {dict.auth?.forgotPasswordQuestion || 'Forgot password?'}
-                </Link>
-              </div>
-              <PasswordInput
-                placeholder="Enter your password"
-                size="lg"
-                {...form.getInputProps('password')}
-              />
-            </div>
+                  {dict.auth?.continue || 'Continue'}
+                </Button>
+              </form>
+            </Tabs.Panel>
 
-            <Checkbox
-              label={dict.auth?.rememberMe || 'Remember me'}
-              {...form.getInputProps('rememberMe', { type: 'checkbox' })}
-            />
+            <Tabs.Panel value="magic-link" pt="md">
+              {!magicLinkSent ? (
+                <form onSubmit={magicLinkForm.onSubmit(handleMagicLink)} className="grid grid-cols-1 gap-6">
+                  <TextInput
+                    label={dict.auth?.email || 'Email address'}
+                    placeholder={dict.auth?.emailPlaceholder || 'example@email.com'}
+                    type="email"
+                    size="lg"
+                    {...magicLinkForm.getInputProps('email')}
+                  />
 
-            <Button 
-              type="submit" 
-              size="lg" 
-              fullWidth
-              loading={isLoading}
-              disabled={isLoading}
-            >
-              {dict.auth?.continue || 'Continue'}
-            </Button>
-          </form>
+                  <Text size="sm" color="dimmed">
+                    We'll send you a secure link to sign in without a password.
+                  </Text>
+
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    fullWidth
+                    loading={isLoading}
+                    disabled={isLoading}
+                    leftSection={<IconMail size={20} />}
+                  >
+                    Send magic link
+                  </Button>
+                </form>
+              ) : (
+                <div className="text-center py-8">
+                  <IconMail size={48} className="mx-auto mb-4 text-green-600" />
+                  <Text size="lg" fw={500} mb="sm">Check your email!</Text>
+                  <Text size="sm" color="dimmed">
+                    We've sent a magic link to your email address. 
+                    Click the link to sign in.
+                  </Text>
+                  <Text size="xs" color="dimmed" mt="md">
+                    The link expires in 15 minutes.
+                  </Text>
+                </div>
+              )}
+            </Tabs.Panel>
+          </Tabs>
 
           {/* Sign up link */}
           <span className="block text-center text-neutral-700 dark:text-neutral-300">

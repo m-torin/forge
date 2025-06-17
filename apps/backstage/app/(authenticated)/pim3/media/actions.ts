@@ -2,7 +2,7 @@
 
 import { auth } from '@repo/auth/server/next';
 import { prisma } from '@repo/database/prisma';
-import { uploadMediaAction, getMediaUrlAction } from '@repo/storage/server/next';
+import { uploadMediaAction, getMediaUrlAction, uploadAndCreateMediaAction } from '@repo/storage/server/next';
 
 import type { MediaType, Prisma } from '@repo/database/prisma';
 import { extractFolderFromUrl, getFolderFromEntityType } from '../utils/media-utils';
@@ -747,89 +747,53 @@ export async function uploadMediaWithStorage(params: UploadMediaWithStorageParam
   const { file, type, altText, entityType, entityId } = params;
 
   try {
-    // Generate storage key based on entity type and folder structure
-    let folder = 'general';
-    if (entityType && entityType !== 'UNASSIGNED') {
-      folder = entityType.toLowerCase();
-    }
-    
-    const timestamp = Date.now();
-    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
-    const key = `media/${folder}/${timestamp}-${sanitizedFilename}`;
-
-    // Upload file to storage
-    const uploadResult = await uploadMediaAction(key, file, {
-      contentType: file.type,
-      metadata: {
-        uploadedBy: session.user.id,
-        entityType: entityType || 'UNASSIGNED',
-        entityId: entityId || null,
-      },
-    });
-
-    if (!uploadResult.success) {
-      throw new Error(uploadResult.error || 'Upload failed');
-    }
-
-    // Get signed URL for product photos or other protected content
-    const isProductPhoto = entityType === 'PRODUCT';
-    const urlResult = await getMediaUrlAction(key, {
-      context: isProductPhoto ? 'product' : 'admin',
-      expiresIn: 7200, // 2 hours for admin operations
-    });
-
-    if (!urlResult.success) {
-      throw new Error(urlResult.error || 'Failed to get URL');
-    }
-
-    // Create media record in database
-    const mediaData: any = {
+    // Build params for the database-integrated upload action
+    const uploadParams: any = {
+      file,
       type,
-      url: urlResult.data,
       altText,
-      mimeType: file.type,
-      size: uploadResult.data.size,
       userId: session.user.id,
-      // Store the storage key in metadata for future operations
-      copy: {
-        storageKey: key,
-        originalUrl: uploadResult.data.url,
-      },
     };
 
     // Add entity association
     if (entityType && entityId) {
       switch (entityType) {
         case 'PRODUCT':
-          mediaData.productId = entityId;
+          uploadParams.productId = entityId;
           break;
         case 'BRAND':
-          mediaData.brandId = entityId;
+          uploadParams.brandId = entityId;
           break;
         case 'CATEGORY':
-          mediaData.categoryId = entityId;
+          uploadParams.categoryId = entityId;
           break;
         case 'COLLECTION':
-          mediaData.collectionId = entityId;
+          uploadParams.collectionId = entityId;
           break;
         case 'ARTICLE':
-          mediaData.articleId = entityId;
+          uploadParams.articleId = entityId;
           break;
         case 'TAXONOMY':
-          mediaData.taxonomyId = entityId;
+          uploadParams.taxonomyId = entityId;
           break;
         case 'REVIEW':
-          mediaData.reviewId = entityId;
+          uploadParams.reviewId = entityId;
           break;
       }
     }
 
-    const media = await createMedia(mediaData);
+    // Use the new database-integrated upload action
+    const result = await uploadAndCreateMediaAction(uploadParams);
 
-    return {
-      success: true,
-      data: media,
-    };
+    if (result.success) {
+      // Transform to match expected return format
+      return {
+        success: true,
+        data: result.data.media,
+      };
+    } else {
+      throw new Error(result.error || 'Upload failed');
+    }
   } catch (error) {
     console.error('Upload error:', error);
     return {
