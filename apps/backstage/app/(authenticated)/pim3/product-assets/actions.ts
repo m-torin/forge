@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { prisma } from '@repo/database/prisma';
+import { uploadMediaAction, getMediaUrlAction } from '@repo/storage/server/next';
 
 import type { AssetType, ProductAsset } from '@repo/database/prisma';
 
@@ -706,6 +707,91 @@ export async function getAssetTemplates() {
     return {
       error: 'Failed to load asset templates',
       success: false,
+    };
+  }
+}
+
+interface UploadProductAssetParams {
+  file: File;
+  productId: string;
+  type: AssetType;
+  alt?: string;
+  description?: string;
+  sortOrder: number;
+  onProgress?: (progress: number) => void;
+}
+
+export async function uploadProductAssetWithStorage(params: UploadProductAssetParams) {
+  const { file, productId, type, alt, description, sortOrder, onProgress } = params;
+
+  try {
+    // Generate storage key for product assets
+    const timestamp = Date.now();
+    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
+    const key = `products/${productId}/assets/${timestamp}-${sanitizedFilename}`;
+
+    // Track progress manually since we're in server action
+    let lastProgress = 0;
+    
+    // Upload file to storage
+    const uploadResult = await uploadMediaAction(key, file, {
+      contentType: file.type,
+      metadata: {
+        productId,
+        assetType: type,
+        uploadedAt: new Date().toISOString(),
+      },
+    });
+
+    // Update progress
+    if (onProgress) {
+      onProgress(50);
+    }
+
+    if (!uploadResult.success) {
+      throw new Error(uploadResult.error || 'Upload failed');
+    }
+
+    // Get signed URL for product assets
+    const urlResult = await getMediaUrlAction(key, {
+      context: 'product', // Ensures signed URL for product photos
+      expiresIn: 7200, // 2 hours for admin operations
+    });
+
+    if (!urlResult.success) {
+      throw new Error(urlResult.error || 'Failed to get URL');
+    }
+
+    // Update progress
+    if (onProgress) {
+      onProgress(75);
+    }
+
+    // Create ProductAsset record in database
+    const formData = new FormData();
+    formData.append('productId', productId);
+    formData.append('type', type);
+    formData.append('url', urlResult.data);
+    formData.append('filename', file.name);
+    formData.append('mimeType', file.type);
+    formData.append('size', file.size.toString());
+    if (alt) formData.append('alt', alt);
+    if (description) formData.append('description', description);
+    formData.append('sortOrder', sortOrder.toString());
+
+    const result = await linkAssetToProduct(formData);
+
+    // Update progress
+    if (onProgress) {
+      onProgress(100);
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Product asset upload error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to upload product asset',
     };
   }
 }

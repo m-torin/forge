@@ -1,24 +1,53 @@
-import { internationalizationMiddleware } from '@repo/internationalization/server/next';
-import { noseconeMiddleware, noseconeOptions } from '@repo/security/middleware';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server';
-
-export async function middleware(request: NextRequest): Promise<NextResponse> {
-  // Run internationalization middleware first to handle locale routing
-  const i18nResponse = await internationalizationMiddleware(request);
-
-  // If i18n middleware returned a response (redirect), use it
-  if (i18nResponse.status !== 200 || i18nResponse.headers.get('x-middleware-rewrite')) {
-    return i18nResponse;
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // Extract locale from pathname (e.g., /en/account -> 'en')
+  const pathnameHasLocale = pathname.match(/^\/([a-z]{2})(\/|$)/);
+  const locale = pathnameHasLocale ? pathnameHasLocale[1] : 'en';
+  
+  // Define protected routes that require authentication
+  const protectedRoutes = [
+    `/${locale}/account`,
+    `/${locale}/account-password`,
+    `/${locale}/account-billing`,
+    `/${locale}/account-wishlists`,
+    `/${locale}/orders`,
+  ];
+  
+  // Check if current path is a protected route
+  const isProtectedRoute = protectedRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+  
+  if (isProtectedRoute) {
+    // Check for Better Auth session token
+    const sessionToken = request.cookies.get('better-auth.session_token');
+    
+    if (!sessionToken) {
+      // Redirect to login with return URL
+      const url = new URL(`/${locale}/login`, request.url);
+      url.searchParams.set('returnUrl', pathname);
+      return NextResponse.redirect(url);
+    }
   }
-
-  // Apply security headers using Nosecone and return the response
-  const securityResponse = await noseconeMiddleware(noseconeOptions)();
-  return securityResponse as NextResponse;
+  
+  // Allow the request to continue
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|apple-touch-icon.*|icon.png|robots.txt|sitemap.xml).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*|_next).*)',
   ],
 };

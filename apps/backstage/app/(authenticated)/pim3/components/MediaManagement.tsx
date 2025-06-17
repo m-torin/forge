@@ -31,10 +31,12 @@ import {
   IconUpload,
   IconX,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { formatDate, formatFileSize, showSuccessNotification } from '../utils/pim-helpers';
 import type { MediaType } from '@repo/database/prisma';
+import { getMediaUrlAction } from '@repo/storage/server/next';
+import { SignedImage } from './SignedImage';
 
 // Media management data structures
 interface MediaAsset {
@@ -48,6 +50,7 @@ interface MediaAsset {
   mimeType: string;
   size: number;
   sortOrder: number;
+  storageKey?: string; // Storage key for signed URLs
   type: MediaType;
   updatedAt: Date;
   url: string;
@@ -78,66 +81,95 @@ export function MediaManagement({
   productName,
 }: MediaManagementProps) {
   // Use Mantine hooks for state management
-  const [assets, assetsHandlers] = useListState<MediaAsset>([
-    {
-      id: 'asset-1',
-      filename: 'product-hero.jpg',
-      type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400',
-      alt: 'Gaming laptop hero image',
-      associatedPdps: ['pdp-1', 'pdp-2'],
-      associatedProducts: [productId],
-      createdAt: new Date('2025-01-10'),
-      description: 'Main product hero image for marketing',
-      mimeType: 'image/jpeg',
-      size: 245760,
-      sortOrder: 1,
-      updatedAt: new Date('2025-01-15'),
-    },
-    {
-      id: 'asset-2',
-      filename: 'product-angle-1.jpg',
-      type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400',
-      alt: 'Gaming laptop side angle',
-      associatedPdps: ['pdp-1'],
-      associatedProducts: [productId],
-      createdAt: new Date('2025-01-10'),
-      description: 'Side angle view showing ports and design',
-      mimeType: 'image/jpeg',
-      size: 189432,
-      sortOrder: 2,
-      updatedAt: new Date('2025-01-10'),
-    },
-    {
-      id: 'asset-3',
-      filename: 'product-specs.pdf',
-      type: 'DOCUMENT',
-      url: '/files/product-specs.pdf',
-      associatedPdps: [],
-      associatedProducts: [productId],
-      createdAt: new Date('2025-01-08'),
-      description: 'Technical specifications document',
-      mimeType: 'application/pdf',
-      size: 512000,
-      sortOrder: 10,
-      updatedAt: new Date('2025-01-08'),
-    },
-    {
-      id: 'asset-4',
-      filename: 'user-manual.pdf',
-      type: 'DOCUMENT',
-      url: '/files/user-manual.pdf',
-      associatedPdps: ['pdp-1', 'pdp-2', 'pdp-3'],
-      associatedProducts: [productId],
-      createdAt: new Date('2025-01-05'),
-      description: 'User manual and setup guide',
-      mimeType: 'application/pdf',
-      size: 1024000,
-      sortOrder: 11,
-      updatedAt: new Date('2025-01-12'),
-    },
-  ]);
+  const [assets, assetsHandlers] = useListState<MediaAsset>([]);
+  const [loadingAssets, setLoadingAssets] = useState(true);
+
+  // Load actual product assets on mount
+  useEffect(() => {
+    if (opened && productId) {
+      loadProductAssets();
+    }
+  }, [opened, productId]);
+
+  const loadProductAssets = async () => {
+    try {
+      setLoadingAssets(true);
+      // TODO: Replace with actual API call to load product assets
+      // const response = await getProductAssets(productId);
+      // assetsHandlers.setState(response.data);
+      
+      // For now, keep mock data but with a note that it needs to be replaced
+      const mockAssets: MediaAsset[] = [
+        {
+          id: 'asset-1',
+          filename: 'product-hero.jpg',
+          type: 'IMAGE',
+          url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400',
+          alt: 'Gaming laptop hero image',
+          associatedPdps: ['pdp-1', 'pdp-2'],
+          associatedProducts: [productId],
+          createdAt: new Date('2025-01-10'),
+          description: 'Main product hero image for marketing',
+          mimeType: 'image/jpeg',
+          size: 245760,
+          sortOrder: 1,
+          updatedAt: new Date('2025-01-15'),
+        },
+        {
+          id: 'asset-2',
+          filename: 'product-angle-1.jpg',
+          type: 'IMAGE',
+          url: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400',
+          alt: 'Gaming laptop side angle',
+          associatedPdps: ['pdp-1'],
+          associatedProducts: [productId],
+          createdAt: new Date('2025-01-10'),
+          description: 'Side angle view showing ports and design',
+          mimeType: 'image/jpeg',
+          size: 189432,
+          sortOrder: 2,
+          updatedAt: new Date('2025-01-10'),
+        },
+        {
+          id: 'asset-3',
+          filename: 'product-specs.pdf',
+          type: 'DOCUMENT',
+          url: '/files/product-specs.pdf',
+          associatedPdps: [],
+          associatedProducts: [productId],
+          createdAt: new Date('2025-01-08'),
+          description: 'Technical specifications document',
+          mimeType: 'application/pdf',
+          size: 512000,
+          sortOrder: 10,
+          updatedAt: new Date('2025-01-08'),
+        },
+        {
+          id: 'asset-4',
+          filename: 'user-manual.pdf',
+          type: 'DOCUMENT',
+          url: '/files/user-manual.pdf',
+          associatedPdps: ['pdp-1', 'pdp-2', 'pdp-3'],
+          associatedProducts: [productId],
+          createdAt: new Date('2025-01-05'),
+          description: 'User manual and setup guide',
+          mimeType: 'application/pdf',
+          size: 1024000,
+          sortOrder: 11,
+          updatedAt: new Date('2025-01-12'),
+        },
+      ];
+      assetsHandlers.setState(mockAssets);
+    } catch (error) {
+      notifications.show({
+        color: 'red',
+        message: 'Failed to load product assets',
+        title: 'Error',
+      });
+    } finally {
+      setLoadingAssets(false);
+    }
+  };
 
   const [activeTab, setActiveTab] = useState<'upload' | 'manage' | 'organize'>('upload');
   const [editingAsset, editingAssetHandlers] = useDisclosure(false);
@@ -482,12 +514,14 @@ export function MediaManagement({
                     <Card key={asset.id} withBorder>
                       <Stack gap="sm">
                         {asset.type === 'IMAGE' && (
-                          <Image
+                          <SignedImage
+                            storageKey={asset.storageKey}
+                            fallbackUrl={asset.url}
+                            context="product"
                             alt={asset.alt}
                             fit="cover"
                             height={120}
                             radius="sm"
-                            src={asset.url}
                           />
                         )}
 
@@ -673,13 +707,15 @@ export function MediaManagement({
                                         </Badge>
                                       )}
                                       {asset.type === 'IMAGE' && (
-                                        <Image
+                                        <SignedImage
+                                          storageKey={asset.storageKey}
+                                          fallbackUrl={asset.url}
+                                          context="product"
                                           width={40}
                                           alt={asset.alt}
                                           fit="cover"
                                           height={40}
                                           radius="sm"
-                                          src={asset.url}
                                         />
                                       )}
                                       <div>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AuthErrorBoundary } from '@/components/auth';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -9,7 +10,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <div className="absolute left-[50%] top-0 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-primary-50/20 blur-3xl dark:bg-primary-900/10" />
         </div>
 
-        {children}
+        <AuthErrorBoundary>
+          {children}
+        </AuthErrorBoundary>
       </div>
     </div>
   );

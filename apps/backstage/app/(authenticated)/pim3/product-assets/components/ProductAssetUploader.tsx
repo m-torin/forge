@@ -27,7 +27,7 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 
-import { linkAssetToProduct } from '../actions';
+import { linkAssetToProduct, uploadProductAssetWithStorage } from '../actions';
 
 import type { AssetType } from '@repo/database/prisma';
 
@@ -108,35 +108,22 @@ export function ProductAssetUploader() {
         ),
       );
 
-      // Simulate file upload progress
-      // In a real implementation, you would:
-      // 1. Upload to your storage service (AWS S3, Cloudinary, etc.)
-      // 2. Track real upload progress
-      // 3. Get the final URL
+      // Upload to storage and create asset record
+      const uploadResult = await uploadProductAssetWithStorage({
+        file: uploadFile.file,
+        productId: metadata.productId,
+        type: metadata.type,
+        alt: metadata.alt,
+        description: metadata.description,
+        sortOrder: metadata.sortOrder,
+        onProgress: (progress) => {
+          setFiles((current) =>
+            current.map((f) => (f.file === uploadFile.file ? { ...f, progress } : f)),
+          );
+        },
+      });
 
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        setFiles((current) =>
-          current.map((f) => (f.file === uploadFile.file ? { ...f, progress } : f)),
-        );
-      }
-
-      // Mock URL - in real implementation, this would come from your storage service
-      const mockUrl = `https://example.com/assets/${uploadFile.file.name}`;
-
-      // Create FormData for the server action
-      const formData = new FormData();
-      formData.append('productId', metadata.productId);
-      formData.append('type', metadata.type);
-      formData.append('url', mockUrl);
-      formData.append('filename', uploadFile.file.name);
-      formData.append('mimeType', uploadFile.file.type);
-      formData.append('size', uploadFile.file.size.toString());
-      if (metadata.alt) formData.append('alt', metadata.alt);
-      if (metadata.description) formData.append('description', metadata.description);
-      formData.append('sortOrder', metadata.sortOrder.toString());
-
-      const result = await linkAssetToProduct(formData);
+      const result = uploadResult;
 
       if (result.success) {
         setFiles((current) =>

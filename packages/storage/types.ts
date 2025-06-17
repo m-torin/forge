@@ -182,3 +182,20 @@ export interface CloudflareImagesTransformOptions {
   sharpen?: number;
   trim?: { top?: number; right?: number; bottom?: number; left?: number };
 }
+
+// Server action response types
+export interface MediaActionResponse<T = void> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface BulkDeleteResponse {
+  succeeded: string[];
+  failed: Array<{ key: string; error: string }>;
+}
+
+export interface BulkMoveResponse {
+  succeeded: Array<{ sourceKey: string; destinationKey: string }>;
+  failed: Array<{ sourceKey: string; destinationKey: string; error: string }>;
+}

@@ -2,6 +2,7 @@
 
 import { auth } from '@repo/auth/server/next';
 import { prisma } from '@repo/database/prisma';
+import { uploadMediaAction, getMediaUrlAction } from '@repo/storage/server/next';
 
 import type { MediaType, Prisma } from '@repo/database/prisma';
 import { extractFolderFromUrl, getFolderFromEntityType } from '../utils/media-utils';
@@ -98,6 +99,7 @@ export interface MediaWithRelations {
     title?: string | null;
   } | null;
   size?: number | null;
+  storageKey?: string; // Storage key for signed URLs
   tags?: string[];
   taxonomy?: {
     id: string;
@@ -332,11 +334,17 @@ export async function getMedia(
       folder = getFolderFromEntityType(entityType);
     }
 
+    // Extract storage key from metadata if available
+    const storageKey = item.copy && typeof item.copy === 'object' 
+      ? (item.copy as any).storageKey 
+      : undefined;
+
     return {
       ...item,
       entityLabel,
       entityType,
       folder,
+      storageKey,
       tags: [], // TODO: Implement tags system from metadata
     };
   });
@@ -722,4 +730,111 @@ export async function getFolders() {
   });
 
   return Array.from(folders).sort();
+}
+
+interface UploadMediaWithStorageParams {
+  file: File;
+  type: MediaType;
+  altText: string;
+  entityType?: MediaEntityType;
+  entityId?: string;
+}
+
+export async function uploadMediaWithStorage(params: UploadMediaWithStorageParams) {
+  const session = await auth.api.getSession();
+  if (!session) throw new Error('Unauthorized');
+
+  const { file, type, altText, entityType, entityId } = params;
+
+  try {
+    // Generate storage key based on entity type and folder structure
+    let folder = 'general';
+    if (entityType && entityType !== 'UNASSIGNED') {
+      folder = entityType.toLowerCase();
+    }
+    
+    const timestamp = Date.now();
+    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
+    const key = `media/${folder}/${timestamp}-${sanitizedFilename}`;
+
+    // Upload file to storage
+    const uploadResult = await uploadMediaAction(key, file, {
+      contentType: file.type,
+      metadata: {
+        uploadedBy: session.user.id,
+        entityType: entityType || 'UNASSIGNED',
+        entityId: entityId || null,
+      },
+    });
+
+    if (!uploadResult.success) {
+      throw new Error(uploadResult.error || 'Upload failed');
+    }
+
+    // Get signed URL for product photos or other protected content
+    const isProductPhoto = entityType === 'PRODUCT';
+    const urlResult = await getMediaUrlAction(key, {
+      context: isProductPhoto ? 'product' : 'admin',
+      expiresIn: 7200, // 2 hours for admin operations
+    });
+
+    if (!urlResult.success) {
+      throw new Error(urlResult.error || 'Failed to get URL');
+    }
+
+    // Create media record in database
+    const mediaData: any = {
+      type,
+      url: urlResult.data,
+      altText,
+      mimeType: file.type,
+      size: uploadResult.data.size,
+      userId: session.user.id,
+      // Store the storage key in metadata for future operations
+      copy: {
+        storageKey: key,
+        originalUrl: uploadResult.data.url,
+      },
+    };
+
+    // Add entity association
+    if (entityType && entityId) {
+      switch (entityType) {
+        case 'PRODUCT':
+          mediaData.productId = entityId;
+          break;
+        case 'BRAND':
+          mediaData.brandId = entityId;
+          break;
+        case 'CATEGORY':
+          mediaData.categoryId = entityId;
+          break;
+        case 'COLLECTION':
+          mediaData.collectionId = entityId;
+          break;
+        case 'ARTICLE':
+          mediaData.articleId = entityId;
+          break;
+        case 'TAXONOMY':
+          mediaData.taxonomyId = entityId;
+          break;
+        case 'REVIEW':
+          mediaData.reviewId = entityId;
+          break;
+      }
+    }
+
+    const media = await createMedia(mediaData);
+
+    return {
+      success: true,
+      data: media,
+    };
+  } catch (error) {
+    console.error('Upload error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Upload failed',
+    };
+  }
 }

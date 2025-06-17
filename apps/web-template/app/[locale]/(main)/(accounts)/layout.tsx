@@ -7,6 +7,7 @@ import { auth } from '@repo/auth/server/next';
 import { Divider, Footer, Header2 } from '@/components/ui';
 import { PageTab } from '@/components/guest';
 import { AccountHeader } from './account-header';
+import { AccountLayoutClient } from './account-layout-client';
 
 interface Props {
   children?: React.ReactNode;
@@ -48,7 +49,11 @@ const Layout = async ({ children, params }: Props) => {
             <Divider />
           </div>
         </div>
-        <div className="mx-auto max-w-4xl pb-24 pt-14 sm:pt-20 lg:pb-32">{children}</div>
+        <div className="mx-auto max-w-4xl pb-24 pt-14 sm:pt-20 lg:pb-32">
+          <AccountLayoutClient>
+            {children}
+          </AccountLayoutClient>
+        </div>
       </div>
       <Footer />
     </>

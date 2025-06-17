@@ -56,6 +56,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 
 import { formatDate, formatFileSize } from '../utils/pim-helpers';
+import { SignedImage } from '../components/SignedImage';
 
 import {
   bulkDeleteMedia,
@@ -68,6 +69,7 @@ import {
   type MediaSort,
   type MediaWithRelations,
   updateMedia,
+  uploadMediaWithStorage,
 } from './actions';
 
 import type { MediaType } from '@repo/database/prisma';
@@ -296,12 +298,13 @@ function MediaCard({
           }}
         >
           {media.type === 'IMAGE' ? (
-            <Image
+            <SignedImage
+              storageKey={(media as any).storageKey}
+              fallbackUrl={media.url}
+              context="product"
               alt={media.altText || 'Media'}
-              fallbackSrc="/placeholder.png"
               fit="cover"
               h="100%"
-              src={media.url}
               w="100%"
             />
           ) : (
@@ -512,10 +515,6 @@ export default function MediaPage() {
     try {
       for (const file of files) {
         try {
-          // In a real implementation, you would upload to a storage service
-          // For now, we'll just create a mock URL
-          const mockUrl = URL.createObjectURL(file);
-
           const mediaType = file.type.startsWith('image/')
             ? 'IMAGE'
             : file.type.startsWith('video/')
@@ -524,17 +523,23 @@ export default function MediaPage() {
                 ? 'AUDIO'
                 : 'DOCUMENT';
 
-          await createMedia({
+          // Upload file to storage and create media record
+          const uploadResult = await uploadMediaWithStorage({
+            file,
             type: mediaType,
-            url: mockUrl,
             altText: file.name,
-            mimeType: file.type,
-            size: file.size,
+            entityType: entityFilter,
+            entityId: entityFilterId,
           });
+
+          if (!uploadResult.success) {
+            throw new Error(uploadResult.error);
+          }
 
           setUploadProgress((prev) => ({ ...prev, [file.name]: 100 }));
         } catch (err) {
           errors.push(file.name);
+          console.error(`Failed to upload ${file.name}:`, err);
         }
       }
 
@@ -924,12 +929,13 @@ export default function MediaPage() {
                           }}
                         >
                           {item.type === 'IMAGE' ? (
-                            <Image
+                            <SignedImage
+                              storageKey={(item as any).storageKey}
+                              fallbackUrl={item.url}
+                              context="product"
                               alt={item.altText || 'Media'}
-                              fallbackSrc="/placeholder.png"
                               fit="cover"
                               h="100%"
-                              src={item.url}
                               w="100%"
                             />
                           ) : (

@@ -1,12 +1,13 @@
 'use client';
 
-import { Button, PasswordInput, TextInput } from '@mantine/core';
+import { Button, PasswordInput, TextInput, Checkbox } from '@mantine/core';
 import { useForm, zodResolver } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconBrandFacebook, IconBrandGoogle, IconBrandTwitter } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
+import { useState } from 'react';
 
 import { authClient } from '@repo/auth/client/next';
 
@@ -16,6 +17,9 @@ const signupSchema = z
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+      message: 'You must agree to the terms and conditions',
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -31,6 +35,8 @@ interface SignupClientProps {
 
 export default function SignupClient({ dict, locale }: SignupClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<SignupFormData>({
     initialValues: {
@@ -38,12 +44,15 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
       email: '',
       password: '',
       confirmPassword: '',
+      agreeToTerms: false,
     },
     validate: zodResolver(signupSchema),
   });
 
   const handleSubmit = async (values: SignupFormData) => {
     try {
+      setIsLoading(true);
+      
       const { data, error } = await authClient.signUp.email({
         email: values.email,
         password: values.password,
@@ -62,12 +71,18 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
       if (data) {
         notifications.show({
           title: 'Account Created!',
-          message: 'Your account has been created successfully. You can now login.',
+          message: 'Welcome! Your account has been created successfully.',
           color: 'green',
         });
 
-        // Redirect to login page or home if auto-login happened
-        router.push(`/${locale}/login`);
+        // Check for return URL
+        const returnUrl = searchParams.get('returnUrl');
+        if (returnUrl && isValidRedirect(returnUrl)) {
+          router.push(returnUrl);
+        } else {
+          // Default redirect to account page
+          router.push(`/${locale}/account`);
+        }
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -76,21 +91,24 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
         message: 'An unexpected error occurred during signup',
         color: 'red',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSocialSignup = async (provider: 'google' | 'facebook' | 'twitter') => {
     try {
-      // Map provider names to Better Auth provider names
-      const providerMap = {
-        google: 'google',
-        facebook: 'facebook',
-        twitter: 'twitter',
-      };
+      setIsLoading(true);
+      
+      // Check for return URL to include in callback
+      const returnUrl = searchParams.get('returnUrl');
+      const callbackURL = returnUrl && isValidRedirect(returnUrl) 
+        ? returnUrl 
+        : `/${locale}/account`;
 
       await authClient.signIn.social({
-        provider: providerMap[provider],
-        callbackURL: `/${locale}/home`,
+        provider,
+        callbackURL,
       });
     } catch (error) {
       console.error(`${provider} signup error:`, error);
@@ -99,6 +117,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
         message: `Failed to sign up with ${provider}. Please try again.`,
         color: 'red',
       });
+      setIsLoading(false);
     }
   };
 
@@ -116,6 +135,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               leftSection={<IconBrandFacebook size={20} />}
               onClick={() => handleSocialSignup('facebook')}
               fullWidth
+              disabled={isLoading}
               classNames={{
                 root: 'hover:-translate-y-0.5 transition-transform',
               }}
@@ -128,6 +148,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               leftSection={<IconBrandTwitter size={20} />}
               onClick={() => handleSocialSignup('twitter')}
               fullWidth
+              disabled={isLoading}
               classNames={{
                 root: 'hover:-translate-y-0.5 transition-transform',
               }}
@@ -140,6 +161,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               leftSection={<IconBrandGoogle size={20} />}
               onClick={() => handleSocialSignup('google')}
               fullWidth
+              disabled={isLoading}
               classNames={{
                 root: 'hover:-translate-y-0.5 transition-transform',
               }}
@@ -187,7 +209,29 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               {...form.getInputProps('confirmPassword')}
             />
 
-            <Button type="submit" size="lg" fullWidth>
+            <Checkbox
+              label={
+                <span className="text-sm">
+                  I agree to the{' '}
+                  <Link href={`/${locale}/terms`} className="text-primary-600 hover:underline">
+                    Terms of Service
+                  </Link>{' '}
+                  and{' '}
+                  <Link href={`/${locale}/privacy`} className="text-primary-600 hover:underline">
+                    Privacy Policy
+                  </Link>
+                </span>
+              }
+              {...form.getInputProps('agreeToTerms', { type: 'checkbox' })}
+            />
+
+            <Button 
+              type="submit" 
+              size="lg" 
+              fullWidth
+              loading={isLoading}
+              disabled={isLoading}
+            >
               {dict.auth?.createAccount || 'Create Account'}
             </Button>
           </form>
@@ -200,19 +244,22 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
             </Link>
           </span>
 
-          {/* Terms */}
-          <p className="text-center text-sm text-neutral-500 dark:text-neutral-400">
-            {dict.auth?.bySigningUp || 'By signing up, you agree to our'}{' '}
-            <Link href={`/${locale}/terms`} className="text-primary-600 hover:underline">
-              {dict.auth?.terms || 'Terms'}
-            </Link>{' '}
-            {dict.auth?.and || 'and'}{' '}
-            <Link href={`/${locale}/privacy`} className="text-primary-600 hover:underline">
-              {dict.auth?.privacyPolicy || 'Privacy Policy'}
-            </Link>
-          </p>
         </div>
       </div>
     </div>
   );
+}
+
+// Validate redirect URLs to prevent open redirect attacks
+function isValidRedirect(url: string): boolean {
+  // Must be a relative URL starting with /
+  if (!url.startsWith('/')) return false;
+  
+  // Must not be a protocol-relative URL
+  if (url.startsWith('//')) return false;
+  
+  // Must not contain @ (prevents user@host URLs)
+  if (url.includes('@')) return false;
+  
+  return true;
 }

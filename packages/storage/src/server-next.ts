@@ -8,3 +8,6 @@ import 'server-only';
 
 // Re-export all server functionality
 export * from './server';
+
+// Export server actions
+export * from './actions';

@@ -1,18 +1,20 @@
 'use client';
 
-import { Button, PasswordInput, TextInput } from '@mantine/core';
+import { Button, PasswordInput, TextInput, Checkbox } from '@mantine/core';
 import { useForm, zodResolver } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconBrandFacebook, IconBrandGoogle, IconBrandTwitter } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
+import { useState } from 'react';
 
 import { authClient } from '@repo/auth/client/next';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  rememberMe: z.boolean().optional(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -24,20 +26,26 @@ interface LoginClientProps {
 
 export default function LoginClient({ dict, locale }: LoginClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<LoginFormData>({
     initialValues: {
       email: '',
       password: '',
+      rememberMe: false,
     },
     validate: zodResolver(loginSchema),
   });
 
   const handleSubmit = async (values: LoginFormData) => {
     try {
+      setIsLoading(true);
+      
       const { data, error } = await authClient.signIn.email({
         email: values.email,
         password: values.password,
+        rememberMe: values.rememberMe,
       });
 
       if (error) {
@@ -56,8 +64,14 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
           color: 'green',
         });
 
-        // Redirect to home or intended page
-        router.push(`/${locale}/home`);
+        // Check for return URL
+        const returnUrl = searchParams.get('returnUrl');
+        if (returnUrl && isValidRedirect(returnUrl)) {
+          router.push(returnUrl);
+        } else {
+          // Default redirect to account page
+          router.push(`/${locale}/account`);
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -66,21 +80,24 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
         message: 'An unexpected error occurred during login',
         color: 'red',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'twitter') => {
     try {
-      // Map provider names to Better Auth provider names
-      const providerMap = {
-        google: 'google',
-        facebook: 'facebook',
-        twitter: 'twitter',
-      };
+      setIsLoading(true);
+      
+      // Check for return URL to include in callback
+      const returnUrl = searchParams.get('returnUrl');
+      const callbackURL = returnUrl && isValidRedirect(returnUrl) 
+        ? returnUrl 
+        : `/${locale}/account`;
 
       await authClient.signIn.social({
-        provider: providerMap[provider],
-        callbackURL: `/${locale}/home`,
+        provider,
+        callbackURL,
       });
     } catch (error) {
       console.error(`${provider} login error:`, error);
@@ -89,6 +106,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
         message: `Failed to login with ${provider}. Please try again.`,
         color: 'red',
       });
+      setIsLoading(false);
     }
   };
 
@@ -106,6 +124,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
               leftSection={<IconBrandFacebook size={20} />}
               onClick={() => handleSocialLogin('facebook')}
               fullWidth
+              disabled={isLoading}
               classNames={{
                 root: 'hover:-translate-y-0.5 transition-transform',
               }}
@@ -118,6 +137,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
               leftSection={<IconBrandTwitter size={20} />}
               onClick={() => handleSocialLogin('twitter')}
               fullWidth
+              disabled={isLoading}
               classNames={{
                 root: 'hover:-translate-y-0.5 transition-transform',
               }}
@@ -130,6 +150,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
               leftSection={<IconBrandGoogle size={20} />}
               onClick={() => handleSocialLogin('google')}
               fullWidth
+              disabled={isLoading}
               classNames={{
                 root: 'hover:-translate-y-0.5 transition-transform',
               }}
@@ -175,7 +196,18 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
               />
             </div>
 
-            <Button type="submit" size="lg" fullWidth>
+            <Checkbox
+              label={dict.auth?.rememberMe || 'Remember me'}
+              {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+            />
+
+            <Button 
+              type="submit" 
+              size="lg" 
+              fullWidth
+              loading={isLoading}
+              disabled={isLoading}
+            >
               {dict.auth?.continue || 'Continue'}
             </Button>
           </form>
@@ -191,4 +223,18 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
       </div>
     </div>
   );
+}
+
+// Validate redirect URLs to prevent open redirect attacks
+function isValidRedirect(url: string): boolean {
+  // Must be a relative URL starting with /
+  if (!url.startsWith('/')) return false;
+  
+  // Must not be a protocol-relative URL
+  if (url.startsWith('//')) return false;
+  
+  // Must not contain @ (prevents user@host URLs)
+  if (url.includes('@')) return false;
+  
+  return true;
 }
