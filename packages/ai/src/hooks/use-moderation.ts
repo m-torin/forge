@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
-import type { ModerationResult } from '../shared/types';
+import { ModerationResult } from '../shared/types';
 
 export interface UseModerationOptions {
   api?: string;
@@ -55,10 +55,10 @@ export function useModeration({
         onResult?.(moderationResult);
 
         return moderationResult;
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Moderation failed');
-        setError(error);
-        onError?.(error);
+      } catch (error: any) {
+        const errorObj = error instanceof Error ? error : new Error('Moderation failed');
+        setError(errorObj);
+        onError?.(errorObj);
         return null;
       } finally {
         setIsModerating(false);

@@ -20,7 +20,6 @@ import {
   Slider,
   Switch,
   Tabs,
-  Highlight,
   Timeline,
   ActionIcon,
   Tooltip,
@@ -33,13 +32,10 @@ import {
   IconTarget,
   IconMoodSmile,
   IconMoodSad,
-  IconLanguage,
   IconRobot,
-  IconMicrophone,
   IconCode,
   IconInfoCircle,
   IconTrendingUp,
-  IconFilter,
 } from '@tabler/icons-react';
 
 // Types for Neural Search

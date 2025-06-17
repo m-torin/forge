@@ -3,6 +3,8 @@ import { z } from 'zod';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const _isDevelopment = process.env.NODE_ENV === 'development';
+const isBuild = process.env.NODE_ENV === 'production' && !process.env.VERCEL;
+
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasSentryVars = Boolean(
   process.env.NEXT_PUBLIC_SENTRY_DSN ||
@@ -12,9 +14,9 @@ const hasSentryVars = Boolean(
 );
 const hasLogtailVars = Boolean(process.env.LOGTAIL_SOURCE_TOKEN);
 
-// Make env vars optional in development or when they're missing (indicating .env.local usage)
-const requireSentryInProduction = isProduction && hasSentryVars;
-const requireLogtailInProduction = isProduction && hasLogtailVars;
+// Make env vars optional in development, local builds, or when they're missing (indicating .env.local usage)
+const requireSentryInProduction = isProduction && !isBuild && hasSentryVars;
+const requireLogtailInProduction = isProduction && !isBuild && hasLogtailVars;
 
 export const keys = () =>
   createEnv({
@@ -48,5 +50,5 @@ export const keys = () =>
     },
   });
 
-// Export the keys instance for tests
-export const observabilityKeys = keys();
+// Export the keys function for tests - call it when needed
+export const observabilityKeys = () => keys();

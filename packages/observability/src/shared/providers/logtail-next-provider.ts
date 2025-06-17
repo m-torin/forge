@@ -6,8 +6,8 @@
 
 import { Logger } from '@logtail/next';
 
-import type { LogtailConfig } from '../types/logtail-types';
-import type {
+import { LogtailConfig } from '../types/logtail-types';
+import {
   Breadcrumb,
   ObservabilityContext,
   ObservabilityProvider,
@@ -16,63 +16,33 @@ import type {
 
 export class LogtailNextProvider implements ObservabilityProvider {
   readonly name = 'logtail';
-  private logger: Logger | null = null;
-  private isInitialized = false;
-  private isDevelopment = process.env.NODE_ENV !== 'production';
   private config: LogtailConfig = {} as LogtailConfig;
+  private isDevelopment = process.env.NODE_ENV !== 'production';
+  private isInitialized = false;
+  private logger: Logger | null = null;
   private sentryProvider: any = null; // Cross-provider coordination
 
-  async initialize(config: ObservabilityProviderConfig): Promise<void> {
-    this.config = config as LogtailConfig;
+  async addBreadcrumb(breadcrumb: Breadcrumb): Promise<void> {
+    if (!this.isInitialized || !this.logger) return;
 
-    // In development, still initialize but with console fallback
-    if (this.isDevelopment && !this.config.sourceToken) {
-      console.warn('[Better Stack] No source token provided, using console fallback in development');
-      this.isInitialized = true;
-      return;
-    }
-
-    if (!this.config.sourceToken) {
-      throw new Error('Better Stack source token is required for production');
-    }
-
-    try {
-      // Use Better Stack's optimized Next.js logger
-      this.logger = new Logger({
-        source: this.config.application || 'nextjs-app',
-        // Better Stack specific optimizations
-        ...this.config.options,
-      });
-
-      this.isInitialized = true;
-      
-      if (this.isDevelopment) {
-        console.log('[Better Stack] Initialized successfully');
-      }
-    } catch (error) {
-      console.error('[Better Stack] Failed to initialize:', error);
-      // In development, fallback to console instead of throwing
-      if (this.isDevelopment) {
-        console.warn('[Better Stack] Falling back to console logging');
-        this.isInitialized = true;
-        return;
-      }
-      throw error;
-    }
+    // Log breadcrumb as debug event
+    this.logger.debug('Breadcrumb', {
+      category: breadcrumb.category,
+      data: breadcrumb.data,
+      level: breadcrumb.level,
+      message: breadcrumb.message,
+      timestamp: breadcrumb.timestamp,
+    });
   }
 
-  // Cross-provider coordination
-  setSentryProvider(sentryProvider: any): void {
-    this.sentryProvider = sentryProvider;
-  }
-
-  async captureException(
-    error: Error,
-    context?: ObservabilityContext,
-  ): Promise<void> {
+  async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
     if (!this.isInitialized) {
       if (this.isDevelopment) {
-        console.error('[Better Stack Fallback] Exception:', error.message, context);
+        console.error(
+          '[Better Stack Fallback] Exception: ',
+          (error as Error)?.message || 'Unknown error',
+          context,
+        );
       }
       return;
     }
@@ -82,7 +52,7 @@ export class LogtailNextProvider implements ObservabilityProvider {
     // Create enhanced context with cross-provider coordination
     const logContext = {
       error: {
-        message: error.message,
+        message: (error as Error)?.message || 'Unknown error',
         name: error.name,
         stack: error.stack,
       },
@@ -107,7 +77,7 @@ export class LogtailNextProvider implements ObservabilityProvider {
 
   async captureMessage(
     message: string,
-    level: 'debug' | 'info' | 'warning' | 'error' = 'info',
+    level: 'debug' | 'error' | 'info' | 'warning' = 'info',
     context?: ObservabilityContext,
   ): Promise<void> {
     if (!this.isInitialized || !this.logger) return;
@@ -121,26 +91,97 @@ export class LogtailNextProvider implements ObservabilityProvider {
       case 'debug':
         this.logger.debug(message, logContext);
         break;
+      case 'error':
+        this.logger.error(message, logContext);
+        break;
       case 'info':
         this.logger.info(message, logContext);
         break;
       case 'warning':
         this.logger.warn(message, logContext);
         break;
-      case 'error':
-        this.logger.error(message, logContext);
-        break;
+    }
+  }
+
+  async flush(): Promise<void> {
+    if (!this.isInitialized) return;
+
+    if (!this.logger) {
+      if (this.isDevelopment) {
+        console.log('[Better Stack Fallback] Flush called (no-op in fallback mode)');
+      }
+      return;
+    }
+
+    try {
+      await this.logger.flush();
+    } catch (error: any) {
+      console.error('[Better Stack] Failed to flush logs: ', error);
+    }
+  }
+
+  async identify(userId: string, traits?: Record<string, any>): Promise<void> {
+    if (!this.isInitialized || !this.logger) return;
+
+    // Set user context
+    this.logger.info('User identified', {
+      traits,
+      userId,
+    });
+  }
+
+  async initialize(config: ObservabilityProviderConfig): Promise<void> {
+    this.config = config as LogtailConfig;
+
+    // In development, still initialize but with console fallback
+    if (this.isDevelopment && !this.config.sourceToken) {
+      console.warn(
+        '[Better Stack] No source token provided, using console fallback in development',
+      );
+      this.isInitialized = true;
+      return;
+    }
+
+    if (!this.config.sourceToken) {
+      throw new Error('Better Stack source token is required for production');
+    }
+
+    try {
+      // Use Better Stack's optimized Next.js logger
+      this.logger = new Logger({
+        source: this.config.application || 'nextjs-app',
+        // Better Stack specific optimizations
+        ...this.config.options,
+      });
+
+      this.isInitialized = true;
+
+      if (this.isDevelopment) {
+        console.log('[Better Stack] Initialized successfully');
+      }
+    } catch (error: any) {
+      console.error('[Better Stack] Failed to initialize:', error);
+      // In development, fallback to console instead of throwing
+      if (this.isDevelopment) {
+        console.warn('[Better Stack] Falling back to console logging');
+        this.isInitialized = true;
+        return;
+      }
+      throw error;
     }
   }
 
   async log(
-    level: 'debug' | 'info' | 'warning' | 'error',
+    level: 'debug' | 'error' | 'info' | 'warning',
     message: string,
     context?: ObservabilityContext,
   ): Promise<void> {
     if (!this.isInitialized) {
       if (this.isDevelopment) {
-        console[level === 'warning' ? 'warn' : level](`[Better Stack Fallback] ${message}`, context);
+        console[level === 'warning' ? 'warn' : level](
+          `[Better Stack Fallback] ${message}`,
+          context,
+        );
       }
       return;
     }
@@ -162,44 +203,16 @@ export class LogtailNextProvider implements ObservabilityProvider {
     }
   }
 
-  async identify(userId: string, traits?: Record<string, any>): Promise<void> {
+  async setContext(key: string, context: Record<string, any>): Promise<void> {
     if (!this.isInitialized || !this.logger) return;
 
-    // Set user context
-    this.logger.info('User identified', {
-      userId,
-      traits,
-    });
+    // Log context update
+    this.logger.debug('Context updated', { context, contextKey: key });
   }
 
-  async addBreadcrumb(breadcrumb: Breadcrumb): Promise<void> {
-    if (!this.isInitialized || !this.logger) return;
-
-    // Log breadcrumb as debug event
-    this.logger.debug('Breadcrumb', {
-      category: breadcrumb.category,
-      message: breadcrumb.message,
-      level: breadcrumb.level,
-      timestamp: breadcrumb.timestamp,
-      data: breadcrumb.data,
-    });
-  }
-
-  async flush(): Promise<void> {
-    if (!this.isInitialized) return;
-    
-    if (!this.logger) {
-      if (this.isDevelopment) {
-        console.log('[Better Stack Fallback] Flush called (no-op in fallback mode)');
-      }
-      return;
-    }
-
-    try {
-      await this.logger.flush();
-    } catch (error) {
-      console.error('[Better Stack] Failed to flush logs:', error);
-    }
+  // Cross-provider coordination
+  setSentryProvider(sentryProvider: any): void {
+    this.sentryProvider = sentryProvider;
   }
 
   startTransaction(name: string, context?: ObservabilityContext): any {
@@ -207,7 +220,7 @@ export class LogtailNextProvider implements ObservabilityProvider {
 
     // Log transaction start
     this.logger.info('Transaction started', { transaction: name, ...context });
-    
+
     // Return a mock transaction that logs when finished
     return {
       finish: () => {
@@ -216,23 +229,12 @@ export class LogtailNextProvider implements ObservabilityProvider {
     };
   }
 
-  async setContext(key: string, context: Record<string, any>): Promise<void> {
-    if (!this.isInitialized || !this.logger) return;
-
-    // Log context update
-    this.logger.debug('Context updated', { contextKey: key, context });
-  }
-
-  trackPerformance(
-    operation: string,
-    duration: number,
-    metadata?: Record<string, any>,
-  ): void {
+  trackPerformance(operation: string, duration: number, metadata?: Record<string, any>): void {
     if (!this.isInitialized || !this.logger) return;
 
     this.logger.info('Performance metric', {
-      operation,
       duration,
+      operation,
       ...metadata,
     });
   }

@@ -1,14 +1,14 @@
+import ProductCard from '@/components/ProductCard'
+import TabFilters from '@/components/TabFilters'
+import TabFiltersPopover from '@/components/TabFiltersPopover'
+import { getProducts } from '@/data/data'
 import {
-  getProducts,
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-  ProductCard,
-  TabFilters,
-  TabFiltersPopover,
-} from '@repo/design-system/ciseco'
+} from '@/shared/Pagination/Pagination'
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params

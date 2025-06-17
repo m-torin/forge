@@ -35,6 +35,24 @@ describe('Server Authentication', () => {
         id: '1',
         name: 'Test User',
         email: 'test@example.com',
+        emailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        banned: false,
+        twoFactorEnabled: false,
+        image: null,
+        phoneNumber: null,
+        role: 'user',
+        banReason: null,
+        banExpires: null,
+        deletedAt: null,
+        bio: null,
+        expertise: [],
+        isVerifiedAuthor: false,
+        authorSince: null,
+        preferences: null,
+        isSuspended: false,
+        suspensionDetails: null,
       };
 
       mockGetSession.mockResolvedValue({
@@ -63,12 +81,20 @@ describe('Server Authentication', () => {
         activeOrganizationId: 'org-1',
         session: {
           id: 'session-1',
+          token: 'session-token',
+          userId: '1',
+          expiresAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
           activeOrganizationId: 'org-1',
         },
         user: {
           id: '1',
           name: 'Test User',
           email: 'test@example.com',
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       };
 

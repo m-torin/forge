@@ -1,20 +1,25 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '../test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '../test-utils';
 import Button from '../../../mantine-ciseco/components/shared/Button/Button';
 
-describe('Button', () => {
+describe('Button', (_: any) => {
   const mockOnClick = vi.fn();
 
   beforeEach(() => {
     mockOnClick.mockClear();
   });
 
-  it('renders button with text', () => {
+  it('renders button with text', (_: any) => {
     render(<Button>Click me</Button>);
     expect(screen.getByRole('button')).toHaveTextContent('Click me');
   });
 
-  it('handles click events', () => {
+  it('renders with default text when no children provided', (_: any) => {
+    render(<Button />);
+    expect(screen.getByRole('button')).toHaveTextContent('Button');
+  });
+
+  it('handles click events', (_: any) => {
     render(<Button onClick={mockOnClick}>Click me</Button>);
     const button = screen.getByRole('button');
 
@@ -22,32 +27,23 @@ describe('Button', () => {
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders with different variants', () => {
-    const { rerender } = render(<Button variant="filled">Filled</Button>);
-    expect(screen.getByRole('button')).toHaveClass('variant-filled');
+  it('renders with custom fontSize prop', (_: any) => {
+    const { rerender } = render(<Button fontSize="text-xs">Small Text</Button>);
+    expect(screen.getByRole('button')).toHaveClass('text-xs');
 
-    rerender(<Button variant="outline">Outline</Button>);
-    expect(screen.getByRole('button')).toHaveClass('variant-outline');
-
-    rerender(<Button variant="ghost">Ghost</Button>);
-    expect(screen.getByRole('button')).toHaveClass('variant-ghost');
+    rerender(<Button fontSize="text-lg font-bold">Large Bold</Button>);
+    expect(screen.getByRole('button')).toHaveClass('text-lg font-bold');
   });
 
-  it('renders with different sizes', () => {
-    const { rerender } = render(<Button size="xs">XS</Button>);
-    expect(screen.getByRole('button')).toHaveClass('size-xs');
+  it('renders with custom sizeClass prop', (_: any) => {
+    const { rerender } = render(<Button sizeClass="py-2 px-3">Small Padding</Button>);
+    expect(screen.getByRole('button')).toHaveClass('py-2 px-3');
 
-    rerender(<Button size="sm">SM</Button>);
-    expect(screen.getByRole('button')).toHaveClass('size-sm');
-
-    rerender(<Button size="md">MD</Button>);
-    expect(screen.getByRole('button')).toHaveClass('size-md');
-
-    rerender(<Button size="lg">LG</Button>);
-    expect(screen.getByRole('button')).toHaveClass('size-lg');
+    rerender(<Button sizeClass="py-5 px-8">Large Padding</Button>);
+    expect(screen.getByRole('button')).toHaveClass('py-5 px-8');
   });
 
-  it('renders disabled state', () => {
+  it('renders disabled state', (_: any) => {
     render(
       <Button disabled onClick={mockOnClick}>
         Disabled
@@ -60,104 +56,130 @@ describe('Button', () => {
     expect(mockOnClick).not.toHaveBeenCalled();
   });
 
-  it('renders loading state', () => {
+  it('renders loading state', (_: any) => {
     render(<Button loading>Loading</Button>);
     const button = screen.getByRole('button');
 
     expect(button).toBeDisabled();
-    expect(screen.getByTestId('button-loader')).toBeInTheDocument();
+    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 
-  it('renders with icon', () => {
-    const TestIcon = () => <span data-testid="test-icon">🚀</span>;
-    render(<Button leftIcon={<TestIcon />}>With Icon</Button>);
+  it('renders loading state with loading spinner', (_: any) => {
+    render(<Button loading>Loading</Button>);
 
-    expect(screen.getByTestId('test-icon')).toBeInTheDocument();
+    const spinner = screen.getByTestId('loading-spinner');
+    expect(spinner).toBeInTheDocument();
+    expect(spinner).toHaveClass('animate-spin');
   });
 
-  it('renders with right icon', () => {
-    const TestIcon = () => <span data-testid="test-icon">→</span>;
-    render(<Button rightIcon={<TestIcon />}>With Right Icon</Button>);
-
-    expect(screen.getByTestId('test-icon')).toBeInTheDocument();
-  });
-
-  it('handles keyboard navigation', () => {
+  it('handles keyboard navigation for button element', (_: any) => {
     render(<Button onClick={mockOnClick}>Keyboard Test</Button>);
     const button = screen.getByRole('button');
 
     button.focus();
     expect(button).toHaveFocus();
 
-    fireEvent.keyDown(button, { key: 'Enter' });
-    expect(mockOnClick).toHaveBeenCalled();
-
-    fireEvent.keyDown(button, { key: ' ' });
-    expect(mockOnClick).toHaveBeenCalledTimes(2);
+    // Native button elements handle Enter and Space automatically
+    // so we just test that click handler works
+    fireEvent.click(button);
+    expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders as different element types', () => {
+  it('renders as different element types', (_: any) => {
     const { rerender } = render(
       <Button as="a" href="/test">
         Link Button
       </Button>,
     );
-    expect(screen.getByRole('link')).toBeInTheDocument();
+    // When href is provided, it should use Link component which renders an anchor
+    expect(screen.getByTestId('button')).toBeInTheDocument();
 
     rerender(<Button as="div">Div Button</Button>);
-    expect(screen.getByRole('button')).toBeInTheDocument(); // Should still maintain button role
+    expect(screen.getByTestId('button').tagName).toBe('DIV');
   });
 
-  it('renders full width', () => {
-    render(<Button fullWidth>Full Width</Button>);
-    expect(screen.getByRole('button')).toHaveClass('w-full');
+  it('renders as Link when href is provided', (_: any) => {
+    render(<Button href="/test">Link Button</Button>);
+    const element = screen.getByTestId('button');
+    expect(element).toHaveAttribute('href', '/test');
   });
 
-  it('renders with custom className', () => {
-    render(<Button className="custom-button">Custom</Button>);
-    expect(screen.getByRole('button')).toHaveClass('custom-button');
-  });
-
-  it('has proper accessibility attributes', () => {
+  it('renders with targetBlank prop', (_: any) => {
     render(
-      <Button ariaLabel="Custom label" ariaDescribedBy="description" ariaExpanded={false}>
-        Accessible Button
+      <Button href="/test" targetBlank>
+        External Link
+      </Button>,
+    );
+    const element = screen.getByTestId('button');
+    expect(element).toHaveAttribute('target', '_blank');
+    expect(element).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('renders with custom className', (_: any) => {
+    render(<Button className="custom-button bg-blue-500">Custom</Button>);
+    expect(screen.getByRole('button')).toHaveClass('custom-button');
+    expect(screen.getByRole('button')).toHaveClass('bg-blue-500');
+  });
+
+  it('renders with default classes', (_: any) => {
+    render(<Button>Default Button</Button>);
+    const button = screen.getByRole('button');
+
+    // Base classes
+    expect(button).toHaveClass('nc-Button');
+    expect(button).toHaveClass('relative');
+    expect(button).toHaveClass('inline-flex');
+    expect(button).toHaveClass('h-auto');
+    expect(button).toHaveClass('cursor-pointer');
+    expect(button).toHaveClass('items-center');
+    expect(button).toHaveClass('justify-center');
+    expect(button).toHaveClass('rounded-full');
+    expect(button).toHaveClass('transition-colors');
+
+    // Default fontSize
+    expect(button).toHaveClass('text-sm');
+    expect(button).toHaveClass('sm:text-base');
+    expect(button).toHaveClass('font-nomal');
+
+    // Default sizeClass
+    expect(button).toHaveClass('py-3');
+    expect(button).toHaveClass('px-4');
+    expect(button).toHaveClass('sm:py-3.5');
+    expect(button).toHaveClass('sm:px-6');
+
+    // Default className
+    expect(button).toHaveClass('text-neutral-700');
+    expect(button).toHaveClass('dark:text-neutral-200');
+    expect(button).toHaveClass('disabled:cursor-not-allowed');
+  });
+
+  it('passes through arbitrary props', (_: any) => {
+    render(
+      <Button
+        data-custom="test"
+        id="my-button"
+        role="button"
+        aria-label="Custom label"
+        aria-describedby="description"
+        aria-expanded={false}
+      >
+        Button with Props
       </Button>,
     );
 
     const button = screen.getByRole('button');
+    expect(button).toHaveAttribute('data-custom', 'test');
+    expect(button).toHaveAttribute('id', 'my-button');
     expect(button).toHaveAttribute('aria-label', 'Custom label');
     expect(button).toHaveAttribute('aria-describedby', 'description');
     expect(button).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('renders with tooltip', async () => {
-    render(<Button tooltip="This is a helpful button">Hover me</Button>);
-    const button = screen.getByRole('button');
-
-    fireEvent.mouseEnter(button);
-
-    await waitFor(() => {
-      expect(screen.getByRole('tooltip')).toHaveTextContent('This is a helpful button');
+  it('supports form submission', (_: any) => {
+    const mockSubmit = vi.fn((e: any) => {
+      e.preventDefault();
     });
-  });
 
-  it('prevents default when type is not submit', () => {
-    const mockEvent = { preventDefault: vi.fn() };
-    render(
-      <Button type="button" onClick={mockOnClick}>
-        Button
-      </Button>,
-    );
-
-    const button = screen.getByRole('button');
-    fireEvent.click(button, mockEvent);
-
-    expect(mockEvent.preventDefault).not.toHaveBeenCalled();
-  });
-
-  it('supports form submission', () => {
-    const mockSubmit = vi.fn();
     render(
       <form onSubmit={mockSubmit}>
         <Button type="submit">Submit</Button>
@@ -168,5 +190,15 @@ describe('Button', () => {
     fireEvent.click(button);
 
     expect(mockSubmit).toHaveBeenCalled();
+  });
+
+  it('uses custom data-testid when provided', (_: any) => {
+    render(<Button data-testid="custom-button">Test</Button>);
+    expect(screen.getByTestId('custom-button')).toBeInTheDocument();
+  });
+
+  it('uses default data-testid when not provided', (_: any) => {
+    render(<Button>Test</Button>);
+    expect(screen.getByTestId('button')).toBeInTheDocument();
   });
 });

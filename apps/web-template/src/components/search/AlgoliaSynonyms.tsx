@@ -22,7 +22,7 @@ import {
   TagsInput,
   Switch,
   Modal,
-  Collapse,
+  Skeleton,
 } from '@mantine/core';
 import {
   IconLanguage,
@@ -32,12 +32,12 @@ import {
   IconTrash,
   IconEdit,
   IconSearch,
-  IconCheck,
-  IconX,
   IconAlertCircle,
   IconBrandAlgolia,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Types for Synonyms
 interface Synonym {
@@ -148,10 +148,37 @@ function SynonymEditor({
       enabled: true,
     },
   );
+  const [internalError, setInternalError] = useState<string | null>(null);
 
   const handleSave = () => {
-    onSave(editingSynonym);
-    onClose();
+    try {
+      onSave(editingSynonym);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save synonym:', error);
+      setInternalError('Failed to save synonym');
+    }
+  };
+
+  const handleTypeChange = (value: string | null) => {
+    try {
+      if (value) {
+        setEditingSynonym({
+          ...editingSynonym,
+          type: value as Synonym['type'],
+          // Reset fields when type changes
+          synonyms: value === 'synonym' || value === 'oneWaySynonym' ? [] : undefined,
+          input: value === 'oneWaySynonym' ? '' : undefined,
+          word: value === 'altCorrection1' || value === 'altCorrection2' ? '' : undefined,
+          corrections: value === 'altCorrection1' || value === 'altCorrection2' ? [] : undefined,
+          placeholder: value === 'placeholder' ? '' : undefined,
+          replacements: value === 'placeholder' ? [] : undefined,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to change synonym type:', error);
+      setInternalError('Failed to change synonym type');
+    }
   };
 
   return (
@@ -161,127 +188,128 @@ function SynonymEditor({
       title={synonym ? 'Edit Synonym' : 'Create New Synonym'}
       size="lg"
     >
-      <Stack gap="md">
-        <Select
-          label="Synonym Type"
-          value={editingSynonym.type}
-          onChange={(value) =>
-            setEditingSynonym({
-              ...editingSynonym,
-              type: value as Synonym['type'],
-              // Reset fields when type changes
-              synonyms: value === 'synonym' || value === 'oneWaySynonym' ? [] : undefined,
-              input: value === 'oneWaySynonym' ? '' : undefined,
-              word: value === 'altCorrection1' || value === 'altCorrection2' ? '' : undefined,
-              corrections:
-                value === 'altCorrection1' || value === 'altCorrection2' ? [] : undefined,
-              placeholder: value === 'placeholder' ? '' : undefined,
-              replacements: value === 'placeholder' ? [] : undefined,
-            })
-          }
-          data={Object.entries(synonymTypes).map(([value, config]) => ({
-            value,
-            label: config.label,
-          }))}
-        />
-
-        <Alert icon={<IconAlertCircle />} c="blue">
-          <Text size="md">{synonymTypes[editingSynonym.type].description}</Text>
-        </Alert>
-
-        {/* Multi-directional synonyms */}
-        {editingSynonym.type === 'synonym' && (
-          <TagsInput
-            label="Synonyms (all interchangeable)"
-            value={editingSynonym.synonyms || []}
-            onChange={(value) => setEditingSynonym({ ...editingSynonym, synonyms: value })}
-            placeholder="Add synonyms..."
-            clearable
+      <ErrorBoundary
+        fallback={
+          <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+            <Text size="sm">Synonym editor failed to load</Text>
+          </Alert>
+        }
+      >
+        <Stack gap="md">
+          {internalError && (
+            <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+              <Text size="sm">{internalError}</Text>
+            </Alert>
+          )}
+          <Select
+            label="Synonym Type"
+            value={editingSynonym.type}
+            onChange={handleTypeChange}
+            data={Object.entries(synonymTypes).map(([value, config]) => ({
+              value,
+              label: config.label,
+            }))}
           />
-        )}
 
-        {/* One-way synonyms */}
-        {editingSynonym.type === 'oneWaySynonym' && (
-          <>
-            <TextInput
-              label="Input Term"
-              value={editingSynonym.input || ''}
-              onChange={(e) =>
-                setEditingSynonym({ ...editingSynonym, input: e.currentTarget.value })
-              }
-              placeholder="e.g., TV"
-              required
-            />
+          <Alert icon={<IconAlertCircle />} c="blue">
+            <Text size="md">{synonymTypes[editingSynonym.type].description}</Text>
+          </Alert>
+
+          {/* Multi-directional synonyms */}
+          {editingSynonym.type === 'synonym' && (
             <TagsInput
-              label="Maps To (synonyms)"
+              label="Synonyms (all interchangeable)"
               value={editingSynonym.synonyms || []}
               onChange={(value) => setEditingSynonym({ ...editingSynonym, synonyms: value })}
-              placeholder="e.g., television, smart TV..."
+              placeholder="Add synonyms..."
               clearable
             />
-          </>
-        )}
+          )}
 
-        {/* Alternative corrections */}
-        {(editingSynonym.type === 'altCorrection1' || editingSynonym.type === 'altCorrection2') && (
-          <>
-            <TextInput
-              label="Correct Word"
-              value={editingSynonym.word || ''}
-              onChange={(e) =>
-                setEditingSynonym({ ...editingSynonym, word: e.currentTarget.value })
-              }
-              placeholder="e.g., headphones"
-              required
-            />
-            <TagsInput
-              label="Common Misspellings"
-              value={editingSynonym.corrections || []}
-              onChange={(value) => setEditingSynonym({ ...editingSynonym, corrections: value })}
-              placeholder="e.g., hedphones, headfones..."
-              clearable
-            />
-          </>
-        )}
+          {/* One-way synonyms */}
+          {editingSynonym.type === 'oneWaySynonym' && (
+            <>
+              <TextInput
+                label="Input Term"
+                value={editingSynonym.input || ''}
+                onChange={(e) =>
+                  setEditingSynonym({ ...editingSynonym, input: e.currentTarget.value })
+                }
+                placeholder="e.g., TV"
+                required
+              />
+              <TagsInput
+                label="Maps To (synonyms)"
+                value={editingSynonym.synonyms || []}
+                onChange={(value) => setEditingSynonym({ ...editingSynonym, synonyms: value })}
+                placeholder="e.g., television, smart TV..."
+                clearable
+              />
+            </>
+          )}
 
-        {/* Placeholders */}
-        {editingSynonym.type === 'placeholder' && (
-          <>
-            <TextInput
-              label="Placeholder Pattern"
-              value={editingSynonym.placeholder || ''}
-              onChange={(e) =>
-                setEditingSynonym({ ...editingSynonym, placeholder: e.currentTarget.value })
-              }
-              placeholder="e.g., <color> <product>"
-              description="Use <placeholder> syntax"
-              required
-            />
-            <TagsInput
-              label="Example Replacements"
-              value={editingSynonym.replacements || []}
-              onChange={(value) => setEditingSynonym({ ...editingSynonym, replacements: value })}
-              placeholder="e.g., red laptop, blue phone..."
-              clearable
-            />
-          </>
-        )}
+          {/* Alternative corrections */}
+          {(editingSynonym.type === 'altCorrection1' ||
+            editingSynonym.type === 'altCorrection2') && (
+            <>
+              <TextInput
+                label="Correct Word"
+                value={editingSynonym.word || ''}
+                onChange={(e) =>
+                  setEditingSynonym({ ...editingSynonym, word: e.currentTarget.value })
+                }
+                placeholder="e.g., headphones"
+                required
+              />
+              <TagsInput
+                label="Common Misspellings"
+                value={editingSynonym.corrections || []}
+                onChange={(value) => setEditingSynonym({ ...editingSynonym, corrections: value })}
+                placeholder="e.g., hedphones, headfones..."
+                clearable
+              />
+            </>
+          )}
 
-        <Switch
-          label="Enabled"
-          checked={editingSynonym.enabled}
-          onChange={(e) =>
-            setEditingSynonym({ ...editingSynonym, enabled: e.currentTarget.checked })
-          }
-        />
+          {/* Placeholders */}
+          {editingSynonym.type === 'placeholder' && (
+            <>
+              <TextInput
+                label="Placeholder Pattern"
+                value={editingSynonym.placeholder || ''}
+                onChange={(e) =>
+                  setEditingSynonym({ ...editingSynonym, placeholder: e.currentTarget.value })
+                }
+                placeholder="e.g., <color> <product>"
+                description="Use <placeholder> syntax"
+                required
+              />
+              <TagsInput
+                label="Example Replacements"
+                value={editingSynonym.replacements || []}
+                onChange={(value) => setEditingSynonym({ ...editingSynonym, replacements: value })}
+                placeholder="e.g., red laptop, blue phone..."
+                clearable
+              />
+            </>
+          )}
 
-        <Group justify="flex-end">
-          <Button variant="subtle" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave}>Save</Button>
-        </Group>
-      </Stack>
+          <Switch
+            label="Enabled"
+            checked={editingSynonym.enabled}
+            onChange={(e) =>
+              setEditingSynonym({ ...editingSynonym, enabled: e.currentTarget.checked })
+            }
+          />
+
+          <Group justify="flex-end">
+            <Button variant="subtle" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>Save</Button>
+          </Group>
+        </Stack>
+      </ErrorBoundary>
     </Modal>
   );
 }
@@ -290,318 +318,492 @@ function SynonymEditor({
 function SynonymTester({ synonyms }: { synonyms: Synonym[] }) {
   const [testQuery, setTestQuery] = useState('');
   const [results, setResults] = useState<{ original: string; expanded: string[] }[]>([]);
+  const [internalError, setInternalError] = useState<string | null>(null);
 
   const testSynonyms = () => {
-    const words = testQuery.toLowerCase().split(' ');
-    const expandedResults: { original: string; expanded: string[] }[] = [];
+    try {
+      const words = testQuery.toLowerCase().split(' ');
+      const expandedResults: { original: string; expanded: string[] }[] = [];
 
-    words.forEach((word) => {
-      const expanded = new Set<string>([word]);
+      words.forEach((word) => {
+        try {
+          const expanded = new Set<string>([word]);
 
-      // Check multi-directional synonyms
-      synonyms
-        .filter((s) => s.type === 'synonym' && s.enabled)
-        .forEach((syn) => {
-          if (syn.synonyms?.includes(word)) {
-            syn.synonyms.forEach((s) => expanded.add(s));
+          // Check multi-directional synonyms
+          synonyms
+            .filter((s) => s.type === 'synonym' && s.enabled)
+            .forEach((syn) => {
+              if (syn.synonyms?.includes(word)) {
+                syn.synonyms.forEach((s) => expanded.add(s));
+              }
+            });
+
+          // Check one-way synonyms
+          synonyms
+            .filter((s) => s.type === 'oneWaySynonym' && s.enabled)
+            .forEach((syn) => {
+              if (syn.input?.toLowerCase() === word) {
+                syn.synonyms?.forEach((s) => expanded.add(s));
+              }
+            });
+
+          // Check corrections
+          synonyms
+            .filter(
+              (s) => (s.type === 'altCorrection1' || s.type === 'altCorrection2') && s.enabled,
+            )
+            .forEach((syn) => {
+              if (syn.corrections?.includes(word)) {
+                expanded.add(syn.word!);
+              }
+            });
+
+          if (expanded.size > 1) {
+            expandedResults.push({
+              original: word,
+              expanded: Array.from(expanded).filter((w) => w !== word),
+            });
           }
-        });
+        } catch (error) {
+          console.error('Error processing word:', word, error);
+        }
+      });
 
-      // Check one-way synonyms
-      synonyms
-        .filter((s) => s.type === 'oneWaySynonym' && s.enabled)
-        .forEach((syn) => {
-          if (syn.input?.toLowerCase() === word) {
-            syn.synonyms?.forEach((s) => expanded.add(s));
-          }
-        });
-
-      // Check corrections
-      synonyms
-        .filter((s) => (s.type === 'altCorrection1' || s.type === 'altCorrection2') && s.enabled)
-        .forEach((syn) => {
-          if (syn.corrections?.includes(word)) {
-            expanded.add(syn.word!);
-          }
-        });
-
-      if (expanded.size > 1) {
-        expandedResults.push({
-          original: word,
-          expanded: Array.from(expanded).filter((w) => w !== word),
-        });
-      }
-    });
-
-    setResults(expandedResults);
+      setResults(expandedResults);
+      setInternalError(null);
+    } catch (error) {
+      console.error('Failed to test synonyms:', error);
+      setInternalError('Failed to test synonyms');
+    }
   };
 
   return (
-    <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
-      <Stack gap="md">
-        <Title order={3}>Test Synonyms</Title>
-        <Group>
-          <TextInput
-            value={testQuery}
-            onChange={(e) => setTestQuery(e.currentTarget.value)}
-            placeholder="Enter a search query..."
-            style={{ flex: 1 }}
-            onKeyDown={(e) => e.key === 'Enter' && testSynonyms()}
-          />
-          <Button onClick={testSynonyms}>Test</Button>
-        </Group>
+    <ErrorBoundary
+      fallback={
+        <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
+          <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+            <Text size="sm">Synonym tester failed to load</Text>
+          </Alert>
+        </Card>
+      }
+    >
+      <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
+        <Stack gap="md">
+          <Title order={3}>Test Synonyms</Title>
+          {internalError && (
+            <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+              <Text size="sm">{internalError}</Text>
+            </Alert>
+          )}
+          <Group>
+            <TextInput
+              value={testQuery}
+              onChange={(e) => setTestQuery(e.currentTarget.value)}
+              placeholder="Enter a search query..."
+              style={{ flex: 1 }}
+              onKeyDown={(e) => e.key === 'Enter' && testSynonyms()}
+            />
+            <Button onClick={testSynonyms}>Test</Button>
+          </Group>
 
-        {results.length > 0 && (
-          <div>
-            <Text size="md" fw={600} mb="xs">
-              Query Expansion:
-            </Text>
-            {results.map((result, i) => (
-              <Paper key={i} p="xs" withBorder={true} mb="xs">
-                <Group>
-                  <Badge c="blue">{result.original}</Badge>
-                  <IconArrowRight size={16} />
-                  {result.expanded.map((word, j) => (
-                    <Badge key={j} c="green" variant="light">
-                      {word}
-                    </Badge>
-                  ))}
-                </Group>
-              </Paper>
-            ))}
-          </div>
-        )}
-      </Stack>
-    </Card>
+          {results.length > 0 && (
+            <div>
+              <Text size="md" fw={600} mb="xs">
+                Query Expansion:
+              </Text>
+              {results.map((result, i) => (
+                <ErrorBoundary key={i} fallback={<Skeleton height={40} />}>
+                  <Paper p="xs" withBorder={true} mb="xs">
+                    <Group>
+                      <Badge c="blue">{result.original}</Badge>
+                      <IconArrowRight size={16} />
+                      {result.expanded.map((word, j) => (
+                        <Badge key={j} c="green" variant="light">
+                          {word}
+                        </Badge>
+                      ))}
+                    </Group>
+                  </Paper>
+                </ErrorBoundary>
+              ))}
+            </div>
+          )}
+        </Stack>
+      </Card>
+    </ErrorBoundary>
   );
 }
 
-export default function AlgoliaSynonyms() {
+interface AlgoliaSynonymsProps {
+  loading?: boolean;
+  error?: string;
+  'data-testid'?: string;
+}
+
+// Loading skeleton for AlgoliaSynonyms
+function AlgoliaSynonymsSkeleton({ testId }: { testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Stack gap="xl">
+        <div>
+          <Group gap="md" mb="md">
+            <Skeleton height={64} width={64} radius="md" />
+            <div>
+              <Skeleton height={32} width={300} mb="xs" />
+              <Skeleton height={20} width={400} />
+            </div>
+          </Group>
+        </div>
+        <Skeleton height={120} />
+        <Skeleton height={200} />
+        <div>
+          <Group justify="space-between" mb="md">
+            <Skeleton height={32} width={200} />
+            <Skeleton height={36} width={120} />
+          </Group>
+          <Skeleton height={400} />
+        </div>
+      </Stack>
+    </Container>
+  );
+}
+
+// Error state for AlgoliaSynonyms
+function AlgoliaSynonymsError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Synonyms demo failed to load: {error}</Text>
+      </Alert>
+    </Container>
+  );
+}
+
+export default function AlgoliaSynonyms({
+  loading = false,
+  error,
+  'data-testid': testId = 'algolia-synonyms',
+}: AlgoliaSynonymsProps = {}) {
   const [synonyms, setSynonyms] = useState<Synonym[]>(sampleSynonyms);
   const [editingSynonym, setEditingSynonym] = useState<Synonym | null>(null);
   const [isCreating, { open: startCreating, close: stopCreating }] = useDisclosure(false);
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [internalError, setInternalError] = useState<string | null>(null);
+
+  // Show loading state
+  if (loading) {
+    return <AlgoliaSynonymsSkeleton testId={testId} />;
+  }
+
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <AlgoliaSynonymsError error={currentError} testId={testId} />;
+  }
 
   const saveSynonym = (synonym: Synonym) => {
-    const existingIndex = synonyms.findIndex((s) => s.objectID === synonym.objectID);
-    if (existingIndex >= 0) {
-      const updated = [...synonyms];
-      updated[existingIndex] = synonym;
-      setSynonyms(updated);
-    } else {
-      setSynonyms([...synonyms, synonym]);
+    try {
+      const existingIndex = synonyms.findIndex((s) => s.objectID === synonym.objectID);
+      if (existingIndex >= 0) {
+        const updated = [...synonyms];
+        updated[existingIndex] = synonym;
+        setSynonyms(updated);
+      } else {
+        setSynonyms([...synonyms, synonym]);
+      }
+    } catch (err) {
+      console.error('Failed to save synonym:', err);
+      setInternalError('Failed to save synonym');
     }
   };
 
   const deleteSynonym = (objectID: string) => {
-    setSynonyms(synonyms.filter((s) => s.objectID !== objectID));
+    try {
+      setSynonyms(synonyms.filter((s) => s.objectID !== objectID));
+    } catch (err) {
+      console.error('Failed to delete synonym:', err);
+      setInternalError('Failed to delete synonym');
+    }
+  };
+
+  const handleCreateSynonym = () => {
+    try {
+      startCreating();
+    } catch (err) {
+      console.error('Failed to start creating synonym:', err);
+      setInternalError('Failed to create new synonym');
+    }
+  };
+
+  const handleEditSynonym = (synonym: Synonym) => {
+    try {
+      setEditingSynonym(synonym);
+    } catch (err) {
+      console.error('Failed to edit synonym:', err);
+      setInternalError('Failed to edit synonym');
+    }
+  };
+
+  const handleCloseEditor = () => {
+    try {
+      setEditingSynonym(null);
+      stopCreating();
+    } catch (err) {
+      console.error('Failed to close editor:', err);
+    }
+  };
+
+  const handleToggleSynonym = (synonym: Synonym, enabled: boolean) => {
+    try {
+      const updated = [...synonyms];
+      const index = updated.findIndex((s) => s.objectID === synonym.objectID);
+      if (index >= 0) {
+        updated[index] = { ...synonym, enabled };
+        setSynonyms(updated);
+      }
+    } catch (err) {
+      console.error('Failed to toggle synonym:', err);
+      setInternalError('Failed to toggle synonym');
+    }
   };
 
   const filteredSynonyms =
     activeTab === 'all' ? synonyms : synonyms.filter((s) => s.type === activeTab);
 
   return (
-    <Container size="xl" py="xl">
-      <Stack gap="xl">
-        {/* Header */}
-        <div>
-          <Group gap="md" mb="md">
-            <ThemeIcon size="xl" variant="light" c="blue">
-              <IconLanguage />
-            </ThemeIcon>
+    <ErrorBoundary
+      fallback={<AlgoliaSynonymsError error="Synonyms demo failed to render" testId={testId} />}
+    >
+      <Container size="xl" py="xl" data-testid={testId}>
+        <Stack gap="xl">
+          {/* Header */}
+          <ErrorBoundary fallback={<Skeleton height={80} />}>
             <div>
-              <Title order={1}>Synonyms Management</Title>
-              <Text size="lg" c="dimmed">
-                Configure search synonyms and corrections
-              </Text>
+              <Group gap="md" mb="md">
+                <ThemeIcon size="xl" variant="light" c="blue">
+                  <IconLanguage />
+                </ThemeIcon>
+                <div>
+                  <Title order={1}>Synonyms Management</Title>
+                  <Text size="lg" c="dimmed">
+                    Configure search synonyms and corrections
+                  </Text>
+                </div>
+              </Group>
             </div>
-          </Group>
-        </div>
+          </ErrorBoundary>
 
-        {/* Introduction */}
-        <Alert icon={<IconBrandAlgolia />} title="Why Use Synonyms?" c="blue">
-          <Stack gap="xs">
-            <Text size="md">
-              Synonyms help users find what they're looking for, regardless of the terms they use:
-            </Text>
-            <ul>
-              <li>
-                <strong>Product variations:</strong> laptop → notebook, MacBook
-              </li>
-              <li>
-                <strong>Brand names:</strong> iPhone → Apple phone
-              </li>
-              <li>
-                <strong>Common misspellings:</strong> hedphones → headphones
-              </li>
-              <li>
-                <strong>Regional differences:</strong> sneakers → trainers
-              </li>
-              <li>
-                <strong>Abbreviations:</strong> TV → television
-              </li>
-            </ul>
-          </Stack>
-        </Alert>
+          {/* Introduction */}
+          <ErrorBoundary fallback={<Skeleton height={150} />}>
+            <Alert icon={<IconBrandAlgolia />} title="Why Use Synonyms?" c="blue">
+              <Stack gap="xs">
+                <Text size="md">
+                  Synonyms help users find what they're looking for, regardless of the terms they
+                  use:
+                </Text>
+                <ul>
+                  <li>
+                    <strong>Product variations:</strong> laptop → notebook, MacBook
+                  </li>
+                  <li>
+                    <strong>Brand names:</strong> iPhone → Apple phone
+                  </li>
+                  <li>
+                    <strong>Common misspellings:</strong> hedphones → headphones
+                  </li>
+                  <li>
+                    <strong>Regional differences:</strong> sneakers → trainers
+                  </li>
+                  <li>
+                    <strong>Abbreviations:</strong> TV → television
+                  </li>
+                </ul>
+              </Stack>
+            </Alert>
+          </ErrorBoundary>
 
-        {/* Synonym Tester */}
-        <SynonymTester synonyms={synonyms} />
+          {/* Synonym Tester */}
+          <ErrorBoundary fallback={<Skeleton height={200} />}>
+            <SynonymTester synonyms={synonyms} />
+          </ErrorBoundary>
 
-        {/* Synonyms Management */}
-        <div>
-          <Group justify="space-between" mb="md">
-            <Title order={2}>Synonym Dictionary</Title>
-            <Button leftSection={<IconPlus />} onClick={startCreating}>
-              Add Synonym
-            </Button>
-          </Group>
+          {/* Synonyms Management */}
+          <ErrorBoundary fallback={<Skeleton height={500} />}>
+            <div>
+              <Group justify="space-between" mb="md">
+                <Title order={2}>Synonym Dictionary</Title>
+                <Button leftSection={<IconPlus />} onClick={handleCreateSynonym}>
+                  Add Synonym
+                </Button>
+              </Group>
 
-          {/* Type filter tabs */}
-          <Tabs value={activeTab} onChange={(value) => setActiveTab(value || '')}>
-            <Tabs.List>
-              <Tabs.Tab value="all">All Types</Tabs.Tab>
-              {Object.entries(synonymTypes).map(([type, config]) => {
-                const Icon = config.icon;
-                const count = synonyms.filter((s) => s.type === type).length;
-                return (
-                  <Tabs.Tab
-                    key={type}
-                    value={type}
-                    leftSection={<Icon size={16} />}
-                    rightSection={
-                      <Badge size="xs" color={config.color} variant="light">
-                        {count}
-                      </Badge>
-                    }
-                  >
-                    {config.label}
-                  </Tabs.Tab>
-                );
-              })}
-            </Tabs.List>
-          </Tabs>
+              {/* Type filter tabs */}
+              <Tabs value={activeTab} onChange={(value) => setActiveTab(value || '')}>
+                <Tabs.List>
+                  <Tabs.Tab value="all">All Types</Tabs.Tab>
+                  {Object.entries(synonymTypes).map(([type, config]) => {
+                    const Icon = config.icon;
+                    const count = synonyms.filter((s) => s.type === type).length;
+                    return (
+                      <Tabs.Tab
+                        key={type}
+                        value={type}
+                        leftSection={<Icon size={16} />}
+                        rightSection={
+                          <Badge size="xs" color={config.color} variant="light">
+                            {count}
+                          </Badge>
+                        }
+                      >
+                        {config.label}
+                      </Tabs.Tab>
+                    );
+                  })}
+                </Tabs.List>
+              </Tabs>
 
-          {/* Synonyms table */}
-          <Table striped highlightOnHover mt="md">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Type</Table.Th>
-                <Table.Th>Configuration</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Actions</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredSynonyms.map((synonym) => {
-                const typeConfig = synonymTypes[synonym.type];
-                const Icon = typeConfig.icon;
+              {/* Synonyms table */}
+              <ErrorBoundary fallback={<Skeleton height={400} />}>
+                <Table striped highlightOnHover mt="md">
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Type</Table.Th>
+                      <Table.Th>Configuration</Table.Th>
+                      <Table.Th>Status</Table.Th>
+                      <Table.Th>Actions</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {filteredSynonyms.map((synonym) => {
+                      const typeConfig = synonymTypes[synonym.type];
+                      const Icon = typeConfig.icon;
 
-                return (
-                  <Table.Tr key={synonym.objectID}>
-                    <Table.Td>
-                      <Group gap="xs">
-                        <ThemeIcon size="md" color={typeConfig.color} variant="light">
-                          <Icon size={16} />
-                        </ThemeIcon>
-                        <Badge color={typeConfig.color} variant="light">
-                          {typeConfig.label}
-                        </Badge>
-                      </Group>
-                    </Table.Td>
-                    <Table.Td>
-                      {synonym.type === 'synonym' && (
-                        <Group gap="xs">
-                          {synonym.synonyms?.map((s, i) => (
-                            <React.Fragment key={i}>
-                              {i > 0 && <IconArrowsLeftRight size={14} />}
-                              <Badge>{s}</Badge>
-                            </React.Fragment>
-                          ))}
-                        </Group>
-                      )}
-                      {synonym.type === 'oneWaySynonym' && (
-                        <Group gap="xs">
-                          <Badge c="blue">{synonym.input}</Badge>
-                          <IconArrowRight size={14} />
-                          {synonym.synonyms?.map((s, i) => (
-                            <Badge key={i} c="green">
-                              {s}
-                            </Badge>
-                          ))}
-                        </Group>
-                      )}
-                      {(synonym.type === 'altCorrection1' || synonym.type === 'altCorrection2') && (
-                        <Group gap="xs">
-                          {synonym.corrections?.map((c, i) => (
-                            <Badge key={i} c="red" variant="light">
-                              {c}
-                            </Badge>
-                          ))}
-                          <IconArrowRight size={14} />
-                          <Badge c="green">{synonym.word}</Badge>
-                        </Group>
-                      )}
-                      {synonym.type === 'placeholder' && <Code>{synonym.placeholder}</Code>}
-                    </Table.Td>
-                    <Table.Td>
-                      <Switch
-                        checked={synonym.enabled}
-                        onChange={(e) => {
-                          const updated = [...synonyms];
-                          const index = updated.findIndex((s) => s.objectID === synonym.objectID);
-                          updated[index] = { ...synonym, enabled: e.currentTarget.checked };
-                          setSynonyms(updated);
-                        }}
-                      />
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap="xs">
-                        <ActionIcon variant="light" onClick={() => setEditingSynonym(synonym)}>
-                          <IconEdit size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                          variant="light"
-                          c="red"
-                          onClick={() => deleteSynonym(synonym.objectID)}
+                      return (
+                        <ErrorBoundary
+                          key={synonym.objectID}
+                          fallback={
+                            <Table.Tr>
+                              <Table.Td colSpan={4}>
+                                <Skeleton height={60} />
+                              </Table.Td>
+                            </Table.Tr>
+                          }
                         >
-                          <IconTrash size={16} />
-                        </ActionIcon>
-                      </Group>
-                    </Table.Td>
-                  </Table.Tr>
-                );
-              })}
-            </Table.Tbody>
-          </Table>
-        </div>
+                          <Table.Tr>
+                            <Table.Td>
+                              <Group gap="xs">
+                                <ThemeIcon size="md" color={typeConfig.color} variant="light">
+                                  <Icon size={16} />
+                                </ThemeIcon>
+                                <Badge color={typeConfig.color} variant="light">
+                                  {typeConfig.label}
+                                </Badge>
+                              </Group>
+                            </Table.Td>
+                            <Table.Td>
+                              {synonym.type === 'synonym' && (
+                                <Group gap="xs">
+                                  {synonym.synonyms?.map((s, i) => (
+                                    <React.Fragment key={i}>
+                                      {i > 0 && <IconArrowsLeftRight size={14} />}
+                                      <Badge>{s}</Badge>
+                                    </React.Fragment>
+                                  ))}
+                                </Group>
+                              )}
+                              {synonym.type === 'oneWaySynonym' && (
+                                <Group gap="xs">
+                                  <Badge c="blue">{synonym.input}</Badge>
+                                  <IconArrowRight size={14} />
+                                  {synonym.synonyms?.map((s, i) => (
+                                    <Badge key={i} c="green">
+                                      {s}
+                                    </Badge>
+                                  ))}
+                                </Group>
+                              )}
+                              {(synonym.type === 'altCorrection1' ||
+                                synonym.type === 'altCorrection2') && (
+                                <Group gap="xs">
+                                  {synonym.corrections?.map((c, i) => (
+                                    <Badge key={i} c="red" variant="light">
+                                      {c}
+                                    </Badge>
+                                  ))}
+                                  <IconArrowRight size={14} />
+                                  <Badge c="green">{synonym.word}</Badge>
+                                </Group>
+                              )}
+                              {synonym.type === 'placeholder' && <Code>{synonym.placeholder}</Code>}
+                            </Table.Td>
+                            <Table.Td>
+                              <Switch
+                                checked={synonym.enabled}
+                                onChange={(e) =>
+                                  handleToggleSynonym(synonym, e.currentTarget.checked)
+                                }
+                              />
+                            </Table.Td>
+                            <Table.Td>
+                              <Group gap="xs">
+                                <ActionIcon
+                                  variant="light"
+                                  onClick={() => handleEditSynonym(synonym)}
+                                >
+                                  <IconEdit size={16} />
+                                </ActionIcon>
+                                <ActionIcon
+                                  variant="light"
+                                  c="red"
+                                  onClick={() => deleteSynonym(synonym.objectID)}
+                                >
+                                  <IconTrash size={16} />
+                                </ActionIcon>
+                              </Group>
+                            </Table.Td>
+                          </Table.Tr>
+                        </ErrorBoundary>
+                      );
+                    })}
+                  </Table.Tbody>
+                </Table>
+              </ErrorBoundary>
+            </div>
+          </ErrorBoundary>
 
-        {/* Synonym editor modal */}
-        {(isCreating || editingSynonym) && (
-          <SynonymEditor
-            synonym={editingSynonym || undefined}
-            onSave={saveSynonym}
-            onClose={() => {
-              setEditingSynonym(null);
-              stopCreating();
-            }}
-          />
-        )}
+          {/* Synonym editor modal */}
+          {(isCreating || editingSynonym) && (
+            <ErrorBoundary
+              fallback={
+                <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+                  <Text size="sm">Synonym editor failed to load</Text>
+                </Alert>
+              }
+            >
+              <SynonymEditor
+                synonym={editingSynonym || undefined}
+                onSave={saveSynonym}
+                onClose={handleCloseEditor}
+              />
+            </ErrorBoundary>
+          )}
 
-        {/* Implementation guide */}
-        <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
-          <Title order={3} mb="md">
-            Implementation Code
-          </Title>
-          <Tabs defaultValue="create">
-            <Tabs.List>
-              <Tabs.Tab value="create">Create Synonyms</Tabs.Tab>
-              <Tabs.Tab value="search">Search with Synonyms</Tabs.Tab>
-              <Tabs.Tab value="manage">Manage Synonyms</Tabs.Tab>
-            </Tabs.List>
+          {/* Implementation guide */}
+          <ErrorBoundary fallback={<Skeleton height={400} />}>
+            <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
+              <Title order={3} mb="md">
+                Implementation Code
+              </Title>
+              <Tabs defaultValue="create">
+                <Tabs.List>
+                  <Tabs.Tab value="create">Create Synonyms</Tabs.Tab>
+                  <Tabs.Tab value="search">Search with Synonyms</Tabs.Tab>
+                  <Tabs.Tab value="manage">Manage Synonyms</Tabs.Tab>
+                </Tabs.List>
 
-            <Tabs.Panel value="create" pt="md">
-              <Code block>
-                {`// Multi-directional synonyms
+                <Tabs.Panel value="create" pt="md">
+                  <Code block>
+                    {`// Multi-directional synonyms
 await index.saveSynonym({
   objectID: 'laptop-synonyms',
   type: 'synonym',
@@ -623,12 +825,12 @@ await index.saveSynonym({
   word: 'headphones',
   corrections: ['hedphones', 'headfones']
 });`}
-              </Code>
-            </Tabs.Panel>
+                  </Code>
+                </Tabs.Panel>
 
-            <Tabs.Panel value="search" pt="md">
-              <Code block>
-                {`// Search automatically uses synonyms
+                <Tabs.Panel value="search" pt="md">
+                  <Code block>
+                    {`// Search automatically uses synonyms
 const results = await index.search('TV', {
   synonyms: true // Enabled by default
 });
@@ -638,12 +840,12 @@ const results = await index.search('TV', {
 // - television
 // - smart TV
 // - LED TV`}
-              </Code>
-            </Tabs.Panel>
+                  </Code>
+                </Tabs.Panel>
 
-            <Tabs.Panel value="manage" pt="md">
-              <Code block>
-                {`// List all synonyms
+                <Tabs.Panel value="manage" pt="md">
+                  <Code block>
+                    {`// List all synonyms
 const { hits } = await index.searchSynonyms('');
 
 // Delete a synonym
@@ -659,11 +861,13 @@ await index.browseSynonyms({
     allSynonyms.push(...batch)
   }
 });`}
-              </Code>
-            </Tabs.Panel>
-          </Tabs>
-        </Card>
-      </Stack>
-    </Container>
+                  </Code>
+                </Tabs.Panel>
+              </Tabs>
+            </Card>
+          </ErrorBoundary>
+        </Stack>
+      </Container>
+    </ErrorBoundary>
   );
 }

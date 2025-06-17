@@ -1,5 +1,5 @@
-import { AppLayout, AppLayoutProvider } from '@/components/layout';
-import { getNavigationRoutes } from '@/data/navigation';
+import { AppLayoutProvider } from '@/components/layout';
+import { ServerAppLayout } from '@/components/layout/ServerAppLayout';
 import { getDictionary } from '@/i18n';
 
 export default async function SplashLayout({
@@ -9,10 +9,9 @@ export default async function SplashLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const [{ locale }, dict, navigationMenu] = await Promise.all([
+  const [{ locale }, dict] = await Promise.all([
     params,
     params.then((p) => getDictionary(p.locale)),
-    getNavigationRoutes(),
   ]);
 
   return (
@@ -24,9 +23,9 @@ export default async function SplashLayout({
         footerEnabled: false,
       }}
     >
-      <AppLayout dict={dict} locale={locale} navigationMenu={navigationMenu} padding="0">
+      <ServerAppLayout dict={dict} locale={locale} padding="0">
         {children}
-      </AppLayout>
+      </ServerAppLayout>
     </AppLayoutProvider>
   );
 }

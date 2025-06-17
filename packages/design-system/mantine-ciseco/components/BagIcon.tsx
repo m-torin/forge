@@ -1,12 +1,12 @@
 import React, { type FC } from 'react';
 
-interface BagIconProps {
+interface BagIconProps extends Record<string, any> {
   className?: string;
 }
 
-const BagIcon: FC<BagIconProps> = ({ className = 'w-5 h-5' }) => {
+const BagIcon: FC<BagIconProps> = ({ className = 'w-5 h-5' }: any) => {
   return (
-    <svg viewBox="0 0 9 9" className={className} fill="none">
+    <svg className={className} fill="none" viewBox="0 0 9 9">
       <path
         d="M2.99997 4.125C3.20708 4.125 3.37497 4.29289 3.37497 4.5C3.37497 5.12132 3.87865 5.625 4.49997 5.625C5.12129 5.625 5.62497 5.12132 5.62497 4.5C5.62497 4.29289 5.79286 4.125 5.99997 4.125C6.20708 4.125 6.37497 4.29289 6.37497 4.5C6.37497 5.53553 5.5355 6.375 4.49997 6.375C3.46444 6.375 2.62497 5.53553 2.62497 4.5C2.62497 4.29289 2.79286 4.125 2.99997 4.125Z"
         fill="currentColor"

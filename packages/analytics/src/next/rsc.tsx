@@ -134,9 +134,9 @@ export async function ServerAnalyticsProvider({
   }
 
   // Get bootstrap data if PostHog is configured
-  let bootstrapData: BootstrapData | undefined;
+  let _bootstrapData: BootstrapData | undefined;
   if (posthogApiKey) {
-    bootstrapData = await getServerBootstrapData(posthogApiKey);
+    _bootstrapData = await getServerBootstrapData(posthogApiKey);
   }
 
   // Return children with any necessary context
@@ -216,7 +216,7 @@ export async function trackEventAction(
   try {
     await trackServerEvent(event, properties);
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false };
   }
 }
@@ -234,7 +234,7 @@ export async function identifyUserAction(
   try {
     await identifyServerUser(userId, traits);
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false };
   }
 }

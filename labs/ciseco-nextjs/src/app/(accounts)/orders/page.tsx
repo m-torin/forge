@@ -1,4 +1,7 @@
-import { ButtonSecondary, Link, Prices, getOrders, type TOrder } from '@repo/design-system/ciseco'
+import { Link } from '@/components/Link'
+import Prices from '@/components/Prices'
+import { getOrders, type TOrder } from '@/data/data'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import { Metadata } from 'next'
 import Image from 'next/image'
 
@@ -12,11 +15,7 @@ const Order = ({ order }: { order: TOrder }) => {
     <div className="z-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
       <div className="flex flex-col bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:bg-neutral-500/5">
         <div>
-          <Link
-            href={{ pathname: '/orders/[number]', query: { number: order.number } } as any}
-            as={'/orders/' + order.number}
-            className="text-lg font-semibold"
-          >
+          <Link href={'/orders/' + order.number} className="text-lg font-semibold">
             #{order.number}
           </Link>
           <p className="mt-1.5 text-sm text-neutral-500 sm:mt-2 dark:text-neutral-400">{order.status}</p>
@@ -58,7 +57,7 @@ const Order = ({ order }: { order: TOrder }) => {
                       <span>{size}</span>
                     </p>
                   </div>
-                  <Prices className="ml-2 mt-0.5" price={price || 0} />
+                  <Prices className="mt-0.5 ml-2" price={price || 0} />
                 </div>
               </div>
               <div className="flex flex-1 items-end justify-between text-sm">
@@ -69,11 +68,7 @@ const Order = ({ order }: { order: TOrder }) => {
                 </p>
 
                 <div className="flex">
-                  <Link
-                    href={{ pathname: '/products/[handle]', query: { handle } } as any}
-                    as={'/products/' + handle}
-                    className="text-primary-600 dark:text-primary-500 font-medium"
-                  >
+                  <Link href={'/products/' + handle} className="font-medium text-primary-600 dark:text-primary-500">
                     Leave review
                   </Link>
                 </div>

@@ -639,10 +639,11 @@ describe('Organization Management', () => {
 
       const result = await getOrganizationStats('org-123');
 
-      expect(result.memberCount).toBe(10);
-      expect(result.teamCount).toBe(5);
-      expect(result.apiKeyCount).toBe(2);
-      expect(result.invitationCount).toBe(3);
+      expect(result).not.toBeNull();
+      expect(result!.memberCount).toBe(10);
+      expect(result!.teamCount).toBe(5);
+      expect(result!.apiKeyCount).toBe(2);
+      expect(result!.invitationCount).toBe(3);
 
       expect(mockPrisma.member.count).toHaveBeenCalledWith({
         where: { organizationId: 'org-123' },

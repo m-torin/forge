@@ -1,24 +1,19 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { createWorkflowEngine } from '../src/server';
+import { ProviderHealthReport, WorkflowDefinition, WorkflowExecution } from '../src/shared/types';
 
 import { createUpstashWorkflowConfig } from './fixtures';
 
-import type {
-  ProviderHealthReport,
-  WorkflowDefinition,
-  WorkflowExecution,
-} from '../src/shared/types';
-
 // Mock dependencies
-vi.mock('@upstash/workflow/nextjs', () => ({
+vi.mock('@upstash/workflow/nextjs', (_: any) => ({
   serve: vi.fn().mockReturnValue({
     GET: vi.fn(),
     POST: vi.fn(),
   }),
 }));
 
-vi.mock('@upstash/qstash', () => ({
+vi.mock('@upstash/qstash', (_: any) => ({
   Client: vi.fn(() => ({
     messages: {
       delete: vi.fn().mockResolvedValue(true),
@@ -31,7 +26,7 @@ vi.mock('@upstash/qstash', () => ({
   })),
 }));
 
-vi.mock('@upstash/redis', () => ({
+vi.mock('@upstash/redis', (_: any) => ({
   Redis: vi.fn(() => ({
     del: vi.fn().mockResolvedValue(1),
     get: vi.fn().mockResolvedValue(null),
@@ -41,11 +36,18 @@ vi.mock('@upstash/redis', () => ({
   })),
 }));
 
-describe('Workflow Engine', () => {
+describe('Workflow Engine', (_: any) => {
   let engine: ReturnType<typeof createWorkflowEngine>;
+  const upstashConfig = createUpstashWorkflowConfig();
   const mockConfig = {
     defaultProvider: 'test-upstash-workflow',
-    providers: [createUpstashWorkflowConfig()],
+    providers: [
+      {
+        name: upstashConfig.name,
+        type: upstashConfig.type as 'upstash-workflow',
+        config: upstashConfig,
+      },
+    ],
     enableHealthChecks: true,
     enableMetrics: true,
   };
@@ -55,20 +57,20 @@ describe('Workflow Engine', () => {
     engine = createWorkflowEngine(mockConfig);
   });
 
-  describe('Engine Creation', () => {
-    test('should create engine with valid config', () => {
+  describe('Engine Creation', (_: any) => {
+    test('should create engine with valid config', (_: any) => {
       expect(engine).toBeDefined();
       expect(engine.manager).toBeDefined();
     });
 
-    test('should create engine with minimal config', () => {
+    test('should create engine with minimal config', (_: any) => {
       const minimalEngine = createWorkflowEngine();
       expect(minimalEngine).toBeDefined();
       expect(minimalEngine.manager).toBeDefined();
     });
   });
 
-  describe('Engine Initialization', () => {
+  describe('Engine Initialization', (_: any) => {
     test('should initialize successfully', async () => {
       await expect(engine.initialize()).resolves.not.toThrow();
     });
@@ -80,7 +82,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Workflow Execution', () => {
+  describe('Workflow Execution', (_: any) => {
     const mockWorkflow: WorkflowDefinition = {
       id: 'test-workflow',
       name: 'Test Workflow',
@@ -136,7 +138,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Execution Management', () => {
+  describe('Execution Management', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });
@@ -188,7 +190,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Scheduling', () => {
+  describe('Scheduling', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });
@@ -204,7 +206,7 @@ describe('Workflow Engine', () => {
         await import('../src/shared/utils/validation'),
         'validateWorkflowDefinition',
       );
-      validateSpy.mockImplementation((def) => def as any);
+      validateSpy.mockImplementation((def: any) => def as any);
 
       const workflowWithSchedule = {
         id: 'test-workflow',
@@ -233,7 +235,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Health and Status', () => {
+  describe('Health and Status', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });
@@ -259,7 +261,7 @@ describe('Workflow Engine', () => {
       expect(health).toEqual(mockHealth);
     });
 
-    test('should get engine status', () => {
+    test('should get engine status', (_: any) => {
       const mockStatus = {
         defaultProvider: 'test-provider',
         providerCount: 1,
@@ -279,7 +281,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Shutdown', () => {
+  describe('Shutdown', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });

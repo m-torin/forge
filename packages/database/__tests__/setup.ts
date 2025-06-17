@@ -1,15 +1,15 @@
 import { beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest';
 
 // Mock the adapters before importing them
-vi.mock('@upstash/vector', () => ({
+vi.mock('@upstash/vector', (_: any) => ({
   Index: vi.fn(),
 }));
 
-vi.mock('@upstash/redis', () => ({
+vi.mock('@upstash/redis', (_: any) => ({
   Redis: vi.fn(),
 }));
 
-vi.mock('firebase-admin', () => ({
+vi.mock('firebase-admin', (_: any) => ({
   initializeApp: vi.fn(),
   credential: {
     cert: vi.fn(),
@@ -17,17 +17,17 @@ vi.mock('firebase-admin', () => ({
   firestore: vi.fn(),
 }));
 
-vi.mock('@prisma/extension-accelerate', () => ({
+vi.mock('@prisma/extension-accelerate', (_: any) => ({
   withAccelerate: vi.fn(() => ({
     name: 'accelerate',
-    extendClient: vi.fn((client) => client),
+    extendClient: vi.fn((client: any) => client),
   })),
 }));
 
 const createMockPrismaClient = () => ({
   $connect: vi.fn(),
   $disconnect: vi.fn(),
-  $extends: vi.fn(function (extension) {
+  $extends: vi.fn(function (_: any) {
     // Return a new client with the same structure
     return createMockPrismaClient();
   }),
@@ -68,19 +68,19 @@ const createMockPrismaClient = () => ({
   },
 });
 
-vi.mock('@prisma/client', () => ({
+vi.mock('@prisma/client', (_: any) => ({
   PrismaClient: vi.fn(() => createMockPrismaClient()),
 }));
 
 // Also mock the generated client
-vi.mock('../prisma/generated/client', () => ({
+vi.mock('../pris../../prisma-generated/client', (_: any) => ({
   PrismaClient: vi.fn(() => createMockPrismaClient()),
 }));
 
 // Setup environment variables
 beforeAll(() => {
   // Database mocking environment
-  process.env.NODE_ENV = 'test';
+  vi.stubEnv('NODE_ENV', 'test');
   process.env.DATABASE_PROVIDER = 'prisma';
   process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
   process.env.FIREBASE_PROJECT_ID = 'mock-project';

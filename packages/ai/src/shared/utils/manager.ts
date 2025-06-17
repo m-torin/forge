@@ -1,6 +1,6 @@
 import { ProviderRegistry } from '../providers/registry';
 
-import type {
+import {
   AIManagerConfig,
   AIProvider,
   Capability,
@@ -15,9 +15,9 @@ import type {
 } from '../types';
 
 export class AIManager {
+  protected defaultProvider?: string;
   protected registry = new ProviderRegistry();
   protected routing = new Map<Capability, string>();
-  protected defaultProvider?: string;
 
   constructor(config?: AIManagerConfig) {
     if (config) {
@@ -25,8 +25,34 @@ export class AIManager {
     }
   }
 
+  async analyzeSentiment(text: string): Promise<SentimentResult> {
+    const provider = this.getProviderForCapability('sentiment');
+    if (!provider?.analyzeSentiment) {
+      throw new Error('No provider available for sentiment analysis');
+    }
+    return provider.analyzeSentiment(text);
+  }
+
+  async classify(text: string, labels?: string[]): Promise<ClassificationResult> {
+    const provider = this.getProviderForCapability('classify');
+    if (!provider?.classify) {
+      throw new Error('No provider available for classification');
+    }
+    return provider.classify(text, labels);
+  }
+
+  async complete(options: CompletionOptions): Promise<CompletionResponse> {
+    const provider = this.getProviderForCapability('complete');
+    if (!provider) {
+      throw new Error('No provider available for completion');
+    }
+    return provider.complete(options);
+  }
+
   configure(config: AIManagerConfig): void {
-    this.defaultProvider = config.defaultProvider;
+    if (config.defaultProvider) {
+      this.defaultProvider = config.defaultProvider;
+    }
 
     if (config.routing) {
       for (const [capability, providerName] of Object.entries(config.routing)) {
@@ -35,14 +61,22 @@ export class AIManager {
     }
   }
 
-  registerProvider(provider: AIProvider): boolean {
-    try {
-      this.registry.register(provider);
-      return true;
-    } catch (error) {
-      console.warn(`Failed to register provider "${provider.name}":`, error);
-      return false;
+  async extractEntities(text: string): Promise<EntityResult> {
+    const provider = this.getProviderForCapability('extraction');
+    if (!provider?.extractEntities) {
+      throw new Error('No provider available for entity extraction');
     }
+    return provider.extractEntities(text);
+  }
+
+  getAvailableCapabilities(): Capability[] {
+    const capabilities = new Set<Capability>();
+    for (const provider of this.registry.getAll()) {
+      for (const capability of provider.capabilities) {
+        capabilities.add(capability);
+      }
+    }
+    return Array.from(capabilities);
   }
 
   getProvider(name: string): AIProvider | undefined {
@@ -73,20 +107,18 @@ export class AIManager {
     return undefined;
   }
 
-  async complete(options: CompletionOptions): Promise<CompletionResponse> {
-    const provider = this.getProviderForCapability('complete');
-    if (!provider) {
-      throw new Error('No provider available for completion');
-    }
-    return provider.complete(options);
-  }
-
-  async *stream(options: StreamOptions): AsyncIterableIterator<StreamChunk> {
-    const provider = this.getProviderForCapability('stream');
-    if (!provider) {
-      throw new Error('No provider available for streaming');
-    }
-    yield* provider.stream(options);
+  getProviderStatus(): {
+    available: boolean;
+    capabilities: Capability[];
+    name: string;
+    type: string;
+  }[] {
+    return this.registry.getAll().map((provider: any) => ({
+      available: true,
+      capabilities: Array.from(provider.capabilities),
+      name: provider.name,
+      type: provider.type,
+    }));
   }
 
   async moderate(content: string): Promise<ModerationResult> {
@@ -97,51 +129,22 @@ export class AIManager {
     return provider.moderate(content);
   }
 
-  async classify(text: string, labels?: string[]): Promise<ClassificationResult> {
-    const provider = this.getProviderForCapability('classify');
-    if (!provider?.classify) {
-      throw new Error('No provider available for classification');
+  registerProvider(provider: AIProvider): boolean {
+    try {
+      this.registry.register(provider);
+      return true;
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.warn(`Failed to register provider "${provider.name}":`, error);
+      return false;
     }
-    return provider.classify(text, labels);
   }
 
-  async analyzeSentiment(text: string): Promise<SentimentResult> {
-    const provider = this.getProviderForCapability('sentiment');
-    if (!provider?.analyzeSentiment) {
-      throw new Error('No provider available for sentiment analysis');
+  async *stream(options: StreamOptions): AsyncIterableIterator<StreamChunk> {
+    const provider = this.getProviderForCapability('stream');
+    if (!provider) {
+      throw new Error('No provider available for streaming');
     }
-    return provider.analyzeSentiment(text);
-  }
-
-  async extractEntities(text: string): Promise<EntityResult> {
-    const provider = this.getProviderForCapability('extraction');
-    if (!provider?.extractEntities) {
-      throw new Error('No provider available for entity extraction');
-    }
-    return provider.extractEntities(text);
-  }
-
-  getAvailableCapabilities(): Capability[] {
-    const capabilities = new Set<Capability>();
-    for (const provider of this.registry.getAll()) {
-      for (const capability of provider.capabilities) {
-        capabilities.add(capability);
-      }
-    }
-    return Array.from(capabilities);
-  }
-
-  getProviderStatus(): {
-    name: string;
-    type: string;
-    capabilities: Capability[];
-    available: boolean;
-  }[] {
-    return this.registry.getAll().map((provider) => ({
-      name: provider.name,
-      type: provider.type,
-      available: true,
-      capabilities: Array.from(provider.capabilities),
-    }));
+    yield* provider.stream(options);
   }
 }

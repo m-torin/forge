@@ -2,9 +2,8 @@
  * Next.js client-side observability integration
  */
 
-import { createClientObservability } from '../client';
-
-import type { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
+import { createClientObservability } from '../client-next';
+import { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
 
 export interface NextJSClientObservabilityConfig extends ObservabilityConfig {
   nextjs?: ObservabilityConfig['nextjs'] & {
@@ -15,9 +14,13 @@ export interface NextJSClientObservabilityConfig extends ObservabilityConfig {
 }
 
 export class NextJSClientObservabilityManager {
-  private manager: ObservabilityManager | null = null;
+  private manager: null | ObservabilityManager = null;
 
   constructor(private config: NextJSClientObservabilityConfig) {}
+
+  getManager(): null | ObservabilityManager {
+    return this.manager;
+  }
 
   async initialize(): Promise<void> {
     this.manager = await createClientObservability(this.config);
@@ -33,10 +36,6 @@ export class NextJSClientObservabilityManager {
 
     // Track route changes (would need actual Next.js router integration)
     // This is a placeholder for the actual implementation
-  }
-
-  getManager(): ObservabilityManager | null {
-    return this.manager;
   }
 }
 
@@ -60,13 +59,13 @@ export async function createNextJSClientObservability(
 
   // Set up client-side error boundaries
   if (typeof window !== 'undefined') {
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', (event: any) => {
       manager.captureException(event.error || new Error(event.message), {
         tags: { source: 'window.onerror' },
       });
     });
 
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', (event: any) => {
       manager.captureException(new Error(`Unhandled Promise Rejection: ${event.reason}`), {
         tags: { source: 'unhandledrejection' },
       });

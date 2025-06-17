@@ -15,7 +15,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ProductEnrichmentInput = z.object({
@@ -50,7 +50,7 @@ const ProductEnrichmentInput = z.object({
           'sustainability',
         ]),
       )
-      .default(['all']),
+      .default(['reviews', 'specifications', 'ai-description']),
   }),
   mode: z.enum(['full', 'incremental', 'specific']).default('incremental'),
   products: z
@@ -264,12 +264,8 @@ export const fetchProductsToEnrichStep = compose(
     (input) => true,
     (output) => output.products.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 30000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['defaultMetric'],
-    }),
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock functions
@@ -301,30 +297,30 @@ export const collectReviewsStep = compose(
     for (const product of products) {
       const reviews = {
         aggregated: {
-          highlights: [],
+          highlights: [] as any[],
           summary: {
             averageRating: 0,
             distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
             sentiment: { negative: 0, neutral: 0, positive: 0 },
             totalReviews: 0,
           },
-          topReviews: [],
+          topReviews: [] as any[],
         },
-        bySource: {},
+        bySource: {} as Record<string, any>,
       };
 
       // Collect from each source
       for (const source of reviewSources) {
         const sourceReviews = await fetchReviewsFromSource(product, source);
-        reviews.bySource[source as any] = sourceReviews;
+        reviews.bySource[source] = sourceReviews;
 
         // Aggregate data
-        reviews.aggregated.summary.totalReviews += sourceReviews.count;
-        reviews.aggregated.summary.averageRating =
-          (reviews.aggregated.summary.averageRating *
-            (reviews.aggregated.summary.totalReviews - sourceReviews.count) +
+        (reviews.aggregated.summary as any).totalReviews += sourceReviews.count;
+        (reviews.aggregated.summary as any).averageRating =
+          ((reviews.aggregated.summary as any).averageRating *
+            ((reviews.aggregated.summary as any).totalReviews - sourceReviews.count) +
             sourceReviews.averageRating * sourceReviews.count) /
-          reviews.aggregated.summary.totalReviews;
+          (reviews.aggregated.summary as any).totalReviews;
       }
 
       // Extract highlights using NLP
@@ -343,11 +339,11 @@ export const collectReviewsStep = compose(
       reviewsCollected: true,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
-      trackingMetrics: ['defaultMetric'],
+      backoff: true,
+      maxRetries: 3,
+      // trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -391,7 +387,7 @@ function selectTopReviews(reviewsBySource: any): any[] {
     allReviews.push(...source.reviews);
   });
 
-  return allReviews.sort((a, b) => b.helpful - a.helpful).slice(0, 5);
+  return allReviews.sort((a: any, b: any) => b.helpful - a.helpful).slice(0, 5);
 }
 
 // Step 3: Extract and validate specifications
@@ -403,11 +399,11 @@ export const extractSpecificationsStep = createStep('extract-specifications', as
     const specs = await extractProductSpecifications(product);
 
     // Validate and normalize specifications
-    const validatedSpecs = {};
+    const validatedSpecs: Record<string, any> = {};
     Object.entries(specs).forEach(([key, value]: [string, any]) => {
       const normalized = normalizeSpecification(key, value);
       if (normalized) {
-        validatedSpecs[normalized.key as any] = {
+        validatedSpecs[normalized.key] = {
           source: normalized.source,
           unit: normalized.unit,
           value: normalized.value,
@@ -523,12 +519,12 @@ export const generateAIDescriptionsStep = compose(
       descriptionsGenerated: true,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
       resetTimeout: 300000,
       threshold: 0.5,
-      timeout: 60000,
-      trackingMetrics: ['defaultMetric'],
+      // timeout: 60000,
+      // trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -559,7 +555,7 @@ async function classifyProductCategory(product: any): Promise<any> {
   const primaryCategories = ['Electronics', 'Clothing', 'Home & Garden', 'Sports & Outdoors'];
   const primary = primaryCategories[Math.floor(Math.random() * primaryCategories.length)];
 
-  const secondaryMap = {
+  const secondaryMap: Record<string, string[]> = {
     Clothing: ["Men's", "Women's", 'Kids', 'Accessories'],
     Electronics: ['Smartphones', 'Laptops', 'Audio', 'Gaming'],
     'Home & Garden': ['Furniture', 'Decor', 'Kitchen', 'Garden'],
@@ -571,7 +567,7 @@ async function classifyProductCategory(product: any): Promise<any> {
   return {
     confidence: 0.85 + Math.random() * 0.15,
     primary,
-    secondary: secondaryMap[primary as any].slice(0, 2),
+    secondary: secondaryMap[primary].slice(0, 2),
     tags: tags.filter(() => Math.random() > 0.7),
   };
 }
@@ -650,7 +646,7 @@ export const generateSEOMetadataStep = compose(
       seoGenerated: true,
     };
   }),
-  (step) => withStepTimeout(step, { execution: 120000 }),
+  (step: any) => withStepTimeout(step, 120000),
 );
 
 function generateStructuredData(product: any, seoContent: any): any {
@@ -864,7 +860,7 @@ function calculateQualityScore(enrichedProduct: any, validation: any): any {
 // Step 11: Store enriched data
 export const storeEnrichedDataStep = compose(
   StepTemplates.database('store-enriched', 'Store enriched product data in database'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 12: Generate enrichment report
@@ -929,7 +925,7 @@ function getCommonIssues(enrichedProducts: any[]): any[] {
       issue,
       percentage: (count / enrichedProducts.length) * 100,
     }))
-    .sort((a, b) => b.count - a.count)
+    .sort((a: any, b: any) => b.count - a.count)
     .slice(0, 5);
 }
 

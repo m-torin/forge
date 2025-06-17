@@ -56,7 +56,7 @@ const { mockGetUserRoleInOrganization, mockIsOrganizationAdmin, mockIsOrganizati
   });
 
 vi.mock('../../../server/organizations/helpers', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as any;
   return {
     ...actual,
     getUserRoleInOrganization: mockGetUserRoleInOrganization,

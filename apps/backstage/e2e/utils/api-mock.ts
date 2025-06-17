@@ -1,4 +1,4 @@
-import type { Page, Request, Route } from '@playwright/test';
+import { Page, Request, Route } from '@playwright/test';
 
 export interface MockResponse {
   body?: any;
@@ -41,7 +41,7 @@ export class ApiMocker {
   }
 
   private setupInterception(): void {
-    this.page.route('**/*', async (route: Route, request: Request) => {
+    this.page.route('**/*', async (route: Route, request: any) => {
       const url = request.url();
       const method = request.method();
 
@@ -56,7 +56,7 @@ export class ApiMocker {
       const matchingRule = this.findMatchingRule(url, method);
 
       if (matchingRule) {
-        await this.handleMockedRequest(route, request, matchingRule);
+        await this.handleMockedNextRequest(route, request, matchingRule);
       } else {
         // Continue with original request
         await route.continue();
@@ -88,12 +88,12 @@ export class ApiMocker {
     return pattern.test(url);
   }
 
-  private async handleMockedRequest(route: Route, request: Request, rule: MockRule): Promise<void> {
+  private async handleMockedNextRequest(route: Route, request: any, rule: MockRule): Promise<void> {
     const { response } = rule;
 
     // Add delay if specified
     if (response.delay) {
-      await new Promise((resolve) => setTimeout(resolve, response.delay));
+      await new Promise((resolve: any) => setTimeout(resolve, response.delay));
     }
 
     const mockResponse = {

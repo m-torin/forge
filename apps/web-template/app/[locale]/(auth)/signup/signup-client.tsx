@@ -8,15 +8,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 
-const signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+import { authClient } from '@repo/auth/client/next';
+
+const signupSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -27,7 +31,7 @@ interface SignupClientProps {
 
 export default function SignupClient({ dict, locale }: SignupClientProps) {
   const router = useRouter();
-  
+
   const form = useForm<SignupFormData>({
     initialValues: {
       name: '',
@@ -40,34 +44,62 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
 
   const handleSubmit = async (values: SignupFormData) => {
     try {
-      // TODO: Implement actual Better Auth signup
-      console.log('Signup attempt:', values);
-      
-      notifications.show({
-        title: 'Demo Mode',
-        message: 'Account creation is not yet connected. This is a UI demo.',
-        color: 'blue',
+      const { data, error } = await authClient.signUp.email({
+        email: values.email,
+        password: values.password,
+        name: values.name,
       });
 
-      // Simulate successful signup
-      setTimeout(() => {
+      if (error) {
+        notifications.show({
+          title: 'Signup Failed',
+          message: error.message || 'Failed to create account',
+          color: 'red',
+        });
+        return;
+      }
+
+      if (data) {
+        notifications.show({
+          title: 'Account Created!',
+          message: 'Your account has been created successfully. You can now login.',
+          color: 'green',
+        });
+
+        // Redirect to login page or home if auto-login happened
         router.push(`/${locale}/login`);
-      }, 1000);
+      }
     } catch (error) {
+      console.error('Signup error:', error);
       notifications.show({
         title: 'Error',
-        message: 'An unexpected error occurred',
+        message: 'An unexpected error occurred during signup',
         color: 'red',
       });
     }
   };
 
   const handleSocialSignup = async (provider: 'google' | 'facebook' | 'twitter') => {
-    notifications.show({
-      title: 'Demo Mode',
-      message: `Social signup with ${provider} is not yet implemented`,
-      color: 'blue',
-    });
+    try {
+      // Map provider names to Better Auth provider names
+      const providerMap = {
+        google: 'google',
+        facebook: 'facebook',
+        twitter: 'twitter',
+      };
+
+      await authClient.signIn.social({
+        provider: providerMap[provider],
+        callbackURL: `/${locale}/home`,
+      });
+    } catch (error) {
+      console.error(`${provider} signup error:`, error);
+      notifications.show({
+        title: 'Social Signup Error',
+        message: `Failed to sign up with ${provider}. Please try again.`,
+        color: 'red',
+      });
+    }
   };
 
   return (
@@ -115,7 +147,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               {dict.auth?.continueWithGoogle || 'Continue with Google'}
             </Button>
           </div>
-          
+
           {/* OR Divider */}
           <div className="relative text-center">
             <span className="relative z-10 inline-block bg-white px-4 text-sm font-medium dark:bg-neutral-900 dark:text-neutral-400">
@@ -123,7 +155,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
             </span>
             <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border border-neutral-100 dark:border-neutral-800" />
           </div>
-          
+
           {/* Signup Form */}
           <form onSubmit={form.onSubmit(handleSubmit)} className="grid grid-cols-1 gap-6">
             <TextInput
@@ -132,7 +164,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               size="lg"
               {...form.getInputProps('name')}
             />
-            
+
             <TextInput
               label={dict.auth?.email || 'Email address'}
               placeholder={dict.auth?.emailPlaceholder || 'example@email.com'}
@@ -140,21 +172,21 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               size="lg"
               {...form.getInputProps('email')}
             />
-            
+
             <PasswordInput
               label={dict.auth?.password || 'Password'}
               placeholder="Create a password"
               size="lg"
               {...form.getInputProps('password')}
             />
-            
+
             <PasswordInput
               label={dict.auth?.confirmPassword || 'Confirm Password'}
               placeholder="Confirm your password"
               size="lg"
               {...form.getInputProps('confirmPassword')}
             />
-            
+
             <Button type="submit" size="lg" fullWidth>
               {dict.auth?.createAccount || 'Create Account'}
             </Button>
@@ -167,7 +199,7 @@ export default function SignupClient({ dict, locale }: SignupClientProps) {
               {dict.auth?.login || 'Login'}
             </Link>
           </span>
-          
+
           {/* Terms */}
           <p className="text-center text-sm text-neutral-500 dark:text-neutral-400">
             {dict.auth?.bySigningUp || 'By signing up, you agree to our'}{' '}

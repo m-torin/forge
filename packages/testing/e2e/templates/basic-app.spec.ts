@@ -3,8 +3,7 @@
  * Copy this file to your app's e2e folder and customize
  */
 
-import { expect, test } from '@repo/testing/e2e';
-import { AppTestHelpers, PerformanceUtils, WaitUtils } from '@repo/testing/e2e';
+import { expect, test, AppTestHelpers, PerformanceUtils, WaitUtils } from '@repo/testing/e2e';
 
 import type { AppTestConfig } from '@repo/testing/e2e';
 

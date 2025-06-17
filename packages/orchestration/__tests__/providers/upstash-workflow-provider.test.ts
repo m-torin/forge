@@ -13,7 +13,7 @@ beforeAll(() => {
   mocks = setupUpstashMocks();
 });
 
-describe('UpstashWorkflowProvider', () => {
+describe('UpstashWorkflowProvider', (_: any) => {
   let provider: any;
   let UpstashWorkflowProvider: any;
 
@@ -41,13 +41,13 @@ describe('UpstashWorkflowProvider', () => {
     resetUpstashMocks(mocks);
   });
 
-  describe('Provider Initialization', () => {
-    test('should initialize with QStash and Redis', () => {
+  describe('Provider Initialization', (_: any) => {
+    test('should initialize with QStash and Redis', (_: any) => {
       expect(provider.name).toBe('upstash-workflow');
       expect(provider.version).toBe('1.0.0');
     });
 
-    test('should initialize without Redis', () => {
+    test('should initialize without Redis', (_: any) => {
       const providerWithoutRedis = new UpstashWorkflowProvider({
         baseUrl: 'http://localhost:3001',
         qstash: {
@@ -58,7 +58,7 @@ describe('UpstashWorkflowProvider', () => {
       expect(providerWithoutRedis.name).toBe('upstash-workflow');
     });
 
-    test('should create provider from config', () => {
+    test('should create provider from config', (_: any) => {
       const config = {
         name: 'test-provider',
         type: 'upstash-workflow' as const,
@@ -76,7 +76,7 @@ describe('UpstashWorkflowProvider', () => {
     });
   });
 
-  describe('Workflow Execution', () => {
+  describe('Workflow Execution', (_: any) => {
     test('should execute workflow successfully', async () => {
       const definition = createTestWorkflowDefinition();
       const input = { action: 'test', userId: '123' };
@@ -182,7 +182,7 @@ describe('UpstashWorkflowProvider', () => {
     });
   });
 
-  describe('Execution Management', () => {
+  describe('Execution Management', (_: any) => {
     test('should get execution by ID', async () => {
       const testExecution = createTestExecution();
 
@@ -270,7 +270,7 @@ describe('UpstashWorkflowProvider', () => {
     });
   });
 
-  describe('Execution Listing', () => {
+  describe('Execution Listing', (_: any) => {
     test('should list executions for workflow', async () => {
       const execution1 = createTestExecution({ id: 'exec_1', workflowId: 'test-workflow' });
       const execution2 = createTestExecution({ id: 'exec_2', workflowId: 'test-workflow' });
@@ -317,11 +317,11 @@ describe('UpstashWorkflowProvider', () => {
     });
 
     test('should limit execution results', async () => {
-      const executions = Array.from({ length: 5 }, (_, i) =>
+      const executions = Array.from({ length: 5 }, (_, i: any) =>
         createTestExecution({ id: `exec_${i}` }),
       );
 
-      mocks.redis.keys.mockResolvedValue(executions.map((e) => `workflow:execution:${e.id}`));
+      mocks.redis.keys.mockResolvedValue(executions.map((e: any) => `workflow:execution:${e.id}`));
 
       for (const exec of executions) {
         mocks.redis.get.mockResolvedValueOnce(JSON.stringify(exec));
@@ -348,7 +348,7 @@ describe('UpstashWorkflowProvider', () => {
     });
   });
 
-  describe('Workflow Scheduling', () => {
+  describe('Workflow Scheduling', (_: any) => {
     test('should schedule workflow', async () => {
       const definition = createTestWorkflowDefinition({
         schedule: {
@@ -410,7 +410,7 @@ describe('UpstashWorkflowProvider', () => {
     });
   });
 
-  describe('Health Check', () => {
+  describe('Health Check', (_: any) => {
     test('should return healthy status', async () => {
       mocks.redis.ping.mockResolvedValue('PONG');
 
@@ -447,7 +447,7 @@ describe('UpstashWorkflowProvider', () => {
     });
   });
 
-  describe('Execution Status Updates', () => {
+  describe('Execution Status Updates', (_: any) => {
     test('should update execution status', async () => {
       const testExecution = createTestExecution();
       mocks.redis.get.mockResolvedValue(JSON.stringify(testExecution));
@@ -486,8 +486,8 @@ describe('UpstashWorkflowProvider', () => {
     });
   });
 
-  describe('Workflow Handler', () => {
-    test('should create workflow handler', () => {
+  describe('Workflow Handler', (_: any) => {
+    test('should create workflow handler', (_: any) => {
       const handler = provider.createWorkflowHandler();
 
       expect(handler).toBeDefined();

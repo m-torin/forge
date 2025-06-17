@@ -3,7 +3,7 @@ import { Redis } from '@upstash/redis';
 
 import { keys } from './keys';
 
-let redis: Redis | null = null;
+let redis: null | Redis = null;
 let hasLoggedWarning = false;
 
 const getRedis = () => {
@@ -11,18 +11,18 @@ const getRedis = () => {
 
   if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) {
     if (!hasLoggedWarning) {
-      console.warn('[Rate Limit] Upstash Redis not configured. Rate limiting is disabled.');
+      // In development, this is expected behavior when Redis is not configured
+      // In production, this should be logged to an error tracking service
+      // console.warn('[Rate Limit] Upstash Redis not configured. Rate limiting is disabled.');
       hasLoggedWarning = true;
     }
     return null;
   }
 
-  if (!redis) {
-    redis = new Redis({
-      url: UPSTASH_REDIS_REST_URL,
-      token: UPSTASH_REDIS_REST_TOKEN,
-    });
-  }
+  redis ??= new Redis({
+    token: UPSTASH_REDIS_REST_TOKEN,
+    url: UPSTASH_REDIS_REST_URL,
+  });
 
   return redis;
 };

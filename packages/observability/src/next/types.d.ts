@@ -2,47 +2,38 @@
  * Next.js specific types for observability
  */
 
-import type { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
+import { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
 
-// Client-side types
-export interface ErrorInfo {
-  componentStack?: string;
-  digest?: string;
+export type APIRouteWrapper = <T extends (req: any, context?: any) => any>(handler: T) => T;
+
+export interface EdgeContext {
+  ctx?: {
+    passThroughOnException: () => void;
+    waitUntil: (promise: Promise<any>) => void;
+  };
+  env?: Record<string, any>;
+  request: any;
 }
 
-export interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps extends Record<string, any> {
   children: React.ReactNode;
   fallback?: React.ComponentType<ErrorFallbackProps>;
   isolate?: boolean;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
-  resetKeys?: (string | number)[];
+  resetKeys?: (number | string)[];
   resetOnPropsChange?: boolean;
 }
 
-export interface ErrorFallbackProps {
+export interface ErrorFallbackProps extends Record<string, any> {
   error: Error;
   errorInfo?: ErrorInfo;
   resetError: () => void;
 }
 
-export interface ObservabilityProviderProps {
-  children: React.ReactNode;
-  config: ObservabilityConfig;
-}
-
-export interface UseObservabilityReturn {
-  addBreadcrumb: (category: string, message: string, data?: any) => void;
-  captureError: (error: Error, context?: any) => void;
-  captureMessage: (message: string, level?: 'info' | 'warning' | 'error') => void;
-  observability: ObservabilityManager | null;
-  startTransaction: (name: string) => any;
-}
-
-export interface PerformanceEntry {
-  duration: number;
-  entryType: string;
-  name: string;
-  startTime: number;
+// Client-side types
+export interface ErrorInfo {
+  componentStack?: string;
+  digest?: string;
 }
 
 export interface NavigationTiming extends PerformanceEntry {
@@ -56,20 +47,34 @@ export interface NavigationTiming extends PerformanceEntry {
   responseStart: number;
 }
 
-export interface ResourceTiming extends PerformanceEntry {
-  decodedBodySize: number;
-  encodedBodySize: number;
-  initiatorType: string;
-  nextHopProtocol: string;
-  transferSize: number;
+// Middleware types
+export interface ObservabilityMiddlewareOptions {
+  afterResponse?: (req: any, res: Response) => Promise<void> | void;
+  beforeRequest?: (req: any) => Promise<void> | void;
+  captureBody?: boolean;
+  captureHeaders?: boolean;
+  config: ObservabilityConfig;
+  skipPaths?: string[];
+}
+
+export interface ObservabilityProviderProps extends Record<string, any> {
+  children: React.ReactNode;
+  config: ObservabilityConfig;
+}
+
+export interface PerformanceEntry {
+  duration: number;
+  entryType: string;
+  name: string;
+  startTime: number;
 }
 
 // Server-side types
 export interface RequestContext {
   geo?: {
+    city?: string;
     country?: string;
     region?: string;
-    city?: string;
   };
   headers?: Record<string, string>;
   ip?: string;
@@ -84,30 +89,18 @@ export interface RequestContext {
   userId?: string;
 }
 
-export interface ServerTiming {
-  description?: string;
-  duration: number;
-  name: string;
+export interface ResourceTiming extends PerformanceEntry {
+  decodedBodySize: number;
+  encodedBodySize: number;
+  initiatorType: string;
+  nextHopProtocol: string;
+  transferSize: number;
 }
 
-export interface EdgeContext {
-  ctx?: {
-    waitUntil: (promise: Promise<any>) => void;
-    passThroughOnException: () => void;
-  };
-  env?: Record<string, any>;
-  request: Request;
-}
-
-// Middleware types
-export interface ObservabilityMiddlewareOptions {
-  afterResponse?: (req: Request, res: Response) => void | Promise<void>;
-  beforeRequest?: (req: Request) => void | Promise<void>;
-  captureBody?: boolean;
-  captureHeaders?: boolean;
-  config: ObservabilityConfig;
-  skipPaths?: string[];
-}
+export type RSCWrapper = <T extends React.ComponentType<any>>(
+  Component: T,
+  componentName?: string,
+) => T;
 
 // Wrapper types
 export type ServerActionWrapper = <T extends (...args: any[]) => any>(
@@ -115,9 +108,16 @@ export type ServerActionWrapper = <T extends (...args: any[]) => any>(
   actionName?: string,
 ) => T;
 
-export type APIRouteWrapper = <T extends (req: Request, context?: any) => any>(handler: T) => T;
+export interface ServerTiming {
+  description?: string;
+  duration: number;
+  name: string;
+}
 
-export type RSCWrapper = <T extends React.ComponentType<any>>(
-  Component: T,
-  componentName?: string,
-) => T;
+export interface UseObservabilityReturn {
+  addBreadcrumb: (category: string, message: string, data?: any) => void;
+  captureError: (error: Error, context?: any) => void;
+  captureMessage: (message: string, level?: 'error' | 'info' | 'warning') => void;
+  observability: null | ObservabilityManager;
+  startTransaction: (name: string) => any;
+}

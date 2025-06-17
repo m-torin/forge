@@ -12,8 +12,12 @@ const testTheme = createTheme({
   primaryColor: 'dark',
 });
 
-interface WrapperProps {
+interface WrapperProps extends Record<string, any> {
   children: React.ReactNode;
+}
+
+export function render(ui: React.ReactElement, options = {}) {
+  return rtlRender(ui, { wrapper: Wrapper, ...options });
 }
 
 function Wrapper({ children }: WrapperProps) {
@@ -22,10 +26,6 @@ function Wrapper({ children }: WrapperProps) {
       {children}
     </MantineProvider>
   );
-}
-
-export function render(ui: React.ReactElement, options = {}) {
-  return rtlRender(ui, { wrapper: Wrapper, ...options });
 }
 
 // Re-export everything from testing-library

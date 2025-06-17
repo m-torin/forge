@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Title,
@@ -10,40 +10,29 @@ import {
   Card,
   Badge,
   Group,
-  Button,
   Switch,
   Paper,
-  Divider,
   Code,
   Alert,
   ThemeIcon,
   List,
   Tabs,
+  Skeleton,
 } from '@mantine/core';
 import {
   IconSearch,
   IconBrain,
-  IconEye,
   IconChartLine,
-  IconUsers,
   IconShoppingCart,
-  IconSparkles,
-  IconFilter,
-  IconMicrophone,
-  IconLanguage,
-  IconMap,
-  IconPhoto,
   IconRocket,
-  IconTestPipe,
   IconBulb,
-  IconTrendingUp,
-  IconClick,
-  IconDatabase,
   IconApi,
   IconCode,
   IconCheck,
   IconX,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Feature categories with their implementations
 const algoliaFeatures = {
@@ -265,17 +254,102 @@ const algoliaFeatures = {
   },
 };
 
-export default function AlgoliaFeaturesShowcase() {
+interface AlgoliaFeaturesShowcaseProps {
+  loading?: boolean;
+  error?: string;
+  'data-testid'?: string;
+}
+
+// Loading skeleton for AlgoliaFeaturesShowcase
+function AlgoliaFeaturesShowcaseSkeleton({ testId }: { testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Stack gap="xl">
+        <div>
+          <Skeleton height={40} width={400} mb="md" />
+          <Skeleton height={24} width={600} />
+        </div>
+        <Paper p="lg">
+          <Group justify="space-between">
+            <div>
+              <Skeleton height={16} width={200} mb="xs" />
+              <Skeleton height={32} width={150} mb="xs" />
+              <Skeleton height={20} width={100} />
+            </div>
+            <Group>
+              <Skeleton height={40} width={120} />
+              <Skeleton height={40} width={100} />
+            </Group>
+          </Group>
+        </Paper>
+        <Skeleton height={40} width={300} />
+        <div>
+          <Group mb="xl">
+            {Array(6)
+              .fill(0)
+              .map((_, i) => (
+                <Skeleton key={i} height={40} width={120} />
+              ))}
+          </Group>
+          <Grid>
+            {Array(4)
+              .fill(0)
+              .map((_, i) => (
+                <Grid.Col key={i} span={6}>
+                  <Skeleton height={180} />
+                </Grid.Col>
+              ))}
+          </Grid>
+        </div>
+      </Stack>
+    </Container>
+  );
+}
+
+// Error state for AlgoliaFeaturesShowcase
+function AlgoliaFeaturesShowcaseError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Features showcase failed to load: {error}</Text>
+      </Alert>
+    </Container>
+  );
+}
+
+export default function AlgoliaFeaturesShowcase({
+  loading = false,
+  error,
+  'data-testid': testId = 'algolia-features-showcase',
+}: AlgoliaFeaturesShowcaseProps = {}) {
   const [activeCategory, setActiveCategory] = useState('core');
   const [showOnlyImplemented, setShowOnlyImplemented] = useState(false);
+  const [internalError, setInternalError] = useState<string | null>(null);
+
+  // Show loading state
+  if (loading) {
+    return <AlgoliaFeaturesShowcaseSkeleton testId={testId} />;
+  }
+
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <AlgoliaFeaturesShowcaseError error={currentError} testId={testId} />;
+  }
 
   // Calculate implementation stats
   const stats = Object.entries(algoliaFeatures).reduce(
     (acc, [key, category]) => {
-      const implemented = category.features.filter((f) => f.implemented).length;
-      const total = category.features.length;
-      acc[key] = { implemented, total, percentage: Math.round((implemented / total) * 100) };
-      return acc;
+      try {
+        const implemented = category.features.filter((f) => f.implemented).length;
+        const total = category.features.length;
+        acc[key] = { implemented, total, percentage: Math.round((implemented / total) * 100) };
+        return acc;
+      } catch (err) {
+        console.error('Error calculating stats for category:', key, err);
+        acc[key] = { implemented: 0, total: 0, percentage: 0 };
+        return acc;
+      }
     },
     {} as Record<string, { implemented: number; total: number; percentage: number }>,
   );
@@ -289,165 +363,206 @@ export default function AlgoliaFeaturesShowcase() {
   );
 
   return (
-    <Container size="xl" py="xl">
-      <Stack gap="xl">
-        {/* Header */}
-        <div>
-          <Title order={1} mb="md">
-            Algolia Features Showcase
-          </Title>
-          <Text size="lg" color="dimmed">
-            Comprehensive overview of Algolia search capabilities in our Next.js 15 implementation
-          </Text>
-        </div>
-
-        {/* Overall Stats */}
-        <Paper p="lg" shadow="sm" radius="sm">
-          <Group justify="space-between" ta="center">
+    <ErrorBoundary
+      fallback={
+        <AlgoliaFeaturesShowcaseError error="Features showcase failed to render" testId={testId} />
+      }
+    >
+      <Container size="xl" py="xl" data-testid={testId}>
+        <Stack gap="xl">
+          {/* Header */}
+          <ErrorBoundary fallback={<Skeleton height={80} />}>
             <div>
-              <Text size="xs" color="dimmed" tt="uppercase" fw={600}>
-                Implementation Progress
-              </Text>
-              <Title order={2}>
-                {totalStats.implemented} of {totalStats.total} features
+              <Title order={1} mb="md">
+                Algolia Features Showcase
               </Title>
-              <Text size="md" color="dimmed">
-                {Math.round((totalStats.implemented / totalStats.total) * 100)}% complete
+              <Text size="lg" color="dimmed">
+                Comprehensive overview of Algolia search capabilities in our Next.js 15
+                implementation
               </Text>
             </div>
-            <Group>
-              <Badge size="xl" color="green" variant="light">
-                {totalStats.implemented} Implemented
-              </Badge>
-              <Badge size="xl" color="gray" variant="light">
-                {totalStats.total - totalStats.implemented} Planned
-              </Badge>
-            </Group>
-          </Group>
-        </Paper>
+          </ErrorBoundary>
 
-        {/* Filter */}
-        <Group justify="space-between">
-          <Switch
-            label="Show only implemented features"
-            checked={showOnlyImplemented}
-            onChange={(event: any) => setShowOnlyImplemented(event.currentTarget.checked)}
-          />
-        </Group>
+          {/* Overall Stats */}
+          <ErrorBoundary fallback={<Skeleton height={120} />}>
+            <Paper p="lg" shadow="sm" radius="sm">
+              <Group justify="space-between" ta="center">
+                <div>
+                  <Text size="xs" color="dimmed" tt="uppercase" fw={600}>
+                    Implementation Progress
+                  </Text>
+                  <Title order={2}>
+                    {totalStats.implemented} of {totalStats.total} features
+                  </Title>
+                  <Text size="md" color="dimmed">
+                    {Math.round((totalStats.implemented / totalStats.total) * 100)}% complete
+                  </Text>
+                </div>
+                <Group>
+                  <Badge size="xl" color="green" variant="light">
+                    {totalStats.implemented} Implemented
+                  </Badge>
+                  <Badge size="xl" color="gray" variant="light">
+                    {totalStats.total - totalStats.implemented} Planned
+                  </Badge>
+                </Group>
+              </Group>
+            </Paper>
+          </ErrorBoundary>
 
-        {/* Feature Categories */}
-        <Tabs value={activeCategory} onChange={(value) => setActiveCategory(value || '')}>
-          <Tabs.List>
-            {Object.entries(algoliaFeatures).map(([key, category]) => {
-              const Icon = category.icon;
-              return (
-                <Tabs.Tab
-                  key={key}
-                  value={key}
-                  leftSection={<Icon size={16} />}
-                  rightSection={
-                    <Badge size="md" variant="light">
-                      {stats[key].percentage}%
-                    </Badge>
+          {/* Filter */}
+          <ErrorBoundary fallback={<Skeleton height={40} />}>
+            <Group justify="space-between">
+              <Switch
+                label="Show only implemented features"
+                checked={showOnlyImplemented}
+                onChange={(event: any) => {
+                  try {
+                    setShowOnlyImplemented(event.currentTarget.checked);
+                  } catch (err) {
+                    console.error('Failed to toggle filter:', err);
+                    setInternalError('Failed to update filter');
                   }
-                >
-                  {category.title}
-                </Tabs.Tab>
-              );
-            })}
-          </Tabs.List>
+                }}
+              />
+            </Group>
+          </ErrorBoundary>
 
-          {Object.entries(algoliaFeatures).map(([key, category]) => (
-            <Tabs.Panel key={key} value={key} pt="xl">
-              <Grid>
-                {category.features
-                  .filter((feature) => !showOnlyImplemented || feature.implemented)
-                  .map((feature, index) => (
-                    <Grid.Col key={index} span={{ base: 12, md: 6 }}>
-                      <Card shadow="sm" radius="sm" h="100%">
-                        <Group justify="space-between" mb="md">
-                          <Group>
-                            <ThemeIcon
-                              size="lg"
-                              variant="light"
-                              color={feature.implemented ? 'green' : 'gray'}
-                            >
-                              {feature.implemented ? <IconCheck /> : <IconX />}
-                            </ThemeIcon>
-                            <div>
-                              <Text fw={600}>{feature.name}</Text>
-                              <Badge
-                                size="md"
-                                color={feature.implemented ? 'green' : 'gray'}
-                                variant="light"
-                              >
-                                {feature.implemented ? 'Implemented' : 'Planned'}
-                              </Badge>
-                            </div>
-                          </Group>
-                        </Group>
-                        <Text size="md" color="dimmed" mb="sm">
-                          {feature.description}
-                        </Text>
-                        {feature.implemented && (
-                          <Code block color="blue" mt="sm">
-                            {feature.component}
-                          </Code>
-                        )}
-                      </Card>
-                    </Grid.Col>
-                  ))}
-              </Grid>
-            </Tabs.Panel>
-          ))}
-        </Tabs>
+          {/* Feature Categories */}
+          <ErrorBoundary fallback={<Skeleton height={400} />}>
+            <Tabs
+              value={activeCategory}
+              onChange={(value) => {
+                try {
+                  setActiveCategory(value || '');
+                } catch (err) {
+                  console.error('Failed to change category:', err);
+                  setInternalError('Failed to change category');
+                }
+              }}
+            >
+              <Tabs.List>
+                {Object.entries(algoliaFeatures).map(([key, category]) => {
+                  const Icon = category.icon;
+                  return (
+                    <ErrorBoundary key={key} fallback={<Skeleton height={40} width={120} />}>
+                      <Tabs.Tab
+                        value={key}
+                        leftSection={<Icon size={16} />}
+                        rightSection={
+                          <Badge size="md" variant="light">
+                            {stats[key]?.percentage || 0}%
+                          </Badge>
+                        }
+                      >
+                        {category.title}
+                      </Tabs.Tab>
+                    </ErrorBoundary>
+                  );
+                })}
+              </Tabs.List>
 
-        {/* Implementation Guide */}
-        <Paper p="lg" shadow="sm" radius="sm" mt="xl">
-          <Title order={3} mb="md">
-            Next.js 15 Optimization Details
-          </Title>
-          <List spacing="md">
-            <List.Item icon={<IconCheck size={20} color="green" />}>
-              <strong>Server Components:</strong> Search results are fetched server-side for better
-              SEO and initial load performance
-            </List.Item>
-            <List.Item icon={<IconCheck size={20} color="green" />}>
-              <strong>Streaming:</strong> Uses Suspense boundaries to stream search results
-              progressively
-            </List.Item>
-            <List.Item icon={<IconCheck size={20} color="green" />}>
-              <strong>Partial Pre-rendering:</strong> Enabled with experimental_ppr for optimal
-              performance
-            </List.Item>
-            <List.Item icon={<IconCheck size={20} color="green" />}>
-              <strong>Edge Runtime:</strong> Compatible with Edge runtime for global low-latency
-              search
-            </List.Item>
-            <List.Item icon={<IconBulb size={20} color="yellow" />}>
-              <strong>Future:</strong> Server Actions for search state updates without client-side
-              JavaScript
-            </List.Item>
-          </List>
-        </Paper>
+              {Object.entries(algoliaFeatures).map(([key, category]) => (
+                <Tabs.Panel key={key} value={key} pt="xl">
+                  <ErrorBoundary fallback={<Skeleton height={300} />}>
+                    <Grid>
+                      {category.features
+                        .filter((feature) => !showOnlyImplemented || feature.implemented)
+                        .map((feature, index) => (
+                          <Grid.Col key={index} span={{ base: 12, md: 6 }}>
+                            <ErrorBoundary fallback={<Skeleton height={180} />}>
+                              <Card shadow="sm" radius="sm" h="100%">
+                                <Group justify="space-between" mb="md">
+                                  <Group>
+                                    <ThemeIcon
+                                      size="lg"
+                                      variant="light"
+                                      color={feature.implemented ? 'green' : 'gray'}
+                                    >
+                                      {feature.implemented ? <IconCheck /> : <IconX />}
+                                    </ThemeIcon>
+                                    <div>
+                                      <Text fw={600}>{feature.name}</Text>
+                                      <Badge
+                                        size="md"
+                                        color={feature.implemented ? 'green' : 'gray'}
+                                        variant="light"
+                                      >
+                                        {feature.implemented ? 'Implemented' : 'Planned'}
+                                      </Badge>
+                                    </div>
+                                  </Group>
+                                </Group>
+                                <Text size="md" color="dimmed" mb="sm">
+                                  {feature.description}
+                                </Text>
+                                {feature.implemented && (
+                                  <Code block color="blue" mt="sm">
+                                    {feature.component}
+                                  </Code>
+                                )}
+                              </Card>
+                            </ErrorBoundary>
+                          </Grid.Col>
+                        ))}
+                    </Grid>
+                  </ErrorBoundary>
+                </Tabs.Panel>
+              ))}
+            </Tabs>
+          </ErrorBoundary>
 
-        {/* API Usage Examples */}
-        <Alert icon={<IconApi />} title="Algolia API Integration" color="blue">
-          <Stack gap="sm">
-            <Text size="md">
-              Our implementation uses Algolia's latest v5 client with optimal caching:
-            </Text>
-            <Code block>
-              {`// Optimized client with caching
+          {/* Implementation Guide */}
+          <ErrorBoundary fallback={<Skeleton height={200} />}>
+            <Paper p="lg" shadow="sm" radius="sm" mt="xl">
+              <Title order={3} mb="md">
+                Next.js 15 Optimization Details
+              </Title>
+              <List spacing="md">
+                <List.Item icon={<IconCheck size={20} color="green" />}>
+                  <strong>Server Components:</strong> Search results are fetched server-side for
+                  better SEO and initial load performance
+                </List.Item>
+                <List.Item icon={<IconCheck size={20} color="green" />}>
+                  <strong>Streaming:</strong> Uses Suspense boundaries to stream search results
+                  progressively
+                </List.Item>
+                <List.Item icon={<IconCheck size={20} color="green" />}>
+                  <strong>Partial Pre-rendering:</strong> Enabled with experimental_ppr for optimal
+                  performance
+                </List.Item>
+                <List.Item icon={<IconCheck size={20} color="green" />}>
+                  <strong>Edge Runtime:</strong> Compatible with Edge runtime for global low-latency
+                  search
+                </List.Item>
+                <List.Item icon={<IconBulb size={20} color="yellow" />}>
+                  <strong>Future:</strong> Server Actions for search state updates without
+                  client-side JavaScript
+                </List.Item>
+              </List>
+            </Paper>
+          </ErrorBoundary>
+
+          {/* API Usage Examples */}
+          <ErrorBoundary fallback={<Skeleton height={150} />}>
+            <Alert icon={<IconApi />} title="Algolia API Integration" color="blue">
+              <Stack gap="sm">
+                <Text size="md">
+                  Our implementation uses Algolia's latest v5 client with optimal caching:
+                </Text>
+                <Code block>
+                  {`// Optimized client with caching
 const searchClient = algoliasearch(appId, apiKey, {
   responsesCache: createInMemoryCache(),
   requestsCache: createInMemoryCache({ serializable: false }),
   timeouts: { connect: 2000, read: 5000, write: 30000 }
 });`}
-            </Code>
-          </Stack>
-        </Alert>
-      </Stack>
-    </Container>
+                </Code>
+              </Stack>
+            </Alert>
+          </ErrorBoundary>
+        </Stack>
+      </Container>
+    </ErrorBoundary>
   );
 }

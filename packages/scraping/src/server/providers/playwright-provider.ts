@@ -1,18 +1,14 @@
-import {
-  type ExtractionResult,
-  type SelectorMap,
-  type SelectorConfig,
-} from '../../shared/types/scraping-types';
-import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
-import { humanDelay, retryWithBackoff } from '../../shared/utils/helpers';
+import { Browser, BrowserContext, ElementHandle, Page } from 'playwright';
 
-import type { Browser, BrowserContext, ElementHandle, Page } from 'playwright';
-import type {
+import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
+import { type ExtractionResult, type SelectorMap } from '../../shared/types/scraping-types';
+import {
   ScrapingProvider,
   ProviderConfig,
   ScrapeOptions,
   ScrapeResult,
 } from '../../shared/types/scraping-types';
+import { humanDelay, retryWithBackoff } from '../../shared/utils/helpers';
 
 /**
  * Enhanced Playwright scraper with reduced boilerplate
@@ -169,7 +165,7 @@ export class PlaywrightProvider implements ScrapingProvider {
         if (config.multiple) {
           const elements = await page.$$(config.selector);
           const values = await Promise.all(
-            elements.map(async (el) => {
+            elements.map(async (el: any) => {
               if (config.attribute) {
                 return el.getAttribute(config.attribute);
               }
@@ -245,7 +241,7 @@ export class PlaywrightProvider implements ScrapingProvider {
    */
   async getTexts(selector: string): Promise<string[]> {
     const page = await this.init();
-    return page.$$eval(selector, (els) => els.map((el) => el.textContent || ''));
+    return page.$$eval(selector, (els: any) => els.map((el: any) => el.textContent || ''));
   }
 
   /**
@@ -262,8 +258,8 @@ export class PlaywrightProvider implements ScrapingProvider {
   async getLinks(selector?: string): Promise<string[]> {
     const page = await this.init();
     const linkSelector = selector || 'a[href]';
-    return page.$$eval(linkSelector, (links) =>
-      links.map((link) => (link as HTMLAnchorElement).href),
+    return page.$$eval(linkSelector, (links: any) =>
+      links.map((link: any) => (link as HTMLAnchorElement).href),
     );
   }
 
@@ -356,7 +352,7 @@ export class PlaywrightProvider implements ScrapingProvider {
   async blockResources(types: string[]): Promise<void> {
     const page = await this.init();
 
-    await page.route('**/*', (route) => {
+    await page.route('**/*', (route: any) => {
       if (types.includes(route.request().resourceType())) {
         route.abort();
       } else {
@@ -436,7 +432,7 @@ export async function quickScrape(
   const scraper = new PlaywrightProvider();
   await scraper.initialize({ options: { headless: true } });
 
-  return scraper.withAutoClose(async (s) => {
+  return scraper.withAutoClose(async (s: any) => {
     // Navigate to URL
     const result = await s.scrape(url, {
       waitForSelector: options.waitForSelector,
@@ -445,7 +441,7 @@ export async function quickScrape(
     });
 
     return {
-      data: result.data || {},
+      data: result?.data || {},
       screenshot: result.screenshot,
       title: result.metadata.title || '',
     };
@@ -471,7 +467,7 @@ export async function scrapeMultiple(
     const batch = urls.slice(i, i + concurrent);
 
     const batchResults = await Promise.all(
-      batch.map(async (url, batchIndex) => {
+      batch.map(async (url, batchIndex: any) => {
         const index = i + batchIndex;
 
         try {
@@ -481,11 +477,14 @@ export async function scrapeMultiple(
 
           const { data } = await quickScrape(url, selectors);
           return { url, data };
-        } catch (error) {
+        } catch (error: any) {
           return {
             url,
             data: {},
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Unknown error',
           };
         }
       }),
@@ -515,14 +514,14 @@ export async function scrapeWithPagination(
   const results: { page: number; data: ExtractionResult }[] = [];
   const maxPages = options.maxPages || 10;
 
-  return scraper.withAutoClose(async (s) => {
+  return scraper.withAutoClose(async (s: any) => {
     let currentUrl = startUrl;
     let pageNum = 1;
 
     while (pageNum <= maxPages) {
       // Navigate to page and extract
       const result = await s.scrape(currentUrl, { extract: selectors });
-      const data = result.data || {};
+      const data = result?.data || {};
       results.push({ data, page: pageNum });
 
       // Check for next page

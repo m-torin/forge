@@ -2,12 +2,40 @@
  * Types for scraping patterns
  */
 
-import type { ScrapeOptions, ScrapeResult } from '../types/scraping-types';
+import { ScrapeOptions, ScrapeResult } from '../types/scraping-types';
 
-// Quick scrape types
-export interface QuickScrapeOptions extends Omit<ScrapeOptions, 'extract'> {
-  provider?: string;
-  retries?: number;
+// AI extraction types
+export interface AIExtractionOptions {
+  confidence?: number;
+  model?: string;
+  prompt: string;
+  schema?: Record<string, any>;
+}
+
+export interface AIExtractionResult {
+  confidence: number;
+  data: any;
+  metadata: {
+    cost?: number;
+    duration: number;
+    tokens?: number;
+  };
+  model: string;
+}
+
+// Browser scraping types
+export interface BrowserScrapeOptions extends ScrapeOptions {
+  interactions?: InteractionStep[];
+  recordSession?: boolean;
+  waitForStable?: boolean;
+}
+
+export interface InteractionStep {
+  delay?: number;
+  options?: Record<string, unknown>;
+  selector?: string;
+  type: 'click' | 'hover' | 'navigate' | 'scroll' | 'select' | 'type' | 'wait';
+  value?: string;
 }
 
 // Multi-scraping types
@@ -44,6 +72,12 @@ export interface PaginationResult {
   url: string;
 }
 
+// Quick scrape types
+export interface QuickScrapeOptions extends Omit<ScrapeOptions, 'extract'> {
+  provider?: string;
+  retries?: number;
+}
+
 // Session types
 export interface SessionOptions {
   cookies?: boolean;
@@ -57,38 +91,4 @@ export interface SessionResult {
   data: Record<string, any>;
   localStorage?: Record<string, string>;
   sessionId: string;
-}
-
-// Browser scraping types
-export interface BrowserScrapeOptions extends ScrapeOptions {
-  interactions?: InteractionStep[];
-  recordSession?: boolean;
-  waitForStable?: boolean;
-}
-
-export interface InteractionStep {
-  delay?: number;
-  options?: Record<string, unknown>;
-  selector?: string;
-  type: 'click' | 'type' | 'select' | 'hover' | 'scroll' | 'wait' | 'navigate';
-  value?: string;
-}
-
-// AI extraction types
-export interface AIExtractionOptions {
-  confidence?: number;
-  model?: string;
-  prompt: string;
-  schema?: Record<string, any>;
-}
-
-export interface AIExtractionResult {
-  confidence: number;
-  data: any;
-  metadata: {
-    tokens?: number;
-    cost?: number;
-    duration: number;
-  };
-  model: string;
 }

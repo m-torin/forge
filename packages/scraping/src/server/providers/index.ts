@@ -4,6 +4,15 @@
  */
 
 // Core provider implementations
+// Factory functions for provider creation
+import { ProviderRegistry } from '../../shared/types/scraping-types';
+
+import { CheerioProvider } from './cheerio-provider';
+import { HeroProvider } from './hero-provider';
+import { NodeFetchProvider } from './node-fetch-provider';
+import { PlaywrightProvider } from './playwright-provider';
+import { PuppeteerProvider } from './puppeteer-provider';
+
 export { PuppeteerProvider, createPuppeteerProvider } from './puppeteer-provider';
 export { PlaywrightProvider } from './playwright-provider';
 export { CheerioProvider, createCheerioProvider } from './cheerio-provider';
@@ -19,32 +28,24 @@ export type {
   ScrapeResult,
 } from '../../shared/types/scraping-types';
 
-// Factory functions for provider creation
-import type { ProviderRegistry } from '../../shared/types/scraping-types';
-import { PuppeteerProvider } from './puppeteer-provider';
-import { PlaywrightProvider } from './playwright-provider';
-import { CheerioProvider } from './cheerio-provider';
-import { HeroProvider } from './hero-provider';
-import { NodeFetchProvider } from './node-fetch-provider';
-
 /**
  * Default server provider registry
  * Maps provider names to factory functions
  */
 export const defaultServerProviders: ProviderRegistry = {
   // Browser automation providers
-  puppeteer: (config) => new PuppeteerProvider(),
-  playwright: (config) => new PlaywrightProvider(),
-  hero: (config) => new HeroProvider(),
+  puppeteer: (_config: any) => new PuppeteerProvider(),
+  playwright: (_config: any) => new PlaywrightProvider(),
+  hero: (_config: any) => new HeroProvider(),
 
   // HTML parsing providers
-  cheerio: (config) => new CheerioProvider(),
-  'node-fetch': (config) => new NodeFetchProvider(),
+  cheerio: (_config: any) => new CheerioProvider(),
+  'node-fetch': (_config: any) => new NodeFetchProvider(),
 
   // Aliases for convenience
-  browser: (config) => new PlaywrightProvider(), // Default browser provider
-  html: (config) => new CheerioProvider(), // Default HTML provider
-  fetch: (config) => new NodeFetchProvider(), // Default fetch provider
+  browser: (_config: any) => new PlaywrightProvider(), // Default browser provider
+  html: (_config: any) => new CheerioProvider(), // Default HTML provider
+  fetch: (_config: any) => new NodeFetchProvider(), // Default fetch provider
 };
 
 /**

@@ -2,7 +2,7 @@
  * Browser utilities for server-side scraping
  */
 
-import type { ScrapingProvider } from '../types/scraping-types';
+import { ScrapingProvider } from '../types/scraping-types';
 
 export interface BrowserPool {
   acquire(): Promise<ScrapingProvider>;
@@ -34,7 +34,7 @@ export function createBrowserPool(
     acquireTimeoutMillis?: number;
   } = {},
 ): BrowserPool {
-  const { min = 1, max = 5 } = options;
+  const { min: _min = 1, max = 5 } = options;
   const pool: ScrapingProvider[] = [];
   const available: ScrapingProvider[] = [];
   const pending: Array<(provider: ScrapingProvider) => void> = [];
@@ -52,7 +52,7 @@ export function createBrowserPool(
       }
 
       // Wait for a provider to become available
-      return new Promise((resolve) => {
+      return new Promise((resolve: any) => {
         pending.push(resolve);
       });
     },
@@ -68,7 +68,7 @@ export function createBrowserPool(
 
     async drain() {
       // Close all browsers
-      await Promise.all(pool.map((p) => p.dispose?.()));
+      await Promise.all(pool.map((p: any) => p.dispose?.()));
       pool.length = 0;
       available.length = 0;
       pending.length = 0;

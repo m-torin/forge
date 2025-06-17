@@ -1,0 +1,163 @@
+---
+title: 'Backstage Admin Panel'
+description: 'Administrative interface for managing users, organizations, and system settings'
+---
+
+# 🎭 Backstage Admin Panel
+
+Admin panel for managing users, organizations, and system settings with impersonation capabilities.
+
+<Note>
+  Backstage runs on port **3300** and provides administrative access to manage the entire platform.
+</Note>
+
+## Core Features
+
+- **User Management** - View, edit, and manage user accounts
+- **Organization Admin** - Manage organization settings and memberships
+- **API Key Oversight** - Monitor and manage API key usage
+- **Impersonation** - Safely impersonate users for support
+- **Analytics Dashboard** - System metrics and user behavior
+- **Feature Flag Management** - Control feature rollouts
+- **Billing Management** - Subscription and payment administration
+- **System Health** - Monitor service status and performance
+
+## Authentication
+
+Backstage uses the same auth system as other apps with additional admin restrictions:
+
+### Admin Access Requirements
+
+1. User must have `admin` or `owner` role
+2. Stricter rate limiting (5 requests/minute for auth)
+3. Enhanced security headers and monitoring
+4. Audit logging for all actions
+
+### API Authentication
+
+```bash
+# Using admin user API key
+curl -H "x-api-key: YOUR_ADMIN_API_KEY" \
+  https://backstage.app/api/protected/users
+
+# Using service API key (for automation)
+curl -H "x-api-key: YOUR_SERVICE_API_KEY" \
+  https://backstage.app/api/health
+```
+
+## Admin Features
+
+<AccordionGroup>
+  <Accordion title="User Management" icon="users">
+    ```typescript
+    // Get all users
+    GET /api/protected/users
+    {
+      "users": [
+        {
+          "id": "user-123",
+          "email": "user@example.com",
+          "role": "member",
+          "organizations": [...]
+        }
+      ]
+    }
+
+    // Update user role
+    PUT /api/protected/users/:id
+    {
+      "role": "admin"
+    }
+
+    // Impersonate user
+    POST /api/protected/impersonate
+    {
+      "userId": "user-123"
+    }
+    ```
+
+  </Accordion>
+  
+  <Accordion title="Organization Management" icon="building">
+    - Create and manage organizations
+    - Invite members and set roles
+    - Configure organization settings
+    - View organization analytics
+  </Accordion>
+  
+  <Accordion title="API Key Management" icon="key">
+    ```typescript
+    // List all API keys
+    GET /api/protected/api-keys
+
+    // Revoke API key
+    DELETE /api/protected/api-keys/:id
+
+    // Monitor API key usage
+    GET /api/protected/api-keys/:id/usage
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Security Features
+
+### Protected Routes
+
+<Warning>All admin routes require proper authentication and authorization.</Warning>
+
+- **Admin-only Access**: Routes protected by role-based middleware
+- **API Rate Limiting**: Enhanced rate limiting for admin actions
+- **Audit Logging**: All admin actions are logged and tracked
+- **Session Security**: Enhanced session management for admin users
+- **CSRF Protection**: Built-in protection against cross-site request forgery
+
+### Impersonation Safety
+
+```typescript
+// Safe impersonation with audit trail
+import { impersonateUser } from '@repo/auth/admin';
+
+const impersonationSession = await impersonateUser({
+  adminUserId: 'admin-123',
+  targetUserId: 'user-456',
+  reason: 'Customer support - billing issue',
+  expiresIn: '1h',
+});
+
+// Auto-logout after session expires
+// All actions logged with impersonation context
+```
+
+## Development
+
+### Local Setup
+
+```bash
+# Start Backstage on port 3300
+pnpm dev --filter=backstage
+
+# Access admin panel
+open http://localhost:3300
+```
+
+### Environment Variables
+
+```bash
+# Backstage-specific variables
+BACKSTAGE_ADMIN_SECRET=your-admin-secret
+BACKSTAGE_IMPERSONATION_TIMEOUT=3600  # 1 hour
+```
+
+## Architecture
+
+Backstage follows the same architectural patterns as other Forge applications:
+
+- **Next.js App Router**: Modern routing and server components
+- **Better Auth Integration**: Seamless authentication with role-based access
+- **Database Integration**: Direct access to the shared Postgres database
+- **Analytics Integration**: PostHog tracking for admin actions
+- **Monitoring**: Built-in health checks and error tracking
+
+The admin panel provides a secure, feature-rich interface for platform management while maintaining
+the same development patterns and security standards as the rest of the Forge ecosystem.

@@ -1,6 +1,11 @@
 'use client'
 
-import { ButtonPrimary, ButtonSecondary, Input, Label, Radio, Select } from '@repo/design-system/ciseco'
+import Label from '@/components/Label/Label'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
+import Input from '@/shared/Input/Input'
+import Radio from '@/shared/Radio/Radio'
+import Select from '@/shared/Select/Select'
 import { FC } from 'react'
 
 interface Props {
@@ -77,7 +82,7 @@ const ShippingAddress: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) =
             </div>
           </div>
           <button
-            className="mt-5 rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto sm:mt-0 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            className="mt-5 rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:mt-0 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700"
             onClick={onOpenActive}
           >
             Change
@@ -101,7 +106,7 @@ const ShippingAddress: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) =
           </div>
 
           {/* ============ */}
-          <div className="space-y-4 sm:flex sm:space-x-3 sm:space-y-0">
+          <div className="space-y-4 sm:flex sm:space-y-0 sm:space-x-3">
             <div className="flex-1">
               <Label className="text-sm">Address</Label>
               <Input className="mt-1.5" placeholder="" defaultValue={'123, Dream Avenue, USA'} type={'text'} />
@@ -165,10 +170,10 @@ const ShippingAddress: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) =
 
           {/* ============ */}
           <div className="flex flex-col pt-6 sm:flex-row">
-            <ButtonPrimary className="sm:px-7! shadow-none" onClick={onCloseActive}>
+            <ButtonPrimary className="shadow-none sm:px-7!" onClick={onCloseActive}>
               Save and next to Payment
             </ButtonPrimary>
-            <ButtonSecondary className="mt-3 sm:ml-3 sm:mt-0" onClick={onCloseActive}>
+            <ButtonSecondary className="mt-3 sm:mt-0 sm:ml-3" onClick={onCloseActive}>
               Cancel
             </ButtonSecondary>
           </div>

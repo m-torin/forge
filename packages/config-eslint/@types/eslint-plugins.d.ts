@@ -3,4 +3,3 @@ declare module 'eslint-plugin-testing-library';
 declare module 'eslint-plugin-jest-dom';
 declare module 'eslint-plugin-react';
 declare module 'eslint-plugin-react-hooks';
-declare module 'eslint-plugin-cypress/flat';

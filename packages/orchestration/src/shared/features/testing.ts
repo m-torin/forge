@@ -3,7 +3,7 @@
  * Workflow mocking, testing utilities, and development server capabilities
  */
 
-import type {
+import {
   WorkflowDefinition,
   WorkflowExecution,
   WorkflowExecutionMetadata,
@@ -11,7 +11,8 @@ import type {
   WorkflowProvider,
   WorkflowStepExecution,
 } from '../types/index';
-import type { ExecutionHistory } from './monitoring';
+
+import { ExecutionHistory } from './monitoring';
 
 export interface MockWorkflowConfig {
   /** Mock execution behavior */
@@ -241,11 +242,11 @@ export class MockWorkflowProvider implements WorkflowProvider {
     options?: { cursor?: string; limit?: number; status?: WorkflowExecutionStatus[] },
   ): Promise<WorkflowExecution[]> {
     const executions = Array.from(this.executions.values()).filter(
-      (e) => e.workflowId === workflowId,
+      (e: any) => e.workflowId === workflowId,
     );
 
     if (options?.status) {
-      return executions.filter((e) => options.status!.includes(e.status));
+      return executions.filter((e: any) => options.status!.includes(e.status));
     }
 
     return executions.slice(0, options?.limit || 100);
@@ -261,8 +262,8 @@ export class MockWorkflowProvider implements WorkflowProvider {
       return workflows;
     }
 
-    return workflows.filter((workflow) => {
-      if (filter.tags && !filter.tags.every((tag) => workflow.tags?.includes(tag))) {
+    return workflows.filter((workflow: any) => {
+      if (filter.tags && !filter.tags.every((tag: any) => workflow.tags?.includes(tag))) {
         return false;
       }
 
@@ -333,7 +334,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
       output: execution.output,
       startedAt: execution.startedAt,
       status: mappedStatus,
-      steps: execution.steps.map((step) => {
+      steps: execution.steps.map((step: any) => {
         // Map step status to ExecutionHistory step status
         const mappedStepStatus = ['cancelled', 'paused', 'timeout'].includes(step.status)
           ? ('failed' as const)
@@ -397,7 +398,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
     const delay = config?.delay || 100;
 
     // Wait for configured delay
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    await new Promise((resolve: any) => setTimeout(resolve, delay));
 
     // Check if execution was cancelled
     if (execution.status === 'cancelled') {
@@ -432,10 +433,8 @@ export class MockWorkflowProvider implements WorkflowProvider {
 
     for (let i = 0; i < workflow.steps.length; i++) {
       if (execution.status === 'cancelled') break;
-
       const step = workflow.steps[i];
-      const stepConfig = stepResults?.find((s) => s.stepId === step.id);
-
+      const stepConfig = stepResults?.find((s: any) => s.stepId === step.id);
       const stepExecution: Partial<WorkflowStepExecution> & {
         status: WorkflowExecutionStatus;
         stepId: string;
@@ -451,7 +450,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
 
       // Simulate step delay
       if (stepConfig?.delay) {
-        await new Promise((resolve) => setTimeout(resolve, stepConfig.delay));
+        await new Promise((resolve: any) => setTimeout(resolve, stepConfig.delay));
       }
 
       // Check for cancellation
@@ -466,7 +465,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
         stepExecution.status = 'failed';
         stepExecution.error = {
           code: 'SIMULATION_ERROR',
-          message: stepConfig.error.message,
+          message: (stepConfig.error as Error)?.message || 'Unknown error',
           retryable: false,
         };
         stepExecution.completedAt = new Date();
@@ -474,7 +473,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
         execution.status = 'failed';
         execution.error = {
           code: 'SIMULATION_ERROR',
-          message: stepConfig.error.message,
+          message: (stepConfig.error as Error)?.message || 'Unknown error',
           retryable: false,
         };
         execution.completedAt = new Date();
@@ -599,7 +598,7 @@ export class WorkflowTestRunner {
       const assertions = await this.runAssertions(scenario, execution);
 
       const duration = Date.now() - startTime;
-      const allPassed = assertions.every((a) => a.passed);
+      const allPassed = assertions.every((a: any) => a.passed);
 
       return {
         actualOutput: execution.output,
@@ -609,14 +608,17 @@ export class WorkflowTestRunner {
         scenarioName: scenario.name,
         status: allPassed ? 'passed' : 'failed',
       };
-    } catch (error) {
+    } catch (error: any) {
       const duration = Date.now() - startTime;
-      const isTimeout = error instanceof Error && error.message.includes('timeout');
+      const isTimeout =
+        (error instanceof Error && (error as Error)?.message) ||
+        'Unknown error'.includes('timeout');
 
       return {
         duration,
         error: {
-          message: error instanceof Error ? error.message : String(error),
+          message:
+            error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
           stack: error instanceof Error ? error.stack : undefined,
           type: isTimeout ? 'timeout' : 'execution',
         },
@@ -641,7 +643,7 @@ export class WorkflowTestRunner {
 
       // Run scenarios
       if (testSuite.config?.parallel) {
-        const scenarioPromises = testSuite.scenarios.map((scenario) =>
+        const scenarioPromises = testSuite.scenarios.map((scenario: any) =>
           this.runScenario(testSuite.workflowId, scenario),
         );
         const scenarioResults = await Promise.all(scenarioPromises);
@@ -657,10 +659,11 @@ export class WorkflowTestRunner {
       if (testSuite.teardown) {
         await testSuite.teardown();
       }
-    } catch (error) {
+    } catch (error: any) {
       return {
         duration: Date.now() - startTime,
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
         results: [],
         stats: { failed: 0, passed: 0, skipped: 0, timeout: 0, total: 0 },
         status: 'failed',
@@ -669,10 +672,10 @@ export class WorkflowTestRunner {
     }
 
     const stats = {
-      failed: results.filter((r) => r.status === 'failed').length,
-      passed: results.filter((r) => r.status === 'passed').length,
-      skipped: results.filter((r) => r.status === 'skipped').length,
-      timeout: results.filter((r) => r.status === 'timeout').length,
+      failed: results.filter((r: any) => r.status === 'failed').length,
+      passed: results.filter((r: any) => r.status === 'passed').length,
+      skipped: results.filter((r: any) => r.status === 'skipped').length,
+      timeout: results.filter((r: any) => r.status === 'timeout').length,
       total: results.length,
     };
 
@@ -740,7 +743,7 @@ export class WorkflowTestRunner {
       type: string;
     }[]
   > {
-    const results = [];
+    const results: any[] = [];
 
     // Default output assertion
     if (scenario.expectedOutput !== undefined) {
@@ -776,9 +779,10 @@ export class WorkflowTestRunner {
             passed,
             type: assertion.type,
           });
-        } catch (error) {
+        } catch (error: any) {
           results.push({
-            message: error instanceof Error ? error.message : String(error),
+            message:
+              error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
             passed: false,
             type: assertion.type,
           });
@@ -813,7 +817,7 @@ export class WorkflowTestRunner {
         return execution;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve: any) => setTimeout(resolve, 100));
     }
 
     throw new Error('Execution timeout');
@@ -828,7 +832,7 @@ export const WorkflowDebugUtils = {
    * Create execution trace for debugging
    */
   createExecutionTrace(execution: WorkflowExecution): string {
-    const trace = [];
+    const trace: any[] = [];
     trace.push(`Execution ${execution.id} (${execution.status})`);
     trace.push(`Started: ${execution.startedAt.toISOString()}`);
 
@@ -854,7 +858,7 @@ export const WorkflowDebugUtils = {
     }
 
     if (execution.error) {
-      trace.push(`Error: ${execution.error.message}`);
+      trace.push(`Error: ${(execution.error as Error)?.message || 'Unknown error'}`);
     }
 
     return trace.join('\n');
@@ -903,7 +907,7 @@ export const WorkflowDebugUtils = {
    * Validate workflow definition
    */
   validateWorkflowDefinition(workflow: WorkflowDefinition): string[] {
-    const errors = [];
+    const errors: any[] = [];
 
     if (!workflow.id) {
       errors.push('Workflow must have an id');

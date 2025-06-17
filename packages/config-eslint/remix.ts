@@ -1,10 +1,9 @@
+import { Linter } from 'eslint';
 import globals from 'globals';
 
 // remix.ts
 import reactPackageConfig from './react-package';
 import serverConfig from './server';
-
-import type { Linter } from 'eslint';
 
 /*
  * This is a custom ESLint configuration for use with
@@ -32,7 +31,6 @@ const config: Linter.FlatConfig[] = [
       'perfectionist/sort-imports': [
         'error',
         {
-          type: 'natural',
           groups: [
             'builtin',
             'external',
@@ -51,6 +49,7 @@ const config: Linter.FlatConfig[] = [
           ],
           newlinesBetween: 'always',
           order: 'asc',
+          type: 'natural',
         },
       ],
     },
@@ -63,7 +62,6 @@ const config: Linter.FlatConfig[] = [
       'app/entry.*.{js,jsx,ts,tsx}',
     ],
     rules: {
-      '@typescript-eslint/explicit-function-return-type': 'off', // Remix handles types
       'import/prefer-default-export': 'off',
     },
   },
@@ -71,7 +69,7 @@ const config: Linter.FlatConfig[] = [
     // Server-side only files
     files: ['app/server/**/*.{js,ts}', 'app/models/**/*.{js,ts}', 'app/services/**/*.{js,ts}'],
     rules: {
-      '@typescript-eslint/explicit-function-return-type': 'error',
+      // Server-side specific rules
     },
   },
 ];

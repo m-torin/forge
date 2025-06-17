@@ -1,23 +1,23 @@
 declare module 'eslint' {
   namespace Linter {
     interface FlatConfig {
-      files?: string | string[] | (string | string[])[];
+      files?: (string | string[])[] | string | string[];
       ignores?: string | string[];
       languageOptions?: {
-        ecmaVersion?: number | 'latest';
-        sourceType?: 'script' | 'module' | 'commonjs';
+        ecmaVersion?: 'latest' | number;
+        globals?: any | Record<string, any>;
         parser?: any;
         parserOptions?: any;
-        globals?: Record<string, any> | any;
+        sourceType?: 'commonjs' | 'module' | 'script';
       };
       linterOptions?:
+        | any
         | {
-            reportUnusedDisableDirectives?: boolean | 'error' | number | string;
             noInlineConfig?: boolean;
-          }
-        | any;
+            reportUnusedDisableDirectives?: 'error' | boolean | number | string;
+          };
       plugins?: Record<string, any>;
-      processor?: string | any;
+      processor?: any | string;
       rules?: Record<string, any>;
       settings?: Record<string, any>;
     }
@@ -34,7 +34,7 @@ declare module 'eslint' {
       message: string;
       messageId?: string;
       nodeType: string;
-      ruleId: string | null;
+      ruleId: null | string;
       severity: number;
     }
   }

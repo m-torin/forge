@@ -27,55 +27,53 @@ import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useRouter } from 'next/navigation';
 
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  createdAt: string;
-  members?: Array<{
-    id: string;
-    userId: string;
-    role: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
-  _count?: {
-    members: number;
-    invitations: number;
-  };
-}
+import { getOrganizationById } from '@repo/auth/server/next';
+import { OrganizationForm } from '../../components/forms/OrganizationForm';
+import { PageHeader } from '../../../components/page-header';
+import type { Organization } from '../../types';
 
-interface OrganizationDetailPageProps {
+interface OrganizationPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function OrganizationDetailPage({ params }: OrganizationDetailPageProps) {
-  const router = useRouter();
+export default function OrganizationPage({ params }: OrganizationPageProps) {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEdit, setIsEdit] = useState(false);
   const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    params.then(p => setParamsData(p));
+    params.then((p) => setParamsData(p));
   }, [params]);
 
   useEffect(() => {
     if (paramsData?.id) {
-      loadOrganization();
+      if (paramsData.id === 'new') {
+        setLoading(false);
+      } else {
+        loadOrganization();
+      }
     }
   }, [paramsData?.id]);
 
   const loadOrganization = async () => {
+    if (!paramsData?.id || paramsData.id === 'new') return;
+
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/organizations/${paramsData?.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setOrganization(data.organization);
+      const result = await getOrganizationById(paramsData.id);
+      if (result.success && result.data) {
+        // The organization data from better-auth may have a different structure
+        // Add member count information
+        const org = result.data as any;
+        setOrganization({
+          ...org,
+          _count: {
+            members: org.members?.length || 0,
+            invitations: org.invitations?.length || 0,
+          },
+        });
       } else {
         notifications.show({
           title: 'Error',
@@ -95,136 +93,234 @@ export default function OrganizationDetailPage({ params }: OrganizationDetailPag
     }
   };
 
+  // Handle "new" case - show create form
+  if (paramsData?.id === 'new') {
+    return (
+      <Container py="xl" size="xl">
+        <Stack gap="xl">
+          <PageHeader
+            title="Create New Organization"
+            description="Set up a new organization for your team"
+            breadcrumbs={[
+              { label: 'Guests', href: '/guests' },
+              { label: 'Organizations', href: '/guests/organizations' },
+              { label: 'New' },
+            ]}
+          />
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <OrganizationForm />
+          </Card>
+        </Stack>
+      </Container>
+    );
+  }
+
+  // Handle edit mode
+  if (isEdit && organization) {
+    return (
+      <Container py="xl" size="xl">
+        <Stack gap="xl">
+          <PageHeader
+            title="Edit Organization"
+            description="Update organization details"
+            breadcrumbs={[
+              { label: 'Guests', href: '/guests' },
+              { label: 'Organizations', href: '/guests/organizations' },
+              { label: organization.name },
+            ]}
+          />
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <OrganizationForm
+              organization={organization}
+              onSuccess={() => {
+                setIsEdit(false);
+                loadOrganization();
+              }}
+              onCancel={() => setIsEdit(false)}
+            />
+          </Card>
+        </Stack>
+      </Container>
+    );
+  }
+
   if (loading || !organization) {
     return (
-      <Container size="lg" py="xl">
+      <Container py="xl" size="xl">
         <Text>Loading...</Text>
       </Container>
     );
   }
 
+  // Handle view mode
   return (
-    <Container size="lg" py="xl">
+    <Container py="xl" size="xl">
       <Stack gap="xl">
-        <Group justify="space-between">
-          <Button variant="subtle" leftSection={<IconArrowLeft size={16} />} onClick={() => router.back()}>
+        <PageHeader
+          title="Organization Details"
+          description="View and manage organization information"
+          actions={{
+            primary: {
+              icon: <IconEdit size={16} />,
+              label: 'Edit',
+              onClick: () => setIsEdit(true),
+            },
+            secondary: [
+              {
+                icon: <IconSettings size={16} />,
+                label: 'Settings',
+                onClick: () => console.log('Settings'),
+              },
+            ],
+          }}
+          breadcrumbs={[
+            { label: 'Guests', href: '/guests' },
+            { label: 'Organizations', href: '/guests/organizations' },
+            { label: organization.name },
+          ]}
+        />
+
+        <SimpleGrid cols={{ base: 1, lg: 3, sm: 2 }} spacing="lg">
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Group gap="xs">
+                <IconBuilding size={16} />
+                <Text fw={500} size="sm">
+                  Organization Info
+                </Text>
+              </Group>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Name
+                </Text>
+                <Text fw={500}>{organization.name}</Text>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Slug
+                </Text>
+                <Text fw={500}>{organization.slug}</Text>
+              </div>
+              {organization.description && (
+                <div>
+                  <Text size="sm" c="dimmed">
+                    Description
+                  </Text>
+                  <Text fw={500}>{organization.description}</Text>
+                </div>
+              )}
+            </Stack>
+          </Card>
+
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Group gap="xs">
+                <IconUsers size={16} />
+                <Text fw={500} size="sm">
+                  Team Information
+                </Text>
+              </Group>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Total Members
+                </Text>
+                <Text fw={500}>{organization._count?.members || 0}</Text>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Pending Invitations
+                </Text>
+                <Text fw={500}>{organization._count?.invitations || 0}</Text>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Created
+                </Text>
+                <Text fw={500}>{new Date(organization.createdAt).toLocaleDateString()}</Text>
+              </div>
+            </Stack>
+          </Card>
+
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Group gap="xs">
+                <IconCalendar size={16} />
+                <Text fw={500} size="sm">
+                  Activity
+                </Text>
+              </Group>
+              <div>
+                <Text size="sm" c="dimmed">
+                  API Keys
+                </Text>
+                <Text fw={500}>{organization._count?.apiKeys || 0}</Text>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Teams
+                </Text>
+                <Text fw={500}>{organization._count?.teams || 0}</Text>
+              </div>
+            </Stack>
+          </Card>
+        </SimpleGrid>
+
+        {organization.members && organization.members.length > 0 && (
+          <>
+            <Divider />
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Stack gap="md">
+                <Text fw={500}>Members</Text>
+                <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+                  {organization.members.map((member) => (
+                    <Card key={member.id} padding="sm" radius="md" withBorder>
+                      <Group gap="sm">
+                        <Avatar radius="xl" size="sm">
+                          {member.user.name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')}
+                        </Avatar>
+                        <div style={{ flex: 1 }}>
+                          <Text fw={500} size="sm">
+                            {member.user.name}
+                          </Text>
+                          <Text c="dimmed" size="xs">
+                            {member.user.email}
+                          </Text>
+                        </div>
+                        <Badge
+                          color={
+                            member.role === 'owner'
+                              ? 'red'
+                              : member.role === 'admin'
+                                ? 'orange'
+                                : 'blue'
+                          }
+                          variant="light"
+                          size="sm"
+                          leftSection={member.role === 'owner' ? <IconCrown size={12} /> : null}
+                        >
+                          {member.role}
+                        </Badge>
+                      </Group>
+                    </Card>
+                  ))}
+                </SimpleGrid>
+              </Stack>
+            </Card>
+          </>
+        )}
+
+        <Group>
+          <Button
+            variant="light"
+            leftSection={<IconArrowLeft size={16} />}
+            onClick={() => router.push('/guests/organizations')}
+          >
             Back to Organizations
           </Button>
         </Group>
-
-        <Card shadow="sm" padding="xl" radius="md" withBorder>
-          <Stack gap="md">
-            <Group justify="space-between">
-              <Group gap="md">
-                <Avatar size="lg" radius="md">
-                  <IconBuilding size={32} />
-                </Avatar>
-                <div>
-                  <Text fw={600} size="xl">
-                    {organization.name}
-                  </Text>
-                  <Text c="dimmed" size="sm">
-                    @{organization.slug}
-                  </Text>
-                  {organization.description && (
-                    <Text c="dimmed" size="sm" mt={4}>
-                      {organization.description}
-                    </Text>
-                  )}
-                </div>
-              </Group>
-              <Group gap="xs">
-                <Tooltip label="Edit Organization">
-                  <ActionIcon variant="light" color="blue" size="lg">
-                    <IconEdit size={20} />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label="Settings">
-                  <ActionIcon variant="light" color="gray" size="lg">
-                    <IconSettings size={20} />
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
-            </Group>
-
-            <Divider />
-
-            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
-              <Card padding="md" radius="md" withBorder>
-                <Stack gap="xs">
-                  <Group gap="xs">
-                    <IconUsers size={16} />
-                    <Text fw={500} size="sm">Members</Text>
-                  </Group>
-                  <Text fw={600} size="xl">
-                    {organization._count?.members || organization.members?.length || 0}
-                  </Text>
-                </Stack>
-              </Card>
-
-              <Card padding="md" radius="md" withBorder>
-                <Stack gap="xs">
-                  <Group gap="xs">
-                    <IconCalendar size={16} />
-                    <Text fw={500} size="sm">Created</Text>
-                  </Group>
-                  <Text size="sm">
-                    {new Date(organization.createdAt).toLocaleDateString()}
-                  </Text>
-                </Stack>
-              </Card>
-
-              <Card padding="md" radius="md" withBorder>
-                <Stack gap="xs">
-                  <Group gap="xs">
-                    <IconSettings size={16} />
-                    <Text fw={500} size="sm">Pending Invites</Text>
-                  </Group>
-                  <Text fw={600} size="xl">
-                    {organization._count?.invitations || 0}
-                  </Text>
-                </Stack>
-              </Card>
-            </SimpleGrid>
-
-            {organization.members && organization.members.length > 0 && (
-              <>
-                <Divider />
-                <div>
-                  <Text fw={500} mb="md" size="lg">Members</Text>
-                  <Stack gap="md">
-                    {organization.members.map((member) => (
-                      <Card key={member.id} padding="md" radius="md" withBorder>
-                        <Group justify="space-between">
-                          <Group gap="sm">
-                            <Avatar size="md" radius="xl">
-                              {member.user.name
-                                .split(' ')
-                                .map((n: string) => n[0])
-                                .join('')}
-                            </Avatar>
-                            <div>
-                              <Text fw={500}>{member.user.name}</Text>
-                              <Text c="dimmed" size="sm">{member.user.email}</Text>
-                            </div>
-                          </Group>
-                          <Badge 
-                            variant="light" 
-                            size="lg"
-                            color={member.role === 'owner' ? 'yellow' : member.role === 'admin' ? 'red' : 'blue'}
-                            leftSection={member.role === 'owner' ? <IconCrown size={14} /> : undefined}
-                          >
-                            {member.role}
-                          </Badge>
-                        </Group>
-                      </Card>
-                    ))}
-                  </Stack>
-                </div>
-              </>
-            )}
-          </Stack>
-        </Card>
       </Stack>
     </Container>
   );

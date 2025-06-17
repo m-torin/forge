@@ -228,12 +228,12 @@ export class AccessibilityReporter {
       <head>
         <title>Accessibility Report</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .violation { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
-          .critical { border-color: #ff0000; background-color: #ffe0e0; }
-          .serious { border-color: #ff8800; background-color: #fff0e0; }
-          .moderate { border-color: #ffaa00; background-color: #fffae0; }
-          .minor { border-color: #888888; background-color: #f5f5f5; }
+          body { font-family: Arial, sans-serif, margin: 20px; }
+          .violation { margin-bottom: 20px, padding: 10px; border: 1px solid #ccc, }
+          .critical { border-color: #ff0000; background-color: #ffe0e0, }
+          .serious { border-color: #ff8800; background-color: #fff0e0, }
+          .moderate { border-color: #ffaa00; background-color: #fffae0, }
+          .minor { border-color: #888888; background-color: #f5f5f5, }
         </style>
       </head>
       <body>

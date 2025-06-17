@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
-import type { StorybookConfig } from '@storybook/nextjs';
+import { StorybookConfig } from '@storybook/nextjs';
 
 const require = createRequire(import.meta.url);
 
@@ -36,6 +36,8 @@ const config: StorybookConfig = {
     '../../../packages/design-system/uix/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../../../packages/design-system/mantine-ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../../../packages/design-system/algolia/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    '../web-template/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    './stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
   webpackFinal: async (config: any) => {
     // Add resolution aliases for auth mocking
@@ -52,7 +54,6 @@ const config: StorybookConfig = {
       // Add fallbacks for Node.js modules
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        url: false,
         assert: false,
         async_hooks: false,
         buffer: require.resolve('buffer'),
@@ -88,6 +89,7 @@ const config: StorybookConfig = {
         stream: require.resolve('stream-browserify'),
         string_decoder: require.resolve('string_decoder'),
         tls: false,
+        url: false,
         util: require.resolve('util'),
         v8: false,
         vm: false,
@@ -97,15 +99,14 @@ const config: StorybookConfig = {
     }
 
     // Add plugins to handle Node.js modules
-    config.plugins = config.plugins || [];
+    config.plugins = config.plugins ?? [];
     config.plugins.push(
       new (require('webpack').IgnorePlugin)({
         resourceRegExp: /^(fsevents|@swc\/core)$/,
       }),
       new (require('webpack').NormalModuleReplacementPlugin)(/^node:/, (resource: any) => {
         const request = resource.request.replace(/^node:/, '');
-        const mapping: Record<string, string | false> = {
-          url: false,
+        const mapping: Record<string, false | string> = {
           assert: false,
           async_hooks: false,
           buffer: require.resolve('buffer'),
@@ -131,6 +132,7 @@ const config: StorybookConfig = {
           repl: false,
           stream: require.resolve('stream-browserify'),
           tls: false,
+          url: false,
           util: require.resolve('util'),
           v8: false,
           vm: false,
@@ -155,18 +157,16 @@ const config: StorybookConfig = {
 
     // Suppress import warnings for missing exports - we'll fix them incrementally
     config.stats = {
-      ...(config.stats || {}),
+      ...(config.stats ?? {}),
       logging: 'error',
       loggingDebug: false,
       warningsFilter: [/export .* was not found/, /Critical dependency/],
     };
 
-    // Log resolved stories
-    console.log('Loading stories from:', [
-      '../../../packages/design-system/uix/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-      '../../../packages/design-system/mantine-ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-      '../../../packages/design-system/algolia/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    ]);
+    // Stories are loaded from these paths:
+    // - '../../../packages/design-system/uix/**/*.stories.@(js|jsx|mjs|ts|tsx)'
+    // - '../../../packages/design-system/mantine-ciseco/**/*.stories.@(js|jsx|mjs|ts|tsx)'
+    // - '../../../packages/design-system/algolia/**/*.stories.@(js|jsx|mjs|ts|tsx)'
 
     return config;
   },

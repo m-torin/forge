@@ -1,14 +1,12 @@
 'use client';
 
-import { useChat as useVercelChat } from 'ai/react';
+import { useChat as useVercelChat, CreateMessage, Message, UseChatOptions } from 'ai/react';
 import { useCallback } from 'react';
-
-import type { CreateMessage, Message, UseChatOptions } from 'ai/react';
 
 export interface UseAIChatOptions extends Omit<UseChatOptions, 'api'> {
   api?: string;
   onRateLimit?: (retryAfter: number) => void;
-  onTokenUsage?: (usage: { prompt: number; completion: number; total: number }) => void;
+  onTokenUsage?: (usage: { completion: number; prompt: number; total: number }) => void;
 }
 
 export function useAIChat({
@@ -21,23 +19,25 @@ export function useAIChat({
 }: UseAIChatOptions = {}) {
   const chat = useVercelChat({
     api,
-    onError: (error) => {
+    onError: (error: any) => {
       // Handle rate limiting
-      if (error.message?.includes('429') && onRateLimit) {
-        const retryAfter = parseInt(error.message.match(/retry after (\d+)/)?.[1] || '60');
-        onRateLimit(retryAfter);
+      if ((error as Error)?.message || ('Unknown error'.includes('429') && onRateLimit)) {
+        const retryAfter = parseInt(
+          ((error as Error)?.message || 'Unknown error'.match(/retry after (\d+)/)?.[1]) ?? '60',
+        );
+        onRateLimit?.(retryAfter);
       }
       onError?.(error);
     },
-    onFinish: (message, options) => {
+    onFinish: (message, options: any) => {
       // Extract token usage if available
       if (options && 'usage' in options && onTokenUsage) {
         const usage = options.usage;
         if (usage && typeof usage === 'object') {
           onTokenUsage({
-            completion: (usage as any).completionTokens || 0,
-            prompt: (usage as any).promptTokens || 0,
-            total: (usage as any).totalTokens || 0,
+            completion: (usage as any).completionTokens ?? 0,
+            prompt: (usage as any).promptTokens ?? 0,
+            total: (usage as any).totalTokens ?? 0,
           });
         }
       }
@@ -49,14 +49,20 @@ export function useAIChat({
 
   // Enhanced append with retry logic
   const appendWithRetry = useCallback(
-    async (message: Message | CreateMessage, retries = 3): Promise<void> => {
+    async (message: CreateMessage | Message, retries = 3): Promise<void> => {
       try {
         await chat.append(message);
-      } catch (error) {
-        if (retries > 0 && error instanceof Error && error.message.includes('429')) {
+      } catch (error: any) {
+        if (
+          (retries > 0 && error instanceof Error && (error as Error)?.message) ||
+          'Unknown error'.includes('429')
+        ) {
           // Wait and retry on rate limit
-          const delay = parseInt(error.message.match(/retry after (\d+)/)?.[1] || '5') * 1000;
-          await new Promise((resolve) => setTimeout(resolve, delay));
+          const delay =
+            parseInt(
+              ((error as Error)?.message || 'Unknown error'.match(/retry after (\d+)/)?.[1]) ?? '5',
+            ) * 1000;
+          await new Promise((resolve: any) => setTimeout(resolve, delay));
           return appendWithRetry(message, retries - 1);
         }
         throw error;
@@ -81,7 +87,7 @@ export function useAIChat({
     // Resubmit last user message
     const lastUserMessage = newMessages[newMessages.length - 1];
     if (lastUserMessage?.role === 'user') {
-      chat.append(lastUserMessage);
+      void chat.append(lastUserMessage);
     }
   }, [chat]);
 

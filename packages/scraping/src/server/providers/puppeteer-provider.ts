@@ -3,26 +3,26 @@
  * Migrated from packages/scraping with enhanced functionality
  */
 
+import { Browser, Page } from 'puppeteer';
+
+import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
 import {
   type ExtractionResult,
   type SelectorMap,
   type SelectorConfig,
 } from '../../shared/types/scraping-types';
-import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
+import {
+  ScrapingProvider,
+  ProviderConfig,
+  ScrapeOptions,
+  ScrapeResult,
+} from '../../shared/types/scraping-types';
 import {
   humanDelay,
   retryWithBackoff,
   getRandomUserAgent,
   detectCaptcha,
 } from '../../shared/utils/helpers';
-
-import type { Browser, Page } from 'puppeteer';
-import type {
-  ScrapingProvider,
-  ProviderConfig,
-  ScrapeOptions,
-  ScrapeResult,
-} from '../../shared/types/scraping-types';
 
 /**
  * Puppeteer scraping provider with full browser automation
@@ -67,7 +67,7 @@ export class PuppeteerProvider implements ScrapingProvider {
   async launch(): Promise<void> {
     try {
       // Dynamic import to handle optional peer dependency
-      this.puppeteer = await import('puppeteer').catch(() => {
+      this.puppeteer = await import('puppeteer').catch((_: any) => {
         throw new ScrapingError(
           'Puppeteer is not installed. Run: npm install puppeteer',
           ScrapingErrorCode.PROVIDER_ERROR,
@@ -79,7 +79,7 @@ export class PuppeteerProvider implements ScrapingProvider {
         executablePath: this.config.executablePath,
         headless: this.config.headless ? 'new' : false,
       });
-    } catch (error) {
+    } catch (error: any) {
       throw new ScrapingError(
         'Failed to launch Puppeteer browser',
         ScrapingErrorCode.PROVIDER_ERROR,
@@ -189,7 +189,7 @@ export class PuppeteerProvider implements ScrapingProvider {
       const title = await page.title();
       const description = await page
         .$eval('meta[name="description"]', (el: any) => el.content)
-        .catch(() => undefined);
+        .catch((_: any) => undefined);
 
       const endTime = Date.now();
 
@@ -210,15 +210,17 @@ export class PuppeteerProvider implements ScrapingProvider {
           },
         },
       };
-    } catch (error) {
-      const endTime = Date.now();
+    } catch (error: any) {
+      const _endTime = Date.now();
 
       if (error instanceof ScrapingError) {
         throw error;
       }
 
       throw new ScrapingError(
-        error instanceof Error ? error.message : 'Unknown error during scraping',
+        error instanceof Error
+          ? (error as Error)?.message || 'Unknown error'
+          : 'Unknown error during scraping',
         ScrapingErrorCode.SCRAPING_FAILED,
         { url },
         error instanceof Error ? error : undefined,
@@ -255,11 +257,14 @@ export class PuppeteerProvider implements ScrapingProvider {
         if (config.multiple) {
           const elements = await page.$$(config.selector);
           const values = await Promise.all(
-            elements.map(async (el) => {
+            elements.map(async (el: any) => {
               if (config.attribute) {
-                return el.evaluate((element, attr) => element.getAttribute(attr), config.attribute);
+                return el.evaluate(
+                  (element: Element, attr: string) => element.getAttribute(attr),
+                  config.attribute,
+                );
               }
-              return el.evaluate((element) => element.textContent);
+              return el.evaluate((element: any) => element.textContent);
             }),
           );
           results[key] = values.filter((v): v is string => v !== null);
@@ -268,11 +273,11 @@ export class PuppeteerProvider implements ScrapingProvider {
           if (element) {
             if (config.attribute) {
               results[key] = await element.evaluate(
-                (el, attr) => el.getAttribute(attr),
+                (el, attr: any) => el.getAttribute(attr),
                 config.attribute,
               );
             } else {
-              results[key] = await element.evaluate((el) => el.textContent);
+              results[key] = await element.evaluate((el: any) => el.textContent);
             }
           } else {
             results[key] = null;
@@ -285,8 +290,9 @@ export class PuppeteerProvider implements ScrapingProvider {
             results[key] = config.transform(results[key]);
           }
         }
-      } catch {
-        results[key] = null;
+      } catch (error: any) {
+        // Re-throw extraction errors so they can be handled upstream
+        throw new Error(`Failed to extract data for key "${key}": ${error.message}`);
       }
     }
 
@@ -299,7 +305,7 @@ export class PuppeteerProvider implements ScrapingProvider {
     // Basic HTML parsing (simplified implementation)
     // In production, this would use a proper HTML parser like cheerio
     for (const [key, selectorOrConfig] of Object.entries(selectors)) {
-      const config: SelectorConfig =
+      const _config: SelectorConfig =
         typeof selectorOrConfig === 'string' ? { selector: selectorOrConfig } : selectorOrConfig;
 
       // Placeholder extraction logic
@@ -318,7 +324,8 @@ export class PuppeteerProvider implements ScrapingProvider {
 
       const pages = await this.browser.pages();
       return pages.length >= 0;
-    } catch {
+    } catch (_error: any) {
+      // Health check failures should return false but not throw
       return false;
     }
   }
@@ -341,7 +348,7 @@ export class PuppeteerProvider implements ScrapingProvider {
   async click(
     page: Page,
     selector: string,
-    options: { timeout?: number; force?: boolean } = {},
+    _options: { timeout?: number; force?: boolean } = {},
   ): Promise<void> {
     await page.click(selector);
   }
@@ -422,7 +429,7 @@ export class PuppeteerProvider implements ScrapingProvider {
 /**
  * Factory function to create a Puppeteer provider
  */
-export function createPuppeteerProvider(config?: ProviderConfig): PuppeteerProvider {
+export function createPuppeteerProvider(_config?: ProviderConfig): PuppeteerProvider {
   return new PuppeteerProvider();
 }
 

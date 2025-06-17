@@ -9,28 +9,28 @@ import { useLocalizeHref } from '../hooks/useLocale';
 import { Link } from './Link';
 import ButtonSecondary from './shared/Button/ButtonSecondary';
 
-interface Props {
+interface Props extends Record<string, any> {
   className?: string;
   collection: TCollection;
   'data-testid'?: string;
 }
 
 const CollectionCard3: FC<Props> = ({
-  'data-testid': testId = 'collection-card-3',
   className = '',
   collection,
+  'data-testid': testId = 'collection-card-3',
 }) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection || !collection.handle) {
+  if (!collection.handle) {
     return null;
   }
 
   return (
     <Link
+      className={`block ${className}`}
       data-testid={testId}
       href={localizeHref(`/collections/${collection.handle}`) as any}
-      className={`block ${className}`}
     >
       <div
         className={`group aspect-[16/11] sm:aspect-[16/9] relative w-full overflow-hidden rounded-2xl ${collection.color}`}
@@ -40,8 +40,8 @@ const CollectionCard3: FC<Props> = ({
             {collection.image && (
               <div className="absolute end-0 h-full w-full max-w-52">
                 <Image
+                  alt={collection.image.alt ?? ''}
                   className="object-contain object-center drop-shadow-xl"
-                  alt={collection.image.alt || ''}
                   fill
                   src={collection.image}
                 />
@@ -57,15 +57,15 @@ const CollectionCard3: FC<Props> = ({
               <span className="mb-2 block text-sm text-neutral-700">{collection.title}</span>
               {collection.description && (
                 <h2
-                  dangerouslySetInnerHTML={{ __html: collection.sortDescription || '' }}
                   className="text-xl font-semibold text-neutral-900 md:text-2xl"
+                  dangerouslySetInnerHTML={{ __html: collection.sortDescription ?? '' }}
                 />
               )}
             </div>
             <div className="mt-auto">
               <ButtonSecondary
-                fontSize="text-sm font-medium"
                 className="nc-shadow-lg"
+                fontSize="text-sm font-medium"
                 sizeClass="py-3 px-4 sm:py-3.5 sm:px-6"
               >
                 Show me all

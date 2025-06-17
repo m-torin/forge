@@ -3,7 +3,7 @@
  * Helps adapt between different provider interfaces
  */
 
-import type { ScrapingProvider, ProviderConfig } from '../types/scraping-types';
+import { ScrapingProvider, ProviderConfig } from '../types/scraping-types';
 
 /**
  * Provider adapter interface
@@ -53,7 +53,7 @@ export class LegacyProviderAdapter implements ProviderAdapter {
     return {
       name: provider.name || 'legacy',
       type: 'custom',
-      async initialize(config: ProviderConfig) {
+      async initialize(_config: ProviderConfig) {
         if (provider.launch) {
           await provider.launch();
         }
@@ -128,14 +128,14 @@ export interface ProviderRoute {
 /**
  * Process a scraping request and route to appropriate provider
  */
-export async function processScrapingRequest(
+export async function processScrapingNextNextRequest(
   url: string,
   routes: ProviderRoute[],
   providers: Record<string, ScrapingProvider>,
   defaultProvider: string,
 ): Promise<any> {
   // Find matching route
-  const route = routes.find((r) => {
+  const route = routes.find((r: any) => {
     if (typeof r.pattern === 'string') {
       return url.includes(r.pattern);
     }
@@ -160,8 +160,8 @@ export function createProviderProcessor(
   providers: Record<string, ScrapingProvider>,
   defaultProvider: string,
 ) {
-  return (url: string, options?: any) => {
-    return processScrapingRequest(url, routes, providers, defaultProvider);
+  return (url: string, _options?: any) => {
+    return processScrapingNextNextRequest(url, routes, providers, defaultProvider);
   };
 }
 
@@ -182,3 +182,6 @@ export function routeToProvider(
   }
   return defaultProvider;
 }
+
+// Export alias for backward compatibility
+export const processScrapingRequest = processScrapingNextNextRequest;

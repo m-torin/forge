@@ -68,10 +68,10 @@ export function extractFromCurrentPage(
       } else if (elements.length === 1) {
         result[key] = elements[0].textContent?.trim() || null;
       } else {
-        result[key] = Array.from(elements).map((el) => el.textContent?.trim() || '');
+        result[key] = Array.from(elements).map((el: any) => el.textContent?.trim() || '');
       }
-    } catch (error) {
-      console.warn(`Error extracting selector "${selector}":`, error);
+    } catch (_error: any) {
+      // Set null on extraction error instead of throwing for client utils
       result[key] = null;
     }
   }
@@ -110,6 +110,8 @@ export function downloadContent(
  */
 export function clientLog(message: string, ...args: any[]): void {
   if (isBrowser()) {
+    // Client logging is acceptable for debugging purposes
+    // eslint-disable-next-line no-console
     console.log(`[${new Date().toISOString()}] ${message}`, ...args);
   }
 }
@@ -202,7 +204,7 @@ export async function clientFetch(
     });
     clearTimeout(timeoutId);
     return response;
-  } catch (error) {
+  } catch (error: any) {
     clearTimeout(timeoutId);
     throw error;
   }

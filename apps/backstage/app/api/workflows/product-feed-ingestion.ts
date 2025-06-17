@@ -10,11 +10,11 @@ import {
   createStep,
   createStepWithValidation,
   createWorkflowStep,
-  withStepBulkhead,
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ProductFeedIngestionInput = z.object({
@@ -236,11 +236,11 @@ export const fetchProductFeedStep = compose(
     (input) => !!input.feedSource.merchantId,
     (output) => output.feedData.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
-  (step) =>
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -319,11 +319,7 @@ export const parseFeedDataStep = compose(
       },
     };
   }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['parseTime'],
-    }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 3: Validate products
@@ -412,7 +408,7 @@ function getCommonValidationIssues(issues: Map<string, string[]>): any[] {
   });
 
   return Array.from(issueCounts.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 5)
     .map(([issue, count]) => ({ count, issue }));
 }
@@ -713,8 +709,8 @@ function extractVariants(product: any): any[] {
 
     // Remove undefined attributes
     Object.keys(variant.attributes).forEach((key) => {
-      if (!variant.attributes[key as any]) {
-        delete variant.attributes[key as any];
+      if (!variant.attributes[key as keyof typeof variant.attributes]) {
+        delete variant.attributes[key as keyof typeof variant.attributes];
       }
     });
 
@@ -827,7 +823,7 @@ export const mapCategoriesStep = createStep('map-categories', async (data: any) 
     categorizedProducts,
     categoryMappingComplete: true,
     categoryStats: Array.from(categoryStats.entries())
-      .sort((a, b) => b[1] - a[1])
+      .sort((a: any, b: any) => b[1] - a[1])
       .slice(0, 20)
       .map(([category, count]) => ({ category, count })),
   };
@@ -960,10 +956,10 @@ export const storeNormalizedProductsStep = compose(
       storedProducts,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 5,
-      maxQueued: 20,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 

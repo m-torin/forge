@@ -63,7 +63,7 @@ global.IntersectionObserver = class IntersectionObserver {
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation((query: any) => ({
     addEventListener: vi.fn(),
     addListener: vi.fn(),
     dispatchEvent: vi.fn(),

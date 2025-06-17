@@ -11,7 +11,6 @@ import {
   ActionIcon,
   Tooltip,
   Code,
-  Alert,
   Container,
   Button,
 } from '@mantine/core';
@@ -21,10 +20,7 @@ import {
   IconEdit,
   IconActivity,
   IconShield,
-  IconAlertTriangle,
   IconCopy,
-  IconEye,
-  IconEyeOff,
   IconArrowLeft,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
@@ -32,62 +28,49 @@ import { notifications } from '@mantine/notifications';
 import { useClipboard } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 
-interface ApiKey {
-  id: string;
-  name: string;
-  start?: string;
-  prefix?: string;
-  enabled: boolean;
-  lastUsedAt?: string;
-  expiresAt?: string;
-  createdAt: string;
-  requestCount?: number;
-  permissions?: string[];
-  userId?: string;
-  organizationId?: string;
-  user?: {
-    name: string;
-    email: string;
-  };
-  organization?: {
-    name: string;
-    slug: string;
-  };
-}
+import { getApiKey } from '@repo/auth/server/next';
+import { ApiKeyForm } from '../../components/forms/ApiKeyForm';
+import { PageHeader } from '../../../components/page-header';
+import type { ApiKey } from '../../types';
 
-interface ApiKeyDetailPageProps {
+interface ApiKeyPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function ApiKeyDetailPage({ params }: ApiKeyDetailPageProps) {
-  const router = useRouter();
+export default function ApiKeyPage({ params }: ApiKeyPageProps) {
   const [apiKey, setApiKey] = useState<ApiKey | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showFullKey, setShowFullKey] = useState(false);
-  const clipboard = useClipboard({ timeout: 2000 });
+  const [isEdit, setIsEdit] = useState(false);
   const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
+  const clipboard = useClipboard({ timeout: 2000 });
+  const router = useRouter();
 
   useEffect(() => {
-    params.then(p => setParamsData(p));
+    params.then((p) => setParamsData(p));
   }, [params]);
 
   useEffect(() => {
     if (paramsData?.id) {
-      loadApiKey();
+      if (paramsData.id === 'new') {
+        setLoading(false);
+      } else {
+        loadApiKey();
+      }
     }
   }, [paramsData?.id]);
 
   const loadApiKey = async () => {
+    if (!paramsData?.id || paramsData.id === 'new') return;
+
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/api-keys/${paramsData?.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setApiKey(data.apiKey);
+      const result = await getApiKey(paramsData.id);
+      if (result.success && result.data) {
+        setApiKey(result.data as ApiKey);
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to load API key details',
+          message: result.error || 'Failed to load API key details',
           color: 'red',
         });
       }
@@ -103,174 +86,246 @@ export default function ApiKeyDetailPage({ params }: ApiKeyDetailPageProps) {
     }
   };
 
+  // Handle "new" case - show create form
+  if (paramsData?.id === 'new') {
+    return (
+      <Container py="xl" size="xl">
+        <Stack gap="xl">
+          <PageHeader
+            title="Create New API Key"
+            description="Generate a new API key for programmatic access"
+            breadcrumbs={[
+              { label: 'Guests', href: '/guests' },
+              { label: 'API Keys', href: '/guests/api-keys' },
+              { label: 'New' },
+            ]}
+          />
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <ApiKeyForm />
+          </Card>
+        </Stack>
+      </Container>
+    );
+  }
+
+  // Handle edit mode
+  if (isEdit && apiKey) {
+    return (
+      <Container py="xl" size="xl">
+        <Stack gap="xl">
+          <PageHeader
+            title="Edit API Key"
+            description="Update API key settings and permissions"
+            breadcrumbs={[
+              { label: 'Guests', href: '/guests' },
+              { label: 'API Keys', href: '/guests/api-keys' },
+              { label: apiKey.name },
+            ]}
+          />
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <ApiKeyForm
+              apiKey={apiKey}
+              onSuccess={() => {
+                setIsEdit(false);
+                loadApiKey();
+              }}
+              onCancel={() => setIsEdit(false)}
+            />
+          </Card>
+        </Stack>
+      </Container>
+    );
+  }
+
   if (loading || !apiKey) {
     return (
-      <Container size="lg" py="xl">
+      <Container py="xl" size="xl">
         <Text>Loading...</Text>
       </Container>
     );
   }
 
-  const isExpired = apiKey.expiresAt && new Date(apiKey.expiresAt) < new Date();
+  const copyApiKeyPrefix = () => {
+    clipboard.copy(apiKey.prefix || apiKey.start || 'N/A');
+    notifications.show({
+      title: 'Copied',
+      message: 'API key prefix copied to clipboard',
+      color: 'green',
+    });
+  };
 
+  // Handle view mode
   return (
-    <Container size="lg" py="xl">
+    <Container py="xl" size="xl">
       <Stack gap="xl">
-        <Group justify="space-between">
-          <Button variant="subtle" leftSection={<IconArrowLeft size={16} />} onClick={() => router.back()}>
+        <PageHeader
+          title="API Key Details"
+          description="View and manage API key settings"
+          actions={{
+            primary: {
+              icon: <IconEdit size={16} />,
+              label: 'Edit',
+              onClick: () => setIsEdit(true),
+            },
+          }}
+          breadcrumbs={[
+            { label: 'Guests', href: '/guests' },
+            { label: 'API Keys', href: '/guests/api-keys' },
+            { label: apiKey.name },
+          ]}
+        />
+
+        <SimpleGrid cols={{ base: 1, lg: 3, sm: 2 }} spacing="lg">
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Group gap="xs">
+                <IconKey size={16} />
+                <Text fw={500} size="sm">
+                  Key Information
+                </Text>
+              </Group>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Name
+                </Text>
+                <Text fw={500}>{apiKey.name}</Text>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Key Prefix
+                </Text>
+                <Group gap="xs">
+                  <Code>{apiKey.prefix || apiKey.start || 'N/A'}</Code>
+                  <Tooltip label={clipboard.copied ? 'Copied!' : 'Copy prefix'}>
+                    <ActionIcon
+                      size="sm"
+                      variant="light"
+                      color={clipboard.copied ? 'green' : 'blue'}
+                      onClick={copyApiKeyPrefix}
+                    >
+                      <IconCopy size={14} />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Status
+                </Text>
+                <Badge color={apiKey.enabled ? 'green' : 'red'} variant="dot">
+                  {apiKey.enabled ? 'Active' : 'Disabled'}
+                </Badge>
+              </div>
+            </Stack>
+          </Card>
+
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Group gap="xs">
+                <IconActivity size={16} />
+                <Text fw={500} size="sm">
+                  Usage Statistics
+                </Text>
+              </Group>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Request Count
+                </Text>
+                <Text fw={500}>{(apiKey.requestCount || 0).toLocaleString()}</Text>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Last Used
+                </Text>
+                <Text fw={500}>
+                  {apiKey.lastUsedAt ? new Date(apiKey.lastUsedAt).toLocaleDateString() : 'Never'}
+                </Text>
+              </div>
+              <div>
+                <Text size="sm" c="dimmed">
+                  Created
+                </Text>
+                <Text fw={500}>{new Date(apiKey.createdAt).toLocaleDateString()}</Text>
+              </div>
+            </Stack>
+          </Card>
+
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Group gap="xs">
+                <IconShield size={16} />
+                <Text fw={500} size="sm">
+                  Permissions & Scope
+                </Text>
+              </Group>
+              {apiKey.permissions && apiKey.permissions.length > 0 ? (
+                <Group gap="xs">
+                  {apiKey.permissions.map((perm) => (
+                    <Badge key={perm} variant="light" size="sm">
+                      {perm}
+                    </Badge>
+                  ))}
+                </Group>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  Default permissions
+                </Text>
+              )}
+              {apiKey.organizationId && apiKey.organization && (
+                <div>
+                  <Text size="sm" c="dimmed">
+                    Organization
+                  </Text>
+                  <Text fw={500}>{apiKey.organization.name}</Text>
+                </div>
+              )}
+              {apiKey.expiresAt && (
+                <div>
+                  <Text size="sm" c="dimmed">
+                    Expires
+                  </Text>
+                  <Badge
+                    color={new Date(apiKey.expiresAt) < new Date() ? 'red' : 'orange'}
+                    variant="light"
+                  >
+                    {new Date(apiKey.expiresAt).toLocaleDateString()}
+                  </Badge>
+                </div>
+              )}
+            </Stack>
+          </Card>
+        </SimpleGrid>
+
+        {apiKey.metadata && Object.keys(apiKey.metadata).length > 0 && (
+          <>
+            <Divider />
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Stack gap="md">
+                <Text fw={500}>Metadata</Text>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                  {Object.entries(apiKey.metadata).map(([key, value]) => (
+                    <div key={key}>
+                      <Text size="sm" c="dimmed">
+                        {key}
+                      </Text>
+                      <Text fw={500}>{String(value)}</Text>
+                    </div>
+                  ))}
+                </SimpleGrid>
+              </Stack>
+            </Card>
+          </>
+        )}
+
+        <Group>
+          <Button
+            variant="light"
+            leftSection={<IconArrowLeft size={16} />}
+            onClick={() => router.push('/guests/api-keys')}
+          >
             Back to API Keys
           </Button>
         </Group>
-
-        <Card shadow="sm" padding="xl" radius="md" withBorder>
-          <Stack gap="md">
-            <Group justify="space-between">
-              <Group gap="md">
-                <ActionIcon size="xl" variant="light" color="blue">
-                  <IconKey size={32} />
-                </ActionIcon>
-                <div>
-                  <Text fw={600} size="xl">
-                    {apiKey.name}
-                  </Text>
-                  <Group gap="xs" mt={4}>
-                    <Badge
-                      color={apiKey.enabled && !isExpired ? 'green' : 'red'}
-                      variant="dot"
-                      size="lg"
-                    >
-                      {apiKey.enabled && !isExpired ? 'Active' : isExpired ? 'Expired' : 'Disabled'}
-                    </Badge>
-                    {apiKey.start && (
-                      <Code>
-                        {apiKey.prefix || 'sk'}-...{apiKey.start}
-                      </Code>
-                    )}
-                  </Group>
-                </div>
-              </Group>
-              <Group gap="xs">
-                <Tooltip label="Edit API Key">
-                  <ActionIcon variant="light" color="blue" size="lg">
-                    <IconEdit size={20} />
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
-            </Group>
-
-            {isExpired && (
-              <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
-                This API key has expired and is no longer valid.
-              </Alert>
-            )}
-
-            <Divider />
-
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
-              <Card padding="md" radius="md" withBorder>
-                <Stack gap="xs">
-                  <Group gap="xs">
-                    <IconActivity size={16} />
-                    <Text fw={500} size="sm">Usage</Text>
-                  </Group>
-                  <Text fw={600} size="xl">
-                    {apiKey.requestCount?.toLocaleString() || 0}
-                  </Text>
-                  <Text c="dimmed" size="xs">Total requests</Text>
-                </Stack>
-              </Card>
-
-              <Card padding="md" radius="md" withBorder>
-                <Stack gap="xs">
-                  <Group gap="xs">
-                    <IconCalendar size={16} />
-                    <Text fw={500} size="sm">Last Used</Text>
-                  </Group>
-                  <Text size="sm">
-                    {apiKey.lastUsedAt 
-                      ? new Date(apiKey.lastUsedAt).toLocaleDateString()
-                      : 'Never'
-                    }
-                  </Text>
-                </Stack>
-              </Card>
-
-              <Card padding="md" radius="md" withBorder>
-                <Stack gap="xs">
-                  <Group gap="xs">
-                    <IconCalendar size={16} />
-                    <Text fw={500} size="sm">Created</Text>
-                  </Group>
-                  <Text size="sm">
-                    {new Date(apiKey.createdAt).toLocaleDateString()}
-                  </Text>
-                </Stack>
-              </Card>
-
-              <Card padding="md" radius="md" withBorder>
-                <Stack gap="xs">
-                  <Group gap="xs">
-                    <IconCalendar size={16} />
-                    <Text fw={500} size="sm">Expires</Text>
-                  </Group>
-                  <Text size="sm" c={isExpired ? 'red' : undefined}>
-                    {apiKey.expiresAt 
-                      ? new Date(apiKey.expiresAt).toLocaleDateString()
-                      : 'Never'
-                    }
-                  </Text>
-                </Stack>
-              </Card>
-            </SimpleGrid>
-
-            {(apiKey.user || apiKey.organization) && (
-              <>
-                <Divider />
-                <div>
-                  <Text fw={500} mb="md" size="lg">Ownership</Text>
-                  <Stack gap="md">
-                    {apiKey.user && (
-                      <Card padding="md" radius="md" withBorder>
-                        <Group justify="space-between">
-                          <div>
-                            <Text fw={500}>User</Text>
-                            <Text c="dimmed" size="sm">{apiKey.user.name} ({apiKey.user.email})</Text>
-                          </div>
-                        </Group>
-                      </Card>
-                    )}
-                    {apiKey.organization && (
-                      <Card padding="md" radius="md" withBorder>
-                        <Group justify="space-between">
-                          <div>
-                            <Text fw={500}>Organization</Text>
-                            <Text c="dimmed" size="sm">{apiKey.organization.name} (@{apiKey.organization.slug})</Text>
-                          </div>
-                        </Group>
-                      </Card>
-                    )}
-                  </Stack>
-                </div>
-              </>
-            )}
-
-            {apiKey.permissions && apiKey.permissions.length > 0 && (
-              <>
-                <Divider />
-                <div>
-                  <Text fw={500} mb="md" size="lg">Permissions</Text>
-                  <Group gap="xs">
-                    {apiKey.permissions.map((permission, index) => (
-                      <Badge key={index} variant="light" color="blue" size="lg">
-                        {permission}
-                      </Badge>
-                    ))}
-                  </Group>
-                </div>
-              </>
-            )}
-          </Stack>
-        </Card>
       </Stack>
     </Container>
   );

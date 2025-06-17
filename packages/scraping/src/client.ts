@@ -1,6 +1,11 @@
 /**
- * Client-side scraping exports
+ * Client-side scraping exports (non-Next.js)
  * Complete scraping solution for browser/client environments
+ *
+ * This file provides client-side scraping functionality for non-Next.js applications.
+ * Use this in browser environments, client-side applications, and standalone JavaScript.
+ *
+ * For Next.js applications, use '@repo/scraping/client/next' instead.
  *
  * @example
  * ```typescript
@@ -11,15 +16,15 @@
  *     fetch: { timeout: 10000 },
  *     console: { debug: true }
  *   }
- * });
+ * };
  *
  * // Scrape a URL
  * const result = await scraper.scrape('https://example.com', {
  *   extract: {
  *     title: 'h1',
- *     price: { selector: '.price', transform: (text) => parseFloat(text.replace('$', '')) }
+ *     price: { selector: '.price', transform: (text: any) => parseFloat(text.replace('$', '')) }
  *   }
- * });
+ * };
  * ```
  */
 
@@ -27,21 +32,16 @@ import { FetchProvider } from './client/providers/fetch-provider';
 // Import scraping functions for convenience exports
 import { createSession, extractFromHtml, quickScrape, scrapeMultiple } from './shared/patterns';
 import { ConsoleProvider } from './shared/providers/console-provider';
-import { createScrapingManager } from './shared/utils/scraping-manager';
-
 // ============================================================================
 // CONVENIENCE EXPORTS
 // ============================================================================
-import type {
-  ProviderRegistry,
-  ScrapingConfig,
-  ScrapingManager,
-} from './shared/types/scraping-types';
+import { ProviderRegistry, ScrapingConfig, ScrapingManager } from './shared/types/scraping-types';
+import { createScrapingManager } from './shared/utils/scraping-manager';
 
 // Client-specific provider registry
 const CLIENT_PROVIDERS: ProviderRegistry = {
-  console: (config) => new ConsoleProvider(),
-  fetch: (config) => new FetchProvider(),
+  console: (_config: any) => new ConsoleProvider(),
+  fetch: (_config: any) => new FetchProvider(),
 };
 
 // ============================================================================
@@ -70,6 +70,25 @@ export function createClientScrapingUninitialized(config: ScrapingConfig): Scrap
 // SCRAPING PATTERNS - PRIMARY INTERFACE
 // ============================================================================
 
+// Export error classes and utilities
+export {
+  getErrorMessage,
+  isRetryableError,
+  isScrapingError,
+  ScrapingError,
+  ScrapingErrorCode,
+} from './shared/errors';
+
+// ============================================================================
+// ADAPTER UTILITIES
+// ============================================================================
+
+export type { ErrorContext, ScrapingErrorType } from './shared/errors';
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
 // Export all core patterns - these are the preferred way to scrape
 export {
   // Core scraping patterns
@@ -86,39 +105,13 @@ export {
   // withSession
 } from './shared/patterns';
 
-// ============================================================================
-// ADAPTER UTILITIES
-// ============================================================================
-
-export {} from // Provider processing utilities (removed - not implemented yet)
-// processScrapingRequest,
-// createProviderProcessor,
-// routeToProvider
-'./shared/utils/provider-adapter';
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-// Core scraping types
+// Pattern types
 export type {
-  ProviderConfig,
-  ScrapingConfig,
-  ScrapingContext,
-  ScrapingManager,
-  ScrapeOptions as ScrapingOptions,
-  ScrapingProvider,
-} from './shared/types/scraping-types';
-
-// Scraping operation types
-export type {
-  ExtractedData,
-  ExtractionResult,
-  ScrapeOptions,
-  ScrapeResult,
-  SelectorConfig,
-  SelectorMap,
-} from './shared/types/scraping-types';
+  MultiScrapeOptions,
+  PaginationOptions,
+  QuickScrapeOptions,
+  SessionOptions,
+} from './shared/patterns/types';
 
 // Provider-specific types
 export type {
@@ -131,16 +124,40 @@ export type {
   ConsoleScrapeOptions as ConsoleOptions,
 } from './shared/types/console-types';
 
-// Pattern types
+// Core scraping types
 export type {
-  MultiScrapeOptions,
-  PaginationOptions,
-  QuickScrapeOptions,
-  SessionOptions,
-} from './shared/patterns/types';
+  ProviderConfig,
+  ScrapingConfig,
+  ScrapingContext,
+  ScrapingManager,
+  ScrapeOptions as ScrapingOptions,
+  ScrapingProvider,
+} from './shared/types/scraping-types';
 
 // ============================================================================
 // CONFIGURATION UTILITIES
+// ============================================================================
+
+// Scraping operation types
+export type {
+  ExtractedData,
+  ExtractionResult,
+  ScrapeOptions,
+  ScrapeResult,
+  SelectorConfig,
+  SelectorMap,
+} from './shared/types/scraping-types';
+
+// Client-specific utilities
+export {
+  // createFetchClient,
+  // isCorsEnabled,
+  getBrowserInfo as getBrowserCapabilities,
+  // createClientSession
+} from './shared/utils/client-utils';
+
+// ============================================================================
+// VALIDATION UTILITIES
 // ============================================================================
 
 export {
@@ -156,7 +173,21 @@ export type {
 } from './shared/utils/config';
 
 // ============================================================================
-// VALIDATION UTILITIES
+// ADVANCED UTILITIES
+// ============================================================================
+
+export {} from // Provider processing utilities (removed - not implemented yet)
+// processScrapingRequest,
+// createProviderProcessor,
+// routeToProvider
+'./shared/utils/provider-adapter';
+// Manager utilities
+export { createScrapingManager } from './shared/utils/scraping-manager';
+
+export { ScrapingManager as ScrapingManagerClass } from './shared/utils/scraping-manager';
+
+// ============================================================================
+// ERROR HANDLING
 // ============================================================================
 
 export {
@@ -167,37 +198,6 @@ export {
 } from './shared/utils/validation';
 
 export type { ValidationError, ValidationResult } from './shared/utils/validation';
-
-// ============================================================================
-// ADVANCED UTILITIES
-// ============================================================================
-
-// Manager utilities
-export { createScrapingManager } from './shared/utils/scraping-manager';
-export { ScrapingManager as ScrapingManagerClass } from './shared/utils/scraping-manager';
-
-// Client-specific utilities
-export {
-  // createFetchClient,
-  // isCorsEnabled,
-  getBrowserInfo as getBrowserCapabilities,
-  // createClientSession
-} from './shared/utils/client-utils';
-
-// ============================================================================
-// ERROR HANDLING
-// ============================================================================
-
-// Export error classes and utilities
-export {
-  getErrorMessage,
-  isRetryableError,
-  isScrapingError,
-  ScrapingError,
-  ScrapingErrorCode,
-} from './shared/errors';
-
-export type { ErrorContext, ScrapingErrorType } from './shared/errors';
 
 // Scraping helpers for client-side
 export const scrape = {
@@ -210,8 +210,8 @@ export const scrape = {
 // Create config builder function
 function createConfigBuilder(initialConfig: Partial<ScrapingConfig> = {}): ScrapingConfig {
   return {
-    providers: {},
     debug: false,
+    providers: {},
     ...initialConfig,
   };
 }

@@ -1,4 +1,6 @@
-import { getCollectionByHandle, getProductsByCollection } from '@/data/data-service';
+import { getCollectionByHandle } from '@/actions/collections';
+import { getProductsByCollection } from '@/actions/products';
+import { transformDatabaseProductToTProductItem } from '@/types/database';
 import { type Metadata } from 'next';
 
 import {
@@ -9,7 +11,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui';
 
-import { CollectionStyle2Client } from './CollectionStyle2Client';
+import { CollectionStyle2Ui } from './CollectionStyle2Ui';
 import { ClientSidebarFilters } from '@/components/ClientSidebarFilters';
 import { ClientTabFiltersPopover } from '@/components/ClientTabFilters';
 
@@ -22,15 +24,18 @@ export async function generateMetadata({
   const collection = await getCollectionByHandle(handle);
 
   return {
-    description: `Browse our ${collection?.title || handle} collection with ${collection?.count || 0} products`,
-    title: `${collection?.title || handle} | Collections`,
+    description: `Browse our ${collection?.name || handle} collection with ${(collection as any)?._count?.products || 0} products`,
+    title: `${collection?.name || handle} | Collections`,
   };
 }
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
   const collection = await getCollectionByHandle(handle);
-  const products = await getProductsByCollection(handle);
+  const productsResult = await getProductsByCollection(handle);
+  const products = (productsResult.products || []).map((product: any) =>
+    transformDatabaseProductToTProductItem(product),
+  );
 
   return (
     <main>
@@ -44,7 +49,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         <div className="mb-10 shrink-0 lg:mx-8 lg:mb-0" />
 
         <div className="flex-1">
-          <CollectionStyle2Client products={products} />
+          <CollectionStyle2Ui products={products} />
 
           <div className="mt-20 flex justify-start lg:mt-24">
             <Pagination className="">

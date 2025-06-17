@@ -1,6 +1,6 @@
 import React, { type FC } from 'react';
 
-export interface BackgroundSectionProps {
+export interface BackgroundSectionProps extends Record<string, any> {
   className?: string;
 }
 

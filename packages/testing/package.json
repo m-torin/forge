@@ -11,7 +11,11 @@
     "./e2e": "./e2e/index.ts",
     "./config/node": "./config/node.ts",
     "./config/react": "./config/react.ts",
-    "./config/next": "./config/next.ts"
+    "./config/next": "./config/next.ts",
+    "./vitest-presets": {
+      "types": "./vitest-presets.d.ts",
+      "default": "./vitest-presets.mjs"
+    }
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -25,7 +29,11 @@
     "@playwright/test": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
-    "@testing-library/user-event": "^14.6.1"
+    "@testing-library/user-event": "^14.6.1",
+    "@vitejs/plugin-react": "^4.5.1",
+    "@vitest/coverage-v8": "catalog:",
+    "jsdom": "catalog:",
+    "vitest": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
@@ -34,14 +42,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.5.1",
     "eslint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  },
-  "peerDependencies": {
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

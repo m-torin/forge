@@ -12,7 +12,7 @@ import {
   StepTemplates,
   withStepMonitoring,
   withStepRetry,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const EmailCampaignInput = z.object({
@@ -99,11 +99,7 @@ export const fetchRecipientsStep = compose(
       totalRecipients: recipients.length,
     };
   }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['templateCount'],
-    }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 3: Validate and deduplicate recipients
@@ -274,10 +270,10 @@ export const sendEmailBatchesStep = compose(
       },
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -320,14 +316,7 @@ export const scheduleFollowUpStep = createStep('schedule-follow-up', async (data
 // Step 9: Send completion notification
 export const sendCompletionNotificationStep = StepTemplates.notification(
   'campaign-complete',
-  'Notify about campaign completion',
-  {
-    channels: ['email', 'slack'],
-    template: {
-      body: 'Sent {{totalSent}} emails with {{successRate}}% success rate',
-      subject: 'Campaign {{campaignName}} Complete',
-    },
-  },
+  'info',
 );
 
 // Main workflow definition

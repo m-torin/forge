@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import type { StreamChunk } from '../shared/types';
+import { StreamChunk } from '../shared/types';
 
 export interface UseAIStreamOptions {
   api?: string;
@@ -83,7 +83,7 @@ export function useAIStream({
         let fullText = '';
 
         try {
-          while (true) {
+          while (!abortControllerRef.current?.signal.aborted) {
             const { done, value } = await reader.read();
 
             if (done) break;
@@ -92,7 +92,7 @@ export function useAIStream({
             const lines = buffer.split('\n');
 
             // Keep the last incomplete line in buffer
-            buffer = lines.pop() || '';
+            buffer = lines.pop() ?? '';
 
             for (const line of lines) {
               if (line.startsWith('data: ')) {
@@ -108,8 +108,9 @@ export function useAIStream({
                   setText(fullText);
 
                   onChunk?.(chunk);
-                } catch (_parseError) {
-                  console.error('Failed to parse chunk:', data);
+                } catch (error: any) {
+                  // eslint-disable-next-line no-console
+                  console.error('Failed to parse chunk: ', data);
                 }
               }
             }
@@ -119,11 +120,11 @@ export function useAIStream({
         } finally {
           reader.releaseLock();
         }
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error occurred');
-        if (error.name !== 'AbortError') {
-          setError(error);
-          onError?.(error);
+      } catch (error: any) {
+        const errorObj = error instanceof Error ? error : new Error('Unknown error occurred');
+        if (errorObj.name !== 'AbortError') {
+          setError(errorObj);
+          onError?.(errorObj);
         }
       } finally {
         setIsStreaming(false);

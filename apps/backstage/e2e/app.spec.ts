@@ -13,14 +13,14 @@ const appConfig = {
 const helpers = new AppTestHelpers(appConfig);
 const authHelpers = createAuthHelpers(appConfig.baseURL);
 
-test.describe('Backstage App - Root Integration Tests', () => {
-  test('app loads successfully', async ({ page }) => {
+test.describe('Backstage App - Root Integration Tests', (_: any) => {
+  test('app loads successfully', async ({ page }: any) => {
     await helpers.waitForApp(page);
     await helpers.checkAppHealth(page);
     await expect(page).toHaveTitle(/Backstage/i);
   });
 
-  test('basic UI elements are present', async ({ page }) => {
+  test('basic UI elements are present', async ({ page }: any) => {
     await page.goto('/');
     await helpers.checkBasicUI(page);
 
@@ -35,7 +35,7 @@ test.describe('Backstage App - Root Integration Tests', () => {
     }
   });
 
-  test('Better Auth routes are accessible', async ({ page }) => {
+  test('Better Auth routes are accessible', async ({ page }: any) => {
     // Test Better Auth specific endpoints
     const betterAuthRoutes = [
       '/api/auth/session',
@@ -53,7 +53,7 @@ test.describe('Backstage App - Root Integration Tests', () => {
     }
   });
 
-  test('health endpoints are working', async ({ page }) => {
+  test('health endpoints are working', async ({ page }: any) => {
     const healthResults = await helpers.checkAPIHealth(page);
 
     // Health endpoint should return 200 if it exists
@@ -66,14 +66,14 @@ test.describe('Backstage App - Root Integration Tests', () => {
     }
   });
 
-  test('no critical JavaScript errors on load', async ({ page }) => {
+  test('no critical JavaScript errors on load', async ({ page }: any) => {
     const errors: string[] = [];
 
-    page.on('pageerror', (error) => {
-      errors.push(error.message);
+    page.on('pageerror', (error: any) => {
+      errors.push((error as Error)?.message || 'Unknown error');
     });
 
-    page.on('console', (msg) => {
+    page.on('console', (msg: any) => {
       if (msg.type() === 'error') {
         errors.push(msg.text());
       }
@@ -84,7 +84,7 @@ test.describe('Backstage App - Root Integration Tests', () => {
 
     // Filter out known non-critical errors
     const criticalErrors = errors.filter(
-      (error) =>
+      (error: any) =>
         !error.includes('404') &&
         !error.includes('favicon') &&
         !error.includes('chrome-extension') &&
@@ -94,7 +94,7 @@ test.describe('Backstage App - Root Integration Tests', () => {
     expect(criticalErrors).toHaveLength(0);
   });
 
-  test('app is responsive', async ({ page }) => {
+  test('app is responsive', async ({ page }: any) => {
     await page.goto('/');
 
     // Test desktop viewport
@@ -113,7 +113,7 @@ test.describe('Backstage App - Root Integration Tests', () => {
     await helpers.checkBasicUI(page);
   });
 
-  test('admin-specific features are present for authenticated users', async ({ page }) => {
+  test('admin-specific features are present for authenticated users', async ({ page }: any) => {
     // Create and sign in a test admin user
     const testUser = authHelpers.createTestUser({
       name: 'Test Admin User',
@@ -169,7 +169,7 @@ test.describe('Backstage App - Root Integration Tests', () => {
     }
   });
 
-  test('can navigate between pages without errors', async ({ page }) => {
+  test('can navigate between pages without errors', async ({ page }: any) => {
     await page.goto('/');
 
     // Look for navigation links
@@ -189,7 +189,7 @@ test.describe('Backstage App - Root Integration Tests', () => {
     }
   });
 
-  test('takes screenshot for visual verification', async ({ page }) => {
+  test('takes screenshot for visual verification', async ({ page }: any) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 

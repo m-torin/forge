@@ -6,7 +6,31 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { ExtractedData, ScrapeOptions, ScrapeResult, SelectorMap } from '../shared/types';
+import { ExtractedData, ScrapeOptions, ScrapeResult, SelectorMap } from '../shared/types';
+
+export interface UseExtractReturn {
+  data: ExtractedData | null;
+  error: Error | null;
+  extract: (html: string, selectors: SelectorMap, provider?: string) => Promise<void>;
+  loading: boolean;
+  reset: () => void;
+}
+
+export interface UseMultiScrapeOptions {
+  concurrent?: number;
+  onError?: (error: Error) => void;
+  onProgress?: (completed: number, total: number) => void;
+  onResult?: (result: ScrapeResult, index: number) => void;
+}
+
+export interface UseMultiScrapeReturn {
+  error: Error | null;
+  loading: boolean;
+  progress: { completed: number; total: number };
+  reset: () => void;
+  results: ScrapeResult[];
+  scrapeMultiple: (urls: string[], options?: ScrapeOptions) => Promise<void>;
+}
 
 export interface UseScrapeOptions {
   immediate?: boolean;
@@ -17,121 +41,11 @@ export interface UseScrapeOptions {
 }
 
 export interface UseScrapeReturn {
-  data: ScrapeResult | null;
+  data: null | ScrapeResult;
   error: Error | null;
   loading: boolean;
   reset: () => void;
   scrape: (url: string, options?: ScrapeOptions) => Promise<void>;
-}
-
-/**
- * Hook for scraping a single URL
- */
-export function useScrape(options: UseScrapeOptions = {}): UseScrapeReturn {
-  const [data, setData] = useState<ScrapeResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const scrape = useCallback(
-    async (url: string, scrapeOptions: ScrapeOptions = {}) => {
-      // Cancel previous request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      setLoading(true);
-      setError(null);
-
-      let attempt = 0;
-      const maxAttempts = (options.retries || 0) + 1;
-
-      while (attempt < maxAttempts) {
-        try {
-          const response = await fetch('/api/scrape', {
-            body: JSON.stringify({ url, options: scrapeOptions }),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            signal: controller.signal,
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP ${response.status}`);
-          }
-
-          const result = await response.json();
-
-          if (!controller.signal.aborted) {
-            setData(result);
-            setLoading(false);
-
-            if (options.onSuccess) {
-              options.onSuccess(result);
-            }
-          }
-
-          return;
-        } catch (err) {
-          if (controller.signal.aborted) {
-            return;
-          }
-
-          attempt++;
-
-          if (attempt >= maxAttempts) {
-            const error = err as Error;
-            setError(error);
-            setLoading(false);
-
-            if (options.onError) {
-              options.onError(error);
-            }
-            return;
-          }
-
-          // Wait before retry
-          if (options.retryDelay) {
-            await new Promise((resolve) => setTimeout(resolve, options.retryDelay));
-          }
-        }
-      }
-    },
-    [options],
-  );
-
-  const reset = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    setData(null);
-    setLoading(false);
-    setError(null);
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
-
-  return { data, error, loading, reset, scrape };
-}
-
-export interface UseExtractReturn {
-  data: ExtractedData | null;
-  error: Error | null;
-  extract: (html: string, selectors: SelectorMap, provider?: string) => Promise<void>;
-  loading: boolean;
-  reset: () => void;
 }
 
 /**
@@ -157,7 +71,7 @@ export function useExtract(): UseExtractReturn {
 
     try {
       const response = await fetch('/api/extract', {
-        body: JSON.stringify({ provider, html, selectors }),
+        body: JSON.stringify({ html, provider, selectors }),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -167,7 +81,7 @@ export function useExtract(): UseExtractReturn {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        throw new Error(errorData.message ?? `HTTP ${response.status}`);
       }
 
       const result = await response.json();
@@ -176,10 +90,9 @@ export function useExtract(): UseExtractReturn {
         setData(result);
         setLoading(false);
       }
-    } catch (err) {
+    } catch (error: any) {
       if (!controller.signal.aborted) {
-        const error = err as Error;
-        setError(error);
+        setError(error instanceof Error ? error : new Error(String(error)));
         setLoading(false);
       }
     }
@@ -204,22 +117,6 @@ export function useExtract(): UseExtractReturn {
   }, []);
 
   return { data, error, extract, loading, reset };
-}
-
-export interface UseMultiScrapeOptions {
-  concurrent?: number;
-  onError?: (error: Error) => void;
-  onProgress?: (completed: number, total: number) => void;
-  onResult?: (result: ScrapeResult, index: number) => void;
-}
-
-export interface UseMultiScrapeReturn {
-  error: Error | null;
-  loading: boolean;
-  progress: { completed: number; total: number };
-  reset: () => void;
-  results: ScrapeResult[];
-  scrapeMultiple: (urls: string[], options?: ScrapeOptions) => Promise<void>;
 }
 
 /**
@@ -250,9 +147,9 @@ export function useMultiScrape(options: UseMultiScrapeOptions = {}): UseMultiScr
       try {
         const response = await fetch('/api/scrape-multiple', {
           body: JSON.stringify({
-            urls,
-            concurrent: options.concurrent || 5,
+            concurrent: options.concurrent ?? 5,
             options: scrapeOptions,
+            urls,
           }),
           headers: {
             'Content-Type': 'application/json',
@@ -263,7 +160,7 @@ export function useMultiScrape(options: UseMultiScrapeOptions = {}): UseMultiScr
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `HTTP ${response.status}`);
+          throw new Error(errorData.message ?? `HTTP ${response.status}`);
         }
 
         if (!response.body) {
@@ -278,13 +175,14 @@ export function useMultiScrape(options: UseMultiScrapeOptions = {}): UseMultiScr
           const { done, value } = await reader.read();
 
           if (done) break;
+
           if (controller.signal.aborted) return;
 
           buffer += decoder.decode(value, { stream: true });
 
           // Process complete JSON objects
           const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // Keep incomplete line
+          buffer = lines.pop() ?? ''; // Keep incomplete line
 
           for (const line of lines) {
             if (line.trim()) {
@@ -292,8 +190,8 @@ export function useMultiScrape(options: UseMultiScrapeOptions = {}): UseMultiScr
                 const data = JSON.parse(line);
 
                 if (data.type === 'result') {
-                  setResults((prev) => [...prev, data.result]);
-                  setProgress((prev) => ({ ...prev, completed: prev.completed + 1 }));
+                  setResults((prev: any) => [...prev, data.result]);
+                  setProgress((prev: any) => ({ ...prev, completed: prev.completed + 1 }));
 
                   if (options.onProgress) {
                     options.onProgress(data.index + 1, urls.length);
@@ -308,21 +206,22 @@ export function useMultiScrape(options: UseMultiScrapeOptions = {}): UseMultiScr
                   }
                 }
               } catch {
-                console.warn('Failed to parse response line:', line);
+                // eslint-disable-next-line no-console
+                console.warn('Failed to parse response line: ', line);
               }
             }
           }
         }
 
         setLoading(false);
-      } catch (err) {
+      } catch (error: any) {
         if (!controller.signal.aborted) {
-          const error = err as Error;
-          setError(error);
+          const errorObj = error instanceof Error ? error : new Error(String(error));
+          setError(errorObj);
           setLoading(false);
 
           if (options.onError) {
-            options.onError(error);
+            options.onError(errorObj);
           }
         }
       }
@@ -353,14 +252,116 @@ export function useMultiScrape(options: UseMultiScrapeOptions = {}): UseMultiScr
 }
 
 /**
+ * Hook for scraping a single URL
+ */
+export function useScrape(options: UseScrapeOptions = {}): UseScrapeReturn {
+  const [data, setData] = useState<null | ScrapeResult>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const scrape = useCallback(
+    async (url: string, scrapeOptions: ScrapeOptions = {}) => {
+      // Cancel previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      setLoading(true);
+      setError(null);
+
+      let attempt = 0;
+      const maxAttempts = (options.retries ?? 0) + 1;
+
+      while (attempt < maxAttempts) {
+        try {
+          const response = await fetch('/api/scrape', {
+            body: JSON.stringify({ options: scrapeOptions, url }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            method: 'POST',
+            signal: controller.signal,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message ?? `HTTP ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (!controller.signal.aborted) {
+            setData(result);
+            setLoading(false);
+
+            if (options.onSuccess) {
+              options.onSuccess(result);
+            }
+          }
+
+          return;
+        } catch (error: any) {
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          attempt++;
+
+          if (attempt >= maxAttempts) {
+            const errorObj = error instanceof Error ? error : new Error(String(error));
+            setError(errorObj);
+            setLoading(false);
+
+            if (options.onError) {
+              options.onError(errorObj);
+            }
+            return;
+          }
+
+          // Wait before retry
+          if (options.retryDelay) {
+            await new Promise((resolve: any) => setTimeout(resolve, options.retryDelay));
+          }
+        }
+      }
+    },
+    [options],
+  );
+
+  const reset = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setData(null);
+    setLoading(false);
+    setError(null);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  return { data, error, loading, reset, scrape };
+}
+
+/**
  * Hook for real-time scraping status
  */
 export function useScrapeStatus() {
   const [status, setStatus] = useState<{
-    isActive: boolean;
     activeJobs: number;
-    queueSize: number;
+    isActive: boolean;
     lastUpdate: Date | null;
+    queueSize: number;
   }>({ activeJobs: 0, isActive: false, lastUpdate: null, queueSize: 0 });
 
   useEffect(() => {
@@ -374,16 +375,19 @@ export function useScrapeStatus() {
             lastUpdate: new Date(),
           });
         }
-      } catch (error) {
-        console.error('Failed to fetch scrape status:', error);
+      } catch (error: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to fetch scrape status: ', error);
       }
     };
 
     // Initial fetch
-    fetchStatus();
+    void fetchStatus();
 
     // Poll every 5 seconds
-    const interval = setInterval(fetchStatus, 5000);
+    const interval = setInterval(() => {
+      void fetchStatus();
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);

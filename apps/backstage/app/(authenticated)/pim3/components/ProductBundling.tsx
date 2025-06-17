@@ -141,7 +141,6 @@ interface ProductBundlingProps {
 }
 
 export function ProductBundling({ onUpdate, productId, productName, form }: ProductBundlingProps) {
-
   // Get data from form context
   const bundles = form.values.bundles || [];
   const recommendations = form.values.recommendations || [];
@@ -291,16 +290,25 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
   };
 
   const getTotalBundleRevenue = () => {
-    return bundles.reduce((total, bundle) => total + bundle.performance.revenue, 0);
+    return bundles.reduce(
+      (total: number, bundle: ProductBundle) => total + bundle.performance.revenue,
+      0,
+    );
   };
 
   const getAverageBundleConversion = () => {
-    const total = bundles.reduce((sum, bundle) => sum + bundle.performance.conversionRate, 0);
+    const total = bundles.reduce(
+      (sum: number, bundle: ProductBundle) => sum + bundle.performance.conversionRate,
+      0,
+    );
     return total / bundles.length;
   };
 
   const getTotalRecommendationRevenue = () => {
-    return recommendations.reduce((total, rec) => total + rec.performance.revenue, 0);
+    return recommendations.reduce(
+      (total: number, rec: ProductRecommendation) => total + rec.performance.revenue,
+      0,
+    );
   };
 
   const handleCreateBundle = () => {
@@ -334,7 +342,7 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
         savingsPercentage: bundleForm.discount || 0,
         totalRegularPrice: 0,
       },
-      products: bundleForm.productIds.map((id, index) => ({
+      products: bundleForm.productIds.map((id: string, index: number) => ({
         isRequired: index === 0,
         position: index + 1,
         productId: id,
@@ -430,7 +438,7 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
           </Group>
 
           <Stack>
-            {bundles.map((bundle) => (
+            {bundles.map((bundle: ProductBundle) => (
               <Card key={bundle.id} withBorder>
                 <Group justify="space-between" mb="sm">
                   <div>
@@ -496,31 +504,44 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
                     Bundle Products ({bundle.products.length})
                   </Text>
                   <Stack gap="xs">
-                    {bundle.products.map((product, index) => (
-                      <Group key={index} justify="space-between">
-                        <div>
-                          <Group gap="sm">
-                            <Text fw={500} size="sm">
-                              {product.productName}
-                            </Text>
-                            <Text c="dimmed" size="xs">
-                              SKU: {product.productSku}
-                            </Text>
-                            {product.isRequired && (
-                              <Badge color="red" size="xs" variant="light">
-                                REQUIRED
-                              </Badge>
-                            )}
-                            {product.discount && (
-                              <Badge color="green" size="xs" variant="light">
-                                -{product.discount}%
-                              </Badge>
-                            )}
-                          </Group>
-                        </div>
-                        <Text size="sm">Qty: {product.quantity}</Text>
-                      </Group>
-                    ))}
+                    {bundle.products.map(
+                      (
+                        product: {
+                          productId: string;
+                          productName: string;
+                          productSku: string;
+                          quantity: number;
+                          isRequired: boolean;
+                          discount?: number;
+                          position: number;
+                        },
+                        index: number,
+                      ) => (
+                        <Group key={index} justify="space-between">
+                          <div>
+                            <Group gap="sm">
+                              <Text fw={500} size="sm">
+                                {product.productName}
+                              </Text>
+                              <Text c="dimmed" size="xs">
+                                SKU: {product.productSku}
+                              </Text>
+                              {product.isRequired && (
+                                <Badge color="red" size="xs" variant="light">
+                                  REQUIRED
+                                </Badge>
+                              )}
+                              {product.discount && (
+                                <Badge color="green" size="xs" variant="light">
+                                  -{product.discount}%
+                                </Badge>
+                              )}
+                            </Group>
+                          </div>
+                          <Text size="sm">Qty: {product.quantity}</Text>
+                        </Group>
+                      ),
+                    )}
                   </Stack>
                 </Card>
 
@@ -564,7 +585,7 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
           </Group>
 
           <Stack>
-            {recommendations.map((rec) => (
+            {recommendations.map((rec: ProductRecommendation) => (
               <Card key={rec.id} withBorder>
                 <Group justify="space-between" mb="sm">
                   <div>
@@ -621,27 +642,40 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
                     Recommended Products
                   </Text>
                   <Stack gap="xs">
-                    {rec.recommendedProducts.map((product, index) => (
-                      <Group key={index} justify="space-between">
-                        <div>
-                          <Group gap="sm">
-                            <Text fw={500} size="sm">
-                              {product.productName}
-                            </Text>
-                            <Badge color="blue" size="xs" variant="outline">
-                              Score: {product.score}
-                            </Badge>
-                            <Text c="dimmed" size="xs">
-                              {product.reason}
-                            </Text>
+                    {rec.recommendedProducts.map(
+                      (
+                        product: {
+                          productId: string;
+                          productName: string;
+                          productSku: string;
+                          score: number;
+                          reason: string;
+                          price: number;
+                          category: string;
+                        },
+                        index: number,
+                      ) => (
+                        <Group key={index} justify="space-between">
+                          <div>
+                            <Group gap="sm">
+                              <Text fw={500} size="sm">
+                                {product.productName}
+                              </Text>
+                              <Badge color="blue" size="xs" variant="outline">
+                                Score: {product.score}
+                              </Badge>
+                              <Text c="dimmed" size="xs">
+                                {product.reason}
+                              </Text>
+                            </Group>
+                          </div>
+                          <Group gap="xs">
+                            <Text size="sm">{formatCurrency(product.price)}</Text>
+                            <Progress size="sm" value={product.score} w={60} />
                           </Group>
-                        </div>
-                        <Group gap="xs">
-                          <Text size="sm">{formatCurrency(product.price)}</Text>
-                          <Progress size="sm" value={product.score} w={60} />
                         </Group>
-                      </Group>
-                    ))}
+                      ),
+                    )}
                   </Stack>
                 </Card>
               </Card>
@@ -805,7 +839,7 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
               Bundle Performance Comparison
             </Text>
             <Stack gap="md">
-              {bundles.map((bundle) => (
+              {bundles.map((bundle: ProductBundle) => (
                 <div key={bundle.id}>
                   <Group justify="space-between" mb="xs">
                     <Text fw={500} size="sm">
@@ -853,7 +887,7 @@ export function ProductBundling({ onUpdate, productId, productName, form }: Prod
               Recommendation Performance
             </Text>
             <Stack gap="md">
-              {recommendations.map((rec) => (
+              {recommendations.map((rec: ProductRecommendation) => (
                 <div key={rec.id}>
                   <Group justify="space-between" mb="xs">
                     <Text fw={500} size="sm">

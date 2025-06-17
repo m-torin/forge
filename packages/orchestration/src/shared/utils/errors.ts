@@ -407,7 +407,7 @@ export function createWorkflowExecutionErrorWithCode(
  */
 export function extractErrorDetails(error: Error): Record<string, any> {
   const details: Record<string, any> = {
-    message: error.message,
+    message: (error as Error)?.message || 'Unknown error',
     name: error.name,
     stack: error.stack,
   };
@@ -452,6 +452,6 @@ export function isRetryableError(error: Error): boolean {
     'INTERNAL_SERVER_ERROR',
   ];
 
-  const errorString = error.message?.toUpperCase() || '';
-  return retryablePatterns.some((pattern) => errorString.includes(pattern));
+  const errorString = (error as Error)?.message || 'Unknown error'?.toUpperCase() || '';
+  return retryablePatterns.some((pattern: any) => errorString.includes(pattern));
 }

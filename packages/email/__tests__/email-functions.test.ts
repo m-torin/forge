@@ -476,7 +476,7 @@ describe('Email Functions', () => {
         magicLink: 'https://example.com/magic-link?token=abc123',
       });
 
-      expect(mockRender).toHaveBeenCalledWith(expect.stringContaining('"name":"Test User"'));
+      expect(mockRender).toHaveBeenCalledWith(expect.stringContaining('"name": "Test User"'));
     });
 
     it('should handle null name values', async () => {

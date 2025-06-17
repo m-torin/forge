@@ -11,22 +11,22 @@ import ButtonCircle from './shared/Button/ButtonCircle';
 import Input from './shared/Input/Input';
 import NcImage from './shared/NcImage/NcImage';
 
-export interface SectionPromo3Props {
+export interface SectionPromo3Props extends Record<string, any> {
   className?: string;
   'data-testid'?: string;
 }
 
 const SectionPromo3: FC<SectionPromo3Props> = ({
-  'data-testid': testId = 'section-promo-3',
   className,
+  'data-testid': testId = 'section-promo-3',
 }) => {
   return (
-    <div data-testid={testId} className={clsx(className, 'xl:pt-10 2xl:pt-24')}>
+    <div className={clsx(className, 'xl:pt-10 2xl:pt-24')} data-testid={testId}>
       <div className="relative flex flex-col rounded-2xl bg-neutral-50 p-4 pb-0 sm:rounded-[40px] sm:p-5 sm:pb-0 lg:flex-row lg:p-14 xl:px-20 xl:py-24 2xl:py-32 dark:bg-neutral-800">
         <div className="absolute inset-10">
           <Image
-            className="absolute h-full w-full object-contain object-bottom dark:opacity-5"
             alt="backgroundLineSvg"
+            className="absolute h-full w-full object-contain object-bottom dark:opacity-5"
             fill
             src={backgroundLineSvg}
           />
@@ -41,7 +41,7 @@ const SectionPromo3: FC<SectionPromo3Props> = ({
           </p>
           <ul className="mt-10 flex flex-col gap-y-4">
             <li className="flex items-center gap-x-4">
-              <Badge color="purple" name="01" />
+              <Badge c="purple" name="01" />
               <span className="font-medium text-neutral-700 dark:text-neutral-300">
                 Savings combos
               </span>
@@ -51,7 +51,7 @@ const SectionPromo3: FC<SectionPromo3Props> = ({
               <span className="font-medium text-neutral-700 dark:text-neutral-300">Freeship</span>
             </li>
             <li className="flex items-center gap-x-4">
-              <Badge color="red" name="03" />
+              <Badge c="red" name="03" />
               <span className="font-medium text-neutral-700 dark:text-neutral-300">
                 Premium magazines
               </span>
@@ -59,10 +59,10 @@ const SectionPromo3: FC<SectionPromo3Props> = ({
           </ul>
           <form className="relative mt-10 max-w-sm">
             <Input
-              placeholder="Enter your email"
-              rounded="rounded-full"
               aria-required
+              placeholder="Enter your email"
               required
+              rounded="rounded-full"
               type="email"
             />
             <ButtonCircle
@@ -75,9 +75,9 @@ const SectionPromo3: FC<SectionPromo3Props> = ({
         </div>
 
         <NcImage
-          containerClassName="relative block lg:absolute lg:right-0 lg:bottom-0 mt-10 lg:mt-0 max-w-lg lg:max-w-[calc(50%-40px)]"
-          className=""
           alt="right hero"
+          className=""
+          containerClassName="relative block lg:absolute lg:right-0 lg:bottom-0 mt-10 lg:mt-0 max-w-lg lg:max-w-[calc(50%-40px)]"
           sizes="(max-width: 768px) 100vw, 50vw"
           src={rightImgDemo}
         />

@@ -16,7 +16,7 @@ export interface BatchPattern {
   /** Whether to preserve order in results */
   preserveOrder?: boolean;
   /** Callback for batch processing */
-  processor: (items: any[]) => Promise<any[]>;
+  processor: (items: unknown[]) => Promise<unknown[]>;
 }
 
 export interface BulkheadPattern {
@@ -27,7 +27,7 @@ export interface BulkheadPattern {
   /** Name of the bulkhead */
   name: string;
   /** Callback for rejected operations */
-  onRejection?: (operation: any) => void;
+  onRejection?: (operation: unknown) => void;
   /** Timeout for queued operations */
   queueTimeout?: number;
   /** Rejection strategy when full */
@@ -36,7 +36,7 @@ export interface BulkheadPattern {
 
 export interface CachePattern {
   /** Cache key generator */
-  keyGenerator: (args: any[]) => string;
+  keyGenerator: (args: unknown[]) => string;
   /** Maximum cache size */
   maxSize?: number;
   /** Whether to refresh cache in background */
@@ -74,7 +74,7 @@ export interface DeduplicationPattern {
   /** Whether to extend window on duplicate */
   extendWindow?: boolean;
   /** Key extractor function */
-  keyExtractor: (item: any) => string;
+  keyExtractor: (item: unknown) => string;
   /** Maximum entries to store */
   maxEntries?: number;
   /** Storage backend for deduplication state */
@@ -85,11 +85,11 @@ export interface DeduplicationPattern {
 
 export interface FallbackPattern {
   /** Fallback operation */
-  fallback: () => Promise<any>;
+  fallback: () => Promise<unknown>;
   /** Conditions to trigger fallback */
   fallbackOn?: (error: Error) => boolean;
   /** Primary operation */
-  primary: () => Promise<any>;
+  primary: () => Promise<unknown>;
   /** Delay before retrying primary */
   retryDelay?: number;
   /** Whether to try primary again after fallback */
@@ -98,7 +98,7 @@ export interface FallbackPattern {
 
 export interface MonitoringPattern {
   /** Custom metric extractors */
-  customMetrics?: Record<string, (result: any, duration: number) => number>;
+  customMetrics?: Record<string, (result: unknown, duration: number) => number>;
   /** Whether to log operations */
   enableLogging?: boolean;
   /** Log level */
@@ -113,7 +113,7 @@ export interface PatternContext {
   /** Attempt number */
   attempt: number;
   /** Additional context */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   /** Operation identifier */
   operationId: string;
   /** Previous errors */
@@ -122,7 +122,7 @@ export interface PatternContext {
   startTime: Date;
 }
 
-export interface PatternResult<T = any> {
+export interface PatternResult<T = unknown> {
   /** Number of attempts made */
   attempts: number;
   /** Result data (if successful) */
@@ -132,7 +132,7 @@ export interface PatternResult<T = any> {
   /** Error (if failed) */
   error?: Error;
   /** Additional metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   /** Pattern that was applied */
   pattern?: string;
   /** Whether operation succeeded */
@@ -143,11 +143,11 @@ export interface RateLimitPattern {
   /** Algorithm to use */
   algorithm: 'fixed-window' | 'sliding-window' | 'token-bucket';
   /** Unique identifier for this rate limiter */
-  identifier: string;
+  getIdentifier: string;
   /** Time window in milliseconds */
   interval: number;
   /** Custom key generator */
-  keyGenerator?: (context: any) => string;
+  keyGenerator?: (context: unknown) => string;
   /** Whether to throw error or return false when limited */
   throwOnLimit?: boolean;
   /** Number of tokens/requests allowed */

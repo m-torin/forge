@@ -1,4 +1,5 @@
-import { ButtonPrimary, Input } from '@repo/design-system/ciseco'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import Input from '@/shared/Input/Input'
 import Link from 'next/link'
 
 export const metadata = {
@@ -10,7 +11,7 @@ const PageForgotPass = () => {
   return (
     <div className="container mb-24 lg:mb-32">
       <header className="mx-auto mb-14 max-w-2xl text-center sm:mb-16 lg:mb-20">
-        <h1 className="mt-20 flex items-center justify-center text-3xl font-semibold leading-[1.15] text-neutral-900 md:text-5xl md:leading-[1.15] dark:text-neutral-100">
+        <h1 className="mt-20 flex items-center justify-center text-3xl leading-[1.15] font-semibold text-neutral-900 md:text-5xl md:leading-[1.15] dark:text-neutral-100">
           Forgot password
         </h1>
         <span className="mt-4 block text-sm text-neutral-700 sm:text-base dark:text-neutral-200">

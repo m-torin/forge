@@ -1,11 +1,9 @@
-import {
-  AsideProductQuickview,
-  AsideSidebarCart,
-  AsideSidebarNavigation,
-  Divider,
-  Footer,
-  Header2,
-} from '@repo/design-system/ciseco'
+import { Divider } from '@/components/Divider'
+import Header2 from '@/components/Header/Header2'
+import AsideProductQuickView from '@/components/aside-product-quickview'
+import AsideSidebarCart from '@/components/aside-sidebar-cart'
+import AsideSidebarNavigation from '@/components/aside-sidebar-navigation'
+import Footer from '@/shared/Footer/Footer'
 import React, { FC } from 'react'
 import PageTab from './PageTab'
 
@@ -33,14 +31,14 @@ const Layout: FC<Props> = ({ children }) => {
             <Divider />
           </div>
         </div>
-        <div className="mx-auto max-w-4xl pb-24 pt-14 sm:pt-20 lg:pb-32">{children}</div>
+        <div className="mx-auto max-w-4xl pt-14 pb-24 sm:pt-20 lg:pb-32">{children}</div>
       </div>
       <Footer />
 
       {/* ASIDES */}
       <AsideSidebarNavigation />
       <AsideSidebarCart />
-      <AsideProductQuickview />
+      <AsideProductQuickView />
     </>
   )
 }

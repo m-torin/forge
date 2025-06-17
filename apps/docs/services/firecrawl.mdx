@@ -1,0 +1,846 @@
+---
+title: 'Firecrawl Integration'
+description: 'AI-powered web scraping and data extraction service with intelligent content processing'
+icon: 'fire'
+---
+
+# Firecrawl Service
+
+AI-powered web scraping and data extraction service that combines intelligent crawling with LLM processing for high-quality content extraction.
+
+## Overview
+
+Firecrawl provides enterprise-grade web scraping capabilities with built-in AI processing, making it perfect for large-scale content extraction, competitive intelligence, and automated data collection workflows.
+
+<CardGroup cols={2}>
+  <Card title="Intelligent Scraping" icon="brain">
+    AI-powered content extraction with LLM processing
+  </Card>
+  <Card title="Scale & Performance" icon="rocket">
+    Handle thousands of pages with parallel processing
+  </Card>
+  <Card title="Multiple Formats" icon="file-code">
+    Extract content as Markdown, HTML, or structured data
+  </Card>
+  <Card title="Real-time Monitoring" icon="chart-line">
+    Track scraping jobs and get real-time status updates
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **AI-Powered Extraction** - Intelligent content processing with LLM integration
+- **Multi-Format Output** - Markdown, HTML, structured JSON, and custom formats
+- **Large-Scale Crawling** - Handle entire websites with smart pagination
+- **Real-Time Processing** - Live status updates and webhook notifications
+- **Custom Extractors** - Define custom data extraction rules and schemas
+- **Rate Limiting** - Respect robots.txt and implement smart crawling delays
+
+## Installation
+
+<Tabs>
+  <Tab title="JavaScript/TypeScript">
+    ```bash
+    npm install @mendable/firecrawl-js
+    # or
+    pnpm add @mendable/firecrawl-js
+    ```
+  </Tab>
+  
+  <Tab title="Python">
+    ```bash
+    pip install firecrawl-py
+    ```
+  </Tab>
+  
+  <Tab title="cURL">
+    ```bash
+    # No installation required - use REST API directly
+    curl -X POST "https://api.firecrawl.dev/v1/scrape" \
+      -H "Authorization: Bearer YOUR_API_KEY"
+    ```
+  </Tab>
+</Tabs>
+
+## Quick Start
+
+<Steps>
+  <Step title="Get API Key">
+    ```bash
+    # Sign up at https://firecrawl.dev and get your API key
+    export FIRECRAWL_API_KEY="fc-your-api-key-here"
+    ```
+  </Step>
+  
+  <Step title="Basic Scraping">
+    ```typescript
+    import { FirecrawlApp } from '@mendable/firecrawl-js';
+    
+    const app = new FirecrawlApp({
+      apiKey: process.env.FIRECRAWL_API_KEY
+    });
+    
+    // Scrape a single page
+    const scrapeResult = await app.scrapeUrl('https://example.com', {
+      formats: ['markdown', 'html'],
+      includeTags: ['h1', 'h2', 'h3', 'p', 'a'],
+      excludeTags: ['nav', 'footer', 'aside'],
+    });
+    
+    console.log(scrapeResult.markdown);
+    ```
+  </Step>
+  
+  <Step title="AI-Powered Extraction">
+    ```typescript
+    // Extract structured data with AI
+    const extractResult = await app.scrapeUrl('https://example.com/product', {
+      formats: ['extract'],
+      extract: {
+        schema: {
+          type: 'object',
+          properties: {
+            productName: { type: 'string' },
+            price: { type: 'number' },
+            availability: { type: 'string' },
+            description: { type: 'string' },
+            images: { 
+              type: 'array',
+              items: { type: 'string' }
+            }
+          }
+        }
+      }
+    });
+    
+    console.log(extractResult.extract);
+    ```
+  </Step>
+</Steps>
+
+## Advanced Usage
+
+### Large-Scale Crawling
+
+<CodeGroup>
+```typescript Website Crawling
+// Crawl an entire website
+const crawlJob = await app.crawlUrl('https://example.com', {
+  crawlerOptions: {
+    includes: ['product/*', 'blog/*'],
+    excludes: ['admin/*', 'login'],
+    maxDepth: 3,
+    limit: 1000,
+  },
+  pageOptions: {
+    formats: ['markdown'],
+    includeTags: ['h1', 'h2', 'p', 'article'],
+    extractorOptions: {
+      mode: 'llm-extraction',
+      extractionPrompt: 'Extract the main content, title, and any product information'
+    }
+  }
+});
+
+// Monitor crawl progress
+const status = await app.checkCrawlStatus(crawlJob.jobId);
+console.log(`Progress: ${status.current}/${status.total} pages`);
+
+// Get results when complete
+if (status.status === 'completed') {
+  const results = await app.getCrawlResults(crawlJob.jobId);
+  results.data.forEach(page => {
+    console.log(`${page.metadata.title}: ${page.markdown.slice(0, 100)}...`);
+  });
+}
+```
+
+```typescript Real-time Monitoring
+// Set up webhook for real-time updates
+const crawlJob = await app.crawlUrl('https://example.com', {
+  webhook: 'https://your-domain.com/webhook/firecrawl',
+  crawlerOptions: {
+    limit: 500,
+    maxDepth: 2,
+  }
+});
+
+// Webhook handler (Express.js example)
+app.post('/webhook/firecrawl', (req, res) => {
+  const { jobId, status, current, total, data } = req.body;
+  
+  console.log(`Job ${jobId}: ${status} (${current}/${total})`);
+  
+  if (status === 'completed') {
+    // Process final results
+    processScrapedData(data);
+  } else if (status === 'failed') {
+    // Handle errors
+    console.error('Crawl failed:', req.body.error);
+  }
+  
+  res.status(200).send('OK');
+});
+```
+</CodeGroup>
+
+### AI-Powered Data Extraction
+
+<Tabs>
+  <Tab title="Structured Extraction">
+    ```typescript
+    // Define extraction schema
+    const productSchema = {
+      type: 'object',
+      properties: {
+        name: { 
+          type: 'string',
+          description: 'Product name or title'
+        },
+        price: { 
+          type: 'number',
+          description: 'Product price in USD'
+        },
+        rating: {
+          type: 'number',
+          description: 'Average customer rating (1-5 stars)'
+        },
+        reviews: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              author: { type: 'string' },
+              rating: { type: 'number' },
+              comment: { type: 'string' }
+            }
+          }
+        },
+        specifications: {
+          type: 'object',
+          description: 'Technical specifications'
+        }
+      },
+      required: ['name', 'price']
+    };
+    
+    // Extract with schema validation
+    const result = await app.scrapeUrl('https://store.example.com/product/123', {
+      formats: ['extract'],
+      extract: {
+        schema: productSchema,
+        systemPrompt: 'You are a product data extraction expert. Extract accurate product information from e-commerce pages.'
+      }
+    });
+    
+    console.log('Extracted product:', result.extract);
+    ```
+  </Tab>
+  
+  <Tab title="Custom Prompts">
+    ```typescript
+    // Use custom extraction prompts
+    const result = await app.scrapeUrl('https://news.example.com/article', {
+      formats: ['extract'],
+      extract: {
+        prompt: `
+          Extract the following information from this news article:
+          1. Headline
+          2. Author name and publication date
+          3. Main topic/category
+          4. Key quotes (up to 3)
+          5. Summary in 2-3 sentences
+          6. Any mentioned companies or people
+          
+          Format the response as structured JSON.
+        `
+      }
+    });
+    
+    // Or combine with existing content
+    const articleData = await app.scrapeUrl('https://blog.example.com/post', {
+      formats: ['markdown', 'extract'],
+      extract: {
+        schema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            publishDate: { type: 'string' },
+            tags: { 
+              type: 'array',
+              items: { type: 'string' }
+            },
+            readTime: { type: 'number' },
+            keyPoints: {
+              type: 'array',
+              items: { type: 'string' }
+            }
+          }
+        }
+      }
+    });
+    
+    console.log('Article content:', articleData.markdown);
+    console.log('Extracted metadata:', articleData.extract);
+    ```
+  </Tab>
+</Tabs>
+
+### Content Processing Pipeline
+
+<CodeGroup>
+```typescript Multi-Stage Processing
+import { FirecrawlApp } from '@mendable/firecrawl-js';
+import { createOpenAIClient } from '@repo/ai';
+
+class ContentProcessor {
+  constructor(
+    private firecrawl: FirecrawlApp,
+    private openai: ReturnType<typeof createOpenAIClient>
+  ) {}
+  
+  async processCompetitorAnalysis(urls: string[]) {
+    // Stage 1: Scrape all competitor websites
+    const scrapeJobs = await Promise.all(
+      urls.map(url => this.firecrawl.scrapeUrl(url, {
+        formats: ['markdown', 'extract'],
+        extract: {
+          schema: {
+            type: 'object',
+            properties: {
+              companyName: { type: 'string' },
+              products: { 
+                type: 'array',
+                items: { type: 'string' }
+              },
+              pricing: { type: 'string' },
+              keyFeatures: {
+                type: 'array', 
+                items: { type: 'string' }
+              }
+            }
+          }
+        }
+      }))
+    );
+    
+    // Stage 2: AI analysis and comparison
+    const competitorData = scrapeJobs.map(job => job.extract);
+    const analysis = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a competitive intelligence analyst. Analyze competitor data and provide strategic insights.'
+        },
+        {
+          role: 'user',
+          content: `Analyze these competitors and provide insights:\n${JSON.stringify(competitorData, null, 2)}`
+        }
+      ]
+    });
+    
+    return {
+      competitors: competitorData,
+      analysis: analysis.choices[0].message.content,
+      recommendations: await this.generateRecommendations(competitorData)
+    };
+  }
+  
+  async generateRecommendations(data: any[]) {
+    // Additional AI processing for recommendations
+    const recommendations = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: 'Generate 5 specific, actionable business recommendations based on competitor analysis.'
+        },
+        {
+          role: 'user',
+          content: JSON.stringify(data, null, 2)
+        }
+      ]
+    });
+    
+    return recommendations.choices[0].message.content;
+  }
+}
+```
+
+```typescript Content Monitoring System
+class ContentMonitor {
+  constructor(private firecrawl: FirecrawlApp) {}
+  
+  async setupMonitoring(urls: string[], interval: number = 3600000) {
+    // Set up periodic content monitoring
+    const monitor = setInterval(async () => {
+      try {
+        await this.checkForChanges(urls);
+      } catch (error) {
+        console.error('Monitoring error:', error);
+      }
+    }, interval);
+    
+    return monitor;
+  }
+  
+  async checkForChanges(urls: string[]) {
+    const results = await Promise.all(
+      urls.map(async url => {
+        const current = await this.firecrawl.scrapeUrl(url, {
+          formats: ['markdown'],
+          includeTags: ['h1', 'h2', 'h3', 'p', 'article']
+        });
+        
+        const previous = await this.getPreviousContent(url);
+        const hasChanged = this.detectChanges(previous, current.markdown);
+        
+        if (hasChanged) {
+          await this.notifyChange(url, current);
+          await this.storeCurrent(url, current.markdown);
+        }
+        
+        return { url, changed: hasChanged };
+      })
+    );
+    
+    return results;
+  }
+  
+  private detectChanges(previous: string, current: string): boolean {
+    // Simple change detection - could be enhanced with diff algorithms
+    const previousHash = this.hashContent(previous);
+    const currentHash = this.hashContent(current);
+    return previousHash !== currentHash;
+  }
+  
+  private hashContent(content: string): string {
+    // Create content hash for comparison
+    return require('crypto')
+      .createHash('md5')
+      .update(content.replace(/\s+/g, ' ').trim())
+      .digest('hex');
+  }
+  
+  private async notifyChange(url: string, content: any) {
+    // Send notifications about content changes
+    console.log(`Content changed on ${url}`);
+    // Could integrate with Slack, email, webhooks, etc.
+  }
+}
+```
+</CodeGroup>
+
+## Integration with Forge Platform
+
+### Analytics Integration
+
+<CodeGroup>
+```typescript Scraping Analytics
+import { createAnalyticsClient } from '@repo/analytics/client/next';
+import { FirecrawlApp } from '@mendable/firecrawl-js';
+
+class AnalyticsEnabledScraper {
+  constructor(
+    private firecrawl: FirecrawlApp,
+    private analytics: ReturnType<typeof createAnalyticsClient>
+  ) {}
+  
+  async scrapeWithAnalytics(url: string, options: any) {
+    const startTime = Date.now();
+    
+    try {
+      // Track scraping start
+      this.analytics.track('scraping_started', {
+        url,
+        options: JSON.stringify(options),
+        timestamp: new Date().toISOString()
+      });
+      
+      const result = await this.firecrawl.scrapeUrl(url, options);
+      const duration = Date.now() - startTime;
+      
+      // Track successful completion
+      this.analytics.track('scraping_completed', {
+        url,
+        duration,
+        contentLength: result.markdown?.length || 0,
+        success: true,
+        timestamp: new Date().toISOString()
+      });
+      
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      // Track errors
+      this.analytics.track('scraping_failed', {
+        url,
+        duration,
+        error: error.message,
+        success: false,
+        timestamp: new Date().toISOString()
+      });
+      
+      throw error;
+    }
+  }
+}
+```
+
+```typescript Database Integration
+import { createDatabaseClient } from '@repo/database/client/next';
+
+interface ScrapedContent {
+  id: string;
+  url: string;
+  title: string;
+  content: string;
+  metadata: Record<string, any>;
+  extractedData: Record<string, any>;
+  scrapedAt: Date;
+}
+
+class ContentDatabase {
+  constructor(private db: ReturnType<typeof createDatabaseClient>) {}
+  
+  async storeScrapedContent(
+    url: string, 
+    firecrawlResult: any
+  ): Promise<ScrapedContent> {
+    const content = {
+      id: generateId(),
+      url,
+      title: firecrawlResult.metadata?.title || '',
+      content: firecrawlResult.markdown || '',
+      metadata: firecrawlResult.metadata || {},
+      extractedData: firecrawlResult.extract || {},
+      scrapedAt: new Date(),
+    };
+    
+    await this.db.scrapedContent.create({
+      data: content
+    });
+    
+    return content;
+  }
+  
+  async searchContent(query: string): Promise<ScrapedContent[]> {
+    return this.db.scrapedContent.findMany({
+      where: {
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { content: { contains: query, mode: 'insensitive' } },
+        ]
+      },
+      orderBy: { scrapedAt: 'desc' },
+      take: 50
+    });
+  }
+  
+  async getContentByDomain(domain: string): Promise<ScrapedContent[]> {
+    return this.db.scrapedContent.findMany({
+      where: {
+        url: { contains: domain }
+      },
+      orderBy: { scrapedAt: 'desc' }
+    });
+  }
+}
+```
+</CodeGroup>
+
+### Orchestration Workflows
+
+<CodeGroup>
+```typescript Workflow Integration
+import { createWorkflow } from '@repo/orchestration';
+
+// Define content processing workflow
+export const contentProcessingWorkflow = createWorkflow('content-processing', {
+  steps: [
+    {
+      id: 'scrape',
+      type: 'firecrawl-scrape',
+      config: {
+        formats: ['markdown', 'extract'],
+        extract: {
+          schema: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              content: { type: 'string' },
+              author: { type: 'string' },
+              publishDate: { type: 'string' }
+            }
+          }
+        }
+      }
+    },
+    {
+      id: 'analyze',
+      type: 'ai-analysis',
+      config: {
+        prompt: 'Analyze this content for key insights and sentiment',
+        model: 'gpt-4'
+      }
+    },
+    {
+      id: 'store',
+      type: 'database-store',
+      config: {
+        table: 'processed_content'
+      }
+    },
+    {
+      id: 'notify',
+      type: 'notification',
+      config: {
+        channels: ['slack', 'email'],
+        template: 'content-processed'
+      }
+    }
+  ]
+});
+
+// Execute workflow
+const result = await contentProcessingWorkflow.execute({
+  url: 'https://example.com/article',
+  userId: 'user-123'
+});
+```
+
+```typescript Scheduled Content Updates
+import { createScheduler } from '@repo/orchestration';
+
+// Schedule regular content updates
+const contentScheduler = createScheduler();
+
+// Daily competitor monitoring
+contentScheduler.schedule('competitor-monitoring', {
+  cron: '0 9 * * *', // 9 AM daily
+  workflow: 'competitor-analysis',
+  data: {
+    competitors: [
+      'https://competitor1.com',
+      'https://competitor2.com',
+      'https://competitor3.com'
+    ]
+  }
+});
+
+// Weekly industry reports
+contentScheduler.schedule('industry-reports', {
+  cron: '0 10 * * 1', // 10 AM every Monday
+  workflow: 'industry-analysis',
+  data: {
+    sources: [
+      'https://industry-news.com',
+      'https://tech-blog.com',
+      'https://market-research.com'
+    ]
+  }
+});
+```
+</CodeGroup>
+
+## Performance & Optimization
+
+### Rate Limiting & Best Practices
+
+<Tabs>
+  <Tab title="Respectful Crawling">
+    ```typescript
+    // Configure rate limiting and delays
+    const crawlConfig = {
+      crawlerOptions: {
+        delay: 1000, // 1 second between requests
+        maxConcurrency: 3, // Maximum 3 concurrent requests
+        respectRobotsTxt: true,
+        userAgent: 'YourBot/1.0 (+https://yoursite.com/bot-info)',
+      },
+      pageOptions: {
+        waitFor: 2000, // Wait 2 seconds for page to load
+        timeout: 30000, // 30 second timeout
+      }
+    };
+    
+    const results = await app.crawlUrl('https://example.com', crawlConfig);
+    ```
+  </Tab>
+  
+  <Tab title="Batch Processing">
+    ```typescript
+    // Process URLs in batches to avoid overwhelming servers
+    async function processUrlsBatch(urls: string[], batchSize: number = 10) {
+      const results = [];
+      
+      for (let i = 0; i < urls.length; i += batchSize) {
+        const batch = urls.slice(i, i + batchSize);
+        
+        console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(urls.length/batchSize)}`);
+        
+        const batchResults = await Promise.all(
+          batch.map(url => app.scrapeUrl(url, {
+            formats: ['markdown'],
+            includeTags: ['h1', 'h2', 'p']
+          }))
+        );
+        
+        results.push(...batchResults);
+        
+        // Delay between batches
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      return results;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Error Handling">
+    ```typescript
+    // Robust error handling and retries
+    async function scrapeWithRetry(
+      url: string, 
+      options: any, 
+      maxRetries: number = 3
+    ) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          return await app.scrapeUrl(url, options);
+        } catch (error) {
+          console.log(`Attempt ${attempt} failed for ${url}:`, error.message);
+          
+          if (attempt === maxRetries) {
+            throw new Error(`Failed to scrape ${url} after ${maxRetries} attempts: ${error.message}`);
+          }
+          
+          // Exponential backoff
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## API Reference
+
+### Core Methods
+
+<AccordionGroup>
+  <Accordion title="scrapeUrl()" icon="globe">
+    **Scrape a single URL with various output formats**
+    
+    ```typescript
+    scrapeUrl(url: string, options?: ScrapeOptions): Promise<ScrapeResult>
+    
+    interface ScrapeOptions {
+      formats?: ('markdown' | 'html' | 'rawHtml' | 'screenshot' | 'extract')[];
+      includeTags?: string[];
+      excludeTags?: string[];
+      onlyMainContent?: boolean;
+      timeout?: number;
+      waitFor?: number;
+      extract?: {
+        schema?: JSONSchema;
+        prompt?: string;
+        systemPrompt?: string;
+      };
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="crawlUrl()" icon="spider">
+    **Crawl an entire website or specific sections**
+    
+    ```typescript
+    crawlUrl(url: string, options?: CrawlOptions): Promise<CrawlJob>
+    
+    interface CrawlOptions {
+      crawlerOptions?: {
+        includes?: string[];
+        excludes?: string[];
+        maxDepth?: number;
+        limit?: number;
+        allowBackwardCrawling?: boolean;
+        allowExternalContentLinks?: boolean;
+      };
+      pageOptions?: ScrapeOptions;
+      webhook?: string;
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="checkCrawlStatus()" icon="clock">
+    **Monitor crawl job progress**
+    
+    ```typescript
+    checkCrawlStatus(jobId: string): Promise<CrawlStatus>
+    
+    interface CrawlStatus {
+      status: 'scraping' | 'completed' | 'failed';
+      total: number;
+      completed: number;
+      creditsUsed: number;
+      expiresAt: Date;
+      next?: string;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Common Issues" icon="exclamation-triangle">
+    **Rate Limiting Errors**
+    - Reduce crawling speed with `delay` option
+    - Decrease `maxConcurrency` setting
+    - Implement proper retry logic with exponential backoff
+    
+    **Timeout Issues**
+    - Increase `timeout` and `waitFor` values for slow pages
+    - Consider using `screenshot` format for dynamic content
+    - Check if the site requires authentication
+    
+    **Content Extraction Problems**
+    - Adjust `includeTags` and `excludeTags` for better content selection
+    - Use AI extraction with specific prompts for complex pages
+    - Try different output formats (markdown vs html)
+  </Accordion>
+  
+  <Accordion title="Performance Optimization" icon="gauge">
+    **Slow Scraping**
+    - Process URLs in batches rather than sequentially
+    - Use appropriate `formats` - avoid unnecessary formats
+    - Implement caching for repeated URLs
+    
+    **Memory Usage**
+    - Process large crawls in chunks
+    - Store results incrementally rather than in memory
+    - Use webhooks for real-time processing of large jobs
+    
+    **API Limits**
+    - Monitor your API usage and credits
+    - Implement proper error handling for rate limits
+    - Use the most appropriate plans for your usage volume
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Warning>
+**Ethical Scraping Guidelines:**
+- Always respect robots.txt files and website terms of service
+- Implement reasonable delays between requests to avoid server overload
+- Use appropriate User-Agent strings that identify your bot
+- Monitor your scraping impact and adjust accordingly
+- Consider reaching out to site owners for high-volume scraping
+- Comply with data protection regulations (GDPR, CCPA, etc.)
+</Warning>
+
+Firecrawl provides powerful web scraping capabilities that integrate seamlessly with the Forge platform's AI, analytics, and data processing workflows, enabling sophisticated content extraction and analysis pipelines.

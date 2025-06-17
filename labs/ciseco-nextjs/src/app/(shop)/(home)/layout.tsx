@@ -1,4 +1,4 @@
-import { Header } from '@repo/design-system/ciseco'
+import Header from '@/components/Header/Header'
 import { Metadata } from 'next'
 import { ApplicationLayout } from '../application-layout'
 

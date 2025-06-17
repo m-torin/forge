@@ -11,24 +11,24 @@ import rightImgDemo from '../images/promo2.png';
 import ButtonPrimary from './shared/Button/ButtonPrimary';
 import Logo from './shared/Logo/Logo';
 
-export interface SectionPromo2Props {
+export interface SectionPromo2Props extends Record<string, any> {
   className?: string;
   'data-testid'?: string;
 }
 
 const SectionPromo2: FC<SectionPromo2Props> = ({
-  'data-testid': testId = 'section-promo-2',
   className,
+  'data-testid': testId = 'section-promo-2',
 }) => {
   const localizeHref = useLocalizeHref();
 
   return (
-    <div data-testid={testId} className={clsx(className, 'xl:pt-10 2xl:pt-24')}>
+    <div className={clsx(className, 'xl:pt-10 2xl:pt-24')} data-testid={testId}>
       <div className="relative flex flex-col rounded-2xl bg-yellow-50 p-4 pb-0 sm:rounded-[40px] sm:p-5 sm:pb-0 lg:flex-row lg:justify-end lg:p-14 xl:px-20 xl:py-24 2xl:py-32 dark:bg-neutral-800">
         <div className="absolute inset-5">
           <Image
-            className="object-contain dark:opacity-5"
             alt="backgroundLineSvg"
+            className="object-contain dark:opacity-5"
             fill
             src={backgroundLineSvg}
           />
@@ -45,8 +45,8 @@ const SectionPromo2: FC<SectionPromo2Props> = ({
           </span>
           <div className="mt-6 flex space-x-2 sm:mt-12 sm:space-x-5">
             <ButtonPrimary
-              href={localizeHref('/search')}
               className="dark:bg-neutral-200 dark:text-neutral-900"
+              href={localizeHref('/search')}
             >
               Discover more
             </ButtonPrimary>
@@ -55,8 +55,8 @@ const SectionPromo2: FC<SectionPromo2Props> = ({
 
         <div className="relative mt-10 block max-w-xl lg:absolute lg:bottom-0 lg:left-0 lg:mt-0 lg:max-w-[calc(55%-40px)]">
           <Image
-            className=""
             alt="section promo 2"
+            className=""
             sizes="(max-width: 768px) 100vw, 50vw"
             src={rightImgDemo}
           />

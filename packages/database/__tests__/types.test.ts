@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DatabaseAdapter, RedisDatabaseAdapter, VectorDatabaseAdapter } from '../types';
+import { DatabaseAdapter, RedisDatabaseAdapter, VectorDatabaseAdapter } from '../types';
 
-describe('Database Types', () => {
-  describe('DatabaseAdapter interface', () => {
-    it('should have all required methods', () => {
+describe('Database Types', (_: any) => {
+  describe('DatabaseAdapter interface', (_: any) => {
+    it('should have all required methods', (_: any) => {
       // This test ensures the interface structure is correct
       const adapter: DatabaseAdapter = {
         initialize: async () => {},
@@ -69,8 +69,8 @@ describe('Database Types', () => {
     });
   });
 
-  describe('VectorDatabaseAdapter interface', () => {
-    it('should extend DatabaseAdapter with vector operations', () => {
+  describe('VectorDatabaseAdapter interface', (_: any) => {
+    it('should extend DatabaseAdapter with vector operations', (_: any) => {
       const adapter: VectorDatabaseAdapter = {
         // Base DatabaseAdapter methods
         initialize: async () => {},
@@ -98,15 +98,51 @@ describe('Database Types', () => {
         getInfo: async () => ({}),
         reset: async () => ({}),
         queryByText: async <T>(text: string, options?: any): Promise<T[]> => [],
-        upsertText: async <T>(data: any[], options?: any): Promise<T> => ({}) as T,
-        upsertDense: async <T>(vectors: any[], options?: any): Promise<T> => ({}) as T,
-        upsertSparse: async <T>(vectors: any[], options?: any): Promise<T> => ({}) as T,
-        upsertHybrid: async <T>(vectors: any[], options?: any): Promise<T> => ({}) as T,
-        querySparse: async <T>(sparseVector: any, options?: any): Promise<T[]> => [],
+        upsertText: async <T>(
+          data: { data: string; id: string; metadata?: Record<string, any> }[],
+          options?: { namespace?: string },
+        ): Promise<T> => ({}) as T,
+        upsertDense: async <T>(
+          vectors: { id: string; metadata?: Record<string, any>; vector: number[] }[],
+          options?: { namespace?: string },
+        ): Promise<T> => ({}) as T,
+        upsertSparse: async <T>(
+          vectors: {
+            id: string;
+            metadata?: Record<string, any>;
+            sparseVector: { indices: number[]; values: number[] };
+          }[],
+          options?: { namespace?: string },
+        ): Promise<T> => ({}) as T,
+        upsertHybrid: async <T>(
+          vectors: {
+            id: string;
+            metadata?: Record<string, any>;
+            sparseVector: { indices: number[]; values: number[] };
+            vector: number[];
+          }[],
+          options?: { namespace?: string },
+        ): Promise<T> => ({}) as T,
+        querySparse: async <T>(
+          sparseVector: { indices: number[]; values: number[] },
+          options?: {
+            filter?: string;
+            includeMetadata?: boolean;
+            includeVectors?: boolean;
+            namespace?: string;
+            topK?: number;
+          },
+        ): Promise<T[]> => [],
         queryHybrid: async <T>(
           vector: number[],
-          sparseVector: any,
-          options?: any,
+          sparseVector: { indices: number[]; values: number[] },
+          options?: {
+            filter?: string;
+            includeMetadata?: boolean;
+            includeVectors?: boolean;
+            namespace?: string;
+            topK?: number;
+          },
         ): Promise<T[]> => [],
         getNamespaceInfo: async (namespace: string) => ({}),
         listNamespaces: async (): Promise<string[]> => [],
@@ -154,12 +190,35 @@ describe('Database Types', () => {
         getInfo: async () => ({ dimension: 1536, totalVectorCount: 1000 }),
         reset: async () => ({ success: true }),
         queryByText: async <T>(text: string, options?: any): Promise<T[]> => [],
-        upsertText: async <T>(data: any[]): Promise<T> => ({}) as T,
-        upsertDense: async <T>(vectors: any[]): Promise<T> => ({}) as T,
-        upsertSparse: async <T>(vectors: any[]): Promise<T> => ({}) as T,
-        upsertHybrid: async <T>(vectors: any[]): Promise<T> => ({}) as T,
-        querySparse: async <T>(sparseVector: any): Promise<T[]> => [],
-        queryHybrid: async <T>(vector: number[], sparseVector: any): Promise<T[]> => [],
+        upsertText: async <T>(
+          data: { data: string; id: string; metadata?: Record<string, any> }[],
+        ): Promise<T> => ({}) as T,
+        upsertDense: async <T>(
+          vectors: { id: string; metadata?: Record<string, any>; vector: number[] }[],
+        ): Promise<T> => ({}) as T,
+        upsertSparse: async <T>(
+          vectors: {
+            id: string;
+            metadata?: Record<string, any>;
+            sparseVector: { indices: number[]; values: number[] };
+          }[],
+        ): Promise<T> => ({}) as T,
+        upsertHybrid: async <T>(
+          vectors: {
+            id: string;
+            metadata?: Record<string, any>;
+            sparseVector: { indices: number[]; values: number[] };
+            vector: number[];
+          }[],
+        ): Promise<T> => ({}) as T,
+        querySparse: async <T>(sparseVector: {
+          indices: number[];
+          values: number[];
+        }): Promise<T[]> => [],
+        queryHybrid: async <T>(
+          vector: number[],
+          sparseVector: { indices: number[]; values: number[] },
+        ): Promise<T[]> => [],
         getNamespaceInfo: async (namespace: string) => ({ name: namespace }),
         listNamespaces: async (): Promise<string[]> => ['default', 'test'],
       };
@@ -178,8 +237,8 @@ describe('Database Types', () => {
     });
   });
 
-  describe('RedisDatabaseAdapter interface', () => {
-    it('should extend DatabaseAdapter with Redis operations', () => {
+  describe('RedisDatabaseAdapter interface', (_: any) => {
+    it('should extend DatabaseAdapter with Redis operations', (_: any) => {
       const adapter: RedisDatabaseAdapter = {
         // Base DatabaseAdapter methods
         initialize: async () => {},
@@ -295,7 +354,7 @@ describe('Database Types', () => {
 
         // Redis methods with realistic implementations
         getMultiple: async <T>(collection: string, ids: string[]): Promise<(T | null)[]> => {
-          return ids.map((id) => ({ id, data: `data-${id}` }) as T);
+          return ids.map((id: any) => ({ id, data: `data-${id}` }) as T);
         },
         setMultiple: async <T>(
           collection: string,
@@ -304,7 +363,7 @@ describe('Database Types', () => {
           return records as T[];
         },
         deleteMultiple: async <T>(collection: string, ids: string[]): Promise<T[]> => {
-          return ids.map((id) => ({ id }) as T);
+          return ids.map((id: any) => ({ id }) as T);
         },
         setWithExpiration: async <T>(
           collection: string,
@@ -399,15 +458,15 @@ describe('Database Types', () => {
     });
   });
 
-  describe('Type compatibility', () => {
-    it('should allow VectorDatabaseAdapter to be used as DatabaseAdapter', () => {
+  describe('Type compatibility', (_: any) => {
+    it('should allow VectorDatabaseAdapter to be used as DatabaseAdapter', (_: any) => {
       const vectorAdapter: VectorDatabaseAdapter = {} as VectorDatabaseAdapter;
       const baseAdapter: DatabaseAdapter = vectorAdapter;
 
       expect(baseAdapter).toBe(vectorAdapter);
     });
 
-    it('should allow RedisDatabaseAdapter to be used as DatabaseAdapter', () => {
+    it('should allow RedisDatabaseAdapter to be used as DatabaseAdapter', (_: any) => {
       const redisAdapter: RedisDatabaseAdapter = {} as RedisDatabaseAdapter;
       const baseAdapter: DatabaseAdapter = redisAdapter;
 

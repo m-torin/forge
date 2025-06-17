@@ -9,8 +9,8 @@ import {
 
 const authHelpers = createAuthHelpers('http://localhost:3300');
 
-test.describe('Backstage Settings - Configuration and Security Testing', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('Backstage Settings - Configuration and Security Testing', (_: any) => {
+  test.beforeEach(async ({ page }: any) => {
     // Sign in as admin user for all settings tests
     const testUser = authHelpers.createTestUser({
       name: 'Settings Admin',
@@ -24,7 +24,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('settings main page loads with configuration interface', async ({ context, page }) => {
+  test('settings main page loads with configuration interface', async ({ context, page }: any) => {
     const { report, result } = await withPerformanceMonitoring(
       page,
       context,
@@ -91,7 +91,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     expect(result.report.metrics.lcp).toBeLessThan(3000);
   });
 
-  test('general settings configuration and updates', async ({ context, page }) => {
+  test('general settings configuration and updates', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock settings update API
@@ -204,7 +204,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('security settings and authentication configuration', async ({ context, page }) => {
+  test('security settings and authentication configuration', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
 
     await page.goto('/settings/security');
@@ -244,9 +244,10 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of passwordPolicyElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
-            await element.check();
-          } else if (await element.evaluate((el) => el.type === 'number')) {
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
+            const mockRequest = new NextRequest('http://localhost') as any;
+            await element.limit(mockRequest);
+          } else if (await element.evaluate((el: any) => el.type === 'number')) {
             await element.fill('8');
           }
           await page.waitForTimeout(500);
@@ -266,8 +267,9 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of twoFactorElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
-            await element.check();
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
+            const mockRequest = new NextRequest('http://localhost') as any;
+            await element.limit(mockRequest);
           } else {
             await element.click();
           }
@@ -287,9 +289,9 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of sessionElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await element.evaluate((el: any) => el.tagName === 'SELECT')) {
             await element.selectOption({ index: 1 });
-          } else if (await element.evaluate((el) => el.type === 'number')) {
+          } else if (await element.evaluate((el: any) => el.type === 'number')) {
             await element.fill('30');
           }
           await page.waitForTimeout(500);
@@ -313,7 +315,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('API keys and integration management', async ({ context, page }) => {
+  test('API keys and integration management', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock API key creation
@@ -401,9 +403,10 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of permissionElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
-            await element.check();
-          } else if (await element.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
+            const mockRequest = new NextRequest('http://localhost') as any;
+            await element.limit(mockRequest);
+          } else if (await element.evaluate((el: any) => el.tagName === 'SELECT')) {
             await element.selectOption({ index: 1 });
           }
           await page.waitForTimeout(500);
@@ -479,7 +482,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('notification settings and preferences', async ({ context, page }) => {
+  test('notification settings and preferences', async ({ context, page }: any) => {
     await page.goto('/settings');
     await page.waitForLoadState('networkidle');
 
@@ -516,8 +519,9 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of emailNotificationElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
-            await element.check();
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
+            const mockRequest = new NextRequest('http://localhost') as any;
+            await element.limit(mockRequest);
           }
           await page.waitForTimeout(500);
           break;
@@ -535,8 +539,9 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of pushNotificationElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
-            await element.check();
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
+            const mockRequest = new NextRequest('http://localhost') as any;
+            await element.limit(mockRequest);
           } else {
             await element.click();
           }
@@ -556,10 +561,11 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of frequencyElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await element.evaluate((el: any) => el.tagName === 'SELECT')) {
             await element.selectOption({ index: 1 });
-          } else if (await element.evaluate((el) => el.type === 'radio')) {
-            await element.check();
+          } else if (await element.evaluate((el: any) => el.type === 'radio')) {
+            const mockRequest = new NextRequest('http://localhost') as any;
+            await element.limit(mockRequest);
           }
           await page.waitForTimeout(500);
           break;
@@ -581,7 +587,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       const element = page.locator(selector).first();
       if ((await element.count()) > 0) {
         // If it's an input, try to configure it
-        if (await element.evaluate((el) => el.tagName === 'INPUT')) {
+        if (await element.evaluate((el: any) => el.tagName === 'INPUT')) {
           if (await element.isVisible()) {
             await element.fill('https://hooks.slack.com/test-webhook-url');
           }
@@ -591,7 +597,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('backup and data management settings', async ({ context, page }) => {
+  test('backup and data management settings', async ({ context, page }: any) => {
     await page.goto('/settings');
     await page.waitForLoadState('networkidle');
 
@@ -630,9 +636,10 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of autoBackupElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
-            await element.check();
-          } else if (await element.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
+            const mockRequest = new NextRequest('http://localhost') as any;
+            await element.limit(mockRequest);
+          } else if (await element.evaluate((el: any) => el.tagName === 'SELECT')) {
             await element.selectOption({ index: 1 });
           }
           await page.waitForTimeout(500);
@@ -683,9 +690,9 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of retentionElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await element.evaluate((el: any) => el.tagName === 'SELECT')) {
             await element.selectOption({ index: 1 });
-          } else if (await element.evaluate((el) => el.type === 'number')) {
+          } else if (await element.evaluate((el: any) => el.type === 'number')) {
             await element.fill('90');
           }
           await page.waitForTimeout(500);
@@ -705,7 +712,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     for (const selector of importElements) {
       const element = page.locator(selector).first();
       if ((await element.count()) > 0 && (await element.isVisible())) {
-        if (await element.evaluate((el) => el.tagName === 'INPUT')) {
+        if (await element.evaluate((el: any) => el.tagName === 'INPUT')) {
           // File input - verify it exists
           await expect(element).toBeVisible();
         } else {
@@ -717,7 +724,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('advanced settings and system configuration', async ({ context, page }) => {
+  test('advanced settings and system configuration', async ({ context, page }: any) => {
     await page.goto('/settings');
     await page.waitForLoadState('networkidle');
 
@@ -758,11 +765,11 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of cacheElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await element.evaluate((el: any) => el.tagName === 'SELECT')) {
             await element.selectOption({ index: 1 });
-          } else if (await element.evaluate((el) => el.type === 'number')) {
+          } else if (await element.evaluate((el: any) => el.type === 'number')) {
             await element.fill('3600');
-          } else if (await element.evaluate((el) => el.tagName === 'BUTTON')) {
+          } else if (await element.evaluate((el: any) => el.tagName === 'BUTTON')) {
             // Don't actually clear cache in test
             await expect(element).toBeVisible();
           }
@@ -782,9 +789,9 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of performanceElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await element.evaluate((el: any) => el.tagName === 'SELECT')) {
             await element.selectOption({ index: 1 });
-          } else if (await element.evaluate((el) => el.type === 'number')) {
+          } else if (await element.evaluate((el: any) => el.type === 'number')) {
             await element.fill('100');
           }
           await page.waitForTimeout(500);
@@ -803,7 +810,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
       for (const selector of maintenanceElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
             // Don't actually enable maintenance mode in test
             await expect(element).toBeVisible();
           }
@@ -829,7 +836,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('settings form validation and error handling', async ({ context, page }) => {
+  test('settings form validation and error handling', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock settings update failure
@@ -919,7 +926,7 @@ test.describe('Backstage Settings - Configuration and Security Testing', () => {
     }
   });
 
-  test('settings performance and data persistence', async ({ context, page }) => {
+  test('settings performance and data persistence', async ({ context, page }: any) => {
     const { result } = await withPerformanceMonitoring(page, context, '/settings', async () => {
       // Test settings navigation performance
       const settingsTabs = [

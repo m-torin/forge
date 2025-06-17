@@ -1,6 +1,6 @@
-import Avatar from './Avatar';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import Avatar from './Avatar';
 
 const meta: Meta<typeof Avatar> = {
   argTypes: {
@@ -159,13 +159,13 @@ export const UserList: Story = {
   render: () => (
     <div className="space-y-3">
       {[
-        { name: 'John Doe', image: 'photo-1472099645785-5658abf4ff4e', verified: true },
-        { name: 'Jane Smith', image: 'photo-1494790108755-2616b612c1c4', verified: false },
-        { name: 'Bob Wilson', image: 'photo-1507003211169-0a1dd7228f2d', verified: true },
-        { name: 'Alice Johnson', image: '', verified: false },
-        { name: 'Carol Brown', image: 'photo-1438761681033-6461ffad8d80', verified: true },
-      ].map((user, index) => (
-        <div key={index} className="flex items-center space-x-3">
+        { image: 'photo-1472099645785-5658abf4ff4e', name: 'John Doe', verified: true },
+        { image: 'photo-1494790108755-2616b612c1c4', name: 'Jane Smith', verified: false },
+        { image: 'photo-1507003211169-0a1dd7228f2d', name: 'Bob Wilson', verified: true },
+        { image: '', name: 'Alice Johnson', verified: false },
+        { image: 'photo-1438761681033-6461ffad8d80', name: 'Carol Brown', verified: true },
+      ].map((user: any) => (
+        <div key={user.name} className="flex items-center space-x-3">
           <Avatar
             hasChecked={user.verified}
             imgUrl={

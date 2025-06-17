@@ -15,22 +15,22 @@ import {
   StepTemplates,
 } from '../src/shared/index';
 
-describe('Basic Step Factory', () => {
+describe('Basic Step Factory', (_: any) => {
   beforeEach(() => {
     // Clear registries before each test
     defaultStepRegistry.clear();
   });
 
-  test('should create a basic workflow step', () => {
+  test('should create a basic workflow step', (_: any) => {
     const step = createWorkflowStep(
       {
         name: 'Test Step',
         version: '1.0.0',
       },
-      async (context) => {
+      async (context: any) => {
         return {
           output: { result: 'test' },
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
       },
@@ -48,10 +48,10 @@ describe('Basic Step Factory', () => {
         name: 'Success Step',
         version: '1.0.0',
       },
-      async (context) => {
+      async (context: any) => {
         return {
           output: { data: context.input },
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
       },
@@ -65,7 +65,7 @@ describe('Basic Step Factory', () => {
     expect(result.performance).toBeDefined();
   });
 
-  test('should create HTTP step from template', () => {
+  test('should create HTTP step from template', (_: any) => {
     const httpStep = StepTemplates.http('API Call', 'Call external API');
 
     expect(httpStep.metadata.name).toBe('API Call');
@@ -87,7 +87,7 @@ describe('Basic Step Factory', () => {
     expect(duration).toBeGreaterThanOrEqual(40); // Allow some tolerance
   });
 
-  test('should register and retrieve steps in registry', () => {
+  test('should register and retrieve steps in registry', (_: any) => {
     const registry = new StepRegistry();
 
     const step = createWorkflowStep(
@@ -97,10 +97,10 @@ describe('Basic Step Factory', () => {
         tags: ['registry', 'test'],
         version: '1.0.0',
       },
-      async (context) => {
+      async (context: any) => {
         return {
           output: {},
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
       },
@@ -116,7 +116,7 @@ describe('Basic Step Factory', () => {
     expect(entry?.usageCount).toBe(0);
   });
 
-  test('should use step factory to create and register steps', () => {
+  test('should use step factory to create and register steps', (_: any) => {
     const factory = new StepFactory();
 
     const step = factory.createStep(
@@ -124,10 +124,10 @@ describe('Basic Step Factory', () => {
         name: 'Factory Step',
         version: '1.0.0',
       },
-      async (context) => {
+      async (context: any) => {
         return {
           output: {},
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
       },
@@ -139,16 +139,16 @@ describe('Basic Step Factory', () => {
     expect(retrieved).toBe(step);
   });
 
-  test('should validate step definitions', () => {
+  test('should validate step definitions', (_: any) => {
     const validStep = createWorkflowStep(
       {
         name: 'Valid Step',
         version: '1.0.0',
       },
-      async (context) => {
+      async (context: any) => {
         return {
           output: {},
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
       },
@@ -159,7 +159,7 @@ describe('Basic Step Factory', () => {
     expect(validation.errors).toBeUndefined();
   });
 
-  test('should search steps by category', () => {
+  test('should search steps by category', (_: any) => {
     const registry = new StepRegistry();
 
     const httpStep = createWorkflowStep(

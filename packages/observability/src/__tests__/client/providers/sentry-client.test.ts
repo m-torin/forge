@@ -5,9 +5,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SentryClientProvider } from '../../../client/providers/sentry-client';
-
-import type { SentryConfig } from '../../../shared/types/sentry-types';
-import type { Breadcrumb, ObservabilityContext } from '../../../shared/types/types';
+import { SentryConfig } from '../../../shared/types/sentry-types';
+import { Breadcrumb, ObservabilityContext } from '../../../shared/types/types';
 
 // Mock Sentry
 const mockSentry = {
@@ -27,8 +26,8 @@ const mockSentry = {
   withScope: vi.fn(),
 };
 
-// Mock dynamic import
-vi.mock('@sentry/react', () => ({
+// Mock dynamic import - client provider imports from @sentry/nextjs
+vi.mock('@sentry/nextjs', () => ({
   default: mockSentry,
   ...mockSentry,
 }));
@@ -68,7 +67,7 @@ describe('SentryClientProvider', () => {
       setUser: vi.fn(),
     };
 
-    mockSentry.withScope.mockImplementation((callback) => {
+    mockSentry.withScope.mockImplementation((callback: any) => {
       callback(mockScope);
     });
 
@@ -100,10 +99,9 @@ describe('SentryClientProvider', () => {
       expect(mockSentry.init).toHaveBeenCalledWith({
         beforeSend: undefined,
         beforeSendTransaction: undefined,
-        debug: false,
         dsn: 'https://test@sentry.io/123456',
         environment: 'test',
-        integrations: [{ name: 'Replay' }],
+        integrations: [], // No integrations by default
         release: '1.0.0',
         replaysOnErrorSampleRate: 1,
         replaysSessionSampleRate: 0.1,
@@ -111,11 +109,15 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should throw error when DSN is missing', async () => {
+    it('should skip initialization without DSN', async () => {
       const configWithoutDsn = { ...config } as any;
       delete configWithoutDsn.dsn;
 
-      await expect(provider.initialize(configWithoutDsn)).rejects.toThrow('Sentry DSN is required');
+      // Should not throw, just skip initialization
+      await provider.initialize(configWithoutDsn);
+
+      // Sentry.init should not be called when no DSN is provided
+      expect(mockSentry.init).not.toHaveBeenCalled();
     });
 
     it('should use default values for optional config', async () => {
@@ -125,9 +127,12 @@ describe('SentryClientProvider', () => {
 
       expect(mockSentry.init).toHaveBeenCalledWith(
         expect.objectContaining({
-          debug: false,
+          dsn: 'https://test@sentry.io/123456',
           environment: 'production',
           tracesSampleRate: 1,
+          replaysOnErrorSampleRate: 1,
+          replaysSessionSampleRate: 0.1,
+          integrations: [],
         }),
       );
     });
@@ -143,7 +148,7 @@ describe('SentryClientProvider', () => {
 
       expect(mockSentry.init).toHaveBeenCalledWith(
         expect.objectContaining({
-          integrations: [{ name: 'Replay' }, customIntegration],
+          integrations: [customIntegration], // Only custom integration, no replay by default
         }),
       );
     });

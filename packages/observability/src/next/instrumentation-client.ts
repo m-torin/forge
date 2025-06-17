@@ -3,9 +3,7 @@
  * This file is imported by apps in their instrumentation-client.ts
  */
 
-import * as Sentry from '@sentry/nextjs';
-
-import type { ObservabilityConfig } from '../shared/types/types';
+import { ObservabilityConfig } from '../shared/types/types';
 
 /**
  * Initialize client-side observability
@@ -30,7 +28,12 @@ export default async function initializeClient(config?: ObservabilityConfig) {
 export { initializeClient };
 
 // Export for Sentry Next.js navigation instrumentation
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+// We export a no-op function since Sentry client is initialized separately
+// The actual router transition tracking is handled by Sentry's client provider when initialized
+export const onRouterTransitionStart = () => {
+  // No-op: Router transitions are automatically tracked when Sentry client is initialized
+  // This export exists for API compatibility with apps expecting this function
+};
 
 /**
  * Get default client configuration

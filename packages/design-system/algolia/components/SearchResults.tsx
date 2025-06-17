@@ -2,13 +2,13 @@
 
 import { useHits } from 'react-instantsearch';
 
-import type { SearchHit, SearchResultsProps } from '../types';
+import { SearchHit, SearchResultsProps } from '../types';
 
 const DefaultHitComponent = ({ hit }: { hit: SearchHit }) => (
   <div className="p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
     <div className="flex items-start space-x-3">
       {hit.image && (
-        <img className="w-12 h-12 rounded-lg object-cover" alt={hit.title} src={hit.image} />
+        <img alt={hit.title} className="w-12 h-12 rounded-lg object-cover" src={hit.image} />
       )}
       <div className="flex-1 min-w-0">
         <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">{hit.title}</h3>
@@ -50,7 +50,7 @@ export default function SearchResults({
   className = '',
   emptyComponent: EmptyComponent = DefaultEmptyComponent,
   hitComponent: HitComponent = DefaultHitComponent,
-  loadingComponent: LoadingComponent = DefaultLoadingComponent,
+  loadingComponent: _LoadingComponent = DefaultLoadingComponent,
 }: SearchResultsProps) {
   const { hits, sendEvent } = useHits<SearchHit>();
 
@@ -69,16 +69,27 @@ export default function SearchResults({
       className={`bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${className}`}
     >
       <div className="max-h-96 overflow-y-auto">
-        {hits.map((hit: any) => (
+        {hits.map((hit) => (
           <div
             key={hit.objectID}
+            className="cursor-pointer"
+            role="button"
+            tabIndex={0}
             onClick={() => {
               sendEvent('click', hit, 'Hit Clicked');
               if (hit.url) {
                 window.location.href = hit.url;
               }
             }}
-            className="cursor-pointer"
+            onKeyDown={(e: any) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                sendEvent('click', hit, 'Hit Clicked');
+                if (hit.url) {
+                  window.location.href = hit.url;
+                }
+              }
+            }}
           >
             <HitComponent hit={hit} />
           </div>

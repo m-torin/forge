@@ -1,6 +1,6 @@
-import Heading from './Heading';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import Heading from './Heading';
 
 const meta: Meta<typeof Heading> = {
   argTypes: {
@@ -225,7 +225,7 @@ export const SectionHeaders: Story = {
         Customer Reviews
       </Heading>
 
-      <Heading fontClass="text-xl font-medium" className="mb-6" level="h3">
+      <Heading className="mb-6" fontClass="text-xl font-medium" level="h3">
         Related Items
       </Heading>
     </div>

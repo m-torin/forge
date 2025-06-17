@@ -12,7 +12,7 @@ import {
   StepTemplates,
   withStepMonitoring,
   withStepRetry,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const UserOnboardingInput = z.object({
@@ -68,22 +68,16 @@ export const createUserProfileStep = compose(
         profileCreated: true,
       };
     },
-    (input) => !!input.userId && !!input.email,
-    (output) => !!output.profile,
+    (input: any) => !!input.userId && !!input.email,
+    (output: any) => !!output.profile,
   ),
-  (step) => withStepMonitoring(step, { enableDetailedLogging: true }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 2: Send welcome email
 export const sendWelcomeEmailStep = compose(
-  StepTemplates.notification('send-welcome-email', 'Send personalized welcome email', {
-    channel: 'email',
-    template: {
-      subject: 'Welcome to {{appName}}! 🎉',
-      templateId: 'welcome-v2',
-    },
-  }),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  StepTemplates.notification('send-welcome-email', 'info'),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 3: Check referral code
@@ -132,7 +126,7 @@ export const checkReferralStep = createStep('check-referral', async (data: any) 
 // Step 4: Apply referral rewards (conditional)
 export const applyReferralRewardsStep = StepTemplates.conditional(
   'apply-referral-rewards',
-  'Apply referral bonuses if valid',
+  (input: any) => input.referral?.isValid === true,
   {
     falseStep: createStep('skip-rewards', async (data: any) => ({
       ...data,
@@ -301,7 +295,7 @@ export const scheduleOnboardingEmailsStep = createStep('schedule-emails', async 
 // Step 8: Track onboarding analytics
 export const trackAnalyticsStep = compose(
   createStep('track-analytics', async (data: any) => {
-    const events = [
+    const events: any[] = [
       {
         event: 'user_onboarded',
         properties: {
@@ -337,22 +331,11 @@ export const trackAnalyticsStep = compose(
       events,
     };
   }),
-  (step) => withStepRetry(step, { maxAttempts: 2 }),
+  (step: any) => withStepRetry(step, { maxRetries: 2 }),
 );
 
 // Step 9: Send internal notification
-export const notifyInternalTeamStep = StepTemplates.notification(
-  'notify-team',
-  'Alert sales/success team about new signup',
-  {
-    condition: (data: any) =>
-      data.signupSource === 'paid' || data.referral?.referrer?.tier === 'premium',
-    template: {
-      channel: '#new-signups',
-      text: 'New {{tier}} user signup from {{source}}',
-    },
-  },
-);
+export const notifyInternalTeamStep = StepTemplates.notification('notify-team', 'info');
 
 // Step 10: Finalize onboarding
 export const finalizeOnboardingStep = createStep('finalize-onboarding', async (data: any) => {

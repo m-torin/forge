@@ -4,7 +4,7 @@ import { type FC, useEffect, useState } from 'react';
 
 import Label from './Label/Label';
 
-export interface MySwitchProps {
+export interface MySwitchProps extends Record<string, any> {
   className?: string;
   'data-testid'?: string;
   desc?: string;
@@ -14,8 +14,8 @@ export interface MySwitchProps {
 }
 
 const MySwitch: FC<MySwitchProps> = ({
-  'data-testid': testId = 'switch-toggle',
   className = '',
+  'data-testid': testId = 'switch-toggle',
   desc = 'You’ll receive bids on this item',
   enabled = false,
   label = 'Put on sale',
@@ -29,33 +29,33 @@ const MySwitch: FC<MySwitchProps> = ({
 
   return (
     <div
-      data-testid={testId}
       className={`MySwitch flex items-center justify-between space-x-2 ${className}`}
+      data-testid={testId}
     >
       <div>
         <Label data-testid="switch-label">{label}</Label>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">{desc}</p>
       </div>
       <Switch
-        color="teal"
-        onChange={(event) => {
-          const checked = event.currentTarget.checked;
-          setEnabledState(checked);
-          onChange && onChange(checked);
-        }}
+        aria-label={label}
+        checked={enabledState}
         classNames={{
           root: 'w-[68px]',
           thumb: 'h-7 w-7',
           track: 'cursor-pointer h-8 w-[68px]',
         }}
+        c="teal"
+        size="lg"
         styles={{
           track: {
             backgroundColor: enabledState ? undefined : 'var(--mantine-color-gray-4)',
           },
         }}
-        aria-label={label}
-        checked={enabledState}
-        size="lg"
+        onChange={(event: any) => {
+          const checked = event.currentTarget.checked;
+          setEnabledState(checked);
+          onChange && onChange(checked);
+        }}
       />
     </div>
   );

@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@mantine/core';
 import Link from 'next/link';
 import { forwardRef } from 'react';
@@ -10,6 +12,7 @@ interface ButtonProps {
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
 }
 
 export const ButtonPrimary = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(

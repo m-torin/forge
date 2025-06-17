@@ -1,16 +1,13 @@
-import {
-  Avatar,
-  Badge,
-  ButtonPrimary,
-  ButtonSecondary,
-  Divider,
-  PostCard1,
-  SocialsList,
-  Tag,
-  Textarea,
-  getBlogPosts,
-  getBlogPostsByHandle,
-} from '@repo/design-system/ciseco'
+import { Divider } from '@/components/Divider'
+import PostCard1 from '@/components/blog/PostCard1'
+import { getBlogPosts, getBlogPostsByHandle } from '@/data/data'
+import Avatar from '@/shared/Avatar/Avatar'
+import Badge from '@/shared/Badge/Badge'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
+import SocialsList from '@/shared/SocialsList/SocialsList'
+import Tag from '@/shared/Tag/Tag'
+import Textarea from '@/shared/Textarea/Textarea'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -44,10 +41,10 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   const renderHeader = () => {
     return (
       <header className="container rounded-xl">
-        <div className="max-w-(--breakpoint-md) mx-auto flex w-full flex-col items-start gap-y-5">
+        <div className="mx-auto flex w-full max-w-(--breakpoint-md) flex-col items-start gap-y-5">
           <Badge href="#" color="purple" name={category?.title} />
           <h1
-            className="md:leading-[120%]! max-w-4xl text-3xl font-semibold text-neutral-900 md:text-4xl lg:text-4xl dark:text-neutral-100"
+            className="max-w-4xl text-3xl font-semibold text-neutral-900 md:text-4xl md:leading-[120%]! lg:text-4xl dark:text-neutral-100"
             title="Quiet ingenuity: 120,000 lunches and counting"
           >
             {title}
@@ -86,7 +83,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
     return (
       <div
         id="single-entry-content"
-        className="prose prose-sm max-w-(--breakpoint-md)! sm:prose lg:prose-lg dark:prose-invert mx-auto"
+        className="mx-auto prose prose-sm max-w-(--breakpoint-md)! sm:prose lg:prose-lg dark:prose-invert"
       >
         {/* Your content will render here  {content} */}
 
@@ -182,7 +179,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
 
   const renderTags = () => {
     return (
-      <div className="max-w-(--breakpoint-md) mx-auto flex w-full flex-wrap gap-2">
+      <div className="mx-auto flex w-full max-w-(--breakpoint-md) flex-wrap gap-2">
         {tags.map((tag) => (
           <Tag key={tag} className="mb-2">
             {tag}
@@ -194,11 +191,11 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
 
   const renderAuthor = () => {
     return (
-      <div className="max-w-(--breakpoint-md) mx-auto w-full">
+      <div className="mx-auto w-full max-w-(--breakpoint-md)">
         <div className="nc-SingleAuthor flex">
           <Avatar sizeClass="w-11 h-11 md:w-24 md:h-24" />
           <div className="ml-3 flex max-w-lg flex-col gap-y-1 sm:ml-5">
-            <span className="text-xs uppercase tracking-wider text-neutral-400">written by</span>
+            <span className="text-xs tracking-wider text-neutral-400 uppercase">written by</span>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-200">
               <a href="#">{author?.name}</a>
             </h2>
@@ -211,7 +208,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
 
   const renderCommentForm = () => {
     return (
-      <div className="max-w-(--breakpoint-md) mx-auto w-full pt-5">
+      <div className="mx-auto w-full max-w-(--breakpoint-md) pt-5">
         <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">Comments (14)</h3>
         <form className="mt-5">
           <Textarea rows={8} />
@@ -259,7 +256,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
       <div className="container flex flex-col gap-y-10">
         {renderContent()}
         {renderTags()}
-        <div className="max-w-(--breakpoint-md) mx-auto w-full border-b border-t border-neutral-100 dark:border-neutral-700"></div>
+        <div className="mx-auto w-full max-w-(--breakpoint-md) border-t border-b border-neutral-100 dark:border-neutral-700"></div>
         {renderAuthor()}
         {renderCommentForm()}
       </div>

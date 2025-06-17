@@ -1,0 +1,312 @@
+// orders.prisma - Order Management, Cart, and Inventory Models
+
+//==============================================================================
+// ADDRESS MODELS
+//==============================================================================
+
+model Address {
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      AddressType @default(SHIPPING)
+  isDefault Boolean     @default(false)
+
+  firstName String
+  lastName  String
+  company   String?
+  phone     String?
+
+  street1    String
+  street2    String?
+  city       String
+  state      String
+  postalCode String
+  country    String  @default("US")
+
+  // Validation flags
+  isValidated Boolean   @default(false)
+  validatedAt DateTime?
+
+  // Relations
+  orderShippingAddresses Order[] @relation("ShippingAddress")
+  orderBillingAddresses  Order[] @relation("BillingAddress")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([type])
+}
+
+//==============================================================================
+// CART MODELS
+//==============================================================================
+
+model Cart {
+  id        String  @id @default(cuid())
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String? // For guest carts
+
+  status    CartStatus @default(ACTIVE)
+  expiresAt DateTime? // For abandoned cart cleanup
+
+  // Cart metadata
+  currency String  @default("USD")
+  notes    String?
+  metadata Json?
+
+  // Relations
+  items CartItem[]
+
+  // Analytics
+  abandonedAt DateTime?
+  recoveredAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([userId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model CartItem {
+  id     String @id @default(cuid())
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId String?
+  variant   Product? @relation("CartItemVariant", fields: [variantId], references: [id], onDelete: SetNull)
+
+  quantity Int
+  price    Decimal @db.Decimal(10, 2)
+
+  // Gift/Registry info
+  isGift      Boolean   @default(false)
+  giftMessage String?
+  registryId  String?
+  registry    Registry? @relation(fields: [registryId], references: [id])
+
+  // Saved for later
+  savedForLater Boolean @default(false)
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId, variantId])
+  @@index([productId])
+  @@index([variantId])
+}
+
+//==============================================================================
+// ORDER MODELS
+//==============================================================================
+
+model Order {
+  id          String  @id @default(cuid())
+  orderNumber String  @unique
+  userId      String?
+  user        User?   @relation(fields: [userId], references: [id])
+
+  // Guest order info
+  guestEmail String?
+  guestName  String?
+
+  status OrderStatus @default(PENDING)
+
+  // Addresses
+  shippingAddressId String?
+  shippingAddress   Address? @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId  String?
+  billingAddress    Address? @relation("BillingAddress", fields: [billingAddressId], references: [id])
+
+  // Pricing
+  currency       String  @default("USD")
+  subtotal       Decimal @db.Decimal(10, 2)
+  taxAmount      Decimal @db.Decimal(10, 2)
+  shippingAmount Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  total          Decimal @db.Decimal(10, 2)
+
+  // Shipping
+  shippingMethod String?
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+
+  // Payment
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+
+  // Relations
+  items        OrderItem[]
+  transactions Transaction[]
+
+  // Customer info
+  customerNotes String?
+  internalNotes String?
+
+  metadata Json?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId String?
+  variant   Product? @relation("OrderItemVariant", fields: [variantId], references: [id], onDelete: SetNull)
+
+  // Snapshot data at time of order
+  productName String
+  variantName String?
+  sku         String?
+
+  quantity Int
+  price    Decimal @db.Decimal(10, 2)
+  total    Decimal @db.Decimal(10, 2)
+
+  // Gift/Registry info
+  isGift      Boolean   @default(false)
+  giftMessage String?
+  registryId  String?
+  registry    Registry? @relation(fields: [registryId], references: [id])
+
+  // Fulfillment
+  status      OrderItemStatus @default(PENDING)
+  fulfilledAt DateTime?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([variantId])
+  @@index([status])
+}
+
+//==============================================================================
+// TRANSACTION MODELS
+//==============================================================================
+
+model Transaction {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  type   TransactionType
+  status TransactionStatus @default(PENDING)
+
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("USD")
+
+  // Payment gateway info
+  gateway         String // stripe, paypal, etc
+  gatewayId       String? // External transaction ID
+  gatewayResponse Json?
+
+  // Card info (last 4 digits only)
+  paymentMethod String?
+  last4         String?
+
+  // For refunds
+  parentTransactionId String?
+  parentTransaction   Transaction?  @relation("RefundTransaction", fields: [parentTransactionId], references: [id])
+  refunds             Transaction[] @relation("RefundTransaction")
+
+  metadata Json?
+
+  processedAt   DateTime?
+  failedAt      DateTime?
+  failureReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([gateway])
+  @@index([gatewayId])
+  @@index([status])
+}
+
+//==============================================================================
+// INVENTORY MODELS
+//==============================================================================
+
+model Inventory {
+  id        String   @id @default(cuid())
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId String?
+  variant   Product? @relation("InventoryVariant", fields: [variantId], references: [id], onDelete: SetNull)
+
+  // Stock levels
+  quantity  Int @default(0)
+  reserved  Int @default(0) // Reserved for pending orders
+  available Int @default(0) // quantity - reserved
+
+  // Thresholds
+  lowStockThreshold Int?
+
+  // Location (for multi-warehouse)
+  locationId   String?
+  locationName String?
+
+  // Tracking
+  lastRestockedAt DateTime?
+
+  // Relations
+  transactions InventoryTransaction[]
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, variantId, locationId])
+  @@index([available])
+  @@index([locationId])
+}
+
+model InventoryTransaction {
+  id          String    @id @default(cuid())
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  type     InventoryTransactionType
+  quantity Int // Positive for additions, negative for removals
+
+  // Reference to order/return/adjustment
+  referenceType String?
+  referenceId   String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  @@index([inventoryId])
+  @@index([referenceType, referenceId])
+}

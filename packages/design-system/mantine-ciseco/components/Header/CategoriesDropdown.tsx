@@ -6,7 +6,7 @@ import { Menu } from '@mantine/core';
 import { type TDropdownCategory } from '../../data/types';
 import { Link } from '../Link';
 
-interface Props {
+interface Props extends Record<string, any> {
   categories: TDropdownCategory[];
   className?: string;
 }
@@ -15,16 +15,16 @@ export default function CategoriesDropdown({ categories, className }: Props) {
   return (
     <div className={className}>
       <Menu
-        width={320}
-        offset={16}
-        position="bottom-start"
-        shadow="lg"
-        transitionProps={{ duration: 200, transition: 'pop-top-left' }}
         classNames={{
           dropdown:
             'rounded-2xl border-0 ring-1 ring-black/5 dark:ring-white/10 p-0 overflow-hidden',
           item: 'rounded-none',
         }}
+        offset={16}
+        position="bottom-start"
+        shadow="lg"
+        transitionProps={{ duration: 200, transition: 'pop-top-left' }}
+        width={320}
       >
         <Menu.Target>
           <button className="-m-2.5 flex items-center rounded-md p-2.5 text-sm font-medium focus:outline-hidden sm:text-base group">
@@ -38,17 +38,17 @@ export default function CategoriesDropdown({ categories, className }: Props) {
 
         <Menu.Dropdown>
           <div className="relative grid grid-cols-1 gap-4 bg-white p-6 dark:bg-neutral-800">
-            {categories.map((item, index) => (
+            {categories.map((item: any) => (
               <Menu.Item
-                key={index}
-                href={`/collections/${item.handle}` as any}
-                component={Link}
+                key={item.handle}
                 className="!bg-transparent hover:!bg-transparent p-0"
+                component={Link}
+                href={`/collections/${item.handle}` as any}
               >
                 <div className="flex items-center focus:outline-hidden focus-visible:ring-0">
                   <div
-                    dangerouslySetInnerHTML={{ __html: item.icon }}
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-50 text-primary-500 sm:h-12 sm:w-12"
+                    dangerouslySetInnerHTML={{ __html: item.icon }}
                   />
                   <div className="ms-4">
                     <p className="text-sm font-medium">{item.name}</p>
@@ -63,9 +63,9 @@ export default function CategoriesDropdown({ categories, className }: Props) {
           {/* FOOTER */}
           <div className="bg-neutral-50 p-6 dark:bg-neutral-700">
             <Menu.Item
-              href={`/collections/all` as any}
-              component={Link}
               className="!bg-transparent hover:!bg-transparent p-0"
+              component={Link}
+              href={`/collections/all` as any}
             >
               <div>
                 <span className="block text-sm font-medium">Go to our shop </span>

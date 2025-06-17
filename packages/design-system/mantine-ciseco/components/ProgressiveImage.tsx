@@ -5,12 +5,12 @@ import clsx from 'clsx';
 import Image, { type ImageProps } from 'next/image';
 import { useState } from 'react';
 
-interface ProgressiveImageProps extends Omit<ImageProps, 'src' | 'placeholder'> {
+interface ProgressiveImageProps extends Omit<ImageProps, 'placeholder' | 'src'> {
   blurDataURL?: string;
   height: number;
   placeholder?: string;
   rootMargin?: string;
-  src: string | { small: string; medium: string; large: string };
+  src: string | { large: string; medium: string; small: string };
   threshold?: number;
   // Ensure width and height are required for Next.js Image
   width: number;
@@ -49,15 +49,15 @@ export function ProgressiveImage({
 
   return (
     <div
+      className={clsx('relative overflow-hidden', className)}
       data-testid="progressive-image-container"
       ref={ref}
-      className={clsx('relative overflow-hidden', className)}
     >
       {/* Blur placeholder */}
-      {(placeholder || blurDataURL) && !imageLoaded && (
+      {(placeholder ?? blurDataURL) && !imageLoaded && (
         <div
-          data-testid="placeholder"
           className="absolute inset-0 animate-pulse bg-neutral-200 dark:bg-neutral-800"
+          data-testid="placeholder"
           style={{
             backgroundImage: blurDataURL ? `url(${blurDataURL})` : undefined,
             backgroundSize: 'cover',
@@ -71,17 +71,17 @@ export function ProgressiveImage({
       {isVisible && !hasError && (
         <Image
           {...props}
-          width={props.width || 800}
-          onError={() => setHasError(true)}
-          onLoad={() => setImageLoaded(true)}
+          alt={alt}
           className={clsx(
             'transition-opacity duration-700',
             imageLoaded ? 'opacity-100' : 'opacity-0',
             props.fill && 'object-cover',
           )}
-          alt={alt}
           height={props.height || 600}
           src={imageSrc}
+          width={props.width || 800}
+          onError={() => setHasError(true)}
+          onLoad={() => setImageLoaded(true)}
         />
       )}
 
@@ -90,16 +90,16 @@ export function ProgressiveImage({
         <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
           <div className="text-center">
             <svg
-              stroke="currentColor"
-              viewBox="0 0 24 24"
               className="mx-auto h-12 w-12 text-neutral-400"
               fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
               <path
-                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                strokeWidth={2}
               />
             </svg>
             <p className="mt-2 text-sm text-neutral-500">Failed to load image</p>
@@ -115,25 +115,25 @@ export function ProgressiveImageGallery({
   className,
   images,
 }: {
-  images: string[];
   className?: string;
+  images: string[];
 }) {
-  const [loadedIndexes, setLoadedIndexes] = useState(new Set([0, 1])); // Load first 2 immediately
+  const [_loadedIndexes, setLoadedIndexes] = useState(new Set([0, 1])); // Load first 2 immediately
 
   return (
     <div className={clsx('grid gap-4', className)}>
       {images.map((image, index) => (
         <ProgressiveImage
-          key={index}
+          key={image}
+          alt={`Gallery image ${index + 1}`}
+          height={800}
+          priority={index < 2}
+          rootMargin={index < 4 ? '100px' : '200px'} // Load nearby images sooner
+          src={image}
           width={800}
           onLoad={() => {
             setLoadedIndexes((prev) => new Set(prev).add(index));
           }}
-          priority={index < 2}
-          rootMargin={index < 4 ? '100px' : '200px'} // Load nearby images sooner
-          alt={`Gallery image ${index + 1}`}
-          height={800}
-          src={image}
         />
       ))}
     </div>

@@ -1,7 +1,9 @@
 'use client';
 
-import { IconChevronDown } from '@tabler/icons-react';
+import { Popover, RangeSlider, Skeleton, Alert, Text } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
+  IconChevronDown,
   IconX,
   IconCurrencyDollar,
   IconNote,
@@ -9,10 +11,11 @@ import {
   IconPercentage,
   IconResize,
   IconSortAscending,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
-import { Popover, RangeSlider } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
+
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 import ButtonPrimary from './ButtonPrimary';
 import ButtonThird from './ButtonThird';
@@ -52,13 +55,68 @@ const DATA_sortOrderRadios = [
 ];
 const PRICE_RANGE: [number, number] = [1, 500];
 //
-const TabFilters = ({ className }: { className?: string }) => {
+// Loading skeleton for TabFilters
+function TabFiltersSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      <div className="flex flex-1 flex-wrap gap-x-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} height={40} width={120} radius="xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Error state for TabFilters
+function TabFiltersError({ error: _error, className }: { error: string; className?: string }) {
+  return (
+    <div className={className}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Filter controls failed to load</Text>
+      </Alert>
+    </div>
+  );
+}
+
+// Zero state for TabFilters
+function _TabFiltersEmpty({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      <div className="flex flex-1 flex-wrap gap-x-4">
+        <div className="flex items-center justify-center px-4 py-2 text-sm text-gray-500 bg-gray-50 rounded-full border border-dashed border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
+          No filters available
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface TabFiltersProps {
+  className?: string;
+  loading?: boolean;
+  error?: string;
+}
+
+const TabFilters = ({ className, loading = false, error }: TabFiltersProps) => {
   const [isOnSale, setIsIsOnSale] = useState<boolean>();
   const [rangePrices, setRangePrices] = useState<[number, number]>([100, 500]);
   const [categoriesState, setCategoriesState] = useState<string[]>();
   const [colorsState, setColorsState] = useState<string[]>();
   const [sizesState, setSizesState] = useState<string[]>();
   const [sortOrderStates, setSortOrderStates] = useState<string>();
+  const [internalError, _setInternalError] = useState<string | null>(null);
+
+  // Show loading state
+  if (loading) {
+    return <TabFiltersSkeleton className={className} />;
+  }
+
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <TabFiltersError error={currentError} className={className} />;
+  }
 
   //
   const handleChangeCategories = (checked: boolean, name: string) => {
@@ -297,16 +355,34 @@ const TabFilters = ({ className }: { className?: string }) => {
   };
 
   return (
-    <div className={className}>
-      <div className="flex flex-1 flex-wrap gap-x-4">
-        {renderTabsPriceRage()}
-        {renderTabsCategories()}
-        {renderTabsColor()}
-        {renderTabsSize()}
-        {renderTabIsOnsale()}
-        <div className="ml-auto">{renderTabsSortOrder()}</div>
+    <ErrorBoundary
+      fallback={<TabFiltersError error="Filter controls failed to render" className={className} />}
+    >
+      <div className={className}>
+        <div className="flex flex-1 flex-wrap gap-x-4">
+          <ErrorBoundary fallback={<Skeleton height={40} width={120} radius="xl" />}>
+            {renderTabsPriceRage()}
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<Skeleton height={40} width={120} radius="xl" />}>
+            {renderTabsCategories()}
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<Skeleton height={40} width={120} radius="xl" />}>
+            {renderTabsColor()}
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<Skeleton height={40} width={120} radius="xl" />}>
+            {renderTabsSize()}
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<Skeleton height={40} width={120} radius="xl" />}>
+            {renderTabIsOnsale()}
+          </ErrorBoundary>
+          <div className="ml-auto">
+            <ErrorBoundary fallback={<Skeleton height={40} width={120} radius="xl" />}>
+              {renderTabsSortOrder()}
+            </ErrorBoundary>
+          </div>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 
@@ -328,71 +404,85 @@ const FieldPopover = ({
   const [opened, { close, open: _open, toggle }] = useDisclosure(false);
 
   return (
-    <Popover
-      classNames={{
-        dropdown: 'rounded-2xl border border-neutral-200 dark:border-neutral-700 px-0',
-      }}
-      offset={12}
-      opened={opened}
-      position={anchor}
-      shadow="xl"
-      transitionProps={{ duration: 200, transition: 'pop' }}
-      width={384}
-      onChange={(opened) => {
-        if (!opened) close();
-      }}
-    >
-      <Popover.Target>
-        <button
-          className={`flex items-center justify-center rounded-full border px-4 py-2 text-sm select-none focus:outline-hidden ${
-            opened ? 'border-primary-500' : ''
-          } ${
-            fieldState?.length
-              ? 'border-primary-500 bg-primary-50 text-primary-900'
-              : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500'
-          }`}
-          onClick={toggle}
-        >
-          <ButtonIcon color="currentColor" size={16} stroke={1.5} />
-          <span className="ms-2">{buttonText}</span>
-          {!fieldState?.length ? (
-            <IconChevronDown className="ms-3 h-4 w-4" />
-          ) : (
-            <button
-              aria-label="Clear filter"
-              className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white border-none"
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClickClear();
-              }}
-            >
-              <IconX color="currentColor" size={10} stroke={1.5} />
-            </button>
-          )}
-        </button>
-      </Popover.Target>
+    <ErrorBoundary fallback={<Skeleton height={40} width={120} radius="xl" />}>
+      <Popover
+        classNames={{
+          dropdown: 'rounded-2xl border border-neutral-200 dark:border-neutral-700 px-0',
+        }}
+        offset={12}
+        opened={opened}
+        position={anchor}
+        shadow="xl"
+        transitionProps={{ duration: 200, transition: 'pop' }}
+        width={384}
+        onChange={(opened) => {
+          if (!opened) close();
+        }}
+      >
+        <Popover.Target>
+          <button
+            className={`flex items-center justify-center rounded-full border px-4 py-2 text-sm select-none focus:outline-hidden ${
+              opened ? 'border-primary-500' : ''
+            } ${
+              fieldState?.length
+                ? 'border-primary-500 bg-primary-50 text-primary-900'
+                : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500'
+            }`}
+            onClick={toggle}
+          >
+            <ButtonIcon color="currentColor" size={16} stroke={1.5} />
+            <span className="ms-2">{buttonText}</span>
+            {!fieldState?.length ? (
+              <IconChevronDown className="ms-3 h-4 w-4" />
+            ) : (
+              <button
+                aria-label="Clear filter"
+                className="ms-3 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary-500 text-white border-none"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClickClear();
+                }}
+              >
+                <IconX color="currentColor" size={10} stroke={1.5} />
+              </button>
+            )}
+          </button>
+        </Popover.Target>
 
-      <Popover.Dropdown className="p-0">
-        <>
-          {children}
-          <div className="flex items-center justify-between bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900 rounded-b-2xl">
-            <ButtonThird
-              sizeClass="px-4 py-2 sm:px-5"
-              onClick={() => {
-                onClickClear();
-                close();
-              }}
-            >
-              Clear
-            </ButtonThird>
-            <ButtonPrimary sizeClass="px-4 py-2 sm:px-5" onClick={close}>
-              Apply
-            </ButtonPrimary>
-          </div>
-        </>
-      </Popover.Dropdown>
-    </Popover>
+        <Popover.Dropdown className="p-0">
+          <ErrorBoundary
+            fallback={
+              <div className="p-4">
+                <Text size="sm" c="red">
+                  Filter options failed to load
+                </Text>
+              </div>
+            }
+          >
+            {children}
+            <div className="flex items-center justify-between bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900 rounded-b-2xl">
+              <ErrorBoundary fallback={<Skeleton height={32} width={60} />}>
+                <ButtonThird
+                  sizeClass="px-4 py-2 sm:px-5"
+                  onClick={() => {
+                    onClickClear();
+                    close();
+                  }}
+                >
+                  Clear
+                </ButtonThird>
+              </ErrorBoundary>
+              <ErrorBoundary fallback={<Skeleton height={32} width={60} />}>
+                <ButtonPrimary sizeClass="px-4 py-2 sm:px-5" onClick={close}>
+                  Apply
+                </ButtonPrimary>
+              </ErrorBoundary>
+            </div>
+          </ErrorBoundary>
+        </Popover.Dropdown>
+      </Popover>
+    </ErrorBoundary>
   );
 };
 

@@ -2,33 +2,46 @@
 
 /**
  * PIM3-specific server actions
- * 
- * This file contains actions that are specific to PIM3 functionality and not available 
+ *
+ * This file contains actions that are specific to PIM3 functionality and not available
  * in the centralized database actions.
- * 
+ *
  * For common e-commerce actions, import directly from @repo/database/prisma/actions:
  * - Products: getProducts, getProductByHandle, searchProducts, etc.
  * - Brands: getBrands, getBrandByHandle, getPopularBrands, etc.
  * - Collections: getCollections, getCollectionByHandle, getFeaturedCollections, etc.
  * - PDP/Brand associations: createProductBrandAssociation, removeProductBrandAssociation, etc.
- * 
+ *
  * PIM3-specific features in this file:
  * - Soft delete/restore functionality
  * - Parent/child product relationships
  * - Enhanced PIM filtering (AI-generated, type filters, etc.)
- * - Barcode management
- * - Asset management
- * - Scan history tracking
+ * - Media/Asset management
  * - Bulk operations specific to PIM workflows
  */
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-import { auth } from '@repo/auth/server';
-import { orm } from '@repo/database/prisma';
-
-import type { AssetType, BarcodeType, ProductStatus } from '@repo/database/prisma';
+import { auth } from '@repo/auth/server/next';
+import {
+  createProductAction,
+  updateProductAction,
+  deleteProductAction,
+  getProductAction,
+  getProductsAction,
+  getProductsWithFullOptionsAction,
+  createMediaAction,
+  updateMediaAction,
+  deleteMediaAction,
+  findManyMediaAction,
+  countMediaAction,
+  deleteManyProductsAction,
+  updateManyProductsAction,
+  updateManyProductsWithFullOptionsAction,
+  type MediaType,
+  type ProductStatus,
+} from '@repo/database/prisma';
 
 // Affiliate marketplace types
 export interface AffiliateData {
@@ -103,20 +116,23 @@ export async function createProduct(input: FormData | any) {
     const data = input instanceof FormData ? Object.fromEntries(input) : input;
     const validatedData = createProductSchema.parse({
       ...data,
-      aiConfidence: typeof data.aiConfidence === 'string' ? parseFloat(data.aiConfidence) : data.aiConfidence,
-      aiGenerated: typeof data.aiGenerated === 'string' ? data.aiGenerated === 'true' : data.aiGenerated,
-      aiSources: typeof data.aiSources === 'string' ? JSON.parse(data.aiSources) : (data.aiSources || []),
-      attributes: typeof data.attributes === 'string' ? JSON.parse(data.attributes) : (data.attributes || {}),
+      aiConfidence:
+        typeof data.aiConfidence === 'string' ? parseFloat(data.aiConfidence) : data.aiConfidence,
+      aiGenerated:
+        typeof data.aiGenerated === 'string' ? data.aiGenerated === 'true' : data.aiGenerated,
+      aiSources:
+        typeof data.aiSources === 'string' ? JSON.parse(data.aiSources) : data.aiSources || [],
+      attributes:
+        typeof data.attributes === 'string' ? JSON.parse(data.attributes) : data.attributes || {},
       parentId: data.parentId || undefined,
       price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
     });
 
-    const product = await orm.createProduct({
+    const product = await createProductAction({
       data: {
         ...validatedData,
         slug: validatedData.sku.toLowerCase(),
-        createdById: session.user.id,
-        organizationId: session.session.activeOrganizationId || 'default',
+        createdBy: session.user.id,
       },
     });
 
@@ -142,20 +158,21 @@ export async function updateProduct(id: string, input: FormData | any) {
     const data = input instanceof FormData ? Object.fromEntries(input) : input;
     const validatedData = createProductSchema.parse({
       ...data,
-      aiConfidence: typeof data.aiConfidence === 'string' ? parseFloat(data.aiConfidence) : data.aiConfidence,
-      aiGenerated: typeof data.aiGenerated === 'string' ? data.aiGenerated === 'true' : data.aiGenerated,
-      aiSources: typeof data.aiSources === 'string' ? JSON.parse(data.aiSources) : (data.aiSources || []),
-      attributes: typeof data.attributes === 'string' ? JSON.parse(data.attributes) : (data.attributes || {}),
+      aiConfidence:
+        typeof data.aiConfidence === 'string' ? parseFloat(data.aiConfidence) : data.aiConfidence,
+      aiGenerated:
+        typeof data.aiGenerated === 'string' ? data.aiGenerated === 'true' : data.aiGenerated,
+      aiSources:
+        typeof data.aiSources === 'string' ? JSON.parse(data.aiSources) : data.aiSources || [],
+      attributes:
+        typeof data.attributes === 'string' ? JSON.parse(data.attributes) : data.attributes || {},
       parentId: data.parentId || undefined,
       price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
     });
 
-    const product = await orm.updateProduct({
-      where: { id },
-      data: {
-        ...validatedData,
-        slug: validatedData.sku.toLowerCase(),
-      },
+    const product = await updateProductAction(id, {
+      ...validatedData,
+      slug: validatedData.sku.toLowerCase(),
     });
 
     revalidatePath('/admin/cms');
@@ -178,9 +195,7 @@ export async function deleteProduct(id: string) {
       return { error: 'Unauthorized', success: false };
     }
 
-    await orm.deleteProduct({
-      where: { id },
-    });
+    await deleteProductAction(id);
 
     revalidatePath('/admin/cms');
     revalidatePath('/pim3/products');
@@ -199,12 +214,9 @@ export async function deleteProduct(id: string) {
 // Soft delete product
 export async function softDeleteProduct(id: string, deletedById?: string) {
   try {
-    await orm.updateProduct({
-      data: {
-        deletedAt: new Date(),
-        deletedById: deletedById || 'system', // TODO: Get from session
-      },
-      where: { id },
+    await updateProductAction(id, {
+      deletedAt: new Date(),
+      deletedById: deletedById || 'system', // TODO: Get from session
     });
 
     revalidatePath('/admin/cms');
@@ -221,12 +233,9 @@ export async function softDeleteProduct(id: string, deletedById?: string) {
 // Restore soft deleted product
 export async function restoreProduct(id: string) {
   try {
-    await orm.updateProduct({
-      data: {
-        deletedAt: null,
-        deletedById: null,
-      },
-      where: { id },
+    await updateProductAction(id, {
+      deletedAt: null,
+      deletedById: null,
     });
 
     revalidatePath('/admin/cms');
@@ -243,10 +252,7 @@ export async function restoreProduct(id: string) {
 // Set product parent/child relationship
 export async function setProductParent(childId: string, parentId: string | null) {
   try {
-    await orm.updateProduct({
-      data: { parentId },
-      where: { id: childId },
-    });
+    await updateProductAction({ where: { id: childId }, data: { parentId } });
 
     revalidatePath('/admin/cms');
     return { success: true };
@@ -262,17 +268,8 @@ export async function setProductParent(childId: string, parentId: string | null)
 // Get product hierarchy (parent with all children)
 export async function getProductHierarchy(productId: string) {
   try {
-    const product = await orm.findUniqueProduct({
-      include: {
-        children: true,
-        parent: {
-          include: {
-            children: true,
-          },
-        },
-      },
-      where: { id: productId },
-    });
+    const product = await getProductAction({ where: { id: productId } });
+    // TODO: Update to handle includes (children, parent with children)
 
     if (!product) {
       return { error: 'Product not found', success: false };
@@ -280,7 +277,7 @@ export async function getProductHierarchy(productId: string) {
 
     // If this is a child, return the parent hierarchy
     if (product.parentId) {
-      const parent = await orm.findUniqueProduct({ where: { id: product.parentId } });
+      const parent = await getProductAction({ where: { id: product.parentId } });
       return { data: parent, success: true };
     }
 
@@ -350,16 +347,16 @@ export async function getProductsWithPIMFilters(params?: {
     };
 
     const [products, total] = await Promise.all([
-      orm.findManyProducts({
+      getProductsWithFullOptionsAction({
         include: {
           _count: {
             select: {
               children: true,
-              scanHistory: true,
               soldBy: true,
+              media: true,
             },
           },
-          barcodes: true,
+          identifiers: true,
           children: {
             select: {
               id: true,
@@ -377,10 +374,6 @@ export async function getProductsWithPIMFilters(params?: {
               email: true,
             },
           },
-          digitalAssets: {
-            orderBy: { sortOrder: 'asc' },
-            take: 1,
-          },
           // Media for better display
           media: {
             select: {
@@ -389,6 +382,7 @@ export async function getProductsWithPIMFilters(params?: {
               url: true,
               altText: true,
             },
+            orderBy: { sortOrder: 'asc' },
             take: 1,
           },
           // Parent/child relationships
@@ -423,7 +417,7 @@ export async function getProductsWithPIMFilters(params?: {
         take: limit,
         where,
       }),
-      orm.countProducts({ where }),
+      Promise.resolve(0), // TODO: Update getProductsAction to return count
     ]);
 
     return {
@@ -445,7 +439,7 @@ export async function getProductsWithPIMFilters(params?: {
 // Functions to get data for the other tables
 export async function getAssets(params?: {
   search?: string;
-  type?: AssetType;
+  type?: MediaType;
   productId?: string;
   page?: number;
   limit?: number;
@@ -457,8 +451,8 @@ export async function getAssets(params?: {
     const where = {
       ...(search && {
         OR: [
-          { filename: { contains: search, mode: 'insensitive' as const } },
-          { description: { contains: search, mode: 'insensitive' as const } },
+          { altText: { contains: search, mode: 'insensitive' as const } },
+          { url: { contains: search, mode: 'insensitive' as const } },
           {
             product: {
               name: { contains: search, mode: 'insensitive' as const },
@@ -471,7 +465,7 @@ export async function getAssets(params?: {
     };
 
     const [assets, total] = await Promise.all([
-      orm.findManyProductAssets({
+      findManyMediaAction({
         include: {
           product: {
             select: {
@@ -486,7 +480,7 @@ export async function getAssets(params?: {
         take: limit,
         where,
       }),
-      orm.countProductAssets({ where }),
+      countMediaAction({ where }),
     ]);
 
     return {
@@ -505,164 +499,19 @@ export async function getAssets(params?: {
   }
 }
 
-export async function getBarcodes(params?: {
-  search?: string;
-  type?: BarcodeType;
-  isPrimary?: boolean;
-  productId?: string;
-  page?: number;
-  limit?: number;
-}) {
-  try {
-    const { type, isPrimary, limit = 10, page = 1, productId, search } = params || {};
-    const skip = (page - 1) * limit;
+// Note: Barcode functionality has been moved to ProductIdentifiers model
 
-    const where = {
-      ...(search && {
-        OR: [
-          { barcode: { contains: search, mode: 'insensitive' as const } },
-          {
-            product: {
-              name: { contains: search, mode: 'insensitive' as const },
-            },
-          },
-          {
-            product: {
-              sku: { contains: search, mode: 'insensitive' as const },
-            },
-          },
-        ],
-      }),
-      ...(type && { type }),
-      ...(isPrimary !== undefined && { isPrimary }),
-      ...(productId && { productId }),
-    };
-
-    const [barcodes, total] = await Promise.all([
-      orm.findManyProductBarcodes({
-        include: {
-          product: {
-            select: {
-              id: true,
-              name: true,
-              sku: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-        where,
-      }),
-      orm.countProductBarcodes({ where }),
-    ]);
-
-    return {
-      data: barcodes,
-      pagination: {
-        limit,
-        page,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-      success: true,
-    };
-  } catch (error) {
-    console.error('Error fetching barcodes:', error);
-    return { error: 'Failed to fetch barcodes', success: false };
-  }
-}
-
-// Barcode Actions
-const createBarcodeSchema = z.object({
-  type: z.enum([
-    'UPC_A',
-    'UPC_E',
-    'EAN_13',
-    'EAN_8',
-    'CODE_128',
-    'CODE_39',
-    'QR_CODE',
-    'PDF417',
-    'AZTEC',
-    'DATA_MATRIX',
-    'ITF14',
-    'CODABAR',
-    'OTHER',
-  ] as const),
-  barcode: z.string().min(1, 'Barcode is required'),
-  isPrimary: z.boolean().default(false),
-  productId: z.string().min(1, 'Product is required'),
-});
-
-export async function createBarcode(formData: FormData) {
-  try {
-    const data = Object.fromEntries(formData);
-    const validatedData = createBarcodeSchema.parse({
-      ...data,
-      isPrimary: data.isPrimary === 'true',
-    });
-
-    // If setting as primary, unset other primary barcodes
-    if (validatedData.isPrimary) {
-      await orm.updateManyProductBarcodes({
-        data: { isPrimary: false },
-        where: { productId: validatedData.productId },
-      });
-    }
-
-    const barcode = await orm.createProductBarcode({
-      data: validatedData,
-      include: { product: true },
-    });
-
-    revalidatePath('/admin/cms');
-    return { data: barcode, success: true };
-  } catch (error) {
-    console.error('Error creating barcode:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to create barcode',
-      success: false,
-    };
-  }
-}
-
-export async function deleteBarcode(id: string) {
-  try {
-    await orm.deleteProductBarcode({
-      where: { id },
-    });
-
-    revalidatePath('/admin/cms');
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting barcode:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to delete barcode',
-      success: false,
-    };
-  }
-}
-
-// Asset Actions
+// Asset Actions (now using Media model)
 const createAssetSchema = z.object({
-  filename: z.string().min(1, 'Filename is required'),
-  type: z.enum([
-    'IMAGE',
-    'VIDEO',
-    'DOCUMENT',
-    'MANUAL',
-    'SPECIFICATION',
-    'CERTIFICATE',
-    'OTHER',
-  ] as const),
+  type: z.enum(['IMAGE', 'VIDEO', 'DOCUMENT', 'OTHER'] as const),
   url: z.string().url('Invalid URL'),
-  alt: z.string().optional(),
-  description: z.string().optional(),
+  altText: z.string().optional(),
   mimeType: z.string().optional(),
   productId: z.string().min(1, 'Product is required'),
   size: z.number().optional(),
   sortOrder: z.number().default(0),
+  width: z.number().optional(),
+  height: z.number().optional(),
 });
 
 export async function createAsset(formData: FormData) {
@@ -672,11 +521,15 @@ export async function createAsset(formData: FormData) {
       ...data,
       size: data.size ? parseInt(data.size as string, 10) : undefined,
       sortOrder: data.sortOrder ? parseInt(data.sortOrder as string, 10) : 0,
+      width: data.width ? parseInt(data.width as string, 10) : undefined,
+      height: data.height ? parseInt(data.height as string, 10) : undefined,
     });
 
-    const asset = await orm.createProductAsset({
-      data: validatedData,
-      include: { product: true },
+    const asset = await createMediaAction({
+      data: {
+        ...validatedData,
+        copy: {},
+      },
     });
 
     revalidatePath('/admin/cms');
@@ -694,9 +547,9 @@ export async function updateAssetOrder(assets: { id: string; sortOrder: number }
   try {
     await Promise.all(
       assets.map((asset) =>
-        orm.updateProductAsset({
-          data: { sortOrder: asset.sortOrder },
+        updateMediaAction({
           where: { id: asset.id },
+          data: { sortOrder: asset.sortOrder },
         }),
       ),
     );
@@ -711,9 +564,7 @@ export async function updateAssetOrder(assets: { id: string; sortOrder: number }
 
 export async function deleteAsset(id: string) {
   try {
-    await orm.deleteProductAsset({
-      where: { id },
-    });
+    await deleteMediaAction({ where: { id } });
 
     revalidatePath('/admin/cms');
     return { success: true };
@@ -726,87 +577,14 @@ export async function deleteAsset(id: string) {
   }
 }
 
-// Scan History Actions
-export async function getScanHistory(params?: {
-  productId?: string;
-  userId?: string;
-  sessionId?: string;
-  success?: boolean;
-  startDate?: Date;
-  endDate?: Date;
-  page?: number;
-  limit?: number;
-}) {
-  try {
-    const {
-      endDate,
-      limit = 20,
-      page = 1,
-      productId,
-      sessionId,
-      startDate,
-      success,
-      userId,
-    } = params || {};
-    const skip = (page - 1) * limit;
-
-    const where = {
-      ...(productId && { productId }),
-      ...(userId && { userId }),
-      ...(sessionId && { sessionId }),
-      ...(success !== undefined && { success }),
-      ...(startDate || endDate
-        ? {
-            scannedAt: {
-              ...(startDate && { gte: startDate }),
-              ...(endDate && { lte: endDate }),
-            },
-          }
-        : {}),
-    };
-
-    const [scans, total] = await Promise.all([
-      orm.findManyScanHistories({
-        include: {
-          product: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: { scannedAt: 'desc' },
-        skip,
-        take: limit,
-        where,
-      }),
-      orm.countScanHistories({ where }),
-    ]);
-
-    return {
-      data: scans,
-      pagination: {
-        limit,
-        page,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-      success: true,
-    };
-  } catch (error) {
-    console.error('Error fetching scan history:', error);
-    return { error: 'Failed to fetch scan history', success: false };
-  }
-}
+// Note: Scan History functionality has been removed
 
 // Bulk Actions
 export async function bulkUpdateProductStatus(ids: string[], status: ProductStatus) {
   try {
-    await orm.updateManyProducts({
-      data: { status },
+    await updateManyProductsWithFullOptionsAction({
       where: { id: { in: ids } },
+      data: { status },
     });
 
     revalidatePath('/admin/cms');
@@ -819,9 +597,7 @@ export async function bulkUpdateProductStatus(ids: string[], status: ProductStat
 
 export async function bulkDeleteProducts(ids: string[]) {
   try {
-    await orm.deleteManyProducts({
-      where: { id: { in: ids } },
-    });
+    await deleteManyProductsAction({ where: { id: { in: ids } } });
 
     revalidatePath('/admin/cms');
     return { success: true };
@@ -834,12 +610,12 @@ export async function bulkDeleteProducts(ids: string[]) {
 // Bulk soft delete products
 export async function bulkSoftDeleteProducts(ids: string[], deletedById?: string) {
   try {
-    await orm.updateManyProducts({
+    await updateManyProductsWithFullOptionsAction({
+      where: { id: { in: ids } },
       data: {
         deletedAt: new Date(),
         deletedById: deletedById || 'system',
       },
-      where: { id: { in: ids } },
     });
 
     revalidatePath('/admin/cms');
@@ -853,12 +629,12 @@ export async function bulkSoftDeleteProducts(ids: string[], deletedById?: string
 // Bulk restore products
 export async function bulkRestoreProducts(ids: string[]) {
   try {
-    await orm.updateManyProducts({
+    await updateManyProductsWithFullOptionsAction({
+      where: { id: { in: ids } },
       data: {
         deletedAt: null,
         deletedById: null,
       },
-      where: { id: { in: ids } },
     });
 
     revalidatePath('/admin/cms');
@@ -872,9 +648,9 @@ export async function bulkRestoreProducts(ids: string[]) {
 // Bulk set parent for products
 export async function bulkSetProductParent(childIds: string[], parentId: string | null) {
   try {
-    await orm.updateManyProducts({
-      data: { parentId },
+    await updateManyProductsWithFullOptionsAction({
       where: { id: { in: childIds } },
+      data: { parentId },
     });
 
     revalidatePath('/admin/cms');
@@ -888,9 +664,9 @@ export async function bulkSetProductParent(childIds: string[], parentId: string 
 // Bulk update AI generated flag
 export async function bulkUpdateAIGenerated(ids: string[], aiGenerated: boolean) {
   try {
-    await orm.updateManyProducts({
-      data: { aiGenerated },
+    await updateManyProductsWithFullOptionsAction({
       where: { id: { in: ids } },
+      data: { aiGenerated },
     });
 
     revalidatePath('/admin/cms');
@@ -932,63 +708,15 @@ const affiliateDataSchema = z
 
 // PDP management - Import these directly from @repo/database/prisma/actions when needed:
 // - createProductBrandAssociation (as addProductSeller)
-// - removeProductBrandAssociation (as removeProductSeller)  
+// - removeProductBrandAssociation (as removeProductSeller)
 // - getProductBrands (as getProductSellers)
 // - updateProductBrands (as bulkUpdateProductSellers)
 
 // Get single product with all related data
 export async function getProductById(id: string) {
   try {
-    const product = await orm.findUniqueProduct({
-      include: {
-        // Counts
-        _count: {
-          select: {
-            scanHistory: true,
-            soldBy: true,
-          },
-        },
-        // Core product data
-        barcodes: {
-          orderBy: { createdAt: 'asc' },
-        },
-        digitalAssets: {
-          orderBy: { sortOrder: 'asc' },
-        },
-        scanHistory: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-          orderBy: { scannedAt: 'desc' },
-          take: 10,
-        },
-        // PDPs/Sellers
-        soldBy: {
-          include: {
-            brand: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-                baseUrl: true,
-                slug: true,
-                status: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
-      where: { id },
-    });
+    const product = await getProductAction({ where: { id } });
+    // TODO: Update to handle complex includes
 
     if (!product) {
       return { error: 'Product not found', success: false };

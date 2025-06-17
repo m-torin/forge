@@ -6,11 +6,10 @@
 import { Client } from '@upstash/qstash';
 import { serve } from '@upstash/workflow/nextjs';
 import { nanoid } from 'nanoid';
+
 import { redis } from '@repo/database/redis';
 
-import { createProviderError, ProviderError } from '../../shared/utils/errors';
-
-import type {
+import {
   ListExecutionsOptions,
   ProviderHealth,
   UpstashWorkflowConfig,
@@ -21,6 +20,7 @@ import type {
   WorkflowStep,
   WorkflowData,
 } from '../../shared/types/index';
+import { createProviderError, ProviderError } from '../../shared/utils/errors';
 
 export interface UpstashWorkflowProviderOptions {
   /** Base URL for webhook callbacks */
@@ -105,7 +105,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       // This would require tracking message IDs
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderError(
         `Failed to cancel execution ${executionId}`,
         this.name,
@@ -126,7 +126,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
    * Create workflow execution handler for Next.js
    */
   createWorkflowHandler() {
-    return serve(async (context) => {
+    return serve(async (context: any) => {
       const payload = context.requestPayload as {
         workflowId: string;
         executionId: string;
@@ -146,14 +146,14 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
             const result = await this.executeStep(step, input);
 
             await this.updateExecutionStatus(executionId, 'completed', step.id, result);
-          } catch (stepError) {
-            await this.updateExecutionStatus(executionId, 'failed', step.id, undefined, stepError);
-            throw stepError;
+          } catch (error: any) {
+            await this.updateExecutionStatus(executionId, 'failed', step.id, undefined, error);
+            throw error;
           }
         }
 
         await this.updateExecutionStatus(executionId, 'completed');
-      } catch (error) {
+      } catch (error: any) {
         await this.updateExecutionStatus(executionId, 'failed', undefined, undefined, error);
         throw error;
       }
@@ -163,10 +163,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   /**
    * Execute a workflow
    */
-  async execute(
-    definition: WorkflowDefinition,
-    input?: WorkflowData,
-  ): Promise<WorkflowExecution> {
+  async execute(definition: WorkflowDefinition, input?: WorkflowData): Promise<WorkflowExecution> {
     try {
       const executionId = nanoid();
       const startedAt = new Date();
@@ -184,7 +181,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         },
         startedAt,
         status: 'pending',
-        steps: definition.steps.map((step) => ({
+        steps: definition.steps.map((step: any) => ({
           attempts: 0,
           status: 'pending',
           stepId: step.id,
@@ -200,14 +197,13 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
           JSON.stringify(execution),
           { ex: 24 * 60 * 60 }, // 24 hours TTL
         );
-        
+
         // Add to workflow's execution index (sorted by timestamp)
-        await redis.zadd(
-          `workflow:${definition.id}:executions`,
-          startedAt.getTime(),
-          executionId
-        );
-        
+        await redis.zadd(`workflow:${definition.id}:executions`, {
+          score: startedAt.getTime(),
+          member: executionId,
+        });
+
         // Trim old entries to prevent unbounded growth (keep last 1000)
         await redis.zremrangebyrank(`workflow:${definition.id}:executions`, 0, -1001);
       }
@@ -241,7 +237,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       }
 
       return execution;
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderError(
         `Failed to execute workflow ${definition.id}`,
         this.name,
@@ -272,7 +268,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       }
 
       return JSON.parse(data as string);
-    } catch (error) {
+    } catch (error: any) {
       // Re-throw ProviderError instances without wrapping
       if (error instanceof ProviderError) {
         throw error;
@@ -317,10 +313,11 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         status: 'healthy',
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error:
+            error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error',
           qstash: 'unknown',
           redis: this.useRedis ? 'unknown' : 'not-configured',
         },
@@ -351,12 +348,9 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
 
       // Use a sorted set to track executions by workflow ID for better performance
       // This avoids using KEYS command which can block Redis
-      const executionIds = await redis.zrange(
-        `workflow:${workflowId}:executions`,
-        0,
-        -1,
-        { rev: true }
-      );
+      const executionIds = await redis.zrange(`workflow:${workflowId}:executions`, 0, -1, {
+        rev: true,
+      });
 
       const executions: WorkflowExecution[] = [];
 
@@ -365,14 +359,14 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       for (let i = 0; i < executionIds.length; i += batchSize) {
         const batch = executionIds.slice(i, i + batchSize);
         const pipeline = redis.pipeline();
-        
+
         for (const executionId of batch) {
           pipeline.get(`workflow:execution:${executionId}`);
         }
-        
+
         const results = await pipeline.exec();
         for (const result of results) {
-          if (result[1]) {
+          if (result && Array.isArray(result) && result[1]) {
             executions.push(JSON.parse(result[1] as string));
           }
         }
@@ -382,19 +376,21 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       let filtered = executions;
 
       if (options?.status && options.status.length > 0) {
-        filtered = filtered.filter((e) => options.status!.includes(e.status));
+        filtered = filtered.filter((e: any) => options.status!.includes(e.status));
       }
 
       if (options?.startDate) {
-        filtered = filtered.filter((e) => new Date(e.startedAt) >= options.startDate!);
+        filtered = filtered.filter((e: any) => new Date(e.startedAt) >= options.startDate!);
       }
 
       if (options?.endDate) {
-        filtered = filtered.filter((e) => new Date(e.startedAt) <= options.endDate!);
+        filtered = filtered.filter((e: any) => new Date(e.startedAt) <= options.endDate!);
       }
 
       // Sort by start time (newest first)
-      filtered.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+      filtered.sort(
+        (a: any, b: any) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
+      );
 
       // Apply limit
       if (options?.limit && options.limit > 0) {
@@ -402,7 +398,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       }
 
       return filtered;
-    } catch (error) {
+    } catch (error: any) {
       // Re-throw ProviderError instances without wrapping
       if (error instanceof ProviderError) {
         throw error;
@@ -461,19 +457,21 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       let filtered = executions;
 
       if (options?.status && options.status.length > 0) {
-        filtered = filtered.filter((e) => options.status!.includes(e.status));
+        filtered = filtered.filter((e: any) => options.status!.includes(e.status));
       }
 
       if (options?.startDate) {
-        filtered = filtered.filter((e) => new Date(e.startedAt) >= options.startDate!);
+        filtered = filtered.filter((e: any) => new Date(e.startedAt) >= options.startDate!);
       }
 
       if (options?.endDate) {
-        filtered = filtered.filter((e) => new Date(e.startedAt) <= options.endDate!);
+        filtered = filtered.filter((e: any) => new Date(e.startedAt) <= options.endDate!);
       }
 
       // Sort by start time (newest first)
-      filtered.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+      filtered.sort(
+        (a: any, b: any) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
+      );
 
       // Apply pagination
       const offset = options?.offset || 0;
@@ -482,7 +480,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       filtered = filtered.slice(offset, offset + limit);
 
       return filtered;
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderError(
         'Failed to list workflow executions',
         this.name,
@@ -540,7 +538,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       }
 
       return scheduleId;
-    } catch (error) {
+    } catch (error: any) {
       // Re-throw ProviderError instances without wrapping
       if (error instanceof ProviderError) {
         throw error;
@@ -579,7 +577,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       }
 
       return false;
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderError(
         `Failed to unschedule workflow ${workflowId}`,
         this.name,
@@ -622,12 +620,16 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
 
     // Update step status if provided
     if (stepId) {
-      const step = execution.steps.find((s) => s.stepId === stepId);
+      const step = execution.steps.find((s: any) => s.stepId === stepId);
       if (step) {
         step.status = status;
         step.completedAt = new Date();
         if (result !== undefined) step.output = result;
-        if (error) step.error = error;
+        if (error)
+          step.error = {
+            message:
+              error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
+          };
       }
     }
 
@@ -644,7 +646,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
     try {
       // Log step execution if debug mode is enabled
       if (this.options.debug) {
-        console.log(`[UpstashWorkflow] Executing step ${step.id} with action ${step.action}`);
+        console.info(`[UpstashWorkflow] Executing step ${step.id} with action ${step.action}`);
       }
 
       // Check if step has a condition
@@ -654,21 +656,14 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         const conditionResult = this.evaluateCondition(step.condition, input);
         if (!conditionResult) {
           // Skip this step
-          return {
-            input,
-            output: { skipped: true, reason: 'Condition not met' },
-            stepId: step.id,
-            duration: 0,
-            timestamp: Date.now(),
-            success: true,
-          };
+          return { skipped: true, reason: 'Condition not met' };
         }
       }
 
       // Apply timeout if specified with proper cleanup
       const timeout = step.timeout || 30000; // Default 30s timeout
-      let timeoutId: NodeJS.Timeout;
-      const timeoutPromise = new Promise<never>((_, reject) => {
+      let timeoutId: NodeJS.Timeout | undefined;
+      const timeoutPromise = new Promise<never>((_, reject: any) => {
         timeoutId = setTimeout(() => {
           reject(new Error(`Step ${step.id} timed out after ${timeout}ms`));
         }, timeout);
@@ -677,64 +672,61 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       try {
         // Execute the step action
         const startTime = Date.now();
-        const result = await Promise.race([
-          this.executeStepAction(step, input),
-          timeoutPromise,
-        ]);
+        const result = await Promise.race([this.executeStepAction(step, input), timeoutPromise]);
         const endTime = Date.now();
-        
-        // Clear timeout on successful completion
-        clearTimeout(timeoutId);
 
-        return {
-          input,
-          output: result,
-          stepId: step.id,
-          duration: endTime - startTime,
-          timestamp: endTime,
-          success: true,
-        };
-      } catch (error) {
+        // Clear timeout on successful completion
+        if (timeoutId) clearTimeout(timeoutId);
+
+        return result;
+      } catch (error: any) {
         // Clear timeout on error
-        clearTimeout(timeoutId);
-        
+        if (timeoutId) clearTimeout(timeoutId);
+
         throw createProviderError(
           `Failed to execute step ${step.id}`,
           this.name,
           'step-execution-failed',
-          { 
-            stepId: step.id,
-            action: step.action,
+          {
             originalError: error as Error,
           },
         );
+      } finally {
+        // Ensure timeout is always cleared
+        if (timeoutId) clearTimeout(timeoutId);
       }
+    } catch (error: any) {
+      // Handle any errors in the step execution
+      throw createProviderError(
+        `Failed to execute step ${step.id}`,
+        this.name,
+        'step-execution-failed',
+        { originalError: error as Error },
+      );
+    }
   }
 
   /**
    * Execute the actual step action
    * This is where actual step logic would be implemented
    */
-  private async executeStepAction(
-    step: WorkflowStep,
-    input?: WorkflowData,
-  ): Promise<WorkflowData> {
+  private async executeStepAction(step: WorkflowStep, input?: WorkflowData): Promise<WorkflowData> {
     // For now, return a simulated result based on action type
     switch (step.action) {
       case 'http':
         // Simulate HTTP request
         return { status: 200, body: { success: true } };
-      
+
       case 'delay':
         // Simulate delay
         const delay = (step.input?.delay as number) || 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve: any) => setTimeout(resolve, delay));
         return { delayed: delay };
-      
+
       case 'transform':
         // Simulate data transformation
-        return { transformed: true, data: input };
-      
+        return { transformed: true, data: input || {} };
+
       default:
         // For unknown actions, return the input
         return { action: step.action, result: 'completed' };
@@ -748,15 +740,15 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   private evaluateCondition(condition: string, input?: WorkflowData): boolean {
     // Parse simple conditions like "input.value > 10" or "input.status === 'active'"
     // This is a basic implementation - in production you'd want a safe expression evaluator
-    
+
     if (!input) return true;
-    
+
     // Check for simple equality/inequality conditions
     const equalityMatch = condition.match(/^input\.(\w+)\s*(===?|!==?)\s*['"]?(.+?)['"]?$/);
     if (equalityMatch) {
       const [, field, operator, value] = equalityMatch;
       const inputValue = input[field];
-      
+
       switch (operator) {
         case '==':
         case '===':
@@ -766,16 +758,16 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
           return String(inputValue) !== value;
       }
     }
-    
+
     // Check for simple comparison conditions
     const comparisonMatch = condition.match(/^input\.(\w+)\s*([<>]=?)\s*(\d+)$/);
     if (comparisonMatch) {
       const [, field, operator, value] = comparisonMatch;
       const inputValue = Number(input[field]);
       const compareValue = Number(value);
-      
+
       if (isNaN(inputValue) || isNaN(compareValue)) return false;
-      
+
       switch (operator) {
         case '>':
           return inputValue > compareValue;
@@ -787,13 +779,13 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
           return inputValue <= compareValue;
       }
     }
-    
+
     // Check for simple boolean conditions
     if (condition.match(/^input\.(\w+)$/)) {
       const field = condition.replace('input.', '');
       return Boolean(input[field]);
     }
-    
+
     // Default to true if we can't parse the condition
     return true;
   }
@@ -807,11 +799,10 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       // Redis client can be cleaned up if needed
       // Upstash Redis doesn't need explicit cleanup
       // The connections are automatically managed
-      }
-    } catch (error) {
+    } catch (error: any) {
       // Log error but don't throw during cleanup
       if (this.options.debug) {
-        console.error('[UpstashWorkflow] Error during cleanup:', error);
+        console.error('[UpstashWorkflow] Error during cleanup: ', error);
       }
     }
   }

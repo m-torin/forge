@@ -1,20 +1,24 @@
 /**
- * Client-side orchestration exports
+ * Client-side orchestration exports (non-Next.js)
  * Lightweight utilities and types for client-side workflow interaction
+ *
+ * This file provides client-side orchestration functionality for non-Next.js applications.
+ * Use this in browser environments, client-side applications, and standalone JavaScript.
+ *
+ * For Next.js applications, use '@repo/orchestration/client/next' instead.
  */
 
 import { RetryStrategies, withRetry } from './shared/patterns/retry';
-// Import for internal use
-import { validateWorkflowDefinition } from './shared/utils/index';
-
 // Core types (re-export for client usage)
 // Import types for internal use
-import type { 
-  ListExecutionsOptions, 
+import {
+  ListExecutionsOptions,
   WorkflowExecution,
   WorkflowDefinition,
-  WorkflowData
+  WorkflowData,
 } from './shared/types/index';
+// Import for internal use
+import { validateWorkflowDefinition } from './shared/utils/index';
 
 // Client-side patterns (safe for browser usage)
 export {
@@ -114,7 +118,7 @@ export class WorkflowClient {
       try {
         const result = await response.json();
         return result.cancelled || false;
-      } catch (error) {
+      } catch (_error: any) {
         // If JSON parsing fails, assume operation was successful
         return true;
       }
@@ -123,7 +127,7 @@ export class WorkflowClient {
     if (this.config.enableRetries) {
       const result = await withRetry(requestFn, RetryStrategies.network);
       if (result.success) {
-        return result.data;
+        return result?.data;
       } else {
         throw result.error;
       }
@@ -159,7 +163,7 @@ export class WorkflowClient {
 
       try {
         return await response.json();
-      } catch (error) {
+      } catch (_error: any) {
         throw new Error('Failed to parse response as JSON');
       }
     };
@@ -167,7 +171,7 @@ export class WorkflowClient {
     if (this.config.enableRetries) {
       const result = await withRetry(requestFn, RetryStrategies.network);
       if (result.success) {
-        return result.data;
+        return result?.data;
       } else {
         throw result.error;
       }
@@ -207,7 +211,7 @@ export class WorkflowClient {
 
       try {
         return await response.json();
-      } catch (error) {
+      } catch (_error: any) {
         throw new Error('Failed to parse response as JSON');
       }
     };
@@ -215,7 +219,7 @@ export class WorkflowClient {
     if (this.config.enableRetries) {
       const result = await withRetry(requestFn, RetryStrategies.network);
       if (result.success) {
-        return result.data;
+        return result?.data;
       } else {
         throw result.error;
       }
@@ -255,7 +259,7 @@ export class WorkflowClient {
 
       try {
         return await response.json();
-      } catch (error) {
+      } catch (_error: any) {
         throw new Error('Failed to parse response as JSON');
       }
     };
@@ -263,7 +267,7 @@ export class WorkflowClient {
     if (this.config.enableRetries) {
       const result = await withRetry(requestFn, RetryStrategies.network);
       if (result.success) {
-        return result.data;
+        return result?.data;
       } else {
         throw result.error;
       }
@@ -286,23 +290,27 @@ export function createWorkflowClient(config: WorkflowClientConfig): WorkflowClie
 function createTimeoutSignal(timeout: number): AbortSignal | undefined {
   try {
     // Check if AbortSignal.timeout is available (Node.js 16+)
-    if ('timeout' in AbortSignal && typeof AbortSignal.timeout === 'function') {
+    if (
+      typeof AbortSignal !== 'undefined' &&
+      'timeout' in AbortSignal &&
+      typeof AbortSignal.timeout === 'function'
+    ) {
       return AbortSignal.timeout(timeout);
     }
-    
+
     // Fallback: create a manual timeout signal
     if (typeof AbortController !== 'undefined') {
       const controller = new AbortController();
       setTimeout(() => controller.abort(), timeout);
       return controller.signal;
     }
-  } catch (error) {
+  } catch (error: any) {
     // If anything fails, log warning and return undefined
     if (typeof console !== 'undefined' && console.warn) {
-      console.warn('[WorkflowClient] Failed to create timeout signal:', error);
+      console.warn('[WorkflowClient] Failed to create timeout signal: ', error);
     }
   }
-  
+
   return undefined;
 }
 

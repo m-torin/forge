@@ -33,7 +33,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     this.isInitialized = true;
   }
 
-  async track(event: string, properties: any = {}, context?: any): Promise<void> {
+  async track(event: string, properties: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
       console.warn('Console provider not initialized');
       return;
@@ -46,7 +46,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     });
   }
 
-  async identify(userId: string, traits: any = {}, context?: any): Promise<void> {
+  async identify(userId: string, traits: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
       console.warn('Console provider not initialized');
       return;
@@ -59,7 +59,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     });
   }
 
-  async page(name?: string, properties: any = {}, context?: any): Promise<void> {
+  async page(name?: string, properties: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
       console.warn('Console provider not initialized');
       return;
@@ -72,7 +72,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     });
   }
 
-  async group(groupId: string, traits: any = {}, context?: any): Promise<void> {
+  async group(groupId: string, traits: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
       console.warn('Console provider not initialized');
       return;
@@ -85,7 +85,7 @@ export class ConsoleProvider implements AnalyticsProvider {
     });
   }
 
-  async alias(userId: string, previousId: string, context?: any): Promise<void> {
+  async alias(userId: string, previousId: string, _context?: any): Promise<void> {
     if (!this.isInitialized) {
       console.warn('Console provider not initialized');
       return;

@@ -4,7 +4,7 @@ import CollectionCard1 from '../../../mantine-ciseco/components/CollectionCard1'
 import { mockCollection } from '../test-utils';
 
 // Mock the Link component
-vi.mock('../../../mantine-ciseco/components/Link', () => ({
+vi.mock('../../../mantine-ciseco/components/Link', (_: any) => ({
   Link: ({ children, className, href, ...props }: any) => (
     <a className={className} href={href} {...props}>
       {children}
@@ -13,12 +13,12 @@ vi.mock('../../../mantine-ciseco/components/Link', () => ({
 }));
 
 // Mock the useLocalizeHref hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', () => ({
+vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => `/en${href}`,
 }));
 
 // Mock NcImage component to avoid Next.js Image issues
-vi.mock('../../../mantine-ciseco/components/shared/NcImage/NcImage', () => ({
+vi.mock('../../../mantine-ciseco/components/shared/NcImage/NcImage', (_: any) => ({
   default: ({ alt, src, containerClassName, fill, sizes, ...props }: any) => (
     <div className={containerClassName}>
       <img alt={alt} src={typeof src === 'object' ? src.src : src} {...props} />
@@ -26,10 +26,10 @@ vi.mock('../../../mantine-ciseco/components/shared/NcImage/NcImage', () => ({
   ),
 }));
 
-describe('CollectionCard1', () => {
+describe('CollectionCard1', (_: any) => {
   const defaultCollection = mockCollection();
 
-  it('renders collection card with basic info', () => {
+  it('renders collection card with basic info', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} />);
 
     expect(screen.getByText(defaultCollection.title!)).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe('CollectionCard1', () => {
     expect(screen.getByAltText(defaultCollection.image!.alt)).toBeInTheDocument();
   });
 
-  it('renders collection image with correct src and alt', () => {
+  it('renders collection image with correct src and alt', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} />);
     const image = screen.getByAltText(defaultCollection.image!.alt);
 
@@ -45,21 +45,21 @@ describe('CollectionCard1', () => {
     expect(image).toHaveAttribute('alt', defaultCollection.image!.alt);
   });
 
-  it('renders as a link with correct href', () => {
+  it('renders as a link with correct href', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} />);
     const link = screen.getByRole('link');
 
     expect(link).toHaveAttribute('href', `/en/collections/${defaultCollection.handle}`);
   });
 
-  it('renders with custom className', () => {
+  it('renders with custom className', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} className="custom-class" />);
     const link = screen.getByRole('link');
 
     expect(link).toHaveClass('custom-class');
   });
 
-  it('renders with large size', () => {
+  it('renders with large size', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} size="large" />);
 
     const title = screen.getByText(defaultCollection.title!);
@@ -69,7 +69,7 @@ describe('CollectionCard1', () => {
     expect(description).toHaveClass('text-sm');
   });
 
-  it('renders with normal size (default)', () => {
+  it('renders with normal size (default)', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} size="normal" />);
 
     const title = screen.getByText(defaultCollection.title!);
@@ -79,7 +79,7 @@ describe('CollectionCard1', () => {
     expect(description).toHaveClass('text-xs');
   });
 
-  it('renders title with proper styling', () => {
+  it('renders title with proper styling', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} />);
 
     const title = screen.getByText(defaultCollection.title!);
@@ -91,7 +91,7 @@ describe('CollectionCard1', () => {
     );
   });
 
-  it('renders description with proper styling', () => {
+  it('renders description with proper styling', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} />);
 
     const description = screen.getByText(defaultCollection.sortDescription!);
@@ -103,7 +103,7 @@ describe('CollectionCard1', () => {
     );
   });
 
-  it('returns null when collection has no handle', () => {
+  it('returns null when collection has no handle', (_: any) => {
     const collectionWithoutHandle = mockCollection({ handle: null });
     render(<CollectionCard1 collection={collectionWithoutHandle} />);
 
@@ -112,7 +112,7 @@ describe('CollectionCard1', () => {
     expect(screen.queryByText(defaultCollection.title!)).not.toBeInTheDocument();
   });
 
-  it('renders without image when image is not provided', () => {
+  it('renders without image when image is not provided', (_: any) => {
     const collectionWithoutImage = mockCollection({ image: null });
     render(<CollectionCard1 collection={collectionWithoutImage} />);
 
@@ -120,14 +120,14 @@ describe('CollectionCard1', () => {
     expect(screen.getByText(collectionWithoutImage.title!)).toBeInTheDocument();
   });
 
-  it('has proper link structure and classes', () => {
+  it('has proper link structure and classes', (_: any) => {
     render(<CollectionCard1 collection={defaultCollection} />);
 
     const link = screen.getByRole('link');
     expect(link).toHaveClass('flex', 'items-center');
   });
 
-  it('positions image correctly based on size', () => {
+  it('positions image correctly based on size', (_: any) => {
     const { rerender } = render(<CollectionCard1 collection={defaultCollection} size="large" />);
 
     // For large size, the image container should have size-20 class

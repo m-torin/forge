@@ -1,6 +1,6 @@
-import Button from './Button';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import Button from './Button';
 
 const meta: Meta<typeof Button> = {
   argTypes: {
@@ -169,7 +169,7 @@ export const ButtonStates: Story = {
         <Button className="bg-blue-600 text-white" disabled>
           Primary Disabled
         </Button>
-        <Button loading className="bg-blue-600 text-white">
+        <Button className="bg-blue-600 text-white" loading>
           Primary Loading
         </Button>
       </div>

@@ -1,10 +1,7 @@
-import {
-  Divider,
-  SectionPromo1,
-  SectionSliderLargeProduct,
-  getCollectionByHandle,
-  getProducts,
-} from '@repo/design-system/ciseco'
+import { Divider } from '@/components/Divider'
+import SectionPromo1 from '@/components/SectionPromo1'
+import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
+import { getCollectionByHandle, getProducts } from '@/data/data'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import React from 'react'
@@ -42,7 +39,7 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
             dangerouslySetInnerHTML={{ __html: description || '' }}
           />
         </div>
-        <hr className="mb-10 mt-20 border-neutral-200 lg:mt-24 dark:border-neutral-700" />
+        <hr className="mt-20 mb-10 border-neutral-200 lg:mt-24 dark:border-neutral-700" />
 
         {/* content */}
         {children}

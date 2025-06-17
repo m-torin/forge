@@ -13,6 +13,7 @@ export const stripe = new Proxy({} as Stripe, {
     // Return no-op functions if key is missing
     if (!STRIPE_SECRET_KEY) {
       if (!hasLoggedWarning) {
+        // eslint-disable-next-line no-console
         console.warn('Stripe payment service is disabled: Missing STRIPE_SECRET_KEY');
         hasLoggedWarning = true;
       }

@@ -120,7 +120,7 @@ export function ScanHistoryTable() {
       });
 
       if (result.success && result.data) {
-        setScans(result.data);
+        setScans(result.data as unknown as any);
         if (result.pagination) {
           setTotalPages(result.pagination.totalPages);
         }
@@ -128,9 +128,11 @@ export function ScanHistoryTable() {
         // Calculate stats
         const totalScans = result.data.length;
         const successfulScans = result.data.filter((scan) => scan.success).length;
-        const uniqueUsers = new Set(result.data.map((scan) => scan.userId).filter(Boolean)).size;
-        const uniquePlatforms = new Set(result.data.map((scan) => scan.platform).filter(Boolean))
+        const uniqueUsers = new Set(result.data.map((scan: any) => scan.userId).filter(Boolean))
           .size;
+        const uniquePlatforms = new Set(
+          result.data.map((scan: any) => scan.platform).filter(Boolean),
+        ).size;
 
         setStats({
           successfulScans,
@@ -219,7 +221,7 @@ export function ScanHistoryTable() {
       })
     : scans;
 
-  const rows = sortedData.map((scan) => {
+  const rows = sortedData.map((scan: any) => {
     const selected = selectedRows.includes(scan.id);
     return (
       <Table.Tr key={scan.id} bg={selected ? 'blue.0' : undefined}>
@@ -430,7 +432,7 @@ export function ScanHistoryTable() {
           />
           <DatePickerInput
             leftSection={<IconCalendar size={16} />}
-            onChange={setStartDate}
+            onChange={(value) => setStartDate(value as unknown as Date | null)}
             placeholder="Pick start date"
             clearable
             label="Start Date"
@@ -438,7 +440,7 @@ export function ScanHistoryTable() {
           />
           <DatePickerInput
             leftSection={<IconCalendar size={16} />}
-            onChange={setEndDate}
+            onChange={(value) => setEndDate(value as unknown as Date | null)}
             placeholder="Pick end date"
             clearable
             label="End Date"

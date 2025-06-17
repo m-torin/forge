@@ -41,16 +41,16 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
       // Extract client-side only options that don't apply to server
       const {
-        api_host,
-        autocapture,
-        bootstrap,
-        capture_pageview,
-        cross_subdomain_cookie,
-        disable_session_recording,
-        fetch_options,
-        loaded,
-        persistence,
-        ui_host,
+        api_host: _api_host,
+        autocapture: _autocapture,
+        bootstrap: _bootstrap,
+        capture_pageview: _capture_pageview,
+        cross_subdomain_cookie: _cross_subdomain_cookie,
+        disable_session_recording: _disable_session_recording,
+        fetch_options: _fetch_options,
+        loaded: _loaded,
+        persistence: _persistence,
+        ui_host: _ui_host,
         ...serverOptions
       } = this.config.options || {};
 
@@ -60,7 +60,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
       });
 
       this.isInitialized = true;
-    } catch (error) {
+    } catch (_error) {
       throw new Error('PostHog Node.js SDK not available. Install with: npm install posthog-node');
     }
   }
@@ -76,7 +76,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
         event,
         properties,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -91,7 +91,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
         distinctId: userId,
         properties: traits,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -111,7 +111,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
           ...properties,
         },
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -127,7 +127,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
         groupType: 'company',
         properties: traits,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -142,7 +142,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
         alias: previousId,
         distinctId: userId,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -160,7 +160,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       const flags = await this.client.getAllFlags(userId);
       return flags || {};
-    } catch (error) {
+    } catch (_error) {
       return {};
     }
   }
@@ -177,7 +177,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       const flagValue = await this.client.getFeatureFlag(flag, userId);
       return flagValue;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -194,7 +194,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       const flagValue = await this.client.isFeatureEnabled(flag, userId);
       return Boolean(flagValue);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -211,7 +211,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
     try {
       const payload = await this.client.getFeatureFlagPayload(flag, userId);
       return payload || null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -241,7 +241,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
       }
 
       return experiments;
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   }
@@ -266,7 +266,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
             if (payload) {
               featureFlagPayloads[flagKey] = payload;
             }
-          } catch (error) {
+          } catch (_error) {
             // Continue if individual payload fetch fails - silently ignore
           }
         }
@@ -275,7 +275,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
       return {
         distinctID: distinctId,
       };
-    } catch (error) {
+    } catch (_error) {
       return { distinctID: distinctId };
     }
   }
@@ -293,7 +293,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       await this.client.shutdown();
-    } catch (error) {
+    } catch (_error) {
       // Silently fail
     }
   }
@@ -306,7 +306,7 @@ export class PostHogServerProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       await this.client.flush();
-    } catch (error) {
+    } catch (_error) {
       // Silently fail
     }
   }

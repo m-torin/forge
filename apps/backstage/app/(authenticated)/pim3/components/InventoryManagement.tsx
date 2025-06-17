@@ -16,7 +16,13 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconAlertTriangle, IconBox, IconEdit, IconPlus, IconTrendingUp } from '@tabler/icons-react';
+import {
+  IconAlertTriangle,
+  IconBox,
+  IconEdit,
+  IconPlus,
+  IconTrendingUp,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { formatDateTime, getLocationStockStatus } from '../utils/pim-helpers';
@@ -71,6 +77,14 @@ export function InventoryManagement({
       inventory: {
         locations: [] as InventoryLocation[],
         movements: [] as StockMovement[],
+        adjustmentForm: {
+          locationId: '',
+          adjustmentType: 'addition' as const,
+          quantity: 0,
+          reason: '',
+          notes: '',
+          type: 'adjustment' as const,
+        },
       },
     },
   });
@@ -84,7 +98,7 @@ export function InventoryManagement({
   );
 
   const getTotalStock = () => {
-    return locations.reduce((total, location) => total + location.stock.available, 0);
+    return locations.reduce((total: any, location) => total + location.stock.available, 0);
   };
 
   const getLocationTypeColor = (type: string) => {
@@ -120,8 +134,8 @@ export function InventoryManagement({
   const getStockStatusForLocation = (location: InventoryLocation) => {
     return getLocationStockStatus(
       location.stock.available,
-      location.stock.reserved,
       location.settings.reorderPoint,
+      location.settings.maxStock,
     );
   };
 
@@ -167,10 +181,12 @@ export function InventoryManagement({
 
     // Reset adjustment form
     form.setFieldValue('inventory.adjustmentForm', {
-      type: 'adjustment',
       locationId: '',
+      adjustmentType: 'addition' as const,
       quantity: 0,
       reason: '',
+      notes: '',
+      type: 'adjustment' as const,
     });
 
     onUpdate?.();
@@ -238,7 +254,11 @@ export function InventoryManagement({
           {/* Location Details */}
           <Stack>
             {locations.map((location) => {
-              const status = getLocationStockStatus(location);
+              const status = getLocationStockStatus(
+                location.stock.available,
+                location.settings.reorderPoint,
+                location.settings.maxStock,
+              );
               return (
                 <Card key={location.id} withBorder>
                   <Stack gap="sm">
@@ -407,11 +427,19 @@ export function InventoryManagement({
 
           {locations
             .filter((location) => {
-              const status = getLocationStockStatus(location);
+              const status = getLocationStockStatus(
+                location.stock.available,
+                location.settings.reorderPoint,
+                location.settings.maxStock,
+              );
               return status.color === 'red' || status.color === 'orange';
             })
             .map((location) => {
-              const status = getLocationStockStatus(location);
+              const status = getLocationStockStatus(
+                location.stock.available,
+                location.settings.reorderPoint,
+                location.settings.maxStock,
+              );
               return (
                 <Card
                   key={location.id}
@@ -518,10 +546,12 @@ export function InventoryManagement({
                 <Button
                   onClick={() =>
                     form.setFieldValue('inventory.adjustmentForm', {
-                      type: 'adjustment',
                       locationId: '',
+                      adjustmentType: 'addition' as const,
                       quantity: 0,
                       reason: '',
+                      notes: '',
+                      type: 'adjustment' as const,
                     })
                   }
                   variant="outline"

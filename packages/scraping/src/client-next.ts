@@ -1,6 +1,11 @@
 /**
- * Next.js client-side scraping exports
+ * Client-side scraping exports for Next.js
  * Client-side scraping with Next.js specific additions
+ *
+ * This file provides client-side scraping functionality specifically for Next.js applications.
+ * Use this in client components, React hooks, and Next.js browser environments.
+ *
+ * For non-Next.js applications, use '@repo/scraping/client' instead.
  *
  * @example
  * ```typescript

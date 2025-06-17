@@ -3,8 +3,7 @@
  * Copy this file to your app's e2e folder and customize
  */
 
-import { expect, test } from '@repo/testing/e2e';
-import { AccessibilityReporter, AccessibilityTestUtils } from '@repo/testing/e2e';
+import { expect, test, AccessibilityReporter, AccessibilityTestUtils } from '@repo/testing/e2e';
 
 test.describe('Accessibility Testing', () => {
   let a11y: AccessibilityTestUtils;

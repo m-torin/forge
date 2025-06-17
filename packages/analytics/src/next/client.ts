@@ -4,7 +4,7 @@
  */
 
 import { type AnalyticsManager } from '../shared/utils/manager';
-import { createPostHogConfig } from '../shared/utils/posthog-next-utils';
+import { createPostHogConfig } from '../shared/utils/posthog-client-utils';
 
 import type { BootstrapData } from '../shared/types/posthog-types';
 import type { AnalyticsConfig, TrackingOptions } from '../shared/types/types';
@@ -128,7 +128,7 @@ export class NextJSClientAnalyticsManager {
       await this.flushBufferedEvents();
 
       // Analytics initialized successfully
-    } catch (error) {
+    } catch (_error) {
       // Failed to initialize analytics
     } finally {
       this.isLoading = false;
@@ -228,7 +228,7 @@ export class NextJSClientAnalyticsManager {
             await this.manager.alias(event.args[0], event.args[1], event.args[2]);
             break;
         }
-      } catch (error) {
+      } catch (_error) {
         // Error flushing buffered event
       }
     }

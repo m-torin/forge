@@ -1,6 +1,6 @@
-import { SearchBox, SearchProvider, SearchResults, SearchStats } from '@repo/design-system/algolia';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import { SearchBox, SearchProvider, SearchResults, SearchStats } from '@repo/design-system/algolia';
 
 const meta: Meta<typeof SearchBox> = {
   argTypes: {
@@ -44,7 +44,7 @@ export const Default: Story = {
     autoFocus: false,
     placeholder: 'Search products...',
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider config={mockConfig}>
       <div className="space-y-4">
         <SearchBox {...args} />
@@ -60,7 +60,7 @@ export const WithAutoFocus: Story = {
     autoFocus: true,
     placeholder: 'Search with auto focus...',
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider config={mockConfig}>
       <div className="space-y-4">
         <SearchBox {...args} />
@@ -75,7 +75,7 @@ export const WithMaxLength: Story = {
     maxLength: 50,
     placeholder: 'Search (max 50 chars)...',
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider config={mockConfig}>
       <div className="space-y-4">
         <SearchBox {...args} />
@@ -91,7 +91,7 @@ export const CustomStyling: Story = {
     className: 'max-w-lg mx-auto border-2 border-blue-300 rounded-lg',
     placeholder: 'Custom styled search...',
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider config={mockConfig}>
       <div className="space-y-6">
         <SearchBox {...args} />
@@ -107,7 +107,7 @@ export const ECommercSearch: Story = {
     autoFocus: false,
     placeholder: 'Search for products, brands, categories...',
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider config={mockConfig}>
       <div className="bg-gray-50 p-6 rounded-lg">
         <div className="max-w-2xl mx-auto">
@@ -127,7 +127,7 @@ export const MinimalSearch: Story = {
   args: {
     placeholder: 'Type to search...',
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider config={mockConfig}>
       <div className="max-w-md mx-auto">
         <SearchBox

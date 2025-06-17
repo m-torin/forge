@@ -45,7 +45,7 @@ export const authClient = createAuthClient({
         ]
       : []),
   ],
-}) as any; // Type assertion for compatibility
+});
 
 // Export the raw client for advanced usage
 export default authClient;

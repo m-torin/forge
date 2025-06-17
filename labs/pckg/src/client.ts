@@ -3,6 +3,23 @@
  * This package is a skeleton for migrating authentication functionality
  */
 
+// Placeholder auth types
+export interface AuthConfig {
+  providers?: string[];
+  redirectUrl?: string,
+}
+
+export interface AuthSession {
+  token: string,
+  user: AuthUser,
+}
+
+export interface AuthUser {
+  email: string,
+  id: string,
+  name?: string,
+}
+
 // Placeholder auth client functions
 export function createAuthClient(_config?: any) {
   return {
@@ -11,23 +28,6 @@ export function createAuthClient(_config?: any) {
     signIn: async () => ({ message: 'Not implemented', success: false }),
     signOut: async () => ({ message: 'Not implemented', success: false }),
   };
-}
-
-// Placeholder auth types
-export interface AuthConfig {
-  providers?: string[];
-  redirectUrl?: string;
-}
-
-export interface AuthUser {
-  email: string;
-  id: string;
-  name?: string;
-}
-
-export interface AuthSession {
-  token: string;
-  user: AuthUser;
 }
 
 // Placeholder hooks

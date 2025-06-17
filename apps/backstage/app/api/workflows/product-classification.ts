@@ -12,7 +12,7 @@ import {
   StepTemplates,
   withStepMonitoring,
   withStepRetry,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input/Output schemas
 const ProductClassificationInput = z.object({
@@ -73,24 +73,23 @@ export const extractFeaturesStep = compose(
       },
     };
   }),
-  (step) => withStepRetry(step, { backoff: 'exponential', maxAttempts: 3 }),
-  (step) => withStepMonitoring(step, { enableDetailedLogging: true }),
+  (step: any) => withStepRetry(step, { backoff: true, maxRetries: 3 }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 3: Classify using AI model
-export const classifyProductStep = StepTemplates.http(
-  'classify-product',
-  'Call AI classification service',
-  {
-    httpConfig: {
-      baseHeaders: {
-        'Content-Type': 'application/json',
-      },
-      baseUrl: 'https://api.classification.example.com',
-      method: 'POST',
+export const classifyProductStep = createStep('classify-product', async (data: any) => {
+  // Call AI classification service
+  const response = await fetch('https://api.classification.example.com', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  },
-);
+    body: JSON.stringify(data),
+  });
+
+  return await response.json();
+});
 
 // Step 4: Validate classification
 export const validateClassificationStep = createStepWithValidation(
@@ -112,7 +111,7 @@ export const validateClassificationStep = createStepWithValidation(
 // Step 5: Store results
 export const storeResultsStep = compose(
   StepTemplates.database('store-classification', 'Save classification to database'),
-  (step) => withStepRetry(step, { maxAttempts: 2 }),
+  (step: any) => withStepRetry(step, { maxRetries: 2 }),
 );
 
 // Step 6: Queue for training if needed
@@ -130,13 +129,7 @@ export const queueForTrainingStep = createStep('queue-for-training', async (resu
 });
 
 // Step 7: Send notification
-export const notifyStep = StepTemplates.notification(
-  'notify-classification',
-  'Send classification complete notification',
-  {
-    channels: ['email', 'webhook'],
-  },
-);
+export const notifyStep = StepTemplates.notification('notify-classification', 'info');
 
 // Main workflow definition
 export const productClassificationWorkflow = {
@@ -145,8 +138,8 @@ export const productClassificationWorkflow = {
   config: {
     maxDuration: 60000, // 1 minute
     retryPolicy: {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     },
   },
   description: 'AI-powered product categorization with training feedback',

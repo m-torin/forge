@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock environment variables
 const mockCreateEnv = vi.fn();
-vi.mock('@t3-oss/env-nextjs', () => ({
+vi.mock('@t3-oss/env-nextjs', (_: any) => ({
   createEnv: mockCreateEnv,
 }));
 
-describe('Notifications Keys Configuration', () => {
+describe('Notifications Keys Configuration', (_: any) => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Notifications Keys Configuration', () => {
     process.env = originalEnv;
   });
 
-  describe('development environment', () => {
+  describe('development environment', (_: any) => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -89,7 +89,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('production environment', () => {
+  describe('production environment', (_: any) => {
     beforeEach(() => {
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = 'sk_live_123456789';
@@ -141,7 +141,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('key validation', () => {
+  describe('key validation', (_: any) => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -190,7 +190,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('runtime environment mapping', () => {
+  describe('runtime environment mapping', (_: any) => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -252,7 +252,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('hasRequiredEnvVars logic', () => {
+  describe('hasRequiredEnvVars logic', (_: any) => {
     it('should detect when any env var is present', async () => {
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123';
@@ -300,7 +300,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('client vs server configuration', () => {
+  describe('client vs server configuration', (_: any) => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -363,7 +363,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('error handling', () => {
+  describe('error handling', (_: any) => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -383,7 +383,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('function invocation', () => {
+  describe('function invocation', (_: any) => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -435,7 +435,7 @@ describe('Notifications Keys Configuration', () => {
     });
   });
 
-  describe('configuration consistency', () => {
+  describe('configuration consistency', (_: any) => {
     it('should always make notifications keys optional', async () => {
       // Test production with all keys present
       process.env.NODE_ENV = 'production';

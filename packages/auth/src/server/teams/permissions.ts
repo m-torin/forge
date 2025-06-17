@@ -4,10 +4,9 @@
 
 import 'server-only';
 
-import { prisma as database } from '@repo/database/prisma';
-
 import { roleHasPermission } from '../../shared/teams/permissions';
 import { auth } from '../auth';
+import { getAuthHeaders } from '../helpers/get-headers';
 
 import type { TeamPermissionCheck, TeamPermissionResult } from '../../shared/teams/types';
 
@@ -18,7 +17,7 @@ export async function checkTeamPermission(
   check: TeamPermissionCheck,
 ): Promise<TeamPermissionResult> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return { error: 'Authentication required', hasPermission: false };
@@ -27,13 +26,20 @@ export async function checkTeamPermission(
     const { permission, teamId, userId } = check;
     const targetUserId = userId || session.user.id;
 
-    // Get user's team membership
-    const membership = await database.teamMember.findFirst({
-      where: {
-        teamId,
-        userId: targetUserId,
-      },
+    // Get team data with members using better-auth native method
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
     });
+
+    if (!teamResult?.team) {
+      return { error: 'Team not found or access denied', hasPermission: false };
+    }
+
+    // Find user's membership in the team
+    const membership = (teamResult.team.members || []).find(
+      (member: any) => member.userId === targetUserId,
+    );
 
     if (!membership) {
       return { error: 'User is not a team member', hasPermission: false };
@@ -56,7 +62,7 @@ export async function checkTeamPermission(
  */
 export async function canManageTeamMember(teamId: string, targetUserId: string): Promise<boolean> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return false;
@@ -67,21 +73,23 @@ export async function canManageTeamMember(teamId: string, targetUserId: string):
       return true;
     }
 
-    // Get both memberships
-    const [currentUserMembership, targetUserMembership] = await Promise.all([
-      database.teamMember.findFirst({
-        where: {
-          teamId,
-          userId: session.user.id,
-        },
-      }),
-      database.teamMember.findFirst({
-        where: {
-          teamId,
-          userId: targetUserId,
-        },
-      }),
-    ]);
+    // Get team data with members using better-auth native method
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
+    });
+
+    if (!teamResult?.team?.members) {
+      return false;
+    }
+
+    // Find both memberships in the team
+    const currentUserMembership = teamResult.team.members.find(
+      (member: any) => member.userId === session.user.id,
+    );
+    const targetUserMembership = teamResult.team.members.find(
+      (member: any) => member.userId === targetUserId,
+    );
 
     if (!currentUserMembership || !targetUserMembership) {
       return false;
@@ -121,7 +129,7 @@ export async function getUserTeamPermissions(
   error?: string;
 }> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return { error: 'Authentication required', permissions: [], role: '' };
@@ -129,12 +137,20 @@ export async function getUserTeamPermissions(
 
     const targetUserId = userId || session.user.id;
 
-    const membership = await database.teamMember.findFirst({
-      where: {
-        teamId,
-        userId: targetUserId,
-      },
+    // Get team data with members using better-auth native method
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
     });
+
+    if (!teamResult?.team) {
+      return { error: 'Team not found or access denied', permissions: [], role: '' };
+    }
+
+    // Find user's membership in the team
+    const membership = (teamResult.team.members || []).find(
+      (member: any) => member.userId === targetUserId,
+    );
 
     if (!membership) {
       return { error: 'User is not a team member', permissions: [], role: '' };
@@ -159,7 +175,7 @@ export async function getUserTeamPermissions(
  */
 export async function isTeamOwner(teamId: string, userId?: string): Promise<boolean> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return false;
@@ -167,12 +183,20 @@ export async function isTeamOwner(teamId: string, userId?: string): Promise<bool
 
     const targetUserId = userId || session.user.id;
 
-    const membership = await database.teamMember.findFirst({
-      where: {
-        teamId,
-        userId: targetUserId,
-      },
+    // Get team data with members using better-auth native method
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
     });
+
+    if (!teamResult?.team) {
+      return false;
+    }
+
+    // Find user's membership in the team
+    const membership = (teamResult.team.members || []).find(
+      (member: any) => member.userId === targetUserId,
+    );
 
     return membership?.role === 'owner';
   } catch (error) {
@@ -186,7 +210,7 @@ export async function isTeamOwner(teamId: string, userId?: string): Promise<bool
  */
 export async function isTeamAdmin(teamId: string, userId?: string): Promise<boolean> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return false;
@@ -194,12 +218,20 @@ export async function isTeamAdmin(teamId: string, userId?: string): Promise<bool
 
     const targetUserId = userId || session.user.id;
 
-    const membership = await database.teamMember.findFirst({
-      where: {
-        teamId,
-        userId: targetUserId,
-      },
+    // Get team data with members using better-auth native method
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
     });
+
+    if (!teamResult?.team) {
+      return false;
+    }
+
+    // Find user's membership in the team
+    const membership = (teamResult.team.members || []).find(
+      (member: any) => member.userId === targetUserId,
+    );
 
     return membership?.role === 'owner' || membership?.role === 'admin';
   } catch (error) {
@@ -271,13 +303,25 @@ export async function canManageTeamBilling(teamId: string, userId?: string): Pro
 
 export async function hasTeamAccess(teamId: string, userId?: string): Promise<boolean> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
     if (!session) return false;
 
     const targetUserId = userId || session.user.id;
-    const membership = await database.teamMember.findFirst({
-      where: { teamId, userId: targetUserId },
+
+    // Get team data with members using better-auth native method
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
     });
+
+    if (!teamResult?.team) {
+      return false;
+    }
+
+    // Find user's membership in the team
+    const membership = (teamResult.team.members || []).find(
+      (member: any) => member.userId === targetUserId,
+    );
 
     return !!membership;
   } catch (error) {
@@ -288,13 +332,25 @@ export async function hasTeamAccess(teamId: string, userId?: string): Promise<bo
 
 export async function hasTeamRole(teamId: string, role: string, userId?: string): Promise<boolean> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
     if (!session) return false;
 
     const targetUserId = userId || session.user.id;
-    const membership = await database.teamMember.findFirst({
-      where: { teamId, userId: targetUserId },
+
+    // Get team data with members using better-auth native method
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
     });
+
+    if (!teamResult?.team) {
+      return false;
+    }
+
+    // Find user's membership in the team
+    const membership = (teamResult.team.members || []).find(
+      (member: any) => member.userId === targetUserId,
+    );
 
     return membership?.role === role;
   } catch (error) {

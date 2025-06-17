@@ -1,6 +1,11 @@
 /**
- * Client-side observability exports
+ * Client-side observability exports (non-Next.js)
  * Complete observability solution for browser/client environments
+ *
+ * This file provides client-side observability functionality for non-Next.js applications.
+ * Use this in browser environments, client-side applications, and standalone JavaScript.
+ *
+ * For Next.js applications, use '@repo/observability/client/next' instead.
  *
  * @example
  * ```typescript
@@ -11,7 +16,7 @@
  *     sentry: { dsn: 'xxx' },
  *     console: { enabled: true }
  *   }
- * });
+ * };
  *
  * // Use observability
  * observability.captureException(new Error('Something went wrong'));
@@ -19,20 +24,23 @@
  * ```
  */
 
-import { SentryClientProvider } from './client/providers/sentry-client';
-import { ConsoleProvider } from './shared/providers/console-provider';
-import { createObservabilityManager } from './shared/utils/manager';
+import { createClientObservabilityManager } from './client/utils/manager';
+import { ObservabilityConfig, ObservabilityManager, ProviderRegistry } from './shared/types/types';
 
-import type {
-  ObservabilityConfig,
-  ObservabilityManager,
-  ProviderRegistry,
-} from './shared/types/types';
-
-// Client-specific provider registry
+// Client-specific provider registry with lazy loading
 const CLIENT_PROVIDERS: ProviderRegistry = {
-  console: () => new ConsoleProvider(),
-  sentry: () => new SentryClientProvider(),
+  console: async () => {
+    const { ConsoleProvider } = await import('./shared/providers/console-provider');
+    return new ConsoleProvider();
+  },
+  sentry: async () => {
+    const { SentryClientProvider } = await import('./client/providers/sentry-client');
+    return new SentryClientProvider();
+  },
+  grafanaMonitoring: async () => {
+    const { GrafanaClientProvider } = await import('./client/providers/grafana-client');
+    return new GrafanaClientProvider();
+  },
   // Better Stack/Logtail is not available on client side due to Node.js dependencies
 };
 
@@ -47,7 +55,7 @@ const CLIENT_PROVIDERS: ProviderRegistry = {
 export async function createClientObservability(
   config: ObservabilityConfig,
 ): Promise<ObservabilityManager> {
-  const manager = createObservabilityManager(config, CLIENT_PROVIDERS);
+  const manager = createClientObservabilityManager(config, CLIENT_PROVIDERS);
   await manager.initialize();
   return manager;
 }
@@ -59,13 +67,56 @@ export async function createClientObservability(
 export function createClientObservabilityUninitialized(
   config: ObservabilityConfig,
 ): ObservabilityManager {
-  return createObservabilityManager(config, CLIENT_PROVIDERS);
+  return createClientObservabilityManager(config, CLIENT_PROVIDERS);
 }
 
 // ============================================================================
-// TYPES
+// TYPES (Client-safe only - no React dependencies)
 // ============================================================================
 
+// Pure types only - React components and hooks are in client-next.ts
+
+export {
+  createErrorBoundaryHandler,
+  createSafeFunction,
+  parseAndCaptureError,
+  parseError,
+  withErrorHandling,
+} from './client/utils/error';
+// Manager utilities
+export { createClientObservabilityManager } from './client/utils/manager';
+
+// ============================================================================
+// CONFIGURATION UTILITIES
+// ============================================================================
+
+export { ClientObservabilityManager as ObservabilityManagerClass } from './client/utils/manager';
+
+// ============================================================================
+// ERROR HANDLING UTILITIES
+// ============================================================================
+
+export { debugConfig, validateConfig } from './client/utils/validation';
+
+// ============================================================================
+// BUNDLE OPTIMIZATION & LAZY LOADING
+// ============================================================================
+
+export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
+
+// ============================================================================
+// ADVANCED UTILITIES
+// ============================================================================
+
+// Provider-specific types
+export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
+export type {
+  GrafanaMonitoringConfig,
+  GrafanaProviderConfig,
+  GrafanaRUMEvent,
+  GrafanaMetric,
+  GrafanaBusinessMetric,
+} from './shared/types/grafana-types';
 // Core observability types
 export type {
   Breadcrumb,
@@ -76,52 +127,13 @@ export type {
   ObservabilityProvider as ObservabilityProviderInterface,
 } from './shared/types/types';
 
-// Provider-specific types
-export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
-export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-
-// ============================================================================
-// CONFIGURATION UTILITIES
-// ============================================================================
-
-export { debugConfig, validateConfig } from './shared/utils/validation';
-
-// ============================================================================
-// ERROR HANDLING UTILITIES
-// ============================================================================
-
-export {
-  createErrorBoundaryHandler,
-  createSafeFunction,
-  parseAndCaptureError,
-  parseError,
-  withErrorHandling,
-} from './shared/utils/error';
-
-// ============================================================================
-// ADVANCED UTILITIES
-// ============================================================================
-
-// Manager utilities
-export { createObservabilityManager } from './shared/utils/manager';
-export { ObservabilityManager as ObservabilityManagerClass } from './shared/utils/manager';
-
 // ============================================================================
 // REACT HOOKS & COMPONENTS
 // ============================================================================
 
 export {
-  type ErrorContext,
-  ObservabilityContext,
-  // Types
-  type ObservabilityEvent,
-  // Provider
-  ObservabilityProvider,
-  type ObservabilityProviderProps,
-  // Hooks
-  useObservability,
-  useObservabilityManager,
-  usePerformanceTimer,
-  useWorkflowObservability,
-  withObservability,
-} from './hooks';
+  analyzeBundleSize,
+  clearProviderCache,
+  createLazyProviderLoader,
+  preloadProviders,
+} from './shared/utils/lazy-loading';

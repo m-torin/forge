@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ScrapingProvider } from '../../../shared/types/scraping-types';
+// Import after mocks are set up
+import { createScraper, createServerScraper } from '../../../shared/factories/scraper-factory';
 
 // Mock the provider modules
 vi.mock('../../../server/providers/playwright-provider', () => ({
@@ -48,13 +49,6 @@ vi.mock('../../../client/providers/fetch-provider', () => ({
   })),
 }));
 
-// Import after mocks are set up
-import {
-  createScraper,
-  createServerScraper,
-  createClientScraper,
-} from '../../../shared/factories/scraper-factory';
-
 describe('createScraper', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -72,7 +66,7 @@ describe('createScraper', () => {
 
     it('should create client scraper when specified', async () => {
       // Mock window object for client environment
-      const originalWindow = global.window;
+      const _originalWindow = global.window;
       global.window = {} as any;
 
       try {

@@ -1,4 +1,6 @@
-import { Alert as MantineAlert, CloseButton } from '@mantine/core';
+'use client';
+
+import { Alert as MantineAlert } from '@mantine/core';
 import { IconCheck, IconExclamationMark, IconInfoCircle, IconX } from '@tabler/icons-react';
 import React from 'react';
 
@@ -10,12 +12,12 @@ export interface AlertProps {
   withCloseButton?: boolean;
 }
 
-export const Alert: React.FC<AlertProps> = ({ 
-  type = 'default', 
-  children = 'Alert Text', 
+export const Alert: React.FC<AlertProps> = ({
+  type = 'default',
+  children = 'Alert Text',
   className = '',
   onClose,
-  withCloseButton = true
+  withCloseButton = true,
 }) => {
   const getIcon = () => {
     switch (type) {

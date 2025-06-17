@@ -36,6 +36,7 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 // Product lifecycle and advanced features data structures (UI only)
 interface ProductLifecycleStage {
@@ -138,9 +139,7 @@ interface ProductSustainability {
 }
 
 interface ProductAnalytics {
-  id: string;
   metrics: {
-    views: number;
     sales: number;
     revenue: number;
     conversionRate: number;
@@ -149,23 +148,45 @@ interface ProductAnalytics {
     returnRate: number;
     reviewRating: number;
   };
-  predictions: {
-    nextMonthSales: number;
-    seasonalForecast: {
-      month: string;
-      predictedSales: number;
-      confidence: number;
-    }[];
-    lifecycleStage: string;
-    recommendedActions: string[];
-  };
-  timeframe: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
   trends: {
     salesTrend: 'up' | 'down' | 'stable';
     priceOptimization: 'optimal' | 'too_high' | 'too_low';
     inventoryStatus: 'healthy' | 'overstock' | 'understock';
     competitorPosition: 'leading' | 'competitive' | 'lagging';
   };
+  timeframe: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+  performance: {
+    sales: number;
+    revenue: number;
+    profit: number;
+    marketShare: number;
+  };
+  predictions: {
+    seasonalForecast: Array<{
+      month: string;
+      predictedSales: number;
+      confidence: number;
+    }>;
+    recommendedActions: string[];
+  };
+}
+
+interface ProductBundle {
+  id: string;
+  name: string;
+  conversionRate: number;
+}
+
+interface ProductLifecycleFormData {
+  lifecycleStages: ProductLifecycleStage[];
+  qualityChecks: ProductQualityCheck[];
+  compliance: ProductCompliance[];
+  analytics: ProductAnalytics;
+  milestoneForm: {
+    title: string;
+    description: string;
+  };
+  bundles: ProductBundle[];
 }
 
 interface ProductLifecycleProps {
@@ -176,13 +197,41 @@ interface ProductLifecycleProps {
 
 export function ProductLifecycle({ onUpdate, productId, productName }: ProductLifecycleProps) {
   // Get form context
-  const form = useFormContext();
+  const form = useFormContext<ProductLifecycleFormData>();
 
   // Get data from form context
-  const lifecycleStages = form.values.lifecycleStages || [];
-  const qualityChecks = form.values.qualityChecks || [];
-  const compliance = form.values.compliance || [];
-  const analytics = form.values.analytics;
+  const lifecycleStages = form.watch('lifecycleStages') || [];
+  const qualityChecks = form.watch('qualityChecks') || [];
+  const compliance = form.watch('compliance') || [];
+  const analytics = form.watch('analytics') || {
+    metrics: {
+      sales: 0,
+      revenue: 0,
+      conversionRate: 0,
+      averageOrderValue: 0,
+      customerSatisfaction: 0,
+      returnRate: 0,
+      reviewRating: 0,
+    },
+    trends: {
+      salesTrend: 'stable',
+      priceOptimization: 'optimal',
+      inventoryStatus: 'healthy',
+      competitorPosition: 'competitive',
+    },
+    timeframe: 'monthly',
+    performance: {
+      sales: 0,
+      revenue: 0,
+      profit: 0,
+      marketShare: 0,
+    },
+    predictions: {
+      seasonalForecast: [],
+      recommendedActions: [],
+    },
+  };
+  const bundles = form.watch('bundles') || [];
 
   // Keep sustainability as local state (reference data)
   const [sustainability] = useState<ProductSustainability>({
@@ -308,8 +357,8 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
 
   const getCurrentStage = () => {
     return (
-      lifecycleStages.find((stage) => stage.isActive) ||
-      lifecycleStages[lifecycleStages.length - 1] || {
+      lifecycleStages.find((stage: ProductLifecycleStage) => stage.isActive) ||
+      lifecycleStages[0] || {
         id: 'default',
         description: 'Product is in development phase',
         isActive: true,
@@ -321,12 +370,80 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
     );
   };
 
+  const getAverageBundleConversion = () => {
+    if (!bundles.length) return 0;
+    const bundleTotal = bundles.reduce((sum, bundle) => sum + (bundle.conversionRate ?? 0), 0);
+    return bundleTotal / bundles.length;
+  };
+
   const handleCreateMilestone = () => {
-    // For now just show notification since lifecycle stages are complex demo data
-    notifications.show({
-      color: 'green',
-      message: 'Milestone created successfully',
-      title: 'Success',
+    const newMilestone = {
+      id: `milestone-${Date.now()}`,
+      title: form.getValues('milestoneForm.title') || '',
+      description: form.getValues('milestoneForm.description') || '',
+      isCompleted: false,
+    };
+
+    const currentStage = getCurrentStage();
+    if (currentStage) {
+      const updatedStages = lifecycleStages.map((stage) =>
+        stage.id === currentStage.id
+          ? {
+              ...stage,
+              milestones: [...stage.milestones, newMilestone],
+            }
+          : stage,
+      );
+      form.setValue('lifecycleStages', updatedStages);
+    }
+  };
+
+  const handleUpdateStage = (stageId: string, updates: Partial<ProductLifecycleStage>) => {
+    const updatedStages = lifecycleStages.map((stage) =>
+      stage.id === stageId ? { ...stage, ...updates } : stage,
+    );
+    form.setValue('lifecycleStages', updatedStages);
+  };
+
+  const handleUpdateQualityCheck = (checkId: string, updates: Partial<ProductQualityCheck>) => {
+    const updatedChecks = qualityChecks.map((check) =>
+      check.id === checkId ? { ...check, ...updates } : check,
+    );
+    form.setValue('qualityChecks', updatedChecks);
+  };
+
+  const handleUpdateCompliance = (complianceId: string, updates: Partial<ProductCompliance>) => {
+    const updatedCompliance = compliance.map((comp) =>
+      comp.id === complianceId ? { ...comp, ...updates } : comp,
+    );
+    form.setValue('compliance', updatedCompliance);
+  };
+
+  const handleUpdateAnalytics = (updates: Partial<ProductAnalytics>) => {
+    form.setValue('analytics', { ...analytics, ...updates });
+  };
+
+  const handleUpdateField = (field: keyof ProductLifecycleFormData, value: any) => {
+    form.setValue(field, value);
+  };
+
+  const handleUpdatePerformance = (updates: Partial<ProductAnalytics['performance']>) => {
+    form.setValue('analytics', {
+      ...analytics,
+      performance: {
+        ...analytics.performance,
+        ...updates,
+      },
+    });
+  };
+
+  const handleUpdatePredictions = (updates: Partial<ProductAnalytics['predictions']>) => {
+    form.setValue('analytics', {
+      ...analytics,
+      predictions: {
+        ...analytics.predictions,
+        ...updates,
+      },
     });
   };
 
@@ -423,52 +540,52 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
           {/* Key Metrics */}
           {getCurrentStage().keyMetrics && Object.keys(getCurrentStage().keyMetrics).length > 0 && (
             <SimpleGrid cols={4} spacing="md">
-              {getCurrentStage().keyMetrics.salesVolume && (
+              {getCurrentStage().keyMetrics.salesVolume != null && (
                 <Card withBorder>
                   <Text c="dimmed" size="sm">
                     Sales Volume
                   </Text>
                   <Text fw={700} size="xl">
-                    {getCurrentStage().keyMetrics.salesVolume.toLocaleString()}
+                    {(getCurrentStage().keyMetrics.salesVolume ?? 0).toLocaleString()}
                   </Text>
                   <Text c="dimmed" size="xs">
                     units sold
                   </Text>
                 </Card>
               )}
-              {getCurrentStage().keyMetrics.marketShare && (
+              {getCurrentStage().keyMetrics.marketShare != null && (
                 <Card withBorder>
                   <Text c="dimmed" size="sm">
                     Market Share
                   </Text>
                   <Text fw={700} size="xl">
-                    {formatPercentage(getCurrentStage().keyMetrics.marketShare)}
+                    {formatPercentage(getCurrentStage().keyMetrics.marketShare ?? 0)}
                   </Text>
                   <Text c="dimmed" size="xs">
                     of total market
                   </Text>
                 </Card>
               )}
-              {getCurrentStage().keyMetrics.profitability && (
+              {getCurrentStage().keyMetrics.profitability != null && (
                 <Card withBorder>
                   <Text c="dimmed" size="sm">
                     Profitability
                   </Text>
                   <Text fw={700} size="xl">
-                    {formatPercentage(getCurrentStage().keyMetrics.profitability)}
+                    {formatPercentage(getCurrentStage().keyMetrics.profitability ?? 0)}
                   </Text>
                   <Text c="dimmed" size="xs">
                     profit margin
                   </Text>
                 </Card>
               )}
-              {getCurrentStage().keyMetrics.customerAcquisitionCost && (
+              {getCurrentStage().keyMetrics.customerAcquisitionCost != null && (
                 <Card withBorder>
                   <Text c="dimmed" size="sm">
                     CAC
                   </Text>
                   <Text fw={700} size="xl">
-                    {formatCurrency(getCurrentStage().keyMetrics.customerAcquisitionCost)}
+                    {formatCurrency(getCurrentStage().keyMetrics.customerAcquisitionCost ?? 0)}
                   </Text>
                   <Text c="dimmed" size="xs">
                     per customer
@@ -483,8 +600,10 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
             <Text fw={500} mb="md">
               Lifecycle Timeline
             </Text>
-            <Timeline active={lifecycleStages.findIndex((stage) => stage.isActive)}>
-              {lifecycleStages.map((stage, index) => (
+            <Timeline
+              active={lifecycleStages.findIndex((stage: ProductLifecycleStage) => stage.isActive)}
+            >
+              {lifecycleStages.map((stage: ProductLifecycleStage, index: number) => (
                 <Timeline.Item
                   key={stage.id}
                   bullet={
@@ -506,25 +625,33 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
 
                   {/* Stage Milestones */}
                   <Stack gap="xs" mt="sm">
-                    {stage.milestones.map((milestone) => (
-                      <Group key={milestone.id} gap="xs">
-                        <Badge
-                          color={milestone.isCompleted ? 'green' : 'gray'}
-                          size="xs"
-                          variant={milestone.isCompleted ? 'filled' : 'outline'}
-                        >
-                          {milestone.isCompleted ? '✓' : '○'}
-                        </Badge>
-                        <Text fw={milestone.isCompleted ? 400 : 500} size="xs">
-                          {milestone.title}
-                        </Text>
-                        {milestone.completedDate && (
-                          <Text c="dimmed" size="xs">
-                            ({formatDate(milestone.completedDate)})
+                    {stage.milestones.map(
+                      (milestone: {
+                        id: string;
+                        title: string;
+                        description: string;
+                        completedDate?: Date;
+                        isCompleted: boolean;
+                      }) => (
+                        <Group key={milestone.id} gap="xs">
+                          <Badge
+                            color={milestone.isCompleted ? 'green' : 'gray'}
+                            size="xs"
+                            variant={milestone.isCompleted ? 'filled' : 'outline'}
+                          >
+                            {milestone.isCompleted ? '✓' : '○'}
+                          </Badge>
+                          <Text fw={milestone.isCompleted ? 400 : 500} size="xs">
+                            {milestone.title}
                           </Text>
-                        )}
-                      </Group>
-                    ))}
+                          {milestone.completedDate && (
+                            <Text c="dimmed" size="xs">
+                              ({formatDate(milestone.completedDate)})
+                            </Text>
+                          )}
+                        </Group>
+                      ),
+                    )}
                   </Stack>
                 </Timeline.Item>
               ))}
@@ -546,7 +673,7 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
           </Group>
 
           <Stack>
-            {qualityChecks.map((check) => (
+            {qualityChecks.map((check: ProductQualityCheck) => (
               <Card key={check.id} withBorder>
                 <Group justify="space-between" mb="sm">
                   <div>
@@ -577,17 +704,27 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
 
                 {/* Criteria Results */}
                 <SimpleGrid cols={2} mb="md" spacing="md">
-                  {check.criteria.map((criterion, index) => (
-                    <Group key={index} justify="space-between">
-                      <Text size="sm">{criterion.name}</Text>
-                      <Group gap="xs">
-                        <Badge color={getStatusColor(criterion.status)} size="xs" variant="light">
-                          {criterion.status.toUpperCase()}
-                        </Badge>
-                        {criterion.value && <Text size="xs">{criterion.value}</Text>}
+                  {check.criteria.map(
+                    (
+                      criterion: {
+                        name: string;
+                        status: 'pass' | 'fail' | 'warning';
+                        value?: string;
+                        requirement?: string;
+                      },
+                      index: number,
+                    ) => (
+                      <Group key={index} justify="space-between">
+                        <Text size="sm">{criterion.name}</Text>
+                        <Group gap="xs">
+                          <Badge color={getStatusColor(criterion.status)} size="xs" variant="light">
+                            {criterion.status.toUpperCase()}
+                          </Badge>
+                          {criterion.value && <Text size="xs">{criterion.value}</Text>}
+                        </Group>
                       </Group>
-                    </Group>
-                  ))}
+                    ),
+                  )}
                 </SimpleGrid>
 
                 {check.notes && (
@@ -606,19 +743,29 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
                       Corrective Actions
                     </Text>
                     <Stack gap="xs">
-                      {check.correctiveActions.map((action, index) => (
-                        <Group key={index} justify="space-between">
-                          <div>
-                            <Text size="sm">{action.action}</Text>
-                            <Text c="dimmed" size="xs">
-                              Assigned to {action.assignedTo} - Due {formatDate(action.dueDate)}
-                            </Text>
-                          </div>
-                          <Badge color={getStatusColor(action.status)} size="xs" variant="light">
-                            {action.status.replace('_', ' ').toUpperCase()}
-                          </Badge>
-                        </Group>
-                      ))}
+                      {check.correctiveActions.map(
+                        (
+                          action: {
+                            action: string;
+                            assignedTo: string;
+                            dueDate: Date;
+                            status: 'open' | 'in_progress' | 'completed';
+                          },
+                          index: number,
+                        ) => (
+                          <Group key={index} justify="space-between">
+                            <div>
+                              <Text size="sm">{action.action}</Text>
+                              <Text c="dimmed" size="xs">
+                                Assigned to {action.assignedTo} - Due {formatDate(action.dueDate)}
+                              </Text>
+                            </div>
+                            <Badge color={getStatusColor(action.status)} size="xs" variant="light">
+                              {action.status.replace('_', ' ').toUpperCase()}
+                            </Badge>
+                          </Group>
+                        ),
+                      )}
                     </Stack>
                   </Card>
                 )}
@@ -641,7 +788,7 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
           </Group>
 
           <Stack>
-            {compliance.map((comp) => (
+            {compliance.map((comp: ProductCompliance) => (
               <Card key={comp.id} withBorder>
                 <Group justify="space-between" mb="sm">
                   <div>
@@ -722,21 +869,30 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
                     Requirements
                   </Text>
                   <Stack gap="xs">
-                    {comp.requirements.map((req, index) => (
-                      <Group key={index} justify="space-between">
-                        <div>
-                          <Text size="sm">{req.requirement}</Text>
-                          {req.evidence && (
-                            <Text c="dimmed" size="xs">
-                              Evidence: {req.evidence}
-                            </Text>
-                          )}
-                        </div>
-                        <Badge color={getStatusColor(req.status)} size="xs" variant="light">
-                          {req.status.replace('_', ' ').toUpperCase()}
-                        </Badge>
-                      </Group>
-                    ))}
+                    {comp.requirements.map(
+                      (
+                        req: {
+                          requirement: string;
+                          status: 'met' | 'not_met' | 'partial';
+                          evidence?: string;
+                        },
+                        index: number,
+                      ) => (
+                        <Group key={index} justify="space-between">
+                          <div>
+                            <Text size="sm">{req.requirement}</Text>
+                            {req.evidence && (
+                              <Text c="dimmed" size="xs">
+                                Evidence: {req.evidence}
+                              </Text>
+                            )}
+                          </div>
+                          <Badge color={getStatusColor(req.status)} size="xs" variant="light">
+                            {req.status.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        </Group>
+                      ),
+                    )}
                   </Stack>
                 </Card>
               </Card>
@@ -890,7 +1046,11 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
               Product Analytics & Insights
             </Text>
             <Select
-              onChange={(value) => form.setFieldValue('analytics.timeframe', value)}
+              onChange={(value) => {
+                if (value) {
+                  form.setValue('analytics.timeframe', value as ProductAnalytics['timeframe']);
+                }
+              }}
               data={[
                 { label: 'Daily', value: 'daily' },
                 { label: 'Weekly', value: 'weekly' },
@@ -1018,17 +1178,22 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
                   Seasonal Forecast
                 </Text>
                 <Stack gap="xs">
-                  {analytics.predictions.seasonalForecast.map((forecast, index) => (
-                    <Group key={index} justify="space-between">
-                      <Text size="sm">{forecast.month}</Text>
-                      <Group gap="xs">
-                        <Text size="sm">{forecast.predictedSales}</Text>
-                        <Text c="dimmed" size="xs">
-                          ({forecast.confidence}% confidence)
-                        </Text>
+                  {analytics.predictions.seasonalForecast.map(
+                    (
+                      forecast: { month: string; predictedSales: number; confidence: number },
+                      index: number,
+                    ) => (
+                      <Group key={index} justify="space-between">
+                        <Text size="sm">{forecast.month}</Text>
+                        <Group gap="xs">
+                          <Text size="sm">{forecast.predictedSales}</Text>
+                          <Text c="dimmed" size="xs">
+                            ({forecast.confidence}% confidence)
+                          </Text>
+                        </Group>
                       </Group>
-                    </Group>
-                  ))}
+                    ),
+                  )}
                 </Stack>
               </div>
               <div>
@@ -1036,7 +1201,7 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
                   Recommended Actions
                 </Text>
                 <Stack gap="xs">
-                  {analytics.predictions.recommendedActions.map((action, index) => (
+                  {analytics.predictions.recommendedActions.map((action: string, index: number) => (
                     <Text key={index} size="sm">
                       • {action}
                     </Text>
@@ -1044,12 +1209,6 @@ export function ProductLifecycle({ onUpdate, productId, productName }: ProductLi
                 </Stack>
               </div>
             </SimpleGrid>
-
-            <Group justify="center" mt="md">
-              <Badge color="blue" size="lg" variant="light">
-                Predicted Lifecycle Stage: {analytics.predictions.lifecycleStage.toUpperCase()}
-              </Badge>
-            </Group>
           </Card>
 
           {/* Customer Metrics */}

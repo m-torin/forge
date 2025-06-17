@@ -1,0 +1,17 @@
+{
+  "extends": ["@repo/config/knip/next.json"],
+  "entry": [
+    "app/**/*.{ts,tsx}",
+    "src/**/*.{ts,tsx}",
+    "middleware.ts",
+    "instrumentation.ts",
+    "env.ts",
+    "scripts/**/*.{ts,js}",
+    "e2e/**/*.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}"
+  ],
+  "ignoreDependencies": ["@hello-pangea/dnd"]
+}

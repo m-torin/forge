@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { createMetadata } from '@repo/seo/server/next';
 
 import { Divider, Heading, Prices } from '@/components/ui';
-import { getOrders } from '@/data/data-service';
+import { getOrders } from '@/actions/orders';
 
 export const metadata: Metadata = createMetadata({
   title: 'Order Successful',
@@ -21,13 +21,14 @@ export const metadata: Metadata = createMetadata({
 });
 
 export default async function Page() {
-  // for demo purposes, you need to use the getOrder(number) function to get the order by number, example: getOrder(123456789)
-  const order = (await getOrders())[0];
+  // for demo purposes, you need to use the getOrderByNumber(number) function to get the order by number
+  const { orders } = await getOrders();
+  const order = orders[0];
 
   if (!order) {
     return notFound();
   }
-  const products = order.products;
+  const items = order.items || [];
 
   return (
     <main className="container">
@@ -44,8 +45,8 @@ export default async function Page() {
           <dl className="mt-16 text-sm">
             <dt className="text-neutral-500">Tracking number</dt>
             <dd>
-              <Link href="/orders/123456789" className="mt-2 text-lg font-medium">
-                #{order.number}
+              <Link href={`/orders/${order.orderNumber}`} className="mt-2 text-lg font-medium">
+                #{order.orderNumber}
                 <span aria-hidden="true"> &rarr;</span>
               </Link>
             </dd>
@@ -55,42 +56,40 @@ export default async function Page() {
             role="list"
             className="mt-6 divide-y divide-neutral-200 border-t border-neutral-200 text-sm text-neutral-500 dark:divide-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
           >
-            {products?.map((product: any) => (
-              <li key={product.id} className="flex gap-x-2.5 py-6 sm:gap-x-6">
+            {items?.map((item: any) => (
+              <li key={item.id} className="flex gap-x-2.5 py-6 sm:gap-x-6">
                 <div className="aspect-3/4 relative w-24 flex-none">
-                  {product.featuredImage && (
+                  {item.product?.image && (
                     <Image
                       className="rounded-md bg-neutral-100 object-cover"
-                      alt={product.featuredImage.alt}
+                      alt={item.productName}
                       fill
                       sizes="200px"
-                      src={product.featuredImage}
+                      src={item.product.image}
                     />
                   )}
                 </div>
                 <div className="flex flex-auto flex-col gap-y-1.5">
                   <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                    <Link href={`/products/${product.handle}`}>{product.title}</Link>
+                    <Link href={`/products/${item.product?.slug || item.productId}`}>
+                      {item.productName}
+                    </Link>
                   </h3>
-                  <div className="flex items-center gap-x-2 text-neutral-500 dark:text-neutral-300">
-                    <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                      {product.color}
-                    </p>
-                    {product.size ? <p className="text-sm text-neutral-300">/</p> : null}
-                    {product.size ? (
+                  {item.variantId && (
+                    <div className="flex items-center gap-x-2 text-neutral-500 dark:text-neutral-300">
                       <p className="text-sm text-neutral-500 dark:text-neutral-300">
-                        {product.size}
+                        Variant ID: {item.variantId}
                       </p>
-                    ) : null}
-                  </div>
-                  <Prices className="flex justify-start sm:hidden" price={product.price} />
+                    </div>
+                  )}
+                  <Prices className="flex justify-start sm:hidden" price={item.price} />
 
                   <p className="mt-auto text-sm text-neutral-500 dark:text-neutral-300">
-                    Qty {product.quantity}
+                    Qty {item.quantity}
                   </p>
                 </div>
 
-                <Prices className="hidden sm:block" price={product.price} />
+                <Prices className="hidden sm:block" price={item.price} />
               </li>
             ))}
           </ul>
@@ -99,27 +98,27 @@ export default async function Page() {
             <div className="flex justify-between">
               <dt className="uppercase">Subtotal</dt>
               <dd className="text-neutral-900 dark:text-neutral-100">
-                ${order.cost?.subtotal?.toFixed(2) || '0.00'}
+                ${order.subtotal?.toFixed(2) || '0.00'}
               </dd>
             </div>
 
             <div className="flex justify-between">
               <dt className="uppercase">Shipping</dt>
               <dd className="text-neutral-900 dark:text-neutral-100">
-                ${order.cost?.shipping?.toFixed(2) || '0.00'}
+                ${order.shippingAmount?.toFixed(2) || '10.00'}
               </dd>
             </div>
 
             <div className="flex justify-between">
               <dt className="uppercase">Taxes</dt>
               <dd className="text-neutral-900 dark:text-neutral-100">
-                ${order.cost?.tax?.toFixed(2) || '0.00'}
+                ${order.taxAmount?.toFixed(2) || '0.00'}
               </dd>
             </div>
 
             <div className="flex items-center justify-between border-t border-neutral-200 pt-6 text-neutral-900 dark:border-neutral-700 dark:text-neutral-100">
               <dt className="text-base uppercase">Total</dt>
-              <dd className="text-base">${order.cost?.total?.toFixed(2) || '0.00'}</dd>
+              <dd className="text-base">${order.total?.toFixed(2) || '0.00'}</dd>
             </div>
           </dl>
 
@@ -128,9 +127,27 @@ export default async function Page() {
               <dt className="font-medium uppercase text-neutral-900">Shipping Address</dt>
               <dd className="mt-2">
                 <address className="uppercase not-italic">
-                  <span className="block">Kristin Watson</span>
-                  <span className="block">7363 Cynthia Pass</span>
-                  <span className="block">Toronto, ON N3Y 4H8</span>
+                  {order.shippingAddress ? (
+                    <>
+                      <span className="block">
+                        {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                      </span>
+                      <span className="block">{order.shippingAddress.street1}</span>
+                      {order.shippingAddress.street2 && (
+                        <span className="block">{order.shippingAddress.street2}</span>
+                      )}
+                      <span className="block">
+                        {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
+                        {order.shippingAddress.postalCode}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="block">Kristin Watson</span>
+                      <span className="block">7363 Cynthia Pass</span>
+                      <span className="block">Toronto, ON N3Y 4H8</span>
+                    </>
+                  )}
                 </address>
               </dd>
             </div>

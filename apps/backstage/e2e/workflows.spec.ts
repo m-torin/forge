@@ -5,14 +5,14 @@ import { createApiMocker } from './utils/api-mock';
 import { withPerformanceMonitoring } from './utils/performance-monitor';
 import { createVisualTester } from './utils/visual-testing';
 
-import type { AppTestConfig } from '@repo/testing/e2e';
+import { AppTestConfig } from '@repo/testing/e2e';
 
-test.describe('Backstage Workflows', () => {
+test.describe('Backstage Workflows', (_: any) => {
   let helpers: AppTestHelpers;
   let waitUtils: WaitUtils;
   let perfUtils: PerformanceUtils;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }: any) => {
     const config: AppTestConfig = {
       name: 'backstage',
       appDirectory: '/Users/torin/repos/new--/forge/apps/backstage',
@@ -24,7 +24,7 @@ test.describe('Backstage Workflows', () => {
     perfUtils = new PerformanceUtils(page);
   });
 
-  test('workflows page should load successfully', async ({ context, page }) => {
+  test('workflows page should load successfully', async ({ context, page }: any) => {
     const { report, result } = await withPerformanceMonitoring(
       page,
       context,
@@ -72,7 +72,7 @@ test.describe('Backstage Workflows', () => {
     });
   });
 
-  test('should display workflow management interface', async ({ page }) => {
+  test('should display workflow management interface', async ({ page }: any) => {
     await page.goto('/workflows');
     await waitUtils.forNavigation();
 
@@ -101,7 +101,7 @@ test.describe('Backstage Workflows', () => {
     expect(bodyText).toBeTruthy();
   });
 
-  test('should have good performance metrics', async ({ page }) => {
+  test('should have good performance metrics', async ({ page }: any) => {
     await page.goto('/workflows');
 
     // Measure page load performance
@@ -114,7 +114,7 @@ test.describe('Backstage Workflows', () => {
     }
   });
 
-  test('workflow creation flow', async ({ page }) => {
+  test('workflow creation flow', async ({ page }: any) => {
     const mocker = await createApiMocker(page);
 
     // Mock workflow creation API
@@ -172,7 +172,7 @@ test.describe('Backstage Workflows', () => {
     expect(pageContent).toBeTruthy();
   });
 
-  test('workflow execution with API mocking', async ({ page }) => {
+  test('workflow execution with API mocking', async ({ page }: any) => {
     const mocker = await createApiMocker(page);
 
     // Mock workflow execution
@@ -210,7 +210,7 @@ test.describe('Backstage Workflows', () => {
     expect(pageContent).toBeTruthy();
   });
 
-  test('visual regression testing', async ({ page }) => {
+  test('visual regression testing', async ({ page }: any) => {
     const visualTester = createVisualTester(page, 'workflows');
 
     await page.goto('/workflows');
@@ -223,7 +223,7 @@ test.describe('Backstage Workflows', () => {
     });
   });
 
-  test('responsive design', async ({ page }) => {
+  test('responsive design', async ({ page }: any) => {
     await page.goto('/workflows');
     await waitUtils.forNavigation();
 

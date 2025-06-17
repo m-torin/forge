@@ -1,4 +1,4 @@
-export * from './manager';
 export * from './config';
-export * from './validation';
+export * from './manager';
 export * from './response-normalizer';
+export * from './validation';

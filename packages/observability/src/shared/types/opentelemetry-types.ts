@@ -2,42 +2,68 @@
  * OpenTelemetry-specific types
  */
 
-export interface OpenTelemetryConfig {
+import { ObservabilityProviderConfig } from './types';
+
+export interface OpenTelemetryConfig extends ObservabilityProviderConfig {
   endpoint?: string;
   exportIntervalMillis?: number;
   exportTimeoutMillis?: number;
   headers?: Record<string, string>;
-  maxExportBatchSize?: number;
-  maxQueueSize?: number;
-  scheduledDelayMillis?: number;
-  serviceName: string;
-  serviceVersion?: string;
-
-  // Resource attributes
-  resourceAttributes?: Record<string, string | number | boolean>;
-
   // Instrumentation options
   instrumentations?: string[];
-
+  maxExportBatchSize?: number;
+  maxQueueSize?: number;
+  // Resource attributes
+  resourceAttributes?: Record<string, boolean | number | string>;
   // Sampling
   samplingRatio?: number;
-  samplingStrategy?: 'always_on' | 'always_off' | 'trace_id_ratio' | 'parent_based';
+
+  samplingStrategy?: 'always_off' | 'always_on' | 'parent_based' | 'trace_id_ratio';
+
+  scheduledDelayMillis?: number;
+
+  serviceName: string;
+  serviceVersion?: string;
 }
 
 export interface OpenTelemetryOptions {
   compression?: 'gzip' | 'none';
   // Exporter options
-  exporterType?: 'otlp' | 'jaeger' | 'zipkin' | 'console';
-  protocol?: 'grpc' | 'http/protobuf' | 'http/json';
+  exporterType?: 'console' | 'jaeger' | 'otlp' | 'zipkin';
+  logLevel?: 'debug' | 'error' | 'info' | 'verbose' | 'warn';
 
-  // Propagation
-  propagators?: ('tracecontext' | 'baggage' | 'b3' | 'jaeger' | 'xray' | 'ottrace')[];
+  // Logs
+  logsEnabled?: boolean;
 
   metricExportInterval?: number;
   // Metrics
   metricsEnabled?: boolean;
 
-  logLevel?: 'error' | 'warn' | 'info' | 'debug' | 'verbose';
-  // Logs
-  logsEnabled?: boolean;
+  // Propagation
+  propagators?: ('b3' | 'baggage' | 'jaeger' | 'ottrace' | 'tracecontext' | 'xray')[];
+  protocol?: 'grpc' | 'http/json' | 'http/protobuf';
+}
+
+export interface VercelOTelConfig extends ObservabilityProviderConfig {
+  endpoint?: string;
+  environment?: string;
+  headers?: Record<string, string>;
+  instrumentations?: string[];
+  propagateContextUrls?: (RegExp | string)[];
+  protocol?: 'grpc' | 'http/json' | 'http/protobuf';
+  resourceAttributes?: Record<string, boolean | number | string>;
+  samplingRatio?: number;
+  serviceName: string;
+  serviceVersion?: string;
+  // Vercel-specific options
+  traceExporter?:
+    | 'auto'
+    | 'console'
+    | 'otlp'
+    | {
+        headers?: Record<string, string>;
+        url: string;
+      };
+
+  useVercelOTel?: boolean; // Default true for better edge compatibility
 }

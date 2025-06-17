@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./metadata-enhanced": "./metadata-enhanced.ts",
-    "./structured-data": "./structured-data.tsx",
-    "./types": "./types.ts"
+    "./client": "./client.tsx",
+    "./server": "./server.ts",
+    "./client/next": "./client-next.tsx",
+    "./server/next": "./server-next.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",

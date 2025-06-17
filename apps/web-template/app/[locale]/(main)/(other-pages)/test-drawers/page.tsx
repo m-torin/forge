@@ -1,10 +1,10 @@
 'use client';
 
-import { getProductsAction } from '@/actions';
-import { type TProductItem } from '@/data/data-service';
+import { getProducts } from '@/actions';
+import { type TProductItem } from '@/types';
+import { transformDatabaseProductToTProductItem } from '@/types/database';
 import { Badge, Button, Card, Group, Stack, Text, Title } from '@mantine/core';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import { ProductCard } from '@/components/ui';
 
@@ -22,8 +22,12 @@ export default function TestDrawersPage() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const data = await getProductsAction();
-      setProducts(data.slice(0, 3)); // Get first 3 products for testing
+      const data = await getProducts({ limit: 3 });
+      // Transform database products to TProductItem format using the transformation function
+      const transformedProducts = data.data.map((product: any) =>
+        transformDatabaseProductToTProductItem(product),
+      );
+      setProducts(transformedProducts);
     };
     fetchProducts();
   }, []);

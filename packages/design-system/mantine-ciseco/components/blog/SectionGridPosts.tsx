@@ -13,17 +13,17 @@ import {
 import PostCard1 from './PostCard1';
 
 //
-export interface SectionLatestPostsProps {
+export interface SectionLatestPostsProps extends Record<string, any> {
   className?: string;
   posts: TBlogPost[];
 }
 
-const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }) => {
+const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }: any) => {
   return (
     <div className={`relative ${className}`}>
       <Heading>Latest Articles 🎈</Heading>
       <div className="grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 sm:gap-y-16 lg:grid-cols-3">
-        {posts?.map((post) => (
+        {posts.map((post: any) => (
           <PostCard1 key={post.id} post={post} size="sm" />
         ))}
       </div>
@@ -31,7 +31,7 @@ const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts }
         <Pagination className="mx-auto">
           <PaginationPrevious href="?page=1" />
           <PaginationList>
-            <PaginationPage href="?page=1" current>
+            <PaginationPage current href="?page=1">
               1
             </PaginationPage>
             <PaginationPage href="?page=2">2</PaginationPage>

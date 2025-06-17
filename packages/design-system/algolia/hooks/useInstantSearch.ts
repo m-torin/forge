@@ -3,7 +3,7 @@
 import { useInstantSearch as useInstantSearchCore } from 'react-instantsearch';
 
 interface ExtendedInstantSearchResult {
-  addMiddlewares: (...middlewares: any[]) => () => void;
+  addMiddlewares: (...middlewares: any[]) => void;
   error?: Error;
   hasResults: boolean;
   isSearchStalled: boolean;
@@ -21,10 +21,10 @@ export function useInstantSearch(): ExtendedInstantSearchResult {
 
   return {
     ...instantSearch,
-    hasResults: instantSearch.results && instantSearch.results.nbHits > 0,
+    hasResults: Boolean(instantSearch.results?.nbHits),
     isSearchStalled: instantSearch.status === 'stalled',
-    nbHits: instantSearch.results?.nbHits || 0,
-    processingTimeMS: instantSearch.results?.processingTimeMS || 0,
-    query: (instantSearch.uiState as any)?.query || '',
+    nbHits: instantSearch.results?.nbHits ?? 0,
+    processingTimeMS: instantSearch.results?.processingTimeMS ?? 0,
+    query: (instantSearch.uiState as any)?.query ?? '',
   };
 }

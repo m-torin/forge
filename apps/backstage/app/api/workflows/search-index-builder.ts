@@ -10,11 +10,11 @@ import {
   createStep,
   createStepWithValidation,
   createWorkflowStep,
-  withStepBulkhead,
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const SearchIndexBuilderInput = z.object({
@@ -262,12 +262,8 @@ export const fetchDataToIndexStep = compose(
     (input) => input.indices.length > 0,
     (output) => output.totalRecords > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['recordCount', 'indexTypes'],
-    }),
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock data fetching functions
@@ -428,10 +424,10 @@ export const processDocumentsStep = compose(
       processingComplete: true,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 10,
-      maxQueued: 50,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 
@@ -490,7 +486,7 @@ async function buildAutocompleteData(documents: any[]): Promise<any> {
 
   // Sort by frequency and return top suggestions
   const suggestions = Array.from(phrases.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 1000)
     .map(([phrase, count]) => ({ count, phrase, weight: Math.log(count + 1) }));
 
@@ -519,13 +515,13 @@ function buildPrefixTree(phrases: string[]): any {
 
 function buildFacets(documents: any[]): any {
   const facets = {
-    attributes: new Map(),
-    brand: new Map(),
-    category: new Map(),
+    attributes: new Map() as Map<string, Map<string, number>>,
+    brand: new Map() as Map<string, number>,
+    category: new Map() as Map<string, number>,
     price: {
       max: -Infinity,
       min: Infinity,
-      ranges: [],
+      ranges: [] as Array<{ label: string; max: number; min: number }>,
     },
   };
 
@@ -551,9 +547,10 @@ function buildFacets(documents: any[]): any {
       if (!facets.attributes.has(key)) {
         facets.attributes.set(key, new Map());
       }
-      facets.attributes
-        .get(key)
-        .set(value as string, (facets.attributes.get(key).get(value as string) || 0) + 1);
+      const attrMap = facets.attributes.get(key);
+      if (attrMap) {
+        attrMap.set(value as string, (attrMap.get(value as string) || 0) + 1);
+      }
     });
   });
 
@@ -570,7 +567,10 @@ function buildFacets(documents: any[]): any {
   return {
     attributes: Array.from(facets.attributes.entries()).map(([attr, values]) => ({
       attribute: attr,
-      values: Array.from(values.entries()).map(([value, count]) => ({ count, value })),
+      values: Array.from(values.entries()).map(([value, count]: [string, number]) => ({
+        count,
+        value,
+      })),
     })),
     brand: Array.from(facets.brand.entries()).map(([name, count]) => ({ name, count })),
     category: Array.from(facets.category.entries()).map(([name, count]) => ({ name, count })),
@@ -676,10 +676,10 @@ export const createOrUpdateIndicesStep = compose(
       indicesCreated: true,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -743,7 +743,7 @@ function generateMappings(indexType: string, config: any): any {
 
   // Add vector fields if semantic search is enabled
   if (config.features?.semanticSearch) {
-    baseMapping.properties.vectors = {
+    (baseMapping.properties as any).vectors = {
       properties: {
         combined: { type: 'dense_vector', dims: 384 },
         description: { type: 'dense_vector', dims: 384 },
@@ -776,21 +776,17 @@ export const bulkIndexDocumentsStep = compose(
       indexingResults,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 5,
-      maxQueued: 20,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['documentCount', 'indexingRate'],
-    }),
+  (step: any) => withStepMonitoring(step),
 );
 
 async function bulkIndexToSearchEngine(documents: any[], index: any, config: any): Promise<any> {
   const results = {
-    errors: [],
+    errors: [] as Array<{ batch: number; count: number; reason: string }>,
     failed: 0,
     indexed: 0,
     indexName: index.indexName,
@@ -886,8 +882,8 @@ async function validateIndex(indexResult: any, features: any): Promise<any> {
   };
 
   const allPassed = Object.values(tests)
-    .filter((t) => typeof t === 'object' && t.passed !== undefined)
-    .every((t) => t.passed);
+    .filter((t) => typeof t === 'object' && t !== null && 'passed' in t)
+    .every((t) => (t as any).passed);
 
   return {
     indexName: indexResult.indexName,
@@ -993,10 +989,10 @@ export const switchToNewIndexStep = compose(
       switchResults,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 

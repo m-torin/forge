@@ -4,8 +4,9 @@
  */
 
 import { Ratelimit } from '@upstash/ratelimit';
-import { redis, createUpstashRedisFromEnv } from '@repo/database/redis';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
+
+import { redis } from '@repo/database/redis';
 
 export interface RateLimitConfig {
   /** Maximum number of requests */
@@ -41,20 +42,20 @@ function getDefaultIdentifier(request: NextRequest): string {
   const forwardedFor = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
-  
+
   if (forwardedFor) {
     // x-forwarded-for can contain multiple IPs, take the first one
     return forwardedFor.split(',')[0].trim();
   }
-  
+
   if (realIp) {
     return realIp;
   }
-  
+
   if (cfConnectingIp) {
     return cfConnectingIp;
   }
-  
+
   // Fallback to a default identifier
   return 'anonymous';
 }
@@ -66,7 +67,7 @@ function isRedisAvailable(): boolean {
   try {
     // Try to access the shared Redis instance
     return !!redis;
-  } catch (error) {
+  } catch (error: any) {
     console.warn('[RateLimit] Redis instance not available:', error);
     return false;
   }
@@ -117,10 +118,10 @@ export function createRateLimiter(config: RateLimitConfig) {
      */
     async limit(request: NextRequest): Promise<RateLimitResult> {
       const identifier = getIdentifier(request);
-      
+
       try {
         const result = await ratelimit.limit(identifier);
-        
+
         return {
           success: result.success,
           remaining: result.remaining,
@@ -128,10 +129,10 @@ export function createRateLimiter(config: RateLimitConfig) {
           reset: result.reset,
           reason: result.success ? undefined : 'Rate limit exceeded',
         };
-      } catch (error) {
+      } catch (error: any) {
         // If rate limiting fails, allow the request but log the error
         console.error('[RateLimit] Error checking rate limit:', error);
-        
+
         return {
           success: true,
           remaining: maxRequests,

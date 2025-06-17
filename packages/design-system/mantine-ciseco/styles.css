@@ -263,23 +263,6 @@ root {
   overflow: initial;
 }
 
-/* embla carousel */
-@utility embla {
-  overflow: hidden;
-}
-@utility embla-overflow-unset {
-  overflow: unset;
-}
-@utility embla__container {
-  display: flex;
-  touch-action: pan-y pinch-zoom;
-}
-@utility embla__slide {
-  flex-shrink: 0;
-  flex-grow: 0;
-  transform: translate3d(0, 0, 0);
-}
-
 @utility nc-shadow-lg {
   @apply shadow-[2px_8px_40px_rgba(0,0,0,0.08)];
 }

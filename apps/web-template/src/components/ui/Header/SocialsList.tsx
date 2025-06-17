@@ -9,9 +9,10 @@ import clsx from 'clsx';
 
 interface SocialsListProps {
   itemClass?: string;
+  'data-testid'?: string;
 }
 
-const SocialsList = ({ itemClass }: SocialsListProps) => {
+const SocialsList = ({ itemClass, 'data-testid': testId = 'socials-list' }: SocialsListProps) => {
   const socials = [
     {
       name: 'Facebook',
@@ -36,7 +37,7 @@ const SocialsList = ({ itemClass }: SocialsListProps) => {
   ];
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-2" data-testid={testId}>
       {socials.map((social) => {
         const Icon = social.icon;
         return (

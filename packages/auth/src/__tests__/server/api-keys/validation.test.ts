@@ -67,11 +67,11 @@ describe('API Key Validation', () => {
     mockHeaders.mockImplementation(() => Promise.resolve(new Headers()));
 
     // Setup default permission conversion mock
-    mockPermissionsArrayToStructure.mockImplementation((permissions) => {
-      const actions = [];
-      const resources = [];
+    mockPermissionsArrayToStructure.mockImplementation((permissions: string[]) => {
+      const actions: string[] = [];
+      const resources: string[] = [];
 
-      permissions.forEach((p) => {
+      permissions.forEach((p: string) => {
         if (p && p.includes(':')) {
           const [resource, action] = p.split(':');
           if (!resources.includes(resource)) resources.push(resource);

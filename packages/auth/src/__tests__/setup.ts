@@ -161,7 +161,7 @@ vi.mock('@repo/email', () => ({
 }));
 
 // Set up environment variables for tests
-process.env.NODE_ENV = 'test';
+(process.env as any).NODE_ENV = 'test';
 process.env.BETTER_AUTH_SECRET = 'test-secret';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';

@@ -1,0 +1,845 @@
+---
+title: 'AI Package Overview'
+description:
+  'Comprehensive AI and machine learning integration with OpenAI, vector embeddings, and intelligent
+  automation'
+icon: 'brain'
+---
+
+# AI Package
+
+Comprehensive artificial intelligence and machine learning package providing OpenAI integration,
+vector embeddings, intelligent automation, and AI-powered features for the Forge platform.
+
+## Overview
+
+The AI package enables applications to leverage cutting-edge AI capabilities including large
+language models, computer vision, natural language processing, and intelligent automation workflows.
+
+<CardGroup cols={2}>
+  <Card title="OpenAI Integration" icon="openai" href="/packages/ai/product-classification">
+    GPT-4, GPT-4 Vision, and DALL-E integration for content generation
+  </Card>
+  <Card title="Vector Embeddings" icon="vector-square">
+    Text and image embeddings for similarity search and recommendations
+  </Card>
+  <Card title="Product Intelligence" icon="package" href="/packages/ai/product-classification">
+    Automated product classification, description generation, and optimization
+  </Card>
+  <Card title="Workflow Automation" icon="workflow">
+    AI-powered workflow automation and decision making
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **OpenAI Models**: GPT-4, GPT-4 Vision, GPT-4o, DALL-E 3, and text embedding models
+- **Vector Operations**: Text and image embeddings with similarity search capabilities
+- **Product Intelligence**: Automated classification, description generation, and SEO optimization
+- **Content Generation**: AI-powered content creation for products, marketing, and documentation
+- **Computer Vision**: Image analysis, OCR, and visual content understanding
+- **Natural Language Processing**: Text analysis, sentiment detection, and language understanding
+- **Workflow Integration**: AI decision points and automated content processing
+- **Performance Optimization**: Intelligent caching, batching, and cost optimization
+
+## Installation
+
+```bash
+pnpm add @repo/ai
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Configure Environment">
+    ```bash
+    # .env.local
+    OPENAI_API_KEY=sk-...
+    OPENAI_ORGANIZATION=org-...
+    ```
+  </Step>
+  
+  <Step title="Initialize AI Client">
+    ```typescript
+    // lib/ai.ts
+    import { createAIClient } from '@repo/ai';
+    
+    export const ai = createAIClient({
+      apiKey: process.env.OPENAI_API_KEY,
+      organization: process.env.OPENAI_ORGANIZATION,
+    });
+    ```
+  </Step>
+  
+  <Step title="Use AI Features">
+    ```typescript
+    import { ai } from '@/lib/ai';
+    
+    // Generate product description
+    const description = await ai.generateProductDescription({
+      title: 'iPhone 15 Pro',
+      features: ['A17 Pro chip', 'Titanium design', 'Advanced camera'],
+      category: 'Electronics',
+    });
+    
+    // Classify product
+    const classification = await ai.classifyProduct({
+      title: 'Professional Camera Lens',
+      description: 'High-quality telephoto lens for DSLRs',
+    });
+    ```
+  </Step>
+</Steps>
+
+## Core AI Services
+
+### Text Generation
+
+<Tabs>
+  <Tab title="Product Descriptions">
+    ```typescript
+    import { generateProductDescription } from '@repo/ai';
+    
+    export async function createProductDescription(product: Product) {
+      const description = await generateProductDescription({
+        title: product.title,
+        category: product.category,
+        features: product.features,
+        brand: product.brand,
+        specifications: product.specifications,
+        targetAudience: 'general consumers',
+        tone: 'professional and engaging',
+        length: 'medium', // short, medium, long
+      });
+      
+      return {
+        description: description.text,
+        seoKeywords: description.keywords,
+        highlights: description.highlights,
+        confidence: description.confidence,
+      };
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Content Generation">
+    ```typescript
+    import { generateContent } from '@repo/ai';
+    
+    export async function createMarketingContent(product: Product) {
+      const [
+        shortDescription,
+        longDescription,
+        bullets,
+        seoContent
+      ] = await Promise.all([
+        generateContent({
+          type: 'product-summary',
+          input: product,
+          parameters: { maxWords: 50 }
+        }),
+        generateContent({
+          type: 'product-description',
+          input: product,
+          parameters: { maxWords: 200, includeFeatures: true }
+        }),
+        generateContent({
+          type: 'feature-bullets',
+          input: product,
+          parameters: { count: 5, style: 'benefit-focused' }
+        }),
+        generateContent({
+          type: 'seo-content',
+          input: product,
+          parameters: { 
+            keywords: product.seoKeywords,
+            includeSchema: true 
+          }
+        }),
+      ]);
+      
+      return {
+        shortDescription,
+        longDescription,
+        bulletPoints: bullets,
+        seoOptimized: seoContent,
+      };
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Translation & Localization">
+    ```typescript
+    import { translateContent, localizeContent } from '@repo/ai';
+    
+    export async function localizeProduct(
+      product: Product, 
+      targetLocale: string
+    ) {
+      // Translate core content
+      const translated = await translateContent({
+        text: product.description,
+        from: 'en',
+        to: targetLocale,
+        context: 'product-description',
+        preserveFormatting: true,
+      });
+      
+      // Localize for market
+      const localized = await localizeContent({
+        content: translated.text,
+        locale: targetLocale,
+        adaptations: {
+          currency: true,
+          measurements: true,
+          culturalReferences: true,
+          regulations: true,
+        },
+      });
+      
+      return {
+        title: translated.title,
+        description: localized.text,
+        features: translated.features,
+        culturalNotes: localized.adaptations,
+        confidence: Math.min(translated.confidence, localized.confidence),
+      };
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Image Analysis and Generation
+
+<CodeGroup>
+```typescript Image Analysis
+import { analyzeImage, extractText } from '@repo/ai';
+
+export async function processProductImage(imageUrl: string) {
+  const analysis = await analyzeImage({
+    url: imageUrl,
+    features: [
+      'objects',
+      'colors',
+      'text',
+      'quality',
+      'composition'
+    ],
+  });
+  
+  return {
+    objects: analysis.objects.map(obj => ({
+      name: obj.name,
+      confidence: obj.confidence,
+      boundingBox: obj.box,
+    })),
+    dominantColors: analysis.colors,
+    extractedText: analysis.text,
+    qualityScore: analysis.quality.score,
+    suggestions: analysis.improvements,
+  };
+}
+
+// OCR for product labels and packaging export async function extractProductInfo(imageUrl: string) {
+const text = await extractText({ url: imageUrl, language: 'auto', structure: true, });
+
+return { rawText: text.raw, structuredData: text.structured, detectedLanguage: text.language,
+confidence: text.confidence, }; }
+
+````
+
+```typescript Image Generation
+import { generateImage, editImage } from '@repo/ai';
+
+export async function createProductImages(product: Product) {
+  // Generate hero image
+  const heroImage = await generateImage({
+    prompt: `Professional product photo of ${product.title}, ${product.description}, studio lighting, white background, high quality`,
+    size: '1024x1024',
+    style: 'photographic',
+    quality: 'hd',
+  });
+
+  // Generate lifestyle images
+  const lifestyleImages = await Promise.all([
+    generateImage({
+      prompt: `${product.title} being used in modern home setting, natural lighting, lifestyle photography`,
+      size: '1024x768',
+      style: 'natural',
+    }),
+    generateImage({
+      prompt: `Close-up detail shot of ${product.title} showing premium materials and craftsmanship`,
+      size: '768x1024',
+      style: 'photographic',
+    }),
+  ]);
+
+  return {
+    hero: heroImage,
+    lifestyle: lifestyleImages,
+    generationCost: heroImage.cost + lifestyleImages.reduce((sum, img) => sum + img.cost, 0),
+  };
+}
+
+// Background removal and editing
+export async function optimizeProductImage(imageUrl: string) {
+  const optimized = await editImage({
+    image: imageUrl,
+    operations: [
+      { type: 'remove-background' },
+      { type: 'enhance-quality' },
+      { type: 'adjust-lighting', strength: 0.2 },
+      { type: 'crop-to-product' },
+    ],
+  });
+
+  return optimized;
+}
+````
+
+</CodeGroup>
+
+### Vector Embeddings and Search
+
+<AccordionGroup>
+  <Accordion title="Text Embeddings" icon="text">
+    ```typescript
+    import { createEmbedding, findSimilar } from '@repo/ai';
+    
+    export async function embedProduct(product: Product) {
+      // Create comprehensive product embedding
+      const text = [
+        product.title,
+        product.description,
+        ...product.features,
+        product.category,
+        product.brand,
+      ].join(' ');
+      
+      const embedding = await createEmbedding({
+        text,
+        model: 'text-embedding-3-large',
+        dimensions: 1536,
+      });
+      
+      // Store in vector database
+      await vectorDB.upsert({
+        id: `product:${product.id}`,
+        vector: embedding.data,
+        metadata: {
+          title: product.title,
+          category: product.category,
+          price: product.price,
+          tags: product.tags,
+        },
+      });
+      
+      return embedding;
+    }
+    
+    export async function findSimilarProducts(
+      query: string, 
+      filters?: Record<string, any>
+    ) {
+      // Create query embedding
+      const queryEmbedding = await createEmbedding({
+        text: query,
+        model: 'text-embedding-3-large',
+      });
+      
+      // Search similar products
+      const results = await vectorDB.query({
+        vector: queryEmbedding.data,
+        topK: 20,
+        includeMetadata: true,
+        filter: filters,
+      });
+      
+      return results.matches.map(match => ({
+        productId: match.id.replace('product:', ''),
+        similarity: match.score,
+        metadata: match.metadata,
+      }));
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Image Embeddings" icon="image">
+    ```typescript
+    import { createImageEmbedding, findSimilarImages } from '@repo/ai';
+    
+    export async function embedProductImage(imageUrl: string, productId: string) {
+      const embedding = await createImageEmbedding({
+        url: imageUrl,
+        model: 'clip-vit-large-patch14',
+      });
+      
+      await vectorDB.upsert({
+        id: `image:${productId}`,
+        vector: embedding.data,
+        metadata: {
+          url: imageUrl,
+          productId,
+          type: 'product-image',
+        },
+      });
+      
+      return embedding;
+    }
+    
+    export async function findVisuallySimiler(imageUrl: string) {
+      const queryEmbedding = await createImageEmbedding({
+        url: imageUrl,
+        model: 'clip-vit-large-patch14',
+      });
+      
+      const results = await vectorDB.query({
+        vector: queryEmbedding.data,
+        topK: 10,
+        filter: { type: 'product-image' },
+      });
+      
+      return results.matches;
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Hybrid Search" icon="magnifying-glass">
+    ```typescript
+    import { hybridSearch } from '@repo/ai';
+    
+    export async function searchProducts({
+      query,
+      filters,
+      boosts,
+    }: {
+      query: string;
+      filters?: Record<string, any>;
+      boosts?: {
+        semantic?: number;
+        keyword?: number;
+        popularity?: number;
+      };
+    }) {
+      const results = await hybridSearch({
+        query,
+        indices: ['products'],
+        searchTypes: {
+          semantic: {
+            enabled: true,
+            weight: boosts?.semantic || 0.6,
+            model: 'text-embedding-3-large',
+          },
+          keyword: {
+            enabled: true,
+            weight: boosts?.keyword || 0.3,
+            fields: ['title', 'description', 'tags'],
+          },
+          popularity: {
+            enabled: true,
+            weight: boosts?.popularity || 0.1,
+            field: 'popularity_score',
+          },
+        },
+        filters,
+        limit: 50,
+      });
+      
+      return {
+        products: results.items,
+        facets: results.facets,
+        total: results.total,
+        explanation: results.debug?.explanation,
+      };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Intelligent Automation
+
+### Workflow Integration
+
+<Tabs>
+  <Tab title="AI Decision Points">
+    ```typescript
+    import { createAIDecisionPoint } from '@repo/ai';
+    
+    export const productApprovalWorkflow = {
+      steps: [
+        {
+          type: 'ai-analysis',
+          name: 'content-quality-check',
+          config: {
+            model: 'gpt-4',
+            prompt: `
+              Analyze this product listing for quality and completeness:
+              
+              Title: {{product.title}}
+              Description: {{product.description}}
+              Category: {{product.category}}
+              Price: {{product.price}}
+              
+              Check for:
+              1. Title clarity and SEO optimization
+              2. Description quality and completeness
+              3. Appropriate categorization
+              4. Competitive pricing
+              5. Missing information
+              
+              Return a score from 1-100 and specific recommendations.
+            `,
+            outputSchema: {
+              score: 'number',
+              recommendations: 'array',
+              approved: 'boolean',
+              issues: 'array',
+            },
+          },
+        },
+        {
+          type: 'conditional',
+          condition: '{{steps.content-quality-check.output.score >= 80}}',
+          onTrue: { action: 'approve' },
+          onFalse: { action: 'request-improvements' },
+        },
+      ],
+    };
+    
+    export async function runProductApproval(product: Product) {
+      const result = await executeWorkflow({
+        workflow: productApprovalWorkflow,
+        context: { product },
+      });
+      
+      return result;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Content Enhancement">
+    ```typescript
+    import { enhanceContent } from '@repo/ai';
+    
+    export async function enhanceProduct(product: Product) {
+      const enhancements = await Promise.all([
+        // Improve title for SEO
+        enhanceContent({
+          type: 'seo-title',
+          input: product.title,
+          context: {
+            category: product.category,
+            keywords: product.seoKeywords,
+          },
+        }),
+        
+        // Enhance description
+        enhanceContent({
+          type: 'product-description',
+          input: product.description,
+          context: {
+            features: product.features,
+            benefits: product.benefits,
+            targetAudience: product.targetAudience,
+          },
+        }),
+        
+        // Generate missing features
+        enhanceContent({
+          type: 'feature-extraction',
+          input: product.description,
+          context: {
+            category: product.category,
+          },
+        }),
+        
+        // SEO optimization
+        enhanceContent({
+          type: 'seo-optimization',
+          input: {
+            title: product.title,
+            description: product.description,
+          },
+          context: {
+            targetKeywords: product.seoKeywords,
+            competitors: product.competitors,
+          },
+        }),
+      ]);
+      
+      return {
+        enhancedTitle: enhancements[0].text,
+        enhancedDescription: enhancements[1].text,
+        extractedFeatures: enhancements[2].features,
+        seoOptimizations: enhancements[3].optimizations,
+        confidenceScores: enhancements.map(e => e.confidence),
+      };
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Batch Processing
+
+<CodeGroup>
+```typescript Bulk Operations
+import { processBatch } from '@repo/ai';
+
+export async function enhanceProductCatalog(products: Product[]) {
+  const results = await processBatch({
+    items: products,
+    operation: 'enhance-product',
+    batchSize: 10,
+    concurrency: 3,
+    retries: 2,
+    onProgress: (completed, total) => {
+      console.log(`Processing: ${completed}/${total}`);
+    },
+  });
+  
+  return {
+    enhanced: results.successful,
+    failed: results.failed,
+    costs: results.totalCost,
+    duration: results.processingTime,
+  };
+}
+
+export async function generateMissingDescriptions() {
+  const productsWithoutDescriptions = await prisma.product.findMany({
+    where: {
+      OR: [
+        { description: null },
+        { description: '' },
+        { description: { contains: 'TODO' } },
+      ],
+    },
+  });
+  
+  const results = await processBatch({
+    items: productsWithoutDescriptions,
+    operation: async (product) => {
+      const description = await generateProductDescription({
+        title: product.title,
+        category: product.category,
+        features: product.features || [],
+        specifications: product.specifications,
+      });
+      
+      await prisma.product.update({
+        where: { id: product.id },
+        data: { description: description.text },
+      });
+      
+      return { productId: product.id, description: description.text };
+    },
+    batchSize: 5,
+    concurrency: 2,
+  });
+  
+  return results;
+}
+```
+
+```typescript Cost Optimization
+import { optimizeAICosts } from '@repo/ai';
+
+export class AIOptimizer {
+  private cache = new Map();
+  private batchQueue: Array<{ request: any; resolve: Function; reject: Function }> = [];
+
+  async optimizedRequest(request: AIRequest) {
+    // Check cache first
+    const cacheKey = this.getCacheKey(request);
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    // Use appropriate model based on complexity
+    const optimizedRequest = this.selectOptimalModel(request);
+
+    // Batch similar requests
+    if (this.shouldBatch(request)) {
+      return this.addToBatch(request);
+    }
+
+    // Execute request
+    const result = await this.executeRequest(optimizedRequest);
+
+    // Cache result
+    this.cache.set(cacheKey, result);
+
+    return result;
+  }
+
+  private selectOptimalModel(request: AIRequest) {
+    // Use GPT-3.5 for simple tasks
+    if (this.isSimpleTask(request)) {
+      return { ...request, model: 'gpt-3.5-turbo' };
+    }
+
+    // Use GPT-4 for complex reasoning
+    if (this.requiresReasoning(request)) {
+      return { ...request, model: 'gpt-4' };
+    }
+
+    // Use GPT-4o for speed-critical tasks
+    if (this.isSpeedCritical(request)) {
+      return { ...request, model: 'gpt-4o' };
+    }
+
+    return request;
+  }
+
+  private async processBatch() {
+    if (this.batchQueue.length === 0) return;
+
+    const batch = this.batchQueue.splice(0, 20); // Max batch size
+
+    try {
+      const results = await this.executeBatchRequest(batch.map((item) => item.request));
+
+      batch.forEach((item, index) => {
+        item.resolve(results[index]);
+      });
+    } catch (error) {
+      batch.forEach((item) => item.reject(error));
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+## Performance and Monitoring
+
+### Usage Analytics
+
+<AccordionGroup>
+  <Accordion title="Cost Tracking" icon="dollar-sign">
+    ```typescript
+    import { trackAIUsage } from '@repo/ai';
+    
+    export class AIUsageTracker {
+      async trackRequest(request: AIRequest, response: AIResponse) {
+        await trackAIUsage({
+          model: request.model,
+          operation: request.operation,
+          inputTokens: response.usage.prompt_tokens,
+          outputTokens: response.usage.completion_tokens,
+          cost: this.calculateCost(request.model, response.usage),
+          duration: response.duration,
+          userId: request.userId,
+          organizationId: request.organizationId,
+          metadata: {
+            endpoint: request.endpoint,
+            success: response.success,
+            cached: response.fromCache,
+          },
+        });
+      }
+      
+      async getUsageReport(organizationId: string, period: string) {
+        return await prisma.aiUsage.aggregate({
+          where: {
+            organizationId,
+            createdAt: {
+              gte: this.getPeriodStart(period),
+            },
+          },
+          _sum: {
+            cost: true,
+            inputTokens: true,
+            outputTokens: true,
+          },
+          _count: {
+            id: true,
+          },
+        });
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Performance Monitoring" icon="chart-line">
+    ```typescript
+    import { monitorAIPerformance } from '@repo/ai';
+    
+    export function setupAIMonitoring() {
+      return monitorAIPerformance({
+        metrics: [
+          'response_time',
+          'token_usage',
+          'cost_per_request',
+          'cache_hit_rate',
+          'error_rate',
+          'quality_score',
+        ],
+        alerts: [
+          {
+            metric: 'response_time',
+            threshold: 10000, // 10 seconds
+            action: 'slack_notification',
+          },
+          {
+            metric: 'cost_per_request',
+            threshold: 0.50, // $0.50
+            action: 'email_notification',
+          },
+          {
+            metric: 'error_rate',
+            threshold: 0.05, // 5%
+            action: 'page_admin',
+          },
+        ],
+        dashboard: {
+          refresh: 30000, // 30 seconds
+          retention: '30d',
+        },
+      });
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Warning>
+  **AI Integration Guidelines:** - Always implement proper error handling and fallbacks - Monitor
+  costs and usage patterns closely - Cache AI responses when appropriate to reduce costs - Use the
+  most cost-effective model for each task - Implement rate limiting to prevent API quota exhaustion
+  - Validate AI outputs before using in production
+</Warning>
+
+### Recommended Patterns
+
+1. **Cost Optimization**
+
+   - Cache frequently requested content
+   - Use batch processing for multiple items
+   - Select appropriate models based on task complexity
+   - Implement intelligent retry logic
+
+2. **Quality Assurance**
+
+   - Validate AI outputs with confidence scores
+   - Implement human review workflows for critical content
+   - Use structured outputs with schema validation
+   - Monitor and improve prompt effectiveness
+
+3. **Performance Optimization**
+
+   - Use asynchronous processing for non-critical tasks
+   - Implement proper timeout handling
+   - Cache embeddings and reuse when possible
+   - Monitor response times and optimize bottlenecks
+
+4. **Security and Privacy**
+   - Never send sensitive user data to AI models
+   - Implement proper access controls for AI features
+   - Log and audit AI usage for compliance
+   - Use data anonymization when required
+
+The AI package provides powerful artificial intelligence capabilities that enhance the Forge
+platform with intelligent automation, content generation, and advanced analytics while maintaining
+cost efficiency and performance optimization.

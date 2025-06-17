@@ -5,12 +5,12 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     '../../../packages/design-system/ciseco/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  theme: {
-    extend: {},
+  corePlugins: {
+    preflight: false,
   },
   plugins: [],
   presets: [require('tailwind-preset-mantine')],
-  corePlugins: {
-    preflight: false,
+  theme: {
+    extend: {},
   },
 };

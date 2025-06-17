@@ -1,0 +1,14 @@
+{
+  "extends": ["@repo/config/knip/base.json"],
+  "entry": [
+    "metadata.ts",
+    "metadata-enhanced.ts",
+    "i18n-enhanced.ts",
+    "json-ld.tsx",
+    "structured-data.tsx",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}"
+  ]
+}

@@ -5,10 +5,27 @@
 import type { ApiKeyValidationResult } from './api-keys/types';
 // Import types needed internally
 import type { ApiKey, Organization, Team } from '@repo/database/prisma';
-import type { Session, User } from 'better-auth';
+import type { User } from 'better-auth';
+
+// Import type extensions
+import './better-auth-types';
 
 // Re-export Better Auth types
-export type { Session, User } from 'better-auth';
+export type { User } from 'better-auth';
+
+// Define our own Session type that matches the database schema
+export interface Session {
+  id: string;
+  token: string;
+  userId: string;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  activeOrganizationId?: string | null;
+  impersonatedBy?: string | null;
+}
 
 // Re-export database types
 export type {
@@ -101,6 +118,12 @@ export interface AuthContextType {
 export interface AuthClientMethods {
   forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (token: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  changePassword: (data: {
+    currentPassword: string;
+    newPassword: string;
+    revokeOtherSessions?: boolean;
+  }) => Promise<{ success: boolean; error?: string }>;
+  setPassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
   signIn: (credentials: {
     email: string;
     password: string;

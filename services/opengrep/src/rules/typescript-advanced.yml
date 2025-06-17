@@ -1,0 +1,85 @@
+rules:
+  - id: typescript-any-usage
+    message: Avoid using 'any' type - use specific types instead
+    languages: [typescript]
+    severity: WARNING
+    pattern-either:
+      - pattern: ": any"
+      - pattern: "as any"
+      - pattern: "any[]"
+      - pattern: "Array<any>"
+      - pattern: "Promise<any>"
+
+  - id: typescript-non-null-assertion
+    message: Non-null assertion operator (!) should be used carefully
+    languages: [typescript]
+    severity: INFO
+    pattern: "$VAR!"
+
+  - id: typescript-console-log
+    message: Console.log statement found in TypeScript code
+    languages: [typescript]
+    severity: WARNING
+    pattern: "console.log(...)"
+
+  - id: typescript-unused-vars
+    message: Potentially unused variable (starts with underscore)
+    languages: [typescript]
+    severity: INFO
+    pattern: |
+      const $_VAR = ...
+
+  - id: typescript-eval-usage
+    message: Dangerous eval() usage in TypeScript
+    languages: [typescript]
+    severity: ERROR
+    pattern: "eval(...)"
+
+  - id: typescript-function-any-param
+    message: Function parameter with 'any' type
+    languages: [typescript]
+    severity: WARNING
+    pattern: |
+      function $FUNC(..., $PARAM: any, ...) {
+        ...
+      }
+
+  - id: typescript-untyped-function
+    message: Function missing return type annotation
+    languages: [typescript]
+    severity: INFO
+    pattern: |
+      function $FUNC($...PARAMS) {
+        ...
+      }
+
+  - id: typescript-implicit-any-return
+    message: Function returns 'any' implicitly
+    languages: [typescript]
+    severity: WARNING
+    pattern: |
+      function $FUNC($...PARAMS): any {
+        ...
+      }
+
+  - id: typescript-class-any-property
+    message: Class property with 'any' type
+    languages: [typescript]
+    severity: WARNING
+    pattern: |
+      class $CLASS {
+        ...
+        $PROP: any;
+        ...
+      }
+
+  - id: typescript-interface-any-property
+    message: Interface property with 'any' type
+    languages: [typescript]
+    severity: WARNING
+    pattern: |
+      interface $INTERFACE {
+        ...
+        $PROP: any;
+        ...
+      }

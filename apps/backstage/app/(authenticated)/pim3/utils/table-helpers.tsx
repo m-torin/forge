@@ -47,31 +47,32 @@ export function useTableForm<T extends Record<string, any>>(additionalValues: Pa
     initialValues: {
       ...defaultTableValues,
       ...additionalValues,
-    } as T,
+    } as unknown as T,
   });
 
   const setSorting = (field: string) => {
-    const reversed = field === form.values.sortBy ? !form.values.reverseSortDirection : false;
-    form.setFieldValue('reverseSortDirection' as any, reversed);
-    form.setFieldValue('sortBy' as any, field);
+    const reversed =
+      field === (form.values as any).sortBy ? !(form.values as any).reverseSortDirection : false;
+    form.setFieldValue('reverseSortDirection' as any, reversed as any);
+    form.setFieldValue('sortBy' as any, field as any);
   };
 
   const toggleAllRows = (ids: string[], checked: boolean) => {
     if (checked) {
-      form.setFieldValue('selectedRows' as any, ids);
+      form.setFieldValue('selectedRows' as any, ids as any);
     } else {
-      form.setFieldValue('selectedRows' as any, []);
+      form.setFieldValue('selectedRows' as any, [] as any);
     }
   };
 
   const toggleRow = (id: string, checked: boolean) => {
-    const selectedRows = form.values.selectedRows as string[];
+    const selectedRows = ((form.values as any).selectedRows as string[]) || [];
     if (checked) {
-      form.setFieldValue('selectedRows' as any, [...selectedRows, id]);
+      form.setFieldValue('selectedRows' as any, [...selectedRows, id] as any);
     } else {
       form.setFieldValue(
         'selectedRows' as any,
-        selectedRows.filter((rowId) => rowId !== id),
+        selectedRows.filter((rowId) => rowId !== id) as any,
       );
     }
   };
@@ -106,8 +107,17 @@ export function sortTableData<T extends Record<string, any>>(
       return reverse ? bValue - aValue : aValue - bValue;
     }
 
-    if (aValue instanceof Date && bValue instanceof Date) {
-      return reverse ? bValue.getTime() - aValue.getTime() : aValue.getTime() - bValue.getTime();
+    if (
+      aValue &&
+      typeof aValue === 'object' &&
+      'getTime' in aValue &&
+      bValue &&
+      typeof bValue === 'object' &&
+      'getTime' in bValue
+    ) {
+      return reverse
+        ? (bValue as Date).getTime() - (aValue as Date).getTime()
+        : (aValue as Date).getTime() - (bValue as Date).getTime();
     }
 
     return 0;

@@ -9,8 +9,8 @@ import {
 
 const authHelpers = createAuthHelpers('http://localhost:3300');
 
-test.describe('Backstage PIM - Product Information Management Testing', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('Backstage PIM - Product Information Management Testing', (_: any) => {
+  test.beforeEach(async ({ page }: any) => {
     // Sign in as admin user for all PIM tests
     const testUser = authHelpers.createTestUser({
       name: 'PIM Admin',
@@ -24,7 +24,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     }
   });
 
-  test('PIM main page loads with product management interface', async ({ context, page }) => {
+  test('PIM main page loads with product management interface', async ({ context, page }: any) => {
     const { report, result } = await withPerformanceMonitoring(page, context, '/pim', async () => {
       // Verify page loads successfully
       await expect(page).toHaveTitle(/PIM|Product|Backstage/i);
@@ -84,7 +84,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     expect(result.report.metrics.lcp).toBeLessThan(3000);
   });
 
-  test('product catalog browsing and filtering', async ({ context, page }) => {
+  test('product catalog browsing and filtering', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
 
     await page.goto('/pim');
@@ -131,7 +131,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
       if ((await filterElement.count()) > 0 && (await filterElement.isVisible())) {
         if (filterElement.getByRole) {
           // Handle select dropdowns
-          if (await filterElement.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await filterElement.evaluate((el: any) => el.tagName === 'SELECT')) {
             await filterElement.selectOption({ index: 1 });
           } else {
             await filterElement.click();
@@ -164,7 +164,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     }
   });
 
-  test('product creation and editing workflow', async ({ context, page }) => {
+  test('product creation and editing workflow', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock product creation API
@@ -309,7 +309,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     }
   });
 
-  test('product taxonomy and categorization', async ({ context, page }) => {
+  test('product taxonomy and categorization', async ({ context, page }: any) => {
     await page.goto('/pim/taxonomy');
     await page.waitForLoadState('networkidle');
 
@@ -391,7 +391,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     }
   });
 
-  test('product media and asset management', async ({ context, page }) => {
+  test('product media and asset management', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
 
     await page.goto('/pim');
@@ -469,7 +469,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     }
   });
 
-  test('product import and export functionality', async ({ context, page }) => {
+  test('product import and export functionality', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock import/export APIs
@@ -570,7 +570,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     }
   });
 
-  test('product inventory and stock management', async ({ context, page }) => {
+  test('product inventory and stock management', async ({ context, page }: any) => {
     await page.goto('/pim');
     await page.waitForLoadState('networkidle');
 
@@ -626,7 +626,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
       for (const selector of statusFilters) {
         const filter = page.locator(selector).first();
         if ((await filter.count()) > 0 && (await filter.isVisible())) {
-          if (await filter.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await filter.evaluate((el: any) => el.tagName === 'SELECT')) {
             await filter.selectOption({ index: 1 });
           } else {
             await filter.click();
@@ -654,7 +654,7 @@ test.describe('Backstage PIM - Product Information Management Testing', () => {
     }
   });
 
-  test('PIM performance with large product catalogs', async ({ context, page }) => {
+  test('PIM performance with large product catalogs', async ({ context, page }: any) => {
     const { result } = await withPerformanceMonitoring(page, context, '/pim', async () => {
       // Test pagination if available
       const paginationElements = [

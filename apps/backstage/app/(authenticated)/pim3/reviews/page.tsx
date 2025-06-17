@@ -232,7 +232,7 @@ export default function ReviewsPage() {
   const loadSuspiciousReviews = async () => {
     try {
       const suspicious = await detectSuspiciousReviews();
-      setSuspiciousReviews(suspicious);
+      setSuspiciousReviews(suspicious as any);
     } catch (err) {
       notifications.show({ color: 'red', message: 'Failed to load suspicious reviews' });
     }
@@ -635,7 +635,7 @@ export default function ReviewsPage() {
           </Group>
         </Group>
 
-        <Tabs onChange={setActiveTab} value={activeTab}>
+        <Tabs onChange={(value) => setActiveTab(value || 'reviews')} value={activeTab}>
           <Tabs.List>
             <Tabs.Tab leftSection={<IconMessages size={16} />} value="reviews">
               Reviews ({pagination.total})

@@ -1,0 +1,18 @@
+{
+  "extends": ["@repo/config/knip/next.json"],
+  "entry": [
+    "stories/**/*.{ts,tsx}",
+    "**/*.stories.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}"
+  ],
+  "project": [
+    "stories/**/*.{ts,tsx}",
+    "**/*.stories.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}"
+  ],
+  "ignoreDependencies": ["@storybook/*", "chromatic", "serve"]
+}

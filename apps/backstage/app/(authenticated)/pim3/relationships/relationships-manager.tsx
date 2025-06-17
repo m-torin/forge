@@ -183,28 +183,28 @@ export function RelationshipsManager() {
         </Tabs.List>
 
         <Tabs.Panel pt="xl" value="pdp">
-          <PdpRelationships filterType={filterType} searchQuery={searchQuery} />
+          <PdpRelationships />
         </Tabs.Panel>
 
         <Tabs.Panel pt="xl" value="favorites">
-          <FavoriteRelationships filterType={filterType} searchQuery={searchQuery} />
+          <FavoriteRelationships />
         </Tabs.Panel>
 
         <Tabs.Panel pt="xl" value="reviews">
-          <ReviewVoteRelationships filterType={filterType} searchQuery={searchQuery} />
+          <ReviewVoteRelationships />
         </Tabs.Panel>
 
         <Tabs.Panel pt="xl" value="registry-users">
-          <RegistryRelationships filterType={filterType} searchQuery={searchQuery} />
+          <RegistryRelationships />
         </Tabs.Panel>
 
         <Tabs.Panel pt="xl" value="purchases">
-          <PurchaseRelationships filterType={filterType} searchQuery={searchQuery} />
+          <PurchaseRelationships />
         </Tabs.Panel>
       </Tabs>
 
       {/* Analytics Modal */}
-      <RelationshipAnalytics onClose={closeAnalytics} opened={analyticsModalOpened} />
+      <RelationshipAnalytics />
     </Stack>
   );
 }

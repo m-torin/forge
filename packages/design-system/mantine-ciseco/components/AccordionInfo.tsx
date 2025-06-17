@@ -6,12 +6,11 @@ import React, { type FC } from 'react';
 
 const DEMO_DATA = [
   {
-    name: 'Description',
     content:
       'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
+    name: 'Description',
   },
   {
-    name: 'Fabric + Care',
     content: `<ul class="list-disc list-inside leading-7">
     <li>Made from a sheer Belgian power micromesh.</li>
     <li>
@@ -24,15 +23,15 @@ const DEMO_DATA = [
     Hand wash in cold water, dry flat
     </li>
   </ul>`,
+    name: 'Fabric + Care',
   },
 
   {
-    name: 'How it Fits',
     content:
       "Use this as a guide. Preference is a huge factor — if you're near the top of a size range and/or prefer more coverage, you may want to size up.",
+    name: 'How it Fits',
   },
   {
-    name: 'FAQ',
     content: `
     <ul class="list-disc list-inside leading-7">
     <li>All full-priced, unworn items, with tags attached and in their original packaging are eligible for return or exchange within 30 days of placing your order.</li>
@@ -47,10 +46,11 @@ const DEMO_DATA = [
     </li>
   </ul>
     `,
+    name: 'FAQ',
   },
 ];
 
-interface Props {
+interface Props extends Record<string, any> {
   data?: typeof DEMO_DATA;
   panelClassName?: string;
 }
@@ -59,7 +59,7 @@ const AccordionInfo: FC<Props> = ({
   data = DEMO_DATA,
   panelClassName = 'p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6',
 }) => {
-  const defaultValue = data.slice(0, 2).map((_, index) => String(index));
+  const defaultValue = data.slice(0, 2).map((_, index: any) => String(index));
 
   return (
     <Accordion
@@ -76,7 +76,7 @@ const AccordionInfo: FC<Props> = ({
       multiple
     >
       {data.map((item, index) => (
-        <Accordion.Item key={`${item.name}-${index}`} value={String(index)}>
+        <Accordion.Item key={item.name} value={String(index)}>
           <Accordion.Control>{item.name}</Accordion.Control>
           <Accordion.Panel>
             <div dangerouslySetInnerHTML={{ __html: item.content }} />

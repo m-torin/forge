@@ -8,23 +8,28 @@ import {
   NavLink,
   ScrollArea,
   Text,
+  Center,
+  Stack,
+  Alert,
+  Skeleton,
 } from '@mantine/core';
+import { IconAlertTriangle } from '@tabler/icons-react';
 // useResizeObserver removed - using fixed responsive heights
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type ReactNode, useMemo, useEffect, useState } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { CartContent } from '@/components/CartContent';
-import { SidebarNavigationWrapper } from '@/components/SidebarNavigationWrapper';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Header } from '@/components/layout';
-import { getNavigationAction } from '@/actions';
-
-import classes from './AppLayout.module.css';
+import { SidebarNavigationWrapper } from '@/components/SidebarNavigationWrapper';
+import { Logo } from '@/components/ui';
 import { AppLayoutProvider, useAppLayout } from '@/react/AppLayoutContext';
 
-import { Footer, Logo } from '@/components/ui';
+import classes from './AppLayout.module.css';
+// Removed direct action import - data should come from props
 
-import { TCollection, TNavigationItem } from '@/types';
+import type { TCollection, TNavigationItem } from '@/types';
 
 interface AppLayoutProps
   extends Omit<AppShellProps, 'aside' | 'children' | 'footer' | 'header' | 'navbar'> {
@@ -33,6 +38,74 @@ interface AppLayoutProps
   featuredCollection?: TCollection;
   locale?: string;
   navigationMenu?: TNavigationItem[];
+  cartData?: any; // Cart data passed from server component
+  loading?: boolean;
+  error?: string;
+}
+
+// Loading skeleton for AppLayout
+function AppLayoutSkeleton() {
+  return (
+    <div style={{ height: '100vh' }}>
+      {/* Header skeleton */}
+      <div
+        style={{
+          height: 60,
+          borderBottom: '1px solid var(--mantine-color-gray-2)',
+          padding: '0 1rem',
+        }}
+      >
+        <Group h={60} justify="space-between">
+          <Skeleton height={32} width={120} />
+          <Group gap="lg" visibleFrom="md">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} height={16} width={60 + Math.random() * 40} />
+            ))}
+          </Group>
+          <Group gap="sm">
+            <Skeleton height={36} width={200} />
+            <Skeleton height={32} width={32} radius="xl" />
+            <Skeleton height={32} width={32} radius="xl" />
+          </Group>
+        </Group>
+      </div>
+
+      {/* Content skeleton */}
+      <div style={{ padding: '2rem' }}>
+        <Stack gap="lg">
+          <Skeleton height={40} width="60%" />
+          <Skeleton height={200} />
+          <Group>
+            <Skeleton height={120} style={{ flex: 1 }} />
+            <Skeleton height={120} style={{ flex: 1 }} />
+            <Skeleton height={120} style={{ flex: 1 }} />
+          </Group>
+        </Stack>
+      </div>
+    </div>
+  );
+}
+
+// Error state for AppLayout
+function AppLayoutError({ error, onRetry }: { error: string; onRetry?: () => void }) {
+  return (
+    <Center style={{ height: '100vh' }}>
+      <Alert
+        icon={<IconAlertTriangle size={20} />}
+        title="Layout Error"
+        color="red"
+        variant="light"
+        maw={400}
+      >
+        <Text size="sm">{error}</Text>
+        {onRetry && (
+          <button onClick={onRetry} style={{ marginTop: '1rem' }}>
+            Try Again
+          </button>
+        )}
+      </Alert>
+    </Center>
+  );
 }
 
 function AppLayoutInner({
@@ -43,6 +116,9 @@ function AppLayoutInner({
   layout = 'default',
   locale,
   navigationMenu,
+  cartData,
+  loading = false,
+  error,
   offsetScrollbars,
   padding = 'md', // Changed default to "md" for proper content spacing
   transitionDuration = 200,
@@ -52,21 +128,11 @@ function AppLayoutInner({
   ...otherProps
 }: AppLayoutProps) {
   const pathname = usePathname();
-  const { cartOpened, closeCart, closeNav, navOpened } = useAppLayout();
-  const [navigationData, setNavigationData] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchNavigation = async () => {
-      try {
-        const data = await getNavigationAction();
-        setNavigationData(data);
-      } catch (error) {
-        console.error('Failed to fetch navigation: ', error);
-      }
-    };
-    fetchNavigation();
-  }, []);
   const {
+    cartOpened,
+    closeCart,
+    closeNav,
+    navOpened,
     asideEnabled,
     asideOpened,
     asideWidth,
@@ -82,6 +148,19 @@ function AppLayoutInner({
     toggleMobileNavbar,
     toggleNavbar,
   } = useAppLayout();
+
+  // Show loading state
+  if (loading) {
+    return <AppLayoutSkeleton />;
+  }
+
+  // Show error state
+  if (error) {
+    return <AppLayoutError error={error} />;
+  }
+
+  // Use navigationMenu prop directly instead of client-side fetching
+  const navigationData = navigationMenu || [];
 
   // Fixed responsive header heights - no dynamic measurement needed
   // CSS custom properties are set via Mantine's responsive system
@@ -149,7 +228,7 @@ function AppLayoutInner({
 
   // If all components are disabled, render children directly without AppShell
   if (!headerEnabled && !navbarEnabled && !asideEnabled && !footerEnabled) {
-    return <>{children}</>;
+    return children as ReactNode;
   }
 
   return (
@@ -169,73 +248,85 @@ function AppLayoutInner({
       >
         {headerEnabled && (
           <AppShell.Header className={classes.header}>
-            <Header
-              dict={dict}
-              featuredCollection={featuredCollection}
-              locale={locale}
-              mobileMenuOpen={mobileNavbarOpened}
-              navbarOpen={navbarOpened}
-              navigationMenu={navigationMenu}
-              onMobileMenuToggle={toggleMobileNavbar}
-              onNavbarToggle={toggleNavbar}
-            />
+            <ErrorBoundary
+              fallback={<div style={{ height: 60, padding: '1rem' }}>Header Error</div>}
+            >
+              <Header
+                dict={dict}
+                featuredCollection={featuredCollection}
+                locale={locale}
+                mobileMenuOpen={mobileNavbarOpened}
+                navbarOpen={navbarOpened}
+                navigationMenu={navigationMenu}
+                onMobileMenuToggle={toggleMobileNavbar}
+                onNavbarToggle={toggleNavbar}
+              />
+            </ErrorBoundary>
           </AppShell.Header>
         )}
 
         {navbarEnabled && (
           <AppShell.Navbar className={classes.navbar} p="md">
-            <Text fw={500} mb="md" size="md">
-              {dict?.navigation?.home || 'Navigation'}
-            </Text>
+            <ErrorBoundary fallback={<div style={{ padding: '1rem' }}>Navigation Error</div>}>
+              <Text fw={500} mb="md" size="md">
+                {dict?.navigation?.home || 'Navigation'}
+              </Text>
 
-            {memoizedNavigationItems?.map((item: any) => (
-              <div key={item.id}>
-                <NavLink
-                  active={item.isActive}
-                  component={Link}
-                  href={item.href as any}
-                  label={item.name}
-                  mb="xs"
-                />
-                {/* Handle children items */}
-                {item.children?.map((child: any) => (
+              {memoizedNavigationItems?.map((item: any) => (
+                <div key={item.id}>
                   <NavLink
-                    key={child.id}
-                    active={child.isActive}
+                    active={item.isActive}
                     component={Link}
-                    href={child.href as any}
-                    label={child.name}
+                    href={item.href as any}
+                    label={item.name}
                     mb="xs"
-                    pl="md"
                   />
-                ))}
-              </div>
-            ))}
+                  {/* Handle children items */}
+                  {item.children?.map((child: any) => (
+                    <NavLink
+                      key={child.id}
+                      active={child.isActive}
+                      component={Link}
+                      href={child.href as any}
+                      label={child.name}
+                      mb="xs"
+                      pl="md"
+                    />
+                  ))}
+                </div>
+              ))}
+            </ErrorBoundary>
           </AppShell.Navbar>
         )}
 
-        <AppShell.Main className={classes.main}>{children}</AppShell.Main>
+        <AppShell.Main className={classes.main}>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </AppShell.Main>
 
         {asideEnabled && (
           <AppShell.Aside className={classes.aside} p="md">
-            <div className={classes.asidePortalTarget} id="aside-portal-target" />
+            <ErrorBoundary fallback={<div style={{ padding: '1rem' }}>Aside Error</div>}>
+              <div className={classes.asidePortalTarget} id="aside-portal-target" />
+            </ErrorBoundary>
           </AppShell.Aside>
         )}
 
         {footerEnabled && (
           <AppShell.Footer className={classes.footer} p="md">
-            <Group justify="space-between">
-              <Text c="dimmed" size="md">
-                © 2024 {dict?.app?.brand || 'Web New App'}.{' '}
-                {dict?.app?.allRightsReserved || 'All rights reserved.'}
-              </Text>
-              <Group gap="xs">
+            <ErrorBoundary fallback={<div style={{ padding: '1rem' }}>Footer Error</div>}>
+              <Group justify="space-between">
                 <Text c="dimmed" size="md">
-                  {dict?.app?.madeWith || 'Made with'} ❤️ {dict?.app?.by || 'by'}{' '}
-                  {dict?.app?.team || 'the team'}
+                  © 2024 {dict?.app?.brand || 'Web New App'}.{' '}
+                  {dict?.app?.allRightsReserved || 'All rights reserved.'}
                 </Text>
+                <Group gap="xs">
+                  <Text c="dimmed" size="md">
+                    {dict?.app?.madeWith || 'Made with'} ❤️ {dict?.app?.by || 'by'}{' '}
+                    {dict?.app?.team || 'the team'}
+                  </Text>
+                </Group>
               </Group>
-            </Group>
+            </ErrorBoundary>
           </AppShell.Footer>
         )}
       </AppShell>
@@ -254,7 +345,9 @@ function AppLayoutInner({
         title="Shopping Cart"
         zIndex={200}
       >
-        <CartContent onClose={closeCart} />
+        <ErrorBoundary fallback={<div style={{ padding: '1rem' }}>Cart Error</div>}>
+          <CartContent cart={cartData} onClose={closeCart} />
+        </ErrorBoundary>
       </Drawer>
 
       {/* Navigation Drawer */}
@@ -275,9 +368,11 @@ function AppLayoutInner({
         title={<Logo />}
         zIndex={200}
       >
-        <div style={{ padding: 'var(--mantine-spacing-md)' }}>
-          <SidebarNavigationWrapper onClose={closeNav} data={navigationData} />
-        </div>
+        <ErrorBoundary fallback={<div style={{ padding: '1rem' }}>Navigation Error</div>}>
+          <div style={{ padding: 'var(--mantine-spacing-md)' }}>
+            <SidebarNavigationWrapper onClose={closeNav} data={navigationData} />
+          </div>
+        </ErrorBoundary>
       </Drawer>
     </>
   );

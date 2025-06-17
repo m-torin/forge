@@ -3,8 +3,9 @@
  * Copy this file to your app's e2e folder and customize
  */
 
-import { expect, test } from '@repo/testing/e2e';
 import {
+  expect,
+  test,
   APIAssertions,
   APITestUtils,
   EnvironmentData,

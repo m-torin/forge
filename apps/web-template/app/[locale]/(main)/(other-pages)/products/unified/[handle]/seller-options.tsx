@@ -3,7 +3,7 @@
 import { IconShoppingBag } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { AddToCartButton, ButtonPrimary, NcInputNumber } from '@/components/ui';
+import { ButtonPrimary, NcInputNumber } from '@/components/ui';
 
 import { type Seller, type SellerOptionsProps } from './types';
 import { useTrackAffiliateClick } from './use-track-affiliate';

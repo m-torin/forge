@@ -19,7 +19,6 @@ import {
 import { IconSearch, IconShoppingCart, IconStar, IconHome } from '@tabler/icons-react';
 import {
   InstantSearch,
-  SearchBox,
   Hits,
   RefinementList,
   Configure,

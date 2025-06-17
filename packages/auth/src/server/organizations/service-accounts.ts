@@ -5,17 +5,14 @@
 import 'server-only';
 import { headers } from 'next/headers';
 
-import { prisma as database } from '@repo/database/prisma';
-
-import { createServiceAuth } from '../api-keys/service-auth';
 import { auth } from '../auth';
 
 import { checkPermission } from './permissions';
 
-import type { ServiceAuthOptions, ServiceAuthResult } from '../../shared/api-keys/types';
+import type { ServiceAuthResult } from '../../shared/api-keys/types';
 
 /**
- * Creates a service account for an organization
+ * Creates a service account for an organization using better-auth API key metadata
  */
 export async function createServiceAccount(data: {
   organizationId: string;
@@ -25,18 +22,6 @@ export async function createServiceAccount(data: {
   expiresIn?: string;
 }): Promise<ServiceAuthResult & { serviceAccountId?: string }> {
   try {
-    // Get current session to check permissions and get user ID
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      return {
-        error: 'Authentication required',
-        success: false,
-      };
-    }
-
     // Check if user has permission to create service accounts
     const hasPermission = await checkPermission('api-keys:create', data.organizationId);
 
@@ -47,42 +32,35 @@ export async function createServiceAccount(data: {
       };
     }
 
-    // Create service authentication
-    const serviceOptions: ServiceAuthOptions = {
-      expiresIn: data.expiresIn,
-      permissions: data.permissions,
-      serviceId: `${data.organizationId}-${data.name}`,
-    };
-
-    const authResult = await createServiceAuth(serviceOptions);
-
-    if (!authResult.success) {
-      return authResult;
-    }
-
-    // Store service account metadata
-    const serviceAccount = await database.apiKey.create({
-      data: {
-        id: `apikey_${Math.random().toString(36).substr(2, 9)}`,
+    // Use better-auth native createApiKey with service account metadata
+    const result = await auth.api.createApiKey({
+      body: {
         name: data.name,
-        createdAt: new Date(),
-        expiresAt: authResult.expiresAt,
-        key: authResult.token || '',
+        organizationId: data.organizationId,
+        permissions: data.permissions,
+        expiresIn: data.expiresIn,
         metadata: {
           type: 'service-account',
           description: data.description,
-          serviceId: serviceOptions.serviceId,
+          serviceId: `${data.organizationId}-${data.name}`,
+          createdAt: new Date().toISOString(),
         },
-        organizationId: data.organizationId,
-        permissions: JSON.stringify(data.permissions),
-        updatedAt: new Date(),
-        userId: session.user.id, // User who created the service account
       },
+      headers: await headers(),
     });
 
+    if (!result?.key) {
+      return {
+        error: 'Failed to create service account',
+        success: false,
+      };
+    }
+
     return {
-      ...authResult,
-      serviceAccountId: serviceAccount.id,
+      success: true,
+      token: result.key,
+      expiresAt: result.expiresAt ? new Date(result.expiresAt) : undefined,
+      serviceAccountId: result.id,
     };
   } catch (error) {
     console.error('Create service account error:', error);
@@ -94,7 +72,7 @@ export async function createServiceAccount(data: {
 }
 
 /**
- * Lists service accounts for an organization
+ * Lists service accounts for an organization using better-auth API key methods
  */
 export async function listServiceAccounts(organizationId: string): Promise<{
   success: boolean;
@@ -120,27 +98,29 @@ export async function listServiceAccounts(organizationId: string): Promise<{
       };
     }
 
-    const apiKeys = await database.apiKey.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      where: {
-        metadata: {
-          equals: 'service-account',
-          path: ['type'],
-        },
-        organizationId,
-      },
+    // Use better-auth native listApiKeys method
+    const apiKeys = await auth.api.listApiKeys({
+      headers: await headers(),
     });
 
-    const serviceAccounts = apiKeys.map((key: any) => ({
+    // Filter for service accounts in this organization
+    const serviceAccountKeys = (apiKeys || []).filter(
+      (key: any) =>
+        key.organizationId === organizationId && key.metadata?.type === 'service-account',
+    );
+
+    const serviceAccounts = serviceAccountKeys.map((key: any) => ({
       id: key.id,
       name: key.name,
-      createdAt: key.createdAt,
-      description: (key.metadata as any)?.description,
-      expiresAt: key.expiresAt,
-      isActive: !key.expiresAt || key.expiresAt > new Date(),
-      permissions: key.permissions ? JSON.parse(key.permissions) : [],
+      createdAt: new Date(key.createdAt),
+      description: key.metadata?.description,
+      expiresAt: key.expiresAt ? new Date(key.expiresAt) : undefined,
+      isActive: !key.expiresAt || new Date(key.expiresAt) > new Date(),
+      permissions: Array.isArray(key.permissions)
+        ? key.permissions
+        : key.permissions
+          ? Object.values(key.permissions).flat()
+          : [],
     }));
 
     return {
@@ -157,7 +137,7 @@ export async function listServiceAccounts(organizationId: string): Promise<{
 }
 
 /**
- * Updates a service account
+ * Updates a service account using better-auth API key methods
  */
 export async function updateServiceAccount(data: {
   serviceAccountId: string;
@@ -180,22 +160,31 @@ export async function updateServiceAccount(data: {
       };
     }
 
-    // Update the service account metadata
-    await database.apiKey.update({
-      data: {
-        ...(data.name && { name: data.name }),
-        ...(data.permissions && { permissions: JSON.stringify(data.permissions) }),
-        ...(data.description !== undefined && {
-          metadata: {
-            type: 'service-account',
-            description: data.description,
-          },
-        }),
-      },
-      where: {
-        id: data.serviceAccountId,
-        organizationId: data.organizationId,
-      },
+    // Prepare update data for better-auth
+    const updateData: any = {
+      keyId: data.serviceAccountId,
+    };
+
+    if (data.name) {
+      updateData.name = data.name;
+    }
+
+    if (data.permissions) {
+      updateData.permissions = data.permissions;
+    }
+
+    if (data.description !== undefined) {
+      updateData.metadata = {
+        type: 'service-account',
+        description: data.description,
+        serviceId: `${data.organizationId}-${data.name || 'service'}`,
+      };
+    }
+
+    // Use better-auth native updateApiKey method
+    await auth.api.updateApiKey({
+      body: updateData,
+      headers: await headers(),
     });
 
     return { success: true };
@@ -209,7 +198,7 @@ export async function updateServiceAccount(data: {
 }
 
 /**
- * Revokes a service account
+ * Revokes a service account using better-auth API key methods
  */
 export async function revokeServiceAccount(data: {
   serviceAccountId: string;
@@ -229,12 +218,12 @@ export async function revokeServiceAccount(data: {
       };
     }
 
-    // Delete the service account
-    await database.apiKey.delete({
-      where: {
-        id: data.serviceAccountId,
-        organizationId: data.organizationId,
+    // Use better-auth native deleteApiKey method
+    await auth.api.deleteApiKey({
+      body: {
+        keyId: data.serviceAccountId,
       },
+      headers: await headers(),
     });
 
     return { success: true };
@@ -248,7 +237,7 @@ export async function revokeServiceAccount(data: {
 }
 
 /**
- * Gets service account details
+ * Gets service account details using better-auth API key methods
  */
 export async function getServiceAccount(data: {
   serviceAccountId: string;
@@ -278,16 +267,17 @@ export async function getServiceAccount(data: {
       };
     }
 
-    const apiKey = await database.apiKey.findFirst({
-      where: {
-        id: data.serviceAccountId,
-        metadata: {
-          equals: 'service-account',
-          path: ['type'],
-        },
-        organizationId: data.organizationId,
-      },
+    // Use better-auth native listApiKeys to find the specific key
+    const apiKeys = await auth.api.listApiKeys({
+      headers: await headers(),
     });
+
+    const apiKey = (apiKeys || []).find(
+      (key: any) =>
+        key.id === data.serviceAccountId &&
+        key.organizationId === data.organizationId &&
+        key.metadata?.type === 'service-account',
+    );
 
     if (!apiKey) {
       return {
@@ -299,12 +289,16 @@ export async function getServiceAccount(data: {
     const serviceAccount = {
       id: apiKey.id,
       name: apiKey.name,
-      createdAt: apiKey.createdAt,
-      description: (apiKey.metadata as any)?.description,
-      expiresAt: apiKey.expiresAt || undefined,
-      isActive: !apiKey.expiresAt || apiKey.expiresAt > new Date(),
-      lastUsedAt: apiKey.lastUsedAt || undefined,
-      permissions: apiKey.permissions ? JSON.parse(apiKey.permissions) : [],
+      createdAt: new Date(apiKey.createdAt),
+      description: apiKey.metadata?.description,
+      expiresAt: apiKey.expiresAt ? new Date(apiKey.expiresAt) : undefined,
+      isActive: !apiKey.expiresAt || new Date(apiKey.expiresAt) > new Date(),
+      lastUsedAt: apiKey.lastUsedAt ? new Date(apiKey.lastUsedAt) : undefined,
+      permissions: Array.isArray(apiKey.permissions)
+        ? apiKey.permissions
+        : apiKey.permissions
+          ? Object.values(apiKey.permissions).flat()
+          : [],
     };
 
     return {
@@ -321,7 +315,7 @@ export async function getServiceAccount(data: {
 }
 
 /**
- * Regenerates service account token
+ * Regenerates service account token using better-auth API key methods
  */
 export async function regenerateServiceAccountToken(data: {
   serviceAccountId: string;
@@ -339,17 +333,17 @@ export async function regenerateServiceAccountToken(data: {
       };
     }
 
-    // Get current service account
-    const currentAccount = await database.apiKey.findFirst({
-      where: {
-        id: data.serviceAccountId,
-        metadata: {
-          equals: 'service-account',
-          path: ['type'],
-        },
-        organizationId: data.organizationId,
-      },
+    // Get current service account details using better-auth
+    const apiKeys = await auth.api.listApiKeys({
+      headers: await headers(),
     });
+
+    const currentAccount = (apiKeys || []).find(
+      (key: any) =>
+        key.id === data.serviceAccountId &&
+        key.organizationId === data.organizationId &&
+        key.metadata?.type === 'service-account',
+    );
 
     if (!currentAccount) {
       return {
@@ -358,30 +352,44 @@ export async function regenerateServiceAccountToken(data: {
       };
     }
 
-    // Create new service authentication
-    const serviceOptions: ServiceAuthOptions = {
-      expiresIn: data.expiresIn,
-      permissions: currentAccount.permissions ? JSON.parse(currentAccount.permissions) : [],
-      serviceId:
-        (currentAccount.metadata as any)?.serviceId ||
-        `${data.organizationId}-${currentAccount.name}`,
-    };
-
-    const authResult = await createServiceAuth(serviceOptions);
-
-    if (!authResult.success) {
-      return authResult;
-    }
-
-    // Update the service account with new expiration
-    await database.apiKey.update({
-      data: {
-        expiresAt: authResult.expiresAt,
-      },
-      where: { id: data.serviceAccountId },
+    // Delete the old API key
+    await auth.api.deleteApiKey({
+      body: { keyId: data.serviceAccountId },
+      headers: await headers(),
     });
 
-    return authResult;
+    // Create a new API key with the same metadata but new token
+    const result = await auth.api.createApiKey({
+      body: {
+        name: currentAccount.name,
+        organizationId: data.organizationId,
+        expiresIn: data.expiresIn,
+        permissions: Array.isArray(currentAccount.permissions)
+          ? currentAccount.permissions
+          : currentAccount.permissions
+            ? Object.values(currentAccount.permissions).flat()
+            : [],
+        metadata: {
+          ...currentAccount.metadata,
+          type: 'service-account',
+          regeneratedAt: new Date().toISOString(),
+        },
+      },
+      headers: await headers(),
+    });
+
+    if (!result?.key) {
+      return {
+        error: 'Failed to regenerate service account token',
+        success: false,
+      };
+    }
+
+    return {
+      success: true,
+      token: result.key,
+      expiresAt: result.expiresAt ? new Date(result.expiresAt) : undefined,
+    };
   } catch (error) {
     console.error('Regenerate service account token error:', error);
     return {

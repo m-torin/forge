@@ -1,6 +1,12 @@
 import { ProductDetailFavoriteButton } from '@/components/guest/ProductDetailFavoriteButton';
 import { getDictionary } from '@/i18n';
-import { getProductDetailByHandle, getProducts } from '@/data/data-service';
+import { getProductByHandle, getProducts } from '@/actions/products';
+import { getProductReviews } from '@/actions/reviews';
+import {
+  transformDatabaseProductToTProductItem,
+  transformDatabaseProductToTCardProduct,
+  transformDatabaseReviewToTReview,
+} from '@/types/database';
 import { IconStar, IconShoppingBag } from '@tabler/icons-react';
 import { type Metadata } from 'next';
 import Image from 'next/image';
@@ -10,7 +16,6 @@ import { OptimizedJsonLd } from '@repo/seo/client/next';
 
 import {
   AccordionInfo,
-  AddToCartButton,
   ButtonPrimary,
   Divider,
   NcInputNumber,
@@ -18,7 +23,7 @@ import {
   SectionPromo2,
   SectionSliderProductCard,
 } from '@/components/ui';
-import { getProductReviews } from '@/data/data-service';
+// Note: Product reviews will need to be implemented when review system is added to database
 
 import Policy from '../Policy';
 import ProductOptions from '../ProductOptions';
@@ -51,7 +56,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle, locale } = await params;
   const dict = await getDictionary(locale);
-  const product = await getProductDetailByHandle(handle);
+  const productData = await getProductByHandle(handle);
+  const product = productData ? transformDatabaseProductToTProductItem(productData) : null;
 
   if (!product?.id) {
     return {
@@ -94,11 +100,27 @@ export default async function Page({
 }) {
   const { handle, locale } = await params;
   const _dict = await getDictionary(locale);
-  const product = await getProductDetailByHandle(handle);
-  const relatedProducts = (await getProducts()).slice(2, 8);
-  const reviews = await getProductReviews(handle);
+  const productData = await getProductByHandle(handle);
+  const product = productData ? transformDatabaseProductToTProductItem(productData) : null;
+  const productsResult = await getProducts({ page: 1, sort: 'newest', limit: 8 });
+  const relatedProducts = productsResult.data
+    .slice(2, 8)
+    .map(transformDatabaseProductToTCardProduct);
 
-  if (!product.id) {
+  // Fetch reviews for this product
+  const reviewsResult = product
+    ? await getProductReviews(product.id, { limit: 10 })
+    : { data: [], pagination: { total: 0, page: 1, limit: 10, totalPages: 0 } };
+  const reviews = reviewsResult.data?.map(transformDatabaseReviewToTReview) || [];
+
+  // Calculate average rating from reviews
+  const avgRating =
+    reviews.length > 0
+      ? reviews.reduce((sum: any, review: any) => sum + review.rating, 0) / reviews.length
+      : 0;
+  const reviewCount = reviewsResult.pagination.total || 0;
+
+  if (!product?.id) {
     return notFound();
   }
 
@@ -316,9 +338,9 @@ export default async function Page({
         {renderDetailSection()}
         <Divider />
         <ProductReviews
-          rating={rating || 1}
-          reviewNumber={reviewNumber || 0}
-          reviews={reviews.map((review) => ({
+          rating={avgRating || rating || 0}
+          reviewNumber={reviewCount || reviewNumber || 0}
+          reviews={reviews.map((review: any) => ({
             ...review,
             author:
               typeof review.author === 'string'
@@ -331,7 +353,7 @@ export default async function Page({
         {/* OTHER SECTION */}
         <SectionSliderProductCard
           headingFontClassName="text-3xl font-semibold"
-          data={relatedProducts.map((p) => ({
+          data={relatedProducts.map((p: any) => ({
             ...p,
             name: p.title || '',
             image: p.featuredImage?.src,

@@ -1,0 +1,13 @@
+{
+  "extends": ["@repo/config/knip/base.json"],
+  "entry": [
+    "index.ts",
+    "keys.ts",
+    "mantine-notifications.tsx",
+    "components/**/*.tsx",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}"
+  ]
+}

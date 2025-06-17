@@ -1,8 +1,33 @@
-import type { AIProvider, Capability } from '../types';
+import { AIProvider, Capability } from '../types';
 
 export class ProviderRegistry {
-  private providers = new Map<string, AIProvider>();
   private capabilityMap = new Map<Capability, Set<string>>();
+  private providers = new Map<string, AIProvider>();
+
+  clear(): void {
+    this.providers.clear();
+    this.capabilityMap.clear();
+  }
+
+  get(name: string): AIProvider | undefined {
+    return this.providers.get(name);
+  }
+
+  getAll(): AIProvider[] {
+    return Array.from(this.providers.values());
+  }
+
+  getByCapability(capability: Capability): AIProvider[] {
+    const providerNames = this.capabilityMap.get(capability) ?? new Set();
+    return Array.from(providerNames)
+      .map((name: any) => this.providers.get(name))
+      .filter((provider): provider is AIProvider => provider !== undefined);
+  }
+
+  hasCapability(providerName: string, capability: Capability): boolean {
+    const provider = this.providers.get(providerName);
+    return provider?.capabilities.has(capability) ?? false;
+  }
 
   register(provider: AIProvider): void {
     // Validate provider before registration
@@ -11,10 +36,29 @@ export class ProviderRegistry {
     this.providers.set(provider.name, provider);
 
     for (const capability of provider.capabilities) {
-      const providers = this.capabilityMap.get(capability) || new Set();
+      const providers = this.capabilityMap.get(capability) ?? new Set();
       providers.add(provider.name);
       this.capabilityMap.set(capability, providers);
     }
+  }
+
+  remove(name: string): boolean {
+    const provider = this.providers.get(name);
+    if (!provider) return false;
+
+    this.providers.delete(name);
+
+    for (const capability of provider.capabilities) {
+      const providers = this.capabilityMap.get(capability);
+      if (providers) {
+        providers.delete(name);
+        if (providers.size === 0) {
+          this.capabilityMap.delete(capability);
+        }
+      }
+    }
+
+    return true;
   }
 
   private validateProvider(provider: AIProvider): void {
@@ -22,11 +66,11 @@ export class ProviderRegistry {
       throw new Error('Provider must have a valid name');
     }
 
-    if (!provider.type || !['ai-sdk', 'custom', 'direct'].includes(provider.type)) {
+    if (!['ai-sdk', 'custom', 'direct'].includes(provider.type)) {
       throw new Error(`Provider "${provider.name}" has invalid type: ${provider.type}`);
     }
 
-    if (!provider.capabilities || provider.capabilities.size === 0) {
+    if (provider.capabilities.size === 0) {
       throw new Error(`Provider "${provider.name}" must declare at least one capability`);
     }
 
@@ -77,49 +121,5 @@ export class ProviderRegistry {
         `Provider "${provider.name}" claims capabilities but missing methods: ${missingMethods.join(', ')}`,
       );
     }
-  }
-
-  get(name: string): AIProvider | undefined {
-    return this.providers.get(name);
-  }
-
-  getAll(): AIProvider[] {
-    return Array.from(this.providers.values());
-  }
-
-  getByCapability(capability: Capability): AIProvider[] {
-    const providerNames = this.capabilityMap.get(capability) || new Set();
-    return Array.from(providerNames)
-      .map((name) => this.providers.get(name))
-      .filter((provider): provider is AIProvider => provider !== undefined);
-  }
-
-  hasCapability(providerName: string, capability: Capability): boolean {
-    const provider = this.providers.get(providerName);
-    return provider?.capabilities.has(capability) ?? false;
-  }
-
-  remove(name: string): boolean {
-    const provider = this.providers.get(name);
-    if (!provider) return false;
-
-    this.providers.delete(name);
-
-    for (const capability of provider.capabilities) {
-      const providers = this.capabilityMap.get(capability);
-      if (providers) {
-        providers.delete(name);
-        if (providers.size === 0) {
-          this.capabilityMap.delete(capability);
-        }
-      }
-    }
-
-    return true;
-  }
-
-  clear(): void {
-    this.providers.clear();
-    this.capabilityMap.clear();
   }
 }

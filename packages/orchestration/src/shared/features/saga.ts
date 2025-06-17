@@ -3,7 +3,7 @@
  * Distributed transaction management for complex workflows
  */
 
-import type { WorkflowProvider } from '../types/workflow';
+import { WorkflowProvider } from '../types/workflow';
 
 export interface SagaContext {
   /** Current step ID */
@@ -325,7 +325,7 @@ export class SagaOrchestrator {
         return context.results[key];
       },
       input,
-      log: (level, message, data) => {
+      log: (level, message, data: any) => {
         state.logs.push({
           data,
           level,
@@ -389,7 +389,7 @@ export class SagaOrchestrator {
 
     // Reset execution state
     if (fromStepId) {
-      const stepIndex = saga.steps.findIndex((step) => step.id === fromStepId);
+      const stepIndex = saga.steps.findIndex((step: any) => step.id === fromStepId);
       if (stepIndex !== -1) {
         execution.state.currentStepIndex = stepIndex;
         execution.state.completedSteps = execution.state.completedSteps.slice(0, stepIndex);
@@ -431,7 +431,7 @@ export class SagaOrchestrator {
         : execution.state.compensationQueue;
 
     for (const stepId of compensationOrder) {
-      const step = saga.steps.find((s) => s.id === stepId);
+      const step = saga.steps.find((s: any) => s.id === stepId);
       if (!step?.compensation) {
         continue;
       }
@@ -443,15 +443,16 @@ export class SagaOrchestrator {
         await step.compensation(execution.context);
 
         // Update completed step status
-        const completedStep = execution.state.completedSteps.find((s) => s.stepId === stepId);
+        const completedStep = execution.state.completedSteps.find((s: any) => s.stepId === stepId);
         if (completedStep) {
           completedStep.status = 'compensated';
         }
 
         execution.context.log('info', `Step ${stepId} compensated successfully`);
-      } catch (error) {
+      } catch (error: any) {
         execution.context.log('error', `Compensation failed for step ${stepId}`, {
-          error: error instanceof Error ? error.message : String(error),
+          error:
+            error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
         });
 
         if (!saga.config?.continueOnCompensationFailure) {
@@ -477,14 +478,14 @@ export class SagaOrchestrator {
         if (step.timeout) {
           return await Promise.race([
             step.action(context),
-            new Promise((_, reject) =>
+            new Promise((_, reject: any) =>
               setTimeout(() => reject(new Error('Step timeout')), step.timeout),
             ),
           ]);
         } else {
           return await step.action(context);
         }
-      } catch (error) {
+      } catch (error: any) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < maxAttempts && step.retry) {
@@ -493,7 +494,7 @@ export class SagaOrchestrator {
             'warn',
             `Step ${step.id} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`,
           );
-          await new Promise((resolve) => setTimeout(resolve, delay));
+          await new Promise((resolve: any) => setTimeout(resolve, delay));
         }
       }
     }
@@ -569,7 +570,7 @@ export class SagaOrchestrator {
           }
 
           execution.context.log('info', `Step ${step.id} completed successfully`);
-        } catch (error) {
+        } catch (error: any) {
           const stepCompletedTime = new Date();
           const duration = stepCompletedTime.getTime() - stepStartTime.getTime();
 
@@ -577,20 +578,23 @@ export class SagaOrchestrator {
           execution.state.completedSteps.push({
             completedAt: stepCompletedTime,
             duration,
-            error: error instanceof Error ? error.message : String(error),
+            error:
+              error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
             startedAt: stepStartTime,
             status: 'failed',
             stepId: step.id,
           });
 
           execution.state.error = {
-            message: error instanceof Error ? error.message : String(error),
+            message:
+              error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
             stack: error instanceof Error ? error.stack : undefined,
             stepId: step.id,
           };
 
           execution.context.log('error', `Step ${step.id} failed`, {
-            error: error instanceof Error ? error.message : String(error),
+            error:
+              error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
           });
 
           // Start compensation
@@ -605,15 +609,17 @@ export class SagaOrchestrator {
       execution.state.completedAt = new Date();
       execution.result = execution.context.results;
       execution.context.log('info', 'Saga execution completed successfully');
-    } catch (error) {
+    } catch (error: any) {
       execution.state.status = 'failed';
       execution.state.completedAt = new Date();
       execution.state.error = {
-        message: error instanceof Error ? error.message : String(error),
+        message:
+          error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
         stepId: 'global',
       };
       execution.context.log('error', 'Saga execution failed', {
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
       });
     }
   }
@@ -650,7 +656,7 @@ export const SagaUtils = {
     if (falseStep) {
       steps.push({
         ...falseStep,
-        condition: (context) => !condition(context),
+        condition: (context: any) => !condition(context),
       });
     }
 
@@ -670,7 +676,7 @@ export const SagaUtils = {
     }[],
   ): SagaStep {
     return {
-      action: async (context) => {
+      action: async (context: any) => {
         const results = await Promise.all(
           actions.map(async ({ action, id: actionId }) => ({
             id: actionId,
@@ -685,8 +691,8 @@ export const SagaUtils = {
 
         return results;
       },
-      compensation: actions.some((a) => a.compensation)
-        ? async (context) => {
+      compensation: actions.some((a: any) => a.compensation)
+        ? async (context: any) => {
             // Compensate in reverse order
             for (const { compensation, id: actionId } of actions.reverse()) {
               if (compensation) {

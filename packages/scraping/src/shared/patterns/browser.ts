@@ -4,11 +4,108 @@
  */
 
 import { ScrapingError, ScrapingErrorCode } from '../errors';
+import { ProviderRegistry, ScrapeOptions, ScrapingConfig } from '../types/scraping-types';
 import { humanDelay } from '../utils/helpers';
 import { createScrapingManager } from '../utils/scraping-manager';
 
-import type { ProviderRegistry, ScrapeOptions, ScrapingConfig } from '../types/scraping-types';
-import type { BrowserScrapeOptions, InteractionStep } from './types';
+import { BrowserScrapeOptions, InteractionStep } from './types';
+
+/**
+ * Browser scraping with authentication
+ */
+export async function authenticatedScrape(
+  url: string,
+  auth: {
+    loginUrl: string;
+    password: string;
+    passwordSelector: string;
+    submitSelector: string;
+    successIndicator?: string;
+    username: string;
+    usernameSelector: string;
+  },
+  options: ScrapeOptions = {},
+): Promise<any> {
+  const {
+    loginUrl,
+    password,
+    passwordSelector,
+    submitSelector,
+    successIndicator,
+    username,
+    usernameSelector,
+  } = auth;
+
+  const provider = options.provider ?? 'playwright';
+
+  // First, perform login
+  const loginInteractions: InteractionStep[] = [
+    { delay: 300, selector: usernameSelector, type: 'type', value: username },
+    { delay: 300, selector: passwordSelector, type: 'type', value: password },
+    { delay: 2000, selector: submitSelector, type: 'click' },
+  ];
+
+  if (successIndicator) {
+    loginInteractions.push({ delay: 1000, selector: successIndicator, type: 'wait' });
+  }
+
+  await browserScrapeWithInteractions(loginUrl, {
+    interactions: loginInteractions,
+    provider,
+    waitForStable: true,
+  });
+
+  // Then scrape the target URL (cookies should be preserved)
+  return browserScrapeWithInteractions(url, options);
+}
+
+/**
+ * Browser scraping with form filling
+ */
+export async function browserScrape(
+  url: string,
+  options: ScrapeOptions & {
+    formData?: Record<string, string>;
+    submitSelector?: string;
+    waitAfterSubmit?: number;
+  } = {},
+): Promise<any> {
+  const {
+    formData = {},
+    provider = 'playwright',
+    submitSelector,
+    waitAfterSubmit = 2000,
+    ...scrapeOptions
+  } = options;
+
+  const interactions: InteractionStep[] = [];
+
+  // Add form filling interactions
+  for (const [selector, value] of Object.entries(formData)) {
+    interactions.push({
+      delay: 200,
+      selector,
+      type: 'type' as const,
+      value,
+    });
+  }
+
+  // Add form submission
+  if (submitSelector) {
+    interactions.push({
+      delay: waitAfterSubmit,
+      selector: submitSelector,
+      type: 'click',
+    });
+  }
+
+  return browserScrapeWithInteractions(url, {
+    ...scrapeOptions,
+    interactions,
+    provider,
+    waitForStable: true,
+  });
+}
 
 /**
  * Browser scraping with complex interactions
@@ -18,8 +115,8 @@ export async function browserScrapeWithInteractions(
   options: BrowserScrapeOptions = {},
 ): Promise<any> {
   const {
-    provider = 'playwright',
     interactions = [],
+    provider = 'playwright',
     recordSession = false,
     waitForStable = true,
     ...scrapeOptions
@@ -37,13 +134,13 @@ export async function browserScrapeWithInteractions(
   const { PuppeteerProvider } = await import('../../server/providers/puppeteer-provider');
 
   const providers: ProviderRegistry = {
-    playwright: (config) => new PlaywrightProvider(),
-    puppeteer: (config) => new PuppeteerProvider(),
+    playwright: (_config: any) => new PlaywrightProvider(),
+    puppeteer: (_config: any) => new PuppeteerProvider(),
   };
 
   const config: ScrapingConfig = {
-    providers: { [provider]: { options: { autoClose: false } } },
     debug: false,
+    providers: { [provider]: { options: { autoClose: false } } },
   };
 
   const manager = createScrapingManager(config, providers);
@@ -52,7 +149,7 @@ export async function browserScrapeWithInteractions(
     await manager.initialize();
 
     // Initial page load
-    const initialResult = await manager.scrape(url, {
+    const _initialResult = await manager.scrape(url, {
       ...scrapeOptions,
       extract: undefined, // Don't extract yet
     });
@@ -84,165 +181,49 @@ export async function browserScrapeWithInteractions(
 }
 
 /**
- * Execute a single interaction step
+ * Browser automation with session persistence
  */
-async function executeInteraction(manager: any, step: InteractionStep): Promise<void> {
-  const { type, delay = 500, options = {}, selector, value } = step;
+export async function withBrowser<T>(
+  callback: (manager: any) => Promise<T>,
+  options: { persistent?: boolean; provider?: string } = {},
+): Promise<T> {
+  const provider = options.provider ?? 'playwright';
 
-  try {
-    switch (type) {
-      case 'click':
-        if (!selector) throw new Error('Selector required for click interaction');
-        // await manager.click(selector, options);
-        break;
-
-      case 'type':
-        if (!selector || !value)
-          throw new Error('Selector and value required for type interaction');
-        // await manager.type(selector, value, options);
-        break;
-
-      case 'select':
-        if (!selector || !value)
-          throw new Error('Selector and value required for select interaction');
-        // await manager.select(selector, value, options);
-        break;
-
-      case 'hover':
-        if (!selector) throw new Error('Selector required for hover interaction');
-        // await manager.hover(selector, options);
-        break;
-
-      case 'scroll':
-        // await manager.scroll(options);
-        break;
-
-      case 'wait':
-        if (selector) {
-          // await manager.waitForSelector(selector, options);
-        } else {
-          await humanDelay(delay, delay * 1.2);
-        }
-        break;
-
-      case 'navigate':
-        if (!value) throw new Error('URL required for navigate interaction');
-        // await manager.navigate(value, options);
-        break;
-
-      default:
-        throw new Error(`Unknown interaction type: ${type}`);
-    }
-
-    // Add delay after interaction
-    if (delay > 0) {
-      await humanDelay(delay, delay * 1.2);
-    }
-  } catch (error) {
+  if (typeof window !== 'undefined') {
     throw new ScrapingError(
-      `Interaction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      ScrapingErrorCode.INTERACTION_FAILED,
-      { step },
-      error instanceof Error ? error : undefined,
+      'Browser sessions require server-side browser automation',
+      ScrapingErrorCode.PROVIDER_ERROR,
     );
   }
-}
 
-/**
- * Browser scraping with form filling
- */
-export async function browserScrape(
-  url: string,
-  options: {
-    formData?: Record<string, string>;
-    submitSelector?: string;
-    waitAfterSubmit?: number;
-  } & ScrapeOptions = {},
-): Promise<any> {
-  const {
-    provider = 'playwright',
-    formData = {},
-    submitSelector,
-    waitAfterSubmit = 2000,
-    ...scrapeOptions
-  } = options;
+  const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
 
-  const interactions: InteractionStep[] = [];
+  const providers: ProviderRegistry = {
+    [provider]: (_config: any) => new PlaywrightProvider(),
+  };
 
-  // Add form filling interactions
-  for (const [selector, value] of Object.entries(formData)) {
-    interactions.push({
-      type: 'type' as const,
-      delay: 200,
-      selector,
-      value,
-    });
+  const config: ScrapingConfig = {
+    debug: false,
+    providers: {
+      [provider]: {
+        options: {
+          autoClose: false,
+          persistent: options.persistent,
+        },
+      },
+    },
+  };
+
+  const manager = createScrapingManager(config, providers);
+
+  try {
+    await manager.initialize();
+    return await callback(manager);
+  } finally {
+    if (!options.persistent) {
+      await manager.dispose();
+    }
   }
-
-  // Add form submission
-  if (submitSelector) {
-    interactions.push({
-      type: 'click',
-      delay: waitAfterSubmit,
-      selector: submitSelector,
-    });
-  }
-
-  return browserScrapeWithInteractions(url, {
-    ...scrapeOptions,
-    provider,
-    interactions,
-    waitForStable: true,
-  });
-}
-
-/**
- * Browser scraping with authentication
- */
-export async function authenticatedScrape(
-  url: string,
-  auth: {
-    loginUrl: string;
-    usernameSelector: string;
-    passwordSelector: string;
-    submitSelector: string;
-    username: string;
-    password: string;
-    successIndicator?: string;
-  },
-  options: ScrapeOptions = {},
-): Promise<any> {
-  const {
-    username,
-    usernameSelector,
-    loginUrl,
-    password,
-    passwordSelector,
-    submitSelector,
-    successIndicator,
-  } = auth;
-
-  const provider = options.provider || 'playwright';
-
-  // First, perform login
-  const loginInteractions: InteractionStep[] = [
-    { type: 'type', delay: 300, selector: usernameSelector, value: username },
-    { type: 'type', delay: 300, selector: passwordSelector, value: password },
-    { type: 'click', delay: 2000, selector: submitSelector },
-  ];
-
-  if (successIndicator) {
-    loginInteractions.push({ type: 'wait', delay: 1000, selector: successIndicator });
-  }
-
-  await browserScrapeWithInteractions(loginUrl, {
-    provider,
-    interactions: loginInteractions,
-    waitForStable: true,
-  });
-
-  // Then scrape the target URL (cookies should be preserved)
-  return browserScrapeWithInteractions(url, options);
 }
 
 /**
@@ -250,14 +231,14 @@ export async function authenticatedScrape(
  */
 export async function workflowScrape(
   steps: {
-    url?: string;
-    interactions?: InteractionStep[];
     extract?: any;
+    interactions?: InteractionStep[];
     name?: string;
+    url?: string;
   }[],
   options: { provider?: string } = {},
-): Promise<{ name?: string; data: any; url?: string }[]> {
-  const provider = options.provider || 'playwright';
+): Promise<{ data: any; name?: string; url?: string }[]> {
+  const provider = options.provider ?? 'playwright';
 
   if (typeof window !== 'undefined') {
     throw new ScrapingError(
@@ -269,16 +250,16 @@ export async function workflowScrape(
   const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
 
   const providers: ProviderRegistry = {
-    [provider]: (config) => new PlaywrightProvider(),
+    [provider]: (_config: any) => new PlaywrightProvider(),
   };
 
   const config: ScrapingConfig = {
-    providers: { [provider]: { options: { autoClose: false } } },
     debug: false,
+    providers: { [provider]: { options: { autoClose: false } } },
   };
 
   const manager = createScrapingManager(config, providers);
-  const results: { name?: string; data: any; url?: string }[] = [];
+  const results: { data: any; name?: string; url?: string }[] = [];
 
   try {
     await manager.initialize();
@@ -300,20 +281,20 @@ export async function workflowScrape(
         // Extract data if selectors specified
         let data: any = {};
         if (step.extract) {
-          const result = await manager.scrape(step.url || '', {
+          const result = await manager.scrape(step.url ?? '', {
             extract: step.extract,
           });
-          data = result.data || {};
+          data = result?.data ?? {};
         }
 
         results.push({
+          data,
           name: step.name,
           url: step.url,
-          data,
         });
-      } catch (error) {
+      } catch (error: any) {
         throw new ScrapingError(
-          `Workflow step failed: ${step.name || 'unnamed'}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          `Workflow step failed: ${step.name ?? 'unnamed'}: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
           ScrapingErrorCode.SCRAPING_FAILED,
           { step },
           error instanceof Error ? error : undefined,
@@ -328,47 +309,66 @@ export async function workflowScrape(
 }
 
 /**
- * Browser automation with session persistence
+ * Execute a single interaction step
  */
-export async function withBrowser<T>(
-  callback: (manager: any) => Promise<T>,
-  options: { provider?: string; persistent?: boolean } = {},
-): Promise<T> {
-  const provider = options.provider || 'playwright';
-
-  if (typeof window !== 'undefined') {
-    throw new ScrapingError(
-      'Browser sessions require server-side browser automation',
-      ScrapingErrorCode.PROVIDER_ERROR,
-    );
-  }
-
-  const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
-
-  const providers: ProviderRegistry = {
-    [provider]: (config) => new PlaywrightProvider(),
-  };
-
-  const config: ScrapingConfig = {
-    providers: {
-      [provider]: {
-        options: {
-          autoClose: false,
-          persistent: options.persistent,
-        },
-      },
-    },
-    debug: false,
-  };
-
-  const manager = createScrapingManager(config, providers);
+async function executeInteraction(manager: any, step: InteractionStep): Promise<void> {
+  const { delay = 500, options: _options = {}, selector, type, value } = step;
 
   try {
-    await manager.initialize();
-    return await callback(manager);
-  } finally {
-    if (!options.persistent) {
-      await manager.dispose();
+    switch (type) {
+      case 'click':
+        if (!selector) throw new Error('Selector required for click interaction');
+        // await manager.click(selector, options);
+        break;
+
+      case 'hover':
+        if (!selector) throw new Error('Selector required for hover interaction');
+        // await manager.hover(selector, options);
+        break;
+
+      case 'navigate':
+        if (!value) throw new Error('URL required for navigate interaction');
+        // await manager.navigate(value, options);
+        break;
+
+      case 'scroll':
+        // await manager.scroll(options);
+        break;
+
+      case 'select':
+        if (!selector || !value)
+          throw new Error('Selector and value required for select interaction');
+        // await manager.select(selector, value, options);
+        break;
+
+      case 'type':
+        if (!selector || !value)
+          throw new Error('Selector and value required for type interaction');
+        // await manager.type(selector, value, options);
+        break;
+
+      case 'wait':
+        if (selector) {
+          // await manager.waitForSelector(selector, options);
+        } else {
+          await humanDelay(delay, delay * 1.2);
+        }
+        break;
+
+      default:
+        throw new Error(`Unknown interaction type: ${type}`);
     }
+
+    // Add delay after interaction
+    if (delay > 0) {
+      await humanDelay(delay, delay * 1.2);
+    }
+  } catch (error: any) {
+    throw new ScrapingError(
+      `Interaction failed: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+      ScrapingErrorCode.INTERACTION_FAILED,
+      { step },
+      error instanceof Error ? error : undefined,
+    );
   }
 }

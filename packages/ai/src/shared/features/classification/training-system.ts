@@ -1,26 +1,25 @@
-import { InMemoryTrainingStorage } from './training-storage';
-
-import type { TrainingStorage } from './training-storage';
+import { InMemoryTrainingStorage, TrainingStorage } from './training-storage';
 
 export class ClassificationTrainingSystem {
+  private autoSave: boolean;
+
   private feedbackStore = new Map<
     string,
     {
-      predicted: string;
       actual: string;
       confidence: number;
+      predicted: string;
       timestamp: Date;
     }[]
   >();
-
   private storage: TrainingStorage;
-  private autoSave: boolean;
 
   constructor(storage?: TrainingStorage, autoSave = true) {
-    this.storage = storage || new InMemoryTrainingStorage();
+    this.storage = storage ?? new InMemoryTrainingStorage();
     this.autoSave = autoSave;
 
     // Load existing data on initialization
+    // eslint-disable-next-line no-console
     this.loadFromStorage().catch(console.error);
   }
 
@@ -31,13 +30,13 @@ export class ClassificationTrainingSystem {
     confidence: number,
   ): Promise<void> {
     const feedback = {
-      confidence,
       actual: actualCategory,
+      confidence,
       predicted: predictedCategory,
       timestamp: new Date(),
     };
 
-    const existing = this.feedbackStore.get(productId) || [];
+    const existing = this.feedbackStore.get(productId) ?? [];
     existing.push(feedback);
     this.feedbackStore.set(productId, existing);
 
@@ -47,52 +46,72 @@ export class ClassificationTrainingSystem {
     }
   }
 
+  async clearTrainingData(): Promise<void> {
+    this.feedbackStore.clear();
+    await this.storage.clear();
+  }
+
+  exportTrainingData(): {
+    feedbacks: {
+      actual: string;
+      confidence: number;
+      predicted: string;
+      timestamp: Date;
+    }[];
+    productId: string;
+  }[] {
+    return Array.from(this.feedbackStore.entries()).map(([productId, feedbacks]: any) => ({
+      feedbacks,
+      productId,
+    }));
+  }
+
   getAccuracyMetrics(): {
-    overall: number;
     byCategory: Map<string, number>;
     confidenceAnalysis: {
+      high: number;
       low: number;
       medium: number;
-      high: number;
     };
+    overall: number;
   } {
     const allFeedback = Array.from(this.feedbackStore.values()).flat();
 
     if (allFeedback.length === 0) {
       return {
-        confidenceAnalysis: { high: 0, low: 0, medium: 0 },
         byCategory: new Map(),
+        confidenceAnalysis: { high: 0, low: 0, medium: 0 },
         overall: 0,
       };
     }
 
-    const correct = allFeedback.filter((f) => f.predicted === f.actual).length;
+    const correct = allFeedback.filter((f: any) => f.predicted === f.actual).length;
     const overall = correct / allFeedback.length;
 
     const byCategory = new Map<string, number>();
-    const categoryGroups = this.groupBy(allFeedback, (f) => f.actual);
+    const categoryGroups = this.groupBy(allFeedback, (f: any) => f.actual);
 
     for (const [category, feedbacks] of categoryGroups) {
-      const categoryCorrect = feedbacks.filter((f) => f.predicted === f.actual).length;
+      const categoryCorrect = feedbacks.filter((f: any) => f.predicted === f.actual).length;
       byCategory.set(category, categoryCorrect / feedbacks.length);
     }
 
     const confidenceAnalysis = {
-      high: allFeedback.filter((f) => f.confidence >= 0.8).length / allFeedback.length,
-      low: allFeedback.filter((f) => f.confidence < 0.5).length / allFeedback.length,
+      high: allFeedback.filter((f: any) => f.confidence >= 0.8).length / allFeedback.length,
+      low: allFeedback.filter((f: any) => f.confidence < 0.5).length / allFeedback.length,
       medium:
-        allFeedback.filter((f) => f.confidence >= 0.5 && f.confidence < 0.8).length /
+        allFeedback.filter((f: any) => f.confidence >= 0.5 && f.confidence < 0.8).length /
         allFeedback.length,
     };
 
-    return { confidenceAnalysis, byCategory, overall };
+    return { byCategory, confidenceAnalysis, overall };
   }
 
   getProductsNeedingRetraining(threshold = 0.5): string[] {
     const productsToRetrain: string[] = [];
 
     for (const [productId, feedbacks] of this.feedbackStore) {
-      const correct = feedbacks.filter((f) => f.predicted === f.actual).length;
+      const correct = feedbacks.filter((f: any) => f.predicted === f.actual).length;
       const accuracy = correct / feedbacks.length;
 
       if (accuracy < threshold) {
@@ -103,43 +122,22 @@ export class ClassificationTrainingSystem {
     return productsToRetrain;
   }
 
-  private groupBy<T>(array: T[], keyFn: (item: T) => string): Map<string, T[]> {
-    const map = new Map<string, T[]>();
-
-    for (const item of array) {
-      const key = keyFn(item);
-      const group = map.get(key) || [];
-      group.push(item);
-      map.set(key, group);
-    }
-
-    return map;
-  }
-
-  exportTrainingData(): {
-    productId: string;
-    feedbacks: {
-      predicted: string;
-      actual: string;
-      confidence: number;
-      timestamp: Date;
-    }[];
-  }[] {
-    return Array.from(this.feedbackStore.entries()).map(([productId, feedbacks]) => ({
-      feedbacks,
-      productId,
-    }));
+  getTrainingDataSize(): number {
+    return Array.from(this.feedbackStore.values()).reduce(
+      (total, feedbacks: any) => total + feedbacks.length,
+      0,
+    );
   }
 
   importTrainingData(
     data: {
-      productId: string;
       feedbacks: {
-        predicted: string;
         actual: string;
         confidence: number;
+        predicted: string;
         timestamp: Date;
       }[];
+      productId: string;
     }[],
   ): void {
     this.feedbackStore.clear();
@@ -149,29 +147,31 @@ export class ClassificationTrainingSystem {
     }
   }
 
-  async clearTrainingData(): Promise<void> {
-    this.feedbackStore.clear();
-    await this.storage.clear();
-  }
+  private groupBy<T>(array: T[], keyFn: (item: T) => string): Map<string, T[]> {
+    const map = new Map<string, T[]>();
 
-  getTrainingDataSize(): number {
-    return Array.from(this.feedbackStore.values()).reduce(
-      (total, feedbacks) => total + feedbacks.length,
-      0,
-    );
-  }
+    for (const item of array) {
+      const key = keyFn(item);
+      const group = map.get(key) ?? [];
+      group.push(item);
+      map.set(key, group);
+    }
 
-  private async saveToStorage(): Promise<void> {
-    const data = this.exportTrainingData();
-    await this.storage.save(data);
+    return map;
   }
 
   private async loadFromStorage(): Promise<void> {
     try {
       const data = await this.storage.load();
       this.importTrainingData(data);
-    } catch (error) {
-      console.error('Failed to load training data from storage:', error);
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load training data from storage: ', error);
     }
+  }
+
+  private async saveToStorage(): Promise<void> {
+    const data = this.exportTrainingData();
+    await this.storage.save(data);
   }
 }

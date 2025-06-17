@@ -3,7 +3,7 @@
  * Handles scraping configuration and validation
  */
 
-import type { ProviderConfig, ScrapingConfig } from '../types/scraping-types';
+import { ProviderConfig, ScrapingConfig } from '../types/scraping-types';
 
 /**
  * Default configuration values
@@ -263,7 +263,7 @@ export function getEnvironmentConfig(): Partial<ScrapingConfig> {
 }
 
 // Additional exports for backward compatibility
-export function getScrapingConfig(env?: string): ScrapingConfig {
+export function getScrapingConfig(_env?: string): ScrapingConfig {
   const baseConfig = getEnvironmentConfig();
   return mergeScrapingConfig(baseConfig);
 }
@@ -279,7 +279,7 @@ export function validateConfig(config: ScrapingConfig): { valid: boolean; errors
   for (const [name, providerConfig] of Object.entries(config.providers)) {
     const result = validateProviderConfig(name, providerConfig);
     if (!result.valid) {
-      errors.push(...result.errors.map((e) => `${name}: ${e}`));
+      errors.push(...result.errors.map((e: any) => `${name}: ${e}`));
     }
   }
 

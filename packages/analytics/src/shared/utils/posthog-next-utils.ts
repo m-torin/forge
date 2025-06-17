@@ -26,6 +26,10 @@ try {
  * Create a PostHog client for server-side operations
  */
 export async function createPostHogServerClient(apiKey: string, options?: any) {
+  if (typeof window !== 'undefined') {
+    throw new Error('createPostHogServerClient should only be called on the server');
+  }
+
   try {
     const { PostHog } = await import('posthog-node');
 
@@ -35,7 +39,7 @@ export async function createPostHogServerClient(apiKey: string, options?: any) {
       host: 'https://app.posthog.com',
       ...options,
     });
-  } catch (error) {
+  } catch (_error) {
     throw new Error('PostHog Node.js SDK not available. Install with: npm install posthog-node');
   }
 }
@@ -92,7 +96,7 @@ export const getPostHogBootstrapData = cache(
       setCachedBootstrapData(distinctId, bootstrapData);
 
       return bootstrapData;
-    } catch (error) {
+    } catch (_error) {
       // Return minimal data on error
       const minimalData = createMinimalBootstrapData(distinctId);
       setCachedBootstrapData(distinctId, minimalData);
@@ -121,14 +125,14 @@ export const getCompleteBootstrapData = cache(
 
       // Fetch bootstrap data
       return await getPostHogBootstrapData(apiKey, distinctId, options);
-    } catch (error) {
+    } catch (_error) {
       if (options?.fallbackToGenerated !== false) {
         // Fallback to generated ID with empty flags
         const fallbackId = generateDistinctId();
         return createMinimalBootstrapData(fallbackId);
       }
 
-      throw error;
+      throw _error;
     }
   },
 );
@@ -210,7 +214,7 @@ export function createPostHogConfig(
  * Middleware helper for PostHog tracking
  */
 export function createPostHogMiddleware(apiKey: string) {
-  return async (request: any, response?: any) => {
+  return async (request: any, _response?: any) => {
     try {
       // Extract user info from request
       const userAgent = request.headers?.get?.('user-agent') || request.headers?.['user-agent'];
@@ -231,7 +235,7 @@ export function createPostHogMiddleware(apiKey: string) {
       };
 
       return trackingContext;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   };

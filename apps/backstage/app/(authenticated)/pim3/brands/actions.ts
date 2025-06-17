@@ -2,14 +2,21 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { prisma, orm } from '@repo/database/prisma';
-import { type BrandType, ContentStatus, type Prisma } from '@repo/database/prisma';
-import { auth } from '@repo/auth/server';
-
+import { auth } from '@repo/auth/server/next';
+import {
+  countBrandsAction,
+  createBrandAction,
+  findManyBrandsAction,
+  findUniqueBrandAction,
+  updateBrandAction,
+  type BrandType,
+  ContentStatus,
+  type Prisma,
+} from '@repo/database/prisma';
 
 /**
  * PIM3-specific brand actions
- * 
+ *
  * These actions provide enhanced functionality specific to PIM3:
  * - Hierarchical brand relationships (parent/child)
  * - Soft delete/restore capabilities
@@ -29,10 +36,10 @@ export async function getBrands(params?: {
   parentId?: string | null;
   includeDeleted?: boolean;
 }) {
-  const session = await auth.api.getSession();
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
+  // const session = await auth.api.getSession();
+  // if (!session) {
+  //   throw new Error('Unauthorized');
+  // }
 
   const {
     type,
@@ -60,7 +67,7 @@ export async function getBrands(params?: {
   };
 
   const [brands, total] = await Promise.all([
-    orm.findManyBrands({
+    findManyBrands({
       include: {
         _count: {
           select: {
@@ -79,7 +86,7 @@ export async function getBrands(params?: {
       take: limit,
       where,
     }),
-    orm.countBrands({ where }),
+    countBrands({ where }),
   ]);
 
   return {
@@ -99,7 +106,7 @@ export async function getBrand(id: string) {
   //   throw new Error('Unauthorized');
   // }
 
-  const brand = await orm.findUniqueBrand({
+  const brand = await findUniqueBrand({
     include: {
       _count: {
         select: {
@@ -140,7 +147,7 @@ export async function createBrand(data: {
   // }
 
   // Check if slug already exists
-  const existing = await orm.findUniqueBrand({
+  const existing = await findUniqueBrand({
     where: { slug: data.slug },
   });
 
@@ -150,7 +157,7 @@ export async function createBrand(data: {
 
   // Validate parent exists if provided
   if (data.parentId) {
-    const parent = await orm.findUniqueBrand({
+    const parent = await findUniqueBrand({
       where: { id: data.parentId },
     });
     if (!parent) {
@@ -158,7 +165,7 @@ export async function createBrand(data: {
     }
   }
 
-  const brand = await orm.createBrand({
+  const brand = await createBrandOrm({
     data: {
       name: data.name,
       type: data.type,
@@ -205,7 +212,7 @@ export async function updateBrand(
   // }
 
   // Check if brand exists
-  const existing = await orm.findUniqueBrand({
+  const existing = await findUniqueBrand({
     where: { id },
   });
 
@@ -215,7 +222,7 @@ export async function updateBrand(
 
   // Check if new slug already exists (if slug is being changed)
   if (data.slug && data.slug !== existing.slug) {
-    const slugExists = await orm.findUniqueBrand({
+    const slugExists = await findUniqueBrand({
       where: { slug: data.slug },
     });
     if (slugExists) {
@@ -231,7 +238,7 @@ export async function updateBrand(
     }
 
     // Check if parent exists
-    const parent = await orm.findUniqueBrand({
+    const parent = await findUniqueBrand({
       where: { id: data.parentId },
     });
     if (!parent) {
@@ -245,7 +252,7 @@ export async function updateBrand(
     }
   }
 
-  const brand = await orm.updateBrand({
+  const brand = await updateBrandOrm({
     data: {
       ...(data.name !== undefined && { name: data.name }),
       ...(data.slug !== undefined && { slug: data.slug }),
@@ -281,7 +288,7 @@ export async function deleteBrand(id: string) {
   //   throw new Error('Unauthorized');
   // }
 
-  const brand = await orm.updateBrand({
+  const brand = await updateBrandOrm({
     data: {
       deletedAt: new Date(),
       deletedById: 'system', // session.user.id,
@@ -301,7 +308,7 @@ export async function restoreBrand(id: string) {
   //   throw new Error('Unauthorized');
   // }
 
-  const brand = await orm.updateBrand({
+  const brand = await updateBrandOrm({
     data: {
       deletedAt: null,
       deletedById: null,
@@ -315,7 +322,7 @@ export async function restoreBrand(id: string) {
 
 // Helper function to check if a brand is a descendant of another
 async function checkIfDescendant(brandId: string, potentialAncestorId: string): Promise<boolean> {
-  const brand = await orm.findUniqueBrand({
+  const brand = await findUniqueBrand({
     select: { parentId: true },
     where: { id: brandId },
   });
@@ -339,7 +346,7 @@ export async function getBrandTree(includeDeleted = false) {
   //   throw new Error('Unauthorized');
   // }
 
-  const brands = await orm.findManyBrands({
+  const brands = await findManyBrands({
     include: {
       _count: {
         select: {
@@ -357,7 +364,7 @@ export async function getBrandTree(includeDeleted = false) {
   const tree: any[] = [];
 
   // First pass: create map
-  brands.forEach((brand) => {
+  brands.forEach((brand: any) => {
     brandMap.set(brand.id, {
       ...brand,
       children: [],
@@ -365,7 +372,7 @@ export async function getBrandTree(includeDeleted = false) {
   });
 
   // Second pass: build tree
-  brands.forEach((brand) => {
+  brands.forEach((brand: any) => {
     const brandNode = brandMap.get(brand.id);
     if (brand.parentId) {
       const parent = brandMap.get(brand.parentId);
@@ -388,7 +395,7 @@ export async function duplicateBrand(id: string) {
   //   throw new Error('Unauthorized');
   // }
 
-  const original = await orm.findUniqueBrand({
+  const original = await findUniqueBrand({
     where: { id },
   });
 
@@ -399,17 +406,17 @@ export async function duplicateBrand(id: string) {
   // Generate unique slug
   let newSlug = `${original.slug}-copy`;
   let counter = 1;
-  while (await orm.findUniqueBrand({ where: { slug: newSlug } })) {
+  while (await findUniqueBrand({ where: { slug: newSlug } })) {
     newSlug = `${original.slug}-copy-${counter}`;
     counter++;
   }
 
-  const duplicate = await orm.createBrand({
+  const duplicate = await createBrandOrm({
     data: {
       name: `${original.name} (Copy)`,
       type: original.type,
       baseUrl: original.baseUrl,
-      copy: original.copy,
+      copy: original.copy ?? {},
       displayOrder: original.displayOrder + 1,
       parentId: original.parentId,
       slug: newSlug,

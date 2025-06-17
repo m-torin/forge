@@ -18,9 +18,9 @@ export interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
 }
 
 const Heading: React.FC<HeadingProps> = ({
-  'data-testid': testId = 'heading',
   children,
   className = 'mb-12 lg:mb-14 text-neutral-900 dark:text-neutral-50',
+  'data-testid': testId = 'heading',
   description,
   fontClass = 'text-3xl md:text-4xl font-semibold',
   hasNextPrev = false,
@@ -35,8 +35,8 @@ const Heading: React.FC<HeadingProps> = ({
 }) => {
   return (
     <div
-      data-testid={testId}
       className={clsx('relative flex flex-col justify-between sm:flex-row sm:items-end', className)}
+      data-testid={testId}
     >
       <div className={clsx(isCenter && 'mx-auto flex w-full flex-col items-center text-center')}>
         <Level className={clsx(isCenter && 'justify-center', fontClass)} {...args}>
@@ -57,10 +57,10 @@ const Heading: React.FC<HeadingProps> = ({
       {hasNextPrev && !isCenter && (
         <div className="mt-4 flex shrink-0 justify-end sm:ms-2 sm:mt-0">
           <NextPrev
-            onClickNext={onClickNext}
-            onClickPrev={onClickPrev}
             nextDisabled={nextBtnDisabled}
             prevDisabled={prevBtnDisabled}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
           />
         </div>
       )}

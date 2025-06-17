@@ -8,6 +8,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { createAuthMiddleware } from 'better-auth/api';
 import { nextCookies } from 'better-auth/next-js';
 import { admin, apiKey, organization } from 'better-auth/plugins';
+import { haveIBeenPwned } from 'better-auth/plugins/haveibeenpwned';
 import { magicLink } from 'better-auth/plugins/magic-link';
 import { passkey } from 'better-auth/plugins/passkey';
 import { twoFactor } from 'better-auth/plugins/two-factor';
@@ -26,7 +27,13 @@ import {
 } from '../shared/email';
 import { ac, roles } from '../shared/permissions';
 
-import type { AuthSession } from '../shared/types';
+import { accountSecurityPlugin } from './plugins/account-security';
+import { auditLoggerPlugin } from './plugins/audit-logger';
+// Security plugins
+import { passwordPolicyPlugin } from './plugins/password-policy';
+import { rateLimiterPlugin } from './plugins/rate-limiter';
+
+import type { AuthSession, Session } from '../shared/types';
 
 const config = createAuthConfig();
 
@@ -118,7 +125,9 @@ export const auth: any = betterAuth({
   // Email and password configuration
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true, // Changed to true for security
+    minPasswordLength: 12, // Use better-auth's built-in password validation
+    maxPasswordLength: 128,
     sendResetPassword: async ({ url, token, user }) => {
       await sendPasswordResetEmail({ name: user.name, url, email: user.email, token });
     },
@@ -127,7 +136,7 @@ export const auth: any = betterAuth({
   // Email verification configuration
   emailVerification: {
     autoSignInAfterVerification: true,
-    sendOnSignUp: false,
+    sendOnSignUp: true, // Changed to true to send verification email on signup
     sendVerificationEmail: async ({ url, token, user }) => {
       await sendVerificationEmail({ name: user.name, url, email: user.email, token });
     },
@@ -179,6 +188,49 @@ export const auth: any = betterAuth({
   // Plugins configuration
   plugins: [
     nextCookies(),
+
+    // Security plugins
+    passwordPolicyPlugin({
+      minLength: 12,
+      requireUppercase: true,
+      requireLowercase: true,
+      requireNumbers: true,
+      requireSymbols: true,
+      preventCommonPasswords: true,
+      preventEmailInPassword: true,
+    }),
+
+    haveIBeenPwned({
+      customPasswordCompromisedMessage:
+        'This password has been found in data breaches. Please choose a different password for your security.',
+    }),
+
+    accountSecurityPlugin({
+      maxFailedAttempts: 5,
+      lockoutDuration: 30, // 30 minutes
+      detectSuspiciousLogin: true,
+      notifySuspiciousLogin: true,
+    }),
+
+    auditLoggerPlugin({
+      enabled: true,
+      logSuccessfulAuth: true,
+      logFailedAuth: true,
+      logPasswordChanges: true,
+      logProfileUpdates: true,
+      logApiKeyEvents: true,
+      logOrganizationEvents: true,
+      logAdminActions: true,
+      retentionDays: 90,
+    }),
+
+    rateLimiterPlugin({
+      enabled: true,
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      maxAttempts: 5, // 5 attempts per 15 minutes
+      skipSuccessfulRequests: true,
+      message: 'Too many authentication attempts. Please try again later.',
+    }),
 
     // Organization plugin
     ...(config.features.organizations
@@ -371,8 +423,6 @@ export const auth: any = betterAuth({
       enabled: config.features.sessionCaching,
       maxAge: 5 * 60, // 5 minutes
     },
-    cookieSameSite: 'lax',
-    cookieSecure: process.env.NODE_ENV === 'production',
   },
 });
 
@@ -398,9 +448,13 @@ export async function getSession(): Promise<AuthSession | null> {
     return null;
   }
 
+  // Better Auth returns { session, user } where session is the database record
+  // We need to cast it to our extended Session type that includes activeOrganizationId
+  const sessionWithOrg = session.session as Session;
+
   return {
-    activeOrganizationId: (session.session as any).activeOrganizationId || undefined,
-    session: session.session,
+    activeOrganizationId: sessionWithOrg.activeOrganizationId || undefined,
+    session: sessionWithOrg,
     user: session.user,
   };
 }

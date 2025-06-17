@@ -1,0 +1,877 @@
+---
+title: 'Dub URL Shortening'
+description: 'Enterprise-grade URL shortening service with advanced analytics and custom domain support'
+icon: 'link'
+---
+
+# Dub URL Shortening Service
+
+Enterprise-grade URL shortening platform providing branded short links, comprehensive analytics, and team collaboration features for marketing and growth teams.
+
+## Overview
+
+Dub offers powerful URL shortening capabilities with advanced analytics, custom domains, and team management features that integrate seamlessly with the Forge platform's marketing and analytics workflows.
+
+<CardGroup cols={2}>
+  <Card title="Custom Domains" icon="globe">
+    Use your own branded domains for professional short links
+  </Card>
+  <Card title="Advanced Analytics" icon="chart-bar">
+    Detailed click tracking with geographic and device insights
+  </Card>
+  <Card title="Team Management" icon="users">
+    Collaborate with team members and manage permissions
+  </Card>
+  <Card title="API-First" icon="code">
+    Comprehensive REST API with SDKs for multiple languages
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **Custom Domains** - Use your own branded domains (e.g., yourbrand.co/link)
+- **Advanced Analytics** - Real-time click tracking with detailed insights
+- **QR Code Generation** - Automatic QR codes for all shortened links
+- **Link Expiration** - Set expiration dates and redirect expired links
+- **Password Protection** - Secure sensitive links with passwords
+- **Geo-targeting** - Route users to different URLs based on location
+- **UTM Parameters** - Built-in UTM tracking for campaign management
+- **Bulk Operations** - Create and manage thousands of links efficiently
+- **Team Collaboration** - Share links and analytics across team members
+- **API Integration** - Comprehensive REST API with webhooks
+
+## Installation
+
+<Tabs>
+  <Tab title="JavaScript/TypeScript">
+    ```bash
+    npm install dub
+    # or
+    pnpm add dub
+    ```
+  </Tab>
+  
+  <Tab title="Python">
+    ```bash
+    pip install dub-python
+    ```
+  </Tab>
+  
+  <Tab title="REST API">
+    ```bash
+    # No installation required - use cURL or any HTTP client
+    curl -X POST "https://api.dub.co/links" \
+      -H "Authorization: Bearer DUB_API_KEY"
+    ```
+  </Tab>
+</Tabs>
+
+## Quick Start
+
+<Steps>
+  <Step title="Get API Key">
+    ```bash
+    # Sign up at https://dub.co and get your API key
+    export DUB_API_KEY="dub_your-api-key-here"
+    ```
+  </Step>
+  
+  <Step title="Create Your First Link">
+    ```typescript
+    import { Dub } from 'dub';
+    
+    const dub = new Dub({
+      token: process.env.DUB_API_KEY,
+    });
+    
+    // Create a simple short link
+    const link = await dub.links.create({
+      url: 'https://example.com/very/long/url/path',
+      domain: 'dub.sh', // or your custom domain
+      key: 'my-link', // optional custom short key
+      tags: ['marketing', 'campaign-2024'],
+    });
+    
+    console.log(`Short link: ${link.shortLink}`);
+    console.log(`Link ID: ${link.id}`);
+    ```
+  </Step>
+  
+  <Step title="Track Analytics">
+    ```typescript
+    // Get click analytics for your link
+    const analytics = await dub.analytics.retrieve({
+      linkId: link.id,
+      interval: '7d', // Last 7 days
+      groupBy: 'countries', // Group by countries
+    });
+    
+    console.log(`Total clicks: ${analytics.clicks}`);
+    console.log(`Top countries:`, analytics.countries.slice(0, 5));
+    ```
+  </Step>
+</Steps>
+
+## Advanced Usage
+
+### Custom Domain Setup
+
+<CodeGroup>
+```typescript Domain Configuration
+// First, add your custom domain in the Dub dashboard
+// Then use it in your API calls
+
+const customDomainLink = await dub.links.create({
+  url: 'https://example.com/product-launch',
+  domain: 'go.yourbrand.com', // Your custom domain
+  key: 'product-launch-2024',
+  title: 'Product Launch 2024',
+  description: 'Check out our amazing new product!',
+  tags: ['product', 'launch', '2024'],
+  
+  // Advanced options
+  expiresAt: new Date('2024-12-31'),
+  expiredUrl: 'https://yourbrand.com/expired',
+  password: 'secret123', // Optional password protection
+  
+  // UTM parameters for tracking
+  utm: {
+    source: 'email',
+    medium: 'newsletter',
+    campaign: 'product-launch',
+    term: 'cta-button',
+    content: 'header',
+  },
+});
+
+console.log(`Branded link: ${customDomainLink.shortLink}`);
+```
+
+```typescript Geo-targeting Setup
+// Route users to different URLs based on their location
+const geoTargetedLink = await dub.links.create({
+  url: 'https://example.com/global', // Default URL
+  domain: 'go.yourbrand.com',
+  key: 'global-campaign',
+  
+  // Geo-targeting configuration
+  geo: {
+    US: 'https://example.com/us-landing',
+    UK: 'https://example.com/uk-landing',
+    DE: 'https://example.com/de-landing',
+    FR: 'https://example.com/fr-landing',
+    // Users from other countries go to the default URL
+  },
+  
+  tags: ['geo-targeted', 'global-campaign'],
+});
+
+console.log('Geo-targeted link created:', geoTargetedLink.shortLink);
+```
+</CodeGroup>
+
+### Bulk Link Management
+
+<Tabs>
+  <Tab title="Bulk Creation">
+    ```typescript
+    // Create multiple links efficiently
+    const bulkLinks = [
+      {
+        url: 'https://example.com/product-a',
+        key: 'product-a-2024',
+        tags: ['product', 'category-a'],
+      },
+      {
+        url: 'https://example.com/product-b', 
+        key: 'product-b-2024',
+        tags: ['product', 'category-b'],
+      },
+      {
+        url: 'https://example.com/product-c',
+        key: 'product-c-2024', 
+        tags: ['product', 'category-c'],
+      },
+    ];
+    
+    // Create all links in parallel
+    const createdLinks = await Promise.all(
+      bulkLinks.map(linkData => 
+        dub.links.create({
+          ...linkData,
+          domain: 'go.yourbrand.com',
+        })
+      )
+    );
+    
+    console.log(`Created ${createdLinks.length} links:`);
+    createdLinks.forEach(link => {
+      console.log(`- ${link.key}: ${link.shortLink}`);
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Bulk Analytics">
+    ```typescript
+    // Get analytics for multiple links
+    const linkIds = createdLinks.map(link => link.id);
+    
+    const bulkAnalytics = await Promise.all(
+      linkIds.map(async linkId => {
+        const analytics = await dub.analytics.retrieve({
+          linkId,
+          interval: '30d',
+          groupBy: 'devices',
+        });
+        
+        return {
+          linkId,
+          clicks: analytics.clicks,
+          topDevices: analytics.devices.slice(0, 3),
+        };
+      })
+    );
+    
+    // Aggregate total statistics
+    const totalClicks = bulkAnalytics.reduce(
+      (sum, analytics) => sum + analytics.clicks, 
+      0
+    );
+    
+    console.log(`Total clicks across all links: ${totalClicks}`);
+    
+    // Find best performing link
+    const bestLink = bulkAnalytics.reduce(
+      (best, current) => current.clicks > best.clicks ? current : best
+    );
+    
+    console.log(`Best performing link: ${bestLink.linkId} (${bestLink.clicks} clicks)`);
+    ```
+  </Tab>
+  
+  <Tab title="Link Management">
+    ```typescript
+    // Update multiple links
+    const updatePromises = createdLinks.map(link => 
+      dub.links.update(link.id, {
+        tags: [...(link.tags || []), 'updated-campaign'],
+        title: `Updated: ${link.title || link.key}`,
+      })
+    );
+    
+    await Promise.all(updatePromises);
+    
+    // Archive old campaign links
+    const oldCampaignLinks = await dub.links.list({
+      tags: 'old-campaign',
+      sort: 'createdAt',
+      order: 'asc',
+    });
+    
+    for (const link of oldCampaignLinks.result) {
+      await dub.links.update(link.id, {
+        archived: true,
+      });
+    }
+    
+    console.log(`Archived ${oldCampaignLinks.result.length} old campaign links`);
+    ```
+  </Tab>
+</Tabs>
+
+### Advanced Analytics
+
+<CodeGroup>
+```typescript Comprehensive Analytics
+// Get detailed analytics breakdown
+async function getComprehensiveAnalytics(linkId: string) {
+  const [
+    overallStats,
+    countryStats,
+    deviceStats,
+    browserStats,
+    referrerStats,
+    timeSeriesData
+  ] = await Promise.all([
+    // Overall statistics
+    dub.analytics.retrieve({
+      linkId,
+      interval: '30d',
+    }),
+    
+    // Geographic breakdown
+    dub.analytics.retrieve({
+      linkId,
+      interval: '30d',
+      groupBy: 'countries',
+    }),
+    
+    // Device breakdown
+    dub.analytics.retrieve({
+      linkId,
+      interval: '30d', 
+      groupBy: 'devices',
+    }),
+    
+    // Browser breakdown
+    dub.analytics.retrieve({
+      linkId,
+      interval: '30d',
+      groupBy: 'browsers',
+    }),
+    
+    // Referrer breakdown
+    dub.analytics.retrieve({
+      linkId,
+      interval: '30d',
+      groupBy: 'referers',
+    }),
+    
+    // Time series data (daily clicks)
+    dub.analytics.retrieve({
+      linkId,
+      interval: '30d',
+      groupBy: 'timeseries',
+      timezone: 'America/New_York',
+    }),
+  ]);
+  
+  return {
+    summary: {
+      totalClicks: overallStats.clicks,
+      uniqueClicks: overallStats.uniqueClicks,
+      ctr: overallStats.ctr,
+    },
+    geographic: countryStats.countries,
+    devices: deviceStats.devices,
+    browsers: browserStats.browsers,
+    referrers: referrerStats.referers,
+    timeline: timeSeriesData.timeseries,
+  };
+}
+
+// Usage
+const analytics = await getComprehensiveAnalytics('link_123');
+console.log('Analytics report:', analytics);
+```
+
+```typescript Campaign Performance Tracking
+class CampaignTracker {
+  constructor(private dub: Dub) {}
+  
+  async createCampaign(campaignId: string, links: Array<{url: string, channel: string}>) {
+    const campaignLinks = await Promise.all(
+      links.map(({url, channel}) => 
+        this.dub.links.create({
+          url,
+          domain: 'go.yourbrand.com',
+          key: `${campaignId}-${channel}`,
+          tags: ['campaign', campaignId, channel],
+          utm: {
+            source: channel,
+            medium: 'social',
+            campaign: campaignId,
+          },
+        })
+      )
+    );
+    
+    return campaignLinks;
+  }
+  
+  async getCampaignMetrics(campaignId: string) {
+    // Get all links for this campaign
+    const campaignLinks = await this.dub.links.list({
+      tags: campaignId,
+    });
+    
+    // Get analytics for each link
+    const linkAnalytics = await Promise.all(
+      campaignLinks.result.map(async link => {
+        const analytics = await this.dub.analytics.retrieve({
+          linkId: link.id,
+          interval: '7d',
+        });
+        
+        return {
+          channel: link.key.split('-').pop(),
+          clicks: analytics.clicks,
+          uniqueClicks: analytics.uniqueClicks,
+          link: link.shortLink,
+        };
+      })
+    );
+    
+    // Calculate campaign totals
+    const totals = linkAnalytics.reduce(
+      (acc, link) => ({
+        clicks: acc.clicks + link.clicks,
+        uniqueClicks: acc.uniqueClicks + link.uniqueClicks,
+      }),
+      { clicks: 0, uniqueClicks: 0 }
+    );
+    
+    return {
+      campaignId,
+      totals,
+      byChannel: linkAnalytics,
+      bestPerforming: linkAnalytics.sort((a, b) => b.clicks - a.clicks)[0],
+    };
+  }
+}
+
+// Usage
+const tracker = new CampaignTracker(dub);
+
+const campaignLinks = await tracker.createCampaign('product-launch-2024', [
+  { url: 'https://example.com/landing?ref=twitter', channel: 'twitter' },
+  { url: 'https://example.com/landing?ref=facebook', channel: 'facebook' },
+  { url: 'https://example.com/landing?ref=linkedin', channel: 'linkedin' },
+]);
+
+const metrics = await tracker.getCampaignMetrics('product-launch-2024');
+console.log('Campaign performance:', metrics);
+```
+</CodeGroup>
+
+## Integration with Forge Platform
+
+### Analytics Integration
+
+<CodeGroup>
+```typescript Forge Analytics Integration
+import { createAnalyticsClient } from '@repo/analytics/client/next';
+import { Dub } from 'dub';
+
+class ForgeUrlShortener {
+  constructor(
+    private dub: Dub,
+    private analytics: ReturnType<typeof createAnalyticsClient>
+  ) {}
+  
+  async createTrackedLink(
+    url: string,
+    options: {
+      campaign?: string;
+      source?: string;
+      medium?: string;
+      userId?: string;
+    }
+  ) {
+    // Create Dub link with UTM parameters
+    const dubLink = await this.dub.links.create({
+      url,
+      domain: 'go.yourbrand.com',
+      tags: [options.campaign, options.source].filter(Boolean),
+      utm: {
+        source: options.source,
+        medium: options.medium,
+        campaign: options.campaign,
+      },
+    });
+    
+    // Track link creation in Forge analytics
+    this.analytics.track('link_created', {
+      dubLinkId: dubLink.id,
+      shortUrl: dubLink.shortLink,
+      originalUrl: url,
+      campaign: options.campaign,
+      source: options.source,
+      medium: options.medium,
+      userId: options.userId,
+      timestamp: new Date().toISOString(),
+    });
+    
+    return dubLink;
+  }
+  
+  async syncDubAnalytics(linkId: string) {
+    // Get analytics from Dub
+    const dubAnalytics = await this.dub.analytics.retrieve({
+      linkId,
+      interval: '1d', // Last 24 hours
+    });
+    
+    // Send to Forge analytics
+    this.analytics.track('link_analytics_sync', {
+      dubLinkId: linkId,
+      clicks: dubAnalytics.clicks,
+      uniqueClicks: dubAnalytics.uniqueClicks,
+      syncedAt: new Date().toISOString(),
+    });
+    
+    // Track individual click events if available
+    if (dubAnalytics.timeseries) {
+      dubAnalytics.timeseries.forEach(dataPoint => {
+        this.analytics.track('link_click_aggregated', {
+          dubLinkId: linkId,
+          date: dataPoint.start,
+          clicks: dataPoint.clicks,
+          uniqueClicks: dataPoint.uniqueClicks,
+        });
+      });
+    }
+  }
+}
+```
+
+```typescript Database Integration
+import { createDatabaseClient } from '@repo/database/client/next';
+
+interface LinkRecord {
+  id: string;
+  dubLinkId: string;
+  shortUrl: string;
+  originalUrl: string;
+  campaign?: string;
+  tags: string[];
+  createdAt: Date;
+  expiresAt?: Date;
+  clickCount: number;
+  lastClickAt?: Date;
+}
+
+class LinkDatabase {
+  constructor(private db: ReturnType<typeof createDatabaseClient>) {}
+  
+  async storeLinkRecord(dubLink: any, metadata: any): Promise<LinkRecord> {
+    const linkRecord = {
+      id: generateId(),
+      dubLinkId: dubLink.id,
+      shortUrl: dubLink.shortLink,
+      originalUrl: dubLink.url,
+      campaign: metadata.campaign,
+      tags: dubLink.tags || [],
+      createdAt: new Date(),
+      expiresAt: dubLink.expiresAt ? new Date(dubLink.expiresAt) : null,
+      clickCount: 0,
+      lastClickAt: null,
+    };
+    
+    await this.db.linkRecord.create({
+      data: linkRecord
+    });
+    
+    return linkRecord;
+  }
+  
+  async updateClickStats(dubLinkId: string, clickData: any) {
+    await this.db.linkRecord.update({
+      where: { dubLinkId },
+      data: {
+        clickCount: { increment: clickData.newClicks },
+        lastClickAt: new Date(),
+      },
+    });
+  }
+  
+  async getLinksByCampaign(campaign: string): Promise<LinkRecord[]> {
+    return this.db.linkRecord.findMany({
+      where: { campaign },
+      orderBy: { clickCount: 'desc' },
+    });
+  }
+  
+  async getTopPerformingLinks(limit: number = 10): Promise<LinkRecord[]> {
+    return this.db.linkRecord.findMany({
+      orderBy: { clickCount: 'desc' },
+      take: limit,
+    });
+  }
+}
+```
+</CodeGroup>
+
+### Workflow Automation
+
+<CodeGroup>
+```typescript Automated Link Creation
+import { createWorkflow } from '@repo/orchestration';
+
+// Workflow for automated marketing link creation
+export const marketingLinkWorkflow = createWorkflow('marketing-link-creation', {
+  steps: [
+    {
+      id: 'validate-url',
+      type: 'url-validation',
+      config: {
+        checkAccessibility: true,
+        validateSSL: true,
+      }
+    },
+    {
+      id: 'create-dub-link',
+      type: 'dub-link-creation',
+      config: {
+        domain: 'go.yourbrand.com',
+        addUTMParams: true,
+        generateQR: true,
+      }
+    },
+    {
+      id: 'store-in-database',
+      type: 'database-store',
+      config: {
+        table: 'marketing_links'
+      }
+    },
+    {
+      id: 'notify-team',
+      type: 'slack-notification',
+      config: {
+        channel: '#marketing',
+        template: 'new-link-created'
+      }
+    }
+  ]
+});
+
+// Execute workflow
+const result = await marketingLinkWorkflow.execute({
+  originalUrl: 'https://example.com/new-product',
+  campaign: 'product-launch-q4',
+  source: 'email',
+  medium: 'newsletter'
+});
+```
+
+```typescript Analytics Reporting Workflow
+import { createScheduler } from '@repo/orchestration';
+
+// Schedule daily analytics reports
+const analyticsScheduler = createScheduler();
+
+analyticsScheduler.schedule('daily-link-report', {
+  cron: '0 9 * * *', // 9 AM daily
+  workflow: async () => {
+    // Get yesterday's link performance
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const dailyReport = await generateDailyLinkReport(yesterday);
+    
+    // Send to Slack
+    await sendSlackReport('#marketing', dailyReport);
+    
+    // Store in database
+    await storeDailyReport(dailyReport);
+    
+    return dailyReport;
+  }
+});
+
+async function generateDailyLinkReport(date: Date) {
+  // Get all active links
+  const activeLinks = await dub.links.list({
+    sort: 'clicks',
+    order: 'desc',
+  });
+  
+  // Get analytics for each link
+  const linkPerformance = await Promise.all(
+    activeLinks.result.slice(0, 10).map(async link => {
+      const analytics = await dub.analytics.retrieve({
+        linkId: link.id,
+        interval: '1d',
+        start: date.toISOString(),
+        end: new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+      });
+      
+      return {
+        shortUrl: link.shortLink,
+        clicks: analytics.clicks,
+        uniqueClicks: analytics.uniqueClicks,
+        ctr: analytics.ctr,
+      };
+    })
+  );
+  
+  return {
+    date: date.toISOString().split('T')[0],
+    totalClicks: linkPerformance.reduce((sum, link) => sum + link.clicks, 0),
+    topLinks: linkPerformance,
+    summary: `${linkPerformance.length} active links generated ${linkPerformance.reduce((sum, link) => sum + link.clicks, 0)} clicks`,
+  };
+}
+```
+</CodeGroup>
+
+## QR Code Integration
+
+<CodeGroup>
+```typescript QR Code Generation
+// Dub automatically generates QR codes for all links
+const linkWithQR = await dub.links.create({
+  url: 'https://example.com/mobile-app',
+  domain: 'go.yourbrand.com',
+  key: 'mobile-app',
+});
+
+// QR code is automatically available at:
+const qrCodeUrl = `${linkWithQR.shortLink}/qr`;
+console.log(`QR Code URL: ${qrCodeUrl}`);
+
+// You can also get QR code data via API
+const qrData = await dub.qr.get({
+  url: linkWithQR.shortLink,
+  size: 512, // 512x512 pixels
+  level: 'M', // Error correction level
+  includeMargin: true,
+});
+
+// Use in React component
+function QRCodeDisplay({ shortUrl }: { shortUrl: string }) {
+  return (
+    <div className="qr-code-container">
+      <img 
+        src={`${shortUrl}/qr`}
+        alt="QR Code"
+        width={200}
+        height={200}
+      />
+      <p>Scan to visit: {shortUrl}</p>
+    </div>
+  );
+}
+```
+
+```typescript Print-Ready QR Campaigns
+// Generate QR codes for print materials
+async function createPrintCampaign(
+  baseUrl: string, 
+  materials: Array<{type: string, code: string}>
+) {
+  const printLinks = await Promise.all(
+    materials.map(async material => {
+      const link = await dub.links.create({
+        url: `${baseUrl}?print=${material.code}`,
+        domain: 'go.yourbrand.com',
+        key: `print-${material.code}`,
+        tags: ['print-campaign', material.type],
+        utm: {
+          source: 'print',
+          medium: material.type,
+          campaign: 'print-campaign-2024',
+          content: material.code,
+        },
+      });
+      
+      return {
+        material: material.type,
+        code: material.code,
+        shortUrl: link.shortLink,
+        qrCodeUrl: `${link.shortLink}/qr?size=1024`, // High-res for print
+      };
+    })
+  );
+  
+  return printLinks;
+}
+
+// Usage
+const printCampaign = await createPrintCampaign('https://example.com/landing', [
+  { type: 'business-card', code: 'BC001' },
+  { type: 'flyer', code: 'FL001' },
+  { type: 'poster', code: 'PO001' },
+  { type: 'brochure', code: 'BR001' },
+]);
+
+console.log('Print campaign created:', printCampaign);
+```
+</CodeGroup>
+
+## API Reference
+
+### Core Methods
+
+<AccordionGroup>
+  <Accordion title="links.create()" icon="plus">
+    **Create a new short link**
+    
+    ```typescript
+    create(options: CreateLinkOptions): Promise<Link>
+    
+    interface CreateLinkOptions {
+      url: string;
+      domain?: string;
+      key?: string;
+      title?: string;
+      description?: string;
+      image?: string;
+      tags?: string[];
+      expiresAt?: Date;
+      expiredUrl?: string;
+      password?: string;
+      utm?: UTMParameters;
+      geo?: Record<string, string>;
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="links.update()" icon="edit">
+    **Update an existing link**
+    
+    ```typescript
+    update(linkId: string, options: UpdateLinkOptions): Promise<Link>
+    
+    interface UpdateLinkOptions {
+      url?: string;
+      title?: string;
+      description?: string;
+      tags?: string[];
+      expiresAt?: Date;
+      archived?: boolean;
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="analytics.retrieve()" icon="chart-bar">
+    **Get link analytics**
+    
+    ```typescript
+    retrieve(options: AnalyticsOptions): Promise<Analytics>
+    
+    interface AnalyticsOptions {
+      linkId?: string;
+      domain?: string;
+      key?: string;
+      interval: '1h' | '24h' | '7d' | '30d' | '90d' | 'all';
+      start?: string;
+      end?: string;
+      timezone?: string;
+      groupBy?: 'countries' | 'cities' | 'devices' | 'browsers' | 'os' | 'referers' | 'timeseries';
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Warning>
+**URL Shortening Best Practices:**
+- Use descriptive custom keys for better link management
+- Implement proper UTM parameter strategies for campaign tracking
+- Set appropriate expiration dates for time-sensitive content
+- Use geo-targeting thoughtfully to improve user experience
+- Monitor link performance regularly and optimize based on data
+- Implement proper access controls for team collaboration
+</Warning>
+
+### Recommended Patterns
+
+1. **Link Organization**
+   - Use consistent naming conventions for custom keys
+   - Implement systematic tagging strategies
+   - Group related links by campaigns or projects
+
+2. **Analytics & Tracking**
+   - Set up regular analytics syncing with your main analytics platform
+   - Create custom dashboards for campaign performance
+   - Implement automated reporting workflows
+
+3. **Security & Management**
+   - Use password protection for sensitive links
+   - Implement link expiration for time-sensitive content
+   - Regular audit and cleanup of unused links
+
+Dub provides enterprise-grade URL shortening capabilities that integrate seamlessly with the Forge platform's marketing, analytics, and automation workflows, enabling sophisticated link management and campaign tracking.

@@ -254,7 +254,7 @@ export function ProductAssetsTable() {
       });
 
       if (result.success && result.data) {
-        setAssets(result.data);
+        setAssets(result.data as ProductAssetWithProduct[]);
         if (result.pagination) {
           setTotalPages(result.pagination.totalPages);
         }
@@ -344,8 +344,8 @@ export function ProductAssetsTable() {
   const sortedData = sortBy
     ? [...assets].sort((a, b) => {
         if (!sortBy) return 0;
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
+        const aValue = (a as unknown as any)[sortBy];
+        const bValue = (b as unknown as any)[sortBy];
 
         if (typeof aValue === 'string' && typeof bValue === 'string') {
           return reverseSortDirection ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);

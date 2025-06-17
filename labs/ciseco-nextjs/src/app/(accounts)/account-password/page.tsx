@@ -1,4 +1,6 @@
-import { ButtonPrimary, Input, Label } from '@repo/design-system/ciseco'
+import Label from '@/components/Label/Label'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import Input from '@/shared/Input/Input'
 
 export const metadata = {
   title: 'Account - Password',

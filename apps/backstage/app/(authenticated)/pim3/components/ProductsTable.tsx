@@ -120,8 +120,10 @@ export function ProductsTable() {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
-  const [productModalOpened, { open: openProductModal, close: closeProductModal }] = useDisclosure(false);
-  const [detailsModalOpened, { open: openDetailsModal, close: closeDetailsModal }] = useDisclosure(false);
+  const [productModalOpened, { open: openProductModal, close: closeProductModal }] =
+    useDisclosure(false);
+  const [detailsModalOpened, { open: openDetailsModal, close: closeDetailsModal }] =
+    useDisclosure(false);
   const [editingProduct, setEditingProduct] = useState<ProductWithRelations | null>(null);
   const [viewingProduct, setViewingProduct] = useState<ProductWithRelations | null>(null);
   const router = useRouter();
@@ -152,7 +154,7 @@ export function ProductsTable() {
       });
 
       if (result.success && result.data) {
-        setProducts(result.data);
+        setProducts(result.data as unknown as any);
         if (result.pagination) {
           setTotalPages(result.pagination.totalPages);
         }
@@ -348,7 +350,7 @@ export function ProductsTable() {
           </Badge>
         </Table.Td>
         <Table.Td>{product.brand || '-'}</Table.Td>
-        <Table.Td>{formatCurrency(product.price, product.currency)}</Table.Td>
+        <Table.Td>{formatCurrency(product.price, product.currency ?? undefined)}</Table.Td>
         <Table.Td>{product.barcodes.length}</Table.Td>
         <Table.Td>{product.digitalAssets.length}</Table.Td>
         <Table.Td>
@@ -536,7 +538,7 @@ export function ProductsTable() {
             value={form.values.statusFilter}
           />
           <Select
-            onChange={(value) => form.setFieldValue('typeFilter', value || '')}
+            onChange={(value) => form.setFieldValue('typeFilter', (value as unknown as any) || '')}
             placeholder="Type"
             style={{ width: rem(120) }}
             clearable
@@ -558,7 +560,9 @@ export function ProductsTable() {
             value={form.values.categoryFilter}
           />
           <Select
-            onChange={(value) => form.setFieldValue('parentFilter', value || 'all')}
+            onChange={(value) =>
+              form.setFieldValue('parentFilter', (value as unknown as any) || 'all')
+            }
             placeholder="Hierarchy"
             style={{ width: rem(120) }}
             data={[
@@ -570,7 +574,9 @@ export function ProductsTable() {
             value={form.values.parentFilter}
           />
           <Select
-            onChange={(value) => form.setFieldValue('aiGeneratedFilter', value || 'all')}
+            onChange={(value) =>
+              form.setFieldValue('aiGeneratedFilter', (value as unknown as any) || 'all')
+            }
             placeholder="AI Content"
             style={{ width: rem(120) }}
             data={[
@@ -668,11 +674,14 @@ export function ProductsTable() {
                   onChange={(event) =>
                     toggleAllRows(
                       form,
-                      products.map((p) => p.id),
+                      products.map((p: any) => p.id),
                       event.currentTarget.checked,
                     )
                   }
-                  {...getSelectAllCheckboxProps(form, products.length)}
+                  {...getSelectAllCheckboxProps(
+                    { selectedRows: form.values.selectedRows } as any,
+                    products.length,
+                  )}
                 />
               </Table.Th>
               <Th
@@ -789,7 +798,7 @@ export function ProductsTable() {
         }}
         onUpdate={loadProducts}
         opened={detailsModalOpened}
-        product={viewingProduct}
+        product={viewingProduct as any}
       />
     </Stack>
   );

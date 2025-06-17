@@ -1,8 +1,7 @@
 import React from 'react';
+import { Thing, WithContext } from 'schema-dts';
 
-import type { Thing, WithContext } from 'schema-dts';
-
-interface JsonLdProps {
+interface JsonLdProps extends Record<string, any> {
   code: WithContext<Thing>;
 }
 

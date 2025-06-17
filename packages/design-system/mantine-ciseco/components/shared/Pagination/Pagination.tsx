@@ -6,143 +6,8 @@ import Button from '../Button/Button';
 
 import type React from 'react';
 
-export function Pagination({
-  'data-testid': testId = 'pagination',
-  'aria-label': ariaLabel = 'Page navigation',
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<'nav'> & { 'data-testid'?: string }) {
-  return (
-    <nav
-      data-testid={testId}
-      aria-label={ariaLabel}
-      {...props}
-      className={clsx(className, 'flex gap-x-5')}
-    />
-  );
-}
-
-export function PaginationPrevious({
-  'data-testid': testId = 'pagination-previous',
-  children = 'Previous',
-  className,
-  href = null,
-}: React.PropsWithChildren<{ href?: string | null; className?: string; 'data-testid'?: string }>) {
-  return (
-    <span className={clsx(className, 'grow basis-0')}>
-      <Button
-        {...(href === null ? { disabled: true } : { href })}
-        data-testid={testId}
-        className="rounded-lg"
-        aria-label="Previous page"
-      >
-        <HugeiconsIcon
-          strokeWidth={1.5}
-          color="currentColor"
-          icon={ArrowLeft02Icon}
-          className="me-2"
-          size={16}
-        />
-
-        {children}
-      </Button>
-    </span>
-  );
-}
-
-export function PaginationNext({
-  'data-testid': testId = 'pagination-next',
-  children = 'Next',
-  className,
-  href = null,
-}: React.PropsWithChildren<{ href?: string | null; className?: string; 'data-testid'?: string }>) {
-  return (
-    <span className={clsx(className, 'flex grow basis-0 justify-end')}>
-      <Button
-        {...(href === null ? { disabled: true } : { href })}
-        data-testid={testId}
-        className="rounded-lg"
-        aria-label="Next page"
-      >
-        {children}
-        <HugeiconsIcon
-          strokeWidth={1.5}
-          color="currentColor"
-          icon={ArrowRight02Icon}
-          className="ms-2"
-          size={16}
-        />
-      </Button>
-    </span>
-  );
-}
-
-export function PaginationList({
-  'data-testid': testId = 'pagination-list',
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<'span'> & { 'data-testid'?: string }) {
-  return (
-    <span
-      data-testid={testId}
-      {...props}
-      className={clsx(className, 'hidden items-baseline gap-x-2 sm:flex')}
-    />
-  );
-}
-
-export function PaginationPage({
-  'data-testid': testId = 'pagination-page',
-  children,
-  className,
-  current = false,
-  href,
-}: React.PropsWithChildren<{
-  href: string;
-  className?: string;
-  current?: boolean;
-  'data-testid'?: string;
-}>) {
-  return (
-    <Button
-      data-testid={current ? 'pagination-page-current' : testId}
-      href={href}
-      className={clsx(
-        className,
-        'min-w-[2.25rem] rounded-lg before:absolute before:-inset-px before:rounded-lg',
-        current && 'before:bg-neutral-950/5 dark:before:bg-white/10',
-      )}
-      aria-current={current ? 'page' : undefined}
-      aria-label={`Page ${children}`}
-    >
-      <span className="-mx-0.5">{children}</span>
-    </Button>
-  );
-}
-
-export function PaginationGap({
-  'data-testid': testId = 'pagination-gap',
-  children = <>&hellip;</>,
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<'span'> & { 'data-testid'?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      data-testid={testId}
-      {...props}
-      className={clsx(
-        className,
-        'w-[2.25rem] text-center text-sm/6 font-semibold text-neutral-950 select-none dark:text-white',
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
 // Complete pagination component that accepts totalPages, currentPage, and baseUrl
-export interface CompletePaginationProps {
+export interface CompletePaginationProps extends Record<string, any> {
   baseUrl: string;
   className?: string;
   currentPage: number;
@@ -151,10 +16,10 @@ export interface CompletePaginationProps {
 }
 
 export function CompletePagination({
-  'data-testid': testId = 'complete-pagination',
   baseUrl,
   className,
   currentPage,
+  'data-testid': testId = 'complete-pagination',
   totalPages,
 }: CompletePaginationProps) {
   // Don't render pagination if there's only one page or less
@@ -171,7 +36,7 @@ export function CompletePagination({
 
   // Calculate which pages to show
   const getVisiblePages = () => {
-    const pages: (number | 'gap')[] = [];
+    const pages: ('gap' | number)[] = [];
     const delta = 2; // Number of pages to show around current page
 
     if (totalPages <= 7) {
@@ -215,15 +80,15 @@ export function CompletePagination({
   const nextPage = currentPage < totalPages ? currentPage + 1 : null;
 
   return (
-    <Pagination data-testid={testId} className={clsx('mx-auto', className)}>
+    <Pagination className={clsx('mx-auto', className)} data-testid={testId}>
       <PaginationPrevious href={prevPage ? getPageUrl(prevPage) : null} />
       <PaginationList>
         {visiblePages.map((page, index) => {
           if (page === 'gap') {
-            return <PaginationGap key={`gap-${index}`} />;
+            return <PaginationGap key={`gap-before-${visiblePages[index + 1] || 'end'}`} />;
           }
           return (
-            <PaginationPage key={page} href={getPageUrl(page)} current={page === currentPage}>
+            <PaginationPage key={page} current={page === currentPage} href={getPageUrl(page)}>
               {page}
             </PaginationPage>
           );
@@ -231,5 +96,140 @@ export function CompletePagination({
       </PaginationList>
       <PaginationNext href={nextPage ? getPageUrl(nextPage) : null} />
     </Pagination>
+  );
+}
+
+export function Pagination({
+  'aria-label': ariaLabel = 'Page navigation',
+  className,
+  'data-testid': testId = 'pagination',
+  ...props
+}: React.ComponentPropsWithoutRef<'nav'> & { 'data-testid'?: string }) {
+  return (
+    <nav
+      aria-label={ariaLabel}
+      data-testid={testId}
+      {...props}
+      className={clsx(className, 'flex gap-x-5')}
+    />
+  );
+}
+
+export function PaginationGap({
+  children = <>&hellip;</>,
+  className,
+  'data-testid': testId = 'pagination-gap',
+  ...props
+}: React.ComponentPropsWithoutRef<'span'> & { 'data-testid'?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      data-testid={testId}
+      {...props}
+      className={clsx(
+        className,
+        'w-[2.25rem] text-center text-sm/6 font-semibold text-neutral-950 select-none dark:text-white',
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function PaginationList({
+  className,
+  'data-testid': testId = 'pagination-list',
+  ...props
+}: React.ComponentPropsWithoutRef<'span'> & { 'data-testid'?: string }) {
+  return (
+    <span
+      data-testid={testId}
+      {...props}
+      className={clsx(className, 'hidden items-baseline gap-x-2 sm:flex')}
+    />
+  );
+}
+
+export function PaginationNext({
+  children = 'Next',
+  className,
+  'data-testid': testId = 'pagination-next',
+  href = null,
+}: React.PropsWithChildren<{ className?: string; 'data-testid'?: string; href?: null | string }>) {
+  return (
+    <span className={clsx(className, 'flex grow basis-0 justify-end')}>
+      <Button
+        {...(href === null ? { disabled: true } : { href })}
+        aria-label="Next page"
+        className="rounded-lg"
+        data-testid={testId}
+      >
+        {children}
+        <HugeiconsIcon
+          className="ms-2"
+          color="currentColor"
+          icon={ArrowRight02Icon}
+          size={16}
+          strokeWidth={1.5}
+        />
+      </Button>
+    </span>
+  );
+}
+
+export function PaginationPage({
+  children,
+  className,
+  current = false,
+  'data-testid': testId = 'pagination-page',
+  href,
+}: React.PropsWithChildren<{
+  className?: string;
+  current?: boolean;
+  'data-testid'?: string;
+  href: string;
+}>) {
+  return (
+    <Button
+      aria-current={current ? 'page' : undefined}
+      aria-label={`Page ${children}`}
+      className={clsx(
+        className,
+        'min-w-[2.25rem] rounded-lg before:absolute before:-inset-px before:rounded-lg',
+        current && 'before:bg-neutral-950/5 dark:before:bg-white/10',
+      )}
+      data-testid={current ? 'pagination-page-current' : testId}
+      href={href}
+    >
+      <span className="-mx-0.5">{children}</span>
+    </Button>
+  );
+}
+
+export function PaginationPrevious({
+  children = 'Previous',
+  className,
+  'data-testid': testId = 'pagination-previous',
+  href = null,
+}: React.PropsWithChildren<{ className?: string; 'data-testid'?: string; href?: null | string }>) {
+  return (
+    <span className={clsx(className, 'grow basis-0')}>
+      <Button
+        {...(href === null ? { disabled: true } : { href })}
+        aria-label="Previous page"
+        className="rounded-lg"
+        data-testid={testId}
+      >
+        <HugeiconsIcon
+          className="me-2"
+          color="currentColor"
+          icon={ArrowLeft02Icon}
+          size={16}
+          strokeWidth={1.5}
+        />
+
+        {children}
+      </Button>
+    </span>
   );
 }

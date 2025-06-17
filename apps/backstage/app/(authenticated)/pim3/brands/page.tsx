@@ -302,7 +302,7 @@ export default function BrandsPage() {
   };
 
   // Render brand row
-  const renderBrandRow = (brand: Brand, level = 0) => {
+  const renderBrandRow = (brand: Brand, level = 0): React.ReactNode => {
     const isExpanded = expandedBrands.has(brand.id);
     const hasChildren = brand.children.length > 0;
 

@@ -8,11 +8,12 @@ import { z } from 'zod';
 import {
   compose,
   createStep,
+  createStepWithValidation,
   createWorkflowStep,
   StepFactory,
   StepTemplates,
   withStepMonitoring,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schema
 const DistributedComputationInput = z.object({
@@ -39,6 +40,7 @@ const createWorkerStep = (workerId: number, config: any) => {
     },
     async (context) => {
       const { computation, partition } = context.input;
+      const startTime = Date.now();
 
       // Simulate different computation types
       let result: any;
@@ -87,7 +89,7 @@ const createWorkerStep = (workerId: number, config: any) => {
         output: {
           memoryUsage: process.memoryUsage().heapUsed,
           partition: partition.id,
-          processingTime: Date.now() - context.startTime,
+          processingTime: Date.now() - startTime,
           result,
           workerId,
         },
@@ -95,13 +97,8 @@ const createWorkerStep = (workerId: number, config: any) => {
       };
     },
     {
-      executionConfig: {
-        retryConfig: {
-          backoff: 'exponential',
-          maxAttempts: 2,
-        },
-        timeout: { execution: 60000 },
-      },
+      retries: 2,
+      timeout: 60000,
     },
   );
 };
@@ -166,12 +163,10 @@ export const partitionDatasetStep = createStep(
 export const executeWorkersStep = compose(
   createStep('execute-workers', async (data: any) => {
     const { computation, partitions, workers } = data;
-    const stepFactory = new StepFactory();
 
     // Create worker steps dynamically
     const workerSteps = partitions.map((partition: any, index: number) => {
       const workerStep = createWorkerStep(index, { computation });
-      stepFactory.register(workerStep);
       return workerStep;
     });
 
@@ -209,11 +204,7 @@ export const executeWorkersStep = compose(
       workerResults: results.map((r) => r.output),
     };
   }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['workerCount', 'processingTime', 'memoryUsage'],
-    }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 3: Reduce results
@@ -314,29 +305,32 @@ export const validateResultsStep = createStepWithValidation(
 );
 
 // Step 5: Cache results
-export const cacheResultsStep = StepTemplates.conditional(
-  'cache-results',
-  'Cache computation results for future use',
-  {
-    trueStep: createStep('store-cache', async (data: any) => {
-      const cacheKey = `computation_${data.computation.type}_${Date.now()}`;
-      const ttl = 3600; // 1 hour
+export const cacheResultsStep = createStep('cache-results', async (data: any) => {
+  const shouldCache = data.options?.cache_results !== false;
 
-      // Simulate caching
-      console.log(`Caching results with key: ${cacheKey}`);
+  if (!shouldCache) {
+    return {
+      ...data,
+      cacheSkipped: true,
+    };
+  }
 
-      return {
-        ...data,
-        cache: {
-          key: cacheKey,
-          size: JSON.stringify(data.reducedResult).length,
-          storedAt: new Date().toISOString(),
-          ttl,
-        },
-      };
-    }),
-  },
-);
+  const cacheKey = `computation_${data.computation.type}_${Date.now()}`;
+  const ttl = 3600; // 1 hour
+
+  // Simulate caching
+  console.log(`Caching results with key: ${cacheKey}`);
+
+  return {
+    ...data,
+    cache: {
+      key: cacheKey,
+      size: JSON.stringify(data.reducedResult).length,
+      storedAt: new Date().toISOString(),
+      ttl,
+    },
+  };
+});
 
 // Step 6: Generate computation report
 export const generateReportStep = createStep('generate-report', async (data: any) => {
@@ -349,7 +343,7 @@ export const generateReportStep = createStep('generate-report', async (data: any
       parallelEfficiency: `${((1 / data.workers) * (executionStats.totalProcessingTime / executionStats.avgProcessingTime) * 100).toFixed(1)}%`,
       totalMemoryUsed: `${(executionStats.totalMemoryUsed / 1024 / 1024).toFixed(2)}MB`,
     },
-    recommendations: [],
+    recommendations: [] as string[],
     results: reducedResult,
     summary: {
       computationType: data.computation.type,

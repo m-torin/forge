@@ -6,8 +6,7 @@
  */
 
 import { initializePerformanceData, updatePerformanceData } from './step-factory/step-performance';
-
-import type { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
+import { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 
 /**
  * Compose multiple enhancers together
@@ -18,7 +17,7 @@ export function compose<TInput = unknown, TOutput = unknown>(
     step: SimpleWorkflowStep<TInput, TOutput>,
   ) => SimpleWorkflowStep<TInput, TOutput>)[]
 ): SimpleWorkflowStep<TInput, TOutput> {
-  return enhancers.reduce((currentStep, enhancer) => enhancer(currentStep), step);
+  return enhancers.reduce((currentStep, enhancer: any) => enhancer(currentStep), step);
 }
 
 /**
@@ -94,6 +93,7 @@ export function withStepMonitoring<TInput = unknown, TOutput = unknown>(
     enableDetailedLogging?: boolean;
     enableProgressReporting?: boolean;
     trackCustomMetrics?: boolean;
+    onStepComplete?: (stepName: string, duration: number, success: boolean) => void;
   } = {},
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
@@ -113,6 +113,11 @@ export function withStepMonitoring<TInput = unknown, TOutput = unknown>(
 
       if (options.enableDetailedLogging) {
         console.log(`[MONITOR] Step completed in ${performance.duration}ms`);
+      }
+
+      // Call the onStepComplete callback if provided
+      if (options.onStepComplete) {
+        options.onStepComplete('step', performance.duration || 0, result.success);
       }
 
       return result;
@@ -165,11 +170,14 @@ export function withStepRetry<TInput = unknown, TOutput = unknown>(
           waitTime += Math.random() * 1000;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        await new Promise((resolve: any) => setTimeout(resolve, waitTime));
       }
 
       return {
-        error: lastError,
+        error:
+          lastError instanceof Error
+            ? { message: lastError.message }
+            : { message: String(lastError) },
         performance: { duration: 0, startTime: Date.now() },
         shouldRetry: false,
         success: false,
@@ -188,7 +196,7 @@ export function withStepTimeout<TInput = unknown, TOutput = unknown>(
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
     execute: async (input: TInput) => {
-      const timeoutPromise = new Promise<StepExecutionResult<TOutput>>((_, reject) => {
+      const timeoutPromise = new Promise<StepExecutionResult<TOutput>>((_, reject: any) => {
         setTimeout(() => {
           reject(new Error(`Step execution timed out after ${timeoutMs}ms`));
         }, timeoutMs);
@@ -196,11 +204,14 @@ export function withStepTimeout<TInput = unknown, TOutput = unknown>(
 
       try {
         return await Promise.race([step.execute(input), timeoutPromise]);
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'STEP_TIMEOUT_ERROR',
-            message: error instanceof Error ? error.message : 'Timeout error',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Timeout error',
             retryable: true,
             stepId: 'timeout',
             timestamp: new Date(),

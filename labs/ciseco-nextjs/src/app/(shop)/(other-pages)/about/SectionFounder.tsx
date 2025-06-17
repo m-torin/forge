@@ -1,4 +1,5 @@
-import { Heading, NcImage } from '@repo/design-system/ciseco'
+import Heading from '@/components/Heading/Heading'
+import NcImage from '@/shared/NcImage/NcImage'
 
 export interface People {
   id: string
@@ -54,7 +55,7 @@ const SectionFounder = () => {
               alt=""
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-              containerClassName="relative aspect-square rounded-xl overflow-hidden"
+              containerClassName="relative h-0 aspect-h-1 aspect-w-1 rounded-xl overflow-hidden"
               className="object-cover"
               src={item.avatar}
             />

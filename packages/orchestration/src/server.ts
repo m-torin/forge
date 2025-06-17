@@ -1,19 +1,23 @@
 /**
- * Server-side orchestration exports
+ * Server-side orchestration exports (non-Next.js)
  * Core workflow management and execution functionality
+ *
+ * This file provides server-side orchestration functionality for non-Next.js applications.
+ * Use this in Node.js applications, API servers, and standalone server environments.
+ *
+ * For Next.js applications, use '@repo/orchestration/server/next' instead.
  */
 
-import { RateLimitProvider, UpstashWorkflowProvider } from './providers/index';
-// Core types
-// Import for internal use
-import { OrchestrationManager, validateWorkflowDefinition } from './shared/utils/index';
-import type {
+import { UpstashWorkflowProvider } from './providers/index';
+import {
   AnyProviderConfig,
-  RateLimitConfig,
   ListExecutionsOptions,
   WorkflowDefinition,
   WorkflowData,
 } from './shared/types/index';
+// Core types
+// Import for internal use
+import { OrchestrationManager, validateWorkflowDefinition } from './shared/utils/index';
 
 // Providers
 export { RateLimitProvider, UpstashWorkflowProvider } from './providers/index';
@@ -71,7 +75,11 @@ export function createWorkflowEngine(config?: {
   });
 
   return {
-    async executeWorkflow(definition: WorkflowDefinition, input?: WorkflowData, providerName?: string) {
+    async executeWorkflow(
+      definition: WorkflowDefinition,
+      input?: WorkflowData,
+      providerName?: string,
+    ) {
       const validatedDefinition = validateWorkflowDefinition(definition);
       return manager.executeWorkflow(validatedDefinition, input, providerName);
     },
@@ -98,32 +106,30 @@ export function createWorkflowEngine(config?: {
 
           switch (providerConfig.type) {
             case 'rate-limit':
-              provider = new RateLimitProvider(providerConfig.config as RateLimitConfig);
+              // RateLimitProvider is not a WorkflowProvider, skip registration
               break;
             case 'upstash-workflow':
               provider = new UpstashWorkflowProvider({
-                baseUrl: providerConfig.config.baseUrl,
+                baseUrl: (providerConfig.config as any).baseUrl,
                 qstash: {
-                  token: providerConfig.config.qstashToken,
+                  token: (providerConfig.config as any).qstashToken,
                 },
-                redis: providerConfig.config.redisUrl
-                  ? {
-                      token: providerConfig.config.redisToken,
-                      url: providerConfig.config.redisUrl,
-                    }
-                  : undefined,
+                enableRedis: true,
               });
+              await manager.registerProvider(providerConfig.name, provider);
               break;
             default:
               throw new Error(`Unknown provider type: ${providerConfig.type}`);
           }
-
-          await manager.registerProvider(providerConfig.name, provider);
         }
       }
     },
 
-    async listExecutions(workflowId: string, options?: ListExecutionsOptions, providerName?: string) {
+    async listExecutions(
+      workflowId: string,
+      options?: ListExecutionsOptions,
+      providerName?: string,
+    ) {
       return manager.listExecutions(workflowId, options, providerName);
     },
 

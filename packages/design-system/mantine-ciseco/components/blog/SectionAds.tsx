@@ -4,14 +4,14 @@ import { type FC } from 'react';
 
 import imgAds from '../../images/ads.png';
 
-export interface SectionAdsProps {
+export interface SectionAdsProps extends Record<string, any> {
   className?: string;
 }
 
-const SectionAds: FC<SectionAdsProps> = ({ className }) => {
+const SectionAds: FC<SectionAdsProps> = ({ className }: any) => {
   return (
     <div className={clsx(className)}>
-      <Image width={400} className="w-full" alt="ads" height={400} src={imgAds} />
+      <Image alt="ads" className="w-full" height={400} src={imgAds} width={400} />
     </div>
   );
 };

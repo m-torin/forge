@@ -2,23 +2,23 @@ import { openai } from '@ai-sdk/openai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
 
-import type {
+import {
   CategoryHierarchy,
   ProductClassificationResult,
   ProductData,
 } from '../../types/classification';
 
 const ClassificationSchema = z.object({
-  confidence: z.number().min(0).max(1),
   alternativeCategories: z
     .array(
       z.object({
-        confidence: z.number().min(0).max(1),
         categoryId: z.string(),
+        confidence: z.number().min(0).max(1),
       }),
     )
     .max(3),
   categoryId: z.string(),
+  confidence: z.number().min(0).max(1),
   reasoning: z.string(),
 });
 
@@ -29,6 +29,35 @@ export class AIProductClassifier {
   constructor(categories: readonly CategoryHierarchy[], model = 'gpt-4-turbo') {
     this.categories = categories;
     this.model = model;
+  }
+
+  async batchClassifyProducts(
+    products: ProductData[],
+  ): Promise<{ error?: string; productId: string; result: ProductClassificationResult }[]> {
+    const results = await Promise.all(
+      products.map(async (product: any) => {
+        try {
+          const result = await this.classifyProduct(product);
+          return { productId: product.id, result };
+        } catch (error: any) {
+          return {
+            error:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Unknown error',
+            productId: product.id,
+            result: {
+              categoryId: 'unknown',
+              confidence: 0,
+              path: [],
+              reasoning: 'Classification failed',
+            },
+          };
+        }
+      }),
+    );
+
+    return results;
   }
 
   async classifyProduct(product: ProductData): Promise<ProductClassificationResult> {
@@ -53,12 +82,12 @@ Consider:
 Provide confidence scores and reasoning for your classification.`,
     });
 
-    const category = this.categories.find((c) => c.id === object.categoryId);
+    const category = this.categories.find((c: any) => c.id === object.categoryId);
     const path = category ? this.getCategoryPath(category) : [];
 
     return {
-      confidence: object.confidence,
       categoryId: object.categoryId,
+      confidence: object.confidence,
       path,
       reasoning: object.reasoning,
     };
@@ -69,7 +98,7 @@ Provide confidence scores and reasoning for your classification.`,
     vectorResults: ProductClassificationResult[],
   ): Promise<ProductClassificationResult> {
     const vectorContext = vectorResults
-      .map((r) => `${r.categoryId} (confidence: ${r.confidence.toFixed(2)}) - ${r.reasoning}`)
+      .map((r: any) => `${r.categoryId} (confidence: ${r.confidence.toFixed(2)}) - ${r.reasoning}`)
       .join('\n');
 
     const { text } = await generateText({
@@ -92,8 +121,8 @@ Your task is to:
     });
 
     const bestVectorResult = vectorResults[0] ?? {
-      confidence: 0,
       categoryId: 'unknown',
+      confidence: 0,
       path: [],
       reasoning: 'No similar products found',
     };
@@ -104,35 +133,9 @@ Your task is to:
     };
   }
 
-  async batchClassifyProducts(
-    products: ProductData[],
-  ): Promise<{ productId: string; result: ProductClassificationResult; error?: string }[]> {
-    const results = await Promise.all(
-      products.map(async (product) => {
-        try {
-          const result = await this.classifyProduct(product);
-          return { productId: product.id, result };
-        } catch (error) {
-          return {
-            error: error instanceof Error ? error.message : 'Unknown error',
-            productId: product.id,
-            result: {
-              confidence: 0,
-              categoryId: 'unknown',
-              path: [],
-              reasoning: 'Classification failed',
-            },
-          };
-        }
-      }),
-    );
-
-    return results;
-  }
-
   private createCategoryContext(): string {
     const categoryTree = this.categories
-      .map((cat) => {
+      .map((cat: any) => {
         const indent = '  '.repeat(cat.level - 1);
         return `${indent}- ${cat.id}: ${cat.name}${cat.description ? ` (${cat.description})` : ''}`;
       })
@@ -159,7 +162,7 @@ Your task is to:
     const path: string[] = [category.name];
 
     if (category.parent) {
-      const parent = this.categories.find((c) => c.id === category.parent);
+      const parent = this.categories.find((c: any) => c.id === category.parent);
       if (parent) {
         path.unshift(...this.getCategoryPath(parent));
       }

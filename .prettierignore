@@ -23,3 +23,13 @@ pnpm-lock.yaml
 apps/swr-site/app/[lang]/graphql-eslint/
 apps/swr-site/app/[lang]/remote/
 apps/swr-site/nextra-remote-filepaths/
+
+# Ignored directories
+labs/
+services/
+
+# Generated files that cause parsing errors
+apps/email/.react-email/**
+**/*.test.skip.ts
+**/test-results/**
+**/playwright-report/**

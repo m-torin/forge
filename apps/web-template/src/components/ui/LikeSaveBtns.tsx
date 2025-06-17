@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useGuestFavorites } from '@/hooks/useGuestFavorites';
+import { useGuestFavorites } from '@/react/GuestActionsContext';
 import { notifications } from '@mantine/notifications';
 
 interface LikeSaveBtnsProps {
@@ -9,10 +9,10 @@ interface LikeSaveBtnsProps {
   productTitle?: string;
 }
 
-const LikeSaveBtns = ({ 
+const LikeSaveBtns = ({
   'data-testid': testId = 'like-save-buttons',
   productId,
-  productTitle = 'Product'
+  productTitle = 'Product',
 }: LikeSaveBtnsProps = {}) => {
   const { isFavorite, toggleFavorite } = useGuestFavorites();
   const isLiked = productId ? isFavorite(productId) : false;

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "extends": ["./base.json"],
+  "entry": [
+    "src/app/**/*.{ts,tsx}",
+    "src/pages/**/*.{ts,tsx}",
+    "app/**/*.{ts,tsx}",
+    "pages/**/*.{ts,tsx}",
+    "src/middleware.{ts,tsx}",
+    "middleware.{ts,tsx}",
+    "src/instrumentation.{ts,tsx}",
+    "instrumentation.{ts,tsx}",
+    "next.config.{js,ts,mjs}",
+    "tailwind.config.{js,ts}",
+    "postcss.config.{js,mjs}"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "app/**/*.{ts,tsx}",
+    "pages/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx}",
+    "utils/**/*.{ts,tsx}",
+    "hooks/**/*.{ts,tsx}",
+    "contexts/**/*.{ts,tsx}",
+    "providers/**/*.{ts,tsx}",
+    "types/**/*.{ts,tsx}",
+    "data/**/*.{ts,tsx}",
+    "actions/**/*.{ts,tsx}",
+    "middleware.{ts,tsx}",
+    "instrumentation.{ts,tsx}",
+    "env.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{js,ts,tsx}",
+    "**/*.spec.{js,ts,tsx}",
+    "e2e/**/*.{js,ts,tsx}",
+    "__tests__/**/*.{js,ts,tsx}",
+    "scripts/**/*.{js,ts,mjs}"
+  ],
+  "ignoreDependencies": ["@types/*", "eslint-*", "prettier", "@next/eslint-plugin-next"],
+  "workspaces": {
+    ".": {
+      "entry": "src/app/**/*.{ts,tsx}",
+      "project": "src/**/*.{ts,tsx}"
+    }
+  }
+}

@@ -9,7 +9,7 @@ import { ChatInput } from './chat-input';
 import { ChatMessage } from './chat-message';
 import { ChatThread } from './chat-thread';
 
-interface AIChatProps {
+interface AIChatProps extends Record<string, any> {
   api?: string;
   height?: number | string;
   placeholder?: string;
@@ -24,10 +24,10 @@ export const AIChat = ({
   systemPrompt,
   welcomeMessage = 'Hello! How can I help you today?',
 }: AIChatProps) => {
-  const { append, isLoading, messages } = useAIChat({
+  const { append, isLoading, messages, stop } = useAIChat({
     api,
     initialMessages: welcomeMessage
-      ? [{ id: 'welcome', content: welcomeMessage, role: 'assistant' as const }]
+      ? [{ content: welcomeMessage, id: 'welcome', role: 'assistant' as const }]
       : [],
     ...(systemPrompt && {
       body: { systemPrompt },
@@ -36,7 +36,7 @@ export const AIChat = ({
 
   const handleSend = useCallback(
     (message: string) => {
-      append({ content: message, role: 'user' });
+      void append({ content: message, role: 'user' });
     },
     [append],
   );
@@ -47,13 +47,13 @@ export const AIChat = ({
 
   return (
     <Paper
-      withBorder
       style={{
         display: 'flex',
         flexDirection: 'column',
         height,
         position: 'relative',
       }}
+      withBorder={true}
     >
       <LoadingOverlay visible={isLoading && messages.length === 0} />
 
@@ -79,7 +79,7 @@ export const AIChat = ({
             </Box>
           )}
 
-          {messages.map((message) => (
+          {messages.map((message: any) => (
             <ChatMessage key={message.id} data={message} />
           ))}
 
@@ -95,11 +95,11 @@ export const AIChat = ({
 
       {/* Input Area */}
       <ChatInput
-        onSend={handleSend}
-        onStop={handleStop}
-        placeholder={placeholder}
         disabled={isLoading}
         isStreaming={isLoading}
+        placeholder={placeholder}
+        onSend={handleSend}
+        onStop={handleStop}
       />
     </Paper>
   );

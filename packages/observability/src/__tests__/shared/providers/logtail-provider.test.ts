@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LogtailProvider } from '../../../shared/providers/logtail-provider';
-
-import type { LogEntry } from '../../../shared/types/logger-types';
+import { LogEntry } from '../../../shared/types/logger-types';
 
 // Use vi.hoisted for mocks
 const { mockLogtail, mockLogtailClient } = vi.hoisted(() => {
@@ -20,7 +19,7 @@ const { mockLogtail, mockLogtailClient } = vi.hoisted(() => {
   return { mockLogtail, mockLogtailClient };
 });
 
-vi.mock('@logtail/node', () => ({
+vi.mock('@logtail/node', (_: any) => ({
   Logtail: mockLogtail,
 }));
 
@@ -31,7 +30,7 @@ describe('LogtailProvider', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     // Reset all mock function calls
-    Object.values(mockLogtailClient).forEach((fn) => {
+    Object.values(mockLogtailClient).forEach((fn: any) => {
       if (typeof fn === 'function' && 'mockClear' in fn) {
         fn.mockClear();
       }
@@ -100,14 +99,14 @@ describe('LogtailProvider', () => {
           case 'debug':
             expect(mockLogtailClient.debug).toHaveBeenCalled();
             break;
+          case 'error':
+            expect(mockLogtailClient.error).toHaveBeenCalled();
+            break;
           case 'info':
             expect(mockLogtailClient.info).toHaveBeenCalled();
             break;
           case 'warn':
             expect(mockLogtailClient.warn).toHaveBeenCalled();
-            break;
-          case 'error':
-            expect(mockLogtailClient.error).toHaveBeenCalled();
             break;
         }
       }
@@ -115,7 +114,7 @@ describe('LogtailProvider', () => {
 
     it('should send multiple logs', async () => {
       // Send multiple logs quickly
-      const promises = [];
+      const promises: any[] = [];
       for (let i = 0; i < 5; i++) {
         promises.push(provider.log('info', `Log ${i}`, { timestamp: new Date().toISOString() }));
       }
@@ -300,7 +299,7 @@ describe('LogtailProvider', () => {
   describe('batching', () => {
     it('should send logs to Logtail client', async () => {
       // Send logs without awaiting
-      const promises = [];
+      const promises: any[] = [];
       for (let i = 0; i < 3; i++) {
         promises.push(provider.log('info', `Log ${i}`, { timestamp: new Date().toISOString() }));
       }
@@ -313,7 +312,7 @@ describe('LogtailProvider', () => {
 
     it('should handle many logs', async () => {
       // Send many logs
-      const promises = [];
+      const promises: any[] = [];
       for (let i = 0; i < 101; i++) {
         promises.push(provider.log('info', `Log ${i}`, { timestamp: new Date().toISOString() }));
       }

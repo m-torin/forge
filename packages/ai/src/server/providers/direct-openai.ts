@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 
 import { BaseProvider } from '../../shared/providers/base-provider';
 
-import type {
+import {
   Capability,
   CompletionOptions,
   CompletionResponse,
@@ -15,16 +15,16 @@ import type {
 } from '../../shared/types';
 
 export class DirectOpenAIProvider extends BaseProvider {
-  readonly name = 'openai-direct';
-  readonly type = 'direct' as const;
   readonly capabilities = new Set<Capability>([
     'complete',
-    'stream',
     'embed',
     'generateObject',
-    'tools',
     'moderate',
+    'stream',
+    'tools',
   ]);
+  readonly name = 'openai-direct';
+  readonly type = 'direct' as const;
 
   private client: OpenAI;
   private config: DirectOpenAIConfig;
@@ -34,9 +34,9 @@ export class DirectOpenAIProvider extends BaseProvider {
     this.config = config;
     this.client = new OpenAI({
       apiKey: config.apiKey,
-      baseURL: config.baseUrl,
-      organization: config.organization,
-      timeout: config.timeout || 30000, // 30 second default
+      ...(config.baseUrl && { baseURL: config.baseUrl }),
+      ...(config.organization && { organization: config.organization }),
+      timeout: config.timeout ?? 30000, // 30 second default
     });
   }
 
@@ -45,32 +45,98 @@ export class DirectOpenAIProvider extends BaseProvider {
       this.validateOptions(options);
 
       const response = await this.client.chat.completions.create({
-        max_tokens: options.maxTokens || this.config.maxTokens || 1000,
+        max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
         messages: [
           ...(options.systemPrompt
             ? [{ content: options.systemPrompt, role: 'system' as const }]
             : []),
           { content: options.prompt, role: 'user' as const },
         ],
-        model: options.model || this.config.model || 'gpt-4-turbo',
+        model: options.model ?? this.config.model ?? 'gpt-4-turbo',
         temperature: options.temperature ?? this.config.temperature ?? 0.1,
       });
 
-      return {
-        id: response.id,
-        finishReason: this.mapFinishReason(response.choices[0]?.finish_reason),
-        model: response.model,
-        text: response.choices[0]?.message?.content || '',
-        usage: response.usage
-          ? {
-              completionTokens: response.usage.completion_tokens,
-              promptTokens: response.usage.prompt_tokens,
-              totalTokens: response.usage.total_tokens,
-            }
-          : undefined,
+      const finishReason = this.mapFinishReason(response.choices[0]?.finish_reason);
+      const completionResponse: CompletionResponse = {
+        text: response.choices[0]?.message?.content ?? '',
+        ...(finishReason && { finishReason }),
+        ...(response.id && { id: response.id }),
+        ...(response.model && { model: response.model }),
+        ...(response.usage && {
+          usage: {
+            completionTokens: response.usage.completion_tokens,
+            promptTokens: response.usage.prompt_tokens,
+            totalTokens: response.usage.total_tokens,
+          },
+        }),
       };
-    } catch (error) {
+      return completionResponse;
+    } catch (error: any) {
       throw this.formatError(error, 'completion');
+    }
+  }
+
+  async embed(options: EmbedOptions): Promise<EmbeddingResponse> {
+    try {
+      const input = Array.isArray(options.input) ? options.input : [options.input];
+
+      const response = await this.client.embeddings.create({
+        input,
+        model: options.model ?? 'text-embedding-3-small',
+      });
+
+      return {
+        embeddings: response.data.map((item: any) => item.embedding),
+        model: response.model,
+        ...(response.usage && {
+          usage: {
+            completionTokens: 0,
+            promptTokens: response.usage.prompt_tokens,
+            totalTokens: response.usage.total_tokens,
+          },
+        }),
+      };
+    } catch (error: any) {
+      throw this.formatError(error, 'embedding');
+    }
+  }
+
+  async moderate(content: string): Promise<ModerationResult> {
+    try {
+      const response = await this.client.moderations.create({
+        input: content,
+      });
+
+      const result = response.results[0];
+      if (!result) {
+        return {
+          confidence: 0.5,
+          explanation: 'No moderation result returned',
+          safe: true,
+          violations: [],
+        };
+      }
+
+      const violations: string[] = [];
+      if (result.categories) {
+        for (const [category, flagged] of Object.entries(result.categories)) {
+          if (flagged) {
+            violations.push(category);
+          }
+        }
+      }
+
+      return {
+        confidence: Math.max(...Object.values(result.category_scores ?? {})),
+        explanation:
+          violations.length > 0
+            ? `Content flagged for: ${violations.join(', ')}`
+            : 'Content is safe',
+        safe: !result.flagged,
+        violations,
+      };
+    } catch (error: any) {
+      throw this.formatError(error, 'moderation');
     }
   }
 
@@ -79,14 +145,14 @@ export class DirectOpenAIProvider extends BaseProvider {
       this.validateOptions(options);
 
       const stream = await this.client.chat.completions.create({
-        max_tokens: options.maxTokens || this.config.maxTokens || 1000,
+        max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
         messages: [
           ...(options.systemPrompt
             ? [{ content: options.systemPrompt, role: 'system' as const }]
             : []),
           { content: options.prompt, role: 'user' as const },
         ],
-        model: options.model || this.config.model || 'gpt-4-turbo',
+        model: options.model ?? this.config.model ?? 'gpt-4-turbo',
         stream: true,
         temperature: options.temperature ?? this.config.temperature ?? 0.1,
       });
@@ -117,89 +183,25 @@ export class DirectOpenAIProvider extends BaseProvider {
         isLast: true,
         text: '',
       };
-    } catch (error) {
+    } catch (error: any) {
       throw this.formatError(error, 'streaming');
-    }
-  }
-
-  async embed(options: EmbedOptions): Promise<EmbeddingResponse> {
-    try {
-      const input = Array.isArray(options.input) ? options.input : [options.input];
-
-      const response = await this.client.embeddings.create({
-        input,
-        model: options.model || 'text-embedding-3-small',
-      });
-
-      return {
-        embeddings: response.data.map((item) => item.embedding),
-        model: response.model,
-        usage: response.usage
-          ? {
-              completionTokens: 0,
-              promptTokens: response.usage.prompt_tokens,
-              totalTokens: response.usage.total_tokens,
-            }
-          : undefined,
-      };
-    } catch (error) {
-      throw this.formatError(error, 'embedding');
     }
   }
 
   private mapFinishReason(
     reason?: string,
-  ): 'stop' | 'length' | 'tool_calls' | 'content_filter' | undefined {
+  ): 'content_filter' | 'length' | 'stop' | 'tool_calls' | undefined {
     switch (reason) {
-      case 'stop':
-        return 'stop';
-      case 'length':
-        return 'length';
-      case 'tool_calls':
-        return 'tool_calls';
       case 'content_filter':
         return 'content_filter';
+      case 'length':
+        return 'length';
+      case 'stop':
+        return 'stop';
+      case 'tool_calls':
+        return 'tool_calls';
       default:
         return undefined;
-    }
-  }
-
-  async moderate(content: string): Promise<ModerationResult> {
-    try {
-      const response = await this.client.moderations.create({
-        input: content,
-      });
-
-      const result = response.results[0];
-      if (!result) {
-        return {
-          confidence: 0.5,
-          explanation: 'No moderation result returned',
-          safe: true,
-          violations: [],
-        };
-      }
-
-      const violations: string[] = [];
-      if (result.categories) {
-        for (const [category, flagged] of Object.entries(result.categories)) {
-          if (flagged) {
-            violations.push(category);
-          }
-        }
-      }
-
-      return {
-        confidence: Math.max(...Object.values(result.category_scores || {})),
-        explanation:
-          violations.length > 0
-            ? `Content flagged for: ${violations.join(', ')}`
-            : 'Content is safe',
-        safe: !result.flagged,
-        violations,
-      };
-    } catch (error) {
-      throw this.formatError(error, 'moderation');
     }
   }
 }
@@ -207,24 +209,27 @@ export class DirectOpenAIProvider extends BaseProvider {
 export function createDirectOpenAIProvider(
   config?: Partial<DirectOpenAIConfig>,
 ): DirectOpenAIProvider | null {
-  const apiKey = config?.apiKey || process.env.OPENAI_API_KEY;
+  const apiKey = config?.apiKey ?? process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
+    // eslint-disable-next-line no-console
     console.warn('[DirectOpenAIProvider] No API key found');
     return null;
   }
 
   const finalConfig: DirectOpenAIConfig = {
     apiKey,
-    baseUrl: config?.baseUrl || process.env.OPENAI_BASE_URL,
     maxTokens:
       config?.maxTokens ??
       (process.env.OPENAI_MAX_TOKENS ? parseInt(process.env.OPENAI_MAX_TOKENS, 10) : 1000),
-    model: config?.model || process.env.OPENAI_MODEL || 'gpt-4-turbo',
-    organization: config?.organization || process.env.OPENAI_ORGANIZATION,
+    model: config?.model ?? process.env.OPENAI_MODEL ?? 'gpt-4-turbo',
     temperature:
       config?.temperature ??
       (process.env.OPENAI_TEMPERATURE ? parseFloat(process.env.OPENAI_TEMPERATURE) : 0.1),
+    ...(config?.baseUrl && { baseUrl: config.baseUrl }),
+    ...(process.env.OPENAI_BASE_URL && { baseUrl: process.env.OPENAI_BASE_URL }),
+    ...(config?.organization && { organization: config.organization }),
+    ...(process.env.OPENAI_ORGANIZATION && { organization: process.env.OPENAI_ORGANIZATION }),
   };
 
   return new DirectOpenAIProvider(finalConfig);

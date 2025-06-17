@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Center, Loader, Stack, Text, Alert } from '@mantine/core';
+import { IconAlertTriangle } from '@tabler/icons-react';
 
 import { FavoriteButton } from '@/components/guest/FavoriteButton';
 import { ProductCard } from '@/components/ui';
 import { useGuestFavorites } from '@/react/GuestActionsContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { TProductItem } from '@/types';
 
 interface FavoritesClientProps {
@@ -15,14 +18,26 @@ interface FavoritesClientProps {
 export function FavoritesClient({ allProducts }: FavoritesClientProps) {
   const { favorites } = useGuestFavorites();
   const [favoriteProducts, setFavoriteProducts] = useState<TProductItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Filter products that are in favorites
-    const favoriteIds = Array.from(favorites);
-    const filtered = allProducts.filter(
-      (product: any) => product.id && favoriteIds.includes(product.id),
-    );
-    setFavoriteProducts(filtered);
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Filter products that are in favorites
+      const favoriteIds = Array.from(favorites);
+      const filtered = allProducts.filter(
+        (product: any) => product.id && favoriteIds.includes(product.id),
+      );
+      setFavoriteProducts(filtered);
+    } catch (err) {
+      setError('Failed to load favorites');
+      console.error('Error filtering favorites:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [favorites, allProducts]);
 
   // Track page view
@@ -34,6 +49,33 @@ export function FavoritesClient({ allProducts }: FavoritesClientProps) {
     });
   }, [favorites.size]);
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <Center py="xl">
+        <Stack align="center" gap="md">
+          <Loader size="lg" />
+          <Text c="dimmed">Loading your favorites...</Text>
+        </Stack>
+      </Center>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Alert
+        icon={<IconAlertTriangle size={16} />}
+        title="Unable to load favorites"
+        color="red"
+        variant="light"
+      >
+        <Text size="sm">{error}</Text>
+      </Alert>
+    );
+  }
+
+  // Zero state (already good, keeping as is)
   if (favoriteProducts.length === 0) {
     return (
       <div className="text-center py-16">
@@ -80,19 +122,23 @@ export function FavoritesClient({ allProducts }: FavoritesClientProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
-      {favoriteProducts.map((product: any) => (
-        <div key={product.id} className="relative">
-          <ProductCard data={product} isLiked={true} />
-          {/* Override the built-in like button with our functional one */}
-          <FavoriteButton
-            productId={product.id || ''}
-            productName={product.title}
-            className="absolute end-3 top-3 z-20"
-            price={product.price}
-          />
-        </div>
-      ))}
-    </div>
+    <ErrorBoundary>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
+        {favoriteProducts.map((product: any) => (
+          <ErrorBoundary key={product.id}>
+            <div className="relative">
+              <ProductCard data={product} isLiked={true} />
+              {/* Override the built-in like button with our functional one */}
+              <FavoriteButton
+                productId={product.id || ''}
+                productName={product.title}
+                className="absolute end-3 top-3 z-20"
+                price={product.price}
+              />
+            </div>
+          </ErrorBoundary>
+        ))}
+      </div>
+    </ErrorBoundary>
   );
 }

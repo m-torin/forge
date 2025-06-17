@@ -1,9 +1,12 @@
 import { defineConfig } from 'vitest/config';
+import { nodePreset } from '@repo/testing/vitest-presets';
 
 export default defineConfig({
+  ...nodePreset,
   test: {
+    ...nodePreset.test,
     coverage: {
-      provider: 'v8',
+      ...nodePreset.test?.coverage,
       exclude: [
         'src/__tests__/**',
         'src/**/*.test.ts',
@@ -11,8 +14,6 @@ export default defineConfig({
         'node_modules/**',
         'dist/**',
       ],
-      reporter: ['text', 'json', 'html'],
     },
-    environment: 'node',
   },
 });

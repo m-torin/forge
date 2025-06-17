@@ -1,3 +1,9 @@
+import Label from '@/components/Label/Label'
+import avatar from '@/images/users/avatar1.jpg'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import Input from '@/shared/Input/Input'
+import Select from '@/shared/Select/Select'
+import Textarea from '@/shared/Textarea/Textarea'
 import {
   Calendar01Icon,
   ImageAdd02Icon,
@@ -6,8 +12,6 @@ import {
   SmartPhone01Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ButtonPrimary, Input, Label, Select, Textarea } from '@repo/design-system/ciseco'
-import avatarImage from '@repo/design-system/ciseco/images/users/avatar1.jpg'
 import { Metadata } from 'next'
 import Image from 'next/image'
 
@@ -26,10 +30,10 @@ const Page = () => {
           {/* AVATAR */}
           <div className="relative flex overflow-hidden rounded-full">
             <Image
-              src={avatarImage}
+              src={avatar}
               alt={'avatar'}
-              width={avatarImage.width}
-              height={avatarImage.height}
+              width={avatar.width}
+              height={avatar.height}
               sizes="132px"
               priority
               className="z-0 size-32 rounded-full object-cover"

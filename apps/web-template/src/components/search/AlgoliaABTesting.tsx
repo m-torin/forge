@@ -16,37 +16,28 @@ import {
   Code,
   Alert,
   ThemeIcon,
-  Timeline,
   Select,
   TextInput,
   NumberInput,
-  Switch,
-  RingProgress,
   Tabs,
   Table,
-  Slider,
-  SegmentedControl,
   ActionIcon,
+  Skeleton,
 } from '@mantine/core';
 import {
   IconTestPipe,
   IconChartBar,
   IconTrendingUp,
-  IconUsers,
-  IconClick,
-  IconShoppingCart,
-  IconEye,
   IconPlus,
   IconPlayerPlay,
-  IconPlayerPause,
-  IconCheck,
   IconX,
   IconBrandAlgolia,
   IconFlask,
   IconTarget,
-  IconPercentage,
   IconCode,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Types for A/B Testing
 interface ABTest {
@@ -566,167 +557,268 @@ function TestResults({ test }: { test: ABTest }) {
   );
 }
 
-export default function AlgoliaABTesting() {
-  const [tests, setTests] = useState<ABTest[]>(sampleTests);
-  const [selectedTest, setSelectedTest] = useState<ABTest | null>(tests[0]);
-  const [isCreating, setIsCreating] = useState(false);
+interface AlgoliaABTestingProps {
+  loading?: boolean;
+  error?: string;
+  'data-testid'?: string;
+}
 
-  const createNewTest = () => {
-    const newTest: ABTest = {
-      id: `test-${Date.now()}`,
-      name: 'New A/B Test',
-      description: '',
-      status: 'draft',
-      variants: [
-        {
-          id: 'control',
-          name: 'Control',
-          description: 'Original configuration',
-          trafficPercentage: 50,
-          configuration: {},
-        },
-        {
-          id: 'variant-1',
-          name: 'Variant A',
-          description: 'Test configuration',
-          trafficPercentage: 50,
-          configuration: {},
-        },
-      ],
-      metrics: {
-        totalSearches: 0,
-        statisticalSignificance: 0,
-      },
-      duration: 14,
-      trafficAllocation: 100,
-      primaryMetric: 'conversionRate',
-    };
-
-    setTests([...tests, newTest]);
-    setSelectedTest(newTest);
-    setIsCreating(true);
-  };
-
-  const updateTest = (test: ABTest) => {
-    const updated = tests.map((t) => (t.id === test.id ? test : t));
-    setTests(updated);
-    setSelectedTest(test);
-  };
-
-  const startTest = (testId: string) => {
-    const updated = tests.map((t) =>
-      t.id === testId
-        ? { ...t, status: 'running' as const, startDate: new Date().toISOString().split('T')[0] }
-        : t,
-    );
-    setTests(updated);
-  };
-
+// Loading skeleton for AlgoliaABTesting
+function AlgoliaABTestingSkeleton({ testId }: { testId?: string }) {
   return (
-    <Container size="xl" py="xl">
+    <Container size="xl" py="xl" data-testid={testId}>
       <Stack gap="xl">
-        {/* Header */}
         <div>
           <Group gap="md" mb="md">
-            <ThemeIcon size="xl" variant="light" c="blue">
-              <IconTestPipe />
-            </ThemeIcon>
+            <Skeleton height={40} width={40} />
             <div>
-              <Title order={1}>A/B Testing</Title>
-              <Text size="lg" c="dimmed">
-                Test and optimize your search relevance
-              </Text>
+              <Skeleton height={32} width={200} mb="xs" />
+              <Skeleton height={20} width={300} />
             </div>
           </Group>
         </div>
-
-        {/* Introduction */}
-        <Alert icon={<IconBrandAlgolia />} title="Why A/B Test Your Search?" c="blue">
-          <Stack gap="xs">
-            <Text size="md">
-              A/B testing helps you make data-driven decisions about your search configuration:
-            </Text>
-            <ul>
-              <li>Test different ranking strategies</li>
-              <li>Optimize for business metrics vs pure relevance</li>
-              <li>Find the right balance of typo tolerance</li>
-              <li>Measure the impact of filters and facets</li>
-              <li>Validate custom ranking attributes</li>
-            </ul>
-          </Stack>
-        </Alert>
-
-        {/* Test selector and creator */}
-        <Group align="flex-end">
-          <Select
-            label="Select Test"
-            value={selectedTest?.id}
-            onChange={(value) => setSelectedTest(tests.find((t) => t.id === value) || null)}
-            data={tests.map((t) => ({
-              value: t.id,
-              label: t.name,
-            }))}
-            style={{ flex: 1 }}
-          />
-          <Button leftSection={<IconPlus />} onClick={createNewTest}>
-            Create New Test
-          </Button>
+        <Skeleton height={120} />
+        <Group>
+          <Skeleton height={40} style={{ flex: 1 }} />
+          <Skeleton height={40} width={150} />
         </Group>
+        <Card>
+          <Skeleton height={400} />
+        </Card>
+      </Stack>
+    </Container>
+  );
+}
 
-        {/* Test details */}
-        {selectedTest && (
-          <Tabs defaultValue={isCreating || selectedTest.status === 'draft' ? 'setup' : 'results'}>
-            <Tabs.List>
-              <Tabs.Tab value="setup" leftSection={<IconFlask size={16} />}>
-                Test Setup
-              </Tabs.Tab>
-              <Tabs.Tab
-                value="results"
-                leftSection={<IconChartBar size={16} />}
-                disabled={selectedTest.status === 'draft'}
-              >
-                Results
-              </Tabs.Tab>
-              <Tabs.Tab value="implementation" leftSection={<IconCode size={16} />}>
-                Implementation
-              </Tabs.Tab>
-            </Tabs.List>
+// Error state for AlgoliaABTesting
+function AlgoliaABTestingError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">A/B Testing dashboard failed to load: {error}</Text>
+      </Alert>
+    </Container>
+  );
+}
 
-            <Tabs.Panel value="setup" pt="xl">
-              <Stack gap="lg">
-                <TestConfigEditor test={selectedTest} onChange={updateTest} />
+export default function AlgoliaABTesting({
+  loading = false,
+  error,
+  'data-testid': testId = 'algolia-ab-testing',
+}: AlgoliaABTestingProps = {}) {
+  const [tests, setTests] = useState<ABTest[]>(sampleTests);
+  const [selectedTest, setSelectedTest] = useState<ABTest | null>(tests[0]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [internalError, setInternalError] = useState<string | null>(null);
 
-                {selectedTest.status === 'draft' && (
-                  <Group justify="flex-end">
-                    <Button
-                      size="lg"
-                      leftSection={<IconPlayerPlay />}
-                      onClick={() => startTest(selectedTest.id)}
-                      disabled={!selectedTest.name || selectedTest.variants.length < 2}
-                    >
-                      Start Test
-                    </Button>
-                  </Group>
-                )}
+  // Show loading state
+  if (loading) {
+    return <AlgoliaABTestingSkeleton testId={testId} />;
+  }
 
-                {selectedTest.status === 'running' && (
-                  <Alert icon={<IconPlayerPlay />} c="green">
-                    This test is currently running. Started on {selectedTest.startDate}
-                  </Alert>
-                )}
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <AlgoliaABTestingError error={currentError} testId={testId} />;
+  }
+
+  const createNewTest = () => {
+    try {
+      const newTest: ABTest = {
+        id: `test-${Date.now()}`,
+        name: 'New A/B Test',
+        description: '',
+        status: 'draft',
+        variants: [
+          {
+            id: 'control',
+            name: 'Control',
+            description: 'Original configuration',
+            trafficPercentage: 50,
+            configuration: {},
+          },
+          {
+            id: 'variant-1',
+            name: 'Variant A',
+            description: 'Test configuration',
+            trafficPercentage: 50,
+            configuration: {},
+          },
+        ],
+        metrics: {
+          totalSearches: 0,
+          statisticalSignificance: 0,
+        },
+        duration: 14,
+        trafficAllocation: 100,
+        primaryMetric: 'conversionRate',
+      };
+
+      setTests([...tests, newTest]);
+      setSelectedTest(newTest);
+      setIsCreating(true);
+    } catch (err) {
+      console.error('Failed to create new test:', err);
+      setInternalError('Failed to create new test');
+    }
+  };
+
+  const updateTest = (test: ABTest) => {
+    try {
+      const updated = tests.map((t) => (t.id === test.id ? test : t));
+      setTests(updated);
+      setSelectedTest(test);
+    } catch (err) {
+      console.error('Failed to update test:', err);
+      setInternalError('Failed to update test');
+    }
+  };
+
+  const startTest = (testId: string) => {
+    try {
+      const updated = tests.map((t) =>
+        t.id === testId
+          ? { ...t, status: 'running' as const, startDate: new Date().toISOString().split('T')[0] }
+          : t,
+      );
+      setTests(updated);
+    } catch (err) {
+      console.error('Failed to start test:', err);
+      setInternalError('Failed to start test');
+    }
+  };
+
+  return (
+    <ErrorBoundary
+      fallback={
+        <AlgoliaABTestingError error="A/B Testing dashboard failed to render" testId={testId} />
+      }
+    >
+      <Container size="xl" py="xl" data-testid={testId}>
+        <Stack gap="xl">
+          {/* Header */}
+          <ErrorBoundary fallback={<Skeleton height={80} />}>
+            <div>
+              <Group gap="md" mb="md">
+                <ThemeIcon size="xl" variant="light" c="blue">
+                  <IconTestPipe />
+                </ThemeIcon>
+                <div>
+                  <Title order={1}>A/B Testing</Title>
+                  <Text size="lg" c="dimmed">
+                    Test and optimize your search relevance
+                  </Text>
+                </div>
+              </Group>
+            </div>
+          </ErrorBoundary>
+
+          {/* Introduction */}
+          <ErrorBoundary fallback={<Skeleton height={120} />}>
+            <Alert icon={<IconBrandAlgolia />} title="Why A/B Test Your Search?" c="blue">
+              <Stack gap="xs">
+                <Text size="md">
+                  A/B testing helps you make data-driven decisions about your search configuration:
+                </Text>
+                <ul>
+                  <li>Test different ranking strategies</li>
+                  <li>Optimize for business metrics vs pure relevance</li>
+                  <li>Find the right balance of typo tolerance</li>
+                  <li>Measure the impact of filters and facets</li>
+                  <li>Validate custom ranking attributes</li>
+                </ul>
               </Stack>
-            </Tabs.Panel>
+            </Alert>
+          </ErrorBoundary>
 
-            <Tabs.Panel value="results" pt="xl">
-              <TestResults test={selectedTest} />
-            </Tabs.Panel>
+          {/* Test selector and creator */}
+          <ErrorBoundary fallback={<Skeleton height={80} />}>
+            <Group align="flex-end">
+              <Select
+                label="Select Test"
+                value={selectedTest?.id}
+                onChange={(value) => {
+                  try {
+                    setSelectedTest(tests.find((t) => t.id === value) || null);
+                  } catch (err) {
+                    console.error('Failed to select test:', err);
+                    setInternalError('Failed to select test');
+                  }
+                }}
+                data={tests.map((t) => ({
+                  value: t.id,
+                  label: t.name,
+                }))}
+                style={{ flex: 1 }}
+              />
+              <Button leftSection={<IconPlus />} onClick={createNewTest}>
+                Create New Test
+              </Button>
+            </Group>
+          </ErrorBoundary>
 
-            <Tabs.Panel value="implementation" pt="xl">
-              <Stack gap="md">
-                <Title order={3}>Implementation Guide</Title>
+          {/* Test details */}
+          {selectedTest && (
+            <ErrorBoundary fallback={<Skeleton height={400} />}>
+              <Tabs
+                defaultValue={isCreating || selectedTest.status === 'draft' ? 'setup' : 'results'}
+              >
+                <Tabs.List>
+                  <Tabs.Tab value="setup" leftSection={<IconFlask size={16} />}>
+                    Test Setup
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    value="results"
+                    leftSection={<IconChartBar size={16} />}
+                    disabled={selectedTest.status === 'draft'}
+                  >
+                    Results
+                  </Tabs.Tab>
+                  <Tabs.Tab value="implementation" leftSection={<IconCode size={16} />}>
+                    Implementation
+                  </Tabs.Tab>
+                </Tabs.List>
 
-                <Code block>
-                  {`// 1. Install A/B Testing client
+                <Tabs.Panel value="setup" pt="xl">
+                  <ErrorBoundary fallback={<Skeleton height={300} />}>
+                    <Stack gap="lg">
+                      <TestConfigEditor test={selectedTest} onChange={updateTest} />
+
+                      {selectedTest.status === 'draft' && (
+                        <Group justify="flex-end">
+                          <Button
+                            size="lg"
+                            leftSection={<IconPlayerPlay />}
+                            onClick={() => startTest(selectedTest.id)}
+                            disabled={!selectedTest.name || selectedTest.variants.length < 2}
+                          >
+                            Start Test
+                          </Button>
+                        </Group>
+                      )}
+
+                      {selectedTest.status === 'running' && (
+                        <Alert icon={<IconPlayerPlay />} c="green">
+                          This test is currently running. Started on {selectedTest.startDate}
+                        </Alert>
+                      )}
+                    </Stack>
+                  </ErrorBoundary>
+                </Tabs.Panel>
+
+                <Tabs.Panel value="results" pt="xl">
+                  <ErrorBoundary fallback={<Skeleton height={300} />}>
+                    <TestResults test={selectedTest} />
+                  </ErrorBoundary>
+                </Tabs.Panel>
+
+                <Tabs.Panel value="implementation" pt="xl">
+                  <ErrorBoundary fallback={<Skeleton height={300} />}>
+                    <Stack gap="md">
+                      <Title order={3}>Implementation Guide</Title>
+
+                      <Code block>
+                        {`// 1. Install A/B Testing client
 npm install @algolia/client-abtesting
 
 // 2. Create A/B test
@@ -775,22 +867,25 @@ aa('convertedObjectIDsAfterSearch', {
   objectIDs: ['product-123'],
   queryID: 'query-id-from-search'
 });`}
-                </Code>
+                      </Code>
 
-                <Alert icon={<IconTarget />} title="Best Practices" c="blue">
-                  <ul>
-                    <li>Run tests for at least 1-2 weeks to account for weekly patterns</li>
-                    <li>Ensure sufficient traffic ({'>'}1000 searches per variant)</li>
-                    <li>Test one major change at a time</li>
-                    <li>Monitor secondary metrics to avoid negative impacts</li>
-                    <li>Document your hypothesis and learnings</li>
-                  </ul>
-                </Alert>
-              </Stack>
-            </Tabs.Panel>
-          </Tabs>
-        )}
-      </Stack>
-    </Container>
+                      <Alert icon={<IconTarget />} title="Best Practices" c="blue">
+                        <ul>
+                          <li>Run tests for at least 1-2 weeks to account for weekly patterns</li>
+                          <li>Ensure sufficient traffic ({'>'}1000 searches per variant)</li>
+                          <li>Test one major change at a time</li>
+                          <li>Monitor secondary metrics to avoid negative impacts</li>
+                          <li>Document your hypothesis and learnings</li>
+                        </ul>
+                      </Alert>
+                    </Stack>
+                  </ErrorBoundary>
+                </Tabs.Panel>
+              </Tabs>
+            </ErrorBoundary>
+          )}
+        </Stack>
+      </Container>
+    </ErrorBoundary>
   );
 }

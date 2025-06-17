@@ -2,8 +2,8 @@
  * Core workflow type definitions
  */
 
-import type { WorkflowError } from './errors';
-import type { WorkflowData, Metadata, ErrorDetails, StepData, EventPayload } from './common';
+import { WorkflowData, Metadata, ErrorDetails, EventPayload } from './common';
+import { WorkflowError } from './errors';
 
 export interface ListExecutionsOptions {
   /** Pagination cursor */
@@ -297,7 +297,7 @@ interface SchedulingService {
   unscheduleWorkflow(scheduleId: string): Promise<boolean>;
 }
 
-// import type { EventBus } from '../features/event-bus';
+// import { EventBus } from '../features/event-bus';
 // Define minimal StepRegistry interface to avoid circular dependencies
 interface StepRegistry {
   get(id: string): WorkflowDefinition | null;

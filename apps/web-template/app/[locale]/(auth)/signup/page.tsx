@@ -16,6 +16,6 @@ export async function generateMetadata({
 
 export default async function PageSignup({ params }: { params: { locale: string } }) {
   const dict = await getDictionary(params.locale);
-  
+
   return <SignupClient dict={dict} locale={params.locale} />;
 }

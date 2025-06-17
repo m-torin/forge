@@ -1,9 +1,8 @@
 'use client';
 
-import { Box } from '@mantine/core';
+import { Box, BoxProps } from '@mantine/core';
 
-import type { BoxProps } from '@mantine/core';
-import type { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 type ChatThreadProps = BoxProps & {
   children: ReactNode;
@@ -11,6 +10,9 @@ type ChatThreadProps = BoxProps & {
 
 export const ChatThread = ({ children, ...props }: ChatThreadProps) => (
   <Box
+    display="flex"
+    p="xl"
+    pb={0}
     style={{
       alignItems: 'flex-start',
       flex: 1,
@@ -18,9 +20,6 @@ export const ChatThread = ({ children, ...props }: ChatThreadProps) => (
       gap: '1rem',
       overflowY: 'auto',
     }}
-    display="flex"
-    p="xl"
-    pb={0}
     {...props}
   >
     {children}

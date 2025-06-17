@@ -12,7 +12,7 @@ export default async function ProductSearchPage({ params }: ProductSearchPagePro
 
 export async function generateMetadata({ params }: ProductSearchPageProps) {
   const { locale } = await params;
-  
+
   return {
     title: 'Product Search - Algolia InstantSearch',
     description: 'Search through our collection of fashion products using Algolia InstantSearch',

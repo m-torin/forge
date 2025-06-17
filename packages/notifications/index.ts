@@ -11,6 +11,7 @@ let hasLoggedWarning = false;
 const getKnock = () => {
   if (!apiKey) {
     if (!hasLoggedWarning) {
+      // eslint-disable-next-line no-console
       console.warn(
         '[Notifications] Knock API key not configured. Notification features are disabled.',
       );

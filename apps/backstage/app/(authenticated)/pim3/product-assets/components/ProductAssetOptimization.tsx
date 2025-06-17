@@ -250,7 +250,18 @@ export function ProductAssetOptimization() {
     try {
       const result = await getAssetOptimizationRecommendations();
       if (result.success && result.data) {
-        setRecommendations(result.data);
+        // Transform the data to match OptimizationRecommendation interface
+        const transformedData = result.data.map((rec: any) => ({
+          ...rec,
+          assets: rec.assets.map((asset: any) => ({
+            id: asset.id,
+            filename: asset.filename,
+            type: asset.type,
+            size: asset.size ?? undefined, // Convert null to undefined
+            product: asset.product,
+          })),
+        }));
+        setRecommendations(transformedData);
 
         // Calculate stats
         const totalIssues = result.data.reduce((sum, rec) => sum + rec.count, 0);

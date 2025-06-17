@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-export interface SocialsShareProps {
+export interface SocialsShareProps extends Record<string, any> {
   className?: string;
   itemClass?: string;
 }
@@ -12,10 +12,10 @@ export interface SocialType {
 }
 
 const socials: SocialType[] = [
-  { name: 'Facebook', href: '#', icon: 'lab la-facebook-f' },
-  { name: 'Twitter', href: '#', icon: 'lab la-twitter' },
-  { name: 'Linkedin', href: '#', icon: 'lab la-linkedin-in' },
-  { name: 'Instagram', href: '#', icon: 'lab la-instagram' },
+  { href: '#', icon: 'lab la-facebook-f', name: 'Facebook' },
+  { href: '#', icon: 'lab la-twitter', name: 'Twitter' },
+  { href: '#', icon: 'lab la-linkedin-in', name: 'Linkedin' },
+  { href: '#', icon: 'lab la-instagram', name: 'Instagram' },
 ];
 
 const SocialsShare: FC<SocialsShareProps> = ({
@@ -26,8 +26,8 @@ const SocialsShare: FC<SocialsShareProps> = ({
     return (
       <a
         key={index}
-        href={item.href}
         className={`flex items-center justify-center rounded-full bg-white leading-none text-neutral-600 ${itemClass}`}
+        href={item.href}
         title={`Share on ${item.name}`}
       >
         <i className={item.icon} />
@@ -36,7 +36,7 @@ const SocialsShare: FC<SocialsShareProps> = ({
   };
 
   return (
-    <div data-nc-id="SocialsShare" className={`nc-SocialsShare ${className}`}>
+    <div className={`nc-SocialsShare ${className}`} data-nc-id="SocialsShare">
       {socials.map(renderItem)}
     </div>
   );

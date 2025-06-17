@@ -4,11 +4,44 @@
  */
 
 import { ScrapingError, ScrapingErrorCode } from '../errors';
+import { ProviderRegistry, ScrapingConfig, SelectorMap } from '../types/scraping-types';
 import { retryWithBackoff } from '../utils/helpers';
 import { createScrapingManager } from '../utils/scraping-manager';
 
-import type { ProviderRegistry, ScrapingConfig, SelectorMap } from '../types/scraping-types';
-import type { QuickScrapeOptions } from './types';
+import { QuickScrapeOptions } from './types';
+
+/**
+ * Quick extract function for extracting data from existing HTML
+ */
+export async function extractFromHtml(
+  html: string,
+  selectors: SelectorMap,
+  _options: { transform?: boolean } = {},
+): Promise<Record<string, any>> {
+  // Use Cheerio for HTML parsing if available
+  try {
+    const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
+    const provider = new CheerioProvider();
+    await provider.initialize({ options: {} });
+
+    return provider.extract(html, selectors);
+  } catch (_error: any) {
+    // Fallback to basic extraction if Cheerio provider fails
+    return basicHtmlExtraction(html, selectors);
+  }
+}
+
+/**
+ * Quick extract function for extracting data from a URL
+ */
+export async function extractFromUrl(
+  url: string,
+  selectors: SelectorMap,
+  options: QuickScrapeOptions = {},
+): Promise<Record<string, any>> {
+  const result = await quickScrape(url, selectors, options);
+  return result?.data;
+}
 
 /**
  * Quick scrape function for simple use cases
@@ -20,12 +53,12 @@ export async function quickScrape(
   options: QuickScrapeOptions = {},
 ): Promise<{
   data: Record<string, any>;
-  title: string;
-  screenshot?: Buffer;
   metadata?: any;
+  screenshot?: Buffer;
+  title: string;
 }> {
   // Determine provider based on options or use smart defaults
-  const provider = options.provider || 'auto';
+  const provider = options.provider ?? 'auto';
 
   // Create basic provider registry for quick scraping
   const providers: ProviderRegistry = {};
@@ -34,23 +67,23 @@ export async function quickScrape(
   if (typeof window !== 'undefined') {
     // Client environment
     const { FetchProvider } = await import('../../client/providers/fetch-provider');
-    providers.fetch = (config) => new FetchProvider();
+    providers.fetch = (_config: any) => new FetchProvider();
   } else {
     // Server environment - import providers dynamically
     const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
     const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
     const { NodeFetchProvider } = await import('../../server/providers/node-fetch-provider');
 
-    providers.cheerio = (config) => new CheerioProvider();
-    providers.playwright = (config) => new PlaywrightProvider();
-    providers['node-fetch'] = (config) => new NodeFetchProvider();
+    providers.cheerio = (_config: any) => new CheerioProvider();
+    providers.playwright = (_config: any) => new PlaywrightProvider();
+    providers['node-fetch'] = (_config: any) => new NodeFetchProvider();
   }
 
   const config: ScrapingConfig = {
+    debug: false,
     providers: {
       [provider === 'auto' ? Object.keys(providers)[0] : provider]: {},
     },
-    debug: false,
   };
 
   const manager = createScrapingManager(config, providers);
@@ -66,60 +99,27 @@ export async function quickScrape(
         });
       },
       {
-        attempts: options.retries || 3,
+        attempts: options.retries ?? 3,
         delay: 1000,
       },
     );
 
     return {
-      data: result.data || {},
+      data: result?.data ?? {},
       metadata: result.metadata,
       screenshot: result.screenshot,
-      title: result.metadata.title || '',
+      title: result.metadata.title ?? '',
     };
-  } catch (error) {
+  } catch (error: any) {
     throw new ScrapingError(
-      `Quick scrape failed for ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Quick scrape failed for ${url}: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
       ScrapingErrorCode.SCRAPING_FAILED,
-      { url, options, selectors },
+      { options, selectors, url },
       error instanceof Error ? error : undefined,
     );
   } finally {
     await manager.dispose();
   }
-}
-
-/**
- * Quick extract function for extracting data from existing HTML
- */
-export async function extractFromHtml(
-  html: string,
-  selectors: SelectorMap,
-  options: { transform?: boolean } = {},
-): Promise<Record<string, any>> {
-  // Use Cheerio for HTML parsing if available
-  try {
-    const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
-    const provider = new CheerioProvider();
-    await provider.initialize({ options: {} });
-
-    return provider.extract(html, selectors);
-  } catch {
-    // Fallback to basic extraction
-    return basicHtmlExtraction(html, selectors);
-  }
-}
-
-/**
- * Quick extract function for extracting data from a URL
- */
-export async function extractFromUrl(
-  url: string,
-  selectors: SelectorMap,
-  options: QuickScrapeOptions = {},
-): Promise<Record<string, any>> {
-  const result = await quickScrape(url, selectors, options);
-  return result.data;
 }
 
 /**
@@ -143,7 +143,8 @@ function basicHtmlExtraction(html: string, selectors: SelectorMap): Record<strin
           result[key] = extractTextFromHtml(html, selectorOrConfig.selector);
         }
       }
-    } catch {
+    } catch (_error: any) {
+      // For basic extraction fallback, set null on error instead of throwing
       result[key] = null;
     }
   }
@@ -151,7 +152,13 @@ function basicHtmlExtraction(html: string, selectors: SelectorMap): Record<strin
   return result;
 }
 
-function extractTextFromHtml(html: string, selector: string): string | null {
+function extractMultipleFromHtml(_html: string, _selector: string): string[] {
+  // Basic regex-based extraction (simplified)
+  // This would be replaced with proper DOM parsing in production
+  return [];
+}
+
+function extractTextFromHtml(html: string, selector: string): null | string {
   // Basic regex-based extraction (simplified)
   // This would be replaced with proper DOM parsing in production
 
@@ -162,10 +169,4 @@ function extractTextFromHtml(html: string, selector: string): string | null {
 
   // For other selectors, return null (would need proper parser)
   return null;
-}
-
-function extractMultipleFromHtml(html: string, selector: string): string[] {
-  // Basic regex-based extraction (simplified)
-  // This would be replaced with proper DOM parsing in production
-  return [];
 }

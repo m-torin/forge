@@ -16,14 +16,14 @@ export default function MainLoading() {
           </div>
         </div>
       </div>
-      
+
       {/* Content skeleton */}
       <div className="container mx-auto px-4">
         <div className="mb-8 space-y-4">
           <Skeleton height={60} width="50%" />
           <Skeleton height={20} width="70%" />
         </div>
-        
+
         {/* Grid skeleton */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (

@@ -1,0 +1,52 @@
+{
+  "name": "@repo/nextfaster",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "NextFaster high-performance e-commerce service wrapper with local deployment",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./types": "./src/types.ts",
+    "./manager": "./src/manager.ts",
+    "./deploy": "./src/deploy.ts"
+  },
+  "scripts": {
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "setup": "tsx scripts/nextfaster-cli.ts setup",
+    "dev": "tsx scripts/nextfaster-cli.ts dev",
+    "build": "tsx scripts/nextfaster-cli.ts build",
+    "start": "tsx scripts/nextfaster-cli.ts start",
+    "stop": "tsx scripts/nextfaster-cli.ts stop",
+    "deploy": "tsx scripts/nextfaster-cli.ts deploy",
+    "logs": "tsx scripts/nextfaster-cli.ts logs"
+  },
+  "bin": {
+    "nextfaster": "./scripts/nextfaster-cli.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:",
+    "commander": "catalog:",
+    "execa": "^9.5.1",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "fs-extra": "^11.2.0",
+    "yaml": "^2.6.1",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/config": "workspace:*",
+    "@repo/testing": "workspace:*",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "tsx": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  }
+}

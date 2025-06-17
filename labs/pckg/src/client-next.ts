@@ -8,15 +8,6 @@ import type { ReactNode } from 'react';
 // Re-export all client functionality
 export * from './client';
 
-// Next.js specific client features (placeholder)
-export function useRouter() {
-  return {
-    back: () => {},
-    push: () => {},
-    replace: () => {},
-  };
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   return children;
 }
@@ -26,5 +17,14 @@ export function useAuthRedirect() {
   return {
     redirectAfterLogin: () => {},
     redirectToLogin: () => {},
+  };
+}
+
+// Next.js specific client features (placeholder)
+export function useRouter() {
+  return {
+    back: () => {},
+    push: () => {},
+    replace: () => {},
   };
 }

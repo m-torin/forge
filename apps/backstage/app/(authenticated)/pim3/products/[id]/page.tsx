@@ -14,7 +14,7 @@ interface ProductDetailPageProps {
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   // Await params as required in Next.js 15
   const { id } = await params;
-  
+
   // Handle "new" product creation
   if (id === 'new') {
     return <ProductDetailClient product={null} isCreating={true} />;
@@ -32,5 +32,5 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     );
   }
 
-  return <ProductDetailClient product={result.data} isCreating={false} />;
+  return <ProductDetailClient product={result.data as any} isCreating={false} />;
 }

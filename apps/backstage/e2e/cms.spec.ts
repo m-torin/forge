@@ -9,8 +9,8 @@ import {
 
 const authHelpers = createAuthHelpers('http://localhost:3300');
 
-test.describe('Backstage CMS - Content Management System Testing', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('Backstage CMS - Content Management System Testing', (_: any) => {
+  test.beforeEach(async ({ page }: any) => {
     // Sign in as admin user for all CMS tests
     const testUser = authHelpers.createTestUser({
       name: 'CMS Admin',
@@ -24,7 +24,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('CMS main page loads with content management interface', async ({ context, page }) => {
+  test('CMS main page loads with content management interface', async ({ context, page }: any) => {
     const { report, result } = await withPerformanceMonitoring(page, context, '/cms', async () => {
       // Verify page loads successfully
       await expect(page).toHaveTitle(/CMS|Content|Backstage/i);
@@ -86,7 +86,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     expect(result.report.metrics.lcp).toBeLessThan(3000);
   });
 
-  test('content creation and rich text editing', async ({ context, page }) => {
+  test('content creation and rich text editing', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
 
     await page.goto('/cms');
@@ -242,7 +242,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('content media management and file uploads', async ({ context, page }) => {
+  test('content media management and file uploads', async ({ context, page }: any) => {
     await page.goto('/cms/media');
     await page.waitForLoadState('networkidle');
 
@@ -281,7 +281,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
       for (const selector of uploadElements) {
         const uploadElement = page.locator(selector);
         if ((await uploadElement.count()) > 0 && (await uploadElement.isVisible())) {
-          if (await uploadElement.evaluate((el) => el.tagName === 'INPUT')) {
+          if (await uploadElement.evaluate((el: any) => el.tagName === 'INPUT')) {
             // File input - verify it exists
             await expect(uploadElement).toBeVisible();
           } else {
@@ -326,7 +326,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('content publishing workflow and status management', async ({ context, page }) => {
+  test('content publishing workflow and status management', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock content publishing API
@@ -406,7 +406,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
       for (const selector of statusFilters) {
         const filter = page.locator(selector).first();
         if ((await filter.count()) > 0 && (await filter.isVisible())) {
-          if (await filter.evaluate((el) => el.tagName === 'SELECT')) {
+          if (await filter.evaluate((el: any) => el.tagName === 'SELECT')) {
             await filter.selectOption({ index: 1 });
           } else {
             await filter.click();
@@ -428,7 +428,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
       for (const selector of scheduleElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.tagName === 'INPUT')) {
+          if (await element.evaluate((el: any) => el.tagName === 'INPUT')) {
             const futureDate = new Date();
             futureDate.setDate(futureDate.getDate() + 1);
             const dateString = futureDate.toISOString().slice(0, 16);
@@ -440,7 +440,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('content categories and taxonomy management', async ({ context, page }) => {
+  test('content categories and taxonomy management', async ({ context, page }: any) => {
     await page.goto('/cms');
     await page.waitForLoadState('networkidle');
 
@@ -524,7 +524,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('content search and advanced filtering', async ({ context, page }) => {
+  test('content search and advanced filtering', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
 
     await page.goto('/cms');
@@ -583,9 +583,9 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
         for (const optionSelector of filterOptions) {
           const option = page.locator(optionSelector).first();
           if ((await option.count()) > 0 && (await option.isVisible())) {
-            if (await option.evaluate((el) => el.tagName === 'SELECT')) {
+            if (await option.evaluate((el: any) => el.tagName === 'SELECT')) {
               await option.selectOption({ index: 1 });
-            } else if (await option.evaluate((el) => el.type === 'date')) {
+            } else if (await option.evaluate((el: any) => el.type === 'date')) {
               const today = new Date().toISOString().slice(0, 10);
               await option.fill(today);
             }
@@ -608,7 +608,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     for (const selector of sortElements) {
       const sortElement = page.locator(selector).first();
       if ((await sortElement.count()) > 0 && (await sortElement.isVisible())) {
-        if (await sortElement.evaluate((el) => el.tagName === 'SELECT')) {
+        if (await sortElement.evaluate((el: any) => el.tagName === 'SELECT')) {
           await sortElement.selectOption({ index: 1 });
         } else {
           await sortElement.click();
@@ -619,7 +619,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('content preview and SEO optimization', async ({ context, page }) => {
+  test('content preview and SEO optimization', async ({ context, page }: any) => {
     await page.goto('/cms');
     await page.waitForLoadState('networkidle');
 
@@ -703,7 +703,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('content versioning and revision history', async ({ context, page }) => {
+  test('content versioning and revision history', async ({ context, page }: any) => {
     await page.goto('/cms');
     await page.waitForLoadState('networkidle');
 
@@ -780,7 +780,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
     }
   });
 
-  test('CMS performance and bulk operations', async ({ context, page }) => {
+  test('CMS performance and bulk operations', async ({ context, page }: any) => {
     const { result } = await withPerformanceMonitoring(page, context, '/cms', async () => {
       // Test bulk selection if available
       const bulkElements = [
@@ -794,7 +794,7 @@ test.describe('Backstage CMS - Content Management System Testing', () => {
       for (const selector of bulkElements) {
         const element = page.locator(selector).first();
         if ((await element.count()) > 0 && (await element.isVisible())) {
-          if (await element.evaluate((el) => el.type === 'checkbox')) {
+          if (await element.evaluate((el: any) => el.type === 'checkbox')) {
             await element.check();
           } else {
             await element.click();

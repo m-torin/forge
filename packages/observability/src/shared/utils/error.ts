@@ -3,7 +3,9 @@
  * Migrated from the original observability package
  */
 
-import type { ObservabilityManager } from '../types/types';
+import { ObservabilityManager } from '../types/types';
+
+import { Environment } from './environment';
 
 /**
  * Error codes for standardized error handling
@@ -40,6 +42,110 @@ export function createError(message: string, code: ErrorCode | string, data?: an
 }
 
 /**
+ * Create an error boundary handler for React components
+ * This returns a function that can be used in error boundaries
+ */
+export function createErrorBoundaryHandler(observability: ObservabilityManager) {
+  return (error: Error, errorInfo: { componentStack?: string }) => {
+    void observability.captureException(error, {
+      extra: {
+        componentStack: errorInfo.componentStack,
+        errorBoundary: true,
+      },
+      tags: {
+        source: 'error_boundary',
+      },
+    });
+  };
+}
+
+/**
+ * Create a safe version of a function that won't throw
+ * Returns undefined on error and captures the error
+ */
+export function createSafeFunction<T extends (...args: any[]) => any>(
+  fn: T,
+  observability: ObservabilityManager,
+  fallbackValue?: ReturnType<T>,
+): (...args: Parameters<T>) => ReturnType<T> | undefined {
+  return (...args: Parameters<T>) => {
+    try {
+      const result = fn(...args);
+
+      // Handle async functions
+      if (result instanceof Promise) {
+        return result.catch((error: any) => {
+          void parseAndCaptureError(error, observability, {
+            function: fn.name || 'anonymous',
+            safeFunction: true,
+          });
+          return fallbackValue;
+        }) as any;
+      }
+
+      return result;
+    } catch (error: any) {
+      void parseAndCaptureError(error, observability, {
+        function: fn.name || 'anonymous',
+        safeFunction: true,
+      });
+      return fallbackValue;
+    }
+  };
+}
+
+/**
+ * Get error message from unknown value
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error === null || error === undefined) {
+    return 'Unknown error';
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  if (typeof error === 'number') {
+    return error.toString();
+  }
+
+  if (error instanceof Error) {
+    return (error as Error)?.message || 'Unknown error';
+  }
+
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as Error)?.message || 'Unknown error');
+  }
+
+  // Handle object types
+  try {
+    if (error && typeof error === 'object') {
+      return JSON.stringify(error);
+    }
+    return String(error);
+  } catch {
+    // Handle circular references and other JSON.stringify failures
+    return String(error);
+  }
+}
+
+/**
+ * Get error stack trace
+ */
+export function getErrorStack(error: unknown): string | undefined {
+  if (error instanceof Error) {
+    return error.stack;
+  }
+
+  if (error && typeof error === 'object' && 'stack' in error) {
+    return String(error.stack);
+  }
+
+  return undefined;
+}
+
+/**
  * Check if a value is an Error or Error-like object
  */
 export function isError(value: unknown): value is Error {
@@ -62,82 +168,34 @@ export function isError(value: unknown): value is Error {
 }
 
 /**
- * Get error message from unknown value
- */
-export function getErrorMessage(error: unknown): string {
-  if (error === null || error === undefined) {
-    return 'Unknown error';
-  }
-
-  if (typeof error === 'string') {
-    return error;
-  }
-
-  if (typeof error === 'number') {
-    return error.toString();
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
-  }
-
-  // Try to stringify the object
-  try {
-    return JSON.stringify(error);
-  } catch {
-    // Fallback for circular references
-    return String(error);
-  }
-}
-
-/**
- * Get error stack trace
- */
-export function getErrorStack(error: unknown): string | undefined {
-  if (error instanceof Error) {
-    return error.stack;
-  }
-
-  if (error && typeof error === 'object' && 'stack' in error) {
-    return String(error.stack);
-  }
-
-  return undefined;
-}
-
-/**
  * Normalize an error to a consistent format
  */
 export function normalizeError(error: unknown): Record<string, any> {
   if (error === null || error === undefined) {
     return {
-      name: 'Error',
       message: 'Unknown error',
+      name: 'Error',
     };
   }
 
   if (typeof error === 'string') {
     return {
-      name: 'Error',
       message: error,
+      name: 'Error',
     };
   }
 
   if (typeof error === 'number') {
     return {
-      name: 'Error',
       message: error.toString(),
+      name: 'Error',
     };
   }
 
   if (error instanceof Error) {
     const normalized: Record<string, any> = {
+      message: (error as Error)?.message || 'Unknown error',
       name: error.name,
-      message: error.message,
     };
 
     if (error.stack) {
@@ -159,25 +217,16 @@ export function normalizeError(error: unknown): Record<string, any> {
   if (typeof error === 'object') {
     const message = getErrorMessage(error);
     return {
-      name: 'Error',
       message,
+      name: 'Error',
       ...error,
     };
   }
 
   return {
-    name: 'Error',
     message: String(error),
+    name: 'Error',
   };
-}
-
-/**
- * Parse an unknown error into a string message
- * This is useful for displaying error messages to users
- * Alias for getErrorMessage for backward compatibility
- */
-export function parseError(error: unknown): string {
-  return getErrorMessage(error);
 }
 
 /**
@@ -203,31 +252,24 @@ export async function parseAndCaptureError(
       originalError: error,
       ...context,
     });
-  } catch (newError) {
-    // If observability fails, at least log to console
-    console.error('Error parsing error:', newError);
-    console.error('Original error:', error);
+  } catch (error: any) {
+    // If observability fails, at least log to console in development
+    if (Environment.isNonProduction()) {
+      console.error('Error parsing error:', error);
+      console.error('Original error: ', error);
+    }
   }
 
   return message;
 }
 
 /**
- * Create an error boundary handler for React components
- * This returns a function that can be used in error boundaries
+ * Parse an unknown error into a string message
+ * This is useful for displaying error messages to users
+ * Alias for getErrorMessage for backward compatibility
  */
-export function createErrorBoundaryHandler(observability: ObservabilityManager) {
-  return (error: Error, errorInfo: { componentStack?: string }) => {
-    observability.captureException(error, {
-      extra: {
-        componentStack: errorInfo.componentStack,
-        errorBoundary: true,
-      },
-      tags: {
-        source: 'error_boundary',
-      },
-    });
-  };
+export function parseError(error: unknown): string {
+  return getErrorMessage(error);
 }
 
 /**
@@ -242,7 +284,7 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
   return (async (...args: Parameters<T>) => {
     try {
       return await fn(...args);
-    } catch (error) {
+    } catch (error: any) {
       await parseAndCaptureError(error, observability, {
         function: fn.name || 'anonymous',
         ...context,
@@ -250,39 +292,4 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
       throw error;
     }
   }) as T;
-}
-
-/**
- * Create a safe version of a function that won't throw
- * Returns undefined on error and captures the error
- */
-export function createSafeFunction<T extends (...args: any[]) => any>(
-  fn: T,
-  observability: ObservabilityManager,
-  fallbackValue?: ReturnType<T>,
-): (...args: Parameters<T>) => ReturnType<T> | undefined {
-  return (...args: Parameters<T>) => {
-    try {
-      const result = fn(...args);
-
-      // Handle async functions
-      if (result instanceof Promise) {
-        return result.catch((error) => {
-          parseAndCaptureError(error, observability, {
-            function: fn.name || 'anonymous',
-            safeFunction: true,
-          });
-          return fallbackValue;
-        }) as any;
-      }
-
-      return result;
-    } catch (error) {
-      parseAndCaptureError(error, observability, {
-        function: fn.name || 'anonymous',
-        safeFunction: true,
-      });
-      return fallbackValue;
-    }
-  };
 }

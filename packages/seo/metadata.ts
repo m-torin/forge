@@ -1,11 +1,10 @@
 import merge from 'lodash.merge';
-
-import type { Metadata } from 'next';
+import { Metadata } from 'next';
 
 type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {
-  title: string;
   description: string;
   image?: string;
+  title: string;
 };
 
 const applicationName = 'forge';
@@ -40,11 +39,11 @@ export const createMetadata = ({
     },
     metadataBase: productionUrl ? new URL(`${protocol}://${productionUrl}`) : undefined,
     openGraph: {
-      type: 'website',
       description,
       locale: 'en_US',
       siteName: applicationName,
       title: parsedTitle,
+      type: 'website',
     },
     publisher,
     title: parsedTitle,
@@ -59,10 +58,10 @@ export const createMetadata = ({
   if (image && metadata.openGraph) {
     metadata.openGraph.images = [
       {
-        width: 1200,
-        url: image,
         alt: title,
         height: 630,
+        url: image,
+        width: 1200,
       },
     ];
   }

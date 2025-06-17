@@ -1,6 +1,7 @@
 /// <reference path="./eslint.d.ts" />
 /// <reference path="./eslint-plugin-node.d.ts" />
+/// <reference path="./eslint-plugins.d.ts" />
 
 // Re-export the types for easier consumption
-import type { Linter } from 'eslint';
+import { Linter } from 'eslint';
 export { Linter };

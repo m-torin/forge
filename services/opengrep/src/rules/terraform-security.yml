@@ -1,0 +1,64 @@
+rules:
+  - id: terraform-s3-public-read
+    message: S3 bucket allows public read access
+    languages: [terraform]
+    severity: ERROR
+    pattern: |
+      resource "aws_s3_bucket_acl" "$NAME" {
+        acl = "public-read"
+      }
+
+  - id: terraform-s3-public-read-write
+    message: S3 bucket allows public read-write access
+    languages: [terraform]
+    severity: ERROR
+    pattern: |
+      resource "aws_s3_bucket_acl" "$NAME" {
+        acl = "public-read-write"
+      }
+
+  - id: terraform-unencrypted-ebs
+    message: EBS volume is not encrypted
+    languages: [terraform]
+    severity: ERROR
+    pattern: |
+      resource "aws_ebs_volume" "$NAME" {
+        ...
+        encrypted = false
+        ...
+      }
+
+  - id: terraform-unencrypted-rds
+    message: RDS instance is not encrypted
+    languages: [terraform]
+    severity: ERROR
+    pattern: |
+      resource "aws_db_instance" "$NAME" {
+        ...
+        storage_encrypted = false
+        ...
+      }
+
+  - id: terraform-security-group-all-ports
+    message: Security group allows access to all ports
+    languages: [terraform]
+    severity: WARNING
+    pattern: |
+      resource "aws_security_group_rule" "$NAME" {
+        ...
+        from_port = 0
+        to_port = 65535
+        ...
+      }
+
+  - id: terraform-hardcoded-secret
+    message: Hardcoded secret in Terraform file
+    languages: [terraform]
+    severity: ERROR
+    pattern-either:
+      - pattern: |
+          password = "..."
+      - pattern: |
+          secret_key = "..."
+      - pattern: |
+          api_key = "..."

@@ -28,9 +28,9 @@ export class SegmentClientProvider implements AnalyticsProvider {
     try {
       // Dynamically import Segment Analytics Next
       const { AnalyticsBrowser } = await import(
-      /* webpackChunkName: "segment-analytics-browser" */
-      '@segment/analytics-next'
-    );
+        /* webpackChunkName: "segment-analytics-browser" */
+        '@segment/analytics-next'
+      );
 
       // Initialize Analytics Browser
       this.analytics = AnalyticsBrowser.load({
@@ -39,7 +39,7 @@ export class SegmentClientProvider implements AnalyticsProvider {
       });
 
       this.isInitialized = true;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         'Segment Analytics Next not available. Install with: npm install @segment/analytics-next',
       );
@@ -53,7 +53,7 @@ export class SegmentClientProvider implements AnalyticsProvider {
 
     try {
       await this.analytics.track(event, properties);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -65,7 +65,7 @@ export class SegmentClientProvider implements AnalyticsProvider {
 
     try {
       await this.analytics.identify(userId, traits);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -77,7 +77,7 @@ export class SegmentClientProvider implements AnalyticsProvider {
 
     try {
       await this.analytics.page(name, properties);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -89,7 +89,7 @@ export class SegmentClientProvider implements AnalyticsProvider {
 
     try {
       await this.analytics.group(groupId, traits);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -101,7 +101,7 @@ export class SegmentClientProvider implements AnalyticsProvider {
 
     try {
       await this.analytics.alias(userId, previousId);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }

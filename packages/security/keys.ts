@@ -16,9 +16,9 @@ const requireUpstashInProduction = isProduction && hasUpstashVars;
 export const keys = () =>
   createEnv({
     runtimeEnv: {
-      ARCJET_KEY: process.env.ARCJET_KEY || undefined,
-      UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || undefined,
-      UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || undefined,
+      ARCJET_KEY: process.env.ARCJET_KEY ?? undefined,
+      UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN ?? undefined,
+      UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL ?? undefined,
     },
     server: {
       ARCJET_KEY: requireArcjetInProduction

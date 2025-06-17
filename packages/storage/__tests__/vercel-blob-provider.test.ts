@@ -6,7 +6,7 @@ const mockDel = vi.fn();
 const mockHead = vi.fn();
 const mockList = vi.fn();
 
-vi.mock('@vercel/blob', () => ({
+vi.mock('@vercel/blob', (_: any) => ({
   del: mockDel,
   head: mockHead,
   list: mockList,
@@ -17,13 +17,13 @@ vi.mock('@vercel/blob', () => ({
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('VercelBlobProvider', () => {
+describe('VercelBlobProvider', (_: any) => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
   });
 
-  describe('constructor', () => {
+  describe('constructor', (_: any) => {
     it('should create provider with valid token', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
@@ -42,7 +42,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('upload', () => {
+  describe('upload', (_: any) => {
     beforeEach(() => {
       mockPut.mockResolvedValue({
         pathname: 'test-key',
@@ -190,7 +190,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('download', () => {
+  describe('download', (_: any) => {
     it('should download blob successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
@@ -238,7 +238,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('delete', () => {
+  describe('delete', (_: any) => {
     it('should delete blob successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
@@ -263,7 +263,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('exists', () => {
+  describe('exists', (_: any) => {
     it('should return true when blob exists', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
@@ -306,7 +306,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('list', () => {
+  describe('list', (_: any) => {
     beforeEach(() => {
       mockList.mockResolvedValue({
         blobs: [
@@ -325,7 +325,7 @@ describe('VercelBlobProvider', () => {
         ],
       });
 
-      mockHead.mockImplementation((url) => {
+      mockHead.mockImplementation((url: any) => {
         if (url.includes('file1.txt')) {
           return Promise.resolve({
             contentType: 'text/plain',
@@ -428,7 +428,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('getUrl', () => {
+  describe('getUrl', (_: any) => {
     beforeEach(() => {
       mockHead.mockResolvedValue({
         url: 'https://blob.vercel.com/test-key',
@@ -471,7 +471,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('getMetadata', () => {
+  describe('getMetadata', (_: any) => {
     beforeEach(() => {
       mockHead.mockResolvedValue({
         pathname: 'test-key',
@@ -529,7 +529,7 @@ describe('VercelBlobProvider', () => {
     });
   });
 
-  describe('error handling and edge cases', () => {
+  describe('error handling and edge cases', (_: any) => {
     it('should handle API responses with missing fields', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 

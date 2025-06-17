@@ -32,7 +32,7 @@ type Priority = 'high' | 'low' | 'normal' | 'urgent';
  */
 export const HttpRequestInputSchema = z
   .object({
-    body: z.any().optional(),
+    body: z.unknown().optional(),
     cache: z.enum(['default', 'no-store', 'reload', 'no-cache', 'force-cache']).optional(),
     credentials: z.enum(['omit', 'same-origin', 'include']).optional(),
     followRedirects: z.boolean().default(true),
@@ -47,7 +47,7 @@ export const HttpRequestInputSchema = z
     url: z.string().url('Must be a valid URL'),
   })
   .refine(
-    (data) => {
+    (data: any) => {
       // Custom validation using nullish coalescing
       const hasBody = data.body != null;
       const isBodyMethod = ['PATCH', 'POST', 'PUT'].includes(data.method);
@@ -61,7 +61,7 @@ export const HttpRequestInputSchema = z
  */
 export const HttpRequestOutputSchema = z.object({
   cached: z.boolean().optional(),
-  data: z.any(),
+  data: z.unknown(),
   duration: z.number(),
   headers: z.record(z.string()),
   // Modern additions
@@ -87,7 +87,7 @@ const parseContentType = (contentType: string): ContentType => {
   return 'application/octet-stream';
 };
 
-const parseResponseData = async (response: Response): Promise<any> => {
+const parseResponseData = async (response: Response): Promise<unknown> => {
   const contentType = response.headers.get('content-type') ?? '';
   const type = parseContentType(contentType);
 
@@ -146,7 +146,7 @@ export function createHttpRequestStep(
           // Use AbortSignal.any if available (newer browsers), otherwise manual combination
           const combinedSignal = (AbortSignal as any).any?.(signals) ?? controller.signal;
           if (!AbortSignal.any && abortSignal) {
-            abortSignal.addEventListener('abort', () => controller.abort());
+            abortSignal.addEventListener('abort', (_: any) => controller.abort());
           }
         }
 
@@ -206,7 +206,7 @@ export function createHttpRequestStep(
               timestamp: new Date(),
             },
             output,
-            performance: context.performance,
+            performance: context?.performance,
             shouldRetry,
             success: false,
           };
@@ -220,10 +220,10 @@ export function createHttpRequestStep(
             status: response.status,
           },
           output,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         const duration = Date.now() - startTime;
         const isTimeoutError = error instanceof Error && error.name === 'AbortError';
         const isNetworkError = error instanceof TypeError;
@@ -239,12 +239,15 @@ export function createHttpRequestStep(
           error: {
             code: errorCode,
             details: { duration, errorType: error?.constructor.name, originalError: error },
-            message: error instanceof Error ? error.message : 'Unknown HTTP error',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Unknown HTTP error',
             retryable: !isNetworkError, // Network errors typically aren't retryable
             timestamp: new Date(),
           },
           metadata: { duration, errorType: errorCode },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: !isNetworkError,
           success: false,
         };
@@ -257,7 +260,7 @@ export function createHttpRequestStep(
           delay: 1000,
           jitter: true,
           maxAttempts: 3,
-          retryIf: (error) =>
+          retryIf: (error: any) =>
             error.code ? ['HTTP_REQUEST_ERROR', 'HTTP_TIMEOUT_ERROR'].includes(error.code) : false,
         },
         timeout: { execution: 60000 },
@@ -299,7 +302,7 @@ export const DatabaseQueryInputSchema = z
   .object({
     connection: z.string().optional(),
     maxRows: z.number().positive().optional(),
-    parameters: z.array(z.any()).optional(),
+    parameters: z.array(z.unknown()).optional(),
     query: z.string().min(1, 'Query cannot be empty'),
     // Modern additions
     readOnly: z.boolean().default(false),
@@ -307,7 +310,7 @@ export const DatabaseQueryInputSchema = z
     timeout: z.number().positive().default(30000),
     transactionId: z.string().optional(),
   })
-  .refine((data) => validateParameters(data.query, data.parameters), {
+  .refine((data: any) => validateParameters(data.query, data.parameters), {
     message: 'Parameter count must match query placeholders',
   });
 
@@ -319,10 +322,10 @@ export const DatabaseQueryOutputSchema = z.object({
   affectedRows: z.number().optional(),
   duration: z.number(),
   insertId: z.union([z.string(), z.number()]).optional(),
-  metadata: z.record(z.any()).optional(),
-  queryPlan: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  queryPlan: z.record(z.unknown()).optional(),
   rowCount: z.number(),
-  rows: z.array(z.record(z.any())),
+  rows: z.array(z.record(z.unknown())),
   warnings: z.array(z.string()).optional(),
 });
 
@@ -336,7 +339,7 @@ export function createDatabaseQueryStep(
   name: string,
   description?: string,
   customConfig?: {
-    connectionProvider?: () => Promise<any>;
+    connectionProvider?: () => Promise<unknown>;
     executionConfig?: StepExecutionConfig;
     queryProcessor?: (
       context: ReturnType<typeof createQueryContext>,
@@ -424,18 +427,21 @@ export function createDatabaseQueryStep(
             queryDuration: duration,
           },
           output: mockResult,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         const duration = Date.now() - startTime;
 
         // Determine error type and retryability
         const isConnectionError =
           error instanceof Error &&
-          ['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND'].some((code) => error.message.includes(code));
+          ['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND'].some((code: any) =>
+            ((error as Error)?.message || 'Unknown error').includes(code),
+          );
         const isSyntaxError =
-          error instanceof Error && error.message.toLowerCase().includes('syntax');
+          error instanceof Error &&
+          ((error as Error)?.message || 'Unknown error').toLowerCase().includes('syntax');
         const isValidationError =
           error instanceof OrchestrationError && error.code === 'DATABASE_VALIDATION_ERROR';
 
@@ -456,12 +462,15 @@ export function createDatabaseQueryStep(
               originalError: error,
               query: input.query,
             },
-            message: error instanceof Error ? error.message : 'Database query failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Database query failed',
             retryable: isConnectionError, // Only retry connection errors
             timestamp: new Date(),
           },
           metadata: { duration, errorType: errorCode },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: isConnectionError,
           success: false,
         };
@@ -473,7 +482,7 @@ export function createDatabaseQueryStep(
           backoff: 'exponential',
           delay: 500,
           maxAttempts: 3,
-          retryIf: (error) => error.code === 'DATABASE_CONNECTION_ERROR',
+          retryIf: (error: any) => error.code === 'DATABASE_CONNECTION_ERROR',
         },
         timeout: { execution: 30000 },
         ...customConfig?.executionConfig,
@@ -498,7 +507,7 @@ export const FileProcessingInputSchema = z.object({
   encoding: z.string().default('utf-8'),
   filePath: z.string().min(1, 'File path is required'),
   operation: z.enum(['read', 'write', 'delete', 'copy', 'move', 'compress', 'decompress']),
-  options: z.record(z.any()).optional(),
+  options: z.record(z.unknown()).optional(),
   outputPath: z.string().optional(),
 });
 
@@ -506,9 +515,9 @@ export const FileProcessingInputSchema = z.object({
  * Output schema for file processing steps
  */
 export const FileProcessingOutputSchema = z.object({
-  content: z.any().optional(),
+  content: z.unknown().optional(),
   filePath: z.string(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
   size: z.number().optional(),
   success: z.boolean(),
 });
@@ -556,19 +565,22 @@ export function createFileProcessingStep(
 
         return {
           output: mockResult,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'FILE_PROCESSING_ERROR',
             details: { filePath: input.filePath, originalError: error },
-            message: error instanceof Error ? error.message : 'File processing failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'File processing failed',
             retryable: false, // File errors are typically not retryable
             timestamp: new Date(),
           },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: false,
           success: false,
         };
@@ -606,7 +618,7 @@ export const NotificationInputSchema = z.object({
     )
     .optional(),
   message: z.string().min(1, 'Message is required'),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
   priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
   recipients: z.array(z.string()).min(1, 'At least one recipient is required'),
   subject: z.string().optional(),
@@ -657,7 +669,7 @@ export function createNotificationStep(
 
         const mockResult: NotificationOutput = {
           deliveryStatus: Object.fromEntries(
-            input.recipients.map((recipient) => [recipient, 'delivered']),
+            input.recipients.map((recipient: any) => [recipient, 'delivered']),
           ),
           messageId: `msg_${Date.now()}`,
           recipients: input.recipients,
@@ -670,19 +682,22 @@ export function createNotificationStep(
             recipientCount: input.recipients.length,
           },
           output: mockResult,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'NOTIFICATION_ERROR',
             details: { notificationType: input.type, originalError: error },
-            message: error instanceof Error ? error.message : 'Notification failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Notification failed',
             retryable: true,
             timestamp: new Date(),
           },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: true,
           success: false,
         };
@@ -715,7 +730,7 @@ export function createNotificationStep(
  * Input schema for data transformation steps
  */
 export const DataTransformationInputSchema = z.object({
-  data: z.any(),
+  data: z.unknown(),
   options: z
     .object({
       continueOnError: z.boolean().default(true),
@@ -725,7 +740,7 @@ export const DataTransformationInputSchema = z.object({
     .optional(),
   transformations: z.array(
     z.object({
-      config: z.record(z.any()),
+      config: z.record(z.unknown()),
       type: z.enum(['map', 'filter', 'reduce', 'sort', 'group', 'validate', 'convert']),
     }),
   ),
@@ -735,17 +750,17 @@ export const DataTransformationInputSchema = z.object({
  * Output schema for data transformation steps
  */
 export const DataTransformationOutputSchema = z.object({
-  data: z.any(),
+  data: z.unknown(),
   errors: z
     .array(
       z.object({
         error: z.string(),
-        item: z.any().optional(),
+        item: z.unknown().optional(),
         transformation: z.string(),
       }),
     )
     .optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
   transformedCount: z.number(),
 });
 
@@ -789,18 +804,22 @@ export function createDataTransformationStep(
               case 'filter':
                 if (Array.isArray(data)) {
                   const originalLength = data.length;
-                  data = data.filter((item) => item !== null && item !== undefined);
-                  transformedCount += originalLength - data.length;
+                  const filteredData = (data as any[]).filter(
+                    (item: any) => item !== null && item !== undefined,
+                  );
+                  data = filteredData;
+                  transformedCount += originalLength - filteredData.length;
                 }
                 break;
               case 'map':
                 if (Array.isArray(data)) {
-                  data = data.map((item, index) => ({
+                  const mappedData = (data as any[]).map((item, index: any) => ({
                     ...item,
                     _index: index,
                     _transformed: true,
                   }));
-                  transformedCount += data.length;
+                  data = mappedData;
+                  transformedCount += mappedData.length;
                 }
                 break;
               case 'validate':
@@ -810,9 +829,12 @@ export function createDataTransformationStep(
               default:
                 throw new Error(`Unsupported transformation type: ${transformation.type}`);
             }
-          } catch (error) {
+          } catch (error: any) {
             const errorDetails = {
-              error: error instanceof Error ? error.message : 'Unknown error',
+              error:
+                error instanceof Error
+                  ? (error as Error)?.message || 'Unknown error'
+                  : 'Unknown error',
               item: null, // Would include the specific item that failed
               transformation: transformation.type,
             };
@@ -846,19 +868,22 @@ export function createDataTransformationStep(
             transformedItems: transformedCount,
           },
           output: result,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'DATA_TRANSFORMATION_ERROR',
             details: { originalError: error },
-            message: error instanceof Error ? error.message : 'Data transformation failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Data transformation failed',
             retryable: false, // Data transformation errors are typically not retryable
             timestamp: new Date(),
           },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: false,
           success: false,
         };
@@ -888,8 +913,8 @@ export function createDataTransformationStep(
 export const ConditionalInputSchema = z.object({
   condition: z.object({
     customFunction: z.string().optional(), // For custom conditions
-    left: z.any(),
-    right: z.any().optional(),
+    left: z.unknown(),
+    right: z.unknown().optional(),
     type: z.enum([
       'equals',
       'not_equals',
@@ -901,7 +926,7 @@ export const ConditionalInputSchema = z.object({
     ]),
   }),
   falseSteps: z.array(z.string()).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
   trueSteps: z.array(z.string()).optional(),
 });
 
@@ -910,7 +935,7 @@ export const ConditionalInputSchema = z.object({
  */
 export const ConditionalOutputSchema = z.object({
   conditionMet: z.boolean(),
-  evaluationDetails: z.record(z.any()).optional(),
+  evaluationDetails: z.record(z.unknown()).optional(),
   nextSteps: z.array(z.string()).optional(),
 });
 
@@ -953,7 +978,7 @@ export function createBatchProcessingStep<TInput, TOutput>(
 
         // Process batches with concurrency control
         for (let i = 0; i < batches.length; i += concurrency) {
-          const batchPromises = batches.slice(i, i + concurrency).map(async (batch, idx) => {
+          const batchPromises = batches.slice(i, i + concurrency).map(async (batch, idx: any) => {
             const batchResults = await batchProcessor(batch);
             results.push(...batchResults);
             processed += batch.length;
@@ -978,19 +1003,22 @@ export function createBatchProcessingStep<TInput, TOutput>(
             totalBatches: batches.length,
           },
           output: results,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'BATCH_PROCESSING_ERROR' as const,
             details: { originalError: error },
-            message: error instanceof Error ? error.message : 'Batch processing failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Batch processing failed',
             retryable: true,
             timestamp: new Date(),
           },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: true,
           success: false,
         };
@@ -1087,19 +1115,22 @@ export function createConditionalStep(
             nextStepCount: nextSteps?.length || 0,
           },
           output: result,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'CONDITIONAL_EVALUATION_ERROR',
             details: { condition: input.condition, originalError: error },
-            message: error instanceof Error ? error.message : 'Condition evaluation failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Condition evaluation failed',
             retryable: false,
             timestamp: new Date(),
           },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: false,
           success: false,
         };
@@ -1139,16 +1170,18 @@ export function createDelayStep(
       tags: ['delay', 'sleep', 'wait'],
       version: '1.0.0',
     },
-    async (context): Promise<StepExecutionResult<{ actualDelay: number; delayMs: number }>> => {
+    async (
+      context: any,
+    ): Promise<StepExecutionResult<{ actualDelay: number; delayMs: number }>> => {
       const delay = context.input.delayMs || delayMs;
       const startTime = Date.now();
 
       try {
-        await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject: any) => {
           const timeout = setTimeout(resolve, delay);
 
           if (context.abortSignal) {
-            context.abortSignal.addEventListener('abort', () => {
+            context.abortSignal.addEventListener('abort', (_: any) => {
               clearTimeout(timeout);
               reject(new Error('Delay aborted'));
             });
@@ -1160,19 +1193,22 @@ export function createDelayStep(
         return {
           metadata: { actualDelay, plannedDelay: delay },
           output: { actualDelay, delayMs: delay },
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'DELAY_ERROR',
             details: { originalError: error, plannedDelay: delay },
-            message: error instanceof Error ? error.message : 'Delay failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Delay failed',
             retryable: false,
             timestamp: new Date(),
           },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: false,
           success: false,
         };
@@ -1222,7 +1258,7 @@ export function createMapReduceStep<TInput, TMapped, TOutput>(
 
         for (let i = 0; i < input.length; i += concurrency) {
           const batch = input.slice(i, i + concurrency);
-          const batchResults = await Promise.all(batch.map((item) => mapper(item)));
+          const batchResults = await Promise.all(batch.map((item: any) => mapper(item)));
           mappedResults.push(...batchResults);
 
           await context.reportProgress?.(
@@ -1246,19 +1282,22 @@ export function createMapReduceStep<TInput, TMapped, TOutput>(
             mappedCount: mappedResults.length,
           },
           output: result,
-          performance: context.performance,
+          performance: context?.performance,
           success: true,
         };
-      } catch (error) {
+      } catch (error: any) {
         return {
           error: {
             code: 'MAP_REDUCE_ERROR' as const,
             details: { originalError: error },
-            message: error instanceof Error ? error.message : 'Map-reduce operation failed',
+            message:
+              error instanceof Error
+                ? (error as Error)?.message || 'Unknown error'
+                : 'Map-reduce operation failed',
             retryable: false,
             timestamp: new Date(),
           },
-          performance: context.performance,
+          performance: context?.performance,
           shouldRetry: false,
           success: false,
         };

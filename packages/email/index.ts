@@ -9,8 +9,14 @@ import { OrganizationInvitationTemplate } from './templates/organization-invitat
 import { PasswordResetTemplate } from './templates/password-reset';
 import { VerificationTemplate } from './templates/verification';
 import { WelcomeTemplate } from './templates/welcome';
+import { RegistryCreatedTemplate } from './templates/registry-created';
+import { RegistryInvitationTemplate } from './templates/registry-invitation';
+import { RegistryPurchaseTemplate } from './templates/registry-purchase';
+import { RegistryThankYouTemplate } from './templates/registry-thank-you';
+import { RegistryPurchaseConfirmationTemplate } from './templates/registry-purchase-confirmation';
+import { RegistryItemAddedTemplate } from './templates/registry-item-added';
 
-let resendInstance: Resend | null = null;
+let resendInstance: null | Resend = null;
 let hasLoggedWarning = false;
 
 export const resend = new Proxy({ emails: {} } as Resend, {
@@ -20,7 +26,7 @@ export const resend = new Proxy({ emails: {} } as Resend, {
     // Return no-op functions if token is missing
     if (!RESEND_TOKEN) {
       if (!hasLoggedWarning) {
-        console.warn('Resend email service is disabled: Missing RESEND_TOKEN');
+        // Resend email service is disabled: Missing RESEND_TOKEN
         hasLoggedWarning = true;
       }
 
@@ -45,19 +51,19 @@ export const resend = new Proxy({ emails: {} } as Resend, {
 // Email sending functions
 export const sendMagicLinkEmail = async (data: {
   email: string;
-  magicLink: string;
-  name?: string | null;
   expiresIn?: string;
+  magicLink: string;
+  name?: null | string;
 }) => {
   const { RESEND_FROM } = keys();
 
   try {
     const html = render(
       MagicLinkTemplate({
-        name: data.name,
         email: data.email,
         expiresIn: data.expiresIn || '20 minutes',
         magicLink: data.magicLink,
+        name: data.name,
       }),
     );
 
@@ -69,24 +75,25 @@ export const sendMagicLinkEmail = async (data: {
     });
 
     return result;
-  } catch (error) {
-    console.error('Failed to send magic link email:', error);
-    throw new Error('Failed to send magic link email');
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send magic link email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
   }
 };
 
 export const sendVerificationEmail = async (data: {
   email: string;
+  name?: null | string;
   verificationLink: string;
-  name?: string | null;
 }) => {
   const { RESEND_FROM } = keys();
 
   try {
     const html = render(
       VerificationTemplate({
-        name: data.name,
         email: data.email,
+        name: data.name,
         verificationLink: data.verificationLink,
       }),
     );
@@ -99,24 +106,25 @@ export const sendVerificationEmail = async (data: {
     });
 
     return result;
-  } catch (error) {
-    console.error('Failed to send verification email:', error);
-    throw new Error('Failed to send verification email');
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send verification email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
   }
 };
 
 export const sendPasswordResetEmail = async (data: {
   email: string;
+  name?: null | string;
   resetLink: string;
-  name?: string | null;
 }) => {
   const { RESEND_FROM } = keys();
 
   try {
     const html = render(
       PasswordResetTemplate({
-        name: data.name,
         email: data.email,
+        name: data.name,
         resetLink: data.resetLink,
       }),
     );
@@ -129,16 +137,17 @@ export const sendPasswordResetEmail = async (data: {
     });
 
     return result;
-  } catch (error) {
-    console.error('Failed to send password reset email:', error);
-    throw new Error('Failed to send password reset email');
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send password reset email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
   }
 };
 
 export const sendContactEmail = async (data: {
   email: string;
-  name: string;
   message: string;
+  name: string;
   to?: string;
 }) => {
   const { RESEND_FROM } = keys();
@@ -146,9 +155,9 @@ export const sendContactEmail = async (data: {
   try {
     const html = render(
       ContactTemplate({
-        name: data.name,
         email: data.email,
         message: data.message,
+        name: data.name,
       }),
     );
 
@@ -160,19 +169,20 @@ export const sendContactEmail = async (data: {
     });
 
     return result;
-  } catch (error) {
-    console.error('Failed to send contact email:', error);
-    throw new Error('Failed to send contact email');
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send contact email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
   }
 };
 
 export const sendOrganizationInvitationEmail = async (data: {
   email: string;
-  inviteLink: string;
-  organizationName: string;
-  inviterName?: string | null;
-  inviterEmail: string;
   expiresIn?: string;
+  inviteLink: string;
+  inviterEmail: string;
+  inviterName?: null | string;
+  organizationName: string;
 }) => {
   const { RESEND_FROM } = keys();
 
@@ -196,26 +206,27 @@ export const sendOrganizationInvitationEmail = async (data: {
     });
 
     return result;
-  } catch (error) {
-    console.error('Failed to send organization invitation email:', error);
-    throw new Error('Failed to send organization invitation email');
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send organization invitation email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
   }
 };
 
 export const sendWelcomeEmail = async (data: {
+  dashboardUrl?: string;
   email: string;
   name: string;
   organizationName: string;
-  dashboardUrl?: string;
 }) => {
   const { RESEND_FROM } = keys();
 
   try {
     const html = render(
       WelcomeTemplate({
-        name: data.name,
         dashboardUrl: data.dashboardUrl,
         email: data.email,
+        name: data.name,
         organizationName: data.organizationName,
       }),
     );
@@ -228,29 +239,30 @@ export const sendWelcomeEmail = async (data: {
     });
 
     return result;
-  } catch (error) {
-    console.error('Failed to send welcome email:', error);
-    throw new Error('Failed to send welcome email');
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send welcome email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
   }
 };
 
 export const sendApiKeyCreatedEmail = async (data: {
+  apiKeyId: string;
+  apiKeyName: string;
+  dashboardUrl?: string;
   email: string;
   name: string;
-  apiKeyName: string;
-  apiKeyId: string;
-  dashboardUrl?: string;
 }) => {
   const { RESEND_FROM } = keys();
 
   try {
     const html = render(
       ApiKeyCreatedTemplate({
-        name: data.name,
         apiKeyId: data.apiKeyId,
         apiKeyName: data.apiKeyName,
         dashboardUrl: data.dashboardUrl,
         email: data.email,
+        name: data.name,
       }),
     );
 
@@ -262,9 +274,259 @@ export const sendApiKeyCreatedEmail = async (data: {
     });
 
     return result;
-  } catch (error) {
-    console.error('Failed to send API key created email:', error);
-    throw new Error('Failed to send API key created email');
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send API key created email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
+  }
+};
+
+// Registry email sending functions
+export const sendRegistryCreatedEmail = async (data: {
+  email: string;
+  name: string;
+  registryTitle: string;
+  registryType: string;
+  registryUrl: string;
+  eventDate?: string;
+}) => {
+  const { RESEND_FROM } = keys();
+
+  try {
+    const html = render(
+      RegistryCreatedTemplate({
+        email: data.email,
+        name: data.name,
+        registryTitle: data.registryTitle,
+        registryType: data.registryType,
+        registryUrl: data.registryUrl,
+        eventDate: data.eventDate,
+      }),
+    );
+
+    const result = await resend.emails.send({
+      from: RESEND_FROM || 'noreply@example.com',
+      html: await html,
+      subject: `Your ${data.registryType} registry has been created!`,
+      to: data.email,
+    });
+
+    return result;
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send registry created email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
+  }
+};
+
+export const sendRegistryInvitationEmail = async (data: {
+  email: string;
+  inviterName: string;
+  inviterEmail: string;
+  registryTitle: string;
+  registryType: string;
+  registryUrl: string;
+  role: 'VIEWER' | 'EDITOR';
+  message?: string;
+  eventDate?: string;
+}) => {
+  const { RESEND_FROM } = keys();
+
+  try {
+    const html = render(
+      RegistryInvitationTemplate({
+        email: data.email,
+        inviterName: data.inviterName,
+        inviterEmail: data.inviterEmail,
+        registryTitle: data.registryTitle,
+        registryType: data.registryType,
+        registryUrl: data.registryUrl,
+        role: data.role,
+        message: data.message,
+        eventDate: data.eventDate,
+      }),
+    );
+
+    const result = await resend.emails.send({
+      from: RESEND_FROM || 'noreply@example.com',
+      html: await html,
+      subject: `${data.inviterName} invited you to view their registry`,
+      to: data.email,
+    });
+
+    return result;
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send registry invitation email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
+  }
+};
+
+export const sendRegistryPurchaseEmail = async (data: {
+  email: string;
+  ownerName: string;
+  purchaserName: string;
+  purchaserEmail: string;
+  registryTitle: string;
+  itemName: string;
+  quantity: number;
+  giftMessage?: string;
+  registryUrl: string;
+}) => {
+  const { RESEND_FROM } = keys();
+
+  try {
+    const html = render(
+      RegistryPurchaseTemplate({
+        email: data.email,
+        ownerName: data.ownerName,
+        purchaserName: data.purchaserName,
+        purchaserEmail: data.purchaserEmail,
+        registryTitle: data.registryTitle,
+        itemName: data.itemName,
+        quantity: data.quantity,
+        giftMessage: data.giftMessage,
+        registryUrl: data.registryUrl,
+      }),
+    );
+
+    const result = await resend.emails.send({
+      from: RESEND_FROM || 'noreply@example.com',
+      html: await html,
+      subject: `${data.purchaserName} purchased from your registry!`,
+      to: data.email,
+    });
+
+    return result;
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send registry purchase email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
+  }
+};
+
+export const sendRegistryThankYouEmail = async (data: {
+  email: string;
+  recipientName: string;
+  senderName: string;
+  registryTitle: string;
+  itemName: string;
+  message: string;
+}) => {
+  const { RESEND_FROM } = keys();
+
+  try {
+    const html = render(
+      RegistryThankYouTemplate({
+        email: data.email,
+        recipientName: data.recipientName,
+        senderName: data.senderName,
+        registryTitle: data.registryTitle,
+        itemName: data.itemName,
+        message: data.message,
+      }),
+    );
+
+    const result = await resend.emails.send({
+      from: RESEND_FROM || 'noreply@example.com',
+      html: await html,
+      subject: `Thank you from ${data.senderName}`,
+      to: data.email,
+    });
+
+    return result;
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send registry thank you email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
+  }
+};
+
+export const sendRegistryPurchaseConfirmationEmail = async (data: {
+  email: string;
+  purchaserName: string;
+  registryOwnerName: string;
+  registryTitle: string;
+  itemName: string;
+  quantity: number;
+  orderNumber?: string;
+  registryUrl: string;
+  isGift: boolean;
+  giftWrapped?: boolean;
+}) => {
+  const { RESEND_FROM } = keys();
+
+  try {
+    const html = render(
+      RegistryPurchaseConfirmationTemplate({
+        email: data.email,
+        purchaserName: data.purchaserName,
+        registryOwnerName: data.registryOwnerName,
+        registryTitle: data.registryTitle,
+        itemName: data.itemName,
+        quantity: data.quantity,
+        orderNumber: data.orderNumber,
+        registryUrl: data.registryUrl,
+        isGift: data.isGift,
+        giftWrapped: data.giftWrapped,
+      }),
+    );
+
+    const result = await resend.emails.send({
+      from: RESEND_FROM || 'noreply@example.com',
+      html: await html,
+      subject: 'Your registry purchase has been recorded',
+      to: data.email,
+    });
+
+    return result;
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send registry purchase confirmation email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
+  }
+};
+
+export const sendRegistryItemAddedEmail = async (data: {
+  email: string;
+  recipientName: string;
+  adderName: string;
+  registryTitle: string;
+  itemName: string;
+  itemQuantity: number;
+  itemPriority: number;
+  itemNotes?: string;
+  registryUrl: string;
+}) => {
+  const { RESEND_FROM } = keys();
+
+  try {
+    const html = render(
+      RegistryItemAddedTemplate({
+        email: data.email,
+        recipientName: data.recipientName,
+        adderName: data.adderName,
+        registryTitle: data.registryTitle,
+        itemName: data.itemName,
+        itemQuantity: data.itemQuantity,
+        itemPriority: data.itemPriority,
+        itemNotes: data.itemNotes,
+        registryUrl: data.registryUrl,
+      }),
+    );
+
+    const result = await resend.emails.send({
+      from: RESEND_FROM || 'noreply@example.com',
+      html: await html,
+      subject: `New item added to ${data.registryTitle}`,
+      to: data.email,
+    });
+
+    return result;
+  } catch (error: any) {
+    throw new Error(
+      `Failed to send registry item added email: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
+    );
   }
 };
 
@@ -277,4 +539,10 @@ export {
   PasswordResetTemplate,
   VerificationTemplate,
   WelcomeTemplate,
+  RegistryCreatedTemplate,
+  RegistryInvitationTemplate,
+  RegistryPurchaseTemplate,
+  RegistryThankYouTemplate,
+  RegistryPurchaseConfirmationTemplate,
+  RegistryItemAddedTemplate,
 };

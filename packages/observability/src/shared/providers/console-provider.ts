@@ -2,8 +2,8 @@
  * Console provider for development observability
  */
 
-import type { ConsoleConfig } from '../types/console-types';
-import type {
+import { ConsoleConfig } from '../types/console-types';
+import {
   Breadcrumb,
   ObservabilityContext,
   ObservabilityProvider,
@@ -12,38 +12,37 @@ import type {
 
 export class ConsoleProvider implements ObservabilityProvider {
   readonly name = 'console';
-  private config: ConsoleConfig = {};
-  private enabled = true;
-  private prefix = '[OBS]';
-  private user: any = null;
-  private tags: Record<string, any> = {};
-  private extras: Record<string, any> = {};
-  private contexts: Record<string, any> = {};
   private breadcrumbs: Breadcrumb[] = [];
+  private config: ConsoleConfig = {};
+  private contexts: Record<string, any> = {};
+  private enabled = true;
+  private extras: Record<string, any> = {};
   private maxBreadcrumbs = 100;
+  private prefix = '[OBS]';
+  private tags: Record<string, any> = {};
+  private user: any = null;
 
-  async initialize(config: ObservabilityProviderConfig): Promise<void> {
-    this.config = config as ConsoleConfig;
-    this.enabled = this.config.enabled !== false;
-    this.prefix = this.config.prefix || '[OBS]';
+  addBreadcrumb(breadcrumb: Breadcrumb): void {
+    if (!this.enabled) return;
 
-    if (this.enabled) {
-      console.log(`${this.prefix} Console provider initialized`, {
-        colors: this.config.colors,
-        levels: this.config.levels,
-        timestamp: this.config.timestamp,
-      });
+    this.breadcrumbs.push(breadcrumb);
+
+    // Limit breadcrumbs
+    if (this.breadcrumbs.length > this.maxBreadcrumbs) {
+      this.breadcrumbs = this.breadcrumbs.slice(-this.maxBreadcrumbs);
     }
+
+    console.log(`${this.prefix} Breadcrumb:`, breadcrumb);
   }
 
   async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
     if (!this.enabled) return;
 
     const errorInfo = {
-      name: error.name,
       breadcrumbs: this.breadcrumbs.slice(-10), // Last 10 breadcrumbs
       context: this.mergeContext(context),
-      message: error.message,
+      message: (error as Error)?.message || 'Unknown error',
+      name: error.name,
       stack: error.stack,
       timestamp: new Date().toISOString(),
     };
@@ -53,7 +52,7 @@ export class ConsoleProvider implements ObservabilityProvider {
 
   async captureMessage(
     message: string,
-    level: 'info' | 'warning' | 'error',
+    level: 'error' | 'info' | 'warning',
     context?: ObservabilityContext,
   ): Promise<void> {
     if (!this.enabled) return;
@@ -67,6 +66,29 @@ export class ConsoleProvider implements ObservabilityProvider {
 
     const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : 'info';
     console[consoleMethod](`${this.prefix} Message:`, messageInfo);
+  }
+
+  endSession(): void {
+    if (!this.enabled) return;
+
+    console.log(`${this.prefix} Session ended`, {
+      timestamp: new Date().toISOString(),
+      user: this.user,
+    });
+  }
+
+  async initialize(config: ObservabilityProviderConfig): Promise<void> {
+    this.config = config as ConsoleConfig;
+    this.enabled = this.config.enabled !== false;
+    this.prefix = this.config.prefix || '[OBS]';
+
+    if (this.enabled) {
+      console.log(`${this.prefix} Console provider initialized`, {
+        colors: this.config.colors,
+        levels: this.config.levels,
+        timestamp: this.config.timestamp,
+      });
+    }
   }
 
   async log(level: string, message: string, metadata?: any): Promise<void> {
@@ -87,32 +109,41 @@ export class ConsoleProvider implements ObservabilityProvider {
     console[consoleLevel](`${this.prefix} ${level.toUpperCase()}:`, message, metadata || '');
   }
 
-  startTransaction(name: string, context?: ObservabilityContext): any {
-    if (!this.enabled) return null;
+  setContext(key: string, context: Record<string, any>): void {
+    if (!this.enabled) return;
 
-    const transaction = {
-      id: this.generateId(),
-      name,
-      context: this.mergeContext(context),
-      startTime: Date.now(),
-    };
+    this.contexts[key] = context;
+    console.log(`${this.prefix} Context set:`, { context, key });
+  }
 
-    console.log(`${this.prefix} Transaction started:`, {
-      id: transaction.id,
-      name: transaction.name,
-      context: transaction.context,
+  setExtra(key: string, value: any): void {
+    if (!this.enabled) return;
+
+    this.extras[key] = value;
+    console.log(`${this.prefix} Extra set:`, { key, value });
+  }
+
+  setTag(key: string, value: boolean | number | string): void {
+    if (!this.enabled) return;
+
+    this.tags[key] = value;
+    console.log(`${this.prefix} Tag set:`, { key, value });
+  }
+
+  setUser(user: { [key: string]: any; email?: string; id: string; username?: string }): void {
+    if (!this.enabled) return;
+
+    this.user = user;
+    console.log(`${this.prefix} User set:`, user);
+  }
+
+  startSession(): void {
+    if (!this.enabled) return;
+
+    console.log(`${this.prefix} Session started`, {
+      timestamp: new Date().toISOString(),
+      user: this.user,
     });
-
-    return {
-      finish: () => {
-        const duration = Date.now() - transaction.startTime;
-        console.log(`${this.prefix} Transaction finished:`, {
-          id: transaction.id,
-          name: transaction.name,
-          duration: `${duration}ms`,
-        });
-      },
-    };
   }
 
   startSpan(name: string, parentSpan?: any): any {
@@ -135,71 +166,62 @@ export class ConsoleProvider implements ObservabilityProvider {
       finish: () => {
         const duration = Date.now() - span.startTime;
         console.log(`${this.prefix} Span finished:`, {
+          duration: `${duration}ms`,
           id: span.id,
           name: span.name,
-          duration: `${duration}ms`,
         });
       },
     };
   }
 
-  setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
-    if (!this.enabled) return;
+  startTransaction(name: string, context?: ObservabilityContext): any {
+    if (!this.enabled) return null;
 
-    this.user = user;
-    console.log(`${this.prefix} User set:`, user);
+    const transaction = {
+      context: this.mergeContext(context),
+      id: this.generateId(),
+      name,
+      startTime: Date.now(),
+    };
+
+    console.log(`${this.prefix} Transaction started:`, {
+      context: transaction.context,
+      id: transaction.id,
+      name: transaction.name,
+    });
+
+    return {
+      finish: () => {
+        const duration = Date.now() - transaction.startTime;
+        console.log(`${this.prefix} Transaction finished:`, {
+          duration: `${duration}ms`,
+          id: transaction.id,
+          name: transaction.name,
+        });
+      },
+    };
   }
 
-  setTag(key: string, value: string | number | boolean): void {
-    if (!this.enabled) return;
-
-    this.tags[key] = value;
-    console.log(`${this.prefix} Tag set:`, { key, value });
+  private generateId(): string {
+    return Math.random().toString(36).substring(2, 15);
   }
 
-  setExtra(key: string, value: any): void {
-    if (!this.enabled) return;
-
-    this.extras[key] = value;
-    console.log(`${this.prefix} Extra set:`, { key, value });
-  }
-
-  setContext(key: string, context: Record<string, any>): void {
-    if (!this.enabled) return;
-
-    this.contexts[key] = context;
-    console.log(`${this.prefix} Context set:`, { context, key });
-  }
-
-  addBreadcrumb(breadcrumb: Breadcrumb): void {
-    if (!this.enabled) return;
-
-    this.breadcrumbs.push(breadcrumb);
-
-    // Limit breadcrumbs
-    if (this.breadcrumbs.length > this.maxBreadcrumbs) {
-      this.breadcrumbs = this.breadcrumbs.slice(-this.maxBreadcrumbs);
+  private mapLogLevel(level: string): 'error' | 'info' | 'log' | 'warn' {
+    switch (level) {
+      case 'debug':
+      case 'trace':
+        return 'log';
+      case 'error':
+      case 'fatal':
+        return 'error';
+      case 'info':
+        return 'info';
+      case 'warn':
+      case 'warning':
+        return 'warn';
+      default:
+        return 'log';
     }
-
-    console.log(`${this.prefix} Breadcrumb:`, breadcrumb);
-  }
-
-  startSession(): void {
-    if (!this.enabled) return;
-
-    console.log(`${this.prefix} Session started`, {
-      timestamp: new Date().toISOString(),
-      user: this.user,
-    });
-  }
-
-  endSession(): void {
-    if (!this.enabled) return;
-
-    console.log(`${this.prefix} Session ended`, {
-      timestamp: new Date().toISOString(),
-      user: this.user,
-    });
   }
 
   // Helper methods
@@ -211,27 +233,5 @@ export class ConsoleProvider implements ObservabilityProvider {
       tags: { ...this.tags, ...context?.tags },
       user: this.user,
     };
-  }
-
-  private mapLogLevel(level: string): 'log' | 'info' | 'warn' | 'error' {
-    switch (level) {
-      case 'trace':
-      case 'debug':
-        return 'log';
-      case 'info':
-        return 'info';
-      case 'warn':
-      case 'warning':
-        return 'warn';
-      case 'error':
-      case 'fatal':
-        return 'error';
-      default:
-        return 'log';
-    }
-  }
-
-  private generateId(): string {
-    return Math.random().toString(36).substring(2, 15);
   }
 }

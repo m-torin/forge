@@ -1,7 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 
-export interface ButtonCloseProps {
+export interface ButtonCloseProps extends Record<string, any> {
   className?: string;
   IconclassName?: string;
   onClick?: () => void;
@@ -14,8 +14,8 @@ const ButtonClose: React.FC<ButtonCloseProps> = ({
 }) => {
   return (
     <button
-      onClick={onClick}
       className={`flex h-8 w-8 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700 ${className}`}
+      onClick={onClick}
     >
       <span className="sr-only">Close</span>
       <XMarkIcon className={IconclassName} />

@@ -17,7 +17,7 @@ vi.mock('firebase-admin', async () => {
   return mockFirebaseAdmin;
 });
 
-describe('Firestore Adapter', () => {
+describe('Firestore Adapter', (_: any) => {
   let helper: DatabaseTestHelper;
 
   beforeEach(async () => {
@@ -34,7 +34,7 @@ describe('Firestore Adapter', () => {
     await helper.cleanup();
   });
 
-  describe('Basic CRUD Operations', () => {
+  describe('Basic CRUD Operations', (_: any) => {
     it('should perform complete CRUD operations', async () => {
       await testDatabaseOperations(helper, 'users');
     });
@@ -98,7 +98,7 @@ describe('Firestore Adapter', () => {
 
       // Check that all users are found
       const foundIds = found.map((u: any) => u.id);
-      const expectedIds = users.map((u) => u.id);
+      const expectedIds = users.map((u: any) => u.id);
       expect(foundIds).toEqual(expect.arrayContaining(expectedIds));
     });
 
@@ -112,9 +112,9 @@ describe('Firestore Adapter', () => {
       const count = await mockFirestoreAdapter.count('users');
       expect(count).toBe(5);
     });
-  });
+  };
 
-  describe('Query Operations', () => {
+  describe('Query Operations', (_: any) => {
     beforeEach(async () => {
       // Seed test data
       const users = [
@@ -177,9 +177,9 @@ describe('Firestore Adapter', () => {
 
       expect(activeCount).toBe(2);
     });
-  });
+  };
 
-  describe('Direct Firestore Client Operations', () => {
+  describe('Direct Firestore Client Operations', (_: any) => {
     it('should create document using direct client', async () => {
       const testData = createTestUser();
 
@@ -207,12 +207,12 @@ describe('Firestore Adapter', () => {
       expect(querySnapshot.empty).toBe(false);
 
       const docs: any[] = [];
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((doc: any) => {
         docs.push({ id: doc.id, ...doc.data() });
       });
 
       expect(docs).toHaveLength(3);
-      docs.forEach((doc) => {
+      docs.forEach((doc: any) => {
         expect(doc.active).toBe(true);
       });
     });
@@ -222,7 +222,7 @@ describe('Firestore Adapter', () => {
       const users = createTestUsers(3);
 
       // Add batch operations
-      users.forEach((user) => {
+      users.forEach((user: any) => {
         const docRef = mockFirestore.collection('users').doc(user.id);
         batch.set(docRef, user);
       });
@@ -230,7 +230,7 @@ describe('Firestore Adapter', () => {
       // Commit batch
       const results = await batch.commit();
       expect(results).toHaveLength(3);
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.writeTime).toBeInstanceOf(Date);
       });
 
@@ -246,7 +246,7 @@ describe('Firestore Adapter', () => {
       const user = createTestUser();
       const docRef = mockFirestore.collection('users').doc(user.id);
 
-      await mockFirestore.runTransaction(async (transaction) => {
+      await mockFirestore.runTransaction(async (transaction: any) => {
         const doc = await transaction.get(docRef);
         expect(doc.exists).toBe(false);
 
@@ -258,9 +258,9 @@ describe('Firestore Adapter', () => {
       expect(doc.exists).toBe(true);
       expect(doc.data()).toMatchObject(user);
     });
-  });
+  };
 
-  describe('Error Handling', () => {
+  describe('Error Handling', (_: any) => {
     it('should handle common error scenarios', async () => {
       await testDatabaseErrors(helper, 'users');
     });
@@ -270,7 +270,7 @@ describe('Firestore Adapter', () => {
         id: 'non-existent',
       });
       expect(found).toBeNull();
-    });
+    };
 
     it('should return empty array for empty collection', async () => {
       const results = await mockFirestoreAdapter.findMany('empty-collection');
@@ -281,9 +281,9 @@ describe('Firestore Adapter', () => {
       const count = await mockFirestoreAdapter.count('empty-collection');
       expect(count).toBe(0);
     });
-  });
+  };
 
-  describe('Raw Operations', () => {
+  describe('Raw Operations', (_: any) => {
     it('should execute raw batch operation', async () => {
       const batch = await mockFirestoreAdapter.raw('batch', null);
       expect(batch).toBeDefined();
@@ -306,10 +306,10 @@ describe('Firestore Adapter', () => {
     it('should throw error for unsupported raw operation', async () => {
       await expect(mockFirestoreAdapter.raw('unsupported', null)).rejects.toThrow('not supported');
     });
-  });
+  };
 
-  describe('Adapter Interface Compliance', () => {
-    it('should implement all required DatabaseAdapter methods', () => {
+  describe('Adapter Interface Compliance', (_: any) => {
+    it('should implement all required DatabaseAdapter methods', (_: any) => {
       const adapter = mockFirestoreAdapter;
 
       expect(typeof adapter.initialize).toBe('function');
@@ -329,15 +329,15 @@ describe('Firestore Adapter', () => {
       await expect(mockFirestoreAdapter.disconnect()).resolves.not.toThrow();
     });
 
-    it('should return the client instance', () => {
+    it('should return the client instance', (_: any) => {
       const client = mockFirestoreAdapter.getClient();
       expect(client).toBeDefined();
       expect(typeof client.collection).toBe('function');
     });
-  });
+  };
 
-  describe('Data Seeding', () => {
-    it('should seed mock data correctly', () => {
+  describe('Data Seeding', (_: any) => {
+    it('should seed mock data correctly', (_: any) => {
       const testDocuments = [
         { id: 'doc1', data: createTestUser({ name: 'Seeded User 1' }) },
         { id: 'doc2', data: createTestUser({ name: 'Seeded User 2' }) },
@@ -346,21 +346,21 @@ describe('Firestore Adapter', () => {
       seedMockFirestoreData('users', testDocuments);
 
       // Verify seeded data is accessible
-      testDocuments.forEach(async ({ id, data }) => {
+      testDocuments.forEach(async ({ id, data }: any) => {
         const found = await mockFirestoreAdapter.findUnique('users', { id });
         expect(found).toMatchObject(data);
       });
     });
-  });
-});
+  };
+};
 
 // Integration test with the actual Firestore adapter class
-describe('FirestoreAdapter Integration', () => {
+describe('FirestoreAdapter Integration', (_: any) => {
   it('should be importable and instantiable', async () => {
     // This tests that the actual adapter can be imported
     // and doesn't have syntax or import errors
     const { FirestoreAdapter } = await import('../firestore/adapter');
     expect(FirestoreAdapter).toBeDefined();
     expect(typeof FirestoreAdapter).toBe('function');
-  });
-});
+  };
+};

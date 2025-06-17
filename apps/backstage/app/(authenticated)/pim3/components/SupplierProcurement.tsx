@@ -15,7 +15,7 @@ import {
   Text,
   Textarea,
 } from '@mantine/core';
-import { UseFormReturnType } from '@mantine/form';
+import { UseFormReturnType, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import {
   IconBuilding,
@@ -108,8 +108,20 @@ export function SupplierProcurement({
   productId,
   productName,
 }: SupplierProcurementProps) {
-  // Get form context
-  const form = useFormContext();
+  // Create local form instance since useFormContext doesn't exist in @mantine/form
+  const form = useForm({
+    initialValues: {
+      suppliers: [] as any[],
+      purchaseOrders: [] as any[],
+      purchaseOrderForm: {
+        supplierId: '',
+        quantity: 0,
+        unitCost: 0,
+        notes: '',
+        shippingMethod: '',
+      },
+    },
+  });
 
   // Get data from form context
   const suppliers = form.values.suppliers || [];
@@ -177,18 +189,18 @@ export function SupplierProcurement({
   };
 
   const getBestPriceSupplier = () => {
-    return suppliers.reduce((best, supplier) => {
+    return suppliers.reduce((best: any, supplier: any) => {
       return supplier.pricing.cost < best.pricing.cost ? supplier : best;
     }, suppliers[0]);
   };
 
   const getTotalProcurementValue = () => {
-    return purchaseOrders.reduce((total, po) => total + po.totals.total, 0);
+    return purchaseOrders.reduce((total: any, po) => total + po.totals.total, 0);
   };
 
   const getAverageLeadTime = () => {
     return Math.round(
-      suppliers.reduce((total, supplier) => total + supplier.businessInfo.leadTime, 0) /
+      suppliers.reduce((total: any, supplier) => total + supplier.businessInfo.leadTime, 0) /
         suppliers.length,
     );
   };
@@ -245,6 +257,7 @@ export function SupplierProcurement({
     form.setFieldValue('purchaseOrderForm', {
       notes: '',
       quantity: 0,
+      unitCost: 0,
       shippingMethod: '',
       supplierId: '',
     });
@@ -398,7 +411,7 @@ export function SupplierProcurement({
                     Volume Pricing
                   </Text>
                   <Group gap="md">
-                    {supplier.pricing.priceBreaks.map((priceBreak, index) => (
+                    {supplier.pricing.priceBreaks.map((priceBreak: any, index: any) => (
                       <Badge key={index} size="sm" variant="outline">
                         {priceBreak.quantity}+ units: {formatCurrency(priceBreak.price)}
                       </Badge>

@@ -70,7 +70,7 @@ export const createMockRedisClient = () => {
     }),
     keys: vi.fn().mockImplementation(async (pattern: string) => {
       const regex = new RegExp(pattern.replace('*', '.*'));
-      return Array.from(storage.keys()).filter((key) => regex.test(key));
+      return Array.from(storage.keys()).filter((key: any) => regex.test(key));
     }),
     llen: vi.fn().mockResolvedValue(0),
     lpush: vi.fn().mockResolvedValue(1),
@@ -96,7 +96,7 @@ export const createMockWorkflowServe = () => {
       GET: async () => {
         return Response.json({ status: 'ok' }, { status: 200 });
       },
-      POST: async (request: Request) => {
+      POST: async (request: any) => {
         const body = await request.json();
         const context = {
           cancel: vi.fn(),
@@ -106,7 +106,9 @@ export const createMockWorkflowServe = () => {
           }),
           sleep: vi
             .fn()
-            .mockImplementation((ms: number) => new Promise((resolve) => setTimeout(resolve, ms))),
+            .mockImplementation(
+              (ms: number) => new Promise((resolve: any) => setTimeout(resolve, ms)),
+            ),
           waitUntil: vi.fn(),
         };
 
@@ -129,13 +131,13 @@ export const createMockWorkflowContext = (payload: any = {}) => ({
   run: vi.fn().mockImplementation(async (name: string, fn: Function) => {
     try {
       return await fn();
-    } catch (error) {
+    } catch (error: any) {
       throw error;
     }
   }),
   sleep: vi
     .fn()
-    .mockImplementation((ms: number) => new Promise((resolve) => setTimeout(resolve, ms))),
+    .mockImplementation((ms: number) => new Promise((resolve: any) => setTimeout(resolve, ms))),
   waitUntil: vi.fn(),
 });
 

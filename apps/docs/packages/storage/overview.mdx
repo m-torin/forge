@@ -1,0 +1,222 @@
+---
+title: 'Storage Overview'
+description: 'Multi-provider file storage system architecture and capabilities'
+icon: 'hard-drive'
+---
+
+# Storage Package Overview
+
+The storage package provides a unified interface for file storage across multiple providers with
+enterprise-grade features for modern applications.
+
+## Architecture
+
+<CardGroup cols={2}>
+  <Card title="Multi-Provider Support" icon="layer-group">
+    Seamlessly switch between Cloudflare R2, Cloudflare Images, and Vercel Blob with a unified API
+  </Card>
+  <Card title="Four-File Export Pattern" icon="code-branch">
+    Proper separation for Next.js and non-Next.js environments with optimized imports
+  </Card>
+  <Card title="Type-Safe Operations" icon="shield-check">
+    Full TypeScript support with comprehensive types for all operations and providers
+  </Card>
+  <Card title="Production Ready" icon="rocket">
+    Battle-tested with multipart uploads, streaming, progress tracking, and error handling
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Storage Providers
+
+- **Cloudflare R2**: S3-compatible object storage with multipart uploads and streaming
+- **Cloudflare Images**: Optimized image storage with automatic transformations
+- **Vercel Blob**: Simple blob storage for Vercel deployments
+- **Multi-Storage Manager**: Intelligent routing between providers
+
+### Advanced Capabilities
+
+- **Multipart Uploads**: Handle files up to 5TB with resumable uploads
+- **Streaming**: Process large files without memory constraints
+- **Progress Tracking**: Real-time upload/download progress
+- **Presigned URLs**: Secure client-side uploads without exposing credentials
+- **Image Transformations**: On-the-fly image optimization and resizing
+- **Batch Operations**: High-throughput operations with batch tokens
+
+## Quick Start
+
+<Steps>
+  <Step title="Configure Environment">
+    ```bash
+    # For single provider
+    STORAGE_PROVIDER=cloudflare-r2
+    R2_ACCOUNT_ID=your-account-id
+    R2_ACCESS_KEY_ID=your-access-key
+    R2_SECRET_ACCESS_KEY=your-secret-key
+    R2_BUCKET=your-bucket-name
+    ```
+  </Step>
+  
+  <Step title="Import and Use">
+    ```typescript
+    import { storage } from '@repo/storage/server/next';
+    
+    // Upload a file
+    const result = await storage.upload('document.pdf', fileBuffer, {
+      contentType: 'application/pdf',
+      onProgress: (progress) => {
+        console.log(`${progress.percent}% uploaded`);
+      },
+    });
+    
+    // Get a signed URL
+    const url = await storage.getUrl('document.pdf', { 
+      expiresIn: 3600 
+    });
+    ```
+  </Step>
+  
+  <Step title="Use Multi-Storage">
+    ```typescript
+    import { multiStorage } from '@repo/storage/server/next';
+    
+    // Automatic routing based on file type
+    await multiStorage.upload('photo.jpg', imageBuffer, {
+      contentType: 'image/jpeg',
+    });
+    
+    // Access specific provider
+    const r2Provider = multiStorage.getProvider('r2-main');
+    ```
+  </Step>
+</Steps>
+
+## Provider Comparison
+
+| Feature              | Cloudflare R2   | Cloudflare Images | Vercel Blob |
+| -------------------- | --------------- | ----------------- | ----------- |
+| **Max File Size**    | 5TB             | 10MB              | 500MB       |
+| **Multipart Upload** | ✅              | ❌                | ❌          |
+| **Streaming**        | ✅              | ❌                | ✅          |
+| **Image Transforms** | ❌              | ✅                | ❌          |
+| **Presigned URLs**   | ✅              | ✅                | ✅          |
+| **Global CDN**       | ✅              | ✅                | ✅          |
+| **Cost**             | $0.015/GB/month | $5/100k images    | Included    |
+
+## Use Cases
+
+### When to Use Each Provider
+
+<AccordionGroup>
+  <Accordion title="Cloudflare R2" icon="database">
+    **Best for:** - Large file storage (videos, documents, backups) - S3-compatible workflows -
+    Cost-effective bulk storage - Streaming large files **Examples:** - User uploads and documents -
+    Video storage and streaming - Backup and archive storage - Large dataset storage
+  </Accordion>
+
+  <Accordion title="Cloudflare Images" icon="image">
+    **Best for:** - Product images and thumbnails - User avatars and profile pictures - Dynamic
+    image transformations - Image optimization workflows **Examples:** - E-commerce product
+    galleries - Social media images - Marketing assets - User-generated image content
+  </Accordion>
+
+  <Accordion title="Vercel Blob" icon="vercel">
+    **Best for:** - Small file storage - Temporary files - Quick prototypes - Vercel-hosted
+    applications **Examples:** - User uploads in prototypes - Temporary file storage - Small asset
+    storage - Development environments
+  </Accordion>
+</AccordionGroup>
+
+## Integration Patterns
+
+### Server Components
+
+```typescript
+// app/documents/page.tsx
+import { storage } from '@repo/storage/server/next';
+
+export default async function DocumentsPage() {
+  const documents = await storage.list({
+    prefix: 'documents/'
+  });
+
+  return (
+    <div>
+      {documents.map((doc) => (
+        <DocumentCard key={doc.key} document={doc} />
+      ))}
+    </div>
+  );
+}
+```
+
+### API Routes
+
+```typescript
+// app/api/upload/route.ts
+import { storage } from '@repo/storage/server/next';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  const formData = await request.formData();
+  const file = formData.get('file') as File;
+
+  const buffer = await file.arrayBuffer();
+  const result = await storage.upload(file.name, buffer, {
+    contentType: file.type,
+  });
+
+  return NextResponse.json(result);
+}
+```
+
+### Client Components
+
+```typescript
+// components/FileUploader.tsx
+'use client';
+
+import { uploadWithPresignedUrl } from '@repo/storage/client/next';
+
+export function FileUploader() {
+  const handleUpload = async (file: File) => {
+    // Get presigned URL from your API
+    const response = await fetch('/api/upload-url', {
+      method: 'POST',
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type,
+      }),
+    });
+
+    const presignedData = await response.json();
+
+    // Upload directly to storage
+    await uploadWithPresignedUrl(presignedData, file, {
+      onProgress: (progress) => {
+        console.log(`${progress.percent}% uploaded`);
+      },
+    });
+  };
+
+  return <input type="file" onChange={(e) => handleUpload(e.target.files[0])} />;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="R2 Storage" href="/packages/storage/cloudflare-r2" icon="cloud">
+    Learn about multipart uploads, streaming, and presigned URLs
+  </Card>
+  <Card title="Image Storage" href="/packages/storage/cloudflare-images" icon="image">
+    Explore image optimization, variants, and transformations
+  </Card>
+  <Card title="Configuration" href="/packages/storage/configuration" icon="gear">
+    Set up multi-provider routing and environment variables
+  </Card>
+  <Card title="Client Usage" href="/packages/storage/client-usage" icon="browser">
+    Implement secure client-side uploads and progress tracking
+  </Card>
+</CardGroup>

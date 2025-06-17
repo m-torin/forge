@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { createClientScraping, quickScrape } from '../client';
-import type { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
+import { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
 
 // Mock fetch for client tests
 global.fetch = vi.fn().mockResolvedValue({
@@ -11,14 +12,14 @@ global.fetch = vi.fn().mockResolvedValue({
 });
 
 // Use vi.hoisted to ensure mock is available before module import
-const { mockFetchProvider, mockScrapeError } = vi.hoisted(() => {
+const { mockFetchProvider } = vi.hoisted(() => {
   const mockFetchProvider = vi.fn();
-  const mockScrapeError = vi.fn();
+  const _mockScrapeError = vi.fn();
 
   // Default implementation
   mockFetchProvider.mockImplementation(() => ({
     initialize: vi.fn().mockResolvedValue(undefined),
-    scrape: mockScrapeError.mockResolvedValue({
+    scrape: _mockScrapeError.mockResolvedValue({
       url: 'https://example.com',
       html: '<html><body><h1>Example Domain</h1></body></html>',
       metadata: {
@@ -37,7 +38,7 @@ const { mockFetchProvider, mockScrapeError } = vi.hoisted(() => {
     }),
   }));
 
-  return { mockFetchProvider, mockScrapeError };
+  return { mockFetchProvider };
 });
 
 // Mock the FetchProvider
@@ -77,8 +78,8 @@ describe('Client Scraping', () => {
     const result = await quickScrape('https://example.com', selectors);
 
     expect(result).toBeDefined();
-    expect(result.data).toBeDefined();
-    expect(result.data.title).toBeDefined();
+    expect(result?.data).toBeDefined();
+    expect(result?.data.title).toBeDefined();
   });
 
   it('should handle errors gracefully', async () => {

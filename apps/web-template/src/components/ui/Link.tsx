@@ -9,25 +9,10 @@ export const Link = forwardRef(function Link(
 ) {
   const { 'data-testid': testId = 'link', ...linkProps } = props;
 
-  return (
-    <NextLink
-      {...linkProps}
-      data-testid={testId}
-      href={props.href}
-      ref={ref}
-      onClick={(e) => {
-        if (props.onClick) {
-          props.onClick(e);
-        }
-        // Prevent default if the link is not a valid URL
-        if (e.defaultPrevented) {
-          return;
-        }
-        // Prevent default if the link is a hash link
-        if (props.href && typeof props.href === 'string' && props.href.startsWith('#')) {
-          return;
-        }
-      }}
-    />
-  );
+  // Fail silently if no href
+  if (!props.href) {
+    return null;
+  }
+
+  return <NextLink {...linkProps} data-testid={testId} href={props.href} ref={ref} />;
 });

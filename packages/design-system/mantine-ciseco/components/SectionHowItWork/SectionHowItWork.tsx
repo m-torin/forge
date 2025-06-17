@@ -9,42 +9,42 @@ import VectorImg from '../../images/VectorHIW.svg';
 import Badge from '../shared/Badge/Badge';
 import NcImage from '../shared/NcImage/NcImage';
 
-export interface SectionHowItWorkProps {
+export interface SectionHowItWorkProps extends Record<string, any> {
   className?: string;
   data?: (typeof DEMO_DATA)[0][];
 }
 
 const DEMO_DATA: {
-  id: number;
   desc: string;
+  id: number;
   img: any;
   imgDark: any;
   title: string;
 }[] = [
   {
-    id: 1,
     desc: 'Smart filtering and suggestions make it easy to find',
+    id: 1,
     img: HIW1img,
     imgDark: HIW1img,
     title: 'Filter & Discover',
   },
   {
-    id: 2,
     desc: 'Easily select the correct items and add them to the cart',
+    id: 2,
     img: HIW2img,
     imgDark: HIW2img,
     title: 'Add to bag',
   },
   {
-    id: 3,
     desc: 'The carrier will confirm and ship quickly to you',
+    id: 3,
     img: HIW3img,
     imgDark: HIW3img,
     title: 'Fast shipping',
   },
   {
-    id: 4,
     desc: 'Have fun and enjoy your 5-star quality products',
+    id: 4,
     img: HIW4img,
     imgDark: HIW4img,
     title: 'Enjoy the product',
@@ -55,13 +55,13 @@ const SectionHowItWork: FC<SectionHowItWorkProps> = ({ className = '', data = DE
   return (
     <div className={`nc-SectionHowItWork ${className}`}>
       <div className="relative grid gap-10 sm:grid-cols-2 sm:gap-16 lg:grid-cols-4 xl:gap-20">
-        <Image className="absolute inset-x-0 top-5 hidden md:block" alt="vector" src={VectorImg} />
-        {data.map((item, index) => (
+        <Image alt="vector" className="absolute inset-x-0 top-5 hidden md:block" src={VectorImg} />
+        {data.map((item: any, index: number) => (
           <div key={item.id} className="relative mx-auto flex max-w-xs flex-col items-center gap-2">
             <NcImage
-              containerClassName="mb-4 sm:mb-10 max-w-[140px] mx-auto"
-              className="rounded-3xl"
               alt="HIW"
+              className="rounded-3xl"
+              containerClassName="mb-4 sm:mb-10 max-w-[140px] mx-auto"
               sizes="150px"
               src={item.img}
             />

@@ -13,11 +13,11 @@ import { Link } from '../../Link';
 import ButtonPrimary from '../../shared/Button/ButtonPrimary';
 import SocialsList from '../../shared/SocialsList/SocialsList';
 
-export interface SidebarNavigationProps {
+export interface SidebarNavigationProps extends Record<string, any> {
   data: TNavigationItem[];
 }
 
-const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
+const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }: any) => {
   const router = useRouter();
   const handleClose = () => {
     // This would typically close the sidebar, but since we don't have access to the aside context,
@@ -41,18 +41,18 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
           item: 'border-0 bg-transparent',
           root: 'nav-mobile-sub-menu pb-1 pl-6 text-base',
         }}
-        variant="filled"
+        variant="light"
       >
-        {item.children.map((childMenu, index) => {
+        {item.children.map((childMenu, index: any) => {
           const hasChildren = childMenu.children && childMenu.children.length > 0;
 
           if (!hasChildren) {
             return (
               <Link
-                key={index}
-                href={`${childMenu.href || '#'}` as any}
-                onClick={handleClose}
+                key={childMenu.name}
                 className={`mt-0.5 flex rounded-lg pr-4 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 ${itemClass} py-2.5`}
+                href={`${childMenu.href ?? '#'}` as any}
+                onClick={handleClose}
               >
                 {childMenu.name}
               </Link>
@@ -60,7 +60,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
           }
 
           return (
-            <Accordion.Item key={index} value={`${level}-${index}`}>
+            <Accordion.Item key={childMenu.name} value={`${level}-${index}`}>
               <Accordion.Control>
                 <span className="py-2.5">{childMenu.name}</span>
               </Accordion.Control>
@@ -85,9 +85,9 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
       return (
         <li key={index} className="text-neutral-900 dark:text-white">
           <Link
-            href={`${menu.href || '#'}` as any}
-            onClick={handleClose}
             className="flex w-full cursor-pointer rounded-lg px-3 py-2.5 text-start text-sm font-medium tracking-wide uppercase hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            href={`${menu.href ?? '#'}` as any}
+            onClick={handleClose}
           >
             {menu.name}
           </Link>
@@ -109,19 +109,19 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
     return (
       <form
         action="#"
+        className="flex-1 text-neutral-900 dark:text-neutral-200"
         method="POST"
-        onSubmit={(e) => {
+        onSubmit={(e: any) => {
           e.preventDefault();
           handleClose();
           router.push('/search');
         }}
-        className="flex-1 text-neutral-900 dark:text-neutral-200"
       >
         <div className="flex h-full items-center gap-x-2.5 rounded-xl bg-neutral-50 px-3 py-3 dark:bg-neutral-800">
-          <HugeiconsIcon strokeWidth={1.5} color="currentColor" icon={Search01Icon} size={24} />
+          <HugeiconsIcon color="currentColor" icon={Search01Icon} size={24} strokeWidth={1.5} />
           <input
-            placeholder="Type and press enter"
             className="w-full border-none bg-transparent text-sm focus:ring-0 focus:outline-hidden"
+            placeholder="Type and press enter"
             type="search"
           />
         </div>
@@ -150,16 +150,16 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
           item: 'border-0 bg-transparent text-neutral-900 dark:text-white',
           root: 'flex flex-col gap-y-1 px-2 py-6',
         }}
-        variant="filled"
+        variant="light"
       >
-        {data?.map(_renderItem)}
+        {data.map(_renderItem)}
       </Accordion>
       <Divider className="mb-6" />
 
       {/* FOR OUR DEMO */}
       <ButtonPrimary
-        href="https://themeforest.net/item/ciseco-shop-ecommerce-nextjs-template/44210635"
         className="px-8!"
+        href="https://themeforest.net/item/ciseco-shop-ecommerce-nextjs-template/44210635"
         targetBlank
       >
         Buy this template

@@ -1,4 +1,6 @@
-import { getBlogPosts, getCollections, getProducts } from '@/data/data-service';
+import { getProducts } from '@/actions/products';
+import { getCollections } from '@/actions/collections';
+import { getArticles } from '@/actions/articles';
 import { type Metadata } from 'next';
 import Link from 'next/link';
 
@@ -12,14 +14,14 @@ export const metadata: Metadata = {
 export default async function SitemapPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   // Fetch dynamic data for dynamic routes
-  const products = await getProducts();
-  const collections = await getCollections();
-  const blogPosts = await getBlogPosts();
+  const products = await getProducts({ limit: 100 });
+  const collections = await getCollections({ limit: 100 });
+  const blogPosts = await getArticles({ limit: 100 });
 
   // Take a sample of products and collections for the sitemap
-  const sampleProducts = products.slice(0, 5);
-  const sampleCollections = collections.slice(0, 5);
-  const sampleBlogPosts = blogPosts.slice(0, 5);
+  const sampleProducts = products.data.slice(0, 5);
+  const sampleCollections = collections.data.slice(0, 5);
+  const sampleBlogPosts = blogPosts.data.slice(0, 5);
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -212,19 +214,19 @@ export default async function SitemapPage({ params }: { params: Promise<{ locale
           </h2>
           <ul className="space-y-2">
             {sampleCollections
-              .filter((collection) => collection?.handle)
-              .map((collection) => (
+              .filter((collection: any) => collection?.slug || collection?.handle)
+              .map((collection: any) => (
                 <li key={collection.id}>
                   <Link
-                    href={`/${locale}/collections/${collection.handle}`}
+                    href={`/${locale}/collections/${collection.slug || collection.handle}`}
                     className="text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
                   >
-                    {collection.title}
+                    {collection.name || collection.title}
                   </Link>
                 </li>
               ))}
             <li className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-              + {collections.length - 5} more collections
+              + {collections.data.length - 5} more collections
             </li>
           </ul>
         </div>
@@ -235,18 +237,18 @@ export default async function SitemapPage({ params }: { params: Promise<{ locale
             Sample Products
           </h2>
           <ul className="space-y-2">
-            {sampleProducts.map((product: any) => (
+            {sampleProducts.map((product) => (
               <li key={product.id}>
                 <Link
-                  href={`/${locale}/products/${product.handle}`}
+                  href={`/${locale}/products/${product.id}`}
                   className="text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
                 >
-                  {product.title}
+                  {product.name}
                 </Link>
               </li>
             ))}
             <li className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-              + {products.length - 5} more products
+              + {products.data.length - 5} more products
             </li>
           </ul>
         </div>
@@ -268,7 +270,7 @@ export default async function SitemapPage({ params }: { params: Promise<{ locale
             {sampleBlogPosts.map((post) => (
               <li key={post.id}>
                 <Link
-                  href={`/${locale}/blog/${post.handle}`}
+                  href={`/${locale}/blog/${post.slug}`}
                   className="text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
                 >
                   {post.title}
@@ -276,7 +278,7 @@ export default async function SitemapPage({ params }: { params: Promise<{ locale
               </li>
             ))}
             <li className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-              + {blogPosts.length - 5} more posts
+              + {blogPosts.data.length - 5} more posts
             </li>
           </ul>
         </div>

@@ -36,6 +36,15 @@ import { useDisclosure, useClipboard } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 
+import {
+  listApiKeys,
+  createApiKey,
+  updateApiKey,
+  deleteApiKey,
+  listAllOrganizations,
+  getApiKeyStatistics,
+} from '@repo/auth/server/next';
+
 import { DataTable } from '../../components/data-table';
 import { PageHeader } from '../../components/page-header';
 import { StatsCard } from '../../components/stats-card';
@@ -69,12 +78,13 @@ export default function ApiKeysPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
-  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
+  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
+    useDisclosure(false);
   const [keyModalOpened, { open: openKeyModal, close: closeKeyModal }] = useDisclosure(false);
   const [createdKey, setCreatedKey] = useState<string>('');
   const [showKey, setShowKey] = useState(false);
   const clipboard = useClipboard({ timeout: 2000 });
-  
+
   const [newKey, setNewKey] = useState({
     name: '',
     organizationId: '',
@@ -106,17 +116,24 @@ export default function ApiKeysPage() {
     },
     {
       title: 'Active Keys',
-      value: apiKeys.filter(k => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date())).length.toString(),
+      value: apiKeys
+        .filter((k) => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date()))
+        .length.toString(),
       color: 'green',
       icon: IconShield,
-      progress: { 
-        label: 'of total keys', 
-        value: apiKeys.length > 0 ? Math.round((apiKeys.filter(k => k.enabled).length / apiKeys.length) * 100) : 0 
+      progress: {
+        label: 'of total keys',
+        value:
+          apiKeys.length > 0
+            ? Math.round((apiKeys.filter((k) => k.enabled).length / apiKeys.length) * 100)
+            : 0,
       },
     },
     {
       title: 'Expired Keys',
-      value: apiKeys.filter(k => k.expiresAt && new Date(k.expiresAt) < new Date()).length.toString(),
+      value: apiKeys
+        .filter((k) => k.expiresAt && new Date(k.expiresAt) < new Date())
+        .length.toString(),
       color: 'red',
       icon: IconCalendar,
     },
@@ -131,11 +148,11 @@ export default function ApiKeysPage() {
   useEffect(() => {
     loadApiKeys();
     loadOrganizations();
-    
+
     // Listen for refresh events from modals
     const handleRefresh = () => loadApiKeys();
     window.addEventListener('refreshApiKeys', handleRefresh);
-    
+
     return () => {
       window.removeEventListener('refreshApiKeys', handleRefresh);
     };
@@ -144,14 +161,19 @@ export default function ApiKeysPage() {
   const loadApiKeys = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/api-keys');
-      if (response.ok) {
-        const data = await response.json();
-        setApiKeys(data.apiKeys || []);
+      const result = await listApiKeys();
+      if (result.success && result.data) {
+        setApiKeys(result.data);
+
+        // Also load statistics
+        const statsResult = await getApiKeyStatistics();
+        if (statsResult.success && statsResult.data) {
+          // Statistics data is available in statsResult.data
+        }
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to load API keys',
+          message: result.error || 'Failed to load API keys',
           color: 'red',
         });
       }
@@ -169,10 +191,9 @@ export default function ApiKeysPage() {
 
   const loadOrganizations = async () => {
     try {
-      const response = await fetch('/api/admin/organizations');
-      if (response.ok) {
-        const data = await response.json();
-        setOrganizations(data.organizations || []);
+      const result = await listAllOrganizations();
+      if (result.success && result.data) {
+        setOrganizations(result.data || []);
       }
     } catch (error) {
       console.error('Failed to load organizations:', error);
@@ -181,21 +202,16 @@ export default function ApiKeysPage() {
 
   const handleCreateApiKey = async () => {
     try {
-      const response = await fetch('/api/admin/api-keys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newKey,
-          permissions: newKey.permissions.length > 0 ? newKey.permissions : ['read'],
-          expiresAt: newKey.expiresAt || undefined,
-        }),
+      const result = await createApiKey({
+        name: newKey.name,
+        organizationId: newKey.organizationId || undefined,
+        permissions: newKey.permissions.length > 0 ? newKey.permissions : ['read'],
+        expiresAt: newKey.expiresAt || undefined,
+        metadata: newKey.metadata,
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        setCreatedKey(result.apiKey);
+      if (result.success && result.data) {
+        setCreatedKey(result.data.key || result.data.apiKey || '');
         closeCreateModal();
         openKeyModal();
         setNewKey({
@@ -207,10 +223,9 @@ export default function ApiKeysPage() {
         });
         await loadApiKeys();
       } else {
-        const error = await response.json();
         notifications.show({
           title: 'Error',
-          message: error.message || 'Failed to create API key',
+          message: result.error || 'Failed to create API key',
           color: 'red',
         });
       }
@@ -226,15 +241,9 @@ export default function ApiKeysPage() {
 
   const handleToggleKey = async (keyId: string, enabled: boolean) => {
     try {
-      const response = await fetch(`/api/admin/api-keys/${keyId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ enabled }),
-      });
+      const result = await updateApiKey(keyId, { enabled });
 
-      if (response.ok) {
+      if (result.success) {
         notifications.show({
           title: 'Success',
           message: `API key ${enabled ? 'enabled' : 'disabled'} successfully`,
@@ -244,7 +253,7 @@ export default function ApiKeysPage() {
       } else {
         notifications.show({
           title: 'Error',
-          message: `Failed to ${enabled ? 'enable' : 'disable'} API key`,
+          message: result.error || `Failed to ${enabled ? 'enable' : 'disable'} API key`,
           color: 'red',
         });
       }
@@ -260,11 +269,9 @@ export default function ApiKeysPage() {
 
   const handleDeleteApiKey = async (keyId: string) => {
     try {
-      const response = await fetch(`/api/admin/api-keys/${keyId}`, {
-        method: 'DELETE',
-      });
+      const result = await deleteApiKey(keyId);
 
-      if (response.ok) {
+      if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'API key deleted successfully',
@@ -274,7 +281,7 @@ export default function ApiKeysPage() {
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to delete API key',
+          message: result.error || 'Failed to delete API key',
           color: 'red',
         });
       }
@@ -312,7 +319,9 @@ export default function ApiKeysPage() {
               {value}
             </Text>
             <Group gap="xs">
-              <Code>{row.prefix || 'forge'}_****{row.start || '****'}</Code>
+              <Code>
+                {row.prefix || 'forge'}_****{row.start || '****'}
+              </Code>
               {row.metadata?.type && (
                 <Badge size="xs" color={row.metadata.type === 'service' ? 'orange' : 'blue'}>
                   {row.metadata.type}
@@ -330,10 +339,7 @@ export default function ApiKeysPage() {
       render: (value: boolean, row: ApiKey) => {
         const expired = isKeyExpired(row.expiresAt);
         return (
-          <Badge
-            color={expired ? 'red' : value ? 'green' : 'gray'}
-            variant="dot"
-          >
+          <Badge color={expired ? 'red' : value ? 'green' : 'gray'} variant="dot">
             {expired ? 'Expired' : value ? 'Active' : 'Disabled'}
           </Badge>
         );
@@ -361,18 +367,19 @@ export default function ApiKeysPage() {
     {
       key: 'requestCount',
       label: 'Requests',
-      render: (value: number) => (
-        <Text size="sm">
-          {value.toLocaleString()}
-        </Text>
-      ),
+      render: (value: number) => <Text size="sm">{value.toLocaleString()}</Text>,
       sortable: true,
     },
     {
       key: 'lastUsedAt',
       label: 'Last Used',
       render: (value: string) => {
-        if (!value) return <Text c="dimmed" size="sm">Never</Text>;
+        if (!value)
+          return (
+            <Text c="dimmed" size="sm">
+              Never
+            </Text>
+          );
         const date = new Date(value);
         const now = new Date();
         const diff = now.getTime() - date.getTime();
@@ -387,7 +394,12 @@ export default function ApiKeysPage() {
       key: 'expiresAt',
       label: 'Expires',
       render: (value: string) => {
-        if (!value) return <Text c="dimmed" size="sm">Never</Text>;
+        if (!value)
+          return (
+            <Text c="dimmed" size="sm">
+              Never
+            </Text>
+          );
         const date = new Date(value);
         const expired = date < new Date();
         return (
@@ -424,11 +436,7 @@ export default function ApiKeysPage() {
 
         <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
           {statsData.map((stat) => (
-            <StatsCard
-              key={stat.title}
-              {...stat}
-              loading={loading}
-            />
+            <StatsCard key={stat.title} {...stat} loading={loading} />
           ))}
         </SimpleGrid>
 
@@ -486,75 +494,81 @@ export default function ApiKeysPage() {
       </Stack>
 
       {/* Create API Key Modal */}
-      <Modal opened={createModalOpened} onClose={closeCreateModal} title="Create New API Key" size="md">
+      <Modal
+        opened={createModalOpened}
+        onClose={closeCreateModal}
+        title="Create New API Key"
+        size="md"
+      >
         <Stack gap="md">
           <TextInput
             label="Key Name"
             placeholder="Enter a descriptive name for this API key"
             value={newKey.name}
-            onChange={(e) => setNewKey(prev => ({ ...prev, name: e.target.value }))}
+            onChange={(e) => setNewKey((prev) => ({ ...prev, name: e.target.value }))}
             required
           />
-          
+
           <Select
             label="Organization (Optional)"
             placeholder="Select organization to scope this key"
             value={newKey.organizationId}
-            onChange={(value) => setNewKey(prev => ({ ...prev, organizationId: value || '' }))}
-            data={organizations.map(org => ({ value: org.id, label: org.name }))}
+            onChange={(value) => setNewKey((prev) => ({ ...prev, organizationId: value || '' }))}
+            data={organizations.map((org) => ({ value: org.id, label: org.name }))}
             clearable
           />
-          
+
           <MultiSelect
             label="Permissions"
             placeholder="Select permissions for this API key"
             value={newKey.permissions}
-            onChange={(value) => setNewKey(prev => ({ ...prev, permissions: value }))}
+            onChange={(value) => setNewKey((prev) => ({ ...prev, permissions: value }))}
             data={availablePermissions}
             description="Leave empty to use default read permissions"
           />
-          
+
           <TextInput
             label="Expiration Date (Optional)"
             placeholder="YYYY-MM-DD"
             type="date"
             value={newKey.expiresAt}
-            onChange={(e) => setNewKey(prev => ({ ...prev, expiresAt: e.target.value }))}
+            onChange={(e) => setNewKey((prev) => ({ ...prev, expiresAt: e.target.value }))}
             description="Leave empty for a key that never expires"
           />
-          
+
           <Select
             label="Key Type"
             value={newKey.metadata.type}
-            onChange={(value) => setNewKey(prev => ({ 
-              ...prev, 
-              metadata: { ...prev.metadata, type: value || 'user' }
-            }))}
+            onChange={(value) =>
+              setNewKey((prev) => ({
+                ...prev,
+                metadata: { ...prev.metadata, type: value || 'user' },
+              }))
+            }
             data={[
               { value: 'user', label: 'User Key' },
               { value: 'service', label: 'Service Key' },
             ]}
           />
-          
+
           <Textarea
             label="Description (Optional)"
             placeholder="Add a description for this API key..."
             value={newKey.metadata.description}
-            onChange={(e) => setNewKey(prev => ({ 
-              ...prev, 
-              metadata: { ...prev.metadata, description: e.target.value }
-            }))}
+            onChange={(e) =>
+              setNewKey((prev) => ({
+                ...prev,
+                metadata: { ...prev.metadata, description: e.target.value },
+              }))
+            }
             rows={3}
           />
-          
+
           <Group justify="flex-end" mt="md">
             <Button variant="light" onClick={closeCreateModal}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleCreateApiKey}
-              disabled={!newKey.name.trim()}
-            >
+            <Button onClick={handleCreateApiKey} disabled={!newKey.name.trim()}>
               Create API Key
             </Button>
           </Group>
@@ -562,9 +576,9 @@ export default function ApiKeysPage() {
       </Modal>
 
       {/* Show Created API Key Modal */}
-      <Modal 
-        opened={keyModalOpened} 
-        onClose={closeKeyModal} 
+      <Modal
+        opened={keyModalOpened}
+        onClose={closeKeyModal}
         title="API Key Created Successfully"
         closeOnClickOutside={false}
         closeOnEscape={false}
@@ -575,15 +589,18 @@ export default function ApiKeysPage() {
             title="Important: Save Your API Key"
             color="orange"
           >
-            This is the only time you'll see this API key. Make sure to copy it now and store it securely.
+            This is the only time you'll see this API key. Make sure to copy it now and store it
+            securely.
           </Alert>
-          
+
           <Stack gap="xs">
-            <Text size="sm" fw={500}>Your API Key:</Text>
+            <Text size="sm" fw={500}>
+              Your API Key:
+            </Text>
             <Group gap="xs">
-              <Code 
-                style={{ 
-                  flex: 1, 
+              <Code
+                style={{
+                  flex: 1,
                   fontSize: '12px',
                   wordBreak: 'break-all',
                   filter: showKey ? 'none' : 'blur(4px)',
@@ -593,16 +610,13 @@ export default function ApiKeysPage() {
                 {createdKey}
               </Code>
               <Tooltip label={showKey ? 'Hide key' : 'Show key'}>
-                <ActionIcon 
-                  variant="light" 
-                  onClick={() => setShowKey(!showKey)}
-                >
+                <ActionIcon variant="light" onClick={() => setShowKey(!showKey)}>
                   {showKey ? <IconEyeOff size={16} /> : <IconEye size={16} />}
                 </ActionIcon>
               </Tooltip>
               <Tooltip label={clipboard.copied ? 'Copied!' : 'Copy to clipboard'}>
-                <ActionIcon 
-                  variant="light" 
+                <ActionIcon
+                  variant="light"
                   color={clipboard.copied ? 'green' : 'blue'}
                   onClick={copyApiKey}
                 >
@@ -611,11 +625,9 @@ export default function ApiKeysPage() {
               </Tooltip>
             </Group>
           </Stack>
-          
+
           <Group justify="flex-end" mt="md">
-            <Button onClick={closeKeyModal}>
-              I've Saved My Key
-            </Button>
+            <Button onClick={closeKeyModal}>I've Saved My Key</Button>
           </Group>
         </Stack>
       </Modal>

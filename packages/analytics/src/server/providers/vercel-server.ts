@@ -29,7 +29,7 @@ export class VercelServerProvider implements AnalyticsProvider {
     // Note: Limited server-side support. Consider using client-side tracking for better features.
   }
 
-  async track(event: string, properties: any = {}): Promise<void> {
+  async track(event: string, _properties: any = {}): Promise<void> {
     if (!this.isInitialized) {
       return;
     }
@@ -39,7 +39,7 @@ export class VercelServerProvider implements AnalyticsProvider {
       // Server-side tracking is limited - most tracking happens client-side
       // In production, you might want to send to Vercel's API endpoint
       // This would require additional setup and is not part of the standard SDK
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }

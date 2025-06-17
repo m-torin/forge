@@ -1,7 +1,7 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { defineConfig, type UserConfig } from 'vitest/config';
+import type { UserConfig } from 'vitest/config';
 
 export interface BaseConfigOptions {
   aliases?: Record<string, string>;
@@ -25,7 +25,7 @@ export function createBaseConfig(options: BaseConfigOptions = {}): UserConfig {
   const currentDir = dirname(fileURLToPath(currentFileUrl));
   const packagesDir = resolve(currentDir, '../../../packages');
 
-  return defineConfig({
+  return {
     resolve: {
       alias: {
         '@': resolve(rootDir, './'),
@@ -52,7 +52,7 @@ export function createBaseConfig(options: BaseConfigOptions = {}): UserConfig {
       globals: true,
       setupFiles,
     },
-  });
+  };
 }
 
-export default createBaseConfig;
+export default createBaseConfig();

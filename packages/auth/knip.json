@@ -1,0 +1,15 @@
+{
+  "extends": ["@repo/config/knip/base.json"],
+  "entry": [
+    "src/index.ts",
+    "src/client-next.ts",
+    "src/server-next.ts",
+    "keys.ts",
+    "mocks.ts",
+    "src/**/*.ts",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}"
+  ]
+}

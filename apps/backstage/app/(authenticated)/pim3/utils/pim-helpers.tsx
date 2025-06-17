@@ -304,8 +304,17 @@ export const sortTableData = <T extends Record<string, any>>(
       return reversed ? bValue - aValue : aValue - bValue;
     }
 
-    if (aValue instanceof Date && bValue instanceof Date) {
-      return reversed ? bValue.getTime() - aValue.getTime() : aValue.getTime() - bValue.getTime();
+    if (
+      aValue &&
+      typeof aValue === 'object' &&
+      'getTime' in aValue &&
+      bValue &&
+      typeof bValue === 'object' &&
+      'getTime' in bValue
+    ) {
+      return reversed
+        ? (bValue as Date).getTime() - (aValue as Date).getTime()
+        : (aValue as Date).getTime() - (bValue as Date).getTime();
     }
 
     return 0;

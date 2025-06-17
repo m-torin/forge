@@ -1,12 +1,13 @@
-import { getProducts } from '@/data/data-service';
+import { getProducts } from '@/actions/products';
+import { transformDatabaseProductToTProductItem } from '@/types/database';
 import { seoManager } from '@/lib/seo-config';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { Breadcrumb, CompletePagination, TabFilters } from '@/components/ui';
-import { createStructuredData, JsonLd, structuredData } from '@repo/seo/structured-data';
+import { structuredData } from '@repo/seo/structured-data';
 
-import { EventClient } from './EventClient';
+import { EventUi } from './EventUi';
 import { ClientSidebarFilters } from '@/components/ClientSidebarFilters';
 
 // import { Event } from "schema-dts";
@@ -66,18 +67,13 @@ async function getEventBySlug(slug: string) {
 
 async function getEventProducts(eventSlug: string, page = 1, limit = 20) {
   // Get all products - in a real implementation, this would filter by event
-  const allProducts = await getProducts();
-
-  // Simulate filtering by event and pagination
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const products = allProducts.slice(startIndex, endIndex);
+  const result = await getProducts({ page, limit });
 
   return {
     currentPage: page,
-    products,
-    totalCount: allProducts.length,
-    totalPages: Math.ceil(allProducts.length / limit),
+    products: result.data,
+    totalCount: result.pagination.total,
+    totalPages: result.pagination.totalPages,
   };
 }
 
@@ -132,7 +128,14 @@ export default async function EventPage({
     notFound();
   }
 
-  const { currentPage, products, totalPages } = await getEventProducts(slug, parseInt(page));
+  const {
+    currentPage,
+    products: rawProducts,
+    totalPages,
+  } = await getEventProducts(slug, parseInt(page));
+  const products = rawProducts.map((product: any) =>
+    transformDatabaseProductToTProductItem(product),
+  );
 
   // Generate structured data for the event
   // const eventSchema = createStructuredData<Event>("Event", {
@@ -285,7 +288,7 @@ export default async function EventPage({
             {/* Products Grid */}
             <div className="flex-shrink-0 mb-10 lg:mb-0 lg:mx-4 lg:w-2/3 xl:w-3/4">
               <TabFilters />
-              <EventClient products={products} />
+              <EventUi products={products} />
 
               {/* Pagination */}
               <div className="mt-12 flex justify-center">

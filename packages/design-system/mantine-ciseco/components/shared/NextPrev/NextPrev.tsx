@@ -3,7 +3,7 @@
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import React, { type FC } from 'react';
 
-export interface NextPrevProps {
+export interface NextPrevProps extends Record<string, any> {
   btnClassName?: string;
   className?: string;
   currentPage?: number;
@@ -34,36 +34,36 @@ const NextPrev: FC<NextPrevProps> = ({
     >
       {!onlyNext && (
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            onClickPrev();
-          }}
-          onMouseEnter={() => setFocus('left')}
+          aria-disabled={prevDisabled}
+          aria-label="Prev"
           className={`${btnClassName} ${
             !onlyPrev ? 'me-2' : ''
           } flex items-center justify-center rounded-full border-neutral-200 dark:border-neutral-600 ${
             focus === 'left' ? 'border-2' : ''
           }`}
-          aria-disabled={prevDisabled}
-          aria-label="Prev"
           disabled={prevDisabled}
+          onClick={(e: any) => {
+            e.preventDefault();
+            onClickPrev();
+          }}
+          onMouseEnter={() => setFocus('left')}
         >
           <ArrowLeftIcon className="h-5 w-5 rtl:rotate-180" />
         </button>
       )}
       {!onlyPrev && (
         <button
-          onClick={(e) => {
+          aria-disabled={nextDisabled}
+          aria-label="Next"
+          className={`${btnClassName} flex items-center justify-center rounded-full border-neutral-200 dark:border-neutral-600 ${
+            focus === 'right' ? 'border-2' : ''
+          }`}
+          disabled={nextDisabled}
+          onClick={(e: any) => {
             e.preventDefault();
             onClickNext();
           }}
           onMouseEnter={() => setFocus('right')}
-          className={`${btnClassName} flex items-center justify-center rounded-full border-neutral-200 dark:border-neutral-600 ${
-            focus === 'right' ? 'border-2' : ''
-          }`}
-          aria-disabled={nextDisabled}
-          aria-label="Next"
-          disabled={nextDisabled}
         >
           <ArrowRightIcon className="h-5 w-5 rtl:rotate-180" />
         </button>

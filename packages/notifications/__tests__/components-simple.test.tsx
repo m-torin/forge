@@ -5,12 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the keys module
 const mockKeys = vi.fn();
-vi.mock('../keys', () => ({
+vi.mock('../keys', (_: any) => ({
   keys: mockKeys,
 }));
 
 // Mock Knock React components with simpler implementations
-vi.mock('@knocklabs/react', () => ({
+vi.mock('@knocklabs/react', (_: any) => ({
   KnockFeedProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="knock-feed-provider">{children}</div>
   ),
@@ -19,7 +19,7 @@ vi.mock('@knocklabs/react', () => ({
   ),
   NotificationFeedPopover: ({ isVisible }: { isVisible: boolean }) =>
     isVisible ? <div data-testid="notification-feed-popover">Feed</div> : null,
-  NotificationIconButton: React.forwardRef<HTMLButtonElement, any>(({ onClick }, ref) => (
+  NotificationIconButton: React.forwardRef<HTMLButtonElement, any>(({ onClick }, ref: any) => (
     <button data-testid="notification-icon-button" ref={ref} onClick={onClick}>
       🔔
     </button>
@@ -27,10 +27,10 @@ vi.mock('@knocklabs/react', () => ({
 }));
 
 // Mock CSS imports
-vi.mock('@knocklabs/react/dist/index.css', () => ({}));
-vi.mock('../styles.css', () => ({}));
+vi.mock('@knocklabs/react/dist/index.css', (_: any) => ({}));
+vi.mock('../styles.css', (_: any) => ({}));
 
-describe('Notifications Components Integration', () => {
+describe('Notifications Components Integration', (_: any) => {
   const user = userEvent.setup();
 
   beforeEach(() => {
@@ -38,8 +38,8 @@ describe('Notifications Components Integration', () => {
     vi.resetModules();
   });
 
-  describe('NotificationsProvider', () => {
-    describe('with valid configuration', () => {
+  describe('NotificationsProvider', (_: any) => {
+    describe('with valid configuration', (_: any) => {
       beforeEach(() => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -79,7 +79,7 @@ describe('Notifications Components Integration', () => {
       });
     });
 
-    describe('without required keys', () => {
+    describe('without required keys', (_: any) => {
       it('should render children directly when API key is missing', async () => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: undefined,
@@ -120,8 +120,8 @@ describe('Notifications Components Integration', () => {
     });
   });
 
-  describe('NotificationsTrigger', () => {
-    describe('with valid API key', () => {
+  describe('NotificationsTrigger', (_: any) => {
+    describe('with valid API key', (_: any) => {
       beforeEach(() => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -211,7 +211,7 @@ describe('Notifications Components Integration', () => {
       });
     });
 
-    describe('without API key', () => {
+    describe('without API key', (_: any) => {
       beforeEach(() => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: undefined,
@@ -244,7 +244,7 @@ describe('Notifications Components Integration', () => {
     });
   });
 
-  describe('Keys integration', () => {
+  describe('Keys integration', (_: any) => {
     it('should call keys function when components are rendered', async () => {
       mockKeys.mockReturnValue({
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -297,7 +297,7 @@ describe('Notifications Components Integration', () => {
     });
   });
 
-  describe('Component cleanup and unmounting', () => {
+  describe('Component cleanup and unmounting', (_: any) => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -338,7 +338,7 @@ describe('Notifications Components Integration', () => {
     });
   });
 
-  describe('Component re-rendering', () => {
+  describe('Component re-rendering', (_: any) => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -388,7 +388,7 @@ describe('Notifications Components Integration', () => {
     });
   });
 
-  describe('Error handling', () => {
+  describe('Error handling', (_: any) => {
     it('should handle keys function throwing error in provider', async () => {
       mockKeys.mockImplementation(() => {
         throw new Error('Keys configuration error');

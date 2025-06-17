@@ -101,22 +101,25 @@ export function TaxonomyFormModal({
 
   // Reset form when taxonomy changes
   useEffect(() => {
-    if (taxonomy) {
-      const copy = (taxonomy.copy as any) || {};
-      form.setValues({
-        name: isDuplicate ? `${taxonomy.name} (Copy)` : taxonomy.name,
-        type: taxonomy.type,
-        description: copy.description || '',
-        metaDescription: copy.metaDescription || '',
-        metaKeywords: copy.metaKeywords || '',
-        metaTitle: copy.metaTitle || '',
-        parentId: null, // Note: Will be populated when schema supports hierarchical relationships
-        slug: isDuplicate ? generateSlug(`${taxonomy.name} (Copy)`) : taxonomy.slug,
-        status: isDuplicate ? 'DRAFT' : taxonomy.status,
-      });
-    } else {
-      form.reset();
-    }
+    const updateForm = async () => {
+      if (taxonomy) {
+        const copy = (taxonomy.copy as unknown as any) || {};
+        form.setValues({
+          name: isDuplicate ? `${taxonomy.name} (Copy)` : taxonomy.name,
+          type: taxonomy.type,
+          description: copy.description || '',
+          metaDescription: copy.metaDescription || '',
+          metaKeywords: copy.metaKeywords || '',
+          metaTitle: copy.metaTitle || '',
+          parentId: null, // Note: Will be populated when schema supports hierarchical relationships
+          slug: isDuplicate ? await generateSlug(`${taxonomy.name} (Copy)`) : taxonomy.slug,
+          status: isDuplicate ? 'DRAFT' : taxonomy.status,
+        });
+      } else {
+        form.reset();
+      }
+    };
+    updateForm();
   }, [taxonomy, isDuplicate]);
 
   // Load parent taxonomy options when type changes
@@ -147,10 +150,10 @@ export function TaxonomyFormModal({
   }, [form.values.type, loadParentOptions]);
 
   // Auto-generate slug from name
-  const handleNameChange = (value: string) => {
+  const handleNameChange = async (value: string) => {
     form.setFieldValue('name', value);
     if ((!isEdit || isDuplicate) && value) {
-      const newSlug = generateSlug(value);
+      const newSlug = await generateSlug(value);
       form.setFieldValue('slug', newSlug);
     }
   };
@@ -256,7 +259,7 @@ export function TaxonomyFormModal({
                 label="Name"
                 required
                 {...form.getInputProps('name')}
-                onChange={(e) => handleNameChange(e.currentTarget.value)}
+                onChange={(e) => void handleNameChange(e.currentTarget.value)}
               />
 
               <TextInput
@@ -320,7 +323,6 @@ export function TaxonomyFormModal({
 
               <Select
                 description="Choose a parent taxonomy to create a hierarchical relationship"
-                loading={loadingParents}
                 placeholder="Select parent taxonomy (optional)"
                 clearable
                 data={parentOptions}

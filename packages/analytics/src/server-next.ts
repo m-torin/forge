@@ -118,7 +118,7 @@ export type {
   TrackedComponentProps,
   TypedTrackFunction,
   UseAnalyticsReturn,
-} from './next/types.d';
+} from './next/types';
 
 // ============================================================================
 // USAGE EXAMPLES & PATTERNS

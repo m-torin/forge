@@ -1,7 +1,7 @@
-// package.ts
-import baseConfig from './index.js';
+import { Linter } from 'eslint';
 
-import type { Linter } from 'eslint';
+// package.ts
+import baseConfig from './index';
 
 /*
  * This is a custom ESLint configuration for generic packages

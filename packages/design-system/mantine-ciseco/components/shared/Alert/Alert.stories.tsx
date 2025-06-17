@@ -1,14 +1,9 @@
-import { Alert } from './Alert';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import { Alert } from './Alert';
 
 const meta: Meta<typeof Alert> = {
   argTypes: {
-    type: {
-      control: 'select',
-      description: 'Alert type/variant',
-      options: ['default', 'info', 'success', 'warning', 'error'],
-    },
     children: {
       control: 'text',
       description: 'Alert content',
@@ -16,6 +11,11 @@ const meta: Meta<typeof Alert> = {
     containerClassName: {
       control: 'text',
       description: 'Additional CSS classes for the container',
+    },
+    type: {
+      control: 'select',
+      description: 'Alert type/variant',
+      options: ['default', 'info', 'success', 'warning', 'error'],
     },
   },
   component: Alert,
@@ -36,50 +36,49 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    type: 'default',
     children: 'This is a default alert message.',
+    type: 'default',
   },
 };
 
 export const Info: Story = {
   args: {
-    type: 'info',
     children: 'This is an informational alert message.',
+    type: 'info',
   },
 };
 
 export const Success: Story = {
   args: {
-    type: 'success',
     children: 'This is a success alert message.',
+    type: 'success',
   },
 };
 
 export const Warning: Story = {
   args: {
-    type: 'warning',
     children: 'This is a warning alert message.',
+    type: 'warning',
   },
 };
 
 export const Error: Story = {
   args: {
-    type: 'error',
     children: 'This is an error alert message.',
+    type: 'error',
   },
 };
 
 export const LongMessage: Story = {
   args: {
-    type: 'info',
     children:
       'This is a longer alert message that contains more detailed information about what the user needs to know. It might span multiple lines and provide comprehensive context.',
+    type: 'info',
   },
 };
 
 export const WithHTML: Story = {
   args: {
-    type: 'warning',
     children: (
       <div>
         <strong>Important:</strong> Please review your{' '}
@@ -89,6 +88,7 @@ export const WithHTML: Story = {
         before continuing.
       </div>
     ),
+    type: 'warning',
   },
 };
 
@@ -133,8 +133,8 @@ export const FormValidation: Story = {
       <div>
         <label className="block text-sm font-medium mb-2">Email</label>
         <input
-          placeholder="Enter your email"
           className="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-200"
+          placeholder="Enter your email"
           type="email"
         />
         <Alert type="error">Please enter a valid email address</Alert>
@@ -142,8 +142,8 @@ export const FormValidation: Story = {
       <div>
         <label className="block text-sm font-medium mb-2">Password</label>
         <input
-          placeholder="Enter your password"
           className="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-200"
+          placeholder="Enter your password"
           type="password"
         />
         <Alert type="success">Password meets all requirements</Alert>
@@ -154,8 +154,8 @@ export const FormValidation: Story = {
 
 export const CustomStyling: Story = {
   args: {
-    type: 'info',
     children: 'Custom styled alert with additional classes',
     containerClassName: 'border-l-4 border-blue-500 shadow-lg',
+    type: 'info',
   },
 };

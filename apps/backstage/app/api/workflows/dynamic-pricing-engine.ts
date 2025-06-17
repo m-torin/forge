@@ -14,7 +14,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const DynamicPricingInput = z.object({
@@ -289,12 +289,8 @@ export const collectProductsStep = compose(
       input.scope.brands?.length > 0,
     (output) => output.products.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 30000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['processingTime'],
-    }),
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock data fetching functions
@@ -371,10 +367,10 @@ export const gatherMarketIntelligenceStep = compose(
       marketIntelligence: Array.from(marketIntelligence.values()),
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -400,7 +396,7 @@ async function fetchCompetitorPrices(product: any): Promise<any> {
       average: prices.reduce((sum, p) => sum + p, 0) / prices.length,
       count: competitors.length,
       max: Math.max(...prices),
-      median: prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)],
+      median: prices.sort((a: any, b: any) => a - b)[Math.floor(prices.length / 2)],
       min: Math.min(...prices),
     },
   };
@@ -470,7 +466,7 @@ function analyzeSeasonality(product: any): any {
     Home: { fall: 1.0, spring: 1.0, summer: 0.9, winter: 1.1 },
   };
 
-  const factor = seasonalFactors[product.category as any]?.[season] || 1.0;
+  const factor = seasonalFactors[product.category as keyof typeof seasonalFactors]?.[season] || 1.0;
 
   return {
     currentSeason: season,
@@ -553,7 +549,7 @@ async function calculatePriceElasticity(product: any, marketData: any): Promise<
     return {
       confidence: 0.5,
       method: 'category_default',
-      value: categoryElasticity[product.category as any] || -1.0,
+      value: categoryElasticity[product.category as keyof typeof categoryElasticity] || -1.0,
     };
   }
 
@@ -607,11 +603,11 @@ export const runMLPricingModelsStep = compose(
       mlPricingComplete: true,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
       resetTimeout: 300000,
       threshold: 0.5,
-      timeout: 60000,
+      // timeout: 60000,
     }),
 );
 
@@ -658,7 +654,7 @@ async function applyPricingStrategy(
   switch (strategy.algorithm) {
     case 'competitive':
       if (marketData?.competitors) {
-        const competitorAvg = marketData.competitors.summary.average;
+        const competitorAvg = (marketData.competitors.summary as any).average;
         recommendedPrice = competitorAvg * (0.98 + Math.random() * 0.04);
         confidence = 0.8;
         factors.competitive = {
@@ -670,7 +666,7 @@ async function applyPricingStrategy(
 
     case 'demand-based':
       if (elasticity && marketData?.demand) {
-        const demandTrend = marketData.demand.summary.trend;
+        const demandTrend = (marketData.demand.summary as any).trend;
         const elasticityValue = Math.abs(elasticity.elasticity.value);
 
         if (demandTrend === 'increasing') {
@@ -717,7 +713,7 @@ async function applyPricingStrategy(
       const weights: any[] = [];
 
       if (marketData?.competitors) {
-        prices.push(marketData.competitors.summary.average * 0.99);
+        prices.push((marketData.competitors.summary as any).average * 0.99);
         weights.push(0.3);
       }
 
@@ -967,7 +963,7 @@ export const generatePricingRecommendationsStep = createStep(
     }
 
     // Sort by potential impact
-    recommendations.sort((a, b) => {
+    recommendations.sort((a: any, b: any) => {
       const aImpact = Math.abs(a.projectedImpact.profit.changePercent);
       const bImpact = Math.abs(b.projectedImpact.profit.changePercent);
       return bImpact - aImpact;
@@ -1151,13 +1147,13 @@ function analyzeDemandTrends(marketIntelligence: any[]): any {
 
   const trends = { decreasing: 0, increasing: 0, stable: 0 };
   demandData.forEach((d) => {
-    trends[d.trend as any]++;
+    trends[d.trend as keyof typeof trends]++;
   });
 
   return {
     averageVolatility: demandData.reduce((sum, d) => sum + d.volatility, 0) / demandData.length,
     distribution: trends,
-    dominant: Object.entries(trends).sort((a, b) => b[1] - a[1])[0][0],
+    dominant: Object.entries(trends).sort((a: any, b: any) => b[1] - a[1])[0][0],
   };
 }
 

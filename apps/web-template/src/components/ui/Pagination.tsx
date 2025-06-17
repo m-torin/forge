@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -19,16 +21,27 @@ export function PaginationPrevious({
 }: React.PropsWithChildren<{ href?: string | null; className?: string }>) {
   return (
     <span className={clsx(className, 'grow basis-0')}>
-      <Button
-        component={href ? Link : 'button'}
-        href={href || undefined}
-        disabled={href === null}
-        leftSection={<IconChevronLeft size={16} />}
-        variant="light"
-        aria-label="Previous page"
-      >
-        {children}
-      </Button>
+      {href ? (
+        <Button
+          component={Link}
+          href={href}
+          leftSection={<IconChevronLeft size={16} />}
+          variant="light"
+          aria-label="Previous page"
+        >
+          {children}
+        </Button>
+      ) : (
+        <Button
+          component="button"
+          disabled
+          leftSection={<IconChevronLeft size={16} />}
+          variant="light"
+          aria-label="Previous page"
+        >
+          {children}
+        </Button>
+      )}
     </span>
   );
 }
@@ -40,16 +53,27 @@ export function PaginationNext({
 }: React.PropsWithChildren<{ href?: string | null; className?: string }>) {
   return (
     <span className={clsx(className, 'flex grow basis-0 justify-end')}>
-      <Button
-        component={href ? Link : 'button'}
-        href={href || undefined}
-        disabled={href === null}
-        rightSection={<IconChevronRight size={16} />}
-        variant="light"
-        aria-label="Next page"
-      >
-        {children}
-      </Button>
+      {href ? (
+        <Button
+          component={Link}
+          href={href}
+          rightSection={<IconChevronRight size={16} />}
+          variant="light"
+          aria-label="Next page"
+        >
+          {children}
+        </Button>
+      ) : (
+        <Button
+          component="button"
+          disabled
+          rightSection={<IconChevronRight size={16} />}
+          variant="light"
+          aria-label="Next page"
+        >
+          {children}
+        </Button>
+      )}
     </span>
   );
 }

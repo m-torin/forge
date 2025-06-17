@@ -149,7 +149,7 @@ export class MockAuthState {
   setActiveOrganization(organizationId: string) {
     if (this.currentSession) {
       this.currentSession.activeOrganizationId = organizationId;
-      (this.currentSession.session as any).activeOrganizationId = organizationId;
+      this.currentSession.session.activeOrganizationId = organizationId;
     }
   }
 

@@ -1,17 +1,19 @@
 import path from 'path';
-
-import { defineConfig } from 'vitest/config';
+import { defineConfig, type UserConfig } from 'vitest/config';
+import { nodePreset } from '@repo/testing/vitest-presets';
 
 export default defineConfig({
+  ...nodePreset,
   resolve: {
+    ...nodePreset.resolve,
     alias: {
+      ...nodePreset.resolve?.alias,
       '@': path.resolve(__dirname, './'),
       '@repo': path.resolve(__dirname, '../../packages'),
     },
   },
   test: {
-    environment: 'node',
-    globals: true,
+    ...nodePreset.test,
     setupFiles: ['./test-setup.ts'],
   },
-});
+} as UserConfig);

@@ -1,8 +1,8 @@
 export interface TrainingData {
   feedbacks: {
-    predicted: string;
     actual: string;
     confidence: number;
+    predicted: string;
     timestamp: Date;
   }[];
   productId: string;
@@ -15,44 +15,23 @@ export interface TrainingStorage {
 }
 
 /**
- * In-memory storage implementation (default)
- */
-export class InMemoryTrainingStorage implements TrainingStorage {
-  private data: TrainingData[] = [];
-
-  async save(data: TrainingData[]): Promise<void> {
-    this.data = data;
-  }
-
-  async load(): Promise<TrainingData[]> {
-    return this.data;
-  }
-
-  async clear(): Promise<void> {
-    this.data = [];
-  }
-}
-
-/**
  * File-based storage implementation for Node.js environments
  * Can be extended to use database storage in production
  */
 export class FileTrainingStorage implements TrainingStorage {
   constructor(private filePath: string) {}
 
-  async save(data: TrainingData[]): Promise<void> {
+  async clear(): Promise<void> {
     if (typeof window !== 'undefined') {
-      // In browser, fall back to localStorage
-      localStorage.setItem('ai_training_data', JSON.stringify(data));
+      localStorage.removeItem('ai_training_data');
       return;
     }
 
-    // In Node.js, use file system
     try {
       const fs = await import('fs/promises');
-      await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (_error) {
-      console.error('Failed to save training data');
+      await fs.unlink(this.filePath);
+    } catch (error: any) {
+      // File doesn't exist, ignore
     }
   }
 
@@ -68,24 +47,47 @@ export class FileTrainingStorage implements TrainingStorage {
       const fs = await import('fs/promises');
       const content = await fs.readFile(this.filePath, 'utf-8');
       return JSON.parse(content);
-    } catch (_error) {
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load training data');
       // File doesn't exist or is invalid
       return [];
     }
   }
 
-  async clear(): Promise<void> {
+  async save(data: TrainingData[]): Promise<void> {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('ai_training_data');
+      // In browser, fall back to localStorage
+      localStorage.setItem('ai_training_data', JSON.stringify(data));
       return;
     }
 
+    // In Node.js, use file system
     try {
       const fs = await import('fs/promises');
-      await fs.unlink(this.filePath);
-    } catch (_error) {
-      // File doesn't exist, ignore
+      await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to save training data');
     }
+  }
+}
+
+/**
+ * In-memory storage implementation (default)
+ */
+export class InMemoryTrainingStorage implements TrainingStorage {
+  private data: TrainingData[] = [];
+
+  async clear(): Promise<void> {
+    this.data = [];
+  }
+
+  async load(): Promise<TrainingData[]> {
+    return this.data;
+  }
+
+  async save(data: TrainingData[]): Promise<void> {
+    this.data = data;
   }
 }

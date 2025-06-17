@@ -1,4 +1,9 @@
-import { getCollectionByHandle, getProducts } from '@/data/data-service';
+import { getCollectionByHandle } from '@/actions/collections';
+import { getProductsByCollection } from '@/actions/products';
+import {
+  transformDatabaseCollectionToTCollection,
+  transformDatabaseProductToTCardProduct,
+} from '@/types/database';
 import { type Metadata } from 'next';
 import { createMetadata, structuredData } from '@repo/seo/server/next';
 import { OptimizedJsonLd } from '@repo/seo/client/next';
@@ -11,7 +16,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui';
 
-import { CollectionClient } from './CollectionClient';
+import { CollectionUi } from './CollectionUi';
 import { ClientTabFilters, ClientTabFiltersPopover } from '@/components/ClientTabFilters';
 
 // ISR Configuration - Revalidate every 4 hours for collection pages
@@ -33,13 +38,16 @@ export async function generateMetadata({
   params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
   const { handle, locale } = await params;
-  const collection = await getCollectionByHandle(handle);
+  const collectionData = await getCollectionByHandle(handle);
+  const collection = collectionData
+    ? transformDatabaseCollectionToTCollection(collectionData)
+    : null;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com';
   const collectionUrl = `${baseUrl}/${locale}/collections/${handle}`;
 
   return createMetadata({
-    title: `${collection?.title || handle} | Collections`,
-    description: `Browse our ${collection?.title || handle} collection with ${collection?.count || 0} products. Discover quality products in our carefully curated collection.`,
+    title: `${collection?.title || collectionData?.name || handle} | Collections`,
+    description: `Browse our ${collection?.title || collectionData?.name || handle} collection with ${collection?.count || (collectionData as any)?._count?.products || 0} products. Discover quality products in our carefully curated collection.`,
     alternates: {
       canonical: collectionUrl,
       languages: {
@@ -51,8 +59,8 @@ export async function generateMetadata({
       },
     },
     openGraph: {
-      title: `${collection?.title || handle} Collection`,
-      description: `Explore ${collection?.count || 0} products in our ${collection?.title || handle} collection`,
+      title: `${collection?.title || collectionData?.name || handle} Collection`,
+      description: `Explore ${collection?.count || (collectionData as any)?._count?.products || 0} products in our ${collection?.title || collectionData?.name || handle} collection`,
       type: 'website',
       images: undefined,
     },
@@ -68,8 +76,33 @@ export default async function Page({
 }) {
   const { handle, locale } = await params;
   const { page: _page = '1' } = await searchParams;
-  const products = await getProducts();
-  const collection = await getCollectionByHandle(handle);
+  const collectionData = await getCollectionByHandle(handle);
+  const collection = collectionData
+    ? transformDatabaseCollectionToTCollection(collectionData)
+    : null;
+
+  // Get products from this specific collection
+  const productsResult = collection
+    ? await getProductsByCollection(handle)
+    : {
+        products: [],
+        total: 0,
+        hasMore: false,
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      };
+  const products = (productsResult.products || []).map((product: any) => {
+    const cardProduct = transformDatabaseProductToTCardProduct(product);
+    // Convert TCardProduct to TProductItem for CollectionUi
+    return {
+      ...cardProduct,
+      images: [],
+      variants: [],
+      options: [],
+      tags: [],
+      availableForSale: true,
+      description: '',
+    };
+  });
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com';
 
   // Create breadcrumb structured data
@@ -83,7 +116,7 @@ export default async function Page({
       url: `${baseUrl}/${locale}/collections`,
     },
     {
-      name: collection?.title || handle,
+      name: collection?.title || collectionData?.name || handle,
       url: `${baseUrl}/${locale}/collections/${handle}`,
     },
   ]);
@@ -96,7 +129,7 @@ export default async function Page({
       <ClientTabFiltersPopover className="block lg:hidden" />
 
       {/* LOOP ITEMS */}
-      <CollectionClient products={products} />
+      <CollectionUi products={products} />
 
       {/* PAGINATION */}
       <div className="mt-20 flex justify-center lg:mt-24">

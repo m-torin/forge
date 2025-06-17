@@ -52,10 +52,10 @@ describe('Product Emitters', () => {
 
     it('should accept emitter options', () => {
       const properties = { query: 'laptops' };
-      const options = { context: { traits: { userId: 'user123' } }, timestamp: new Date() };
+      const options = { context: { traits: { userId: 'user123' }, timestamp: new Date() } };
       const result = productSearched(properties, options);
 
-      expect(result.timestamp).toBe(options.timestamp);
+      expect(result.timestamp).toBe(options.context.timestamp);
       expect(result.context?.traits?.userId).toBe('user123');
     });
 
@@ -726,7 +726,7 @@ describe('Product Emitters', () => {
     });
 
     it('should handle malformed product data gracefully', () => {
-      const malformedProducts = [
+      const _malformedProducts = [
         null,
         undefined,
         {},

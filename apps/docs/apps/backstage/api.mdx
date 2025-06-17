@@ -1,0 +1,303 @@
+---
+title: 'Backstage API Reference'
+description: 'RESTful API endpoints for managing resources with Better Auth integration'
+icon: 'code'
+---
+
+## Base URL
+
+- **Development**: `http://localhost:3300`
+- **Production**: `https://api.your-domain.com`
+
+## Authentication
+
+The API supports two authentication methods:
+
+### Session-based Authentication
+
+Use cookies from the main application for authentication. This is automatically handled when making
+requests from the frontend.
+
+### API Key Authentication
+
+Use API keys for programmatic access. Include your API key in the request headers:
+
+```bash
+x-api-key: your_api_key_here
+```
+
+## Creating API Keys
+
+<Steps>
+  <Step title="Navigate to API Keys">
+    Go to the API Keys page in the main application: `/api-keys`
+  </Step>
+  <Step title="Create New Key">Click "Create API Key" and configure permissions</Step>
+  <Step title="Copy Generated Key">Copy the generated key (you won't be able to see it again)</Step>
+</Steps>
+
+## API Key Permissions
+
+API keys can have different permission levels:
+
+- `read:user` - Read user data
+- `write:user` - Modify user data
+- `read:organization` - Read organization data
+- `write:organization` - Modify organization data
+
+<Note>
+  API keys are rate-limited to 100 requests per day by default. This can be configured when creating
+  the key.
+</Note>
+
+## Endpoints
+
+### Public Endpoints
+
+#### Health Check
+
+<CodeGroup>
+```bash cURL
+curl https://api.your-domain.com/public/health
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.your-domain.com/public/health');
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.get('https://api.your-domain.com/public/health')
+data = response.json()
+```
+
+</CodeGroup>
+
+**Response:**
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-05-19T12:00:00.000Z",
+  "environment": "production",
+  "version": "1.0.0"
+}
+```
+
+### Protected Endpoints
+
+#### Protected Root
+
+<CodeGroup>
+```bash cURL
+curl -H "x-api-key: forge_abc123..." \
+     https://api.your-domain.com/protected
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.your-domain.com/protected', {
+  headers: {
+    'x-api-key': 'forge_abc123...',
+  },
+});
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.your-domain.com/protected',
+    headers={'x-api-key': 'forge_abc123...'}
+)
+data = response.json()
+```
+
+</CodeGroup>
+
+**Response:**
+
+```json
+{
+  "message": "Welcome to the protected API",
+  "endpoints": {
+    "/protected/example": "Example protected endpoint",
+    "/protected/user": "Get user information",
+    "/protected/organization": "Get organization information"
+  },
+  "authentication": {
+    "method": "api_key",
+    "userId": "user_123"
+  }
+}
+```
+
+#### Get User Information
+
+<CodeGroup>
+```bash cURL
+curl -H "x-api-key: forge_abc123..." \
+     https://api.your-domain.com/protected/user
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.your-domain.com/protected/user', {
+  headers: {
+    'x-api-key': 'forge_abc123...',
+  },
+});
+const user = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.your-domain.com/protected/user',
+    headers={'x-api-key': 'forge_abc123...'}
+)
+user = response.json()
+```
+
+</CodeGroup>
+
+**Headers:**
+
+- `x-api-key`: Your API key with `read:user` permission
+
+**Response:**
+
+```json
+{
+  "user": {
+    "id": "user_123",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "image": "https://example.com/avatar.jpg",
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "emailVerified": true
+  }
+}
+```
+
+#### Update User Information
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH \
+     -H "x-api-key: forge_abc123..." \
+     -H "Content-Type: application/json" \
+     -d '{"name": "New Name"}' \
+     https://api.your-domain.com/protected/user
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.your-domain.com/protected/user', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'forge_abc123...',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'New Name',
+  }),
+});
+```
+
+```python Python
+import requests
+
+response = requests.patch(
+    'https://api.your-domain.com/protected/user',
+    headers={'x-api-key': 'forge_abc123...'},
+    json={'name': 'New Name'}
+)
+```
+
+</CodeGroup>
+
+**Headers:**
+
+- `x-api-key`: Your API key with `write:user` permission
+- `Content-Type`: `application/json`
+
+**Request Body:**
+
+```json
+{
+  "name": "Jane Doe",
+  "image": "https://example.com/new-avatar.jpg"
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "User updated successfully",
+  "user": {
+    "id": "user_123",
+    "email": "user@example.com",
+    "name": "Jane Doe",
+    "image": "https://example.com/new-avatar.jpg",
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "emailVerified": true
+  }
+}
+```
+
+## Error Responses
+
+The API returns standard HTTP status codes:
+
+| Status Code | Description              |
+| ----------- | ------------------------ |
+| `200`       | Request successful       |
+| `201`       | Resource created         |
+| `400`       | Invalid request          |
+| `401`       | Authentication required  |
+| `403`       | Insufficient permissions |
+| `404`       | Resource not found       |
+| `429`       | Rate limit exceeded      |
+| `500`       | Internal server error    |
+
+**Error Response Format:**
+
+```json
+{
+  "error": "Error message",
+  "code": "error_code",
+  "details": {}
+}
+```
+
+## Security Best Practices
+
+<Warning>
+  - Never expose your API keys in client-side code - Rotate API keys regularly - Use
+  environment-specific keys - Set appropriate permissions for each key - Monitor API key usage
+</Warning>
+
+## Development
+
+To run the API locally:
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run in development mode
+pnpm dev
+
+# Run tests
+pnpm test
+
+# Build for production
+pnpm build
+```
+
+## Support
+
+For support, please contact the development team or create an issue in the repository.

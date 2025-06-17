@@ -10,7 +10,7 @@ This guide explains how to seed your database with test data for development and
 
 ## Seeding Process
 
-### Step 1: Create the Default Organization
+### Step 1: Create Organizations
 
 ```bash
 # With Doppler
@@ -20,7 +20,10 @@ pnpm seed
 pnpm seed:local
 ```
 
-This creates the basic structure including a default organization.
+This creates the basic structure including:
+
+- **Default Organization**: `default-org` for general development
+- **Test Organization**: `test-org` for API testing and development
 
 ### Step 2: Create Users
 
@@ -47,10 +50,48 @@ pnpm --filter @repo/database create-users
 
 This creates:
 
-- Admin user: `admin@example.com` / `admin123`
-- Test users: `test1@example.com` through `test5@example.com` / `password123`
+- **Admin user**: `admin@example.com` / `admin123` (role: `super-admin`)
+- **Test user**: `user@example.com` / `user1234` (role: `user`)
 
-### Step 3: Seed Product Data
+Both users are automatically added to the test organization.
+
+### Step 3: Create API Keys
+
+Once users exist, running the seed script again will automatically create test API keys:
+
+```bash
+# This will now also create API keys since users exist
+pnpm seed:local
+```
+
+**Created API Keys:**
+
+1. **Admin API Key**
+
+   - Name: `Test Admin Key`
+   - Prefix: `forge_adm_`
+   - Permissions: `admin:*`, `api:*`, `users:*`, `organizations:*`
+   - Rate limit: 100 requests/minute
+   - User: `admin@example.com`
+
+2. **User API Key**
+
+   - Name: `Test User Key`
+   - Prefix: `forge_usr_`
+   - Permissions: `read:*`, `user:profile`
+   - Rate limit: 50 requests/minute
+   - User: `user@example.com`
+
+3. **Service API Key**
+   - Name: `Test Service Key`
+   - Prefix: `forge_svc_`
+   - Permissions: `service:*`, `api:*`
+   - Rate limit: 1000 requests/minute
+   - Service ID: `test-service`
+
+The actual API key values will be displayed in the console when created.
+
+### Step 4: Seed Product Data
 
 #### Basic Products Only
 
@@ -171,14 +212,56 @@ pnpm --filter @repo/database seed:all
 - Ensure PostgreSQL is running
 - Check database permissions
 
+## API Key Testing
+
+The seeded API keys can be used to test the authentication system:
+
+### Testing with cURL
+
+```bash
+# Test admin key
+curl -H "Authorization: Bearer YOUR_ADMIN_KEY" \
+     -H "Content-Type: application/json" \
+     http://localhost:3300/api/admin/users
+
+# Test user key
+curl -H "x-api-key: YOUR_USER_KEY" \
+     -H "Content-Type: application/json" \
+     http://localhost:3300/api/user/profile
+
+# Test service key
+curl -H "Authorization: Bearer YOUR_SERVICE_KEY" \
+     -H "Content-Type: application/json" \
+     http://localhost:3300/api/service/status
+```
+
+### Using in Better Auth
+
+The API keys are compatible with better-auth's API key system and can be verified using:
+
+- `auth.api.verifyApiKey()` for validation
+- Rate limiting based on the key's settings
+- Permission checking against the key's permission array
+
+### Key Rotation
+
+For testing key rotation and lifecycle management:
+
+1. Create new keys via the API
+2. Update existing keys' permissions
+3. Disable/enable keys
+4. Test expiration (set short expiry times)
+
 ## Data Relationships
 
 The seed creates realistic relationships:
 
-- Products belong to brands, categories, collections, and taxonomies
-- Users have favorites, reviews, and registries
-- Registries contain products and collections
-- Reviews have votes from other users
-- Media assets are attached to various entities
+- **Users**: Belong to organizations with different roles
+- **API Keys**: Tied to users and organizations with specific permissions
+- **Products**: Belong to brands, categories, collections, and taxonomies
+- **Reviews**: Created by users with helpfulness votes
+- **Registries**: User-created with products and collections
+- **Organizations**: Contain members and API keys for testing
 
-This creates a rich, interconnected dataset perfect for testing e-commerce functionality.
+This creates a rich, interconnected dataset perfect for testing e-commerce functionality and API
+authentication.

@@ -80,6 +80,10 @@ interface PromotionalPricing {
   type: 'percentage' | 'fixed_amount' | 'buy_x_get_y' | 'tiered' | 'flash_sale';
 }
 
+// Type aliases for compatibility
+type PriceEntry = PriceHistoryEntry;
+type PromotionEntry = PromotionalPricing;
+
 interface CompetitorPricing {
   availability: 'in_stock' | 'out_of_stock' | 'limited' | 'unknown';
   competitorName: string;
@@ -112,6 +116,21 @@ export function PriceHistory({
     initialValues: {
       priceHistory: [] as PriceEntry[],
       promotions: [] as PromotionEntry[],
+      promotionalForm: {
+        name: '',
+        type: 'percentage' as const,
+        discountPercentage: 0,
+        discountAmount: 0,
+        startDate: new Date(),
+        endDate: new Date(),
+        couponCode: '',
+      },
+      priceUpdateForm: {
+        newPrice: 0,
+        changeType: 'manual' as const,
+        reason: '',
+        effectiveDate: new Date(),
+      },
     },
   });
 
@@ -294,7 +313,7 @@ export function PriceHistory({
       },
       rules: {},
       startDate: promotionalForm.startDate,
-      status: 'scheduled',
+      status: 'scheduled' as const,
     };
 
     form.setFieldValue('promotions', [...promotions, newPromotion]);
@@ -302,11 +321,12 @@ export function PriceHistory({
     // Reset form
     form.setFieldValue('promotionalForm', {
       name: '',
-      type: 'percentage',
-      discountAmount: 0,
+      type: 'percentage' as const,
       discountPercentage: 0,
-      endDate: null,
-      startDate: null,
+      discountAmount: 0,
+      startDate: new Date(),
+      endDate: new Date(),
+      couponCode: '',
     });
 
     notifications.show({

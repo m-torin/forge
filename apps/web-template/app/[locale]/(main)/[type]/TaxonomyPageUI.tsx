@@ -1,7 +1,7 @@
 'use client';
 
-import { Badge, Button, Card, Container, Grid, Group, Stack, Text, Title } from '@mantine/core';
-import { IconArrowRight, IconSearch } from '@tabler/icons-react';
+import { Button, Card, Container, Grid, Group, Stack, Text, Title } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
 import Link from 'next/link';
 
 import { TaxonomyCard, ZeroStateActions } from '@/components/taxonomy';

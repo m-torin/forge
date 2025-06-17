@@ -53,7 +53,7 @@ import {
 import type { BarcodeType, ProductBarcode } from '@repo/database/prisma';
 
 interface ProductBarcodeWithProduct extends ProductBarcode {
-  product: {
+  product?: {
     id: string;
     name: string;
     sku: string;
@@ -296,8 +296,8 @@ export function BarcodesTable() {
   const sortedData = sortBy
     ? [...barcodes].sort((a, b) => {
         if (!sortBy) return 0;
-        const aValue = (a as any)[sortBy];
-        const bValue = (b as any)[sortBy];
+        const aValue = (a as unknown as any)[sortBy];
+        const bValue = (b as unknown as any)[sortBy];
 
         if (typeof aValue === 'string' && typeof bValue === 'string') {
           return reverseSortDirection ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
@@ -365,10 +365,10 @@ export function BarcodesTable() {
           <Group gap="sm">
             <div>
               <Text fw={500} fz="sm">
-                {barcode.product.name}
+                {barcode.product?.name || 'Unknown Product'}
               </Text>
               <Text c="dimmed" fz="xs">
-                SKU: {barcode.product.sku}
+                SKU: {barcode.product?.sku || 'N/A'}
               </Text>
             </div>
           </Group>

@@ -15,9 +15,9 @@ import {
 vi.mock('@upstash/redis', async () => {
   const { mockUpstashRedis } = await import('@repo/testing/database');
   return mockUpstashRedis;
-});
+};
 
-describe('Upstash Redis Adapter', () => {
+describe('Upstash Redis Adapter', (_: any) => {
   let helper: RedisDatabaseTestHelper;
 
   beforeEach(async () => {
@@ -31,7 +31,7 @@ describe('Upstash Redis Adapter', () => {
     await helper.cleanup();
   });
 
-  describe('Basic CRUD Operations', () => {
+  describe('Basic CRUD Operations', (_: any) => {
     it('should perform complete CRUD operations', async () => {
       await testDatabaseOperations(helper, 'users');
     });
@@ -46,7 +46,7 @@ describe('Upstash Redis Adapter', () => {
       const key = `users:${testData.id}`;
       const stored = await mockUpstashRedisClient.get(key);
       expect(JSON.parse(stored!)).toMatchObject(testData);
-    });
+    };
 
     it('should find a unique record', async () => {
       const testData = createTestUser();
@@ -54,17 +54,17 @@ describe('Upstash Redis Adapter', () => {
 
       const found = await mockUpstashRedisAdapter.findUnique('users', { id: testData.id });
       expect(found).toMatchObject(testData);
-    });
+    };
 
     it('should update a record with merge', async () => {
       const testData = createTestUser();
       await mockUpstashRedisAdapter.create('users', testData);
 
-      const updateData = { name: 'Updated Name', active: false };
+      const updateData = { name: 'Updated Name', active: false });
       const updated = await mockUpstashRedisAdapter.update('users', testData.id, updateData);
 
       expect(updated).toMatchObject({ ...testData, ...updateData });
-    });
+    };
 
     it('should delete a record', async () => {
       const testData = createTestUser();
@@ -75,7 +75,7 @@ describe('Upstash Redis Adapter', () => {
 
       const found = await mockUpstashRedisAdapter.findUnique('users', { id: testData.id });
       expect(found).toBeNull();
-    });
+    };
 
     it('should find many records with pattern matching', async () => {
       const users = createTestUsers(3);
@@ -88,9 +88,9 @@ describe('Upstash Redis Adapter', () => {
       expect(found).toHaveLength(3);
 
       const foundIds = found.map((u: any) => u.id);
-      const expectedIds = users.map((u) => u.id);
+      const expectedIds = users.map((u: any) => u.id);
       expect(foundIds).toEqual(expect.arrayContaining(expectedIds));
-    });
+    };
 
     it('should count records with pattern matching', async () => {
       const users = createTestUsers(5);
@@ -101,10 +101,10 @@ describe('Upstash Redis Adapter', () => {
 
       const count = await mockUpstashRedisAdapter.count('users');
       expect(count).toBe(5);
-    });
-  });
+    };
+  };
 
-  describe('Redis String Operations', () => {
+  describe('Redis String Operations', (_: any) => {
     it('should set and get values directly', async () => {
       await mockUpstashRedisClient.set('test-key', 'test-value');
       const value = await mockUpstashRedisClient.get('test-key');
@@ -122,14 +122,14 @@ describe('Upstash Redis Adapter', () => {
 
       expect(result).toMatchObject(testData);
       await helper.assertTTL(`sessions:${testData.id}`, 3600);
-    });
+    };
 
     it('should check if keys exist', async () => {
       const testData = createTestUser();
       await mockUpstashRedisAdapter.create('users', testData);
 
       await helper.assertKeyExists(`users:${testData.id}`);
-    });
+    };
 
     it('should handle TTL operations', async () => {
       await mockUpstashRedisClient.set('temp-key', 'value', { ex: 1800 });
@@ -137,10 +137,10 @@ describe('Upstash Redis Adapter', () => {
 
       expect(ttl).toBeGreaterThan(1700);
       expect(ttl).toBeLessThanOrEqual(1800);
-    });
-  });
+    };
+  };
 
-  describe('Redis Numeric Operations', () => {
+  describe('Redis Numeric Operations', (_: any) => {
     it('should increment counters', async () => {
       const result1 = await mockUpstashRedisAdapter.increment('counters', 'page-views');
       expect(result1).toBe(1);
@@ -161,9 +161,9 @@ describe('Upstash Redis Adapter', () => {
       const result = await mockUpstashRedisAdapter.decrement('counters', 'credits', undefined, 3);
       expect(result).toBe(7);
     });
-  });
+  };
 
-  describe('Redis List Operations', () => {
+  describe('Redis List Operations', (_: any) => {
     it('should push and pop items from lists', async () => {
       const items = ['item1', 'item2', 'item3'];
 
@@ -192,16 +192,16 @@ describe('Upstash Redis Adapter', () => {
 
       expect(range).toHaveLength(3);
       expect(range[0]).toEqual(emails[2]); // Last pushed is first
-    });
+    };
 
     it('should get list length', async () => {
       await mockUpstashRedisAdapter.listPush('queue', 'jobs', 'job1', 'job2');
       const length = await mockUpstashRedisAdapter.listLength('queue', 'jobs');
       expect(length).toBe(2);
     });
-  });
+  };
 
-  describe('Redis Set Operations', () => {
+  describe('Redis Set Operations', (_: any) => {
     it('should add and remove set members', async () => {
       const tags = ['javascript', 'redis', 'database'];
 
@@ -233,9 +233,9 @@ describe('Upstash Redis Adapter', () => {
       );
       expect(isNotMember).toBe(false);
     });
-  });
+  };
 
-  describe('Redis Hash Operations', () => {
+  describe('Redis Hash Operations', (_: any) => {
     it('should set and get hash fields', async () => {
       await mockUpstashRedisAdapter.hashSet('profiles', 'user1', 'name', 'John Doe');
       await mockUpstashRedisAdapter.hashSet('profiles', 'user1', 'email', 'john@example.com');
@@ -245,7 +245,7 @@ describe('Upstash Redis Adapter', () => {
     });
 
     it('should get all hash fields', async () => {
-      const userData = { name: 'Jane Doe', age: 30, city: 'New York' };
+      const userData = { name: 'Jane Doe', age: 30, city: 'New York' });
 
       for (const [field, value] of Object.entries(userData)) {
         await mockUpstashRedisAdapter.hashSet('profiles', 'user2', field, value);
@@ -255,7 +255,7 @@ describe('Upstash Redis Adapter', () => {
       expect(profile.name).toBe('Jane Doe');
       expect(profile.age).toBe(30);
       expect(profile.city).toBe('New York');
-    });
+    };
 
     it('should delete hash fields', async () => {
       await mockUpstashRedisAdapter.hashSet('temp', 'data', 'field1', 'value1');
@@ -270,9 +270,9 @@ describe('Upstash Redis Adapter', () => {
       const existing = await mockUpstashRedisAdapter.hashGet('temp', 'data', 'field2');
       expect(existing).toBe('value2');
     });
-  });
+  };
 
-  describe('Redis Sorted Set Operations', () => {
+  describe('Redis Sorted Set Operations', (_: any) => {
     it('should add members with scores', async () => {
       const players = [
         { score: 1000, member: { userId: 'user1', name: 'Alice' } },
@@ -282,7 +282,7 @@ describe('Upstash Redis Adapter', () => {
 
       const added = await mockUpstashRedisAdapter.sortedSetAdd('leaderboard', 'game1', ...players);
       expect(added).toBe(3);
-    });
+    };
 
     it('should get sorted set range', async () => {
       const players = [
@@ -306,20 +306,20 @@ describe('Upstash Redis Adapter', () => {
       if (Array.isArray(topPlayers) && topPlayers.length > 0 && 'score' in topPlayers[0]) {
         expect((topPlayers[0] as any).score).toBe(100); // Lowest score first in ascending order
       }
-    });
+    };
 
     it('should get member score', async () => {
-      const player = { name: 'TestPlayer', id: 'player1' };
+      const player = { name: 'TestPlayer', id: 'player1' });
       await mockUpstashRedisAdapter.sortedSetAdd('rankings', 'weekly', {
         score: 750,
         member: player,
       });
 
       await helper.assertSortedSetScore('rankings', 'weekly', player, 750);
-    });
-  });
+    };
+  };
 
-  describe('Batch Operations', () => {
+  describe('Batch Operations', (_: any) => {
     it('should set multiple records', async () => {
       const users = createTestUsers(3);
       const result = await mockUpstashRedisAdapter.setMultiple('users', users);
@@ -331,13 +331,13 @@ describe('Upstash Redis Adapter', () => {
         const found = await mockUpstashRedisAdapter.findUnique('users', { id: user.id });
         expect(found).toMatchObject(user);
       }
-    });
+    };
 
     it('should get multiple records', async () => {
       const users = createTestUsers(3);
       await mockUpstashRedisAdapter.setMultiple('users', users);
 
-      const ids = users.map((u) => u.id);
+      const ids = users.map((u: any) => u.id);
       const results = await mockUpstashRedisAdapter.getMultiple('users', ids);
 
       expect(results).toHaveLength(3);
@@ -345,14 +345,14 @@ describe('Upstash Redis Adapter', () => {
         if (result) {
           expect(result).toMatchObject(users[index]);
         }
-      });
-    });
+      };
+    };
 
     it('should delete multiple records', async () => {
       const users = createTestUsers(3);
       await mockUpstashRedisAdapter.setMultiple('users', users);
 
-      const ids = users.map((u) => u.id);
+      const ids = users.map((u: any) => u.id);
       const deleted = await mockUpstashRedisAdapter.deleteMultiple('users', ids);
 
       expect(deleted).toHaveLength(3);
@@ -362,10 +362,10 @@ describe('Upstash Redis Adapter', () => {
         const found = await mockUpstashRedisAdapter.findUnique('users', { id });
         expect(found).toBeNull();
       }
-    });
-  });
+    };
+  };
 
-  describe('Pipeline Operations', () => {
+  describe('Pipeline Operations', (_: any) => {
     it('should execute pipeline operations', async () => {
       const pipeline = mockUpstashRedisClient.pipeline();
 
@@ -380,9 +380,9 @@ describe('Upstash Redis Adapter', () => {
       expect(results[1]).toBe('OK');
       expect(results[2]).toBe(1);
     });
-  });
+  };
 
-  describe('Error Handling', () => {
+  describe('Error Handling', (_: any) => {
     it('should handle common error scenarios', async () => {
       await testDatabaseErrors(helper, 'users');
     });
@@ -391,14 +391,14 @@ describe('Upstash Redis Adapter', () => {
       await expect(mockUpstashRedisAdapter.create('users', { name: 'No ID' })).rejects.toThrow(
         'must have an "id" field',
       );
-    });
+    };
 
     it('should handle non-existent keys', async () => {
       const found = await mockUpstashRedisAdapter.findUnique('users', {
         id: 'non-existent',
       });
       expect(found).toBeNull();
-    });
+    };
 
     it('should handle empty collections', async () => {
       const results = await mockUpstashRedisAdapter.findMany('empty-collection');
@@ -407,9 +407,9 @@ describe('Upstash Redis Adapter', () => {
       const count = await mockUpstashRedisAdapter.count('empty-collection');
       expect(count).toBe(0);
     });
-  });
+  };
 
-  describe('Raw Operations', () => {
+  describe('Raw Operations', (_: any) => {
     it('should execute raw Redis commands', async () => {
       const result = await mockUpstashRedisAdapter.raw('set', ['raw-key', 'raw-value']);
       expect(result).toBe('OK');
@@ -433,10 +433,10 @@ describe('Upstash Redis Adapter', () => {
 
     it('should throw error for unsupported raw operation', async () => {
       await expect(mockUpstashRedisAdapter.raw('unsupported', {})).rejects.toThrow('not supported');
-    });
-  });
+    };
+  };
 
-  describe('Utility Operations', () => {
+  describe('Utility Operations', (_: any) => {
     it('should ping successfully', async () => {
       const pong = await mockUpstashRedisAdapter.ping();
       expect(pong).toBe('PONG');
@@ -457,10 +457,10 @@ describe('Upstash Redis Adapter', () => {
       const value = await mockUpstashRedisClient.get('test-key');
       expect(value).toBeNull();
     });
-  });
+  };
 
-  describe('Adapter Interface Compliance', () => {
-    it('should implement all required RedisDatabaseAdapter methods', () => {
+  describe('Adapter Interface Compliance', (_: any) => {
+    it('should implement all required RedisDatabaseAdapter methods', (_: any) => {
       const adapter = mockUpstashRedisAdapter;
 
       // Base adapter methods
@@ -498,15 +498,15 @@ describe('Upstash Redis Adapter', () => {
       await expect(mockUpstashRedisAdapter.disconnect()).resolves.not.toThrow();
     });
 
-    it('should return the client instance', () => {
+    it('should return the client instance', (_: any) => {
       const client = mockUpstashRedisAdapter.getClient();
       expect(client).toBeDefined();
       expect(typeof client.set).toBe('function');
     });
-  });
+  };
 
-  describe('Data Seeding', () => {
-    it('should seed mock data correctly', () => {
+  describe('Data Seeding', (_: any) => {
+    it('should seed mock data correctly', (_: any) => {
       const testData = {
         'user:1': createTestUser({ name: 'Seeded User 1' }),
         'user:2': createTestUser({ name: 'Seeded User 2' }),
@@ -516,23 +516,23 @@ describe('Upstash Redis Adapter', () => {
       seedMockRedisData(testData);
 
       // Verify seeded data is accessible
-      Object.entries(testData).forEach(async ([key, value]) => {
+      Object.entries(testData).forEach(async ([key, value]: any) => {
         const result = await mockUpstashRedisClient.get(key);
         if (typeof value === 'string') {
           expect(result).toBe(value);
         } else {
           expect(JSON.parse(result!)).toMatchObject(value);
         }
-      });
-    });
-  });
-});
+      };
+    };
+  };
+};
 
 // Integration test with the actual Upstash Redis adapter class
-describe('UpstashRedisAdapter Integration', () => {
+describe('UpstashRedisAdapter Integration', (_: any) => {
   it('should be importable and instantiable', async () => {
     const { UpstashRedisAdapter } = await import('../redis/adapter');
     expect(UpstashRedisAdapter).toBeDefined();
     expect(typeof UpstashRedisAdapter).toBe('function');
-  });
-});
+  };
+};

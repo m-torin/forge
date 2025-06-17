@@ -1,11 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { createSaga } from '../../src/shared/features/saga';
+import { SagaContext } from '../../src/shared/types/index';
 import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
 
-import type { SagaContext } from '../../src/shared/types/index';
-
-describe('Saga Pattern', () => {
+describe('Saga Pattern', (_: any) => {
   let mocks: ReturnType<typeof setupUpstashMocks>;
 
   beforeEach(() => {
@@ -16,20 +15,20 @@ describe('Saga Pattern', () => {
     resetUpstashMocks(mocks);
   });
 
-  describe('Saga Creation', () => {
-    test('should create saga with basic configuration', () => {
+  describe('Saga Creation', (_: any) => {
+    test('should create saga with basic configuration', (_: any) => {
       const sagaBuilder = createSaga('order-processing-saga', 'Order Processing');
 
       const saga = sagaBuilder
         .step(
           'reserve-inventory',
           'Reserve Inventory',
-          async (context) => {
+          async (context: any) => {
             context.setResult('reservationId', `res_${Date.now()}`);
             return { reservationId: `res_${Date.now()}` };
           },
           {
-            compensation: async (context) => {
+            compensation: async (context: any) => {
               console.log('Releasing inventory reservation');
             },
           },
@@ -37,12 +36,12 @@ describe('Saga Pattern', () => {
         .step(
           'process-payment',
           'Process Payment',
-          async (context) => {
+          async (context: any) => {
             context.setResult('paymentId', `pay_${Date.now()}`);
             return { paymentId: `pay_${Date.now()}` };
           },
           {
-            compensation: async (context) => {
+            compensation: async (context: any) => {
               console.log('Refunding payment');
             },
           },
@@ -56,10 +55,10 @@ describe('Saga Pattern', () => {
       expect(saga.steps[1].name).toBe('Process Payment');
     });
 
-    test('should create saga with lifecycle hooks', () => {
+    test('should create saga with lifecycle hooks', (_: any) => {
       const saga = createSaga('lifecycle-saga', 'Lifecycle Saga')
         .metadata({ version: '1.0.0' })
-        .step('dummy-step', 'Dummy Step', async (context) => {
+        .step('dummy-step', 'Dummy Step', async (context: any) => {
           return {};
         })
         .build();
@@ -71,7 +70,7 @@ describe('Saga Pattern', () => {
     });
   });
 
-  describe('Saga Execution', () => {
+  describe('Saga Execution', (_: any) => {
     test.skip('should execute all steps successfully', async () => {
       // TODO: Implement saga execution tests using SagaOrchestrator
       // The saga builder creates definitions, execution happens through the orchestrator
@@ -293,13 +292,13 @@ describe('Saga Pattern', () => {
     });
   });
 
-  describe('Saga State Management', () => {
+  describe('Saga State Management', (_: any) => {
     test.skip('should persist state between steps', async () => {
       const saga = createSaga('stateful-saga', 'Stateful Saga')
         .step(
           'create-order',
           'Create Order',
-          async (context) => {
+          async (context: any) => {
             context.setResult('orderId', 'order_123');
             const input = context.input as { amount: number };
             context.setResult('amount', input.amount);
@@ -315,7 +314,7 @@ describe('Saga Pattern', () => {
         .step(
           'charge-payment',
           'Charge Payment',
-          async (context) => {
+          async (context: any) => {
             const orderId = context.getResult('orderId');
             const amount = context.getResult('amount');
             context.setResult('paymentId', `payment_${orderId}`);
@@ -378,7 +377,7 @@ describe('Saga Pattern', () => {
         .step(
           'use-context',
           'Use Context',
-          async (context) => {
+          async (context: any) => {
             // Test context utilities
             context.store?.set('test-key', 'test-value');
             context.events?.emit('saga.step.completed', { step: 'use-context' });
@@ -434,7 +433,7 @@ describe('Saga Pattern', () => {
     });
   });
 
-  describe('Complex Saga Scenarios', () => {
+  describe('Complex Saga Scenarios', (_: any) => {
     test.skip('should handle distributed transaction scenario', async () => {
       interface BookingInput {
         amount: number;
@@ -452,7 +451,7 @@ describe('Saga Pattern', () => {
       }
 
       const bookingSaga = createSaga('hotel-booking', 'Hotel Booking')
-        .step('check-availability', 'Check Availability', async (context) => {
+        .step('check-availability', 'Check Availability', async (context: any) => {
           // Simulate availability check
           const available = true; // Mock check
           if (!available) {
@@ -463,7 +462,7 @@ describe('Saga Pattern', () => {
         .step(
           'reserve-room',
           'Reserve Room',
-          async (context) => {
+          async (context: any) => {
             const input = context.input as BookingInput;
             await context.sleep?.(500); // Simulate API call
             const reservationId = `res_${input.roomId}_${Date.now()}`;
@@ -471,7 +470,7 @@ describe('Saga Pattern', () => {
             return { reservationId };
           },
           {
-            compensation: async (context) => {
+            compensation: async (context: any) => {
               const reservationId = context.getResult('reservationId');
               if (reservationId) {
                 await context.events?.emit('room.reservation.cancelled', {
@@ -484,7 +483,7 @@ describe('Saga Pattern', () => {
         .step(
           'process-payment',
           'Process Payment',
-          async (context) => {
+          async (context: any) => {
             const input = context.input as BookingInput;
             await context.sleep?.(1000); // Simulate payment processing
 
@@ -499,7 +498,7 @@ describe('Saga Pattern', () => {
             return { paymentId };
           },
           {
-            compensation: async (context) => {
+            compensation: async (context: any) => {
               const paymentId = context.getResult('paymentId');
               const input = context.input as BookingInput;
               if (paymentId) {
@@ -514,14 +513,14 @@ describe('Saga Pattern', () => {
         .step(
           'confirm-booking',
           'Confirm Booking',
-          async (context) => {
+          async (context: any) => {
             const input = context.input as BookingInput;
             const confirmationId = `conf_${input.userId}_${Date.now()}`;
             context.setResult('confirmationId', confirmationId);
             return { confirmationId };
           },
           {
-            compensation: async (context) => {
+            compensation: async (context: any) => {
               const confirmationId = context.getResult('confirmationId');
               if (confirmationId) {
                 context.events?.emit('booking.cancelled', {
@@ -531,7 +530,7 @@ describe('Saga Pattern', () => {
             },
           },
         )
-        .onSuccess(async (context) => {
+        .onSuccess(async (context: any) => {
           const confirmationId = context.getResult('confirmationId');
           const input = context.input as BookingInput;
           context.events?.emit('booking.completed', {
@@ -539,10 +538,10 @@ describe('Saga Pattern', () => {
             userId: input.userId,
           });
         })
-        .onFailure(async (context, error) => {
+        .onFailure(async (context, error: any) => {
           const input = context.input as BookingInput;
           context.events?.emit('booking.failed', {
-            error: error.message,
+            error: (error as Error)?.message || 'Unknown error',
             userId: input.userId,
           });
         })
@@ -558,7 +557,7 @@ describe('Saga Pattern', () => {
         results: {},
         sagaId: 'booking_saga_123',
         setResult: vi.fn(),
-        sleep: vi.fn().mockImplementation((ms) => Promise.resolve()),
+        sleep: vi.fn().mockImplementation((ms: any) => Promise.resolve()),
         state: {
           compensationQueue: [],
           completedSteps: [],

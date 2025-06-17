@@ -32,7 +32,7 @@ export class AIRateLimiter {
     this.cleanOldEntries(provider, oneMinuteAgo);
 
     // Check request rate limit
-    const requests = this.requestCounts.get(provider) || [];
+    const requests = this.requestCounts.get(provider) ?? [];
     if (requests.length >= this.config.maxRequestsPerMinute) {
       const oldestRequest = Math.min(...requests);
       const retryAfter = Math.ceil((oldestRequest + 60000 - now) / 1000);
@@ -40,8 +40,8 @@ export class AIRateLimiter {
     }
 
     // Check token rate limit
-    const tokens = this.tokenCounts.get(provider) || [];
-    const totalTokens = tokens.reduce((sum, tokenCount) => sum + tokenCount, 0);
+    const tokens = this.tokenCounts.get(provider) ?? [];
+    const totalTokens = tokens.reduce((sum, tokenCount: any) => sum + tokenCount, 0);
     if (totalTokens + estimatedTokens > this.config.maxTokensPerMinute) {
       const retryAfter = 60; // Wait a minute for token limit
       return { allowed: false, retryAfter };
@@ -59,41 +59,20 @@ export class AIRateLimiter {
     return { allowed: true };
   }
 
-  recordTokenUsage(provider: string, tokenCount: number): void {
-    if (!this.config.enabled) return;
-
-    const tokens = this.tokenCounts.get(provider) || [];
-    tokens.push(tokenCount);
-    this.tokenCounts.set(provider, tokens);
-  }
-
-  private cleanOldEntries(provider: string, cutoff: number): void {
-    // Clean request counts
-    const requests = this.requestCounts.get(provider) || [];
-    const recentRequests = requests.filter((timestamp) => timestamp > cutoff);
-    this.requestCounts.set(provider, recentRequests);
-
-    // For tokens, we'll keep them simple and reset every minute
-    // In a real implementation, you might want to track timestamps with token counts
-    if (requests.length === 0) {
-      this.tokenCounts.set(provider, []);
-    }
-  }
-
   getRateLimitStatus(provider: string): {
-    requestsThisMinute: number;
-    tokensThisMinute: number;
     maxRequests: number;
     maxTokens: number;
+    requestsThisMinute: number;
+    tokensThisMinute: number;
   } {
     const now = Date.now();
     const oneMinuteAgo = now - 60000;
 
     this.cleanOldEntries(provider, oneMinuteAgo);
 
-    const requests = this.requestCounts.get(provider) || [];
-    const tokens = this.tokenCounts.get(provider) || [];
-    const totalTokens = tokens.reduce((sum, count) => sum + count, 0);
+    const requests = this.requestCounts.get(provider) ?? [];
+    const tokens = this.tokenCounts.get(provider) ?? [];
+    const totalTokens = tokens.reduce((sum, count: any) => sum + count, 0);
 
     return {
       maxRequests: this.config.maxRequestsPerMinute,
@@ -101,6 +80,27 @@ export class AIRateLimiter {
       requestsThisMinute: requests.length,
       tokensThisMinute: totalTokens,
     };
+  }
+
+  recordTokenUsage(provider: string, tokenCount: number): void {
+    if (!this.config.enabled) return;
+
+    const tokens = this.tokenCounts.get(provider) ?? [];
+    tokens.push(tokenCount);
+    this.tokenCounts.set(provider, tokens);
+  }
+
+  private cleanOldEntries(provider: string, cutoff: number): void {
+    // Clean request counts
+    const requests = this.requestCounts.get(provider) ?? [];
+    const recentRequests = requests.filter((timestamp: any) => timestamp > cutoff);
+    this.requestCounts.set(provider, recentRequests);
+
+    // For tokens, we'll keep them simple and reset every minute
+    // In a real implementation, you might want to track timestamps with token counts
+    if (requests.length === 0) {
+      this.tokenCounts.set(provider, []);
+    }
   }
 }
 

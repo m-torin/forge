@@ -1,6 +1,6 @@
-import CollectionCard4 from './CollectionCard4';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import CollectionCard4 from './CollectionCard4';
 
 const meta: Meta<typeof CollectionCard4> = {
   argTypes: {
@@ -34,16 +34,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockCollection = {
-  id: 'gid://1',
   color: 'bg-yellow-50',
   count: 127,
   description: 'Stylish pieces for the sunny season',
   handle: 'summer-collection',
+  id: 'gid://1',
   image: {
-    width: 200,
     alt: 'Summer collection',
     height: 200,
     src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop',
+    width: 200,
   },
   sortDescription: 'Light & airy fabrics',
   title: 'Summer Collection',
@@ -70,10 +70,10 @@ export const WinterCollection: Story = {
       color: 'bg-blue-50',
       count: 89,
       image: {
-        width: 200,
         alt: 'Winter collection',
         height: 200,
         src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop',
+        width: 200,
       },
       sortDescription: 'Warm & cozy pieces',
       title: 'Winter Essentials',
@@ -88,10 +88,10 @@ export const LuxuryCollection: Story = {
       color: 'bg-purple-50',
       count: 45,
       image: {
-        width: 200,
         alt: 'Luxury collection',
         height: 200,
         src: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop',
+        width: 200,
       },
       sortDescription: 'Premium materials & craftsmanship',
       title: 'Luxury Line',
@@ -131,7 +131,7 @@ export const NoHandle: Story = {
   args: {
     collection: {
       ...mockCollection,
-      handle: undefined,
+      handle: '',
     },
   },
 };
@@ -182,19 +182,19 @@ export const Grid: Story = {
           image: 'photo-1434389677669-e08b4cac3105',
           title: 'Minimalist',
         },
-      ].map((item, index) => (
+      ].map((item, index: any) => (
         <CollectionCard4
-          key={index}
+          key={item.title}
           collection={{
-            id: `gid://${index}`,
             color: item.color,
             count: item.count,
             handle: item.title.toLowerCase().replace(' ', '-'),
+            id: `gid://${index}`,
             image: {
-              width: 200,
               alt: item.title,
               height: 200,
               src: `https://images.unsplash.com/${item.image}?w=200&h=200&fit=crop`,
+              width: 200,
             },
             sortDescription: item.desc,
             title: item.title,
@@ -219,11 +219,10 @@ export const ResponsiveLayout: Story = {
         Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }, (_, i) => (
+        {Array.from({ length: 6 }, (_, i: any) => (
           <CollectionCard4
             key={`collection-card-${i}`}
             collection={{
-              id: `gid://${i}`,
               color: [
                 'bg-blue-50',
                 'bg-green-50',
@@ -232,13 +231,14 @@ export const ResponsiveLayout: Story = {
                 'bg-yellow-50',
                 'bg-indigo-50',
               ][i],
-              count: Math.floor(Math.random() * 200) + 50,
+              count: (Math.floor(Math.random() * 200) as number) + 50,
               handle: `collection-${i + 1}`,
+              id: `gid://${i}`,
               image: {
-                width: 200,
                 alt: `Collection ${i + 1}`,
                 height: 200,
                 src: `https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&seed=${i}`,
+                width: 200,
               },
               sortDescription: `Style category ${i + 1}`,
               title: `Collection ${i + 1}`,

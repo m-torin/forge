@@ -1,0 +1,410 @@
+---
+title: 'Workers Application'
+description:
+  'Background job processing system with QStash integration for reliable workflow execution'
+icon: 'gear'
+---
+
+# Workers Application
+
+Background job processing system with QStash integration for reliable workflow execution and
+distributed computing.
+
+<Note>
+  Workers runs on port **3400** and provides a dashboard for managing background workflows with
+  comprehensive API access.
+</Note>
+
+## Core Features
+
+<CardGroup cols={2}>
+  <Card title="Workflow Engine" icon="workflow">
+    QStash-powered distributed workflow execution with automatic retries
+  </Card>
+  <Card title="Real-time Monitoring" icon="chart-line">
+    Track workflow progress, performance metrics, and error handling
+  </Card>
+  <Card title="API Access" icon="api">
+    RESTful endpoints for workflow management and integration
+  </Card>
+  <Card title="Rate Limiting" icon="shield">
+    Configurable limits per endpoint type with Upstash Redis
+  </Card>
+</CardGroup>
+
+## Available Workflows
+
+### Product Classification
+
+AI-powered product categorization using GPT-4:
+
+<AccordionGroup>
+  <Accordion title="Features" icon="brain">
+    - Automatic category assignment
+    - Confidence scoring
+    - Batch processing support
+    - Human review workflow
+  </Accordion>
+  
+  <Accordion title="Usage" icon="code">
+    ```typescript
+    await fetch('/api/workflows/product-classification', {
+      method: 'POST',
+      headers: {
+        'x-api-key': API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        productId: '123',
+        description: 'Wireless bluetooth headphones',
+        title: 'Premium Audio Headset',
+      }),
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Image Processing
+
+Advanced image manipulation workflows:
+
+- Resize and optimization
+- Format conversion (WebP, AVIF)
+- Watermarking and branding
+- Thumbnail generation
+
+### Data Processing
+
+High-volume data processing capabilities:
+
+- Chart generation from datasets
+- CSV/Excel processing and transformation
+- Data transformation pipelines
+- Batch import/export operations
+
+### Communication Workflows
+
+Automated communication systems:
+
+- Transactional email delivery
+- SMS notifications via Twilio
+- Webhook dispatching
+- Event broadcasting
+
+## Authentication
+
+All API endpoints require authentication via API key or session cookie.
+
+### Authentication Methods
+
+<Tabs>
+  <Tab title="User API Keys">
+    Generated through the Better Auth system:
+
+    1. Sign in to the Workers app at `/sign-in`
+    2. Navigate to your account settings
+    3. Create a new API key with appropriate permissions
+    4. Copy the key immediately (it won't be shown again)
+
+    ```bash
+    curl -X POST https://workers.app/api/client/trigger \
+      -H "Content-Type: application/json" \
+      -H "x-api-key: user_xxxxxxxxxxxxxxxx" \
+      -d '{"url": "...", "body": {...}}'
+    ```
+
+  </Tab>
+  
+  <Tab title="Service API Key">
+    For service-to-service authentication and CI/CD:
+
+    - Set via `SERVICE_API_KEY` environment variable
+    - Minimum 32 characters for security
+    - Can be rotated via Doppler without code changes
+    - Provides system-level access without user context
+
+    ```bash
+    curl -X POST https://workers.app/api/workflows/basic \
+      -H "x-api-key: YOUR_SERVICE_API_KEY" \
+      -d '{"data": "..."}'
+    ```
+
+  </Tab>
+  
+  <Tab title="Session Cookie">
+    For web application integration:
+
+    ```bash
+    # After user sign-in
+    curl -X POST https://workers.app/api/workflows/basic \
+      -H "Cookie: session=..." \
+      -d '{"data": "..."}'
+    ```
+
+  </Tab>
+</Tabs>
+
+### API Key Permissions
+
+User API keys support scoped permissions:
+
+| Permission           | Description                          |
+| -------------------- | ------------------------------------ |
+| `workflows:read`     | View workflow status and history     |
+| `workflows:write`    | Trigger and cancel workflows         |
+| `workflows:admin`    | Manage workflow configurations       |
+| `observability:read` | Access monitoring and analytics data |
+
+## API Endpoints
+
+### Workflow Management
+
+<CodeGroup>
+```typescript Trigger Workflow
+POST /api/client/trigger
+{
+  "url": "https://workers.app/api/workflows/product-classification",
+  "body": {
+    "productId": "123",
+    "data": {...}
+  },
+  "delay": 0,
+  "retries": 3
+}
+```
+
+```typescript Get Status
+GET /api/workflows/status/:id
+
+// Response
+{
+  "id": "run_123",
+  "status": "completed",
+  "result": {...},
+  "duration": 1234,
+  "steps": [...]
+}
+```
+
+```typescript Cancel Workflow
+POST /api/client/cancel
+{
+  "workflowRunId": "run_123"
+}
+```
+
+</CodeGroup>
+
+### Rate Limits
+
+Different endpoints have different rate limits:
+
+| Endpoint Type | Limit        | Window     |
+| ------------- | ------------ | ---------- |
+| Default       | 60 requests  | 60 seconds |
+| Workflows     | 10 requests  | 60 seconds |
+| Trigger       | 20 requests  | 60 seconds |
+| Observability | 100 requests | 60 seconds |
+
+## Workflow Development
+
+### Creating a New Workflow
+
+```typescript
+// app/workflows/my-workflow/definition.ts
+import { workflow } from '@upstash/workflow';
+
+export const myWorkflow = workflow('my-workflow')
+  .step('validate', async ({ input }) => {
+    // Validation logic
+    return { valid: true, data: input };
+  })
+  .step('process', async ({ data }) => {
+    // Main processing
+    return { result: processedData };
+  })
+  .step('notify', async ({ result }) => {
+    // Send notifications
+    await sendNotification(result);
+    return { success: true };
+  });
+```
+
+### Registering Workflows
+
+```typescript
+// app/workflows/registry.ts
+import { myWorkflow } from './my-workflow/definition';
+
+export const workflows = {
+  'my-workflow': {
+    workflow: myWorkflow,
+    metadata: {
+      name: 'My Workflow',
+      description: 'Process data with custom logic',
+      category: 'processing',
+    },
+  },
+};
+```
+
+## Monitoring & Observability
+
+### Dashboard Features
+
+<CardGroup cols={2}>
+  <Card title="Real-time Status" icon="activity">
+    Live workflow execution tracking with step-by-step progress
+  </Card>
+  <Card title="Performance Metrics" icon="chart-bar">
+    Execution time, success rates, and throughput analytics
+  </Card>
+  <Card title="Error Logs" icon="bug">
+    Detailed error messages and stack traces for debugging
+  </Card>
+  <Card title="Queue Statistics" icon="list">
+    Pending, active, completed, and failed workflow counts
+  </Card>
+</CardGroup>
+
+### Webhook Integration
+
+Workers sends status updates via webhooks:
+
+```typescript
+// Webhook payload
+{
+  "workflowRunId": "run_123",
+  "status": "completed",
+  "result": {...},
+  "duration": 1234,
+  "step": {
+    "name": "process",
+    "status": "completed"
+  }
+}
+```
+
+## Security
+
+### Authentication Flow
+
+<Steps>
+  <Step title="Initial Check">All routes except `/api/auth` require authentication</Step>
+  <Step title="Service Keys">Service API keys checked first for system access</Step>
+  <Step title="User Authentication">User API keys or sessions checked second</Step>
+  <Step title="Webhook Verification">Webhook endpoints use QStash signature verification</Step>
+</Steps>
+
+### Webhook Verification
+
+QStash webhooks are automatically verified using signature:
+
+```typescript
+import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
+
+export async function POST(request: Request) {
+  // Signature automatically verified
+  await verifySignatureAppRouter(request);
+
+  // Process webhook securely
+  const data = await request.json();
+}
+```
+
+<Warning>
+  **Security Best Practices:** - Rotate API keys regularly using Doppler - Use environment
+  variables, never hardcode keys - Grant minimum required permissions - Monitor API key usage in
+  observability dashboard
+</Warning>
+
+## Environment Variables
+
+### Required for Production
+
+```bash
+# Authentication
+SERVICE_API_KEY=... # Minimum 32 characters
+BETTER_AUTH_SECRET=...
+DATABASE_URL=...
+
+# QStash
+QSTASH_TOKEN=...
+QSTASH_CURRENT_SIGNING_KEY=...
+
+# Redis
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+
+# App URLs
+NEXTAUTH_URL=https://workers.yourdomain.com
+NEXT_PUBLIC_APP_URL=https://workers.yourdomain.com
+```
+
+### Optional Configuration
+
+```bash
+# Development
+SKIP_WORKFLOW_DEDUPLICATION=false
+WORKFLOW_DEV_MODE=false
+TRUSTED_IPS=ip1,ip2,ip3 # Additional security
+
+# Remove in production
+QSTASH_URL=... # Only for local development
+UPSTASH_WORKFLOW_URL=... # Only for local tunnels
+```
+
+## Common Use Cases
+
+### Batch Product Import
+
+```typescript
+await fetch('/api/workflows/product-import', {
+  method: 'POST',
+  headers: {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    csvUrl: 'https://example.com/products.csv',
+    mappings: {
+      name: 'product_name',
+      price: 'product_price',
+      category: 'product_category',
+    },
+  }),
+});
+```
+
+### Scheduled Reports
+
+```typescript
+// Schedule daily report
+await fetch('/api/schedules', {
+  method: 'POST',
+  headers: { 'x-api-key': API_KEY },
+  body: JSON.stringify({
+    workflow: 'generate-report',
+    schedule: '0 9 * * *', // 9 AM daily
+    data: { reportType: 'sales' },
+  }),
+});
+```
+
+### Event-Driven Processing
+
+```typescript
+// Process on webhook
+export async function POST(request: Request) {
+  const event = await request.json();
+
+  // Trigger workflow
+  await triggerWorkflow('process-event', {
+    eventType: event.type,
+    payload: event.data,
+  });
+}
+```
+
+The Workers application provides a robust foundation for distributed computing, workflow
+orchestration, and background job processing with enterprise-grade monitoring and security features.

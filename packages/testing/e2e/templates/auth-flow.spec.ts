@@ -10,9 +10,8 @@ import {
   EnvironmentData,
   PageObjectFactory,
   TestDataGenerator,
+  BetterAuthTestHelpers,
 } from '@repo/testing/e2e';
-
-import type { BetterAuthTestHelpers } from '@repo/testing/e2e';
 
 test.describe('Authentication Flow', () => {
   let authHelpers: BetterAuthTestHelpers;

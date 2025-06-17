@@ -12,7 +12,7 @@ import {
   StepTemplates,
   withStepMonitoring,
   withStepRetry,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const UniversalRegistryInput = z.object({
@@ -116,7 +116,7 @@ const productNormalizerFactory = createWorkflowStep(
     tags: ['normalization', 'registry'],
     version: '1.0.0',
   },
-  async (context) => {
+  async (context: any) => {
     const { product, sourceMapping } = context.input;
 
     // Apply field mappings
@@ -197,12 +197,8 @@ export const fetchProductsStep = compose(
       totalProducts: fetchedProducts.reduce((sum, s) => sum + s.count, 0),
     };
   }),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['sourceCount'],
-    }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock fetch functions
@@ -241,13 +237,11 @@ export const normalizeProductsStep = createStep('normalize-products', async (dat
     const normalized = [];
 
     for (const product of sourceData.products) {
-      const result = await normalizer.execute({
-        executionId: `norm_${Date.now()}`,
+      const result = await normalizer.handler({
         input: {
           product,
           sourceMapping: source?.config.mapping || {},
         },
-        workflowId: 'universal-registry',
       });
 
       if (result.success) {
@@ -414,7 +408,7 @@ function calculateQualityScore(products: any[]): number {
 // Step 4: Enrich products
 export const enrichProductsStep = StepTemplates.conditional(
   'enrich-products',
-  'Enrich products with additional data',
+  (input: any) => input.enableEnrichment === true && input.options.enrichment?.enabled === true,
   {
     trueStep: createStep('perform-enrichment', async (data: any) => {
       const { deduplicationResults, options } = data;
@@ -535,7 +529,7 @@ export const validateProductsStep = createStep('validate-products', async (data:
 
     // Apply validation rules
     for (const rule of rules) {
-      const fieldValue = rule.field.split('.').reduce((obj, key) => obj?.[key], product);
+      const fieldValue = rule.field.split('.').reduce((obj: any, key: any) => obj?.[key], product);
 
       switch (rule.rule) {
         case 'required':
@@ -617,7 +611,7 @@ export const validateProductsStep = createStep('validate-products', async (data:
 // Step 6: Store in universal registry
 export const storeInRegistryStep = compose(
   StepTemplates.database('store-registry', 'Store products in universal registry database'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 7: Update registry indexes
@@ -697,7 +691,7 @@ export const generateRegistryReportStep = createStep('generate-report', async (d
       deduplication: deduplicationStats,
       indexing: indexes,
     },
-    recommendations: [],
+    recommendations: [] as Array<{ type: string; message: string; priority: string }>,
     sources: data.fetchedProducts.map((s: any) => ({
       id: s.sourceId,
       name: s.sourceName,

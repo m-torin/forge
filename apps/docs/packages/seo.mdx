@@ -1,0 +1,1122 @@
+---
+title: 'SEO Package'
+description:
+  'Comprehensive SEO optimization with metadata generation, structured data, and performance
+  monitoring'
+icon: 'magnifying-glass'
+---
+
+# SEO Package
+
+Comprehensive search engine optimization package providing metadata management, structured data
+generation, and SEO performance monitoring for Next.js applications.
+
+## Overview
+
+The SEO package provides a complete solution for optimizing applications for search engines,
+including automatic metadata generation, structured data markup, sitemap creation, and SEO analytics
+integration.
+
+<CardGroup cols={2}>
+  <Card title="Next.js Metadata API" icon="next-js">
+    Full integration with Next.js App Router metadata system
+  </Card>
+  <Card title="Structured Data" icon="code">
+    Automatic JSON-LD generation for rich search results
+  </Card>
+  <Card title="Performance Monitoring" icon="chart-line">
+    Core Web Vitals tracking and SEO performance analytics
+  </Card>
+  <Card title="Internationalization" icon="globe">
+    Multi-language SEO with hreflang and localized metadata
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **Next.js 15 Metadata API**: Full integration with the latest metadata system
+- **Structured Data**: Automatic JSON-LD generation for products, organizations, and content
+- **Open Graph & Twitter Cards**: Rich social media previews with dynamic image generation
+- **Sitemap Generation**: Automated XML sitemaps with priority and frequency settings
+- **Core Web Vitals**: Performance monitoring with Google Analytics integration
+- **Schema.org Markup**: Comprehensive structured data for enhanced search results
+- **Internationalization**: Multi-language SEO with proper hreflang implementation
+- **Content Analysis**: Automated SEO auditing and optimization suggestions
+
+## Installation
+
+```bash
+pnpm add @repo/seo
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Configure Root Layout">
+    ```typescript
+    // app/layout.tsx
+    import { generateMetadata } from '@repo/seo';
+    import { SEOProvider } from '@repo/seo';
+    
+    export const metadata = generateMetadata({
+      title: 'Forge Platform',
+      description: 'Modern product management and workflow platform',
+      keywords: ['product management', 'workflow', 'automation'],
+    });
+    
+    export default function RootLayout({ children }) {
+      return (
+        <html>
+          <body>
+            <SEOProvider>
+              {children}
+            </SEOProvider>
+          </body>
+        </html>
+      );
+    }
+    ```
+  </Step>
+  
+  <Step title="Page-Level Metadata">
+    ```typescript
+    // app/products/[id]/page.tsx
+    import { generateProductMetadata } from '@repo/seo';
+    import { ProductStructuredData } from '@repo/seo';
+    
+    export async function generateMetadata({ params }) {
+      const product = await getProduct(params.id);
+      
+      return generateProductMetadata({
+        product,
+        images: product.assets.map(asset => asset.url),
+      });
+    }
+    
+    export default function ProductPage({ product }) {
+      return (
+        <>
+          <ProductStructuredData product={product} />
+          <main>{/* Product content */}</main>
+        </>
+      );
+    }
+    ```
+  </Step>
+  
+  <Step title="Enable Analytics">
+    ```typescript
+    // app/layout.tsx
+    import { WebVitalsTracker } from '@repo/seo';
+    
+    export default function RootLayout({ children }) {
+      return (
+        <html>
+          <body>
+            {children}
+            <WebVitalsTracker />
+          </body>
+        </html>
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+## Metadata Management
+
+### Next.js Metadata API Integration
+
+<Tabs>
+  <Tab title="Basic Metadata">
+    ```typescript
+    import { generateMetadata } from '@repo/seo';
+    
+    // Static metadata
+    export const metadata = generateMetadata({
+      title: 'Product Catalog',
+      description: 'Browse our comprehensive product catalog with advanced filtering and search capabilities.',
+      keywords: ['products', 'catalog', 'ecommerce', 'search'],
+      canonical: '/products',
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Dynamic Metadata">
+    ```typescript
+    // Dynamic metadata based on content
+    export async function generateMetadata({ params, searchParams }) {
+      const category = await getCategory(params.slug);
+      
+      return generateMetadata({
+        title: `${category.name} - Product Category`,
+        description: category.description,
+        keywords: [...category.tags, 'products', category.name.toLowerCase()],
+        canonical: `/categories/${category.slug}`,
+        openGraph: {
+          title: category.name,
+          description: category.description,
+          images: category.images,
+          type: 'website',
+        },
+      });
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Template Metadata">
+    ```typescript
+    // Template-based metadata for consistent patterns
+    export const metadata = generateMetadata({
+      title: {
+        template: '%s | Forge Platform',
+        default: 'Forge Platform - Product Management & Workflows',
+      },
+      description: 'Modern platform for product management and workflow automation',
+      metadataBase: new URL('https://forge.example.com'),
+      alternates: {
+        canonical: '/',
+        languages: {
+          'en-US': '/en',
+          'fr-FR': '/fr',
+          'es-ES': '/es',
+        },
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Open Graph and Social Media
+
+<CodeGroup>
+```typescript Open Graph Configuration
+import { generateOpenGraphMetadata } from '@repo/seo';
+
+export const metadata = generateOpenGraphMetadata({
+  title: 'Revolutionary Product Management Platform',
+  description: 'Streamline your product workflow with AI-powered automation',
+  images: [
+    {
+      url: '/og-image.jpg',
+      width: 1200,
+      height: 630,
+      alt: 'Forge Platform Dashboard',
+    },
+  ],
+  type: 'website',
+  locale: 'en_US',
+  siteName: 'Forge Platform',
+});
+```
+
+```typescript Twitter Cards
+import { generateTwitterMetadata } from '@repo/seo';
+
+export const metadata = generateTwitterMetadata({
+  card: 'summary_large_image',
+  title: 'Product Management Made Simple',
+  description: 'Discover how Forge transforms product workflows',
+  images: ['/twitter-card.jpg'],
+  creator: '@forge_platform',
+  site: '@forge_platform',
+});
+```
+
+</CodeGroup>
+
+## Structured Data
+
+### Product Schema
+
+<AccordionGroup>
+  <Accordion title="Product Markup" icon="package">
+    ```typescript
+    import { ProductStructuredData } from '@repo/seo';
+    
+    export function ProductPage({ product }) {
+      return (
+        <>
+          <ProductStructuredData
+            product={{
+              name: product.title,
+              description: product.description,
+              image: product.assets.map(asset => asset.url),
+              brand: {
+                '@type': 'Brand',
+                name: product.brand,
+              },
+              offers: {
+                '@type': 'Offer',
+                price: product.price,
+                priceCurrency: product.currency || 'USD',
+                availability: product.stock > 0 ? 'InStock' : 'OutOfStock',
+                seller: {
+                  '@type': 'Organization',
+                  name: 'Forge Platform',
+                },
+              },
+              aggregateRating: product.reviews?.length > 0 ? {
+                '@type': 'AggregateRating',
+                ratingValue: product.averageRating,
+                reviewCount: product.reviews.length,
+              } : undefined,
+              review: product.reviews?.map(review => ({
+                '@type': 'Review',
+                author: review.author.name,
+                datePublished: review.createdAt,
+                reviewBody: review.content,
+                reviewRating: {
+                  '@type': 'Rating',
+                  ratingValue: review.rating,
+                },
+              })),
+            }}
+          />
+          {/* Product content */}
+        </>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Organization Schema" icon="building">
+    ```typescript
+    import { OrganizationStructuredData } from '@repo/seo';
+    
+    export function AboutPage() {
+      return (
+        <>
+          <OrganizationStructuredData
+            organization={{
+              name: 'Forge Platform Inc.',
+              url: 'https://forge.example.com',
+              logo: 'https://forge.example.com/logo.png',
+              description: 'Leading provider of product management solutions',
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: '123 Innovation Drive',
+                addressLocality: 'San Francisco',
+                addressRegion: 'CA',
+                postalCode: '94105',
+                addressCountry: 'US',
+              },
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: '+1-555-123-4567',
+                contactType: 'customer service',
+                email: 'support@forge.example.com',
+              },
+              sameAs: [
+                'https://twitter.com/forge_platform',
+                'https://linkedin.com/company/forge-platform',
+                'https://github.com/forge-platform',
+              ],
+            }}
+          />
+          {/* About content */}
+        </>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Article Schema" icon="newspaper">
+    ```typescript
+    import { ArticleStructuredData } from '@repo/seo';
+    
+    export function BlogPost({ post }) {
+      return (
+        <>
+          <ArticleStructuredData
+            article={{
+              headline: post.title,
+              description: post.excerpt,
+              image: post.featuredImage,
+              author: {
+                '@type': 'Person',
+                name: post.author.name,
+                url: post.author.profileUrl,
+              },
+              publisher: {
+                '@type': 'Organization',
+                name: 'Forge Platform',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://forge.example.com/logo.png',
+                },
+              },
+              datePublished: post.publishedAt,
+              dateModified: post.updatedAt,
+              mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': `https://forge.example.com/blog/${post.slug}`,
+              },
+            }}
+          />
+          {/* Article content */}
+        </>
+      );
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Sitemap Generation
+
+The SEO package provides comprehensive sitemap generation with multiple approaches for different use
+cases.
+
+### Next.js App Router (Recommended)
+
+<Tabs>
+  <Tab title="Static Sitemap">
+    ```typescript
+    // app/sitemap.ts
+    import { generateSitemapObject } from '@repo/seo/server/next';
+    import type { MetadataRoute } from 'next';
+    
+    export default function sitemap(): MetadataRoute.Sitemap {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://forge.example.com';
+      
+      return generateSitemapObject([
+        {
+          url: baseUrl,
+          lastModified: new Date(),
+          changeFrequency: 'daily',
+          priority: 1,
+        },
+        {
+          url: `${baseUrl}/products`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        },
+        {
+          url: `${baseUrl}/about`,
+          lastModified: new Date(),
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        },
+      ]);
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Dynamic Sitemap">
+    ```typescript
+    // app/sitemap.ts
+    import { generateSitemapObject } from '@repo/seo/server/next';
+    import type { MetadataRoute } from 'next';
+    
+    export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://forge.example.com';
+      
+      // Fetch dynamic content
+      const products = await getAllProducts();
+      const categories = await getAllCategories();
+      const posts = await getAllBlogPosts();
+      
+      const routes = [
+        // Static routes
+        { 
+          url: baseUrl, 
+          changeFrequency: 'daily' as const, 
+          priority: 1,
+          lastModified: new Date(),
+        },
+        { 
+          url: `${baseUrl}/about`, 
+          changeFrequency: 'monthly' as const, 
+          priority: 0.6,
+          lastModified: new Date(),
+        },
+        
+        // Dynamic product pages
+        ...products.map((product) => ({
+          url: `${baseUrl}/products/${product.slug}`,
+          lastModified: product.updatedAt,
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        })),
+        
+        // Dynamic category pages
+        ...categories.map((category) => ({
+          url: `${baseUrl}/categories/${category.slug}`,
+          lastModified: category.updatedAt,
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        })),
+        
+        // Dynamic blog posts
+        ...posts.map((post) => ({
+          url: `${baseUrl}/blog/${post.slug}`,
+          lastModified: post.publishedAt,
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+        })),
+      ];
+      
+      return generateSitemapObject(routes);
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Multiple Sitemaps">
+    ```typescript
+    // app/sitemap.ts - Main sitemap index
+    import type { MetadataRoute } from 'next';
+    
+    export default function sitemap(): MetadataRoute.Sitemap {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://forge.example.com';
+      
+      return [
+        {
+          url: `${baseUrl}/sitemaps/pages.xml`,
+          lastModified: new Date(),
+        },
+        {
+          url: `${baseUrl}/sitemaps/products.xml`,
+          lastModified: new Date(),
+        },
+        {
+          url: `${baseUrl}/sitemaps/blog.xml`,
+          lastModified: new Date(),
+        },
+      ];
+    }
+    
+    // app/sitemaps/products/sitemap.ts
+    import { generateSitemapObject } from '@repo/seo/server/next';
+    
+    export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+      const products = await getAllProducts();
+      
+      return generateSitemapObject(
+        products.map((product) => ({
+          url: `https://forge.example.com/products/${product.slug}`,
+          lastModified: product.updatedAt,
+          changeFrequency: 'daily',
+          priority: 0.8,
+          // Include product images
+          images: product.assets?.map((asset) => ({
+            url: asset.url,
+            title: asset.alt || product.title,
+            caption: product.title,
+          })),
+        }))
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Advanced Sitemap Features
+
+<CodeGroup>
+```typescript Image Sitemaps
+// Include images in product sitemaps
+const productRoutes = products.map((product) => ({
+  url: `${baseUrl}/products/${product.slug}`,
+  lastModified: product.updatedAt,
+  changeFrequency: 'weekly' as const,
+  priority: 0.8,
+  images: product.assets?.map((asset) => ({
+    url: asset.url,
+    title: asset.alt || product.title,
+    caption: `${product.title} - ${asset.alt}`,
+    geo_location: product.origin?.country,
+    license: 'https://creativecommons.org/licenses/by/4.0/',
+  })),
+}));
+```
+
+```typescript Video Sitemaps
+// Include videos in content sitemaps
+const videoRoutes = videoContent.map((video) => ({
+  url: `${baseUrl}/videos/${video.slug}`,
+  lastModified: video.updatedAt,
+  changeFrequency: 'monthly' as const,
+  priority: 0.7,
+  videos: [
+    {
+      thumbnail_url: video.thumbnail,
+      title: video.title,
+      description: video.description,
+      content_url: video.url,
+      player_url: `${baseUrl}/player/${video.id}`,
+      duration: video.duration,
+      rating: video.averageRating,
+      view_count: video.viewCount,
+      publication_date: video.publishedAt,
+      family_friendly: video.familyFriendly ? 'yes' : 'no',
+      restriction: video.restrictions,
+      platform: video.platforms,
+      live: video.isLive ? 'yes' : 'no',
+    },
+  ],
+}));
+```
+
+```typescript Localized Sitemaps
+// Multi-language sitemap support
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
+  const locales = ['en', 'fr', 'es', 'pt', 'de'];
+
+  const products = await getAllProducts();
+
+  const routes = [];
+
+  // Generate localized routes for each product
+  for (const product of products) {
+    for (const locale of locales) {
+      routes.push({
+        url: `${baseUrl}/${locale}/products/${product.slug}`,
+        lastModified: product.updatedAt,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+        alternates: {
+          languages: locales.reduce(
+            (acc, loc) => {
+              acc[loc] = `${baseUrl}/${loc}/products/${product.slug}`;
+              return acc;
+            },
+            {} as Record<string, string>
+          ),
+        },
+      });
+    }
+  }
+
+  return generateSitemapObject(routes);
+}
+```
+
+</CodeGroup>
+
+### Legacy Next-Sitemap Integration
+
+For advanced features or Pages Router compatibility:
+
+```typescript
+// next-sitemap.config.js
+const { createSitemapConfig } = require('@repo/seo/server/next');
+
+module.exports = createSitemapConfig({
+  siteUrl: process.env.SITE_URL || 'https://forge.example.com',
+  generateRobotsTxt: true,
+  generateIndexSitemap: true,
+
+  // Exclude patterns
+  exclude: ['/admin/*', '/api/*', '/private/*'],
+
+  // Additional paths for static pages
+  additionalPaths: async () => [{ loc: '/special-page', changefreq: 'monthly', priority: 0.7 }],
+
+  // Transform function for custom logic
+  transform: async (config, path) => {
+    // Custom priority based on path
+    let priority = 0.7;
+    let changefreq = 'weekly';
+
+    if (path === '/') {
+      priority = 1.0;
+      changefreq = 'daily';
+    } else if (path.startsWith('/products')) {
+      priority = 0.8;
+      changefreq = 'daily';
+    } else if (path.startsWith('/blog')) {
+      priority = 0.6;
+      changefreq = 'monthly';
+    }
+
+    return {
+      loc: path,
+      changefreq,
+      priority,
+      lastmod: new Date().toISOString(),
+    };
+  },
+
+  // Robots.txt configuration
+  robotsTxtOptions: {
+    policies: [
+      { userAgent: '*', allow: '/' },
+      { userAgent: '*', disallow: ['/admin', '/api'] },
+      { userAgent: 'Googlebot', allow: '/' },
+    ],
+    additionalSitemaps: ['https://forge.example.com/server-sitemap.xml'],
+  },
+});
+```
+
+### Robots.txt Generation
+
+<CodeGroup>
+```typescript Basic Robots.txt
+// app/robots.ts
+import { generateRobots } from '@repo/seo';
+
+export default function robots() {
+  return generateRobots({
+    userAgent: '*',
+    allow: '/',
+    disallow: ['/admin/', '/api/', '/private/'],
+    sitemap: 'https://forge.example.com/sitemap.xml',
+  });
+}
+```
+
+```typescript Environment-Specific Robots
+// app/robots.ts
+import { generateRobots } from '@repo/seo';
+
+export default function robots() {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (!isProduction) {
+    // Block all crawlers in non-production
+    return generateRobots({
+      userAgent: '*',
+      disallow: '/',
+    });
+  }
+
+  return generateRobots({
+    userAgent: '*',
+    allow: '/',
+    disallow: [
+      '/admin/',
+      '/api/',
+      '/private/',
+      '/temp/',
+      '/*?*', // Block query parameters
+    ],
+    sitemap: 'https://forge.example.com/sitemap.xml',
+    crawlDelay: 1,
+  });
+}
+```
+
+</CodeGroup>
+
+## Performance Monitoring
+
+### Core Web Vitals Tracking
+
+<Tabs>
+  <Tab title="Web Vitals Component">
+    ```typescript
+    // components/WebVitalsTracker.tsx
+    import { WebVitalsTracker } from '@repo/seo';
+    
+    export function PerformanceTracker() {
+      return (
+        <WebVitalsTracker
+          onCLS={(metric) => {
+            // Track Cumulative Layout Shift
+            analytics.track('Core Web Vital', {
+              name: 'CLS',
+              value: metric.value,
+              rating: metric.rating,
+            });
+          }}
+          onFID={(metric) => {
+            // Track First Input Delay
+            analytics.track('Core Web Vital', {
+              name: 'FID',
+              value: metric.value,
+              rating: metric.rating,
+            });
+          }}
+          onLCP={(metric) => {
+            // Track Largest Contentful Paint
+            analytics.track('Core Web Vital', {
+              name: 'LCP',
+              value: metric.value,
+              rating: metric.rating,
+            });
+          }}
+          onFCP={(metric) => {
+            // Track First Contentful Paint
+            analytics.track('Core Web Vital', {
+              name: 'FCP',
+              value: metric.value,
+              rating: metric.rating,
+            });
+          }}
+          onTTFB={(metric) => {
+            // Track Time to First Byte
+            analytics.track('Core Web Vital', {
+              name: 'TTFB',
+              value: metric.value,
+              rating: metric.rating,
+            });
+          }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Performance Analytics">
+    ```typescript
+    import { useWebVitals } from '@repo/seo';
+    
+    export function PerformanceDashboard() {
+      const vitals = useWebVitals();
+      
+      return (
+        <div className="performance-dashboard">
+          <h2>Core Web Vitals</h2>
+          
+          <div className="metrics-grid">
+            <MetricCard
+              title="Largest Contentful Paint"
+              value={vitals.lcp?.value}
+              rating={vitals.lcp?.rating}
+              threshold={{ good: 2500, poor: 4000 }}
+            />
+            
+            <MetricCard
+              title="First Input Delay"
+              value={vitals.fid?.value}
+              rating={vitals.fid?.rating}
+              threshold={{ good: 100, poor: 300 }}
+            />
+            
+            <MetricCard
+              title="Cumulative Layout Shift"
+              value={vitals.cls?.value}
+              rating={vitals.cls?.rating}
+              threshold={{ good: 0.1, poor: 0.25 }}
+            />
+            
+            <MetricCard
+              title="First Contentful Paint"
+              value={vitals.fcp?.value}
+              rating={vitals.fcp?.rating}
+              threshold={{ good: 1800, poor: 3000 }}
+            />
+          </div>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Internationalization SEO
+
+### Multi-Language Metadata
+
+<CodeGroup>
+```typescript Hreflang Implementation
+// app/[locale]/layout.tsx
+import { generateLocalizedMetadata } from '@repo/seo';
+
+export async function generateMetadata({ params }) {
+  const { locale } = params;
+  
+  return generateLocalizedMetadata({
+    locale,
+    title: getLocalizedTitle(locale),
+    description: getLocalizedDescription(locale),
+    alternates: {
+      languages: {
+        'en-US': '/en',
+        'fr-FR': '/fr',
+        'es-ES': '/es',
+        'pt-PT': '/pt',
+        'de-DE': '/de',
+        'x-default': '/en', // Default language
+      },
+    },
+  });
+}
+```
+
+```typescript Localized Structured Data
+import { LocalizedStructuredData } from '@repo/seo';
+
+export function LocalizedProductPage({ product, locale }) {
+  return (
+    <>
+      <LocalizedStructuredData
+        locale={locale}
+        data={{
+          '@type': 'Product',
+          name: product.translations[locale]?.title || product.title,
+          description: product.translations[locale]?.description || product.description,
+          offers: {
+            '@type': 'Offer',
+            price: product.price,
+            priceCurrency: getCurrencyForLocale(locale),
+          },
+        }}
+      />
+      {/* Localized product content */}
+    </>
+  );
+}
+```
+
+</CodeGroup>
+
+## SEO Analytics and Monitoring
+
+### Search Console Integration
+
+<AccordionGroup>
+  <Accordion title="Performance Tracking" icon="chart-line">
+    ```typescript
+    import { useSearchConsoleData } from '@repo/seo';
+    
+    export function SEODashboard() {
+      const { data, loading, error } = useSearchConsoleData({
+        startDate: '30daysAgo',
+        endDate: 'today',
+        dimensions: ['query', 'page'],
+      });
+      
+      if (loading) return <Loader />;
+      if (error) return <ErrorMessage error={error} />;
+      
+      return (
+        <div className="seo-dashboard">
+          <h2>Search Performance</h2>
+          
+          <div className="metrics-overview">
+            <StatCard
+              title="Total Clicks"
+              value={data.summary.clicks}
+              change={data.summary.clicksChange}
+            />
+            <StatCard
+              title="Total Impressions"
+              value={data.summary.impressions}
+              change={data.summary.impressionsChange}
+            />
+            <StatCard
+              title="Average CTR"
+              value={`${data.summary.ctr.toFixed(2)}%`}
+              change={data.summary.ctrChange}
+            />
+            <StatCard
+              title="Average Position"
+              value={data.summary.position.toFixed(1)}
+              change={data.summary.positionChange}
+            />
+          </div>
+          
+          <TopQueries queries={data.topQueries} />
+          <TopPages pages={data.topPages} />
+        </div>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Technical SEO Monitoring" icon="wrench">
+    ```typescript
+    import { useTechnicalSEOAudit } from '@repo/seo';
+    
+    export function TechnicalSEOAudit() {
+      const audit = useTechnicalSEOAudit();
+      
+      return (
+        <div className="technical-audit">
+          <h2>Technical SEO Audit</h2>
+          
+          <AuditSection
+            title="Core Web Vitals"
+            status={audit.coreWebVitals.status}
+            issues={audit.coreWebVitals.issues}
+          />
+          
+          <AuditSection
+            title="Mobile Usability"
+            status={audit.mobileUsability.status}
+            issues={audit.mobileUsability.issues}
+          />
+          
+          <AuditSection
+            title="Structured Data"
+            status={audit.structuredData.status}
+            issues={audit.structuredData.issues}
+          />
+          
+          <AuditSection
+            title="Security Issues"
+            status={audit.security.status}
+            issues={audit.security.issues}
+          />
+          
+          <AuditSection
+            title="Indexing Status"
+            status={audit.indexing.status}
+            issues={audit.indexing.issues}
+          />
+        </div>
+      );
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Content Optimization
+
+### SEO Content Analysis
+
+<Tabs>
+  <Tab title="Content Analyzer">
+    ```typescript
+    import { analyzeSEOContent } from '@repo/seo';
+    
+    export function ContentEditor({ content, onChange }) {
+      const analysis = analyzeSEOContent(content);
+      
+      return (
+        <div className="content-editor">
+          <textarea
+            value={content}
+            onChange={(e) => onChange(e.target.value)}
+            className="content-input"
+          />
+          
+          <div className="seo-analysis">
+            <h3>SEO Analysis</h3>
+            
+            <ScoreCard
+              title="Overall SEO Score"
+              score={analysis.overallScore}
+              maxScore={100}
+            />
+            
+            <div className="analysis-details">
+              <AnalysisItem
+                title="Title Tag"
+                status={analysis.title.status}
+                message={analysis.title.message}
+                suggestions={analysis.title.suggestions}
+              />
+              
+              <AnalysisItem
+                title="Meta Description"
+                status={analysis.metaDescription.status}
+                message={analysis.metaDescription.message}
+                suggestions={analysis.metaDescription.suggestions}
+              />
+              
+              <AnalysisItem
+                title="Heading Structure"
+                status={analysis.headings.status}
+                message={analysis.headings.message}
+                suggestions={analysis.headings.suggestions}
+              />
+              
+              <AnalysisItem
+                title="Keyword Density"
+                status={analysis.keywords.status}
+                message={analysis.keywords.message}
+                suggestions={analysis.keywords.suggestions}
+              />
+              
+              <AnalysisItem
+                title="Readability"
+                status={analysis.readability.status}
+                message={analysis.readability.message}
+                suggestions={analysis.readability.suggestions}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Keyword Research">
+    ```typescript
+    import { useKeywordResearch } from '@repo/seo';
+    
+    export function KeywordResearchTool() {
+      const { searchKeywords, suggestions, loading } = useKeywordResearch();
+      
+      return (
+        <div className="keyword-research">
+          <h2>Keyword Research</h2>
+          
+          <SearchInput
+            onSearch={searchKeywords}
+            placeholder="Enter seed keywords..."
+            loading={loading}
+          />
+          
+          {suggestions.length > 0 && (
+            <div className="keyword-suggestions">
+              <h3>Keyword Suggestions</h3>
+              
+              <div className="keywords-table">
+                {suggestions.map((keyword) => (
+                  <KeywordRow
+                    key={keyword.term}
+                    keyword={keyword.term}
+                    volume={keyword.searchVolume}
+                    difficulty={keyword.difficulty}
+                    cpc={keyword.cpc}
+                    trend={keyword.trend}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<Warning>
+  **SEO Guidelines:** - Always include proper meta titles and descriptions - Use structured data for
+  rich search results - Optimize Core Web Vitals for better search rankings - Implement proper
+  internationalization with hreflang - Monitor and fix technical SEO issues regularly - Create
+  high-quality, relevant content consistently
+</Warning>
+
+### Recommended Patterns
+
+1. **Technical Foundation**
+
+   - Implement proper URL structures and canonical tags
+   - Use semantic HTML and proper heading hierarchy
+   - Optimize images with alt text and proper sizing
+   - Ensure fast loading times and good Core Web Vitals
+
+2. **Content Strategy**
+
+   - Focus on user intent and search query matching
+   - Create comprehensive, authoritative content
+   - Use natural keyword placement and semantic variations
+   - Implement proper internal linking structure
+
+3. **Performance Optimization**
+
+   - Monitor Core Web Vitals continuously
+   - Optimize for mobile-first indexing
+   - Implement proper caching strategies
+   - Use CDN for global content delivery
+
+4. **Monitoring and Analytics**
+   - Set up proper tracking and measurement
+   - Monitor search rankings and organic traffic
+   - Track technical SEO health regularly
+   - Analyze user behavior and engagement metrics
+
+The SEO package provides comprehensive tools and utilities for optimizing search engine visibility
+and performance across the entire Forge platform, ensuring applications rank well and provide
+excellent user experiences.

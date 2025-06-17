@@ -3,11 +3,11 @@
  * Enhanced from the old package with better error handling and progress reporting
  */
 
+import { ProviderRegistry, ScrapingConfig, SelectorMap } from '../types/scraping-types';
 import { humanDelay } from '../utils/helpers';
 import { createScrapingManager } from '../utils/scraping-manager';
 
-import type { ProviderRegistry, ScrapingConfig, SelectorMap } from '../types/scraping-types';
-import type { MultiScrapeOptions, MultiScrapeResult } from './types';
+import { MultiScrapeOptions, MultiScrapeResult } from './types';
 
 /**
  * Scrape multiple URLs with concurrency control and progress tracking
@@ -19,12 +19,12 @@ export async function scrapeMultiple(
   options: MultiScrapeOptions = {},
 ): Promise<MultiScrapeResult[]> {
   const {
-    provider = 'auto',
     concurrent = 3,
     delayBetween = 0,
     onError,
     onProgress,
-    retries = 3,
+    provider = 'auto',
+    retries: _retries = 3,
     timeout = 30000,
   } = options;
 
@@ -38,31 +38,31 @@ export async function scrapeMultiple(
   if (typeof window !== 'undefined') {
     // Client environment
     const { FetchProvider } = await import('../../client/providers/fetch-provider');
-    providers.fetch = (config) => new FetchProvider();
+    providers.fetch = (_config: any) => new FetchProvider();
   } else {
     // Server environment
     const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
     const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
 
-    providers.cheerio = (config) => new CheerioProvider();
-    providers.playwright = (config) => new PlaywrightProvider();
+    providers.cheerio = (_config: any) => new CheerioProvider();
+    providers.playwright = (_config: any) => new PlaywrightProvider();
   }
 
   const config: ScrapingConfig = {
+    debug: false,
     providers: {
       [provider === 'auto' ? Object.keys(providers)[0] : provider]: {},
     },
-    debug: false,
   };
 
   const results: MultiScrapeResult[] = [];
-  const errors: { url: string; error: Error; index: number }[] = [];
+  const errors: { error: Error; index: number; url: string }[] = [];
 
   // Process URLs in batches
   for (let i = 0; i < urls.length; i += concurrent) {
     const batch = urls.slice(i, i + concurrent);
 
-    const batchPromises = batch.map(async (url, batchIndex) => {
+    const batchPromises = batch.map(async (url, batchIndex: any) => {
       const globalIndex = i + batchIndex;
       const startTime = Date.now();
 
@@ -79,17 +79,17 @@ export async function scrapeMultiple(
         let lastError: Error | undefined;
 
         // Retry logic
-        for (let attempt = 0; attempt < retries; attempt++) {
+        for (let attempt = 0; attempt < _retries; attempt++) {
           try {
             result = await manager.scrape(url, {
               extract: selectors,
               timeout,
             });
             break; // Success, exit retry loop
-          } catch (error) {
+          } catch (error: any) {
             lastError = error instanceof Error ? error : new Error(String(error));
 
-            if (attempt < retries - 1) {
+            if (attempt < _retries - 1) {
               // Wait before retry
               await humanDelay(1000 * (attempt + 1), 2000 * (attempt + 1));
             }
@@ -97,32 +97,32 @@ export async function scrapeMultiple(
         }
 
         if (!result) {
-          throw lastError || new Error('All retry attempts failed');
+          throw lastError ?? new Error('All retry attempts failed');
         }
 
         const duration = Date.now() - startTime;
 
         return {
-          url,
-          data: result.data,
+          data: result?.data,
           duration,
           index: globalIndex,
+          url,
         };
-      } catch (error) {
+      } catch (error: any) {
         const duration = Date.now() - startTime;
         const scrapeError = error instanceof Error ? error : new Error(String(error));
 
-        errors.push({ url, error: scrapeError, index: globalIndex });
+        errors.push({ error: scrapeError, index: globalIndex, url });
 
         if (onError) {
           onError(url, scrapeError, globalIndex + 1, urls.length);
         }
 
         return {
-          url,
           duration,
           error: scrapeError.message,
           index: globalIndex,
+          url,
         };
       } finally {
         await manager.dispose();
@@ -143,126 +143,6 @@ export async function scrapeMultiple(
 }
 
 /**
- * Scrape multiple URLs with streaming results
- * Yields results as they complete for better memory usage
- */
-export async function* scrapeMultipleStream(
-  urls: string[],
-  selectors: SelectorMap,
-  options: MultiScrapeOptions = {},
-): AsyncGenerator<MultiScrapeResult, void, unknown> {
-  const {
-    provider = 'auto',
-    concurrent = 3,
-    onError,
-    onProgress,
-    retries = 3,
-    timeout = 30000,
-  } = options;
-
-  if (urls.length === 0) {
-    return;
-  }
-
-  // Set up providers (same logic as scrapeMultiple)
-  const providers: ProviderRegistry = {};
-
-  if (typeof window !== 'undefined') {
-    const { FetchProvider } = await import('../../client/providers/fetch-provider');
-    providers.fetch = (config) => new FetchProvider();
-  } else {
-    const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
-    const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
-
-    providers.cheerio = (config) => new CheerioProvider();
-    providers.playwright = (config) => new PlaywrightProvider();
-  }
-
-  const config: ScrapingConfig = {
-    providers: {
-      [provider === 'auto' ? Object.keys(providers)[0] : provider]: {},
-    },
-    debug: false,
-  };
-
-  // Create a pool of workers
-  const workers: Promise<MultiScrapeResult>[] = [];
-  let urlIndex = 0;
-
-  const createWorker = async (url: string, index: number): Promise<MultiScrapeResult> => {
-    const startTime = Date.now();
-    const manager = createScrapingManager(config, providers);
-
-    try {
-      await manager.initialize();
-
-      if (onProgress) {
-        onProgress(url, index + 1, urls.length);
-      }
-
-      const result = await manager.scrape(url, {
-        extract: selectors,
-        timeout,
-      });
-
-      const duration = Date.now() - startTime;
-
-      return {
-        url,
-        data: result.data,
-        duration,
-        index,
-      };
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      const scrapeError = error instanceof Error ? error : new Error(String(error));
-
-      if (onError) {
-        onError(url, scrapeError, index + 1, urls.length);
-      }
-
-      return {
-        url,
-        duration,
-        error: scrapeError.message,
-        index,
-      };
-    } finally {
-      await manager.dispose();
-    }
-  };
-
-  // Start initial workers
-  while (workers.length < concurrent && urlIndex < urls.length) {
-    workers.push(createWorker(urls[urlIndex], urlIndex));
-    urlIndex++;
-  }
-
-  // Process results as they complete
-  while (workers.length > 0) {
-    const result = await Promise.race(workers);
-
-    // Remove completed worker
-    const completedIndex = workers.findIndex(async (worker) => {
-      const workerResult = await worker;
-      return workerResult.url === result.url;
-    });
-
-    if (completedIndex !== -1) {
-      workers.splice(completedIndex, 1);
-    }
-
-    // Start new worker if more URLs available
-    if (urlIndex < urls.length) {
-      workers.push(createWorker(urls[urlIndex], urlIndex));
-      urlIndex++;
-    }
-
-    yield result;
-  }
-}
-
-/**
  * Scrape URLs from a list with smart batching
  * Automatically adjusts batch size based on performance
  */
@@ -270,9 +150,9 @@ export async function scrapeMultipleSmart(
   urls: string[],
   selectors: SelectorMap,
   options: Omit<MultiScrapeOptions, 'concurrent'> & {
-    targetDuration?: number; // Target duration per batch in ms
-    minConcurrent?: number;
     maxConcurrent?: number;
+    minConcurrent?: number;
+    targetDuration?: number; // Target duration per batch in ms
   } = {},
 ): Promise<MultiScrapeResult[]> {
   const {
@@ -313,4 +193,124 @@ export async function scrapeMultipleSmart(
   }
 
   return results;
+}
+
+/**
+ * Scrape multiple URLs with streaming results
+ * Yields results as they complete for better memory usage
+ */
+export async function* scrapeMultipleStream(
+  urls: string[],
+  selectors: SelectorMap,
+  options: MultiScrapeOptions = {},
+): AsyncGenerator<MultiScrapeResult, void, unknown> {
+  const {
+    concurrent = 3,
+    onError,
+    onProgress,
+    provider = 'auto',
+    retries: _retries = 3,
+    timeout = 30000,
+  } = options;
+
+  if (urls.length === 0) {
+    return;
+  }
+
+  // Set up providers (same logic as scrapeMultiple)
+  const providers: ProviderRegistry = {};
+
+  if (typeof window !== 'undefined') {
+    const { FetchProvider } = await import('../../client/providers/fetch-provider');
+    providers.fetch = (_config: any) => new FetchProvider();
+  } else {
+    const { CheerioProvider } = await import('../../server/providers/cheerio-provider');
+    const { PlaywrightProvider } = await import('../../server/providers/playwright-provider');
+
+    providers.cheerio = (_config: any) => new CheerioProvider();
+    providers.playwright = (_config: any) => new PlaywrightProvider();
+  }
+
+  const config: ScrapingConfig = {
+    debug: false,
+    providers: {
+      [provider === 'auto' ? Object.keys(providers)[0] : provider]: {},
+    },
+  };
+
+  // Create a pool of workers
+  const workers: Promise<MultiScrapeResult>[] = [];
+  let urlIndex = 0;
+
+  const createWorker = async (url: string, index: number): Promise<MultiScrapeResult> => {
+    const startTime = Date.now();
+    const manager = createScrapingManager(config, providers);
+
+    try {
+      await manager.initialize();
+
+      if (onProgress) {
+        onProgress(url, index + 1, urls.length);
+      }
+
+      const result = await manager.scrape(url, {
+        extract: selectors,
+        timeout,
+      });
+
+      const duration = Date.now() - startTime;
+
+      return {
+        data: result?.data,
+        duration,
+        index,
+        url,
+      };
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      const scrapeError = error instanceof Error ? error : new Error(String(error));
+
+      if (onError) {
+        onError(url, scrapeError, index + 1, urls.length);
+      }
+
+      return {
+        duration,
+        error: scrapeError.message,
+        index,
+        url,
+      };
+    } finally {
+      await manager.dispose();
+    }
+  };
+
+  // Start initial workers
+  while (workers.length < concurrent && urlIndex < urls.length) {
+    workers.push(createWorker(urls[urlIndex], urlIndex));
+    urlIndex++;
+  }
+
+  // Process results as they complete
+  while (workers.length > 0) {
+    const result = await Promise.race(workers);
+
+    // Remove completed worker
+    const completedIndex = workers.findIndex(async (worker: any) => {
+      const workerResult = await worker;
+      return workerResult.url === result.url;
+    });
+
+    if (completedIndex !== -1) {
+      void workers.splice(completedIndex, 1);
+    }
+
+    // Start new worker if more URLs available
+    if (urlIndex < urls.length) {
+      workers.push(createWorker(urls[urlIndex], urlIndex));
+      urlIndex++;
+    }
+
+    yield result;
+  }
 }

@@ -4,13 +4,13 @@ import AddToCardButton from '../../../mantine-ciseco/components/AddToCardButton'
 import { notify } from '@repo/notifications/mantine-notifications';
 
 // Mock next/image
-vi.mock('next/image', () => ({
+vi.mock('next/image', (_: any) => ({
   default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
 }));
 
 // Notifications are already mocked in vitest.setup.ts
 
-describe('AddToCardButton', () => {
+describe('AddToCardButton', (_: any) => {
   const defaultProps = {
     title: 'Test Product',
     imageUrl: '/test-product.jpg',
@@ -24,7 +24,7 @@ describe('AddToCardButton', () => {
     vi.clearAllMocks();
   });
 
-  it('renders as a button by default', () => {
+  it('renders as a button by default', (_: any) => {
     render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
 
     const button = screen.getByTestId('add-to-cart-button');
@@ -32,7 +32,7 @@ describe('AddToCardButton', () => {
     expect(button).toHaveTextContent('Add to Cart');
   });
 
-  it('renders with custom component when as prop is provided', () => {
+  it('renders with custom component when as prop is provided', (_: any) => {
     render(
       <AddToCardButton {...defaultProps} as="div">
         Add to Cart
@@ -43,7 +43,7 @@ describe('AddToCardButton', () => {
     expect(element.tagName).toBe('DIV');
   });
 
-  it('applies custom className', () => {
+  it('applies custom className', (_: any) => {
     render(
       <AddToCardButton {...defaultProps} className="custom-class">
         Add to Cart
@@ -54,7 +54,7 @@ describe('AddToCardButton', () => {
     expect(button).toHaveClass('custom-class');
   });
 
-  it('shows notification when clicked', () => {
+  it('shows notification when clicked', (_: any) => {
     render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
 
     const button = screen.getByTestId('add-to-cart-button');
@@ -77,7 +77,7 @@ describe('AddToCardButton', () => {
     });
   });
 
-  it('passes through additional props', () => {
+  it('passes through additional props', (_: any) => {
     render(
       <AddToCardButton {...defaultProps} data-testid="add-to-cart" disabled>
         Add to Cart
@@ -88,7 +88,7 @@ describe('AddToCardButton', () => {
     expect(button).toBeDisabled();
   });
 
-  it('handles click event', () => {
+  it('handles click event', (_: any) => {
     render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
 
     const button = screen.getByTestId('add-to-cart-button');
@@ -98,8 +98,8 @@ describe('AddToCardButton', () => {
     expect(notify.custom).toHaveBeenCalled();
   });
 
-  describe('NotifyAddToCart component', () => {
-    it('displays product information in notification', () => {
+  describe('NotifyAddToCart component', (_: any) => {
+    it('displays product information in notification', (_: any) => {
       render(<AddToCardButton {...defaultProps}>Add to Cart</AddToCardButton>);
 
       const button = screen.getByTestId('add-to-cart-button');
@@ -116,7 +116,7 @@ describe('AddToCardButton', () => {
     });
   });
 
-  it('works without optional props', () => {
+  it('works without optional props', (_: any) => {
     const minimalProps = {
       title: 'Test Product',
       imageUrl: '/test-product.jpg',

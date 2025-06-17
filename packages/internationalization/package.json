@@ -3,12 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./extend": "./extend.ts",
-    "./middleware": "./middleware.ts",
     "./client": "./client.ts",
-    "./link": "./link.tsx",
-    "./types": "./index.ts"
+    "./server": "./server.ts",
+    "./client/next": "./client-next.ts",
+    "./server/next": "./server-next.ts"
   },
   "scripts": {
     "translate": "npx -y languine@latest translate",

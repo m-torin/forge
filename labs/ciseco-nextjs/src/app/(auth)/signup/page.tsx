@@ -1,7 +1,8 @@
-import { ButtonPrimary, Input } from '@repo/design-system/ciseco'
-import facebookSvg from '@repo/design-system/ciseco/images/socials/facebook-2.svg'
-import googleSvg from '@repo/design-system/ciseco/images/socials/google.svg'
-import twitterSvg from '@repo/design-system/ciseco/images/socials/twitter.svg'
+import facebookSvg from '@/images/socials/facebook-2.svg'
+import googleSvg from '@/images/socials/google.svg'
+import twitterSvg from '@/images/socials/twitter.svg'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import Input from '@/shared/Input/Input'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
 const PageSignUp = () => {
   return (
     <div className="container mb-24 lg:mb-32">
-      <h1 className="my-20 flex items-center justify-center text-3xl font-semibold leading-[115%] text-neutral-900 md:text-5xl md:leading-[115%] dark:text-neutral-100">
+      <h1 className="my-20 flex items-center justify-center text-3xl leading-[115%] font-semibold text-neutral-900 md:text-5xl md:leading-[115%] dark:text-neutral-100">
         Sign up
       </h1>
       <div className="mx-auto max-w-md space-y-6">
@@ -41,7 +42,7 @@ const PageSignUp = () => {
             <a
               key={index}
               href={item.href}
-              className="bg-primary-50 flex w-full rounded-lg px-4 py-3 transition-transform hover:translate-y-[-2px] sm:px-6 dark:bg-neutral-800"
+              className="flex w-full transform rounded-lg bg-primary-50 px-4 py-3 transition-transform hover:translate-y-[-2px] sm:px-6 dark:bg-neutral-800"
             >
               <Image sizes="40px" className="size-5 shrink-0 object-cover" src={item.icon} alt={item.name} />
               <h3 className="grow text-center text-sm font-medium text-neutral-700 sm:text-sm dark:text-neutral-300">
@@ -55,7 +56,7 @@ const PageSignUp = () => {
           <span className="relative z-10 inline-block bg-white px-4 text-sm font-medium dark:bg-neutral-900 dark:text-neutral-400">
             OR
           </span>
-          <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border border-neutral-100 dark:border-neutral-800"></div>
+          <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 transform border border-neutral-100 dark:border-neutral-800"></div>
         </div>
         {/* FORM */}
         <form className="grid grid-cols-1 gap-6" action="#" method="post">

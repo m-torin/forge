@@ -6,7 +6,7 @@
  * Make sure backstage app is running first!
  */
 
-import { PrismaClient } from '../generated/client';
+import { PrismaClient } from '../../prisma-generated/client';
 
 const prisma = new PrismaClient();
 
@@ -19,26 +19,30 @@ interface UserToCreate {
 
 const users: UserToCreate[] = [
   {
-    name: 'Admin User',
     email: 'admin@example.com',
+    name: 'Admin User',
     password: 'admin123',
     role: 'super-admin',
   },
   {
-    name: 'Test User',
     email: 'user@example.com',
+    name: 'Test User',
     password: 'user1234',
     role: 'user',
   },
 ];
 
 async function createUsersThroughAuth() {
+  // eslint-disable-next-line no-console
   console.log('📝 Creating users through Better Auth...');
+  // eslint-disable-next-line no-console
   console.log('Make sure backstage is running on http://localhost:3350');
+  // eslint-disable-next-line no-console
   console.log('');
 
   for (const userData of users) {
     try {
+      // eslint-disable-next-line no-console
       console.log(`Creating ${userData.email}...`);
 
       // First, check if user already exists
@@ -47,6 +51,7 @@ async function createUsersThroughAuth() {
       });
 
       if (existingUser) {
+        // eslint-disable-next-line no-console
         console.log(`  ℹ️  User already exists`);
 
         // Update role if needed
@@ -55,6 +60,7 @@ async function createUsersThroughAuth() {
             data: { role: userData.role },
             where: { email: userData.email },
           });
+          // eslint-disable-next-line no-console
           console.log(`  ✅ Updated role to ${userData.role}`);
         }
         continue;
@@ -63,8 +69,8 @@ async function createUsersThroughAuth() {
       // Create user through Better Auth sign-up
       const response = await fetch('http://localhost:3350/api/auth/sign-up/email', {
         body: JSON.stringify({
-          name: userData.name,
           email: userData.email,
+          name: userData.name,
           password: userData.password,
         }),
         headers: {
@@ -76,10 +82,12 @@ async function createUsersThroughAuth() {
       const result = await response.json();
 
       if (!response.ok) {
+        // eslint-disable-next-line no-console
         console.error(`  ❌ Failed to create user:`, result);
         continue;
       }
 
+      // eslint-disable-next-line no-console
       console.log(`  ✅ User created successfully`);
 
       // Update the user role
@@ -87,6 +95,7 @@ async function createUsersThroughAuth() {
         data: { role: userData.role },
         where: { email: userData.email },
       });
+      // eslint-disable-next-line no-console
       console.log(`  ✅ Updated role to ${userData.role}`);
 
       // Add to default organization
@@ -109,33 +118,42 @@ async function createUsersThroughAuth() {
         if (!existingMember) {
           await prisma.member.create({
             data: {
-              id: crypto.randomUUID(),
               createdAt: new Date(),
+              id: crypto.randomUUID(),
               organizationId: defaultOrg.id,
               role: 'owner',
               userId: user.id,
             },
           });
+          // eslint-disable-next-line no-console
           console.log(`  ✅ Added to default organization`);
         }
       }
-    } catch (error) {
-      console.error(`  ❌ Error creating ${userData.email}:`, error);
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.error(`  ❌ Error creating ${userData.email}: `, error);
     }
   }
 
+  // eslint-disable-next-line no-console
   console.log('');
+  // eslint-disable-next-line no-console
   console.log('✅ User creation completed!');
+  // eslint-disable-next-line no-console
   console.log('');
+  // eslint-disable-next-line no-console
   console.log('You can now sign in with:');
+  // eslint-disable-next-line no-console
   console.log('  Admin: admin@example.com / admin123');
-  console.log('  User: user@example.com / user123');
+  // eslint-disable-next-line no-console
+  console.log('  User: user@example.com / user1234');
 }
 
 void (async () => {
   try {
     await createUsersThroughAuth();
-  } catch (error) {
+  } catch (error: any) {
+    // eslint-disable-next-line no-console
     console.error(error);
   } finally {
     await prisma.$disconnect();

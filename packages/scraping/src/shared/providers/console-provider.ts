@@ -2,7 +2,7 @@
  * Console provider - Debug/development provider that logs scraping actions
  */
 
-import type {
+import {
   ExtractedData,
   ProviderConfig,
   ScrapeOptions,
@@ -15,29 +15,13 @@ export class ConsoleProvider implements ScrapingProvider {
   readonly name = 'console';
   readonly type = 'custom' as const;
 
-  async initialize(config: ProviderConfig): Promise<void> {
-    console.log(`[ConsoleProvider] Initialized with config:`, config);
-  }
-
-  async scrape(url: string, options: ScrapeOptions = {}): Promise<ScrapeResult> {
-    console.log(`[ConsoleProvider] Scraping: ${url}`, options);
-
-    // Simulate scraping delay
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    return {
-      provider: this.name,
-      url,
-      html: `<html><head><title>Console Provider - ${url}</title></head><body><h1>Scraped via Console Provider</h1><p>URL: ${url}</p></body></html>`,
-      metadata: {
-        statusCode: 200,
-        timing: { duration: 100, end: Date.now(), start: Date.now() },
-        title: `Console Provider - ${url}`,
-      },
-    };
+  async dispose(): Promise<void> {
+    // eslint-disable-next-line no-console
+    console.log(`[ConsoleProvider] Disposed`);
   }
 
   async extract(html: string, selectors: SelectorMap): Promise<ExtractedData> {
+    // eslint-disable-next-line no-console
     console.log(`[ConsoleProvider] Extracting from HTML (${html.length} chars):`, selectors);
 
     const data: ExtractedData = {};
@@ -59,11 +43,32 @@ export class ConsoleProvider implements ScrapingProvider {
   }
 
   async healthCheck(): Promise<boolean> {
+    // eslint-disable-next-line no-console
     console.log(`[ConsoleProvider] Health check: OK`);
     return true;
   }
 
-  async dispose(): Promise<void> {
-    console.log(`[ConsoleProvider] Disposed`);
+  async initialize(config: ProviderConfig): Promise<void> {
+    // eslint-disable-next-line no-console
+    console.log(`[ConsoleProvider] Initialized with config: `, config);
+  }
+
+  async scrape(url: string, options: ScrapeOptions = {}): Promise<ScrapeResult> {
+    // eslint-disable-next-line no-console
+    console.log(`[ConsoleProvider] Scraping: ${url}`, options);
+
+    // Simulate scraping delay
+    await new Promise((resolve: any) => setTimeout(resolve, 100));
+
+    return {
+      html: `<html><head><title>Console Provider - ${url}</title></head><body><h1>Scraped via Console Provider</h1><p>URL: ${url}</p></body></html>`,
+      metadata: {
+        statusCode: 200,
+        timing: { duration: 100, end: Date.now(), start: Date.now() },
+        title: `Console Provider - ${url}`,
+      },
+      provider: this.name,
+      url,
+    };
   }
 }

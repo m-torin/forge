@@ -2,7 +2,7 @@
  * Test fixtures and utilities for orchestration package tests
  */
 
-import type {
+import {
   RateLimitConfig,
   UpstashQStashConfig,
   UpstashWorkflowConfig,
@@ -154,7 +154,7 @@ export function createTestTimeout(ms = 5000): {
   promise: Promise<never>;
 } {
   let timeoutId: NodeJS.Timeout;
-  const promise = new Promise<never>((_, reject) => {
+  const promise = new Promise<never>((_, reject: any) => {
     timeoutId = setTimeout(() => reject(new Error(`Test timeout after ${ms}ms`)), ms);
   });
 
@@ -168,5 +168,5 @@ export function createTestTimeout(ms = 5000): {
  * Wait for async operations in tests
  */
 export async function waitFor(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve: any) => setTimeout(resolve, ms));
 }

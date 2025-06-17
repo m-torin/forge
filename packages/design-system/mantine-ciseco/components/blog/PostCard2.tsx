@@ -9,12 +9,12 @@ import NcImage from '../shared/NcImage/NcImage';
 
 import PostCardMeta from './PostCardMeta';
 
-interface Props {
+interface Props extends Record<string, any> {
   className?: string;
   post: TBlogPost;
 }
 
-const PostCard2: FC<Props> = ({ className, post }) => {
+const PostCard2: FC<Props> = ({ className, post }: any) => {
   const localizeHref = useLocalizeHref();
   const {
     author,
@@ -31,8 +31,8 @@ const PostCard2: FC<Props> = ({ className, post }) => {
       <div className="flex h-full flex-col py-2">
         <h2 className="block text-base font-semibold nc-card-title">
           <Link
-            href={localizeHref(`/blog/${handle}`)}
             className="line-clamp-2 capitalize"
+            href={localizeHref(`/blog/${handle}`)}
             title="title"
           >
             {title}
@@ -45,19 +45,19 @@ const PostCard2: FC<Props> = ({ className, post }) => {
           {date} · {timeToRead}
         </span>
         <div className="mt-auto hidden sm:block">
-          <PostCardMeta author={author} date={date || ''} />
+          <PostCardMeta author={author} date={date ?? ''} />
         </div>
       </div>
 
       <Link
-        href={localizeHref(`/blog/${handle}`)}
         className="relative block h-full w-2/5 shrink-0 sm:w-1/3"
+        href={localizeHref(`/blog/${handle}`)}
       >
         {image?.src && (
           <NcImage
-            containerClassName="absolute inset-0"
-            className="h-full w-full rounded-xl object-cover sm:rounded-3xl"
             alt={title}
+            className="h-full w-full rounded-xl object-cover sm:rounded-3xl"
+            containerClassName="absolute inset-0"
             fill
             sizes="400px"
             src={image}

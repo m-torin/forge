@@ -11,18 +11,18 @@ import ProductCard from './ProductCard';
 import ButtonPrimary from './shared/Button/ButtonPrimary';
 
 //
-export interface SectionGridFeatureItemsProps {
+export interface SectionGridFeatureItemsProps extends Record<string, any> {
   data: TProductItem[];
 }
 
-const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }) => {
+const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }: any) => {
   const localizeHref = useLocalizeHref();
 
   return (
     <div className="nc-SectionGridFeatureItems relative">
       <HeaderFilterSection heading="Find your favorite products." />
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data?.map((item) => (
+        {data.map((item: any) => (
           <ProductCard key={item.id} data={item} />
         ))}
       </div>

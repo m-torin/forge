@@ -5,8 +5,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 const _isDevelopment = process.env.NODE_ENV === 'development';
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasRequiredEnvVars = Boolean(
-  process.env.KNOCK_SECRET_API_KEY ||
-    process.env.NEXT_PUBLIC_KNOCK_API_KEY ||
+  process.env.KNOCK_SECRET_API_KEY ??
+    process.env.NEXT_PUBLIC_KNOCK_API_KEY ??
     process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID,
 );
 

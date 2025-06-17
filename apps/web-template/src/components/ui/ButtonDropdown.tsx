@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@mantine/core';
 import { IconChevronDown } from '@tabler/icons-react';
 import { type FC, type ReactNode } from 'react';
@@ -11,14 +13,14 @@ export interface ButtonDropdownProps {
   disabled?: boolean;
 }
 
-const ButtonDropdown: FC<ButtonDropdownProps> = ({ 
-  children, 
+const ButtonDropdown: FC<ButtonDropdownProps> = ({
+  children,
   className = '',
   onClick,
   size = 'sm',
   variant = 'outline',
   disabled = false,
-  ...args 
+  ...args
 }) => {
   return (
     <Button

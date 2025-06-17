@@ -1,3 +1,5 @@
+'use client';
+
 import { ActionIcon } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
 import React from 'react';
@@ -7,13 +9,15 @@ export interface ButtonCloseProps {
   iconSize?: number;
   onClick?: () => void;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  'data-testid'?: string;
 }
 
-const ButtonClose: React.FC<ButtonCloseProps> = ({ 
-  className = '', 
-  iconSize = 16, 
-  onClick = () => {},
-  size = 'sm'
+const ButtonClose: React.FC<ButtonCloseProps> = ({
+  className = '',
+  iconSize = 16,
+  onClick,
+  size = 'sm',
+  'data-testid': testId = 'button-close',
 }) => {
   return (
     <ActionIcon
@@ -22,6 +26,7 @@ const ButtonClose: React.FC<ButtonCloseProps> = ({
       color="gray"
       size={size}
       className={className}
+      data-testid={testId}
       aria-label="Close"
     >
       <IconX size={iconSize} />

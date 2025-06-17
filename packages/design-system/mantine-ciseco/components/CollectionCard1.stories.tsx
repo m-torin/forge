@@ -1,6 +1,6 @@
-import CollectionCard1 from './CollectionCard1';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import CollectionCard1 from './CollectionCard1';
 
 const meta: Meta<typeof CollectionCard1> = {
   argTypes: {
@@ -35,17 +35,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockCollection = {
-  id: 'gid://1',
   color: 'bg-indigo-50',
   count: 77,
   description:
     'Stylish jackets for every occasion, from casual to formal. Explore our collection of trendy jackets that elevate your outfit.',
   handle: 'jackets',
+  id: 'gid://1',
   image: {
-    width: 400,
     alt: 'Jackets collection',
     height: 400,
     src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=400&fit=crop',
+    width: 400,
   },
   sortDescription: 'Newest arrivals',
   title: 'Jackets',
@@ -110,7 +110,7 @@ export const NoHandle: Story = {
   args: {
     collection: {
       ...mockCollection,
-      handle: undefined,
+      handle: '',
     },
     size: 'normal',
   },
@@ -121,15 +121,15 @@ export const DifferentCollections: Story = {
     <div className="space-y-4 w-full max-w-md">
       <CollectionCard1
         collection={{
-          id: 'gid://1',
           count: 155,
           description: 'Casual t-shirts for everyday wear',
           handle: 't-shirts',
+          id: 'gid://1',
           image: {
-            width: 400,
             alt: 'T-Shirts collection',
             height: 400,
             src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+            width: 400,
           },
           title: 'T-Shirts',
         }}
@@ -137,15 +137,15 @@ export const DifferentCollections: Story = {
       />
       <CollectionCard1
         collection={{
-          id: 'gid://2',
           count: 35,
           description: 'Trendy jeans for a casual yet stylish look',
           handle: 'jeans',
+          id: 'gid://2',
           image: {
-            width: 400,
             alt: 'Jeans collection',
             height: 400,
             src: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop',
+            width: 400,
           },
           title: 'Jeans',
         }}
@@ -153,15 +153,15 @@ export const DifferentCollections: Story = {
       />
       <CollectionCard1
         collection={{
-          id: 'gid://3',
           count: 114,
           description: 'Trendy shoes for every occasion',
           handle: 'shoes',
+          id: 'gid://3',
           image: {
-            width: 400,
             alt: 'Shoes collection',
             height: 400,
             src: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop',
+            width: 400,
           },
           title: 'Shoes',
         }}

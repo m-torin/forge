@@ -11,10 +11,10 @@ import {
   createStepWithValidation,
   createWorkflowStep,
   StepTemplates,
-  withStepBulkhead,
   withStepMonitoring,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ReviewAggregationInput = z.object({
@@ -193,12 +193,12 @@ async function analyzeSentiment(review: any, config: any): Promise<any> {
   sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
 
   // Aspect-based sentiment
-  const aspects = {};
+  const aspects: Record<string, any> = {};
   if (config.aspects.includes('quality')) {
-    aspects['quality' as any] = analyzeAspect(text, ['quality', 'build', 'material', 'durable']);
+    aspects['quality'] = analyzeAspect(text, ['quality', 'build', 'material', 'durable']);
   }
   if (config.aspects.includes('value')) {
-    aspects['value' as any] = analyzeAspect(text, [
+    aspects['value'] = analyzeAspect(text, [
       'price',
       'value',
       'worth',
@@ -208,12 +208,7 @@ async function analyzeSentiment(review: any, config: any): Promise<any> {
     ]);
   }
   if (config.aspects.includes('shipping')) {
-    aspects['shipping' as any] = analyzeAspect(text, [
-      'shipping',
-      'delivery',
-      'arrived',
-      'package',
-    ]);
+    aspects['shipping'] = analyzeAspect(text, ['shipping', 'delivery', 'arrived', 'package']);
   }
 
   // Emotions
@@ -300,7 +295,7 @@ function extractKeywords(text: string): any[] {
     );
 
   return Object.entries(words)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 10)
     .map(([word, frequency]) => ({
       frequency,
@@ -345,12 +340,8 @@ export const collectReviewsStep = compose(
       input.scope.categories?.length > 0,
     (output) => output.collectedReviews.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['sourceCount'],
-    }),
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock review collection
@@ -586,10 +577,10 @@ export const analyzeSentimentStep = compose(
       sentimentResults,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 10,
-      maxQueued: 50,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 
@@ -597,63 +588,63 @@ function calculateAggregateSentiment(sentimentResults: any[]): any {
   const totalReviews = sentimentResults.length;
 
   // Overall sentiment distribution
-  const sentimentCounts = { negative: 0, neutral: 0, positive: 0 };
+  const sentimentCounts: Record<string, number> = { negative: 0, neutral: 0, positive: 0 };
   let totalScore = 0;
 
   sentimentResults.forEach((result) => {
-    sentimentCounts[result.overall.sentiment as any]++;
+    sentimentCounts[result.overall.sentiment]++;
     totalScore += result.overall.score;
   });
 
   // Aspect aggregation
-  const aspectAggregates = {};
-  const aspectCounts = {};
+  const aspectAggregates: Record<string, any> = {};
+  const aspectCounts: Record<string, number> = {};
 
   sentimentResults.forEach((result) => {
     Object.entries(result.aspects || {}).forEach(([aspect, data]: [string, any]) => {
       if (!data) return;
 
-      if (!aspectAggregates[aspect as any]) {
-        aspectAggregates[aspect as any] = { negative: 0, neutral: 0, positive: 0, totalScore: 0 };
-        aspectCounts[aspect as any] = 0;
+      if (!aspectAggregates[aspect]) {
+        aspectAggregates[aspect] = { negative: 0, neutral: 0, positive: 0, totalScore: 0 };
+        aspectCounts[aspect] = 0;
       }
 
-      aspectAggregates[aspect as any][data.sentiment]++;
-      aspectAggregates[aspect as any].totalScore += data.score;
-      aspectCounts[aspect as any]++;
+      aspectAggregates[aspect][data.sentiment]++;
+      aspectAggregates[aspect].totalScore += data.score;
+      aspectCounts[aspect]++;
     });
   });
 
   // Calculate aspect averages
-  const aspectSummary = {};
+  const aspectSummary: Record<string, any> = {};
   Object.entries(aspectAggregates).forEach(([aspect, data]: [string, any]) => {
-    aspectSummary[aspect as any] = {
-      averageScore: data.totalScore / aspectCounts[aspect as any],
+    aspectSummary[aspect] = {
+      averageScore: data.totalScore / aspectCounts[aspect],
       distribution: {
-        negative: data.negative / aspectCounts[aspect as any],
-        neutral: data.neutral / aspectCounts[aspect as any],
-        positive: data.positive / aspectCounts[aspect as any],
+        negative: data.negative / aspectCounts[aspect],
+        neutral: data.neutral / aspectCounts[aspect],
+        positive: data.positive / aspectCounts[aspect],
       },
-      mentionCount: aspectCounts[aspect as any],
+      mentionCount: aspectCounts[aspect],
     };
   });
 
   // Emotion aggregation
-  const emotionAverages = {};
+  const emotionAverages: Record<string, number> = {};
   let emotionCount = 0;
 
   sentimentResults.forEach((result) => {
     if (result.emotions) {
       emotionCount++;
       Object.entries(result.emotions).forEach(([emotion, value]) => {
-        emotionAverages[emotion as any as any] = (emotionAverages[emotion] || 0) + value;
+        emotionAverages[emotion] = (emotionAverages[emotion] || 0) + (value as number);
       });
     }
   });
 
   if (emotionCount > 0) {
     Object.keys(emotionAverages).forEach((emotion) => {
-      emotionAverages[emotion as any] /= emotionCount;
+      emotionAverages[emotion] /= emotionCount;
     });
   }
 
@@ -668,7 +659,9 @@ function calculateAggregateSentiment(sentimentResults: any[]): any {
         neutral: sentimentCounts.neutral / totalReviews,
         positive: sentimentCounts.positive / totalReviews,
       },
-      dominantSentiment: Object.entries(sentimentCounts).sort((a, b) => b[1] - a[1])[0][0],
+      dominantSentiment: Object.entries(sentimentCounts).sort(
+        (a: any, b: any) => b[1] - a[1],
+      )[0][0],
     },
   };
 }
@@ -741,12 +734,12 @@ export const extractTopicsThemesStep = createStep('extract-topics', async (data:
   const topTopics = Array.from(allTopics.values())
     .map((topic) => ({
       ...topic,
-      dominantSentiment: (Object as any)
-        .entries((topic as any).sentimentCounts)
-        .sort((a, b) => b[1] - a[1])[0][0],
+      dominantSentiment: Object.entries((topic as any).sentimentCounts).sort(
+        (a: any, b: any) => b[1] - a[1],
+      )[0][0],
       products: Array.from(topic.products),
     }))
-    .sort((a, b) => b.mentions - a.mentions)
+    .sort((a: any, b: any) => b.mentions - a.mentions)
     .slice(0, 20);
 
   const topThemes = Array.from(themePatterns.values())
@@ -759,7 +752,7 @@ export const extractTopicsThemesStep = createStep('extract-topics', async (data:
         positive: theme.sentiment.positive / theme.frequency,
       },
     }))
-    .sort((a, b) => b.frequency - a.frequency)
+    .sort((a: any, b: any) => b.frequency - a.frequency)
     .slice(0, 15);
 
   return {
@@ -803,7 +796,7 @@ export const generateSummariesInsightsStep = createStep('generate-summaries', as
   const { validatedReviews, aggregateSentiment, analysisConfig, sentimentResults, topicAnalysis } =
     data;
 
-  const summaries = {};
+  const summaries: Record<string, any> = {};
   const insights = [];
 
   if (analysisConfig.generateSummaries) {
@@ -822,7 +815,7 @@ export const generateSummariesInsightsStep = createStep('generate-summaries', as
     // Generate product summaries
     for (const [productId, productReviews] of reviewsByProduct) {
       if (productReviews.length >= data.aggregationConfig.minimumReviews) {
-        summaries[productId as any] = generateProductSummary(productId, productReviews);
+        summaries[productId] = generateProductSummary(productId, productReviews);
       }
     }
   }
@@ -846,9 +839,9 @@ function generateProductSummary(productId: string, reviews: any[]): any {
   const avgRating = ratings.reduce((sum, r) => sum + r, 0) / totalReviews;
 
   // Sentiment breakdown
-  const sentiments = { negative: 0, neutral: 0, positive: 0 };
+  const sentiments: Record<string, number> = { negative: 0, neutral: 0, positive: 0 };
   reviews.forEach((r) => {
-    sentiments[r.sentiment.overall.sentiment as any]++;
+    sentiments[r.sentiment.overall.sentiment]++;
   });
 
   // Common positive and negative points
@@ -872,14 +865,14 @@ function generateProductSummary(productId: string, reviews: any[]): any {
   const negativeCounts = countFrequencies(negativePoints);
 
   return {
-    averageRating,
+    avgRating,
     highlights: {
       negative: Object.entries(negativeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort((a: any, b: any) => b[1] - a[1])
         .slice(0, 5)
         .map(([point, count]) => ({ frequency: count, point })),
       positive: Object.entries(positiveCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort((a: any, b: any) => b[1] - a[1])
         .slice(0, 5)
         .map(([point, count]) => ({ frequency: count, point })),
     },
@@ -956,7 +949,7 @@ function extractKeyInsights(data: any): any[] {
 
   // Quality insights
   const lowQualityProducts = Object.entries(data.productSummaries)
-    .filter(([_, summary]: [string, any]) => summary.averageRating < 3)
+    .filter(([_, summary]: [string, any]) => (summary as any).avgRating < 3)
     .map(([productId]) => productId);
 
   if (lowQualityProducts.length > 0) {
@@ -1043,7 +1036,7 @@ function generateTimeSeriesData(reviews: any[], sentiments: any[]): any {
     const weekData = weeklyData.get(weekKey);
     weekData.reviews++;
     weekData.ratings.push(review.rating);
-    weekData.sentiment[sentiments[index].overall.sentiment]++;
+    (weekData.sentiment as any)[sentiments[index].overall.sentiment]++;
   });
 
   // Calculate averages
@@ -1057,7 +1050,7 @@ function generateTimeSeriesData(reviews: any[], sentiments: any[]): any {
     },
   }));
 
-  return timeSeries.sort((a, b) => a.week.localeCompare(b.week));
+  return timeSeries.sort((a: any, b: any) => a.week.localeCompare(b.week));
 }
 
 function getWeekStart(date: Date): Date {
@@ -1073,7 +1066,7 @@ function analyzeSeasonalPatterns(timeSeriesData: any[]): any {
     hasSeasonality: true,
     patterns: [
       {
-        averageRatingLift: 0.3,
+        avgRatingLift: 0.3,
         description: 'Holiday shopping season',
         impact: 'Increased review volume and higher ratings',
         period: 'Q4',
@@ -1178,7 +1171,7 @@ function analyzeMerchantPatterns(reviews: any[], sentiments: any[]): any {
 
   // Calculate merchant metrics
   const merchantAnalysis = Array.from(merchantStats.values()).map((stats) => ({
-    averageRating: stats.ratings.reduce((sum: any, r: any) => sum + r, 0) / stats.ratings.length,
+    avgRating: stats.ratings.reduce((sum: any, r: any) => sum + r, 0) / stats.ratings.length,
     merchantId: stats.merchantId,
     reviewCount: stats.reviews,
     sentimentScore: (stats.sentiments.positive - stats.sentiments.negative) / stats.reviews,
@@ -1186,10 +1179,12 @@ function analyzeMerchantPatterns(reviews: any[], sentiments: any[]): any {
 
   return {
     bottomPerformers: merchantAnalysis
-      .sort((a, b) => a.averageRating - b.averageRating)
+      .sort((a: any, b: any) => a.avgRating - b.avgRating)
       .slice(0, 5),
-    mostReviewed: merchantAnalysis.sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 5),
-    topPerformers: merchantAnalysis.sort((a, b) => b.averageRating - a.averageRating).slice(0, 5),
+    mostReviewed: merchantAnalysis
+      .sort((a: any, b: any) => b.reviewCount - a.reviewCount)
+      .slice(0, 5),
+    topPerformers: merchantAnalysis.sort((a: any, b: any) => b.avgRating - a.avgRating).slice(0, 5),
   };
 }
 
@@ -1245,11 +1240,11 @@ async function fetchCompetitorReviewData(): Promise<any> {
 }
 
 function compareAspects(ourAspects: any, competitorAspects: any): any {
-  const comparison = {};
+  const comparison: Record<string, any> = {};
 
   Object.keys(ourAspects).forEach((aspect) => {
     if (competitorAspects[aspect]) {
-      comparison[aspect as any] = {
+      comparison[aspect] = {
         advantage: ourAspects[aspect].averageScore - competitorAspects[aspect].averageScore,
         competitorScore: competitorAspects[aspect].averageScore,
         ourScore: ourAspects[aspect].averageScore,
@@ -1398,10 +1393,10 @@ export const generateAlertsStep = createStep('generate-alerts', async (data: any
 // Step 9: Store analysis results
 export const storeAnalysisResultsStep = compose(
   StepTemplates.database('store-results', 'Store review analysis results and insights'),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 5,
-      maxQueued: 20,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 
@@ -1452,13 +1447,13 @@ export const generateReviewReportStep = createStep('generate-report', async (dat
     },
     timestamp: new Date().toISOString(),
     topProducts: Object.entries(productSummaries)
-      .sort((a, b) => b[1].averageRating - a[1].averageRating)
+      .sort((a: any, b: any) => b[1].avgRating - a[1].avgRating)
       .slice(0, 10)
       .map(([productId, summary]) => ({
         productId,
-        rating: summary.averageRating,
-        reviews: summary.reviewCount,
-        sentiment: summary.sentimentDistribution,
+        rating: (summary as any).avgRating,
+        reviews: (summary as any).reviewCount,
+        sentiment: (summary as any).sentimentDistribution,
       })),
     trends: trendAnalysis || {},
   };

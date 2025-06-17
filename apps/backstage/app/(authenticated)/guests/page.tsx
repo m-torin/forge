@@ -1,22 +1,22 @@
 'use client';
 
-import { 
-  Container, 
-  Stack, 
-  SimpleGrid, 
-  Card, 
-  Text, 
-  Group, 
+import {
+  Container,
+  Stack,
+  SimpleGrid,
+  Card,
+  Text,
+  Group,
   ThemeIcon,
   Button,
   Badge,
   ActionIcon,
   Tooltip,
 } from '@mantine/core';
-import { 
-  IconUsers, 
-  IconBuilding, 
-  IconKey, 
+import {
+  IconUsers,
+  IconBuilding,
+  IconKey,
   IconChevronRight,
   IconPlus,
   IconSettings,
@@ -25,6 +25,13 @@ import {
 } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+import {
+  listUsers,
+  listAllOrganizations,
+  listApiKeys,
+  getApiKeyStatistics,
+} from '@repo/auth/server/next';
 
 import { PageHeader } from '../components/page-header';
 import { StatsCard } from '../components/stats-card';
@@ -66,19 +73,17 @@ export default function GuestsPage() {
   const loadDashboardStats = async () => {
     setLoading(true);
     try {
-      const [usersRes, companiesRes, apiKeysRes] = await Promise.all([
-        fetch('/api/admin/users'),
-        fetch('/api/admin/organizations'),
-        fetch('/api/admin/api-keys'),
+      const [usersRes, companiesRes, apiKeysRes, apiStatsRes] = await Promise.all([
+        listUsers(),
+        listAllOrganizations(),
+        listApiKeys(),
+        getApiKeyStatistics(),
       ]);
 
-      const usersData = usersRes.ok ? await usersRes.json() : { users: [] };
-      const companiesData = companiesRes.ok ? await companiesRes.json() : { organizations: [] };
-      const apiKeysData = apiKeysRes.ok ? await apiKeysRes.json() : { apiKeys: [] };
-
-      const users = usersData.users || [];
-      const companies = companiesData.organizations || [];
-      const apiKeys = apiKeysData.apiKeys || [];
+      const users = usersRes.success ? usersRes.data || [] : [];
+      const companies = companiesRes.success ? companiesRes.data || [] : [];
+      const apiKeys = apiKeysRes.success ? apiKeysRes.data || [] : [];
+      const apiStats = apiStatsRes.success ? apiStatsRes.data : null;
 
       setStats({
         users: {
@@ -89,17 +94,33 @@ export default function GuestsPage() {
         },
         companies: {
           total: companies.length,
-          totalMembers: companies.reduce((acc: number, org: any) => acc + (org._count?.members || 0), 0),
-          pendingInvitations: companies.reduce((acc: number, org: any) => acc + (org._count?.invitations || 0), 0),
-          averageMembers: companies.length > 0 
-            ? Math.round(companies.reduce((acc: number, org: any) => acc + (org._count?.members || 0), 0) / companies.length)
-            : 0,
+          totalMembers: companies.reduce(
+            (acc: number, org: any) => acc + (org._count?.members || 0),
+            0,
+          ),
+          pendingInvitations: companies.reduce(
+            (acc: number, org: any) => acc + (org._count?.invitations || 0),
+            0,
+          ),
+          averageMembers:
+            companies.length > 0
+              ? Math.round(
+                  companies.reduce((acc: number, org: any) => acc + (org._count?.members || 0), 0) /
+                    companies.length,
+                )
+              : 0,
         },
         apiKeys: {
           total: apiKeys.length,
-          active: apiKeys.filter((k: any) => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date())).length,
-          expired: apiKeys.filter((k: any) => k.expiresAt && new Date(k.expiresAt) < new Date()).length,
-          totalRequests: apiKeys.reduce((acc: number, key: any) => acc + (key.requestCount || 0), 0),
+          active: apiKeys.filter(
+            (k: any) => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date()),
+          ).length,
+          expired: apiKeys.filter((k: any) => k.expiresAt && new Date(k.expiresAt) < new Date())
+            .length,
+          totalRequests: apiKeys.reduce(
+            (acc: number, key: any) => acc + (key.requestCount || 0),
+            0,
+          ),
         },
       });
     } catch (error) {
@@ -138,8 +159,16 @@ export default function GuestsPage() {
         { label: 'Pending Invites', value: stats.companies.pendingInvitations.toString() },
       ],
       actions: [
-        { icon: IconPlus, label: 'Create Organization', onClick: () => router.push('/guests/organizations/new') },
-        { icon: IconUsers, label: 'Manage Members', onClick: () => router.push('/guests/organizations') },
+        {
+          icon: IconPlus,
+          label: 'Create Organization',
+          onClick: () => router.push('/guests/organizations/new'),
+        },
+        {
+          icon: IconUsers,
+          label: 'Manage Members',
+          onClick: () => router.push('/guests/organizations'),
+        },
       ],
     },
     {
@@ -154,7 +183,11 @@ export default function GuestsPage() {
         { label: 'Total Requests', value: stats.apiKeys.totalRequests.toLocaleString() },
       ],
       actions: [
-        { icon: IconPlus, label: 'Create API Key', onClick: () => router.push('/guests/api-keys/new') },
+        {
+          icon: IconPlus,
+          label: 'Create API Key',
+          onClick: () => router.push('/guests/api-keys/new'),
+        },
         { icon: IconActivity, label: 'View Usage', onClick: () => router.push('/guests/api-keys') },
       ],
     },
@@ -209,11 +242,7 @@ export default function GuestsPage() {
         {/* Overall Statistics */}
         <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
           {overallStats.map((stat) => (
-            <StatsCard
-              key={stat.title}
-              {...stat}
-              loading={loading}
-            />
+            <StatsCard key={stat.title} {...stat} loading={loading} />
           ))}
         </SimpleGrid>
 

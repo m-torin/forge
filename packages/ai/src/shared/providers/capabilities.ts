@@ -1,4 +1,4 @@
-import type { Capability } from '../types';
+import { Capability } from '../types';
 
 export const CORE_CAPABILITIES: Capability[] = ['complete', 'stream'];
 export const EXTENDED_CAPABILITIES: Capability[] = ['embed', 'generateObject', 'tools', 'vision'];
@@ -16,13 +16,6 @@ export const ALL_CAPABILITIES: Capability[] = [
   ...ANALYSIS_CAPABILITIES,
 ];
 
-export function hasRequiredCapabilities(
-  providerCapabilities: Set<Capability>,
-  requiredCapabilities: Capability[],
-): boolean {
-  return requiredCapabilities.every((cap) => providerCapabilities.has(cap));
-}
-
 export function getCapabilityDescription(capability: Capability): string {
   const descriptions: Record<Capability, string> = {
     analyze: 'General content analysis',
@@ -38,5 +31,12 @@ export function getCapabilityDescription(capability: Capability): string {
     vision: 'Image understanding and analysis',
   };
 
-  return descriptions[capability] || 'Unknown capability';
+  return descriptions[capability] ?? 'Unknown capability';
+}
+
+export function hasRequiredCapabilities(
+  providerCapabilities: Set<Capability>,
+  requiredCapabilities: Capability[],
+): boolean {
+  return requiredCapabilities.every((cap: any) => providerCapabilities.has(cap));
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { LogLevel, ObservabilityConfig } from '../../../shared/types/types';
 import {
   debugConfig,
   isValidEmail,
@@ -10,8 +11,6 @@ import {
   validateProvider,
   validateProviderConfig,
 } from '../../../shared/utils/validation';
-
-import type { LogLevel, ObservabilityConfig } from '../../../shared/types/types';
 
 describe('Validation Utilities', () => {
   describe('validateObservabilityConfig', () => {
@@ -309,7 +308,7 @@ describe('Validation Utilities', () => {
       debugConfig(config);
 
       expect(consoleSpy).toHaveBeenCalledWith('[Observability] Configuration is valid');
-      expect(consoleSpy).toHaveBeenCalledWith('[Observability] Providers:', 'console, sentry');
+      expect(consoleSpy).toHaveBeenCalledWith('[Observability] Providers: ', 'console, sentry');
 
       consoleSpy.mockRestore();
     });

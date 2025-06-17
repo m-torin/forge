@@ -2,57 +2,57 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
 import BagIcon from '../../../mantine-ciseco/components/BagIcon';
 
-describe('BagIcon', () => {
-  it('renders bag icon SVG', () => {
+describe('BagIcon', (_: any) => {
+  it('renders bag icon SVG', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     expect(icon).toBeInTheDocument();
     expect(icon?.tagName).toBe('svg');
   });
 
-  it('renders with correct viewBox', () => {
+  it('renders with correct viewBox', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     expect(icon).toHaveAttribute('viewBox', '0 0 9 9');
   });
 
-  it('renders with default className', () => {
+  it('renders with default className', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     expect(icon).toHaveClass('w-5', 'h-5');
   });
 
-  it('renders with custom className', () => {
+  it('renders with custom className', (_: any) => {
     const { container } = render(<BagIcon className="custom-icon-class" />);
     const icon = container.querySelector('svg');
     expect(icon).toHaveClass('custom-icon-class');
     expect(icon).not.toHaveClass('w-5', 'h-5');
   });
 
-  it('has fill none attribute', () => {
+  it('has fill none attribute', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     expect(icon).toHaveAttribute('fill', 'none');
   });
 
-  it('contains two path elements', () => {
+  it('contains two path elements', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     const paths = icon?.querySelectorAll('path');
     expect(paths).toHaveLength(2);
   });
 
-  it('paths have correct fill attribute', () => {
+  it('paths have correct fill attribute', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     const paths = icon?.querySelectorAll('path');
 
-    paths?.forEach((path) => {
+    paths?.forEach((path: any) => {
       expect(path).toHaveAttribute('fill', 'currentColor');
     });
   });
 
-  it('second path has correct fillRule and clipRule', () => {
+  it('second path has correct fillRule and clipRule', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     const paths = icon?.querySelectorAll('path');
@@ -63,7 +63,7 @@ describe('BagIcon', () => {
     // The actual attributes are tested by checking if the path renders correctly
   });
 
-  it('renders bag shape with handle and body paths', () => {
+  it('renders bag shape with handle and body paths', (_: any) => {
     const { container } = render(<BagIcon />);
     const icon = container.querySelector('svg');
     const paths = icon?.querySelectorAll('path');
@@ -81,14 +81,14 @@ describe('BagIcon', () => {
     );
   });
 
-  it('uses currentColor for icon coloring', () => {
+  it('uses currentColor for icon coloring', (_: any) => {
     const { container } = render(<BagIcon className="text-red-500" />);
     const icon = container.querySelector('svg');
     expect(icon).toHaveClass('text-red-500');
 
     // The paths should use currentColor
     const paths = icon?.querySelectorAll('path');
-    paths?.forEach((path) => {
+    paths?.forEach((path: any) => {
       expect(path).toHaveAttribute('fill', 'currentColor');
     });
   });

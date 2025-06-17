@@ -24,7 +24,7 @@ describe('Auth Configuration', () => {
   describe('createAuthConfig', () => {
     it('should create default configuration with minimal environment', () => {
       // Set minimal required environment
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV = 'development';
       delete process.env.BETTER_AUTH_SECRET;
       delete process.env.DATABASE_URL;
       delete process.env.NEXT_PUBLIC_APP_URL;
@@ -137,7 +137,7 @@ describe('Auth Configuration', () => {
     });
 
     it('should handle production environment requirements', () => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV = 'production';
       process.env.BETTER_AUTH_SECRET = 'production-secret';
       process.env.DATABASE_URL = 'postgresql://prod-host:5432/prod-db';
       process.env.NEXT_PUBLIC_APP_URL = 'https://production.com';

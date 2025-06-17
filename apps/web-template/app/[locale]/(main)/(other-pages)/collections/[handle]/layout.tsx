@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import React from 'react';
 
 import { Divider, SectionPromo1, SectionSliderProductCard } from '@/components/ui';
-import { getCollectionByHandle, getProducts } from '@/data/data-service';
+import { getCollectionByHandle } from '@/actions/collections';
+import { getProducts } from '@/actions/products';
 
 export async function generateMetadata({
   params,
@@ -13,8 +14,9 @@ export async function generateMetadata({
   const { handle } = await params;
 
   const collection = await getCollectionByHandle(handle);
-  const title = collection?.title || 'Collection';
-  const description = collection?.description || 'Collection page';
+  const title = collection?.name || 'Collection';
+  const copy = collection?.copy as { description?: string } | null;
+  const description = copy?.description || 'Collection page';
   return {
     description,
     title,
@@ -34,8 +36,10 @@ const Layout = async ({
   if (!collection?.id) {
     return notFound();
   }
-  const { count: _count, description, title } = collection;
-  const products = await getProducts();
+  const title = collection.name;
+  const copy = collection.copy as { description?: string } | null;
+  const description = copy?.description;
+  const products = await getProducts({ limit: 4 });
 
   return (
     <div className="container flex flex-col gap-y-20 py-20 sm:gap-y-20 lg:gap-y-28 lg:py-28">
@@ -56,10 +60,10 @@ const Layout = async ({
 
       <Divider />
       <SectionSliderProductCard
-        data={products.slice(0, 4).map((p) => ({
+        data={products.data.slice(0, 4).map((p) => ({
           ...p,
-          name: p.title || '',
-          image: p.featuredImage?.src,
+          name: p.name || '',
+          image: (p as any).featuredImage?.src || '',
           price: p.price || 0,
         }))}
       />

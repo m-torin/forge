@@ -1,0 +1,615 @@
+---
+title: 'Analytics Package'
+description: 'Universal analytics system with multi-provider support and feature flags'
+icon: 'chart-line'
+---
+
+# Analytics Package
+
+Universal analytics system with multi-provider support, integrated feature flags, and development
+tools.
+
+## Overview
+
+The analytics package provides a comprehensive solution combining multi-provider analytics tracking
+with a complete feature flag management system. It includes development tools, typed flag helpers,
+and universal analytics emitters for enterprise-grade observability.
+
+## Key Features
+
+- **Multi-Provider Analytics**: PostHog, Vercel Analytics, Google Analytics, Segment
+- **Complete Feature Flag System**: Client/server flags with React hooks and typed helpers
+- **Universal Analytics Emitters**: Segment-compatible multi-provider analytics system
+- **Local Development Overrides**: `LOCAL_FLAGS` environment variable support
+- **Type-Safe Flag Helpers**: Domain-specific flag functions (auth, payments, AI, etc.)
+- **Privacy-Compliant Tracking**: Configurable consent management
+- **Server and Client Implementations**: Full SSR and client-side support
+
+## Installation
+
+```bash
+pnpm add @repo/analytics
+```
+
+## Environment Variables
+
+```bash
+# PostHog (Primary)
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+
+# Vercel Analytics
+VERCEL_ANALYTICS_ID=...
+
+# Google Analytics (Optional)
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-...
+
+# Local Development Overrides
+LOCAL_FLAGS="ai.enabled=true,auth.organizations=false"
+```
+
+## Analytics Provider Setup
+
+```tsx
+import { AnalyticsProvider } from '@repo/analytics';
+
+function App({ children }) {
+  return <AnalyticsProvider>{children}</AnalyticsProvider>;
+}
+```
+
+This automatically configures:
+
+- PostHog client and server analytics
+- Vercel Analytics for web vitals
+- Google Analytics (if configured)
+- Feature flag providers
+
+## Feature Flags
+
+### Client-Side Flags
+
+```typescript
+import { flag, useFlag, flags } from '@repo/analytics';
+
+// Async flag check
+const isEnabled = await flag('ai.enabled', userId);
+
+// React hook for flags
+function MyComponent() {
+  const aiEnabled = useFlag('ai.enabled');
+  const darkMode = useFlag('ui.darkMode');
+
+  return (
+    <div>
+      {aiEnabled && <AIFeature />}
+      <div className={darkMode ? 'dark' : 'light'}>
+        Content
+      </div>
+    </div>
+  );
+}
+
+// Access all flags
+const allFlags = await flags();
+```
+
+### Server-Side Flags
+
+```typescript
+import { flag, flags } from '@repo/analytics/server';
+
+// API route or server component
+export async function GET(request: Request) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  const aiEnabled = await flag('ai.enabled', session?.user.id);
+
+  return Response.json({
+    aiEnabled,
+    features: await flags(session?.user.id),
+  });
+}
+```
+
+### Typed Flag Helpers
+
+```typescript
+import { getAuthFlags, getPaymentFlags, getAIFlags, getUIFlags } from '@repo/analytics/flags';
+
+// Domain-specific flag helpers
+const authFlags = await getAuthFlags(userId);
+const paymentFlags = await getPaymentFlags(organizationId);
+const aiFlags = await getAIFlags(userId);
+
+// Type-safe access
+if (authFlags.organizations) {
+  // Organizations feature enabled
+}
+
+if (paymentFlags.subscriptions) {
+  // Subscription billing enabled
+}
+```
+
+## Analytics Tracking
+
+### Event Tracking
+
+```typescript
+import { track } from '@repo/analytics';
+
+// Track user events
+await track('user_signed_up', {
+  method: 'email',
+  utm_source: 'homepage',
+  user_id: userId,
+});
+
+await track('purchase_completed', {
+  product_id: 'prod_123',
+  amount: 99.99,
+  currency: 'USD',
+  organization_id: orgId,
+});
+
+// Page views (automatic in Next.js apps)
+await track('page_viewed', {
+  path: '/dashboard',
+  user_id: userId,
+});
+```
+
+### User Identification
+
+```typescript
+import { identify } from '@repo/analytics';
+
+// Identify user with properties
+await identify(userId, {
+  email: 'user@example.com',
+  name: 'John Doe',
+  organization_id: 'org_123',
+  subscription_tier: 'pro',
+  created_at: new Date(),
+});
+```
+
+### Group Analytics
+
+```typescript
+import { group } from '@repo/analytics';
+
+// Track organization-level events
+await group('organization', organizationId, {
+  name: 'Acme Corp',
+  plan: 'enterprise',
+  member_count: 25,
+  created_at: new Date(),
+});
+```
+
+## Multi-Provider Support
+
+The analytics package automatically sends events to all configured providers:
+
+<AccordionGroup>
+  <Accordion title="PostHog" icon="chart-bar">
+    - **Primary analytics provider** - Feature flags and A/B testing - Session recordings - Funnels
+    and retention analysis - Custom dashboards
+  </Accordion>
+
+<Accordion title="Vercel Analytics" icon="triangle">
+  - Web vitals tracking - Performance monitoring - Audience insights - Real user metrics
+</Accordion>
+
+<Accordion title="Google Analytics" icon="chart-line">
+  - Universal Analytics support - E-commerce tracking - Goal conversions - Audience segmentation
+</Accordion>
+
+  <Accordion title="Segment" icon="share-nodes">
+    - Data warehouse integration - Custom destinations - Event streaming - Cross-platform tracking
+  </Accordion>
+</AccordionGroup>
+
+## Development Tools
+
+### Local Flag Overrides
+
+```bash
+# Override flags for development
+LOCAL_FLAGS="ai.enabled=true,auth.twoFactor=false,ui.newDashboard=true"
+
+# Start development with overrides
+pnpm dev
+```
+
+### Flag Testing
+
+```typescript
+import { flagHelpers } from '@repo/analytics/testing';
+
+// Test with specific flag values
+const { withFlags } = flagHelpers;
+
+test('AI feature when enabled', async () => {
+  await withFlags({ 'ai.enabled': true }, async () => {
+    const result = await myAIFunction();
+    expect(result).toBeDefined();
+  });
+});
+```
+
+## Privacy & Compliance
+
+### Consent Management
+
+```typescript
+import { setConsent, trackConsent } from '@repo/analytics';
+
+// Set user consent preferences
+await setConsent({
+  analytics: true,
+  marketing: false,
+  functional: true,
+});
+
+// Track consent changes
+await trackConsent('analytics_consent_given', {
+  consent_type: 'analytics',
+  granted: true,
+});
+```
+
+### Data Control
+
+```typescript
+import { deleteUserData, exportUserData } from '@repo/analytics';
+
+// GDPR compliance
+await deleteUserData(userId);
+const userData = await exportUserData(userId);
+```
+
+## Performance Optimization
+
+- **Lazy Loading**: Analytics providers loaded asynchronously
+- **Batching**: Events batched and sent efficiently
+- **Caching**: Flag values cached for performance
+- **SSR Support**: Server-side rendering compatible
+- **Bundle Size**: Minimal client-side footprint
+
+## Next.js Integration
+
+The analytics package provides comprehensive Next.js 15 support with App Router, React Server
+Components, and middleware integration.
+
+### Client Components
+
+```tsx
+// app/layout.tsx
+'use client';
+
+import { AnalyticsProvider } from '@repo/analytics/client';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <AnalyticsProvider
+          config={{
+            providers: {
+              posthog: { apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY },
+              segment: { writeKey: process.env.NEXT_PUBLIC_SEGMENT_KEY },
+            },
+          }}
+          autoPageTracking
+        >
+          {children}
+        </AnalyticsProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Server Components (RSC)
+
+```tsx
+// app/page.tsx
+import { trackServerPageView, isServerFeatureEnabled } from '@repo/analytics/server';
+
+export default async function HomePage() {
+  // Track page view from server
+  await trackServerPageView('/home', {
+    experiment: 'homepage_v2',
+  });
+
+  // Check feature flag
+  const showNewFeature = await isServerFeatureEnabled(
+    'new-homepage-feature',
+    process.env.POSTHOG_API_KEY!
+  );
+
+  return (
+    <div>
+      <h1>Welcome</h1>
+      {showNewFeature && <NewFeature />}
+    </div>
+  );
+}
+```
+
+### React Hooks
+
+<Tabs>
+  <Tab title="Page Tracking">
+    ```tsx
+    'use client';
+    
+    import { usePageTracking } from '@repo/analytics/client';
+    
+    export default function Layout({ children }) {
+      usePageTracking({
+        trackSearch: true, // Track search params
+        trackParams: true, // Track route params
+        properties: {
+          version: 'v2',
+        },
+      });
+    
+      return children;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Event Tracking">
+    ```tsx
+    'use client';
+    
+    import { useTrackEvent } from '@repo/analytics/client';
+    
+    export function ProductCard({ product }) {
+      const track = useTrackEvent();
+    
+      const handleAddToCart = () => {
+        track('Product Added to Cart', {
+          product_id: product.id,
+          product_name: product.name,
+          price: product.price,
+        });
+      };
+    
+      return <button onClick={handleAddToCart}>Add to Cart</button>;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="E-commerce Tracking">
+    ```tsx
+    'use client';
+    
+    import { useEcommerceTracking } from '@repo/analytics/client';
+    
+    export function ProductPage({ product }) {
+      const { trackProductView, trackAddToCart } = useEcommerceTracking();
+    
+      useEffect(() => {
+        trackProductView(product);
+      }, [product]);
+    
+      const handleAddToCart = () => {
+        trackAddToCart({
+          ...product,
+          quantity: 1,
+        });
+      };
+    
+      return <ProductDetails product={product} onAddToCart={handleAddToCart} />;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Middleware Integration
+
+```ts
+// middleware.ts
+import { createAnalyticsMiddleware } from '@repo/analytics/server';
+
+export const middleware = createAnalyticsMiddleware({
+  analytics: {
+    providers: {
+      posthog: { apiKey: process.env.POSTHOG_API_KEY },
+    },
+  },
+  excludeRoutes: ['/_next', '/api/health'],
+  trackPageViews: true,
+  trackApiRoutes: true,
+});
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
+```
+
+### Server Actions
+
+```tsx
+import { trackEventAction, identifyUserAction } from '@repo/analytics/server';
+
+// In your client component
+async function handleSubmit(formData: FormData) {
+  // Track from server action
+  await trackEventAction('Form Submitted', {
+    form_id: formData.get('id'),
+  });
+
+  // Identify user
+  await identifyUserAction(userId, {
+    email: formData.get('email'),
+    plan: 'pro',
+  });
+}
+```
+
+## E-commerce Events
+
+Comprehensive e-commerce tracking with standardized events:
+
+<AccordionGroup>
+  <Accordion title="Product Events" icon="box">
+    - `productSearched` - Product search queries - `searchResultsViewed` - Search results displayed
+    - `productViewed` - Product detail page views - `productListViewed` - Category/collection views
+  </Accordion>
+
+<Accordion title="Cart Events" icon="shopping-cart">
+  - `cartUpdated` - Cart modifications (add/remove/update) - `cartViewed` - Shopping cart page views
+  - `cartAbandoned` - User leaves with items in cart
+</Accordion>
+
+  <Accordion title="Checkout Events" icon="credit-card">
+    - `checkoutProgressed` - Checkout flow progression - `paymentInfoEntered` - Payment method
+    selection - `orderCompleted` - Purchase completion - `orderStatusUpdated` - Order fulfillment
+    updates
+  </Accordion>
+</AccordionGroup>
+
+### E-commerce Usage Examples
+
+```typescript
+import { trackEcommerce } from '@repo/analytics';
+
+// Product interactions
+trackEcommerce(
+  ecommerce.productViewed({
+    product_id: '12345',
+    name: 'iPhone 15 Pro',
+    price: 999.99,
+    category: 'Electronics',
+  })
+);
+
+// Cart operations
+trackEcommerce(
+  ecommerce.cartUpdated({
+    action: 'added',
+    product: {
+      product_id: '12345',
+      name: 'iPhone 15 Pro',
+      price: 999.99,
+    },
+    quantity_change: 1,
+    cart_total: 999.99,
+  })
+);
+
+// Order completion
+trackEcommerce(
+  ecommerce.orderCompleted({
+    order_id: 'ORD-12345',
+    total: 1049.99,
+    currency: 'USD',
+    products: [
+      {
+        product_id: '12345',
+        name: 'iPhone 15 Pro',
+        price: 999.99,
+        quantity: 1,
+      },
+    ],
+  })
+);
+```
+
+## Advanced Configuration
+
+### SSR with Bootstrap Data
+
+Optimize performance with server-side bootstrap:
+
+```tsx
+// app/layout.tsx
+import { getServerBootstrapData } from '@repo/analytics/server';
+import { AnalyticsProvider } from '@repo/analytics/client';
+
+export default async function RootLayout({ children }) {
+  // Get bootstrap data on server
+  const bootstrapData = await getServerBootstrapData(process.env.POSTHOG_API_KEY!);
+
+  return (
+    <html>
+      <body>
+        <AnalyticsProvider
+          config={{
+            providers: {
+              posthog: { apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY },
+            },
+          }}
+          bootstrapData={bootstrapData}
+        >
+          {children}
+        </AnalyticsProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Consent Management
+
+Handle user consent for analytics:
+
+```tsx
+'use client';
+
+import { useAnalyticsConsent } from '@repo/analytics/client';
+
+export function CookieBanner() {
+  const { consentGiven, grantConsent, revokeConsent } = useAnalyticsConsent();
+
+  if (consentGiven) return null;
+
+  return (
+    <div className="cookie-banner">
+      <p>We use cookies for analytics</p>
+      <button onClick={grantConsent}>Accept</button>
+      <button onClick={revokeConsent}>Decline</button>
+    </div>
+  );
+}
+```
+
+### TypeScript Support
+
+```tsx
+import type {
+  AnalyticsConfig,
+  BootstrapData,
+  FeatureFlags,
+  PageViewEvent,
+  ProductViewEvent,
+} from '@repo/analytics/types';
+
+// Type-safe feature flags
+const flags = createServerFeatureFlags<{
+  'new-checkout': boolean;
+  'dark-mode': boolean;
+}>(apiKey, {
+  'new-checkout': false,
+  'dark-mode': true,
+});
+
+const isCheckoutEnabled = await flags.isEnabled('new-checkout');
+```
+
+## Best Practices
+
+<Warning>
+  **Analytics Guidelines:** - Initialize analytics early in your root layout - Use bootstrap data
+  for optimal performance - Track meaningful business events, not implementation details - Analytics
+  should never break your application - Implement proper consent management for privacy compliance -
+  Use TypeScript for better reliability and type safety
+</Warning>
+
+The analytics package provides enterprise-grade analytics and feature flag capabilities with a focus
+on performance, privacy, and developer experience.

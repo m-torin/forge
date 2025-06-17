@@ -7,21 +7,22 @@ vi.mock('@t3-oss/env-nextjs', () => ({
 }));
 
 describe('Payment Keys Configuration', () => {
-  let originalEnv: NodeJS.ProcessEnv;
+  let originalEnv: Record<string, string | undefined>;
 
   beforeEach(() => {
-    originalEnv = { ...process.env };
+    originalEnv = Object.assign({}, process.env);
     vi.clearAllMocks();
     vi.resetModules();
   });
 
   afterEach(() => {
-    process.env = originalEnv;
+    process.env = originalEnv as NodeJS.ProcessEnv;
   });
 
   describe('production environment', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'production';
+      process.env.VERCEL = '1'; // Simulate Vercel deployment
       process.env.STRIPE_SECRET_KEY = 'sk_live_123456789';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123456789';
     });
@@ -111,12 +112,12 @@ describe('Payment Keys Configuration', () => {
         server: {
           STRIPE_SECRET_KEY: expect.objectContaining({
             _def: expect.objectContaining({
-              typeName: 'ZodOptional',
+              typeName: 'ZodUnion',
             }),
           }),
           STRIPE_WEBHOOK_SECRET: expect.objectContaining({
             _def: expect.objectContaining({
-              typeName: 'ZodOptional',
+              typeName: 'ZodUnion',
             }),
           }),
         },
@@ -153,12 +154,12 @@ describe('Payment Keys Configuration', () => {
         server: {
           STRIPE_SECRET_KEY: expect.objectContaining({
             _def: expect.objectContaining({
-              typeName: 'ZodOptional',
+              typeName: 'ZodUnion',
             }),
           }),
           STRIPE_WEBHOOK_SECRET: expect.objectContaining({
             _def: expect.objectContaining({
-              typeName: 'ZodOptional',
+              typeName: 'ZodUnion',
             }),
           }),
         },
@@ -239,6 +240,7 @@ describe('Payment Keys Configuration', () => {
   describe('configuration logic', () => {
     it('should determine requireInProduction correctly for production with keys', async () => {
       process.env.NODE_ENV = 'production';
+      process.env.VERCEL = '1'; // Simulate Vercel deployment
       process.env.STRIPE_SECRET_KEY = 'sk_live_123';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123';
 
@@ -247,7 +249,7 @@ describe('Payment Keys Configuration', () => {
 
       // Should require keys in production when they exist
       const call = mockCreateEnv.mock.calls[0][0];
-      expect(call.server.STRIPE_SECRET_KEY._def.typeName).not.toBe('ZodOptional');
+      expect(call.server.STRIPE_SECRET_KEY._def.typeName).toBe('ZodString');
     });
 
     it('should determine requireInProduction correctly for production without keys', async () => {
@@ -260,7 +262,7 @@ describe('Payment Keys Configuration', () => {
 
       // Should make keys optional in production when they don't exist
       const call = mockCreateEnv.mock.calls[0][0];
-      expect(call.server.STRIPE_SECRET_KEY._def.typeName).toBe('ZodOptional');
+      expect(call.server.STRIPE_SECRET_KEY._def.typeName).toBe('ZodUnion');
     });
 
     it('should determine requireInProduction correctly for development', async () => {
@@ -273,7 +275,7 @@ describe('Payment Keys Configuration', () => {
 
       // Should make keys optional in development regardless of existence
       const call = mockCreateEnv.mock.calls[0][0];
-      expect(call.server.STRIPE_SECRET_KEY._def.typeName).toBe('ZodOptional');
+      expect(call.server.STRIPE_SECRET_KEY._def.typeName).toBe('ZodUnion');
     });
   });
 

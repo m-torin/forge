@@ -20,14 +20,14 @@ export function FeatureFlagDemo() {
   const enhancedPIM = false;
   const workflowAutomation = false;
   const aiSuggestions = false;
-  const tableLayout = 'default';
+  const tableLayout: 'default' | 'compact' | 'expanded' = 'default';
 
   return (
     <Stack>
       <Title order={3}>Feature Flags Demo</Title>
       <Text size="sm" c="dimmed">
-        This component demonstrates how feature flags are integrated with the Vercel Toolbar.
-        Toggle flags in the toolbar to see changes in real-time.
+        This component demonstrates how feature flags are integrated with the Vercel Toolbar. Toggle
+        flags in the toolbar to see changes in real-time.
       </Text>
 
       <Group>
@@ -48,12 +48,12 @@ export function FeatureFlagDemo() {
       <Card withBorder>
         <Stack>
           <Text fw={500}>Table Layout Variant: {tableLayout}</Text>
-          {tableLayout === 'compact' && (
+          {tableLayout !== 'default' && tableLayout === 'compact' && (
             <Alert color="blue" title="Compact Layout">
               Tables will use compact spacing for better density.
             </Alert>
           )}
-          {tableLayout === 'expanded' && (
+          {tableLayout !== 'default' && tableLayout === 'expanded' && (
             <Alert color="green" title="Expanded Layout">
               Tables will use expanded spacing for better readability.
             </Alert>

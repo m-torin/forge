@@ -20,7 +20,7 @@ export function generateDistinctId(): string {
  */
 export function parsePostHogCookie(
   cookieValue: string,
-  projectApiKey: string,
+  _projectApiKey: string,
 ): PostHogCookie | null {
   try {
     const parsed = JSON.parse(cookieValue);
@@ -31,7 +31,7 @@ export function parsePostHogCookie(
     }
 
     return null;
-  } catch (error) {
+  } catch (_error) {
     // Silently fail - cookies may be malformed
     return null;
   }
@@ -73,7 +73,7 @@ export function getDistinctIdFromCookies(
     }
 
     return null;
-  } catch (error) {
+  } catch (_error) {
     // Silently fail - cookies may be malformed or missing
     return null;
   }
@@ -149,7 +149,7 @@ export function validateBootstrapData(data: any): data is BootstrapData {
 export function serializeBootstrapData(data: BootstrapData): string {
   try {
     return JSON.stringify(data);
-  } catch (error) {
+  } catch (_error) {
     // Fallback to minimal data
     return JSON.stringify({ distinctID: data.distinctID });
   }
@@ -162,7 +162,7 @@ export function deserializeBootstrapData(serialized: string): BootstrapData | nu
   try {
     const data = JSON.parse(serialized);
     return validateBootstrapData(data) ? data : null;
-  } catch (error) {
+  } catch (_error) {
     // Silently fail - data may be corrupted
     return null;
   }

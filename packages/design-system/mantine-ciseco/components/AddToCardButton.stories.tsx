@@ -1,8 +1,8 @@
+import { Meta, StoryObj } from '@storybook/react';
+
 import { NotificationsProvider } from '@repo/notifications/mantine-notifications';
 
 import AddToCardButton from './AddToCardButton';
-
-import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof AddToCardButton> = {
   argTypes: {
@@ -112,12 +112,12 @@ export const WithIcon: Story = {
   args: {
     children: (
       <div className="flex items-center space-x-2">
-        <svg stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
-            strokeWidth={2}
+            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            strokeWidth={2}
           />
         </svg>
         <span>Add to Cart</span>

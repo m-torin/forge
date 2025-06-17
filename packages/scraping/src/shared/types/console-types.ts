@@ -2,48 +2,30 @@
  * Console provider types
  */
 
-import type { ScrapeOptions, ScrapeResult } from './scraping-types';
-
-/**
- * Console provider configuration
- */
-export interface ConsoleProviderConfig {
-  colors?: boolean;
-  prefix?: string;
-  timestamps?: boolean;
-  verbose?: boolean;
-}
+import { ScrapeOptions, ScrapeResult } from './scraping-types';
 
 // Aliases for backward compatibility
 export type ConsoleConfig = ConsoleProviderConfig;
-export interface ConsoleOptions extends ConsoleScrapeOptions {}
-
-/**
- * Console scraping options
- */
-export interface ConsoleScrapeOptions extends ScrapeOptions {
-  dryRun?: boolean;
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
-}
-
-/**
- * Console scraping result
- */
-export interface ConsoleScrapeResult extends ScrapeResult {
-  logged: boolean;
-  logLevel: string;
-  timestamp: number;
-}
 
 /**
  * Console log entry
  */
 export interface ConsoleLogEntry {
   data?: any;
-  level: 'debug' | 'info' | 'warn' | 'error';
+  level: 'debug' | 'error' | 'info' | 'warn';
   message: string;
   timestamp: number;
   url?: string;
+}
+/**
+ * Console mock configuration
+ */
+export interface ConsoleMockConfig {
+  delay?: number;
+  enableMocking?: boolean;
+  failureMessage?: string;
+  mockResponse?: any;
+  shouldFail?: boolean;
 }
 
 /**
@@ -56,13 +38,31 @@ export interface ConsoleOperationResult {
   success: boolean;
 }
 
+export type ConsoleOptions = ConsoleScrapeOptions;
+
 /**
- * Console mock configuration
+ * Console provider configuration
  */
-export interface ConsoleMockConfig {
-  delay?: number;
-  enableMocking?: boolean;
-  failureMessage?: string;
-  mockResponse?: any;
-  shouldFail?: boolean;
+export interface ConsoleProviderConfig {
+  colors?: boolean;
+  prefix?: string;
+  timestamps?: boolean;
+  verbose?: boolean;
+}
+
+/**
+ * Console scraping options
+ */
+export interface ConsoleScrapeOptions extends ScrapeOptions {
+  dryRun?: boolean;
+  logLevel?: 'debug' | 'error' | 'info' | 'warn';
+}
+
+/**
+ * Console scraping result
+ */
+export interface ConsoleScrapeResult extends ScrapeResult {
+  logged: boolean;
+  logLevel: string;
+  timestamp: number;
 }

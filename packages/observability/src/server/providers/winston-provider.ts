@@ -2,7 +2,7 @@
  * Winston logging provider skeleton
  */
 
-import type {
+import {
   ObservabilityContext,
   ObservabilityProvider,
   ObservabilityProviderConfig,
@@ -10,14 +10,8 @@ import type {
 
 export class WinstonProvider implements ObservabilityProvider {
   readonly name = 'winston';
-  private logger: any;
   private isInitialized = false;
-
-  async initialize(config: ObservabilityProviderConfig): Promise<void> {
-    // TODO: Implement Winston initialization
-    console.log('[Winston] Initializing with config:', config);
-    this.isInitialized = true;
-  }
+  private logger: any;
 
   async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
     if (!this.isInitialized) return;
@@ -27,12 +21,18 @@ export class WinstonProvider implements ObservabilityProvider {
 
   async captureMessage(
     message: string,
-    level: 'info' | 'warning' | 'error',
+    level: 'error' | 'info' | 'warning',
     context?: ObservabilityContext,
   ): Promise<void> {
     if (!this.isInitialized) return;
     // TODO: Implement message logging
     console.log('[Winston] Logging message:', { context, level, message });
+  }
+
+  async initialize(config: ObservabilityProviderConfig): Promise<void> {
+    // TODO: Implement Winston initialization
+    console.log('[Winston] Initializing with config:', config);
+    this.isInitialized = true;
   }
 
   async log(level: string, message: string, metadata?: any): Promise<void> {

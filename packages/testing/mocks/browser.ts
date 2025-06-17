@@ -3,21 +3,15 @@ import { vi } from 'vitest';
 export function setupBrowserMocks(): void {
   // Mock IntersectionObserver for testing environments
   global.IntersectionObserver = class IntersectionObserver {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     observe() {} // Intentionally empty for testing
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     unobserve() {} // Intentionally empty for testing
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     disconnect() {} // Intentionally empty for testing
   } as any;
 
   // Mock ResizeObserver for testing environments
   global.ResizeObserver = class ResizeObserver {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     observe() {} // Intentionally empty for testing
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     unobserve() {} // Intentionally empty for testing
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     disconnect() {} // Intentionally empty for testing
   } as any;
 

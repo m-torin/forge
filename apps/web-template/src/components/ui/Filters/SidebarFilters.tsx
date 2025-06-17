@@ -1,12 +1,15 @@
 'use client';
 
-import { RangeSlider } from '@mantine/core';
+import { RangeSlider, Skeleton, Alert, Text } from '@mantine/core';
+import { IconAlertTriangle, IconFilter } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { Divider } from './Divider';
-import MySwitch from './MySwitch';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+
 import Checkbox from './Checkbox';
+import { Divider } from './Divider';
 import Input from './Input';
+import MySwitch from './MySwitch';
 import Radio from './Radio';
 
 // DEMO DATA
@@ -43,14 +46,83 @@ const DATA_sortOrderRadios = [
   { id: 'Price-hight-low', name: 'Price Hight - Low' },
 ];
 const PRICE_RANGE = [1, 500];
-//
-const SidebarFilters = ({ className }: { className?: string }) => {
+
+// Loading skeleton for SidebarFilters
+function SidebarFiltersSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      <div className="flex flex-col gap-y-8">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="space-y-4">
+            <Skeleton height={20} width="40%" />
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, j) => (
+                <div key={j} className="flex items-center gap-2">
+                  <Skeleton height={20} width={20} />
+                  <Skeleton height={16} width="60%" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Error state for SidebarFilters
+function SidebarFiltersError({ error: _error, className }: { error: string; className?: string }) {
+  return (
+    <div className={className}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Filter sidebar failed to load</Text>
+      </Alert>
+    </div>
+  );
+}
+
+// Zero state for SidebarFilters
+function _SidebarFiltersEmpty({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <IconFilter size={48} stroke={1} color="var(--mantine-color-gray-5)" />
+        <Text size="lg" fw={600} c="dimmed" mt="md">
+          No filters available
+        </Text>
+        <Text size="sm" c="dimmed" mt="xs">
+          Filter options are not available at this time
+        </Text>
+      </div>
+    </div>
+  );
+}
+
+interface SidebarFiltersProps {
+  className?: string;
+  loading?: boolean;
+  error?: string;
+}
+
+const SidebarFilters = ({ className, loading = false, error }: SidebarFiltersProps) => {
   const [isOnSale, setIsIsOnSale] = useState(true);
   const [rangePrices, setRangePrices] = useState<[number, number]>([100, 500]);
   const [categoriesState, setCategoriesState] = useState<string[]>([]);
   const [colorsState, setColorsState] = useState<string[]>([]);
   const [sizesState, setSizesState] = useState<string[]>([]);
   const [sortOrderStates, setSortOrderStates] = useState<string>('');
+  const [internalError, _setInternalError] = useState<string | null>(null);
+
+  // Show loading state
+  if (loading) {
+    return <SidebarFiltersSkeleton className={className} />;
+  }
+
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <SidebarFiltersError error={currentError} className={className} />;
+  }
 
   //
   const handleChangeCategories = (checked: boolean, name: string) => {
@@ -235,26 +307,40 @@ const SidebarFilters = ({ className }: { className?: string }) => {
   };
 
   return (
-    <div className={className}>
-      <div className="flex flex-col gap-y-8">
-        {renderTabsCategories()}
-        <Divider />
-        {renderTabsColor()}
-        <Divider />
-        {renderTabsSize()}
-        <Divider />
-        {renderTabsPriceRage()}
-        <Divider />
-        <MySwitch
-          desc="Products currently on sale"
-          enabled={isOnSale}
-          label="On sale!"
-          onChange={setIsIsOnSale}
-        />
-        <Divider />
-        {renderTabsSortOrder()}
+    <ErrorBoundary
+      fallback={
+        <SidebarFiltersError error="Filter sidebar failed to render" className={className} />
+      }
+    >
+      <div className={className}>
+        <div className="flex flex-col gap-y-8">
+          <ErrorBoundary fallback={<Skeleton height={80} />}>
+            {renderTabsCategories()}
+          </ErrorBoundary>
+          <Divider />
+          <ErrorBoundary fallback={<Skeleton height={80} />}>{renderTabsColor()}</ErrorBoundary>
+          <Divider />
+          <ErrorBoundary fallback={<Skeleton height={80} />}>{renderTabsSize()}</ErrorBoundary>
+          <Divider />
+          <ErrorBoundary fallback={<Skeleton height={120} />}>
+            {renderTabsPriceRage()}
+          </ErrorBoundary>
+          <Divider />
+          <ErrorBoundary fallback={<Skeleton height={40} />}>
+            <MySwitch
+              desc="Products currently on sale"
+              enabled={isOnSale}
+              label="On sale!"
+              onChange={setIsIsOnSale}
+            />
+          </ErrorBoundary>
+          <Divider />
+          <ErrorBoundary fallback={<Skeleton height={120} />}>
+            {renderTabsSortOrder()}
+          </ErrorBoundary>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

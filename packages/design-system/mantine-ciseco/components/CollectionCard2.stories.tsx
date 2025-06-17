@@ -1,6 +1,6 @@
-import CollectionCard2 from './CollectionCard2';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import CollectionCard2 from './CollectionCard2';
 
 const meta: Meta<typeof CollectionCard2> = {
   argTypes: {
@@ -34,16 +34,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockCollection = {
-  id: 'gid://1',
   color: 'bg-indigo-50',
   count: 77,
   description: 'Stylish jackets for every occasion',
   handle: 'jackets',
+  id: 'gid://1',
   image: {
-    width: 400,
     alt: 'Jackets collection',
     height: 400,
     src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=400&fit=crop',
+    width: 400,
   },
   sortDescription: 'Newest arrivals',
   title: 'Jackets',
@@ -147,7 +147,7 @@ export const NoHandle: Story = {
   args: {
     collection: {
       ...mockCollection,
-      handle: undefined,
+      handle: '',
     },
   },
 };
@@ -192,18 +192,18 @@ export const Grid: Story = {
           image: 'photo-1523275335684-37898b6baf30',
           title: 'Watches',
         },
-      ].map((item, index) => (
+      ].map((item, index: any) => (
         <CollectionCard2
-          key={`${item.title}-${index}`}
+          key={item.title}
           collection={{
-            id: `gid://${index}`,
             color: item.color,
             handle: item.title.toLowerCase(),
+            id: `gid://${index}`,
             image: {
-              width: 300,
               alt: item.title,
               height: 300,
               src: `https://images.unsplash.com/${item.image}?w=300&h=300&fit=crop`,
+              width: 300,
             },
             sortDescription: item.desc,
             title: item.title,
@@ -217,11 +217,10 @@ export const Grid: Story = {
 export const ResponsiveGrid: Story = {
   render: () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
-      {Array.from({ length: 6 }, (_, i) => (
+      {Array.from({ length: 6 }, (_, i: any) => (
         <CollectionCard2
           key={`collection-${i}`}
           collection={{
-            id: `gid://${i}`,
             color: [
               'bg-blue-50',
               'bg-green-50',
@@ -231,11 +230,12 @@ export const ResponsiveGrid: Story = {
               'bg-indigo-50',
             ][i],
             handle: `collection-${i + 1}`,
+            id: `gid://${i}`,
             image: {
-              width: 300,
               alt: `Collection ${i + 1}`,
               height: 300,
               src: `https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop&seed=${i}`,
+              width: 300,
             },
             sortDescription: `Description ${i + 1}`,
             title: `Collection ${i + 1}`,

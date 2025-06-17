@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { createServerScraping, quickScrape } from '../server';
-import type { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
+import { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
 
 // Use vi.hoisted to ensure mocks are available before module imports
 const { mockNodeFetchProvider, mockCheerioProvider } = vi.hoisted(() => {
@@ -91,9 +92,9 @@ describe('Server Scraping', () => {
     });
 
     expect(result).toBeDefined();
-    expect(result.data).toBeDefined();
+    expect(result?.data).toBeDefined();
     // The mock returns data as { title: 'Example Domain' } in the scrape result
-    expect(result.data).toEqual({
+    expect(result?.data).toEqual({
       title: 'Example Domain',
       description: 'Example description',
     });

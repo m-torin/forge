@@ -1,0 +1,509 @@
+---
+title: 'Services Overview'
+description: 'Specialized services for advanced functionality including code analysis, browser automation, and AI-powered operations'
+icon: 'server'
+---
+
+# Services Directory
+
+This directory contains specialized services for the monorepo that provide advanced functionality for code analysis, browser automation, and AI-powered operations.
+
+## Overview
+
+The services in this directory extend the core platform capabilities with powerful external integrations and specialized tools that support development, security, and automation workflows.
+
+<CardGroup cols={2}>
+  <Card title="Security & Analysis" icon="shield" href="/services/opengrep">
+    Code analysis, vulnerability detection, and security scanning
+  </Card>
+  <Card title="AI & Automation" icon="robot" href="/services/firecrawl">
+    AI-powered web scraping, data extraction, and workflow automation
+  </Card>
+  <Card title="Browser Automation" icon="globe" href="/services/browserless">
+    Headless browser operations, testing, and web automation
+  </Card>
+  <Card title="URL Management" icon="link" href="/services/dub">
+    Enterprise URL shortening, analytics, and link management
+  </Card>
+</CardGroup>
+
+## Available Services
+
+### 🔍 Security & Code Analysis
+
+<Tabs>
+  <Tab title="OpenGrep">
+    **Static Code Analysis**
+    
+    - Multi-language security vulnerability detection
+    - Pattern matching and code search across repositories
+    - Integration with Semgrep for comprehensive scanning
+    - Custom rule development and enforcement
+    
+    ```bash
+    pnpm --filter @repo/opengrep deep-analysis
+    ```
+  </Tab>
+  
+  <Tab title="Code Quality Tools">
+    **Automated Quality Assurance**
+    
+    - TypeScript strict mode enforcement
+    - ESLint rule compliance checking
+    - Security best practices validation
+    - Performance analysis and optimization suggestions
+  </Tab>
+</Tabs>
+
+### 🤖 AI & Automation
+
+<Tabs>
+  <Tab title="Firecrawl">
+    **AI-Powered Web Scraping**
+    
+    - Intelligent content extraction with LLM processing
+    - Large-scale website crawling and indexing
+    - Real-time data monitoring and alerts
+    - API-first approach with SDKs for multiple languages
+    
+    ```bash
+    # Scrape and process with AI
+    curl -X POST "https://api.firecrawl.dev/v1/scrape" \
+      -H "Authorization: Bearer fc-YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"url": "https://example.com", "formats": ["markdown", "html"]}'
+    ```
+  </Tab>
+  
+  <Tab title="Activepieces">
+    **Workflow Automation Platform**
+    
+    - Visual workflow builder with 200+ integrations
+    - Custom piece development for specialized operations
+    - Enterprise features: SSO, audit logs, custom domains
+    - Self-hosted and cloud deployment options
+    
+    ```typescript
+    // Custom workflow piece example
+    export const customWorkflow = createPiece({
+      displayName: 'Custom Integration',
+      auth: PieceAuth.None(),
+      minimumSupportedRelease: '0.20.0',
+      logoUrl: 'https://example.com/logo.png',
+      actions: [customAction],
+      triggers: [customTrigger],
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### 🌐 Browser Automation
+
+<Tabs>
+  <Tab title="Browserless">
+    **Headless Browser Service**
+    
+    - Chrome, Firefox, and WebKit automation
+    - PDF generation and screenshot capture
+    - Performance monitoring and debugging
+    - Scalable container-based architecture
+    
+    ```typescript
+    import puppeteer from 'puppeteer-core';
+    
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: 'wss://browserless.example.com'
+    });
+    
+    const page = await browser.newPage();
+    await page.goto('https://example.com');
+    const pdf = await page.pdf({ format: 'A4' });
+    ```
+  </Tab>
+  
+  <Tab title="Camoufox">
+    **Stealth Browser Automation**
+    
+    - Anti-detection web scraping capabilities
+    - Multiple browser engine support
+    - Proxy rotation and session management
+    - Advanced fingerprinting evasion
+    
+    ```bash
+    pnpm --filter @repo/camoufox scrape https://example.com
+    ```
+  </Tab>
+</Tabs>
+
+### 🔗 URL & Link Management
+
+<Tabs>
+  <Tab title="Dub">
+    **Enterprise URL Shortening**
+    
+    - Custom domain support and branding
+    - Advanced analytics and click tracking
+    - Team collaboration and management
+    - API-first architecture with comprehensive SDKs
+    
+    ```typescript
+    import { Dub } from 'dub';
+    
+    const dub = new Dub({
+      token: process.env.DUB_API_KEY,
+    });
+    
+    const link = await dub.links.create({
+      url: 'https://example.com/very/long/url',
+      domain: 'yourdomain.com',
+      key: 'short-key',
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Quick Start
+
+<Steps>
+  <Step title="Install Dependencies">
+    ```bash
+    # Install all service dependencies
+    pnpm install
+    ```
+  </Step>
+  
+  <Step title="Configure Environment">
+    ```bash
+    # Copy example environment files
+    cp .env.example .env.local
+    
+    # Configure service-specific variables
+    # OpenGrep
+    SEMGREP_PATH=/custom/path/to/semgrep
+    
+    # AI Services
+    OPENAI_API_KEY=your-openai-key
+    ANTHROPIC_API_KEY=your-anthropic-key
+    
+    # Browser Services
+    BROWSERLESS_TOKEN=your-browserless-token
+    PROXY_URL=http://proxy:port
+    
+    # URL Services
+    DUB_API_KEY=your-dub-api-key
+    ```
+  </Step>
+  
+  <Step title="Run Services">
+    ```bash
+    # Start individual services
+    pnpm --filter @repo/opengrep start
+    pnpm --filter @repo/browserless start
+    
+    # Or run all services
+    pnpm dev:services
+    ```
+  </Step>
+</Steps>
+
+## Integration Examples
+
+### Security Analysis Pipeline
+
+<CodeGroup>
+```typescript Comprehensive Security Scan
+import { createRepoScanner } from '@repo/opengrep';
+import { createBrowserlessClient } from '@repo/browserless';
+
+// 1. Scan repository for security vulnerabilities
+const scanner = createRepoScanner();
+const securityResults = await scanner.scanRepository({
+  ruleSets: ['security', 'typescript', 'react'],
+  excludePaths: ['node_modules/**', 'dist/**'],
+});
+
+// 2. Generate security report
+const reportGenerator = createBrowserlessClient();
+const securityReport = await reportGenerator.generatePDF({
+  html: formatSecurityReport(securityResults),
+  options: {
+    format: 'A4',
+    printBackground: true,
+  },
+});
+
+console.log(`Found ${securityResults.vulnerabilities.length} security issues`);
+```
+
+```typescript Web Scraping with AI Analysis
+import { FirecrawlApp } from '@mendable/firecrawl-js';
+import { createOpenAIClient } from '@repo/ai';
+
+// 1. Scrape website content
+const firecrawl = new FirecrawlApp({
+  apiKey: process.env.FIRECRAWL_API_KEY
+});
+
+const scrapeResult = await firecrawl.scrapeUrl('https://example.com', {
+  formats: ['markdown', 'html'],
+  includeTags: ['h1', 'h2', 'p', 'a'],
+});
+
+// 2. Analyze content with AI
+const openai = createOpenAIClient();
+const analysis = await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [
+    {
+      role: 'system', 
+      content: 'Analyze this website content for key insights and structure.'
+    },
+    {
+      role: 'user',
+      content: scrapeResult.markdown
+    }
+  ],
+});
+
+console.log('Content analysis:', analysis.choices[0].message.content);
+```
+</CodeGroup>
+
+### Automated Workflow Integration
+
+<CodeGroup>
+```typescript Link Management Automation
+import { Dub } from 'dub';
+import { createActivepiece } from '@repo/activepieces';
+
+// 1. Create shortened links for marketing campaign
+const dub = new Dub({ token: process.env.DUB_API_KEY });
+
+const campaignLinks = await Promise.all([
+  dub.links.create({
+    url: 'https://example.com/product-a',
+    domain: 'yourdomain.com',
+    key: 'product-a-2024',
+    tags: ['campaign', 'product-launch'],
+  }),
+  dub.links.create({
+    url: 'https://example.com/product-b', 
+    domain: 'yourdomain.com',
+    key: 'product-b-2024',
+    tags: ['campaign', 'product-launch'],
+  }),
+]);
+
+// 2. Trigger workflow automation
+const activepieces = createActivepiece();
+await activepieces.triggerFlow('marketing-campaign-flow', {
+  links: campaignLinks,
+  campaignId: 'product-launch-2024',
+});
+```
+
+```typescript Browser Testing Pipeline
+import { createBrowserlessClient } from '@repo/browserless';
+import { createTestReporter } from '@repo/testing';
+
+// 1. Run automated browser tests
+const browserless = createBrowserlessClient();
+
+const testResults = await browserless.runTests({
+  urls: [
+    'https://app.example.com/login',
+    'https://app.example.com/dashboard',
+    'https://app.example.com/checkout',
+  ],
+  viewport: { width: 1920, height: 1080 },
+  tests: [
+    'accessibility',
+    'performance', 
+    'security',
+  ],
+});
+
+// 2. Generate comprehensive test report
+const reporter = createTestReporter();
+const report = await reporter.generateReport({
+  results: testResults,
+  format: 'html',
+  includeScreenshots: true,
+});
+
+console.log(`Tests completed: ${testResults.passed}/${testResults.total} passed`);
+```
+</CodeGroup>
+
+## Architecture
+
+Each service follows a consistent architectural pattern for maintainability and integration:
+
+<Tabs>
+  <Tab title="Service Structure">
+    ```
+    services/[service-name]/
+    ├── src/
+    │   ├── types.ts       # Zod schemas and TypeScript types
+    │   ├── client.ts      # Core client implementation
+    │   ├── server.ts      # Server-side utilities
+    │   └── index.ts       # Public API exports
+    ├── scripts/
+    │   └── [service]-cli.ts  # Command-line interface
+    ├── __tests__/         # Comprehensive test files
+    ├── docs/              # Service-specific documentation
+    ├── package.json       # Service dependencies
+    └── README.md          # Quick reference
+    ```
+  </Tab>
+  
+  <Tab title="Integration Patterns">
+    **Consistent APIs Across Services**
+    
+    ```typescript
+    // Standard service client pattern
+    interface ServiceClient {
+      connect(): Promise<void>;
+      disconnect(): Promise<void>;
+      execute<T>(operation: Operation): Promise<T>;
+      getStatus(): ServiceStatus;
+    }
+    
+    // Standard configuration pattern
+    interface ServiceConfig {
+      apiKey?: string;
+      baseUrl?: string;
+      timeout?: number;
+      retries?: number;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Error Handling">
+    **Consistent Error Interfaces**
+    
+    ```typescript
+    interface ServiceError {
+      code: string;
+      message: string;
+      service: string;
+      timestamp: Date;
+      details?: Record<string, unknown>;
+    }
+    
+    // Usage in services
+    try {
+      await service.execute(operation);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        logger.error('Service error:', {
+          service: error.service,
+          code: error.code,
+          message: error.message,
+        });
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Development
+
+### Adding a New Service
+
+<Steps>
+  <Step title="Create Service Directory">
+    ```bash
+    mkdir services/new-service
+    cd services/new-service
+    ```
+  </Step>
+  
+  <Step title="Copy Service Template">
+    ```bash
+    # Copy structure from existing service
+    cp -r ../existing-service/* .
+    
+    # Update package.json with new service name
+    ```
+  </Step>
+  
+  <Step title="Update Workspace Configuration">
+    ```yaml
+    # pnpm-workspace.yaml
+    packages:
+      - 'services/*'
+    ```
+  </Step>
+  
+  <Step title="Implement Core Functionality">
+    ```typescript
+    // src/index.ts
+    export { ServiceClient } from './client';
+    export { ServiceServer } from './server';
+    export type { ServiceConfig, ServiceOperation } from './types';
+    ```
+  </Step>
+</Steps>
+
+### Testing Services
+
+<CodeGroup>
+```bash Individual Service Testing
+# Test specific service
+pnpm --filter @repo/[service-name] test
+
+# Type check service
+pnpm --filter @repo/[service-name] typecheck
+
+# Lint service code
+pnpm --filter @repo/[service-name] lint
+```
+
+```bash All Services Testing
+# Test all services
+pnpm test --filter "./services/*"
+
+# Type check all services
+pnpm typecheck --filter "./services/*"
+
+# Build all services
+pnpm build --filter "./services/*"
+```
+</CodeGroup>
+
+## Best Practices
+
+<Warning>
+**Service Development Guidelines:**
+- Use Zod for all runtime validation and type safety
+- Implement consistent error handling across all services
+- Provide comprehensive CLI interfaces for service operations
+- Design services to be used independently or in combination
+- Include detailed documentation with real-world examples
+- Follow the established service architecture patterns
+</Warning>
+
+### Recommended Patterns
+
+1. **Type Safety First**
+   - Use Zod schemas for all external data validation
+   - Implement comprehensive TypeScript types
+   - Validate environment variables and configuration
+
+2. **Error Handling & Resilience**
+   - Implement retry logic with exponential backoff
+   - Use circuit breaker patterns for external services
+   - Provide meaningful error messages and debugging information
+
+3. **Observability & Monitoring**
+   - Log all service operations with structured logging
+   - Implement health checks and status endpoints
+   - Track performance metrics and usage patterns
+
+4. **Security & Authentication**
+   - Secure API keys and credentials using environment variables
+   - Implement proper authentication and authorization
+   - Validate all inputs and sanitize outputs
+
+The services directory provides powerful tools that extend the core platform capabilities, enabling advanced workflows for security, automation, and data processing across the entire Forge ecosystem.

@@ -16,6 +16,6 @@ export async function generateMetadata({
 
 export default async function PageForgotPassword({ params }: { params: { locale: string } }) {
   const dict = await getDictionary(params.locale);
-  
+
   return <ForgotPasswordClient dict={dict} locale={params.locale} />;
 }

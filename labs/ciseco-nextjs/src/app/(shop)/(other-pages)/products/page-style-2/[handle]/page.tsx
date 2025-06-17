@@ -1,23 +1,21 @@
+import AccordionInfo from '@/components/AccordionInfo'
+import AddToCardButton from '@/components/AddToCardButton'
+import { Divider } from '@/components/Divider'
+import LikeSaveBtns from '@/components/LikeSaveBtns'
+import NcInputNumber from '@/components/NcInputNumber'
+import SectionSliderProductCard from '@/components/SectionSliderProductCard'
 import { getProductDetailByHandle, getProductReviews, getProducts } from '@/data/data'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import NcImage from '@/shared/NcImage/NcImage'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { ShoppingBag03Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import {
-  AccordionInfo,
-  AddToCardButton,
-  ButtonPrimary,
-  Divider,
-  LikeSaveBtns,
-  NcImage,
-  NcInputNumber,
-  SectionSliderProductCard,
-} from '@repo/design-system/ciseco'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Policy from '../../Policy'
-import ProductOptions from '../../ProductOptions'
+import ProductColorOptions from '../../ProductColorOptions'
 import ProductReviews from '../../ProductReviews'
-import ProductSizeOption from '../../ProductSizeOption'
+import ProductSizeOptions from '../../ProductSizeOptions'
 import ProductStatus from '../../ProductStatus'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
@@ -42,8 +40,8 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   }
 
   const { title, status, featuredImage, rating, reviewNumber, options, price, selectedOptions, images } = product
-  const sizeSelected = selectedOptions?.find((option) => option.name === 'Size')?.value
-  const colorSelected = selectedOptions?.find((option) => option.name === 'Color')?.value
+  const sizeSelected = selectedOptions?.find((option) => option.name === 'Size')?.value || ''
+  const colorSelected = selectedOptions?.find((option) => option.name === 'Color')?.value || ''
 
   const renderSectionSidebar = () => {
     return (
@@ -69,8 +67,8 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
 
             {/* ---------- 3 VARIANTS AND SIZE LIST ----------  */}
             <div className="mt-6 flex flex-col gap-y-7 lg:gap-y-8">
-              <ProductOptions options={options} />
-              <ProductSizeOption options={options} />
+              <ProductColorOptions options={options} defaultColor={colorSelected} />
+              <ProductSizeOptions options={options} defaultSize={sizeSelected} />
             </div>
           </div>
           {/*  ---------- 4  QTY AND ADD TO CART BUTTON */}
@@ -143,7 +141,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
     return (
       <div className="listingSection__wrap border-b-0! pb-0!">
         <h2 className="text-2xl font-semibold">Product details</h2>
-        <div className="prose prose-sm sm:prose dark:prose-invert sm:max-w-4xl">
+        <div className="prose prose-sm sm:prose sm:max-w-4xl dark:prose-invert">
           <p>
             The patented eighteen-inch hardwood Arrowhead deck --- finely mortised in, makes this the strongest and most
             rigid canoe ever built. You cannot buy a canoe that will afford greater satisfaction.
@@ -175,7 +173,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
               {featuredImage?.src && (
                 <NcImage
                   alt={featuredImage.alt || 'product detail'}
-                  containerClassName="aspect-[3/4] relative md:aspect-none md:absolute md:inset-0"
+                  containerClassName="aspect-w-3 aspect-h-4 relative md:aspect-none md:absolute md:inset-0"
                   className="rounded-md object-cover sm:rounded-xl"
                   src={featuredImage}
                   fill
@@ -206,7 +204,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
                   alt={image.alt || 'product detail'}
                   fill
                   sizes="(max-width: 640px) 100vw, 33vw"
-                  containerClassName="aspect-[6/5] lg:aspect-[6/4] relative"
+                  containerClassName="aspect-w-6 aspect-h-5 lg:aspect-h-4"
                   className="rounded-md object-cover sm:rounded-xl"
                   src={image}
                 />
@@ -217,7 +215,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
       </header>
 
       {/* MAIn */}
-      <main className="container relative mt-9 flex sm:mt-11">
+      <main className="relative container mt-9 flex sm:mt-11">
         {/* CONTENT */}
         <div className="flex w-full flex-col gap-y-10 lg:w-3/5 lg:gap-y-14 lg:pr-14 xl:w-2/3">
           {renderSection1()}
@@ -231,7 +229,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
       </main>
 
       {/* OTHER SECTION */}
-      <div className="container flex flex-col gap-y-14 pb-24 pt-14 lg:pb-28">
+      <div className="container flex flex-col gap-y-14 pt-14 pb-24 lg:pb-28">
         <Divider />
         <ProductReviews reviewNumber={reviewNumber || 0} rating={rating || 1} reviews={reviews} />
         <Divider />

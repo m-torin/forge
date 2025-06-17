@@ -1,5 +1,6 @@
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import { CheckIcon } from '@heroicons/react/24/solid'
-import { ButtonPrimary, ButtonSecondary } from '@repo/design-system/ciseco'
 
 export interface PricingItem {
   isPopular: boolean
@@ -52,12 +53,12 @@ const PageSubcription = () => {
         }`}
       >
         {pricing.isPopular && (
-          <span className="bg-primary-500 absolute right-3 top-3 z-10 rounded-full px-3 py-1 text-xs tracking-widest text-white">
+          <span className="absolute top-3 right-3 z-10 rounded-full bg-primary-500 px-3 py-1 text-xs tracking-widest text-white">
             POPULAR
           </span>
         )}
         <div className="mb-8">
-          <h3 className="mb-2 block text-sm font-medium uppercase tracking-widest text-neutral-600 dark:text-neutral-300">
+          <h3 className="mb-2 block text-sm font-medium tracking-widest text-neutral-600 uppercase dark:text-neutral-300">
             {pricing.name}
           </h3>
           <h2 className="flex items-center text-5xl leading-none text-neutral-800 dark:text-neutral-200">
@@ -68,7 +69,7 @@ const PageSubcription = () => {
         <nav className="mb-8 space-y-4">
           {pricing.features.map((item, index) => (
             <li className="flex items-center" key={index}>
-              <span className="text-primary-600 mr-4 inline-flex shrink-0">
+              <span className="mr-4 inline-flex shrink-0 text-primary-600">
                 <CheckIcon className="h-5 w-5" aria-hidden="true" />
               </span>
               <span className="text-neutral-700 dark:text-neutral-300">{item}</span>
@@ -92,7 +93,7 @@ const PageSubcription = () => {
   return (
     <div className="container pb-24 lg:pb-32">
       <header className="mx-auto my-20 max-w-2xl text-center">
-        <h2 className="flex items-center justify-center text-3xl font-semibold leading-[115%] text-neutral-900 md:text-5xl md:leading-[115%] dark:text-neutral-100">
+        <h2 className="flex items-center justify-center text-3xl leading-[115%] font-semibold text-neutral-900 md:text-5xl md:leading-[115%] dark:text-neutral-100">
           <span className="mr-4 text-3xl leading-none md:text-4xl">💎</span>
           Subscription
         </h2>

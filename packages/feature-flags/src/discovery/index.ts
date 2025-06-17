@@ -1,7 +1,7 @@
 // Create a simple discovery endpoint function since createFlagsDiscoveryEndpoint
 // is not available in @vercel/flags v3.1.1
 export function createFlagsDiscoveryEndpoint(
-  getProviderData: () => Promise<{ provider: string; flags: any[] }>
+  getProviderData: () => Promise<{ provider: string; flags: any[] }>,
 ) {
   return async function GET() {
     try {
@@ -12,7 +12,7 @@ export function createFlagsDiscoveryEndpoint(
       // Return empty flags instead of failing
       return Response.json({
         provider: 'fallback',
-        flags: []
+        flags: [],
       });
     }
   };

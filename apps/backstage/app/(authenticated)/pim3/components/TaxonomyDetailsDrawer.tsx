@@ -83,7 +83,7 @@ export function TaxonomyDetailsDrawer({
     });
   };
 
-  const copy = (taxonomy.copy as any) || {};
+  const copy = (taxonomy.copy as unknown as any) || {};
   const totalItems = taxonomy._count.products + taxonomy._count.collections;
 
   return (

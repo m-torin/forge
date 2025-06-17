@@ -11,15 +11,15 @@ import {
   Text,
 } from '@react-email/components';
 
-interface VerificationTemplateProps {
+interface VerificationTemplateProps extends Record<string, any> {
   readonly email: string;
-  readonly name?: string | null;
+  readonly name?: null | string;
   readonly verificationLink: string;
 }
 
 export const VerificationTemplate = ({
-  name,
   email,
+  name,
   verificationLink,
 }: VerificationTemplateProps) => (
   <Tailwind>
@@ -34,7 +34,7 @@ export const VerificationTemplate = ({
                 Verify your email address
               </Text>
 
-              <Text className="m-0 mb-4 text-zinc-500">Hi {name || email}!</Text>
+              <Text className="m-0 mb-4 text-zinc-500">Hi {name ?? email}!</Text>
 
               <Text className="m-0 mb-6 text-zinc-500">
                 Thanks for creating an account! Please click the button below to verify your email
@@ -43,8 +43,8 @@ export const VerificationTemplate = ({
 
               <Section className="mb-6">
                 <Button
-                  href={verificationLink}
                   className="rounded-md bg-zinc-950 px-6 py-3 text-center text-white no-underline"
+                  href={verificationLink}
                 >
                   Verify Email Address
                 </Button>
@@ -69,9 +69,9 @@ export const VerificationTemplate = ({
 
 const ExampleVerificationEmail = () => (
   <VerificationTemplate
-    verificationLink="https://example.com/verify-email?token=abc123"
     email="jane@example.com"
     name="Jane Smith"
+    verificationLink="https://example.com/verify-email?token=abc123"
   />
 );
 

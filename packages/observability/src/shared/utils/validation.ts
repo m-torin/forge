@@ -2,7 +2,7 @@
  * Configuration validation utilities
  */
 
-import type { LogLevel, ObservabilityConfig, ObservabilityProviderConfig } from '../types/types';
+import { LogLevel, ObservabilityConfig, ObservabilityProviderConfig } from '../types/types';
 
 export interface ValidationError {
   field?: string;
@@ -16,146 +16,23 @@ export interface ValidationResult {
 }
 
 /**
- * Validate observability configuration (returns ValidationResult)
- */
-export function validateObservabilityConfig(config: ObservabilityConfig): ValidationResult {
-  const errors: ValidationError[] = [];
-
-  if (!config) {
-    errors.push({ message: 'Configuration is required' });
-    return { valid: false, errors };
-  }
-
-  if (!config.providers || typeof config.providers !== 'object') {
-    errors.push({ message: 'Providers configuration is required' });
-    return { valid: false, errors };
-  }
-
-  // Validate each provider
-  for (const [providerName, providerConfig] of Object.entries(config.providers)) {
-    const providerErrors = validateProviderConfig(providerName, providerConfig);
-    errors.push(...providerErrors);
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
-}
-
-/**
- * Validate individual provider configuration
- */
-export function validateProviderConfig(
-  name: string,
-  config: ObservabilityProviderConfig,
-): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  switch (name) {
-    case 'sentry':
-      if (!config.dsn) {
-        errors.push({
-          provider: name,
-          field: 'dsn',
-          message: 'Sentry DSN is required',
-        });
-      }
-      break;
-
-    case 'opentelemetry':
-      if (!config.serviceName) {
-        errors.push({
-          provider: name,
-          field: 'serviceName',
-          message: 'Service name is required for OpenTelemetry',
-        });
-      }
-      break;
-
-    case 'pino':
-    case 'winston':
-      // Logging providers have sensible defaults
-      break;
-
-    case 'console':
-      // Console provider has no required fields
-      break;
-
-    default:
-      // Unknown provider - not necessarily an error as it might be custom
-      break;
-  }
-
-  return errors;
-}
-
-/**
  * Debug configuration by logging validation results
  */
-/**
- * Validate log level
- */
-export function validateLogLevel(level: LogLevel): void {
-  const validLevels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
-  if (!validLevels.includes(level)) {
-    throw new Error(`Invalid log level: ${level}. Valid levels are: ${validLevels.join(', ')}`);
-  }
-}
+export function debugConfig(config: ObservabilityConfig): void {
+  if (process.env.NODE_ENV === 'production') return;
 
-/**
- * Validate observability provider
- */
-export function validateProvider(provider: unknown): void {
-  if (provider === null || provider === undefined) {
-    throw new Error('Provider cannot be null or undefined');
-  }
+  const result = validateObservabilityConfig(config);
 
-  if (typeof provider !== 'object') {
-    throw new Error('Provider must be an object');
-  }
-
-  const providerObj = provider as Record<string, unknown>;
-
-  if (typeof providerObj.log !== 'function') {
-    throw new Error('Provider must implement log method');
-  }
-
-  if (typeof providerObj.captureException !== 'function') {
-    throw new Error('Provider must implement captureException method');
-  }
-}
-
-/**
- * Validate configuration (throws on error - for tests)
- */
-export function validateConfig(config: any): void {
-  if (!config) {
-    throw new Error('Configuration is required');
-  }
-
-  if (!Array.isArray(config.providers)) {
-    throw new Error('Providers must be an array');
-  }
-
-  if (config.defaultLogLevel !== undefined) {
-    validateLogLevel(config.defaultLogLevel);
-  }
-
-  if (config.enableConsoleInDev !== undefined && typeof config.enableConsoleInDev !== 'boolean') {
-    throw new Error('enableConsoleInDev must be a boolean');
-  }
-
-  if (config.enabledEnvironments !== undefined) {
-    if (!Array.isArray(config.enabledEnvironments)) {
-      throw new Error('enabledEnvironments must be an array');
-    }
-
-    for (const env of config.enabledEnvironments) {
-      if (typeof env !== 'string') {
-        throw new Error('All environments must be strings');
-      }
-    }
+  if (result.valid) {
+    console.log('[Observability] Configuration is valid');
+    console.log('[Observability] Providers: ', Object.keys(config.providers).join(', '));
+  } else {
+    console.error('[Observability] Configuration errors:');
+    result.errors.forEach((error: any) => {
+      const prefix = error.provider ? `[${error.provider}]` : '';
+      const field = error.field ? ` ${error.field}:` : '';
+      console.error(`  ${prefix}${field} ${error.message}`);
+    });
   }
 }
 
@@ -199,20 +76,145 @@ export function isValidUrl(url: string): boolean {
 }
 
 /**
+ * Validate configuration (throws on error - for tests)
+ */
+export function validateConfig(config: any): void {
+  if (!config) {
+    throw new Error('Configuration is required');
+  }
+
+  if (!Array.isArray(config.providers)) {
+    throw new Error('Providers must be an array');
+  }
+
+  if (config.defaultLogLevel !== undefined) {
+    validateLogLevel(config.defaultLogLevel);
+  }
+
+  if (config.enableConsoleInDev !== undefined && typeof config.enableConsoleInDev !== 'boolean') {
+    throw new Error('enableConsoleInDev must be a boolean');
+  }
+
+  if (config.enabledEnvironments !== undefined) {
+    if (!Array.isArray(config.enabledEnvironments)) {
+      throw new Error('enabledEnvironments must be an array');
+    }
+
+    for (const env of config.enabledEnvironments) {
+      if (typeof env !== 'string') {
+        throw new Error('All environments must be strings');
+      }
+    }
+  }
+}
+
+/**
  * Debug configuration by logging validation results
  */
-export function debugConfig(config: ObservabilityConfig): void {
-  const result = validateObservabilityConfig(config);
-
-  if (result.valid) {
-    console.log('[Observability] Configuration is valid');
-    console.log('[Observability] Providers:', Object.keys(config.providers).join(', '));
-  } else {
-    console.error('[Observability] Configuration errors:');
-    result.errors.forEach((error) => {
-      const prefix = error.provider ? `[${error.provider}]` : '';
-      const field = error.field ? ` ${error.field}:` : '';
-      console.error(`  ${prefix}${field} ${error.message}`);
-    });
+/**
+ * Validate log level
+ */
+export function validateLogLevel(level: LogLevel): void {
+  const validLevels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
+  if (!validLevels.includes(level)) {
+    throw new Error(`Invalid log level: ${level}. Valid levels are: ${validLevels.join(', ')}`);
   }
+}
+
+/**
+ * Validate observability configuration (returns ValidationResult)
+ */
+export function validateObservabilityConfig(config: ObservabilityConfig): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  if (!config) {
+    errors.push({ message: 'Configuration is required' });
+    return { errors, valid: false };
+  }
+
+  if (!config.providers || typeof config.providers !== 'object') {
+    errors.push({ message: 'Providers configuration is required' });
+    return { errors, valid: false };
+  }
+
+  // Validate each provider
+  for (const [providerName, providerConfig] of Object.entries(config.providers)) {
+    const providerErrors = validateProviderConfig(providerName, providerConfig);
+    errors.push(...providerErrors);
+  }
+
+  return {
+    errors,
+    valid: errors.length === 0,
+  };
+}
+
+/**
+ * Validate observability provider
+ */
+export function validateProvider(provider: unknown): void {
+  if (provider === null || provider === undefined) {
+    throw new Error('Provider cannot be null or undefined');
+  }
+
+  if (typeof provider !== 'object') {
+    throw new Error('Provider must be an object');
+  }
+
+  const providerObj = provider as Record<string, unknown>;
+
+  if (typeof providerObj.log !== 'function') {
+    throw new Error('Provider must implement log method');
+  }
+
+  if (typeof providerObj.captureException !== 'function') {
+    throw new Error('Provider must implement captureException method');
+  }
+}
+
+/**
+ * Validate individual provider configuration
+ */
+export function validateProviderConfig(
+  name: string,
+  config: ObservabilityProviderConfig,
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  switch (name) {
+    case 'console':
+      // Console provider has no required fields
+      break;
+
+    case 'opentelemetry':
+      if (!config.serviceName) {
+        errors.push({
+          field: 'serviceName',
+          message: 'Service name is required for OpenTelemetry',
+          provider: name,
+        });
+      }
+      break;
+
+    case 'pino':
+    case 'winston':
+      // Logging providers have sensible defaults
+      break;
+
+    case 'sentry':
+      if (!config.dsn) {
+        errors.push({
+          field: 'dsn',
+          message: 'Sentry DSN is required',
+          provider: name,
+        });
+      }
+      break;
+
+    default:
+      // Unknown provider - not necessarily an error as it might be custom
+      break;
+  }
+
+  return errors;
 }

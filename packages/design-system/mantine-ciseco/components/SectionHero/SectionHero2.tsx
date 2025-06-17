@@ -17,32 +17,32 @@ import ButtonPrimary from '../shared/Button/ButtonPrimary';
 // DEMO DATA
 const data = [
   {
-    id: 1,
     btnHref: '/collections/all',
     btnText: 'Explore shop now',
     heading: 'Exclusive collection <br /> for everyone',
+    id: 1,
     imageUrl: heroImage1,
     subHeading: 'In this season, find the best 🔥',
   },
   {
-    id: 2,
     btnHref: '/collections/all',
     btnText: 'Explore shop now',
     heading: 'Exclusive collection <br /> for everyone',
+    id: 2,
     imageUrl: heroImage2,
     subHeading: 'In this season, find the best 🔥',
   },
   {
-    id: 3,
     btnHref: '/collections/all',
     btnText: 'Explore shop now',
     heading: 'Exclusive collection <br /> for everyone',
+    id: 3,
     imageUrl: heroImage3,
     subHeading: 'In this season, find the best 🔥',
   },
 ];
 
-export interface SectionHero2Props {
+export interface SectionHero2Props extends Record<string, any> {
   className?: string;
 }
 
@@ -103,7 +103,7 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
   const handleClickPrev = () => {
     setIndexActive((state) => {
       if (state === 0) {
-        return (data?.length || 0) - 1;
+        return data.length - 1;
       }
       return state - 1;
     });
@@ -124,9 +124,9 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
 
   const renderItem = (index: number) => {
     const isActive = indexActive === index;
-    const item = data?.[index];
-    
-    if (!item) return null;
+    const item = data[index];
+
+    // Item is guaranteed to exist for valid indices
 
     return (
       <div
@@ -139,8 +139,8 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
         {/* BG */}
         <div className="absolute inset-0 -z-10 bg-[#E3FFE6]">
           <Image
-            className="absolute h-full w-full object-contain"
             alt="hero"
+            className="absolute h-full w-full object-contain"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             src={backgroundLineSvg}
@@ -149,23 +149,25 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
 
         {/* DOTS */}
         <div className="absolute start-1/2 bottom-4 flex -translate-x-1/2 justify-center rtl:translate-x-1/2">
-          {data?.map((_, index) => {
+          {data.map((item, index) => {
             const isActive = indexActive === index;
             return (
-              <div
-                key={index}
+              <button
+                key={item.id}
+                aria-label={`Go to slide ${index + 1}`}
+                className="relative cursor-pointer px-1 py-1.5"
+                type="button"
                 onClick={() => {
                   setIndexActive(index);
                   handleAfterClick();
                 }}
-                className="relative cursor-pointer px-1 py-1.5"
               >
                 <div className="relative h-1 w-20 rounded-md bg-white shadow-xs">
                   {isActive && (
                     <div className="absolute inset-0 rounded-md bg-neutral-900 fade--animation__dot" />
                   )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -175,35 +177,35 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
             {item.subHeading}
           </span>
           <h2
-            dangerouslySetInnerHTML={{ __html: item.heading }}
             className="mt-5 text-4xl font-semibold text-neutral-900 fade--animation__heading sm:mt-6 md:text-5xl xl:text-6xl xl:leading-[1.2] 2xl:text-7xl"
+            dangerouslySetInnerHTML={{ __html: item.heading }}
           />
 
           <ButtonPrimary
-            href={item.btnHref || '#'}
             className="mt-10 fade--animation__button sm:mt-20 dark:bg-neutral-900 dark:text-white"
+            href={item.btnHref || '#'}
             sizeClass="py-3 px-6 sm:py-5 sm:px-9 "
           >
             <span>{item.btnText}</span>
             <HugeiconsIcon
-              strokeWidth={1.5}
+              className="ms-2.5"
               color="currentColor"
               icon={Search01Icon}
-              className="ms-2.5"
               size={20}
+              strokeWidth={1.5}
             />
           </ButtonPrimary>
         </div>
 
         <div className="relative -z-10 flex-1/2 lg:pr-10">
           <Image
-            width={790}
-            priority
-            className="object-contain fade--animation__image select-none"
             alt={item.heading}
+            className="object-contain fade--animation__image select-none"
             height={790}
+            priority
             sizes="(max-width: 768px) 100vw, 50vw"
             src={item.imageUrl}
+            width={790}
           />
         </div>
       </div>
@@ -212,38 +214,38 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = '' }) => {
 
   return (
     <div className={clsx('relative z-[1]', className)} {...handlers}>
-      {data?.map((_, index) => renderItem(index))}
+      {data.map((_, index) => renderItem(index))}
 
       <button
-        onClick={handleClickNext}
         className="absolute inset-y-px end-0 z-10 hidden items-center justify-center px-10 text-neutral-700 lg:flex"
         type="button"
+        onClick={handleClickNext}
       >
         <svg
-          strokeWidth={0.6}
-          stroke="currentColor"
-          viewBox="0 0 24 24"
           className="h-12 w-12"
           fill="none"
+          stroke="currentColor"
+          strokeWidth={0.6}
+          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          <path d="m8.25 4.5 7.5 7.5-7.5 7.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
       <button
-        onClick={handleClickPrev}
         className="absolute inset-y-px start-0 z-10 hidden items-center justify-center px-10 text-neutral-700 lg:flex"
         type="button"
+        onClick={handleClickPrev}
       >
         <svg
-          strokeWidth={0.6}
-          stroke="currentColor"
-          viewBox="0 0 24 24"
           className="h-12 w-12"
           fill="none"
+          stroke="currentColor"
+          strokeWidth={0.6}
+          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          <path d="M15.75 19.5 8.25 12l7.5-7.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
     </div>

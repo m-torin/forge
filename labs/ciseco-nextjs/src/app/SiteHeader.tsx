@@ -1,6 +1,8 @@
 'use client'
 
-import { Header, Header2, useThemeMode } from '@repo/design-system/ciseco'
+import Header from '@/components/Header/Header'
+import Header2 from '@/components/Header/Header2'
+import { useThemeMode } from '@/hooks/useThemeMode'
 import { usePathname } from 'next/navigation'
 
 const SiteHeader = () => {

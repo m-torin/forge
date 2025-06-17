@@ -13,7 +13,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const MerchantOnboardingInput = z.object({
@@ -96,7 +96,7 @@ const MerchantOnboardingInput = z.object({
           'fraud-screening',
         ]),
       )
-      .default(['all']),
+      .default(['business-registration', 'tax-verification']),
     level: z.enum(['basic', 'standard', 'enhanced']).default('standard'),
     riskThreshold: z.number().min(0).max(1).default(0.7),
   }),
@@ -359,12 +359,8 @@ export const validateApplicationStep = compose(
     (input) => !!input.application,
     (output) => output.applicationValid,
   ),
-  (step) => withStepTimeout(step, { execution: 30000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['defaultMetric'],
-    }),
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 2: Run business verification checks
@@ -443,10 +439,10 @@ export const runBusinessVerificationStep = compose(
       },
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -515,7 +511,7 @@ function calculateBusinessAgeRisk(founded: string): number {
 }
 
 function calculateBusinessSizeRisk(employeeCount: string, revenue: string): number {
-  const sizeScore = {
+  const sizeScore: Record<string, number> = {
     '1-10': 0.6,
     '11-50': 0.4,
     '51-200': 0.2,
@@ -523,7 +519,7 @@ function calculateBusinessSizeRisk(employeeCount: string, revenue: string): numb
     '500+': 0,
   };
 
-  const revenueScore = {
+  const revenueScore: Record<string, number> = {
     '1M-10M': 0.3,
     '10M-50M': 0.1,
     '50M+': 0,
@@ -531,7 +527,7 @@ function calculateBusinessSizeRisk(employeeCount: string, revenue: string): numb
     '<100k': 0.7,
   };
 
-  return (sizeScore[employeeCount as any as any] + revenueScore[revenue]) / 2;
+  return (sizeScore[employeeCount] + revenueScore[revenue]) / 2;
 }
 
 function calculateWebsiteRisk(websiteVerification: any): number {
@@ -736,7 +732,7 @@ export const createMerchantAccountStep = createStep('create-account', async (dat
 });
 
 function generateAccountLimits(tier: string): any {
-  const limits = {
+  const limits: Record<string, any> = {
     basic: {
       apiRateLimit: 10,
       concurrentConnections: 2,
@@ -763,7 +759,7 @@ function generateAccountLimits(tier: string): any {
     },
   };
 
-  return limits[tier as any] || limits.basic;
+  return limits[tier] || limits.basic;
 }
 
 // Step 6: Generate API credentials

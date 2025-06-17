@@ -3,13 +3,25 @@
  * This package is a skeleton for migrating authentication functionality
  */
 
+// Placeholder configuration
+export interface AuthServerConfig {
+  database?: any;
+  providers?: any[];
+  secret?: string,
+}
+
+// Middleware placeholder
+export function authMiddleware(_request: Request) {
+  return new Response('Authentication middleware not implemented', { status: 501 });
+}
+
 // Placeholder auth server functions
 export function createAuthServer(_config?: any) {
   return {
-    validateSession: async () => ({ valid: false, user: null }),
     createSession: async () => ({ message: 'Not implemented', success: false }),
     deleteSession: async () => ({ message: 'Not implemented', success: false }),
     refreshToken: async () => ({ message: 'Not implemented', success: false }),
+    validateSession: async () => ({ user: null, valid: false }),
   };
 }
 
@@ -20,18 +32,6 @@ export async function getServerSession(_request?: Request) {
 
 export async function requireAuth(_request: Request) {
   throw new Error('Authentication not implemented');
-}
-
-// Middleware placeholder
-export function authMiddleware(_request: Request) {
-  return new Response('Authentication middleware not implemented', { status: 501 });
-}
-
-// Placeholder configuration
-export interface AuthServerConfig {
-  database?: any;
-  providers?: any[];
-  secret?: string;
 }
 
 export const authServer = createAuthServer();

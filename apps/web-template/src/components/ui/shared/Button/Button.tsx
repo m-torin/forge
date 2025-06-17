@@ -13,6 +13,69 @@ export interface ButtonProps {
   loading?: boolean;
   sizeClass?: string;
   targetBlank?: boolean;
+  error?: string;
+}
+
+// Error state for Button (Tailwind-only)
+function ButtonError({
+  error,
+  className,
+  testId,
+  sizeClass,
+}: {
+  error: string;
+  className?: string;
+  testId?: string;
+  sizeClass?: string;
+}) {
+  return (
+    <button
+      disabled
+      className={clsx(
+        'nc-Button relative inline-flex h-auto cursor-not-allowed items-center justify-center rounded-full transition-colors',
+        'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
+        sizeClass || 'py-3 px-4 sm:py-3.5 sm:px-6',
+        className,
+      )}
+      data-testid={testId}
+    >
+      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.268 16.5c-.77.833.192 2.5 1.732 2.5z"
+        />
+      </svg>
+      Error
+    </button>
+  );
+}
+
+// Zero state for Button (Tailwind-only)
+function ButtonEmpty({
+  className,
+  testId,
+  sizeClass,
+}: {
+  className?: string;
+  testId?: string;
+  sizeClass?: string;
+}) {
+  return (
+    <button
+      disabled
+      className={clsx(
+        'nc-Button relative inline-flex h-auto cursor-not-allowed items-center justify-center rounded-full transition-colors',
+        'bg-gray-50 text-gray-400 border border-dashed border-gray-300 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-600',
+        sizeClass || 'py-3 px-4 sm:py-3.5 sm:px-6',
+        className,
+      )}
+      data-testid={testId}
+    >
+      Button unavailable
+    </button>
+  );
 }
 
 const Button: FC<ButtonProps> = ({
@@ -26,8 +89,20 @@ const Button: FC<ButtonProps> = ({
   loading,
   sizeClass = 'py-3 px-4 sm:py-3.5 sm:px-6',
   targetBlank,
+  error,
   ...props
 }) => {
+  // Show error state
+  if (error) {
+    return (
+      <ButtonError error={error} className={className} testId={testId} sizeClass={sizeClass} />
+    );
+  }
+
+  // Show zero state when no children and no href
+  if (!children && !href) {
+    return <ButtonEmpty className={className} testId={testId} sizeClass={sizeClass} />;
+  }
   const classes = clsx(
     'nc-Button relative inline-flex h-auto cursor-pointer items-center justify-center rounded-full transition-colors',
     fontSize,

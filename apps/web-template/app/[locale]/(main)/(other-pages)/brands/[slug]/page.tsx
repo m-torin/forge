@@ -1,12 +1,14 @@
-import { getBrandBySlug, getProducts } from '@/data/data-service';
+import { getBrandBySlug } from '@/actions/brands';
+import { getProductsByBrand } from '@/actions/products';
 import { seoManager } from '@/lib/seo-config';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { Breadcrumb, CompletePagination, TabFilters, type TProductItem } from '@/components/ui';
+import { Breadcrumb, CompletePagination, TabFilters } from '@/components/ui';
 import { JsonLd, structuredData } from '@repo/seo/structured-data';
+import { transformDatabaseProductToTProductItem } from '@/types/database';
 
-import { BrandClient } from './BrandClient';
+import { BrandUi } from './BrandUi';
 import { ClientSidebarFilters } from '@/components/ClientSidebarFilters';
 
 // ISR Configuration - Revalidate every 4 hours for brand pages
@@ -23,19 +25,21 @@ export async function generateStaticParams() {
 }
 
 async function getBrandProducts(brandSlug: string, page = 1, limit = 20) {
-  // Get all products - in a real implementation, this would filter by brand
-  const allProducts = await getProducts();
+  // Get products filtered by brand using dedicated action
+  const result = await getProductsByBrand(brandSlug, {
+    page,
+    limit,
+    sort: 'newest',
+  });
 
-  // Simulate pagination
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const products = allProducts.slice(startIndex, endIndex);
+  // Transform database products to TProductItem type
+  const transformedProducts = (result.data || []).map(transformDatabaseProductToTProductItem);
 
   return {
     currentPage: page,
-    products,
-    totalCount: allProducts.length,
-    totalPages: Math.ceil(allProducts.length / limit),
+    products: transformedProducts,
+    totalCount: result.pagination?.total || 0,
+    totalPages: result.pagination?.totalPages || 1,
   };
 }
 
@@ -143,7 +147,7 @@ export default async function BrandPage({
             {/* Products Grid */}
             <div className="flex-shrink-0 mb-10 lg:mb-0 lg:mx-4 lg:w-2/3 xl:w-3/4">
               <TabFilters />
-              <BrandClient products={products} />
+              <BrandUi products={products} />
 
               {/* Pagination */}
               <div className="mt-12 flex justify-center">

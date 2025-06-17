@@ -1,4 +1,7 @@
-import { Divider, Heading, Prices, getOrders } from '@repo/design-system/ciseco'
+import { Divider } from '@/components/Divider'
+import Heading from '@/components/Heading/Heading'
+import Prices from '@/components/Prices'
+import { getOrders } from '@/data/data'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -27,8 +30,8 @@ export default async function Page() {
             <Heading className="mt-4">Payment successful!</Heading>
 
             <p className="mt-2.5 max-w-2xl text-neutral-500">
-              We appreciate your order, we&apos;re currently processing it. So hang tight and we&apos;ll send you
-              confirmation very soon!
+              We appreciate your order, we’re currently processing it. So hang tight and we’ll send you confirmation
+              very soon!
             </p>
 
             <dl className="mt-16 text-sm">
@@ -47,7 +50,7 @@ export default async function Page() {
             >
               {products.map((product) => (
                 <li key={product.id} className="flex gap-x-2.5 py-6 sm:gap-x-6">
-                  <div className="aspect-3/4 relative w-24 flex-none">
+                  <div className="relative aspect-3/4 w-24 flex-none">
                     {product.featuredImage && (
                       <Image
                         alt={product.featuredImage.alt}
@@ -60,7 +63,7 @@ export default async function Page() {
                   </div>
                   <div className="flex flex-auto flex-col gap-y-1.5">
                     <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                      <Link href={`/products/${product.handle}`}>{product.title}</Link>
+                      <Link href={'/products/' + product.handle}>{product.title}</Link>
                     </h3>
                     <div className="flex items-center gap-x-2 text-neutral-500 dark:text-neutral-300">
                       <p className="text-sm text-neutral-500 dark:text-neutral-300">{product.color}</p>
@@ -103,7 +106,7 @@ export default async function Page() {
 
             <dl className="mt-12 grid grid-cols-2 gap-x-4 text-sm text-neutral-600 sm:mt-16 dark:text-neutral-300">
               <div>
-                <dt className="font-medium uppercase text-neutral-900">Shipping Address</dt>
+                <dt className="font-medium text-neutral-900 uppercase">Shipping Address</dt>
                 <dd className="mt-2">
                   <address className="uppercase not-italic">
                     <span className="block">Kristin Watson</span>
@@ -114,7 +117,7 @@ export default async function Page() {
               </div>
               <div>
                 <dt className="font-medium uppercase">Payment Information</dt>
-                <dd className="mt-2 space-y-2 sm:flex sm:gap-x-4 sm:space-y-0">
+                <dd className="mt-2 space-y-2 sm:flex sm:space-y-0 sm:gap-x-4">
                   <div className="flex-none">
                     <svg width={36} height={24} viewBox="0 0 36 24" aria-hidden="true" className="h-6 w-auto">
                       <rect rx={4} fill="#224DBA" width={36} height={24} />

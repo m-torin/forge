@@ -1,4 +1,6 @@
-import { Badge, UnstyledButton } from '@mantine/core';
+'use client';
+
+import { UnstyledButton } from '@mantine/core';
 import Link from 'next/link';
 import { type FC } from 'react';
 
@@ -11,13 +13,13 @@ export interface TagProps {
   onClick?: () => void;
 }
 
-const Tag: FC<TagProps> = ({ 
-  hideCount = false, 
-  children, 
-  className = '', 
+const Tag: FC<TagProps> = ({
+  hideCount = false,
+  children,
+  className = '',
   count = 22,
   href = '/blog',
-  onClick
+  onClick,
 }) => {
   const content = (
     <>
@@ -34,20 +36,14 @@ const Tag: FC<TagProps> = ({
 
   if (onClick) {
     return (
-      <UnstyledButton
-        onClick={onClick}
-        className={baseStyles}
-      >
+      <UnstyledButton onClick={onClick} className={baseStyles}>
         {content}
       </UnstyledButton>
     );
   }
 
   return (
-    <Link
-      href={href}
-      className={baseStyles}
-    >
+    <Link href={href} className={baseStyles}>
       {content}
     </Link>
   );

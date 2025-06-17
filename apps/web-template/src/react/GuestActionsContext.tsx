@@ -1,25 +1,21 @@
 'use client';
 
-import { useLocalStorage, useMap, useMediaQuery, useViewportSize } from '@mantine/hooks';
+import { useMediaQuery, useViewportSize } from '@mantine/hooks';
 import { usePathname } from 'next/navigation';
 import {
   createContext,
   type ReactNode,
   useContext,
-  useEffect,
   useMemo,
   useTransition,
+  useCallback,
+  useState,
+  useEffect,
 } from 'react';
 
-// Simplified version without analytics
-
-interface FavoriteItem {
-  id: string;
-  metadata?: any;
-  addedAt: string;
-}
-
-type FavoritesMap = Record<string, FavoriteItem>;
+import { addFavorite, removeFavorite, getFavorites, toggleFavorite } from '@/actions/favorites';
+import { AuthPromptModal } from '@/components/auth/AuthPromptModal';
+import { useSession } from '@repo/auth/client/next';
 
 export interface GuestPreferences {
   currency: 'USD' | 'EUR' | 'GBP';
@@ -57,12 +53,13 @@ interface PreferencesOperations {
 }
 
 interface FavoritesOperations {
-  addFavorite: (id: string, metadata?: any) => void;
-  removeFavorite: (id: string) => void;
-  toggleFavorite: (id: string, metadata?: any) => void;
+  addFavorite: (id: string, metadata?: any) => Promise<void>;
+  removeFavorite: (id: string) => Promise<void>;
+  toggleFavorite: (id: string, metadata?: any) => Promise<void>;
   isFavorite: (id: string) => boolean;
   favorites: Set<string>;
   favoriteCount: number;
+  refreshFavorites: () => Promise<void>;
 }
 
 interface GuestActionsContextValue {
@@ -89,19 +86,24 @@ const DEFAULT_PREFERENCES = {
 } as const satisfies GuestPreferences;
 
 export function GuestActionsProvider({ children }: { children: ReactNode }) {
-  const _pathname = usePathname();
+  const pathname = usePathname();
   const [_isPending, startTransition] = useTransition();
+  const { data: session } = useSession();
 
-  // Guest ID management
-  const [guestId] = useLocalStorage({
-    defaultValue: () => `guest-${Math.random().toString(36).substring(2, 15)}`,
-    key: 'guest-id',
-  });
+  // Extract locale from pathname
+  const locale = pathname.split('/')[1] || 'en';
 
-  const [authenticatedUserId, setAuthenticatedUserId] = useLocalStorage({
-    defaultValue: '',
-    key: 'authenticated-user-id',
-  });
+  // Store favorites in state (database for auth users, localStorage for guests)
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [guestFavoriteIds, setGuestFavoriteIds] = useState<Set<string>>(new Set());
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
+
+  // Auth prompt modal state
+  const [authPromptOpened, setAuthPromptOpened] = useState(false);
+  const [authPromptContext, setAuthPromptContext] = useState<{
+    action: 'favorite' | 'review' | 'purchase' | 'generic';
+    productName?: string;
+  }>({ action: 'generic' });
 
   // Device detection
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -109,87 +111,86 @@ export function GuestActionsProvider({ children }: { children: ReactNode }) {
   const isDesktop = useMediaQuery('(min-width: 1025px)');
   const viewport = useViewportSize();
 
-  // Preferences
-  const [preferences, setPreferences] = useLocalStorage<GuestPreferences>({
-    defaultValue: DEFAULT_PREFERENCES,
-    key: 'guest-preferences',
-  });
+  // Preferences - for now keep in memory, could be moved to DB later
+  const [preferences, setPreferences] = useState<GuestPreferences>(DEFAULT_PREFERENCES);
 
-  // Favorites with metadata
-  const [favorites, setFavorites] = useLocalStorage<FavoritesMap>({
-    key: 'guest-lists-favorites',
-    defaultValue: {},
-  });
-
-  // Lists (favorites, wishlists, etc.)
-  const lists = useMap<string, string[]>();
-
-  // Initialize lists from localStorage
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('guest-favorites');
-    if (savedFavorites) {
+  // Load guest favorites from localStorage
+  const loadGuestFavorites = useCallback(() => {
+    if (typeof window !== 'undefined') {
       try {
-        lists.set('favorites', JSON.parse(savedFavorites));
-      } catch {
-        // Ignore parse errors
+        const stored = localStorage.getItem('guest-favorites');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setGuestFavoriteIds(new Set(parsed));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load guest favorites:', error);
       }
     }
-  }, [lists]);
+  }, []);
 
-  // Save favorites to localStorage
-  useEffect(() => {
-    const favorites = lists.get('favorites');
-    if (favorites) {
-      localStorage.setItem('guest-favorites', JSON.stringify(favorites));
+  // Save guest favorites to localStorage
+  const saveGuestFavorites = useCallback((favorites: Set<string>) => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('guest-favorites', JSON.stringify([...favorites]));
+      } catch (error) {
+        console.error('Failed to save guest favorites:', error);
+      }
     }
-  }, [lists]);
+  }, []);
 
-  // Operations
+  // Load favorites from database when user is authenticated
+  const loadFavorites = useCallback(async () => {
+    if (session?.user) {
+      try {
+        setIsLoadingFavorites(true);
+        const favs = await getFavorites(session.user.id);
+        setFavoriteIds(new Set(favs.map((f: any) => f.id)));
+      } catch (error) {
+        console.error('Failed to load favorites:', error);
+      } finally {
+        setIsLoadingFavorites(false);
+      }
+    } else {
+      setFavoriteIds(new Set());
+      loadGuestFavorites();
+      setIsLoadingFavorites(false);
+    }
+  }, [session?.user, loadGuestFavorites]);
+
+  useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
+
+  // Lists operations (for other types of lists in the future)
   const listOperations = useMemo<ListOperations>(
     () => ({
-      add: async (listType: string, itemId: string, _metadata?: Record<string, any>) => {
-        const currentList = lists.get(listType) || [];
-        if (!currentList.includes(itemId)) {
-          lists.set(listType, [...currentList, itemId]);
-        }
+      add: async (_listType: string, _itemId: string, _metadata?: Record<string, any>) => {
+        // Not implemented for non-favorites lists
       },
-
-      remove: async (listType: string, itemId: string) => {
-        const currentList = lists.get(listType) || [];
-        lists.set(
-          listType,
-          currentList.filter((id) => id !== itemId),
-        );
+      remove: async (_listType: string, _itemId: string) => {
+        // Not implemented for non-favorites lists
       },
-
-      toggle: async (listType: string, itemId: string, _metadata?: Record<string, any>) => {
-        const currentList = lists.get(listType) || [];
-        const has = currentList.includes(itemId);
-
-        if (has) {
-          lists.set(
-            listType,
-            currentList.filter((id) => id !== itemId),
-          );
-        } else {
-          lists.set(listType, [...currentList, itemId]);
-        }
-
-        return !has;
+      toggle: async (_listType: string, _itemId: string, _metadata?: Record<string, any>) => {
+        // Not implemented for non-favorites lists
+        return false;
       },
-
-      has: (listType: string, itemId: string) => {
-        const currentList = lists.get(listType) || [];
-        return currentList.includes(itemId);
+      has: (_listType: string, _itemId: string) => {
+        // Not implemented for non-favorites lists
+        return false;
       },
-
-      get: (listType: string) => lists.get(listType) || [],
-
-      clear: (listType: string) => {
-        lists.set(listType, []);
+      get: (_listType: string) => {
+        // Not implemented for non-favorites lists
+        return [];
+      },
+      clear: (_listType: string) => {
+        // Not implemented for non-favorites lists
       },
     }),
-    [lists],
+    [],
   );
 
   const activityOperations = useMemo<ActivityOperations>(
@@ -229,65 +230,131 @@ export function GuestActionsProvider({ children }: { children: ReactNode }) {
         });
       },
     }),
-    [preferences, setPreferences],
+    [preferences],
   );
 
   const favoritesOperations = useMemo<FavoritesOperations>(
     () => ({
-      addFavorite: (id: string, metadata?: any) => {
-        setFavorites((prev) => ({
-          ...prev,
-          [id]: {
-            id,
-            metadata,
-            addedAt: new Date().toISOString(),
-          },
-        }));
+      addFavorite: async (id: string, metadata?: any) => {
+        if (!session?.user) {
+          // Allow guest users to save to localStorage and show prompt
+          const newGuestFavorites = new Set([...guestFavoriteIds, id]);
+          setGuestFavoriteIds(newGuestFavorites);
+          saveGuestFavorites(newGuestFavorites);
+
+          // Show auth prompt for enhanced experience
+          setAuthPromptContext({
+            action: 'favorite',
+            productName: metadata?.productName,
+          });
+          setAuthPromptOpened(true);
+          return;
+        }
+
+        try {
+          await addFavorite(session?.user?.id || 'guest', id);
+          setFavoriteIds((prev) => new Set([...prev, id]));
+        } catch (error) {
+          console.error('Failed to add favorite:', error);
+          throw error;
+        }
       },
 
-      removeFavorite: (id: string) => {
-        setFavorites((prev) => {
-          const { [id]: _, ...rest } = prev;
-          return rest;
-        });
+      removeFavorite: async (id: string) => {
+        if (!session?.user) {
+          // Remove from guest favorites
+          const newGuestFavorites = new Set(guestFavoriteIds);
+          newGuestFavorites.delete(id);
+          setGuestFavoriteIds(newGuestFavorites);
+          saveGuestFavorites(newGuestFavorites);
+          return;
+        }
+
+        try {
+          await removeFavorite(session?.user?.id || 'guest', id);
+          setFavoriteIds((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(id);
+            return newSet;
+          });
+        } catch (error) {
+          console.error('Failed to remove favorite:', error);
+          throw error;
+        }
       },
 
-      toggleFavorite: (id: string, metadata?: any) => {
-        setFavorites((prev) => {
-          if (prev[id]) {
-            const { [id]: _, ...rest } = prev;
-            return rest;
+      toggleFavorite: async (id: string, metadata?: any) => {
+        if (!session?.user) {
+          // Toggle guest favorites
+          const newGuestFavorites = new Set(guestFavoriteIds);
+          if (newGuestFavorites.has(id)) {
+            newGuestFavorites.delete(id);
+          } else {
+            newGuestFavorites.add(id);
+            // Show auth prompt when adding (not removing)
+            setAuthPromptContext({
+              action: 'favorite',
+              productName: metadata?.productName,
+            });
+            setAuthPromptOpened(true);
           }
-          return {
-            ...prev,
-            [id]: {
-              id,
-              metadata,
-              addedAt: new Date().toISOString(),
-            },
-          };
-        });
+          setGuestFavoriteIds(newGuestFavorites);
+          saveGuestFavorites(newGuestFavorites);
+          return;
+        }
+
+        try {
+          const isFavorited = await toggleFavorite(session?.user?.id || 'guest', id);
+
+          if (isFavorited) {
+            setFavoriteIds((prev) => new Set([...prev, id]));
+          } else {
+            setFavoriteIds((prev) => {
+              const newSet = new Set(prev);
+              newSet.delete(id);
+              return newSet;
+            });
+          }
+        } catch (error) {
+          console.error('Failed to toggle favorite:', error);
+          throw error;
+        }
       },
 
       isFavorite: (id: string) => {
-        return Boolean(favorites[id]);
+        return session?.user ? favoriteIds.has(id) : guestFavoriteIds.has(id);
       },
 
-      favorites: new Set(Object.keys(favorites)),
-      favoriteCount: Object.keys(favorites).length,
+      favorites: session?.user ? favoriteIds : guestFavoriteIds,
+      favoriteCount: session?.user ? favoriteIds.size : guestFavoriteIds.size,
+      refreshFavorites: loadFavorites,
     }),
-    [favorites, setFavorites],
+    [favoriteIds, guestFavoriteIds, session?.user, loadFavorites, saveGuestFavorites],
   );
 
   const guestOperations = useMemo<GuestOperations>(
     () => ({
-      id: typeof guestId === 'function' ? guestId() : guestId,
-      becomeAuthenticated: async (userId: string) => {
-        setAuthenticatedUserId(userId);
+      id: session?.user?.id || `guest-${Math.random().toString(36).substring(2, 15)}`,
+      becomeAuthenticated: async (_userId: string) => {
+        // Migrate guest favorites to authenticated user
+        if (guestFavoriteIds.size > 0) {
+          try {
+            for (const productId of guestFavoriteIds) {
+              await addFavorite(session.user.id, productId);
+            }
+            // Clear guest favorites after migration
+            setGuestFavoriteIds(new Set());
+            localStorage.removeItem('guest-favorites');
+          } catch (error) {
+            console.error('Failed to migrate guest favorites:', error);
+          }
+        }
+        // Refresh favorites when user becomes authenticated
+        await loadFavorites();
       },
-      isAuthenticated: !!authenticatedUserId,
+      isAuthenticated: !!session?.user,
     }),
-    [guestId, authenticatedUserId, setAuthenticatedUserId],
+    [session?.user, loadFavorites, guestFavoriteIds],
   );
 
   const value = useMemo<GuestActionsContextValue>(
@@ -317,7 +384,18 @@ export function GuestActionsProvider({ children }: { children: ReactNode }) {
     ],
   );
 
-  return <GuestActionsContext.Provider value={value}>{children}</GuestActionsContext.Provider>;
+  return (
+    <GuestActionsContext.Provider value={value}>
+      {children}
+      <AuthPromptModal
+        opened={authPromptOpened}
+        onClose={() => setAuthPromptOpened(false)}
+        action={authPromptContext.action}
+        productName={authPromptContext.productName}
+        locale={locale}
+      />
+    </GuestActionsContext.Provider>
+  );
 }
 
 export function useGuestActions() {

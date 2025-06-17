@@ -3,8 +3,7 @@
 import { useStats } from 'react-instantsearch';
 
 import { useInstantSearch } from '../hooks/useInstantSearch';
-
-import type { SearchStatsProps } from '../types';
+import { SearchStatsProps } from '../types';
 
 export default function SearchStats({
   className = '',

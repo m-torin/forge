@@ -1,4 +1,4 @@
-import type { SearchConfig } from '../types';
+import { SearchConfig } from '../types';
 
 export function getSearchConfig(): SearchConfig {
   const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID;

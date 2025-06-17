@@ -4,9 +4,8 @@
 
 import OpossumCircuitBreaker from 'opossum';
 
+import { CircuitBreakerPattern, PatternContext, PatternResult } from '../types/patterns';
 import { CircuitBreakerError } from '../utils/errors';
-
-import type { CircuitBreakerPattern, PatternContext, PatternResult } from '../types/patterns';
 
 export interface CircuitBreakerOptions extends Partial<CircuitBreakerPattern> {
   /** Context for the operation */
@@ -19,7 +18,7 @@ export interface CircuitBreakerOptions extends Partial<CircuitBreakerPattern> {
  * Circuit Breaker Manager
  */
 export class CircuitBreakerManager {
-  private breakers = new Map<string, OpossumCircuitBreaker<any, any>>();
+  private breakers = new Map<string, OpossumCircuitBreaker<unknown[], unknown>>();
 
   /**
    * Remove all circuit breakers
@@ -27,8 +26,10 @@ export class CircuitBreakerManager {
   clear(): void {
     for (const [name, breaker] of this.breakers) {
       // Remove all event listeners to prevent memory leaks
-      breaker.removeAllListeners();
-      
+      if ('removeAllListeners' in breaker && typeof breaker.removeAllListeners === 'function') {
+        (breaker as any).removeAllListeners();
+      }
+
       // If the circuit breaker has a destroy method, call it
       if (typeof (breaker as any).destroy === 'function') {
         (breaker as any).destroy();
@@ -41,7 +42,7 @@ export class CircuitBreakerManager {
    * Get all circuit breaker statistics
    */
   getAllStats(): any[] {
-    return Array.from(this.breakers.keys()).map((name) => this.getStats(name));
+    return Array.from(this.breakers.keys()).map((name: any) => this.getStats(name));
   }
 
   /**
@@ -137,13 +138,15 @@ export class CircuitBreakerManager {
     }
 
     // Remove all event listeners to prevent memory leaks
-    breaker.removeAllListeners();
-    
+    if ('removeAllListeners' in breaker && typeof breaker.removeAllListeners === 'function') {
+      (breaker as any).removeAllListeners();
+    }
+
     // If the circuit breaker has a destroy method, call it
     if (typeof (breaker as any).destroy === 'function') {
       (breaker as any).destroy();
     }
-    
+
     this.breakers.delete(name);
     return true;
   }
@@ -204,7 +207,7 @@ export class CircuitBreakerManager {
         pattern: 'circuit-breaker',
         success: true,
       };
-    } catch (error) {
+    } catch (error: any) {
       const err = error as Error;
 
       // Check if this is a circuit breaker error
@@ -270,7 +273,7 @@ export function CircuitBreaker(name?: string, options: CircuitBreakerOptions = {
       );
 
       if (result.success) {
-        return result.data;
+        return result?.data;
       } else {
         throw result.error;
       }
@@ -320,7 +323,7 @@ export const CircuitBreakerConfigs = {
   api: {
     errorFilter: (error: Error) => {
       // Only trip on 5xx errors, not 4xx
-      const message = error.message?.toLowerCase() || '';
+      const message = (error as Error)?.message || 'Unknown error'?.toLowerCase() || '';
       return message.includes('5') || message.includes('timeout') || message.includes('network');
     },
     failureThreshold: 5,
@@ -333,7 +336,7 @@ export const CircuitBreakerConfigs = {
   /** Database-specific circuit breaker */
   database: {
     errorFilter: (error: Error) => {
-      const message = error.message?.toLowerCase() || '';
+      const message = (error as Error)?.message || 'Unknown error'?.toLowerCase() || '';
       return (
         message.includes('connection') ||
         message.includes('timeout') ||

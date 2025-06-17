@@ -1,3 +1,5 @@
+'use client';
+
 import { ActionIcon } from '@mantine/core';
 import React, { type ButtonHTMLAttributes } from 'react';
 
@@ -5,11 +7,11 @@ export interface ButtonCircleProps extends Omit<ButtonHTMLAttributes<HTMLButtonE
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const ButtonCircle: React.FC<ButtonCircleProps> = ({ 
-  className = '', 
+const ButtonCircle: React.FC<ButtonCircleProps> = ({
+  className = '',
   size = 'md',
   children,
-  ...args 
+  ...args
 }) => {
   return (
     <ActionIcon

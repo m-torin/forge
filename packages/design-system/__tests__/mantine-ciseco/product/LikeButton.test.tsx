@@ -2,19 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
 import LikeButton from '../../../mantine-ciseco/components/LikeButton';
 
-describe('LikeButton', () => {
+describe('LikeButton', (_: any) => {
   const mockOnClick = vi.fn();
 
   beforeEach(() => {
     mockOnClick.mockClear();
   });
 
-  it('renders like button', () => {
+  it('renders like button', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     expect(screen.getByTestId('like-button')).toBeInTheDocument();
   });
 
-  it('shows unliked state by default', () => {
+  it('shows unliked state by default', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     expect(button).toHaveAttribute('aria-label', 'Add to favorites');
@@ -24,7 +24,7 @@ describe('LikeButton', () => {
     expect(svg).toBeInTheDocument();
   });
 
-  it('shows liked state when liked prop is true', () => {
+  it('shows liked state when liked prop is true', (_: any) => {
     render(<LikeButton liked data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     expect(button).toHaveAttribute('aria-label', 'Remove from favorites');
@@ -36,7 +36,7 @@ describe('LikeButton', () => {
     expect(path).toHaveAttribute('fill', '#ef4444');
   });
 
-  it('calls onClick when clicked', () => {
+  it('calls onClick when clicked', (_: any) => {
     render(<LikeButton onClick={mockOnClick} data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
 
@@ -44,7 +44,7 @@ describe('LikeButton', () => {
     expect(mockOnClick).toHaveBeenCalled();
   });
 
-  it('prevents event propagation on click', () => {
+  it('prevents event propagation on click', (_: any) => {
     const parentOnClick = vi.fn();
     render(
       <div onClick={parentOnClick}>
@@ -59,13 +59,13 @@ describe('LikeButton', () => {
     expect(parentOnClick).not.toHaveBeenCalled();
   });
 
-  it('applies custom className', () => {
+  it('applies custom className', (_: any) => {
     render(<LikeButton className="custom-like-button" data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     expect(button).toHaveClass('custom-like-button');
   });
 
-  it('applies default styling classes', () => {
+  it('applies default styling classes', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
 
@@ -84,24 +84,24 @@ describe('LikeButton', () => {
     );
   });
 
-  it('applies dark mode classes', () => {
+  it('applies dark mode classes', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     expect(button).toHaveClass('dark:bg-neutral-900', 'dark:text-neutral-200');
   });
 
-  it('renders with custom testId', () => {
+  it('renders with custom testId', (_: any) => {
     render(<LikeButton data-testid="custom-like-button" />);
     expect(screen.getByTestId('custom-like-button')).toBeInTheDocument();
   });
 
-  it('renders with custom aria-label', () => {
+  it('renders with custom aria-label', (_: any) => {
     render(<LikeButton aria-label="Custom like label" data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     expect(button).toHaveAttribute('aria-label', 'Custom like label');
   });
 
-  it('renders heart icon with correct dimensions', () => {
+  it('renders heart icon with correct dimensions', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     const svg = button.querySelector('svg');
@@ -111,7 +111,7 @@ describe('LikeButton', () => {
     expect(svg).toHaveAttribute('fill', 'none');
   });
 
-  it('shows outline heart when not liked', () => {
+  it('shows outline heart when not liked', (_: any) => {
     render(<LikeButton liked={false} data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     const svg = button.querySelector('svg');
@@ -121,7 +121,7 @@ describe('LikeButton', () => {
     expect(path).toHaveAttribute('fill', 'none');
   });
 
-  it('shows filled heart when liked', () => {
+  it('shows filled heart when liked', (_: any) => {
     render(<LikeButton liked={true} data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     const svg = button.querySelector('svg');
@@ -131,7 +131,7 @@ describe('LikeButton', () => {
     expect(path).toHaveAttribute('fill', '#ef4444');
   });
 
-  it('handles mouse events properly', () => {
+  it('handles mouse events properly', (_: any) => {
     render(<LikeButton onClick={mockOnClick} data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
 
@@ -142,7 +142,7 @@ describe('LikeButton', () => {
     expect(mockOnClick).toHaveBeenCalled();
   });
 
-  it('maintains consistent button dimensions', () => {
+  it('maintains consistent button dimensions', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
 
@@ -150,13 +150,13 @@ describe('LikeButton', () => {
     expect(button).toHaveClass('h-9', 'w-9');
   });
 
-  it('applies hover scale effect', () => {
+  it('applies hover scale effect', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     expect(button).toHaveClass('hover:scale-110');
   });
 
-  it('uses proper SVG path for heart icon', () => {
+  it('uses proper SVG path for heart icon', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
     const path = button.querySelector('path');
@@ -170,7 +170,7 @@ describe('LikeButton', () => {
     expect(pathData).toContain('M12.62 20.81C12.28 20.93');
   });
 
-  it('handles focus state for accessibility', () => {
+  it('handles focus state for accessibility', (_: any) => {
     render(<LikeButton data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
 
@@ -178,7 +178,7 @@ describe('LikeButton', () => {
     expect(button).toHaveFocus();
   });
 
-  it('supports keyboard interaction', () => {
+  it('supports keyboard interaction', (_: any) => {
     render(<LikeButton onClick={mockOnClick} data-testid="like-button" />);
     const button = screen.getByTestId('like-button');
 
@@ -190,7 +190,7 @@ describe('LikeButton', () => {
     expect(mockOnClick).toHaveBeenCalled();
   });
 
-  it('toggles aria-label based on liked state', () => {
+  it('toggles aria-label based on liked state', (_: any) => {
     const { rerender } = render(<LikeButton liked={false} data-testid="like-button" />);
     let button = screen.getByTestId('like-button');
     expect(button).toHaveAttribute('aria-label', 'Add to favorites');
@@ -200,7 +200,7 @@ describe('LikeButton', () => {
     expect(button).toHaveAttribute('aria-label', 'Remove from favorites');
   });
 
-  it('maintains visual consistency across states', () => {
+  it('maintains visual consistency across states', (_: any) => {
     const { rerender } = render(<LikeButton liked={false} data-testid="like-button" />);
     let button = screen.getByTestId('like-button');
     const classes = Array.from(button.classList);
@@ -211,7 +211,7 @@ describe('LikeButton', () => {
 
     // Most classes should remain the same
     const baseClasses = ['flex', 'h-9', 'w-9', 'items-center', 'justify-center', 'rounded-full'];
-    baseClasses.forEach((cls) => {
+    baseClasses.forEach((cls: any) => {
       expect(classes).toContain(cls);
       expect(likedClasses).toContain(cls);
     });

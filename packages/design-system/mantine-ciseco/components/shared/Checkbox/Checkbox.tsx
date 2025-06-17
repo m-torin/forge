@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { type FC } from 'react';
 
 export interface CheckboxProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'className'> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className' | 'onChange'> {
   'data-testid'?: string;
   description?: string;
   label?: string;
@@ -15,11 +15,11 @@ export interface CheckboxProps
 
 const Checkbox: FC<CheckboxProps> = ({
   'data-testid': testId = 'checkbox',
-  id,
-  name,
   description,
+  id,
   label,
   labelClassName,
+  name,
   onChange,
   sizeClassName = 'size-6',
   ...props
@@ -29,29 +29,29 @@ const Checkbox: FC<CheckboxProps> = ({
       <div className="flex h-6 shrink-0 items-center">
         <div className="group grid size-6 grid-cols-1">
           <input
-            data-testid={testId}
-            id={id || name + '-checkbox'}
-            onChange={(e) => onChange?.(e.target.checked)}
             className={clsx(
               'col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-primary-600 checked:bg-primary-600 indeterminate:border-primary-600 indeterminate:bg-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto',
               sizeClassName,
             )}
+            data-testid={testId}
+            id={id ?? name + '-checkbox'}
             name={name}
             type="checkbox"
+            onChange={(e) => onChange?.(e.target.checked)}
             {...props}
           />
 
           <HugeiconsIcon
-            strokeWidth={3}
+            className="pointer-events-none col-start-1 row-start-1 size-4 self-center justify-self-center text-white opacity-0 group-has-checked:opacity-100"
             color="#ffffff"
             icon={Tick01Icon}
-            className="pointer-events-none col-start-1 row-start-1 size-4 self-center justify-self-center text-white opacity-0 group-has-checked:opacity-100"
             size={16}
+            strokeWidth={3}
           />
         </div>
       </div>
       <div className="text-sm/6">
-        <label htmlFor={id || name + '-checkbox'} className={labelClassName}>
+        <label className={labelClassName} htmlFor={id ?? name + '-checkbox'}>
           {label}
         </label>
         {description && <p className="text-neutral-400">{description}</p>}

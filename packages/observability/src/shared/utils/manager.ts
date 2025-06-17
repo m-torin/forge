@@ -2,9 +2,7 @@
  * Observability Manager - Core orchestration for multi-provider observability
  */
 
-/* eslint-disable promise/no-promise-in-callback */
-
-import type {
+import {
   Breadcrumb,
   ObservabilityManager as IObservabilityManager,
   ObservabilityConfig,
@@ -13,23 +11,229 @@ import type {
   ProviderRegistry,
 } from '../types/types';
 
+import { CircuitBreaker, createCircuitBreaker } from './circuit-breaker';
+import { mergeObservabilityContext } from './config';
+import { ConnectionPool } from './connection-pool';
+import { ProviderHealthMonitor, createHealthMonitor } from './health-check';
+import { withTimeout, createTimeoutConfig } from './timeout';
+
 export class ObservabilityManager implements IObservabilityManager {
-  private providers = new Map<string, ObservabilityProvider>();
   private context: ObservabilityContext = {};
-  private isInitialized = false;
-  private user: { id: string; email?: string; username?: string; [key: string]: any } | null = null;
-  private tags: Record<string, string | number | boolean> = {};
-  private extras: Record<string, any> = {};
   private contexts: Record<string, Record<string, any>> = {};
+  private extras: Record<string, any> = {};
+  private isInitialized = false;
+  private initializationPromise: Promise<void> | null = null;
+  private providers = new Map<string, ObservabilityProvider>();
+  private circuitBreakers = new Map<string, CircuitBreaker>();
+  private tags: Record<string, boolean | number | string> = {};
+  private user: null | { [key: string]: any; email?: string; id: string; username?: string } = null;
+  private timeouts = createTimeoutConfig();
+  private healthMonitor: ProviderHealthMonitor | null = null;
+  private connectionPool: ConnectionPool | null = null;
 
   constructor(
     private config: ObservabilityConfig,
     private availableProviders: ProviderRegistry,
   ) {}
 
+  /**
+   * Check if provider is healthy and should be used
+   */
+  private shouldUseProvider(providerName: string): boolean {
+    // Check health monitor if available
+    if (this.healthMonitor) {
+      const health = this.healthMonitor.getProviderHealth(providerName);
+      if (health && !health.healthy) {
+        if (this.config.debug) {
+          console.debug(`[Observability] Skipping unhealthy provider: ${providerName}`);
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Get health summary for all providers
+   */
+  getHealthSummary() {
+    return (
+      this.healthMonitor?.getHealthSummary() ?? {
+        total: this.providers.size,
+        healthy: this.providers.size,
+        unhealthy: 0,
+        providers: Array.from(this.providers.keys()).map((name: any) => ({
+          name,
+          healthy: true,
+          errorCount: 0,
+        })),
+      }
+    );
+  }
+
+  /**
+   * Get connection pool statistics
+   */
+  getConnectionPoolStats() {
+    return (
+      this.connectionPool?.getStats() ?? {
+        providers: [],
+        totalConnections: 0,
+        totalInUse: 0,
+      }
+    );
+  }
+
+  /**
+   * Execute provider method with circuit breaker protection
+   */
+  private async executeWithCircuitBreaker<T>(
+    providerName: string,
+    provider: ObservabilityProvider,
+    operation: () => Promise<T>,
+    fallback?: T,
+  ): Promise<T | undefined> {
+    let circuitBreaker = this.circuitBreakers.get(providerName);
+
+    if (!circuitBreaker) {
+      circuitBreaker = createCircuitBreaker(providerName, {
+        failureThreshold: this.config.circuitBreaker?.failureThreshold ?? 5,
+        resetTimeout: this.config.circuitBreaker?.resetTimeout ?? 60000,
+        failureWindow: this.config.circuitBreaker?.failureWindow ?? 60000,
+        successThreshold: this.config.circuitBreaker?.successThreshold ?? 3,
+        onOpen: (name: any) => {
+          if (this.config.onProviderError) {
+            this.config.onProviderError(new Error(`Circuit opened for provider: ${name}`), {
+              provider: name,
+              circuitState: 'OPEN',
+            });
+          }
+        },
+      });
+      this.circuitBreakers.set(providerName, circuitBreaker);
+    }
+
+    try {
+      return await circuitBreaker.execute(operation);
+    } catch (error: any) {
+      if (this.config.onError) {
+        this.config.onError(error, {
+          method: 'executeWithCircuitBreaker',
+          provider: providerName,
+          circuitBreakerState: circuitBreaker.getState(),
+        });
+      }
+      return fallback;
+    }
+  }
+
+  addBreadcrumb(breadcrumb: Breadcrumb): void {
+    const breadcrumbWithTimestamp = {
+      ...breadcrumb,
+      timestamp: breadcrumb.timestamp || Date.now(),
+    };
+
+    for (const provider of this.providers.values()) {
+      if (provider.addBreadcrumb) {
+        try {
+          provider.addBreadcrumb(breadcrumbWithTimestamp);
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { method: 'addBreadcrumb', provider: provider.name });
+          }
+        }
+      }
+    }
+  }
+
+  async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
+    const mergedContext = mergeObservabilityContext(this.context, context);
+
+    const promises: Promise<any>[] = [];
+
+    for (const [providerName, provider] of this.providers) {
+      // Skip unhealthy providers
+      if (!this.shouldUseProvider(providerName)) {
+        continue;
+      }
+
+      const promise = this.executeWithCircuitBreaker(providerName, provider, () =>
+        withTimeout(
+          provider.captureException(error, mergedContext),
+          this.timeouts.CAPTURE_EXCEPTION,
+          `${providerName}.captureException`,
+        ),
+      );
+      promises.push(promise);
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async captureMessage(
+    message: string,
+    level: 'error' | 'info' | 'warning',
+    context?: ObservabilityContext,
+  ): Promise<void> {
+    const mergedContext = mergeObservabilityContext(this.context, context);
+
+    const promises: Promise<any>[] = [];
+
+    for (const [providerName, provider] of this.providers) {
+      // Skip unhealthy providers
+      if (!this.shouldUseProvider(providerName)) {
+        continue;
+      }
+
+      const promise = this.executeWithCircuitBreaker(providerName, provider, () =>
+        withTimeout(
+          provider.captureMessage(message, level, mergedContext),
+          this.timeouts.CAPTURE_MESSAGE,
+          `${providerName}.captureMessage`,
+        ),
+      );
+      promises.push(promise);
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  endSession(): void {
+    for (const provider of this.providers.values()) {
+      if (provider.endSession) {
+        try {
+          provider.endSession();
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { method: 'endSession', provider: provider.name });
+          }
+        }
+      }
+    }
+  }
+
   async initialize(): Promise<void> {
+    // Return existing promise if initialization is in progress
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
+    // Return immediately if already initialized
     if (this.isInitialized) return;
 
+    // Create and store the initialization promise
+    this.initializationPromise = this.performInitialization();
+
+    try {
+      await this.initializationPromise;
+    } catch (error: any) {
+      // Reset on failure to allow retry
+      this.initializationPromise = null;
+      throw error;
+    }
+  }
+
+  private async performInitialization(): Promise<void> {
     const initPromises: Promise<void>[] = [];
 
     for (const [providerName, providerConfig] of Object.entries(this.config.providers)) {
@@ -37,23 +241,30 @@ export class ObservabilityManager implements IObservabilityManager {
 
       if (providerFactory) {
         try {
-          const provider = providerFactory(providerConfig);
+          // Handle both sync and async provider factories
+          const providerResult = providerFactory(providerConfig);
+          const provider = await Promise.resolve(providerResult);
+
           this.providers.set(providerName, provider);
 
-          // Initialize provider with error boundary
+          // Initialize provider with timeout and error boundary
           initPromises.push(
-            provider.initialize(providerConfig).catch((error) => {
+            withTimeout(
+              provider.initialize(providerConfig),
+              this.timeouts.PROVIDER_INIT,
+              `${providerName}.initialize`,
+            ).catch((error: any) => {
               if (this.config.onError) {
-                this.config.onError(error, { provider: providerName, method: 'initialize' });
+                this.config.onError(error, { method: 'initialize', provider: providerName });
               }
               // Remove failed provider to ensure it doesn't affect others
               this.providers.delete(providerName);
               // Continue with other providers
             }),
           );
-        } catch (error) {
+        } catch (error: any) {
           if (this.config.onError) {
-            this.config.onError(error, { provider: providerName, method: 'create' });
+            this.config.onError(error, { method: 'create', provider: providerName });
           }
           // Continue with other providers
         }
@@ -75,11 +286,223 @@ export class ObservabilityManager implements IObservabilityManager {
     // Set initial context on providers
     this.syncContextToProviders();
 
+    // Initialize connection pooling
+    this.connectionPool = new ConnectionPool({
+      maxConnections: this.config.connectionPool?.maxConnections ?? 3,
+      idleTimeout: this.config.connectionPool?.idleTimeout ?? 300000,
+      maxLifetime: this.config.connectionPool?.maxLifetime ?? 3600000,
+      onConnectionClose: (providerId, reason: any) => {
+        if (this.config.debug && this.config.onInfo) {
+          this.config.onInfo(`Connection ${providerId} closed: ${reason}`);
+        }
+      },
+    });
+
+    // Initialize health monitoring
+    this.healthMonitor = createHealthMonitor(this.providers, {
+      timeout: this.timeouts.CAPTURE_MESSAGE,
+      onHealthChange: (providerName, health: any) => {
+        if (this.config.debug && this.config.onInfo) {
+          this.config.onInfo(
+            `Provider ${providerName} health changed: ${health.healthy ? 'healthy' : 'unhealthy'}`,
+          );
+        }
+      },
+    });
+
+    // Start health monitoring if enabled
+    if (this.config.healthCheck?.enabled !== false) {
+      const interval = this.config.healthCheck?.intervalMs ?? 60000;
+      this.healthMonitor.startMonitoring(interval);
+    }
+
     this.isInitialized = true;
     if (this.config.debug && this.config.onInfo) {
       this.config.onInfo(
         `Observability initialized with providers: ${Array.from(this.providers.keys()).join(', ')}`,
       );
+    }
+  }
+
+  async log(level: string, message: string, metadata?: any): Promise<void> {
+    const promises: Promise<any>[] = [];
+
+    for (const [providerName, provider] of this.providers) {
+      if (!provider.log) continue;
+
+      // Skip unhealthy providers
+      if (!this.shouldUseProvider(providerName)) {
+        continue;
+      }
+
+      const promise = this.executeWithCircuitBreaker(providerName, provider, () =>
+        withTimeout(
+          provider.log!(level, message, metadata),
+          this.timeouts.LOG_OPERATION,
+          `${providerName}.log`,
+        ),
+      );
+      promises.push(promise);
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  setContext(key: string, context: Record<string, any>): void {
+    this.contexts[key] = context;
+
+    for (const provider of this.providers.values()) {
+      if (provider.setContext) {
+        try {
+          provider.setContext(key, context);
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { key, method: 'setContext', provider: provider.name });
+          }
+        }
+      }
+    }
+  }
+
+  setExtra(key: string, value: any): void {
+    this.extras[key] = value;
+
+    for (const provider of this.providers.values()) {
+      if (provider.setExtra) {
+        try {
+          provider.setExtra(key, value);
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { key, method: 'setExtra', provider: provider.name });
+          }
+        }
+      }
+    }
+  }
+
+  setTag(key: string, value: boolean | number | string): void {
+    this.tags[key] = value;
+
+    for (const provider of this.providers.values()) {
+      if (provider.setTag) {
+        try {
+          provider.setTag(key, value);
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { key, method: 'setTag', provider: provider.name, value });
+          }
+        }
+      }
+    }
+  }
+
+  setUser(user: { [key: string]: any; email?: string; id: string; username?: string }): void {
+    this.user = user;
+
+    for (const provider of this.providers.values()) {
+      if (provider.setUser) {
+        try {
+          provider.setUser(user);
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { method: 'setUser', provider: provider.name });
+          }
+        }
+      }
+    }
+  }
+
+  startSession(): void {
+    for (const provider of this.providers.values()) {
+      if (provider.startSession) {
+        try {
+          provider.startSession();
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { method: 'startSession', provider: provider.name });
+          }
+        }
+      }
+    }
+  }
+
+  startSpan(name: string, parentSpan?: any): any {
+    const spans: any[] = [];
+
+    for (const provider of this.providers.values()) {
+      if (provider.startSpan) {
+        try {
+          const span = provider.startSpan(name, parentSpan);
+          if (span) {
+            spans.push(span);
+          }
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, { method: 'startSpan', name, provider: provider.name });
+          }
+        }
+      }
+    }
+
+    // Return a composite span object
+    return spans.length > 0 ? spans : null;
+  }
+
+  startTransaction(name: string, context?: ObservabilityContext): any {
+    const mergedContext = mergeObservabilityContext(this.context, context);
+    const transactions: any[] = [];
+
+    for (const provider of this.providers.values()) {
+      if (provider.startTransaction) {
+        try {
+          const transaction = provider.startTransaction(name, mergedContext);
+          if (transaction) {
+            transactions.push(transaction);
+          }
+        } catch (error: any) {
+          if (this.config.onError) {
+            this.config.onError(error, {
+              method: 'startTransaction',
+              name,
+              provider: provider.name,
+            });
+          }
+        }
+      }
+    }
+
+    // Return a composite transaction object
+    return transactions.length > 0 ? transactions : null;
+  }
+
+  /**
+   * Set up cross-provider coordination for enhanced observability
+   * This allows providers to share context and correlation IDs
+   */
+  private setupProviderCoordination(): void {
+    const sentryProvider = this.providers.get('sentry');
+    const logtailProvider = this.providers.get('logtail') || this.providers.get('better-stack');
+
+    // Enable coordination between Sentry and Better Stack (if both exist)
+    if (sentryProvider && logtailProvider) {
+      // Check if providers support coordination
+      try {
+        if (typeof (logtailProvider as any).setSentryProvider === 'function') {
+          (logtailProvider as any).setSentryProvider(sentryProvider);
+        }
+        if (typeof (sentryProvider as any).setLogtailProvider === 'function') {
+          (sentryProvider as any).setLogtailProvider(logtailProvider);
+        }
+
+        if (this.config.debug && this.config.onInfo) {
+          this.config.onInfo('Cross-provider coordination enabled: Sentry ↔ Better Stack');
+        }
+      } catch (error: any) {
+        // Silently continue if coordination setup fails
+        if (this.config.debug && this.config.onError) {
+          this.config.onError(error, { method: 'setupProviderCoordination', provider: 'manager' });
+        }
+      }
     }
   }
 
@@ -121,259 +544,26 @@ export class ObservabilityManager implements IObservabilityManager {
     }
   }
 
-  async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
-    const mergedContext = { ...this.context, ...context };
-
-    const providers = Array.from(this.providers.values());
-    const promises: Promise<any>[] = [];
-
-    for (const provider of providers) {
-      const promise = provider.captureException(error, mergedContext).catch((err) => {
-        if (this.config.onError) {
-          this.config.onError(err, {
-            provider: provider.name,
-            method: 'captureException',
-            originalError: error,
-          });
-        }
-        return undefined; // Explicitly return undefined for caught errors
-      });
-      promises.push(promise);
-    }
-
-    await Promise.allSettled(promises);
-  }
-
-  async captureMessage(
-    message: string,
-    level: 'info' | 'warning' | 'error',
-    context?: ObservabilityContext,
-  ): Promise<void> {
-    const mergedContext = { ...this.context, ...context };
-
-    const providers = Array.from(this.providers.values());
-    const promises: Promise<any>[] = [];
-
-    for (const provider of providers) {
-      const promise = provider.captureMessage(message, level, mergedContext).catch((err) => {
-        if (this.config.onError) {
-          this.config.onError(err, {
-            provider: provider.name,
-            level,
-            message,
-            method: 'captureMessage',
-          });
-        }
-        return undefined; // Explicitly return undefined for caught errors
-      });
-      promises.push(promise);
-    }
-
-    await Promise.allSettled(promises);
-  }
-
-  async log(level: string, message: string, metadata?: any): Promise<void> {
-    const providersWithLog = Array.from(this.providers.values()).filter((provider) => provider.log);
-    const promises: Promise<any>[] = [];
-
-    for (const provider of providersWithLog) {
-      const promise = provider.log!(level, message, metadata).catch((err) => {
-        if (this.config.onError) {
-          this.config.onError(err, { provider: provider.name, level, message, method: 'log' });
-        }
-        return undefined; // Explicitly return undefined for caught errors
-      });
-      promises.push(promise);
-    }
-
-    await Promise.allSettled(promises);
-  }
-
-  startTransaction(name: string, context?: ObservabilityContext): any {
-    const mergedContext = { ...this.context, ...context };
-    const transactions: any[] = [];
-
-    for (const provider of this.providers.values()) {
-      if (provider.startTransaction) {
-        try {
-          const transaction = provider.startTransaction(name, mergedContext);
-          if (transaction) {
-            transactions.push(transaction);
-          }
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, name, method: 'startTransaction' });
-          }
-        }
-      }
-    }
-
-    // Return a composite transaction object
-    return transactions.length > 0 ? transactions : null;
-  }
-
-  startSpan(name: string, parentSpan?: any): any {
-    const spans: any[] = [];
-
-    for (const provider of this.providers.values()) {
-      if (provider.startSpan) {
-        try {
-          const span = provider.startSpan(name, parentSpan);
-          if (span) {
-            spans.push(span);
-          }
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, name, method: 'startSpan' });
-          }
-        }
-      }
-    }
-
-    // Return a composite span object
-    return spans.length > 0 ? spans : null;
-  }
-
-  setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
-    this.user = user;
-
-    for (const provider of this.providers.values()) {
-      if (provider.setUser) {
-        try {
-          provider.setUser(user);
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'setUser' });
-          }
-        }
-      }
-    }
-  }
-
-  setTag(key: string, value: string | number | boolean): void {
-    this.tags[key] = value;
-
-    for (const provider of this.providers.values()) {
-      if (provider.setTag) {
-        try {
-          provider.setTag(key, value);
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, key, method: 'setTag', value });
-          }
-        }
-      }
-    }
-  }
-
-  setExtra(key: string, value: any): void {
-    this.extras[key] = value;
-
-    for (const provider of this.providers.values()) {
-      if (provider.setExtra) {
-        try {
-          provider.setExtra(key, value);
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, key, method: 'setExtra' });
-          }
-        }
-      }
-    }
-  }
-
-  setContext(key: string, context: Record<string, any>): void {
-    this.contexts[key] = context;
-
-    for (const provider of this.providers.values()) {
-      if (provider.setContext) {
-        try {
-          provider.setContext(key, context);
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, key, method: 'setContext' });
-          }
-        }
-      }
-    }
-  }
-
-  addBreadcrumb(breadcrumb: Breadcrumb): void {
-    const breadcrumbWithTimestamp = {
-      ...breadcrumb,
-      timestamp: breadcrumb.timestamp || Date.now(),
-    };
-
-    for (const provider of this.providers.values()) {
-      if (provider.addBreadcrumb) {
-        try {
-          provider.addBreadcrumb(breadcrumbWithTimestamp);
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'addBreadcrumb' });
-          }
-        }
-      }
-    }
-  }
-
-  startSession(): void {
-    for (const provider of this.providers.values()) {
-      if (provider.startSession) {
-        try {
-          provider.startSession();
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'startSession' });
-          }
-        }
-      }
-    }
-  }
-
-  endSession(): void {
-    for (const provider of this.providers.values()) {
-      if (provider.endSession) {
-        try {
-          provider.endSession();
-        } catch (err) {
-          if (this.config.onError) {
-            this.config.onError(err, { provider: provider.name, method: 'endSession' });
-          }
-        }
-      }
-    }
-  }
-
   /**
-   * Set up cross-provider coordination for enhanced observability
-   * This allows providers to share context and correlation IDs
+   * Clean up resources and stop monitoring
    */
-  private setupProviderCoordination(): void {
-    const sentryProvider = this.providers.get('sentry');
-    const logtailProvider = this.providers.get('logtail') || this.providers.get('better-stack');
-
-    // Enable coordination between Sentry and Better Stack (if both exist)
-    if (sentryProvider && logtailProvider) {
-      // Check if providers support coordination
-      try {
-        if (typeof (logtailProvider as any).setSentryProvider === 'function') {
-          (logtailProvider as any).setSentryProvider(sentryProvider);
-        }
-        if (typeof (sentryProvider as any).setLogtailProvider === 'function') {
-          (sentryProvider as any).setLogtailProvider(logtailProvider);
-        }
-
-        if (this.config.debug && this.config.onInfo) {
-          this.config.onInfo('Cross-provider coordination enabled: Sentry ↔ Better Stack');
-        }
-      } catch (error) {
-        // Silently continue if coordination setup fails
-        if (this.config.debug && this.config.onError) {
-          this.config.onError(error, { provider: 'manager', method: 'setupProviderCoordination' });
-        }
-      }
+  async cleanup(): Promise<void> {
+    // Stop health monitoring
+    if (this.healthMonitor) {
+      this.healthMonitor.stopMonitoring();
     }
+
+    // Close connection pool
+    if (this.connectionPool) {
+      this.connectionPool.close();
+    }
+
+    // Clear providers
+    this.providers.clear();
+    this.circuitBreakers.clear();
+
+    this.isInitialized = false;
+    this.initializationPromise = null;
   }
 }
 

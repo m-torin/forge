@@ -1,24 +1,14 @@
 # @repo/ai
 
-AI/LLM integration package - Placeholder for future migration.
+AI/LLM integrations and utilities with support for multiple providers and unified interface.
 
-## Overview
+## 📚 Documentation
 
-This package is a skeleton for migrating AI functionality from the existing @repo/ai package.
+Complete documentation is available at:
+**[https://docs.example.com/packages/ai/overview](https://docs.example.com/packages/ai/overview)**
 
-## Architecture
+## Quick Install
 
-The package follows a client/server split pattern:
-
+```bash
+pnpm add @repo/ai
 ```
-/src
-  /client          - Client-side AI features
-  /server          - Server-side AI integrations
-  /client-next     - Next.js client integration
-  /server-next     - Next.js server integration
-```
-
-## TODO
-
-This is a skeleton implementation. The actual AI provider implementations need to be migrated from
-the existing ai package.

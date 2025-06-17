@@ -12,8 +12,8 @@ const requireInProduction = isProduction && hasRequiredEnvVars;
 export const keys = () =>
   createEnv({
     runtimeEnv: {
-      RESEND_FROM: process.env.RESEND_FROM || undefined,
-      RESEND_TOKEN: process.env.RESEND_TOKEN || undefined,
+      RESEND_FROM: process.env.RESEND_FROM ?? undefined,
+      RESEND_TOKEN: process.env.RESEND_TOKEN ?? undefined,
     },
     server: {
       RESEND_FROM: requireInProduction ? z.string().email() : z.string().email().optional(),

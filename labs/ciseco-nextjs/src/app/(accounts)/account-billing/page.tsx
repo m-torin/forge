@@ -1,4 +1,4 @@
-import { ButtonPrimary } from '@repo/design-system/ciseco'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 
 export const metadata = {
   title: 'Account - Payments & payouts',
@@ -16,7 +16,7 @@ const Page = () => {
         </p>
       </div>
       {/* CONTENT */}
-      <div className="prose prose-slate dark:prose-invert max-w-2xl">
+      <div className="prose max-w-2xl prose-slate dark:prose-invert">
         <span className="">
           {`When you receive a payment for a order, we call that payment to you a
           "payout." Our secure payment system supports several payout methods,

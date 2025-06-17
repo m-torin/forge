@@ -107,7 +107,7 @@ export function createAnalyticsMiddleware(config: AnalyticsMiddlewareConfig) {
           // Silently fail to avoid disrupting request
         });
       }
-    } catch (error) {
+    } catch (_error) {
       // Don't let analytics errors break the app
       if (config.debug) {
         // Log error in debug mode only
@@ -246,7 +246,7 @@ function extractAnalyticsContext(request: NextRequest): Record<string, any> {
 function getDefaultEventName(
   pathname: string,
   method: string,
-  config: AnalyticsMiddlewareConfig,
+  _config: AnalyticsMiddlewareConfig,
 ): string {
   const isApiRoute = pathname.startsWith('/api/');
 

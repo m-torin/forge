@@ -2,29 +2,36 @@
  * Logger-specific types (Pino, Winston)
  */
 
+export interface LogEntry {
+  [key: string]: any;
+  level: string;
+  message: string;
+  timestamp?: number | string;
+}
+
 export interface LoggerConfig {
-  destination?: string;
-  format?: 'json' | 'pretty' | 'text';
-  level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-  timestamp?: boolean | (() => string);
-
-  // Transport configuration
-  transports?: LoggerTransport[];
-
   base?: Record<string, any>;
   // Context fields
   defaultMeta?: Record<string, any>;
+  destination?: string;
+  format?: 'json' | 'pretty' | 'text';
 
-  // Serializers
-  serializers?: Record<string, (value: any) => any>;
+  level: 'debug' | 'error' | 'fatal' | 'info' | 'trace' | 'warn';
 
   // Redaction
   redact?:
     | string[]
     | {
+        censor?: ((value: any) => any) | string;
         paths: string[];
-        censor?: string | ((value: any) => any);
       };
+  // Serializers
+  serializers?: Record<string, (value: any) => any>;
+
+  timestamp?: (() => string) | boolean;
+
+  // Transport configuration
+  transports?: LoggerTransport[];
 }
 
 export interface LoggerTransport {
@@ -43,9 +50,9 @@ export interface PinoConfig extends LoggerConfig {
     | boolean
     | {
         colorize?: boolean;
-        translateTime?: boolean | string;
         ignore?: string;
         messageKey?: string;
+        translateTime?: boolean | string;
       };
   safe?: boolean;
 }
@@ -56,11 +63,4 @@ export interface WinstonConfig extends LoggerConfig {
   handleExceptions?: boolean;
   handleRejections?: boolean;
   transports?: any[]; // Winston transport instances
-}
-
-export interface LogEntry {
-  [key: string]: any;
-  level: string;
-  message: string;
-  timestamp?: string | number;
 }

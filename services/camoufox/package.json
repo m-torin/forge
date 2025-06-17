@@ -1,0 +1,48 @@
+{
+  "name": "@repo/camoufox",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Camoufox browser automation service for stealth web scraping and testing",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./types": "./src/types.ts",
+    "./browser": "./src/browser.ts",
+    "./stealth": "./src/stealth.ts"
+  },
+  "scripts": {
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "launch": "tsx scripts/camoufox-cli.ts launch",
+    "scrape": "tsx scripts/camoufox-cli.ts scrape",
+    "test-page": "tsx scripts/camoufox-cli.ts test"
+  },
+  "bin": {
+    "camoufox": "./scripts/camoufox-cli.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:",
+    "commander": "catalog:",
+    "puppeteer": "^23.10.4",
+    "playwright": "^1.53.0",
+    "user-agents": "^1.1.370",
+    "proxy-agent": "^6.5.0",
+    "@napi-rs/canvas": "^0.1.57",
+    "chromium-bidi": "^0.8.0",
+    "rust-webdriver": "^0.3.2"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/config": "workspace:*",
+    "@repo/testing": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "tsx": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  }
+}

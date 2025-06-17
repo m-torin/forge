@@ -1,7 +1,7 @@
 'use client';
 import { type FC } from 'react';
 
-export interface PrevProps {
+export interface PrevProps extends Record<string, any> {
   btnClassName?: string;
   className?: string;
   onClickPrev?: () => void;
@@ -16,31 +16,31 @@ const Prev: FC<PrevProps> = ({
 }) => {
   return (
     <div
-      data-glide-el="controls"
       className={`nc-Prev text-neutral-500 dark:text-neutral-400 ${className}`}
+      data-glide-el="controls"
     >
       <button
-        data-glide-dir="<"
-        onClick={onClickPrev}
         className={`${btnClassName} flex items-center justify-center rounded-full border-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-600`}
+        data-glide-dir="<"
         title="Prev"
+        onClick={onClickPrev}
       >
-        <svg viewBox="0 0 24 24" className={`${svgSize} rtl:rotate-180`} fill="none">
+        <svg className={`${svgSize} rtl:rotate-180`} fill="none" viewBox="0 0 24 24">
           <path
-            strokeWidth="1.5"
+            d="M9.57 5.92993L3.5 11.9999L9.57 18.0699"
             stroke="currentColor"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeMiterlimit="10"
-            d="M9.57 5.92993L3.5 11.9999L9.57 18.0699"
+            strokeWidth="1.5"
           />
           <path
-            strokeWidth="1.5"
+            d="M20.5 12H3.67004"
             stroke="currentColor"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeMiterlimit="10"
-            d="M20.5 12H3.67004"
+            strokeWidth="1.5"
           />
         </svg>
       </button>

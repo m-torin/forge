@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 // Mock Vercel Blob
-vi.mock('@vercel/blob', () => ({
+vi.mock('@vercel/blob', (_: any) => ({
   del: vi.fn(),
   get: vi.fn(),
   list: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@vercel/blob', () => ({
 }));
 
 // Mock environment variables
-vi.mock('./keys', () => ({
+vi.mock('./keys', (_: any) => ({
   keys: () => ({
     BLOB_READ_WRITE_TOKEN: 'test-blob-token',
   }),

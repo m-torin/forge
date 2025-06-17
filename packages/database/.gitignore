@@ -4,6 +4,7 @@ node_modules
 
 # Generated client
 prisma/generated
+.prisma
 
 # SQLite database files
 *.db

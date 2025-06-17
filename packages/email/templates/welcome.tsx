@@ -11,7 +11,7 @@ import {
   Text,
 } from '@react-email/components';
 
-interface WelcomeTemplateProps {
+interface WelcomeTemplateProps extends Record<string, any> {
   readonly dashboardUrl?: string;
   readonly email: string;
   readonly name: string;
@@ -19,9 +19,9 @@ interface WelcomeTemplateProps {
 }
 
 export const WelcomeTemplate = ({
-  name,
   dashboardUrl = 'https://example.com/dashboard',
   email: _email,
+  name,
   organizationName,
 }: WelcomeTemplateProps) => (
   <Tailwind>
@@ -65,8 +65,8 @@ export const WelcomeTemplate = ({
 
               <Section className="mb-6">
                 <Button
-                  href={dashboardUrl}
                   className="rounded-md bg-zinc-950 px-6 py-3 text-center text-white no-underline"
+                  href={dashboardUrl}
                 >
                   Go to Dashboard
                 </Button>
@@ -95,9 +95,9 @@ export const WelcomeTemplate = ({
 const ExampleWelcomeEmail = () => (
   <WelcomeTemplate
     dashboardUrl="https://example.com/dashboard"
-    organizationName="Acme Corp"
     email="jane@example.com"
     name="Jane Smith"
+    organizationName="Acme Corp"
   />
 );
 

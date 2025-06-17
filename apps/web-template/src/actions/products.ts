@@ -1,85 +1,117 @@
 'use server';
 
-// App-specific actions for events and locations that aren't in the database schema yet
+import {
+  findManyProductsAction,
+  findFirstProductAction,
+  findManyBrandsAction,
+  getCategoriesAdvancedAction,
+} from '@repo/database/prisma';
 
-import { unstable_cache } from 'next/cache';
-
-// Server action to get events (placeholder until Event model is added)
-export async function getEvents() {
+// Wrapper functions that return expected format with data property
+export async function getProducts(args?: any) {
   'use server';
 
-  const cached = unstable_cache(
-    async () => {
-      // Mock events data until Event model is added to schema
-      return [
-        {
-          id: 'event-1',
-          name: 'Summer Sale 2024',
-          description: 'Get up to 50% off on summer collection',
-          endDate: new Date('2024-08-31'),
-          slug: 'summer-sale-2024',
-          startDate: new Date('2024-06-01'),
-        },
-        {
-          id: 'event-2',
-          name: 'Black Friday',
-          description: 'Biggest sale of the year',
-          endDate: new Date('2024-11-29'),
-          slug: 'black-friday',
-          startDate: new Date('2024-11-29'),
-        },
-      ];
-    },
-    ['events'],
-    {
-      revalidate: 3600,
-      tags: ['events'],
-    },
-  );
+  // Convert web-template params to Prisma params
+  const prismaArgs = { ...args };
+  if (args?.limit) {
+    prismaArgs.take = args.limit;
+    delete prismaArgs.limit;
+  }
+  if (args?.page) {
+    prismaArgs.skip = (args.page - 1) * (args.limit || 50);
+    delete prismaArgs.page;
+  }
 
-  return cached();
+  const products = await findManyProductsAction(prismaArgs);
+  return {
+    data: products,
+    pagination: {
+      total: products.length,
+      page: args?.page || 1,
+      limit: args?.limit || args?.take || 50,
+      totalPages: Math.ceil(products.length / (args?.limit || args?.take || 50)),
+    },
+  };
 }
 
-// Server action to get locations (placeholder until Location model is added)
-export async function getLocations() {
+export async function getProductByHandle(handle: string) {
   'use server';
+  const product = await findFirstProductAction({
+    where: { slug: handle },
+  });
+  return product;
+}
 
-  const cached = unstable_cache(
-    async () => {
-      // Mock locations data until Location model is added to schema
-      return [
-        {
-          id: 'loc-1',
-          name: 'New York Store',
-          address: '123 5th Avenue, New York, NY 10001',
-          coordinates: { lat: 40.7128, lng: -74.006 },
-          country: 'USA',
-          slug: 'new-york',
-        },
-        {
-          id: 'loc-2',
-          name: 'Los Angeles Store',
-          address: '456 Sunset Blvd, Los Angeles, CA 90028',
-          coordinates: { lat: 34.0522, lng: -118.2437 },
-          country: 'USA',
-          slug: 'los-angeles',
-        },
-        {
-          id: 'loc-3',
-          name: 'London Store',
-          address: '789 Oxford Street, London, UK',
-          coordinates: { lat: 51.5074, lng: -0.1278 },
-          country: 'UK',
-          slug: 'london',
-        },
-      ];
+export async function getProductsByCollection(collectionId: string, args?: any) {
+  'use server';
+  const products = await findManyProductsAction({
+    where: {
+      collections: {
+        some: { id: collectionId },
+      },
     },
-    ['locations'],
-    {
-      revalidate: 3600,
-      tags: ['locations'],
+    ...args,
+  });
+  return {
+    products: products as any,
+    data: products,
+    pagination: {
+      total: products.length,
+      page: args?.page || 1,
+      limit: args?.limit || 50,
+      totalPages: Math.ceil(products.length / (args?.limit || 50)),
     },
-  );
+  };
+}
 
-  return cached();
+export async function getProductsByBrand(brandSlug: string, args?: any) {
+  'use server';
+  const products = await findManyProductsAction({
+    where: {
+      brand: brandSlug,
+    },
+    ...args,
+  });
+  return {
+    data: products,
+    pagination: {
+      total: products.length,
+      page: args?.page || 1,
+      limit: args?.limit || 50,
+      totalPages: Math.ceil(products.length / (args?.limit || 50)),
+    },
+  };
+}
+
+export async function searchProducts(query: string, args?: any) {
+  'use server';
+  const products = await findManyProductsAction({
+    where: {
+      OR: [
+        { name: { contains: query, mode: 'insensitive' } },
+        { category: { contains: query, mode: 'insensitive' } },
+      ],
+    },
+    ...args,
+  });
+  return {
+    data: products,
+    pagination: {
+      total: products.length,
+      page: args?.page || 1,
+      limit: args?.limit || 50,
+      totalPages: Math.ceil(products.length / (args?.limit || 50)),
+    },
+  };
+}
+
+export async function getProductBrands(args?: any) {
+  'use server';
+  const brands = await findManyBrandsAction(args);
+  return { data: brands };
+}
+
+export async function getProductCategories(args?: any) {
+  'use server';
+  return getCategoriesAdvancedAction(args);
 }

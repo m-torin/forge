@@ -30,14 +30,14 @@ const createSchedulingService = (provider?: any) => ({
 });
 
 // Mock Upstash dependencies
-vi.mock('@upstash/workflow/nextjs', () => ({
+vi.mock('@upstash/workflow/nextjs', (_: any) => ({
   serve: vi.fn().mockReturnValue({
     GET: vi.fn(),
     POST: vi.fn(),
   }),
 }));
 
-vi.mock('@upstash/qstash', () => ({
+vi.mock('@upstash/qstash', (_: any) => ({
   Client: vi.fn(() => ({
     messages: {
       delete: vi.fn().mockResolvedValue(true),
@@ -50,7 +50,7 @@ vi.mock('@upstash/qstash', () => ({
   })),
 }));
 
-vi.mock('@upstash/redis', () => ({
+vi.mock('@upstash/redis', (_: any) => ({
   Redis: vi.fn(() => ({
     del: vi.fn().mockResolvedValue(1),
     get: vi.fn().mockResolvedValue(null),
@@ -75,9 +75,16 @@ describe('Workflow Engine', () => {
       },
     });
 
+    const upstashConfig = createUpstashWorkflowConfig();
     engineConfig = {
       defaultProvider: 'test-upstash-workflow',
-      providers: [createUpstashWorkflowConfig()],
+      providers: [
+        {
+          name: upstashConfig.name,
+          type: upstashConfig.type as 'upstash-workflow',
+          config: upstashConfig,
+        },
+      ],
     };
   });
 
@@ -208,19 +215,30 @@ describe('Workflow Engine', () => {
 
   describe('Provider Management', () => {
     test('should register multiple providers', async () => {
+      const provider1Config = createUpstashWorkflowConfig({ name: 'provider-1' });
+      const provider2Config = createUpstashWorkflowConfig({
+        name: 'provider-2',
+        config: {
+          baseUrl: 'http://localhost:8081',
+          qstashToken: 'test-qstash-token-2',
+          redisToken: 'test-redis-token-2',
+          redisUrl: 'redis://localhost:6379',
+        },
+      });
+
       const config = {
         defaultProvider: 'provider-1',
         providers: [
-          createUpstashWorkflowConfig({ name: 'provider-1' }),
-          createUpstashWorkflowConfig({
-            name: 'provider-2',
-            config: {
-              baseUrl: 'http://localhost:8081',
-              qstashToken: 'test-qstash-token-2',
-              redisToken: 'test-redis-token-2',
-              redisUrl: 'redis://localhost:6379',
-            },
-          }),
+          {
+            name: provider1Config.name,
+            type: provider1Config.type as 'upstash-workflow',
+            config: provider1Config,
+          },
+          {
+            name: provider2Config.name,
+            type: provider2Config.type as 'upstash-workflow',
+            config: provider2Config,
+          },
         ],
       };
 
@@ -239,19 +257,30 @@ describe('Workflow Engine', () => {
     });
 
     test('should execute with specific provider', async () => {
+      const provider1Config = createUpstashWorkflowConfig({ name: 'provider-1' });
+      const provider2Config = createUpstashWorkflowConfig({
+        name: 'provider-2',
+        config: {
+          baseUrl: 'http://localhost:8081',
+          qstashToken: 'test-qstash-token-2',
+          redisToken: 'test-redis-token-2',
+          redisUrl: 'redis://localhost:6379',
+        },
+      });
+
       const config = {
         defaultProvider: 'provider-1',
         providers: [
-          createUpstashWorkflowConfig({ name: 'provider-1' }),
-          createUpstashWorkflowConfig({
-            name: 'provider-2',
-            config: {
-              baseUrl: 'http://localhost:8081',
-              qstashToken: 'test-qstash-token-2',
-              redisToken: 'test-redis-token-2',
-              redisUrl: 'redis://localhost:6379',
-            },
-          }),
+          {
+            name: provider1Config.name,
+            type: provider1Config.type as 'upstash-workflow',
+            config: provider1Config,
+          },
+          {
+            name: provider2Config.name,
+            type: provider2Config.type as 'upstash-workflow',
+            config: provider2Config,
+          },
         ],
       };
 

@@ -1,6 +1,6 @@
-import ButtonDropdown from './ButtonDropdown';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import ButtonDropdown from './ButtonDropdown';
 
 const meta: Meta<typeof ButtonDropdown> = {
   argTypes: {

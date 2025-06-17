@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { z } from 'zod';
 
+import { authClient } from '@repo/auth/client/next';
+
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
@@ -22,7 +24,7 @@ interface ForgotPasswordClientProps {
 export default function ForgotPasswordClient({ dict, locale }: ForgotPasswordClientProps) {
   const router = useRouter();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+
   const form = useForm<ForgotPasswordFormData>({
     initialValues: {
       email: '',
@@ -32,21 +34,34 @@ export default function ForgotPasswordClient({ dict, locale }: ForgotPasswordCli
 
   const handleSubmit = async (values: ForgotPasswordFormData) => {
     try {
-      // TODO: Implement actual Better Auth password reset
-      console.log('Password reset request:', values);
-      
-      notifications.show({
-        title: 'Demo Mode',
-        message: 'Password reset is not yet connected. This is a UI demo.',
-        color: 'blue',
+      const { data, error } = await authClient.forgetPassword({
+        email: values.email,
+        redirectTo: `${window.location.origin}/${locale}/reset-password`,
       });
 
-      // Simulate successful submission
-      setIsSubmitted(true);
+      if (error) {
+        notifications.show({
+          title: 'Reset Failed',
+          message: error.message || 'Failed to send reset email',
+          color: 'red',
+        });
+        return;
+      }
+
+      if (data) {
+        notifications.show({
+          title: 'Reset Email Sent',
+          message: 'Please check your email for password reset instructions.',
+          color: 'green',
+        });
+
+        setIsSubmitted(true);
+      }
     } catch (error) {
+      console.error('Password reset error:', error);
       notifications.show({
         title: 'Error',
-        message: 'An unexpected error occurred',
+        message: 'An unexpected error occurred while sending reset email',
         color: 'red',
       });
     }
@@ -71,21 +86,17 @@ export default function ForgotPasswordClient({ dict, locale }: ForgotPasswordCli
               />
             </svg>
           </div>
-          
+
           <h1 className="mb-4 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
             {dict.auth?.checkYourEmail || 'Check your email'}
           </h1>
-          
+
           <p className="mb-8 text-neutral-600 dark:text-neutral-400">
-            {dict.auth?.passwordResetEmailSent || 
+            {dict.auth?.passwordResetEmailSent ||
               `We've sent a password reset link to ${form.values.email}`}
           </p>
-          
-          <Button
-            onClick={() => router.push(`/${locale}/login`)}
-            size="lg"
-            fullWidth
-          >
+
+          <Button onClick={() => router.push(`/${locale}/login`)} size="lg" fullWidth>
             {dict.auth?.backToLogin || 'Back to login'}
           </Button>
         </div>
@@ -101,10 +112,10 @@ export default function ForgotPasswordClient({ dict, locale }: ForgotPasswordCli
         </h1>
         <div className="mx-auto flex max-w-md flex-col gap-y-6">
           <p className="text-center text-neutral-600 dark:text-neutral-400">
-            {dict.auth?.forgotPasswordInstructions || 
+            {dict.auth?.forgotPasswordInstructions ||
               "Enter your email address and we'll send you a link to reset your password."}
           </p>
-          
+
           {/* Reset Form */}
           <form onSubmit={form.onSubmit(handleSubmit)} className="grid grid-cols-1 gap-6">
             <TextInput
@@ -114,7 +125,7 @@ export default function ForgotPasswordClient({ dict, locale }: ForgotPasswordCli
               size="lg"
               {...form.getInputProps('email')}
             />
-            
+
             <Button type="submit" size="lg" fullWidth>
               {dict.auth?.sendResetLink || 'Send Reset Link'}
             </Button>
@@ -122,16 +133,11 @@ export default function ForgotPasswordClient({ dict, locale }: ForgotPasswordCli
 
           {/* Back to login */}
           <div className="text-center">
-            <Link 
-              href={`/${locale}/login`} 
+            <Link
+              href={`/${locale}/login`}
               className="text-primary-600 hover:underline inline-flex items-center gap-2"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

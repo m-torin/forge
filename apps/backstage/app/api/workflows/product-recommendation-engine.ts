@@ -10,10 +10,16 @@ import {
   createStep,
   createStepWithValidation,
   createWorkflowStep,
-  withStepBulkhead,
   withStepMonitoring,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
+
+// Type definitions for workflow context
+interface StepContext {
+  input: any;
+  metadata?: any;
+}
 
 // Input schemas
 const RecommendationEngineInput = z.object({
@@ -142,7 +148,7 @@ const mlRecommendationFactory = createWorkflowStep(
     tags: ['recommendation', 'machine-learning', 'personalization'],
     version: '1.0.0',
   },
-  async (context) => {
+  async (context: StepContext) => {
     const { config, modelType, products, userProfiles } = context.input;
     const recommendations = [];
 
@@ -288,18 +294,14 @@ export const collectUserProfilesStep = compose(
         userProfiles: enrichedProfiles,
       };
     },
-    (input) =>
+    (input: any) =>
       input.targetScope.all ||
       input.targetScope.userIds?.length > 0 ||
       input.targetScope.sessionIds?.length > 0,
-    (output) => output.userProfiles.length > 0,
+    (output: any) => output.userProfiles.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 120000 }), // 2 minutes
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['profileEnrichmentRate'],
-    }),
+  (step: any) => withStepTimeout(step, 120000), // 2 minutes
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock profile fetching functions
@@ -414,18 +416,19 @@ function getDeviceCapabilities(device: string): any {
     mobile: { hasKeyboard: false, screenSize: 'small', touchCapable: true },
     tablet: { hasKeyboard: false, screenSize: 'medium', touchCapable: true },
   };
-  return capabilities[device as any] || capabilities.desktop;
+  return capabilities[device as keyof typeof capabilities] || capabilities.desktop;
 }
 
 function getLocationInsights(location: string): any {
   const insights = {
-    CA: { currency: 'CAD', shippingRegion: 'North America', timezone: 'America/Toronto' },
-    DE: { currency: 'EUR', shippingRegion: 'Europe', timezone: 'Europe/Berlin' },
-    FR: { currency: 'EUR', shippingRegion: 'Europe', timezone: 'Europe/Paris' },
-    UK: { currency: 'GBP', shippingRegion: 'Europe', timezone: 'Europe/London' },
-    US: { currency: 'USD', shippingRegion: 'North America', timezone: 'America/New_York' },
+    US: { currency: 'USD', timezone: 'EST', shippingRegion: 'North America' },
+    CA: { currency: 'CAD', timezone: 'EST', shippingRegion: 'North America' },
+    UK: { currency: 'GBP', timezone: 'GMT', shippingRegion: 'Europe' },
+    DE: { currency: 'EUR', timezone: 'CET', shippingRegion: 'Europe' },
+    FR: { currency: 'EUR', timezone: 'CET', shippingRegion: 'Europe' },
   };
-  return insights[location as any] || insights.US;
+
+  return insights[location as keyof typeof insights] || insights.US;
 }
 
 // Step 2: Fetch product catalog
@@ -528,7 +531,9 @@ function calculateRecencyScore(product: any): number {
 function generateSemanticVector(product: any): number[] {
   // Generate mock 100-dimensional semantic vector
   const vector = [];
-  const seed = product.title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const seed = product.title
+    .split('')
+    .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
 
   for (let i = 0; i < 100; i++) {
     vector.push(Math.sin(seed + i) * Math.cos(seed - i));
@@ -585,7 +590,7 @@ async function generateUserBasedCF(
       similarity: calculateUserSimilarity(targetProfile, profile),
       userId: profile.userId,
     }))
-    .sort((a, b) => b.similarity - a.similarity)
+    .sort((a: any, b: any) => b.similarity - a.similarity)
     .slice(0, 50); // Top 50 similar users
 
   // Generate recommendations based on similar users' preferences
@@ -603,7 +608,7 @@ async function generateUserBasedCF(
 
   // Convert to recommendation format
   const sortedCandidates = Array.from(candidateProducts.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 10);
 
   sortedCandidates.forEach(([productId, score], index) => {
@@ -649,7 +654,7 @@ async function generateItemBasedCF(profile: any, products: any[]): Promise<any[]
 
   // Convert to recommendations
   const sortedCandidates = Array.from(candidateProducts.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 10);
 
   sortedCandidates.forEach(([productId, score], index) => {
@@ -695,7 +700,7 @@ function findSimilarItems(itemId: string, products: any[]): any[] {
       productId: product.id,
       similarity: calculateProductSimilarity(targetProduct, product),
     }))
-    .sort((a, b) => b.similarity - a.similarity)
+    .sort((a: any, b: any) => b.similarity - a.similarity)
     .slice(0, 20);
 }
 
@@ -760,7 +765,7 @@ async function generateContentBasedRecommendations(profile: any, products: any[]
   // Sort and filter
   const topProducts = productScores
     .filter(({ score }) => score > 0.3)
-    .sort((a, b) => b.score - a.score)
+    .sort((a: any, b: any) => b.score - a.score)
     .slice(0, 15);
 
   topProducts.forEach(({ product, score }, index) => {
@@ -880,10 +885,10 @@ export const runMLModelsStep = compose(
       mlRecommendations: finalMLRecommendations,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 5,
-      maxQueued: 20,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 
@@ -949,7 +954,7 @@ function ensembleByStacking(recommendations: any[]): any[] {
   const ensembled: any[] = [];
   grouped.forEach((recs, key) => {
     const weightedScore = recs.reduce((sum: number, rec: any) => {
-      const weight = modelWeights[rec.algorithm as any] || 0.25;
+      const weight = modelWeights[rec.algorithm as keyof typeof modelWeights] || 0.25;
       return sum + rec.score * weight;
     }, 0);
 
@@ -1044,7 +1049,9 @@ function getTimeContextScore(recommendation: any, profile: any): number {
     night: ['Books', 'Electronics', 'Entertainment'],
   };
 
-  return timePreferences[timeOfDay as any]?.includes(category) ? 0.2 : -0.1;
+  return timePreferences[timeOfDay as keyof typeof timePreferences]?.includes(category)
+    ? 0.2
+    : -0.1;
 }
 
 function getLocationContextScore(recommendation: any, profile: any): number {
@@ -1082,7 +1089,9 @@ function getSeasonalityScore(recommendation: any, profile: any): number {
     winter: ['Electronics', 'Home', 'Books'],
   };
 
-  return seasonalCategories[season as any]?.includes(category) ? 0.15 : 0;
+  return seasonalCategories[season as keyof typeof seasonalCategories]?.includes(category)
+    ? 0.15
+    : 0;
 }
 
 function getContextFactors(profile: any, config: any): any[] {
@@ -1185,7 +1194,7 @@ function applyHybridScoring(recommendations: any[], weights: Record<string, numb
 
   return recommendations.map((rec) => ({
     ...rec,
-    finalScore: rec.score * (finalWeights[rec.algorithm as any] || 0.1),
+    finalScore: rec.score * (finalWeights[rec.algorithm as keyof typeof finalWeights] || 0.1),
   }));
 }
 
@@ -1347,10 +1356,10 @@ export const storeRecommendationsStep = compose(
       storedRecommendations: stored,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 5,
-      maxQueued: 20,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 
@@ -1430,7 +1439,7 @@ function analyzeCategoryDistribution(recommendations: any[]): any {
   });
 
   return Array.from(distribution.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 10)
     .map(([category, count]) => ({ category, count }));
 }
@@ -1444,7 +1453,7 @@ function analyzeBrandDistribution(recommendations: any[]): any {
   });
 
   return Array.from(distribution.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 10)
     .map(([brand, count]) => ({ brand, count }));
 }
@@ -1453,7 +1462,7 @@ function analyzePriceDistribution(recommendations: any[]): any {
   const prices = recommendations
     .map((rec) => rec.metadata?.price)
     .filter((price) => price !== undefined)
-    .sort((a, b) => a - b);
+    .sort((a: any, b: any) => a - b);
 
   if (prices.length === 0) return null;
 

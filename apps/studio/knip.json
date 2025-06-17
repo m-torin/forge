@@ -1,0 +1,5 @@
+{
+  "extends": ["@repo/config/knip/base.json"],
+  "entry": ["index.ts", "**/*.config.{js,ts,mjs}", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+  "project": ["index.ts", "**/*.config.{js,ts,mjs}", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"]
+}

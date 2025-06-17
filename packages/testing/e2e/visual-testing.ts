@@ -51,7 +51,7 @@ export class VisualTestUtils {
   /**
    * Compare with baseline screenshot
    */
-  async compareWithBaseline(name: string, options?: { threshold?: number }) {
+  async compareWithBaseline(name: string, _options?: { threshold?: number }) {
     // This would integrate with visual regression tools
     // For now, we'll use Playwright's built-in screenshot comparison
     await this.page.screenshot({

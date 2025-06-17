@@ -14,7 +14,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ProductCopySEOAnalysisInput = z.object({
@@ -235,12 +235,8 @@ export const analyzeCurrentCopyStep = compose(
     (input) => input.products.length > 0,
     (output) => output.copyAnalysis.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 60000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['averageScore'],
-    }),
+  (step: any) => withStepTimeout(step, 60000),
+  (step: any) => withStepMonitoring(step),
 );
 
 function analyzeProductCopy(product: any, settings: any): any {
@@ -403,10 +399,10 @@ export const performKeywordResearchStep = compose(
       keywordResearchComplete: true,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -571,7 +567,7 @@ export const optimizeContentStep = compose(
       optimizedContent,
     };
   }),
-  (step) => withStepTimeout(step, { execution: 120000 }), // 2 minutes
+  (step: any) => withStepTimeout(step, 120000), // 2 minutes
 );
 
 function generateStructuredContent(product: any, keywords: any): any {
@@ -843,7 +839,7 @@ function calculateProductImprovements(
 // Step 7: Store SEO data
 export const storeSEODataStep = compose(
   StepTemplates.database('store-seo-data', 'Store SEO analysis and optimizations'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 8: Generate SEO report
@@ -898,7 +894,7 @@ function getTopImprovements(improvements: any[]): any[] {
     })),
   );
 
-  return allImprovements.sort((a, b) => b.impact - a.impact).slice(0, 10);
+  return allImprovements.sort((a: any, b: any) => b.impact - a.impact).slice(0, 10);
 }
 
 function getKeywordOpportunities(keywordData: any[]): any[] {
@@ -909,7 +905,7 @@ function getKeywordOpportunities(keywordData: any[]): any[] {
   );
 
   return allKeywords
-    .sort((a, b) => b.volume - a.volume)
+    .sort((a: any, b: any) => b.volume - a.volume)
     .slice(0, 10)
     .map((k) => ({
       difficulty: k.difficulty,
@@ -929,7 +925,7 @@ function getCommonGaps(competitorData: any[]): string[] {
   });
 
   return Array.from(gapCounts.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 5)
     .map(([gap]) => gap);
 }
@@ -944,7 +940,7 @@ function getCommonOpportunities(competitorData: any[]): string[] {
   });
 
   return Array.from(oppCounts.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 5)
     .map(([opp]) => opp);
 }

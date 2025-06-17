@@ -1,394 +1,190 @@
 /**
  * Order Processing Workflow
- * Complete e-commerce order fulfillment with inventory, payment, and shipping
+ * Simple hello world version with basic steps
  */
 
 import { z } from 'zod';
 
-import {
-  compose,
-  createStep,
-  createStepWithValidation,
-  StepTemplates,
-  withStepCircuitBreaker,
-  withStepRetry,
-  withStepTimeout,
-} from '@repo/orchestration';
+import { createStep, createStepWithValidation } from '@repo/orchestration/server/next';
 
 // Input schemas
 const OrderProcessingInput = z.object({
-  couponCode: z.string().optional(),
+  orderId: z.string(),
   customerId: z.string(),
-  giftMessage: z.string().optional(),
+  totalAmount: z.number(),
   items: z.array(
     z.object({
-      discount: z.number().min(0).max(100).default(0),
-      price: z.number().positive(),
       productId: z.string(),
-      quantity: z.number().positive(),
-      sku: z.string(),
+      quantity: z.number(),
+      price: z.number(),
     }),
   ),
-  orderId: z.string(),
-  paymentMethod: z.object({
-    type: z.enum(['credit_card', 'paypal', 'apple_pay', 'google_pay']),
-    token: z.string(),
-  }),
-  shippingAddress: z.object({
-    name: z.string(),
-    city: z.string(),
-    country: z.string(),
-    phone: z.string(),
-    postalCode: z.string(),
-    state: z.string(),
-    street: z.string(),
-  }),
-  shippingMethod: z.enum(['standard', 'express', 'overnight']),
 });
 
-// Step 1: Validate order
-export const validateOrderStep = compose(
-  createStepWithValidation(
-    'validate-order',
-    async (input: z.infer<typeof OrderProcessingInput>) => {
-      const validationResults = {
-        validation: {
-          addressValid: true, // Simulate address validation
-          couponValid: !input.couponCode || input.couponCode.startsWith('VALID'),
-          itemsValid: true,
-          paymentMethodValid: true,
-        },
-        order: {
-          ...input,
-          itemCount: input.items.reduce((sum, item) => sum + item.quantity, 0),
-          subtotal: input.items.reduce(
-            (sum, item) => sum + item.price * item.quantity * (1 - item.discount / 100),
-            0,
-          ),
-        },
-        timestamp: new Date().toISOString(),
-      };
+// Step 1: Hello World - Validate Order
+export const validateOrderStep = createStepWithValidation(
+  'validate-order',
+  async (input: z.infer<typeof OrderProcessingInput>) => {
+    console.log('Hello World from Step 1: Validating order');
+    console.log(`Order ID: ${input.orderId}`);
+    console.log(`Customer ID: ${input.customerId}`);
+    console.log(`Total Amount: $${input.totalAmount}`);
+    console.log(`Items: ${input.items.length}`);
 
-      // Check for any validation failures
-      const allValid = Object.values(validationResults.validation).every((v) => v === true);
-      if (!allValid) {
-        throw new Error(`Order validation failed: ${JSON.stringify(validationResults.validation)}`);
-      }
-
-      return validationResults;
-    },
-    (input) => input.items.length > 0 && !!input.customerId,
-    (output) => output.validation.itemsValid,
-  ),
-  (step) => withStepMonitoring(step, { enableDetailedLogging: true }),
-);
-
-// Step 2: Check inventory
-export const checkInventoryStep = compose(
-  createStep('check-inventory', async (data: any) => {
-    const { order } = data;
-    const inventoryChecks = [];
-    const reservations = [];
-
-    for (const item of order.items) {
-      // Simulate inventory check
-      const available = Math.floor(Math.random() * 100) + 50;
-      const inStock = available >= item.quantity;
-
-      inventoryChecks.push({
-        available,
-        backorderExpected: !inStock ? new Date(Date.now() + 7 * 86400000).toISOString() : null,
-        inStock,
-        productId: item.productId,
-        requested: item.quantity,
-        sku: item.sku,
-        warehouse: inStock ? 'warehouse-1' : null,
-      });
-
-      if (inStock) {
-        reservations.push({
-          expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour
-          quantity: item.quantity,
-          reservationId: `res_${Date.now()}_${item.sku}`,
-          sku: item.sku,
-          warehouse: 'warehouse-1',
-        });
-      }
-    }
-
-    const allInStock = inventoryChecks.every((check) => check.inStock);
+    // Simple validation
+    const isValid = input.totalAmount > 0 && input.items.length > 0;
 
     return {
-      ...data,
-      inventory: {
-        allInStock,
-        checkedAt: new Date().toISOString(),
-        checks: inventoryChecks,
-        reservations,
-      },
+      ...input,
+      isValid,
+      message: 'Hello from validate order step!',
+      timestamp: new Date().toISOString(),
     };
-  }),
-  (step) =>
-    withStepRetry(step, {
-      maxAttempts: 3,
-    }),
-  (step) =>
-    withStepCircuitBreaker(step, {
-      resetTimeout: 30000,
-      threshold: 0.5,
-      timeout: 5000,
-    }),
+  },
+  (input) => input.items.length > 0, // Pre-condition
+  (output) => output.isValid !== undefined, // Post-condition
 );
 
-// Step 3: Calculate pricing
-export const calculatePricingStep = createStep('calculate-pricing', async (data: any) => {
-  const { order } = data;
+// Step 2: Hello World - Check Inventory
+export const checkInventoryStep = createStep('check-inventory', async (data: any) => {
+  console.log('Hello World from Step 2: Checking inventory');
 
-  // Calculate base pricing
-  const subtotal = order.subtotal;
+  // Simulate inventory check
+  const inventoryStatus = data.items.map((item: any) => ({
+    productId: item.productId,
+    requested: item.quantity,
+    available: Math.floor(Math.random() * 20),
+    inStock: true, // Simplified - always in stock for hello world
+  }));
 
-  // Apply coupon if valid
-  let couponDiscount = 0;
-  if (order.couponCode && data.validation.couponValid) {
-    couponDiscount = subtotal * 0.1; // 10% off
+  const allInStock = inventoryStatus.every((item: any) => item.inStock);
+
+  console.log(`All items in stock: ${allInStock}`);
+
+  return {
+    ...data,
+    inventoryStatus,
+    allInStock,
+    message: 'Hello from check inventory step!',
+  };
+});
+
+// Step 3: Hello World - Process Payment
+export const processPaymentStep = createStep('process-payment', async (data: any) => {
+  console.log('Hello World from Step 3: Processing payment');
+
+  // Simulate payment processing
+  const paymentResult = {
+    success: Math.random() > 0.1, // 90% success rate
+    transactionId: `txn_${Date.now()}`,
+    amount: data.totalAmount,
+    currency: 'USD',
+  };
+
+  console.log(`Payment ${paymentResult.success ? 'succeeded' : 'failed'}`);
+  console.log(`Transaction ID: ${paymentResult.transactionId}`);
+
+  return {
+    ...data,
+    paymentResult,
+    paymentProcessed: true,
+    message: 'Hello from process payment step!',
+  };
+});
+
+// Step 4: Hello World - Update Order Status
+export const updateOrderStatusStep = createStep('update-status', async (data: any) => {
+  console.log('Hello World from Step 4: Updating order status');
+
+  let orderStatus = 'pending';
+  if (data.paymentResult.success && data.allInStock) {
+    orderStatus = 'confirmed';
+  } else if (!data.paymentResult.success) {
+    orderStatus = 'payment-failed';
+  } else if (!data.allInStock) {
+    orderStatus = 'inventory-issue';
   }
 
-  // Calculate shipping
-  const shippingRates = {
-    express: 15.99,
-    overnight: 29.99,
-    standard: 5.99,
-  };
-  const shippingCost = shippingRates[order.shippingMethod as any];
-
-  // Calculate tax (simplified)
-  const taxRate = 0.08; // 8%
-  const taxableAmount = subtotal - couponDiscount;
-  const tax = taxableAmount * taxRate;
-
-  // Final total
-  const total = subtotal - couponDiscount + shippingCost + tax;
+  console.log(`Order status updated to: ${orderStatus}`);
 
   return {
     ...data,
-    pricing: {
-      breakdown: {
-        items: order.items.map((item: any) => ({
-          ...item,
-          lineTotal: item.price * item.quantity * (1 - item.discount / 100),
-        })),
-      },
-      couponDiscount: Number(couponDiscount.toFixed(2)),
-      currency: 'USD',
-      shippingCost: Number(shippingCost.toFixed(2)),
-      subtotal: Number(subtotal.toFixed(2)),
-      tax: Number(tax.toFixed(2)),
-      total: Number(total.toFixed(2)),
-    },
+    orderStatus,
+    statusUpdated: true,
+    message: 'Hello from update status step!',
   };
 });
 
-// Step 4: Process payment
-export const processPaymentStep = compose(
-  createStep('process-payment', async (data: any) => {
-    const { order, pricing } = data;
+// Step 5: Hello World - Send Confirmation
+export const sendConfirmationStep = createStep('send-confirmation', async (data: any) => {
+  console.log('Hello World from Step 5: Sending order confirmation');
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Mock payment result (95% success rate)
-    const success = Math.random() > 0.05;
-
-    if (!success) {
-      throw new Error('Payment declined: Insufficient funds');
-    }
-
-    const payment = {
-      amount: pricing.total,
-      currency: pricing.currency,
-      metadata: {
-        authCode: 'AUTH' + Math.random().toString(36).substring(7).toUpperCase(),
-        brand: 'visa',
-        last4: '4242',
-      },
-      method: order.paymentMethod.type,
-      processedAt: new Date().toISOString(),
-      processor: 'stripe',
-      status: 'authorized',
-      transactionId: `txn_${Date.now()}`,
-    };
-
-    return {
-      ...data,
-      payment,
-      paymentProcessed: true,
-    };
-  }),
-  (step) =>
-    withStepRetry(step, {
-      maxAttempts: 2,
-    }),
-  (step) => withStepTimeout(step, { execution: 30000 }), // 30 second timeout
-);
-
-// Step 5: Create fulfillment order
-export const createFulfillmentStep = createStep('create-fulfillment', async (data: any) => {
-  const { inventory, order, pricing } = data;
-
-  const fulfillment = {
-    createdAt: new Date().toISOString(),
-    fulfillmentId: `ful_${Date.now()}`,
-    items: inventory.reservations.map((res: any) => {
-      const item = order.items.find((i: any) => i.sku === res.sku);
-      return {
-        ...item,
-        location: `A${Math.floor(Math.random() * 10)}-${Math.floor(Math.random() * 100)}`,
-        reservationId: res.reservationId,
-      };
-    }),
-    orderId: order.orderId,
-    packingInstructions: order.giftMessage ? 'Include gift message' : null,
-    priority: order.shippingMethod === 'overnight' ? 'high' : 'normal',
-    warehouse: 'warehouse-1',
+  const confirmation = {
+    orderId: data.orderId,
+    customerId: data.customerId,
+    status: data.orderStatus,
+    totalAmount: data.totalAmount,
+    itemCount: data.items.length,
+    message:
+      data.orderStatus === 'confirmed'
+        ? 'Your order has been confirmed!'
+        : 'There was an issue with your order',
+    timestamp: new Date().toISOString(),
   };
 
-  // Generate shipping label
-  const shippingLabel = {
-    carrier: order.shippingMethod === 'overnight' ? 'FedEx' : 'UPS',
-    estimatedDelivery: new Date(
-      Date.now() +
-        (order.shippingMethod === 'standard' ? 5 : order.shippingMethod === 'express' ? 2 : 1) *
-          86400000,
-    ).toISOString(),
-    labelUrl: `https://shipping.example.com/labels/${fulfillment.fulfillmentId}.pdf`,
-    service: order.shippingMethod,
-    trackingNumber: `1Z${Math.random().toString(36).substring(2, 11).toUpperCase()}`,
-  };
+  console.log('Sending confirmation:', confirmation);
 
   return {
     ...data,
-    fulfillment,
-    shippingLabel,
+    confirmation,
+    confirmationSent: true,
+    message: 'Hello from send confirmation step!',
   };
 });
 
-// Step 6: Update inventory
-export const updateInventoryStep = StepTemplates.database(
-  'update-inventory',
-  'Decrement inventory levels and update reservations',
-);
+// Step 6: Hello World - Generate Report
+export const generateReportStep = createStep('generate-report', async (data: any) => {
+  console.log('Hello World from Step 6: Generating order report');
 
-// Step 7: Send order confirmation
-export const sendOrderConfirmationStep = compose(
-  StepTemplates.notification('order-confirmation', 'Send order confirmation email to customer', {
-    template: {
-      subject: 'Order {{orderId}} Confirmed - Thank You!',
-      templateId: 'order-confirmation-v2',
+  const report = {
+    summary: {
+      orderId: data.orderId,
+      customerId: data.customerId,
+      totalAmount: data.totalAmount,
+      itemCount: data.items.length,
+      orderStatus: data.orderStatus,
+      paymentSuccess: data.paymentResult.success,
+      allItemsInStock: data.allInStock,
     },
-  }),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
-);
+    messages: [data.message, 'Hello from all order processing steps!'],
+    completedAt: new Date().toISOString(),
+  };
 
-// Step 8: Notify warehouse
-export const notifyWarehouseStep = StepTemplates.http(
-  'notify-warehouse',
-  'Send fulfillment request to warehouse system',
-  {
-    httpConfig: {
-      baseHeaders: {
-        'Content-Type': 'application/json',
-        'X-API-Key': 'warehouse-key',
-      },
-      baseUrl: 'https://warehouse-api.example.com',
-      method: 'POST',
-    },
-  },
-);
-
-// Step 9: Schedule status updates
-export const scheduleStatusUpdatesStep = createStep('schedule-updates', async (data: any) => {
-  const { order, shippingLabel } = data;
-
-  const scheduledJobs = [
-    {
-      type: 'send-shipped-notification',
-      data: {
-        orderId: order.orderId,
-        trackingNumber: shippingLabel.trackingNumber,
-      },
-      scheduledFor: new Date(Date.now() + 3600000).toISOString(), // 1 hour
-    },
-    {
-      type: 'request-review',
-      data: {
-        customerId: order.customerId,
-        items: order.items.map((i: any) => i.productId),
-        orderId: order.orderId,
-      },
-      scheduledFor: new Date(Date.now() + 7 * 86400000).toISOString(), // 7 days
-    },
-    {
-      type: 'loyalty-points',
-      data: {
-        customerId: order.customerId,
-        points: Math.floor(data.pricing.total),
-      },
-      scheduledFor: new Date(Date.now() + 30 * 86400000).toISOString(), // 30 days
-    },
-  ];
+  console.log('Report generated:', JSON.stringify(report, null, 2));
 
   return {
     ...data,
-    orderProcessingComplete: true,
-    scheduledJobs,
+    report,
+    workflowComplete: true,
+    finalMessage: 'Hello World order processing completed!',
   };
 });
-
-// Step 10: Capture payment
-export const capturePaymentStep = compose(
-  StepTemplates.conditional(
-    'capture-payment',
-    'Capture authorized payment after successful fulfillment',
-    {
-      trueStep: createStep('capture', async (data: any) => {
-        // Simulate payment capture
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        return {
-          ...data,
-          payment: {
-            ...data.payment,
-            capturedAt: new Date().toISOString(),
-            status: 'captured',
-          },
-        };
-      }),
-    },
-  ),
-  (step) => withStepRetry(step, { backoff: 'exponential', maxAttempts: 5 }),
-);
 
 // Main workflow definition
 export const orderProcessingWorkflow = {
   id: 'order-processing',
-  name: 'Order Processing',
+  name: 'Order Processing - Hello World',
+  description: 'Simple hello world order processing workflow',
+  version: '1.0.0',
   config: {
-    compensationEnabled: true, // Enable saga pattern for rollback
-    criticalSteps: ['process-payment', 'update-inventory', 'capture-payment'],
-    maxDuration: 300000, // 5 minutes
+    maxDuration: 60000, // 1 minute
   },
-  description: 'Complete e-commerce order fulfillment with inventory, payment, and shipping',
   steps: [
     validateOrderStep,
     checkInventoryStep,
-    calculatePricingStep,
     processPaymentStep,
-    createFulfillmentStep,
-    updateInventoryStep,
-    sendOrderConfirmationStep,
-    notifyWarehouseStep,
-    scheduleStatusUpdatesStep,
-    capturePaymentStep,
+    updateOrderStatusStep,
+    sendConfirmationStep,
+    generateReportStep,
   ],
-  version: '1.0.0',
 };

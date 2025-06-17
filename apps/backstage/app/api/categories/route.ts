@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@repo/auth/server';
-import { database } from '@repo/database/prisma';
+import { auth } from '@repo/auth/server/next';
+import { prisma } from '@repo/database/prisma';
 import { Prisma } from '@repo/database/prisma';
 
 import type { ContentStatus } from '@repo/database/prisma';
@@ -74,7 +74,6 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { slug: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -105,7 +104,7 @@ export async function GET(request: NextRequest) {
 
     // Execute queries in parallel
     const [categories, totalCount] = await Promise.all([
-      database.productCategory.findMany({
+      prisma.productCategory.findMany({
         include: {
           _count: {
             select: {
@@ -137,7 +136,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         where,
       }),
-      database.productCategory.count({ where }),
+      prisma.productCategory.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -191,7 +190,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if slug already exists
-    const existingCategory = await database.productCategory.findUnique({
+    const existingCategory = await prisma.productCategory.findUnique({
       where: { slug },
     });
 
@@ -204,7 +203,7 @@ export async function POST(request: NextRequest) {
 
     // Validate parent exists if provided
     if (parentId) {
-      const parentCategory = await database.productCategory.findUnique({
+      const parentCategory = await prisma.productCategory.findUnique({
         where: { id: parentId },
       });
 
@@ -223,15 +222,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the category
-    const category = await database.productCategory.create({
+    const category = await prisma.productCategory.create({
       data: {
         name,
         copy: copy || {},
-        description,
         displayOrder,
-        metaDescription,
-        metaKeywords,
-        metaTitle,
         parentId,
         slug,
         status,
@@ -284,7 +279,7 @@ export async function POST(request: NextRequest) {
 async function checkCircularReference(parentId: string, childId: string | null): Promise<boolean> {
   if (!childId) return false;
 
-  const parent = await database.productCategory.findUnique({
+  const parent = await prisma.productCategory.findUnique({
     select: { parentId: true },
     where: { id: parentId },
   });

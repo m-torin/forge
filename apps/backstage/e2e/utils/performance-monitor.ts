@@ -1,4 +1,4 @@
-import type { BrowserContext, Page } from '@playwright/test';
+import { BrowserContext, Page } from '@playwright/test';
 
 export interface PerformanceMetrics {
   cls?: number; // Cumulative Layout Shift
@@ -76,13 +76,13 @@ export class PerformanceMonitor {
   }
 
   private setupNetworkMonitoring(): void {
-    this.page.on('request', (request) => {
+    this.page.on('request', (request: any) => {
       this.networkRequests.set(request.url(), {
         start: Date.now(),
       });
     });
 
-    this.page.on('response', (response) => {
+    this.page.on('response', (response: any) => {
       const timing = this.networkRequests.get(response.url());
       if (timing) {
         timing.end = Date.now();
@@ -94,7 +94,7 @@ export class PerformanceMonitor {
       }
     });
 
-    this.page.on('requestfailed', (request) => {
+    this.page.on('requestfailed', (request: any) => {
       const timing = this.networkRequests.get(request.url());
       if (timing) {
         timing.end = Date.now();
@@ -124,7 +124,7 @@ export class PerformanceMonitor {
 
       // Get FCP
       let fcp: number | undefined;
-      const fcpEntry = paintTimings.find((entry) => entry.name === 'first-contentful-paint');
+      const fcpEntry = paintTimings.find((entry: any) => entry.name === 'first-contentful-paint');
       if (fcpEntry) {
         fcp = fcpEntry.startTime;
       }
@@ -132,7 +132,7 @@ export class PerformanceMonitor {
       // Get CLS
       let cls = 0;
       const clsEntries = performance.getEntriesByType('layout-shift') as any[];
-      clsEntries.forEach((entry) => {
+      clsEntries.forEach((entry: any) => {
         if (!entry.hadRecentInput) {
           cls += entry.value;
         }
@@ -174,7 +174,7 @@ export class PerformanceMonitor {
     let totalRequestSize = 0;
     let failedRequestCount = 0;
 
-    this.networkRequests.forEach((timing) => {
+    this.networkRequests.forEach((timing: any) => {
       totalRequestCount++;
       if (timing.size) {
         totalRequestSize += timing.size;
@@ -195,14 +195,14 @@ export class PerformanceMonitor {
     return await this.page.evaluate(() => {
       const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
       return resources
-        .filter((resource) => resource.duration > 0)
-        .map((resource) => ({
+        .filter((resource: any) => resource.duration > 0)
+        .map((resource: any) => ({
           name: resource.name,
           type: resource.initiatorType,
           duration: Math.round(resource.duration),
           size: resource.transferSize,
         }))
-        .sort((a, b) => b.duration - a.duration)
+        .sort((a, b: any) => b.duration - a.duration)
         .slice(0, 20); // Top 20 slowest resources
     });
   }
@@ -219,9 +219,9 @@ export class PerformanceMonitor {
         const endTime = Date.now();
         return endTime - startTime;
       }
-    } catch (error) {
+    } catch (error: any) {
       // If we can't measure FID, return undefined
-      console.warn('Could not measure FID:', error);
+      console.warn('Could not measure FID: ', error);
     }
     return undefined;
   }
@@ -241,7 +241,7 @@ export class PerformanceMonitor {
       { name: 'Page Load Complete', key: 'loadComplete' },
     ];
 
-    metricsToCheck.forEach(({ name, key }) => {
+    metricsToCheck.forEach(({ name, key }: any) => {
       const value = metrics[key];
       const threshold = this.thresholds[key as keyof PerformanceThresholds];
 
@@ -309,7 +309,7 @@ export class PerformanceMonitor {
 
     if (report.violations && report.violations.length > 0) {
       lines.push('', 'Performance Violations:');
-      report.violations.forEach((violation) => {
+      report.violations.forEach((violation: any) => {
         const icon = violation.severity === 'error' ? '❌' : '⚠️';
         lines.push(
           `  ${icon} ${violation.metric}: ${violation.actual.toFixed(0)} ms (threshold: ${violation.threshold.toFixed(0)} ms)`,
@@ -319,7 +319,7 @@ export class PerformanceMonitor {
 
     if (report.metrics.resources && report.metrics.resources.length > 0) {
       lines.push('', 'Slowest Resources:');
-      report.metrics.resources.slice(0, 5).forEach((resource) => {
+      report.metrics.resources.slice(0, 5).forEach((resource: any) => {
         const name = resource.name.length > 50 ? '...' + resource.name.slice(-47) : resource.name;
         lines.push(`  ${resource.duration} ms - ${name}`);
       });
@@ -352,10 +352,10 @@ export async function withPerformanceMonitoring<T>(
     console.log(PerformanceMonitor.formatReport(report));
 
     // Fail the test if there are errors
-    const errors = report.violations?.filter((v) => v.severity === 'error');
+    const errors = report.violations?.filter((v: any) => v.severity === 'error');
     if (errors && errors.length > 0) {
       throw new Error(
-        `Performance violations detected:\n${errors.map((e) => `${e.metric}: ${e.actual} ms`).join('\n')}`,
+        `Performance violations detected:\n${errors.map((e: any) => `${e.metric}: ${e.actual} ms`).join('\n')}`,
       );
     }
 

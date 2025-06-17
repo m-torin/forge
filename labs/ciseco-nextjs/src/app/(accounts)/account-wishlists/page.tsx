@@ -1,4 +1,6 @@
-import { ButtonSecondary, ProductCard, getProducts } from '@repo/design-system/ciseco'
+import ProductCard from '@/components/ProductCard'
+import { getProducts } from '@/data/data'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {

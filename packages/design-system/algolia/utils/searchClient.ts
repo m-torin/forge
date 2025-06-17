@@ -1,6 +1,6 @@
 import { algoliasearch } from 'algoliasearch';
 
-import type { SearchConfig } from '../types';
+import { SearchConfig } from '../types';
 
 export function createSearchClient(config: SearchConfig) {
   const { apiKey, appId } = config;

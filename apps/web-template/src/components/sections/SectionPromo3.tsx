@@ -1,4 +1,6 @@
-import { Button, TextInput } from '@mantine/core';
+'use client';
+
+import { TextInput } from '@mantine/core';
 import { IconArrowRight } from '@tabler/icons-react';
 import clsx from 'clsx';
 import Image from 'next/image';
@@ -15,10 +17,10 @@ export interface SectionPromo3Props {
   subHeading?: string;
 }
 
-const SectionPromo3: FC<SectionPromo3Props> = ({ 
+const SectionPromo3: FC<SectionPromo3Props> = ({
   className,
   heading = "Don't miss out on special offers.",
-  subHeading = "Register to receive news about the latest, savings combos, discount codes."
+  subHeading = 'Register to receive news about the latest, savings combos, discount codes.',
 }) => {
   return (
     <div className={clsx(className, 'xl:pt-10 2xl:pt-24')}>
@@ -33,16 +35,14 @@ const SectionPromo3: FC<SectionPromo3Props> = ({
         </div>
 
         <div className="relative max-w-lg lg:w-1/2">
-          <h2 className="text-4xl font-semibold leading-[1.15] md:text-5xl">
-            {heading}
-          </h2>
-          <p className="mt-7 block text-neutral-500 dark:text-neutral-400">
-            {subHeading}
-          </p>
+          <h2 className="text-4xl font-semibold leading-[1.15] md:text-5xl">{heading}</h2>
+          <p className="mt-7 block text-neutral-500 dark:text-neutral-400">{subHeading}</p>
           <ul className="mt-10 flex flex-col gap-y-4">
             <li className="flex items-center gap-x-4">
               <Badge color="purple" name="01" />
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">Savings combos</span>
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                Savings combos
+              </span>
             </li>
             <li className="flex items-center gap-x-4">
               <Badge color="blue" name="02" />
@@ -50,10 +50,12 @@ const SectionPromo3: FC<SectionPromo3Props> = ({
             </li>
             <li className="flex items-center gap-x-4">
               <Badge color="red" name="03" />
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">Premium magazines</span>
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                Premium magazines
+              </span>
             </li>
           </ul>
-          
+
           {/* Email signup form */}
           <form className="relative mt-10 max-w-sm">
             <TextInput

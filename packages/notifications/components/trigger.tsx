@@ -1,11 +1,9 @@
 'use client';
 
 import { NotificationFeedPopover, NotificationIconButton } from '@knocklabs/react';
-import { useRef, useState } from 'react';
+import { useRef, useState, RefObject } from 'react';
 
 import { keys } from '../keys';
-
-import type { RefObject } from 'react';
 
 // Required CSS import, unless you're overriding the styling
 import '@knocklabs/react/dist/index.css';
@@ -34,8 +32,8 @@ export const NotificationsTrigger = () => {
       {notifButtonRef.current && (
         <NotificationFeedPopover
           buttonRef={notifButtonRef as RefObject<HTMLElement>}
-          onClose={handleClose}
           isVisible={isVisible}
+          onClose={handleClose}
         />
       )}
     </>

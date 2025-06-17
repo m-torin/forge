@@ -1,4 +1,4 @@
-import { getBrands } from '@/data/data-service';
+import { getBrands } from '@/actions/brands';
 import { type Metadata } from 'next';
 import Link from 'next/link';
 
@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 
 export default async function BrandsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const brands = await getBrands();
+  const brandsResult = await getBrands();
+  const brands = brandsResult.data || [];
 
   return (
     <div className="container py-16 lg:py-28">
@@ -28,7 +29,7 @@ export default async function BrandsPage({ params }: { params: Promise<{ locale:
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {brands?.map((brand) => (
+          {brands?.map((brand: any) => (
             <Link
               key={brand.id}
               href={`/${locale}/brands/${brand.slug}`}

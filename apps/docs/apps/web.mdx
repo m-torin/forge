@@ -1,0 +1,501 @@
+---
+title: 'Web Application'
+description:
+  'Main marketing website with authentication, internationalization, and e-commerce capabilities'
+icon: 'globe'
+---
+
+# Web Application
+
+The main marketing website with user authentication, internationalization, and comprehensive
+e-commerce features.
+
+<Note>
+  Web runs on port **3200** and serves as the primary user-facing application with full e-commerce
+  capabilities.
+</Note>
+
+## Core Features
+
+<CardGroup cols={2}>
+  <Card title="Complete Auth Flow" icon="key">
+    Sign-in, sign-up, magic links, social providers, and 2FA
+  </Card>
+  <Card title="Internationalization" icon="language">
+    Multi-language support with locale routing and translations
+  </Card>
+  <Card title="E-commerce Platform" icon="shopping-cart">
+    Product catalog, cart, checkout, and order management
+  </Card>
+  <Card title="User Dashboard" icon="user">
+    Account settings, order history, favorites, and preferences
+  </Card>
+</CardGroup>
+
+### Advanced Features
+
+- **Advanced Routing**: Parallel and intercepting routes for smooth UX
+- **Search Integration**: Full-text search with Algolia and filters
+- **Analytics Tracking**: Comprehensive event tracking with feature flags
+- **SEO Optimized**: Server-side rendering with dynamic metadata
+
+## Authentication
+
+Web app uses the unified auth system with feature flag controls:
+
+### Available Auth Methods
+
+<AccordionGroup>
+  <Accordion title="Email Authentication" icon="envelope">
+    - Email/password authentication - Magic link sign-in - Email verification flow - Password reset
+    functionality
+  </Accordion>
+
+<Accordion title="Social Providers" icon="share-nodes">
+  - Google OAuth - GitHub OAuth - Discord OAuth (configurable) - Additional providers via Better
+  Auth
+</Accordion>
+
+  <Accordion title="Security Features" icon="shield">
+    - Two-factor authentication - API key support for integrations - Session management - Rate
+    limiting protection
+  </Accordion>
+</AccordionGroup>
+
+### API Authentication
+
+<CodeGroup>
+```bash User API Key
+curl -H "x-api-key: YOUR_USER_API_KEY" \
+  https://app.com/api/protected
+```
+
+```bash Service API Key
+curl -H "x-api-key: YOUR_SERVICE_API_KEY" \
+  https://app.com/api/integrations
+```
+
+</CodeGroup>
+
+## Internationalization
+
+### Supported Locales
+
+| Language | Code | Status   |
+| -------- | ---- | -------- |
+| English  | `en` | Default  |
+| Spanish  | `es` | Complete |
+| French   | `fr` | Complete |
+| German   | `de` | Complete |
+| Japanese | `ja` | Complete |
+
+### Locale Routing
+
+The app automatically handles locale-based routing:
+
+```typescript
+// URL structure
+/en/products     // English
+/es/productos    // Spanish
+/fr/produits     // French
+
+// Automatic redirect based on browser preference
+/ → /en (default or detected locale)
+```
+
+### Translation Integration
+
+<CodeGroup>
+```typescript Server Component
+import { getDictionary } from '@/dictionaries';
+
+export default async function ProductPage({ params }) {
+  const dict = await getDictionary(params.locale);
+
+return ( <div> <h1>{dict.products.title}</h1> <p>{dict.products.description}</p> </div> ); }
+
+````
+
+```typescript Client Component
+import { useDictionary } from '@/hooks/use-dictionary';
+
+export function ProductCard() {
+  const dict = useDictionary();
+
+  return (
+    <div>
+      <button>{dict.products.addToCart}</button>
+      <span>{dict.products.price}</span>
+    </div>
+  );
+}
+````
+
+</CodeGroup>
+
+## API Endpoints
+
+### Protected Routes
+
+All API routes require authentication except `/api/auth`:
+
+<Tabs>
+  <Tab title="User Data">
+    ```typescript
+    GET /api/protected
+    
+    // Response
+    {
+      "user": {
+        "id": "user-123",
+        "email": "user@example.com",
+        "locale": "en",
+        "preferences": {...}
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Secure Signup">
+    ```typescript
+    POST /api/auth/secure-signup
+    
+    // Request
+    {
+      "email": "new@example.com",
+      "password": "secure-password",
+      "name": "New User"
+    }
+    
+    // Includes bot protection
+    ```
+  </Tab>
+  
+  <Tab title="Commerce">
+    ```typescript
+    // Cart operations
+    POST /api/cart/add
+    GET /api/cart
+    PUT /api/cart/:id
+    DELETE /api/cart/:id
+    
+    // Order management
+    POST /api/orders
+    GET /api/orders/:id
+    GET /api/orders/history
+    ```
+  </Tab>
+</Tabs>
+
+### Rate Limiting
+
+| Endpoint        | Limit        | Window   |
+| --------------- | ------------ | -------- |
+| Auth            | 10 requests  | 1 minute |
+| Secure Signup   | 3 requests   | 1 hour   |
+| Protected       | 100 requests | 1 minute |
+| Cart Operations | 20 requests  | 1 minute |
+
+## Security Features
+
+### Middleware Stack
+
+The security middleware processes requests in this order:
+
+<Steps>
+  <Step title="Internationalization">Route to appropriate locale and load translations</Step>
+  <Step title="Authentication">Verify user session or API key</Step>
+  <Step title="Bot Protection">Arcjet security with allowlist for search engines</Step>
+  <Step title="Security Headers">Apply comprehensive security headers</Step>
+</Steps>
+
+```typescript
+// middleware.ts implementation
+const middleware = async (request) => {
+  // 1. Internationalization
+  const i18nResponse = internationalizationMiddleware(request);
+
+  // 2. Authentication check
+  const authResponse = await authMiddleware()(request);
+
+  // 3. Arcjet bot protection
+  await secure(['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW', 'CATEGORY:MONITOR'], request);
+
+  // 4. Security headers
+  return securityHeaders();
+};
+```
+
+### Bot Protection
+
+<Warning>
+  **Arcjet Integration**: Advanced bot detection protects against automated attacks while allowing
+  legitimate crawlers.
+</Warning>
+
+```typescript
+// Secure endpoint with bot protection
+const decision = await aj.protect(request);
+
+if (decision.isDenied()) {
+  return NextResponse.json({ error: 'Bot detected' }, { status: 403 });
+}
+```
+
+## User Features
+
+### Account Dashboard
+
+<CardGroup cols={2}>
+  <Card title="Profile Management" icon="user-edit">
+    - Personal information - Profile picture - Communication preferences - Privacy settings
+  </Card>
+  <Card title="Order Management" icon="package">
+    - Order history - Tracking information - Return/exchange requests - Receipts and invoices
+  </Card>
+  <Card title="Address Book" icon="location">
+    - Saved addresses - Default shipping/billing - Address validation - International support
+  </Card>
+  <Card title="Payment Methods" icon="credit-card">
+    - Saved cards - Payment history - Stripe integration - Secure storage
+  </Card>
+</CardGroup>
+
+### Shopping Features
+
+- **Product Browsing**: Advanced filtering, sorting, and search
+- **Shopping Cart**: Persistent cart with quantity management
+- **Wishlist/Favorites**: Save products for later purchase
+- **Quick Checkout**: Express checkout flow
+- **Order Tracking**: Real-time shipping updates
+
+### Social Features
+
+- Product reviews and ratings
+- Social sharing integration
+- Referral program
+- Personalized recommendations
+
+## Common Integrations
+
+### Product Search
+
+<CodeGroup>
+```typescript Algolia Integration
+import { InstantSearch, SearchBox, Hits } from 'react-instantsearch';
+
+export function ProductSearch() {
+  return (
+    <InstantSearch searchClient={searchClient} indexName="products">
+      <SearchBox placeholder="Search products..." />
+      <Hits hitComponent={ProductHit} />
+    </InstantSearch>
+  );
+}
+```
+
+```typescript Custom Search
+import { useSearch } from '@/hooks/use-search';
+
+export function ProductList() {
+  const { products, loading } = useSearch({
+    query: searchTerm,
+    filters: selectedFilters,
+  });
+
+  return (
+    <div>
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
+```
+
+</CodeGroup>
+
+### Analytics Tracking
+
+```typescript
+// Automatic event tracking
+analytics.capture('product_viewed', {
+  productId: product.id,
+  category: product.category,
+  price: product.price,
+  locale: locale,
+});
+
+// User identification
+analytics.identify(user.email, {
+  locale: user.locale,
+  created_at: user.createdAt,
+  total_orders: user.orderCount,
+});
+
+// E-commerce events
+analytics.capture('purchase_completed', {
+  order_id: order.id,
+  total: order.total,
+  currency: order.currency,
+  products: order.items,
+});
+```
+
+### Feature Flags
+
+<CodeGroup>
+```typescript React Hook
+import { useFlag } from '@repo/analytics';
+
+export function CheckoutButton() {
+  const checkoutV2Enabled = useFlag('checkout.v2');
+  const expressCheckoutEnabled = useFlag('checkout.express');
+
+if (expressCheckoutEnabled) { return <ExpressCheckout />; }
+
+return checkoutV2Enabled ? <CheckoutV2 /> : <CheckoutV1 />; }
+
+````
+
+```typescript Server Component
+import { flag } from '@repo/analytics/server';
+
+export async function ProductPage({ params }) {
+  const aiRecommendations = await flag('ai.recommendations', userId);
+
+  return (
+    <div>
+      <ProductDetails />
+      {aiRecommendations && <AIRecommendations />}
+    </div>
+  );
+}
+````
+
+</CodeGroup>
+
+## SEO & Performance
+
+### Dynamic Metadata
+
+```typescript
+export async function generateMetadata({ params }) {
+  const product = await getProduct(params.id);
+  const locale = params.locale;
+
+  return {
+    title: `${product.name} | Your Store`,
+    description: product.description,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      images: [
+        {
+          url: product.image,
+          width: 800,
+          height: 600,
+          alt: product.name,
+        },
+      ],
+      locale: locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description: product.description,
+      images: [product.image],
+    },
+  };
+}
+```
+
+### Performance Optimizations
+
+<CardGroup cols={2}>
+  <Card title="Server-Side Rendering" icon="server">
+    Full SSR for SEO and performance with dynamic content
+  </Card>
+  <Card title="Image Optimization" icon="image">
+    Next.js Image component with WebP/AVIF support
+  </Card>
+  <Card title="Code Splitting" icon="code">
+    Dynamic imports and route-based splitting
+  </Card>
+  <Card title="Edge Runtime" icon="bolt">
+    Edge API routes for global low-latency responses
+  </Card>
+</CardGroup>
+
+## Environment Configuration
+
+### Required Variables
+
+```bash
+# Authentication
+SERVICE_API_KEY=your-32-character-service-key
+BETTER_AUTH_SECRET=your-secret-key
+DATABASE_URL=postgresql://...
+
+# Email
+RESEND_API_KEY=re_...
+FROM_EMAIL=noreply@yourdomain.com
+
+# Security
+ARCJET_KEY=ajkey_...
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+```
+
+### Optional Configuration
+
+```bash
+# Internationalization
+DEFAULT_LOCALE=en
+SUPPORTED_LOCALES=en,es,fr,de,ja
+
+# E-commerce
+STRIPE_PUBLISHABLE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...
+
+# Search
+ALGOLIA_APP_ID=...
+ALGOLIA_API_KEY=...
+
+# Analytics
+POSTHOG_KEY=phc_...
+SEGMENT_WRITE_KEY=...
+
+# Feature flags
+LOCAL_FLAGS=checkout.v2:true,ai.recommendations:false
+```
+
+## Health Monitoring
+
+### Health Check Endpoint
+
+```bash
+# Requires authentication
+curl -H "x-api-key: YOUR_API_KEY" https://app.com/api/health
+```
+
+**Response:**
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2024-01-15T10:00:00Z",
+  "services": {
+    "database": "healthy",
+    "redis": "healthy",
+    "stripe": "healthy",
+    "resend": "healthy"
+  },
+  "version": "1.0.0",
+  "environment": "production"
+}
+```
+
+The Web Application provides a comprehensive foundation for e-commerce platforms with
+enterprise-grade authentication, internationalization, and performance optimization features.

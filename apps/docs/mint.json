@@ -1,0 +1,184 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Forge Documentation",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/your-org/forge"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "/quickstart"
+  },
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": ["introduction", "quickstart", "concepts"]
+    },
+    {
+      "group": "Architecture",
+      "pages": ["architecture/overview", "concepts/ai-pairing"]
+    },
+    {
+      "group": "Core Packages",
+      "pages": [
+        {
+          "group": "Database & Storage",
+          "icon": "database",
+          "pages": [
+            {
+              "group": "Database",
+              "pages": [
+                "packages/database/overview",
+                "packages/database/prisma",
+                "packages/database/redis",
+                "packages/database/vector"
+              ]
+            },
+            {
+              "group": "Storage",
+              "pages": [
+                "packages/storage",
+                "packages/storage/cloudflare-r2",
+                "packages/storage/cloudflare-images",
+                "packages/storage/configuration",
+                "packages/storage/client-usage"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Authentication & Security",
+          "icon": "shield",
+          "pages": ["packages/auth/overview", "packages/auth/better-auth", "packages/security"]
+        },
+        {
+          "group": "AI & Automation",
+          "icon": "robot",
+          "pages": [
+            "packages/ai/overview",
+            "packages/ai/product-classification",
+            "packages/scraping",
+            "architecture/ai-package",
+            "architecture/scraping-package"
+          ]
+        },
+        {
+          "group": "Observability & Analytics",
+          "icon": "chart-line",
+          "pages": [
+            "packages/observability/overview",
+            "packages/observability/sentry",
+            "packages/analytics",
+            "packages/feature-flags"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Business Features",
+      "pages": [
+        {
+          "group": "Commerce & Payments",
+          "icon": "credit-card",
+          "pages": ["packages/payments", "packages/links"]
+        },
+        {
+          "group": "Communication",
+          "icon": "envelope",
+          "pages": ["packages/email", "packages/notifications"]
+        },
+        {
+          "group": "Workflow & Orchestration",
+          "icon": "workflow",
+          "pages": ["packages/orchestration/overview", "packages/orchestration/workflows"]
+        },
+        {
+          "group": "User Experience",
+          "icon": "users",
+          "pages": ["packages/internationalization", "packages/seo", "packages/collaboration"]
+        }
+      ]
+    },
+    {
+      "group": "Applications",
+      "pages": [
+        {
+          "group": "Frontend",
+          "icon": "browser",
+          "pages": ["apps/web", "apps/web-template/overview", "apps/web-template/components"]
+        },
+        {
+          "group": "Admin & Internal",
+          "icon": "gear",
+          "pages": [
+            "apps/backstage/overview",
+            "apps/backstage/features",
+            "apps/backstage/api",
+            "apps/backstage/observability",
+            "apps/studio"
+          ]
+        },
+        {
+          "group": "Developer Tools",
+          "icon": "code",
+          "pages": ["apps/storybook", "apps/email", "apps/workers"]
+        }
+      ]
+    },
+    {
+      "group": "Design System",
+      "pages": ["packages/design-system/overview", "packages/design-system/components"]
+    },
+    {
+      "group": "Development",
+      "pages": [
+        {
+          "group": "Setup & Configuration",
+          "icon": "wrench",
+          "pages": [
+            "development/overview",
+            "packages/typescript-config",
+            "packages/eslint-config",
+            "packages/next-config"
+          ]
+        },
+        {
+          "group": "Testing",
+          "icon": "flask",
+          "pages": ["development/testing", "packages/testing"]
+        }
+      ]
+    },
+    {
+      "group": "External Services",
+      "pages": ["services/overview", "services/firecrawl", "services/dub"]
+    },
+    {
+      "group": "Deployment",
+      "pages": ["deployment/overview"]
+    },
+    {
+      "group": "Advanced Topics",
+      "pages": ["advanced/overview"]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/your-org/forge"
+  }
+}

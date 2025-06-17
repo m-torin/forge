@@ -2,74 +2,31 @@
  * Sentry client-side provider
  */
 
-import type { SentryConfig } from '../../shared/types/sentry-types';
-import type {
+import { SentryConfig } from '../../shared/types/sentry-types';
+import {
   Breadcrumb,
   ObservabilityContext,
   ObservabilityProvider,
   ObservabilityProviderConfig,
 } from '../../shared/types/types';
+import { Environment } from '../../shared/utils/environment';
 
 export class SentryClientProvider implements ObservabilityProvider {
   readonly name = 'sentry-client';
   private client: any;
   private isInitialized = false;
 
-  async initialize(config: ObservabilityProviderConfig): Promise<void> {
-    const sentryConfig = config as SentryConfig;
+  addBreadcrumb(breadcrumb: Breadcrumb): void {
+    if (!this.isInitialized || !this.client) return;
 
-    if (!sentryConfig.dsn) {
-      // Silently skip initialization if no DSN is provided
-      console.info('[Sentry] No DSN provided, skipping initialization');
-      return;
-    }
-
-    try {
-      // Dynamically import Sentry to avoid bundling if not used
-      const Sentry = await import('@sentry/nextjs');
-
-      // Initialize with configuration similar to original
-      Sentry.init({
-        dsn: sentryConfig.dsn,
-        environment: sentryConfig.environment || 'production',
-        release: sentryConfig.release,
-
-        replaysOnErrorSampleRate: sentryConfig.replaysOnErrorSampleRate ?? 1.0,
-        replaysSessionSampleRate: sentryConfig.replaysSessionSampleRate ?? 0.1,
-        // Sampling rates from config
-        tracesSampleRate: sentryConfig.tracesSampleRate ?? 1,
-
-        // Debug mode removed to avoid non-debug bundle conflicts
-
-        // Integrations
-        integrations: [
-          ...(sentryConfig.integrations?.includes('replay')
-            ? [
-                Sentry.replayIntegration({
-                  blockAllMedia: sentryConfig.replayBlockAllMedia ?? true,
-                  maskAllText: sentryConfig.replayMaskAllText ?? true,
-                }),
-              ]
-            : []),
-          ...(Array.isArray(sentryConfig.integrations)
-            ? sentryConfig.integrations.filter((i) => typeof i !== 'string')
-            : []),
-        ],
-
-        // Callbacks
-        beforeSend: sentryConfig.beforeSend,
-        beforeSendTransaction: sentryConfig.beforeSendTransaction,
-
-        // Additional options from config
-        ...(sentryConfig.options || {}),
-      });
-
-      this.client = Sentry;
-      this.isInitialized = true;
-    } catch (error) {
-      console.error('Failed to initialize Sentry:', error);
-      throw error;
-    }
+    this.client.addBreadcrumb({
+      category: breadcrumb.category,
+      data: breadcrumb.data,
+      level: breadcrumb.level || 'info',
+      message: breadcrumb.message,
+      timestamp: breadcrumb.timestamp ? breadcrumb.timestamp / 1000 : undefined,
+      type: breadcrumb.type || 'default',
+    });
   }
 
   async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
@@ -82,12 +39,12 @@ export class SentryClientProvider implements ObservabilityProvider {
           scope.setUser({ id: context.userId });
         }
         if (context.tags) {
-          Object.entries(context.tags).forEach(([key, value]) => {
+          Object.entries(context.tags).forEach(([key, value]: [string, any]) => {
             scope.setTag(key, value);
           });
         }
         if (context.extra) {
-          Object.entries(context.extra).forEach(([key, value]) => {
+          Object.entries(context.extra).forEach(([key, value]: [string, any]) => {
             scope.setExtra(key, value);
           });
         }
@@ -111,7 +68,7 @@ export class SentryClientProvider implements ObservabilityProvider {
 
   async captureMessage(
     message: string,
-    level: 'info' | 'warning' | 'error',
+    level: 'error' | 'info' | 'warning',
     context?: ObservabilityContext,
   ): Promise<void> {
     if (!this.isInitialized || !this.client) return;
@@ -125,12 +82,12 @@ export class SentryClientProvider implements ObservabilityProvider {
           scope.setUser({ id: context.userId });
         }
         if (context.tags) {
-          Object.entries(context.tags).forEach(([key, value]) => {
+          Object.entries(context.tags).forEach(([key, value]: [string, any]) => {
             scope.setTag(key, value);
           });
         }
         if (context.extra) {
-          Object.entries(context.extra).forEach(([key, value]) => {
+          Object.entries(context.extra).forEach(([key, value]: [string, any]) => {
             scope.setExtra(key, value);
           });
         }
@@ -143,27 +100,100 @@ export class SentryClientProvider implements ObservabilityProvider {
     });
   }
 
-  startTransaction(name: string, context?: ObservabilityContext): any {
-    if (!this.isInitialized || !this.client) return null;
+  endSession(): void {
+    if (!this.isInitialized || !this.client) return;
+    this.client.endSession();
+  }
 
-    const transaction = this.client.startTransaction({
-      name,
-      data: context?.extra,
-      op: context?.operation || 'navigation',
-      tags: context?.tags,
-      ...(context?.traceId && { traceId: context.traceId }),
+  async initialize(config: ObservabilityProviderConfig): Promise<void> {
+    const sentryConfig = config as SentryConfig;
+
+    if (!sentryConfig.dsn) {
+      // Silently skip initialization if no DSN is provided
+      if (Environment.isDevelopment()) {
+        console.info('[Sentry] No DSN provided, skipping initialization');
+      }
+      return;
+    }
+
+    try {
+      // Dynamically import Sentry to avoid bundling if not used
+      const Sentry = await import('@sentry/nextjs');
+
+      // Initialize with configuration similar to original
+      Sentry.init({
+        // Callbacks
+        beforeSend: sentryConfig.beforeSend,
+        beforeSendTransaction: sentryConfig.beforeSendTransaction,
+        dsn: sentryConfig.dsn,
+
+        environment: sentryConfig.environment || 'production',
+        // Integrations
+        integrations: [
+          ...(sentryConfig.integrations?.includes('replay')
+            ? [
+                Sentry.replayIntegration({
+                  blockAllMedia: sentryConfig.replayBlockAllMedia ?? true,
+                  maskAllText: sentryConfig.replayMaskAllText ?? true,
+                }),
+              ]
+            : []),
+          ...(Array.isArray(sentryConfig.integrations)
+            ? sentryConfig.integrations.filter((i: any) => typeof i !== 'string')
+            : []),
+        ],
+        release: sentryConfig.release,
+
+        // Debug mode removed to avoid non-debug bundle conflicts
+
+        replaysOnErrorSampleRate: sentryConfig.replaysOnErrorSampleRate ?? 1.0,
+
+        replaysSessionSampleRate: sentryConfig.replaysSessionSampleRate ?? 0.1,
+        // Sampling rates from config
+        tracesSampleRate: sentryConfig.tracesSampleRate ?? 1,
+
+        // Additional options from config
+        ...(sentryConfig.options || {}),
+      });
+
+      this.client = Sentry;
+      this.isInitialized = true;
+    } catch (error: any) {
+      console.error('Failed to initialize Sentry:', error);
+      throw error;
+    }
+  }
+
+  setContext(key: string, context: Record<string, any>): void {
+    if (!this.isInitialized || !this.client) return;
+    this.client.setContext(key, context);
+  }
+
+  setExtra(key: string, value: any): void {
+    if (!this.isInitialized || !this.client) return;
+    this.client.setExtra(key, value);
+  }
+
+  setTag(key: string, value: boolean | number | string): void {
+    if (!this.isInitialized || !this.client) return;
+    this.client.setTag(key, value);
+  }
+
+  setUser(user: { [key: string]: any; email?: string; id: string; username?: string }): void {
+    if (!this.isInitialized || !this.client) return;
+
+    const { email, id, username, ...rest } = user;
+    this.client.setUser({
+      email,
+      id,
+      username,
+      ...rest,
     });
+  }
 
-    // Set transaction on scope for child spans
-    this.client.getCurrentScope().setSpan(transaction);
-
-    return {
-      finish: () => transaction.finish(),
-      setData: (key: string, value: any) => transaction.setData(key, value),
-      setStatus: (status: string) => transaction.setStatus(status),
-      setTag: (key: string, value: string) => transaction.setTag(key, value),
-      startChild: (op: string, description?: string) => transaction.startChild({ description, op }),
-    };
+  startSession(): void {
+    if (!this.isInitialized || !this.client) return;
+    this.client.startSession();
   }
 
   startSpan(name: string, parentSpan?: any): any {
@@ -180,53 +210,26 @@ export class SentryClientProvider implements ObservabilityProvider {
     return this.startTransaction(name);
   }
 
-  setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
-    if (!this.isInitialized || !this.client) return;
+  startTransaction(name: string, context?: ObservabilityContext): any {
+    if (!this.isInitialized || !this.client) return null;
 
-    const { id, username, email, ...rest } = user;
-    this.client.setUser({
-      id,
-      username,
-      email,
-      ...rest,
+    const transaction = this.client.startTransaction({
+      data: context?.extra,
+      name,
+      op: context?.operation || 'navigation',
+      tags: context?.tags,
+      ...(context?.traceId && { traceId: context.traceId }),
     });
-  }
 
-  setTag(key: string, value: string | number | boolean): void {
-    if (!this.isInitialized || !this.client) return;
-    this.client.setTag(key, value);
-  }
+    // Set transaction on scope for child spans
+    this.client.getCurrentScope().setSpan(transaction);
 
-  setExtra(key: string, value: any): void {
-    if (!this.isInitialized || !this.client) return;
-    this.client.setExtra(key, value);
-  }
-
-  setContext(key: string, context: Record<string, any>): void {
-    if (!this.isInitialized || !this.client) return;
-    this.client.setContext(key, context);
-  }
-
-  addBreadcrumb(breadcrumb: Breadcrumb): void {
-    if (!this.isInitialized || !this.client) return;
-
-    this.client.addBreadcrumb({
-      type: breadcrumb.type || 'default',
-      category: breadcrumb.category,
-      data: breadcrumb.data,
-      level: breadcrumb.level || 'info',
-      message: breadcrumb.message,
-      timestamp: breadcrumb.timestamp ? breadcrumb.timestamp / 1000 : undefined,
-    });
-  }
-
-  startSession(): void {
-    if (!this.isInitialized || !this.client) return;
-    this.client.startSession();
-  }
-
-  endSession(): void {
-    if (!this.isInitialized || !this.client) return;
-    this.client.endSession();
+    return {
+      finish: () => transaction.finish(),
+      setData: (key: string, value: any) => transaction.setData(key, value),
+      setStatus: (status: string) => transaction.setStatus(status),
+      setTag: (key: string, value: string) => transaction.setTag(key, value),
+      startChild: (op: string, description?: string) => transaction.startChild({ description, op }),
+    };
   }
 }

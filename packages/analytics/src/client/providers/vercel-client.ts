@@ -29,7 +29,7 @@ export class VercelClientProvider implements AnalyticsProvider {
       inject(this.config.options);
 
       this.isInitialized = true;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         'Vercel Analytics not available. Install with: npm install @vercel/analytics',
       );
@@ -45,7 +45,7 @@ export class VercelClientProvider implements AnalyticsProvider {
       // Import track function dynamically to avoid SSR issues
       const { track } = await import('@vercel/analytics');
       track(event, properties);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }

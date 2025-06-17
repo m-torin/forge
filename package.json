@@ -26,14 +26,17 @@
     "doppler:sync:dry": "for dir in apps/*; do if [ -f \"$dir/.env.local\" ]; then echo \"Would upload: $dir/.env.local\"; fi; done",
     "doppler:open": "turbo run doppler:open",
     "lint": "pnpm prettier && turbo lint --parallel",
+    "lint:packages": "turbo typecheck --filter=\"./packages/*\" --parallel",
     "prettier": "prettier --log-level=error \"**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml,graphql,gql}\" --write",
     "bump-deps": "node scripts/update-workspace.mjs",
     "test": "turbo test --parallel --concurrency=10",
+    "test:coverage": "turbo test:coverage --parallel --concurrency=10 && node scripts/aggregate-coverage.js",
     "test:doppler": "doppler run -- turbo test --parallel --concurrency=10",
     "test:e2e": "turbo test:e2e --parallel",
     "test:e2e:ui": "turbo test:e2e:ui",
     "test:e2e:headed": "turbo test:e2e:headed",
     "typecheck": "turbo typecheck",
+    "check": "node scripts/check.mjs",
     "analyze": "turbo analyze",
     "translate": "turbo translate",
     "boundaries": "turbo boundaries",
@@ -41,7 +44,16 @@
     "migrate": "doppler run -- pnpm --filter @repo/database migrate",
     "migrate:offline": "pnpm --filter @repo/database migrate",
     "clean": "./scripts/clean-everything.sh",
-    "mac-setup": "./scripts/mac-setup.sh"
+    "mac-setup": "./scripts/mac-setup.sh",
+    "knip": "knip --config @repo/config/knip/monorepo.json",
+    "knip:production": "knip --config @repo/config/knip/monorepo.json --production",
+    "knip:workspace": "knip --config @repo/config/knip/monorepo.json --workspace",
+    "knip:fix": "knip --config @repo/config/knip/monorepo.json --fix",
+    "knip:reporter": "knip --config @repo/config/knip/monorepo.json --reporter json",
+    "knip:apps": "knip --config @repo/config/knip/monorepo.json --workspace 'apps/*'",
+    "knip:packages": "knip --config @repo/config/knip/monorepo.json --workspace 'packages/*'",
+    "knip:labs": "knip --config @repo/config/knip/monorepo.json --workspace 'labs/*'",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx ."
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",
@@ -54,6 +66,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "glob": "^11.0.2",
     "js-yaml": "^4.1.0",
+    "knip": "^5.60.2",
     "madge": "^8.0.0",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
@@ -61,17 +74,16 @@
     "tsup": "^8.5.0",
     "turbo": "^2.5.4",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.33.1",
     "vitest": "catalog:"
   },
   "engines": {
     "node": ">=22",
     "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.11.1",
+  "packageManager": "pnpm@10.12.1",
   "dependencies": {
     "@clack/prompts": "^0.11.0",
-    "@eslint/markdown": "^6.4.0",
+    "@eslint/markdown": "^6.5.0",
     "commander": "^14.0.0",
     "server-only": "catalog:"
   },

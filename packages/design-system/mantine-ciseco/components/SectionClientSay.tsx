@@ -1,14 +1,12 @@
 'use client';
 
 import { StarIcon } from '@heroicons/react/24/solid';
+import { Carousel } from '@mantine/carousel';
 import clsx from 'clsx';
 import Autoplay from 'embla-carousel-autoplay';
-import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
-import { type FC } from 'react';
+import { type FC, useRef, useState } from 'react';
 
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
-import { useCarouselDotButton } from '../hooks/use-carousel-dot-buttons';
 import userImage1 from '../images/users/1.png';
 import userImage2 from '../images/users/2.png';
 import userImage3 from '../images/users/3.png';
@@ -21,61 +19,55 @@ import qrImage from '../images/users/qr.png';
 
 import Heading from './Heading/Heading';
 
-import type { EmblaOptionsType } from 'embla-carousel';
-
 export const DEMO_DATA = [
   {
-    id: 1,
     clientName: 'Tiana Abie',
     content:
       'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
+    id: 1,
   },
   {
-    id: 2,
     clientName: 'Lennie Swiffan',
     content:
       'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
+    id: 2,
   },
   {
-    id: 3,
     clientName: 'Berta Emili',
     content:
       'Great quality products, affordable prices, fast and friendly delivery. I very recommend.',
+    id: 3,
   },
 ];
 
-export interface SectionClientSayProps {
+export interface SectionClientSayProps extends Record<string, any> {
   className?: string;
-  emblaOptions?: EmblaOptionsType;
   heading?: string;
   subHeading?: string;
 }
 
 const SectionClientSay: FC<SectionClientSayProps> = ({
   className,
-  emblaOptions = {
-    slidesToScroll: 1,
-    loop: true,
-  },
   heading = 'Good news from far away 🥇',
   subHeading = "Let's see what people think of Ciseco",
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions, [
-    Autoplay({ delay: 2000, playOnInit: true }),
-  ]);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
-  const { onDotButtonClick, scrollSnaps, selectedIndex } = useCarouselDotButton(emblaApi);
+  const autoplay = useRef(Autoplay({ delay: 2000 }));
+  const [embla, setEmbla] = useState<any>(null);
+  const nextBtnDisabled = !embla?.canScrollNext();
+  const prevBtnDisabled = !embla?.canScrollPrev();
+
+  const onNextButtonClick = () => embla?.scrollNext();
+  const onPrevButtonClick = () => embla?.scrollPrev();
 
   return (
     <div className={clsx('relative flow-root', className)}>
       <Heading
         description={subHeading}
-        onClickNext={onNextButtonClick}
-        onClickPrev={onPrevButtonClick}
         isCenter
         nextBtnDisabled={nextBtnDisabled}
         prevBtnDisabled={prevBtnDisabled}
+        onClickNext={onNextButtonClick}
+        onClickPrev={onPrevButtonClick}
       >
         {heading}
       </Heading>
@@ -83,81 +75,90 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
         {/* BACKGROUND USER IMAGES */}
         <div className="hidden md:block">
           <Image
-            width={60}
-            className="absolute top-9 -left-20"
             alt=""
+            className="absolute top-9 -left-20"
             height={60}
             sizes="100px"
             src={userImage2}
+            width={60}
           />
           <Image
-            width={60}
-            className="absolute right-full bottom-[100px] mr-40"
             alt=""
+            className="absolute right-full bottom-[100px] mr-40"
             height={60}
             sizes="100px"
             src={userImage3}
+            width={60}
           />
           <Image
-            width={60}
-            className="absolute top-full left-[140px]"
             alt=""
+            className="absolute top-full left-[140px]"
             height={60}
             sizes="100px"
             src={userImage4}
+            width={60}
           />
           <Image
-            width={60}
-            className="absolute right-[140px] -bottom-10"
             alt=""
+            className="absolute right-[140px] -bottom-10"
             height={60}
             sizes="100px"
             src={userImage5}
+            width={60}
           />
           <Image
-            width={60}
-            className="absolute bottom-[80px] left-full ml-32"
             alt=""
+            className="absolute bottom-[80px] left-full ml-32"
             height={60}
             sizes="100px"
             src={userImage6}
+            width={60}
           />
           <Image
-            width={60}
-            className="absolute top-10 -right-10"
             alt=""
+            className="absolute top-10 -right-10"
             height={60}
             sizes="100px"
             src={userImage7}
+            width={60}
           />
         </div>
 
         {/* MAIN USER IMAGE */}
-        <Image width={125} className="mx-auto" alt="" height={120} src={userImage1} />
+        <Image alt="" className="mx-auto" height={120} src={userImage1} width={125} />
 
         {/* SLIDER */}
         <div className="relative mt-12 lg:mt-16">
           <Image
-            width={50}
-            className="absolute top-1 right-full -mr-16 opacity-50 md:opacity-100 lg:mr-3"
             alt=""
+            className="absolute top-1 right-full -mr-16 opacity-50 md:opacity-100 lg:mr-3"
             height={44}
             src={qlImage}
+            width={50}
           />
           <Image
-            width={50}
-            className="absolute top-1 left-full -ml-16 opacity-50 md:opacity-100 lg:ml-3"
             alt=""
+            className="absolute top-1 left-full -ml-16 opacity-50 md:opacity-100 lg:ml-3"
             height={44}
             src={qrImage}
+            width={50}
           />
-          <div ref={emblaRef} className="embla">
-            <ul className="embla__container">
-              {DEMO_DATA.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex embla__slide basis-full flex-col items-center text-center"
-                >
+          <Carousel
+            classNames={{
+              indicator: 'size-2 data-[active]:bg-neutral-700 bg-neutral-300',
+              indicators: 'gap-1 pt-10',
+            }}
+            getEmblaApi={setEmbla}
+            plugins={[autoplay.current]}
+            slideSize="100%"
+            withControls={false}
+            withIndicators
+            onMouseEnter={autoplay.current.stop}
+            onMouseLeave={autoplay.current.reset}
+          >
+            {DEMO_DATA.map((item: any) => (
+              <Carousel.Slide key={item.id}>
+                <div className="flex flex-col items-center text-center">
                   <span className="block text-2xl">{item.content}</span>
                   <span className="mt-8 block text-2xl font-semibold">{item.clientName}</span>
                   <div className="mt-3.5 flex items-center space-x-0.5 text-yellow-500">
@@ -167,24 +168,10 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
                     <StarIcon className="h-6 w-6" />
                     <StarIcon className="h-6 w-6" />
                   </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="embla__dots flex items-center justify-center pt-10">
-              {scrollSnaps.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => onDotButtonClick(index)}
-                  className={clsx(
-                    index === selectedIndex ? 'bg-neutral-700' : 'bg-neutral-300',
-                    'mx-1 size-2 rounded-full focus:outline-none',
-                  )}
-                  type="button"
-                />
-              ))}
-            </div>
-          </div>
+                </div>
+              </Carousel.Slide>
+            ))}
+          </Carousel>
         </div>
       </div>
     </div>

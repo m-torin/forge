@@ -14,13 +14,7 @@ export function ModalWrapper({ children, title, size = 'lg' }: ModalWrapperProps
   const router = useRouter();
 
   return (
-    <Modal
-      opened={true}
-      onClose={() => router.back()}
-      title={title}
-      size={size}
-      centered
-    >
+    <Modal opened={true} onClose={() => router.back()} title={title} size={size} centered>
       {children}
     </Modal>
   );

@@ -1,0 +1,533 @@
+---
+title: 'Observability Package'
+description:
+  'Comprehensive monitoring infrastructure with error tracking, performance monitoring, and
+  analytics'
+icon: 'chart-mixed'
+---
+
+# Observability Package
+
+Comprehensive observability infrastructure with error tracking, structured logging, performance
+monitoring, and system status monitoring built on Sentry, Logtail, and BetterStack.
+
+## Overview
+
+The observability package provides a complete monitoring and tracking solution for production
+applications, featuring automatic error capture, structured logging, performance tracking, and
+real-time analytics integration across all Forge applications.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Sentry Integration" icon="bug">
+    Error tracking, performance monitoring, and session replay with privacy-first defaults
+  </Card>
+  <Card title="Structured Logging" icon="list">
+    Environment-aware logging with Logtail in production, console fallback in development
+  </Card>
+  <Card title="Performance Monitoring" icon="gauge">
+    Automatic timing and performance tracking with specialized React hooks
+  </Card>
+  <Card title="Analytics Integration" icon="chart-line">
+    User behavior tracking and workflow analytics with purpose-built hooks
+  </Card>
+</CardGroup>
+
+### Advanced Features
+
+- **System Status Monitoring**: Real-time status display with BetterStack integration
+- **Next.js Integration**: Seamless framework integration with automatic source map uploading
+- **React Hooks**: Purpose-built hooks for observability in React applications
+- **Environment Aware**: Smart configuration that adapts to development vs production
+
+## Installation
+
+```bash
+pnpm add @repo/observability
+```
+
+## Environment Variables
+
+<Tabs>
+  <Tab title="Sentry Configuration">
+    ```bash # Sentry Configuration SENTRY_DSN=https://...@...ingest.sentry.io/...
+    SENTRY_ORG=your-sentry-org SENTRY_PROJECT=your-sentry-project # Sentry Authentication (for
+    uploads) SENTRY_AUTH_TOKEN=... ```
+  </Tab>
+
+  <Tab title="Logging & Monitoring">
+    ```bash # Logtail Logging (Production) LOGTAIL_SOURCE_TOKEN=... # BetterStack Status Monitoring
+    BETTERSTACK_API_URL=https://betterstack.com/api/... BETTERSTACK_BEARER_TOKEN=... # Vercel Cron
+    Monitoring (Optional) SENTRY_PROJECT_URL=https://your-project.vercel.app ```
+  </Tab>
+</Tabs>
+
+## Setup
+
+### Next.js Application Setup
+
+<Steps>
+  <Step title="Instrumentation">
+    ```typescript
+    // instrumentation.ts (in app root)
+    export async function register() {
+      if (process.env.NEXT_RUNTIME === 'nodejs') {
+        await import('@repo/observability/instrumentation');
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Client Configuration">
+    ```typescript
+    // sentry.client.config.ts (in app root)
+    import '@repo/observability/client';
+    ```
+  </Step>
+  
+  <Step title="Next.js Config Integration">
+    ```typescript
+    // next.config.ts
+    import { withSentry } from '@repo/observability/next-wrappers';
+    
+    const config = {
+      // Your Next.js config
+    };
+    
+    export default withSentry(config);
+    ```
+  </Step>
+</Steps>
+
+## Error Tracking
+
+### Automatic Error Capture
+
+The observability package provides automatic error parsing and capture:
+
+```typescript
+import { parseError } from '@repo/observability';
+
+try {
+  await riskyOperation();
+} catch (error) {
+  // Automatically captures to Sentry and returns standardized message
+  const errorMessage = parseError(error);
+  console.error('Operation failed:', errorMessage);
+}
+```
+
+### Manual Error Reporting
+
+<CodeGroup>
+```typescript Custom Error Reporting
+import { captureException } from '@sentry/nextjs';
+
+// Report custom errors with context captureException(new Error('Custom error'), { tags: {
+component: 'UserProfile', action: 'updateProfile', }, extra: { userId: user.id, organizationId:
+org.id, }, });
+
+````
+
+```typescript Error Context
+import { setUser, setTag, setContext } from '@sentry/nextjs';
+
+// Set user context
+setUser({
+  id: user.id,
+  email: user.email,
+  organization: org.name,
+});
+
+// Add custom tags
+setTag('feature', 'ai-classification');
+setTag('environment', process.env.NODE_ENV);
+
+// Add custom context
+setContext('workflow', {
+  workflowId: workflow.id,
+  status: workflow.status,
+  stepCount: workflow.steps.length,
+});
+````
+
+</CodeGroup>
+
+## Structured Logging
+
+### Environment-Aware Logging
+
+The logging system automatically adapts to your environment:
+
+<Warning>
+  **Production**: Uses Logtail with structured data **Development**: Falls back to console logging
+</Warning>
+
+```typescript
+import { log } from '@repo/observability';
+
+// User action logging
+log('info', 'User action completed', {
+  userId: user.id,
+  action: 'profile_update',
+  duration: 1250,
+  success: true,
+});
+
+// Error logging
+log('error', 'Database query failed', {
+  table: 'users',
+  query: 'findMany',
+  error: error.message,
+});
+
+// Warning logging
+log('warn', 'Rate limit approaching', {
+  userId: user.id,
+  currentCount: 85,
+  limit: 100,
+});
+```
+
+## Performance Monitoring
+
+### Performance Timer Hook
+
+Track timing for async operations automatically:
+
+```typescript
+import { usePerformanceTimer } from '@repo/observability';
+
+function DataComponent() {
+  const { time } = usePerformanceTimer();
+
+  const loadData = async () => {
+    // Automatically tracks timing and logs performance
+    const data = await time(
+      'load-user-data',
+      () => fetchUserData(userId),
+      {
+        userId,
+        organizationId: org.id,
+      }
+    );
+
+    setData(data);
+  };
+
+  return (
+    <button onClick={loadData}>
+      Load Data
+    </button>
+  );
+}
+```
+
+### Custom Performance Tracking
+
+For complex operations requiring manual control:
+
+```typescript
+import { startTransaction } from '@sentry/nextjs';
+
+// Manual performance tracking
+const transaction = startTransaction({
+  name: 'workflow-execution',
+  op: 'workflow',
+});
+
+transaction.setTag('workflowType', 'product-classification');
+transaction.setData('productCount', products.length);
+
+try {
+  const results = await executeWorkflow(products);
+  transaction.setStatus('ok');
+} catch (error) {
+  transaction.setStatus('internal_error');
+  throw error;
+} finally {
+  transaction.finish();
+}
+```
+
+## React Observability Hooks
+
+### General Observability Hook
+
+Comprehensive tracking for React components:
+
+<AccordionGroup>
+  <Accordion title="Event Tracking" icon="mouse-pointer">
+    ```typescript
+    import { useObservability } from '@repo/observability';
+    
+    function ProductCard({ product }) {
+      const { trackEvent, trackError, trackPerformance } = useObservability();
+    
+      const handleAddToCart = async () => {
+        trackEvent('add_to_cart_clicked', {
+          productId: product.id,
+          price: product.price,
+        });
+    
+        try {
+          const startTime = performance.now();
+          await addToCart(product.id);
+    
+          trackPerformance('add_to_cart_duration', performance.now() - startTime);
+          trackEvent('add_to_cart_success', { productId: product.id });
+        } catch (error) {
+          trackError('add_to_cart_failed', error, {
+            productId: product.id,
+          });
+        }
+      };
+    
+      return (
+        <button onClick={handleAddToCart}>
+          Add to Cart
+        </button>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Workflow Tracking" icon="workflow">
+    ```typescript
+    import { useWorkflowObservability } from '@repo/observability';
+    
+    function WorkflowRunner({ workflowId }) {
+      const { 
+        trackWorkflowStart, 
+        trackWorkflowStep, 
+        trackWorkflowComplete, 
+        trackWorkflowError 
+      } = useWorkflowObservability();
+    
+      const executeWorkflow = async () => {
+        trackWorkflowStart(workflowId, {
+          triggerType: 'manual',
+          organizationId: org.id,
+        });
+    
+        try {
+          for (const step of workflow.steps) {
+            trackWorkflowStep(workflowId, step.id, {
+              stepType: step.type,
+              inputSize: step.input?.length,
+            });
+    
+            await executeStep(step);
+          }
+    
+          trackWorkflowComplete(workflowId, {
+            duration: performance.now() - startTime,
+            stepCount: workflow.steps.length,
+          });
+        } catch (error) {
+          trackWorkflowError(workflowId, error, {
+            failedStep: currentStep.id,
+          });
+        }
+      };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Analytics Integration Hooks
+
+<Tabs>
+  <Tab title="UI Analytics">
+    ```typescript
+    import { useUIAnalytics } from '@repo/observability';
+    
+    function Navigation() {
+      const { trackClick, trackView, trackInteraction } = useUIAnalytics();
+    
+      useEffect(() => {
+        trackView('navigation', {
+          organizationId: org.id,
+          userRole: user.role,
+        });
+      }, []);
+    
+      return (
+        <nav>
+          <button
+            onClick={() => trackClick('nav-dashboard', { source: 'header' })}
+          >
+            Dashboard
+          </button>
+    
+          <button
+            onMouseEnter={() => trackInteraction('nav-hover', 'workflows')}
+            onClick={() => trackClick('nav-workflows', { source: 'header' })}
+          >
+            Workflows
+          </button>
+        </nav>
+      );
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Form Analytics">
+    ```typescript
+    import { useFormAnalytics } from '@repo/observability';
+    
+    function ContactForm() {
+      const {
+        trackFormStart,
+        trackFieldFocus,
+        trackFieldBlur,
+        trackFormSubmit,
+        trackFormError
+      } = useFormAnalytics();
+    
+      useEffect(() => {
+        trackFormStart('contact-form');
+      }, []);
+    
+      return (
+        <form onSubmit={handleSubmit}>
+          <input
+            name="email"
+            onFocus={() => trackFieldFocus('contact-form', 'email')}
+            onBlur={(e) => trackFieldBlur('contact-form', 'email', {
+              hasValue: e.target.value.length > 0,
+              isValid: validateEmail(e.target.value),
+            })}
+          />
+    
+          <button type="submit">
+            Submit
+          </button>
+        </form>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## System Status Monitoring
+
+### Status Display Component
+
+Real-time system status with BetterStack integration:
+
+<CodeGroup>
+```typescript Status Component
+import { SystemStatus } from '@repo/observability/status';
+
+function DashboardHeader() { return ( <header> <h1>Dashboard</h1> <SystemStatus /> </header> ); }
+
+// Displays real-time system status: // 🟢 All systems normal // 🟡 Partial outage // 🔴 Degraded
+performance // ⚫ Unable to fetch status
+
+````
+
+```typescript Custom Status Widget
+import { useSystemStatus } from '@repo/observability/status';
+
+function StatusWidget() {
+  const { status, isLoading, error } = useSystemStatus();
+
+  if (isLoading) return <Spinner />;
+  if (error) return <div>Status unavailable</div>;
+
+  return (
+    <div className={`status-${status.state}`}>
+      <StatusIcon state={status.state} />
+      <span>{status.message}</span>
+    </div>
+  );
+}
+````
+
+</CodeGroup>
+
+## Advanced Configuration
+
+### Session Replay Configuration
+
+Session replay is automatically configured with privacy-first settings:
+
+<Note>
+  **Privacy-First Defaults:** - Mask all text content - Block media elements - 10% sample rate -
+  Privacy-compliant data collection
+</Note>
+
+### Custom Sampling
+
+```typescript
+// Custom error sampling (in sentry config)
+beforeSend(event, hint) {
+  // Filter out known non-critical errors
+  if (event.exception?.values?.[0]?.type === 'ChunkLoadError') {
+    return null;
+  }
+
+  // Sample high-volume errors
+  if (event.tags?.component === 'HighVolumeComponent') {
+    return Math.random() < 0.1 ? event : null;
+  }
+
+  return event;
+}
+```
+
+### Environment Behavior
+
+<CardGroup cols={2}>
+  <Card title="Development" icon="laptop-code">
+    - Console logging fallback - Optional environment variables - Reduced sampling rates - Local
+    debugging support
+  </Card>
+  <Card title="Production" icon="server">
+    - Logtail structured logging - Required environment variables - Full error capture and replay -
+    Performance optimization
+  </Card>
+</CardGroup>
+
+## Testing
+
+### Mock Observability
+
+```typescript
+import { vi } from 'vitest';
+
+// Mock observability in tests
+vi.mock('@repo/observability', () => ({
+  log: vi.fn(),
+  parseError: vi.fn((error) => error.message),
+  useObservability: () => ({
+    trackEvent: vi.fn(),
+    trackError: vi.fn(),
+    trackPerformance: vi.fn(),
+  }),
+}));
+```
+
+## Best Practices
+
+<Warning>
+  **Implementation Guidelines:** - Always provide relevant context with errors - Use performance
+  timer hook for async operations - Track user interactions for product insights - Session replay
+  automatically masks sensitive data
+</Warning>
+
+### Recommended Patterns
+
+1. **Error Context**: Include user ID, organization ID, and action context
+2. **Performance Tracking**: Monitor critical user journeys and API calls
+3. **Analytics Integration**: Track business-relevant user interactions
+4. **Privacy First**: Leverage automatic data masking in session replay
+5. **Environment Awareness**: Package adapts automatically to dev/prod
+6. **Structured Logging**: Use structured data for better log analysis
+7. **Error Boundaries**: Implement at component level for graceful failures
+
+The observability package provides comprehensive monitoring infrastructure while maintaining
+simplicity and privacy-first defaults, enabling teams to understand system behavior and user
+interactions across the entire Forge platform.

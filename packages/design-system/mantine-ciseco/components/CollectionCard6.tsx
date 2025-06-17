@@ -10,7 +10,7 @@ import { useLocalizeHref } from '../hooks/useLocale';
 
 import NcImage from './shared/NcImage/NcImage';
 
-interface CollectionCard6Props {
+interface CollectionCard6Props extends Record<string, any> {
   bgSvgUrl?: string;
   className?: string;
   collection: TCollection;
@@ -18,21 +18,21 @@ interface CollectionCard6Props {
 }
 
 const CollectionCard6: FC<CollectionCard6Props> = ({
-  'data-testid': testId = 'collection-card-6',
   bgSvgUrl,
   className = '',
   collection,
+  'data-testid': testId = 'collection-card-6',
 }) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection || !collection.handle) {
+  if (!collection.handle) {
     return null;
   }
 
   return (
     <div
-      data-testid={testId}
       className={`group aspect-square relative w-full overflow-hidden rounded-3xl bg-white transition-shadow hover:nc-shadow-lg dark:bg-neutral-900 ${className}`}
+      data-testid={testId}
     >
       <div>
         <div className="absolute inset-0 opacity-10">
@@ -43,8 +43,8 @@ const CollectionCard6: FC<CollectionCard6Props> = ({
           <div className="flex items-center justify-center">
             {collection.image?.src && (
               <NcImage
+                alt={collection.image.alt}
                 containerClassName={`size-20 rounded-full relative overflow-hidden z-0 ${collection.color}`}
-                alt={collection.image?.alt}
                 fill
                 src={collection.image}
               />
@@ -59,8 +59,8 @@ const CollectionCard6: FC<CollectionCard6Props> = ({
           </div>
 
           <Link
-            href={localizeHref(`/collections/${collection.handle}`)}
             className="flex items-center text-sm font-medium transition-colors group-hover:text-primary-500"
+            href={localizeHref(`/collections/${collection.handle}`)}
           >
             <span>See Collection</span>
             <ArrowRightIcon className="ml-2.5 h-4 w-4" />

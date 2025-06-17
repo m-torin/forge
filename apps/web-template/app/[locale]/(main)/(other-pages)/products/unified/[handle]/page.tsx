@@ -1,5 +1,9 @@
 import { getDictionary } from '@/i18n';
-import { getProductDetailByHandle, getProductReviews, getProducts } from '@/data/data-service';
+import { getProductByHandle, getProducts } from '@/actions/products';
+import {
+  transformDatabaseProductToTProductItem,
+  transformDatabaseProductToTCardProduct,
+} from '@/types/database';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -16,9 +20,10 @@ interface LocalizedUnifiedPDPProps extends UnifiedPDPProps {
 export async function generateMetadata({ params }: LocalizedUnifiedPDPProps): Promise<Metadata> {
   const { handle, locale } = await params;
   const dict = await getDictionary(locale);
-  const product = await getProductDetailByHandle(handle);
+  const productData = await getProductByHandle(handle);
+  const product = productData ? transformDatabaseProductToTProductItem(productData) : null;
 
-  if (!product.id) {
+  if (!product?.id) {
     return {
       description: dict.product.productNotFoundDesc,
       title: dict.product.productNotFound,
@@ -74,11 +79,16 @@ export async function generateMetadata({ params }: LocalizedUnifiedPDPProps): Pr
 export default async function UnifiedPDPPage({ params }: LocalizedUnifiedPDPProps) {
   const { handle, locale } = await params;
   const dict = await getDictionary(locale);
-  const product = await getProductDetailByHandle(handle);
-  const relatedProducts = (await getProducts()).slice(2, 8);
-  const reviews = await getProductReviews(handle);
+  const productData = await getProductByHandle(handle);
+  const product = productData ? transformDatabaseProductToTProductItem(productData) : null;
+  const productsResult = await getProducts({ page: 1, sort: 'newest', limit: 8 });
+  const relatedProducts = productsResult.data
+    .slice(2, 8)
+    .map(transformDatabaseProductToTCardProduct);
+  // TODO: Implement reviews when review system is added to database
+  const reviews: any[] = [];
 
-  if (!product.id) {
+  if (!product?.id) {
     return notFound();
   }
 

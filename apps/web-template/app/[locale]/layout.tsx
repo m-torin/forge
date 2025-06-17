@@ -1,7 +1,5 @@
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 
-import { AppLayout, AppLayoutProvider } from '@/components/layout';
-import { getNavigationRoutes } from '@/data/navigation';
 import { getDictionary } from '@/i18n';
 import { createMetadata, viewportPresets } from '@repo/seo/server/next';
 

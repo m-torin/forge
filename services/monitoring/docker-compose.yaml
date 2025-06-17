@@ -1,0 +1,359 @@
+version: "3.8"
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  alertmanager_data:
+  pyroscope_data:
+
+services:
+  # Prometheus - Metrics Collection & Storage
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    networks:
+      - monitoring
+    volumes:
+      - prometheus_data:/prometheus
+      - ./config/prometheus:/etc/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}"
+      - "--web.enable-lifecycle"
+      - "--web.enable-admin-api"
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana - Visualization & Dashboards
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    networks:
+      - monitoring
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_USERS_AUTO_ASSIGN_ORG=true
+      - GF_USERS_AUTO_ASSIGN_ORG_ROLE=Viewer
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-worldmap-panel,grafana-piechart-panel,grafana-polystat-panel,grafana-image-renderer
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards,frontendLogging
+      - GF_UNIFIED_ALERTING_ENABLED=true
+      - GF_ALERTING_ENABLED=false
+      - GF_ANALYTICS_REPORTING_ENABLED=true
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=true
+      - GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=true
+      - GF_LOG_LEVEL=${GRAFANA_LOG_LEVEL:-info}
+      - GF_METRICS_ENABLED=true
+      - GF_METRICS_BASIC_AUTH_USERNAME=${GRAFANA_METRICS_USER:-admin}
+      - GF_METRICS_BASIC_AUTH_PASSWORD=${GRAFANA_METRICS_PASSWORD:-admin}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - prometheus
+      - loki
+
+  # Loki - Log Aggregation
+  loki:
+    image: grafana/loki:3.3.1
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    networks:
+      - monitoring
+    volumes:
+      - loki_data:/loki
+      - ./config/loki:/etc/loki
+    command:
+      - "-config.file=/etc/loki/loki.yml"
+      - "-target=all"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Promtail - Log Collection Agent
+  promtail:
+    image: grafana/promtail:3.3.1
+    container_name: promtail
+    restart: unless-stopped
+    ports:
+      - "${PROMTAIL_PORT:-9080}:9080"
+    networks:
+      - monitoring
+    volumes:
+      - ./config/promtail:/etc/promtail
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - "-config.file=/etc/promtail/promtail.yml"
+    depends_on:
+      - loki
+
+  # AlertManager - Alert Handling
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    restart: unless-stopped
+    ports:
+      - "${ALERTMANAGER_PORT:-9093}:9093"
+    networks:
+      - monitoring
+    volumes:
+      - alertmanager_data:/alertmanager
+      - ./config/alertmanager:/etc/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.external-url=http://localhost:9093"
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Node Exporter - Host Metrics
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "${NODE_EXPORTER_PORT:-9100}:9100"
+    networks:
+      - monitoring
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # cAdvisor - Container Metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.51.0
+    container_name: cadvisor
+    restart: unless-stopped
+    ports:
+      - "${CADVISOR_PORT:-8080}:8080"
+    networks:
+      - monitoring
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    privileged: true
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Blackbox Exporter - Endpoint Monitoring
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    ports:
+      - "${BLACKBOX_PORT:-9115}:9115"
+    networks:
+      - monitoring
+    volumes:
+      - ./config/blackbox:/etc/blackbox_exporter
+    command:
+      - "--config.file=/etc/blackbox_exporter/blackbox.yml"
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9115/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Postgres Exporter - Database Metrics (if needed)
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres-exporter
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_EXPORTER_PORT:-9187}:9187"
+    networks:
+      - monitoring
+    environment:
+      - DATA_SOURCE_NAME=${POSTGRES_CONNECTION_STRING:-postgresql://user:password@localhost:5432/postgres?sslmode=disable}
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9187/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - postgres
+
+  # Redis Exporter - Redis Metrics (if needed)
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.64.0
+    container_name: redis-exporter
+    restart: unless-stopped
+    ports:
+      - "${REDIS_EXPORTER_PORT:-9121}:9121"
+    networks:
+      - monitoring
+    environment:
+      - REDIS_ADDR=${REDIS_URL:-redis://localhost:6379}
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9121/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - redis
+
+  # RUM Collector - Real User Monitoring
+  rum-collector:
+    image: grafana/faro-web-sdk:latest
+    container_name: rum-collector
+    restart: unless-stopped
+    ports:
+      - "${RUM_COLLECTOR_PORT:-12347}:12347"
+    networks:
+      - monitoring
+    environment:
+      - FARO_ENDPOINT=http://loki:3100/loki/api/v1/push
+      - FARO_API_KEY=${RUM_API_KEY:-}
+      - FARO_APP_NAME=${RUM_APP_NAME:-monitoring-services}
+      - FARO_APP_VERSION=${RUM_APP_VERSION:-1.0.0}
+      - FARO_ENVIRONMENT=${RUM_ENVIRONMENT:-production}
+      - CORS_ALLOWED_ORIGINS=${RUM_CORS_ORIGINS:-*}
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:12347/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - loki
+
+  # Synthetic Monitoring Agent - Additional synthetic checks
+  synthetic-monitoring:
+    image: grafana/synthetic-monitoring-agent:latest
+    container_name: synthetic-monitoring
+    restart: unless-stopped
+    ports:
+      - "${SYNTHETIC_MONITORING_PORT:-4031}:4031"
+    networks:
+      - monitoring
+    environment:
+      - SM_AGENT_TOKEN=${SYNTHETIC_MONITORING_TOKEN:-}
+      - SM_API_SERVER=${SYNTHETIC_MONITORING_API:-api.grafana.com}
+      - SM_METRICS_ENDPOINT=http://prometheus:9090/api/v1/write
+      - SM_LOGS_ENDPOINT=http://loki:3100/loki/api/v1/push
+    volumes:
+      - ./config/synthetic-monitoring:/etc/synthetic-monitoring
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4031/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - prometheus
+      - loki
+    profiles:
+      - synthetic
+
+  # OpenTelemetry Collector - For advanced RUM and APM
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    restart: unless-stopped
+    ports:
+      - "${OTEL_GRPC_PORT:-4317}:4317" # OTLP gRPC receiver
+      - "${OTEL_HTTP_PORT:-4318}:4318" # OTLP HTTP receiver
+      - "${OTEL_METRICS_PORT:-8889}:8889" # Prometheus metrics
+    networks:
+      - monitoring
+    volumes:
+      - ./config/otel:/etc/otel
+    command: ["--config=/etc/otel/otel-collector.yaml"]
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8889/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - prometheus
+      - loki
+    profiles:
+      - otel
+
+  # Pyroscope - Continuous Profiling (for performance analysis)
+  pyroscope:
+    image: grafana/pyroscope:latest
+    container_name: pyroscope
+    restart: unless-stopped
+    ports:
+      - "${PYROSCOPE_PORT:-4040}:4040"
+    networks:
+      - monitoring
+    volumes:
+      - ./config/pyroscope:/etc/pyroscope
+      - pyroscope_data:/data
+    environment:
+      - PYROSCOPE_LOG_LEVEL=${PYROSCOPE_LOG_LEVEL:-info}
+      - PYROSCOPE_STORAGE_PATH=/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4040/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - profiling

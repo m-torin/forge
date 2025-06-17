@@ -35,8 +35,8 @@ async function createAdminUser() {
     // Now update the user role to super-admin
     // This would need to be done directly in the database
     // or through an admin API endpoint
-  } catch (error) {
-    console.error('Error creating admin user:', error);
+  } catch (error: any) {
+    console.error('Error creating admin user: ', error);
   }
 }
 

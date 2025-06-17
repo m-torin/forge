@@ -1,6 +1,6 @@
 'use server';
 
-import { auth } from '@repo/auth/server';
+import { auth } from '@repo/auth/server/next';
 import { prisma } from '@repo/database/prisma';
 
 import type { ContentStatus, ReviewType, VoteType } from '@repo/database/prisma';

@@ -2,32 +2,35 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock external modules
 const mockKeys = vi.fn();
-vi.mock('../keys', () => ({
+vi.mock('../keys', (_: any) => ({
   keys: mockKeys,
 }));
 
 const mockVercelBlobProvider = vi.fn();
 const mockCloudflareR2Provider = vi.fn();
 
-vi.mock('../providers/vercel-blob', () => ({
+vi.mock('../providers/vercel-blob', (_: any) => ({
   VercelBlobProvider: mockVercelBlobProvider,
 }));
 
-vi.mock('../providers/cloudflare-r2', () => ({
+vi.mock('../providers/cloudflare-r2', (_: any) => ({
   CloudflareR2Provider: mockCloudflareR2Provider,
 }));
 
 // Mock console.warn to test warning behavior
 const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-describe('Storage Index', () => {
-  beforeEach(() => {
+describe('Storage Index', (_: any) => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
     mockConsoleWarn.mockClear();
+    // Reset storage state
+    const { resetStorageState } = await import('../src/server');
+    resetStorageState();
   });
 
-  describe('createStorageProvider', () => {
+  describe('createStorageProvider', (_: any) => {
     it('should create Vercel Blob provider with valid config', async () => {
       const mockProviderInstance = {
         delete: vi.fn(),
@@ -40,7 +43,7 @@ describe('Storage Index', () => {
       };
       mockVercelBlobProvider.mockReturnValue(mockProviderInstance);
 
-      const { createStorageProvider } = await import('../index');
+      const { createStorageProvider } = await import('../src/server');
 
       const config = {
         provider: 'vercel-blob' as const,
@@ -67,7 +70,7 @@ describe('Storage Index', () => {
       };
       mockCloudflareR2Provider.mockReturnValue(mockProviderInstance);
 
-      const { createStorageProvider } = await import('../index');
+      const { createStorageProvider } = await import('../src/server');
 
       const config = {
         provider: 'cloudflare-r2' as const,
@@ -91,7 +94,7 @@ describe('Storage Index', () => {
     });
 
     it('should throw error for Vercel Blob provider without token', async () => {
-      const { createStorageProvider } = await import('../index');
+      const { createStorageProvider } = await import('../src/server');
 
       const config = {
         provider: 'vercel-blob' as const,
@@ -104,7 +107,7 @@ describe('Storage Index', () => {
     });
 
     it('should throw error for Vercel Blob provider without vercelBlob config', async () => {
-      const { createStorageProvider } = await import('../index');
+      const { createStorageProvider } = await import('../src/server');
 
       const config = {
         provider: 'vercel-blob' as const,
@@ -114,7 +117,7 @@ describe('Storage Index', () => {
     });
 
     it('should throw error for Cloudflare R2 provider without config', async () => {
-      const { createStorageProvider } = await import('../index');
+      const { createStorageProvider } = await import('../src/server');
 
       const config = {
         provider: 'cloudflare-r2' as const,
@@ -126,7 +129,7 @@ describe('Storage Index', () => {
     });
 
     it('should throw error for unknown provider', async () => {
-      const { createStorageProvider } = await import('../index');
+      const { createStorageProvider } = await import('../src/server');
 
       const config = {
         provider: 'unknown-provider' as any,
@@ -138,7 +141,7 @@ describe('Storage Index', () => {
     });
   });
 
-  describe('MockStorageProvider', () => {
+  describe('MockStorageProvider', (_: any) => {
     let mockProvider: any;
 
     beforeEach(async () => {
@@ -146,7 +149,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: undefined,
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
       mockProvider = initializeStorage();
     });
 
@@ -234,13 +237,13 @@ describe('Storage Index', () => {
     });
   });
 
-  describe('initializeStorage', () => {
+  describe('initializeStorage', (_: any) => {
     it('should return singleton instance when already initialized', async () => {
       mockKeys.mockReturnValue({
         STORAGE_PROVIDER: undefined,
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
 
       const instance1 = initializeStorage();
       const instance2 = initializeStorage();
@@ -249,11 +252,14 @@ describe('Storage Index', () => {
     });
 
     it('should create mock provider when no STORAGE_PROVIDER is configured', async () => {
+      vi.resetModules();
+      mockConsoleWarn.mockClear();
       mockKeys.mockReturnValue({
         STORAGE_PROVIDER: undefined,
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage, resetStorageState } = await import('../src/server');
+      resetStorageState(); // Ensure clean state
       const result = initializeStorage();
 
       expect(mockConsoleWarn).toHaveBeenCalledWith(
@@ -264,11 +270,14 @@ describe('Storage Index', () => {
     });
 
     it('should log warning only once for missing provider', async () => {
+      vi.resetModules();
+      mockConsoleWarn.mockClear();
       mockKeys.mockReturnValue({
         STORAGE_PROVIDER: undefined,
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage, resetStorageState } = await import('../src/server');
+      resetStorageState(); // Ensure clean state
 
       initializeStorage();
       initializeStorage();
@@ -285,7 +294,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: 'vercel-blob',
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
       const result = initializeStorage();
 
       expect(mockVercelBlobProvider).toHaveBeenCalledWith('test-token');
@@ -304,7 +313,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: 'cloudflare-r2',
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
       const result = initializeStorage();
 
       expect(mockCloudflareR2Provider).toHaveBeenCalledWith({
@@ -322,7 +331,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: 'vercel-blob',
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
 
       expect(() => initializeStorage()).toThrow(
         'BLOB_READ_WRITE_TOKEN is required for Vercel Blob provider',
@@ -338,7 +347,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: 'cloudflare-r2',
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
 
       expect(() => initializeStorage()).toThrow('R2 configuration is incomplete');
     });
@@ -381,7 +390,7 @@ describe('Storage Index', () => {
         vi.resetModules();
         mockKeys.mockReturnValue(testCase.env);
 
-        const { initializeStorage } = await import('../index');
+        const { initializeStorage } = await import('../src/server');
 
         expect(() => initializeStorage(), testCase.description).toThrow(
           'R2 configuration is incomplete',
@@ -390,13 +399,13 @@ describe('Storage Index', () => {
     });
   });
 
-  describe('getStorage', () => {
+  describe('getStorage', (_: any) => {
     it('should return existing storage instance', async () => {
       mockKeys.mockReturnValue({
         STORAGE_PROVIDER: undefined,
       });
 
-      const { getStorage, initializeStorage } = await import('../index');
+      const { getStorage, initializeStorage } = await import('../src/server');
 
       const initialized = initializeStorage();
       const retrieved = getStorage();
@@ -409,7 +418,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: undefined,
       });
 
-      const { getStorage } = await import('../index');
+      const { getStorage } = await import('../src/server');
       const result = getStorage();
 
       expect(result).toBeDefined();
@@ -417,9 +426,9 @@ describe('Storage Index', () => {
     });
   });
 
-  describe('storage helper object', () => {
+  describe('storage helper object', (_: any) => {
     it('should provide all required storage methods', async () => {
-      const { storage } = await import('../index');
+      const { storage } = await import('../src/server');
 
       expect(typeof storage.upload).toBe('function');
       expect(typeof storage.download).toBe('function');
@@ -435,7 +444,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: undefined,
       });
 
-      const { getStorage, storage } = await import('../index');
+      const { getStorage, storage } = await import('../src/server');
 
       // Get the instance first to initialize it
       const instance = getStorage();
@@ -454,9 +463,9 @@ describe('Storage Index', () => {
     });
   });
 
-  describe('exports', () => {
+  describe('exports', (_: any) => {
     it('should export all expected functions and objects', async () => {
-      const module = await import('../index');
+      const module = await import('../src/server');
 
       expect(typeof module.createStorageProvider).toBe('function');
       expect(typeof module.initializeStorage).toBe('function');
@@ -473,13 +482,13 @@ describe('Storage Index', () => {
     });
   });
 
-  describe('singleton behavior and state management', () => {
+  describe('singleton behavior and state management', (_: any) => {
     it('should maintain singleton across multiple getStorage calls', async () => {
       mockKeys.mockReturnValue({
         STORAGE_PROVIDER: undefined,
       });
 
-      const { getStorage } = await import('../index');
+      const { getStorage } = await import('../src/server');
 
       const instance1 = getStorage();
       const instance2 = getStorage();
@@ -494,7 +503,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: undefined,
       });
 
-      const { getStorage } = await import('../index');
+      const { getStorage } = await import('../src/server');
       const storage = getStorage();
 
       // Upload and verify it exists
@@ -516,7 +525,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: undefined,
       });
 
-      const { getStorage } = await import('../index');
+      const { getStorage } = await import('../src/server');
       const storage = getStorage();
 
       // Upload multiple files
@@ -540,7 +549,7 @@ describe('Storage Index', () => {
     });
   });
 
-  describe('error handling and edge cases', () => {
+  describe('error handling and edge cases', (_: any) => {
     it('should handle provider creation errors gracefully', async () => {
       // Clear module cache to ensure fresh import
       vi.resetModules();
@@ -554,7 +563,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: 'vercel-blob',
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
 
       expect(() => initializeStorage()).toThrow('Provider initialization failed');
     });
@@ -566,7 +575,7 @@ describe('Storage Index', () => {
         throw new Error('Environment configuration error');
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage } = await import('../src/server');
 
       expect(() => initializeStorage()).toThrow('Environment configuration error');
     });
@@ -579,7 +588,8 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: undefined,
       });
 
-      const { initializeStorage } = await import('../index');
+      const { initializeStorage, resetStorageState } = await import('../src/server');
+      resetStorageState(); // Ensure clean state
 
       // First call should log warning
       initializeStorage();
@@ -598,7 +608,7 @@ describe('Storage Index', () => {
         STORAGE_PROVIDER: undefined,
       });
 
-      const { getStorage } = await import('../index');
+      const { getStorage } = await import('../src/server');
       const storage = getStorage();
 
       // Test that mock storage actually works

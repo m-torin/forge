@@ -1,27 +1,18 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { 
-  Autocomplete, 
-  Group, 
-  Text, 
-  Avatar, 
-  Loader, 
-  Stack, 
-  Badge, 
-  Paper,
-  Alert,
-  Divider
-} from '@mantine/core';
+import { Autocomplete, Group, Text, Avatar, Loader, Badge, Alert, Skeleton } from '@mantine/core';
 import { useDebouncedCallback, useDisclosure } from '@mantine/hooks';
-import { 
-  IconSearch, 
-  IconArticle, 
-  IconQuestionMark, 
-  IconSparkles, 
-  IconExclamationTriangle
+import {
+  IconSearch,
+  IconArticle,
+  IconQuestionMark,
+  IconSparkles,
+  IconExclamationCircle,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { env } from '@/env';
 
 // Strict TypeScript interfaces
@@ -104,6 +95,50 @@ interface Props {
   readonly size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   readonly visibleFrom?: string;
   readonly locale?: string;
+  readonly loading?: boolean;
+  readonly error?: string;
+  readonly 'data-testid'?: string;
+}
+
+// Loading skeleton for ProductionFederatedAutocomplete
+function ProductionFederatedAutocompleteSkeleton({
+  className,
+  size,
+  testId,
+}: {
+  className?: string;
+  size?: string;
+  testId?: string;
+}) {
+  return (
+    <div className={className} data-testid={testId}>
+      <Skeleton
+        height={
+          size === 'xs' ? 32 : size === 'sm' ? 36 : size === 'lg' ? 44 : size === 'xl' ? 48 : 40
+        }
+        radius="sm"
+      />
+    </div>
+  );
+}
+
+// Error state for ProductionFederatedAutocomplete
+function ProductionFederatedAutocompleteError({
+  error,
+  className,
+  testId,
+}: {
+  error: string;
+  className?: string;
+  testId?: string;
+}) {
+  return (
+    <div className={className} data-testid={testId}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="xs">Production search unavailable: {error}</Text>
+      </Alert>
+    </div>
+  );
 }
 
 // Validation and error handling
@@ -124,11 +159,8 @@ const createSearchClient = () => {
     console.error('Algolia configuration error:', validation.error);
     return null;
   }
-  
-  return algoliasearch(
-    env.NEXT_PUBLIC_ALGOLIA_APP_ID,
-    env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY,
-  );
+
+  return algoliasearch(env.NEXT_PUBLIC_ALGOLIA_APP_ID, env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY);
 };
 
 const searchClient = createSearchClient();
@@ -188,12 +220,7 @@ const ProductItem = React.memo<{ hit: ProductHit }>(({ hit }) => {
 
   return (
     <Group gap="sm" wrap="nowrap" p="xs">
-      <Avatar 
-        src={hit.image_urls?.[0]} 
-        size="md" 
-        radius="sm" 
-        alt={hit.name}
-      />
+      <Avatar src={hit.image_urls?.[0]} size="md" radius="sm" alt={hit.name} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <Text
           size="sm"
@@ -213,9 +240,14 @@ const ProductItem = React.memo<{ hit: ProductHit }>(({ hit }) => {
         />
         <Group gap="xs" mt={2}>
           <Text size="xs" fw={600} c={isOnSale ? 'red' : 'blue'}>
-            {currency}{price.toFixed(2)}
+            {currency}
+            {price.toFixed(2)}
           </Text>
-          {isOnSale && <Badge size="xs" color="red">Sale</Badge>}
+          {isOnSale && (
+            <Badge size="xs" color="red">
+              Sale
+            </Badge>
+          )}
           {hit.color?.original_name && (
             <Text size="xs" c="dimmed">
               {hit.color.original_name}
@@ -315,9 +347,11 @@ const NoResultsItem = React.memo<{ query: string }>(({ query }) => (
 ));
 
 const ErrorItem = React.memo<{ error: string }>(({ error }) => (
-  <Alert icon={<IconExclamationTriangle size={16} />} color="red" variant="light" m="xs">
+  <Alert icon={<IconExclamationCircle size={16} />} color="red" variant="light" m="xs">
     <Text size="sm">Search temporarily unavailable</Text>
-    <Text size="xs" c="dimmed">Please try again later</Text>
+    <Text size="xs" c="dimmed">
+      Please try again later
+    </Text>
   </Alert>
 ));
 
@@ -329,12 +363,34 @@ export default function ProductionFederatedAutocomplete({
   size = 'md',
   visibleFrom,
   locale = 'en',
+  loading: externalLoading = false,
+  error: externalError,
+  'data-testid': testId = 'production-federated-autocomplete',
 }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResults>(EMPTY_RESULTS);
   const [loading, { open: startLoading, close: stopLoading }] = useDisclosure(false);
-  const [error, setError] = useState<string | null>(null);
+  const [internalError, setInternalError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Show loading state
+  if (externalLoading) {
+    return (
+      <ProductionFederatedAutocompleteSkeleton className={className} size={size} testId={testId} />
+    );
+  }
+
+  // Show error state
+  const currentError = externalError || internalError;
+  if (currentError) {
+    return (
+      <ProductionFederatedAutocompleteError
+        error={currentError}
+        className={className}
+        testId={testId}
+      />
+    );
+  }
 
   // Cleanup on unmount
   useEffect(() => {
@@ -344,141 +400,178 @@ export default function ProductionFederatedAutocomplete({
   }, []);
 
   // Federated search with proper error handling and cancellation
-  const searchFederated = useCallback(async (searchQuery: string) => {
-    if (!searchClient) {
-      setError('Search unavailable');
-      return;
-    }
-
-    if (!searchQuery.trim()) {
-      setResults(EMPTY_RESULTS);
-      setError(null);
-      return;
-    }
-
-    // Cancel previous request
-    abortControllerRef.current?.abort();
-    abortControllerRef.current = new AbortController();
-
-    startLoading();
-    setError(null);
-
-    try {
-      const queries = [
-        {
-          indexName: INDICES.products,
-          query: searchQuery,
-          params: {
-            hitsPerPage: 6,
-            attributesToRetrieve: [
-              'objectID', 'name', 'brand', 'price', 'image_urls',
-              'hierarchical_categories', 'color'
-            ],
-            attributesToHighlight: ['name', 'brand'],
-          },
-        },
-        {
-          indexName: INDICES.articles,
-          query: searchQuery,
-          params: {
-            hitsPerPage: 3,
-            attributesToRetrieve: ['objectID', 'title', 'image_url', 'date'],
-            attributesToHighlight: ['title'],
-          },
-        },
-        {
-          indexName: INDICES.faq,
-          query: searchQuery,
-          params: {
-            hitsPerPage: 3,
-            attributesToRetrieve: ['objectID', 'title', 'description', 'list_categories'],
-            attributesToHighlight: ['title'],
-          },
-        },
-        {
-          indexName: INDICES.querysuggestions,
-          query: searchQuery,
-          params: {
-            hitsPerPage: 4,
-            attributesToRetrieve: ['objectID', 'query', 'nb_words', 'popularity', 'hierarchical_categories'],
-          },
-        },
-      ];
-
-      const searchResults = await searchClient.search(queries);
-      
-      // Validate results structure
-      if (!Array.isArray(searchResults.results) || searchResults.results.length < 4) {
-        throw new Error('Invalid search results structure');
+  const searchFederated = useCallback(
+    async (searchQuery: string) => {
+      if (!searchClient) {
+        setInternalError('Search unavailable');
+        return;
       }
 
-      const [productsResult, articlesResult, faqResult, suggestionsResult] = searchResults.results;
-
-      setResults({
-        products: (productsResult as any)?.hits ?? [],
-        articles: (articlesResult as any)?.hits ?? [],
-        faq: (faqResult as any)?.hits ?? [],
-        querysuggestions: (suggestionsResult as any)?.hits ?? [],
-      });
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return; // Request was cancelled, ignore
+      if (!searchQuery.trim()) {
+        setResults(EMPTY_RESULTS);
+        setInternalError(null);
+        return;
       }
-      
-      console.error('Federated search error:', err);
-      setError('Search failed');
-      setResults(EMPTY_RESULTS);
-    } finally {
-      stopLoading();
-    }
-  }, [startLoading, stopLoading]);
+
+      // Cancel previous request
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+
+      startLoading();
+      setInternalError(null);
+
+      try {
+        const queries = [
+          {
+            indexName: INDICES.products,
+            query: searchQuery,
+            params: {
+              hitsPerPage: 6,
+              attributesToRetrieve: [
+                'objectID',
+                'name',
+                'brand',
+                'price',
+                'image_urls',
+                'hierarchical_categories',
+                'color',
+              ],
+              attributesToHighlight: ['name', 'brand'],
+            },
+          },
+          {
+            indexName: INDICES.articles,
+            query: searchQuery,
+            params: {
+              hitsPerPage: 3,
+              attributesToRetrieve: ['objectID', 'title', 'image_url', 'date'],
+              attributesToHighlight: ['title'],
+            },
+          },
+          {
+            indexName: INDICES.faq,
+            query: searchQuery,
+            params: {
+              hitsPerPage: 3,
+              attributesToRetrieve: ['objectID', 'title', 'description', 'list_categories'],
+              attributesToHighlight: ['title'],
+            },
+          },
+          {
+            indexName: INDICES.querysuggestions,
+            query: searchQuery,
+            params: {
+              hitsPerPage: 4,
+              attributesToRetrieve: [
+                'objectID',
+                'query',
+                'nb_words',
+                'popularity',
+                'hierarchical_categories',
+              ],
+            },
+          },
+        ];
+
+        const searchResults = await searchClient.search(queries);
+
+        // Validate results structure
+        if (!Array.isArray(searchResults.results) || searchResults.results.length < 4) {
+          throw new Error('Invalid search results structure');
+        }
+
+        const [productsResult, articlesResult, faqResult, suggestionsResult] =
+          searchResults.results;
+
+        setResults({
+          products: (productsResult as any)?.hits ?? [],
+          articles: (articlesResult as any)?.hits ?? [],
+          faq: (faqResult as any)?.hits ?? [],
+          querysuggestions: (suggestionsResult as any)?.hits ?? [],
+        });
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return; // Request was cancelled, ignore
+        }
+
+        console.error('Federated search error:', err);
+        setInternalError('Search failed');
+        setResults(EMPTY_RESULTS);
+      } finally {
+        stopLoading();
+      }
+    },
+    [startLoading, stopLoading],
+  );
 
   // Debounced search with proper cleanup
   const debouncedSearch = useDebouncedCallback(searchFederated, 300);
 
-  const handleInputChange = useCallback((value: string) => {
-    setQuery(value);
-    debouncedSearch(value);
-  }, [debouncedSearch]);
-
-  const handleItemSelect = useCallback((value: string) => {
-    if (value === 'no-results' || value === 'error' || !onSelect) {
-      return;
-    }
-
-    // Find the selected item with type safety
-    for (const [source, hits] of Object.entries(results) as Array<[SearchSource, readonly SearchHit[]]>) {
-      const hit = hits.find((h) => h.objectID === value);
-      if (hit) {
-        onSelect(hit, source);
-        setQuery(''); // Clear search after selection
-        return;
+  const handleInputChange = useCallback(
+    (value: string) => {
+      try {
+        setQuery(value);
+        debouncedSearch(value);
+      } catch (err) {
+        console.error('Input change error:', err);
+        setInternalError('Search input failed');
       }
-    }
-  }, [results, onSelect]);
+    },
+    [debouncedSearch],
+  );
+
+  const handleItemSelect = useCallback(
+    (value: string) => {
+      try {
+        if (value === 'no-results' || value === 'error' || !onSelect) {
+          return;
+        }
+
+        // Find the selected item with type safety
+        for (const [source, hits] of Object.entries(results) as Array<
+          [SearchSource, readonly SearchHit[]]
+        >) {
+          const hit = hits.find((h) => h.objectID === value);
+          if (hit) {
+            onSelect(hit, source);
+            setQuery(''); // Clear search after selection
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Item select error:', err);
+        setInternalError('Selection failed');
+      }
+    },
+    [results, onSelect],
+  );
 
   // Memoized autocomplete data transformation
   const autocompleteData = useMemo((): AutocompleteItem[] => {
-    if (error) {
-      return [{
-        value: 'error',
-        label: 'Error',
-        hit: { objectID: 'error' } as SearchHit,
-        type: 'products' as SearchSource,
-        disabled: true,
-      }];
+    if (currentError) {
+      return [
+        {
+          value: 'error',
+          label: 'Error',
+          hit: { objectID: 'error' } as SearchHit,
+          type: 'products' as SearchSource,
+          disabled: true,
+        },
+      ];
     }
 
-    const hasResults = Object.values(results).some(arr => arr.length > 0);
-    
+    const hasResults = Object.values(results).some((arr) => arr.length > 0);
+
     if (query.length > 0 && !loading && !hasResults) {
-      return [{
-        value: 'no-results',
-        label: `No results found for "${query}"`,
-        hit: { objectID: 'no-results' } as SearchHit,
-        type: 'products' as SearchSource,
-        disabled: true,
-      }];
+      return [
+        {
+          value: 'no-results',
+          label: `No results found for "${query}"`,
+          hit: { objectID: 'no-results' } as SearchHit,
+          type: 'products' as SearchSource,
+          disabled: true,
+        },
+      ];
     }
 
     return [
@@ -507,67 +600,132 @@ export default function ProductionFederatedAutocomplete({
         type: 'faq' as SearchSource,
       })),
     ];
-  }, [results, query, loading, error]);
+  }, [results, query, loading, currentError]);
 
   const shouldShowDropdown = query.length > 0 && (loading || autocompleteData.length > 0);
 
   return (
-    <Autocomplete
-      className={className}
-      placeholder={placeholder}
-      value={query}
-      onChange={handleInputChange}
-      onOptionSubmit={handleItemSelect}
-      data={autocompleteData}
-      renderOption={({ option }) => {
-        const item = option as AutocompleteItem;
-        
-        if (item.value === 'error') {
-          return <ErrorItem error="Search failed" />;
-        }
-        
-        if (item.value === 'no-results') {
-          return <NoResultsItem query={query} />;
-        }
+    <ErrorBoundary
+      fallback={
+        <ProductionFederatedAutocompleteError
+          error="Search component failed to render"
+          className={className}
+          testId={testId}
+        />
+      }
+    >
+      <Autocomplete
+        className={className}
+        placeholder={placeholder}
+        value={query}
+        onChange={handleInputChange}
+        onOptionSubmit={handleItemSelect}
+        data={autocompleteData}
+        renderOption={({ option }) => {
+          const item = option as AutocompleteItem;
 
-        const { hit } = item;
-        
-        if (isProductHit(hit)) {
-          return <ProductItem hit={hit} />;
-        }
-        if (isArticleHit(hit)) {
-          return <ArticleItem hit={hit} />;
-        }
-        if (isFAQHit(hit)) {
-          return <FAQItem hit={hit} />;
-        }
-        if (isQuerySuggestionHit(hit)) {
-          return <QuerySuggestionItem hit={hit} />;
-        }
-        
-        return <Text size="sm">{item.label}</Text>;
-      }}
-      leftSection={<IconSearch size={16} stroke={1.5} />}
-      rightSection={loading ? <Loader size="xs" /> : null}
-      size={size}
-      visibleFrom={visibleFrom}
-      dropdownOpened={shouldShowDropdown}
-      withScrollArea={false}
-      maxDropdownHeight={400}
-      comboboxProps={{
-        withinPortal: true,
-        shadow: 'md',
-        radius: 'md',
-      }}
-      onBlur={() => {
-        // Clear search when focus is lost
-        setTimeout(() => {
-          if (document.activeElement?.tagName !== 'INPUT') {
-            setQuery('');
+          try {
+            if (item.value === 'error') {
+              return <ErrorItem error="Search failed" />;
+            }
+
+            if (item.value === 'no-results') {
+              return <NoResultsItem query={query} />;
+            }
+
+            const { hit } = item;
+
+            if (isProductHit(hit)) {
+              return (
+                <ErrorBoundary
+                  fallback={
+                    <Text size="sm" c="dimmed">
+                      Product unavailable
+                    </Text>
+                  }
+                >
+                  <ProductItem hit={hit} />
+                </ErrorBoundary>
+              );
+            }
+            if (isArticleHit(hit)) {
+              return (
+                <ErrorBoundary
+                  fallback={
+                    <Text size="sm" c="dimmed">
+                      Article unavailable
+                    </Text>
+                  }
+                >
+                  <ArticleItem hit={hit} />
+                </ErrorBoundary>
+              );
+            }
+            if (isFAQHit(hit)) {
+              return (
+                <ErrorBoundary
+                  fallback={
+                    <Text size="sm" c="dimmed">
+                      FAQ unavailable
+                    </Text>
+                  }
+                >
+                  <FAQItem hit={hit} />
+                </ErrorBoundary>
+              );
+            }
+            if (isQuerySuggestionHit(hit)) {
+              return (
+                <ErrorBoundary
+                  fallback={
+                    <Text size="sm" c="dimmed">
+                      Suggestion unavailable
+                    </Text>
+                  }
+                >
+                  <QuerySuggestionItem hit={hit} />
+                </ErrorBoundary>
+              );
+            }
+
+            return <Text size="sm">{item.label}</Text>;
+          } catch (err) {
+            console.error('Render option error:', err);
+            return (
+              <Text size="sm" c="dimmed">
+                Item unavailable
+              </Text>
+            );
           }
-        }, 150);
-      }}
-    />
+        }}
+        leftSection={<IconSearch size={16} stroke={1.5} />}
+        rightSection={loading ? <Loader size="xs" /> : null}
+        size={size}
+        visibleFrom={visibleFrom}
+        dropdownOpened={shouldShowDropdown}
+        withScrollArea={false}
+        maxDropdownHeight={400}
+        comboboxProps={{
+          withinPortal: true,
+          shadow: 'md',
+          radius: 'md',
+        }}
+        onBlur={() => {
+          try {
+            // Clear search when focus is lost
+            setTimeout(() => {
+              if (document.activeElement?.tagName !== 'INPUT') {
+                setQuery('');
+              }
+            }, 150);
+          } catch (err) {
+            console.error('Blur handler error:', err);
+            setInternalError('Focus handling failed');
+          }
+        }}
+        data-testid={testId}
+      />
+    </ErrorBoundary>
   );
 }
 

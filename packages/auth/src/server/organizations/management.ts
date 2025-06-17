@@ -10,7 +10,59 @@ import { auth } from '../auth';
 import type { OrganizationRole } from '../../shared/types';
 
 /**
- * Server-side helper to add a member directly to an organization
+ * Sets the active organization for the current user session
+ */
+export async function setActiveOrganization(organizationId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    await auth.api.setActiveOrganization({
+      body: { organizationId },
+      headers: await headers(),
+    });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Set active organization error:', error);
+    return {
+      error: 'Failed to set active organization',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Gets the full organization data including members for current session
+ */
+export async function getFullOrganization(organizationId?: string): Promise<{
+  success: boolean;
+  organization?: any;
+  error?: string;
+}> {
+  try {
+    const result = await auth.api.getFullOrganization({
+      query: organizationId ? { organizationId } : {},
+      headers: await headers(),
+    });
+
+    return {
+      success: true,
+      organization: result,
+    };
+  } catch (error) {
+    console.error('Get full organization error:', error);
+    return {
+      error: 'Failed to get organization',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Server-side helper to add a member directly to an organization using better-auth native method
  */
 export async function addMember(data: {
   userId: string;
@@ -22,18 +74,19 @@ export async function addMember(data: {
   error?: string;
 }> {
   try {
-    const result = await auth.api.addMember({
+    // Use better-auth native addMember API
+    await auth.api.addMember({
       body: {
+        userId: data.userId,
         organizationId: data.organizationId,
         role: data.role,
-        teamId: data.teamId,
-        userId: data.userId,
+        ...(data.teamId && { teamId: data.teamId }),
       },
+      headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      success: result.success || false,
+      success: true,
     };
   } catch (error) {
     console.error('Add member error:', error);
@@ -45,23 +98,24 @@ export async function addMember(data: {
 }
 
 /**
- * Removes a member from an organization
+ * Removes a member from an organization using better-auth native method
  */
 export async function removeMember(data: { userId: string; organizationId: string }): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.removeMember({
+    // Use better-auth native removeMember API
+    await auth.api.removeMember({
       body: {
+        memberIdOrEmail: data.userId,
         organizationId: data.organizationId,
-        userId: data.userId,
       },
+      headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      success: result.success || false,
+      success: true,
     };
   } catch (error) {
     console.error('Remove member error:', error);
@@ -73,7 +127,7 @@ export async function removeMember(data: { userId: string; organizationId: strin
 }
 
 /**
- * Updates a member's role in an organization
+ * Updates a member's role in an organization using better-auth native method
  */
 export async function updateMemberRole(data: {
   userId: string;
@@ -84,17 +138,17 @@ export async function updateMemberRole(data: {
   error?: string;
 }> {
   try {
-    const result = await auth.api.updateMemberRole({
+    // Use better-auth native updateMemberRole API
+    await auth.api.updateMemberRole({
       body: {
-        organizationId: data.organizationId,
+        memberId: data.userId,
         role: data.role,
-        userId: data.userId,
       },
+      headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      success: result.success || false,
+      success: true,
     };
   } catch (error) {
     console.error('Update member role error:', error);
@@ -106,7 +160,7 @@ export async function updateMemberRole(data: {
 }
 
 /**
- * Creates a new organization
+ * Creates a new organization using better-auth native method
  */
 export async function createOrganization(data: {
   name: string;
@@ -118,19 +172,19 @@ export async function createOrganization(data: {
   error?: string;
 }> {
   try {
+    // Use better-auth native createOrganization API
     const result = await auth.api.createOrganization({
       body: {
         name: data.name,
-        description: data.description,
-        slug: data.slug,
+        slug: data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
+        metadata: data.description ? { description: data.description } : {},
       },
       headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      organization: result.organization,
-      success: result.success || false,
+      organization: result,
+      success: true,
     };
   } catch (error) {
     console.error('Create organization error:', error);
@@ -142,7 +196,7 @@ export async function createOrganization(data: {
 }
 
 /**
- * Updates an organization
+ * Updates an organization using better-auth native method
  */
 export async function updateOrganization(data: {
   organizationId: string;
@@ -155,20 +209,22 @@ export async function updateOrganization(data: {
   error?: string;
 }> {
   try {
+    // Use better-auth native updateOrganization API
     const result = await auth.api.updateOrganization({
       body: {
-        name: data.name,
-        description: data.description,
         organizationId: data.organizationId,
-        slug: data.slug,
+        data: {
+          ...(data.name && { name: data.name }),
+          ...(data.slug && { slug: data.slug }),
+          ...(data.description !== undefined && { metadata: { description: data.description } }),
+        },
       },
       headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      organization: result.organization,
-      success: result.success || false,
+      organization: result,
+      success: true,
     };
   } catch (error) {
     console.error('Update organization error:', error);
@@ -180,21 +236,21 @@ export async function updateOrganization(data: {
 }
 
 /**
- * Deletes an organization
+ * Deletes an organization using better-auth native method
  */
 export async function deleteOrganization(organizationId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.deleteOrganization({
+    // Use better-auth native deleteOrganization API
+    await auth.api.deleteOrganization({
       body: { organizationId },
       headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      success: result.success || false,
+      success: true,
     };
   } catch (error) {
     console.error('Delete organization error:', error);
@@ -206,7 +262,7 @@ export async function deleteOrganization(organizationId: string): Promise<{
 }
 
 /**
- * Invites a user to an organization
+ * Invites a user to an organization using better-auth native method
  */
 export async function inviteUser(data: {
   email: string;
@@ -220,21 +276,21 @@ export async function inviteUser(data: {
   error?: string;
 }> {
   try {
+    // Use better-auth native inviteUser API
     const result = await auth.api.inviteUser({
       body: {
         email: data.email,
-        message: data.message,
         organizationId: data.organizationId,
         role: data.role,
-        teamId: data.teamId,
+        ...(data.teamId && { teamId: data.teamId }),
+        ...(data.message && { message: data.message }),
       },
       headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      invitation: result.invitation,
-      success: result.success || false,
+      invitation: result,
+      success: true,
     };
   } catch (error) {
     console.error('Invite user error:', error);
@@ -246,21 +302,21 @@ export async function inviteUser(data: {
 }
 
 /**
- * Cancels an organization invitation
+ * Cancels an organization invitation using better-auth native method
  */
 export async function cancelInvitation(invitationId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.cancelInvitation({
+    // Use better-auth native cancelInvitation API
+    await auth.api.cancelInvitation({
       body: { invitationId },
       headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      success: result.success || false,
+      success: true,
     };
   } catch (error) {
     console.error('Cancel invitation error:', error);
@@ -272,7 +328,7 @@ export async function cancelInvitation(invitationId: string): Promise<{
 }
 
 /**
- * Accepts an organization invitation
+ * Accepts an organization invitation using better-auth native method
  */
 export async function acceptInvitation(invitationId: string): Promise<{
   success: boolean;
@@ -280,15 +336,15 @@ export async function acceptInvitation(invitationId: string): Promise<{
   error?: string;
 }> {
   try {
+    // Use better-auth native acceptInvitation API
     const result = await auth.api.acceptInvitation({
       body: { invitationId },
       headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      organizationId: result.organizationId,
-      success: result.success || false,
+      organizationId: result?.invitation?.organizationId,
+      success: true,
     };
   } catch (error) {
     console.error('Accept invitation error:', error);
@@ -300,21 +356,21 @@ export async function acceptInvitation(invitationId: string): Promise<{
 }
 
 /**
- * Declines an organization invitation
+ * Declines an organization invitation using better-auth native method
  */
 export async function declineInvitation(invitationId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.declineInvitation({
+    // Use better-auth native rejectInvitation API
+    await auth.api.rejectInvitation({
       body: { invitationId },
       headers: await headers(),
     });
 
     return {
-      error: result.error?.message,
-      success: result.success || false,
+      success: true,
     };
   } catch (error) {
     console.error('Decline invitation error:', error);
@@ -326,7 +382,7 @@ export async function declineInvitation(invitationId: string): Promise<{
 }
 
 /**
- * Lists organization invitations
+ * Lists organization invitations using better-auth native method
  */
 export async function listInvitations(organizationId?: string): Promise<{
   success: boolean;
@@ -334,15 +390,15 @@ export async function listInvitations(organizationId?: string): Promise<{
   error?: string;
 }> {
   try {
+    // Use better-auth native listInvitations API
     const result = await auth.api.listInvitations({
+      query: organizationId ? { organizationId } : {},
       headers: await headers(),
-      ...(organizationId && { query: { organizationId } }),
     });
 
     return {
-      error: result.error?.message,
-      invitations: result.invitations,
-      success: result.success || false,
+      invitations: Array.isArray(result) ? result : [result],
+      success: true,
     };
   } catch (error) {
     console.error('List invitations error:', error);
@@ -354,7 +410,7 @@ export async function listInvitations(organizationId?: string): Promise<{
 }
 
 /**
- * Gets organization members
+ * Gets organization members using better-auth native method
  */
 export async function getOrganizationMembers(organizationId: string): Promise<{
   success: boolean;
@@ -362,15 +418,22 @@ export async function getOrganizationMembers(organizationId: string): Promise<{
   error?: string;
 }> {
   try {
-    const result = await auth.api.getMembers({
+    // Use better-auth native getFullOrganization which includes members
+    const result = await auth.api.getFullOrganization({
       headers: await headers(),
       query: { organizationId },
     });
 
+    if (!result?.organization) {
+      return {
+        error: 'Organization not found or access denied',
+        success: false,
+      };
+    }
+
     return {
-      error: result.error?.message,
-      members: result.members,
-      success: result.success || false,
+      members: result.members || [],
+      success: true,
     };
   } catch (error) {
     console.error('Get organization members error:', error);
@@ -402,26 +465,30 @@ export async function bulkInviteUsers(data: {
 }> {
   try {
     const results = await Promise.allSettled(
-      data.emails.map(email =>
+      data.emails.map((email) =>
         inviteUser({
           email,
           organizationId: data.organizationId,
           role: data.role,
           teamId: data.teamId,
           message: data.message,
-        })
-      )
+        }),
+      ),
     );
 
     const mappedResults = results.map((result, index) => ({
       email: data.emails[index],
       success: result.status === 'fulfilled' ? result.value.success : false,
       invitation: result.status === 'fulfilled' ? result.value.invitation : undefined,
-      error: result.status === 'fulfilled' ? result.value.error : 
-             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+      error:
+        result.status === 'fulfilled'
+          ? result.value.error
+          : result.status === 'rejected'
+            ? result.reason?.message
+            : 'Unknown error',
     }));
 
-    const successCount = mappedResults.filter(r => r.success).length;
+    const successCount = mappedResults.filter((r) => r.success).length;
 
     return {
       success: successCount > 0,
@@ -453,22 +520,26 @@ export async function bulkRemoveMembers(data: {
 }> {
   try {
     const results = await Promise.allSettled(
-      data.userIds.map(userId =>
+      data.userIds.map((userId) =>
         removeMember({
           userId,
           organizationId: data.organizationId,
-        })
-      )
+        }),
+      ),
     );
 
     const mappedResults = results.map((result, index) => ({
       userId: data.userIds[index],
       success: result.status === 'fulfilled' ? result.value.success : false,
-      error: result.status === 'fulfilled' ? result.value.error : 
-             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+      error:
+        result.status === 'fulfilled'
+          ? result.value.error
+          : result.status === 'rejected'
+            ? result.reason?.message
+            : 'Unknown error',
     }));
 
-    const successCount = mappedResults.filter(r => r.success).length;
+    const successCount = mappedResults.filter((r) => r.success).length;
 
     return {
       success: successCount > 0,
@@ -503,23 +574,27 @@ export async function bulkUpdateMemberRoles(data: {
 }> {
   try {
     const results = await Promise.allSettled(
-      data.updates.map(update =>
+      data.updates.map((update) =>
         updateMemberRole({
           userId: update.userId,
           organizationId: data.organizationId,
           role: update.role,
-        })
-      )
+        }),
+      ),
     );
 
     const mappedResults = results.map((result, index) => ({
       userId: data.updates[index].userId,
       success: result.status === 'fulfilled' ? result.value.success : false,
-      error: result.status === 'fulfilled' ? result.value.error : 
-             result.status === 'rejected' ? result.reason?.message : 'Unknown error',
+      error:
+        result.status === 'fulfilled'
+          ? result.value.error
+          : result.status === 'rejected'
+            ? result.reason?.message
+            : 'Unknown error',
     }));
 
-    const successCount = mappedResults.filter(r => r.success).length;
+    const successCount = mappedResults.filter((r) => r.success).length;
 
     return {
       success: successCount > 0,
@@ -572,12 +647,10 @@ export async function getOrganizationStatistics(organizationId: string): Promise
 
     // Calculate statistics
     const totalMembers = members.length;
-    const activeMembers = members.filter((member: any) => 
-      member.user && !member.user.banned
+    const activeMembers = members.filter(
+      (member: any) => member.user && !member.user.banned,
     ).length;
-    const pendingInvitations = invitations.filter((inv: any) => 
-      inv.status === 'pending'
-    ).length;
+    const pendingInvitations = invitations.filter((inv: any) => inv.status === 'pending').length;
 
     // Count members by role
     const membersByRole = members.reduce((acc: Record<string, number>, member: any) => {

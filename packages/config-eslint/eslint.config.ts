@@ -1,8 +1,8 @@
-// eslint.config.ts
-import baseConfig from './index.js';
-
 // @ts-ignore - eslint doesn't have type definitions
-import type { Linter } from 'eslint';
+import { Linter } from 'eslint';
+
+// eslint.config.ts
+import baseConfig from './index';
 
 const config: Linter.FlatConfig[] = [
   {

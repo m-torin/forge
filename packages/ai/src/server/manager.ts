@@ -13,7 +13,7 @@ import {
 import { createDirectAnthropicProvider } from './providers/direct-anthropic';
 import { createDirectOpenAIProvider } from './providers/direct-openai';
 
-import type { AIManagerConfig } from '../shared/types';
+import { AIManagerConfig } from '../shared/types';
 
 export class ServerAIManager extends AIManager {
   constructor(config?: AIManagerConfig) {
@@ -27,7 +27,7 @@ export class ServerAIManager extends AIManager {
     const errors = validateConfig(config);
     if (errors.length > 0) {
       throw new Error(
-        `Configuration validation failed:\n${errors.map((e) => `  - ${e}`).join('\n')}`,
+        `Configuration validation failed:\n${errors.map((e: any) => `  - ${e}`).join('\n')}`,
       );
     }
 
@@ -55,8 +55,9 @@ export class ServerAIManager extends AIManager {
           registeredCount++;
         }
       }
-    } catch (error) {
-      console.warn('Failed to register OpenAI AI SDK provider:', error);
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to register OpenAI AI SDK provider: ', error);
     }
 
     try {
@@ -66,8 +67,9 @@ export class ServerAIManager extends AIManager {
           registeredCount++;
         }
       }
-    } catch (error) {
-      console.warn('Failed to register Anthropic AI SDK provider:', error);
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to register Anthropic AI SDK provider: ', error);
     }
 
     try {
@@ -77,8 +79,9 @@ export class ServerAIManager extends AIManager {
           registeredCount++;
         }
       }
-    } catch (error) {
-      console.warn('Failed to register Google AI SDK provider:', error);
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to register Google AI SDK provider: ', error);
     }
 
     if (registeredCount === 0) {
@@ -87,6 +90,7 @@ export class ServerAIManager extends AIManager {
       );
     }
 
+    // eslint-disable-next-line no-console
     console.log(`AI Manager initialized with ${registeredCount} provider(s)`);
     return manager;
   }

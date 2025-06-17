@@ -164,215 +164,221 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
     <ErrorBoundary>
       <PerformanceMonitor />
       <AppShell
-      styles={{
-        main: {
-          background:
-            colorScheme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
-        },
-      }}
-      header={{ height: 60 }}
-      padding="md"
-    >
-      <AppShell.Header
-        styles={{ header: { borderBottom: '1px solid var(--mantine-color-gray-2)' } }}
+        styles={{
+          main: {
+            background:
+              colorScheme === 'dark'
+                ? 'var(--mantine-color-dark-8)'
+                : 'var(--mantine-color-gray-0)',
+          },
+        }}
+        header={{ height: 60 }}
+        padding="md"
       >
-        <Group h="100%" justify="space-between" px="md">
-          <Group>
-            <Title order={3}>Backstage</Title>
+        <AppShell.Header
+          styles={{ header: { borderBottom: '1px solid var(--mantine-color-gray-2)' } }}
+        >
+          <Group h="100%" justify="space-between" px="md">
+            <Group>
+              <Title order={3}>Backstage</Title>
 
-            <Group gap={0}>
-              {navigationItems.map((item) => (
-                <Menu
-                  key={item.label}
-                  transitionProps={{ exitDuration: 0 }}
-                  withinPortal
-                  trigger="hover"
-                >
-                  <Menu.Target>
-                    <UnstyledButton
-                      onClick={() => router.push(item.href as any)}
-                      styles={{
-                        root: {
-                          '&:hover': {
-                            backgroundColor: 'var(--mantine-color-gray-0)',
+              <Group gap={0}>
+                {navigationItems.map((item) => (
+                  <Menu
+                    key={item.label}
+                    transitionProps={{ exitDuration: 0 }}
+                    withinPortal
+                    trigger="hover"
+                  >
+                    <Menu.Target>
+                      <UnstyledButton
+                        onClick={() => router.push(item.href as any)}
+                        styles={{
+                          root: {
+                            '&:hover': {
+                              backgroundColor: 'var(--mantine-color-gray-0)',
+                            },
+                            backgroundColor:
+                              pathname === item.href ||
+                              (item.href !== '/' && pathname.startsWith(item.href))
+                                ? `var(--mantine-color-${item.color}-0)`
+                                : undefined,
+                            borderRadius: rem(4),
+                            color:
+                              pathname === item.href ||
+                              (item.href !== '/' && pathname.startsWith(item.href))
+                                ? `var(--mantine-color-${item.color}-6)`
+                                : undefined,
                           },
-                          backgroundColor:
-                            pathname === item.href ||
-                            (item.href !== '/' && pathname.startsWith(item.href))
-                              ? `var(--mantine-color-${item.color}-0)`
-                              : undefined,
-                          borderRadius: rem(4),
-                          color:
-                            pathname === item.href ||
-                            (item.href !== '/' && pathname.startsWith(item.href))
-                              ? `var(--mantine-color-${item.color}-6)`
-                              : undefined,
-                        },
-                      }}
-                      px="md"
-                      py="sm"
-                    >
-                      <Group gap="xs">
-                        <item.icon size={16} />
-                        <Text fw={500} size="sm">
-                          {item.label}
-                        </Text>
-                        {item.items && <IconChevronDown size={14} />}
-                      </Group>
-                    </UnstyledButton>
-                  </Menu.Target>
-                  {item.items && (
-                    <Menu.Dropdown>
-                      {item.items.map((subItem) => (
-                        <Menu.Item
-                          key={subItem.href}
-                          leftSection={<div style={{ width: rem(14) }} />}
-                          onClick={() => router.push(subItem.href as any)}
-                        >
-                          {subItem.label}
-                        </Menu.Item>
-                      ))}
-                    </Menu.Dropdown>
-                  )}
-                </Menu>
-              ))}
-            </Group>
-          </Group>
-
-          <Group>
-            <Tooltip label="Search (⌘K)">
-              <ActionIcon
-                color="gray"
-                onClick={() => setSearchOpened(true)}
-                size="lg"
-                variant="subtle"
-              >
-                <IconSearch size={20} />
-              </ActionIcon>
-            </Tooltip>
-
-            <Tooltip label="Notifications">
-              <ActionIcon color="gray" size="lg" variant="subtle">
-                <IconBell size={20} />
-              </ActionIcon>
-            </Tooltip>
-
-            <Tooltip label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}>
-              <ActionIcon
-                color="gray"
-                onClick={() => toggleColorScheme()}
-                size="lg"
-                variant="subtle"
-              >
-                {colorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
-              </ActionIcon>
-            </Tooltip>
-
-            <Divider orientation="vertical" />
-
-            <Menu transitionProps={{ exitDuration: 0 }} withinPortal trigger="hover">
-              <Menu.Target>
-                <Button color="gray" rightSection={<IconChevronDown size={14} />} variant="subtle">
-                  Admin
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>Administration</Menu.Label>
-                {adminItems.map((item) =>
-                  item.items ? (
-                    <Menu key={item.label} position="right-start" withinPortal trigger="hover">
-                      <Menu.Target>
-                        <Menu.Item
-                          leftSection={
-                            <ThemeIcon color={item.color} size="sm" variant="light">
-                              <item.icon size={14} />
-                            </ThemeIcon>
-                          }
-                          rightSection={
-                            <IconChevronDown style={{ transform: 'rotate(-90deg)' }} size={14} />
-                          }
-                        >
-                          {item.label}
-                        </Menu.Item>
-                      </Menu.Target>
+                        }}
+                        px="md"
+                        py="sm"
+                      >
+                        <Group gap="xs">
+                          <item.icon size={16} />
+                          <Text fw={500} size="sm">
+                            {item.label}
+                          </Text>
+                          {item.items && <IconChevronDown size={14} />}
+                        </Group>
+                      </UnstyledButton>
+                    </Menu.Target>
+                    {item.items && (
                       <Menu.Dropdown>
                         {item.items.map((subItem) => (
                           <Menu.Item
                             key={subItem.href}
+                            leftSection={<div style={{ width: rem(14) }} />}
                             onClick={() => router.push(subItem.href as any)}
                           >
                             {subItem.label}
                           </Menu.Item>
                         ))}
                       </Menu.Dropdown>
-                    </Menu>
-                  ) : (
-                    <Menu.Item
-                      key={item.label}
-                      leftSection={
-                        <ThemeIcon color={item.color} size="sm" variant="light">
-                          <item.icon size={14} />
-                        </ThemeIcon>
-                      }
-                      onClick={() => router.push(item.href as any)}
-                    >
-                      {item.label}
-                    </Menu.Item>
-                  ),
-                )}
-                <Menu.Divider />
-                <Menu.Item
-                  color="red"
-                  leftSection={<IconLogout size={14} />}
-                  onClick={() => router.push('/' as any)}
+                    )}
+                  </Menu>
+                ))}
+              </Group>
+            </Group>
+
+            <Group>
+              <Tooltip label="Search (⌘K)">
+                <ActionIcon
+                  color="gray"
+                  onClick={() => setSearchOpened(true)}
+                  size="lg"
+                  variant="subtle"
                 >
-                  Logout
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+                  <IconSearch size={20} />
+                </ActionIcon>
+              </Tooltip>
+
+              <Tooltip label="Notifications">
+                <ActionIcon color="gray" size="lg" variant="subtle">
+                  <IconBell size={20} />
+                </ActionIcon>
+              </Tooltip>
+
+              <Tooltip label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}>
+                <ActionIcon
+                  color="gray"
+                  onClick={() => toggleColorScheme()}
+                  size="lg"
+                  variant="subtle"
+                >
+                  {colorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
+                </ActionIcon>
+              </Tooltip>
+
+              <Divider orientation="vertical" />
+
+              <Menu transitionProps={{ exitDuration: 0 }} withinPortal trigger="hover">
+                <Menu.Target>
+                  <Button
+                    color="gray"
+                    rightSection={<IconChevronDown size={14} />}
+                    variant="subtle"
+                  >
+                    Admin
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>Administration</Menu.Label>
+                  {adminItems.map((item) =>
+                    item.items ? (
+                      <Menu key={item.label} position="right-start" withinPortal trigger="hover">
+                        <Menu.Target>
+                          <Menu.Item
+                            leftSection={
+                              <ThemeIcon color={item.color} size="sm" variant="light">
+                                <item.icon size={14} />
+                              </ThemeIcon>
+                            }
+                            rightSection={
+                              <IconChevronDown style={{ transform: 'rotate(-90deg)' }} size={14} />
+                            }
+                          >
+                            {item.label}
+                          </Menu.Item>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          {item.items.map((subItem) => (
+                            <Menu.Item
+                              key={subItem.href}
+                              onClick={() => router.push(subItem.href as any)}
+                            >
+                              {subItem.label}
+                            </Menu.Item>
+                          ))}
+                        </Menu.Dropdown>
+                      </Menu>
+                    ) : (
+                      <Menu.Item
+                        key={item.label}
+                        leftSection={
+                          <ThemeIcon color={item.color} size="sm" variant="light">
+                            <item.icon size={14} />
+                          </ThemeIcon>
+                        }
+                        onClick={() => router.push(item.href as any)}
+                      >
+                        {item.label}
+                      </Menu.Item>
+                    ),
+                  )}
+                  <Menu.Divider />
+                  <Menu.Item
+                    color="red"
+                    leftSection={<IconLogout size={14} />}
+                    onClick={() => router.push('/' as any)}
+                  >
+                    Logout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            </Group>
           </Group>
-        </Group>
-      </AppShell.Header>
+        </AppShell.Header>
 
-      <AppShell.Main>
-        <Box className="page-transition">
-          {pathname !== '/' && (
-            <Breadcrumbs
-              separator="›"
-              styles={{
-                root: {
-                  fontSize: rem(14),
-                },
-                separator: {
-                  marginLeft: rem(6),
-                  marginRight: rem(6),
-                },
-              }}
-              mb="md"
-            >
-              {getBreadcrumbs().map((item, index) => (
-                <Anchor
-                  key={item.href}
-                  href={item.href as any}
-                  component={Link}
-                  style={{
-                    fontWeight: index === getBreadcrumbs().length - 1 ? 500 : undefined,
-                    textDecoration: 'none',
-                  }}
-                  c={index === getBreadcrumbs().length - 1 ? 'dimmed' : undefined}
-                  size="sm"
-                >
-                  {item.title}
-                </Anchor>
-              ))}
-            </Breadcrumbs>
-          )}
-          {children}
-        </Box>
-      </AppShell.Main>
+        <AppShell.Main>
+          <Box className="page-transition">
+            {pathname !== '/' && (
+              <Breadcrumbs
+                separator="›"
+                styles={{
+                  root: {
+                    fontSize: rem(14),
+                  },
+                  separator: {
+                    marginLeft: rem(6),
+                    marginRight: rem(6),
+                  },
+                }}
+                mb="md"
+              >
+                {getBreadcrumbs().map((item: any, index) => (
+                  <Anchor
+                    key={item.href}
+                    href={item.href as any}
+                    component={Link}
+                    style={{
+                      fontWeight: index === getBreadcrumbs().length - 1 ? 500 : undefined,
+                      textDecoration: 'none',
+                    }}
+                    c={index === getBreadcrumbs().length - 1 ? 'dimmed' : undefined}
+                    size="sm"
+                  >
+                    {item.title}
+                  </Anchor>
+                ))}
+              </Breadcrumbs>
+            )}
+            {children}
+          </Box>
+        </AppShell.Main>
 
-      <SearchModal onClose={() => setSearchOpened(false)} opened={searchOpened} />
-    </AppShell>
+        <SearchModal onClose={() => setSearchOpened(false)} opened={searchOpened} />
+      </AppShell>
     </ErrorBoundary>
   );
 }

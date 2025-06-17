@@ -1,4 +1,10 @@
-import { ButtonPrimary, Divider, Input, Label, SectionPromo1, SocialsList, Textarea } from '@repo/design-system/ciseco'
+import { Divider } from '@/components/Divider'
+import Label from '@/components/Label/Label'
+import SectionPromo1 from '@/components/SectionPromo1'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import Input from '@/shared/Input/Input'
+import SocialsList from '@/shared/SocialsList/SocialsList'
+import Textarea from '@/shared/Textarea/Textarea'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -25,19 +31,19 @@ const PageContact = () => {
   return (
     <div className="py-16 lg:py-24">
       <div className="container mx-auto flex max-w-6xl flex-col gap-y-16 lg:gap-y-28">
-        <h1 className="flex items-center justify-center text-4xl font-semibold leading-[1.15] tracking-tight text-neutral-900 md:text-5xl dark:text-neutral-100">
+        <h1 className="flex items-center justify-center text-4xl leading-[1.15] font-semibold tracking-tight text-neutral-900 md:text-5xl dark:text-neutral-100">
           Contact
         </h1>
         <div className="grid shrink-0 grid-cols-1 gap-12 md:grid-cols-2">
           <div className="flex max-w-sm flex-col gap-y-8">
             {info.map((item, index) => (
               <div key={index}>
-                <p className="text-sm font-semibold uppercase tracking-wider dark:text-neutral-200">{item.title}</p>
+                <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">{item.title}</p>
                 <span className="mt-4 block text-neutral-500 dark:text-neutral-400">{item.desc}</span>
               </div>
             ))}
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wider dark:text-neutral-200">🌏 SOCIALS</p>
+              <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">🌏 SOCIALS</p>
               <SocialsList className="mt-4" />
             </div>
           </div>

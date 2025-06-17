@@ -4,8 +4,8 @@ import { createAuthHelpers } from '@repo/testing/auth-helpers';
 
 const authHelpers = createAuthHelpers('http://localhost:3300');
 
-test.describe('Backstage Auth - Better Auth Integration', () => {
-  test('can access sign-in page', async ({ page }) => {
+test.describe('Backstage Auth - Better Auth Integration', (_: any) => {
+  test('can access sign-in page', async ({ page }: any) => {
     await page.goto('/sign-in');
 
     // Check for Better Auth sign-in form elements
@@ -26,7 +26,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     }
   });
 
-  test('can sign up new admin user', async ({ page }) => {
+  test('can sign up new admin user', async ({ page }: any) => {
     const testUser = authHelpers.createTestUser({
       name: 'Test Admin User',
       email: `admin-${Date.now()}@example.com`,
@@ -46,7 +46,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     expect(isAuthenticated).toBe(true);
   });
 
-  test('can sign in existing user', async ({ page }) => {
+  test('can sign in existing user', async ({ page }: any) => {
     // First create a user
     const testUser = authHelpers.createTestUser({
       email: `admin-signin-${Date.now()}@example.com`,
@@ -72,7 +72,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     await expect(page).toHaveURL(/\/(dashboard|admin)/);
   });
 
-  test('can sign out', async ({ page }) => {
+  test('can sign out', async ({ page }: any) => {
     const testUser = authHelpers.createTestUser();
 
     // Sign in first
@@ -91,7 +91,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     expect(await authHelpers.isSignedIn(page)).toBe(false);
   });
 
-  test('redirects unauthenticated users from protected routes', async ({ page }) => {
+  test('redirects unauthenticated users from protected routes', async ({ page }: any) => {
     // Try to access admin dashboard without authentication
     await page.goto('/dashboard');
 
@@ -107,7 +107,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     }
   });
 
-  test('maintains session across page reloads', async ({ page }) => {
+  test('maintains session across page reloads', async ({ page }: any) => {
     const testUser = authHelpers.createTestUser();
 
     // Sign in
@@ -122,7 +122,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     expect(await authHelpers.isSignedIn(page)).toBe(true);
   });
 
-  test('admin user can access admin features', async ({ page }) => {
+  test('admin user can access admin features', async ({ page }: any) => {
     const testUser = authHelpers.createTestUser({
       email: `admin-features-${Date.now()}@example.com`,
     });
@@ -155,7 +155,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     }
   });
 
-  test('handles authentication errors gracefully', async ({ page }) => {
+  test('handles authentication errors gracefully', async ({ page }: any) => {
     await page.goto('/sign-in');
 
     // Try to sign in with invalid credentials
@@ -186,7 +186,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     }
   });
 
-  test('session expires and redirects to sign-in', async ({ context, page }) => {
+  test('session expires and redirects to sign-in', async ({ context, page }: any) => {
     const testUser = authHelpers.createTestUser();
 
     // Sign in
@@ -202,7 +202,7 @@ test.describe('Backstage Auth - Better Auth Integration', () => {
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
-  test('can use Better Auth API endpoints', async ({ page }) => {
+  test('can use Better Auth API endpoints', async ({ page }: any) => {
     // Test that Better Auth API endpoints are accessible
     const apiEndpoints = [
       '/api/auth/session',

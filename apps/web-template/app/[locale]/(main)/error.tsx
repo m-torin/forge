@@ -32,15 +32,15 @@ export default function MainError({
             />
           </svg>
         </div>
-        
+
         <h2 className="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
           Page failed to load
         </h2>
-        
+
         <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           We&apos;re having trouble loading this content. Please try again.
         </p>
-        
+
         <Button onClick={reset} size="sm" variant="filled">
           Retry
         </Button>

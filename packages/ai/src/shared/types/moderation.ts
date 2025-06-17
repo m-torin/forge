@@ -1,38 +1,38 @@
+export interface BatchContentAnalysisRequest {
+  analysisType: 'classification' | 'extraction' | 'moderation' | 'sentiment';
+  contents: {
+    content: string;
+    contentType: 'image_url' | 'text';
+    id: string;
+    metadata?: any;
+  }[];
+  customPrompt?: string;
+  rules?: any;
+}
+
 export interface ContentModerationRequest {
   content: string;
-  contentType: 'text' | 'image_url';
+  contentType: 'image_url' | 'text';
   customPrompt?: string;
   moderationRules: {
-    checkToxicity: boolean;
-    checkSpam: boolean;
     checkAdultContent: boolean;
     checkHateSpeech: boolean;
+    checkSpam: boolean;
+    checkToxicity: boolean;
     customRules?: string[];
   };
 }
 
 export interface ContentModerationResult {
   categories: {
-    toxicity: { flagged: boolean; confidence: number };
-    spam: { flagged: boolean; confidence: number };
-    adultContent: { flagged: boolean; confidence: number };
-    hateSpeech: { flagged: boolean; confidence: number };
-    custom?: { rule: string; flagged: boolean; confidence: number }[];
+    adultContent: { confidence: number; flagged: boolean };
+    custom?: { confidence: number; flagged: boolean; rule: string }[];
+    hateSpeech: { confidence: number; flagged: boolean };
+    spam: { confidence: number; flagged: boolean };
+    toxicity: { confidence: number; flagged: boolean };
   };
   confidence: number;
   explanation: string;
   safe: boolean;
   violations: string[];
-}
-
-export interface BatchContentAnalysisRequest {
-  analysisType: 'moderation' | 'sentiment' | 'classification' | 'extraction';
-  contents: {
-    id: string;
-    content: string;
-    contentType: 'text' | 'image_url';
-    metadata?: any;
-  }[];
-  customPrompt?: string;
-  rules?: any;
 }

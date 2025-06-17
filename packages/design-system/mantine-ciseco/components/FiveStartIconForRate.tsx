@@ -3,7 +3,7 @@ import { StarIcon } from '@heroicons/react/24/solid';
 import React, { type FC, useEffect } from 'react';
 import { useState } from 'react';
 
-export interface FiveStartIconForRateProps {
+export interface FiveStartIconForRateProps extends Record<string, any> {
   className?: string;
   defaultPoint?: number;
   iconClass?: string;
@@ -23,19 +23,19 @@ const FiveStartIconForRate: FC<FiveStartIconForRateProps> = ({
 
   return (
     <div
-      data-nc-id="FiveStartIconForRate"
       className={`nc-FiveStartIconForRate flex items-center text-neutral-300 ${className}`}
+      data-nc-id="FiveStartIconForRate"
     >
-      {[1, 2, 3, 4, 5].map((item) => {
+      {[1, 2, 3, 4, 5].map((item: any) => {
         return (
           <StarIcon
             key={item}
-            onClick={() => setPoint(() => item)}
-            onMouseEnter={() => setCurrentHover(() => item)}
-            onMouseLeave={() => setCurrentHover(() => 0)}
             className={`${
               point >= item || currentHover >= item ? 'text-yellow-500' : ''
             } ${iconClass}`}
+            onClick={() => setPoint(() => item)}
+            onMouseEnter={() => setCurrentHover(() => item)}
+            onMouseLeave={() => setCurrentHover(() => 0)}
           />
         );
       })}

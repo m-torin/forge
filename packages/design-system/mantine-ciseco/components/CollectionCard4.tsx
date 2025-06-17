@@ -9,7 +9,7 @@ import { type FC } from 'react';
 import { type TCollection } from '../data/types';
 import { useLocalizeHref } from '../hooks/useLocale';
 
-interface CollectionCard4Props {
+interface CollectionCard4Props extends Record<string, any> {
   bgSvgUrl?: string;
   className?: string;
   collection: TCollection;
@@ -17,29 +17,29 @@ interface CollectionCard4Props {
 }
 
 const CollectionCard4: FC<CollectionCard4Props> = ({
-  'data-testid': testId = 'collection-card-4',
   bgSvgUrl,
   className,
   collection,
+  'data-testid': testId = 'collection-card-4',
 }) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection || !collection.handle) {
+  if (!collection.handle) {
     return null;
   }
   return (
     <div
-      data-testid={testId}
       className={clsx(
         'group relative overflow-hidden rounded-3xl bg-white p-5 transition-shadow hover:nc-shadow-lg sm:p-8 dark:bg-neutral-900',
         className,
       )}
+      data-testid={testId}
     >
       {bgSvgUrl && (
         <div className="absolute end-0 bottom-0 size-52 sm:size-64 xl:size-72">
           <Image
-            className="object-contain object-bottom-right opacity-60"
             alt="bgSVG"
+            className="object-contain object-bottom-right opacity-60"
             fill
             src={bgSvgUrl}
           />
@@ -54,11 +54,11 @@ const CollectionCard4: FC<CollectionCard4Props> = ({
             >
               <div className="absolute inset-4">
                 <Image
+                  alt={collection.image.alt ?? ''}
                   className="object-cover"
-                  alt={collection.image?.alt || ''}
                   fill
                   sizes="80px"
-                  src={collection.image?.src || ''}
+                  src={collection.image.src}
                 />
               </div>
             </div>
@@ -68,12 +68,12 @@ const CollectionCard4: FC<CollectionCard4Props> = ({
 
         <div className="mt-12">
           <p
-            dangerouslySetInnerHTML={{ __html: collection.sortDescription || '' }}
             className="text-sm text-neutral-500 dark:text-neutral-400"
+            dangerouslySetInnerHTML={{ __html: collection.sortDescription ?? '' }}
           />
           <h2
-            dangerouslySetInnerHTML={{ __html: collection.title || '' }}
             className="mt-2 text-2xl font-semibold sm:text-3xl"
+            dangerouslySetInnerHTML={{ __html: collection.title || '' }}
           />
         </div>
 
@@ -82,8 +82,8 @@ const CollectionCard4: FC<CollectionCard4Props> = ({
         </p>
 
         <Link
-          href={localizeHref(`/collections/${collection.handle}`)}
           className="absolute inset-0"
+          href={localizeHref(`/collections/${collection.handle}`)}
         />
       </div>
     </div>

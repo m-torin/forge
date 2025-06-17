@@ -1,15 +1,13 @@
 'use client';
 
 import { Modal } from '@mantine/core';
-import { type Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { getNewParam } from '../ListingImageGallery';
+import { ListingGalleryImage } from '../utils/types';
+import { getNewParam } from '../utils/urlUtils';
 
 import SharedModal from './SharedModal';
-
-import type { ListingGalleryImage } from '../utils/types';
 
 export default function ImageGalleryModal({
   images,
@@ -21,7 +19,7 @@ export default function ImageGalleryModal({
   const searchParams = useSearchParams();
   const router = useRouter();
   const thisPathname = usePathname();
-  const photoId = searchParams?.get('photoId');
+  const photoId = searchParams.get('photoId');
   const index = Number(photoId);
 
   const [direction, setDirection] = useState(0);
@@ -31,15 +29,24 @@ export default function ImageGalleryModal({
     onClose && onClose();
   }
 
-  function changePhotoId(newVal: number) {
-    if (newVal > index) {
-      setDirection(1);
-    } else {
-      setDirection(-1);
-    }
-    setCurIndex(newVal);
-    router.push(`${thisPathname}/?${getNewParam({ value: newVal })}` as Route);
-  }
+  const changePhotoId = useCallback(
+    (newVal: number) => {
+      if (newVal > index) {
+        setDirection(1);
+      } else {
+        setDirection(-1);
+      }
+      setCurIndex(newVal);
+      router.push(
+        getNewParam({
+          pathname: thisPathname,
+          searchParams: new URLSearchParams(searchParams.toString()),
+          value: newVal,
+        }),
+      );
+    },
+    [index, router, thisPathname, searchParams],
+  );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -52,19 +59,19 @@ export default function ImageGalleryModal({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [index, images.length]);
+  }, [index, images.length, changePhotoId]);
 
   return (
     <Modal
-      onClose={handleClose}
-      opened={true}
-      withCloseButton={false}
       classNames={{
         body: 'bg-black p-0',
         content: 'bg-black',
         header: 'bg-black',
         root: 'bg-black',
       }}
+      fullScreen
+      opened={true}
+      padding={0}
       styles={{
         body: {
           alignItems: 'center',
@@ -77,16 +84,16 @@ export default function ImageGalleryModal({
           backgroundColor: 'black',
         },
       }}
-      fullScreen
-      padding={0}
+      withCloseButton={false}
+      onClose={handleClose}
     >
       <SharedModal
         changePhotoId={changePhotoId}
         closeModal={handleClose}
         direction={direction}
-        navigation={true}
         images={images}
         index={curIndex}
+        navigation={true}
       />
     </Modal>
   );

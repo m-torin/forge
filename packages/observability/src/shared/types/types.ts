@@ -1,81 +1,84 @@
 /**
  * Core types for the multi-provider observability system
+ * Updated for React 19 and Next.js 15 compatibility
  */
 
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-
-export interface ObservabilityProviderConfig {
-  apiKey?: string; // General API key
-  // Provider-specific required fields
-  dsn?: string; // Sentry DSN
-  projectId?: string; // Project identifier
-  serviceName?: string; // Service/app name
-
-  format?: 'json' | 'pretty' | 'text';
-  // Logging configuration
-  level?: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-
-  // Optional configuration
-  environment?: string;
-  options?: Record<string, any>;
-  profilesSampleRate?: number;
-  release?: string;
-  tracesSampleRate?: number;
-
-  // Allow any other properties for provider-specific config
-  [key: string]: any;
+export interface Breadcrumb {
+  category?: string;
+  data?: Record<string, any>;
+  level?: 'critical' | 'debug' | 'error' | 'info' | 'warning';
+  message?: string;
+  timestamp?: number;
+  type?:
+    | 'debug'
+    | 'default'
+    | 'error'
+    | 'http'
+    | 'info'
+    | 'navigation'
+    | 'query'
+    | 'transaction'
+    | 'ui'
+    | 'user';
 }
 
-export interface ObservabilityProvider {
-  readonly name: string;
-
-  initialize(config: ObservabilityProviderConfig): Promise<void>;
-
-  // Error tracking
-  captureException(error: Error, context?: ObservabilityContext): Promise<void>;
-  captureMessage(
-    message: string,
-    level: 'info' | 'warning' | 'error',
-    context?: ObservabilityContext,
-  ): Promise<void>;
-
-  // Logging
-  log?(level: string, message: string, metadata?: any): Promise<void>;
-
-  startSpan?(name: string, parentSpan?: any): any;
-  // Performance monitoring
-  startTransaction?(name: string, context?: ObservabilityContext): any;
-
-  setContext?(key: string, context: Record<string, any>): void;
-  setExtra?(key: string, value: any): void;
-  setTag?(key: string, value: string | number | boolean): void;
-  // User context
-  setUser?(user: { id: string; email?: string; username?: string; [key: string]: any }): void;
-
-  // Breadcrumbs
-  addBreadcrumb?(breadcrumb: Breadcrumb): void;
-
-  endSession?(): void;
-  // Session tracking
-  startSession?(): void;
-}
+export type LogLevel = 'debug' | 'error' | 'fatal' | 'info' | 'trace' | 'warn';
 
 export interface ObservabilityConfig {
   debug?: boolean;
+  circuitBreaker?: {
+    failureThreshold?: number;
+    resetTimeout?: number;
+    failureWindow?: number;
+    successThreshold?: number;
+  };
+  connectionPool?: {
+    maxConnections?: number;
+    idleTimeout?: number;
+    maxLifetime?: number;
+  };
+  healthCheck?: {
+    enabled?: boolean;
+    intervalMs?: number;
+  };
   nextjs?: {
+    automaticVercelMonitors?: boolean;
+    beforeSend?: (event: any) => any;
+    disableLogger?: boolean;
+    hideSourceMaps?: boolean;
     // Next.js specific configuration
     tunnelRoute?: string;
-    hideSourceMaps?: boolean;
-    disableLogger?: boolean;
-    automaticVercelMonitors?: boolean;
     widenClientFileUpload?: boolean;
-    beforeSend?: (event: any) => any;
+  };
+  grafanaMonitoring?: {
+    enabled?: boolean;
+    endpoints?: {
+      grafana?: string;
+      prometheus?: string;
+      loki?: string;
+      otelGrpc?: string;
+      otelHttp?: string;
+      rum?: string;
+    };
+    service?: {
+      name?: string;
+      version?: string;
+      environment?: string;
+    };
+    features?: {
+      rum?: boolean;
+      traces?: boolean;
+      metrics?: boolean;
+      logs?: boolean;
+      healthChecks?: boolean;
+    };
   };
   onError?: (
     error: unknown,
-    context: { provider: string; method: string; [key: string]: any },
+    context: { [key: string]: any; method: string; provider: string },
   ) => void;
   onInfo?: (message: string) => void;
+  onProviderError?: (error: unknown, context: { [key: string]: any; provider: string }) => void;
   providers: Record<string, ObservabilityProviderConfig>;
 }
 
@@ -84,7 +87,7 @@ export interface ObservabilityContext {
   environment?: string;
   extra?: Record<string, any>;
   fingerprint?: string[];
-  level?: 'debug' | 'info' | 'warning' | 'error' | 'fatal';
+  level?: 'debug' | 'error' | 'fatal' | 'info' | 'warning';
   organizationId?: string;
   platform?: string;
   release?: string;
@@ -92,40 +95,18 @@ export interface ObservabilityContext {
   serverName?: string;
   sessionId?: string;
   spanId?: string;
-  tags?: Record<string, string | number | boolean>;
+  tags?: Record<string, boolean | number | string>;
   traceId?: string;
   transaction?: string;
   userId?: string;
 }
-
-export interface Breadcrumb {
-  category?: string;
-  data?: Record<string, any>;
-  level?: 'debug' | 'info' | 'warning' | 'error' | 'critical';
-  message?: string;
-  timestamp?: number;
-  type?:
-    | 'default'
-    | 'debug'
-    | 'error'
-    | 'navigation'
-    | 'http'
-    | 'info'
-    | 'query'
-    | 'transaction'
-    | 'ui'
-    | 'user';
-}
-
-export type ProviderFactory = (config: ObservabilityProviderConfig) => ObservabilityProvider;
-export type ProviderRegistry = Record<string, ProviderFactory>;
 
 export interface ObservabilityManager {
   addBreadcrumb(breadcrumb: Breadcrumb): void;
   captureException(error: Error, context?: ObservabilityContext): Promise<void>;
   captureMessage(
     message: string,
-    level: 'info' | 'warning' | 'error',
+    level: 'error' | 'info' | 'warning',
     context?: ObservabilityContext,
   ): Promise<void>;
   endSession(): void;
@@ -133,9 +114,70 @@ export interface ObservabilityManager {
   log(level: string, message: string, metadata?: any): Promise<void>;
   setContext(key: string, context: Record<string, any>): void;
   setExtra(key: string, value: any): void;
-  setTag(key: string, value: string | number | boolean): void;
-  setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void;
+  setTag(key: string, value: boolean | number | string): void;
+  setUser(user: { [key: string]: any; email?: string; id: string; username?: string }): void;
   startSession(): void;
   startSpan(name: string, parentSpan?: any): any;
   startTransaction(name: string, context?: ObservabilityContext): any;
 }
+
+export interface ObservabilityProvider {
+  // Breadcrumbs
+  addBreadcrumb?(breadcrumb: Breadcrumb): void;
+
+  // Error tracking
+  captureException(error: Error, context?: ObservabilityContext): Promise<void>;
+
+  captureMessage(
+    message: string,
+    level: 'error' | 'info' | 'warning',
+    context?: ObservabilityContext,
+  ): Promise<void>;
+  endSession?(): void;
+
+  initialize(config: ObservabilityProviderConfig): Promise<void>;
+
+  // Logging
+  log?(level: string, message: string, metadata?: any): Promise<void>;
+  readonly name: string;
+
+  setContext?(key: string, context: Record<string, any>): void;
+  setExtra?(key: string, value: any): void;
+  setTag?(key: string, value: boolean | number | string): void;
+  // User context
+  setUser?(user: { [key: string]: any; email?: string; id: string; username?: string }): void;
+
+  // Session tracking
+  startSession?(): void;
+
+  startSpan?(name: string, parentSpan?: any): any;
+  // Performance monitoring
+  startTransaction?(name: string, context?: ObservabilityContext): any;
+}
+
+export interface ObservabilityProviderConfig {
+  // Allow any other properties for provider-specific config
+  [key: string]: any;
+  apiKey?: string; // General API key
+  // Provider-specific required fields
+  dsn?: string; // Sentry DSN
+  // Optional configuration
+  environment?: string;
+
+  format?: 'json' | 'pretty' | 'text';
+  // Logging configuration
+  level?: 'debug' | 'error' | 'fatal' | 'info' | 'trace' | 'warn';
+
+  options?: Record<string, any>;
+  profilesSampleRate?: number;
+  projectId?: string; // Project identifier
+  release?: string;
+  serviceName?: string; // Service/app name
+
+  tracesSampleRate?: number;
+}
+export type ProviderFactory = (
+  config: ObservabilityProviderConfig,
+) => ObservabilityProvider | Promise<ObservabilityProvider>;
+
+export type ProviderRegistry = Record<string, ProviderFactory>;

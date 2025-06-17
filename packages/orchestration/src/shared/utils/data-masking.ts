@@ -19,7 +19,7 @@ const SENSITIVE_FIELDS = new Set([
   'auth',
   'authorization',
   'bearer',
-  
+
   // Personal data
   'ssn',
   'social_security_number',
@@ -33,7 +33,7 @@ const SENSITIVE_FIELDS = new Set([
   'phone',
   'phoneNumber',
   'phone_number',
-  
+
   // Financial data
   'credit_card',
   'creditCard',
@@ -46,7 +46,7 @@ const SENSITIVE_FIELDS = new Set([
   'routing_number',
   'routingNumber',
   'iban',
-  
+
   // Redis/Upstash specific
   'redis_url',
   'redisUrl',
@@ -64,20 +64,22 @@ const SENSITIVE_FIELDS = new Set([
 const SENSITIVE_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
   // API Keys and tokens (alphanumeric strings of certain lengths)
   { pattern: /\b[A-Za-z0-9]{32,}\b/g, replacement: '[REDACTED_TOKEN]' },
-  
+
   // URLs with credentials
   { pattern: /([a-zA-Z]+:\/\/)([^:]+):([^@]+)@/g, replacement: '$1[REDACTED]:[REDACTED]@' },
-  
+
   // Email addresses (partial masking)
-  { pattern: /\b([a-zA-Z0-9._%+-]{1,3})[a-zA-Z0-9._%+-]*@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g, 
-    replacement: '$1***@$2' },
-  
+  {
+    pattern: /\b([a-zA-Z0-9._%+-]{1,3})[a-zA-Z0-9._%+-]*@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g,
+    replacement: '$1***@$2',
+  },
+
   // Credit card numbers
   { pattern: /\b(\d{4})[\s-]?\d{4}[\s-]?\d{4}[\s-]?(\d{4})\b/g, replacement: '$1-****-****-$2' },
-  
+
   // SSN
   { pattern: /\b\d{3}-\d{2}-\d{4}\b/g, replacement: '***-**-****' },
-  
+
   // Phone numbers
   { pattern: /\b(\d{3})[-.\s]?\d{3}[-.\s]?(\d{4})\b/g, replacement: '$1-***-$2' },
 ];
@@ -87,8 +89,10 @@ const SENSITIVE_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
  */
 function isSensitiveField(fieldName: string): boolean {
   const lowerFieldName = fieldName.toLowerCase();
-  return SENSITIVE_FIELDS.has(lowerFieldName) || 
-         Array.from(SENSITIVE_FIELDS).some(sensitive => lowerFieldName.includes(sensitive));
+  return (
+    SENSITIVE_FIELDS.has(lowerFieldName) ||
+    Array.from(SENSITIVE_FIELDS).some((sensitive: any) => lowerFieldName.includes(sensitive))
+  );
 }
 
 /**
@@ -96,11 +100,11 @@ function isSensitiveField(fieldName: string): boolean {
  */
 function maskString(value: string): string {
   let masked = value;
-  
+
   for (const { pattern, replacement } of SENSITIVE_PATTERNS) {
     masked = masked.replace(pattern, replacement);
   }
-  
+
   return masked;
 }
 
@@ -112,25 +116,25 @@ export function maskSensitiveData<T>(data: T, depth = 0, maxDepth = 10): T {
   if (depth > maxDepth) {
     return '[MAX_DEPTH_REACHED]' as T;
   }
-  
+
   if (data === null || data === undefined) {
     return data;
   }
-  
+
   // Handle strings
   if (typeof data === 'string') {
     return maskString(data) as T;
   }
-  
+
   // Handle arrays
   if (Array.isArray(data)) {
-    return data.map(item => maskSensitiveData(item, depth + 1, maxDepth)) as T;
+    return data.map((item: any) => maskSensitiveData(item, depth + 1, maxDepth)) as T;
   }
-  
+
   // Handle objects
   if (typeof data === 'object') {
     const masked: Record<string, unknown> = {};
-    
+
     for (const [key, value] of Object.entries(data)) {
       // Check if the field name indicates sensitive data
       if (isSensitiveField(key)) {
@@ -143,10 +147,10 @@ export function maskSensitiveData<T>(data: T, depth = 0, maxDepth = 10): T {
         masked[key] = maskSensitiveData(value, depth + 1, maxDepth);
       }
     }
-    
+
     return masked as T;
   }
-  
+
   // Return other types as-is
   return data;
 }
@@ -155,17 +159,20 @@ export function maskSensitiveData<T>(data: T, depth = 0, maxDepth = 10): T {
  * Create a masked error for logging
  */
 export function createMaskedError(error: Error): Error {
-  const maskedError = new Error(maskString(error.message));
+  const maskedError = new Error(maskString((error as Error)?.message || 'Unknown error'));
   maskedError.name = error.name;
   maskedError.stack = error.stack ? maskString(error.stack) : undefined;
-  
+
   // Copy and mask any additional properties
   for (const key of Object.keys(error)) {
     if (key !== 'name' && key !== 'message' && key !== 'stack') {
-      (maskedError as Record<string, unknown>)[key] = maskSensitiveData((error as Record<string, unknown>)[key]);
+      const errorAsRecord = error as unknown as Record<string, unknown>;
+      (maskedError as unknown as Record<string, unknown>)[key] = maskSensitiveData(
+        errorAsRecord[key],
+      );
     }
   }
-  
+
   return maskedError;
 }
 
@@ -174,26 +181,28 @@ export function createMaskedError(error: Error): Error {
  */
 export const safeConsole = {
   log: (...args: unknown[]) => {
-    console.log(...args.map(arg => maskSensitiveData(arg)));
+    console.info(...args.map((arg: any) => maskSensitiveData(arg)));
   },
-  
+
   error: (...args: unknown[]) => {
-    console.error(...args.map(arg => 
-      arg instanceof Error ? createMaskedError(arg) : maskSensitiveData(arg)
-    ));
+    console.error(
+      ...args.map((arg: any) =>
+        arg instanceof Error ? createMaskedError(arg) : maskSensitiveData(arg),
+      ),
+    );
   },
-  
+
   warn: (...args: unknown[]) => {
-    console.warn(...args.map(arg => maskSensitiveData(arg)));
+    console.warn(...args.map((arg: any) => maskSensitiveData(arg)));
   },
-  
+
   info: (...args: unknown[]) => {
-    console.info(...args.map(arg => maskSensitiveData(arg)));
+    console.info(...args.map((arg: any) => maskSensitiveData(arg)));
   },
-  
+
   debug: (...args: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
-      console.debug(...args.map(arg => maskSensitiveData(arg)));
+      console.debug(...args.map((arg: any) => maskSensitiveData(arg)));
     }
   },
 };
@@ -203,12 +212,12 @@ export const safeConsole = {
  */
 export function createSafeLogger(prefix?: string) {
   const logPrefix = prefix ? `[${prefix}] ` : '';
-  
+
   return {
     log: (message: string, ...args: unknown[]) => {
       safeConsole.log(logPrefix + message, ...args);
     },
-    
+
     error: (message: string, error?: Error | unknown, ...args: unknown[]) => {
       if (error instanceof Error) {
         safeConsole.error(logPrefix + message, createMaskedError(error), ...args);
@@ -216,15 +225,15 @@ export function createSafeLogger(prefix?: string) {
         safeConsole.error(logPrefix + message, maskSensitiveData(error), ...args);
       }
     },
-    
+
     warn: (message: string, ...args: unknown[]) => {
       safeConsole.warn(logPrefix + message, ...args);
     },
-    
+
     info: (message: string, ...args: unknown[]) => {
       safeConsole.info(logPrefix + message, ...args);
     },
-    
+
     debug: (message: string, ...args: unknown[]) => {
       safeConsole.debug(logPrefix + message, ...args);
     },
@@ -236,7 +245,7 @@ export function createSafeLogger(prefix?: string) {
  */
 export function withMaskedErrors<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  errorPrefix?: string
+  errorPrefix?: string,
 ): T {
   return (async (...args: Parameters<T>) => {
     try {
@@ -246,10 +255,10 @@ export function withMaskedErrors<T extends (...args: unknown[]) => unknown>(
         return await result;
       }
       return result;
-    } catch (error) {
+    } catch (error: any) {
       const prefix = errorPrefix ? `${errorPrefix}: ` : '';
       if (error instanceof Error) {
-        throw createMaskedError(new Error(prefix + error.message));
+        throw createMaskedError(new Error(prefix + (error as Error)?.message || 'Unknown error'));
       }
       throw new Error(prefix + 'An unknown error occurred');
     }

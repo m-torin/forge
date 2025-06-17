@@ -232,7 +232,7 @@ export class StepRegistry {
     definition: WorkflowStepDefinition;
     metadata: Pick<StepRegistryEntry, 'registeredAt' | 'registeredBy' | 'usageCount'>;
   }[] {
-    return Array.from(this.steps.values()).map((entry) => ({
+    return Array.from(this.steps.values()).map((entry: any) => ({
       definition: entry.definition,
       metadata: {
         registeredAt: entry.registeredAt,
@@ -274,7 +274,7 @@ export class StepRegistry {
     tags: number;
     totalSteps: number;
   } {
-    const activeSteps = Array.from(this.steps.values()).filter((entry) => entry.active).length;
+    const activeSteps = Array.from(this.steps.values()).filter((entry: any) => entry.active).length;
 
     return {
       activeSteps,
@@ -324,16 +324,16 @@ export class StepRegistry {
 
     // Most used steps
     stats.mostUsed = allEntries
-      .filter(([, entry]) => entry.active && entry.usageCount > 0)
-      .map(([stepId, entry]) => ({ stepId, usageCount: entry.usageCount }))
-      .sort((a, b) => b.usageCount - a.usageCount)
+      .filter(([, entry]: any) => entry.active && entry.usageCount > 0)
+      .map(([stepId, entry]: any) => ({ stepId, usageCount: entry.usageCount }))
+      .sort((a, b: any) => b.usageCount - a.usageCount)
       .slice(0, 10);
 
     // Recently used steps
     stats.recentlyUsed = allEntries
-      .filter(([, entry]) => entry.active && entry.lastUsedAt)
-      .map(([stepId, entry]) => ({ lastUsedAt: entry.lastUsedAt!, stepId }))
-      .sort((a, b) => b.lastUsedAt.getTime() - a.lastUsedAt.getTime())
+      .filter(([, entry]: any) => entry.active && entry.lastUsedAt)
+      .map(([stepId, entry]: any) => ({ lastUsedAt: entry.lastUsedAt!, stepId }))
+      .sort((a, b: any) => b.lastUsedAt.getTime() - a.lastUsedAt.getTime())
       .slice(0, 10);
 
     return stats;
@@ -379,10 +379,10 @@ export class StepRegistry {
         }
 
         result.imported++;
-      } catch (error) {
+      } catch (error: any) {
         result.errors.push(
           `Failed to import step ${item.definition.id}: ${
-            error instanceof Error ? error.message : 'Unknown error'
+            error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'
           }`,
         );
       }
@@ -454,7 +454,7 @@ export class StepRegistry {
     }
 
     if (definition.metadata.tags) {
-      definition.metadata.tags.forEach((tag) => this.tags.add(tag));
+      definition.metadata.tags.forEach((tag: any) => this.tags.add(tag));
     }
 
     // Register with factory as well
@@ -540,7 +540,7 @@ export class StepRegistry {
       // Filter by tags (all must match)
       if (filters.tags && filters.tags.length > 0) {
         const stepTags = metadata.tags || [];
-        if (!filters.tags.every((tag) => stepTags.includes(tag))) {
+        if (!filters.tags.every((tag: any) => stepTags.includes(tag))) {
           continue;
         }
       }
@@ -633,12 +633,12 @@ export class StepRegistry {
       if (!node) continue;
 
       // Check if all dependencies are completed
-      const canExecute = node.dependencies.every((depId) => completed.has(depId));
+      const canExecute = node.dependencies.every((depId: any) => completed.has(depId));
 
       if (canExecute) {
         // Find or create a group for this step
-        const groupIndex = groups.findIndex((group) =>
-          group.every((groupStepId) => {
+        const groupIndex = groups.findIndex((group: any) =>
+          group.every((groupStepId: any) => {
             const groupNode = dependencyGraph.get(groupStepId);
             return groupNode && !groupNode.dependents.includes(stepId);
           }),

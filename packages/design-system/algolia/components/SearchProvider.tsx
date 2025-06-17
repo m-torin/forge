@@ -1,13 +1,12 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { InstantSearch } from 'react-instantsearch';
 
+import { SearchConfig } from '../types';
 import { createSearchClient } from '../utils/searchClient';
 
-import type { SearchConfig } from '../types';
-import type { ReactNode } from 'react';
-
-interface SearchProviderProps {
+interface SearchProviderProps extends Record<string, any> {
   children: ReactNode;
   config: SearchConfig;
   routing?: boolean;
@@ -24,8 +23,8 @@ export default function SearchProvider({
 
   return (
     <InstantSearch
-      routing={routing}
       indexName={config.indexName}
+      routing={routing}
       searchClient={searchClient}
       stalledSearchDelay={stalledSearchDelay}
     >

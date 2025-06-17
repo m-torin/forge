@@ -6,10 +6,10 @@ import {
   validateConfig,
 } from '../../../shared/utils/config';
 
-import type { AIConfig } from '../../../shared/types/config';
+import { AIConfig } from '../../../shared/types/config';
 
 // Mock the keys module
-vi.mock('../../../../keys', () => ({
+vi.mock('../../../../keys', (_: any) => ({
   aiKeys: {
     ANTHROPIC_API_KEY: 'test-anthropic-key',
     GOOGLE_AI_API_KEY: 'test-google-key',
@@ -17,7 +17,7 @@ vi.mock('../../../../keys', () => ({
   },
 }));
 
-describe('Config Utilities', () => {
+describe('Config Utilities', (_: any) => {
   let originalNodeEnv: string | undefined;
 
   beforeEach(() => {
@@ -33,8 +33,8 @@ describe('Config Utilities', () => {
     }
   });
 
-  describe('createConfigFromEnv', () => {
-    it('should create config with all API keys from environment', () => {
+  describe('createConfigFromEnv', (_: any) => {
+    it('should create config with all API keys from environment', (_: any) => {
       const config = createConfigFromEnv();
 
       expect(config.defaultProvider).toBe('openai');
@@ -48,33 +48,33 @@ describe('Config Utilities', () => {
       expect(typeof config.enableRateLimit).toBe('boolean');
     });
 
-    it('should enable logging in development environment', () => {
+    it('should enable logging in development environment', (_: any) => {
       process.env.NODE_ENV = 'development';
       const config = createConfigFromEnv();
       expect(config.enableLogging).toBe(true);
     });
 
-    it('should disable logging in production environment', () => {
+    it('should disable logging in production environment', (_: any) => {
       process.env.NODE_ENV = 'production';
       const config = createConfigFromEnv();
       expect(config.enableLogging).toBe(false);
     });
 
-    it('should enable rate limiting in production environment', () => {
+    it('should enable rate limiting in production environment', (_: any) => {
       process.env.NODE_ENV = 'production';
       const config = createConfigFromEnv();
       expect(config.enableRateLimit).toBe(true);
     });
 
-    it('should disable rate limiting in development environment', () => {
+    it('should disable rate limiting in development environment', (_: any) => {
       process.env.NODE_ENV = 'development';
       const config = createConfigFromEnv();
       expect(config.enableRateLimit).toBe(false);
     });
   });
 
-  describe('validateConfig', () => {
-    it('should pass validation for valid config', () => {
+  describe('validateConfig', (_: any) => {
+    it('should pass validation for valid config', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -88,7 +88,7 @@ describe('Config Utilities', () => {
       expect(errors).toEqual([]);
     });
 
-    it('should fail validation when no providers configured', () => {
+    it('should fail validation when no providers configured', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {},
@@ -98,7 +98,7 @@ describe('Config Utilities', () => {
       expect(errors).toContain('At least one provider must be configured');
     });
 
-    it('should fail validation when providers is undefined', () => {
+    it('should fail validation when providers is undefined', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: undefined as any,
@@ -108,7 +108,7 @@ describe('Config Utilities', () => {
       expect(errors).toContain('At least one provider must be configured');
     });
 
-    it('should pass validation with valid OpenAI provider', () => {
+    it('should pass validation with valid OpenAI provider', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -122,7 +122,7 @@ describe('Config Utilities', () => {
       expect(errors).toEqual([]);
     });
 
-    it('should fail validation with OpenAI provider missing API key', () => {
+    it('should fail validation with OpenAI provider missing API key', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -134,7 +134,7 @@ describe('Config Utilities', () => {
       expect(errors).toContain('OpenAI provider configured but missing API key');
     });
 
-    it('should pass validation with valid Anthropic provider', () => {
+    it('should pass validation with valid Anthropic provider', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'anthropic',
         providers: {
@@ -148,7 +148,7 @@ describe('Config Utilities', () => {
       expect(errors).toEqual([]);
     });
 
-    it('should fail validation with Anthropic provider missing API key', () => {
+    it('should fail validation with Anthropic provider missing API key', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'anthropic',
         providers: {
@@ -160,7 +160,7 @@ describe('Config Utilities', () => {
       expect(errors).toContain('Anthropic provider configured but missing API key');
     });
 
-    it('should pass validation with valid Google provider', () => {
+    it('should pass validation with valid Google provider', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'google',
         providers: {
@@ -174,7 +174,7 @@ describe('Config Utilities', () => {
       expect(errors).toEqual([]);
     });
 
-    it('should fail validation with Google provider missing API key', () => {
+    it('should fail validation with Google provider missing API key', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'google',
         providers: {
@@ -186,7 +186,7 @@ describe('Config Utilities', () => {
       expect(errors).toContain('Google provider configured but missing API key');
     });
 
-    it('should pass validation with multiple valid providers', () => {
+    it('should pass validation with multiple valid providers', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -206,7 +206,7 @@ describe('Config Utilities', () => {
       expect(errors).toEqual([]);
     });
 
-    it('should fail validation when no provider has valid API key', () => {
+    it('should fail validation when no provider has valid API key', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -225,7 +225,7 @@ describe('Config Utilities', () => {
       expect(errors).toContain('Google provider configured but missing API key');
     });
 
-    it('should pass validation when at least one provider has valid API key', () => {
+    it('should pass validation when at least one provider has valid API key', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -242,8 +242,8 @@ describe('Config Utilities', () => {
     });
   });
 
-  describe('convertToManagerConfig', () => {
-    it('should convert config with OpenAI provider', () => {
+  describe('convertToManagerConfig', (_: any) => {
+    it('should convert config with OpenAI provider', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -273,7 +273,7 @@ describe('Config Utilities', () => {
       });
     });
 
-    it('should convert config with Anthropic provider', () => {
+    it('should convert config with Anthropic provider', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'anthropic',
         providers: {
@@ -294,7 +294,7 @@ describe('Config Utilities', () => {
       });
     });
 
-    it('should convert config with Google provider', () => {
+    it('should convert config with Google provider', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'google',
         providers: {
@@ -315,7 +315,7 @@ describe('Config Utilities', () => {
       });
     });
 
-    it('should convert config with multiple providers', () => {
+    it('should convert config with multiple providers', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -365,7 +365,7 @@ describe('Config Utilities', () => {
       });
     });
 
-    it('should skip providers without API keys', () => {
+    it('should skip providers without API keys', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -398,7 +398,7 @@ describe('Config Utilities', () => {
       });
     });
 
-    it('should handle config with no providers', () => {
+    it('should handle config with no providers', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {},
@@ -409,7 +409,7 @@ describe('Config Utilities', () => {
       expect(managerConfig.providers).toEqual([]);
     });
 
-    it('should preserve optional fields', () => {
+    it('should preserve optional fields', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {
@@ -427,7 +427,7 @@ describe('Config Utilities', () => {
       expect(managerConfig.enableRateLimit).toBe(false);
     });
 
-    it('should handle undefined optional fields', () => {
+    it('should handle undefined optional fields', (_: any) => {
       const config: AIConfig = {
         defaultProvider: 'openai',
         providers: {

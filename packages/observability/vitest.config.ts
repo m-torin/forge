@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitest/config';
+import { nodePreset } from '@repo/testing/vitest-presets';
 
 export default defineConfig({
+  ...nodePreset,
   test: {
-    environment: 'node',
-    globals: true,
+    ...nodePreset.test,
     setupFiles: ['./src/__tests__/setup.ts'],
   },
 });

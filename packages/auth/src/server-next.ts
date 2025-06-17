@@ -2,14 +2,13 @@
  * Next.js server-side authentication exports
  */
 
-import { auth } from './server/auth';
-
-import type { AuthSession } from './shared/types';
+import type { AuthSession, Session } from './shared/types';
 // Re-export all server functionality
 // Next.js specific server features
 import type { NextRequest } from 'next/server';
 
 export * from './server';
+export { auth } from './server/auth';
 
 /**
  * Get session from Next.js server components
@@ -24,6 +23,7 @@ export async function getServerSession(): Promise<AuthSession | null> {
  */
 export async function authMiddleware(request: NextRequest) {
   try {
+    const { auth } = await import('./server/auth');
     const session = await auth.api.getSession({
       headers: request.headers,
     });
@@ -33,8 +33,9 @@ export async function authMiddleware(request: NextRequest) {
     if (session) {
       headers.set('x-user-id', session.user.id);
       headers.set('x-session-id', session.session.id);
-      if (session.session.activeOrganizationId) {
-        headers.set('x-organization-id', session.session.activeOrganizationId);
+      const sessionWithOrg = session.session as Session;
+      if (sessionWithOrg.activeOrganizationId) {
+        headers.set('x-organization-id', sessionWithOrg.activeOrganizationId);
       }
     }
 
@@ -56,6 +57,7 @@ export function withAuth<T extends any[]>(
 ) {
   return async (request: NextRequest, ...args: T): Promise<Response> => {
     try {
+      const { auth } = await import('./server/auth');
       const session = await auth.api.getSession({
         headers: request.headers,
       });
@@ -67,9 +69,10 @@ export function withAuth<T extends any[]>(
         });
       }
 
+      const sessionWithOrg = session.session as Session;
       const authSession: AuthSession = {
-        activeOrganizationId: session.session.activeOrganizationId || undefined,
-        session: session.session,
+        activeOrganizationId: sessionWithOrg.activeOrganizationId || undefined,
+        session: sessionWithOrg,
         user: session.user,
       };
 

@@ -1,0 +1,159 @@
+# Blackbox Exporter Configuration
+# Synthetic monitoring for all services
+
+modules:
+  # HTTP GET probe with basic success check
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 202, 204]
+      method: GET
+      headers:
+        Host: vhost.example.com
+        Accept-Language: en-US
+        Origin: example.com
+      no_follow_redirects: false
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+
+  # HTTP POST probe for API endpoints
+  http_post_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      method: POST
+      headers:
+        Content-Type: application/json
+      body: '{"status": "test"}'
+      valid_status_codes: [200, 201, 202]
+
+  # Health check probe for service endpoints
+  http_health:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "Blackbox-Exporter-Health-Check"
+      no_follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+
+  # TCP probe for basic connectivity
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+
+  # ICMP probe for network connectivity
+  icmp:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip4"
+      source_ip_address: "0.0.0.0"
+
+  # DNS probe
+  dns_udp:
+    prober: dns
+    timeout: 5s
+    dns:
+      query_name: "example.com"
+      query_type: "A"
+      valid_rcodes:
+        - NOERROR
+      validate_answer_rrs:
+        fail_if_matches_regexp:
+          - ".*127.0.0.1"
+        fail_if_not_matches_regexp:
+          - "www.example.com.\t300\tIN\tA\t127.0.0.1"
+      validate_authority_rrs:
+        fail_if_matches_regexp:
+          - ".*127.0.0.1"
+      validate_additional_rrs:
+        fail_if_matches_regexp:
+          - ".*127.0.0.1"
+
+  # SSL certificate check
+  ssl_expiry:
+    prober: http
+    timeout: 10s
+    http:
+      method: GET
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+
+  # Service-specific probes for our services
+  opengrep_health:
+    prober: http
+    timeout: 15s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "Synthetic-Monitor-OpenGrep"
+      body: ""
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+
+  trycomp_health:
+    prober: http
+    timeout: 20s # AI services may be slower
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "Synthetic-Monitor-TryComp"
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+
+  camoufox_health:
+    prober: http
+    timeout: 30s # Browser automation may be slower
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "Synthetic-Monitor-Camoufox"
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+
+  firecrawl_health:
+    prober: http
+    timeout: 25s # Web scraping may be slower
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "Synthetic-Monitor-Firecrawl"
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+
+  # Performance test - measure response time
+  http_performance:
+    prober: http
+    timeout: 30s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        User-Agent: "Performance-Monitor"
+        Cache-Control: "no-cache"
+      no_follow_redirects: false
+      fail_if_ssl: false
+      fail_if_not_ssl: false

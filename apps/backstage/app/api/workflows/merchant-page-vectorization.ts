@@ -15,7 +15,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const MerchantPageVectorizationInput = z.object({
@@ -236,11 +236,11 @@ export const crawlMerchantPagesStep = compose(
     (input) => input.merchants.length > 0,
     (output) => output.crawledPages.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
-  (step) =>
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes
+  (step: any) =>
     withStepCircuitBreaker(step, {
       threshold: 0.5,
-      timeout: 30000,
+      // timeout: 30000,
     }),
 );
 
@@ -360,11 +360,7 @@ export const generatePageVectorsStep = compose(
       },
     };
   }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['dimensions'],
-    }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 4: Find duplicate products across merchants
@@ -570,8 +566,8 @@ function analyzeMerchantTrend(merchantId: string, vectors: any[], windowDays: nu
   // Analyze pricing trends
   const priceTrend = {
     average: avgPrice,
-    max: Math.max(...vectors.map((v) => v.features.price)),
-    min: Math.min(...vectors.map((v) => v.features.price)),
+    max: Math.max(...(vectors as any).map((v: any) => v.features.price)),
+    min: Math.min(...(vectors as any).map((v: any) => v.features.price)),
     volatility: calculatePriceVolatility(vectors),
   };
 
@@ -645,7 +641,7 @@ function generateMerchantInsights(priceTrend: any, diversity: any): any[] {
 // Step 6: Store vectors and analysis
 export const storeVectorsStep = compose(
   StepTemplates.database('store-vectors', 'Store page vectors and analysis results'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 7: Generate vectorization report

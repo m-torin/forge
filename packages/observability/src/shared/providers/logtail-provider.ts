@@ -2,8 +2,8 @@
  * Logtail/BetterStack provider for production logging
  */
 
-import type { LogtailConfig } from '../types/logtail-types';
-import type {
+import { LogtailConfig } from '../types/logtail-types';
+import {
   Breadcrumb,
   ObservabilityContext,
   ObservabilityProvider,
@@ -13,9 +13,84 @@ import type {
 export class LogtailProvider implements ObservabilityProvider {
   readonly name = 'logtail';
   private client: any;
-  private isInitialized = false;
-  private isDevelopment = process.env.NODE_ENV !== 'production';
   private config: LogtailConfig = {} as LogtailConfig;
+  private isDevelopment = process.env.NODE_ENV !== 'production';
+  private isInitialized = false;
+
+  addBreadcrumb(breadcrumb: Breadcrumb): void {
+    if (!this.isInitialized) return;
+
+    // Log breadcrumb as a debug entry
+    this.log('debug', 'Breadcrumb', {
+      breadcrumb: {
+        category: breadcrumb.category,
+        data: breadcrumb.data,
+        level: breadcrumb.level,
+        message: breadcrumb.message,
+        timestamp: breadcrumb.timestamp || Date.now(),
+        type: breadcrumb.type,
+      },
+    });
+  }
+
+  async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
+    if (!this.isInitialized) return;
+
+    const errorData = {
+      error: {
+        message: (error as Error)?.message || 'Unknown error',
+        name: error.name,
+        stack: error.stack,
+      },
+      level: context?.level || 'error',
+      ...this.buildContext(context),
+    };
+
+    if (this.client) {
+      await this.client.error('Exception captured', errorData);
+    } else if (this.isDevelopment) {
+      console.error('Exception captured: ', errorData);
+    }
+  }
+
+  async captureMessage(
+    message: string,
+    level: 'error' | 'info' | 'warning',
+    context?: ObservabilityContext,
+  ): Promise<void> {
+    if (!this.isInitialized) return;
+
+    const messageData = {
+      level,
+      ...this.buildContext(context),
+    };
+
+    if (this.client) {
+      switch (level) {
+        case 'error':
+          await this.client.error(message, messageData);
+          break;
+        case 'warning':
+          await this.client.warn(message, messageData);
+          break;
+        case 'info':
+        default:
+          await this.client.info(message, messageData);
+          break;
+      }
+    } else if (this.isDevelopment) {
+      const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : 'info';
+      console[consoleMethod](message, messageData);
+    }
+  }
+
+  endSession(): void {
+    if (!this.isInitialized) return;
+
+    this.log('info', 'Session ended', {
+      timestamp: Date.now(),
+    });
+  }
 
   async initialize(config: ObservabilityProviderConfig): Promise<void> {
     this.config = config as LogtailConfig;
@@ -52,60 +127,9 @@ export class LogtailProvider implements ObservabilityProvider {
       }
 
       this.isInitialized = true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to initialize Logtail:', error);
       throw error;
-    }
-  }
-
-  async captureException(error: Error, context?: ObservabilityContext): Promise<void> {
-    if (!this.isInitialized) return;
-
-    const errorData = {
-      error: {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      },
-      level: context?.level || 'error',
-      ...this.buildContext(context),
-    };
-
-    if (this.client) {
-      await this.client.error('Exception captured', errorData);
-    } else if (this.isDevelopment) {
-      console.error('Exception captured:', errorData);
-    }
-  }
-
-  async captureMessage(
-    message: string,
-    level: 'info' | 'warning' | 'error',
-    context?: ObservabilityContext,
-  ): Promise<void> {
-    if (!this.isInitialized) return;
-
-    const messageData = {
-      level,
-      ...this.buildContext(context),
-    };
-
-    if (this.client) {
-      switch (level) {
-        case 'error':
-          await this.client.error(message, messageData);
-          break;
-        case 'warning':
-          await this.client.warn(message, messageData);
-          break;
-        case 'info':
-        default:
-          await this.client.info(message, messageData);
-          break;
-      }
-    } else if (this.isDevelopment) {
-      const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : 'info';
-      console[consoleMethod](message, messageData);
     }
   }
 
@@ -120,9 +144,13 @@ export class LogtailProvider implements ObservabilityProvider {
     if (this.client) {
       // Map custom levels to Logtail methods
       switch (level.toLowerCase()) {
-        case 'trace':
         case 'debug':
+        case 'trace':
           await this.client.debug(message, logData);
+          break;
+        case 'error':
+        case 'fatal':
+          await this.client.error(message, logData);
           break;
         case 'info':
           await this.client.info(message, logData);
@@ -131,10 +159,6 @@ export class LogtailProvider implements ObservabilityProvider {
         case 'warning':
           await this.client.warn(message, logData);
           break;
-        case 'error':
-        case 'fatal':
-          await this.client.error(message, logData);
-          break;
         default:
           await this.client.log(message, logData);
           break;
@@ -142,6 +166,75 @@ export class LogtailProvider implements ObservabilityProvider {
     } else if (this.isDevelopment) {
       console.log(`[${level.toUpperCase()}]`, message, logData);
     }
+  }
+
+  setContext(key: string, context: Record<string, any>): void {
+    if (!this.isInitialized || !this.client) return;
+
+    // Add context to all future logs
+    this.client.use((log: any) => ({
+      ...log,
+      context: {
+        ...log.context,
+        [key]: context,
+      },
+    }));
+  }
+
+  setExtra(key: string, value: any): void {
+    if (!this.isInitialized || !this.client) return;
+
+    // Add extra data to all future logs
+    this.client.use((log: any) => ({
+      ...log,
+      extra: {
+        ...log.extra,
+        [key]: value,
+      },
+    }));
+  }
+
+  setTag(key: string, value: boolean | number | string): void {
+    if (!this.isInitialized || !this.client) return;
+
+    // Add tag to all future logs
+    this.client.use((log: any) => ({
+      ...log,
+      tags: {
+        ...log.tags,
+        [key]: value,
+      },
+    }));
+  }
+
+  setUser(user: { [key: string]: any; email?: string; id: string; username?: string }): void {
+    if (!this.isInitialized || !this.client) return;
+
+    const { email, id, username, ...rest } = user;
+    // Add user context to all future logs
+    this.client.use((log: any) => ({
+      ...log,
+      user: {
+        email,
+        id,
+        username,
+        ...rest,
+      },
+    }));
+  }
+
+  startSession(): void {
+    if (!this.isInitialized) return;
+
+    this.log('info', 'Session started', {
+      sessionId: this.generateId(),
+      timestamp: Date.now(),
+    });
+  }
+
+  startSpan(_name: string, _parentSpan?: any): any {
+    // Logtail doesn't support spans, return a no-op
+    return null;
   }
 
   // Logtail doesn't support transactions/spans directly
@@ -169,99 +262,6 @@ export class LogtailProvider implements ObservabilityProvider {
         });
       },
     };
-  }
-
-  startSpan(_name: string, _parentSpan?: any): any {
-    // Logtail doesn't support spans, return a no-op
-    return null;
-  }
-
-  setUser(user: { id: string; email?: string; username?: string; [key: string]: any }): void {
-    if (!this.isInitialized || !this.client) return;
-
-    const { id, username, email, ...rest } = user;
-    // Add user context to all future logs
-    this.client.use((log: any) => ({
-      ...log,
-      user: {
-        id,
-        username,
-        email,
-        ...rest,
-      },
-    }));
-  }
-
-  setTag(key: string, value: string | number | boolean): void {
-    if (!this.isInitialized || !this.client) return;
-
-    // Add tag to all future logs
-    this.client.use((log: any) => ({
-      ...log,
-      tags: {
-        ...log.tags,
-        [key]: value,
-      },
-    }));
-  }
-
-  setExtra(key: string, value: any): void {
-    if (!this.isInitialized || !this.client) return;
-
-    // Add extra data to all future logs
-    this.client.use((log: any) => ({
-      ...log,
-      extra: {
-        ...log.extra,
-        [key]: value,
-      },
-    }));
-  }
-
-  setContext(key: string, context: Record<string, any>): void {
-    if (!this.isInitialized || !this.client) return;
-
-    // Add context to all future logs
-    this.client.use((log: any) => ({
-      ...log,
-      context: {
-        ...log.context,
-        [key]: context,
-      },
-    }));
-  }
-
-  addBreadcrumb(breadcrumb: Breadcrumb): void {
-    if (!this.isInitialized) return;
-
-    // Log breadcrumb as a debug entry
-    this.log('debug', 'Breadcrumb', {
-      breadcrumb: {
-        type: breadcrumb.type,
-        category: breadcrumb.category,
-        data: breadcrumb.data,
-        level: breadcrumb.level,
-        message: breadcrumb.message,
-        timestamp: breadcrumb.timestamp || Date.now(),
-      },
-    });
-  }
-
-  startSession(): void {
-    if (!this.isInitialized) return;
-
-    this.log('info', 'Session started', {
-      sessionId: this.generateId(),
-      timestamp: Date.now(),
-    });
-  }
-
-  endSession(): void {
-    if (!this.isInitialized) return;
-
-    this.log('info', 'Session ended', {
-      timestamp: Date.now(),
-    });
   }
 
   // Helper methods

@@ -17,6 +17,10 @@ const pages: {
     link: '/account-wishlists',
   },
   {
+    name: 'Registries',
+    link: '/registries',
+  },
+  {
     name: 'Orders history',
     link: '/orders',
   },
@@ -39,6 +43,9 @@ const PageTab = () => {
         {pages.map((item: any) => {
           let isActive = pathname === item.link;
           if (item.link === '/orders' && pathname.includes('/orders/')) {
+            isActive = true;
+          }
+          if (item.link === '/registries' && pathname.includes('/registries')) {
             isActive = true;
           }
 

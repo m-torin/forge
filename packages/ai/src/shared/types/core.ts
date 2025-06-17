@@ -1,3 +1,30 @@
+export interface AICoreConfig {
+  capabilities: Capability[];
+  defaultModel?: string;
+  maxTokens?: number;
+  temperature?: number;
+  timeout?: number;
+}
+
+export type Capability =
+  | 'analyze'
+  | 'classify'
+  | 'complete'
+  | 'embed'
+  | 'extraction'
+  | 'generateObject'
+  | 'moderate'
+  | 'sentiment'
+  | 'stream'
+  | 'tools'
+  | 'vision';
+
+export interface ClassificationResult {
+  category: string;
+  confidence: number;
+  reasoning: string;
+}
+
 export interface CompletionOptions {
   maxTokens?: number;
   model?: string;
@@ -7,33 +34,11 @@ export interface CompletionOptions {
 }
 
 export interface CompletionResponse {
-  finishReason?: 'stop' | 'length' | 'tool_calls' | 'content_filter';
+  finishReason?: 'content_filter' | 'length' | 'stop' | 'tool_calls';
   id?: string;
   model?: string;
   text: string;
   usage?: TokenUsage;
-}
-
-export interface StreamOptions extends CompletionOptions {
-  onChunk?: (chunk: StreamChunk) => void;
-}
-
-export interface StreamChunk {
-  isFirst: boolean;
-  isLast: boolean;
-  text: string;
-  usage?: TokenUsage;
-}
-
-export interface TokenUsage {
-  completionTokens: number;
-  promptTokens: number;
-  totalTokens: number;
-}
-
-export interface EmbedOptions {
-  input: string | string[];
-  model?: string;
 }
 
 export interface EmbeddingResponse {
@@ -42,25 +47,17 @@ export interface EmbeddingResponse {
   usage?: TokenUsage;
 }
 
-export type Capability =
-  | 'complete'
-  | 'stream'
-  | 'embed'
-  | 'generateObject'
-  | 'tools'
-  | 'vision'
-  | 'moderate'
-  | 'classify'
-  | 'sentiment'
-  | 'extraction'
-  | 'analyze';
-
-export interface ObjectOptions<T> {
-  maxTokens?: number;
+export interface EmbedOptions {
+  input: string | string[];
   model?: string;
-  prompt: string;
-  schema: Record<string, unknown> | object;
-  temperature?: number;
+}
+
+export interface EntityResult {
+  entities: {
+    confidence: number;
+    type: string;
+    value: string;
+  }[];
 }
 
 export interface ModerationResult {
@@ -70,30 +67,33 @@ export interface ModerationResult {
   violations: string[];
 }
 
-export interface ClassificationResult {
-  category: string;
-  confidence: number;
-  reasoning: string;
+export interface ObjectOptions<_T = unknown> {
+  maxTokens?: number;
+  model?: string;
+  prompt: string;
+  schema: object | Record<string, unknown>;
+  temperature?: number;
 }
 
 export interface SentimentResult {
   confidence: number;
   reasoning: string;
-  sentiment: 'positive' | 'negative' | 'neutral';
+  sentiment: 'negative' | 'neutral' | 'positive';
 }
 
-export interface EntityResult {
-  entities: {
-    type: string;
-    value: string;
-    confidence: number;
-  }[];
+export interface StreamChunk {
+  isFirst: boolean;
+  isLast: boolean;
+  text: string;
+  usage?: TokenUsage;
 }
 
-export interface AICoreConfig {
-  capabilities: Capability[];
-  defaultModel?: string;
-  maxTokens?: number;
-  temperature?: number;
-  timeout?: number;
+export interface StreamOptions extends CompletionOptions {
+  onChunk?: (chunk: StreamChunk) => void;
+}
+
+export interface TokenUsage {
+  completionTokens: number;
+  promptTokens: number;
+  totalTokens: number;
 }

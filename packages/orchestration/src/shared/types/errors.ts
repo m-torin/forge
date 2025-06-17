@@ -6,9 +6,9 @@ export interface WorkflowError {
   /** Error code */
   code?: string;
   /** Additional context data */
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   /** Original error details */
-  details?: any;
+  details?: unknown;
   /** Human-readable message */
   message: string;
   /** Whether this error is retryable */

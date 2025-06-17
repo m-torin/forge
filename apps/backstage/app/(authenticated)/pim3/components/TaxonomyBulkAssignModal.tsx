@@ -82,14 +82,17 @@ export function TaxonomyBulkAssignModal({
   const loadAvailableItems = async () => {
     try {
       // Load products and collections from centralized actions
-      const { getProducts } = await import('../actions');
+      const { getProductsWithPIMFilters } = await import('../actions');
       const { getCollections } = await import('../collections/actions');
 
       // Load products for assignment
-      const productsResult = await getProducts({ limit: 100, status: 'PUBLISHED' });
+      const productsResult = await getProductsWithPIMFilters({
+        limit: 100,
+        status: 'ACTIVE' as any,
+      });
       if (productsResult.success && productsResult.data) {
         setAvailableProducts(
-          productsResult.data.map((product) => ({
+          productsResult.data.map((product: any) => ({
             label: product.name,
             value: product.id,
           })),
@@ -104,10 +107,10 @@ export function TaxonomyBulkAssignModal({
       }
 
       // Load collections for assignment
-      const collectionsResult = await getCollections({ limit: 100, status: 'PUBLISHED' });
-      if (collectionsResult.success && collectionsResult.data) {
+      const collectionsResult = await getCollections();
+      if (Array.isArray(collectionsResult)) {
         setAvailableCollections(
-          collectionsResult.data.map((collection) => ({
+          collectionsResult.map((collection: any) => ({
             label: collection.name,
             value: collection.id,
           })),

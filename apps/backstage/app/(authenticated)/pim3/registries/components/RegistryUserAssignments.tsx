@@ -292,7 +292,7 @@ export function RegistryUserAssignments({
               <Table.Tr>
                 <Table.Th>User</Table.Th>
                 <Table.Th>Role</Table.Th>
-                {editable && <Table.Th width={60}>Actions</Table.Th>}
+                {editable && <Table.Th style={{ width: 60 }}>Actions</Table.Th>}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>{rows}</Table.Tbody>

@@ -4,7 +4,7 @@ import { Navigation } from '../../../mantine-ciseco/components/Header/Navigation
 import { type TCollection } from '../../../mantine-ciseco/data/data';
 
 // Mock next/link
-vi.mock('next/link', () => ({
+vi.mock('next/link', (_: any) => ({
   default: ({ href, children, className, ...props }: any) => (
     <a href={href} className={className} {...props}>
       {children}
@@ -13,18 +13,18 @@ vi.mock('next/link', () => ({
 }));
 
 // Mock the locale hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', () => ({
+vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => href,
 }));
 
 // Mock CollectionCard3 component
-vi.mock('../../../mantine-ciseco/components/CollectionCard3', () => ({
+vi.mock('../../../mantine-ciseco/components/CollectionCard3', (_: any) => ({
   default: ({ collection }: { collection: TCollection }) => (
     <div data-testid="collection-card">{collection.title}</div>
   ),
 }));
 
-describe('Navigation', () => {
+describe('Navigation', (_: any) => {
   const mockFeaturedCollection: TCollection = {
     id: '1',
     title: 'Featured Collection',
@@ -101,7 +101,7 @@ describe('Navigation', () => {
     },
   ];
 
-  it('renders navigation with menu items', () => {
+  it('renders navigation with menu items', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     expect(screen.getByTestId('main-navigation')).toBeInTheDocument();
@@ -111,14 +111,14 @@ describe('Navigation', () => {
     expect(screen.getByText('Contact')).toBeInTheDocument();
   });
 
-  it('renders simple menu items as links', () => {
+  it('renders simple menu items as links', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     const homeLink = screen.getByText('Home').closest('a');
     expect(homeLink).toHaveAttribute('href', '/');
   });
 
-  it('renders dropdown menu items with children', () => {
+  it('renders dropdown menu items with children', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     const productsItem = screen.getByText('Products');
@@ -129,21 +129,21 @@ describe('Navigation', () => {
     expect(productsLink?.querySelector('svg')).toBeInTheDocument();
   });
 
-  it('renders mega menu items', () => {
+  it('renders mega menu items', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={megaMenuItems} />);
 
     const categoriesItem = screen.getByText('Categories');
     expect(categoriesItem).toBeInTheDocument();
   });
 
-  it('applies flex layout classes', () => {
+  it('applies flex layout classes', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     const navigationList = screen.getByTestId('main-navigation');
     expect(navigationList).toHaveClass('flex');
   });
 
-  it('applies custom className', () => {
+  it('applies custom className', (_: any) => {
     render(
       <Navigation
         featuredCollection={mockFeaturedCollection}
@@ -156,7 +156,7 @@ describe('Navigation', () => {
     expect(navigationList).toHaveClass('custom-nav');
   });
 
-  it('renders menu items in correct order', () => {
+  it('renders menu items in correct order', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     // Get only the top-level navigation items by querying direct children of the main navigation
@@ -171,7 +171,7 @@ describe('Navigation', () => {
     expect(topLevelMenuItems[3]).toHaveTextContent('Contact');
   });
 
-  it('handles menu items without href', () => {
+  it('handles menu items without href', (_: any) => {
     const menuWithoutHref = [
       {
         id: 'no-href',
@@ -187,7 +187,7 @@ describe('Navigation', () => {
     expect(linkElement).toHaveAttribute('href', '#');
   });
 
-  it('applies proper styling classes to menu items', () => {
+  it('applies proper styling classes to menu items', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     const homeLink = screen.getByText('Home').closest('a');
@@ -201,7 +201,7 @@ describe('Navigation', () => {
     );
   });
 
-  it('renders chevron icon for dropdown items', () => {
+  it('renders chevron icon for dropdown items', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     const productsLink = screen.getByText('Products').closest('a');
@@ -211,7 +211,7 @@ describe('Navigation', () => {
     expect(chevronIcon).toHaveClass('h-4', 'w-4');
   });
 
-  it('handles menu item classes properly', () => {
+  it('handles menu item classes properly', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     const menuItems = screen.getAllByRole('listitem');
@@ -223,7 +223,7 @@ describe('Navigation', () => {
     expect(menuItems[1]).toHaveClass('menu-dropdown', 'relative', 'menu-item');
   });
 
-  it('renders mega menu with collection card', () => {
+  it('renders mega menu with collection card', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={megaMenuItems} />);
 
     const categoriesItem = screen.getByText('Categories');
@@ -234,7 +234,7 @@ describe('Navigation', () => {
     expect(megaMenuItem).toHaveClass('menu-megamenu', 'menu-item');
   });
 
-  it('applies consistent text styling across menu types', () => {
+  it('applies consistent text styling across menu types', (_: any) => {
     const mixedMenu = [
       { id: 'simple', name: 'Simple', href: '/', type: undefined as any },
       {
@@ -251,12 +251,12 @@ describe('Navigation', () => {
 
     // All menu items should have consistent text styling
     const links = screen.getAllByRole('link');
-    links.forEach((link) => {
+    links.forEach((link: any) => {
       expect(link).toHaveClass('text-sm', 'font-medium', 'text-neutral-700');
     });
   });
 
-  it('handles empty menu gracefully', () => {
+  it('handles empty menu gracefully', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={[]} />);
 
     const navigationList = screen.getByTestId('main-navigation');
@@ -264,7 +264,7 @@ describe('Navigation', () => {
     expect(navigationList.children).toHaveLength(0);
   });
 
-  it('maintains proper structure for accessibility', () => {
+  it('maintains proper structure for accessibility', (_: any) => {
     render(<Navigation featuredCollection={mockFeaturedCollection} menu={defaultMenuItems} />);
 
     // Should be a proper unordered list
@@ -273,7 +273,7 @@ describe('Navigation', () => {
 
     // Each menu item should be a list item
     const menuItems = screen.getAllByRole('listitem');
-    menuItems.forEach((item) => {
+    menuItems.forEach((item: any) => {
       expect(item.tagName).toBe('LI');
     });
   });

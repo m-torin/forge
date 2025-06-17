@@ -32,6 +32,14 @@ import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 
+import {
+  listAllOrganizations,
+  createOrganization,
+  deleteOrganization,
+  bulkInviteUsers,
+  listUsers,
+} from '@repo/auth/server/next';
+
 import { DataTable } from '../../components/data-table';
 import { PageHeader } from '../../components/page-header';
 import { StatsCard } from '../../components/stats-card';
@@ -68,8 +76,10 @@ export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
-  const [inviteModalOpened, { open: openInviteModal, close: closeInviteModal }] = useDisclosure(false);
+  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
+    useDisclosure(false);
+  const [inviteModalOpened, { open: openInviteModal, close: closeInviteModal }] =
+    useDisclosure(false);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [newOrg, setNewOrg] = useState({
     name: '',
@@ -104,9 +114,13 @@ export default function OrganizationsPage() {
     },
     {
       title: 'Average Members',
-      value: organizations.length > 0 
-        ? Math.round(organizations.reduce((acc, org) => acc + (org._count?.members || 0), 0) / organizations.length).toString()
-        : '0',
+      value:
+        organizations.length > 0
+          ? Math.round(
+              organizations.reduce((acc, org) => acc + (org._count?.members || 0), 0) /
+                organizations.length,
+            ).toString()
+          : '0',
       color: 'violet',
       icon: IconBuildingStore,
     },
@@ -115,11 +129,11 @@ export default function OrganizationsPage() {
   useEffect(() => {
     loadOrganizations();
     loadUsers();
-    
+
     // Listen for refresh events from modals
     const handleRefresh = () => loadOrganizations();
     window.addEventListener('refreshOrganizations', handleRefresh);
-    
+
     return () => {
       window.removeEventListener('refreshOrganizations', handleRefresh);
     };
@@ -128,14 +142,13 @@ export default function OrganizationsPage() {
   const loadOrganizations = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/organizations');
-      if (response.ok) {
-        const data = await response.json();
-        setOrganizations(data.organizations || []);
+      const result = await listAllOrganizations();
+      if (result.success && result.data) {
+        setOrganizations(result.data || []);
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to load organizations',
+          message: result.error || 'Failed to load organizations',
           color: 'red',
         });
       }
@@ -153,10 +166,9 @@ export default function OrganizationsPage() {
 
   const loadUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users?limit=1000');
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users || []);
+      const result = await listUsers();
+      if (result.success && result.data) {
+        setUsers(result.data || []);
       }
     } catch (error) {
       console.error('Failed to load users:', error);
@@ -171,7 +183,7 @@ export default function OrganizationsPage() {
   };
 
   const handleNameChange = (name: string) => {
-    setNewOrg(prev => ({
+    setNewOrg((prev) => ({
       ...prev,
       name,
       slug: prev.slug || generateSlug(name),
@@ -180,15 +192,13 @@ export default function OrganizationsPage() {
 
   const handleCreateOrganization = async () => {
     try {
-      const response = await fetch('/api/admin/organizations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newOrg),
+      const result = await createOrganization({
+        name: newOrg.name,
+        slug: newOrg.slug,
+        metadata: newOrg.description ? { description: newOrg.description } : undefined,
       });
 
-      if (response.ok) {
+      if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'Organization created successfully',
@@ -198,10 +208,9 @@ export default function OrganizationsPage() {
         setNewOrg({ name: '', slug: '', description: '' });
         await loadOrganizations();
       } else {
-        const error = await response.json();
         notifications.show({
           title: 'Error',
-          message: error.message || 'Failed to create organization',
+          message: result.error || 'Failed to create organization',
           color: 'red',
         });
       }
@@ -221,8 +230,8 @@ export default function OrganizationsPage() {
     try {
       const emailList = inviteData.emails
         .split('\n')
-        .map(email => email.trim())
-        .filter(email => email && email.includes('@'));
+        .map((email) => email.trim())
+        .filter((email) => email && email.includes('@'));
 
       if (emailList.length === 0) {
         notifications.show({
@@ -233,21 +242,15 @@ export default function OrganizationsPage() {
         return;
       }
 
-      const response = await fetch(`/api/admin/organizations/${selectedOrg.id}/invite`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          emails: emailList,
-          role: inviteData.role,
-          message: inviteData.message,
-        }),
+      const result = await bulkInviteUsers({
+        emails: emailList,
+        organizationId: selectedOrg.id,
+        role: inviteData.role as 'owner' | 'admin' | 'member',
+        message: inviteData.message || undefined,
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        const successCount = result.results?.filter((r: any) => r.success).length || 0;
+      if (result.success && result.data) {
+        const successCount = result.data.successful?.length || 0;
         const totalCount = emailList.length;
 
         notifications.show({
@@ -259,10 +262,9 @@ export default function OrganizationsPage() {
         setInviteData({ emails: '', role: 'member', message: '' });
         await loadOrganizations();
       } else {
-        const error = await response.json();
         notifications.show({
           title: 'Error',
-          message: error.message || 'Failed to send invitations',
+          message: result.error || 'Failed to send invitations',
           color: 'red',
         });
       }
@@ -278,11 +280,9 @@ export default function OrganizationsPage() {
 
   const handleDeleteOrganization = async (orgId: string) => {
     try {
-      const response = await fetch(`/api/admin/organizations/${orgId}`, {
-        method: 'DELETE',
-      });
+      const result = await deleteOrganization(orgId);
 
-      if (response.ok) {
+      if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'Organization deleted successfully',
@@ -292,7 +292,7 @@ export default function OrganizationsPage() {
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to delete organization',
+          message: result.error || 'Failed to delete organization',
           color: 'red',
         });
       }
@@ -396,11 +396,7 @@ export default function OrganizationsPage() {
 
         <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
           {statsData.map((stat) => (
-            <StatsCard
-              key={stat.title}
-              {...stat}
-              loading={loading}
-            />
+            <StatsCard key={stat.title} {...stat} loading={loading} />
           ))}
         </SimpleGrid>
 
@@ -469,7 +465,7 @@ export default function OrganizationsPage() {
             label="Slug"
             placeholder="organization-slug"
             value={newOrg.slug}
-            onChange={(e) => setNewOrg(prev => ({ ...prev, slug: e.target.value }))}
+            onChange={(e) => setNewOrg((prev) => ({ ...prev, slug: e.target.value }))}
             description="URL-friendly identifier for the organization"
             required
           />
@@ -477,17 +473,14 @@ export default function OrganizationsPage() {
             label="Description"
             placeholder="Enter organization description (optional)"
             value={newOrg.description}
-            onChange={(e) => setNewOrg(prev => ({ ...prev, description: e.target.value }))}
+            onChange={(e) => setNewOrg((prev) => ({ ...prev, description: e.target.value }))}
             rows={3}
           />
           <Group justify="flex-end" mt="md">
             <Button variant="light" onClick={closeCreateModal}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleCreateOrganization}
-              disabled={!newOrg.name || !newOrg.slug}
-            >
+            <Button onClick={handleCreateOrganization} disabled={!newOrg.name || !newOrg.slug}>
               Create Organization
             </Button>
           </Group>
@@ -495,58 +488,53 @@ export default function OrganizationsPage() {
       </Modal>
 
       {/* Invite Members Modal */}
-      <Modal 
-        opened={inviteModalOpened} 
-        onClose={closeInviteModal} 
+      <Modal
+        opened={inviteModalOpened}
+        onClose={closeInviteModal}
         title={`Invite Members to ${selectedOrg?.name}`}
         size="md"
       >
         <Stack gap="md">
-          <Alert
-            icon={<IconAlertTriangle size={16} />}
-            title="Bulk Invitation"
-            color="blue"
-          >
+          <Alert icon={<IconAlertTriangle size={16} />} title="Bulk Invitation" color="blue">
             Enter one email address per line to invite multiple users at once.
           </Alert>
-          
+
           <Textarea
             label="Email Addresses"
             placeholder={'user1@example.com\nuser2@example.com\nuser3@example.com'}
             value={inviteData.emails}
-            onChange={(e) => setInviteData(prev => ({ ...prev, emails: e.target.value }))}
+            onChange={(e) => setInviteData((prev) => ({ ...prev, emails: e.target.value }))}
             rows={6}
             required
           />
-          
+
           <Select
             label="Role"
             placeholder="Select role for invited users"
             value={inviteData.role}
-            onChange={(value) => setInviteData(prev => ({ ...prev, role: value as any || 'member' }))}
+            onChange={(value) =>
+              setInviteData((prev) => ({ ...prev, role: (value as any) || 'member' }))
+            }
             data={[
               { value: 'member', label: 'Member' },
               { value: 'admin', label: 'Admin' },
               { value: 'owner', label: 'Owner' },
             ]}
           />
-          
+
           <Textarea
             label="Invitation Message (Optional)"
             placeholder="Add a personal message to the invitation..."
             value={inviteData.message}
-            onChange={(e) => setInviteData(prev => ({ ...prev, message: e.target.value }))}
+            onChange={(e) => setInviteData((prev) => ({ ...prev, message: e.target.value }))}
             rows={3}
           />
-          
+
           <Group justify="flex-end" mt="md">
             <Button variant="light" onClick={closeInviteModal}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleInviteUsers}
-              disabled={!inviteData.emails.trim()}
-            >
+            <Button onClick={handleInviteUsers} disabled={!inviteData.emails.trim()}>
               Send Invitations
             </Button>
           </Group>

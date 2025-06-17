@@ -1,0 +1,508 @@
+---
+title: 'Web Template Overview'
+description:
+  'Modern e-commerce web template with Mantine UI, internationalization, and advanced search'
+icon: 'store'
+---
+
+# Web Template Overview
+
+Modern, production-ready e-commerce web application template built with Next.js 15, React 19, and
+Mantine UI v8.
+
+<Note>
+  Web Template runs on port **3250** and serves as both a fully-functional e-commerce demonstration
+  and a template for building modern e-commerce applications.
+</Note>
+
+## Purpose & Differentiators
+
+<CardGroup cols={2}>
+  <Card title="Demo & Starter Template" icon="rocket">
+    Complete e-commerce demonstration and starting point for new projects
+  </Card>
+  <Card title="Component Showcase" icon="puzzle">
+    Comprehensive collection of production-ready e-commerce UI components
+  </Card>
+  <Card title="Mantine UI Integration" icon="paintbrush">
+    Complete migration from Headless UI to Mantine v8 components
+  </Card>
+  <Card title="Mock Data Ready" icon="database">
+    Works with demo data while being ready for real backend integration
+  </Card>
+</CardGroup>
+
+## Core E-commerce Features
+
+### Product Management
+
+<AccordionGroup>
+  <Accordion title="Product Catalog" icon="grid">
+    - Product listings with multiple layout styles - Product detail pages with unified layouts
+    (standard, gallery, minimal, showcase) - Product variants and options support - Advanced
+    filtering and sorting capabilities
+  </Accordion>
+
+<Accordion title="Product Reviews" icon="star">
+  - Product reviews and ratings system - Review submission and management - Rating aggregation and
+  display - Review filtering and moderation
+</Accordion>
+
+  <Accordion title="Search Integration" icon="search">
+    - Full-text search with Algolia - Advanced product search and filtering - Search analytics and
+    optimization - Visual and neural search capabilities
+  </Accordion>
+</AccordionGroup>
+
+### Shopping Experience
+
+- **Shopping Cart**: Persistent cart with local storage and quantity management
+- **Guest Favorites**: Wishlist system for non-authenticated users
+- **Multi-step Checkout**: Complete checkout flow with validation
+- **Order Management**: Order tracking, history, and status updates
+
+### Content Management
+
+<Tabs>
+  <Tab title="Blog System">
+    - Multiple blog card layouts and styles - Post categories and tags - Author profiles and
+    metadata - SEO-optimized blog pages
+  </Tab>
+
+<Tab title="Brand Management">
+  - Brand pages with product collections - Brand storytelling and media - Brand-specific product
+  filtering - Brand comparison features
+</Tab>
+
+  <Tab title="Events & Locations">
+    - Event management and calendars - Location-based store finder - Event registration and tracking
+    - Geographic product availability
+  </Tab>
+</Tabs>
+
+## Advanced Search Integration
+
+The web template features **20+ Algolia search implementations** showcasing enterprise search
+capabilities:
+
+### Production Search Features
+
+<CardGroup cols={2}>
+  <Card title="Federated Autocomplete" icon="bolt">
+    Real-time search with intelligent suggestions and multi-index support
+  </Card>
+  <Card title="Visual Search" icon="image">
+    Image-based product discovery and similarity matching
+  </Card>
+  <Card title="Neural Search" icon="brain">
+    AI-powered semantic search with natural language processing
+  </Card>
+  <Card title="A/B Testing" icon="experiment">
+    Built-in search experiment framework for optimization
+  </Card>
+</CardGroup>
+
+### Search Analytics
+
+```typescript
+// Search analytics dashboard
+import { SearchAnalytics } from '@/components/search/SearchAnalytics';
+
+export function SearchDashboard() {
+  return (
+    <SearchAnalytics
+      timeRange="7d"
+      metrics={['queries', 'clicks', 'conversions']}
+      dimensions={['query', 'index', 'filters']}
+    />
+  );
+}
+```
+
+## Internationalization Support
+
+### Supported Locales
+
+The template supports **5 complete localizations**:
+
+| Language   | Code | Completion | Features                |
+| ---------- | ---- | ---------- | ----------------------- |
+| English    | `en` | 100%       | Default, SEO optimized  |
+| French     | `fr` | 100%       | Complete UI translation |
+| Spanish    | `es` | 100%       | Complete UI translation |
+| German     | `de` | 100%       | Complete UI translation |
+| Portuguese | `pt` | 100%       | Complete UI translation |
+
+### Locale Implementation
+
+<CodeGroup>
+```typescript Server Component
+import { getDictionary } from '@/i18n/dictionaries';
+
+export default async function ProductPage({ 
+  params: { locale, handle } 
+}) {
+  const dict = await getDictionary(locale);
+  const product = await getProduct(handle);
+
+return ( <div> <h1>{product.name}</h1> <button>{dict.products.addToCart}</button> </div> ); }
+
+````
+
+```typescript Client Component
+import { useLocale } from '@/hooks/use-locale';
+
+export function LocaleSwitcher() {
+  const { locale, setLocale, locales } = useLocale();
+
+  return (
+    <Select
+      value={locale}
+      onChange={setLocale}
+      data={locales.map(l => ({
+        value: l.code,
+        label: l.name
+      }))}
+    />
+  );
+}
+````
+
+</CodeGroup>
+
+## UI Framework Architecture
+
+### Mantine UI v8 (Primary)
+
+The template uses **Mantine UI v8** as the primary component library:
+
+```typescript
+// Form handling with Mantine + Zod
+import { useForm, zodResolver } from '@mantine/form';
+import { TextInput, Button, Notification } from '@mantine/core';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export function LoginForm() {
+  const form = useForm({
+    validate: zodResolver(schema),
+    initialValues: { email: '', password: '' },
+  });
+
+  return (
+    <form onSubmit={form.onSubmit(handleSubmit)}>
+      <TextInput
+        label="Email"
+        {...form.getInputProps('email')}
+      />
+      <Button type="submit">Sign In</Button>
+    </form>
+  );
+}
+```
+
+### Key Mantine Features
+
+<CardGroup cols={2}>
+  <Card title="Dark Mode" icon="moon">
+    Built-in dark mode with `useMantineColorScheme` hook
+  </Card>
+  <Card title="Responsive Design" icon="mobile">
+    Responsive props: `{ base: value, sm: value, md: value }`
+  </Card>
+  <Card title="Form System" icon="form">
+    Advanced form handling with validation and error states
+  </Card>
+  <Card title="Notifications" icon="bell">
+    Toast notifications and alert system integration
+  </Card>
+</CardGroup>
+
+## Component Library
+
+### Section Components (Homepage)
+
+<AccordionGroup>
+  <Accordion title="Hero Sections" icon="star">
+    - `SectionHero` - Primary hero with CTA - `SectionHero2` - Alternate hero layout -
+    `SectionHero3` - Minimal hero design
+  </Accordion>
+
+<Accordion title="Product Showcases" icon="grid">
+  - `SectionCollectionSlider` - Collection carousels - `SectionSliderLargeProduct` - Large product
+  carousels - `SectionGridFeatureItems` - Featured product grids
+</Accordion>
+
+  <Accordion title="Content Sections" icon="text">
+    - `SectionHowItWork` - Process explanation - `SectionPromo3` - Newsletter signup -
+    `SectionMagazine5` - Featured content
+  </Accordion>
+</AccordionGroup>
+
+### Product Components
+
+```typescript
+// ProductCard with favorites
+import { ProductCard } from '@/components/ui/ProductCard';
+
+export function ProductGrid({ products }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {products.map(product => (
+        <ProductCard
+          key={product.id}
+          product={product}
+          showFavorite
+          showQuickView
+          showCompare
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+### Blog Components
+
+- `PostCard1` - Featured blog post card
+- `PostCard2` - Compact horizontal layout
+- `PostCardMeta` - Author and date metadata
+- `SectionGridPosts` - Blog grid with pagination
+
+## Technology Stack
+
+### Core Technologies
+
+<CardGroup cols={2}>
+  <Card title="Next.js 15.4.0" icon="triangle">
+    App Router, Server Components, and React 19 integration
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Strict typing with zero TypeScript errors
+  </Card>
+  <Card title="Mantine UI v8" icon="paintbrush">
+    Modern, accessible component library
+  </Card>
+  <Card title="Tailwind CSS v4" icon="palette">
+    Utility-first styling for custom components
+  </Card>
+</CardGroup>
+
+### Backend Integration
+
+- **Better Auth**: Complete authentication system (UI ready)
+- **Prisma ORM**: Database layer configured for PostgreSQL
+- **Server Actions**: API layer with Zod validation
+- **Analytics**: PostHog, Segment integration ready
+
+## Development Workflow
+
+### Getting Started
+
+<Steps>
+  <Step title="Installation">```bash cd apps/web-template pnpm install ```</Step>
+  <Step title="Development">```bash pnpm dev # Runs on port 3250 ```</Step>
+  <Step title="Configuration">Set up environment variables for backend integration</Step>
+  <Step title="Customization">Modify components and styling to match your brand</Step>
+</Steps>
+
+### Key Configuration
+
+```bash
+# Demo Mode (default)
+DEMO_MODE=true
+NEXT_PUBLIC_DEMO_MODE=true
+
+# Algolia Search (uses public demo dataset)
+NEXT_PUBLIC_ALGOLIA_APP_ID=latency
+NEXT_PUBLIC_ALGOLIA_API_KEY=6be0576ff61c053d5f9a3225e2a90f76
+
+# Better Auth (configure for production)
+BETTER_AUTH_SECRET=your-secret-key
+BETTER_AUTH_URL=http://localhost:3250
+
+# Analytics (optional)
+NEXT_PUBLIC_POSTHOG_KEY=your-posthog-key
+SEGMENT_WRITE_KEY=your-segment-key
+```
+
+## Migration & Improvements
+
+### Headless UI → Mantine v8 Migration
+
+The template represents a complete migration with these improvements:
+
+<Warning>
+  **Migration Complete**: All 148 components successfully migrated from Headless UI to Mantine v8
+  with enhanced functionality.
+</Warning>
+
+**Key Improvements:**
+
+- ✅ Complete error handling and loading states
+- ✅ Enhanced accessibility with ARIA attributes
+- ✅ Responsive design optimization
+- ✅ Dark mode support throughout
+- ✅ Form validation with Zod integration
+- ✅ Type safety with zero TypeScript errors
+
+### Performance Optimizations
+
+<CardGroup cols={2}>
+  <Card title="Static Generation" icon="bolt">
+    `generateStaticParams` for product and collection pages
+  </Card>
+  <Card title="Image Optimization" icon="image">
+    Next.js Image with WebP/AVIF support
+  </Card>
+  <Card title="Code Splitting" icon="scissors">
+    Dynamic imports for large components
+  </Card>
+  <Card title="SEO Ready" icon="search">
+    Dynamic metadata and structured data
+  </Card>
+</CardGroup>
+
+## Production Readiness
+
+### SEO Features
+
+- **Dynamic Metadata**: Product and collection meta tags
+- **Structured Data**: Schema.org markup for products
+- **Sitemaps**: Automated sitemap generation
+- **hreflang**: International SEO optimization
+
+### Security & Performance
+
+- **Rate Limiting**: API endpoint protection
+- **Authentication**: Better Auth integration
+- **Error Boundaries**: Comprehensive error handling
+- **Mobile First**: Responsive design throughout
+
+## Component Usage Examples
+
+### Import Patterns
+
+<CodeGroup>
+```typescript Individual Imports
+import Breadcrumb from '@/components/ui/Breadcrumb';
+import ReviewItem from '@/components/ui/ReviewItem';
+import Avatar from '@/components/ui/Avatar';
+```
+
+```typescript Named Imports
+import { Breadcrumb, ReviewItem, Avatar } from '@/components/ui';
+```
+
+</CodeGroup>
+
+### Breadcrumb Component
+
+Navigation breadcrumbs for user orientation:
+
+```tsx
+import { Breadcrumb } from '@/components/ui';
+
+const breadcrumbs = [
+  { href: '/', id: 1, name: 'Home' },
+  { href: '/products', id: 2, name: 'Products' },
+  { href: '/products/electronics', id: 3, name: 'Electronics' },
+];
+
+function ProductPage() {
+  return <Breadcrumb breadcrumbs={breadcrumbs} currentPage="Smartphone" className="mb-4" />;
+}
+```
+
+### ReviewItem Component
+
+Display product reviews with author information:
+
+```tsx
+import { ReviewItem } from '@/components/ui';
+import { TReview } from '@/types';
+
+const review: TReview = {
+  id: '1',
+  rating: 4,
+  comment: 'Great product! Highly recommended.',
+  author: {
+    name: 'John Doe',
+    image: 'https://example.com/avatar.jpg',
+  },
+  createdAt: '2024-01-15',
+};
+
+function ProductReviews() {
+  return (
+    <div className="space-y-4">
+      <ReviewItem data={review} className="border-b pb-4" />
+    </div>
+  );
+}
+```
+
+### Avatar Component
+
+User profile images with fallback initials:
+
+```tsx
+import { Avatar } from '@/components/ui';
+
+function UserProfile() {
+  return (
+    <Avatar
+      userName="Jane Smith"
+      imgUrl="https://example.com/jane.jpg"
+      sizeClass="size-12 text-lg"
+      testId="user-avatar"
+    />
+  );
+}
+```
+
+### Type Compatibility
+
+The components support both new and legacy TReview formats:
+
+<Tabs>
+  <Tab title="New Format (Preferred)">
+    ```typescript
+    const newReview: TReview = {
+      id: '1',
+      rating: 5,
+      comment: 'Excellent!',
+      author: {
+        name: 'Alice Johnson',
+        image: 'https://example.com/alice.jpg',
+      },
+      createdAt: '2024-01-15',
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Legacy Format (Still Supported)">
+    ```typescript
+    const legacyReview: TReview = {
+      id: '2',
+      rating: 4,
+      content: 'Good product',
+      author: 'Bob Wilson', // string format
+      authorAvatar: 'https://example.com/bob.jpg',
+      date: '2024-01-10',
+    };
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  Both formats work seamlessly with the ReviewItem component, providing backward compatibility while
+  encouraging the use of the new structured format.
+</Note>
+
+The Web Template provides a comprehensive foundation for building modern e-commerce applications
+with enterprise-grade search, internationalization, and a complete component library.

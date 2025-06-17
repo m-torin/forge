@@ -1,16 +1,15 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { WorkflowClient, type WorkflowClientConfig } from '../src/client';
+import { WorkflowExecution } from '../src/shared/types';
 
 import { createTestWorkflow } from './fixtures';
-
-import type { WorkflowExecution } from '../src/shared/types';
 
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('Workflow Client', () => {
+describe('Workflow Client', (_: any) => {
   let client: WorkflowClient;
   const mockConfig: WorkflowClientConfig = {
     apiKey: 'test-key',
@@ -24,12 +23,12 @@ describe('Workflow Client', () => {
     client = new WorkflowClient(mockConfig);
   });
 
-  describe('Client Creation', () => {
-    test('should create client with valid config', () => {
+  describe('Client Creation', (_: any) => {
+    test('should create client with valid config', (_: any) => {
       expect(client).toBeDefined();
     });
 
-    test('should throw error with invalid config', () => {
+    test('should throw error with invalid config', (_: any) => {
       // WorkflowClient constructor validates required fields
       expect(() => new WorkflowClient({ baseUrl: '' } as any)).toThrow();
       expect(
@@ -38,7 +37,7 @@ describe('Workflow Client', () => {
     });
   });
 
-  describe('Workflow Execution', () => {
+  describe('Workflow Execution', (_: any) => {
     const mockWorkflow = createTestWorkflow();
 
     test('should submit workflow successfully', async () => {
@@ -85,7 +84,7 @@ describe('Workflow Client', () => {
     });
   });
 
-  describe('Execution Status', () => {
+  describe('Execution Status', (_: any) => {
     test('should get execution status', async () => {
       const mockStatus: WorkflowExecution = {
         id: 'exec_123',
@@ -126,7 +125,7 @@ describe('Workflow Client', () => {
     });
   });
 
-  describe('Execution Management', () => {
+  describe('Execution Management', (_: any) => {
     test('should cancel execution', async () => {
       mockFetch.mockResolvedValueOnce({
         json: () => Promise.resolve({ cancelled: true }),
@@ -188,7 +187,7 @@ describe('Workflow Client', () => {
     });
   });
 
-  describe('Error Handling', () => {
+  describe('Error Handling', (_: any) => {
     test('should handle network errors', async () => {
       // Create client with retries disabled for faster error tests
       const errorClient = new WorkflowClient({

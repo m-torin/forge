@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { type FC } from 'react';
 
+import { TCollection, TNavigationItem } from '../../data/types';
 import Logo from '../shared/Logo/Logo';
 
 import AvatarDropdown from './AvatarDropdown';
@@ -11,14 +12,11 @@ import HamburgerBtnMenu from './HamburgerBtnMenu';
 import { MegaMenuPopover } from './MegaMenuPopover';
 import SearchBtnPopover from './SearchBtnPopover';
 
-import type { TCollection } from '../../data/types';
-import type { TNavigationItem } from '../../data/types';
-
-export interface HeaderProps {
+export interface HeaderProps extends Record<string, any> {
   announcementText?: string;
   breadcrumbs?: {
-    label: string;
     href: string;
+    label: string;
   }[];
   cartCount?: number;
   currentLanguage?: string;
@@ -31,11 +29,11 @@ export interface HeaderProps {
   logo?: React.ReactNode;
   megaMenu?: boolean;
   menuItems?: {
-    label: string;
     children?: {
-      label: string;
       href: string;
+      label: string;
     }[];
+    label: string;
   }[];
   notificationCount?: number;
   onCartClick?: () => void;
@@ -50,9 +48,9 @@ export interface HeaderProps {
   sticky?: boolean;
   testId?: string;
   user?: {
-    name: string;
-    email: string;
     avatar?: string;
+    email: string;
+    name: string;
   };
 }
 
@@ -65,29 +63,29 @@ const Header: FC<HeaderProps> = ({
 }) => {
   // Mock data for testing - in real implementation these would be props or from context
   const megamenu: TNavigationItem = {
+    children: [],
     id: '1',
     name: 'Templates',
     type: 'mega-menu',
-    children: [],
   };
   const dropdownCategories: {
-    name: string;
     description: string;
     handle: string;
     icon: string;
+    name: string;
   }[] = [];
   const currencies: {
-    id: string;
-    name: string;
     active?: boolean;
     href: string;
     icon: string;
+    id: string;
+    name: string;
   }[] = [];
-  const languages: { id: string; name: string; description: string; locale: string }[] = [];
+  const languages: { description: string; id: string; locale: string; name: string }[] = [];
   const featuredCollections: TCollection[] = [];
 
   return (
-    <header data-testid={testId} role="banner" className="relative z-10">
+    <header className="relative z-10" data-testid={testId} role="banner">
       <div className="container">
         <div
           className={clsx(
@@ -105,30 +103,30 @@ const Header: FC<HeaderProps> = ({
           </div>
 
           <nav
-            data-testid={`${testId}-navigation`}
-            className="flex flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5"
             aria-label="Main navigation"
+            className="flex flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5"
+            data-testid={`${testId}-navigation`}
           >
             <div className="block lg:hidden">
-              <HamburgerBtnMenu onClick={onMenuClick} aria-label="Toggle menu" />
+              <HamburgerBtnMenu aria-label="Toggle menu" onClick={onMenuClick} />
             </div>
             {featuredCollections[0] && megamenu.children && megamenu.children.length > 0 && (
               <MegaMenuPopover featuredCollection={featuredCollections[0]} megamenu={megamenu} />
             )}
             {(currencies.length > 0 || languages.length > 0) && (
               <CurrLangDropdown
-                currentLocale={currentLocale}
                 className="hidden md:block"
                 currencies={currencies}
+                currentLocale={currentLocale}
                 languages={languages}
               />
             )}
             <SearchBtnPopover data-testid={`${testId}-search`} />
             <AvatarDropdown data-testid={`${testId}-user-menu`} />
             <CartBtn
+              aria-label="Shopping cart"
               data-testid={`${testId}-cart`}
               onClick={onCartClick}
-              aria-label="Shopping cart"
             />
           </nav>
         </div>

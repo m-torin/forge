@@ -18,7 +18,7 @@ import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useCallback, useEffect, useState } from 'react';
 
-import { getProducts } from '@repo/database/prisma/actions';
+import { getProductsAction } from '@repo/database/prisma';
 import { createProduct, updateProduct } from '../actions';
 
 import type { Product } from '@repo/database/prisma';
@@ -76,15 +76,15 @@ export function ProductFormModal({ onClose, onSuccess, opened, product }: Produc
   // Load potential parent products
   const loadPotentialParents = useCallback(async () => {
     try {
-      const result = await getProducts({
+      const result = await getProductsAction({
         limit: 100,
         parentFilter: 'standalone', // Only show products that don't have parents themselves
       });
 
-      if (result.success && result.data) {
+      if (result.data) {
         const parents = result.data
-          .filter((p) => p.id !== product?.id) // Don't include the current product
-          .map((p) => ({
+          .filter((p: any) => p.id !== product?.id) // Don't include the current product
+          .map((p: any) => ({
             label: `${p.name} (${p.sku})`,
             value: p.id,
           }));

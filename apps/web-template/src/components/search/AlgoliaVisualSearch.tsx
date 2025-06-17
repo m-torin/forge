@@ -22,7 +22,6 @@ import {
   Modal,
   ActionIcon,
   Center,
-  Avatar,
   Slider,
   Switch,
   Tabs,
@@ -37,13 +36,11 @@ import {
   IconBrandAlgolia,
   IconStar,
   IconShoppingCart,
-  IconColorSwatch,
-  IconRuler,
-  IconTag,
-  IconFilter,
   IconAdjustments,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Types for Visual Search
 interface VisualSearchResult {
@@ -159,74 +156,120 @@ const mockAnalysis: ImageAnalysis = {
 
 // Visual search result card
 function VisualSearchResultCard({ result }: { result: VisualSearchResult }) {
+  const [imageError, setImageError] = useState(false);
+  const [internalError, setInternalError] = useState<string | null>(null);
+
+  const handleAddToCart = () => {
+    try {
+      // Add to cart logic here
+      console.log('Adding to cart:', result.objectID);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      setInternalError('Failed to add to cart');
+    }
+  };
+
   return (
-    <Card shadow="sm" padding="lg" radius="sm" withBorder={true} h="100%">
-      <Card.Section>
-        <Image src={result.image} height={200} alt={result.name} fit="cover" />
-      </Card.Section>
+    <ErrorBoundary
+      fallback={
+        <Card shadow="sm" padding="lg" radius="sm" withBorder={true} h="100%">
+          <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+            <Text size="xs">Product card failed to load</Text>
+          </Alert>
+        </Card>
+      }
+    >
+      <Card shadow="sm" padding="lg" radius="sm" withBorder={true} h="100%">
+        {internalError && (
+          <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light" mb="xs">
+            <Text size="xs">{internalError}</Text>
+          </Alert>
+        )}
+        <Card.Section>
+          {imageError ? (
+            <Center h={200} style={{ backgroundColor: '#f0f0f0' }}>
+              <Stack align="center" gap="xs">
+                <IconPhoto size={48} style={{ color: '#999' }} />
+                <Text size="xs" c="dimmed">
+                  Image unavailable
+                </Text>
+              </Stack>
+            </Center>
+          ) : (
+            <Image
+              src={result.image}
+              height={200}
+              alt={result.name}
+              fit="cover"
+              onError={() => setImageError(true)}
+            />
+          )}
+        </Card.Section>
 
-      <Stack gap="xs" mt="md">
-        <Group justify="space-between" align="flex-start">
-          <div style={{ flex: 1 }}>
-            <Text fw={600} size="md" lineClamp={2}>
-              {result.name}
-            </Text>
-            {result.brand && (
-              <Text size="xs" c="dimmed">
-                {result.brand}
+        <Stack gap="xs" mt="md">
+          <Group justify="space-between" align="flex-start">
+            <div style={{ flex: 1 }}>
+              <Text fw={600} size="md" lineClamp={2}>
+                {result.name}
               </Text>
-            )}
-          </div>
-          <Badge c="blue" variant="light" size="md">
-            {Math.round(result.similarity * 100)}% match
-          </Badge>
-        </Group>
-
-        {result.rating && (
-          <Group gap="xs">
-            <IconStar size={14} fill="currentColor" style={{ color: '#ffd43b' }} />
-            <Text size="xs" c="dimmed">
-              {result.rating} rating
-            </Text>
+              {result.brand && (
+                <Text size="xs" c="dimmed">
+                  {result.brand}
+                </Text>
+              )}
+            </div>
+            <Badge c="blue" variant="light" size="md">
+              {Math.round(result.similarity * 100)}% match
+            </Badge>
           </Group>
-        )}
 
-        <Text fw={700} size="lg" c="blue">
-          ${result.price}
-        </Text>
+          {result.rating && (
+            <Group gap="xs">
+              <IconStar size={14} fill="currentColor" style={{ color: '#ffd43b' }} />
+              <Text size="xs" c="dimmed">
+                {result.rating} rating
+              </Text>
+            </Group>
+          )}
 
-        {result.colors && (
-          <Group gap="xs">
-            <Text size="xs" c="dimmed">
-              Colors:
-            </Text>
-            {result.colors.map((color) => (
-              <div
-                key={color}
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 6,
-                  backgroundColor: color,
-                  border: '1px solid #ddd',
-                }}
-                title={color}
-              />
-            ))}
-          </Group>
-        )}
+          <Text fw={700} size="lg" c="blue">
+            ${result.price}
+          </Text>
 
-        <Button
-          fullWidth
-          size="md"
-          variant="light"
-          leftSection={<IconShoppingCart size={16} />}
-          mt="xs"
-        >
-          Add to Cart
-        </Button>
-      </Stack>
-    </Card>
+          {result.colors && (
+            <Group gap="xs">
+              <Text size="xs" c="dimmed">
+                Colors:
+              </Text>
+              {result.colors.map((color) => (
+                <div
+                  key={color}
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    backgroundColor: color,
+                    border: '1px solid #ddd',
+                  }}
+                  title={color}
+                />
+              ))}
+            </Group>
+          )}
+
+          <Button
+            fullWidth
+            size="md"
+            variant="light"
+            leftSection={<IconShoppingCart size={16} />}
+            mt="xs"
+            onClick={handleAddToCart}
+          >
+            Add to Cart
+          </Button>
+        </Stack>
+      </Card>
+    </ErrorBoundary>
   );
 }
 
@@ -321,8 +364,11 @@ function CameraCapture({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
   const startCamera = async () => {
     try {
+      setCameraError(null);
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }, // Use back camera on mobile
       });
@@ -332,6 +378,7 @@ function CameraCapture({
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
+      setCameraError('Unable to access camera. Please check permissions.');
     }
   };
 
@@ -343,21 +390,26 @@ function CameraCapture({
   };
 
   const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const video = videoRef.current;
+    try {
+      if (videoRef.current && canvasRef.current) {
+        const canvas = canvasRef.current;
+        const video = videoRef.current;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0);
-        const imageUrl = canvas.toDataURL('image/jpeg');
-        onCapture(imageUrl);
-        stopCamera();
-        onClose();
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0);
+          const imageUrl = canvas.toDataURL('image/jpeg');
+          onCapture(imageUrl);
+          stopCamera();
+          onClose();
+        }
       }
+    } catch (error) {
+      console.error('Failed to capture photo:', error);
+      setCameraError('Failed to capture photo');
     }
   };
 
@@ -372,23 +424,90 @@ function CameraCapture({
 
   return (
     <Modal opened={opened} onClose={onClose} title="Capture Photo" size="lg" centered>
-      <Stack gap="md">
-        <div style={{ position: 'relative' }}>
-          <video ref={videoRef} autoPlay playsInline style={{ width: '100%', borderRadius: 8 }} />
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
-        </div>
+      <ErrorBoundary
+        fallback={
+          <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+            <Text size="sm">Camera failed to load</Text>
+          </Alert>
+        }
+      >
+        <Stack gap="md">
+          {cameraError && (
+            <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+              <Text size="sm">{cameraError}</Text>
+            </Alert>
+          )}
+          <div style={{ position: 'relative' }}>
+            <video ref={videoRef} autoPlay playsInline style={{ width: '100%', borderRadius: 8 }} />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+          </div>
 
-        <Group justify="center">
-          <Button size="lg" onClick={capturePhoto} leftSection={<IconCamera />} disabled={!stream}>
-            Capture Photo
-          </Button>
-        </Group>
-      </Stack>
+          <Group justify="center">
+            <Button
+              size="lg"
+              onClick={capturePhoto}
+              leftSection={<IconCamera />}
+              disabled={!stream}
+            >
+              Capture Photo
+            </Button>
+          </Group>
+        </Stack>
+      </ErrorBoundary>
     </Modal>
   );
 }
 
-export default function AlgoliaVisualSearch() {
+interface AlgoliaVisualSearchProps {
+  loading?: boolean;
+  error?: string;
+  'data-testid'?: string;
+}
+
+// Loading skeleton for AlgoliaVisualSearch
+function AlgoliaVisualSearchSkeleton({ testId }: { testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Stack gap="xl">
+        <div>
+          <Group gap="md" mb="md">
+            <Skeleton height={64} width={64} radius="md" />
+            <div>
+              <Skeleton height={32} width={250} mb="xs" />
+              <Skeleton height={20} width={350} />
+            </div>
+          </Group>
+        </div>
+        <Skeleton height={150} />
+        <Skeleton height={200} />
+        <Grid>
+          {[...Array(4)].map((_, i) => (
+            <Grid.Col key={i} span={{ base: 12, sm: 6, md: 3 }}>
+              <Skeleton height={350} />
+            </Grid.Col>
+          ))}
+        </Grid>
+      </Stack>
+    </Container>
+  );
+}
+
+// Error state for AlgoliaVisualSearch
+function AlgoliaVisualSearchError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Visual search failed to load: {error}</Text>
+      </Alert>
+    </Container>
+  );
+}
+
+export default function AlgoliaVisualSearch({
+  loading = false,
+  error,
+  'data-testid': testId = 'algolia-visual-search',
+}: AlgoliaVisualSearchProps = {}) {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<VisualSearchResult[]>([]);
@@ -396,34 +515,66 @@ export default function AlgoliaVisualSearch() {
   const [similarityThreshold, setSimilarityThreshold] = useState(0.7);
   const [enableColorFilter, setEnableColorFilter] = useState(true);
   const [cameraOpened, { open: openCamera, close: closeCamera }] = useDisclosure(false);
+  const [internalError, setInternalError] = useState<string | null>(null);
+
+  // Show loading state
+  if (loading) {
+    return <AlgoliaVisualSearchSkeleton testId={testId} />;
+  }
+
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <AlgoliaVisualSearchError error={currentError} testId={testId} />;
+  }
 
   // Simulate visual search API call
   const performVisualSearch = useCallback(
     async (imageUrl: string) => {
-      setIsAnalyzing(true);
+      try {
+        setIsAnalyzing(true);
+        setInternalError(null);
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Filter results based on similarity threshold
-      const filteredResults = mockResults.filter((r) => r.similarity >= similarityThreshold);
+        // Filter results based on similarity threshold
+        const filteredResults = mockResults.filter((r) => r.similarity >= similarityThreshold);
 
-      setResults(filteredResults);
-      setAnalysis(mockAnalysis);
-      setIsAnalyzing(false);
+        setResults(filteredResults);
+        setAnalysis(mockAnalysis);
+        setIsAnalyzing(false);
+      } catch (error) {
+        console.error('Visual search failed:', error);
+        setInternalError('Visual search failed. Please try again.');
+        setIsAnalyzing(false);
+      }
     },
     [similarityThreshold],
   );
 
   const handleFileUpload = (file: File | null) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        setUploadedImage(imageUrl);
-        performVisualSearch(imageUrl);
-      };
-      reader.readAsDataURL(file);
+    try {
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const imageUrl = e.target?.result as string;
+            setUploadedImage(imageUrl);
+            performVisualSearch(imageUrl);
+          } catch (error) {
+            console.error('Failed to process image:', error);
+            setInternalError('Failed to process image');
+          }
+        };
+        reader.onerror = () => {
+          setInternalError('Failed to read image file');
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (error) {
+      console.error('File upload failed:', error);
+      setInternalError('Failed to upload file');
     }
   };
 
@@ -433,184 +584,222 @@ export default function AlgoliaVisualSearch() {
   };
 
   const clearSearch = () => {
-    setUploadedImage(null);
-    setResults([]);
-    setAnalysis(null);
-    setIsAnalyzing(false);
+    try {
+      setUploadedImage(null);
+      setResults([]);
+      setAnalysis(null);
+      setIsAnalyzing(false);
+      setInternalError(null);
+    } catch (error) {
+      console.error('Failed to clear search:', error);
+      setInternalError('Failed to clear search');
+    }
   };
 
   return (
-    <Container size="xl" py="xl">
-      <Stack gap="xl">
-        {/* Header */}
-        <div>
-          <Group gap="md" mb="md">
-            <ThemeIcon size="xl" variant="light" color="purple">
-              <IconPhoto />
-            </ThemeIcon>
+    <ErrorBoundary
+      fallback={<AlgoliaVisualSearchError error="Visual search failed to render" testId={testId} />}
+    >
+      <Container size="xl" py="xl" data-testid={testId}>
+        <Stack gap="xl">
+          {/* Header */}
+          <ErrorBoundary fallback={<Skeleton height={80} />}>
             <div>
-              <Title order={1}>Visual Search</Title>
-              <Text size="lg" c="dimmed">
-                Search by image similarity using AI
-              </Text>
-            </div>
-          </Group>
-        </div>
-
-        {/* Introduction */}
-        <Alert icon={<IconBrandAlgolia />} title="How Visual Search Works" color="purple">
-          <Stack gap="xs">
-            <Text size="md">
-              Visual search uses computer vision to find products similar to an uploaded image:
-            </Text>
-            <ul>
-              <li>Upload an image or take a photo with your camera</li>
-              <li>AI analyzes colors, shapes, patterns, and objects</li>
-              <li>Find visually similar products in your catalog</li>
-              <li>Filter by similarity score and visual attributes</li>
-            </ul>
-          </Stack>
-        </Alert>
-
-        {/* Upload interface */}
-        <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
-          <Stack gap="md">
-            <Title order={3}>Upload or Capture Image</Title>
-
-            {!uploadedImage ? (
-              <Group grow>
-                <FileInput
-                  label="Upload Image"
-                  placeholder="Choose image file"
-                  accept="image/*"
-                  leftSection={<IconUpload size={16} />}
-                  onChange={handleFileUpload}
-                />
-                <Button
-                  variant="light"
-                  leftSection={<IconCamera />}
-                  onClick={openCamera}
-                  style={{ marginTop: 25 }}
-                >
-                  Take Photo
-                </Button>
-              </Group>
-            ) : (
-              <Group justify="space-between">
-                <Group>
-                  <Image
-                    src={uploadedImage}
-                    alt="Uploaded image"
-                    width={100}
-                    height={100}
-                    fit="cover"
-                    radius="sm"
-                  />
-                  <div>
-                    <Text fw={600}>Image uploaded</Text>
-                    <Text size="md" c="dimmed">
-                      Analyzing with AI...
-                    </Text>
-                  </div>
-                </Group>
-                <ActionIcon variant="light" c="red" onClick={clearSearch} size="lg">
-                  <IconX />
-                </ActionIcon>
-              </Group>
-            )}
-
-            {/* Search settings */}
-            {uploadedImage && (
-              <Paper p="md" withBorder={true}>
-                <Stack gap="sm">
-                  <Text size="md" fw={600}>
-                    Search Settings
+              <Group gap="md" mb="md">
+                <ThemeIcon size="xl" variant="light" color="purple">
+                  <IconPhoto />
+                </ThemeIcon>
+                <div>
+                  <Title order={1}>Visual Search</Title>
+                  <Text size="lg" c="dimmed">
+                    Search by image similarity using AI
                   </Text>
+                </div>
+              </Group>
+            </div>
+          </ErrorBoundary>
 
-                  <div>
-                    <Text size="xs" mb="xs">
-                      Similarity Threshold: {Math.round(similarityThreshold * 100)}%
-                    </Text>
-                    <Slider
-                      value={similarityThreshold}
-                      onChange={setSimilarityThreshold}
-                      min={0.5}
-                      max={1}
-                      step={0.05}
-                      marks={[
-                        { value: 0.5, label: '50%' },
-                        { value: 0.75, label: '75%' },
-                        { value: 1, label: '100%' },
-                      ]}
-                    />
-                  </div>
+          {/* Introduction */}
+          <ErrorBoundary fallback={<Skeleton height={150} />}>
+            <Alert icon={<IconBrandAlgolia />} title="How Visual Search Works" color="purple">
+              <Stack gap="xs">
+                <Text size="md">
+                  Visual search uses computer vision to find products similar to an uploaded image:
+                </Text>
+                <ul>
+                  <li>Upload an image or take a photo with your camera</li>
+                  <li>AI analyzes colors, shapes, patterns, and objects</li>
+                  <li>Find visually similar products in your catalog</li>
+                  <li>Filter by similarity score and visual attributes</li>
+                </ul>
+              </Stack>
+            </Alert>
+          </ErrorBoundary>
 
-                  <Switch
-                    label="Enable color filtering"
-                    checked={enableColorFilter}
-                    onChange={(e) => setEnableColorFilter(e.currentTarget.checked)}
-                  />
-                </Stack>
-              </Paper>
-            )}
-          </Stack>
-        </Card>
-
-        {/* Analysis and Results */}
-        {uploadedImage && (
-          <Tabs defaultValue="results">
-            <Tabs.List>
-              <Tabs.Tab value="results" leftSection={<IconSearch size={16} />}>
-                Search Results ({results.length})
-              </Tabs.Tab>
-              <Tabs.Tab value="analysis" leftSection={<IconEye size={16} />}>
-                Image Analysis
-              </Tabs.Tab>
-              <Tabs.Tab value="implementation" leftSection={<IconBrandAlgolia size={16} />}>
-                Implementation
-              </Tabs.Tab>
-            </Tabs.List>
-
-            <Tabs.Panel value="results" pt="xl">
-              {isAnalyzing ? (
-                <Stack gap="md">
-                  <Group>
-                    <Progress value={100} size="lg" animated style={{ flex: 1 }} />
-                    <Text size="md">Analyzing image...</Text>
-                  </Group>
-                  <Grid>
-                    {[...Array(4)].map((_, i) => (
-                      <Grid.Col key={i} span={{ base: 12, sm: 6, md: 3 }}>
-                        <Skeleton height={350} radius="sm" />
-                      </Grid.Col>
-                    ))}
-                  </Grid>
-                </Stack>
-              ) : (
-                <Grid>
-                  {results.map((result: any) => (
-                    <Grid.Col key={result.objectID} span={{ base: 12, sm: 6, md: 3 }}>
-                      <VisualSearchResultCard result={result} />
-                    </Grid.Col>
-                  ))}
-                </Grid>
-              )}
-            </Tabs.Panel>
-
-            <Tabs.Panel value="analysis" pt="xl">
-              {analysis ? (
-                <ImageAnalysisDisplay analysis={analysis} />
-              ) : isAnalyzing ? (
-                <Skeleton height={400} radius="sm" />
-              ) : null}
-            </Tabs.Panel>
-
-            <Tabs.Panel value="implementation" pt="xl">
+          {/* Upload interface */}
+          <ErrorBoundary fallback={<Skeleton height={200} />}>
+            <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
               <Stack gap="md">
-                <Title order={3}>Implementation Guide</Title>
+                <Title order={3}>Upload or Capture Image</Title>
 
-                <Code block>
-                  {`// 1. Set up visual search index
+                {!uploadedImage ? (
+                  <Group grow>
+                    <FileInput
+                      label="Upload Image"
+                      placeholder="Choose image file"
+                      accept="image/*"
+                      leftSection={<IconUpload size={16} />}
+                      onChange={handleFileUpload}
+                    />
+                    <Button
+                      variant="light"
+                      leftSection={<IconCamera />}
+                      onClick={() => {
+                        try {
+                          openCamera();
+                        } catch (error) {
+                          console.error('Failed to open camera:', error);
+                          setInternalError('Failed to open camera');
+                        }
+                      }}
+                      style={{ marginTop: 25 }}
+                    >
+                      Take Photo
+                    </Button>
+                  </Group>
+                ) : (
+                  <Group justify="space-between">
+                    <Group>
+                      <Image
+                        src={uploadedImage}
+                        alt="Uploaded image"
+                        width={100}
+                        height={100}
+                        fit="cover"
+                        radius="sm"
+                      />
+                      <div>
+                        <Text fw={600}>Image uploaded</Text>
+                        <Text size="md" c="dimmed">
+                          Analyzing with AI...
+                        </Text>
+                      </div>
+                    </Group>
+                    <ActionIcon variant="light" c="red" onClick={clearSearch} size="lg">
+                      <IconX />
+                    </ActionIcon>
+                  </Group>
+                )}
+
+                {/* Search settings */}
+                {uploadedImage && (
+                  <Paper p="md" withBorder={true}>
+                    <Stack gap="sm">
+                      <Text size="md" fw={600}>
+                        Search Settings
+                      </Text>
+
+                      <div>
+                        <Text size="xs" mb="xs">
+                          Similarity Threshold: {Math.round(similarityThreshold * 100)}%
+                        </Text>
+                        <Slider
+                          value={similarityThreshold}
+                          onChange={setSimilarityThreshold}
+                          min={0.5}
+                          max={1}
+                          step={0.05}
+                          marks={[
+                            { value: 0.5, label: '50%' },
+                            { value: 0.75, label: '75%' },
+                            { value: 1, label: '100%' },
+                          ]}
+                        />
+                      </div>
+
+                      <Switch
+                        label="Enable color filtering"
+                        checked={enableColorFilter}
+                        onChange={(e) => setEnableColorFilter(e.currentTarget.checked)}
+                      />
+                    </Stack>
+                  </Paper>
+                )}
+              </Stack>
+            </Card>
+          </ErrorBoundary>
+
+          {/* Analysis and Results */}
+          {uploadedImage && (
+            <Tabs defaultValue="results">
+              <Tabs.List>
+                <Tabs.Tab value="results" leftSection={<IconSearch size={16} />}>
+                  Search Results ({results.length})
+                </Tabs.Tab>
+                <Tabs.Tab value="analysis" leftSection={<IconEye size={16} />}>
+                  Image Analysis
+                </Tabs.Tab>
+                <Tabs.Tab value="implementation" leftSection={<IconBrandAlgolia size={16} />}>
+                  Implementation
+                </Tabs.Tab>
+              </Tabs.List>
+
+              <Tabs.Panel value="results" pt="xl">
+                <ErrorBoundary
+                  fallback={
+                    <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+                      <Text size="sm">Results failed to load</Text>
+                    </Alert>
+                  }
+                >
+                  {isAnalyzing ? (
+                    <Stack gap="md">
+                      <Group>
+                        <Progress value={100} size="lg" animated style={{ flex: 1 }} />
+                        <Text size="md">Analyzing image...</Text>
+                      </Group>
+                      <Grid>
+                        {[...Array(4)].map((_, i) => (
+                          <Grid.Col key={i} span={{ base: 12, sm: 6, md: 3 }}>
+                            <Skeleton height={350} radius="sm" />
+                          </Grid.Col>
+                        ))}
+                      </Grid>
+                    </Stack>
+                  ) : (
+                    <Grid>
+                      {results.map((result: any) => (
+                        <Grid.Col key={result.objectID} span={{ base: 12, sm: 6, md: 3 }}>
+                          <VisualSearchResultCard result={result} />
+                        </Grid.Col>
+                      ))}
+                    </Grid>
+                  )}
+                </ErrorBoundary>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="analysis" pt="xl">
+                <ErrorBoundary
+                  fallback={
+                    <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+                      <Text size="sm">Analysis failed to load</Text>
+                    </Alert>
+                  }
+                >
+                  {analysis ? (
+                    <ImageAnalysisDisplay analysis={analysis} />
+                  ) : isAnalyzing ? (
+                    <Skeleton height={400} radius="sm" />
+                  ) : null}
+                </ErrorBoundary>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="implementation" pt="xl">
+                <Stack gap="md">
+                  <Title order={3}>Implementation Guide</Title>
+
+                  <Code block>
+                    {`// 1. Set up visual search index
 // Create a separate index for visual search vectors
 await client.initIndex('products_visual')
   .setSettings({
@@ -673,33 +862,38 @@ const handleImageUpload = async (file) => {
   
   setSearchResults(results);
 };`}
-                </Code>
+                  </Code>
 
-                <Alert icon={<IconAdjustments />} title="Visual Search Best Practices" color="blue">
-                  <ul>
-                    <li>Use high-quality product images with consistent backgrounds</li>
-                    <li>
-                      Pre-process images to extract visual features (colors, shapes, textures)
-                    </li>
-                    <li>Combine visual similarity with text-based filters</li>
-                    <li>Implement similarity score thresholds to control result quality</li>
-                    <li>
-                      Consider different similarity algorithms for different product categories
-                    </li>
-                  </ul>
-                </Alert>
-              </Stack>
-            </Tabs.Panel>
-          </Tabs>
-        )}
+                  <Alert
+                    icon={<IconAdjustments />}
+                    title="Visual Search Best Practices"
+                    color="blue"
+                  >
+                    <ul>
+                      <li>Use high-quality product images with consistent backgrounds</li>
+                      <li>
+                        Pre-process images to extract visual features (colors, shapes, textures)
+                      </li>
+                      <li>Combine visual similarity with text-based filters</li>
+                      <li>Implement similarity score thresholds to control result quality</li>
+                      <li>
+                        Consider different similarity algorithms for different product categories
+                      </li>
+                    </ul>
+                  </Alert>
+                </Stack>
+              </Tabs.Panel>
+            </Tabs>
+          )}
 
-        {/* Camera capture modal */}
-        <CameraCapture
-          opened={cameraOpened}
-          onClose={closeCamera}
-          onCapture={handleCameraCapture}
-        />
-      </Stack>
-    </Container>
+          {/* Camera capture modal */}
+          <CameraCapture
+            opened={cameraOpened}
+            onClose={closeCamera}
+            onCapture={handleCameraCapture}
+          />
+        </Stack>
+      </Container>
+    </ErrorBoundary>
   );
 }

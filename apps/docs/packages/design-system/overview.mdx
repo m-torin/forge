@@ -1,0 +1,836 @@
+---
+title: 'Design System Overview'
+description:
+  'Comprehensive UI component library built on Mantine UI with custom components and design tokens'
+icon: 'palette'
+---
+
+# Design System Package
+
+A comprehensive design system providing consistent UI components, design tokens, and patterns across
+all applications in the Forge platform.
+
+## Overview
+
+The design system package serves as the foundation for all user interfaces, providing pre-built
+components, design tokens, and styling utilities that ensure consistency and accessibility across
+the platform.
+
+<CardGroup cols={2}>
+  <Card title="Mantine UI Foundation" icon="foundation" href="/packages/design-system/components">
+    Built on Mantine UI v8 with custom extensions and themes
+  </Card>
+  <Card title="Custom Components" icon="cube" href="/packages/design-system/components">
+    Specialized components for product management and workflows
+  </Card>
+  <Card title="Design Tokens" icon="color-swatch">
+    Consistent colors, typography, spacing, and breakpoints
+  </Card>
+  <Card title="Accessibility First" icon="universal-access">
+    WCAG 2.1 AA compliant with keyboard navigation and screen reader support
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **Mantine UI v8 Integration**: Primary UI framework with comprehensive component library
+- **Custom Component Library**: Specialized components for Forge-specific use cases
+- **Design Token System**: Consistent colors, typography, spacing, and responsive breakpoints
+- **Dark Mode Support**: Built-in dark mode with smooth transitions
+- **TypeScript First**: Full TypeScript support with comprehensive type definitions
+- **Accessibility**: WCAG 2.1 AA compliance with keyboard navigation and ARIA support
+- **Responsive Design**: Mobile-first approach with consistent breakpoints
+- **Theme Customization**: Flexible theming system for brand customization
+
+## Installation
+
+```bash
+pnpm add @repo/design-system
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Install Package">
+    ```bash
+    pnpm add @repo/design-system
+    ```
+  </Step>
+  
+  <Step title="Setup Provider">
+    ```typescript
+    // app/layout.tsx
+    import { DesignSystemProvider } from '@repo/design-system';
+    
+    export default function RootLayout({ children }) {
+      return (
+        <html>
+          <body>
+            <DesignSystemProvider>
+              {children}
+            </DesignSystemProvider>
+          </body>
+        </html>
+      );
+    }
+    ```
+  </Step>
+  
+  <Step title="Use Components">
+    ```typescript
+    import { Button, Card, Stack } from '@repo/design-system';
+    
+    export function MyComponent() {
+      return (
+        <Card>
+          <Stack>
+            <Button variant="filled">Primary Action</Button>
+            <Button variant="outline">Secondary Action</Button>
+          </Stack>
+        </Card>
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+## Component Categories
+
+<Tabs>
+  <Tab title="Core Components">
+    Essential UI building blocks from Mantine UI: - **Layout**: Container, Grid, Stack, Group, Flex
+    - **Inputs**: TextInput, Select, Checkbox, RadioGroup - **Feedback**: Button, Notification,
+    Modal, Loader - **Navigation**: Tabs, Breadcrumbs, Pagination, Stepper - **Display**: Card,
+    Table, Badge, Avatar, Image
+  </Tab>
+
+<Tab title="Custom Components">
+  Forge-specific components for specialized use cases: - **ProductCard**: Display product
+  information with images and metadata - **BarcodeScanner**: Integrated barcode scanning interface -
+  **WorkflowBuilder**: Visual workflow creation and editing - **DataTable**: Enhanced table with
+  sorting, filtering, and pagination - **FileUpload**: Drag-and-drop file upload with progress
+</Tab>
+
+<Tab title="Form Components">
+  Advanced form components with validation: - **FormField**: Enhanced form field with validation and
+  help text - **SearchInput**: Advanced search with filters and suggestions - **DatePicker**: Date
+  and time selection with internationalization - **NumberInput**: Numeric input with formatting and
+  validation - **RichTextEditor**: WYSIWYG editor for content creation
+</Tab>
+
+  <Tab title="Data Visualization">
+    Charts and data display components: - **Chart**: Various chart types (line, bar, pie, area) -
+    **KPI Cards**: Key performance indicator displays - **ProgressIndicator**: Progress bars and
+    circular progress - **StatusIndicator**: Status badges and indicators - **Timeline**: Event
+    timeline visualization
+  </Tab>
+</Tabs>
+
+## Design Tokens
+
+### Color System
+
+<CodeGroup>
+```typescript Primary Colors
+// Primary brand colors
+export const colors = {
+  primary: {
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6', // Primary
+    600: '#2563eb',
+    700: '#1d4ed8',
+    800: '#1e40af',
+    900: '#1e3a8a',
+  },
+  
+  gray: {
+    50: '#f9fafb',
+    100: '#f3f4f6',
+    200: '#e5e7eb',
+    300: '#d1d5db',
+    400: '#9ca3af',
+    500: '#6b7280',
+    600: '#4b5563',
+    700: '#374151',
+    800: '#1f2937',
+    900: '#111827',
+  },
+};
+```
+
+```typescript Semantic Colors
+// Semantic color meanings
+export const semanticColors = {
+  success: {
+    light: '#10b981', // Green
+    dark: '#059669',
+  },
+  warning: {
+    light: '#f59e0b', // Amber
+    dark: '#d97706',
+  },
+  error: {
+    light: '#ef4444', // Red
+    dark: '#dc2626',
+  },
+  info: {
+    light: '#3b82f6', // Blue
+    dark: '#2563eb',
+  },
+};
+```
+
+</CodeGroup>
+
+### Typography Scale
+
+<AccordionGroup>
+  <Accordion title="Font Families" icon="font">
+    ```typescript
+    export const fonts = {
+      // Primary font for headings and UI
+      sans: [
+        'Inter',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        'Segoe UI',
+        'system-ui',
+        'sans-serif'
+      ],
+      
+      // Monospace font for code
+      mono: [
+        'JetBrains Mono',
+        'Monaco',
+        'Consolas',
+        'Liberation Mono',
+        'Courier New',
+        'monospace'
+      ],
+    };
+    ```
+  </Accordion>
+  
+  <Accordion title="Font Sizes" icon="text-size">
+    ```typescript
+    export const fontSizes = {
+      xs: '0.75rem',   // 12px
+      sm: '0.875rem',  // 14px
+      md: '1rem',      // 16px - base
+      lg: '1.125rem',  // 18px
+      xl: '1.25rem',   // 20px
+      '2xl': '1.5rem', // 24px
+      '3xl': '1.875rem', // 30px
+      '4xl': '2.25rem',  // 36px
+      '5xl': '3rem',     // 48px
+      '6xl': '3.75rem',  // 60px
+    };
+    ```
+  </Accordion>
+  
+  <Accordion title="Line Heights" icon="arrows-up-down">
+    ```typescript
+    export const lineHeights = {
+      none: '1',
+      tight: '1.25',
+      snug: '1.375',
+      normal: '1.5',
+      relaxed: '1.625',
+      loose: '2',
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Spacing and Layout
+
+<Tabs>
+  <Tab title="Spacing Scale">
+    ```typescript
+    export const spacing = {
+      0: '0',
+      1: '0.25rem',  // 4px
+      2: '0.5rem',   // 8px
+      3: '0.75rem',  // 12px
+      4: '1rem',     // 16px
+      5: '1.25rem',  // 20px
+      6: '1.5rem',   // 24px
+      8: '2rem',     // 32px
+      10: '2.5rem',  // 40px
+      12: '3rem',    // 48px
+      16: '4rem',    // 64px
+      20: '5rem',    // 80px
+      24: '6rem',    // 96px
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Breakpoints">
+    ```typescript
+    export const breakpoints = {
+      xs: '36em',    // 576px
+      sm: '48em',    // 768px
+      md: '62em',    // 992px
+      lg: '75em',    // 1200px
+      xl: '87.5em',  // 1400px
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Border Radius">
+    ```typescript
+    export const borderRadius = {
+      none: '0',
+      sm: '0.125rem',  // 2px
+      md: '0.375rem',  // 6px
+      lg: '0.5rem',    // 8px
+      xl: '0.75rem',   // 12px
+      '2xl': '1rem',   // 16px
+      full: '9999px',
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Theme Customization
+
+### Custom Theme Provider
+
+<CodeGroup>
+```typescript Theme Configuration
+// Custom theme configuration
+import { MantineProvider, createTheme } from '@mantine/core';
+
+const theme = createTheme({ primaryColor: 'blue', defaultGradient: { from: 'blue', to: 'cyan', deg:
+45 },
+
+fontFamily: 'Inter, sans-serif', fontFamilyMonospace: 'JetBrains Mono, monospace',
+
+headings: { fontFamily: 'Inter, sans-serif', fontWeight: '600', },
+
+colors: { // Custom color palette brand: [ '#eff6ff', '#dbeafe', '#bfdbfe', '#93c5fd', '#60a5fa',
+'#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a', ], },
+
+components: { Button: { defaultProps: { variant: 'filled', }, }, Card: { defaultProps: { shadow:
+'sm', radius: 'md', }, }, }, });
+
+````
+
+```typescript Dark Mode Support
+// Dark mode with color scheme toggle
+import { useMantineColorScheme } from '@mantine/core';
+
+export function ColorSchemeToggle() {
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+
+  return (
+    <ActionIcon
+      onClick={() => toggleColorScheme()}
+      variant="default"
+      size="lg"
+      aria-label="Toggle color scheme"
+    >
+      {colorScheme === 'dark' ? <Sun /> : <Moon />}
+    </ActionIcon>
+  );
+}
+````
+
+</CodeGroup>
+
+## Accessibility Features
+
+### WCAG Compliance
+
+<AccordionGroup>
+  <Accordion title="Keyboard Navigation" icon="keyboard">
+    - All interactive elements are keyboard accessible - Focus indicators meet 3:1 contrast ratio
+    requirements - Logical tab order throughout components - Skip links for screen reader users -
+    Arrow key navigation for complex components
+  </Accordion>
+
+<Accordion title="Screen Reader Support" icon="eye">
+  - Comprehensive ARIA labels and descriptions - Semantic HTML structure - Live regions for dynamic
+  content updates - Proper heading hierarchy - Alternative text for images and icons
+</Accordion>
+
+  <Accordion title="Color and Contrast" icon="contrast">
+    - 4.5:1 contrast ratio for normal text - 3:1 contrast ratio for large text and UI elements -
+    Color is not the only way to convey information - High contrast mode support -
+    Colorblind-friendly color palettes
+  </Accordion>
+</AccordionGroup>
+
+## Component Development
+
+### Creating Custom Components
+
+<Tabs>
+  <Tab title="Component Structure">
+    ```typescript
+    // components/ProductCard/ProductCard.tsx
+    import { Card, Image, Text, Badge, Group, Button } from '@mantine/core';
+    import { forwardRef } from 'react';
+    
+    export interface ProductCardProps {
+      id: string;
+      title: string;
+      price: number;
+      image?: string;
+      status: 'active' | 'inactive' | 'draft';
+      onEdit?: (id: string) => void;
+      'data-testid'?: string;
+    }
+    
+    export const ProductCard = forwardRef<HTMLDivElement, ProductCardProps>(
+      ({ id, title, price, image, status, onEdit, 'data-testid': testId }, ref) => {
+        return (
+          <Card ref={ref} shadow="sm" padding="lg" data-testid={testId}>
+            {image && (
+              <Card.Section>
+                <Image src={image} alt={title} height={200} />
+              </Card.Section>
+            )}
+            
+            <Group justify="space-between" mt="md">
+              <Text fw={500}>{title}</Text>
+              <Badge color={status === 'active' ? 'green' : 'gray'}>
+                {status}
+              </Badge>
+            </Group>
+            
+            <Text size="lg" fw={700} mt="sm">
+              ${price.toFixed(2)}
+            </Text>
+            
+            <Button 
+              variant="light" 
+              fullWidth 
+              mt="md"
+              onClick={() => onEdit?.(id)}
+            >
+              Edit Product
+            </Button>
+          </Card>
+        );
+      }
+    );
+    
+    ProductCard.displayName = 'ProductCard';
+    ```
+  </Tab>
+  
+  <Tab title="Component Testing">
+    ```typescript
+    // components/ProductCard/ProductCard.test.tsx
+    import { render, screen, fireEvent } from '@testing-library/react';
+    import { MantineProvider } from '@mantine/core';
+    import { ProductCard } from './ProductCard';
+    
+    const renderWithProvider = (component: React.ReactElement) => {
+      return render(
+        <MantineProvider>
+          {component}
+        </MantineProvider>
+      );
+    };
+    
+    describe('ProductCard', () => {
+      const mockProps = {
+        id: '1',
+        title: 'Test Product',
+        price: 29.99,
+        status: 'active' as const,
+      };
+      
+      it('renders product information correctly', () => {
+        renderWithProvider(<ProductCard {...mockProps} />);
+        
+        expect(screen.getByText('Test Product')).toBeInTheDocument();
+        expect(screen.getByText('$29.99')).toBeInTheDocument();
+        expect(screen.getByText('active')).toBeInTheDocument();
+      });
+      
+      it('calls onEdit when edit button is clicked', () => {
+        const mockOnEdit = jest.fn();
+        
+        renderWithProvider(
+          <ProductCard {...mockProps} onEdit={mockOnEdit} />
+        );
+        
+        fireEvent.click(screen.getByText('Edit Product'));
+        expect(mockOnEdit).toHaveBeenCalledWith('1');
+      });
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Testing Standards
+
+The design system includes comprehensive testing patterns and utilities to ensure component
+reliability and maintainability.
+
+### Testing Framework
+
+<CodeGroup>
+```typescript Test Setup
+// test-utils.tsx - Enhanced testing utilities
+import { render, RenderOptions } from '@testing-library/react';
+import { MantineProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
+
+interface WrapperProps { children: React.ReactNode; }
+
+function AllTheProviders({ children }: WrapperProps) { return ( <MantineProvider> <ModalsProvider>
+
+<Notifications /> {children} </ModalsProvider> </MantineProvider> ); }
+
+const customRender = ( ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'> ) =>
+render(ui, { wrapper: AllTheProviders, ...options });
+
+export * from '@testing-library/react';
+export { customRender as render };
+```
+
+```typescript Component Testing Pattern
+// ProductCard.test.tsx - Comprehensive component testing
+import { render, screen, fireEvent, waitFor } from './test-utils';
+import { ProductCard } from './ProductCard';
+
+describe('ProductCard', () => {
+  const mockProduct = {
+    id: '1',
+    title: 'Test Product',
+    price: 29.99,
+    status: 'active' as const,
+  };
+
+  describe('Rendering', () => {
+    it('renders product information correctly', () => {
+      render(<ProductCard {...mockProduct} data-testid="product-card" />);
+
+      expect(screen.getByTestId('product-card')).toBeInTheDocument();
+      expect(screen.getByText('Test Product')).toBeInTheDocument();
+      expect(screen.getByText('$29.99')).toBeInTheDocument();
+    });
+
+    it('displays product image when provided', () => {
+      const productWithImage = {
+        ...mockProduct,
+        image: '/test-image.jpg',
+      };
+
+      render(<ProductCard {...productWithImage} />);
+
+      const image = screen.getByRole('img', { name: 'Test Product' });
+      expect(image).toHaveAttribute('src', '/test-image.jpg');
+    });
+  });
+
+  describe('Interactions', () => {
+    it('calls onEdit when edit button is clicked', async () => {
+      const mockOnEdit = jest.fn();
+
+      render(<ProductCard {...mockProduct} onEdit={mockOnEdit} />);
+
+      const editButton = screen.getByRole('button', { name: /edit product/i });
+      fireEvent.click(editButton);
+
+      expect(mockOnEdit).toHaveBeenCalledWith('1');
+    });
+
+    it('handles keyboard navigation correctly', () => {
+      render(<ProductCard {...mockProduct} onEdit={jest.fn()} />);
+
+      const editButton = screen.getByRole('button', { name: /edit product/i });
+      editButton.focus();
+
+      expect(document.activeElement).toBe(editButton);
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has proper ARIA attributes', () => {
+      render(<ProductCard {...mockProduct} />);
+
+      const card = screen.getByRole('article');
+      expect(card).toBeInTheDocument();
+
+      const statusBadge = screen.getByText('active');
+      expect(statusBadge).toHaveAttribute('aria-label', 'Product status: active');
+    });
+
+    it('maintains focus management', () => {
+      render(<ProductCard {...mockProduct} onEdit={jest.fn()} />);
+
+      const editButton = screen.getByRole('button');
+      expect(editButton).toHaveAttribute('type', 'button');
+      expect(editButton).not.toHaveAttribute('disabled');
+    });
+  });
+
+  describe('Responsive Design', () => {
+    it('adapts to different screen sizes', () => {
+      // Test responsive behavior
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 768,
+      });
+
+      render(<ProductCard {...mockProduct} />);
+
+      // Verify mobile-specific layout adjustments
+      const card = screen.getByTestId('product-card');
+      expect(card).toHaveClass('product-card-responsive');
+    });
+  });
+});
+```
+
+</CodeGroup>
+
+### Testing Utilities and Patterns
+
+<Tabs>
+  <Tab title="Data TestId Standards">
+    ```typescript
+    // Consistent data-testid naming conventions
+    interface ComponentProps {
+      'data-testid'?: string;
+    }
+
+    // Component implementation with testids
+    export function Component({ 'data-testid': testId = 'component-name', ...props }) {
+      return (
+        <div data-testid={testId}>
+          <button data-testid={`${testId}-button`}>Action</button>
+          <span data-testid={`${testId}-status`}>Active</span>
+        </div>
+      );
+    }
+
+    // Test usage
+    test('component interactions', () => {
+      render(<Component data-testid="my-component" />);
+
+      const button = screen.getByTestId('my-component-button');
+      const status = screen.getByTestId('my-component-status');
+
+      expect(button).toBeInTheDocument();
+      expect(status).toHaveTextContent('Active');
+    });
+    ```
+
+  </Tab>
+  
+  <Tab title="Mock Data Generators">
+    ```typescript
+    // Mock data utilities for consistent testing
+    export function mockProduct(overrides = {}) {
+      return {
+        id: 'product-1',
+        title: 'Sample Product',
+        description: 'A great product for testing',
+        price: 29.99,
+        currency: 'USD',
+        status: 'active',
+        images: ['/product-1.jpg'],
+        category: 'Electronics',
+        tags: ['popular', 'featured'],
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-15'),
+        ...overrides,
+      };
+    }
+
+    export function mockUser(overrides = {}) {
+      return {
+        id: 'user-1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        avatar: '/avatar-1.jpg',
+        role: 'user',
+        ...overrides,
+      };
+    }
+
+    // Usage in tests
+    test('product card with mock data', () => {
+      const product = mockProduct({
+        title: 'Custom Product',
+        price: 49.99
+      });
+
+      render(<ProductCard product={product} />);
+
+      expect(screen.getByText('Custom Product')).toBeInTheDocument();
+      expect(screen.getByText('$49.99')).toBeInTheDocument();
+    });
+    ```
+
+  </Tab>
+  
+  <Tab title="Accessibility Testing">
+    ```typescript
+    // Automated accessibility testing
+    import { axe, toHaveNoViolations } from 'jest-axe';
+
+    expect.extend(toHaveNoViolations);
+
+    test('component has no accessibility violations', async () => {
+      const { container } = render(<ProductCard {...mockProduct} />);
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    // Keyboard navigation testing
+    test('supports keyboard navigation', () => {
+      render(<ProductCard {...mockProduct} onEdit={jest.fn()} />);
+
+      const editButton = screen.getByRole('button');
+
+      // Test tab navigation
+      editButton.focus();
+      expect(document.activeElement).toBe(editButton);
+
+      // Test enter key activation
+      fireEvent.keyDown(editButton, { key: 'Enter', code: 'Enter' });
+      // Verify action was triggered
+    });
+
+    // Screen reader testing
+    test('provides proper screen reader content', () => {
+      render(<ProductCard {...mockProduct} />);
+
+      // Check for proper ARIA labels
+      expect(screen.getByLabelText(/product status/i)).toBeInTheDocument();
+
+      // Verify semantic structure
+      expect(screen.getByRole('article')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toHaveAccessibleName('Edit Product');
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Test Coverage Standards
+
+<AccordionGroup>
+  <Accordion title="Component Testing Checklist" icon="checklist">
+    **Required Tests for Every Component:**
+    - ✅ Basic rendering with default props
+    - ✅ Rendering with all prop combinations
+    - ✅ Event handling (onClick, onChange, etc.)
+    - ✅ Keyboard navigation and accessibility
+    - ✅ Error states and edge cases
+    - ✅ Loading states and async behavior
+    - ✅ Responsive design behavior
+    - ✅ Dark mode compatibility
+    - ✅ Data-testid attribute presence
+    - ✅ Proper cleanup and unmounting
+  </Accordion>
+  
+  <Accordion title="Coverage Thresholds" icon="chart-bar">
+    **Minimum Coverage Requirements:**
+    - Line Coverage: 95%
+    - Branch Coverage: 90%
+    - Function Coverage: 100%
+    - Statement Coverage: 95%
+    
+    **Coverage Configuration:**
+    ```json
+    {
+      "jest": {
+        "coverageThreshold": {
+          "global": {
+            "branches": 90,
+            "functions": 100,
+            "lines": 95,
+            "statements": 95
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Testing Commands" icon="terminal">
+    ```bash
+    # Run all tests
+    pnpm test
+    
+    # Run tests in watch mode
+    pnpm test:watch
+    
+    # Run tests with coverage
+    pnpm test:coverage
+    
+    # Run specific test file
+    pnpm test ProductCard.test.tsx
+    
+    # Run tests for specific directory
+    pnpm test design-system/
+    
+    # Update snapshots
+    pnpm test -- --updateSnapshot
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Warning>
+  **Design System Guidelines:** - Always use design tokens instead of hardcoded values - Follow
+  Mantine UI patterns for consistency - Include proper TypeScript types for all props - Add
+  comprehensive test coverage for custom components - Ensure accessibility compliance for all
+  components - Use standardized data-testid attributes for reliable testing
+</Warning>
+
+### Recommended Patterns
+
+1. **Component Composition**
+
+   - Use compound components for complex UI patterns
+   - Leverage Mantine's built-in components as building blocks
+   - Create reusable hooks for common functionality
+   - Follow the container/presentational component pattern
+
+2. **Performance Optimization**
+
+   - Use React.memo for expensive components
+   - Implement proper key props for lists
+   - Lazy load heavy components
+   - Optimize bundle size with tree shaking
+
+3. **Accessibility First**
+
+   - Include ARIA labels and descriptions
+   - Test with keyboard navigation
+   - Verify screen reader compatibility
+   - Maintain proper focus management
+
+4. **Testing Excellence**
+
+   - Write tests before implementing features (TDD)
+   - Use descriptive test names and organize by behavior
+   - Test user interactions, not implementation details
+   - Maintain high test coverage with meaningful assertions
+
+5. **Consistent Styling**
+   - Use design tokens for all styling decisions
+   - Follow established color and spacing patterns
+   - Maintain consistent component APIs
+   - Support both light and dark themes
+
+The design system package provides a solid foundation for building consistent, accessible, and
+maintainable user interfaces across the entire Forge platform with comprehensive testing standards
+that ensure reliability and quality.

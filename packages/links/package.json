@@ -1,0 +1,49 @@
+{
+  "name": "@repo/links",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "pnpm exec vitest --run",
+    "test:watch": "pnpm exec vitest",
+    "test:ui": "pnpm exec vitest --ui",
+    "test:coverage": "pnpm exec vitest --coverage --run",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "dub": "^0.63.2",
+    "@t3-oss/env-nextjs": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@repo/analytics": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@repo/analytics": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^4.5.2",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.tsx",
+    "./server/next": "./src/server-next.tsx"
+  }
+}

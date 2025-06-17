@@ -3,17 +3,17 @@ export interface AIConfig {
   enableLogging?: boolean;
   enableRateLimit?: boolean;
   providers?: {
-    openai?: {
-      apiKey?: string;
-      baseUrl?: string;
-      organization?: string;
-    };
     anthropic?: {
       apiKey?: string;
       baseUrl?: string;
     };
     google?: {
       apiKey?: string;
+    };
+    openai?: {
+      apiKey?: string;
+      baseUrl?: string;
+      organization?: string;
     };
   };
 }
@@ -27,6 +27,16 @@ export interface AnthropicConfig {
   timeout?: number;
 }
 
+export type DirectAnthropicConfig = AnthropicConfig;
+
+export type DirectOpenAIConfig = OpenAIConfig;
+
+export interface GoogleConfig {
+  apiKey: string;
+  maxTokens?: number;
+  model?: string;
+  temperature?: number;
+}
 export interface OpenAIConfig {
   apiKey: string;
   baseUrl?: string;
@@ -36,13 +46,3 @@ export interface OpenAIConfig {
   temperature?: number;
   timeout?: number;
 }
-
-export interface GoogleConfig {
-  apiKey: string;
-  maxTokens?: number;
-  model?: string;
-  temperature?: number;
-}
-
-export interface DirectAnthropicConfig extends AnthropicConfig {}
-export interface DirectOpenAIConfig extends OpenAIConfig {}

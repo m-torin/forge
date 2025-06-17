@@ -1,6 +1,6 @@
-import ButtonPrimary from './ButtonPrimary';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import ButtonPrimary from './ButtonPrimary';
 
 const meta: Meta<typeof ButtonPrimary> = {
   argTypes: {
@@ -96,12 +96,12 @@ export const WithIcon: Story = {
   args: {
     children: (
       <div className="flex items-center space-x-2">
-        <svg stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4" fill="none">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
-            strokeWidth={2}
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            strokeWidth={2}
           />
         </svg>
         <span>Add Item</span>

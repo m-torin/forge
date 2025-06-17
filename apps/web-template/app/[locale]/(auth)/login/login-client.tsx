@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 
+import { authClient } from '@repo/auth/client/next';
+
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -22,7 +24,7 @@ interface LoginClientProps {
 
 export default function LoginClient({ dict, locale }: LoginClientProps) {
   const router = useRouter();
-  
+
   const form = useForm<LoginFormData>({
     initialValues: {
       email: '',
@@ -33,35 +35,61 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
 
   const handleSubmit = async (values: LoginFormData) => {
     try {
-      // TODO: Implement actual Better Auth login
-      // For now, we'll simulate the login
-      console.log('Login attempt:', values);
-      
-      notifications.show({
-        title: 'Demo Mode',
-        message: 'Authentication is not yet connected. This is a UI demo.',
-        color: 'blue',
+      const { data, error } = await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
       });
 
-      // Simulate successful login
-      setTimeout(() => {
-        router.push(`/${locale}`);
-      }, 1000);
+      if (error) {
+        notifications.show({
+          title: 'Login Failed',
+          message: error.message || 'Invalid email or password',
+          color: 'red',
+        });
+        return;
+      }
+
+      if (data) {
+        notifications.show({
+          title: 'Welcome back!',
+          message: 'You have been successfully logged in.',
+          color: 'green',
+        });
+
+        // Redirect to home or intended page
+        router.push(`/${locale}/home`);
+      }
     } catch (error) {
+      console.error('Login error:', error);
       notifications.show({
         title: 'Error',
-        message: 'An unexpected error occurred',
+        message: 'An unexpected error occurred during login',
         color: 'red',
       });
     }
   };
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'twitter') => {
-    notifications.show({
-      title: 'Demo Mode',
-      message: `Social login with ${provider} is not yet implemented`,
-      color: 'blue',
-    });
+    try {
+      // Map provider names to Better Auth provider names
+      const providerMap = {
+        google: 'google',
+        facebook: 'facebook',
+        twitter: 'twitter',
+      };
+
+      await authClient.signIn.social({
+        provider: providerMap[provider],
+        callbackURL: `/${locale}/home`,
+      });
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      notifications.show({
+        title: 'Social Login Error',
+        message: `Failed to login with ${provider}. Please try again.`,
+        color: 'red',
+      });
+    }
   };
 
   return (
@@ -109,7 +137,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
               {dict.auth?.continueWithGoogle || 'Continue with Google'}
             </Button>
           </div>
-          
+
           {/* OR Divider */}
           <div className="relative text-center">
             <span className="relative z-10 inline-block bg-white px-4 text-sm font-medium dark:bg-neutral-900 dark:text-neutral-400">
@@ -117,7 +145,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
             </span>
             <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border border-neutral-100 dark:border-neutral-800" />
           </div>
-          
+
           {/* Login Form */}
           <form onSubmit={form.onSubmit(handleSubmit)} className="grid grid-cols-1 gap-6">
             <TextInput
@@ -127,7 +155,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
               size="lg"
               {...form.getInputProps('email')}
             />
-            
+
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
@@ -146,7 +174,7 @@ export default function LoginClient({ dict, locale }: LoginClientProps) {
                 {...form.getInputProps('password')}
               />
             </div>
-            
+
             <Button type="submit" size="lg" fullWidth>
               {dict.auth?.continue || 'Continue'}
             </Button>

@@ -145,7 +145,6 @@ describe('Team Actions', () => {
     createdAt: new Date('2023-01-01'),
     description: null,
     organizationId: 'org-123',
-    teamMembers: [],
     updatedAt: null,
     ...overrides,
   });
@@ -156,12 +155,6 @@ describe('Team Actions', () => {
     role: 'member',
     teamId: 'team-123',
     updatedAt: new Date(),
-    user: {
-      id: 'user-123',
-      name: 'Test User',
-      email: 'test@example.com',
-      image: null,
-    },
     userId: 'user-123',
     ...overrides,
   });
@@ -295,8 +288,8 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.name).toBe('New Team');
-        expect(result.team.organizationId).toBe('org-123');
+        expect(result.team!.name).toBe('New Team');
+        expect(result.team!.organizationId).toBe('org-123');
       }
     });
 
@@ -312,7 +305,7 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.name).toBe('New Team');
+        expect(result.team!.name).toBe('New Team');
       }
     });
 
@@ -327,7 +320,7 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.name).toBe('Dev & QA Team!');
+        expect(result.team!.name).toBe('Dev & QA Team!');
       }
     });
 
@@ -359,8 +352,8 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.name).toBe('Updated Team');
-        expect(result.team.description).toBe('Updated description');
+        expect(result.team!.name).toBe('Updated Team');
+        expect(result.team!.description).toBe('Updated description');
       }
     });
 
@@ -374,7 +367,7 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.name).toBe('New Name Only');
+        expect(result.team!.name).toBe('New Name Only');
       }
     });
 
@@ -386,7 +379,7 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.id).toBe('team-123');
+        expect(result.team!.id).toBe('team-123');
       }
     });
   });
@@ -421,8 +414,8 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.id).toBe('team-123');
-        expect(result.team.name).toBe('Test Team');
+        expect(result.team!.id).toBe('team-123');
+        expect(result.team!.name).toBe('Test Team');
       }
     });
 
@@ -448,8 +441,8 @@ describe('Team Actions', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.team.memberCount).toBe(1);
-        expect(result.team.teamMembers).toHaveLength(1);
+        expect(result.team!.memberCount).toBe(1);
+        expect(result.team!.teamMembers).toHaveLength(1);
       }
     });
   });

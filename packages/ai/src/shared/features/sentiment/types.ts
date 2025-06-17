@@ -1,16 +1,16 @@
 export interface SentimentAnalysisService {
   analyzeSentiment(text: string): Promise<{
-    sentiment: 'positive' | 'negative' | 'neutral';
     confidence: number;
     reasoning: string;
+    sentiment: 'negative' | 'neutral' | 'positive';
   }>;
 
   batchAnalyzeSentiment(texts: string[]): Promise<
     {
-      text: string;
-      sentiment: 'positive' | 'negative' | 'neutral';
       confidence: number;
       reasoning: string;
+      sentiment: 'negative' | 'neutral' | 'positive';
+      text: string;
     }[]
   >;
 }

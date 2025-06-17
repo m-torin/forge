@@ -145,7 +145,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       window.posthog = posthog as any;
 
       this.isInitialized = true;
-    } catch (error) {
+    } catch (_error) {
       throw new Error('PostHog JS SDK not available. Install with: npm install posthog-js');
     }
   }
@@ -166,14 +166,14 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       }
 
       this.posthogInstance.capture(event, properties);
-    } catch (error) {
+    } catch (_error) {
       // Queue event if offline
       if (!this.isOnline) {
         this.queueEvent('track', [event, properties]);
       }
 
       // Enhanced error reporting
-      this.reportError(error, 'track', { event, properties });
+      this.reportError(_error, 'track', { event, properties });
     }
   }
 
@@ -184,7 +184,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.posthogInstance.identify(userId, traits);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -200,7 +200,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
         $title: name || document.title,
         ...properties,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -212,19 +212,19 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.posthogInstance.group('company', groupId, traits);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
 
-  async alias(userId: string, previousId: string): Promise<void> {
+  async alias(userId: string, _previousId: string): Promise<void> {
     if (!this.isInitialized || !this.posthogInstance) {
       return;
     }
 
     try {
       this.posthogInstance.alias(userId);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -242,7 +242,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       }
 
       return this.posthogInstance.getAllFlags() || {};
-    } catch (error) {
+    } catch (_error) {
       return {};
     }
   }
@@ -258,7 +258,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       }
 
       return this.posthogInstance.getFeatureFlag(flag);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -274,7 +274,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       }
 
       return this.posthogInstance.isFeatureEnabled(flag) || false;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -290,7 +290,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       }
 
       return this.posthogInstance.getFeatureFlagPayload(flag) || null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -311,7 +311,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
         payload: this.posthogInstance.getFeatureFlagPayload(flag),
         variant: this.posthogInstance.getFeatureFlag(flag),
       }));
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   }
@@ -323,12 +323,12 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     }
 
     try {
-      const flags = await this.getAllFlags();
+      const _flags = await this.getAllFlags();
 
       return {
         distinctID: distinctId,
       };
-    } catch (error) {
+    } catch (_error) {
       return { distinctID: distinctId };
     }
   }
@@ -341,7 +341,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       this.posthogInstance.reset();
-    } catch (error) {
+    } catch (_error) {
       // Silently fail
     }
   }
@@ -355,7 +355,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       if (this.posthogInstance.shutdown) {
         await this.posthogInstance.shutdown();
       }
-    } catch (error) {
+    } catch (_error) {
       // Silently fail
     }
   }
@@ -368,7 +368,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
 
     try {
       return this.posthogInstance.get_distinct_id();
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -376,7 +376,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
   // Enhanced error handling and utility methods
   private queueEvent(method: string, args: any[]) {
     this.retryQueue.push({ args, method });
-    this.log(`Queued ${method} event for retry:`, args);
+    this.log(`Queued ${method} event for retry: `, args);
   }
 
   private async flushRetryQueue() {
@@ -386,7 +386,7 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
       const { args, method } = this.retryQueue.shift()!;
       try {
         await (this as any)[method](...args);
-      } catch (error) {
+      } catch (_error) {
         // Re-queue failed events (limit retries)
         if (this.retryQueue.length < 100) {
           // Prevent infinite queue growth
@@ -417,14 +417,14 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
     // Check for circular references
     try {
       JSON.stringify(properties);
-    } catch (error) {
+    } catch (_error) {
       console.warn('PostHog: Event properties contain circular references', properties);
     }
   }
 
   private reportError(error: any, method: string, context: any) {
     if (this.debugMode) {
-      console.error(`[PostHog Error] ${method}:`, error, context);
+      console.error(`[PostHog Error] ${method}: `, error, context);
     }
 
     // Could emit error event to other analytics providers
@@ -475,8 +475,8 @@ export class PostHogClientProvider implements AnalyticsProvider, Partial<Enhance
           },
         });
       }
-    } catch (error) {
-      this.reportError(error, 'groupIdentify', { groupKey, groupProperties, groupType });
+    } catch (_error) {
+      this.reportError(_error, 'groupIdentify', { groupKey, groupProperties, groupType });
     }
   }
 }

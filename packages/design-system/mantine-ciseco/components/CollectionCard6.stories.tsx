@@ -1,6 +1,6 @@
-import CollectionCard6 from './CollectionCard6';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import CollectionCard6 from './CollectionCard6';
 
 const meta: Meta<typeof CollectionCard6> = {
   argTypes: {
@@ -34,16 +34,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockCollection = {
-  id: 'gid://1',
   color: 'bg-yellow-50',
   count: 127,
   description: 'Light and breezy summer collection',
   handle: 'summer-vibes',
+  id: 'gid://1',
   image: {
-    width: 200,
     alt: 'Summer collection',
     height: 200,
     src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop',
+    width: 200,
   },
   sortDescription: 'Bright & colorful',
   title: 'Summer Vibes',
@@ -69,10 +69,10 @@ export const ElegantCollection: Story = {
       ...mockCollection,
       color: 'bg-purple-50',
       image: {
-        width: 200,
         alt: 'Elegant collection',
         height: 200,
         src: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=200&h=200&fit=crop',
+        width: 200,
       },
       sortDescription: 'Sophisticated & chic',
       title: 'Elegant Evening',
@@ -86,10 +86,10 @@ export const CasualCollection: Story = {
       ...mockCollection,
       color: 'bg-green-50',
       image: {
-        width: 200,
         alt: 'Casual collection',
         height: 200,
         src: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=200&h=200&fit=crop',
+        width: 200,
       },
       sortDescription: 'Relaxed & easy-going',
       title: 'Casual Comfort',
@@ -120,7 +120,7 @@ export const NoHandle: Story = {
   args: {
     collection: {
       ...mockCollection,
-      handle: undefined,
+      handle: '',
     },
   },
 };
@@ -177,18 +177,18 @@ export const Grid: Story = {
           image: 'photo-1523275335684-37898b6baf30',
           title: 'Glam',
         },
-      ].map((item, index) => (
+      ].map((item, index: any) => (
         <CollectionCard6
-          key={index}
+          key={item.title}
           collection={{
-            id: `gid://${index}`,
             color: item.color,
             handle: item.title.toLowerCase(),
+            id: `gid://${index}`,
             image: {
-              width: 200,
               alt: item.title,
               height: 200,
               src: `https://images.unsplash.com/${item.image}?w=200&h=200&fit=crop`,
+              width: 200,
             },
             sortDescription: item.desc,
             title: item.title,
@@ -229,14 +229,14 @@ export const SeasonalCollections: Story = {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl">
       <CollectionCard6
         collection={{
-          id: 'spring',
           color: 'bg-green-50',
           handle: 'spring',
+          id: 'spring',
           image: {
-            width: 200,
             alt: 'Spring collection',
             height: 200,
             src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=200&h=200&fit=crop',
+            width: 200,
           },
           sortDescription: 'Fresh & floral',
           title: 'Spring',
@@ -244,14 +244,14 @@ export const SeasonalCollections: Story = {
       />
       <CollectionCard6
         collection={{
-          id: 'summer',
           color: 'bg-yellow-50',
           handle: 'summer',
+          id: 'summer',
           image: {
-            width: 200,
             alt: 'Summer collection',
             height: 200,
             src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop',
+            width: 200,
           },
           sortDescription: 'Bright & breezy',
           title: 'Summer',
@@ -259,14 +259,14 @@ export const SeasonalCollections: Story = {
       />
       <CollectionCard6
         collection={{
-          id: 'fall',
           color: 'bg-orange-50',
           handle: 'fall',
+          id: 'fall',
           image: {
-            width: 200,
             alt: 'Fall collection',
             height: 200,
             src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop',
+            width: 200,
           },
           sortDescription: 'Warm & cozy',
           title: 'Fall',
@@ -274,14 +274,14 @@ export const SeasonalCollections: Story = {
       />
       <CollectionCard6
         collection={{
-          id: 'winter',
           color: 'bg-blue-50',
           handle: 'winter',
+          id: 'winter',
           image: {
-            width: 200,
             alt: 'Winter collection',
             height: 200,
             src: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=200&h=200&fit=crop',
+            width: 200,
           },
           sortDescription: 'Elegant & layered',
           title: 'Winter',

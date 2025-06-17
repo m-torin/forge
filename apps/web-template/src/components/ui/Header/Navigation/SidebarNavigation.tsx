@@ -1,18 +1,96 @@
 'use client';
 
-import { IconChevronDown, IconSearch } from '@tabler/icons-react';
-import { Accordion } from '@mantine/core';
+import { IconChevronDown, IconSearch, IconAlertTriangle } from '@tabler/icons-react';
+import { Accordion, Skeleton } from '@mantine/core';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { type SidebarNavigationProps, type TNavigationItem } from '../types';
 import { Divider } from '../Divider';
 import ButtonPrimary from '../ButtonPrimary';
 import SocialsList from '../SocialsList';
 
-const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
+// Add error handling props to SidebarNavigationProps
+interface SidebarNavigationPropsWithErrorHandling extends SidebarNavigationProps {
+  loading?: boolean;
+  error?: string;
+  'data-testid'?: string;
+}
+
+// Loading skeleton for SidebarNavigation
+function SidebarNavigationSkeleton({ testId }: { testId?: string }) {
+  return (
+    <div data-testid={testId}>
+      <Skeleton height={60} mb="md" />
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} height={32} width={32} circle />
+          ))}
+        </div>
+      </div>
+      <div className="mt-5">
+        <Skeleton height={48} />
+      </div>
+      <div className="px-2 py-6 flex flex-col gap-y-1">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} height={40} mb="xs" />
+        ))}
+      </div>
+      <Skeleton height={1} mb="md" />
+      <Skeleton height={48} width={200} />
+    </div>
+  );
+}
+
+// Error state for SidebarNavigation
+function SidebarNavigationError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <div data-testid={testId}>
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
+        <IconAlertTriangle size={24} className="text-red-500 mx-auto mb-2" />
+        <p className="text-red-600 dark:text-red-400 text-sm">Sidebar navigation failed to load</p>
+      </div>
+    </div>
+  );
+}
+
+// Zero state for SidebarNavigation
+function SidebarNavigationEmpty({ testId }: { testId?: string }) {
+  return (
+    <div data-testid={testId}>
+      <span>No navigation items available</span>
+    </div>
+  );
+}
+
+const SidebarNavigation: React.FC<SidebarNavigationPropsWithErrorHandling> = ({
+  data,
+  loading = false,
+  error,
+  'data-testid': testId = 'sidebar-navigation',
+}) => {
   const router = useRouter();
+  const [internalError, setInternalError] = useState<string | null>(null);
+
+  // Show loading state
+  if (loading) {
+    return <SidebarNavigationSkeleton testId={testId} />;
+  }
+
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <SidebarNavigationError error={currentError} testId={testId} />;
+  }
+
+  // Show zero state when no data
+  if (!data || data.length === 0) {
+    return <SidebarNavigationEmpty testId={testId} />;
+  }
+
   const handleClose = () => {
     // This would typically close the sidebar, but since we don't have access to the aside context,
     // we'll just handle navigation
@@ -123,40 +201,71 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
   };
 
   return (
-    <div>
-      <span>
-        Discover the most outstanding articles on all topics of life. Write your stories and share
-        them
-      </span>
+    <ErrorBoundary
+      fallback={
+        <SidebarNavigationError error="Sidebar navigation failed to render" testId={testId} />
+      }
+    >
+      <div data-testid={testId}>
+        <span>
+          Discover the most outstanding articles on all topics of life. Write your stories and share
+          them
+        </span>
 
-      <div className="mt-4 flex items-center justify-between">
-        <SocialsList itemClass="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xl" />
+        <div className="mt-4 flex items-center justify-between">
+          <ErrorBoundary fallback={<div className="text-red-500">Social links unavailable</div>}>
+            <SocialsList itemClass="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xl" />
+          </ErrorBoundary>
+        </div>
+        <div className="mt-5">
+          <ErrorBoundary fallback={<div className="text-red-500">Search unavailable</div>}>
+            {renderSearchForm()}
+          </ErrorBoundary>
+        </div>
+        <ErrorBoundary
+          fallback={<div className="text-red-500 p-4">Navigation menu unavailable</div>}
+        >
+          <Accordion
+            chevron={<IconChevronDown className="h-4 w-4" />}
+            classNames={{
+              chevron: 'ml-2 h-4 w-4 self-center text-neutral-500',
+              content: 'p-0',
+              control: 'hover:bg-transparent p-0',
+              item: 'border-0 bg-transparent text-neutral-900 dark:text-white',
+              root: 'flex flex-col gap-y-1 px-2 py-6',
+            }}
+            variant="light"
+          >
+            {data.map((item, index) => {
+              try {
+                return _renderItem(item, index);
+              } catch (err) {
+                setInternalError('Menu item rendering failed');
+                return (
+                  <div key={index} className="text-red-500 p-2">
+                    Menu item error
+                  </div>
+                );
+              }
+            })}
+          </Accordion>
+        </ErrorBoundary>
+        <ErrorBoundary fallback={<div className="h-px bg-red-200 mb-6" />}>
+          <Divider className="mb-6" />
+        </ErrorBoundary>
+
+        {/* FOR OUR DEMO */}
+        <ErrorBoundary fallback={<div className="text-red-500">Button unavailable</div>}>
+          <ButtonPrimary
+            className="px-8!"
+            href="https://themeforest.net/item/ciseco-shop-ecommerce-nextjs-template/44210635"
+            targetBlank
+          >
+            Buy this template
+          </ButtonPrimary>
+        </ErrorBoundary>
       </div>
-      <div className="mt-5">{renderSearchForm()}</div>
-      <Accordion
-        chevron={<IconChevronDown className="h-4 w-4" />}
-        classNames={{
-          chevron: 'ml-2 h-4 w-4 self-center text-neutral-500',
-          content: 'p-0',
-          control: 'hover:bg-transparent p-0',
-          item: 'border-0 bg-transparent text-neutral-900 dark:text-white',
-          root: 'flex flex-col gap-y-1 px-2 py-6',
-        }}
-        variant="light"
-      >
-        {data.map(_renderItem)}
-      </Accordion>
-      <Divider className="mb-6" />
-
-      {/* FOR OUR DEMO */}
-      <ButtonPrimary
-        className="px-8!"
-        href="https://themeforest.net/item/ciseco-shop-ecommerce-nextjs-template/44210635"
-        targetBlank
-      >
-        Buy this template
-      </ButtonPrimary>
-    </div>
+    </ErrorBoundary>
   );
 };
 

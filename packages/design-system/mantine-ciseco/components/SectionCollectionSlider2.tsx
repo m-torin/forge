@@ -2,24 +2,20 @@
 
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { Carousel } from '@mantine/carousel';
 import clsx from 'clsx';
-import useEmblaCarousel from 'embla-carousel-react';
 import Link from 'next/link';
-import { type FC } from 'react';
+import { type FC, useState } from 'react';
 
 import { type TCollection } from '../data/types';
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
 import { useLocalizeHref } from '../hooks/useLocale';
 
 import CollectionCard2 from './CollectionCard2';
 import Heading from './Heading/Heading';
 
-import type { EmblaOptionsType } from 'embla-carousel';
-
-export interface SectionSliderCategoriesProps {
+export interface SectionSliderCategoriesProps extends Record<string, any> {
   className?: string;
   collections: TCollection[];
-  emblaOptions?: EmblaOptionsType;
   heading?: string;
   headingDim?: string;
   subHeading?: string;
@@ -28,73 +24,75 @@ export interface SectionSliderCategoriesProps {
 const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
   className,
   collections,
-  emblaOptions = {
-    slidesToScroll: 'auto',
-  },
   heading = 'Shop by department',
   headingDim = 'Explore the absolute',
   subHeading,
 }) => {
   const localizeHref = useLocalizeHref();
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
+  const [embla, setEmbla] = useState<any>(null);
+  const nextBtnDisabled = !embla?.canScrollNext();
+  const prevBtnDisabled = !embla?.canScrollPrev();
 
-  // Don't render anything if no collections
-  if (!collections || collections.length === 0) {
-    return null;
-  }
+  const onNextButtonClick = () => embla?.scrollNext();
+  const onPrevButtonClick = () => embla?.scrollPrev();
+
+  // Collections prop is guaranteed to exist and have content
+  // This component should not be rendered without collections
 
   return (
     <div className={clsx(className)}>
       <Heading
         description={subHeading}
-        onClickNext={onNextButtonClick}
-        onClickPrev={onPrevButtonClick}
         hasNextPrev
         headingDim={headingDim}
         nextBtnDisabled={nextBtnDisabled}
         prevBtnDisabled={prevBtnDisabled}
+        onClickNext={onNextButtonClick}
+        onClickPrev={onPrevButtonClick}
       >
         {heading}
       </Heading>
 
-      <div ref={emblaRef} className="embla">
-        <div className="-ms-5 embla__container sm:-ms-8">
-          {collections?.map((collection) => (
-            <div
-              key={collection.id}
-              className="embla__slide basis-[86%] ps-5 sm:ps-8 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-            >
-              <CollectionCard2 collection={collection} />
-            </div>
-          ))}
+      <Carousel
+        classNames={{
+          root: '-mx-5 sm:-mx-8',
+          slide: 'px-5 sm:px-8',
+        }}
+        getEmblaApi={setEmbla}
+        slideGap={{ base: 'xs', sm: 'md' }}
+        slideSize={{ base: '86%', lg: '33.333333%', md: '50%', xl: '25%' }}
+        withControls={false}
+      >
+        {collections.map((collection) => (
+          <Carousel.Slide key={collection.id}>
+            <CollectionCard2 collection={collection} />
+          </Carousel.Slide>
+        ))}
 
-          <div className="embla__slide basis-[86%] ps-5 sm:ps-8 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-            <div className="group aspect-square relative w-full flex-1 overflow-hidden rounded-2xl bg-neutral-100">
-              <div>
-                <div className="absolute inset-x-10 inset-y-6 flex flex-col justify-center sm:items-center">
-                  <div className="relative flex text-neutral-900">
-                    <span className="text-lg font-semibold">More collections</span>
-                    <HugeiconsIcon
-                      strokeWidth={1.5}
-                      color="currentColor"
-                      icon={ArrowUpRight01Icon}
-                      className="absolute left-full ms-2 size-5 group-hover:scale-110"
-                      size={24}
-                    />
-                  </div>
-                  <span className="mt-1 text-sm text-neutral-800">Show me more</span>
+        <Carousel.Slide>
+          <div className="group aspect-square relative w-full flex-1 overflow-hidden rounded-2xl bg-neutral-100">
+            <div>
+              <div className="absolute inset-x-10 inset-y-6 flex flex-col justify-center sm:items-center">
+                <div className="relative flex text-neutral-900">
+                  <span className="text-lg font-semibold">More collections</span>
+                  <HugeiconsIcon
+                    className="absolute left-full ms-2 size-5 group-hover:scale-110"
+                    color="currentColor"
+                    icon={ArrowUpRight01Icon}
+                    size={24}
+                    strokeWidth={1.5}
+                  />
                 </div>
+                <span className="mt-1 text-sm text-neutral-800">Show me more</span>
               </div>
-              <Link
-                href={localizeHref('/collections/all')}
-                className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover:opacity-100"
-              />
             </div>
+            <Link
+              className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover:opacity-100"
+              href={localizeHref('/collections/all')}
+            />
           </div>
-        </div>
-      </div>
+        </Carousel.Slide>
+      </Carousel>
     </div>
   );
 };

@@ -1,9 +1,9 @@
+import { MantineProvider } from '@mantine/core';
 import { withThemeByClassName } from '@storybook/addon-themes';
 
 import { withAuthMock } from '@repo/auth/mocks/storybook-decorator';
-import { MantineProvider, TooltipProvider } from '@repo/design-system/uix';
 
-import type { Preview } from '@storybook/nextjs';
+import { Preview } from '@storybook/nextjs';
 
 // Import global styles
 import '../styles/globals.css';
@@ -18,12 +18,10 @@ const preview: Preview = {
       },
     }),
     withAuthMock,
-    (Story) => {
+    (Story: any) => {
       return (
         <MantineProvider>
-          <TooltipProvider>
-            <Story />
-          </TooltipProvider>
+          <Story />
         </MantineProvider>
       );
     },
@@ -50,8 +48,8 @@ const preview: Preview = {
     themes: {
       default: 'light',
       list: [
-        { name: 'light', class: 'light', color: '#ffffff' },
-        { name: 'dark', class: 'dark', color: '#000000' },
+        { class: 'light', color: '#ffffff', name: 'light' },
+        { class: 'dark', color: '#000000', name: 'dark' },
       ],
     },
   },

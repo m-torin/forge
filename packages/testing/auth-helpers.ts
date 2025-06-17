@@ -235,7 +235,7 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
       // Additional wait for page to stabilize
       await page.waitForLoadState('networkidle');
     } catch (error) {
-      console.warn('Auth wait timeout, continuing with test:', error);
+      console.warn('Auth wait timeout, continuing with test: ', error);
     }
   }
 
@@ -300,7 +300,7 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
         await this.signOut(page);
       }
     } catch (error) {
-      console.warn('User cleanup failed:', error);
+      console.warn('User cleanup failed: ', error);
     }
   }
 

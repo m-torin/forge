@@ -1,21 +1,21 @@
-import { ArrowRightIcon } from '@heroicons/react/24/outline'
-import { Search01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { Divider } from '@/components/Divider'
+import HeaderFilterSection from '@/components/HeaderFilterSection'
+import ProductCard from '@/components/ProductCard'
+import SectionPromo1 from '@/components/SectionPromo1'
+import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
+import { getProducts } from '@/data/data'
+import ButtonCircle from '@/shared/Button/ButtonCircle'
+import Input from '@/shared/Input/Input'
 import {
-  ButtonCircle,
-  Divider,
-  HeaderFilterSection,
-  Input,
   Pagination,
   PaginationList,
   PaginationNext,
   PaginationPage,
   PaginationPrevious,
-  ProductCard,
-  SectionPromo1,
-  SectionSliderLargeProduct,
-  getProducts,
-} from '@repo/design-system/ciseco'
+} from '@/shared/Pagination/Pagination'
+import { ArrowRightIcon } from '@heroicons/react/24/outline'
+import { Search01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -29,14 +29,14 @@ const PageSearch = async () => {
 
   return (
     <div>
-      <div className={'bg-primary-50 left-0 right-0 top-0 h-24 w-full 2xl:h-28 dark:bg-neutral-800/20'} />
+      <div className={'top-0 right-0 left-0 h-24 w-full bg-primary-50 2xl:h-28 dark:bg-neutral-800/20'} />
       <div className="container">
         <header className="mx-auto -mt-10 flex max-w-2xl flex-col lg:-mt-7">
           <form className="relative w-full" method="post">
             <label htmlFor="search-input" className="text-neutral-500 dark:text-neutral-300">
               <span className="sr-only">Search all icons</span>
               <HugeiconsIcon
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl md:left-6"
+                className="absolute top-1/2 left-5 -translate-y-1/2 transform text-2xl md:left-6"
                 icon={Search01Icon}
                 size={24}
                 color="currentColor"
@@ -50,7 +50,7 @@ const PageSearch = async () => {
                 sizeClass="pl-14 py-5 pr-5 md:pl-16"
                 rounded="rounded-full"
               />
-              <ButtonCircle className="absolute right-2.5 top-1/2 -translate-y-1/2" size="size-11" type="submit">
+              <ButtonCircle className="absolute top-1/2 right-2.5 -translate-y-1/2" size="size-11" type="submit">
                 <ArrowRightIcon className="size-5 text-white" />
               </ButtonCircle>
             </label>
@@ -58,7 +58,7 @@ const PageSearch = async () => {
         </header>
       </div>
 
-      <div className="container flex flex-col gap-y-16 py-16 lg:gap-y-28 lg:pb-28 lg:pt-20">
+      <div className="container flex flex-col gap-y-16 py-16 lg:gap-y-28 lg:pt-20 lg:pb-28">
         <main>
           {/* FILTER */}
           <HeaderFilterSection />

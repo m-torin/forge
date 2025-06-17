@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 // import { createEventBus } from '../../src/shared/utils/index'
-// import type { EventBus, WorkflowEvent } from '../../src/shared/types/index'
+// import { EventBus, WorkflowEvent } from '../../src/shared/types/index'
 
 // TODO: Implement EventBus functionality
 interface EventBus {
@@ -60,7 +60,7 @@ const createEventBus = (options?: {
 
       for (const [pattern, patternHandlers] of handlers) {
         if (matchesPattern(pattern, type)) {
-          patternHandlers.forEach((handler) => handler(event));
+          patternHandlers.forEach((handler: any) => handler(event));
         }
       }
     },
@@ -74,7 +74,7 @@ const createEventBus = (options?: {
                   handlerPattern === event.type || matchesPattern(handlerPattern, event.type);
 
                 if (shouldCall) {
-                  patternHandlers.forEach((handler) => handler(event));
+                  patternHandlers.forEach((handler: any) => handler(event));
                 }
               }
             }
@@ -109,14 +109,14 @@ const createEventBus = (options?: {
   };
 };
 
-describe('Event Bus', () => {
+describe('Event Bus', (_: any) => {
   let eventBus: EventBus;
 
   beforeEach(() => {
     eventBus = createEventBus();
   });
 
-  describe('Event Subscription', () => {
+  describe('Event Subscription', (_: any) => {
     test('should subscribe to events with exact pattern', async () => {
       const handler = vi.fn();
 
@@ -205,7 +205,7 @@ describe('Event Bus', () => {
     });
   });
 
-  describe('Event Emission', () => {
+  describe('Event Emission', (_: any) => {
     test('should emit events with automatic ID and timestamp', async () => {
       const handler = vi.fn();
 
@@ -271,7 +271,7 @@ describe('Event Bus', () => {
     });
   });
 
-  describe('Pattern Matching', () => {
+  describe('Pattern Matching', (_: any) => {
     test('should match single-level wildcards', async () => {
       const handler = vi.fn();
 
@@ -314,7 +314,7 @@ describe('Event Bus', () => {
     });
   });
 
-  describe('Error Handling', () => {
+  describe('Error Handling', (_: any) => {
     test('should handle subscriber errors gracefully', async () => {
       const goodHandler = vi.fn();
       const errorHandler = vi.fn().mockRejectedValue(new Error('Handler error'));
@@ -347,12 +347,12 @@ describe('Event Bus', () => {
     });
   });
 
-  describe('Performance and Memory', () => {
+  describe('Performance and Memory', (_: any) => {
     test('should handle many subscribers efficiently', async () => {
       const handlers = Array.from({ length: 1000 }, () => vi.fn());
 
       // Subscribe all handlers
-      handlers.forEach((handler) => {
+      handlers.forEach((handler: any) => {
         eventBus.subscribe('performance.test', handler);
       });
 
@@ -364,29 +364,31 @@ describe('Event Bus', () => {
       expect(duration).toBeLessThan(100);
 
       // All handlers should be called
-      handlers.forEach((handler) => {
+      handlers.forEach((handler: any) => {
         expect(handler).toHaveBeenCalledTimes(1);
       });
     });
 
-    test('should clean up subscriptions properly', () => {
+    test('should clean up subscriptions properly', (_: any) => {
       const handlers = Array.from({ length: 100 }, () => vi.fn());
 
       // Subscribe and immediately unsubscribe
-      const unsubscribers = handlers.map((handler) => eventBus.subscribe('cleanup.test', handler));
+      const unsubscribers = handlers.map((handler: any) =>
+        eventBus.subscribe('cleanup.test', handler),
+      );
 
-      unsubscribers.forEach((unsubscribe) => unsubscribe());
+      unsubscribers.forEach((unsubscribe: any) => unsubscribe());
 
       // Emit event - no handlers should be called
       eventBus.emit('cleanup.test', { data: 'test' });
 
-      handlers.forEach((handler) => {
+      handlers.forEach((handler: any) => {
         expect(handler).not.toHaveBeenCalled();
       });
     });
   });
 
-  describe('Event History and Replay', () => {
+  describe('Event History and Replay', (_: any) => {
     test('should maintain event history when configured', async () => {
       const eventBusWithHistory = createEventBus({
         enableHistory: true,
@@ -461,7 +463,7 @@ describe('Event Bus', () => {
     });
   });
 
-  describe('Workflow Integration', () => {
+  describe('Workflow Integration', (_: any) => {
     test('should handle workflow lifecycle events', async () => {
       const lifecycleHandler = vi.fn();
 
@@ -497,7 +499,7 @@ describe('Event Bus', () => {
     test('should support event filtering', async () => {
       const highPriorityHandler = vi.fn();
 
-      eventBus.subscribe('task.*', async (event) => {
+      eventBus.subscribe('task.*', async (event: any) => {
         // Only handle high priority tasks
         if (event.data?.priority === 'high') {
           highPriorityHandler(event);

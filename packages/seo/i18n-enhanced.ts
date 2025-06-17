@@ -1,6 +1,6 @@
-import { SEOManager } from './metadata-enhanced';
+import { Metadata } from 'next';
 
-import type { Metadata } from 'next';
+import { SEOManager } from './metadata-enhanced';
 
 interface I18nSEOConfig {
   defaultLocale: string;
@@ -20,18 +20,18 @@ export class I18nSEOManager extends SEOManager {
   createI18nMetadata(
     options: Parameters<SEOManager['createMetadata']>[0] & {
       locale: string;
-      translations?: Record<string, { title: string; description: string }>;
+      translations?: Record<string, { description: string; title: string }>;
     },
   ): Metadata {
     const { locale, translations, ...baseOptions } = options;
 
     // Use translated title and description if available
-    const localizedTitle = translations?.[locale]?.title || baseOptions.title;
-    const localizedDescription = translations?.[locale]?.description || baseOptions.description;
+    const localizedTitle = translations?.[locale]?.title ?? baseOptions.title;
+    const localizedDescription = translations?.[locale]?.description ?? baseOptions.description;
 
     // Generate language alternates automatically
     const languageAlternates: Record<string, string> = {};
-    this.i18nConfig.locales.forEach((loc) => {
+    this.i18nConfig.locales.forEach((loc: any) => {
       if (baseOptions.alternates?.canonical) {
         const basePath = baseOptions.alternates.canonical.replace(/^\/[a-z]{2}\//, '/');
         languageAlternates[loc] = `/${loc}${basePath}`;
@@ -43,8 +43,8 @@ export class I18nSEOManager extends SEOManager {
 
     // Get alternate locales for OpenGraph
     const alternateLocales = this.i18nConfig.locales
-      .filter((loc) => loc !== locale)
-      .map((loc) => this.formatOpenGraphLocale(loc));
+      .filter((loc: any) => loc !== locale)
+      .map((loc: any) => this.formatOpenGraphLocale(loc));
 
     const metadata = super.createMetadata({
       ...baseOptions,
@@ -63,7 +63,7 @@ export class I18nSEOManager extends SEOManager {
     }
 
     // Add language meta tag
-    const otherMetadata: Record<string, string | number | (string | number)[]> = {
+    const otherMetadata: Record<string, (number | string)[] | number | string> = {
       'content-language': locale,
     };
 
@@ -72,18 +72,49 @@ export class I18nSEOManager extends SEOManager {
       otherMetadata.direction = 'rtl';
     }
 
-    // Merge with existing metadata.other, filtering out any undefined values
+    // Merge with existing metadata.other
     if (metadata.other) {
-      Object.entries(metadata.other).forEach(([key, value]) => {
-        if (value !== undefined) {
-          otherMetadata[key] = value;
-        }
+      Object.entries(metadata.other).forEach(([key, value]: [string, any]) => {
+        otherMetadata[key] = value;
       });
     }
 
     metadata.other = otherMetadata;
 
     return metadata;
+  }
+
+  // Create localized structured data
+  createLocalizedStructuredData<T>(
+    type: string,
+    data: T,
+    locale: string,
+    translations?: Record<string, Partial<T>>,
+  ): T {
+    const localizedData = translations?.[locale] ? { ...data, ...translations[locale] } : data;
+
+    return {
+      ...localizedData,
+      '@context': 'https://schema.org',
+      '@type': type,
+      inLanguage: locale,
+    } as T;
+  }
+
+  // Generate hreflang tags for international SEO
+  generateHreflangTags(currentPath: string, _currentLocale: string): Record<string, string> {
+    const hreflangTags: Record<string, string> = {};
+
+    // Add x-default for default locale
+    const basePath = currentPath.replace(/^\/[a-z]{2}\//, '/');
+    hreflangTags['x-default'] = `/${this.i18nConfig.defaultLocale}${basePath}`;
+
+    // Add all locale variations
+    this.i18nConfig.locales.forEach((locale: any) => {
+      hreflangTags[locale] = `/${locale}${basePath}`;
+    });
+
+    return hreflangTags;
   }
 
   // Format locale for OpenGraph (e.g., 'en' -> 'en_US', 'fr' -> 'fr_FR')
@@ -102,39 +133,6 @@ export class I18nSEOManager extends SEOManager {
       ru: 'ru_RU',
       zh: 'zh_CN',
     };
-    return localeMap[locale] || `${locale}_${locale.toUpperCase()}`;
-  }
-
-  // Generate hreflang tags for international SEO
-  generateHreflangTags(currentPath: string, _currentLocale: string): Record<string, string> {
-    const hreflangTags: Record<string, string> = {};
-
-    // Add x-default for default locale
-    const basePath = currentPath.replace(/^\/[a-z]{2}\//, '/');
-    hreflangTags['x-default'] = `/${this.i18nConfig.defaultLocale}${basePath}`;
-
-    // Add all locale variations
-    this.i18nConfig.locales.forEach((locale) => {
-      hreflangTags[locale] = `/${locale}${basePath}`;
-    });
-
-    return hreflangTags;
-  }
-
-  // Create localized structured data
-  createLocalizedStructuredData<T>(
-    type: string,
-    data: T,
-    locale: string,
-    translations?: Record<string, Partial<T>>,
-  ): T {
-    const localizedData = translations?.[locale] ? { ...data, ...translations[locale] } : data;
-
-    return {
-      ...localizedData,
-      '@type': type,
-      '@context': 'https://schema.org',
-      inLanguage: locale,
-    } as T;
+    return localeMap[locale] ?? `${locale}_${locale.toUpperCase()}`;
   }
 }

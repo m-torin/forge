@@ -12,7 +12,7 @@ import {
   withStepCircuitBreaker,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const DataSyncInput = z.object({
@@ -29,7 +29,7 @@ export const fetchSourceDataStep = compose(
     const { lastSyncTimestamp, source, syncType } = input;
 
     // Simulate fetching data based on sync type
-    const dataMap = {
+    const dataMap: Record<string, { items: any[]; totalCount: number }> = {
       all: {
         items: [],
         totalCount: 400,
@@ -80,13 +80,11 @@ export const fetchSourceDataStep = compose(
       totalCount: data.totalCount,
     };
   }),
-  (step) => withStepTimeout(step, { execution: 30000, warning: 20000 }),
-  (step) =>
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) =>
     withStepCircuitBreaker(step, {
-      failureThreshold: 5,
       resetTimeout: 30000,
       threshold: 0.5,
-      timeout: 10000,
     }),
 );
 
@@ -211,48 +209,42 @@ export const syncChunksStep = compose(
       totalProcessed,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
 // Step 6: Generate sync report
-export const generateReportStep = StepTemplates.dataTransformation(
-  'generate-report',
-  'Create sync summary report',
-  {
-    transformFunction: async (data: any) => {
-      const { validation, failedChunks, syncType, totalCount, totalProcessed } = data;
+export const generateReportStep = createStep('generate-report', async (data: any) => {
+  const { validation, failedChunks, syncType, totalCount, totalProcessed } = data;
 
-      return {
-        report: {
-          validation: {
-            errors: validation.errors.length,
-            warnings: validation.warnings.length,
-          },
-          status: failedChunks.length === 0 ? 'success' : 'partial',
-          summary: {
-            failedItems: failedChunks.reduce(
-              (sum: number, chunk: any) => sum + chunk.itemsProcessed,
-              0,
-            ),
-            processedItems: totalProcessed,
-            successRate: (totalProcessed / totalCount) * 100,
-            totalItems: totalCount,
-          },
-          syncType,
-          timing: {
-            completedAt: data.syncedAt,
-            duration: new Date(data.syncedAt).getTime() - new Date(data.fetchedAt).getTime(),
-            startedAt: data.fetchedAt,
-          },
-        },
-      };
+  const report = {
+    validation: {
+      errors: validation.errors.length,
+      warnings: validation.warnings.length,
     },
-  },
-);
+    status: failedChunks.length === 0 ? 'success' : 'partial',
+    summary: {
+      failedItems: failedChunks.reduce((sum: number, chunk: any) => sum + chunk.itemsProcessed, 0),
+      processedItems: totalProcessed,
+      successRate: (totalProcessed / totalCount) * 100,
+      totalItems: totalCount,
+    },
+    syncType,
+    timing: {
+      completedAt: data.syncedAt,
+      duration: new Date(data.syncedAt).getTime() - new Date(data.fetchedAt).getTime(),
+      startedAt: data.fetchedAt,
+    },
+  };
+
+  return {
+    ...data,
+    report,
+  };
+});
 
 // Step 7: Store sync metadata
 export const storeSyncMetadataStep = StepTemplates.database(
@@ -261,14 +253,7 @@ export const storeSyncMetadataStep = StepTemplates.database(
 );
 
 // Step 8: Send notification
-export const sendNotificationStep = StepTemplates.notification(
-  'sync-notification',
-  'Notify about sync completion',
-  {
-    channels: ['email', 'slack'],
-    condition: (data: any) => data.report.status !== 'success',
-  },
-);
+export const sendNotificationStep = StepTemplates.notification('sync-notification', 'success');
 
 // Main workflow definition
 export const dataSyncWorkflow = {

@@ -4,14 +4,14 @@
 
 import PQueue from 'p-queue';
 
-import type { BatchPattern, PatternContext } from '../types/patterns';
+import { BatchPattern, PatternContext } from '../types/patterns';
 
 export interface BatchContext {
   batchId: string;
   events: {
     emit: (event: string, data: any) => Promise<void> | void;
   };
-  processedCount: number;
+  processedItems: number;
   totalCount: number;
   updateProgress: (progress: {
     batchId: string;
@@ -78,6 +78,7 @@ export class BatchManager<T = any, R = any> {
   private processingLock = false;
 
   constructor(processor: BatchProcessor<T, R>, options: BatchOptions = {}) {
+    const boundProcessor = processor.processBatch.bind(processor);
     this.pattern = {
       concurrency: 1,
       errorHandling: 'fail-fast',
@@ -85,9 +86,9 @@ export class BatchManager<T = any, R = any> {
       maxWaitTime: 1000,
       minBatchSize: 1,
       preserveOrder: true,
-      processor: processor.processBatch.bind(processor),
+      processor: boundProcessor,
       ...options,
-    };
+    } as Required<BatchPattern>;
 
     this.processor = processor;
     this.queue = new PQueue({
@@ -103,7 +104,7 @@ export class BatchManager<T = any, R = any> {
     if (this.isShuttingDown) {
       throw new Error('BatchManager is shutting down');
     }
-    
+
     const item: BatchItem<T> = {
       addedAt: new Date(),
       data,
@@ -111,7 +112,7 @@ export class BatchManager<T = any, R = any> {
     };
 
     // Create a promise for this item's result
-    const resultPromise = new Promise<R>((resolve, reject) => {
+    const resultPromise = new Promise<R>((resolve, reject: any) => {
       item.resolve = resolve;
       item.reject = reject;
     });
@@ -134,7 +135,7 @@ export class BatchManager<T = any, R = any> {
    * Add multiple items to the batch
    */
   async addMany(items: T[], idPrefix = 'batch'): Promise<R[]> {
-    const promises = items.map((item, index) =>
+    const promises = items.map((item, index: any) =>
       this.add(item, `${idPrefix}_${Date.now()}_${index}`),
     );
 
@@ -187,16 +188,16 @@ export class BatchManager<T = any, R = any> {
   async shutdown(): Promise<void> {
     this.isShuttingDown = true;
     this.clearBatchTimer();
-    
+
     // Pause the queue to prevent new jobs
     this.queue.pause();
-    
+
     // Wait for current jobs to complete
     await this.queue.onIdle();
-    
+
     // Clear remaining items
     this.clear();
-    
+
     // Clear the queue
     this.queue.clear();
   }
@@ -234,7 +235,7 @@ export class BatchManager<T = any, R = any> {
               if (item.resolve) {
                 item.resolve(result);
               }
-            } catch (itemError) {
+            } catch (itemError: any) {
               errors.push(itemError as Error);
               if (item.reject) {
                 item.reject(itemError);
@@ -261,7 +262,7 @@ export class BatchManager<T = any, R = any> {
               if (item.resolve) {
                 item.resolve(result);
               }
-            } catch (itemError) {
+            } catch (itemError: any) {
               if (item.reject) {
                 item.reject(itemError);
               }
@@ -306,12 +307,12 @@ export class BatchManager<T = any, R = any> {
     const currentBatch = this.batch.splice(0, this.pattern.maxBatchSize);
 
     try {
-      const items = currentBatch.map((item) => item.data);
+      const items = currentBatch.map((item: any) => item.data);
       let results: R[];
 
       try {
-        results = await this.pattern.processor(items);
-      } catch (error) {
+        results = (await this.pattern.processor(items)) as R[];
+      } catch (error: any) {
         // Handle batch processing error
         await this.handleBatchError(currentBatch, error as Error);
         return;
@@ -330,7 +331,7 @@ export class BatchManager<T = any, R = any> {
         // Results don't match - this shouldn't happen with proper implementation
         throw new Error('Batch processing returned incorrect number of results');
       }
-    } catch (error) {
+    } catch (error: any) {
       // Handle unexpected errors
       for (const item of currentBatch) {
         if (item.reject) {
@@ -386,20 +387,20 @@ export class BatchManager<T = any, R = any> {
    */
   async cleanup(): Promise<void> {
     this.isShuttingDown = true;
-    
+
     // Clear any pending batch timer
     this.clearBatchTimer();
-    
+
     // Process any remaining items in the batch
     if (this.batch.length > 0 && !this.processing && !this.processingLock) {
       try {
         await this.processBatch();
-      } catch (error) {
+      } catch (error: any) {
         // Log error but continue cleanup
-        console.error('Error during batch cleanup:', error);
+        console.error('Error during batch cleanup: ', error);
       }
     }
-    
+
     // Clear all data
     this.batch = [];
     this.results.clear();
@@ -407,20 +408,47 @@ export class BatchManager<T = any, R = any> {
   }
 }
 
+// WeakMap to track BatchManager instances for proper cleanup
+const batchManagerRegistry = new WeakMap<object, Map<string, BatchManager<any, any>>>();
+
 /**
  * Create a batch processing decorator
  */
 export function Batch<T, R>(options: BatchOptions = {}) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
-    let manager: BatchManager<T, R>;
 
     descriptor.value = function (this: any, item: T, id?: string) {
+      // Get or create manager registry for this instance
+      let managerMap = batchManagerRegistry.get(this);
+      if (!managerMap) {
+        managerMap = new Map();
+        batchManagerRegistry.set(this, managerMap);
+      }
+
+      let manager = managerMap.get(propertyName);
       if (!manager) {
         const processor: BatchProcessor<T, R> = {
           processBatch: (items: T[]) => originalMethod.call(this, items),
         };
         manager = new BatchManager(processor, options);
+        managerMap.set(propertyName, manager);
+
+        // Add cleanup on instance destruction if possible
+        if (this.destroy && typeof this.destroy === 'function') {
+          const originalDestroy = this.destroy.bind(this);
+          this.destroy = async function () {
+            const managers = batchManagerRegistry.get(this);
+            if (managers) {
+              for (const [, mgr] of managers) {
+                await mgr.cleanup();
+              }
+              managers.clear();
+              batchManagerRegistry.delete(this);
+            }
+            return originalDestroy();
+          };
+        }
       }
 
       return manager.add(item, id);

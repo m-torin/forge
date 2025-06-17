@@ -3,9 +3,9 @@ import { type ComponentType, type ElementType, type FC } from 'react';
 
 import { Link } from '../../Link';
 
-export interface ButtonProps {
+export interface ButtonProps extends Record<string, any> {
   [key: string]: any; // Cho phép bất kỳ props tùy chỉnh nào
-  as?: ElementType | ComponentType<any>;
+  as?: ComponentType<any> | ElementType;
   className?: string;
   'data-testid'?: string;
   fontSize?: string;
@@ -16,10 +16,10 @@ export interface ButtonProps {
 }
 
 const Button: FC<ButtonProps> = ({
-  'data-testid': testId = 'button',
   as,
   children,
   className = 'text-neutral-700 dark:text-neutral-200 disabled:cursor-not-allowed',
+  'data-testid': testId = 'button',
   disabled,
   fontSize = 'text-sm sm:text-base font-nomal',
   href,
@@ -35,16 +35,16 @@ const Button: FC<ButtonProps> = ({
     className,
   );
 
-  let Component = as || 'button';
+  let Component = as ?? 'button';
   if (href) {
     Component = Link;
   }
 
   return (
     <Component
-      data-testid={testId}
       className={classes}
-      disabled={disabled || loading}
+      data-testid={testId}
+      disabled={disabled ?? loading}
       {...props}
       href={href}
       rel={targetBlank ? 'noopener noreferrer' : undefined}
@@ -52,19 +52,19 @@ const Button: FC<ButtonProps> = ({
     >
       {loading && (
         <svg
-          data-testid="loading-spinner"
-          viewBox="0 0 24 24"
           className="-ms-1 me-3 size-5 animate-spin"
+          data-testid="loading-spinner"
           fill="none"
+          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <circle
-            strokeWidth="3"
-            stroke="currentColor"
             className="opacity-25"
             cx="12"
             cy="12"
             r="10"
+            stroke="currentColor"
+            strokeWidth="3"
           />
           <path
             className="opacity-75"
@@ -73,7 +73,7 @@ const Button: FC<ButtonProps> = ({
           />
         </svg>
       )}
-      {children || 'Button'}
+      {children ?? 'Button'}
     </Component>
   );
 };

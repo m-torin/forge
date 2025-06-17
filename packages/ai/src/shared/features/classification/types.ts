@@ -1,29 +1,16 @@
 export interface ClassificationService {
-  classifyProduct(product: {
-    id: string;
-    title: string;
-    description: string;
-    brand?: string;
-    price?: number;
-    attributes?: Record<string, unknown>;
-  }): Promise<{
-    categoryId: string;
-    confidence: number;
-    path: readonly string[];
-    reasoning?: string;
-  }>;
-
   batchClassifyProducts(
     products: {
-      id: string;
-      title: string;
-      description: string;
-      brand?: string;
-      price?: number;
       attributes?: Record<string, unknown>;
+      brand?: string;
+      description: string;
+      id: string;
+      price?: number;
+      title: string;
     }[],
   ): Promise<
     {
+      error?: string;
       productId: string;
       result: {
         categoryId: string;
@@ -31,9 +18,22 @@ export interface ClassificationService {
         path: readonly string[];
         reasoning?: string;
       };
-      error?: string;
     }[]
   >;
+
+  classifyProduct(product: {
+    attributes?: Record<string, unknown>;
+    brand?: string;
+    description: string;
+    id: string;
+    price?: number;
+    title: string;
+  }): Promise<{
+    categoryId: string;
+    confidence: number;
+    path: readonly string[];
+    reasoning?: string;
+  }>;
 }
 
 export interface TrainingService {
@@ -45,13 +45,13 @@ export interface TrainingService {
   ): void;
 
   getAccuracyMetrics(): {
-    overall: number;
     byCategory: Map<string, number>;
     confidenceAnalysis: {
+      high: number;
       low: number;
       medium: number;
-      high: number;
     };
+    overall: number;
   };
 
   getProductsNeedingRetraining(threshold?: number): string[];

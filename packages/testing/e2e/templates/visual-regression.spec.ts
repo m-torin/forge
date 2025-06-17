@@ -3,8 +3,14 @@
  * Copy this file to your app's e2e folder and customize
  */
 
-import { expect, test } from '@repo/testing/e2e';
-import { ResponsiveTestUtils, ThemeTestUtils, VisualTestUtils, WaitUtils } from '@repo/testing/e2e';
+import {
+  expect,
+  test,
+  ResponsiveTestUtils,
+  ThemeTestUtils,
+  VisualTestUtils,
+  WaitUtils,
+} from '@repo/testing/e2e';
 
 test.describe('Visual Regression Testing', () => {
   let visual: VisualTestUtils;

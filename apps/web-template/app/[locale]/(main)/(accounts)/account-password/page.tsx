@@ -1,4 +1,4 @@
-import { Input, Label, ButtonPrimary } from '@/components/ui';
+import { PasswordForm } from './password-form';
 
 export const metadata = {
   description: 'Account - Password page',
@@ -16,23 +16,7 @@ const Page = () => {
         </p>
       </div>
 
-      <div className="flex max-w-xl flex-col gap-y-6">
-        <div>
-          <Label>Current password</Label>
-          <Input className="mt-1.5" type="password" />
-        </div>
-        <div>
-          <Label>New password</Label>
-          <Input className="mt-1.5" type="password" />
-        </div>
-        <div>
-          <Label>Confirm password</Label>
-          <Input className="mt-1.5" type="password" />
-        </div>
-        <div className="pt-2">
-          <ButtonPrimary>Update password</ButtonPrimary>
-        </div>
-      </div>
+      <PasswordForm />
     </div>
   );
 };

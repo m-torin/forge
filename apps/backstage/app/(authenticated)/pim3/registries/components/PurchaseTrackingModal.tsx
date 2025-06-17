@@ -293,7 +293,6 @@ export function PurchaseTrackingModal({
                 />
 
                 <Select
-                  loading={loadingUsers}
                   placeholder="Select purchaser"
                   clearable
                   data={users.map((user) => ({
@@ -343,7 +342,7 @@ export function PurchaseTrackingModal({
                 <NumberInput
                   description="Purchase price (optional)"
                   leftSection={<Text size="xs">$</Text>}
-                  precision={2}
+                  decimalScale={2}
                   disabled={!!purchase}
                   label="Price per item"
                   min={0}

@@ -3,9 +3,7 @@
  */
 import { flag } from '@vercel/flags/next';
 
-import { edgeConfigAdapter } from '@repo/feature-flags/server/next';
-// Multi-provider example: Try Edge Config first, then fallback
-import { createPostHogServerAdapter } from '@repo/feature-flags/server/next';
+import { edgeConfigAdapter, createPostHogServerAdapter } from '@repo/feature-flags/server/next';
 
 // Before: Hardcoded flag
 export const oldFlag = flag({

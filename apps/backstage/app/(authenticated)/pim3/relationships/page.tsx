@@ -1,4 +1,4 @@
-import { LoadingState } from '@/components/loading-state';
+import { LoadingState } from '@/app/components/loading-state';
 import { Suspense } from 'react';
 
 import { RelationshipsManager } from './relationships-manager';

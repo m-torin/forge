@@ -1,10 +1,8 @@
-import {
-  AsideProductQuickview,
-  AsideSidebarCart,
-  AsideSidebarNavigation,
-  Footer,
-  Header,
-} from '@repo/design-system/ciseco'
+import Header from '@/components/Header/Header'
+import AsideProductQuickView from '@/components/aside-product-quickview'
+import AsideSidebarCart from '@/components/aside-sidebar-cart'
+import AsideSidebarNavigation from '@/components/aside-sidebar-navigation'
+import Footer from '@/shared/Footer/Footer'
 import 'rc-slider/assets/index.css'
 import React, { ReactNode } from 'react'
 
@@ -24,7 +22,7 @@ const ApplicationLayout: React.FC<ComponentProps> = ({ children, header, footer 
       {/* ASIDES */}
       <AsideSidebarNavigation />
       <AsideSidebarCart />
-      <AsideProductQuickview />
+      <AsideProductQuickView />
     </div>
   )
 }

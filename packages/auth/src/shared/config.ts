@@ -98,7 +98,13 @@ export function createAuthConfig(): AuthConfig {
       teams: true,
       twoFactor: true,
     },
-    secret: config.BETTER_AUTH_SECRET || 'development-secret',
+    secret:
+      config.BETTER_AUTH_SECRET ||
+      (() => {
+        throw new Error(
+          'BETTER_AUTH_SECRET is required. Please set it in your environment variables.',
+        );
+      })(),
     teams: {
       defaultPermissions: ['read'],
       enableInvitations: true,

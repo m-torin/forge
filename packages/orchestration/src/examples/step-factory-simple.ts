@@ -1,7 +1,27 @@
 /**
  * Simple Step Factory Examples
  *
- * Basic examples for testing and demonstration purposes.
+ * Demonstrates basic usage of the orchestration package's step creation utilities.
+ * These examples show the foundational patterns for building workflow steps
+ * using both templates and custom step definitions.
+ *
+ * Examples Included:
+ * - HTTP request step using built-in template
+ * - Custom greeting step with validation
+ * - Delay step using built-in template
+ * - Input/output validation with Zod schemas
+ *
+ * This is the simpler, more direct approach compared to the advanced factory patterns.
+ * Use these examples when you need straightforward step creation without complex
+ * configuration or enhancement patterns.
+ *
+ * Prerequisites:
+ * - @repo/orchestration package configured
+ * - Zod for schema validation
+ *
+ * Environment: Node.js Server-Side
+ *
+ * @see ./simple-step-api.ts for function-based approach
  */
 
 import { z } from 'zod';
@@ -41,7 +61,7 @@ export function createGreetingStep() {
         output: {
           message: `Hello, ${input.name}!`,
         },
-        performance: context.performance,
+        performance: context?.performance,
         success: true,
       };
     },

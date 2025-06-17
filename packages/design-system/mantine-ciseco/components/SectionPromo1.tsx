@@ -11,21 +11,21 @@ import ButtonSecondary from './shared/Button/ButtonSecondary';
 import Logo from './shared/Logo/Logo';
 import NcImage from './shared/NcImage/NcImage';
 
-export interface SectionPromo1Props {
+export interface SectionPromo1Props extends Record<string, any> {
   className?: string;
   'data-testid'?: string;
 }
 
 const SectionPromo1: FC<SectionPromo1Props> = ({
-  'data-testid': testId = 'section-promo-1',
   className = '',
+  'data-testid': testId = 'section-promo-1',
 }) => {
   const localizeHref = useLocalizeHref();
 
   return (
     <div
-      data-testid={testId}
       className={`relative flex flex-col items-center lg:flex-row ${className}`}
+      data-testid={testId}
     >
       <div className="relative mb-16 shrink-0 lg:mr-10 lg:mb-0 lg:w-2/5">
         <Logo className="w-28" />
@@ -36,12 +36,12 @@ const SectionPromo1: FC<SectionPromo1Props> = ({
           With Ciseco you will get freeship & savings combo.
         </span>
         <div className="mt-6 flex space-x-2 sm:mt-12 sm:space-x-5">
-          <ButtonPrimary href={localizeHref('/collection')} className="">
+          <ButtonPrimary className="" href={localizeHref('/collection')}>
             Savings combo
           </ButtonPrimary>
           <ButtonSecondary
-            href={localizeHref('/search')}
             className="border border-neutral-100 dark:border-neutral-700"
+            href={localizeHref('/search')}
           >
             Discover more
           </ButtonSecondary>
@@ -49,16 +49,16 @@ const SectionPromo1: FC<SectionPromo1Props> = ({
       </div>
       <div className="relative max-w-xl flex-1 lg:max-w-none">
         <NcImage
-          containerClassName="block dark:hidden"
-          className=""
           alt=""
+          className=""
+          containerClassName="block dark:hidden"
           sizes="(max-width: 768px) 100vw, 50vw"
           src={rightImgDemo}
         />
         <NcImage
-          containerClassName="hidden dark:block"
-          className=""
           alt=""
+          className=""
+          containerClassName="hidden dark:block"
           sizes="(max-width: 768px) 100vw, 50vw"
           src={rightLargeImgDark}
         />

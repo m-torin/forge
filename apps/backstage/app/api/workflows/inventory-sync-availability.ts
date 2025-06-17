@@ -10,11 +10,10 @@ import {
   createStep,
   createStepWithValidation,
   createWorkflowStep,
-  withStepBulkhead,
   withStepCircuitBreaker,
   withStepMonitoring,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const InventorySyncInput = z.object({
@@ -232,12 +231,8 @@ export const collectInventorySourcesStep = compose(
       input.scope.warehouses?.length > 0,
     (output) => output.inventorySources.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 120000 }), // 2 minutes
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['itemsRetrieved', 'sourceCount'],
-    }),
+  (step: any) => withStepTimeout(step, 120000), // 2 minutes
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock inventory fetching functions
@@ -673,21 +668,21 @@ export const synchronizeInventoryStep = compose(
       syncStats,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 15,
-      maxQueued: 50,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
       resetTimeout: 600000, // 10 minutes
       threshold: 0.5,
-      timeout: 300000, // 5 minutes
+      // timeout: 300000, // 5 minutes
     }),
 );
 
 function calculateSyncStatistics(syncResults: any[]): any {
-  const stats = {
+  const stats: Record<string, number> = {
     averageDiscrepancy: 0,
     conflicts: 0,
     failed: 0,
@@ -699,7 +694,7 @@ function calculateSyncStatistics(syncResults: any[]): any {
   };
 
   syncResults.forEach((result) => {
-    stats[result.status as any]++;
+    stats[result.status]++;
     if (result.discrepancy) {
       stats.totalDiscrepancy += result.discrepancy;
     }
@@ -776,7 +771,7 @@ function resolveByLatestTimestamp(conflict: any): any {
 }
 
 function resolveBySourcePriority(conflict: any): any {
-  const sourcePriority = {
+  const sourcePriority: Record<string, number> = {
     'erp-system': 1,
     'merchant-api': 3,
     'pos-system': 4,
@@ -784,8 +779,7 @@ function resolveBySourcePriority(conflict: any): any {
   };
 
   const sortedItems = conflict.items.sort(
-    (a: any, b: any) =>
-      (sourcePriority[a.source as any as any] || 999) - (sourcePriority[b.source] || 999),
+    (a: any, b: any) => (sourcePriority[a.source] || 999) - (sourcePriority[b.source] || 999),
   );
 
   return {
@@ -869,11 +863,11 @@ function calculateProductAvailability(updates: any[], config: any): any {
     productGroups.get(productId).push(update);
   });
 
-  const productAvailability = {};
+  const productAvailability: Record<string, any> = {};
 
   productGroups.forEach((items, productId) => {
     const availability = calculateProductAvailabilityLogic(items, config);
-    productAvailability[productId as any] = availability;
+    productAvailability[productId] = availability;
   });
 
   return productAvailability;
@@ -918,7 +912,7 @@ function calculateAllLocations(items: any[]): any {
 
 function calculatePrimaryFirst(items: any[]): any {
   // Sort by availability and use primary location logic
-  const sortedItems = items.sort((a, b) => b.availableForSale - a.availableForSale);
+  const sortedItems = items.sort((a: any, b: any) => b.availableForSale - a.availableForSale);
   const primaryItem = sortedItems[0];
 
   return {

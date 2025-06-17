@@ -1,8 +1,9 @@
 import { resolve } from 'path';
-
 import { defineConfig } from 'vitest/config';
+import { databasePreset } from '@repo/testing/vitest-presets';
 
 export default defineConfig({
+  ...databasePreset,
   test: {
     name: 'database',
     globals: true,

@@ -25,6 +25,9 @@ export interface TCollection {
   id: string;
   title: string;
   count?: number;
+  image?: TProductImage;
+  products?: TProductItem[];
+  metafields?: any[];
 }
 
 export interface TNavigationItem {
@@ -37,9 +40,11 @@ export interface TNavigationItem {
 // Product and data types
 export interface TProductImage {
   alt?: string;
+  altText?: string; // Legacy field
   height: number;
   id: string;
   src: string;
+  url?: string; // Legacy field
   width: number;
 }
 
@@ -56,6 +61,7 @@ export interface TCardProduct {
   };
   vendor?: string;
   quantity?: number;
+  price?: number; // Legacy field for compatibility
   selectedVariant?: {
     id: string;
     title: string;
@@ -91,7 +97,15 @@ export interface TProductItem extends TCardProduct {
   category?: string;
   rating?: number;
   reviewCount?: number;
+  reviewNumber?: number; // Legacy field for compatibility
   price?: number; // Legacy field for compatibility
+  compareAtPrice?: number; // Legacy field
+  availableForSale?: boolean; // Legacy field
+  status?: string; // Product status (e.g., "In Stock", "Out of Stock")
+  selectedOptions?: Array<{
+    name: string;
+    value: string;
+  }>; // Legacy field for product options
 }
 
 export interface TBlogPost {

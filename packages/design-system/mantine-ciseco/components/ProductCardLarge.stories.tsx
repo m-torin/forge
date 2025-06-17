@@ -1,6 +1,6 @@
-import ProductCardLarge from './ProductCardLarge';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import ProductCardLarge from './ProductCardLarge';
 
 const meta: Meta<typeof ProductCardLarge> = {
   argTypes: {
@@ -15,7 +15,7 @@ const meta: Meta<typeof ProductCardLarge> = {
   },
   component: ProductCardLarge,
   decorators: [
-    (Story) => (
+    (Story: any) => (
       <div className="w-96">
         <Story />
       </div>
@@ -37,32 +37,32 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockProduct = {
-  id: 'gid://1',
   handle: 'premium-cotton-hoodie',
+  id: 'gid://1',
   images: [
     {
-      width: 500,
       alt: 'Premium Cotton Hoodie - Main',
       height: 400,
       src: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&h=400&fit=crop',
+      width: 500,
     },
     {
-      width: 200,
       alt: 'Premium Cotton Hoodie - Detail 1',
       height: 200,
       src: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=200&h=200&fit=crop&crop=top',
+      width: 200,
     },
     {
-      width: 200,
       alt: 'Premium Cotton Hoodie - Detail 2',
       height: 200,
       src: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=200&h=200&fit=crop&crop=center',
+      width: 200,
     },
     {
-      width: 200,
       alt: 'Premium Cotton Hoodie - Detail 3',
       height: 200,
       src: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=200&h=200&fit=crop&crop=bottom',
+      width: 200,
     },
   ],
   price: 89.99,
@@ -107,28 +107,28 @@ export const ExpensiveItem: Story = {
       ...mockProduct,
       images: [
         {
-          width: 500,
           alt: 'Designer Leather Jacket - Main',
           height: 400,
           src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=500&h=400&fit=crop',
+          width: 500,
         },
         {
-          width: 200,
           alt: 'Designer Leather Jacket - Detail 1',
           height: 200,
           src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop&crop=top',
+          width: 200,
         },
         {
-          width: 200,
           alt: 'Designer Leather Jacket - Detail 2',
           height: 200,
           src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop&crop=center',
+          width: 200,
         },
         {
-          width: 200,
           alt: 'Designer Leather Jacket - Detail 3',
           height: 200,
           src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop&crop=bottom',
+          width: 200,
         },
       ],
       price: 349.99,
@@ -149,28 +149,28 @@ export const BudgetItem: Story = {
       ...mockProduct,
       images: [
         {
-          width: 500,
           alt: 'Basic Cotton T-Shirt - Main',
           height: 400,
           src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=400&fit=crop',
+          width: 500,
         },
         {
-          width: 200,
           alt: 'Basic Cotton T-Shirt - Detail 1',
           height: 200,
           src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&crop=top',
+          width: 200,
         },
         {
-          width: 200,
           alt: 'Basic Cotton T-Shirt - Detail 2',
           height: 200,
           src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&crop=center',
+          width: 200,
         },
         {
-          width: 200,
           alt: 'Basic Cotton T-Shirt - Detail 3',
           height: 200,
           src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&crop=bottom',
+          width: 200,
         },
       ],
       price: 19.99,
@@ -191,10 +191,10 @@ export const OnlyMainImage: Story = {
       ...mockProduct,
       images: [
         {
-          width: 500,
           alt: 'Product - Main Only',
           height: 400,
           src: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&h=400&fit=crop',
+          width: 500,
         },
       ],
     },
@@ -207,16 +207,16 @@ export const TwoImages: Story = {
       ...mockProduct,
       images: [
         {
-          width: 500,
           alt: 'Product - Main',
           height: 400,
           src: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&h=400&fit=crop',
+          width: 500,
         },
         {
-          width: 200,
           alt: 'Product - Detail 1',
           height: 200,
           src: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=200&h=200&fit=crop&crop=top',
+          width: 200,
         },
       ],
     },
@@ -274,41 +274,41 @@ export const ProductGrid: Story = {
           rating: 4.6,
           title: 'Summer Dress',
         },
-      ].map((item, index) => (
+      ].map((item, index: any) => (
         <ProductCardLarge
-          key={index}
+          key={item.title}
           product={{
-            id: `grid-${index}`,
             handle: item.title.toLowerCase().replace(' ', '-'),
+            id: `grid-${index}`,
             images: [
               {
-                width: 500,
                 alt: `${item.title} - Main`,
                 height: 400,
                 src: `https://images.unsplash.com/${item.image}?w=500&h=400&fit=crop`,
+                width: 500,
               },
               {
-                width: 200,
                 alt: `${item.title} - Detail 1`,
                 height: 200,
                 src: `https://images.unsplash.com/${item.image}?w=200&h=200&fit=crop&crop=top`,
+                width: 200,
               },
               {
-                width: 200,
                 alt: `${item.title} - Detail 2`,
                 height: 200,
                 src: `https://images.unsplash.com/${item.image}?w=200&h=200&fit=crop&crop=center`,
+                width: 200,
               },
               {
-                width: 200,
                 alt: `${item.title} - Detail 3`,
                 height: 200,
                 src: `https://images.unsplash.com/${item.image}?w=200&h=200&fit=crop&crop=bottom`,
+                width: 200,
               },
             ],
             price: item.price,
             rating: item.rating,
-            reviewNumber: Math.floor(Math.random() * 200) + 50,
+            reviewNumber: (Math.floor(Math.random() * 200) as number) + 50,
             selectedOptions: [
               { name: 'Color', value: item.color },
               { name: 'Size', value: 'M' },

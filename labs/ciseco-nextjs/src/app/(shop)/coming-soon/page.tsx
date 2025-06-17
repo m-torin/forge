@@ -1,4 +1,5 @@
-import { ButtonPrimary, Input } from '@repo/design-system/ciseco'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import Input from '@/shared/Input/Input'
 import { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 const Page = () => {
   return (
     <div className="container mb-24 lg:mb-32">
-      <header className="mx-auto mb-14 mt-20 text-center sm:mb-16 sm:mt-28 lg:mb-20">
+      <header className="mx-auto mt-20 mb-14 text-center sm:mt-28 sm:mb-16 lg:mb-20">
         <h1 className="leading flex items-center justify-center text-6xl/none font-bold tracking-wide text-neutral-900 md:text-8xl/none dark:text-neutral-100">
           Coming Soon.
         </h1>

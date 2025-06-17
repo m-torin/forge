@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { PlaywrightProvider } from '../../../server/providers/playwright-provider';
+
 // Mock Playwright before importing the provider
 const mockPage = {
   goto: vi.fn(),
@@ -43,19 +45,19 @@ const mockPlaywright = {
   },
 };
 
-vi.mock('playwright', () => ({
+vi.mock('playwright', (_: any) => ({
   chromium: mockPlaywright.chromium,
   firefox: mockPlaywright.firefox,
   webkit: mockPlaywright.webkit,
 }));
 
 // Mock the PlaywrightProvider class itself
-vi.mock('../../../server/providers/playwright-provider', () => {
+vi.mock('../../../server/providers/playwright-provider', (_: any) => {
   class MockPlaywrightProvider {
     private browser: any = null;
     private initialized = false;
 
-    async initialize(config: any) {
+    async initialize(_config: any) {
       this.initialized = true;
       return Promise.resolve();
     }
@@ -95,8 +97,6 @@ vi.mock('../../../server/providers/playwright-provider', () => {
   };
 });
 
-import { PlaywrightProvider } from '../../../server/providers/playwright-provider';
-
 describe('PlaywrightProvider', () => {
   let provider: PlaywrightProvider;
 
@@ -122,8 +122,8 @@ describe('PlaywrightProvider', () => {
     }
   });
 
-  describe('initialization', () => {
-    it('should create provider with default options', () => {
+  describe('initialization', (_: any) => {
+    it('should create provider with default options', (_: any) => {
       const defaultProvider = new PlaywrightProvider();
       expect(defaultProvider).toBeDefined();
     });
@@ -151,7 +151,7 @@ describe('PlaywrightProvider', () => {
     });
   });
 
-  describe('scrape', () => {
+  describe('scrape', (_: any) => {
     it('should scrape a URL successfully', async () => {
       const result = await provider.scrape('https://example.com');
 
@@ -304,7 +304,7 @@ describe('PlaywrightProvider', () => {
     });
   });
 
-  describe('advanced features', () => {
+  describe('advanced features', (_: any) => {
     it('should handle cookies', async () => {
       const result = await provider.scrape('https://example.com', {
         cookies: [{ name: 'session', value: 'abc123' }],

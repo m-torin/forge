@@ -4,37 +4,28 @@
  */
 
 import { ScrapingError, ScrapingErrorCode } from '../errors';
-
-import type { ProviderConfig, ProviderRegistry, ScrapingProvider } from '../types/scraping-types';
+import { ProviderConfig, ProviderRegistry, ScrapingProvider } from '../types/scraping-types';
 
 /**
  * Global provider registry
  */
 class ScrapingProviderRegistry {
-  private providers = new Map<string, (config: ProviderConfig) => ScrapingProvider>();
   private aliases = new Map<string, string>();
+  private providers = new Map<string, (config: ProviderConfig) => ScrapingProvider>();
 
   /**
-   * Register a new provider
+   * Clear all providers
    */
-  register(
-    name: string,
-    factory: (config: ProviderConfig) => ScrapingProvider,
-    aliases: string[] = [],
-  ): void {
-    this.providers.set(name, factory);
-
-    // Register aliases
-    for (const alias of aliases) {
-      this.aliases.set(alias, name);
-    }
+  clear(): void {
+    this.providers.clear();
+    this.aliases.clear();
   }
 
   /**
    * Create a provider instance
    */
   create(name: string, config: ProviderConfig = {}): ScrapingProvider {
-    const actualName = this.aliases.get(name) || name;
+    const actualName = this.aliases.get(name) ?? name;
     const factory = this.providers.get(actualName);
 
     if (!factory) {
@@ -50,8 +41,30 @@ class ScrapingProviderRegistry {
    * Check if a provider is registered
    */
   has(name: string): boolean {
-    const actualName = this.aliases.get(name) || name;
+    const actualName = this.aliases.get(name) ?? name;
     return this.providers.has(actualName);
+  }
+
+  /**
+   * Get provider info
+   */
+  info(name: string): {
+    actualName: string;
+    aliases: string[];
+    available: boolean;
+    name: string;
+  } {
+    const actualName = this.aliases.get(name) ?? name;
+    const aliases = Array.from(this.aliases.entries())
+      .filter(([_, target]: any) => target === actualName)
+      .map(([alias]: any) => alias);
+
+    return {
+      actualName,
+      aliases,
+      available: this.providers.has(actualName),
+      name,
+    };
   }
 
   /**
@@ -69,56 +82,24 @@ class ScrapingProviderRegistry {
   }
 
   /**
-   * Get provider info
+   * Register a new provider
    */
-  info(name: string): {
-    name: string;
-    actualName: string;
-    aliases: string[];
-    available: boolean;
-  } {
-    const actualName = this.aliases.get(name) || name;
-    const aliases = Array.from(this.aliases.entries())
-      .filter(([_, target]) => target === actualName)
-      .map(([alias]) => alias);
+  register(
+    name: string,
+    factory: (config: ProviderConfig) => ScrapingProvider,
+    aliases: string[] = [],
+  ): void {
+    this.providers.set(name, factory);
 
-    return {
-      name,
-      actualName,
-      aliases,
-      available: this.providers.has(actualName),
-    };
-  }
-
-  /**
-   * Clear all providers
-   */
-  clear(): void {
-    this.providers.clear();
-    this.aliases.clear();
+    // Register aliases
+    for (const alias of aliases) {
+      this.aliases.set(alias, name);
+    }
   }
 }
 
 // Global registry instance
 const globalRegistry = new ScrapingProviderRegistry();
-
-/**
- * Get the global provider registry
- */
-export function getProviderRegistry(): ScrapingProviderRegistry {
-  return globalRegistry;
-}
-
-/**
- * Register a provider globally
- */
-export function registerProvider(
-  name: string,
-  factory: (config: ProviderConfig) => ScrapingProvider,
-  aliases: string[] = [],
-): void {
-  globalRegistry.register(name, factory, aliases);
-}
 
 /**
  * Create a provider from the global registry
@@ -128,24 +109,19 @@ export function createProvider(name: string, config: ProviderConfig = {}): Scrap
 }
 
 /**
- * Check if provider is available
+ * Create provider registry from configuration
  */
-export function hasProvider(name: string): boolean {
-  return globalRegistry.has(name);
-}
+export function createProviderRegistry(config: Record<string, any> = {}): ProviderRegistry {
+  const registry: ProviderRegistry = {};
 
-/**
- * List available providers
- */
-export function listProviders(): string[] {
-  return globalRegistry.list();
-}
+  // Add configured providers
+  for (const [name, providerConfig] of Object.entries(config)) {
+    if (hasProvider(name)) {
+      registry[name] = (config: any) => createProvider(name, { ...providerConfig, ...config });
+    }
+  }
 
-/**
- * Get provider information
- */
-export function getProviderInfo(name: string) {
-  return globalRegistry.info(name);
+  return registry;
 }
 
 /**
@@ -153,10 +129,10 @@ export function getProviderInfo(name: string) {
  */
 export function detectBestProvider(
   options: {
-    javascript?: boolean;
     ai?: boolean;
-    fast?: boolean;
     environment?: 'client' | 'server';
+    fast?: boolean;
+    javascript?: boolean;
   } = {},
 ): string {
   const {
@@ -203,53 +179,31 @@ export function detectBestProvider(
 }
 
 /**
- * Create provider registry from configuration
+ * Get provider information
  */
-export function createProviderRegistry(config: Record<string, any> = {}): ProviderRegistry {
-  const registry: ProviderRegistry = {};
-
-  // Add configured providers
-  for (const [name, providerConfig] of Object.entries(config)) {
-    if (hasProvider(name)) {
-      registry[name] = (config) => createProvider(name, { ...providerConfig, ...config });
-    }
-  }
-
-  return registry;
+export function getProviderInfo(name: string) {
+  return globalRegistry.info(name);
 }
 
 /**
- * Validate provider configuration
+ * Get the global provider registry
  */
-export function validateProviderConfig(
-  providers: string[],
-  environment: 'client' | 'server' = typeof window !== 'undefined' ? 'client' : 'server',
-): {
-  valid: string[];
-  invalid: string[];
-  warnings: string[];
-} {
-  const valid: string[] = [];
-  const invalid: string[] = [];
-  const warnings: string[] = [];
+export function getProviderRegistry(): ScrapingProviderRegistry {
+  return globalRegistry;
+}
 
-  const clientProviders = ['fetch', 'console'];
-  const serverProviders = ['playwright', 'puppeteer', 'hero', 'cheerio', 'node-fetch', 'console'];
-  const allowedProviders = environment === 'client' ? clientProviders : serverProviders;
+/**
+ * Check if provider is available
+ */
+export function hasProvider(name: string): boolean {
+  return globalRegistry.has(name);
+}
 
-  for (const provider of providers) {
-    if (!allowedProviders.includes(provider)) {
-      invalid.push(provider);
-      warnings.push(`Provider '${provider}' is not available in ${environment} environment`);
-    } else if (!hasProvider(provider)) {
-      invalid.push(provider);
-      warnings.push(`Provider '${provider}' is not registered`);
-    } else {
-      valid.push(provider);
-    }
-  }
-
-  return { invalid, valid, warnings };
+/**
+ * List available providers
+ */
+export function listProviders(): string[] {
+  return globalRegistry.list();
 }
 
 /**
@@ -327,10 +281,56 @@ export function loadDefaultProviders(): void {
         ['debug', 'log'],
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     // Silently fail if providers can't be loaded
-    console.warn('Failed to load default providers:', error);
+    // eslint-disable-next-line no-console
+    console.warn('Failed to load default providers: ', error);
   }
+}
+
+/**
+ * Register a provider globally
+ */
+export function registerProvider(
+  name: string,
+  factory: (config: ProviderConfig) => ScrapingProvider,
+  aliases: string[] = [],
+): void {
+  globalRegistry.register(name, factory, aliases);
+}
+
+/**
+ * Validate provider configuration
+ */
+export function validateProviderConfig(
+  providers: string[],
+  environment: 'client' | 'server' = typeof window !== 'undefined' ? 'client' : 'server',
+): {
+  invalid: string[];
+  valid: string[];
+  warnings: string[];
+} {
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  const warnings: string[] = [];
+
+  const clientProviders = ['fetch', 'console'];
+  const serverProviders = ['playwright', 'puppeteer', 'hero', 'cheerio', 'node-fetch', 'console'];
+  const allowedProviders = environment === 'client' ? clientProviders : serverProviders;
+
+  for (const provider of providers) {
+    if (!allowedProviders.includes(provider)) {
+      invalid.push(provider);
+      warnings.push(`Provider '${provider}' is not available in ${environment} environment`);
+    } else if (!hasProvider(provider)) {
+      invalid.push(provider);
+      warnings.push(`Provider '${provider}' is not registered`);
+    } else {
+      valid.push(provider);
+    }
+  }
+
+  return { invalid, valid, warnings };
 }
 
 // Auto-load default providers

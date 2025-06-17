@@ -1,20 +1,16 @@
 'use client';
 
-import useEmblaCarousel from 'embla-carousel-react';
-import { type FC } from 'react';
+import { Carousel } from '@mantine/carousel';
+import { type FC, useState } from 'react';
 
 import { type TProductItem } from '../data/types';
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
 
 import Heading from './Heading/Heading';
 import ProductCard from './ProductCard';
 
-import type { EmblaOptionsType } from 'embla-carousel';
-
-export interface SectionSliderProductCardProps {
+export interface SectionSliderProductCardProps extends Record<string, any> {
   className?: string;
   data: TProductItem[];
-  emblaOptions?: EmblaOptionsType;
   heading?: string;
   headingClassName?: string;
   headingFontClassName?: string;
@@ -24,50 +20,52 @@ export interface SectionSliderProductCardProps {
 const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   className = '',
   data,
-  emblaOptions = {
-    slidesToScroll: 'auto',
-  },
   heading,
   headingClassName,
   headingFontClassName,
   subHeading = 'REY backpacks & bags',
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
+  const [embla, setEmbla] = useState<any>(null);
+  const nextBtnDisabled = !embla?.canScrollNext();
+  const prevBtnDisabled = !embla?.canScrollPrev();
 
-  // Don't render anything if no products
-  if (!data || data.length === 0) {
-    return null;
-  }
+  const onNextButtonClick = () => embla?.scrollNext();
+  const onPrevButtonClick = () => embla?.scrollPrev();
+
+  // Data prop is guaranteed to exist and have content
+  // This component should not be rendered without data
 
   return (
     <div className={`nc-SectionSliderProductCard ${className}`}>
       <Heading
-        fontClass={headingFontClassName}
-        onClickNext={onNextButtonClick}
-        onClickPrev={onPrevButtonClick}
         className={headingClassName}
+        fontClass={headingFontClassName}
         hasNextPrev
         headingDim={subHeading}
         nextBtnDisabled={nextBtnDisabled}
         prevBtnDisabled={prevBtnDisabled}
+        onClickNext={onNextButtonClick}
+        onClickPrev={onPrevButtonClick}
       >
-        {heading || 'New Arrivals'}
+        {heading ?? 'New Arrivals'}
       </Heading>
 
-      <div ref={emblaRef} className="embla">
-        <div className="-ms-5 embla__container sm:-ms-8">
-          {data?.map((product) => (
-            <div
-              key={product.id}
-              className="embla__slide basis-[86%] ps-5 sm:ps-8 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-            >
-              <ProductCard data={product} />
-            </div>
-          ))}
-        </div>
-      </div>
+      <Carousel
+        classNames={{
+          root: '-mx-5 sm:-mx-8',
+          slide: 'px-5 sm:px-8',
+        }}
+        getEmblaApi={setEmbla}
+        slideGap={{ base: 'xs', sm: 'md' }}
+        slideSize={{ base: '86%', lg: '33.333333%', md: '50%', xl: '25%' }}
+        withControls={false}
+      >
+        {data.map((product: any) => (
+          <Carousel.Slide key={product.id}>
+            <ProductCard data={product} />
+          </Carousel.Slide>
+        ))}
+      </Carousel>
     </div>
   );
 };

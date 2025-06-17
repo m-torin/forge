@@ -1,13 +1,13 @@
-import type { RenderOptions } from '@testing-library/react';
+import { RenderOptions } from '@testing-library/react';
 import { render } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
-import type { ReactElement, ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 import { vi } from 'vitest';
 
 // Mock data generators
-export const mockProduct = (overrides = {}) => ({
+export const mockProduct = (overrides: any = {}) => ({
   id: '1',
   name: 'Test Product',
   title: 'Test Product', // ProductCardLarge uses title
@@ -34,7 +34,7 @@ export const mockProduct = (overrides = {}) => ({
   ...overrides,
 });
 
-export const mockCollection = (overrides = {}) => ({
+export const mockCollection = (overrides: any = {}) => ({
   id: 'gid://1',
   title: 'Test Collection',
   description: 'Test collection description',
@@ -46,7 +46,7 @@ export const mockCollection = (overrides = {}) => ({
   ...overrides,
 });
 
-export const mockPost = (overrides = {}) => ({
+export const mockPost = (overrides: any = {}) => ({
   id: '1',
   title: 'Test Blog Post',
   excerpt: 'Test blog post excerpt',
@@ -59,7 +59,7 @@ export const mockPost = (overrides = {}) => ({
   ...overrides,
 });
 
-export const mockUser = (overrides = {}) => ({
+export const mockUser = (overrides: any = {}) => ({
   id: '1',
   name: 'Test User',
   email: 'test@example.com',
@@ -68,7 +68,7 @@ export const mockUser = (overrides = {}) => ({
 });
 
 // Custom render function with all providers
-interface AllTheProvidersProps {
+interface AllTheProvidersProps extends Record<string, any> {
   children: ReactNode;
 }
 
@@ -108,7 +108,7 @@ export const mockHandlers = {
 export const checkAccessibility = (component: HTMLElement) => {
   // Check for proper ARIA labels
   const buttons = component.querySelectorAll('button');
-  buttons.forEach((button) => {
+  buttons.forEach((button: any) => {
     expect(
       button.getAttribute('aria-label') || button.textContent || button.querySelector('title'),
     ).toBeTruthy();
@@ -116,14 +116,14 @@ export const checkAccessibility = (component: HTMLElement) => {
 
   // Check for alt text on images
   const images = component.querySelectorAll('img');
-  images.forEach((img) => {
+  images.forEach((img: any) => {
     expect(img.getAttribute('alt')).toBeTruthy();
   });
 
   // Check for proper heading hierarchy
   const headings = component.querySelectorAll('h1, h2, h3, h4, h5, h6');
   let lastLevel = 0;
-  headings.forEach((heading) => {
+  headings.forEach((heading: any) => {
     const level = parseInt(heading.tagName[1]);
     expect(level - lastLevel).toBeLessThanOrEqual(1);
     lastLevel = level;

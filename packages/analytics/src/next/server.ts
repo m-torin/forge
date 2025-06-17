@@ -66,7 +66,7 @@ export class NextJSServerAnalyticsManager {
       this.isInitialized = true;
 
       // Server analytics initialized successfully
-    } catch (error) {
+    } catch (_error) {
       // Failed to initialize server analytics
     }
   }

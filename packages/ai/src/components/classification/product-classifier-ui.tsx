@@ -20,25 +20,24 @@ import { useCallback, useState } from 'react';
 
 import { useClassification } from '../../hooks/use-classification';
 
-import type { ProductData } from '../../shared/types/classification';
+import { ProductData } from '../../shared/types/classification';
 
-interface ProductClassifierUIProps {
+interface ProductClassifierUIProps extends Record<string, any> {
   api?: string;
   onResult?: (result: any) => void;
 }
 
 export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps) => {
   const [product, setProduct] = useState<Partial<ProductData>>({
-    id: '',
     brand: '',
     description: '',
-    price: undefined,
+    id: '',
     title: '',
   });
 
   const { classify, clear, error, isClassifying, result } = useClassification({
-    api,
-    onSuccess: onResult,
+    ...(api && { api }),
+    ...(onResult && { onSuccess: onResult }),
   });
 
   const handleClassify = useCallback(async () => {
@@ -47,11 +46,11 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
     }
 
     const productData: ProductData = {
+      description: product.description || '',
       id: product.id || Date.now().toString(),
-      brand: product.brand,
-      description: product.description,
-      price: product.price,
-      title: product.title,
+      title: product.title || '',
+      ...(product.brand && { brand: product.brand }),
+      ...(typeof product.price === 'number' && { price: product.price }),
     };
 
     await classify(productData);
@@ -60,10 +59,9 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
   const handleClear = useCallback(() => {
     clear();
     setProduct({
-      id: '',
       brand: '',
       description: '',
-      price: undefined,
+      id: '',
       title: '',
     });
   }, [clear]);
@@ -71,10 +69,10 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
   const isValid = product.title && product.description;
 
   return (
-    <Box style={{ maxWidth: 800, margin: '0 auto' }}>
+    <Box style={{ margin: '0 auto', maxWidth: 800 }}>
       <Stack gap="md">
-        <Card withBorder>
-          <Card.Section withBorder inheritPadding py="xs">
+        <Card withBorder={true}>
+          <Card.Section inheritPadding py="xs" withBorder={true}>
             <Group justify="space-between">
               <Text fw={600}>Product Classification</Text>
               <IconBrain size={20} />
@@ -83,67 +81,70 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
 
           <Stack gap="md" mt="md">
             <TextInput
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                setProduct((prev) => ({ ...prev, id: event.currentTarget.value }))
-              }
-              placeholder="Auto-generated if empty"
               label="Product ID"
+              placeholder="Auto-generated if empty"
               value={product.id}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setProduct((prev: any) => ({ ...prev, id: event.currentTarget.value }))
+              }
             />
 
             <TextInput
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                setProduct((prev) => ({ ...prev, title: event.currentTarget.value }))
-              }
-              placeholder="Enter product title"
               label="Product Title"
+              placeholder="Enter product title"
               required
               value={product.title}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setProduct((prev: any) => ({ ...prev, title: event.currentTarget.value }))
+              }
             />
 
             <Textarea
-              minRows={3}
-              onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setProduct((prev) => ({ ...prev, description: event.currentTarget.value }))
-              }
-              placeholder="Enter detailed product description"
               label="Product Description"
+              minRows={3}
+              placeholder="Enter detailed product description"
               required
               value={product.description}
+              onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setProduct((prev: any) => ({ ...prev, description: event.currentTarget.value }))
+              }
             />
 
             <Group grow>
               <TextInput
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  setProduct((prev) => ({ ...prev, brand: event.currentTarget.value }))
-                }
-                placeholder="Product brand"
                 label="Brand"
+                placeholder="Product brand"
                 value={product.brand}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  setProduct((prev: any) => ({ ...prev, brand: event.currentTarget.value }))
+                }
               />
 
               <NumberInput
-                onChange={(value: string | number) =>
-                  setProduct((prev) => ({ ...prev, price: value as number | undefined }))
-                }
-                placeholder="Product price"
                 decimalScale={2}
                 fixedDecimalScale
                 label="Price"
                 min={0}
-                value={product.price}
+                placeholder="Product price"
+                value={product.price ?? ''}
+                onChange={(value: number | string) =>
+                  setProduct((prev: any) => ({
+                    ...prev,
+                    price: typeof value === 'number' ? value : undefined,
+                  }))
+                }
               />
             </Group>
 
             <Group justify="space-between">
-              <Button onClick={handleClear} disabled={isClassifying} variant="outline">
+              <Button disabled={isClassifying} variant="outline" onClick={handleClear}>
                 Clear
               </Button>
 
               <Button
-                loading={isClassifying}
-                onClick={handleClassify}
                 disabled={!isValid || isClassifying}
+                loading={isClassifying}
+                onClick={() => void handleClassify()}
               >
                 Classify Product
               </Button>
@@ -152,14 +153,14 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
         </Card>
 
         {error && (
-          <Alert color="red" icon={<IconAlertCircle size={16} />} title="Classification Error">
-            {error.message}
+          <Alert c="red" icon={<IconAlertCircle size={16} />} title="Classification Error">
+            {(error as Error)?.message || 'Unknown error'}
           </Alert>
         )}
 
         {result && (
-          <Card withBorder>
-            <Card.Section withBorder inheritPadding py="xs">
+          <Card withBorder={true}>
+            <Card.Section inheritPadding py="xs" withBorder={true}>
               <Group justify="space-between">
                 <Text fw={600}>Classification Result</Text>
                 <IconCheck color="green" size={20} />
@@ -167,9 +168,9 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
             </Card.Section>
 
             <Stack gap="md" mt="md">
-              <Group align="center" justify="space-between">
+              <Group ta="center" justify="space-between">
                 <Text fw={500}>Category:</Text>
-                <Badge size="lg" variant="filled">
+                <Badge size="lg" variant="light">
                   {result.categoryId}
                 </Badge>
               </Group>
@@ -182,7 +183,7 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
                   color={
                     result.confidence > 0.8 ? 'green' : result.confidence > 0.6 ? 'yellow' : 'red'
                   }
-                  radius="md"
+                  radius="sm"
                   size="lg"
                   value={result.confidence * 100}
                 />
@@ -191,17 +192,14 @@ export const ProductClassifierUI = ({ api, onResult }: ProductClassifierUIProps)
                 </Text>
               </Box>
 
-              {result.path && result.path.length > 0 && (
+              {result.path && (
                 <Box>
                   <Text fw={500} mb={5}>
                     Category Path:
                   </Text>
                   <Group gap={4}>
-                    {result.path.map((category, index) => (
-                      <Box
-                        key={`${category}-${index}`}
-                        style={{ alignItems: 'center', display: 'flex' }}
-                      >
+                    {result.path.map((category, index: any) => (
+                      <Box key={category} style={{ alignItems: 'center', display: 'flex' }}>
                         {index > 0 && (
                           <Text c="dimmed" mx={4}>
                             →

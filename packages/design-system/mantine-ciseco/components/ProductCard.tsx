@@ -17,7 +17,7 @@ import ProductQuickView from './ProductQuickView';
 import ProductStatus from './ProductStatus';
 import { ProgressiveImage } from './ProgressiveImage';
 
-export interface ProductCardProps {
+export interface ProductCardProps extends Record<string, any> {
   className?: string;
   data?: TProductItem;
   imageAspectRatio?: string;
@@ -58,10 +58,10 @@ const ProductCard: FC<ProductCardProps> = memo(
     const [shouldRenderColors, setShouldRenderColors] = useState(false);
 
     const {
-      id,
       featuredImage,
       handle,
-      images,
+      id,
+      images: _images,
       options,
       price,
       rating,
@@ -70,7 +70,7 @@ const ProductCard: FC<ProductCardProps> = memo(
       selectedOptions,
       status,
       title,
-    } = product || data || {};
+    } = product ?? data ?? {};
     const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
 
     // ✅ Memoize expensive computations
@@ -125,9 +125,9 @@ const ProductCard: FC<ProductCardProps> = memo(
             ) => (
               <div
                 key={color.name}
-                data-testid={`${testId}-color-option-${color.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full"
                 aria-label={`Color: ${color.name}`}
+                className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full"
+                data-testid={`${testId}-color-option-${color.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <div
                   className="absolute inset-0.5 z-0 rounded-full"
@@ -147,19 +147,20 @@ const ProductCard: FC<ProductCardProps> = memo(
       return (
         <div className="absolute end-2 top-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
           <LikeButton
-            onClick={props.onLike}
-            className="relative ms-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
             aria-label="Like product"
+            className="relative ms-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
             liked={isLiked}
+            onClick={props.onLike}
           />
-          <div
-            data-testid={`${testId}-quick-view-button`}
-            onClick={openQuickView}
-            className="relative ms-1.5 mt-1.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
+          <button
             aria-label="Quick view"
+            className="relative ms-1.5 mt-1.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
+            data-testid={`${testId}-quick-view-button`}
+            type="button"
+            onClick={openQuickView}
           >
             <ArrowsPointingOutIcon className="h-4 w-4" />
-          </div>
+          </button>
         </div>
       );
     };
@@ -168,13 +169,13 @@ const ProductCard: FC<ProductCardProps> = memo(
     if (loading) {
       return (
         <div
-          data-testid={`${testId}-skeleton`}
           className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}
+          data-testid={`${testId}-skeleton`}
         >
           <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
             <div
-              data-testid="placeholder"
               className="flex aspect-[11/12] w-full animate-pulse bg-gray-200 dark:bg-gray-700"
+              data-testid="placeholder"
             />
           </div>
           <div className="space-y-4 px-2.5 pt-5 pb-2.5">
@@ -197,46 +198,51 @@ const ProductCard: FC<ProductCardProps> = memo(
       <>
         <div
           data-testid={testId}
-          onClick={props.onClick}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && props.onClick) {
-              props.onClick();
-            }
-          }}
+          {...(props.onClick
+            ? {
+                onClick: props.onClick,
+                onKeyDown: (e) => {
+                  if (e.key === 'Enter' && props.onClick) {
+                    props.onClick();
+                  }
+                },
+                role: 'button',
+                tabIndex: 0,
+              }
+            : {})}
           className={`nc-ProductCard group relative flex flex-col bg-transparent ${className} ${props.layout ? `layout-${props.layout}` : ''} ${status === 'out-of-stock' ? 'opacity-75' : ''}`}
-          tabIndex={props.onClick ? 0 : undefined}
         >
-          <Link href={productUrl() as any} className="absolute inset-0" />
+          <Link className="absolute inset-0" href={productUrl()} />
 
           <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
-            <Link href={productUrl() as any} className="block">
+            <Link className="block" href={productUrl()}>
               {featuredImage?.src ? (
                 <ProgressiveImage
+                  alt={handle ?? 'Product image'}
+                  className="flex aspect-[11/12] w-full relative"
                   data-testid={`${testId}-image`}
-                  width={400}
+                  height={440}
                   loading={props.lazyLoad ? 'lazy' : 'eager'}
                   placeholder={featuredImage.alt}
                   priority={false}
-                  className="flex aspect-[11/12] w-full relative"
-                  alt={handle || 'Product image'}
-                  height={440}
                   sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
                   src={featuredImage.src}
+                  width={400}
                 />
               ) : (
                 <div
-                  data-testid="placeholder"
                   className="flex aspect-[11/12] w-full bg-gray-200 dark:bg-gray-700"
+                  data-testid="placeholder"
                 />
               )}
             </Link>
             <ProductStatus data-testid={`${testId}-status`} status={status} />
             <LikeButton
-              data-testid={`${testId}-like-button`}
-              onClick={props.onLike}
-              className="absolute end-3 top-3 z-10"
               aria-label="Like product"
+              className="absolute end-3 top-3 z-10"
+              data-testid={`${testId}-like-button`}
               liked={isLiked}
+              onClick={props.onLike}
             />
             {renderGroupButtons()}
           </div>
@@ -245,27 +251,27 @@ const ProductCard: FC<ProductCardProps> = memo(
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3
-                  data-testid={`${testId}-title`}
                   className="text-base font-semibold text-neutral-900 dark:text-neutral-100"
+                  data-testid={`${testId}-title`}
                 >
-                  <Link href={productUrl() as any}>{title}</Link>
+                  <Link href={productUrl()}>{title}</Link>
                 </h3>
                 {renderColorOptions()}
               </div>
 
               <div className="flex items-center justify-between">
                 <Prices
-                  data-testid={`${testId}-price`}
-                  contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium"
                   className="text-green-600"
-                  price={price || 0}
+                  contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium"
+                  data-testid={`${testId}-price`}
+                  price={price ?? 0}
                   salePrice={salePrice}
                 />
 
                 <div className="flex items-center space-x-1">
                   <StarIcon className="h-4 w-4 pb-[1px] text-amber-400" />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                    {(rating ?? 0).toFixed(1)} ({reviewNumber || 0} reviews)
+                    {(rating ?? 0).toFixed(1)} ({reviewNumber ?? 0} reviews)
                   </span>
                 </div>
               </div>
@@ -273,33 +279,33 @@ const ProductCard: FC<ProductCardProps> = memo(
 
             <div className="flex w-full space-x-3">
               <AddToCardButton
-                data-testid={`${testId}-add-to-cart`}
-                color={color}
-                onClick={props.onAddToCart}
                 className="flex-1"
-                imageUrl={featuredImage?.src || ''}
-                price={price || 0}
+                color={color}
+                data-testid={`${testId}-add-to-cart`}
+                imageUrl={featuredImage?.src ?? ''}
+                price={price ?? 0}
                 quantity={1}
                 size={selectedOptions?.find((option) => option.name === 'Size')?.value}
-                title={title || ''}
+                title={title ?? ''}
+                onClick={props.onAddToCart}
               />
             </div>
           </div>
         </div>
 
         <Drawer
-          onClose={closeQuickView}
           opened={quickViewOpened}
           position="right"
+          size="sm"
           styles={{
             body: { padding: 0 },
             header: { paddingBottom: 0 },
           }}
-          size="md"
           title="Product Quick View"
+          onClose={closeQuickView}
         >
-          <ScrollArea ref={scrollAreaRef} h="100%">
-            <ProductQuickView onClose={closeQuickView} product={(product || data)!} />
+          <ScrollArea h="100%" ref={scrollAreaRef}>
+            <ProductQuickView product={(product ?? data)!} onClose={closeQuickView} />
           </ScrollArea>
         </Drawer>
       </>

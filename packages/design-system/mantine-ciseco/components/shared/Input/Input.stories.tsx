@@ -1,14 +1,9 @@
-import Input from './Input';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import Input from './Input';
 
 const meta: Meta<typeof Input> = {
   argTypes: {
-    type: {
-      control: 'select',
-      description: 'Input type',
-      options: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
-    },
     className: {
       control: 'text',
       description: 'Additional CSS classes',
@@ -32,6 +27,11 @@ const meta: Meta<typeof Input> = {
     sizeClass: {
       control: 'text',
       description: 'Size and padding classes',
+    },
+    type: {
+      control: 'select',
+      description: 'Input type',
+      options: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
     },
   },
   component: Input,
@@ -58,31 +58,31 @@ export const Default: Story = {
 
 export const Email: Story = {
   args: {
-    type: 'email',
     placeholder: 'Enter your email...',
+    type: 'email',
   },
 };
 
 export const Password: Story = {
   args: {
-    type: 'password',
     placeholder: 'Enter password...',
+    type: 'password',
   },
 };
 
 export const Search: Story = {
   args: {
-    type: 'search',
     placeholder: 'Search products...',
+    type: 'search',
   },
 };
 
 export const Number: Story = {
   args: {
-    type: 'number',
     max: 100,
     min: 0,
     placeholder: 'Enter quantity...',
+    type: 'number',
   },
 };
 
@@ -227,20 +227,20 @@ export const ValidationStates: Story = {
       <div>
         <label className="block text-sm font-medium mb-2 text-green-700">Success</label>
         <Input
-          placeholder="Success state..."
           className="border-green-300 focus:border-green-500 focus:ring-green-200"
+          placeholder="Success state..."
         />
       </div>
       <div>
         <label className="block text-sm font-medium mb-2 text-red-700">Error</label>
         <Input
-          placeholder="Error state..."
           className="border-red-300 focus:border-red-500 focus:ring-red-200"
+          placeholder="Error state..."
         />
       </div>
       <div>
         <label className="block text-sm font-medium mb-2 text-gray-500">Disabled</label>
-        <Input placeholder="Disabled state..." disabled />
+        <Input disabled placeholder="Disabled state..." />
       </div>
     </div>
   ),

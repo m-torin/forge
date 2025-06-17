@@ -4,9 +4,8 @@
 
 import pRetry from 'p-retry';
 
+import { PatternContext, PatternResult, RetryPattern } from '../types/patterns';
 import { isRetryableError } from '../utils/errors';
-
-import type { PatternContext, PatternResult, RetryPattern } from '../types/patterns';
 
 export interface RetryOptions extends Partial<RetryPattern> {
   /** Context for the operation */
@@ -70,7 +69,7 @@ export function Retry(options: RetryOptions = {}) {
       const result = await withRetry(() => method.apply(this, args), options);
 
       if (result.success) {
-        return result.data;
+        return result?.data;
       } else {
         throw result.error;
       }
@@ -109,13 +108,13 @@ export async function withRetry<T>(
 
   try {
     const result = await pRetry(
-      async (attemptNumber) => {
+      async (attemptNumber: any) => {
         context.attempt = attemptNumber;
 
         try {
           const data = await fn();
           return data;
-        } catch (error) {
+        } catch (error: any) {
           const err = error instanceof Error ? error : new Error(String(error));
           context.previousErrors.push(err);
           lastError = err;
@@ -160,7 +159,7 @@ export async function withRetry<T>(
       pattern: 'retry',
       success: true,
     };
-  } catch (error) {
+  } catch (error: any) {
     const err = (error as any)?.originalError || (error as Error);
 
     return {
@@ -190,7 +189,7 @@ export const RetryStrategies = {
     maxAttempts: 3,
     maxDelay: 5000,
     shouldRetry: (error: Error) => {
-      const message = error.message?.toLowerCase() || '';
+      const message = (error as Error)?.message || 'Unknown error'?.toLowerCase() || '';
       return (
         message.includes('connection') ||
         message.includes('timeout') ||
@@ -218,7 +217,7 @@ export const RetryStrategies = {
     maxDelay: 8000,
     shouldRetry: (error: Error) => {
       // Retry on network errors, timeouts, and 5xx status codes
-      const message = error.message?.toLowerCase() || '';
+      const message = (error as Error)?.message || 'Unknown error'?.toLowerCase() || '';
       return (
         message.includes('network') ||
         message.includes('timeout') ||

@@ -4,25 +4,24 @@
  * Migrated from packages/scraping with enhanced functionality
  */
 
+import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
 import {
   type ExtractionResult,
   type SelectorMap,
   type SelectorConfig,
 } from '../../shared/types/scraping-types';
-import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
+import {
+  ScrapingProvider,
+  ProviderConfig,
+  ScrapeOptions,
+  ScrapeResult,
+} from '../../shared/types/scraping-types';
 import {
   humanDelay,
   retryWithBackoff,
   getRandomUserAgent,
   detectCaptcha,
 } from '../../shared/utils/helpers';
-
-import type {
-  ScrapingProvider,
-  ProviderConfig,
-  ScrapeOptions,
-  ScrapeResult,
-} from '../../shared/types/scraping-types';
 
 /**
  * Hero scraping provider with AI-powered capabilities
@@ -62,7 +61,7 @@ export class HeroProvider implements ScrapingProvider {
     try {
       // Dynamic import to handle optional peer dependency
       // Note: Using @ulixee/hero-playground as peer dependency
-      const heroModule = await import('@ulixee/hero-playground').catch(() => {
+      const heroModule = await import('@ulixee/hero-playground').catch((_: any) => {
         throw new ScrapingError(
           'Hero is not installed. Run: npm install @ulixee/hero-playground',
           ScrapingErrorCode.PROVIDER_ERROR,
@@ -77,7 +76,7 @@ export class HeroProvider implements ScrapingProvider {
         userAgent: this.config.userAgent || getRandomUserAgent(),
         viewport: this.config.viewport,
       });
-    } catch (error) {
+    } catch (error: any) {
       throw new ScrapingError(
         'Failed to launch Hero browser',
         ScrapingErrorCode.PROVIDER_ERROR,
@@ -152,7 +151,7 @@ export class HeroProvider implements ScrapingProvider {
       const title = await this.hero!.document.title;
       const metaDescription = await this.hero!.querySelector('meta[name="description"]')
         ?.getAttribute('content')
-        .catch(() => undefined);
+        .catch((_: any) => undefined);
 
       const endTime = Date.now();
 
@@ -173,15 +172,17 @@ export class HeroProvider implements ScrapingProvider {
           },
         },
       };
-    } catch (error) {
-      const endTime = Date.now();
+    } catch (error: any) {
+      const _endTime = Date.now();
 
       if (error instanceof ScrapingError) {
         throw error;
       }
 
       throw new ScrapingError(
-        error instanceof Error ? error.message : 'Unknown error during scraping',
+        error instanceof Error
+          ? (error as Error)?.message || 'Unknown error'
+          : 'Unknown error during scraping',
         ScrapingErrorCode.SCRAPING_FAILED,
         { url },
         error instanceof Error ? error : undefined,
@@ -241,8 +242,9 @@ export class HeroProvider implements ScrapingProvider {
             results[key] = config.transform(results[key]);
           }
         }
-      } catch {
-        results[key] = null;
+      } catch (error: any) {
+        // Re-throw extraction errors so they can be handled upstream
+        throw new Error(`Failed to extract data for key "${key}": ${error.message}`);
       }
     }
 
@@ -255,7 +257,7 @@ export class HeroProvider implements ScrapingProvider {
     // Basic HTML parsing (simplified implementation)
     // In production, this would use a proper HTML parser like cheerio
     for (const [key, selectorOrConfig] of Object.entries(selectors)) {
-      const config: SelectorConfig =
+      const _config: SelectorConfig =
         typeof selectorOrConfig === 'string' ? { selector: selectorOrConfig } : selectorOrConfig;
 
       // Placeholder extraction logic
@@ -278,7 +280,7 @@ export class HeroProvider implements ScrapingProvider {
       // Hero's AI extraction capabilities
       // Note: The exact API may vary based on Hero version
       return await this.hero!.ai?.extract(prompt);
-    } catch (error) {
+    } catch (error: any) {
       throw new ScrapingError(
         'AI extraction failed',
         ScrapingErrorCode.AI_EXTRACTION_FAILED,
@@ -299,7 +301,7 @@ export class HeroProvider implements ScrapingProvider {
     try {
       // Use Hero's AI to understand and execute interaction instructions
       await this.hero!.ai?.interact(instruction);
-    } catch (error) {
+    } catch (error: any) {
       throw new ScrapingError(
         'AI interaction failed',
         ScrapingErrorCode.INTERACTION_FAILED,
@@ -318,7 +320,8 @@ export class HeroProvider implements ScrapingProvider {
       // Check if Hero is still connected
       await this.hero.url;
       return true;
-    } catch {
+    } catch (_error: any) {
+      // Health check failures should return false but not throw
       return false;
     }
   }
@@ -331,7 +334,7 @@ export class HeroProvider implements ScrapingProvider {
   }
 
   // Additional Hero-specific methods for enhanced functionality
-  async click(selector: string, options: { timeout?: number } = {}): Promise<void> {
+  async click(selector: string, _options: { timeout?: number } = {}): Promise<void> {
     if (!this.hero) {
       throw new ScrapingError('Hero not initialized', ScrapingErrorCode.PROVIDER_ERROR);
     }
@@ -385,7 +388,7 @@ export class HeroProvider implements ScrapingProvider {
 /**
  * Factory function to create a Hero provider
  */
-export function createHeroProvider(config?: ProviderConfig): HeroProvider {
+export function createHeroProvider(_config?: ProviderConfig): HeroProvider {
   return new HeroProvider();
 }
 

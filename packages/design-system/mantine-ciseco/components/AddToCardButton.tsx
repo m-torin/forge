@@ -27,8 +27,8 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
 }) => {
   return (
     <div
-      data-testid="notification-content"
       className="pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10"
+      data-testid="notification-content"
     >
       <p className="block text-base leading-none font-semibold">Added to cart!</p>
 
@@ -37,8 +37,8 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
       <div className="flex">
         <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
           <Image
-            className="h-full w-full object-contain object-center"
             alt={title}
+            className="h-full w-full object-contain object-center"
             fill
             sizes="100px"
             src={imageUrl}
@@ -64,8 +64,8 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
 
             <div className="flex">
               <button
-                data-testid="view-cart-button"
                 className="font-medium text-primary-600 dark:text-primary-500"
+                data-testid="view-cart-button"
                 type="button"
               >
                 View cart
@@ -78,9 +78,9 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({
   );
 };
 
-interface AddToCardButtonProps {
+interface AddToCardButtonProps extends Record<string, any> {
   [key: string]: any; // Cho phép bất kỳ props tùy chỉnh nào
-  as?: ElementType | ComponentType<any>;
+  as?: ComponentType<any> | ElementType;
   children?: React.ReactNode;
   className?: string;
   color?: string;
@@ -93,11 +93,11 @@ interface AddToCardButtonProps {
 }
 
 const AddToCardButton = ({
-  'data-testid': testId = 'add-to-cart-button',
   as,
   children,
   className,
   color,
+  'data-testid': testId = 'add-to-cart-button',
   imageUrl,
   price,
   quantity,
@@ -107,8 +107,8 @@ const AddToCardButton = ({
 }: AddToCardButtonProps) => {
   const notifyAddTocart = () => {
     notify.custom({
-      id: 'nc-product-notify',
       autoClose: 4000,
+      id: 'nc-product-notify',
       message: (
         <NotifyAddToCart
           color={color}
@@ -132,10 +132,10 @@ const AddToCardButton = ({
     });
   };
 
-  const Component = as || 'button';
+  const Component = as ?? 'button';
 
   return (
-    <Component data-testid={testId} onClick={notifyAddTocart} className={className} {...props}>
+    <Component className={className} data-testid={testId} onClick={notifyAddTocart} {...props}>
       {children}
     </Component>
   );

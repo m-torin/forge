@@ -1,7 +1,8 @@
-import { getProducts } from '@/data/data-service';
+import { getProducts } from '@/actions/products';
+import { transformDatabaseProductToTProductItem } from '@/types/database';
 import { type Metadata } from 'next';
 
-import { FavoritesClient } from '@/components/guest';
+import { FavoritesUi } from './FavoritesUi';
 
 export const metadata: Metadata = {
   description: 'Your favorite products and wishlists',
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
 
 const Page = async () => {
   // Get all products to filter by favorites on client side
-  const allProducts = await getProducts();
+  const productsResult = await getProducts({ limit: 100 });
+  const allProducts = productsResult.data?.map(transformDatabaseProductToTProductItem) || [];
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
@@ -21,7 +23,7 @@ const Page = async () => {
         </p>
       </div>
 
-      <FavoritesClient allProducts={allProducts} />
+      <FavoritesUi allProducts={allProducts} />
     </div>
   );
 };

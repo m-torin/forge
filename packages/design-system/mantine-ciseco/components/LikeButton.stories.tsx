@@ -1,6 +1,6 @@
-import LikeButton from './LikeButton';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import LikeButton from './LikeButton';
 
 const meta: Meta<typeof LikeButton> = {
   argTypes: {
@@ -63,8 +63,8 @@ export const InProductCard: Story = {
     <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-xs">
       <div className="relative">
         <img
-          className="w-full h-48 object-cover"
           alt="Product"
+          className="w-full h-48 object-cover"
           src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop"
         />
         <div className="absolute top-3 right-3">
@@ -115,7 +115,7 @@ export const DifferentPositions: Story = {
 export const Grid: Story = {
   render: () => (
     <div className="grid grid-cols-4 gap-4">
-      {Array.from({ length: 12 }, (_, i) => (
+      {Array.from({ length: 12 }, (_, i: any) => (
         <LikeButton key={`like-button-${i}`} liked={i % 3 === 0} />
       ))}
     </div>

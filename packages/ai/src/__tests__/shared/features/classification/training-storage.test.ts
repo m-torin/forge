@@ -6,7 +6,7 @@ import {
   type TrainingData,
 } from '../../../../shared/features/classification/training-storage';
 
-describe('Training Storage', () => {
+describe('Training Storage', (_: any) => {
   const mockTrainingData: TrainingData[] = [
     {
       feedbacks: [
@@ -38,7 +38,7 @@ describe('Training Storage', () => {
     },
   ];
 
-  describe('InMemoryTrainingStorage', () => {
+  describe('InMemoryTrainingStorage', (_: any) => {
     let storage: InMemoryTrainingStorage;
 
     beforeEach(() => {
@@ -89,7 +89,7 @@ describe('Training Storage', () => {
     });
   });
 
-  describe('FileTrainingStorage', () => {
+  describe('FileTrainingStorage', (_: any) => {
     let storage: FileTrainingStorage;
     const testFilePath = '/tmp/test-training-data.json';
 
@@ -98,7 +98,7 @@ describe('Training Storage', () => {
       vi.clearAllMocks();
     });
 
-    describe('Node.js environment', () => {
+    describe('Node.js environment', (_: any) => {
       beforeEach(() => {
         // Ensure we're in Node.js-like environment
         Object.defineProperty(global, 'window', {
@@ -204,11 +204,11 @@ describe('Training Storage', () => {
       });
     });
 
-    describe('Browser environment', () => {
+    describe('Browser environment', (_: any) => {
       let mockLocalStorage: {
         getItem: ReturnType<typeof vi.fn>;
-        setItem: ReturnType<typeof vi.fn>;
         removeItem: ReturnType<typeof vi.fn>;
+        setItem: ReturnType<typeof vi.fn>;
       };
 
       beforeEach(() => {
@@ -279,8 +279,8 @@ describe('Training Storage', () => {
     });
   });
 
-  describe('TrainingData interface', () => {
-    it('should have correct structure', () => {
+  describe('TrainingData interface', (_: any) => {
+    it('should have correct structure', (_: any) => {
       const data: TrainingData = {
         feedbacks: [
           {

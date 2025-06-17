@@ -13,7 +13,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const PriceMonitoringInput = z.object({
@@ -118,12 +118,8 @@ export const fetchProductsToMonitorStep = compose(
     (input) => true,
     (output) => output.products.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 30000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['defaultMetric'],
-    }),
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock product generator
@@ -225,11 +221,11 @@ export const checkCurrentPricesStep = compose(
       totalChecked: priceChecks.length,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
-      trackingMetrics: ['defaultMetric'],
+      backoff: true,
+      maxRetries: 3,
+      // trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -344,7 +340,7 @@ export const analyzePriceChangesStep = createStep('analyze-changes', async (data
 // Step 4: Store price history
 export const storePriceHistoryStep = compose(
   StepTemplates.database('store-price-history', 'Store price history in time-series database'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 5: Generate alerts
@@ -518,7 +514,7 @@ export const sendAlertsStep = compose(
       sendResults,
     };
   }),
-  (step) => withStepRetry(step, { maxAttempts: 2 }),
+  (step: any) => withStepRetry(step, { maxRetries: 2 }),
 );
 
 // Helper function to get next batch time
@@ -592,7 +588,7 @@ function getTopCategories(drops: any[], products: any[]): any[] {
   });
 
   return Object.entries(categoryCount)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 5)
     .map(([category, count]) => ({ category, count }));
 }
@@ -617,7 +613,7 @@ function getMostVolatileBrands(priceHistory: any[], products: any[]): any[] {
       changeCount: data.changes,
       volatility: data.avgChange / data.changes,
     }))
-    .sort((a, b) => b.volatility - a.volatility)
+    .sort((a: any, b: any) => b.volatility - a.volatility)
     .slice(0, 5);
 }
 

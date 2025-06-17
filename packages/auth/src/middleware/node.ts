@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '../server/auth';
 
-import type { MiddlewareOptions } from '../shared/types';
+import type { MiddlewareOptions, Session } from '../shared/types';
 import type { NextRequest } from 'next/server';
 
 const defaultPublicRoutes = [
@@ -75,8 +75,9 @@ export function createNodeMiddleware(options: MiddlewareOptions = {}) {
         response.headers.set('x-session-cached', 'true');
         response.headers.set('x-user-id', session.user.id);
 
-        if (session.session.activeOrganizationId) {
-          response.headers.set('x-organization-id', session.session.activeOrganizationId);
+        const sessionWithOrg = session.session as Session;
+        if (sessionWithOrg.activeOrganizationId) {
+          response.headers.set('x-organization-id', sessionWithOrg.activeOrganizationId);
         }
       }
 

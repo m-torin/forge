@@ -1,6 +1,27 @@
 import merge from 'lodash.merge';
+import { Metadata, Viewport } from 'next';
 
-import type { Metadata, Viewport } from 'next';
+interface MetadataGeneratorOptions {
+  alternates?: {
+    canonical?: string;
+    languages?: Record<string, string>;
+  };
+  article?: {
+    authors?: string[];
+    expirationTime?: string;
+    modifiedTime?: string;
+    publishedTime?: string;
+    section?: string;
+    tags?: string[];
+  };
+  canonical?: string;
+  description: string;
+  image?: string | { alt?: string; height?: number; url: string; width?: number };
+  keywords?: string[];
+  noFollow?: boolean;
+  noIndex?: boolean;
+  title: string;
+}
 
 interface SEOConfig {
   applicationName: string;
@@ -15,35 +36,13 @@ interface SEOConfig {
   twitterHandle: string;
 }
 
-interface MetadataGeneratorOptions {
-  alternates?: {
-    canonical?: string;
-    languages?: Record<string, string>;
-  };
-  article?: {
-    publishedTime?: string;
-    modifiedTime?: string;
-    expirationTime?: string;
-    authors?: string[];
-    section?: string;
-    tags?: string[];
-  };
-  canonical?: string;
-  description: string;
-  image?: string | { url: string; alt?: string; width?: number; height?: number };
-  keywords?: string[];
-  noFollow?: boolean;
-  noIndex?: boolean;
-  title: string;
-}
-
 // Enhanced viewport configuration for better mobile experience
 export const viewport: Viewport = {
-  width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
+  width: 'device-width',
 };
 
 export class SEOManager {
@@ -51,6 +50,22 @@ export class SEOManager {
 
   constructor(config: SEOConfig) {
     this.config = config;
+  }
+
+  // Generate metadata for error pages
+  createErrorMetadata(statusCode: number): Metadata {
+    const titles: Record<number, string> = {
+      404: 'Page Not Found',
+      500: 'Internal Server Error',
+      503: 'Service Unavailable',
+    };
+
+    return this.createMetadata({
+      description: `Error ${statusCode}`,
+      noFollow: true,
+      noIndex: true,
+      title: titles[statusCode] ?? 'Error',
+    });
   }
 
   createMetadata(options: MetadataGeneratorOptions): Metadata {
@@ -68,23 +83,27 @@ export class SEOManager {
     } = options;
 
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.NEXT_PUBLIC_URL;
+    const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.NEXT_PUBLIC_URL;
     const parsedTitle = `${title} | ${this.config.applicationName}`;
 
     // Combine default keywords with page-specific ones
-    const allKeywords = [...(this.config.keywords || []), ...keywords];
+    const allKeywords = [...(this.config.keywords ?? []), ...keywords];
 
     const defaultMetadata: Metadata = {
+      // Alternates for i18n and canonical URLs
+      alternates: alternates ?? (canonical ? { canonical } : undefined),
+      // Apple Web App
+      appleWebApp: {
+        capable: true,
+        statusBarStyle: 'default',
+        title: title,
+      },
       applicationName: this.config.applicationName,
+      // App Links for mobile deep linking
+      appLinks: {},
       authors: [{ name: this.config.author.name, url: this.config.author.url }],
       creator: this.config.author.name,
       description,
-      keywords: allKeywords,
-      publisher: this.config.publisher,
-      title: {
-        default: parsedTitle,
-        template: `%s | ${this.config.applicationName}`,
-      },
 
       // Enhanced format detection
       formatDetection: {
@@ -94,39 +113,18 @@ export class SEOManager {
         telephone: false,
       },
 
+      keywords: allKeywords,
+
       // Metadata base for absolute URLs
       metadataBase: productionUrl ? new URL(`${protocol}://${productionUrl}`) : undefined,
 
-      // Robots directives
-      robots: {
-        follow: !noFollow,
-        googleBot: {
-          'max-video-preview': -1,
-          follow: !noFollow,
-          index: !noIndex,
-          'max-image-preview': 'large',
-          'max-snippet': -1,
-        },
-        index: !noIndex,
-      },
-
-      // Alternates for i18n and canonical URLs
-      alternates: alternates || (canonical ? { canonical } : undefined),
-
-      // Apple Web App
-      appleWebApp: {
-        capable: true,
-        statusBarStyle: 'default',
-        title: title,
-      },
-
       // Open Graph
       openGraph: {
-        type: article ? 'article' : 'website',
         description,
-        locale: this.config.locale || 'en_US',
+        locale: this.config.locale ?? 'en_US',
         siteName: this.config.applicationName,
         title: parsedTitle,
+        type: article ? 'article' : 'website',
         ...(article && {
           article: {
             authors: article.authors,
@@ -137,6 +135,26 @@ export class SEOManager {
             tags: article.tags,
           },
         }),
+      },
+
+      publisher: this.config.publisher,
+
+      // Robots directives
+      robots: {
+        follow: !noFollow,
+        googleBot: {
+          follow: !noFollow,
+          index: !noIndex,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+          'max-video-preview': -1,
+        },
+        index: !noIndex,
+      },
+
+      title: {
+        default: parsedTitle,
+        template: `%s | ${this.config.applicationName}`,
       },
 
       // Twitter Card
@@ -150,17 +168,14 @@ export class SEOManager {
 
       // Verification (can be extended)
       verification: {},
-
-      // App Links for mobile deep linking
-      appLinks: {},
     };
 
     // Handle image configuration
     if (image) {
       const imageData =
         typeof image === 'string'
-          ? { width: 1200, url: image, alt: title, height: 630 }
-          : { width: 1200, alt: title, height: 630, ...image };
+          ? { alt: title, height: 630, url: image, width: 1200 }
+          : { alt: title, height: 630, width: 1200, ...image };
 
       if (defaultMetadata.openGraph) {
         defaultMetadata.openGraph.images = [imageData];
@@ -179,21 +194,5 @@ export class SEOManager {
     }
 
     return merge(defaultMetadata, additionalProperties);
-  }
-
-  // Generate metadata for error pages
-  createErrorMetadata(statusCode: number): Metadata {
-    const titles: Record<number, string> = {
-      404: 'Page Not Found',
-      500: 'Internal Server Error',
-      503: 'Service Unavailable',
-    };
-
-    return this.createMetadata({
-      description: `Error ${statusCode}`,
-      noFollow: true,
-      noIndex: true,
-      title: titles[statusCode] || 'Error',
-    });
   }
 }

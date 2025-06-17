@@ -1,6 +1,6 @@
-import AccordionInfo from './AccordionInfo';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import AccordionInfo from './AccordionInfo';
 
 const meta: Meta<typeof AccordionInfo> = {
   argTypes: {
@@ -31,26 +31,25 @@ type Story = StoryObj<typeof meta>;
 
 const defaultData = [
   {
-    name: 'Description',
     content:
       'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
+    name: 'Description',
   },
   {
-    name: 'Fabric + Care',
     content: `<ul class="list-disc list-inside leading-7">
     <li>Made from a sheer Belgian power micromesh.</li>
     <li>74% Polyamide (Nylon) 26% Elastane (Spandex)</li>
     <li>Adjustable hook & eye closure and straps</li>
     <li>Hand wash in cold water, dry flat</li>
   </ul>`,
+    name: 'Fabric + Care',
   },
   {
-    name: 'How it Fits',
     content:
       "Use this as a guide. Preference is a huge factor — if you're near the top of a size range and/or prefer more coverage, you may want to size up.",
+    name: 'How it Fits',
   },
   {
-    name: 'FAQ',
     content: `
     <ul class="list-disc list-inside leading-7">
     <li>All full-priced, unworn items, with tags attached and in their original packaging are eligible for return or exchange within 30 days of placing your order.</li>
@@ -59,6 +58,7 @@ const defaultData = [
     <li>Want more info about shipping, materials or care instructions? Here!</li>
   </ul>
     `,
+    name: 'FAQ',
   },
 ];
 
@@ -80,8 +80,8 @@ export const SingleItem: Story = {
   args: {
     data: [
       {
-        name: 'Single Item',
         content: 'This is a single accordion item with just text content.',
+        name: 'Single Item',
       },
     ],
   },
@@ -91,7 +91,6 @@ export const HTMLContent: Story = {
   args: {
     data: [
       {
-        name: 'Rich HTML Content',
         content: `
           <div>
             <h4 class="font-bold text-lg mb-3">Product Features</h4>
@@ -105,6 +104,7 @@ export const HTMLContent: Story = {
             </div>
           </div>
         `,
+        name: 'Rich HTML Content',
       },
     ],
   },
@@ -113,12 +113,12 @@ export const HTMLContent: Story = {
 export const ManyItems: Story = {
   args: {
     data: [
-      { name: 'Item 1', content: 'Content for the first item.' },
-      { name: 'Item 2', content: 'Content for the second item.' },
-      { name: 'Item 3', content: 'Content for the third item.' },
-      { name: 'Item 4', content: 'Content for the fourth item.' },
-      { name: 'Item 5', content: 'Content for the fifth item.' },
-      { name: 'Item 6', content: 'Content for the sixth item.' },
+      { content: 'Content for the first item.', name: 'Item 1' },
+      { content: 'Content for the second item.', name: 'Item 2' },
+      { content: 'Content for the third item.', name: 'Item 3' },
+      { content: 'Content for the fourth item.', name: 'Item 4' },
+      { content: 'Content for the fifth item.', name: 'Item 5' },
+      { content: 'Content for the sixth item.', name: 'Item 6' },
     ],
   },
 };

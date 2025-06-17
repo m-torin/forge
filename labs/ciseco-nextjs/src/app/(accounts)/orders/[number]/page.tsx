@@ -1,4 +1,7 @@
-import { ButtonSecondary, Divider, Prices, getOrder } from '@repo/design-system/ciseco'
+import { Divider } from '@/components/Divider'
+import Prices from '@/components/Prices'
+import { getOrder } from '@/data/data'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import clsx from 'clsx'
 import { Metadata } from 'next'
 import Image from 'next/image'
@@ -53,7 +56,7 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
         <h2 className="sr-only">Products purchased</h2>
         <div className="flex flex-col gap-y-10">
           {products.map((product) => (
-            <div key={product.id} className="border-b border-t border-neutral-200 bg-white sm:rounded-lg sm:border">
+            <div key={product.id} className="border-t border-b border-neutral-200 bg-white sm:rounded-lg sm:border">
               <div className="py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
                 <div className="sm:flex lg:col-span-7">
                   <div className="relative aspect-square w-full shrink-0 rounded-lg object-cover sm:size-40">
@@ -68,7 +71,7 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
                     )}
                   </div>
 
-                  <div className="mt-6 flex flex-col sm:ml-6 sm:mt-0">
+                  <div className="mt-6 flex flex-col sm:mt-0 sm:ml-6">
                     <h3 className="text-base font-medium text-neutral-900">
                       <a href={product.href}>{product.title}</a>
                     </h3>
@@ -143,8 +146,8 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
             </div>
             <div>
               <dt className="font-medium text-neutral-900">Payment information</dt>
-              <dd className="-ml-4 -mt-1 flex flex-wrap">
-                <div className="ml-4 mt-4 shrink-0">
+              <dd className="-mt-1 -ml-4 flex flex-wrap">
+                <div className="mt-4 ml-4 shrink-0">
                   <svg width={36} height={24} viewBox="0 0 36 24" aria-hidden="true" className="h-6 w-auto">
                     <rect rx={4} fill="#224DBA" width={36} height={24} />
                     <path
@@ -154,7 +157,7 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
                   </svg>
                   <p className="sr-only">Visa</p>
                 </div>
-                <div className="ml-4 mt-4">
+                <div className="mt-4 ml-4">
                   <p className="text-neutral-900">Ending with 4242</p>
                   <p className="text-neutral-600">Expires 02 / 24</p>
                 </div>

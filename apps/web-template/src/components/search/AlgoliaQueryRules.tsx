@@ -18,30 +18,18 @@ import {
   Code,
   Alert,
   ThemeIcon,
-  Timeline,
   ActionIcon,
-  Collapse,
   JsonInput,
   NumberInput,
-  Chip,
-  Tabs,
 } from '@mantine/core';
 import {
   IconSparkles,
-  IconTag,
   IconCalendar,
-  IconClock,
   IconFilter,
-  IconSortAscending,
-  IconBan,
   IconPlus,
   IconTrash,
   IconEdit,
-  IconCheck,
-  IconAlertCircle,
   IconBrandAlgolia,
-  IconArrowUp,
-  IconArrowDown,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 

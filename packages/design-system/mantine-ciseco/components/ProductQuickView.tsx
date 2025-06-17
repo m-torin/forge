@@ -21,7 +21,7 @@ import NcInputNumber from './NcInputNumber';
 import Prices from './Prices';
 import ButtonPrimary from './shared/Button/ButtonPrimary';
 
-export interface ProductQuickViewProps {
+export interface ProductQuickViewProps extends Record<string, any> {
   className?: string;
   'data-testid'?: string;
   isOpen?: boolean;
@@ -31,28 +31,26 @@ export interface ProductQuickViewProps {
   onLike?: () => void;
   onShare?: () => void;
   onViewDetails?: () => void;
-  product: TProductItem | TProductDetail; // Accept either type
+  product: TProductDetail | TProductItem; // Accept either type
 }
 
 const ProductQuickView: FC<ProductQuickViewProps> = ({
-  'data-testid': testId = 'quick-view-modal',
   className,
-  isOpen,
-  loading,
-  onAddToCart,
-  onClose,
-  onLike,
-  onShare,
-  onViewDetails,
+  'data-testid': testId = 'quick-view-modal',
+  isOpen: _isOpen,
+  loading: _loading,
+  onAddToCart: _onAddToCart,
+  onClose: _onClose,
+  onLike: _onLike,
+  onShare: _onShare,
+  onViewDetails: _onViewDetails,
   product,
 }) => {
   const localizeHref = useLocalizeHref();
 
   const [qualitySelected, setQualitySelected] = useState(1);
 
-  if (!product) {
-    return null;
-  }
+  // Product is guaranteed to exist when this component is used
 
   const {
     featuredImage,
@@ -78,7 +76,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
     return otherOptions.map((option) => {
       return (
         <div key={option.name}>
-          <label htmlFor="" className="block rtl:text-right">
+          <label className="block rtl:text-right" htmlFor="">
             <span className="text-sm font-medium">{option.name}</span>
           </label>
           <div className="mt-2.5 flex gap-x-2.5">
@@ -203,13 +201,13 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
           <div className="mt-5 flex flex-wrap items-center justify-start gap-x-4 gap-y-1.5 sm:gap-x-5 rtl:justify-end">
             <Prices
               contentClass="py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold"
-              price={price || 1}
+              price={price ?? 1}
             />
             <div className="h-6 border-s border-neutral-300 dark:border-neutral-700" />
             <div className="flex items-center">
               <Link
-                href={localizeHref(`/products/${handle}`)}
                 className="flex items-center text-sm font-medium"
+                href={localizeHref(`/products/${handle}`)}
               >
                 <StarIcon className="h-5 w-5 pb-px text-yellow-400" />
                 <div className="ms-1.5 flex">
@@ -236,24 +234,24 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         {/*  ---------- 4  QTY AND ADD TO CART BUTTON */}
         <div className="flex gap-x-3.5">
           <div className="flex items-center justify-center rounded-full bg-neutral-100/70 px-2 py-3 sm:p-3.5 dark:bg-neutral-800/70">
-            <NcInputNumber onChange={setQualitySelected} defaultValue={qualitySelected} />
+            <NcInputNumber defaultValue={qualitySelected} onChange={setQualitySelected} />
           </div>
           <AddToCardButton
-            color={colorSelected}
-            className="flex-1 shrink-0"
             as={ButtonPrimary}
-            imageUrl={featuredImage?.src || ''}
-            price={price || 1}
+            className="flex-1 shrink-0"
+            color={colorSelected}
+            imageUrl={featuredImage?.src ?? ''}
+            price={price ?? 1}
             quantity={qualitySelected}
             size={sizeSelected}
-            title={title || ''}
+            title={title ?? ''}
           >
             <HugeiconsIcon
-              strokeWidth={1.5}
+              className="hidden sm:inline-block"
               color="currentColor"
               icon={ShoppingBag03Icon}
-              className="hidden sm:inline-block"
               size={20}
+              strokeWidth={1.5}
             />
             <span className="ms-3">Add to cart</span>
           </AddToCardButton>
@@ -265,15 +263,13 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         <AccordionInfo
           data={[
             {
-              name: 'Description',
               content:
-                'descriptionHtml' in product &&
-                typeof product.descriptionHtml === 'string'
+                'descriptionHtml' in product && typeof product.descriptionHtml === 'string'
                   ? product.descriptionHtml
                   : 'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
+              name: 'Description',
             },
             {
-              name: 'Features',
               content: `<ul class="list-disc list-inside leading-7">
                   <li>Material: 43% Sorona Yarn + 57% Stretch Polyester</li>
                   <li>
@@ -286,16 +282,17 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
                     Excool technology application 4-way stretch
                   </li>
                 </ul>`,
+              name: 'Features',
             },
             {
-              name: 'Shipping & Return',
               content:
                 'We offer free shipping on all orders over $50. If you are not satisfied with your purchase, you can return it within 30 days for a full refund.',
+              name: 'Shipping & Return',
             },
             {
-              name: 'Care Instructions',
               content:
                 'Machine wash cold with like colors. Do not bleach. Tumble dry low. Iron low if needed. Do not dry clean.',
+              name: 'Care Instructions',
             },
           ]}
         />
@@ -304,8 +301,8 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
           <p className="text-xs">
             or{' '}
             <Link
-              href={localizeHref(`/products/${handle}`)}
               className="text-xs font-medium text-neutral-900 uppercase"
+              href={localizeHref(`/products/${handle}`)}
             >
               Go to product detail page <span aria-hidden="true"> →</span>
             </Link>
@@ -316,16 +313,16 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
   };
 
   return (
-    <div data-testid={testId} className={className}>
+    <div className={className} data-testid={testId}>
       <div className="lg:flex">
         <div className="w-full lg:w-[50%]">
           <div className="relative">
             <div className="aspect-square relative">
               {images?.[0] && (
                 <Image
-                  data-testid="product-image"
+                  alt={images[0].alt ?? ''}
                   className="rounded-xl object-cover"
-                  alt={images[0].alt || ''}
+                  data-testid="product-image"
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   src={images[0].src}
@@ -342,13 +339,13 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
                 return null;
               }
               return (
-                <div key={index} className="aspect-[3/4] relative">
+                <div key={image.src || `image-${index}`} className="aspect-[3/4] relative">
                   <Image
+                    alt={image.alt ?? ''}
                     className="rounded-xl object-cover"
-                    alt={image.alt || ''}
                     fill
-                    src={image.src}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    src={image.src}
                   />
                 </div>
               );
@@ -358,8 +355,8 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
 
         {/* SIDEBAR */}
         <div
-          data-testid="product-details"
           className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8"
+          data-testid="product-details"
         >
           {renderSectionContent()}
         </div>

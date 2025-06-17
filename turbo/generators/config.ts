@@ -1,4 +1,4 @@
-import type { PlopTypes } from '@turbo/gen';
+import { PlopTypes } from '@turbo/gen';
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
   plop.setGenerator('init', {
@@ -11,7 +11,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
       },
     ],
     actions: [
-      (answers) => {
+      (answers: any) => {
         if (
           'name' in answers &&
           typeof answers.name === 'string' &&

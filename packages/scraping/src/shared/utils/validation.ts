@@ -3,9 +3,10 @@
  */
 
 import { z } from 'zod';
-import type { ScrapeOptions, ProviderConfig } from '../types/provider';
-import type { ScrapingConfig } from '../types/scraping-types';
-import { ScrapingErrorCode, ConfigurationError } from '../errors';
+
+import { ConfigurationError } from '../errors';
+import { ScrapeOptions, ProviderConfig } from '../types/provider';
+import { ScrapingConfig } from '../types/scraping-types';
 
 /**
  * URL validation
@@ -14,7 +15,8 @@ export function isValidUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     return ['http:', 'https:'].includes(parsed.protocol);
-  } catch {
+  } catch (_error: any) {
+    // URL parsing failures are expected for invalid URLs, so we return false
     return false;
   }
 }
@@ -27,7 +29,7 @@ export function normalizeUrl(url: string): string {
   try {
     const parsed = new URL(url);
     return parsed.toString();
-  } catch {
+  } catch (_error: any) {
     throw new ConfigurationError(`Invalid URL: ${url}`);
   }
 }
@@ -49,8 +51,8 @@ export function isValidSelector(selector: string): boolean {
       /[<>]/, // HTML tags
     ];
 
-    return !invalidPatterns.some((pattern) => pattern.test(selector));
-  } catch {
+    return !invalidPatterns.some((pattern: any) => pattern.test(selector));
+  } catch (_error: any) {
     return false;
   }
 }
@@ -147,9 +149,9 @@ const scrapeOptionsSchema = z.object({
 export function validateScrapeOptions(options: unknown): ScrapeOptions {
   try {
     return scrapeOptionsSchema.parse(options);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      const issues = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const issues = error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
       throw new ConfigurationError(`Invalid scrape options: ${issues}`);
     }
     throw error;
@@ -171,9 +173,9 @@ const providerConfigSchema = z.object({
 export function validateProviderConfig(config: unknown): ProviderConfig {
   try {
     return providerConfigSchema.parse(config);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      const issues = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const issues = error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
       throw new ConfigurationError(`Invalid provider configuration: ${issues}`);
     }
     throw error;
@@ -218,9 +220,9 @@ const scrapingConfigSchema = z.object({
 export function validateScrapingConfig(config: unknown): ScrapingConfig {
   try {
     return scrapingConfigSchema.parse(config);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      const issues = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const issues = error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
       throw new ConfigurationError(`Invalid scraping configuration: ${issues}`);
     }
     throw error;
@@ -244,22 +246,42 @@ export function isJsonContent(contentType?: string): boolean {
  * Resource validation
  */
 export function parseMemoryLimit(limit: string): number {
-  const match = limit.match(/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)?$/i);
-  if (!match) {
+  // Use string parsing instead of regex to avoid security warnings
+  const trimmed = limit.trim().toUpperCase();
+
+  // Extract numeric part using string manipulation instead of regex
+  let numericString = '';
+  for (let i = 0; i < trimmed.length; i++) {
+    const char = trimmed[i];
+    if ((char >= '0' && char <= '9') || char === '.') {
+      numericString += char;
+    } else {
+      break;
+    }
+  }
+
+  if (!numericString) {
     throw new ConfigurationError(`Invalid memory limit: ${limit}`);
   }
 
-  const value = parseFloat(match[1]);
-  const unit = (match[2] || 'B').toUpperCase();
+  const value = parseFloat(numericString);
+
+  // Determine unit
+  let unit = 'B';
+  if (trimmed.endsWith('KB')) unit = 'KB';
+  else if (trimmed.endsWith('MB')) unit = 'MB';
+  else if (trimmed.endsWith('GB')) unit = 'GB';
+  else if (trimmed.endsWith('TB')) unit = 'TB';
 
   const multipliers: Record<string, number> = {
     B: 1,
     KB: 1024,
     MB: 1024 * 1024,
     GB: 1024 * 1024 * 1024,
+    TB: 1024 * 1024 * 1024 * 1024,
   };
 
-  return value * (multipliers[unit] || 1);
+  return value * multipliers[unit];
 }
 
 /**
@@ -277,7 +299,7 @@ export function canScrapeUrl(url: string, robotsTxt?: string): boolean {
     const trimmed = line.trim();
     if (trimmed.startsWith('#') || !trimmed) continue;
 
-    const [key, value] = trimmed.split(':').map((s) => s.trim());
+    const [key, value] = trimmed.split(':').map((s: any) => s.trim());
 
     if (key.toLowerCase() === 'user-agent') {
       currentUserAgent = value.toLowerCase();
@@ -328,9 +350,9 @@ export function validateProvider(provider: string): boolean {
 export function validateConfigOrThrow(config: any): void {
   try {
     validateScrapingConfig(config);
-  } catch (error) {
+  } catch (error: any) {
     throw new ConfigurationError(
-      `Configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Configuration validation failed: ${error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error'}`,
     );
   }
 }

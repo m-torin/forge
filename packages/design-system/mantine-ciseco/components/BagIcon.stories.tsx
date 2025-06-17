@@ -1,6 +1,6 @@
-import BagIcon from './BagIcon';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import BagIcon from './BagIcon';
 
 const meta: Meta<typeof BagIcon> = {
   argTypes: {

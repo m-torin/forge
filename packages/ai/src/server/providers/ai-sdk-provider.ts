@@ -5,7 +5,7 @@ import { embed, generateObject, generateText, streamText } from 'ai';
 
 import { BaseProvider } from '../../shared/providers/base-provider';
 
-import type {
+import {
   Capability,
   CompletionOptions,
   CompletionResponse,
@@ -17,50 +17,33 @@ import type {
 } from '../../shared/types';
 
 export class AISdkProvider extends BaseProvider {
-  readonly name: string;
-  readonly type = 'ai-sdk' as const;
   readonly capabilities = new Set<Capability>([
     'complete',
-    'stream',
     'embed',
     'generateObject',
+    'stream',
     'tools',
   ]);
+  readonly name: string;
+  readonly type = 'ai-sdk' as const;
 
   private model: any;
   private providerName: string;
 
-  private mapFinishReason(
-    reason?: string,
-  ): 'stop' | 'length' | 'tool_calls' | 'content_filter' | undefined {
-    switch (reason) {
-      case 'stop':
-        return 'stop';
-      case 'length':
-        return 'length';
-      case 'tool-calls':
-        return 'tool_calls';
-      case 'content-filter':
-        return 'content_filter';
-      default:
-        return undefined;
-    }
-  }
-
-  constructor(providerName: 'openai' | 'anthropic' | 'google', modelName?: string) {
+  constructor(providerName: 'anthropic' | 'google' | 'openai', modelName?: string) {
     super();
     this.providerName = providerName;
     this.name = `${providerName}-ai-sdk`;
 
     switch (providerName) {
-      case 'openai':
-        this.model = openai(modelName || 'gpt-4-turbo');
-        break;
       case 'anthropic':
-        this.model = anthropic(modelName || 'claude-3-5-sonnet-20241022');
+        this.model = anthropic(modelName ?? 'claude-3-5-sonnet-20241022');
         break;
       case 'google':
-        this.model = google(modelName || 'gemini-1.5-pro');
+        this.model = google(modelName ?? 'gemini-1.5-pro');
+        break;
+      case 'openai':
+        this.model = openai(modelName ?? 'gpt-4-turbo');
         break;
       default:
         throw new Error(`Unsupported provider: ${providerName}`);
@@ -72,27 +55,81 @@ export class AISdkProvider extends BaseProvider {
       this.validateOptions(options);
 
       const result = await generateText({
-        maxTokens: options.maxTokens,
         model: this.model,
         prompt: options.prompt,
-        system: options.systemPrompt,
-        temperature: options.temperature,
+        ...(options.maxTokens && { maxTokens: options.maxTokens }),
+        ...(options.systemPrompt && { system: options.systemPrompt }),
+        ...(options.temperature && { temperature: options.temperature }),
       });
 
-      return {
-        finishReason: this.mapFinishReason(result.finishReason),
-        model: this.model.modelId,
+      const response: CompletionResponse = {
         text: result.text,
-        usage: result.usage
-          ? {
-              completionTokens: result.usage.completionTokens,
-              promptTokens: result.usage.promptTokens,
-              totalTokens: result.usage.totalTokens,
-            }
-          : undefined,
+        ...(this.mapFinishReason(result.finishReason) && {
+          finishReason: this.mapFinishReason(result.finishReason)!,
+        }),
+        ...(this.model.modelId && { model: this.model.modelId }),
+        ...(result.usage && {
+          usage: {
+            completionTokens: result.usage.completionTokens,
+            promptTokens: result.usage.promptTokens,
+            totalTokens: result.usage.totalTokens,
+          },
+        }),
       };
-    } catch (error) {
+      return response;
+    } catch (error: any) {
       throw this.formatError(error, 'completion');
+    }
+  }
+
+  async embed(options: EmbedOptions): Promise<EmbeddingResponse> {
+    try {
+      // AI SDK embed only works with certain providers
+      if (this.providerName !== 'openai') {
+        throw new Error(`Embedding not supported for ${this.providerName} in AI SDK mode`);
+      }
+
+      const inputs = Array.isArray(options.input) ? options.input : [options.input];
+      const embeddings: number[][] = [];
+      let totalTokens = 0;
+
+      // Process each input separately to avoid data corruption
+      for (const input of inputs) {
+        const result = await embed({
+          model: openai.embedding('text-embedding-3-small'),
+          value: input,
+        });
+
+        embeddings.push(result.embedding);
+        totalTokens += result.usage?.tokens ?? 0;
+      }
+
+      return {
+        embeddings,
+        usage: {
+          completionTokens: 0,
+          promptTokens: 0,
+          totalTokens,
+        },
+      };
+    } catch (error: any) {
+      throw this.formatError(error, 'embedding');
+    }
+  }
+
+  async generateObject<T>(options: ObjectOptions<T>): Promise<T> {
+    try {
+      const result = await generateObject({
+        model: this.model,
+        prompt: options.prompt,
+        schema: options.schema as any, // AI SDK expects specific schema format
+        ...(options.maxTokens && { maxTokens: options.maxTokens }),
+        ...(options.temperature && { temperature: options.temperature }),
+      });
+
+      return result.object as T;
+    } catch (error: any) {
+      throw this.formatError(error, 'object generation');
     }
   }
 
@@ -101,11 +138,11 @@ export class AISdkProvider extends BaseProvider {
       this.validateOptions(options);
 
       const result = await streamText({
-        maxTokens: options.maxTokens,
         model: this.model,
         prompt: options.prompt,
-        system: options.systemPrompt,
-        temperature: options.temperature,
+        ...(options.maxTokens && { maxTokens: options.maxTokens }),
+        ...(options.systemPrompt && { system: options.systemPrompt }),
+        ...(options.temperature && { temperature: options.temperature }),
       });
 
       let isFirst = true;
@@ -131,65 +168,27 @@ export class AISdkProvider extends BaseProvider {
         isLast: true,
         text: '',
       };
-    } catch (error) {
+    } catch (error: any) {
       throw this.formatError(error, 'streaming');
     }
   }
 
-  async embed(options: EmbedOptions): Promise<EmbeddingResponse> {
-    try {
-      // AI SDK embed only works with certain providers
-      if (this.providerName !== 'openai') {
-        throw new Error(`Embedding not supported for ${this.providerName} in AI SDK mode`);
-      }
-
-      const inputs = Array.isArray(options.input) ? options.input : [options.input];
-      const embeddings: number[][] = [];
-      let totalTokens = 0;
-
-      // Process each input separately to avoid data corruption
-      for (const input of inputs) {
-        const result = await embed({
-          model: openai.embedding('text-embedding-3-small'),
-          value: input,
-        });
-
-        embeddings.push(result.embedding);
-        totalTokens += result.usage?.tokens || 0;
-      }
-
-      return {
-        embeddings,
-        usage: {
-          completionTokens: 0,
-          promptTokens: 0,
-          totalTokens,
-        },
-      };
-    } catch (error) {
-      throw this.formatError(error, 'embedding');
+  private mapFinishReason(
+    reason?: string,
+  ): 'content_filter' | 'length' | 'stop' | 'tool_calls' | undefined {
+    switch (reason) {
+      case 'content-filter':
+        return 'content_filter';
+      case 'length':
+        return 'length';
+      case 'stop':
+        return 'stop';
+      case 'tool-calls':
+        return 'tool_calls';
+      default:
+        return undefined;
     }
   }
-
-  async generateObject<T>(options: ObjectOptions<T>): Promise<T> {
-    try {
-      const result = await generateObject({
-        maxTokens: options.maxTokens,
-        model: this.model,
-        prompt: options.prompt,
-        schema: options.schema as any, // AI SDK expects specific schema format
-        temperature: options.temperature,
-      });
-
-      return result.object as T;
-    } catch (error) {
-      throw this.formatError(error, 'object generation');
-    }
-  }
-}
-
-export function createOpenAIAISdkProvider(modelName?: string): AISdkProvider {
-  return new AISdkProvider('openai', modelName);
 }
 
 export function createAnthropicAISdkProvider(modelName?: string): AISdkProvider {
@@ -198,4 +197,8 @@ export function createAnthropicAISdkProvider(modelName?: string): AISdkProvider 
 
 export function createGoogleAISdkProvider(modelName?: string): AISdkProvider {
   return new AISdkProvider('google', modelName);
+}
+
+export function createOpenAIAISdkProvider(modelName?: string): AISdkProvider {
+  return new AISdkProvider('openai', modelName);
 }

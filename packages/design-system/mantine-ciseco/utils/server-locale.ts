@@ -4,21 +4,12 @@
  */
 
 /**
- * Localizes a path with the given locale
- * @param path - The path to localize
- * @param locale - The locale to use (e.g., 'en', 'fr', 'es')
- * @returns The localized path
+ * Creates a localized href function bound to a specific locale
+ * @param locale - The locale to bind to
+ * @returns A function that localizes hrefs with the bound locale
  */
-export function localizeHref(path: string, locale: string): string {
-  if (!path || path === '#' || path === '/#') {
-    return path;
-  }
-
-  // Remove leading slash if present
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-
-  // Return localized path
-  return `/${locale}/${cleanPath}`;
+export function createLocalizedHrefFunction(locale: string) {
+  return (path: string) => localizeHref(path, locale);
 }
 
 /**
@@ -41,10 +32,19 @@ export function extractLocaleFromPathname(pathname: string): string {
 }
 
 /**
- * Creates a localized href function bound to a specific locale
- * @param locale - The locale to bind to
- * @returns A function that localizes hrefs with the bound locale
+ * Localizes a path with the given locale
+ * @param path - The path to localize
+ * @param locale - The locale to use (e.g., 'en', 'fr', 'es')
+ * @returns The localized path
  */
-export function createLocalizedHrefFunction(locale: string) {
-  return (path: string) => localizeHref(path, locale);
+export function localizeHref(path: string, locale: string): string {
+  if (!path || path === '#' || path === '/#') {
+    return path;
+  }
+
+  // Remove leading slash if present
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+  // Return localized path
+  return `/${locale}/${cleanPath}`;
 }

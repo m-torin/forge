@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, mockScrollTo } from '../test-utils';
 import { SectionHero } from '../../../mantine-ciseco';
 
-describe('SectionHero', () => {
+describe('SectionHero', (_: any) => {
   const defaultProps = {
     heading: 'Welcome to Our Store',
     subheading: 'Discover amazing products',
@@ -13,14 +13,14 @@ describe('SectionHero', () => {
     mockScrollTo();
   });
 
-  it('renders hero section with heading and subheading', () => {
+  it('renders hero section with heading and subheading', (_: any) => {
     render(<SectionHero {...defaultProps} />);
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(defaultProps.heading);
     expect(screen.getByText(defaultProps.subheading)).toBeInTheDocument();
   });
 
-  it('renders with background image', () => {
+  it('renders with background image', (_: any) => {
     render(<SectionHero {...defaultProps} />);
     const heroSection = screen.getByTestId('hero-section');
 
@@ -29,7 +29,7 @@ describe('SectionHero', () => {
     });
   });
 
-  it('renders call-to-action buttons', () => {
+  it('renders call-to-action buttons', (_: any) => {
     const ctaButtons = [
       { text: 'Shop Now', href: '/shop', variant: 'primary' },
       { text: 'Learn More', href: '/about', variant: 'secondary' },
@@ -41,7 +41,7 @@ describe('SectionHero', () => {
     expect(screen.getByRole('link', { name: 'Learn More' })).toBeInTheDocument();
   });
 
-  it('handles CTA button clicks', () => {
+  it('handles CTA button clicks', (_: any) => {
     const mockOnCta = vi.fn();
     const ctaButtons = [{ text: 'Shop Now', onClick: mockOnCta, variant: 'primary' }];
 
@@ -53,7 +53,7 @@ describe('SectionHero', () => {
     expect(mockOnCta).toHaveBeenCalled();
   });
 
-  it('renders with video background', () => {
+  it('renders with video background', (_: any) => {
     render(
       <SectionHero
         {...defaultProps}
@@ -68,21 +68,21 @@ describe('SectionHero', () => {
     expect(video).toHaveAttribute('autoplay');
   });
 
-  it('supports full height layout', () => {
+  it('supports full height layout', (_: any) => {
     render(<SectionHero {...defaultProps} fullHeight />);
     const heroSection = screen.getByTestId('hero-section');
 
     expect(heroSection).toHaveClass('min-h-screen');
   });
 
-  it('renders with overlay', () => {
+  it('renders with overlay', (_: any) => {
     render(<SectionHero {...defaultProps} overlay overlayOpacity={0.6} />);
     const overlay = screen.getByTestId('hero-overlay');
 
     expect(overlay).toHaveStyle({ opacity: '0.6' });
   });
 
-  it('supports text alignment options', () => {
+  it('supports text alignment options', (_: any) => {
     const { rerender } = render(<SectionHero {...defaultProps} textAlign="left" />);
     expect(screen.getByTestId('hero-content')).toHaveClass('text-left');
 
@@ -93,7 +93,7 @@ describe('SectionHero', () => {
     expect(screen.getByTestId('hero-content')).toHaveClass('text-right');
   });
 
-  it('renders with animated elements', () => {
+  it('renders with animated elements', (_: any) => {
     render(<SectionHero {...defaultProps} animated />);
 
     const heading = screen.getByRole('heading');
@@ -103,7 +103,7 @@ describe('SectionHero', () => {
     expect(subheading).toHaveClass('animate-fade-in-up');
   });
 
-  it('handles scroll indicator', () => {
+  it('handles scroll indicator', (_: any) => {
     render(<SectionHero {...defaultProps} showScrollIndicator />);
 
     const scrollIndicator = screen.getByTestId('scroll-indicator');

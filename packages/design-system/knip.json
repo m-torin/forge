@@ -1,0 +1,21 @@
+{
+  "extends": ["@repo/config/knip/base.json"],
+  "entry": [
+    "mantine-ciseco/index.ts",
+    "algolia/index.ts",
+    "**/*.stories.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}"
+  ],
+  "project": [
+    "mantine-ciseco/**/*.{ts,tsx}",
+    "algolia/**/*.{ts,tsx}",
+    "**/*.stories.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}"
+  ]
+}

@@ -1,0 +1,850 @@
+---
+title: 'Internationalization'
+description:
+  'Multi-language support and localization for global applications with Next.js and React'
+icon: 'globe'
+---
+
+# Internationalization Package
+
+Comprehensive internationalization (i18n) solution providing multi-language support, localization,
+and cultural adaptation for global applications in the Forge platform.
+
+## Overview
+
+The internationalization package enables applications to support multiple languages and regions,
+providing seamless localization for user interfaces, content, and user experiences.
+
+<CardGroup cols={2}>
+  <Card title="Next.js Integration" icon="next-js">
+    Native Next.js i18n with automatic locale detection and routing
+  </Card>
+  <Card title="Translation Management" icon="translate">
+    Structured translation files with TypeScript support and validation
+  </Card>
+  <Card title="Cultural Adaptation" icon="users">
+    Date, time, number, and currency formatting for different regions
+  </Card>
+  <Card title="Developer Experience" icon="code">
+    Type-safe translations with autocomplete and compile-time validation
+  </Card>
+</CardGroup>
+
+## Supported Languages
+
+Standard locale codes with comprehensive language support:
+
+<Tabs>
+  <Tab title="Primary Languages">
+    - **English (en)**: United States - Default language
+    - **French (fr)**: France - European market
+    - **Spanish (es)**: Spain - European and Latin American markets
+    - **Portuguese (pt)**: Portugal/Brazil - Brazilian and European markets
+    - **German (de)**: Germany - Central European market
+  </Tab>
+  
+  <Tab title="Regional Variants">
+    ```typescript
+    // Locale configuration with regional support
+    export const locales = {
+      'en-US': { name: 'English (US)', currency: 'USD', dateFormat: 'MM/dd/yyyy' },
+      'en-GB': { name: 'English (UK)', currency: 'GBP', dateFormat: 'dd/MM/yyyy' },
+      'fr-FR': { name: 'Français', currency: 'EUR', dateFormat: 'dd/MM/yyyy' },
+      'es-ES': { name: 'Español', currency: 'EUR', dateFormat: 'dd/MM/yyyy' },
+      'es-MX': { name: 'Español (México)', currency: 'MXN', dateFormat: 'dd/MM/yyyy' },
+      'pt-PT': { name: 'Português', currency: 'EUR', dateFormat: 'dd/MM/yyyy' },
+      'pt-BR': { name: 'Português (Brasil)', currency: 'BRL', dateFormat: 'dd/MM/yyyy' },
+      'de-DE': { name: 'Deutsch', currency: 'EUR', dateFormat: 'dd.MM.yyyy' },
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Installation
+
+```bash
+pnpm add @repo/internationalization
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Setup Middleware">
+    ```typescript
+    // middleware.ts
+    import { internationalizationMiddleware } from '@repo/internationalization/middleware';
+
+    export function middleware(request: NextRequest) {
+      return internationalizationMiddleware(request);
+    }
+
+    export const config = {
+      matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+    };
+    ```
+
+  </Step>
+  
+  <Step title="Use in Server Components">
+    ```tsx
+    // app/[locale]/page.tsx
+    import { getDictionary } from '@repo/internationalization';
+
+    export default async function Page({
+      params: { locale }
+    }: {
+      params: { locale: string }
+    }) {
+      const dict = await getDictionary(locale);
+
+      return <h1>{dict.welcome}</h1>;
+    }
+    ```
+
+  </Step>
+  
+  <Step title="Access Available Locales">
+    ```typescript
+    import { locales } from '@repo/internationalization';
+    
+    // Available locales: ['en', 'es', 'fr', 'de', 'pt', 'zh']
+    console.log('Supported locales:', locales);
+    ```
+  </Step>
+</Steps>
+
+## Translation Management
+
+### File Structure
+
+<CodeGroup>
+```json English (en.json)
+{
+  "common": {
+    "welcome": "Welcome",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "An error occurred"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "register": "Create Account",
+    "forgotPassword": "Forgot Password?",
+    "loginPrompt": "Please sign in to continue"
+  },
+  "products": {
+    "title": "Products",
+    "addProduct": "Add Product",
+    "editProduct": "Edit Product",
+    "deleteProduct": "Delete Product",
+    "price": "Price",
+    "stock": "Stock",
+    "category": "Category"
+  }
+}
+```
+
+```json French (fr.json)
+{
+  "common": {
+    "welcome": "Bienvenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "register": "Créer un compte",
+    "forgotPassword": "Mot de passe oublié ?",
+    "loginPrompt": "Veuillez vous connecter pour continuer"
+  },
+  "products": {
+    "title": "Produits",
+    "addProduct": "Ajouter un produit",
+    "editProduct": "Modifier le produit",
+    "deleteProduct": "Supprimer le produit",
+    "price": "Prix",
+    "stock": "Stock",
+    "category": "Catégorie"
+  }
+}
+```
+
+</CodeGroup>
+
+### TypeScript Integration
+
+<AccordionGroup>
+  <Accordion title="Type-Safe Translations" icon="shield-check">
+    ```typescript
+    // Generated types from translation files
+    export type TranslationKeys = 
+      | 'common.welcome'
+      | 'common.save'
+      | 'auth.login'
+      | 'auth.loginPrompt'
+      | 'products.title'
+      | 'products.addProduct';
+    
+    // Type-safe translation hook
+    export function useTranslation() {
+      const { t } = useI18n();
+      
+      return {
+        t: (key: TranslationKeys, params?: Record<string, any>) => t(key, params)
+      };
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Translation Validation" icon="check-circle">
+    ```typescript
+    // Compile-time validation
+    import { validateTranslations } from '@repo/internationalization/tools';
+    
+    // Ensures all languages have the same keys
+    const validation = validateTranslations({
+      en: require('./locales/en.json'),
+      fr: require('./locales/fr.json'),
+      es: require('./locales/es.json'),
+    });
+    
+    if (!validation.isValid) {
+      console.error('Translation validation failed:', validation.errors);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Features
+
+### Pluralization
+
+<Tabs>
+  <Tab title="Simple Plurals">
+    ```json
+    {
+      "items": {
+        "zero": "No items",
+        "one": "{{count}} item",
+        "other": "{{count}} items"
+      }
+    }
+    ```
+    
+    ```typescript
+    const { t } = useTranslation();
+    
+    // Usage
+    t('items', { count: 0 }); // "No items"
+    t('items', { count: 1 }); // "1 item"
+    t('items', { count: 5 }); // "5 items"
+    ```
+  </Tab>
+  
+  <Tab title="Complex Plurals">
+    ```json
+    {
+      "timeAgo": {
+        "seconds": {
+          "zero": "just now",
+          "one": "{{count}} second ago",
+          "other": "{{count}} seconds ago"
+        },
+        "minutes": {
+          "one": "{{count}} minute ago",
+          "other": "{{count}} minutes ago"
+        },
+        "hours": {
+          "one": "{{count}} hour ago",
+          "other": "{{count}} hours ago"
+        }
+      }
+    }
+    ```
+    
+    ```typescript
+    function formatTimeAgo(seconds: number) {
+      const { t } = useTranslation();
+      
+      if (seconds < 60) {
+        return t('timeAgo.seconds', { count: seconds });
+      } else if (seconds < 3600) {
+        return t('timeAgo.minutes', { count: Math.floor(seconds / 60) });
+      } else {
+        return t('timeAgo.hours', { count: Math.floor(seconds / 3600) });
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Interpolation and Formatting
+
+<CodeGroup>
+```typescript Variable Interpolation
+// Translation with variables
+{
+  "welcome": "Welcome back, {{name}}!",
+  "orderTotal": "Order total: {{amount, currency}}",
+  "lastSeen": "Last seen {{date, datetime}}"
+}
+
+// Usage const { t } = useTranslation();
+
+t('welcome', { name: 'John' }); // "Welcome back, John!"
+
+t('orderTotal', { amount: 29.99 }); // "Order total: $29.99"
+
+t('lastSeen', { date: new Date() }); // "Last seen Dec 15, 2024 at 2:30 PM"
+
+````
+
+```typescript Rich Text Support
+// HTML and React components in translations
+{
+  "termsAcceptance": "I agree to the <link>Terms of Service</link>",
+  "announcement": "New feature: <strong>{{feature}}</strong> is now available!"
+}
+
+// Usage with components
+const { t } = useTranslation();
+
+<p>
+  {t('termsAcceptance', {
+    link: (chunks) => <Link href="/terms">{chunks}</Link>
+  })}
+</p>
+
+<div>
+  {t('announcement', {
+    feature: 'Dark Mode',
+    strong: (chunks) => <strong>{chunks}</strong>
+  })}
+</div>
+````
+
+</CodeGroup>
+
+## Localization Utilities
+
+### Date and Time Formatting
+
+<Tabs>
+  <Tab title="Date Formatting">
+    ```typescript
+    import { useLocaleFormat } from '@repo/internationalization';
+    
+    export function DateDisplay({ date }: { date: Date }) {
+      const { formatDate, formatTime, formatDateTime } = useLocaleFormat();
+      
+      return (
+        <div>
+          <p>Date: {formatDate(date)}</p>
+          <p>Time: {formatTime(date)}</p>
+          <p>Full: {formatDateTime(date)}</p>
+        </div>
+      );
+    }
+    
+    // Output varies by locale:
+    // en-US: "12/15/2024", "2:30 PM", "Dec 15, 2024 at 2:30 PM"
+    // fr-FR: "15/12/2024", "14:30", "15 déc. 2024 à 14:30"
+    // de-DE: "15.12.2024", "14:30", "15. Dez. 2024 um 14:30"
+    ```
+  </Tab>
+  
+  <Tab title="Relative Time">
+    ```typescript
+    import { useRelativeTime } from '@repo/internationalization';
+    
+    export function TimeAgo({ date }: { date: Date }) {
+      const formatRelative = useRelativeTime();
+      
+      return <span>{formatRelative(date)}</span>;
+    }
+    
+    // Automatically updates and formats relative time:
+    // "2 minutes ago", "1 hour ago", "yesterday", "last week"
+    ```
+  </Tab>
+</Tabs>
+
+### Number and Currency Formatting
+
+<AccordionGroup>
+  <Accordion title="Currency Formatting" icon="dollar-sign">
+    ```typescript
+    import { useCurrencyFormat } from '@repo/internationalization';
+    
+    export function PriceDisplay({ amount, currency }: { 
+      amount: number; 
+      currency?: string 
+    }) {
+      const formatCurrency = useCurrencyFormat();
+      
+      return (
+        <span className="price">
+          {formatCurrency(amount, currency)}
+        </span>
+      );
+    }
+    
+    // Locale-aware currency formatting:
+    // en-US: "$29.99"
+    // fr-FR: "29,99 €"
+    // de-DE: "29,99 €"
+    // pt-BR: "R$ 29,99"
+    ```
+  </Accordion>
+  
+  <Accordion title="Number Formatting" icon="hash">
+    ```typescript
+    import { useNumberFormat } from '@repo/internationalization';
+    
+    export function StatDisplay({ value, type }: { 
+      value: number; 
+      type: 'decimal' | 'percent' | 'compact' 
+    }) {
+      const { formatNumber, formatPercent, formatCompact } = useNumberFormat();
+      
+      switch (type) {
+        case 'decimal':
+          return formatNumber(value); // 1,234.56
+        case 'percent':
+          return formatPercent(value); // 45.6%
+        case 'compact':
+          return formatCompact(value); // 1.2K, 1.5M
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next.js Integration
+
+### Routing and Navigation
+
+<CodeGroup>
+```typescript Locale Detection
+// Automatic locale detection and routing
+export const i18nConfig = {
+  locales: ['en', 'fr', 'es', 'pt', 'de'],
+  defaultLocale: 'en',
+  localeDetection: true,
+  domains: [
+    {
+      domain: 'example.com',
+      defaultLocale: 'en',
+    },
+    {
+      domain: 'example.fr',
+      defaultLocale: 'fr',
+    },
+  ],
+};
+```
+
+```typescript Locale Switching
+import { useRouter } from 'next/router';
+import { useTranslation } from '@repo/internationalization';
+
+export function LocaleSwitcher() {
+  const router = useRouter();
+  const { locale, locales } = router;
+  const { t } = useTranslation();
+
+  const switchLocale = (newLocale: string) => {
+    router.push(router.asPath, router.asPath, { locale: newLocale });
+  };
+
+  return (
+    <select value={locale} onChange={(e) => switchLocale(e.target.value)}>
+      {locales?.map((loc) => (
+        <option key={loc} value={loc}>
+          {t(`locales.${loc}`)}
+        </option>
+      ))}
+    </select>
+  );
+}
+```
+
+</CodeGroup>
+
+### Server-Side Rendering
+
+<Tabs>
+  <Tab title="Static Generation">
+    ```typescript
+    // pages/products/[id].tsx
+    export async function getStaticProps({ locale, params }) {
+      const translations = await import(`../locales/${locale}.json`);
+      const product = await getProduct(params.id);
+      
+      return {
+        props: {
+          product,
+          translations: translations.default,
+        },
+      };
+    }
+    
+    export async function getStaticPaths({ locales }) {
+      const products = await getAllProducts();
+      const paths = [];
+      
+      // Generate paths for all locales
+      for (const locale of locales) {
+        for (const product of products) {
+          paths.push({
+            params: { id: product.id },
+            locale,
+          });
+        }
+      }
+      
+      return { paths, fallback: false };
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Server-Side Props">
+    ```typescript
+    // pages/dashboard.tsx
+    export async function getServerSideProps({ locale, req }) {
+      const translations = await import(`../locales/${locale}.json`);
+      
+      // Get user's preferred locale from database or headers
+      const userLocale = getUserLocalePreference(req);
+      
+      return {
+        props: {
+          translations: translations.default,
+          userLocale,
+        },
+      };
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Content Management
+
+### Dynamic Content Translation
+
+<AccordionGroup>
+  <Accordion title="Database Content" icon="database">
+    ```typescript
+    // Translatable content schema
+    interface TranslatableContent {
+      id: string;
+      translations: {
+        [locale: string]: {
+          title: string;
+          description: string;
+          content: string;
+        };
+      };
+    }
+    
+    // Helper for translated content
+    export function useTranslatedContent<T>(
+      content: T & { translations: Record<string, any> },
+      fallbackLocale = 'en'
+    ) {
+      const { locale } = useRouter();
+      
+      return {
+        ...content,
+        ...content.translations[locale] || content.translations[fallbackLocale],
+      };
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Content Validation" icon="check-circle">
+    ```typescript
+    // Ensure all required translations exist
+    export function validateContentTranslations(
+      content: any,
+      requiredLocales: string[]
+    ) {
+      const errors: string[] = [];
+      
+      for (const locale of requiredLocales) {
+        if (!content.translations[locale]) {
+          errors.push(`Missing translation for locale: ${locale}`);
+        }
+      }
+      
+      return {
+        isValid: errors.length === 0,
+        errors,
+      };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Testing
+
+The package includes comprehensive testing infrastructure for internationalization features:
+
+<Tabs>
+  <Tab title="Test Structure">
+    ```
+    packages/internationalization/
+    ├── __tests__/
+    │   ├── config.test.ts      # Tests for languine configuration
+    │   ├── index.test.ts       # Tests for getDictionary and locales
+    │   ├── middleware.test.ts  # Tests for middleware functionality
+    │   └── types.test.ts       # Tests for type exports
+    ├── test-setup.ts           # Test environment setup
+    └── vitest.config.ts        # Vitest configuration
+    ```
+  </Tab>
+  
+  <Tab title="Running Tests">
+    ```bash
+    # Run all tests
+    pnpm test
+
+    # Run tests in watch mode
+    pnpm test:watch
+
+    # Run tests with coverage
+    pnpm test:coverage
+
+    # Run tests with UI
+    pnpm test:ui
+    ```
+
+  </Tab>
+  
+  <Tab title="Writing Tests">
+    ```typescript
+    import { describe, it, expect } from 'vitest';
+    import { getDictionary } from '../index';
+
+    describe('getDictionary', () => {
+      it('returns dictionary for valid locale', async () => {
+        const dictionary = await getDictionary('en');
+        expect(dictionary).toBeDefined();
+      });
+
+      it('falls back to English for unsupported locale', async () => {
+        const dictionary = await getDictionary('invalid');
+        expect(dictionary).toBeDefined();
+      });
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Test Configuration
+
+The package uses Node.js environment for server-side testing with mocked server-only modules and
+languine configuration.
+
+<CodeGroup>
+```typescript Mock Setup
+// Test mocks for dictionaries
+vi.mock('../dictionaries/en.json', () => ({
+  default: { hello: 'Hello', welcome: 'Welcome' },
+}));
+
+// Testing middleware const mockRequest = new NextRequest('http://localhost:3000/'); const result =
+internationalizationMiddleware(mockRequest);
+
+````
+
+```typescript Locale Fallback Testing
+// Testing locale fallback behavior
+const dictionary = await getDictionary('unsupported-locale');
+expect(dictionary).toEqual(englishDictionary);
+````
+
+</CodeGroup>
+
+## Languine Integration
+
+The package uses [Languine](https://languine.ai) for automated translation management with
+AI-powered translations.
+
+<Tabs>
+  <Tab title="Configuration">
+    ```json
+    // languine.json
+    {
+      "locale": {
+        "source": "en",
+        "targets": ["es", "fr", "de", "pt", "zh"]
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Environment Setup">
+    ```bash
+    # Required for Languine translations
+    DEEPSEEK_API_KEY=your-deepseek-api-key
+    ```
+  </Tab>
+  
+  <Tab title="Translation Commands">
+    ```bash
+    # Generate translations using Languine
+    pnpm translate
+
+    # Type check translations
+    pnpm typecheck
+
+    # Clean build artifacts
+    pnpm clean
+    ```
+
+  </Tab>
+</Tabs>
+
+### Adding New Languages
+
+<Steps>
+  <Step title="Update Configuration">
+    ```json
+    // languine.json
+    {
+      "locale": {
+        "source": "en",
+        "targets": ["es", "fr", "de", "pt", "zh", "new-locale"]
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Generate Translations">
+    ```bash
+    pnpm translate
+    ```
+  </Step>
+  
+  <Step title="Update Tests">
+    Add the new locale to test cases and verify dictionary loading
+  </Step>
+  
+  <Step title="Rebuild Package">
+    ```bash
+    pnpm build
+    ```
+  </Step>
+</Steps>
+
+## Developer Tools
+
+### Translation Management CLI
+
+<CodeGroup>
+```bash Extract Keys
+# Extract translation keys from code
+pnpm i18n:extract
+
+# Output: List of all translation keys used in the codebase
+
+# Generates skeleton translation files for new keys
+
+````
+
+```bash Validate Translations
+# Validate translation files
+pnpm i18n:validate
+
+# Checks for:
+# - Missing translations across locales
+# - Unused translation keys
+# - Malformed interpolation syntax
+# - Inconsistent pluralization rules
+````
+
+```bash Statistics
+# Generate translation statistics
+pnpm i18n:stats
+
+# Output:
+# Total keys: 1,234
+# Translated (fr): 98% (1,210/1,234)
+# Translated (es): 95% (1,173/1,234)
+# Missing keys: 24
+```
+
+</CodeGroup>
+
+### VS Code Integration
+
+<Tabs>
+  <Tab title="Extension Support">
+    Recommended VS Code extensions:
+    - **i18n Ally**: Translation management and inline preview
+    - **Auto Import**: Automatic import of translation functions
+    - **TypeScript Hero**: Auto-completion for translation keys
+  </Tab>
+  
+  <Tab title="Settings">
+    ```json
+    // .vscode/settings.json
+    {
+      "i18n-ally.localesPaths": ["locales"],
+      "i18n-ally.keystyle": "nested",
+      "i18n-ally.defaultNamespace": "common",
+      "i18n-ally.enabledFrameworks": ["react", "next"],
+      "i18n-ally.enabledParsers": ["json"],
+      "typescript.suggest.includeCompletionsForModuleExports": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<Warning>
+  **Internationalization Guidelines:** - Use semantic translation keys instead of English text as
+  keys - Keep translation files organized with logical namespacing - Always provide fallback
+  translations for missing content - Test right-to-left (RTL) layouts for Arabic and Hebrew -
+  Consider cultural differences beyond language translation
+</Warning>
+
+### Recommended Patterns
+
+1. **Translation Organization**
+
+   - Group related translations in namespaces
+   - Use consistent naming conventions
+   - Keep translations close to components when possible
+
+2. **Performance Optimization**
+
+   - Load only necessary translation files
+   - Use dynamic imports for large translation sets
+   - Implement proper caching strategies
+
+3. **User Experience**
+
+   - Detect user locale preferences automatically
+   - Provide easy locale switching
+   - Handle missing translations gracefully
+
+4. **Content Strategy**
+   - Plan for text expansion/contraction in different languages
+   - Use appropriate date, time, and number formats
+   - Consider cultural context in imagery and colors
+
+The internationalization package provides comprehensive support for building truly global
+applications that serve users worldwide with appropriate localization and cultural adaptation.

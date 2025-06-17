@@ -1,8 +1,6 @@
-import { dedupe, flag } from '@vercel/flags/next';
+import { dedupe, flag, postHogServerAdapter as adapter } from '@repo/feature-flags/server/next';
 
-import { postHogServerAdapter as adapter } from '@repo/feature-flags/server/next';
-
-import type { ReadonlyRequestCookies } from '@vercel/flags';
+import type { ReadonlyRequestCookies } from '@repo/feature-flags/server/next';
 
 // Define entities for type safety
 interface Entities {
@@ -56,7 +54,7 @@ export const aiSuggestionsFlag = flag<boolean, Entities>({
 // Example: Multivariate test for table layout
 export const tableLayoutVariantFlag = flag<string, Entities>({
   identify,
-  adapter: adapter.featureFlagValue(),
+  adapter: adapter.featureFlagValue() as any,
   defaultValue: 'default',
   key: 'table-layout-variant',
   options: [

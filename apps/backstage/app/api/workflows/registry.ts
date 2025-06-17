@@ -199,7 +199,7 @@ class WorkflowRegistry {
           count: this.getByTag(tag).length,
           tag,
         }))
-        .sort((a, b) => b.count - a.count)
+        .sort((a: any, b: any) => b.count - a.count)
         .slice(0, 10),
       tags: tags.length,
       totalWorkflows: workflows.length,

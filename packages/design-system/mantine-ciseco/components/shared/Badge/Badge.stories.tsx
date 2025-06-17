@@ -1,13 +1,9 @@
-import Badge from './Badge';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import Badge from './Badge';
 
 const meta: Meta<typeof Badge> = {
   argTypes: {
-    name: {
-      control: 'text',
-      description: 'Badge content/text',
-    },
     className: {
       control: 'text',
       description: 'Additional CSS classes',
@@ -20,6 +16,10 @@ const meta: Meta<typeof Badge> = {
     href: {
       control: 'text',
       description: 'URL to link to (makes badge clickable)',
+    },
+    name: {
+      control: 'text',
+      description: 'Badge content/text',
     },
   },
   component: Badge,
@@ -40,86 +40,86 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    name: 'Default Badge',
     color: 'blue',
+    name: 'Default Badge',
   },
 };
 
 export const Blue: Story = {
   args: {
-    name: 'Blue Badge',
     color: 'blue',
+    name: 'Blue Badge',
   },
 };
 
 export const Pink: Story = {
   args: {
-    name: 'Pink Badge',
     color: 'pink',
+    name: 'Pink Badge',
   },
 };
 
 export const Red: Story = {
   args: {
-    name: 'Red Badge',
     color: 'red',
+    name: 'Red Badge',
   },
 };
 
 export const Gray: Story = {
   args: {
-    name: 'Gray Badge',
     color: 'gray',
+    name: 'Gray Badge',
   },
 };
 
 export const Green: Story = {
   args: {
-    name: 'Green Badge',
     color: 'green',
+    name: 'Green Badge',
   },
 };
 
 export const Purple: Story = {
   args: {
-    name: 'Purple Badge',
     color: 'purple',
+    name: 'Purple Badge',
   },
 };
 
 export const Indigo: Story = {
   args: {
-    name: 'Indigo Badge',
     color: 'indigo',
+    name: 'Indigo Badge',
   },
 };
 
 export const Yellow: Story = {
   args: {
-    name: 'Yellow Badge',
     color: 'yellow',
+    name: 'Yellow Badge',
   },
 };
 
 export const AsLink: Story = {
   args: {
-    name: 'Clickable Badge',
     color: 'blue',
     href: '/example',
+    name: 'Clickable Badge',
   },
 };
 
 export const AllColors: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      <Badge color="blue" name="Blue" />
-      <Badge color="pink" name="Pink" />
-      <Badge color="red" name="Red" />
-      <Badge color="gray" name="Gray" />
-      <Badge color="green" name="Green" />
-      <Badge color="purple" name="Purple" />
-      <Badge color="indigo" name="Indigo" />
-      <Badge color="yellow" name="Yellow" />
+      <Badge c="blue" name="Blue" />
+      <Badge c="pink" name="Pink" />
+      <Badge c="red" name="Red" />
+      <Badge c="gray" name="Gray" />
+      <Badge c="green" name="Green" />
+      <Badge c="purple" name="Purple" />
+      <Badge c="indigo" name="Indigo" />
+      <Badge c="yellow" name="Yellow" />
     </div>
   ),
 };
@@ -127,10 +127,10 @@ export const AllColors: Story = {
 export const WithLinks: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      <Badge href="/blue" color="blue" name="Clickable Blue" />
-      <Badge href="/pink" color="pink" name="Clickable Pink" />
-      <Badge href="/green" color="green" name="Clickable Green" />
-      <Badge color="gray" name="Regular Badge" />
+      <Badge c="blue" href="/blue" name="Clickable Blue" />
+      <Badge c="pink" href="/pink" name="Clickable Pink" />
+      <Badge c="green" href="/green" name="Clickable Green" />
+      <Badge c="gray" name="Regular Badge" />
     </div>
   ),
 };
@@ -138,14 +138,14 @@ export const WithLinks: Story = {
 export const DifferentContent: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      <Badge color="green" name="New" />
-      <Badge color="red" name="Sale" />
-      <Badge color="purple" name="Featured" />
-      <Badge color="blue" name="Popular" />
-      <Badge color="yellow" name="Limited" />
-      <Badge color="pink" name="Hot" />
-      <Badge color="indigo" name="Trending" />
-      <Badge color="green" name="Best Seller" />
+      <Badge c="green" name="New" />
+      <Badge c="red" name="Sale" />
+      <Badge c="purple" name="Featured" />
+      <Badge c="blue" name="Popular" />
+      <Badge c="yellow" name="Limited" />
+      <Badge c="pink" name="Hot" />
+      <Badge c="indigo" name="Trending" />
+      <Badge c="green" name="Best Seller" />
     </div>
   ),
 };
@@ -153,11 +153,11 @@ export const DifferentContent: Story = {
 export const WithNumbers: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      <Badge color="blue" name="1" />
-      <Badge color="green" name="5" />
-      <Badge color="red" name="12" />
-      <Badge color="purple" name="99+" />
-      <Badge color="indigo" name="∞" />
+      <Badge c="blue" name="1" />
+      <Badge c="green" name="5" />
+      <Badge c="red" name="12" />
+      <Badge c="purple" name="99+" />
+      <Badge c="indigo" name="∞" />
     </div>
   ),
 };
@@ -167,22 +167,22 @@ export const InContext: Story = {
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <h3 className="text-lg font-semibold">Product Title</h3>
-        <Badge color="green" name="New" />
-        <Badge color="red" name="Sale" />
+        <Badge c="green" name="New" />
+        <Badge c="red" name="Sale" />
       </div>
 
       <div className="flex items-center space-x-2">
         <span className="text-sm text-gray-600">Categories:</span>
-        <Badge href="/electronics" color="blue" name="Electronics" />
-        <Badge href="/smartphones" color="purple" name="Smartphones" />
-        <Badge href="/apple" color="gray" name="Apple" />
+        <Badge c="blue" href="/electronics" name="Electronics" />
+        <Badge c="purple" href="/smartphones" name="Smartphones" />
+        <Badge c="gray" href="/apple" name="Apple" />
       </div>
 
       <div className="flex items-center space-x-2">
         <span className="text-sm text-gray-600">Tags:</span>
-        <Badge color="yellow" name="Featured" />
-        <Badge color="green" name="Best Seller" />
-        <Badge color="pink" name="Trending" />
+        <Badge c="yellow" name="Featured" />
+        <Badge c="green" name="Best Seller" />
+        <Badge c="pink" name="Trending" />
       </div>
     </div>
   ),
@@ -190,8 +190,8 @@ export const InContext: Story = {
 
 export const CustomStyling: Story = {
   args: {
-    name: 'Custom Badge',
     className: 'text-sm px-4 py-2 shadow-lg',
     color: 'blue',
+    name: 'Custom Badge',
   },
 };

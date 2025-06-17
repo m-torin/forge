@@ -1,8 +1,31 @@
 /**
- * Example: Simple Step Factory API Usage
+ * Simple Step Factory API Usage Example
  *
- * Demonstrates the new function-based approach that handles 80% of use cases
- * with minimal complexity, while advanced features are available as opt-in enhancers.
+ * Demonstrates the modern function-based approach to step creation in the orchestration
+ * package. This API design handles 80% of use cases with minimal complexity, while
+ * advanced features are available as opt-in enhancers.
+ *
+ * API Design Philosophy:
+ * - Simple cases should be simple (80% of usage)
+ * - Complex cases should be possible (20% of usage)
+ * - Functional composition over class hierarchies
+ * - Progressive enhancement of capabilities
+ *
+ * Examples Included:
+ * - Basic step creation with minimal configuration
+ * - Step validation with input/output checking
+ * - Monitoring and logging enhancement
+ * - Retry and resilience patterns
+ * - Circuit breaker integration
+ * - Functional composition of enhancers
+ *
+ * Prerequisites:
+ * - @repo/orchestration package configured
+ * - Understanding of functional composition
+ *
+ * Environment: Node.js Server-Side
+ *
+ * @see ./step-factory-simple.ts for class-based approach
  */
 
 import {
@@ -41,9 +64,9 @@ const processPaymentStep = createStepWithValidation(
     return { amount: input.amount, status: 'completed', transactionId: 'txn_456' };
   },
   // Input validator
-  (input) => input.amount > 0 && ['EUR', 'GBP', 'USD'].includes(input.currency),
+  (input: any) => input.amount > 0 && ['EUR', 'GBP', 'USD'].includes(input.currency),
   // Output validator
-  (output) => output.status === 'completed',
+  (output: any) => output.status === 'completed',
 );
 
 // ===== ADVANCED FEATURES AS OPT-IN ENHANCERS (20% of use cases) =====
@@ -52,7 +75,11 @@ const processPaymentStep = createStepWithValidation(
  * Example 3: Adding monitoring to a step
  * Only when you need detailed logging and metrics
  */
-const monitoredStep = withStepMonitoring(sendEmailStep, { enableDetailedLogging: true });
+const monitoredStep = withStepMonitoring(sendEmailStep, {
+  onStepComplete: (stepName: string, duration: number, success: boolean) => {
+    console.log(`Step ${stepName} completed in ${duration}ms, success: ${success}`);
+  },
+});
 
 /**
  * Example 4: Adding retry capabilities
@@ -71,10 +98,15 @@ const resilientStep = withStepRetry(processPaymentStep, {
  */
 const robustEmailStep = compose(
   sendEmailStep,
-  (step) => withStepTimeout(step, 30000),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
-  (step) => withStepCircuitBreaker(step, { failureThreshold: 5 }),
-  (step) => withStepMonitoring(step, { enableDetailedLogging: true }),
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepCircuitBreaker(step, { failureThreshold: 5 }),
+  (step: any) =>
+    withStepMonitoring(step, {
+      onStepComplete: (stepName: string, duration: number, success: boolean) => {
+        console.log(`Step ${stepName} completed in ${duration}ms, success: ${success}`);
+      },
+    }),
 );
 
 // ===== USAGE EXAMPLES =====
@@ -115,7 +147,7 @@ async function demonstrateSimpleAPI() {
     email: 'robust@example.com',
     name: 'Bob Wilson',
   });
-  console.log('Result:', robustResult);
+  console.log('Result: ', robustResult);
 }
 
 // ===== COMPARISON WITH OLD API =====
@@ -125,15 +157,15 @@ async function demonstrateSimpleAPI() {
  *
  * const factory = new StepFactory({
  *   enablePerformanceMonitoring: true,
- *   enableDetailedLogging: false,
+ *   onStepComplete: (stepName: string, duration: number, success: boolean) => {},
  *   defaultExecutionConfig: { ... },
  *   defaultValidationConfig: { ... },
  *   errorHandlers: new Map(),
- * });
+ * };
  *
  * const stepDefinition = factory.createStep(
  *   { name: 'send-email', description: '...', version: '1.0.0', category: 'notification' },
- *   async (context) => { ... },
+ *   async (context: any) => { ... },
  *   {
  *     executionConfig: {
  *       retryConfig: { maxAttempts: 3, backoff: 'exponential' },
@@ -151,14 +183,14 @@ async function demonstrateSimpleAPI() {
  * AFTER (Simple): Function-based with optional complexity
  *
  * // Simple case (80% of usage)
- * const step = createStep('send-email', async (input) => { ... });
+ * const step = createStep('send-email', async (input: any) => { ... });
  *
  * // Complex case (20% of usage) - opt-in enhancers
  * const enhancedStep = compose(
  *   step,
- *   (s) => withStepRetry(s, { maxAttempts: 3 }),
- *   (s) => withStepCircuitBreaker(s, { failureThreshold: 5 }),
- *   (s) => withStepTimeout(s, 30000)
+ *   (s: any) => withStepRetry(s, { maxAttempts: 3 }),
+ *   (s: any) => withStepCircuitBreaker(s, { failureThreshold: 5 }),
+ *   (s: any) => withStepTimeout(s, 30000)
  * );
  */
 

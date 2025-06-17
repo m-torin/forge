@@ -7,8 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ObservabilityProvider } from '../../hooks/ObservabilityProvider';
 import { useObservability } from '../../hooks/use-observability';
-
-import type { ObservabilityConfig } from '../../shared/types/types';
+import { ObservabilityConfig } from '../../shared/types/types';
 
 // Mock configuration for testing
 const mockConfig: ObservabilityConfig = {
@@ -44,6 +43,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={mockConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -77,6 +77,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={mockConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -110,6 +111,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={mockConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -144,6 +146,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={mockConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -176,6 +179,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={mockConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -208,6 +212,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={multiProviderConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -241,6 +246,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={mockConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -276,6 +282,7 @@ describe('useObservability', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ObservabilityProvider
         config={mockConfig}
+        enableConcurrent={false}
         onInitialized={() => {
           isInitialized = true;
         }}
@@ -318,7 +325,7 @@ describe('useObservability', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <ObservabilityProvider config={errorConfig} onError={() => {}}>
+      <ObservabilityProvider config={errorConfig} enableConcurrent={false} onError={() => {}}>
         {children}
       </ObservabilityProvider>
     );

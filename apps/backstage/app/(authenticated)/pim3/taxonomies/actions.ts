@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { auth } from '@repo/auth/server';
+import { auth } from '@repo/auth/server/next';
 import { prisma } from '@repo/database/prisma';
 import { type ContentStatus, type Prisma, type TaxonomyType } from '@repo/database/prisma';
 
@@ -487,7 +487,7 @@ export async function duplicateTaxonomy(id: string, newName?: string) {
     }
 
     const name = newName || `${originalTaxonomy.name} (Copy)`;
-    const slug = generateSlug(name);
+    const slug = await generateSlug(name);
 
     // Check if slug already exists
     const existingTaxonomy = await prisma.taxonomy.findUnique({
@@ -502,7 +502,7 @@ export async function duplicateTaxonomy(id: string, newName?: string) {
       data: {
         name,
         type: originalTaxonomy.type,
-        copy: originalTaxonomy.copy,
+        copy: originalTaxonomy.copy || {},
         slug,
         status: 'DRAFT', // Always create duplicates as draft
         // Note: parentId would be included when schema supports hierarchical relationships

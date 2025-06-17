@@ -12,21 +12,17 @@ export class AIError extends Error {
   }
 }
 
-export class AIRateLimitError extends AIError {
-  constructor(
-    provider: string,
-    operation: string,
-    public readonly retryAfter: number,
-  ) {
+export class AIAuthenticationError extends AIError {
+  constructor(provider: string, operation: string) {
     super(
-      `Rate limit exceeded for ${provider}. Retry after ${retryAfter} seconds.`,
+      `Authentication failed for ${provider}. Please check your API key.`,
       provider,
       operation,
-      'RATE_LIMIT',
-      429,
-      true,
+      'AUTHENTICATION_ERROR',
+      401,
+      false,
     );
-    this.name = 'AIRateLimitError';
+    this.name = 'AIAuthenticationError';
   }
 }
 
@@ -44,17 +40,21 @@ export class AIQuotaExceededError extends AIError {
   }
 }
 
-export class AIAuthenticationError extends AIError {
-  constructor(provider: string, operation: string) {
+export class AIRateLimitError extends AIError {
+  constructor(
+    provider: string,
+    operation: string,
+    public readonly retryAfter: number,
+  ) {
     super(
-      `Authentication failed for ${provider}. Please check your API key.`,
+      `Rate limit exceeded for ${provider}. Retry after ${retryAfter} seconds.`,
       provider,
       operation,
-      'AUTHENTICATION_ERROR',
-      401,
-      false,
+      'RATE_LIMIT',
+      429,
+      true,
     );
-    this.name = 'AIAuthenticationError';
+    this.name = 'AIRateLimitError';
   }
 }
 
@@ -79,10 +79,10 @@ export function normalizeAIError(error: unknown, provider: string, operation: st
 
   if (error instanceof Error) {
     // Check for common error patterns
-    const message = error.message.toLowerCase();
+    const message = (error as Error)?.message || 'Unknown error'.toLowerCase();
 
     if (message.includes('rate limit') || message.includes('429')) {
-      const retryAfter = extractRetryAfter(error.message);
+      const retryAfter = extractRetryAfter((error as Error)?.message || 'Unknown error');
       return new AIRateLimitError(provider, operation, retryAfter);
     }
 
@@ -103,7 +103,14 @@ export function normalizeAIError(error: unknown, provider: string, operation: st
     }
 
     // Generic error
-    return new AIError(error.message, provider, operation, 'UNKNOWN_ERROR', undefined, false);
+    return new AIError(
+      (error as Error)?.message || 'Unknown error',
+      provider,
+      operation,
+      'UNKNOWN_ERROR',
+      undefined,
+      false,
+    );
   }
 
   // Unknown error type
@@ -117,11 +124,6 @@ export function normalizeAIError(error: unknown, provider: string, operation: st
   );
 }
 
-function extractRetryAfter(message: string): number {
-  const match = message.match(/retry after (\d+)/i);
-  return match ? parseInt(match[1], 10) : 60;
-}
-
 export async function withRetry<T>(
   operation: () => Promise<T>,
   maxRetries = 3,
@@ -132,7 +134,7 @@ export async function withRetry<T>(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
-    } catch (error) {
+    } catch (error: any) {
       lastError = error instanceof Error ? error : new Error('Unknown error');
 
       // Don't retry on last attempt or non-retryable errors
@@ -147,14 +149,20 @@ export async function withRetry<T>(
       const jitter = Math.random() * 0.1 * delay;
       const totalDelay = delay + jitter;
 
+      // eslint-disable-next-line no-console
       console.warn(
         `Retrying operation in ${totalDelay}ms (attempt ${attempt + 1}/${maxRetries + 1}):`,
         lastError.message,
       );
 
-      await new Promise((resolve) => setTimeout(resolve, totalDelay));
+      await new Promise((resolve: any) => setTimeout(resolve, totalDelay));
     }
   }
 
   throw lastError!;
+}
+
+function extractRetryAfter(message: string): number {
+  const match = message.match(/retry after (\d+)/i);
+  return match ? parseInt(match[1], 10) : 60;
 }

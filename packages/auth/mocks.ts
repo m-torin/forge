@@ -1,1 +1,2 @@
-export * from './mocks';
+// Mock exports - no self-reference needed
+export {};

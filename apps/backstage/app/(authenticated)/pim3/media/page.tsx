@@ -801,8 +801,8 @@ export default function MediaPage() {
           <SegmentedControl
             onChange={(value) => setViewMode(value as 'grid' | 'list')}
             data={[
-              { icon: <IconGridDots size={16} />, label: 'Grid', value: 'grid' },
-              { icon: <IconList size={16} />, label: 'List', value: 'list' },
+              { label: 'Grid', value: 'grid' },
+              { label: 'List', value: 'list' },
             ]}
             size="sm"
             value={viewMode}

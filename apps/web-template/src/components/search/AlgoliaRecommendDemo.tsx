@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Title,
@@ -18,18 +18,18 @@ import {
   Code,
   Avatar,
   Rating,
-  Divider,
+  Skeleton,
 } from '@mantine/core';
 import {
   IconShoppingCart,
   IconTrendingUp,
-  IconUsers,
   IconEye,
   IconSparkles,
-  IconHistory,
   IconBrandAlgolia,
   IconArrowRight,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Mock product data for recommendations
 const mockProducts = {
@@ -168,255 +168,449 @@ function RecommendProductCard({
   badge?: string;
   badgeColor?: string;
 }) {
+  const [imageError, setImageError] = useState(false);
+
+  const handleAddToCart = () => {
+    try {
+      console.log('Adding to cart:', product.objectID);
+      // Add to cart logic would go here
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+    }
+  };
+
   return (
-    <Card shadow="sm" padding="lg" radius="sm" withBorder={true} h="100%">
-      <Card.Section>
-        <Avatar src={product.image} size={120} radius="sm" mx="auto" mt="md" />
-      </Card.Section>
+    <ErrorBoundary
+      fallback={
+        <Card shadow="sm" padding="lg" radius="sm" withBorder={true} h="100%">
+          <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+            <Text size="sm">Product card failed to load</Text>
+          </Alert>
+        </Card>
+      }
+    >
+      <Card shadow="sm" padding="lg" radius="sm" withBorder={true} h="100%">
+        <Card.Section>
+          <Avatar
+            src={imageError ? undefined : product.image}
+            size={120}
+            radius="sm"
+            mx="auto"
+            mt="md"
+            onError={() => setImageError(true)}
+          >
+            {imageError && <IconShoppingCart size={40} />}
+          </Avatar>
+        </Card.Section>
 
-      <Stack gap="xs" mt="md">
-        <Text fw={600} size="md" lineClamp={2}>
-          {product.name}
-        </Text>
-
-        {product.rating && (
-          <Group gap="xs">
-            <Rating value={product.rating} readOnly size="xs" />
-            <Text size="xs" color="dimmed">
-              ({product.rating})
-            </Text>
-          </Group>
-        )}
-
-        <Group justify="space-between" align="flex-end">
-          <Text fw={700} size="lg" color="blue">
-            ${product.price}
+        <Stack gap="xs" mt="md">
+          <Text fw={600} size="md" lineClamp={2}>
+            {product.name || 'Unknown Product'}
           </Text>
-          {badge && (
-            <Badge color={badgeColor} size="md" variant="light">
-              {badge}
+
+          {product.rating && (
+            <Group gap="xs">
+              <Rating value={product.rating} readOnly size="xs" />
+              <Text size="xs" color="dimmed">
+                ({product.rating})
+              </Text>
+            </Group>
+          )}
+
+          <Group justify="space-between" align="flex-end">
+            <Text fw={700} size="lg" color="blue">
+              ${product.price || '0.00'}
+            </Text>
+            {badge && (
+              <Badge color={badgeColor} size="md" variant="light">
+                {badge}
+              </Badge>
+            )}
+          </Group>
+
+          {product.trend && (
+            <Badge color="green" leftSection={<IconTrendingUp size={12} />}>
+              {product.trend}, this week
             </Badge>
           )}
-        </Group>
 
-        {product.trend && (
-          <Badge color="green" leftSection={<IconTrendingUp size={12} />}>
-            {product.trend}, this week
-          </Badge>
-        )}
+          {product.sales && (
+            <Text size="xs" color="dimmed">
+              {product.sales.toLocaleString()}, sold
+            </Text>
+          )}
 
-        {product.sales && (
-          <Text size="xs" color="dimmed">
-            {product.sales.toLocaleString()}, sold
-          </Text>
-        )}
+          {product.similarity && (
+            <Badge color="blue" variant="dot">
+              {Math.round(product.similarity * 100)}% match
+            </Badge>
+          )}
 
-        {product.similarity && (
-          <Badge color="blue" variant="dot">
-            {Math.round(product.similarity * 100)}% match
-          </Badge>
-        )}
+          {product.confidence && (
+            <Badge color="green" variant="dot">
+              {Math.round(product.confidence * 100)}% buy together
+            </Badge>
+          )}
 
-        {product.confidence && (
-          <Badge color="green" variant="dot">
-            {Math.round(product.confidence * 100)}% buy together
-          </Badge>
-        )}
+          {product.visualSimilarity && (
+            <Badge color="purple" variant="dot">
+              {Math.round(product.visualSimilarity * 100)}% visual match
+            </Badge>
+          )}
+        </Stack>
 
-        {product.visualSimilarity && (
-          <Badge color="purple" variant="dot">
-            {Math.round(product.visualSimilarity * 100)}% visual match
-          </Badge>
-        )}
-      </Stack>
-
-      <Button
-        fullWidth
-        mt="md"
-        size="md"
-        variant="light"
-        leftSection={<IconShoppingCart size={16} />}
-      >
-        Add to Cart
-      </Button>
-    </Card>
+        <Button
+          fullWidth
+          mt="md"
+          size="md"
+          variant="light"
+          leftSection={<IconShoppingCart size={16} />}
+          onClick={handleAddToCart}
+        >
+          Add to Cart
+        </Button>
+      </Card>
+    </ErrorBoundary>
   );
 }
 
-export default function AlgoliaRecommendDemo() {
-  const [activeModel, setActiveModel] = React.useState('related-products');
+interface AlgoliaRecommendDemoProps {
+  loading?: boolean;
+  error?: string;
+  'data-testid'?: string;
+}
 
+// Loading skeleton for AlgoliaRecommendDemo
+function AlgoliaRecommendDemoSkeleton({ testId }: { testId?: string }) {
   return (
-    <Container size="xl" py="xl">
+    <Container size="xl" py="xl" data-testid={testId}>
       <Stack gap="xl">
-        {/* Header */}
         <div>
           <Group gap="md" mb="md">
-            <ThemeIcon size="xl" variant="light" color="blue">
-              <IconBrandAlgolia />
-            </ThemeIcon>
+            <Skeleton height={64} width={64} radius="md" />
             <div>
-              <Title order={1}>Algolia Recommend API</Title>
-              <Text size="lg" color="dimmed">
-                AI-powered product recommendations for e-commerce
-              </Text>
+              <Skeleton height={32} width={300} mb="xs" />
+              <Skeleton height={20} width={400} />
             </div>
           </Group>
         </div>
-
-        {/* Introduction */}
-        <Alert icon={<IconSparkles />} title="What is Algolia Recommend?" color="blue">
-          <Text size="md">
-            Algolia Recommend uses machine learning to provide personalized product recommendations:
-          </Text>
-          <ul>
-            <li>Increase average order value with "Frequently Bought Together"</li>
-            <li>Improve discovery with "Related Products"</li>
-            <li>Boost engagement with "Trending Items"</li>
-            <li>Enable visual search with "Looking Similar"</li>
-          </ul>
-        </Alert>
-
-        {/* Recommendation Models */}
-        <Stack gap="md">
-          <Title order={2}>Recommendation Models</Title>
-
+        <Skeleton height={120} />
+        <div>
+          <Skeleton height={32} width={200} mb="md" />
           <Grid>
-            {recommendModels.map((model) => {
-              const Icon = model.icon;
-              return (
-                <Grid.Col key={model.id} span={{ base: 12, sm: 6, md: 3 }}>
-                  <Paper
-                    p="md"
-                    radius="sm"
-                    withBorder={true}
-                    style={{
-                      cursor: 'pointer',
-                      borderColor:
-                        activeModel === model.id
-                          ? `var(--mantine-color-${model.color}-6)`
-                          : undefined,
-                      borderWidth: activeModel === model.id ? 2 : 1,
-                    }}
-                    onClick={() => setActiveModel(model.id)}
-                  >
-                    <Stack gap="sm" ta="center">
-                      <ThemeIcon size="xl" variant="light" color={model.color}>
-                        <Icon size={24} />
-                      </ThemeIcon>
-                      <Text fw={600}>{model.name}</Text>
-                      <Text size="xs" color="dimmed">
-                        {model.description}
-                      </Text>
-                      <Code block>{model.apiEndpoint}</Code>
-                    </Stack>
-                  </Paper>
+            {Array(4)
+              .fill(0)
+              .map((_, i) => (
+                <Grid.Col key={i} span={{ base: 12, sm: 6, md: 3 }}>
+                  <Skeleton height={200} />
                 </Grid.Col>
-              );
-            })}
+              ))}
           </Grid>
-        </Stack>
-
-        {/* Recommendation Results */}
-        <Tabs value={activeModel} onChange={(value) => setActiveModel(value || '')}>
-          <Tabs.List>
-            <Tabs.Tab value="related-products" leftSection={<IconSparkles size={16} />}>
-              Related Products
-            </Tabs.Tab>
-            <Tabs.Tab value="frequently-bought" leftSection={<IconShoppingCart size={16} />}>
-              Frequently Bought
-            </Tabs.Tab>
-            <Tabs.Tab value="trending-items" leftSection={<IconTrendingUp size={16} />}>
-              Trending Items
-            </Tabs.Tab>
-            <Tabs.Tab value="looking-similar" leftSection={<IconEye size={16} />}>
-              Looking Similar
-            </Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="related-products" pt="xl">
-            <Grid>
-              {mockProducts.related.map((product: any) => (
-                <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
-                  <RecommendProductCard product={product} badge="Related" />
+        </div>
+        <div>
+          <Skeleton height={40} mb="xl" />
+          <Grid>
+            {Array(3)
+              .fill(0)
+              .map((_, i) => (
+                <Grid.Col key={i} span={{ base: 12, sm: 6, md: 4 }}>
+                  <Skeleton height={400} />
                 </Grid.Col>
               ))}
-            </Grid>
-          </Tabs.Panel>
+          </Grid>
+        </div>
+      </Stack>
+    </Container>
+  );
+}
 
-          <Tabs.Panel value="frequently-bought" pt="xl">
-            <Grid>
-              {mockProducts.frequentlyBought.map((product: any) => (
-                <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
-                  <RecommendProductCard
-                    product={product}
-                    badge="Often bought together"
-                    badgeColor="green"
-                  />
-                </Grid.Col>
-              ))}
-            </Grid>
-          </Tabs.Panel>
+// Error state for AlgoliaRecommendDemo
+function AlgoliaRecommendDemoError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Algolia Recommend demo failed to load: {error}</Text>
+      </Alert>
+    </Container>
+  );
+}
 
-          <Tabs.Panel value="trending-items" pt="xl">
-            <Grid>
-              {mockProducts.trending.map((product: any) => (
-                <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
-                  <RecommendProductCard product={product} badge="Trending" badgeColor="orange" />
-                </Grid.Col>
-              ))}
-            </Grid>
-          </Tabs.Panel>
+export default function AlgoliaRecommendDemo({
+  loading = false,
+  error,
+  'data-testid': testId = 'algolia-recommend-demo',
+}: AlgoliaRecommendDemoProps = {}) {
+  const [activeModel, setActiveModel] = useState('related-products');
+  const [internalError, setInternalError] = useState<string | null>(null);
 
-          <Tabs.Panel value="looking-similar" pt="xl">
-            <Grid>
-              {mockProducts.lookingSimilar.map((product: any) => (
-                <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
-                  <RecommendProductCard
-                    product={product}
-                    badge="Visually similar"
-                    badgeColor="purple"
-                  />
-                </Grid.Col>
-              ))}
-            </Grid>
-          </Tabs.Panel>
-        </Tabs>
+  // Show loading state
+  if (loading) {
+    return <AlgoliaRecommendDemoSkeleton testId={testId} />;
+  }
 
-        {/* Implementation Guide */}
-        <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
-          <Title order={3} mb="md">
-            Implementation Guide
-          </Title>
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <AlgoliaRecommendDemoError error={currentError} testId={testId} />;
+  }
 
-          <Stack gap="md">
+  const handleModelChange = (modelId: string) => {
+    try {
+      setActiveModel(modelId);
+    } catch (err) {
+      console.error('Failed to change model:', err);
+      setInternalError('Failed to change recommendation model');
+    }
+  };
+
+  return (
+    <ErrorBoundary
+      fallback={
+        <AlgoliaRecommendDemoError error="Recommend demo failed to render" testId={testId} />
+      }
+    >
+      <Container size="xl" py="xl" data-testid={testId}>
+        <Stack gap="xl">
+          {/* Header */}
+          <ErrorBoundary fallback={<Skeleton height={80} />}>
             <div>
-              <Text fw={600} mb="xs">
-                1. Install Recommend Client
-              </Text>
-              <Code block>npm install @algolia/recommend</Code>
+              <Group gap="md" mb="md">
+                <ThemeIcon size="xl" variant="light" color="blue">
+                  <IconBrandAlgolia />
+                </ThemeIcon>
+                <div>
+                  <Title order={1}>Algolia Recommend API</Title>
+                  <Text size="lg" color="dimmed">
+                    AI-powered product recommendations for e-commerce
+                  </Text>
+                </div>
+              </Group>
             </div>
+          </ErrorBoundary>
 
-            <div>
-              <Text fw={600} mb="xs">
-                2. Initialize Client
+          {/* Introduction */}
+          <ErrorBoundary fallback={<Skeleton height={120} />}>
+            <Alert icon={<IconSparkles />} title="What is Algolia Recommend?" color="blue">
+              <Text size="md">
+                Algolia Recommend uses machine learning to provide personalized product
+                recommendations:
               </Text>
-              <Code block>
-                {`import { getRecommendClient } from '@algolia/recommend';
+              <ul>
+                <li>Increase average order value with "Frequently Bought Together"</li>
+                <li>Improve discovery with "Related Products"</li>
+                <li>Boost engagement with "Trending Items"</li>
+                <li>Enable visual search with "Looking Similar"</li>
+              </ul>
+            </Alert>
+          </ErrorBoundary>
+
+          {/* Recommendation Models */}
+          <ErrorBoundary fallback={<Skeleton height={300} />}>
+            <Stack gap="md">
+              <Title order={2}>Recommendation Models</Title>
+
+              <Grid>
+                {recommendModels.map((model) => {
+                  const Icon = model.icon;
+                  return (
+                    <Grid.Col key={model.id} span={{ base: 12, sm: 6, md: 3 }}>
+                      <ErrorBoundary fallback={<Skeleton height={200} />}>
+                        <Paper
+                          p="md"
+                          radius="sm"
+                          withBorder={true}
+                          style={{
+                            cursor: 'pointer',
+                            borderColor:
+                              activeModel === model.id
+                                ? `var(--mantine-color-${model.color}-6)`
+                                : undefined,
+                            borderWidth: activeModel === model.id ? 2 : 1,
+                          }}
+                          onClick={() => handleModelChange(model.id)}
+                        >
+                          <Stack gap="sm" ta="center">
+                            <ThemeIcon size="xl" variant="light" color={model.color}>
+                              <Icon size={24} />
+                            </ThemeIcon>
+                            <Text fw={600}>{model.name}</Text>
+                            <Text size="xs" color="dimmed">
+                              {model.description}
+                            </Text>
+                            <Code block>{model.apiEndpoint}</Code>
+                          </Stack>
+                        </Paper>
+                      </ErrorBoundary>
+                    </Grid.Col>
+                  );
+                })}
+              </Grid>
+            </Stack>
+          </ErrorBoundary>
+
+          {/* Recommendation Results */}
+          <ErrorBoundary fallback={<Skeleton height={400} />}>
+            <Tabs value={activeModel} onChange={(value) => handleModelChange(value || '')}>
+              <Tabs.List>
+                <Tabs.Tab value="related-products" leftSection={<IconSparkles size={16} />}>
+                  Related Products
+                </Tabs.Tab>
+                <Tabs.Tab value="frequently-bought" leftSection={<IconShoppingCart size={16} />}>
+                  Frequently Bought
+                </Tabs.Tab>
+                <Tabs.Tab value="trending-items" leftSection={<IconTrendingUp size={16} />}>
+                  Trending Items
+                </Tabs.Tab>
+                <Tabs.Tab value="looking-similar" leftSection={<IconEye size={16} />}>
+                  Looking Similar
+                </Tabs.Tab>
+              </Tabs.List>
+
+              <Tabs.Panel value="related-products" pt="xl">
+                <ErrorBoundary
+                  fallback={
+                    <Grid>
+                      {Array(3)
+                        .fill(0)
+                        .map((_, i) => (
+                          <Grid.Col key={i} span={{ base: 12, sm: 6, md: 4 }}>
+                            <Skeleton height={400} />
+                          </Grid.Col>
+                        ))}
+                    </Grid>
+                  }
+                >
+                  <Grid>
+                    {mockProducts.related.map((product: any) => (
+                      <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
+                        <RecommendProductCard product={product} badge="Related" />
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </ErrorBoundary>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="frequently-bought" pt="xl">
+                <ErrorBoundary
+                  fallback={
+                    <Grid>
+                      {Array(2)
+                        .fill(0)
+                        .map((_, i) => (
+                          <Grid.Col key={i} span={{ base: 12, sm: 6, md: 4 }}>
+                            <Skeleton height={400} />
+                          </Grid.Col>
+                        ))}
+                    </Grid>
+                  }
+                >
+                  <Grid>
+                    {mockProducts.frequentlyBought.map((product: any) => (
+                      <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
+                        <RecommendProductCard
+                          product={product}
+                          badge="Often bought together"
+                          badgeColor="green"
+                        />
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </ErrorBoundary>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="trending-items" pt="xl">
+                <ErrorBoundary
+                  fallback={
+                    <Grid>
+                      {Array(3)
+                        .fill(0)
+                        .map((_, i) => (
+                          <Grid.Col key={i} span={{ base: 12, sm: 6, md: 4 }}>
+                            <Skeleton height={400} />
+                          </Grid.Col>
+                        ))}
+                    </Grid>
+                  }
+                >
+                  <Grid>
+                    {mockProducts.trending.map((product: any) => (
+                      <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
+                        <RecommendProductCard
+                          product={product}
+                          badge="Trending"
+                          badgeColor="orange"
+                        />
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </ErrorBoundary>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="looking-similar" pt="xl">
+                <ErrorBoundary
+                  fallback={
+                    <Grid>
+                      {Array(2)
+                        .fill(0)
+                        .map((_, i) => (
+                          <Grid.Col key={i} span={{ base: 12, sm: 6, md: 4 }}>
+                            <Skeleton height={400} />
+                          </Grid.Col>
+                        ))}
+                    </Grid>
+                  }
+                >
+                  <Grid>
+                    {mockProducts.lookingSimilar.map((product: any) => (
+                      <Grid.Col key={product.objectID} span={{ base: 12, sm: 6, md: 4 }}>
+                        <RecommendProductCard
+                          product={product}
+                          badge="Visually similar"
+                          badgeColor="purple"
+                        />
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </ErrorBoundary>
+              </Tabs.Panel>
+            </Tabs>
+          </ErrorBoundary>
+
+          {/* Implementation Guide */}
+          <ErrorBoundary fallback={<Skeleton height={400} />}>
+            <Card shadow="sm" padding="lg" radius="sm" withBorder={true}>
+              <Title order={3} mb="md">
+                Implementation Guide
+              </Title>
+
+              <Stack gap="md">
+                <div>
+                  <Text fw={600} mb="xs">
+                    1. Install Recommend Client
+                  </Text>
+                  <Code block>npm install @algolia/recommend</Code>
+                </div>
+
+                <div>
+                  <Text fw={600} mb="xs">
+                    2. Initialize Client
+                  </Text>
+                  <Code block>
+                    {`import { getRecommendClient } from '@algolia/recommend';
 
 const recommendClient = getRecommendClient({
   appId: 'YOUR_APP_ID',
   apiKey: 'YOUR_API_KEY',
 });`}
-              </Code>
-            </div>
+                  </Code>
+                </div>
 
-            <div>
-              <Text fw={600} mb="xs">
-                3. Get Recommendations
-              </Text>
-              <Code block>
-                {`// Related Products
+                <div>
+                  <Text fw={600} mb="xs">
+                    3. Get Recommendations
+                  </Text>
+                  <Code block>
+                    {`// Related Products
 const { results } = await recommendClient.getRelatedProducts([
   {
     indexName: 'products',
@@ -431,15 +625,15 @@ const { results } = await recommendClient.getFrequentlyBoughtTogether([
     objectID: 'product-123',
     maxRecommendations: 2}
 ]);`}
-              </Code>
-            </div>
+                  </Code>
+                </div>
 
-            <div>
-              <Text fw={600} mb="xs">
-                4. React Component
-              </Text>
-              <Code block>
-                {`import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+                <div>
+                  <Text fw={600} mb="xs">
+                    4. React Component
+                  </Text>
+                  <Code block>
+                    {`import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
 import { recommendClient } from './algolia';
 
 <FrequentlyBoughtTogether
@@ -449,32 +643,36 @@ import { recommendClient } from './algolia';
         itemComponent={({ item }) => <ProductCard product={item} />}
             maxRecommendations={3}
 />`}
-              </Code>
-            </div>
-          </Stack>
-        </Card>
+                  </Code>
+                </div>
+              </Stack>
+            </Card>
+          </ErrorBoundary>
 
-        {/* Performance Benefits */}
-        <Alert icon={<IconArrowRight />} title="Performance Benefits" color="green">
-          <Stack gap="xs">
-            <Text size="md">Algolia Recommend delivers significant business impact: </Text>
-            <ul>
-              <li>
-                <strong>+22% Average Order Value</strong> with Frequently Bought Together
-              </li>
-              <li>
-                <strong>+15% Click-Through Rate</strong> with Related Products
-              </li>
-              <li>
-                <strong>+18% Conversion Rate</strong> with personalized recommendations
-              </li>
-              <li>
-                <strong>-30% Bounce Rate</strong> by improving product discovery
-              </li>
-            </ul>
-          </Stack>
-        </Alert>
-      </Stack>
-    </Container>
+          {/* Performance Benefits */}
+          <ErrorBoundary fallback={<Skeleton height={150} />}>
+            <Alert icon={<IconArrowRight />} title="Performance Benefits" color="green">
+              <Stack gap="xs">
+                <Text size="md">Algolia Recommend delivers significant business impact: </Text>
+                <ul>
+                  <li>
+                    <strong>+22% Average Order Value</strong> with Frequently Bought Together
+                  </li>
+                  <li>
+                    <strong>+15% Click-Through Rate</strong> with Related Products
+                  </li>
+                  <li>
+                    <strong>+18% Conversion Rate</strong> with personalized recommendations
+                  </li>
+                  <li>
+                    <strong>-30% Bounce Rate</strong> by improving product discovery
+                  </li>
+                </ul>
+              </Stack>
+            </Alert>
+          </ErrorBoundary>
+        </Stack>
+      </Container>
+    </ErrorBoundary>
   );
 }

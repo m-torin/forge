@@ -36,8 +36,8 @@ This repository contains the following applications:
   - Database management interface
 - **storybook** (Component Library) - Port **3700**
   - UI component development and documentation
-- **documentation** (Documentation) - Port **3800**
-  - Nextra documentation site
+- **docs** (Documentation) - Port **3800**
+  - Mintlify documentation site
 
 ## Getting Started
 

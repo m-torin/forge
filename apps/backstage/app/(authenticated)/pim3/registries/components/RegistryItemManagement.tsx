@@ -406,7 +406,7 @@ export function RegistryItemManagement({
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {registry.items.map((item, index) => {
+                {registry.items.map((item: any, index) => {
                   const isSelected = selectedItems.includes(item.id);
                   const priorityFormItem = priorityForm.values.items.find((i) => i.id === item.id);
 
@@ -510,7 +510,7 @@ export function RegistryItemManagement({
                       <Table.Td>
                         {item.purchases.length > 0 ? (
                           <Stack gap="xs">
-                            {item.purchases.slice(0, 2).map((purchase) => (
+                            {item.purchases.slice(0, 2).map((purchase: any) => (
                               <Group key={purchase.id} gap="xs">
                                 <Avatar radius="xl" size="xs">
                                   {purchase.purchaser.name.charAt(0)}
@@ -633,7 +633,7 @@ export function RegistryItemManagement({
         }}
         onSubmit={loadRegistry}
         opened={itemModalOpened}
-        item={editingItem}
+        item={editingItem as any}
         registry={registry}
       />
 

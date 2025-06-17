@@ -13,12 +13,40 @@ import { type TProductItem } from '../data/types';
 
 import ProductCard from './ProductCard';
 
-interface ViewportAwareProductGridProps {
+interface ViewportAwareProductGridProps extends Record<string, any> {
   bufferItems?: number;
   className?: string;
   itemHeight?: number;
   onNearEnd?: () => void;
   products: TProductItem[];
+}
+
+// Hook for progressive data loading
+export function useProgressiveProducts(
+  initialProducts: TProductItem[],
+  loadMore: () => Promise<TProductItem[]>,
+) {
+  const [products, setProducts] = useState(initialProducts);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadNextBatch = async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    try {
+      const newProducts = await loadMore();
+      if (newProducts.length === 0) {
+        setHasMore(false);
+      } else {
+        setProducts((prev: any) => [...prev, ...newProducts]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { hasMore, loading, loadNextBatch, products };
 }
 
 export function ViewportAwareProductGrid({
@@ -67,7 +95,7 @@ export function ViewportAwareProductGrid({
       }
       setSeenItems(newSeenItems);
     }
-  }, [visibleRange, documentVisibility]);
+  }, [visibleRange, documentVisibility, seenItems]);
 
   // Render virtualized grid
   return (
@@ -81,9 +109,9 @@ export function ViewportAwareProductGrid({
 
       {/* Rendered items */}
       <div className="absolute inset-x-0 top-0 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.slice(visibleRange.start, visibleRange.end).map((product, index) => {
+        {products.slice(visibleRange.start, visibleRange.end).map((product, index: any) => {
           const actualIndex = visibleRange.start + index;
-          const hasBeenSeen = seenItems.has(actualIndex);
+          const _hasBeenSeen = seenItems.has(actualIndex);
 
           return (
             <div
@@ -100,35 +128,7 @@ export function ViewportAwareProductGrid({
       </div>
 
       {/* Intersection observer target for infinite scroll */}
-      <div ref={endRef} className="absolute bottom-0 h-px w-full" />
+      <div className="absolute bottom-0 h-px w-full" ref={endRef} />
     </div>
   );
-}
-
-// Hook for progressive data loading
-export function useProgressiveProducts(
-  initialProducts: TProductItem[],
-  loadMore: () => Promise<TProductItem[]>,
-) {
-  const [products, setProducts] = useState(initialProducts);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-
-  const loadNextBatch = async () => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-    try {
-      const newProducts = await loadMore();
-      if (newProducts.length === 0) {
-        setHasMore(false);
-      } else {
-        setProducts((prev) => [...prev, ...newProducts]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { hasMore, loading, loadNextBatch, products };
 }

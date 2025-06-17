@@ -11,13 +11,13 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
-    "@react-email/components": "0.0.41",
+    "@react-email/components": "0.0.42",
     "@react-email/render": "1.1.2",
     "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "resend": "^4.5.1",
+    "resend": "^4.5.2",
     "zod": "catalog:"
   },
   "devDependencies": {

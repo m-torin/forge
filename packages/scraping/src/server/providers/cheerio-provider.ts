@@ -4,20 +4,15 @@
  * New implementation for lightweight scraping
  */
 
-import {
-  type ExtractionResult,
-  type SelectorMap,
-  type SelectorConfig,
-} from '../../shared/types/scraping-types';
 import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
-import { retryWithBackoff, getRandomUserAgent, detectCaptcha } from '../../shared/utils/helpers';
-
-import type {
+import { type ExtractionResult, type SelectorMap } from '../../shared/types/scraping-types';
+import {
   ScrapingProvider,
   ProviderConfig,
   ScrapeOptions,
   ScrapeResult,
 } from '../../shared/types/scraping-types';
+import { retryWithBackoff, getRandomUserAgent, detectCaptcha } from '../../shared/utils/helpers';
 
 /**
  * Cheerio scraping provider for fast HTML parsing
@@ -57,13 +52,13 @@ export class CheerioProvider implements ScrapingProvider {
 
     // Load Cheerio
     try {
-      this.cheerio = await import('cheerio').catch(() => {
+      this.cheerio = await import('cheerio').catch((_: any) => {
         throw new ScrapingError(
           'Cheerio is not installed. Run: npm install cheerio',
           ScrapingErrorCode.PROVIDER_ERROR,
         );
       });
-    } catch (error) {
+    } catch (error: any) {
       throw new ScrapingError(
         'Failed to load Cheerio',
         ScrapingErrorCode.PROVIDER_ERROR,
@@ -149,15 +144,17 @@ export class CheerioProvider implements ScrapingProvider {
           },
         },
       };
-    } catch (error) {
-      const endTime = Date.now();
+    } catch (error: any) {
+      const _endTime = Date.now();
 
       if (error instanceof ScrapingError) {
         throw error;
       }
 
       throw new ScrapingError(
-        error instanceof Error ? error.message : 'Unknown error during scraping',
+        error instanceof Error
+          ? (error as Error)?.message || 'Unknown error'
+          : 'Unknown error during scraping',
         ScrapingErrorCode.SCRAPING_FAILED,
         { url },
         error instanceof Error ? error : undefined,
@@ -266,8 +263,9 @@ export class CheerioProvider implements ScrapingProvider {
 
           results[key] = value;
         }
-      } catch (error) {
-        results[key] = null;
+      } catch (error: any) {
+        // Re-throw extraction errors so they can be handled upstream
+        throw new Error(`Failed to extract data for key "${key}": ${error.message}`);
       }
     }
 
@@ -385,7 +383,7 @@ export class CheerioProvider implements ScrapingProvider {
 /**
  * Factory function to create a Cheerio provider
  */
-export function createCheerioProvider(config?: ProviderConfig): CheerioProvider {
+export function createCheerioProvider(_config?: ProviderConfig): CheerioProvider {
   return new CheerioProvider();
 }
 

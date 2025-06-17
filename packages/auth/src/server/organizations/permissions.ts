@@ -9,6 +9,8 @@ import { auth } from '../auth';
 
 import { getUserRoleInOrganization } from './helpers';
 
+import type { Session } from '../../shared/types';
+
 /**
  * Organization permissions hierarchy
  */
@@ -132,7 +134,8 @@ export async function checkPermission(
       return false;
     }
 
-    const targetOrgId = organizationId || session.session.activeOrganizationId;
+    const sessionWithOrg = session.session as Session;
+    const targetOrgId = organizationId || sessionWithOrg.activeOrganizationId;
 
     if (!targetOrgId) {
       return false;
@@ -159,13 +162,8 @@ export async function checkPermissions(
   organizationId?: string,
 ): Promise<boolean> {
   try {
-    // Use Better Auth's built-in permission checking if available
-    const result = await auth.api.hasPermission({
-      body: { permissions },
-      headers: await headers(),
-    });
-
-    return result?.hasPermission || false;
+    // auth.api.hasPermission doesn't exist, fall through to fallback implementation
+    throw new Error('Fallback to individual permission checks');
   } catch (error) {
     console.error('Check permissions error:', error);
 
@@ -205,7 +203,8 @@ export async function canActOnUser(
       return false;
     }
 
-    const targetOrgId = organizationId || session.session.activeOrganizationId;
+    const sessionWithOrg = session.session as Session;
+    const targetOrgId = organizationId || sessionWithOrg.activeOrganizationId;
 
     if (!targetOrgId) {
       return false;
@@ -275,7 +274,8 @@ export async function getUserPermissions(
     }
 
     const targetUserId = userId || session.user.id;
-    const targetOrgId = organizationId || session.session.activeOrganizationId;
+    const sessionWithOrg = session.session as Session;
+    const targetOrgId = organizationId || sessionWithOrg.activeOrganizationId;
 
     if (!targetOrgId) {
       return [];

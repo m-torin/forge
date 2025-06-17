@@ -1,4 +1,8 @@
-import { ButtonPrimary, ButtonSecondary, Checkbox, Input, Label } from '@repo/design-system/ciseco'
+import Label from '@/components/Label/Label'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
+import Checkbox from '@/shared/Checkbox/Checkbox'
+import Input from '@/shared/Input/Input'
 import { FC } from 'react'
 
 interface Props {
@@ -44,7 +48,7 @@ const ContactInfo: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => {
           </span>
           <div className="sm:ml-8">
             <h3 className="flex text-neutral-700 dark:text-neutral-300">
-              <span className="uppercase tracking-tight">CONTACT INFO</span>
+              <span className="tracking-tight uppercase">CONTACT INFO</span>
               <svg
                 fill="none"
                 viewBox="0 0 24 24"
@@ -61,7 +65,7 @@ const ContactInfo: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => {
             </div>
           </div>
           <button
-            className="mt-5 rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto sm:mt-0 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            className="mt-5 rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:mt-0 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700"
             onClick={() => onOpenActive()}
           >
             Change
@@ -76,7 +80,7 @@ const ContactInfo: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => {
             <h3 className="text-lg font-semibold">Contact infomation</h3>
             <span className="my-1 block text-sm md:my-0">
               Do not have an account?{` `}
-              <a href="##" className="text-primary-500 font-medium">
+              <a href="##" className="font-medium text-primary-500">
                 Log in
               </a>
             </span>
@@ -95,10 +99,10 @@ const ContactInfo: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => {
 
           {/* ============ */}
           <div className="flex flex-col pt-6 sm:flex-row">
-            <ButtonPrimary className="sm:px-7! shadow-none" onClick={() => onCloseActive()}>
+            <ButtonPrimary className="shadow-none sm:px-7!" onClick={() => onCloseActive()}>
               Save and next to Shipping
             </ButtonPrimary>
-            <ButtonSecondary className="mt-3 sm:ml-3 sm:mt-0" onClick={() => onCloseActive()}>
+            <ButtonSecondary className="mt-3 sm:mt-0 sm:ml-3" onClick={() => onCloseActive()}>
               Cancel
             </ButtonSecondary>
           </div>

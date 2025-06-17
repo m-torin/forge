@@ -5,7 +5,25 @@ import { notFound } from 'next/navigation';
 
 import { Divider, Prices } from '@/components/ui';
 import ButtonSecondary from '@/components/ui/shared/Button/ButtonSecondary';
-import { getOrderByNumber } from '@/data/data-service';
+import { getOrderByNumber } from '@/actions/orders';
+
+// Helper functions for order status
+function getStatusStep(status: string): number {
+  switch (status) {
+    case 'PENDING':
+      return 0;
+    case 'PROCESSING':
+      return 1;
+    case 'FULFILLED':
+      return 3;
+    default:
+      return 0;
+  }
+}
+
+function getStatusProgress(status: string): number {
+  return ((getStatusStep(status) * 2 + 1) / 8) * 100;
+}
 
 export async function generateMetadata({
   params,
@@ -20,8 +38,8 @@ export async function generateMetadata({
       title: 'Order not found',
     };
   }
-  const orderNumber = order.orderNumber || order.number || '';
-  const status = order.fulfillmentStatus || order.status || '';
+  const orderNumber = order.orderNumber || '';
+  const status = order.status || '';
   return { description: status, title: 'Order #' + orderNumber };
 }
 
@@ -33,7 +51,7 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
     return notFound();
   }
 
-  const products = order.lines || order.products || [];
+  const items = order.items || [];
 
   return (
     <div>
@@ -41,13 +59,13 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
         <div>
           <p className="mb-1 text-sm">
             <span className="text-neutral-500 dark:text-neutral-400">Order placed</span>
-            <time dateTime={order.processedAt || order.createdAt || '2021-03-22'}>
+            <time dateTime={order.createdAt.toISOString()}>
               {' '}
-              {order.processedAt ? new Date(order.processedAt).toLocaleDateString() : order.date}
+              {new Date(order.createdAt).toLocaleDateString()}
             </time>
           </p>
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-            Order #{order.orderNumber || order.number}
+            Order #{order.orderNumber}
           </h1>
         </div>
 
@@ -65,31 +83,33 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
       <div className="mt-6">
         <h2 className="sr-only">Products purchased</h2>
         <div className="flex flex-col gap-y-10">
-          {products.map((product: any) => (
+          {items.map((item: any) => (
             <div
-              key={product.id}
+              key={item.id}
               className="border-b border-t border-neutral-200 bg-white sm:rounded-lg sm:border"
             >
               <div className="py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
                 <div className="sm:flex lg:col-span-7">
                   <div className="relative aspect-square w-full shrink-0 rounded-lg object-cover sm:size-40">
-                    {product.featuredImage.src && (
+                    {item.product?.image && (
                       <Image
                         className="rounded-lg object-cover"
-                        alt={product.featuredImage.alt}
+                        alt={item.productName}
                         fill
                         sizes="(min-width: 640px) 10rem, 100vw"
-                        src={product.featuredImage}
+                        src={item.product.image}
                       />
                     )}
                   </div>
 
                   <div className="mt-6 flex flex-col sm:ml-6 sm:mt-0">
                     <h3 className="text-base font-medium text-neutral-900">
-                      <a href={product.href}>{product.title}</a>
+                      <a href={`/products/${item.product?.slug || item.productId}`}>
+                        {item.productName}
+                      </a>
                     </h3>
-                    <p className="my-2 text-sm text-neutral-500">Qty {product.quantity}</p>
-                    <Prices className="mt-auto flex justify-start" price={product.price} />
+                    <p className="my-2 text-sm text-neutral-500">Qty {item.quantity}</p>
+                    <Prices className="mt-auto flex justify-start" price={item.price} />
                   </div>
                 </div>
 
@@ -98,20 +118,33 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
                     <div>
                       <dt className="font-medium text-neutral-900">Delivery address</dt>
                       <dd className="mt-3 text-neutral-500">
-                        <span className="block">{product.address[0]}</span>
-                        <span className="block">{product.address[1]}</span>
-                        <span className="block">{product.address[2]}</span>
+                        {order.shippingAddress ? (
+                          <>
+                            <span className="block">
+                              {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                            </span>
+                            <span className="block">{order.shippingAddress.street1}</span>
+                            {order.shippingAddress.street2 && (
+                              <span className="block">{order.shippingAddress.street2}</span>
+                            )}
+                            <span className="block">
+                              {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
+                              {order.shippingAddress.postalCode}
+                            </span>
+                            <span className="block">{order.shippingAddress.country}</span>
+                          </>
+                        ) : (
+                          <span>No shipping address</span>
+                        )}
                       </dd>
                     </div>
                     <div>
                       <dt className="font-medium text-neutral-900">Shipping updates</dt>
                       <dd className="mt-3 flex flex-col gap-y-3 text-neutral-500">
-                        <p>{product.email}</p>
-                        <p>{product.phone}</p>
-                        <button className="font-medium text-neutral-950 underline" type="button">
-                          Edit
-                          <span aria-hidden="true"> &rarr;</span>
-                        </button>
+                        {order.shippingAddress?.phone && <p>{order.shippingAddress.phone}</p>}
+                        {order.trackingNumber && (
+                          <p className="font-medium">Tracking: {order.trackingNumber}</p>
+                        )}
                       </dd>
                     </div>
                   </dl>
@@ -121,30 +154,54 @@ const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
               <div className="border-t border-neutral-200 px-4 py-6 sm:px-6 lg:p-8">
                 <h4 className="sr-only">Status</h4>
                 <p className="text-sm font-medium text-neutral-900">
-                  {product.status} on <time dateTime={product.datetime}>{product.date}</time>
+                  {item.status}
+                  {item.fulfilledAt && (
+                    <>
+                      {' '}
+                      on{' '}
+                      <time dateTime={item.fulfilledAt.toISOString()}>
+                        {new Date(item.fulfilledAt).toLocaleDateString()}
+                      </time>
+                    </>
+                  )}
                 </p>
                 <div aria-hidden="true" className="mt-6">
                   <div className="overflow-hidden rounded-full bg-neutral-200">
                     <div
                       className="h-2 rounded-full bg-neutral-950 sm:h-1.5"
                       style={{
-                        width: `calc((${product.step} * 2 + 1) / 8 * 100%)`,
+                        width: `${getStatusProgress(item.status)}%`,
                       }}
                     />
                   </div>
                   <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-neutral-500 sm:grid">
-                    <div className="text-neutral-950">Order placed</div>
                     <div
-                      className={clsx(product.step > 0 ? 'text-neutral-950' : '', 'text-center')}
+                      className={clsx(getStatusStep(item.status) >= 0 ? 'text-neutral-950' : '')}
+                    >
+                      Order placed
+                    </div>
+                    <div
+                      className={clsx(
+                        getStatusStep(item.status) >= 1 ? 'text-neutral-950' : '',
+                        'text-center',
+                      )}
                     >
                       Processing
                     </div>
                     <div
-                      className={clsx(product.step > 1 ? 'text-neutral-950' : '', 'text-center')}
+                      className={clsx(
+                        getStatusStep(item.status) >= 2 ? 'text-neutral-950' : '',
+                        'text-center',
+                      )}
                     >
                       Shipped
                     </div>
-                    <div className={clsx(product.step > 2 ? 'text-neutral-950' : '', 'text-right')}>
+                    <div
+                      className={clsx(
+                        getStatusStep(item.status) >= 3 ? 'text-neutral-950' : '',
+                        'text-right',
+                      )}
+                    >
                       Delivered
                     </div>
                   </div>

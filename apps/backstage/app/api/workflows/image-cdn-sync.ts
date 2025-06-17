@@ -11,11 +11,11 @@ import {
   createStepWithValidation,
   createWorkflowStep,
   StepTemplates,
-  withStepBulkhead,
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ImageCDNSyncInput = z.object({
@@ -178,12 +178,8 @@ export const fetchImagesToSyncStep = compose(
     (input) => input.sources.length > 0,
     (output) => output.images.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 60000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['imageCount', 'sourceCount'],
-    }),
+  (step: any) => withStepTimeout(step, 60000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock function to fetch images from source
@@ -309,15 +305,15 @@ export const processImageBatchesStep = compose(
       },
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 10,
-      maxQueued: 100,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -360,7 +356,7 @@ export const distributeToCDNStep = compose(
       },
     };
   }),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes
 );
 
 // Helper function to get CDN base URL
@@ -424,7 +420,7 @@ function generatePlaceholderSVG(metadata: any): string {
 // Step 6: Update database and cache
 export const updateDatabaseStep = compose(
   StepTemplates.database('update-image-records', 'Update image CDN records in database'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 7: Warm CDN caches
@@ -478,7 +474,7 @@ export const generateSyncReportStep = createStep('generate-report', async (data:
       cacheWarmingLatency: data.warmingStats?.averageLatency || 0,
       totalProcessingTime: Date.now() - new Date(data.fetchedAt).getTime(),
     },
-    recommendations: [],
+    recommendations: [] as Array<{ type: string; message: string; priority: string }>,
     summary: {
       cdnProviders: data.targets.length,
       duplicatesFound: data.deduplicationStats?.duplicatesFound || 0,

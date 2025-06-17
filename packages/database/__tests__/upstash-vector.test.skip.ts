@@ -15,9 +15,9 @@ import {
 vi.mock('@upstash/vector', async () => {
   const { mockUpstashVector } = await import('@repo/testing/database');
   return mockUpstashVector;
-});
+};
 
-describe('Upstash Vector Adapter', () => {
+describe('Upstash Vector Adapter', (_: any) => {
   let helper: VectorDatabaseTestHelper;
 
   beforeEach(async () => {
@@ -31,7 +31,7 @@ describe('Upstash Vector Adapter', () => {
     await helper.cleanup();
   });
 
-  describe('Basic CRUD Operations', () => {
+  describe('Basic CRUD Operations', (_: any) => {
     it('should perform complete CRUD operations', async () => {
       const vector = createTestVector();
 
@@ -55,7 +55,7 @@ describe('Upstash Vector Adapter', () => {
       // Verify deletion
       const notFound = await mockUpstashVectorAdapter.findUnique('documents', { id: vector.id });
       expect(notFound).toBeNull();
-    });
+    };
 
     it('should create a vector with metadata', async () => {
       const vector = createTestVector({
@@ -64,12 +64,12 @@ describe('Upstash Vector Adapter', () => {
           category: 'technology',
           timestamp: Date.now(),
         },
-      });
+      };
 
       const result = await mockUpstashVectorAdapter.create('documents', vector);
       expect(result).toMatchObject(vector);
       expect((result as any).metadata.title).toBe('Test Document');
-    });
+    };
 
     it('should upsert multiple vectors', async () => {
       const vectors = createTestVectors(3);
@@ -82,7 +82,7 @@ describe('Upstash Vector Adapter', () => {
         const found = await mockUpstashVectorAdapter.findUnique('documents', { id: vector.id });
         expect(found).toMatchObject(vector);
       }
-    });
+    };
 
     it('should count vectors in collection', async () => {
       const vectors = createTestVectors(5);
@@ -91,9 +91,9 @@ describe('Upstash Vector Adapter', () => {
       const count = await mockUpstashVectorAdapter.count('documents');
       expect(count).toBe(5);
     });
-  });
+  };
 
-  describe('Vector Search Operations', () => {
+  describe('Vector Search Operations', (_: any) => {
     beforeEach(async () => {
       // Seed test vectors
       const vectors = [
@@ -112,7 +112,7 @@ describe('Upstash Vector Adapter', () => {
       ];
 
       await helper.seedVectorData('documents', vectors);
-    });
+    };
 
     it('should perform similarity search', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
@@ -134,7 +134,7 @@ describe('Upstash Vector Adapter', () => {
         expect(result.score).toBeGreaterThan(0);
         expect(result.score).toBeLessThanOrEqual(1);
       });
-    });
+    };
 
     it('should perform similarity search with helper assertions', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
@@ -145,7 +145,7 @@ describe('Upstash Vector Adapter', () => {
         ['tech-1', 'tech-2', 'science-1'],
         0.7,
       );
-    });
+    };
 
     it('should limit search results with topK', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
@@ -160,7 +160,7 @@ describe('Upstash Vector Adapter', () => {
       );
 
       expect(results).toHaveLength(2);
-    });
+    };
 
     it('should handle empty search results', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
@@ -174,10 +174,10 @@ describe('Upstash Vector Adapter', () => {
       );
 
       expect(results).toHaveLength(0);
-    });
-  });
+    };
+  };
 
-  describe('Text-Based Operations', () => {
+  describe('Text-Based Operations', (_: any) => {
     it('should upsert text data', async () => {
       const textData = [
         {
@@ -194,7 +194,7 @@ describe('Upstash Vector Adapter', () => {
 
       const result = await mockUpstashVectorAdapter.upsertText(textData, { namespace: 'articles' });
       expect(result.upserted).toBe(2);
-    });
+    };
 
     it('should perform text-based search', async () => {
       const textData = [
@@ -223,7 +223,7 @@ describe('Upstash Vector Adapter', () => {
       // The JavaScript article should have a higher score
       const jsArticle = results.find((r: any) => r.id === 'article-1');
       expect(jsArticle).toBeDefined();
-    });
+    };
 
     it('should assert text search with helper', async () => {
       const textData = [
@@ -236,10 +236,10 @@ describe('Upstash Vector Adapter', () => {
 
       await mockUpstashVectorAdapter.upsertText(textData, { namespace: 'docs' });
       await helper.assertTextSearch('docs', 'machine learning', 1);
-    });
-  });
+    };
+  };
 
-  describe('Vector Type Operations', () => {
+  describe('Vector Type Operations', (_: any) => {
     it('should handle dense vectors', async () => {
       const denseVectors = [
         {
@@ -254,7 +254,7 @@ describe('Upstash Vector Adapter', () => {
       });
 
       expect(result.upserted).toBe(1);
-    });
+    };
 
     it('should handle sparse vectors', async () => {
       const sparseVectors = [
@@ -273,7 +273,7 @@ describe('Upstash Vector Adapter', () => {
       });
 
       expect(result.upserted).toBe(1);
-    });
+    };
 
     it('should handle hybrid vectors', async () => {
       const hybridVectors = [
@@ -293,7 +293,7 @@ describe('Upstash Vector Adapter', () => {
       });
 
       expect(result.upserted).toBe(1);
-    });
+    };
 
     it('should query with sparse vectors', async () => {
       // First upsert some sparse vectors
@@ -318,7 +318,7 @@ describe('Upstash Vector Adapter', () => {
       );
 
       expect(results.length).toBeGreaterThan(0);
-    });
+    };
 
     it('should query with hybrid vectors', async () => {
       // First upsert some hybrid vectors
@@ -345,15 +345,15 @@ describe('Upstash Vector Adapter', () => {
       );
 
       expect(results.length).toBeGreaterThan(0);
-    });
-  });
+    };
+  };
 
-  describe('Batch Operations', () => {
+  describe('Batch Operations', (_: any) => {
     it('should fetch multiple vectors by IDs', async () => {
       const vectors = createTestVectors(3);
       await mockUpstashVectorAdapter.upsertMany(vectors, 'documents');
 
-      const ids = vectors.map((v) => v.id);
+      const ids = vectors.map((v: any) => v.id);
       const results = await mockUpstashVectorAdapter.fetch(ids, {
         namespace: 'documents',
         includeMetadata: true,
@@ -363,13 +363,13 @@ describe('Upstash Vector Adapter', () => {
       results.forEach((result: any) => {
         expect(ids).toContain(result.id);
       });
-    });
+    };
 
     it('should delete multiple vectors', async () => {
       const vectors = createTestVectors(3);
       await mockUpstashVectorAdapter.upsertMany(vectors, 'documents');
 
-      const ids = vectors.map((v) => v.id);
+      const ids = vectors.map((v: any) => v.id);
       const result = await mockUpstashVectorAdapter.deleteMany(ids, 'documents');
 
       expect(result.deleted).toBe(3);
@@ -379,10 +379,10 @@ describe('Upstash Vector Adapter', () => {
         const found = await mockUpstashVectorAdapter.findUnique('documents', { id });
         expect(found).toBeNull();
       }
-    });
-  });
+    };
+  };
 
-  describe('Index Management', () => {
+  describe('Index Management', (_: any) => {
     it('should get index information', async () => {
       // Add some vectors first
       const vectors = createTestVectors(5);
@@ -409,9 +409,9 @@ describe('Upstash Vector Adapter', () => {
       const count = await mockUpstashVectorAdapter.count('documents');
       expect(count).toBe(0);
     });
-  });
+  };
 
-  describe('Namespace Operations', () => {
+  describe('Namespace Operations', (_: any) => {
     it('should work with different namespaces', async () => {
       const vector1 = createTestVector({ id: 'doc-1' });
       const vector2 = createTestVector({ id: 'doc-2' });
@@ -434,8 +434,8 @@ describe('Upstash Vector Adapter', () => {
       expect(docs.some((d: any) => d.id === 'doc-2')).toBe(false);
 
       expect(articles.some((a: any) => a.id === 'doc-2')).toBe(true);
-      expect(articles.some((a: any) => a.id === 'doc-1')).toBe(false);
-    });
+      expect(articles.some((a: any) => a.id === 'doc-1')).toBe(false),
+    };
 
     it('should get namespace info', async () => {
       const vectors = createTestVectors(3);
@@ -445,30 +445,30 @@ describe('Upstash Vector Adapter', () => {
       expect(info).toHaveProperty('namespace');
       expect(info.namespace).toBe('documents');
     });
-  });
+  };
 
-  describe('Error Handling', () => {
+  describe('Error Handling', (_: any) => {
     it('should handle common error scenarios', async () => {
       // Test with non-vector query (should throw)
       await expect(mockUpstashVectorAdapter.findMany('documents', {})).rejects.toThrow(
         'Vector query requires a vector',
       );
-    });
+    };
 
     it('should handle non-existent vectors', async () => {
       const found = await mockUpstashVectorAdapter.findUnique('documents', {
         id: 'non-existent',
       });
       expect(found).toBeNull();
-    });
+    };
 
     it('should handle empty collections', async () => {
       const count = await mockUpstashVectorAdapter.count('empty-collection');
       expect(count).toBe(0);
     });
-  });
+  };
 
-  describe('Raw Operations', () => {
+  describe('Raw Operations', (_: any) => {
     it('should execute raw upsert operation', async () => {
       const vector = createTestVector();
       const result = await mockUpstashVectorAdapter.raw('upsert', vector);
@@ -487,17 +487,17 @@ describe('Upstash Vector Adapter', () => {
 
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-    });
+    };
 
     it('should throw error for unsupported raw operation', async () => {
       await expect(mockUpstashVectorAdapter.raw('unsupported', {})).rejects.toThrow(
         'not supported',
       );
-    });
-  });
+    };
+  };
 
-  describe('Adapter Interface Compliance', () => {
-    it('should implement all required VectorDatabaseAdapter methods', () => {
+  describe('Adapter Interface Compliance', (_: any) => {
+    it('should implement all required VectorDatabaseAdapter methods', (_: any) => {
       const adapter = mockUpstashVectorAdapter;
 
       // Base adapter methods
@@ -526,19 +526,19 @@ describe('Upstash Vector Adapter', () => {
       await expect(mockUpstashVectorAdapter.disconnect()).resolves.not.toThrow();
     });
 
-    it('should return the client instance', () => {
+    it('should return the client instance', (_: any) => {
       const client = mockUpstashVectorAdapter.getClient();
       expect(client).toBeDefined();
       expect(typeof client.upsert).toBe('function');
     });
-  });
-});
+  };
+};
 
 // Integration test with the actual Upstash Vector adapter class
-describe('UpstashVectorAdapter Integration', () => {
+describe('UpstashVectorAdapter Integration', (_: any) => {
   it('should be importable and instantiable', async () => {
     const { UpstashVectorAdapter } = await import('../upstash/adapter');
     expect(UpstashVectorAdapter).toBeDefined();
     expect(typeof UpstashVectorAdapter).toBe('function');
-  });
-});
+  };
+};

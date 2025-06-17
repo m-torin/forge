@@ -3,29 +3,28 @@
  * Uses ES2022+ features including private fields, nullish coalescing, and async generators
  */
 
-import { defaultStepFactory, type StepFactory } from '../factories/step-factory';
-import { defaultStepRegistry, type StepRegistry } from '../factories/step-registry';
-
 import {
-  createOrchestrationError,
-  createProviderErrorWithCode,
-  OrchestrationErrorCodes,
-} from './errors';
-
-import type {
   StepCompositionConfig,
   StepExecutionPlan,
   StepSearchFilters,
   ValidationResult,
   WorkflowStepDefinition,
 } from '../factories/index';
-import type {
+import { defaultStepFactory, type StepFactory } from '../factories/step-factory';
+import { defaultStepRegistry, type StepRegistry } from '../factories/step-registry';
+import {
   ListExecutionsOptions,
   ProviderHealthReport,
   WorkflowDefinition,
   WorkflowExecution,
   WorkflowProvider,
 } from '../types/index';
+
+import {
+  createOrchestrationError,
+  createProviderErrorWithCode,
+  OrchestrationErrorCodes,
+} from './errors';
 
 export interface OrchestrationManagerConfig {
   /** Whether to auto-retry failed operations */
@@ -100,7 +99,7 @@ export class OrchestrationManager {
 
     try {
       return await provider.cancelExecution(executionId);
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderErrorWithCode(
         `Failed to cancel execution ${executionId}`,
         providerName || this.config.defaultProvider || 'unknown',
@@ -168,7 +167,7 @@ export class OrchestrationManager {
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       // Track failed execution metrics
       if (this.config.enableMetrics) {
         this.updateExecutionMetrics(stepId, Date.now() - startTime, false);
@@ -190,7 +189,7 @@ export class OrchestrationManager {
 
     try {
       return await provider.execute(definition, input);
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderErrorWithCode(
         `Failed to execute workflow ${definition.id}`,
         providerName ?? this.config.defaultProvider ?? 'unknown',
@@ -227,7 +226,7 @@ export class OrchestrationManager {
 
     try {
       return await provider.getExecution(executionId);
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderErrorWithCode(
         `Failed to get execution ${executionId}`,
         providerName || this.config.defaultProvider || 'unknown',
@@ -372,9 +371,10 @@ export class OrchestrationManager {
           timestamp: new Date(),
           type: provider.name,
         });
-      } catch (error) {
+      } catch (error: any) {
         reports.push({
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error:
+            error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error',
           name,
           responseTime: 0,
           status: 'unhealthy',
@@ -427,7 +427,7 @@ export class OrchestrationManager {
       }
 
       this.isInitialized = true;
-    } catch (error) {
+    } catch (error: any) {
       throw createOrchestrationError('Failed to initialize orchestration manager', {
         code: OrchestrationErrorCodes.INITIALIZATION_ERROR,
         originalError: error as Error,
@@ -448,7 +448,7 @@ export class OrchestrationManager {
 
     try {
       return await provider.listExecutions(workflowId, options);
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderErrorWithCode(
         `Failed to list executions for workflow ${workflowId}`,
         providerName || this.config.defaultProvider || 'unknown',
@@ -506,7 +506,7 @@ export class OrchestrationManager {
       if (!this.config.defaultProvider && this.providers.size === 1) {
         this.config.defaultProvider = name;
       }
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderErrorWithCode(
         `Failed to register provider ${name}`,
         name,
@@ -545,7 +545,7 @@ export class OrchestrationManager {
 
     try {
       return await provider.scheduleWorkflow(definition);
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderErrorWithCode(
         `Failed to schedule workflow ${definition.id}`,
         providerName || this.config.defaultProvider || 'unknown',
@@ -597,11 +597,11 @@ export class OrchestrationManager {
           cleanupPromises.push(
             (async () => {
               try {
-                await provider.cleanup();
-              } catch (error) {
-                console.error(`Failed to cleanup provider ${name}:`, error);
+                await provider.cleanup?.();
+              } catch (error: any) {
+                console.error(`Failed to cleanup provider ${name}: `, error);
               }
-            })()
+            })(),
           );
         }
       }
@@ -613,7 +613,7 @@ export class OrchestrationManager {
       this.providers.clear();
       this.executionMetrics.clear();
       this.isInitialized = false;
-    } catch (error) {
+    } catch (error: any) {
       throw createOrchestrationError('Failed to shutdown orchestration manager', {
         code: OrchestrationErrorCodes.SHUTDOWN_ERROR,
         originalError: error as Error,
@@ -650,7 +650,7 @@ export class OrchestrationManager {
 
     try {
       return await provider.unscheduleWorkflow(workflowId);
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderErrorWithCode(
         `Failed to unschedule workflow ${workflowId}`,
         providerName || this.config.defaultProvider || 'unknown',
@@ -695,8 +695,8 @@ export class OrchestrationManager {
     this.healthCheckTimer = setInterval(async () => {
       try {
         await this.healthCheckAll();
-      } catch (error) {
-        console.warn('Health check failed:', error);
+      } catch (error: any) {
+        console.warn('Health check failed: ', error);
       }
     }, this.config.healthCheckInterval);
   }

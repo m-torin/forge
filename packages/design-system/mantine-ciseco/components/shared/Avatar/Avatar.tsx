@@ -4,11 +4,11 @@ import { type FC } from 'react';
 import avatarImage from '../../../images/users/avatar4.jpg';
 import VerifyIcon from '../../VerifyIcon';
 
-export interface AvatarProps {
+export interface AvatarProps extends Record<string, any> {
   containerClassName?: string;
   hasChecked?: boolean;
   hasCheckedClass?: string;
-  imgUrl?: string | StaticImageData;
+  imgUrl?: StaticImageData | string;
   radius?: string;
   sizeClass?: string;
   testId?: string;
@@ -26,7 +26,7 @@ const Avatar: FC<AvatarProps> = ({
   userName,
 }) => {
   const url = imgUrl || '';
-  const name = userName || 'John Doe';
+  const name = userName ?? 'John Doe';
   const _setBgColor = (name: string) => {
     const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FF8C33'];
     const index = name.charCodeAt(0) % colors.length;
@@ -35,14 +35,14 @@ const Avatar: FC<AvatarProps> = ({
 
   return (
     <div
-      data-testid={testId}
       className={`wil-avatar relative inline-flex shrink-0 items-center justify-center font-semibold text-neutral-100 uppercase shadow-inner ${radius} ${sizeClass} ${containerClassName}`}
+      data-testid={testId}
       style={{ backgroundColor: url ? undefined : _setBgColor(name) }}
     >
       {url && (
         <Image
-          className={`absolute inset-0 h-full w-full object-cover ${radius}`}
           alt={name}
+          className={`absolute inset-0 h-full w-full object-cover ${radius}`}
           fill
           sizes="100px"
           src={url}

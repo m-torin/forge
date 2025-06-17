@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ClientAIManager } from '../../client/manager';
 
-import type { CompletionOptions, StreamOptions } from '../../shared/types';
+import { CompletionOptions, StreamOptions } from '../../shared/types';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('ClientAIManager', () => {
+describe('ClientAIManager', (_: any) => {
   let clientManager: ClientAIManager;
   const baseUrl = 'https://api.example.com';
 
@@ -17,18 +17,18 @@ describe('ClientAIManager', () => {
     clientManager = new ClientAIManager({ baseUrl });
   });
 
-  describe('constructor', () => {
-    it('should initialize with default baseUrl when not provided', () => {
+  describe('constructor', (_: any) => {
+    it('should initialize with default baseUrl when not provided', (_: any) => {
       const manager = new ClientAIManager();
       expect(manager).toBeInstanceOf(ClientAIManager);
     });
 
-    it('should initialize with provided baseUrl', () => {
+    it('should initialize with provided baseUrl', (_: any) => {
       const manager = new ClientAIManager({ baseUrl });
       expect(manager).toBeInstanceOf(ClientAIManager);
     });
 
-    it('should initialize with config options', () => {
+    it('should initialize with config options', (_: any) => {
       const config = {
         baseUrl,
         maxRetries: 3,
@@ -39,7 +39,7 @@ describe('ClientAIManager', () => {
     });
   });
 
-  describe('complete', () => {
+  describe('complete', (_: any) => {
     const mockOptions: CompletionOptions = {
       model: 'gpt-3.5-turbo',
       prompt: 'Test prompt',
@@ -108,7 +108,7 @@ describe('ClientAIManager', () => {
     });
   });
 
-  describe('stream', () => {
+  describe('stream', (_: any) => {
     const mockOptions: StreamOptions = {
       model: 'gpt-3.5-turbo',
       prompt: 'Test streaming prompt',
@@ -146,7 +146,7 @@ describe('ClientAIManager', () => {
 
       mockFetch.mockResolvedValueOnce(mockResponse as any);
 
-      const chunks = [];
+      const chunks: any[] = [];
       for await (const chunk of clientManager.stream(mockOptions)) {
         chunks.push(chunk);
       }
@@ -179,7 +179,7 @@ describe('ClientAIManager', () => {
     });
   });
 
-  describe('classify', () => {
+  describe('classify', (_: any) => {
     const mockText = 'This is a test message';
 
     it('should make successful classification request', async () => {
@@ -216,7 +216,7 @@ describe('ClientAIManager', () => {
     });
   });
 
-  describe('extractEntities', () => {
+  describe('extractEntities', (_: any) => {
     const mockText = 'John Doe works at Acme Corp in New York';
 
     it('should make successful entity extraction request', async () => {
@@ -246,7 +246,7 @@ describe('ClientAIManager', () => {
     });
   });
 
-  describe('analyzeSentiment', () => {
+  describe('analyzeSentiment', (_: any) => {
     const mockText = 'I love this product!';
 
     it('should make successful sentiment analysis request', async () => {
@@ -274,7 +274,7 @@ describe('ClientAIManager', () => {
     });
   });
 
-  describe('moderate', () => {
+  describe('moderate', (_: any) => {
     const mockText = 'This is a test message for moderation';
 
     it('should make successful moderation request', async () => {

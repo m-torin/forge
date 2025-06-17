@@ -12,7 +12,7 @@ export default function ProductsLoading() {
         </div>
         <Skeleton height={40} width={200} radius="md" />
       </div>
-      
+
       {/* Products grid skeleton */}
       <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {[...Array(12)].map((_, i) => (

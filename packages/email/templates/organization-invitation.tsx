@@ -11,12 +11,12 @@ import {
   Text,
 } from '@react-email/components';
 
-interface OrganizationInvitationTemplateProps {
+interface OrganizationInvitationTemplateProps extends Record<string, any> {
   readonly email: string;
   readonly expiresIn?: string;
   readonly inviteLink: string;
   readonly inviterEmail: string;
-  readonly inviterName?: string | null;
+  readonly inviterName?: null | string;
   readonly organizationName: string;
 }
 
@@ -43,7 +43,7 @@ export const OrganizationInvitationTemplate = ({
               <Text className="m-0 mb-4 text-zinc-500">Hi there!</Text>
 
               <Text className="m-0 mb-4 text-zinc-500">
-                {inviterName || 'Someone'} ({inviterEmail}) has invited you to join their
+                {inviterName ?? 'Someone'} ({inviterEmail}) has invited you to join their
                 organization
                 <strong>{organizationName}</strong>.
               </Text>
@@ -54,8 +54,8 @@ export const OrganizationInvitationTemplate = ({
 
               <Section className="mb-6">
                 <Button
-                  href={inviteLink}
                   className="rounded-md bg-zinc-950 px-6 py-3 text-center text-white no-underline"
+                  href={inviteLink}
                 >
                   Accept Invitation
                 </Button>
@@ -85,12 +85,12 @@ export const OrganizationInvitationTemplate = ({
 
 const ExampleOrganizationInvitationEmail = () => (
   <OrganizationInvitationTemplate
-    organizationName="Acme Corp"
     email="jane@example.com"
     expiresIn="48 hours"
     inviteLink="https://example.com/accept-invitation/abc123"
     inviterEmail="john@acmecorp.com"
     inviterName="John Doe"
+    organizationName="Acme Corp"
   />
 );
 

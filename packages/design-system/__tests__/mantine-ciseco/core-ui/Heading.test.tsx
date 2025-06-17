@@ -2,19 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
 import Heading from '../../../mantine-ciseco/components/Heading/Heading';
 
-describe('Heading', () => {
-  it('renders heading with text', () => {
+describe('Heading', (_: any) => {
+  it('renders heading with text', (_: any) => {
     render(<Heading>Test Heading</Heading>);
     expect(screen.getByRole('heading')).toHaveTextContent('Test Heading');
   });
 
-  it('renders as h2 by default', () => {
+  it('renders as h2 by default', (_: any) => {
     render(<Heading>Default Heading</Heading>);
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading.tagName).toBe('H2');
   });
 
-  it('renders with different heading levels', () => {
+  it('renders with different heading levels', (_: any) => {
     const { rerender } = render(<Heading level="h1">H1 Heading</Heading>);
     expect(screen.getByRole('heading', { level: 1 }).tagName).toBe('H1');
 
@@ -34,14 +34,14 @@ describe('Heading', () => {
     expect(screen.getByRole('heading', { level: 6 }).tagName).toBe('H6');
   });
 
-  it('renders with custom className', () => {
+  it('renders with custom className', (_: any) => {
     const { container } = render(<Heading className="custom-heading">Test</Heading>);
     // The className is applied to the wrapper div
     const wrapper = container.querySelector('.custom-heading');
     expect(wrapper).toBeInTheDocument();
   });
 
-  it('renders with description', () => {
+  it('renders with description', (_: any) => {
     render(<Heading description="This is a description">Heading with Description</Heading>);
     expect(screen.getByText('This is a description')).toBeInTheDocument();
     expect(screen.getByText('This is a description')).toHaveClass(
@@ -50,12 +50,12 @@ describe('Heading', () => {
     );
   });
 
-  it('renders with custom font class', () => {
+  it('renders with custom font class', (_: any) => {
     render(<Heading fontClass="text-4xl font-bold">Large Heading</Heading>);
     expect(screen.getByRole('heading')).toHaveClass('text-4xl', 'font-bold');
   });
 
-  it('renders with center alignment', () => {
+  it('renders with center alignment', (_: any) => {
     render(<Heading isCenter>Centered Heading</Heading>);
     const container = screen.getByRole('heading').parentElement;
     expect(container).toHaveClass(
@@ -68,12 +68,12 @@ describe('Heading', () => {
     );
   });
 
-  it('renders with heading dim', () => {
+  it('renders with heading dim', (_: any) => {
     render(<Heading headingDim="dimmed text">Heading with Dim</Heading>);
     expect(screen.getByText('dimmed text')).toHaveClass('text-neutral-400');
   });
 
-  it('renders with next/prev buttons', () => {
+  it('renders with next/prev buttons', (_: any) => {
     const onClickNext = () => {};
     const onClickPrev = () => {};
     const { container } = render(
@@ -85,7 +85,7 @@ describe('Heading', () => {
     expect(buttons.length).toBe(2);
   });
 
-  it('disables next/prev buttons', () => {
+  it('disables next/prev buttons', (_: any) => {
     const { container } = render(
       <Heading hasNextPrev nextBtnDisabled prevBtnDisabled>
         Heading with Disabled Navigation
@@ -96,7 +96,7 @@ describe('Heading', () => {
     expect(buttons[1]).toBeDisabled();
   });
 
-  it('renders children components', () => {
+  it('renders children components', (_: any) => {
     render(
       <Heading>
         Text with <strong>bold</strong> and <em>italic</em> parts

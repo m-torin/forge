@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
-import type { SearchState } from '../types';
+import { SearchState } from '../types';
 
 export function useSearchState(initialQuery = '') {
   const [state, setState] = useState<SearchState>({
@@ -12,19 +12,19 @@ export function useSearchState(initialQuery = '') {
   });
 
   const setQuery = useCallback((query: string) => {
-    setState((prev) => ({ ...prev, query }));
+    setState((prev: any) => ({ ...prev, query }));
   }, []);
 
   const setLoading = useCallback((isLoading: boolean) => {
-    setState((prev) => ({ ...prev, isLoading }));
+    setState((prev: any) => ({ ...prev, isLoading }));
   }, []);
 
   const setResults = useCallback((results: any) => {
-    setState((prev) => ({ ...prev, error: null, isLoading: false, results }));
+    setState((prev: any) => ({ ...prev, error: null, isLoading: false, results }));
   }, []);
 
   const setError = useCallback((error: Error) => {
-    setState((prev) => ({ ...prev, error, isLoading: false }));
+    setState((prev: any) => ({ ...prev, error, isLoading: false }));
   }, []);
 
   const clearState = useCallback(() => {

@@ -13,6 +13,9 @@ import {
   Textarea,
 } from '@/components/ui';
 
+import { getArticles, getArticleByHandle } from '@/actions/articles';
+import { transformDatabaseArticleToTBlogPost } from '@/types/database';
+
 // Temporary components until proper blog components are created
 const Badge = ({
   children,
@@ -79,15 +82,14 @@ const PostCard1 = ({ post, size = 'sm' }: { post: any; size?: string }) => (
   </article>
 );
 
-import { getBlogPosts, getBlogPostByHandle } from '@/data/data-service';
-
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
   const { handle, locale } = await params;
-  const post = await getBlogPostByHandle(handle);
+  const articleData = await getArticleByHandle(handle);
+  const post = articleData ? transformDatabaseArticleToTBlogPost(articleData) : null;
 
   if (!post) {
     return {
@@ -131,7 +133,8 @@ export default async function Page({
   params: Promise<{ handle: string; locale: string }>;
 }) {
   const { handle, locale } = await params;
-  const post = await getBlogPostByHandle(handle);
+  const articleData = await getArticleByHandle(handle);
+  const post = articleData ? transformDatabaseArticleToTBlogPost(articleData) : null;
 
   if (!post) {
     return notFound();
@@ -150,7 +153,8 @@ export default async function Page({
   } = post;
 
   // only get the first 4 posts demo
-  const relatedPosts = (await getBlogPosts()).slice(0, 4);
+  const articlesResult = await getArticles({ status: 'PUBLISHED', page: 1, limit: 4 });
+  const relatedPosts = (articlesResult.data || []).map(transformDatabaseArticleToTBlogPost);
 
   // Extract author name for structured data
   const authorName = typeof author === 'string' ? author : author?.name || 'Anonymous';

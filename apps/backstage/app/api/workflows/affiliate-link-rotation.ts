@@ -14,7 +14,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const AffiliateLinkRotationInput = z.object({
@@ -133,12 +133,8 @@ export const fetchLinkPerformanceStep = compose(
     (input) => input.networks.length > 0,
     (output) => output.performanceData.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 30000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['performanceMetrics'],
-    }),
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock function to generate default products
@@ -199,7 +195,7 @@ function generateAffiliateUrl(productId: string, network: any): string {
     walmart: `https://goto.walmart.com/c/AFFILIATE_ID/OFFER_ID/${productId}`,
   };
 
-  return `${baseUrls[network.name] || 'https://affiliate.example.com'}${network.id}`;
+  return `${baseUrls[network.name as string] || 'https://affiliate.example.com'}${network.id}`;
 }
 
 // Step 2: Health check affiliate links
@@ -250,16 +246,15 @@ export const healthCheckLinksStep = compose(
       },
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'linear',
-      maxAttempts: 2,
+      backoff: true,
+      maxRetries: 2,
     }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
+      resetTimeout: 30000,
       threshold: 0.5,
-      threshold: 0.5,
-      timeout: 10000,
     }),
 );
 
@@ -374,7 +369,7 @@ function calculateConfidence(performances: any[]): number {
 
 // Helper function to get rotation recommendation
 function getRotationRecommendation(weights: Record<string, number>, threshold: number): string {
-  const sortedWeights = Object.entries(weights).sort((a, b) => b[1] - a[1]);
+  const sortedWeights = Object.entries(weights).sort((a: any, b: any) => b[1] - a[1]);
 
   if (sortedWeights.length === 0) return 'no_data';
   if (sortedWeights[0][1] > threshold) return 'single_best';
@@ -419,7 +414,7 @@ export const optimizeGeographicRoutingStep = createStep(
     });
 
     // Calculate best network per region
-    const geoOptimization = {};
+    const geoOptimization: Record<string, any> = {};
     for (const [region, performances] of geoRouting.entries()) {
       const regionBest = performances.reduce((best: any, curr: any) => {
         if (!best || curr.performance.conversionRate > best.performance.conversionRate) {
@@ -428,7 +423,7 @@ export const optimizeGeographicRoutingStep = createStep(
         return best;
       }, null);
 
-      geoOptimization[region as any] = {
+      geoOptimization[region] = {
         fallbackNetworks: performances
           .filter((p: any) => p.networkId !== regionBest?.networkId)
           .sort((a: any, b: any) => b.performance.conversionRate - a.performance.conversionRate)
@@ -473,7 +468,7 @@ export const setupABTestsStep = createStep('setup-ab-tests', async (data: any) =
         targetConversions: minConversions,
         testId: `test_${weight.productId}_${Date.now()}`,
         variants: Object.entries(weight.weights)
-          .sort((a, b) => b[1] - a[1])
+          .sort((a: any, b: any) => b[1] - a[1])
           .slice(0, 3) // Top 3 networks
           .map(([networkId, weight], index) => ({
             allocation: index === 0 ? 0.5 : 0.25, // 50% to best, 25% each to others
@@ -504,12 +499,12 @@ export const configureFailoverStep = createStep('configure-failover', async (dat
   rotationWeights.forEach((weight: any) => {
     const productFailover = {
       productId: weight.productId,
-      rules: [],
+      rules: [] as any[],
     };
 
     // Sort networks by weight
     const sortedNetworks = Object.entries(weight.weights)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a: any, b: any) => b[1] - a[1])
       .map(([networkId]) => networkId);
 
     // Create failover chain
@@ -549,7 +544,7 @@ export const configureFailoverStep = createStep('configure-failover', async (dat
 // Step 7: Update routing configuration
 export const updateRoutingConfigStep = compose(
   StepTemplates.database('update-routing', 'Update affiliate link routing configuration'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 8: Monitor and report
@@ -558,7 +553,7 @@ export const generateRotationReportStep = createStep('generate-report', async (d
     data;
 
   const report = {
-    nextActions: [],
+    nextActions: [] as any[],
     performance: {
       averageConversionRate: calculateAverageMetric(performanceData, 'conversionRate'),
       averageEPC: calculateAverageMetric(performanceData, 'epc'),
@@ -628,7 +623,7 @@ function getTopNetworks(performanceData: any[], limit: number): any[] {
       conversionRate: n.totalClicks > 0 ? n.totalConversions / n.totalClicks : 0,
       epc: n.totalClicks > 0 ? n.totalRevenue / n.totalClicks : 0,
     }))
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+    .sort((a: any, b: any) => b.totalRevenue - a.totalRevenue)
     .slice(0, limit);
 }
 

@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React, { type FC } from 'react';
 
-export interface LabelProps {
+export interface LabelProps extends Record<string, any> {
   children?: React.ReactNode;
   className?: string;
   'data-testid'?: string;
@@ -9,13 +9,13 @@ export interface LabelProps {
   error?: boolean;
   htmlFor?: string;
   required?: boolean;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'lg' | 'md' | 'sm' | 'xs';
 }
 
 const Label: FC<LabelProps> = ({
-  'data-testid': testId,
   children,
   className = '',
+  'data-testid': testId,
   disabled = false,
   error = false,
   htmlFor,
@@ -41,7 +41,7 @@ const Label: FC<LabelProps> = ({
   );
 
   return (
-    <label data-nc-id="Label" data-testid={testId} htmlFor={htmlFor} className={labelClasses}>
+    <label className={labelClasses} data-nc-id="Label" data-testid={testId} htmlFor={htmlFor}>
       {children}
       {required && <span className="required-indicator text-red-500 ml-1">*</span>}
     </label>

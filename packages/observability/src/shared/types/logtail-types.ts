@@ -3,37 +3,37 @@
  */
 
 export interface LogtailConfig {
-  batchInterval?: number;
-  batchSize?: number;
-  endpoint?: string;
-  retryCount?: number;
-  retryDelay?: number;
-  sourceToken: string;
-
   // Metadata
   application?: string;
-  environment?: string;
-  release?: string;
-
+  batchInterval?: number;
+  batchSize?: number;
   captureErrors?: boolean;
   captureRejections?: boolean;
-  // Options
-  sendLogsToConsoleInDev?: boolean;
-  
+  endpoint?: string;
+
+  environment?: string;
   // Better Stack specific options (passed to Logger constructor)
   options?: Record<string, any>;
+  release?: string;
+
+  retryCount?: number;
+  retryDelay?: number;
+  // Options
+  sendLogsToConsoleInDev?: boolean;
+
+  sourceToken: string;
 }
 
 export interface LogtailOptions {
-  // Context fields to include with every log
-  context?: Record<string, any>;
-
-  // Middleware functions
-  middleware?: ((log: any) => any)[];
-
   // Should logs be buffered when offline
   bufferOffline?: boolean;
 
+  // Context fields to include with every log
+  context?: Record<string, any>;
+
   // Maximum buffer size
   maxBufferSize?: number;
+
+  // Middleware functions
+  middleware?: ((log: any) => any)[];
 }

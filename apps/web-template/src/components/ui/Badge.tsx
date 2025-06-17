@@ -1,8 +1,18 @@
+'use client';
+
 import { Badge as MantineBadge } from '@mantine/core';
 import Link from 'next/link';
 import { type FC, type ReactNode } from 'react';
 
-export type BadgeColor = 'pink' | 'red' | 'gray' | 'green' | 'purple' | 'indigo' | 'yellow' | 'blue';
+export type BadgeColor =
+  | 'pink'
+  | 'red'
+  | 'gray'
+  | 'green'
+  | 'purple'
+  | 'indigo'
+  | 'yellow'
+  | 'blue';
 
 export interface BadgeProps {
   className?: string;
@@ -11,16 +21,23 @@ export interface BadgeProps {
   name: ReactNode;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   variant?: 'light' | 'filled' | 'outline' | 'dot';
+  'data-testid'?: string;
 }
 
-const Badge: FC<BadgeProps> = ({ 
-  name, 
-  className = '', 
-  color = 'blue', 
+const Badge: FC<BadgeProps> = ({
+  name,
+  className = '',
+  color = 'blue',
   href,
   size = 'sm',
-  variant = 'light'
+  variant = 'light',
+  'data-testid': testId = 'badge',
 }) => {
+  // Return null if no name (fail silently)
+  if (!name) {
+    return null;
+  }
+
   const getMantineColor = () => {
     switch (color) {
       case 'pink':
@@ -50,6 +67,7 @@ const Badge: FC<BadgeProps> = ({
       variant={variant}
       size={size}
       className={className}
+      data-testid={testId}
     >
       {name}
     </MantineBadge>

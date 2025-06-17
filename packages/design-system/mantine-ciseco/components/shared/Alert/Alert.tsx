@@ -2,30 +2,30 @@ import React from 'react';
 
 import ButtonClose from '../ButtonClose/ButtonClose';
 
-export interface AlertProps {
+export interface AlertProps extends Record<string, any> {
   children?: React.ReactNode;
   containerClassName?: string;
-  type?: 'default' | 'warning' | 'info' | 'success' | 'error';
+  type?: 'default' | 'error' | 'info' | 'success' | 'warning';
 }
 
 const Alert: React.FC<AlertProps> = ({
-  type = 'default',
   children = 'Alert Text',
   containerClassName = '',
+  type = 'default',
 }) => {
   let classes = containerClassName;
   switch (type) {
     case 'default':
       classes += ' text-black bg-neutral-900';
       break;
+    case 'error':
+      classes += ' bg-status-errorBg text-status-error';
+      break;
     case 'info':
       classes += ' bg-status-infoBg text-status-info';
       break;
     case 'success':
       classes += ' bg-status-successBg text-status-success';
-      break;
-    case 'error':
-      classes += ' bg-status-errorBg text-status-error';
       break;
     case 'warning':
       classes += ' bg-status-warningBg text-status-warning';

@@ -232,11 +232,11 @@ export function debugConfig(config: AnalyticsConfig): void {
   console.log('Validation Result:', result);
 
   if (result.errors.length > 0) {
-    console.error('Errors:', result.errors);
+    console.error('Errors: ', result.errors);
   }
 
   if (result.warnings.length > 0) {
-    console.warn('Warnings:', result.warnings);
+    console.warn('Warnings: ', result.warnings);
   }
 
   console.groupEnd();

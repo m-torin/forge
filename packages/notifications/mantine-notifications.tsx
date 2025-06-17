@@ -1,9 +1,7 @@
 'use client';
 
-import { notifications as mantineNotifications } from '@mantine/notifications';
+import { notifications as mantineNotifications, NotificationData } from '@mantine/notifications';
 import { IconAlertTriangle, IconCheck, IconInfoCircle, IconX } from '@tabler/icons-react';
-
-import type { NotificationData } from '@mantine/notifications';
 
 // Default notification configuration
 const defaultConfig: Partial<NotificationData> = {
@@ -20,14 +18,12 @@ const defaultConfig: Partial<NotificationData> = {
 
 // Notification presets
 export const notify = {
-  success: (message: string, options?: Partial<NotificationData>) =>
-    mantineNotifications.show({
-      ...defaultConfig,
-      color: 'green',
-      icon: <IconCheck size={20} />,
-      message,
-      ...options,
-    }),
+  clean: mantineNotifications.clean,
+
+  cleanQueue: mantineNotifications.cleanQueue,
+
+  // Direct access to Mantine notifications for custom usage
+  custom: mantineNotifications.show,
 
   error: (message: string, options?: Partial<NotificationData>) =>
     mantineNotifications.show({
@@ -38,6 +34,7 @@ export const notify = {
       ...options,
     }),
 
+  hide: mantineNotifications.hide,
   info: (message: string, options?: Partial<NotificationData>) =>
     mantineNotifications.show({
       ...defaultConfig,
@@ -46,7 +43,15 @@ export const notify = {
       message,
       ...options,
     }),
-
+  success: (message: string, options?: Partial<NotificationData>) =>
+    mantineNotifications.show({
+      ...defaultConfig,
+      color: 'green',
+      icon: <IconCheck size={20} />,
+      message,
+      ...options,
+    }),
+  update: mantineNotifications.update,
   warning: (message: string, options?: Partial<NotificationData>) =>
     mantineNotifications.show({
       ...defaultConfig,
@@ -55,13 +60,6 @@ export const notify = {
       message,
       ...options,
     }),
-
-  hide: mantineNotifications.hide,
-  clean: mantineNotifications.clean,
-  cleanQueue: mantineNotifications.cleanQueue,
-  // Direct access to Mantine notifications for custom usage
-  custom: mantineNotifications.show,
-  update: mantineNotifications.update,
 };
 
 // Re-export the notifications provider

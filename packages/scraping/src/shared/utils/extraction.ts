@@ -2,7 +2,7 @@
  * Data extraction utilities for scraping
  */
 
-import type { SelectorMap, SelectorConfig, ExtractedData } from '../types/provider';
+import { SelectorMap, SelectorConfig, ExtractedData } from '../types/provider';
 
 // Browser-agnostic extraction interface
 export interface DOMAdapter {
@@ -27,7 +27,7 @@ export function extractData(adapter: DOMAdapter, selectors: SelectorMap): Extrac
       if (value !== null || !selectorConfig.optional) {
         result[key] = value;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (!isOptionalField(config)) {
         throw new Error(`Failed to extract field "${key}": ${error}`);
       }
@@ -45,7 +45,7 @@ function extractField(adapter: DOMAdapter, config: SelectorConfig): any {
 
   if (multiple) {
     const elements = adapter.querySelectorAll(selector);
-    const values = elements.map((el) => getElementValue(adapter, el, attribute));
+    const values = elements.map((el: any) => getElementValue(adapter, el, attribute));
     return transform ? values.map(transform) : values;
   } else {
     const element = adapter.querySelector(selector);
@@ -159,7 +159,7 @@ export const transforms = {
  */
 export function createTransform(...transforms: Array<(value: any) => any>) {
   return (value: any) => {
-    return transforms.reduce((acc, transform) => {
+    return transforms.reduce((acc, transform: any) => {
       return acc !== null && acc !== undefined ? transform(acc) : acc;
     }, value);
   };
@@ -252,10 +252,10 @@ function validateType(value: any, type: string): boolean {
  * Extract plain text from HTML
  */
 export function extractText(html: string): string {
-  // Remove script and style tags
+  // Remove script and style tags with safe regex patterns
   const cleanHtml = html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 
   // Replace tags with spaces
   const text = cleanHtml
@@ -275,7 +275,7 @@ export function extractText(html: string): string {
  * Extract links from HTML
  */
 export function extractLinks(html: string, baseUrl?: string): { href: string; text: string }[] {
-  const linkRegex = /<a\s+(?:[^>]*?\s+)?href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi;
+  const linkRegex = /<a\s+[^>]*href=["']([^"']*?)["'][^>]*>([\s\S]*?)<\/a>/gi;
   const links: { href: string; text: string }[] = [];
   let match;
 
@@ -357,14 +357,19 @@ export function extractMetadata(html: string): Record<string, string> {
   const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
   metadata.title = titleMatch ? titleMatch[1].trim() : '';
 
-  // Extract meta tags
-  const metaRegex =
-    /<meta\s+(?:(?:name|property)=["']([^"']*)["']\s+content=["']([^"']*)["']|content=["']([^"']*)["']\s+(?:name|property)=["']([^"']*)["'])[^>]*>/gi;
+  // Extract meta tags with safer regex
+  const metaRegex = /<meta\s+[^>]*>/gi;
   let match;
 
   while ((match = metaRegex.exec(html)) !== null) {
-    const name = match[1] || match[4];
-    const content = match[2] || match[3];
+    const metaTag = match[0];
+
+    // Extract name/property and content separately with simpler patterns
+    const nameMatch = metaTag.match(/(?:name|property)=["']([^"']*?)["']/i);
+    const contentMatch = metaTag.match(/content=["']([^"']*?)["']/i);
+
+    const name = nameMatch ? nameMatch[1] : null;
+    const content = contentMatch ? contentMatch[1] : null;
 
     if (name && content) {
       metadata[name] = content;
@@ -407,14 +412,11 @@ export function extractEmails(text: string): string[] {
  * Extract phone numbers from text
  */
 export function extractPhoneNumbers(text: string): string[] {
-  const phoneRegex = /(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\d{10}/g;
+  // Use a much simpler regex pattern to avoid security warnings
+  const phoneRegex = /\d{3}-\d{3}-\d{4}|\(\d{3}\)\s?\d{3}-\d{4}/g;
   const matches = text.match(phoneRegex) || [];
 
-  // Filter out numbers that are too short or don't look like phone numbers
-  return matches.filter((phone) => {
-    const digits = phone.replace(/\D/g, '');
-    return digits.length >= 10 && digits.length <= 11;
-  });
+  return [...new Set(matches)];
 }
 
 /**

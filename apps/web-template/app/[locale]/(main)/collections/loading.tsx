@@ -8,7 +8,7 @@ export default function CollectionsLoading() {
         <Skeleton height={48} width={400} className="mx-auto mb-4" />
         <Skeleton height={20} width={600} className="mx-auto" />
       </div>
-      
+
       {/* Collections grid skeleton */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(6)].map((_, i) => (
@@ -17,8 +17,17 @@ export default function CollectionsLoading() {
               <Skeleton height={320} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6">
-                <Skeleton height={28} width="60%" className="mb-2" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }} />
-                <Skeleton height={16} width="40%" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }} />
+                <Skeleton
+                  height={28}
+                  width="60%"
+                  className="mb-2"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                />
+                <Skeleton
+                  height={16}
+                  width="40%"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                />
               </div>
             </div>
           </div>

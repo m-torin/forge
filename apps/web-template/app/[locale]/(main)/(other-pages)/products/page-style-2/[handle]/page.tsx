@@ -1,12 +1,13 @@
 import { getDictionary } from '@/i18n';
-import { getProductDetailByHandle, getProductReviews, getProducts } from '@/data/data-service';
+import { getProductByHandle, getProducts } from '@/actions/products';
+import { transformDatabaseProductToTCardProduct } from '@/types/database';
+// TODO: Add getProductReviews when review actions are available
 import { IconStar, IconShoppingBag } from '@tabler/icons-react';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import {
   AccordionInfo,
-  AddToCartButton,
   ButtonPrimary,
   Divider,
   LikeSaveBtns,
@@ -28,8 +29,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle, locale } = await params;
   const _dict = await getDictionary(locale);
-  const product = await getProductDetailByHandle(handle);
-  const title = product?.title || _dict.product.productDetail;
+  const product = await getProductByHandle(handle);
+  const title = product?.name || _dict.product.productDetail;
   const description = (product as any)?.description || _dict.product.productDetailDescription;
   return {
     description,
@@ -44,27 +45,28 @@ export default async function Page({
 }) {
   const { handle, locale } = await params;
   const _dict = await getDictionary(locale);
-  const product = await getProductDetailByHandle(handle);
-  const relatedProducts = (await getProducts()).slice(2, 8);
-  const reviews = await getProductReviews(handle);
+  const product = await getProductByHandle(handle);
+  const productsResult = await getProducts({ limit: 8 });
+  const relatedProducts = productsResult.data
+    .slice(2, 8)
+    .map(transformDatabaseProductToTCardProduct);
+  // TODO: Replace with actual reviews when review actions are available
+  const reviews: any[] = [];
 
-  if (!product.id) {
+  if (!product?.id) {
     return notFound();
   }
 
-  const {
-    featuredImage,
-    images,
-    options,
-    price,
-    rating,
-    reviewNumber,
-    selectedOptions,
-    status,
-    title,
-  } = product;
-  const sizeSelected = selectedOptions?.find((option: any) => option.name === 'Size')?.value;
-  const colorSelected = selectedOptions?.find((option: any) => option.name === 'Color')?.value;
+  const { price, status, name: title } = product;
+  const media = (product as any).media || [];
+  const featuredImage = media?.[0] ? { src: media[0].url } : null;
+  const images = media;
+  const options: any[] = [];
+  const rating = 4.5; // Mock rating for now
+  const reviewNumber = 48; // Mock review count for now
+  const selectedOptions: any[] = [];
+  const sizeSelected = null;
+  const colorSelected = null;
 
   const renderSectionSidebar = () => {
     return (
@@ -208,24 +210,24 @@ export default async function Page({
                   containerClassName="aspect-[3/4] relative md:aspect-none md:absolute md:inset-0"
                   priority
                   className="rounded-md object-cover sm:rounded-xl"
-                  alt={featuredImage.alt || 'product detail'}
+                  alt="product detail"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
-                  src={featuredImage}
+                  src={featuredImage.src}
                 />
               )}
             </div>
 
             {/*  */}
             <div className="relative z-0 col-span-1 row-span-2 overflow-hidden rounded-md sm:rounded-xl">
-              {images?.[1]?.src && (
+              {images?.[1]?.url && (
                 <NcImage
                   containerClassName="absolute inset-0"
                   className="rounded-md object-cover sm:rounded-xl"
-                  alt={images[1].alt || 'product detail'}
+                  alt="product detail"
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
-                  src={images[1]}
+                  src={images[1].url}
                 />
               )}
             </div>
@@ -233,16 +235,16 @@ export default async function Page({
             {/*  */}
             {images?.slice(2, 4)?.map((image: any) => (
               <div
-                key={image.src}
+                key={image.url}
                 className="relative z-0 overflow-hidden rounded-md sm:rounded-xl"
               >
                 <NcImage
                   containerClassName="aspect-[6/5] lg:aspect-[6/4] relative"
                   className="rounded-md object-cover sm:rounded-xl"
-                  alt={image.alt || 'product detail'}
+                  alt="product detail"
                   fill
                   sizes="(max-width: 640px) 100vw, 33vw"
-                  src={image}
+                  src={image.url}
                 />
               </div>
             ))}

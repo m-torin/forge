@@ -1,3 +1,5 @@
+import { Meta, StoryObj } from '@storybook/react';
+
 import {
   Autocomplete,
   SearchBox,
@@ -5,8 +7,6 @@ import {
   SearchResults,
   SearchStats,
 } from '@repo/design-system/algolia';
-
-import type { Meta, StoryObj } from '@storybook/react';
 
 // This is a comprehensive example showing all Algolia components working together
 const meta: Meta = {
@@ -41,8 +41,8 @@ export const FullECommerceSearch: Story = {
 
               <div className="flex-1 max-w-2xl mx-8">
                 <SearchBox
-                  placeholder="Search for products, brands, categories..."
                   className="w-full"
+                  placeholder="Search for products, brands, categories..."
                 />
               </div>
 
@@ -60,7 +60,11 @@ export const FullECommerceSearch: Story = {
             <aside className="space-y-6">
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">Quick Search</h3>
-                <Autocomplete placeholder="Type for suggestions..." className="w-full" />
+                <Autocomplete
+                  className="w-full"
+                  config={mockConfig}
+                  placeholder="Type for suggestions..."
+                />
               </div>
 
               <div className="bg-white rounded-lg shadow-sm p-6">
@@ -126,13 +130,19 @@ export const FullECommerceSearch: Story = {
                             type="checkbox"
                           />
                           <div className="flex items-center">
-                            {[...Array(stars)].map((_, i) => (
-                              <span key={`star-filled-${stars}-${i}`} className="text-yellow-400">
+                            {Array.from({ length: stars }, (_, i) => (
+                              <span
+                                key={`star-filled-${stars}-pos-${i}`}
+                                className="text-yellow-400"
+                              >
                                 ★
                               </span>
                             ))}
-                            {[...Array(5 - stars)].map((_, i) => (
-                              <span key={`star-empty-${stars}-${i}`} className="text-gray-300">
+                            {Array.from({ length: 5 - stars }, (_, i) => (
+                              <span
+                                key={`star-empty-${5 - stars}-pos-${i}`}
+                                className="text-gray-300"
+                              >
                                 ★
                               </span>
                             ))}
@@ -189,7 +199,7 @@ export const DocumentationSearch: Story = {
                 <h1 className="text-xl font-bold">Documentation</h1>
               </div>
               <div className="flex-1 max-w-md ml-8">
-                <SearchBox autoFocus placeholder="Search docs..." className="w-full" />
+                <SearchBox autoFocus className="w-full" placeholder="Search docs..." />
               </div>
             </div>
           </div>
@@ -318,7 +328,7 @@ export const MinimalBlogSearch: Story = {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Search Our Blog</h1>
           <p className="text-lg text-gray-600 mb-8">Find articles, tutorials, and insights</p>
           <div className="max-w-2xl mx-auto">
-            <SearchBox placeholder="Search articles..." className="text-lg py-4" />
+            <SearchBox className="text-lg py-4" placeholder="Search articles..." />
           </div>
         </div>
 

@@ -7,15 +7,15 @@ export interface LogoProps extends React.ComponentPropsWithoutRef<'svg'> {
   'data-testid'?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ 'data-testid': testId, className = 'shrink-0', ...props }) => {
+const Logo: React.FC<LogoProps> = ({ className = 'shrink-0', 'data-testid': testId, ...props }) => {
   return (
-    <Link href="/" className={`flex text-neutral-950 dark:text-neutral-50 ${className}`}>
+    <Link className={`flex text-neutral-950 dark:text-neutral-50 ${className}`} href="/">
       <svg
         data-testid={testId}
-        width="112"
-        viewBox="0 0 112 44"
         fill="none"
         height="44"
+        viewBox="0 0 112 44"
+        width="112"
         xmlns="http://www.w3.org/2000/svg"
         {...props}
       >
@@ -24,20 +24,20 @@ const Logo: React.FC<LogoProps> = ({ 'data-testid': testId, className = 'shrink-
           fill="black"
         />
         <rect
-          width="2"
-          transform="rotate(50.5422 23.8064 10.0613)"
           fill="white"
           height="20"
           rx="1"
+          transform="rotate(50.5422 23.8064 10.0613)"
+          width="2"
           x="23.8064"
           y="10.0613"
         />
         <rect
-          width="2"
-          transform="rotate(50.5422 21.5823 19.8572)"
           fill="white"
           height="20"
           rx="1"
+          transform="rotate(50.5422 21.5823 19.8572)"
+          width="2"
           x="21.5823"
           y="19.8572"
         />

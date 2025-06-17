@@ -1,7 +1,11 @@
 'use client';
 
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { IconAlertTriangle } from '@tabler/icons-react';
+import { Skeleton, Alert, Text } from '@mantine/core';
 import React, { type FC, useEffect, useState } from 'react';
+
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export interface NcInputNumberProps {
   className?: string;
@@ -12,6 +16,80 @@ export interface NcInputNumberProps {
   max?: number;
   min?: number;
   onChange?: (value: number) => void;
+  loading?: boolean;
+  error?: string;
+}
+
+// Loading skeleton for NcInputNumber
+function NcInputNumberSkeleton({ className, testId }: { className?: string; testId?: string }) {
+  return (
+    <div
+      className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
+      data-testid={testId}
+    >
+      <div className="flex flex-col">
+        <Skeleton height={20} width="60%" mb="xs" />
+        <Skeleton height={16} width="40%" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton height={32} width={32} radius="xl" />
+        <Skeleton height={20} width={24} />
+        <Skeleton height={32} width={32} radius="xl" />
+      </div>
+    </div>
+  );
+}
+
+// Error state for NcInputNumber
+function NcInputNumberError({
+  error,
+  className,
+  testId,
+}: {
+  error: string;
+  className?: string;
+  testId?: string;
+}) {
+  return (
+    <div
+      className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
+      data-testid={testId}
+    >
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Number input failed to load</Text>
+      </Alert>
+    </div>
+  );
+}
+
+// Zero state for NcInputNumber
+function NcInputNumberEmpty({ className, testId }: { className?: string; testId?: string }) {
+  return (
+    <div
+      className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
+      data-testid={testId}
+    >
+      <div className="flex flex-col">
+        <span className="font-medium text-neutral-400 dark:text-neutral-500">Number input</span>
+        <span className="text-xs text-neutral-400 dark:text-neutral-500">Not available</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          disabled
+          className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 opacity-50 cursor-not-allowed"
+        >
+          <MinusIcon className="w-4 h-4 mx-auto text-gray-400" />
+        </button>
+        <span className="text-gray-400">--</span>
+        <button
+          disabled
+          className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 opacity-50 cursor-not-allowed"
+        >
+          <PlusIcon className="w-4 h-4 mx-auto text-gray-400" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 const NcInputNumber: FC<NcInputNumberProps> = ({
@@ -23,7 +101,18 @@ const NcInputNumber: FC<NcInputNumberProps> = ({
   max = 99,
   min = 1,
   onChange,
+  loading = false,
+  error,
 }) => {
+  // Show loading state
+  if (loading) {
+    return <NcInputNumberSkeleton className={className} testId={testId} />;
+  }
+
+  // Show error state
+  if (error) {
+    return <NcInputNumberError error={error} className={className} testId={testId} />;
+  }
   const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
@@ -57,34 +146,48 @@ const NcInputNumber: FC<NcInputNumberProps> = ({
   };
 
   return (
-    <div
-      className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
-      data-testid={testId}
+    <ErrorBoundary
+      fallback={
+        <NcInputNumberError
+          error="Number input failed to render"
+          className={className}
+          testId={testId}
+        />
+      }
     >
-      {label && renderLabel()}
+      <div
+        className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
+        data-testid={testId}
+      >
+        <ErrorBoundary fallback={<Skeleton height={20} width="60%" />}>
+          {label && renderLabel()}
+        </ErrorBoundary>
 
-      <div className="nc-NcInputNumber__content flex items-center justify-between w-[104px] sm:w-28">
-        <button
-          className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-400 dark:border-neutral-500 bg-white dark:bg-neutral-900 focus:outline-hidden hover:border-neutral-700 dark:hover:border-neutral-400 disabled:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-default"
-          data-testid="decrement-button"
-          disabled={min >= value}
-          type="button"
-          onClick={handleClickDecrement}
-        >
-          <MinusIcon className="w-4 h-4" />
-        </button>
-        <span className="select-none block flex-1 text-center leading-none">{value}</span>
-        <button
-          className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-400 dark:border-neutral-500 bg-white dark:bg-neutral-900 focus:outline-hidden hover:border-neutral-700 dark:hover:border-neutral-400 disabled:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-default"
-          data-testid="increment-button"
-          disabled={max ? max <= value : false}
-          type="button"
-          onClick={handleClickIncrement}
-        >
-          <PlusIcon className="w-4 h-4" />
-        </button>
+        <ErrorBoundary fallback={<Skeleton height={32} width={104} />}>
+          <div className="nc-NcInputNumber__content flex items-center justify-between w-[104px] sm:w-28">
+            <button
+              className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-400 dark:border-neutral-500 bg-white dark:bg-neutral-900 focus:outline-hidden hover:border-neutral-700 dark:hover:border-neutral-400 disabled:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-default"
+              data-testid="decrement-button"
+              disabled={min >= value}
+              type="button"
+              onClick={handleClickDecrement}
+            >
+              <MinusIcon className="w-4 h-4" />
+            </button>
+            <span className="select-none block flex-1 text-center leading-none">{value}</span>
+            <button
+              className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-400 dark:border-neutral-500 bg-white dark:bg-neutral-900 focus:outline-hidden hover:border-neutral-700 dark:hover:border-neutral-400 disabled:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-default"
+              data-testid="increment-button"
+              disabled={max ? max <= value : false}
+              type="button"
+              onClick={handleClickIncrement}
+            >
+              <PlusIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </ErrorBoundary>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

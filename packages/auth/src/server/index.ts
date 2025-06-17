@@ -17,13 +17,28 @@ export { inviteToTeam, listTeamInvitations, respondToInvitation } from './teams/
 export * from './organizations';
 
 // Actions - only export what actually exists
-export { getActiveOrganization, updateUser } from './actions';
+export {
+  getActiveOrganization,
+  updateUser,
+  changePassword,
+  setPassword,
+  listAccounts,
+  unlinkAccount,
+  createApiKey,
+  updateApiKey,
+  deleteApiKey,
+  listAllOrganizations,
+} from './actions';
 
 // Admin management functions
 export {
   banUser,
   deleteSession,
   deleteUser,
+  getApiKey,
+  getOrganization,
+  getUser,
+  getUserById,
   impersonateUser,
   listApiKeys,
   listSessions,

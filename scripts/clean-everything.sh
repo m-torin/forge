@@ -209,12 +209,24 @@ track_deletion() {
   local parent=$(dirname "$item")
   local name=$(basename "$item")
   
+  # Clean up the path (remove leading ./)
+  parent=${parent#./}
+  [[ "$parent" == "." ]] && parent=""
+  
   # Only track top-level deletions (apps/*, packages/*, or root)
-  if [[ "$parent" == "." ]] || [[ "$parent" =~ ^./apps/[^/]+$ ]] || [[ "$parent" =~ ^./packages/[^/]+$ ]]; then
+  if [[ -z "$parent" ]] || [[ "$parent" =~ ^apps/[^/]+$ ]] || [[ "$parent" =~ ^packages/[^/]+$ ]]; then
     if [[ "$type" == "dir" ]]; then
-      deleted_dirs+=("${parent#./}/$name")
+      if [[ -z "$parent" ]]; then
+        deleted_dirs+=("$name")
+      else
+        deleted_dirs+=("$parent/$name")
+      fi
     else
-      deleted_files+=("${parent#./}/$name")
+      if [[ -z "$parent" ]]; then
+        deleted_files+=("$name")
+      else
+        deleted_files+=("$parent/$name")
+      fi
     fi
   fi
 }
@@ -275,27 +287,23 @@ fi
 print_header "Deletion Summary"
 
 if [[ ${#deleted_dirs[@]} -gt 0 ]] || [[ ${#deleted_files[@]} -gt 0 ]]; then
-  echo -e "${YELLOW}Removed from top-level directories:${NC}\n"
+  echo -e "${YELLOW}Removed items:${NC}\n"
   
-  # Group by parent directory
-  declare -A deletions_by_parent
+  # Display directories
+  if [[ ${#deleted_dirs[@]} -gt 0 ]]; then
+    echo -e "${GREEN}Directories:${NC}"
+    for dir in "${deleted_dirs[@]}"; do
+      echo -e "  ${YELLOW}▸${NC} $dir"
+    done
+  fi
   
-  for dir in "${deleted_dirs[@]}"; do
-    parent=$(dirname "$dir")
-    name=$(basename "$dir")
-    deletions_by_parent[$parent]+="$name (dir) "
-  done
-  
-  for file in "${deleted_files[@]}"; do
-    parent=$(dirname "$file")
-    name=$(basename "$file")
-    deletions_by_parent[$parent]+="$name "
-  done
-  
-  # Sort and display
-  for parent in "${!deletions_by_parent[@]}"; do
-    echo -e "${GREEN}${parent}:${NC} ${deletions_by_parent[$parent]}"
-  done
+  # Display files  
+  if [[ ${#deleted_files[@]} -gt 0 ]]; then
+    echo -e "${GREEN}Files:${NC}"
+    for file in "${deleted_files[@]}"; do
+      echo -e "  ${YELLOW}▸${NC} $file"
+    done
+  fi
 else
   echo -e "${YELLOW}No items were deleted${NC}"
 fi

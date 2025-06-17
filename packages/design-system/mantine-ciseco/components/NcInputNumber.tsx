@@ -3,7 +3,7 @@
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/solid';
 import React, { type FC, useEffect, useState } from 'react';
 
-export interface NcInputNumberProps {
+export interface NcInputNumberProps extends Record<string, any> {
   className?: string;
   'data-testid'?: string;
   defaultValue?: number;
@@ -15,8 +15,8 @@ export interface NcInputNumberProps {
 }
 
 const NcInputNumber: FC<NcInputNumberProps> = ({
-  'data-testid': testId = 'number-input',
   className = 'w-full',
+  'data-testid': testId = 'number-input',
   defaultValue = 1,
   desc,
   label,
@@ -32,14 +32,14 @@ const NcInputNumber: FC<NcInputNumberProps> = ({
 
   const handleClickDecrement = () => {
     if (min >= value) return;
-    setValue((state) => {
+    setValue((state: any) => {
       return state - 1;
     });
     onChange && onChange(value - 1);
   };
   const handleClickIncrement = () => {
     if (max && max <= value) return;
-    setValue((state) => {
+    setValue((state: any) => {
       return state + 1;
     });
     onChange && onChange(value + 1);
@@ -58,28 +58,28 @@ const NcInputNumber: FC<NcInputNumberProps> = ({
 
   return (
     <div
-      data-testid={testId}
       className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
+      data-testid={testId}
     >
       {label && renderLabel()}
 
       <div className="nc-NcInputNumber__content flex items-center justify-between w-[104px] sm:w-28">
         <button
-          data-testid="decrement-button"
-          onClick={handleClickDecrement}
           className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-400 dark:border-neutral-500 bg-white dark:bg-neutral-900 focus:outline-hidden hover:border-neutral-700 dark:hover:border-neutral-400 disabled:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-default"
+          data-testid="decrement-button"
           disabled={min >= value}
           type="button"
+          onClick={handleClickDecrement}
         >
           <MinusIcon className="w-4 h-4" />
         </button>
         <span className="select-none block flex-1 text-center leading-none">{value}</span>
         <button
-          data-testid="increment-button"
-          onClick={handleClickIncrement}
           className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-400 dark:border-neutral-500 bg-white dark:bg-neutral-900 focus:outline-hidden hover:border-neutral-700 dark:hover:border-neutral-400 disabled:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-default"
+          data-testid="increment-button"
           disabled={max ? max <= value : false}
           type="button"
+          onClick={handleClickIncrement}
         >
           <PlusIcon className="w-4 h-4" />
         </button>

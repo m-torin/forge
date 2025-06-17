@@ -1,3 +1,5 @@
+import { Meta, StoryObj } from '@storybook/react';
+
 import {
   Autocomplete,
   SearchBox,
@@ -5,8 +7,6 @@ import {
   SearchResults,
   SearchStats,
 } from '@repo/design-system/algolia';
-
-import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof SearchProvider> = {
   argTypes: {
@@ -42,7 +42,7 @@ export const BasicSetup: Story = {
   args: {
     config: mockConfig,
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider {...args}>
       <div className="space-y-4">
         <h2 className="text-xl font-bold">Basic Search Setup</h2>
@@ -58,11 +58,11 @@ export const WithAutocomplete: Story = {
   args: {
     config: ecommerceConfig,
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider {...args}>
       <div className="space-y-4">
         <h2 className="text-xl font-bold">Search with Autocomplete</h2>
-        <Autocomplete placeholder="Type to see suggestions..." />
+        <Autocomplete config={args.config} placeholder="Type to see suggestions..." />
         <SearchStats />
         <SearchResults />
       </div>
@@ -85,7 +85,7 @@ export const MultiIndexSearch: Story = {
       <SearchProvider config={ecommerceConfig}>
         <div className="border rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-4">Query Suggestions Index</h3>
-          <Autocomplete placeholder="Search with suggestions..." />
+          <Autocomplete config={ecommerceConfig} placeholder="Search with suggestions..." />
           <SearchStats />
         </div>
       </SearchProvider>
@@ -97,7 +97,7 @@ export const ECommerceDemo: Story = {
   args: {
     config: mockConfig,
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider {...args}>
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-6xl mx-auto">
@@ -111,8 +111,8 @@ export const ECommerceDemo: Story = {
               </div>
             </div>
             <SearchBox
-              placeholder="Search for products, brands, categories..."
               className="w-full max-w-2xl mx-auto"
+              placeholder="Search for products, brands, categories..."
             />
           </header>
 
@@ -175,12 +175,12 @@ export const DocumentationSearch: Story = {
   args: {
     config: mockConfig,
   },
-  render: (args: any) => (
+  render: (args) => (
     <SearchProvider {...args}>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Documentation</h1>
-          <SearchBox autoFocus placeholder="Search documentation..." className="max-w-lg mx-auto" />
+          <SearchBox autoFocus className="max-w-lg mx-auto" placeholder="Search documentation..." />
         </div>
 
         <div className="grid md:grid-cols-[200px_1fr] gap-6">

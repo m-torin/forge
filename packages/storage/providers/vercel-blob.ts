@@ -1,6 +1,6 @@
 import { del, head, list, put } from '@vercel/blob';
 
-import type { ListOptions, StorageObject, StorageProvider, UploadOptions } from '../types';
+import { ListOptions, StorageObject, StorageProvider, UploadOptions } from '../types';
 
 export class VercelBlobProvider implements StorageProvider {
   private token: string;
@@ -12,30 +12,8 @@ export class VercelBlobProvider implements StorageProvider {
     this.token = token;
   }
 
-  async upload(
-    key: string,
-    data: Buffer | Blob | File | ArrayBuffer | ReadableStream,
-    options?: UploadOptions,
-  ): Promise<StorageObject> {
-    const result = await put(key, data, {
-      access: 'public',
-      addRandomSuffix: false,
-      cacheControlMaxAge: options?.cacheControl,
-      contentType: options?.contentType,
-      token: this.token,
-    });
-
-    // Get metadata to get size and other info
-    const metadata = await head(result.url, { token: this.token });
-
-    return {
-      url: result.url,
-      contentType: metadata.contentType,
-      etag: undefined, // Vercel Blob doesn't provide ETags
-      key: result.pathname,
-      lastModified: new Date(metadata.uploadedAt),
-      size: metadata.size,
-    };
+  async delete(key: string): Promise<void> {
+    await del(key, { token: this.token });
   }
 
   async download(key: string): Promise<Blob> {
@@ -52,10 +30,6 @@ export class VercelBlobProvider implements StorageProvider {
     return response.blob();
   }
 
-  async delete(key: string): Promise<void> {
-    await del(key, { token: this.token });
-  }
-
   async exists(key: string): Promise<boolean> {
     try {
       await head(key, { token: this.token });
@@ -63,6 +37,26 @@ export class VercelBlobProvider implements StorageProvider {
     } catch {
       return false;
     }
+  }
+
+  async getMetadata(key: string): Promise<StorageObject> {
+    const blob = await head(key, { token: this.token });
+
+    return {
+      contentType: blob.contentType,
+      etag: undefined,
+      key: blob.pathname,
+      lastModified: new Date(blob.uploadedAt),
+      size: blob.size,
+      url: blob.url,
+    };
+  }
+
+  async getUrl(key: string, _options?: { expiresIn?: number }): Promise<string> {
+    // Vercel Blob URLs are permanent for public files
+    // For private files, they include auth in the URL
+    const blob = await head(key, { token: this.token });
+    return blob.url;
   }
 
   async list(options?: ListOptions): Promise<StorageObject[]> {
@@ -75,37 +69,43 @@ export class VercelBlobProvider implements StorageProvider {
 
     // For list results, we need to call head on each blob to get contentType
     return Promise.all(
-      result.blobs.map(async (blob) => {
+      result.blobs.map(async (blob: any) => {
         const metadata = await head(blob.url, { token: this.token });
         return {
-          url: blob.url,
           contentType: metadata.contentType || 'application/octet-stream',
           etag: undefined,
           key: blob.pathname,
           lastModified: new Date(blob.uploadedAt),
           size: blob.size,
+          url: blob.url,
         };
       }),
     );
   }
 
-  async getUrl(key: string, _options?: { expiresIn?: number }): Promise<string> {
-    // Vercel Blob URLs are permanent for public files
-    // For private files, they include auth in the URL
-    const blob = await head(key, { token: this.token });
-    return blob.url;
-  }
+  async upload(
+    key: string,
+    data: ArrayBuffer | Blob | Buffer | File | ReadableStream,
+    options?: UploadOptions,
+  ): Promise<StorageObject> {
+    const result = await put(key, data, {
+      access: 'public',
+      addRandomSuffix: false,
+      cacheControlMaxAge: options?.cacheControl,
+      contentType: options?.contentType,
+      token: this.token,
+    });
 
-  async getMetadata(key: string): Promise<StorageObject> {
-    const blob = await head(key, { token: this.token });
+    // Get metadata to get size and other info
+    const metadata = await head(result.url, { token: this.token });
 
     return {
-      url: blob.url,
-      contentType: blob.contentType,
-      etag: undefined,
-      key: blob.pathname,
-      lastModified: new Date(blob.uploadedAt),
-      size: blob.size,
+      contentType: metadata.contentType,
+      etag: undefined, // Vercel Blob doesn't provide ETags
+      key: result.pathname,
+      lastModified: new Date(metadata.uploadedAt),
+      size: metadata.size,
+      url: result.url,
     };
   }
 }

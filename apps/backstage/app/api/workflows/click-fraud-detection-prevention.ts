@@ -10,11 +10,10 @@ import {
   createStep,
   createStepWithValidation,
   createWorkflowStep,
-  withStepBulkhead,
   withStepCircuitBreaker,
   withStepMonitoring,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const FraudDetectionInput = z.object({
@@ -428,12 +427,8 @@ export const collectClickEventsStep = compose(
     (input) => !!input.analysisScope.timeRange.start && !!input.analysisScope.timeRange.end,
     (output) => output.events.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['timeRangeHours'],
-    }),
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock event fetching functions
@@ -549,7 +544,7 @@ function generateUserAgent(deviceType: string): string {
     ],
   };
 
-  const agentList = userAgents[deviceType as any] || userAgents.desktop;
+  const agentList = userAgents[deviceType as keyof typeof userAgents] || userAgents.desktop;
   return agentList[Math.floor(Math.random() * agentList.length)];
 }
 
@@ -560,7 +555,7 @@ function generateScreenResolution(deviceType: string): string {
     tablet: ['768x1024', '820x1180', '834x1194', '1024x768'],
   };
 
-  const resList = resolutions[deviceType as any] || resolutions.desktop;
+  const resList = resolutions[deviceType as keyof typeof resolutions] || resolutions.desktop;
   return resList[Math.floor(Math.random() * resList.length)];
 }
 
@@ -569,7 +564,7 @@ function generateIP(): string {
 }
 
 function generateTimezone(country: string): string {
-  const timezones = {
+  const timezones: Record<string, string> = {
     AU: 'Australia/Sydney',
     BR: 'America/Sao_Paulo',
     CA: 'America/Toronto',
@@ -582,7 +577,7 @@ function generateTimezone(country: string): string {
     US: 'America/New_York',
   };
 
-  return timezones[country as any] || 'UTC';
+  return timezones[country] || 'UTC';
 }
 
 // Step 2: Perform statistical analysis
@@ -706,7 +701,7 @@ function analyzeGeographicDistribution(events: any[]): any {
       country,
       percentage: (count / events.length) * 100,
     }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a: any, b: any) => b.count - a.count);
 
   return {
     concentrationRatio: distribution.slice(0, 3).reduce((sum, c) => sum + c.percentage, 0),
@@ -750,8 +745,8 @@ function analyzeTemporalPatterns(events: any[]): any {
   return {
     hourlyDistribution: Array.from(byHour.entries()).map(([hour, count]) => ({ count, hour })),
     dailyDistribution: Array.from(byDayOfWeek.entries()).map(([day, count]) => ({ count, day })),
-    peakDay: Array.from(byDayOfWeek.entries()).sort((a, b) => b[1] - a[1])[0],
-    peakHour: Array.from(byHour.entries()).sort((a, b) => b[1] - a[1])[0],
+    peakDay: Array.from(byDayOfWeek.entries()).sort((a: any, b: any) => b[1] - a[1])[0],
+    peakHour: Array.from(byHour.entries()).sort((a: any, b: any) => b[1] - a[1])[0],
   };
 }
 
@@ -895,16 +890,16 @@ export const runMLFraudDetectionStep = compose(
       },
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 8,
-      maxQueued: 40,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
       resetTimeout: 300000, // 5 minutes
       threshold: 0.5,
-      timeout: 600000, // 10 minutes
+      // timeout: 600000, // 10 minutes
     }),
 );
 
@@ -1512,7 +1507,7 @@ function analyzeFraudTypes(fraudulentEvents: any[]): any {
       count,
       percentage: (count / fraudulentEvents.length) * 100,
     }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a: any, b: any) => b.count - a.count);
 
   return {
     distribution,
@@ -1552,7 +1547,7 @@ function identifyTopThreats(fraudulentEvents: any[]): any[] {
       averageFraudScore: threat.totalFraudScore / threat.eventCount,
       riskLevel: threat.eventCount > 20 ? 'high' : threat.eventCount > 10 ? 'medium' : 'low',
     }))
-    .sort((a, b) => b.eventCount - a.eventCount)
+    .sort((a: any, b: any) => b.eventCount - a.eventCount)
     .slice(0, 10);
 }
 

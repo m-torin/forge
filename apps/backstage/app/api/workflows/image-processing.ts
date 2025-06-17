@@ -13,7 +13,7 @@ import {
   withStepCircuitBreaker,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ImageProcessingInput = z.object({
@@ -68,11 +68,11 @@ export const downloadImageStep = compose(
     (input) => !!input.imageUrl,
     (output) => !!output.originalImage,
   ),
-  (step) => withStepTimeout(step, { execution: 30000 }),
-  (step) =>
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -145,11 +145,11 @@ export const generateVariantsStep = compose(
       totalVariants: processedVariants.length,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
       resetTimeout: 30000,
       threshold: 0.5,
-      timeout: 5000,
+      // timeout: 5000,
     }),
 );
 
@@ -224,27 +224,26 @@ export const uploadToCDNStep = compose(
       uploadedAt: new Date().toISOString(),
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 5,
+      backoff: true,
+      maxRetries: 5,
     }),
 );
 
 // Step 6: Invalidate CDN cache
-export const invalidateCacheStep = StepTemplates.http(
-  'invalidate-cache',
-  'Invalidate old image versions in CDN',
-  {
-    httpConfig: {
-      baseHeaders: {
-        'X-CDN-Key': 'cdn-secret-key',
-      },
-      baseUrl: 'https://cdn-api.example.com',
-      method: 'POST',
+export const invalidateCacheStep = createStep('invalidate-cache', async (data: any) => {
+  // Invalidate old image versions in CDN
+  const response = await fetch('https://cdn-api.example.com', {
+    method: 'POST',
+    headers: {
+      'X-CDN-Key': 'cdn-secret-key',
     },
-  },
-);
+    body: JSON.stringify(data),
+  });
+
+  return await response.json();
+});
 
 // Step 7: Update database
 export const updateDatabaseStep = StepTemplates.database(
@@ -277,20 +276,18 @@ export const generateSitemapStep = createStep('generate-sitemap', async (data: a
 });
 
 // Step 9: Send webhook notification
-export const sendWebhookStep = StepTemplates.http(
-  'webhook-notification',
-  'Notify external systems about new images',
-  {
-    httpConfig: {
-      method: 'POST',
-      retryConfig: {
-        backoff: 'fixed',
-        delay: 1000,
-        maxAttempts: 3,
-      },
+export const sendWebhookStep = createStep('webhook-notification', async (data: any) => {
+  // Notify external systems about new images
+  const response = await fetch(data.webhookUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  },
-);
+    body: JSON.stringify(data),
+  });
+
+  return await response.json();
+});
 
 // Main workflow definition
 export const imageProcessingWorkflow = {

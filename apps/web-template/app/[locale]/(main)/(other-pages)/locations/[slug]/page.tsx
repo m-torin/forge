@@ -1,12 +1,13 @@
-import { getProducts } from '@/data/data-service';
+import { getProducts } from '@/actions/products';
+import { transformDatabaseProductToTProductItem } from '@/types/database';
 import { seoManager } from '@/lib/seo-config';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { Breadcrumb, CompletePagination, TabFilters } from '@/components/ui';
-import { createStructuredData, JsonLd, structuredData } from '@repo/seo/structured-data';
+import { structuredData } from '@repo/seo/structured-data';
 
-import { LocationClient } from './LocationClient';
+import { LocationUi } from './LocationUi';
 import { ClientSidebarFilters } from '@/components/ClientSidebarFilters';
 
 // import { LocalBusiness } from "schema-dts";
@@ -87,18 +88,13 @@ async function getLocationBySlug(slug: string) {
 
 async function getLocationProducts(locationSlug: string, page = 1, limit = 20) {
   // Get all products - in a real implementation, this would filter by location
-  const allProducts = await getProducts();
-
-  // Simulate filtering by location and pagination
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const products = allProducts.slice(startIndex, endIndex);
+  const result = await getProducts({ page, limit });
 
   return {
     currentPage: page,
-    products,
-    totalCount: allProducts.length,
-    totalPages: Math.ceil(allProducts.length / limit),
+    products: result.data,
+    totalCount: result.pagination.total,
+    totalPages: result.pagination.totalPages,
   };
 }
 
@@ -146,7 +142,14 @@ export default async function LocationPage({
     notFound();
   }
 
-  const { currentPage, products, totalPages } = await getLocationProducts(slug, parseInt(page));
+  const {
+    currentPage,
+    products: rawProducts,
+    totalPages,
+  } = await getLocationProducts(slug, parseInt(page));
+  const products = rawProducts.map((product: any) =>
+    transformDatabaseProductToTProductItem(product),
+  );
 
   // Generate structured data for LocalBusiness
   // const localBusinessSchema = createStructuredData<LocalBusiness>(
@@ -294,7 +297,7 @@ export default async function LocationPage({
             {/* Products Grid */}
             <div className="flex-shrink-0 mb-10 lg:mb-0 lg:mx-4 lg:w-2/3 xl:w-3/4">
               <TabFilters />
-              <LocationClient products={products} />
+              <LocationUi products={products} />
 
               {/* Pagination */}
               <div className="mt-12 flex justify-center">

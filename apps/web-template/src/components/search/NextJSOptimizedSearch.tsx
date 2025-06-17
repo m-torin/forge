@@ -1,8 +1,18 @@
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
-import { Container, Stack, Skeleton, Title, Text, Breadcrumbs, Anchor, Group } from '@mantine/core';
-import { IconHome } from '@tabler/icons-react';
+import {
+  Container,
+  Stack,
+  Skeleton,
+  Title,
+  Text,
+  Breadcrumbs,
+  Anchor,
+  Group,
+  Alert,
+} from '@mantine/core';
+import { IconHome, IconAlertTriangle } from '@tabler/icons-react';
 import { env } from '@/env';
 import { createMetadata, structuredData } from '@repo/seo/server/next';
 import { OptimizedJsonLd } from '@repo/seo/client/next';
@@ -23,6 +33,15 @@ const searchClient = algoliasearch(
 
 // Use products index for InstantSearch examples
 const indexName = 'autocomplete_demo_products';
+
+// Error component for search failures
+function SearchError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light" data-testid={testId}>
+      <Text size="sm">Search failed to load: {error}</Text>
+    </Alert>
+  );
+}
 
 interface SearchPageProps {
   params: Promise<{ locale: string }>;
@@ -100,104 +119,114 @@ function SearchPageSkeleton() {
 
 // Main optimized search page component
 export default async function NextJSOptimizedSearchPage({ params, searchParams }: SearchPageProps) {
-  const { locale } = await params;
-  const { q: query, category, page } = await searchParams;
+  try {
+    const { locale } = await params;
+    const { q: query, category, page } = await searchParams;
 
-  // Get headers for URL routing (Next.js 15 feature)
-  const headersList = await headers();
-  const serverUrl = headersList.get('x-url') || '';
+    // Get headers for URL routing (Next.js 15 feature)
+    const headersList = await headers();
+    const serverUrl = headersList.get('x-url') || '';
 
-  // Pre-fetch initial search data server-side
-  const initialData = await getInitialSearchData(query);
+    // Pre-fetch initial search data server-side
+    const initialData = await getInitialSearchData(query);
 
-  // Create WebSite search action structured data
-  const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://example.com';
-  const websiteData = structuredData.website({
-    name: 'Web Template',
-    url: baseUrl,
-    potentialAction: {
-      target: `${baseUrl}/${locale}/nextjs-search?q={search_term_string}`,
-      queryInput: 'search_term_string',
-    },
-  });
+    // Create WebSite search action structured data
+    const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://example.com';
+    const websiteData = structuredData.website({
+      name: 'Web Template',
+      url: baseUrl,
+      potentialAction: {
+        target: `${baseUrl}/${locale}/nextjs-search?q={search_term_string}`,
+        queryInput: 'search_term_string',
+      },
+    });
 
-  // Create breadcrumb structured data
-  const breadcrumbData = structuredData.breadcrumbs([
-    {
-      name: 'Home',
-      url: `${baseUrl}/${locale}`,
-    },
-    {
-      name: 'Search',
-      url: `${baseUrl}/${locale}/search`,
-    },
-    ...(query
-      ? [
-          {
-            name: `Results for "${query}"`,
-            url: `${baseUrl}/${locale}/nextjs-search?q=${encodeURIComponent(query)}`,
-          },
-        ]
-      : []),
-  ]);
+    // Create breadcrumb structured data
+    const breadcrumbData = structuredData.breadcrumbs([
+      {
+        name: 'Home',
+        url: `${baseUrl}/${locale}`,
+      },
+      {
+        name: 'Search',
+        url: `${baseUrl}/${locale}/search`,
+      },
+      ...(query
+        ? [
+            {
+              name: `Results for "${query}"`,
+              url: `${baseUrl}/${locale}/nextjs-search?q=${encodeURIComponent(query)}`,
+            },
+          ]
+        : []),
+    ]);
 
-  return (
-    <Container size="xl" py="xl">
-      <OptimizedJsonLd data={websiteData} id="website-search" strategy="afterInteractive" />
-      <OptimizedJsonLd data={breadcrumbData} id="breadcrumb" strategy="afterInteractive" />
-      <NextJSSearchWrapper>
-        <Stack gap="xl">
-          {/* Breadcrumbs - Static (no suspense needed) */}
-          <Breadcrumbs>
-            <Anchor href={`/${locale}`} c="dimmed" size="md">
-              <Group gap="xs">
-                <IconHome size={14} />
-                Home
-              </Group>
-            </Anchor>
-            <Anchor href={`/${locale}/search`} c="dimmed" size="md">
-              Search
-            </Anchor>
-          </Breadcrumbs>
+    return (
+      <Container size="xl" py="xl" data-testid="nextjs-optimized-search">
+        <OptimizedJsonLd data={websiteData} id="website-search" strategy="afterInteractive" />
+        <OptimizedJsonLd data={breadcrumbData} id="breadcrumb" strategy="afterInteractive" />
+        <NextJSSearchWrapper>
+          <Stack gap="xl">
+            {/* Breadcrumbs - Static (no suspense needed) */}
+            <Breadcrumbs>
+              <Anchor href={`/${locale}`} c="dimmed" size="md">
+                <Group gap="xs">
+                  <IconHome size={14} />
+                  Home
+                </Group>
+              </Anchor>
+              <Anchor href={`/${locale}/search`} c="dimmed" size="md">
+                Search
+              </Anchor>
+            </Breadcrumbs>
 
-          {/* Page header - Static */}
-          <div>
-            <Title order={1} mb="md">
-              Next.js 15 Optimized Search
-            </Title>
-            <Text c="dimmed" size="lg">
-              Server-side rendered search with streaming and React Server Components
-            </Text>
-          </div>
-
-          {/* Search box - Client component for interactivity */}
-          <SearchBoxClient locale={locale} />
-
-          {/* Search stats - Stream from server */}
-          <Suspense fallback={<Skeleton height={80} radius="sm" />}>
-            <SearchStatsServer initialData={initialData} />
-          </Suspense>
-
-          {/* Main content grid */}
-          <Group align="flex-start" gap="xl" wrap="nowrap">
-            {/* Sidebar filters - Stream from server */}
-            <div style={{ minWidth: '250px', maxWidth: '300px' }}>
-              <Suspense fallback={<Skeleton height={600} radius="sm" />}>
-                <SearchFiltersServer />
-              </Suspense>
+            {/* Page header - Static */}
+            <div>
+              <Title order={1} mb="md">
+                Next.js 15 Optimized Search
+              </Title>
+              <Text c="dimmed" size="lg">
+                Server-side rendered search with streaming and React Server Components
+              </Text>
             </div>
 
-            {/* Search results - Stream from server */}
-            <div style={{ flex: 1 }}>
-              <Suspense fallback={<SearchResultsSkeleton />}>
-                <SearchResultsServer initialData={initialData} locale={locale} />
-              </Suspense>
-            </div>
-          </Group>
-        </Stack>
-      </NextJSSearchWrapper>
-    </Container>
-  );
+            {/* Search box - Client component for interactivity */}
+            <SearchBoxClient locale={locale} />
+
+            {/* Search stats - Stream from server */}
+            <Suspense fallback={<Skeleton height={80} radius="sm" />}>
+              <SearchStatsServer initialData={initialData} />
+            </Suspense>
+
+            {/* Main content grid */}
+            <Group align="flex-start" gap="xl" wrap="nowrap">
+              {/* Sidebar filters - Stream from server */}
+              <div style={{ minWidth: '250px', maxWidth: '300px' }}>
+                <Suspense fallback={<Skeleton height={600} radius="sm" />}>
+                  <SearchFiltersServer />
+                </Suspense>
+              </div>
+
+              {/* Search results - Stream from server */}
+              <div style={{ flex: 1 }}>
+                <Suspense fallback={<SearchResultsSkeleton />}>
+                  <SearchResultsServer initialData={initialData} locale={locale} />
+                </Suspense>
+              </div>
+            </Group>
+          </Stack>
+        </NextJSSearchWrapper>
+      </Container>
+    );
+  } catch (error) {
+    console.error('NextJSOptimizedSearchPage error:', error);
+    return (
+      <SearchError
+        error={error instanceof Error ? error.message : 'Failed to load search page'}
+        testId="nextjs-optimized-search-error"
+      />
+    );
+  }
 }
 
 // Specific skeleton for search results
@@ -207,7 +236,12 @@ function SearchResultsSkeleton() {
       <Skeleton height={40} radius="sm" />
       <Group gap="md" wrap="wrap">
         {[...Array(6)].map((_, i) => (
-          <Skeleton key={i} height={300} radius="sm" style={{ flex: '1 1 300px', minWidth: '250px' }} />
+          <Skeleton
+            key={i}
+            height={300}
+            radius="sm"
+            style={{ flex: '1 1 300px', minWidth: '250px' }}
+          />
         ))}
       </Group>
     </Stack>

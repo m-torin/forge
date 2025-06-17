@@ -13,7 +13,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const AnalyticsPipelineInput = z.object({
@@ -101,12 +101,8 @@ export const extractDataStep = compose(
     (input) => !!input.dateRange && new Date(input.dateRange.start) < new Date(input.dateRange.end),
     (output) => output.totalRecords > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 60000 }), // 1 minute timeout
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['extractionTime'],
-    }),
+  (step: any) => withStepTimeout(step, 60000), // 1 minute timeout
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 2: Clean and validate data
@@ -193,7 +189,7 @@ export const transformDataStep = compose(
           // Add user metrics
           isNewUser: Math.random() > 0.8,
           // Calculate metrics
-          metrics: {},
+          metrics: {} as Record<string, any>,
           userSegment: ['high_value', 'medium_value', 'low_value', 'new'][
             Math.floor(Math.random() * 4)
           ],
@@ -220,7 +216,7 @@ export const transformDataStep = compose(
       transformedRecords,
     };
   }),
-  (step) => withStepRetry(step, { maxAttempts: 2 }),
+  (step: any) => withStepRetry(step, { maxRetries: 2 }),
 );
 
 // Step 4: Aggregate metrics
@@ -283,7 +279,7 @@ export const aggregateMetricsStep = createStep('aggregate-metrics', async (data:
       const dimensionAgg: any = {};
 
       // Group by dimension
-      const groups = transformedRecords.reduce((acc: any, record: any) => {
+      const groups = transformedRecords.reduce((acc: Record<string, any[]>, record: any) => {
         const key = record.properties[dimension] || 'unknown';
         if (!acc[key]) acc[key] = [];
         acc[key].push(record);
@@ -401,7 +397,7 @@ export const generateInsightsStep = createStep('generate-insights', async (data:
 // Step 6: Store processed data
 export const storeDataStep = compose(
   StepTemplates.database('store-analytics', 'Save aggregated analytics data'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 7: Update dashboards
@@ -448,18 +444,14 @@ export const updateDashboardsStep = createStep('update-dashboards', async (data:
 // Step 8: Send alerts if needed
 export const sendAlertsStep = StepTemplates.conditional(
   'send-alerts',
-  'Send alerts for anomalies or achievements',
+  (data: any) => {
+    const alerts = data.insights?.filter(
+      (i: any) => i.type === 'warning' || (i.type === 'positive' && i.category === 'conversion'),
+    );
+    return alerts && alerts.length > 0;
+  },
   {
-    condition: (data: any) => {
-      const alerts = data.insights?.filter(
-        (i: any) => i.type === 'warning' || (i.type === 'positive' && i.category === 'conversion'),
-      );
-      return alerts && alerts.length > 0;
-    },
-    trueStep: StepTemplates.notification('alert-notification', 'Send alert notifications', {
-      channels: ['email', 'slack'],
-      priority: 'high',
-    }),
+    trueStep: StepTemplates.notification('alert-notification', 'warning'),
   },
 );
 

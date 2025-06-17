@@ -1,9 +1,18 @@
-import React from 'react';
+import type React from 'react';
+
+// Create mock navigation components
+export function AppRouterProvider({ children }: { children: React.ReactNode }) {
+  // This is a simple wrapper to simulate the App Router context
+  return children;
+}
+
+export function usePathname() {
+  return '/';
+}
 
 // Mock Next.js navigation APIs
 export function useRouter() {
   return {
-    pathname: '/',
     asPath: '/',
     back: () => {},
     events: {
@@ -12,6 +21,7 @@ export function useRouter() {
       on: () => {},
     },
     forward: () => {},
+    pathname: '/',
     prefetch: async () => {},
     push: async () => {},
     query: {},
@@ -20,16 +30,6 @@ export function useRouter() {
   };
 }
 
-export function usePathname() {
-  return '/';
-}
-
 export function useSearchParams() {
   return new URLSearchParams();
-}
-
-// Create mock navigation components
-export function AppRouterProvider({ children }: { children: React.ReactNode }) {
-  // This is a simple wrapper to simulate the App Router context
-  return <>{children}</>;
 }

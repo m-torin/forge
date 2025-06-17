@@ -1,6 +1,6 @@
 'use client'
 
-import { Link } from '@repo/design-system/ciseco'
+import { Link } from '@/components/Link'
 import { usePathname } from 'next/navigation'
 
 const pages: {
@@ -44,7 +44,7 @@ const PageTab = () => {
           return (
             <Link
               key={item.link}
-              href={item.link as any}
+              href={item.link}
               className={`block shrink-0 border-b-2 py-5 text-sm sm:text-base md:py-8 ${
                 isActive
                   ? 'border-primary-500 font-medium text-neutral-950 dark:text-neutral-100'

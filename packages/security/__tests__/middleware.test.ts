@@ -15,7 +15,7 @@ const _mockDefaults = {
 
 const _mockCreateMiddleware = vi.fn();
 
-vi.mock('@nosecone/next', () => ({
+vi.mock('@nosecone/next', (_: any) => ({
   createMiddleware: vi.fn(),
   defaults: {
     contentSecurityPolicy: {
@@ -26,13 +26,13 @@ vi.mock('@nosecone/next', () => ({
   },
 }));
 
-describe('middleware', () => {
-  describe('noseconeOptions', () => {
-    it('should have contentSecurityPolicy disabled', () => {
+describe('middleware', (_: any) => {
+  describe('noseconeOptions', (_: any) => {
+    it('should have contentSecurityPolicy disabled', (_: any) => {
       expect(noseconeOptions.contentSecurityPolicy).toBe(false);
     });
 
-    it('should include default options', () => {
+    it('should include default options', (_: any) => {
       // Check that defaults are spread into options
       expect(noseconeOptions).toMatchObject({
         contentSecurityPolicy: false,
@@ -40,8 +40,8 @@ describe('middleware', () => {
     });
   });
 
-  describe('noseconeMiddleware', () => {
-    it('should export createMiddleware function', () => {
+  describe('noseconeMiddleware', (_: any) => {
+    it('should export createMiddleware function', (_: any) => {
       expect(noseconeMiddleware).toBe(createMiddleware);
     });
   });

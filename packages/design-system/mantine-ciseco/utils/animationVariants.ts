@@ -1,4 +1,4 @@
-export const variants = (x = 1000, opacity = 0) => ({
+export const variants = (x: any = 1000, opacity: any = 0) => ({
   center: {
     opacity: 1,
     x: 0,

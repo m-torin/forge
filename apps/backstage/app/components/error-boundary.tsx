@@ -93,7 +93,7 @@ function ErrorFallback({ error, reset }: ErrorFallbackProps): React.ReactElement
 
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  fallback?: (error: Error, reset: () => void) => ReactNode
+  fallback?: (error: Error, reset: () => void) => ReactNode,
 ): React.ComponentType<P> {
   const WithErrorBoundaryComponent = (props: P) => (
     <ErrorBoundary fallback={fallback}>

@@ -65,7 +65,7 @@ export function createMockAuthSession(
 
   return {
     activeOrganizationId:
-      (session as any).activeOrganizationId || `org-${Math.random().toString(36).substr(2, 9)}`,
+      session.activeOrganizationId || `org-${Math.random().toString(36).substr(2, 9)}`,
     session,
     user,
   };

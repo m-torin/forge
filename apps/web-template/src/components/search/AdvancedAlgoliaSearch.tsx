@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useMemo, useState, useCallback } from 'react';
+import React, { Suspense, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Container,
@@ -20,15 +20,11 @@ import {
   Loader,
   Paper,
   Skeleton,
-  Divider,
   Chip,
   ThemeIcon,
   useMantineColorScheme,
   Tooltip,
-  Progress,
   NumberFormatter,
-  Transition,
-  Box,
 } from '@mantine/core';
 import {
   useDisclosure,
@@ -44,39 +40,31 @@ import {
   IconMicrophone,
   IconMicrophoneOff,
   IconFilter,
-  IconX,
   IconHeart,
   IconShare,
   IconTruck,
   IconBolt as IconFlash,
   IconSparkles,
   IconEye,
-  IconThumbUp,
   IconAdjustments,
   IconTrendingUp,
   IconBolt,
 } from '@tabler/icons-react';
 import {
   InstantSearch,
-  SearchBox,
-  Hits,
   RefinementList,
   Configure,
   Pagination,
-  Stats,
   SortBy,
   RangeInput,
   useInstantSearch,
   useSearchBox,
   useStats,
-  useRefinementList,
   ToggleRefinement,
   ClearRefinements,
   CurrentRefinements,
-  Highlight,
   useCurrentRefinements,
   useSortBy,
-  Snippet,
   useHits,
 } from 'react-instantsearch';
 import { liteClient as algoliasearch } from 'algoliasearch/lite';

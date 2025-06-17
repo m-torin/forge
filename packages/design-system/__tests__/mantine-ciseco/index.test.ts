@@ -268,19 +268,19 @@ export const testStats = {
 // Simple test to verify test suite initialization
 import { describe, expect, it } from 'vitest';
 
-describe('Mantine Ciseco Test Suite', () => {
-  it('should export test categories', () => {
+describe('Mantine Ciseco Test Suite', (_: any) => {
+  it('should export test categories', (_: any) => {
     expect(testCategories).toBeDefined();
     expect(Object.keys(testCategories).length).toBeGreaterThan(0);
   });
 
-  it('should export test statistics', () => {
+  it('should export test statistics', (_: any) => {
     expect(testStats).toBeDefined();
     expect(testStats.totalComponents).toBeGreaterThan(0);
     expect(testStats.categoriesCount).toBeGreaterThan(0);
   });
 
-  it('should have correct component count', () => {
+  it('should have correct component count', (_: any) => {
     const actualCount = Object.values(testCategories).flat().length;
     expect(testStats.totalComponents).toBe(actualCount);
   });

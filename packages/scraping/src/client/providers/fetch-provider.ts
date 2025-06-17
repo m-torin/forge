@@ -2,7 +2,7 @@
  * Fetch provider - Client-side provider using browser fetch API
  */
 
-import type {
+import {
   ExtractedData,
   ProviderConfig,
   ScrapeOptions,
@@ -14,63 +14,6 @@ import type {
 export class FetchProvider implements ScrapingProvider {
   readonly name = 'fetch';
   readonly type = 'html' as const;
-
-  async initialize(_config: ProviderConfig): Promise<void> {
-    // Check if fetch is available
-    if (typeof fetch === 'undefined') {
-      throw new Error('Fetch API not available in this environment');
-    }
-  }
-
-  async scrape(url: string, options: ScrapeOptions = {}): Promise<ScrapeResult> {
-    const headers: Record<string, string> = {
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'User-Agent': options.userAgent || 'Mozilla/5.0 (compatible; FetchProvider/1.0)',
-      ...options.headers,
-    };
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), options.timeout || 30000);
-
-    try {
-      const response = await fetch(url, {
-        headers,
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const html = await response.text();
-
-      // Basic title extraction
-      const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-      const title = titleMatch ? titleMatch[1].trim() : undefined;
-
-      // Extract data if selectors provided
-      let data: any;
-      if (options.extract) {
-        data = await this.extract(html, options.extract);
-      }
-
-      return {
-        provider: this.name,
-        url,
-        data,
-        html,
-        metadata: {
-          contentType: response.headers.get('content-type') || undefined,
-          headers: Object.fromEntries(response.headers.entries()),
-          statusCode: response.status,
-          timing: { duration: 0, end: Date.now(), start: Date.now() },
-          title,
-        },
-      };
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
 
   async extract(html: string, selectors: SelectorMap): Promise<ExtractedData> {
     const data: ExtractedData = {};
@@ -108,6 +51,63 @@ export class FetchProvider implements ScrapingProvider {
       return response.ok;
     } catch {
       return false;
+    }
+  }
+
+  async initialize(_config: ProviderConfig): Promise<void> {
+    // Check if fetch is available
+    if (typeof fetch === 'undefined') {
+      throw new Error('Fetch API not available in this environment');
+    }
+  }
+
+  async scrape(url: string, options: ScrapeOptions = {}): Promise<ScrapeResult> {
+    const headers: Record<string, string> = {
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'User-Agent': options.userAgent ?? 'Mozilla/5.0 (compatible; FetchProvider/1.0)',
+      ...options.headers,
+    };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), options.timeout ?? 30000);
+
+    try {
+      const response = await fetch(url, {
+        headers,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const html = await response.text();
+
+      // Basic title extraction
+      const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+      const title = titleMatch ? titleMatch[1].trim() : undefined;
+
+      // Extract data if selectors provided
+      let data: any;
+      if (options.extract) {
+        data = await this.extract(html, options.extract);
+      }
+
+      return {
+        data,
+        html,
+        metadata: {
+          contentType: response.headers.get('content-type') ?? undefined,
+          headers: Object.fromEntries(response.headers.entries()),
+          statusCode: response.status,
+          timing: { duration: 0, end: Date.now(), start: Date.now() },
+          title,
+        },
+        provider: this.name,
+        url,
+      };
+    } finally {
+      clearTimeout(timeout);
     }
   }
 }

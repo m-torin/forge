@@ -25,11 +25,6 @@ declare module 'eslint-plugin-perfectionist' {
   export default plugin;
 }
 
-declare module 'eslint-plugin-cypress' {
-  const plugin: any;
-  export default plugin;
-}
-
 declare module 'eslint-plugin-jest-dom' {
   const plugin: any;
   export default plugin;

@@ -1,6 +1,6 @@
 'use client';
 
-import { em, px, useMantineTheme } from '@mantine/core';
+import { em, useMantineTheme } from '@mantine/core';
 import { useMediaQuery, useViewportSize } from '@mantine/hooks';
 
 // Convenience hook for responsive behavior using Mantine 8

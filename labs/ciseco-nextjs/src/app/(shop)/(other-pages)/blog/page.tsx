@@ -1,11 +1,9 @@
-import {
-  BgGlassmorphism,
-  SectionAds,
-  SectionGridPosts,
-  SectionMagazine5,
-  SectionPromo2,
-  getBlogPosts,
-} from '@repo/design-system/ciseco'
+import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism'
+import SectionPromo2 from '@/components/SectionPromo2'
+import SectionAds from '@/components/blog/SectionAds'
+import SectionGridPosts from '@/components/blog/SectionGridPosts'
+import SectionMagazine5 from '@/components/blog/SectionMagazine5'
+import { getBlogPosts } from '@/data/data'
 import { Metadata } from 'next'
 import React from 'react'
 
@@ -20,8 +18,8 @@ const BlogPage: React.FC = async () => {
   return (
     <div>
       <BgGlassmorphism />
-      <div className="container relative">
-        <div className="pb-16 pt-12 lg:pb-28">
+      <div className="relative container">
+        <div className="pt-12 pb-16 lg:pb-28">
           <SectionMagazine5 posts={blogPosts} />
         </div>
         <SectionAds />

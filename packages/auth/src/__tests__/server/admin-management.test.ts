@@ -154,7 +154,7 @@ describe('Admin Management', () => {
     });
 
     it('should handle missing userId', async () => {
-      const result = await deleteUser();
+      const result = await deleteUser('');
 
       expect(result).toEqual({
         error: 'User deletion not implemented yet - requires Better Auth admin features',

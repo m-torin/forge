@@ -4,15 +4,16 @@
 
 import { z } from 'zod';
 
-import { ConfigurationError, type ValidationError, WorkflowValidationError } from './errors';
-
-import type {
+import {
   AnyProviderConfig,
+  JsonValue,
   RetryConfig,
   ScheduleConfig,
   WorkflowDefinition,
   WorkflowStep,
 } from '../types/index';
+
+import { ConfigurationError, type ValidationError, WorkflowValidationError } from './errors';
 
 // Base schemas
 const retryConfigSchema = z.object({
@@ -27,9 +28,9 @@ const scheduleConfigSchema = z.object({
   cron: z.string().optional(),
   enabled: z.boolean().optional(),
   endDate: z.date().optional(),
-  input: z.record(z.any()).optional(),
+  input: z.record(z.unknown()).optional(),
   maxRetries: z.number().int().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
   retryDelay: z.number().int().optional(),
   runAt: z.date().optional(),
   startDate: z.date().optional(),
@@ -37,12 +38,24 @@ const scheduleConfigSchema = z.object({
   workflowId: z.string().min(1),
 });
 
+// Create a schema that matches JsonValue
+const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonValueSchema),
+    z.record(jsonValueSchema),
+  ]),
+);
+
 const workflowStepSchema: z.ZodType<WorkflowStep> = z.object({
   action: z.string().min(1),
   condition: z.string().optional(),
   dependsOn: z.array(z.string()).optional(),
   id: z.string().min(1),
-  input: z.record(z.any()).optional(),
+  input: z.record(jsonValueSchema).optional(),
   name: z.string().min(1),
   optional: z.boolean().optional(),
   retryConfig: retryConfigSchema.optional(),
@@ -165,7 +178,7 @@ const providerConfigSchema = z.discriminatedUnion('type', [
   upstashQStashConfigSchema,
   rateLimitConfigSchema,
   z.object({
-    config: z.record(z.any()),
+    config: z.record(z.unknown()),
     enabled: z.boolean(),
     environment: z.enum(['development', 'staging', 'production', 'all']).optional(),
     features: z
@@ -204,7 +217,7 @@ export function sanitizeConfig(config: Record<string, any>): Record<string, any>
       const sanitized: Record<string, any> = {};
       for (const [key, val] of Object.entries(value)) {
         const lowerKey = key.toLowerCase();
-        if (sensitiveKeys.some((sensitive) => lowerKey.includes(sensitive))) {
+        if (sensitiveKeys.some((sensitive: any) => lowerKey.includes(sensitive))) {
           sanitized[key] = '[REDACTED]';
         } else {
           sanitized[key] = sanitizeValue(val);
@@ -244,9 +257,9 @@ export function validateEnvironmentVariables(requiredVars: string[]): Validation
 export function validateProviderConfig(config: unknown): AnyProviderConfig {
   try {
     return providerConfigSchema.parse(config) as AnyProviderConfig;
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      const validationErrors: ValidationError[] = error.errors.map((err) => ({
+      const validationErrors: ValidationError[] = error.errors.map((err: any) => ({
         message: err.message,
         path: err.path.join('.'),
         rule: err.code,
@@ -268,10 +281,10 @@ export function validateProviderConfig(config: unknown): AnyProviderConfig {
 export function validateRetryConfig(config: unknown): RetryConfig {
   try {
     return retryConfigSchema.parse(config);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       throw new ConfigurationError(
-        `Invalid retry configuration: ${error.errors.map((e) => e.message).join(', ')}`,
+        `Invalid retry configuration: ${error.errors.map((e: any) => e.message).join(', ')}`,
         'retryConfig',
       );
     }
@@ -293,10 +306,10 @@ export function validateScheduleConfig(config: unknown): ScheduleConfig {
     }
 
     return validated;
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       throw new ConfigurationError(
-        `Invalid schedule configuration: ${error.errors.map((e) => e.message).join(', ')}`,
+        `Invalid schedule configuration: ${error.errors.map((e: any) => e.message).join(', ')}`,
         'schedule',
       );
     }
@@ -327,7 +340,7 @@ export function validateWorkflowDefinition(definition: unknown): WorkflowDefinit
     }
 
     // Check that dependencies reference valid steps
-    const stepIds = new Set(validated.steps.map((s) => s.id));
+    const stepIds = new Set(validated.steps.map((s: any) => s.id));
     for (const step of validated.steps) {
       if (step.dependsOn) {
         for (const dep of step.dependsOn) {
@@ -359,9 +372,9 @@ export function validateWorkflowDefinition(definition: unknown): WorkflowDefinit
     }
 
     return validated as WorkflowDefinition;
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      const validationErrors: ValidationError[] = error.errors.map((err) => ({
+      const validationErrors: ValidationError[] = error.errors.map((err: any) => ({
         message: err.message,
         path: err.path.join('.'),
         rule: err.code,
@@ -456,7 +469,7 @@ function isValidCronExpression(cron: string): boolean {
 
   // Each part should be valid (basic check)
   const validPart = /^(\*|[0-9\-,\/]+)$/;
-  return parts.every((part) => validPart.test(part));
+  return parts.every((part: any) => validPart.test(part));
 }
 
 /**
@@ -465,9 +478,9 @@ function isValidCronExpression(cron: string): boolean {
 export function validateWorkflowStep(step: unknown): WorkflowStep {
   try {
     return workflowStepSchema.parse(step);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      const validationErrors: ValidationError[] = error.errors.map((err) => ({
+      const validationErrors: ValidationError[] = error.errors.map((err: any) => ({
         message: err.message,
         path: err.path.join('.'),
         rule: err.code,

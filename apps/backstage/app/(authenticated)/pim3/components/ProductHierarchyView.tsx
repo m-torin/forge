@@ -93,7 +93,7 @@ export function ProductHierarchyView({
                     SKU: {child.sku} | Type: {child.type}
                   </Text>
                   <Text c="dimmed" size="xs">
-                    {formatCurrency(child.price, child.currency)}
+                    {formatCurrency(child.price, child.currency ?? undefined)}
                   </Text>
                 </div>
                 <Group gap="xs">
@@ -143,7 +143,7 @@ export function ProductHierarchyView({
                 SKU: {product.sku} | Type: {product.type}
               </Text>
               <Text c="dimmed" size="xs">
-                {formatCurrency(product.price, product.currency)}
+                {formatCurrency(product.price, product.currency ?? undefined)}
               </Text>
             </div>
             <Group gap="xs">
@@ -213,7 +213,7 @@ export function ProductHierarchyView({
         </Button>
       </Group>
 
-      <Tree data={treeData} expandedByDefault levelOffset={30} />
+      <Tree data={treeData} levelOffset={30} />
 
       {/* Hierarchy Statistics */}
       <Card withBorder p="sm">
@@ -247,7 +247,7 @@ export function ProductHierarchyView({
                   (hierarchyData.price || 0) +
                     (hierarchyData.children?.reduce((sum, child) => sum + (child.price || 0), 0) ||
                       0),
-                  hierarchyData.currency,
+                  hierarchyData.currency ?? undefined,
                 )}
               </Text>
             </div>

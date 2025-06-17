@@ -2,25 +2,25 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
 import LikeSaveBtns from '../../../mantine-ciseco/components/LikeSaveBtns';
 
-describe('LikeSaveBtns', () => {
-  it('renders both share and save buttons', () => {
+describe('LikeSaveBtns', (_: any) => {
+  it('renders both share and save buttons', (_: any) => {
     render(<LikeSaveBtns />);
 
     expect(screen.getByLabelText('Share')).toBeInTheDocument();
     expect(screen.getByLabelText('Save')).toBeInTheDocument();
   });
 
-  it('shows share button with text', () => {
+  it('shows share button with text', (_: any) => {
     render(<LikeSaveBtns />);
     expect(screen.getByText('Share')).toBeInTheDocument();
   });
 
-  it('shows save button with text', () => {
+  it('shows save button with text', (_: any) => {
     render(<LikeSaveBtns />);
     expect(screen.getByText('Save')).toBeInTheDocument();
   });
 
-  it('handles save button toggle', () => {
+  it('handles save button toggle', (_: any) => {
     render(<LikeSaveBtns />);
 
     const saveButton = screen.getByLabelText('Save');
@@ -35,7 +35,7 @@ describe('LikeSaveBtns', () => {
     expect(saveButton).toHaveAttribute('aria-label', 'Save');
   });
 
-  it('shows different icons for save states', () => {
+  it('shows different icons for save states', (_: any) => {
     render(<LikeSaveBtns />);
 
     const saveButton = screen.getByLabelText('Save');
@@ -50,7 +50,7 @@ describe('LikeSaveBtns', () => {
     expect(saveIcon).toHaveAttribute('fill', 'currentColor');
   });
 
-  it('renders with proper button structure', () => {
+  it('renders with proper button structure', (_: any) => {
     render(<LikeSaveBtns />);
 
     const container = screen.getByLabelText('Share').closest('.flow-root');
@@ -60,7 +60,7 @@ describe('LikeSaveBtns', () => {
     expect(buttonsContainer).toHaveClass('text-neutral-700', 'dark:text-neutral-300');
   });
 
-  it('both buttons have proper hover styles', () => {
+  it('both buttons have proper hover styles', (_: any) => {
     render(<LikeSaveBtns />);
 
     const shareButton = screen.getByLabelText('Share');
@@ -70,7 +70,7 @@ describe('LikeSaveBtns', () => {
     expect(saveButton).toHaveClass('hover:bg-neutral-100', 'dark:hover:bg-neutral-800');
   });
 
-  it('both buttons are type button', () => {
+  it('both buttons are type button', (_: any) => {
     render(<LikeSaveBtns />);
 
     const shareButton = screen.getByLabelText('Share');
@@ -80,7 +80,7 @@ describe('LikeSaveBtns', () => {
     expect(saveButton).toHaveAttribute('type', 'button');
   });
 
-  it('renders SVG icons correctly', () => {
+  it('renders SVG icons correctly', (_: any) => {
     render(<LikeSaveBtns />);
 
     const shareButton = screen.getByLabelText('Share');
@@ -96,7 +96,7 @@ describe('LikeSaveBtns', () => {
     expect(saveIcon).toHaveClass('h-5', 'w-5');
   });
 
-  it('shows responsive text visibility', () => {
+  it('shows responsive text visibility', (_: any) => {
     render(<LikeSaveBtns />);
 
     const shareText = screen.getByText('Share');

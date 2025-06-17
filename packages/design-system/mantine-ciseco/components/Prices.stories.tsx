@@ -1,6 +1,6 @@
-import Prices from './Prices';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import Prices from './Prices';
 
 const meta: Meta<typeof Prices> = {
   argTypes: {

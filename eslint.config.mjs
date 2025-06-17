@@ -7,7 +7,7 @@ import ts from 'typescript-eslint';
 export default [
   {
     // Ignore directories
-    ignores: ['**/.next', '**/node_modules', '**/dist', '**/storybook-static', '**/ios/Pods', '**/Pods'],
+    ignores: ['**/.next', '**/node_modules', '**/dist', '**/storybook-static', '**/ios/Pods', '**/Pods', 'labs/**', 'services/**'],
   },
 
   // Apply TypeScript recommended rules first
@@ -44,15 +44,14 @@ export default [
       ...next.configs['core-web-vitals'].rules,
       // Custom rules
       '@next/next/no-img-element': 'error',
-      '@typescript-eslint/no-unused-vars': [
+      // Custom rules
+      'no-unused-vars': [
         'error',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
         },
       ],
-      // Disable problematic rules
-      '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
 
@@ -79,40 +78,6 @@ export default [
     },
     rules: {
       // Turn off ALL rules for markdown code blocks
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/ban-types': 'off',
-      '@typescript-eslint/no-array-constructor': 'off',
-      '@typescript-eslint/no-duplicate-enum-values': 'off',
-      '@typescript-eslint/no-empty-object-type': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-extra-non-null-assertion': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-misused': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/no-namespace': 'off',
-      '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
-      '@typescript-eslint/no-this-alias': 'off',
-      '@typescript-eslint/no-unnecessary-type-constraint': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-declaration-merging': 'off',
-      '@typescript-eslint/no-unsafe-function-type': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unused-expressions': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-wrapper-object-types': 'off',
-      '@typescript-eslint/prefer-as-const': 'off',
-      '@typescript-eslint/prefer-namespace-keyword': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/triple-slash-reference': 'off',
-      '@typescript-eslint/unbound-method': 'off',
-
       // Disable React Next.js rules
       '@next/next/no-img-element': 'off',
       'react-hooks/exhaustive-deps': 'off',

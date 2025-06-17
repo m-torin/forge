@@ -35,40 +35,27 @@ export default function GlobalError({
                 />
               </svg>
             </div>
-            
+
             <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-gray-100">
               Something went wrong!
             </h1>
-            
+
             <p className="mb-8 text-gray-600 dark:text-gray-400">
-              An unexpected error occurred. We apologize for the inconvenience.
-              Please try refreshing the page or contact support if the problem persists.
+              An unexpected error occurred. We apologize for the inconvenience. Please try
+              refreshing the page or contact support if the problem persists.
             </p>
-            
+
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <Button
-                onClick={reset}
-                size="lg"
-                variant="filled"
-              >
+              <Button onClick={reset} size="lg" variant="filled">
                 Try again
               </Button>
-              
-              <Button
-                component="a"
-                href="/"
-                size="lg"
-                variant="light"
-              >
+
+              <Button component="a" href="/" size="lg" variant="light">
                 Go home
               </Button>
             </div>
-            
-            {error.digest && (
-              <p className="mt-8 text-xs text-gray-500">
-                Error ID: {error.digest}
-              </p>
-            )}
+
+            {error.digest && <p className="mt-8 text-xs text-gray-500">Error ID: {error.digest}</p>}
           </div>
         </div>
       </body>

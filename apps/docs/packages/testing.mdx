@@ -1,0 +1,906 @@
+---
+title: 'Testing Package'
+description:
+  'Enterprise testing framework with Vitest configurations, React Testing Library setup,
+  comprehensive mocks, and specialized database testing utilities'
+icon: 'flask'
+---
+
+# Testing Package
+
+Enterprise testing framework with **Vitest** configurations, **React Testing Library** setup,
+comprehensive mocks, and specialized database testing utilities.
+
+## Overview
+
+The testing package provides a complete testing infrastructure for the monorepo with intelligent
+defaults and comprehensive mocking:
+
+<CardGroup cols={2}>
+  <Card title="Multi-Environment Configurations" icon="cog">
+    Base, React, Next.js, Node.js, and Integration presets with optimized settings
+  </Card>
+  <Card title="Mantine UI Testing" icon="paintbrush">
+    Pre-configured render functions with theme providers and dark mode support
+  </Card>
+  <Card title="Comprehensive Mocks" icon="mask">
+    Better Auth, Firestore, Upstash Redis/Vector, Next.js APIs with realistic data
+  </Card>
+  <Card title="Database Testing" icon="database">
+    Utilities for database setup, seeding, cleanup, and transaction testing
+  </Card>
+  <Card title="Performance Testing" icon="gauge">
+    Memory usage and render time measurements with automated benchmarking
+  </Card>
+  <Card title="Type-Safe Testing" icon="code">
+    Full TypeScript support with proper type definitions and custom matchers
+  </Card>
+</CardGroup>
+
+## Architecture
+
+```mermaid
+graph TB
+    TestPackage[Testing Package] --> Configs[Configuration Presets]
+    TestPackage --> Mocks[Mock Implementations]
+    TestPackage --> Utils[Testing Utilities]
+    TestPackage --> Setup[Setup Files]
+
+    Configs --> BaseConfig[Base Config]
+    Configs --> ReactConfig[React Config]
+    Configs --> NextConfig[Next.js Config]
+    Configs --> NodeConfig[Node.js Config]
+    Configs --> IntegrationConfig[Integration Config]
+
+    Mocks --> AuthMocks[Better Auth Mocks]
+    Mocks --> FirestoreMocks[Firestore Mocks]
+    Mocks --> RedisMocks[Redis/Vector Mocks]
+    Mocks --> NextMocks[Next.js Mocks]
+    Mocks --> BrowserMocks[Browser API Mocks]
+
+    Utils --> RenderUtils[Render Utilities]
+    Utils --> DatabaseUtils[Database Utilities]
+    Utils --> TestProviders[Test Providers]
+```
+
+## Installation
+
+```bash
+pnpm add -D @repo/testing
+```
+
+## Configuration Presets
+
+### Next.js Applications
+
+<CodeGroup>
+```typescript vitest.config.ts (Recommended)
+import { defineConfig } from 'vitest/config';
+import { createNextConfig } from '@repo/testing/config/next';
+
+export default defineConfig({
+  ...createNextConfig({
+    rootDir: process.cwd(),
+    coverage: true,
+  }),
+});
+```
+
+```typescript Using Presets
+import { defineConfig } from 'vitest/config';
+import { nextPreset } from '@repo/testing';
+
+export default defineConfig({
+  test: nextPreset,
+});
+```
+
+</CodeGroup>
+
+### React Packages
+
+<Tabs>
+  <Tab title="React Library">
+    ```typescript
+    // vitest.config.ts
+    import { defineConfig } from 'vitest/config';
+    import { createReactConfig } from '@repo/testing/config/react';
+    
+    export default defineConfig({
+      ...createReactConfig({
+        environment: 'jsdom',
+        setupFiles: ['./test-setup.ts'],
+      }),
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Node.js Package">
+    ```typescript
+    // vitest.config.ts
+    import { defineConfig } from 'vitest/config';
+    import { createNodeConfig } from '@repo/testing/config/node';
+    
+    export default defineConfig({
+      ...createNodeConfig({
+        environment: 'node',
+        coverage: true,
+      }),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Available Presets
+
+<AccordionGroup>
+  <Accordion title="Configuration Presets" icon="cog">
+    **Available presets:** - `nextPreset` - For Next.js applications with SSR/SSG support -
+    `reactPreset` - For React packages and components - `nodePreset` - For Node.js packages and
+    servers - `integrationPreset` - For integration tests across multiple services **Features
+    included in each preset:** - Optimized Vitest configuration for environment - Automatic mock
+    setup and cleanup - Performance testing utilities - TypeScript support with proper path
+    resolution - Coverage configuration with sensible defaults
+  </Accordion>
+</AccordionGroup>
+
+## React Component Testing
+
+### Mantine UI Components
+
+The package includes pre-configured providers for Mantine UI testing with theme support:
+
+<CodeGroup>
+```typescript Basic Component Testing
+import { render, screen, renderDark } from '@repo/testing';
+import { Button } from '@mantine/core';
+
+test('renders button with correct theme', () => { render(<Button>Click me</Button>);
+expect(screen.getByRole('button')).toHaveTextContent('Click me'); });
+
+test('renders in dark mode', () => { renderDark(<Button>Dark button</Button>); // Button will be
+rendered with dark theme expect(screen.getByRole('button')).toHaveClass('mantine-dark'); });
+
+````
+
+```typescript Custom Theme Testing
+test('renders with custom theme', () => {
+  render(
+    <Button>Themed button</Button>,
+    {
+      theme: {
+        primaryColor: 'violet',
+        fontFamily: 'Arial',
+      }
+    }
+  );
+
+  expect(screen.getByRole('button')).toHaveStyle({
+    fontFamily: 'Arial'
+  });
+});
+````
+
+</CodeGroup>
+
+### Custom Test Providers
+
+<AccordionGroup>
+  <Accordion title="Test Providers Setup" icon="provider">
+    ```typescript
+    import { TestProviders } from '@repo/testing';
+    
+    function CustomWrapper({ children }: { children: React.ReactNode }) {
+      return (
+        <TestProviders
+          colorScheme="dark"
+          locale="es"
+          theme={{ primaryColor: 'teal' }}
+        >
+          <MyContextProvider>
+            {children}
+          </MyContextProvider>
+        </TestProviders>
+      );
+    }
+    
+    test('with custom providers', () => {
+      render(<Component />, { wrapper: CustomWrapper });
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="User Interactions" icon="mouse-pointer">
+    ```typescript
+    import { render, screen, userEvent } from '@repo/testing';
+    
+    test('handles user interactions', async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+    
+      render(<Form onSubmit={handleSubmit} />);
+    
+      await user.type(screen.getByLabelText('Email'), 'test@example.com');
+      await user.click(screen.getByRole('button', { name: 'Submit' }));
+    
+      expect(handleSubmit).toHaveBeenCalledWith({
+        email: 'test@example.com'
+      });
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Comprehensive Mocks
+
+### Better Auth Mocks
+
+Full mock implementation for Better Auth with organizations and realistic session management:
+
+<CodeGroup>
+```typescript Mock Setup
+import {
+  createMockUser,
+  createMockOrganization,
+  createMockSession,
+  mockAuthServer,
+  mockAuthClient
+} from '@repo/testing/mocks/auth';
+
+// Create mock data const mockUser = createMockUser({ email: 'admin@company.com', name: 'Admin
+User', });
+
+const mockOrg = createMockOrganization({ name: 'Test Company', slug: 'test-company', metadata: {
+plan: 'enterprise' }, });
+
+const mockSession = createMockSession({ user: mockUser, session: { activeOrganizationId: mockOrg.id,
+}, });
+
+````
+
+```typescript Test Usage
+// Mock server-side auth
+vi.mock('@repo/auth/server', () => ({
+  auth: mockAuthServer,
+}));
+
+// Mock client-side auth
+vi.mock('@repo/auth/client', () => ({
+  authClient: mockAuthClient,
+}));
+
+test('authenticated user flow', async () => {
+  mockAuthServer.api.getSession.mockResolvedValue(mockSession);
+
+  render(<DashboardPage />);
+
+  expect(screen.getByText('Welcome, Admin User')).toBeInTheDocument();
+  expect(screen.getByText('Test Company')).toBeInTheDocument();
+});
+````
+
+</CodeGroup>
+
+### Firestore Mocks
+
+Complete mock Firestore implementation with query support and transaction testing:
+
+<AccordionGroup>
+  <Accordion title="Firestore Setup" icon="database">
+    ```typescript
+    import {
+      mockFirestore,
+      mockFirestoreAdapter,
+      resetMockFirestoreStorage,
+      seedMockFirestoreData,
+      createMockDocumentData,
+    } from '@repo/testing/mocks/firestore';
+    
+    beforeEach(() => {
+      resetMockFirestoreStorage();
+    
+      // Seed test data
+      seedMockFirestoreData('users', [
+        { id: 'user1', data: createMockDocumentData({ name: 'John Doe' }) },
+        { id: 'user2', data: createMockDocumentData({ name: 'Jane Smith' }) },
+      ]);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Firestore Operations Testing" icon="code">
+    ```typescript
+    test('firestore operations', async () => {
+      // Test document creation
+      const docRef = await mockFirestore.collection('users').add({
+        name: 'New User',
+        email: 'new@example.com',
+      });
+    
+      const snapshot = await docRef.get();
+      expect(snapshot.data()).toEqual({
+        name: 'New User',
+        email: 'new@example.com',
+      });
+    
+      // Test queries
+      const querySnapshot = await mockFirestore
+        .collection('users')
+        .where('name', '==', 'John Doe')
+        .get();
+    
+      expect(querySnapshot.size).toBe(1);
+      expect(querySnapshot.docs[0].data().name).toBe('John Doe');
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Firestore Adapter Testing" icon="adapter">
+    ```typescript
+    test('firestore adapter', async () => {
+      const user = await mockFirestoreAdapter.create('users', {
+        name: 'Test User',
+        email: 'test@example.com',
+      });
+    
+      expect(user.id).toBeDefined();
+      expect(user.name).toBe('Test User');
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Upstash Redis/Vector Mocks
+
+<Tabs>
+  <Tab title="Redis Mocks">
+    ```typescript
+    import {
+      createMockRedisClient,
+      resetMockRedis,
+    } from '@repo/testing/mocks/upstash-redis';
+    
+    beforeEach(() => {
+      resetMockRedis();
+    });
+    
+    test('redis operations', async () => {
+      const redis = createMockRedisClient();
+    
+      await redis.set('key', 'value');
+      const result = await redis.get('key');
+    
+      expect(result).toBe('value');
+    
+      // Test complex operations
+      await redis.lpush('list', 'item1', 'item2');
+      const listItems = await redis.lrange('list', 0, -1);
+      
+      expect(listItems).toEqual(['item2', 'item1']);
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Vector Mocks">
+    ```typescript
+    import {
+      createMockVectorClient,
+      resetMockVector,
+    } from '@repo/testing/mocks/upstash-redis';
+    
+    beforeEach(() => {
+      resetMockVector();
+    });
+    
+    test('vector operations', async () => {
+      const vector = createMockVectorClient();
+    
+      const result = await vector.upsert({
+        id: 'vec1',
+        vector: [0.1, 0.2, 0.3],
+        metadata: { text: 'test document' },
+      });
+    
+      expect(result).toBeDefined();
+    
+      // Test vector search
+      const searchResults = await vector.query({
+        vector: [0.1, 0.2, 0.3],
+        topK: 5,
+      });
+    
+      expect(searchResults.matches).toHaveLength(1);
+      expect(searchResults.matches[0].id).toBe('vec1');
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Next.js Mocks
+
+Complete Next.js API mocks including router, image, and themes:
+
+<CodeGroup>
+```typescript Next.js Setup
+import {
+  mockNextImage,
+  mockNextNavigation,
+  mockNextThemes,
+  setupNextMocks
+} from '@repo/testing/mocks/next';
+
+// Setup all Next.js mocks setupNextMocks();
+
+// Or individual mocks mockNextNavigation({ push: vi.fn(), back: vi.fn(), pathname: '/test',
+searchParams: new URLSearchParams('?tab=settings'), });
+
+````
+
+```typescript Navigation Testing
+test('next router navigation', () => {
+  const { push } = require('next/navigation');
+
+  render(<NavigationComponent />);
+  fireEvent.click(screen.getByText('Go to Dashboard'));
+
+  expect(push).toHaveBeenCalledWith('/dashboard');
+});
+
+test('next image optimization', () => {
+  render(<NextImage src="/test.jpg" alt="Test" width={100} height={100} />);
+
+  const image = screen.getByAltText('Test');
+  expect(image).toHaveAttribute('src', '/test.jpg');
+});
+````
+
+</CodeGroup>
+
+## Database Testing
+
+### Database Utilities
+
+<AccordionGroup>
+  <Accordion title="Test Database Setup" icon="database">
+    ```typescript
+    import {
+      setupTestDatabase,
+      cleanupTestDatabase,
+      seedTestData,
+      clearTestData,
+    } from '@repo/testing/utils/database';
+    
+    describe('User Service', () => {
+      beforeAll(async () => {
+        await setupTestDatabase();
+      });
+    
+      afterAll(async () => {
+        await cleanupTestDatabase();
+      });
+    
+      beforeEach(async () => {
+        await seedTestData({
+          users: [
+            { email: 'test1@example.com', name: 'User 1' },
+            { email: 'test2@example.com', name: 'User 2' },
+          ],
+          organizations: [{ name: 'Test Org', slug: 'test-org' }],
+        });
+      });
+    
+      afterEach(async () => {
+        await clearTestData();
+      });
+    
+      test('creates user successfully', async () => {
+        const user = await userService.create({
+          email: 'new@example.com',
+          name: 'New User',
+        });
+    
+        expect(user.id).toBeDefined();
+        expect(user.email).toBe('new@example.com');
+      });
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Transaction Testing" icon="exchange">
+    ```typescript
+    import { mockFirestore } from '@repo/testing/mocks/firestore';
+    
+    test('database transactions', async () => {
+      await mockFirestore.runTransaction(async (transaction) => {
+        const userRef = mockFirestore.collection('users').doc('user1');
+        const orgRef = mockFirestore.collection('organizations').doc('org1');
+    
+        const userDoc = await transaction.get(userRef);
+        const currentCount = userDoc.data()?.count || 0;
+    
+        transaction.update(userRef, { count: currentCount + 1 });
+        transaction.set(orgRef, {
+          lastActivity: new Date(),
+          memberCount: currentCount + 1,
+        });
+      });
+    
+      const userDoc = await mockFirestore.doc('users/user1').get();
+      expect(userDoc.data()?.count).toBe(1);
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Testing Patterns
+
+### Integration Testing
+
+<CodeGroup>
+```typescript Integration Config
+import { integrationPreset } from '@repo/testing';
+
+// vitest.config.integration.ts export default defineConfig({ test: { ...integrationPreset, include:
+['**/*.integration.test.ts'], }, });
+
+````
+
+```typescript Integration Test Example
+// user-registration.integration.test.ts
+describe('User Registration Integration', () => {
+  test('complete registration flow', async () => {
+    // Test spans multiple services
+    const authResult = await authService.register({
+      email: 'integration@test.com',
+      password: 'password123',
+    });
+
+    expect(authResult.success).toBe(true);
+
+    const user = await database.user.findUnique({
+      where: { email: 'integration@test.com' },
+    });
+
+    expect(user).toBeDefined();
+    expect(user?.emailVerified).toBe(false);
+
+    await emailService.sendVerification(user!.id);
+
+    // Verify email was queued
+    const emailQueue = await queue.getJobs('email');
+    expect(emailQueue).toHaveLength(1);
+  });
+});
+````
+
+</CodeGroup>
+
+### Performance Testing
+
+<Tabs>
+  <Tab title="Render Performance">
+    ```typescript
+    import { performance } from 'perf_hooks';
+    
+    function measureRenderTime<T>(renderFn: () => T): { result: T; renderTime: number } {
+      const start = performance.now();
+      const result = renderFn();
+      const renderTime = performance.now() - start;
+    
+      return { result, renderTime };
+    }
+    
+    test('component renders within performance budget', () => {
+      const { renderTime } = measureRenderTime(() => {
+        return render(<LargeDataTable data={largeDataset} />);
+      });
+    
+      expect(renderTime).toBeLessThan(100); // 100ms budget
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Memory Testing">
+    ```typescript
+    test('memory usage stays within bounds', () => {
+      const beforeMemory = process.memoryUsage().heapUsed;
+    
+      render(<ComponentWithManyChildren />);
+    
+      const afterMemory = process.memoryUsage().heapUsed;
+      const memoryIncrease = (afterMemory - beforeMemory) / 1024 / 1024; // MB
+    
+      expect(memoryIncrease).toBeLessThan(10); // 10MB increase limit
+    });
+    
+    test('no memory leaks in component lifecycle', () => {
+      let initialMemory = process.memoryUsage().heapUsed;
+      
+      for (let i = 0; i < 100; i++) {
+        const { unmount } = render(<TestComponent />);
+        unmount();
+      }
+      
+      // Force garbage collection if available
+      if (global.gc) global.gc();
+      
+      const finalMemory = process.memoryUsage().heapUsed;
+      const memoryGrowth = (finalMemory - initialMemory) / 1024 / 1024;
+      
+      expect(memoryGrowth).toBeLessThan(5); // Less than 5MB growth
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Accessibility Testing
+
+<CodeGroup>
+```typescript A11y Setup
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
+
+test('has no accessibility violations', async () => { const { container } =
+render(<FormComponent />);
+
+const results = await axe(container); expect(results).toHaveNoViolations(); });
+
+````
+
+```typescript Keyboard Navigation
+test('keyboard navigation works', async () => {
+  render(<NavigationMenu />);
+
+  const firstMenuItem = screen.getByRole('menuitem', { name: 'Home' });
+  firstMenuItem.focus();
+
+  await userEvent.keyboard('{ArrowDown}');
+
+  const secondMenuItem = screen.getByRole('menuitem', { name: 'About' });
+  expect(secondMenuItem).toHaveFocus();
+});
+
+test('focuses management for modals', async () => {
+  render(<Modal isOpen={true}>Modal content</Modal>);
+
+  // Focus should be trapped within modal
+  await userEvent.keyboard('{Tab}');
+
+  const focusedElement = document.activeElement;
+  expect(focusedElement).toBeInTheDocument();
+  expect(focusedElement?.closest('[role="dialog"]')).toBeInTheDocument();
+});
+````
+
+</CodeGroup>
+
+## Test Organization
+
+### File Structure
+
+<AccordionGroup>
+  <Accordion title="Recommended Structure" icon="folder">
+    ```
+    __tests__/
+    ├── setup/           # Test setup files
+    │   ├── common.ts    # Common test setup
+    │   ├── database.ts  # Database test setup
+    │   └── integration.ts # Integration test setup
+    ├── mocks/           # Mock implementations
+    │   ├── auth.ts      # Auth service mocks
+    │   ├── database.ts  # Database mocks
+    │   └── apis.ts      # External API mocks
+    ├── fixtures/        # Test data fixtures
+    │   ├── users.ts     # User test data
+    │   └── organizations.ts # Organization test data
+    └── helpers/         # Test helper functions
+        ├── render.tsx   # Custom render functions
+        └── assertions.ts # Custom assertions
+    ```
+  </Accordion>
+  
+  <Accordion title="Test Categories" icon="tags">
+    **Unit tests: `*.test.ts`**
+    ```typescript
+    test('validates email format', () => {
+      expect(validateEmail('test@example.com')).toBe(true);
+      expect(validateEmail('invalid-email')).toBe(false);
+    });
+    ```
+    
+    **Component tests: `*.component.test.tsx`**
+    ```typescript
+    test('Button renders correctly', () => {
+      render(<Button variant="primary">Click me</Button>);
+      expect(screen.getByRole('button')).toHaveClass('btn-primary');
+    });
+    ```
+    
+    **Integration tests: `*.integration.test.ts`**
+    ```typescript
+    test('user creation flow', async () => {
+      const user = await createUser({ email: 'test@example.com' });
+      const dbUser = await findUser(user.id);
+      expect(dbUser).toEqual(user);
+    });
+    ```
+    
+    **E2E tests: `*.e2e.test.ts`** (handled by Playwright)
+  </Accordion>
+</AccordionGroup>
+
+## Configuration Options
+
+### Coverage Configuration
+
+<CodeGroup>
+```typescript Coverage Setup
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      exclude: [
+        'node_modules/',
+        '**/*.config.*',
+        '**/*.d.ts',
+        '__tests__/helpers/**',
+        '**/*.stories.*',
+        '**/test-utils.tsx',
+      ],
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80,
+      },
+    },
+  },
+});
+```
+
+```typescript Custom Matchers
+// test-setup.ts
+import { expect } from 'vitest';
+
+expect.extend({
+  toBeValidEmail(received: string) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const pass = emailRegex.test(received);
+
+    return {
+      pass,
+      message: () => `expected ${received} ${pass ? 'not ' : ''}to be a valid email`,
+    };
+  },
+
+  toHaveBeenCalledWithUser(received: any, expectedUser: any) {
+    const lastCall = received.mock.calls[received.mock.calls.length - 1];
+    const pass = lastCall && lastCall[0]?.id === expectedUser.id;
+
+    return {
+      pass,
+      message: () =>
+        `expected function ${pass ? 'not ' : ''}to have been called with user ${expectedUser.id}`,
+    };
+  },
+});
+
+// Extend type definitions
+declare module 'vitest' {
+  interface Assertion<T = any> {
+    toBeValidEmail(): T;
+    toHaveBeenCalledWithUser(user: any): T;
+  }
+}
+```
+
+</CodeGroup>
+
+## Running Tests
+
+<Tabs>
+  <Tab title="Basic Commands">
+    ```bash # Run all tests pnpm test # Run with coverage pnpm test:coverage # Run in watch mode
+    pnpm test:watch # Run specific test file pnpm test user.test.ts # Run tests matching pattern
+    pnpm test --grep "authentication" ```
+  </Tab>
+
+  <Tab title="Advanced Commands">
+    ```bash # Run integration tests only pnpm test:integration # Run with specific configuration
+    pnpm test --config vitest.config.integration.ts # Debug tests pnpm test --inspect-brk # Run
+    tests in parallel pnpm test --reporter=verbose --pool=threads # Run with UI mode pnpm test --ui
+    ```
+  </Tab>
+</Tabs>
+
+## Environment Setup
+
+<CodeGroup>
+```typescript Test Setup
+// test-setup.ts
+import '@testing-library/jest-dom';
+import { setupBrowserMocks } from '@repo/testing/mocks/browser';
+import { setupNextMocks } from '@repo/testing/mocks/next';
+import { suppressConsoleErrors, setTestEnv } from '@repo/testing/setup/common';
+
+// Setup test environment setTestEnv({ NODE_ENV: 'test', BETTER_AUTH_SECRET: 'test-secret',
+DATABASE_URL: 'postgresql://test:test@localhost:5432/test_db', });
+
+// Suppress console errors in tests suppressConsoleErrors();
+
+// Setup mocks setupBrowserMocks(); setupNextMocks();
+
+````
+
+```typescript Global Test Config
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./test-setup.ts'],
+    include: ['**/*.{test,spec}.{js,ts,tsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**'],
+    testTimeout: 10000,
+    hookTimeout: 10000,
+  },
+});
+````
+
+</CodeGroup>
+
+## Best Practices
+
+<Warning>
+  **Testing Best Practices:** - Use descriptive test names that explain behavior being tested -
+  Follow AAA pattern: Arrange, Act, Assert for clear test structure - One assertion per test to
+  focus on testing one behavior at a time - Always mock external dependencies and reset mocks
+  between tests
+</Warning>
+
+### Implementation Guidelines
+
+1. **Test Structure**
+
+   - **Descriptive test names**: Test names should explain the behavior being tested
+   - **Follow AAA pattern**: Arrange, Act, Assert for clear test structure
+   - **One assertion per test**: Focus on testing one behavior at a time
+
+2. **Mock Strategy**
+
+   - **Mock external dependencies**: Always mock external APIs, databases, and services
+   - **Use realistic mock data**: Ensure mock data resembles real data structures
+   - **Reset mocks between tests**: Prevent test interference with proper cleanup
+
+3. **Performance**
+
+   - **Minimize test setup**: Only setup what's needed for each test
+   - **Use beforeEach/afterEach wisely**: Balance between test isolation and performance
+   - **Parallel test execution**: Structure tests to run in parallel when possible
+
+4. **Maintainability**
+   - **Extract common test utilities**: Reuse test helpers and fixtures
+   - **Keep tests close to code**: Co-locate tests with the code they're testing
+   - **Update tests with code changes**: Ensure tests evolve with the codebase
+
+## Enterprise Features Summary
+
+The testing package provides comprehensive testing infrastructure with:
+
+- **Multi-Environment Support** with specialized configurations for React, Next.js, Node.js, and
+  integration testing
+- **Mantine UI Testing** with pre-configured providers and theme support including dark mode
+- **Complete Mock Ecosystem** for Better Auth, Firestore, Upstash services, and Next.js APIs with
+  realistic data
+- **Database Testing Utilities** with setup, seeding, cleanup helpers, and transaction support
+- **Performance and Accessibility Testing** with built-in support for benchmarking and a11y
+  validation
+- **Type-Safe Testing** with full TypeScript support, custom matchers, and proper type definitions
+- **Enterprise Test Organization** with proper file structure, test categorization, and coverage
+  reporting
+
+This makes it suitable for large-scale applications requiring comprehensive test coverage with
+minimal setup overhead and maximum developer productivity.

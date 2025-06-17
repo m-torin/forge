@@ -41,7 +41,7 @@ vi.mock('../../middleware/node', () => ({
 }));
 
 vi.mock('next/server', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as any;
   return {
     ...actual,
     NextRequest: vi.fn().mockImplementation((url, init) => ({
@@ -224,7 +224,7 @@ describe('Middleware Factory', () => {
     });
 
     it('should add feature flags in development mode', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV = 'development';
 
       const middleware = createAdvancedMiddleware(mockAuthConfig);
       const request = new NextRequest('http://localhost:3000/dashboard');
@@ -242,7 +242,7 @@ describe('Middleware Factory', () => {
     });
 
     it('should handle audit logging when enabled', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV = 'development';
 
       const middleware = createAdvancedMiddleware(mockAuthConfig, {
         enableAuditLog: true,

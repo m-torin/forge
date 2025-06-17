@@ -3,7 +3,7 @@
  * Advanced workflow management with versioning and composition utilities
  */
 
-import type { WorkflowDefinition, WorkflowExecution, WorkflowProvider } from '../types/index';
+import { WorkflowDefinition, WorkflowExecution, WorkflowProvider } from '../types/index';
 
 export interface BulkOperation {
   /** Completion timestamp */
@@ -232,7 +232,7 @@ export class BulkOperationManager {
         const batch = operation.targets.slice(i, i + batchSize);
 
         // Process batch with concurrency limit
-        const batchPromises = batch.map(async (target, index) => {
+        const batchPromises = batch.map(async (target) => {
           if ((operation.status as string) === 'cancelled') {
             return;
           }
@@ -270,12 +270,15 @@ export class BulkOperationManager {
             });
 
             operation.progress.completed++;
-          } catch (error) {
+          } catch (error: any) {
             const duration = Date.now() - startTime;
 
             operation.results.push({
               duration,
-              error: error instanceof Error ? error.message : String(error),
+              error:
+                error instanceof Error
+                  ? (error as Error)?.message || 'Unknown error'
+                  : String(error),
               status: 'failed',
               workflowId: target.workflowId,
             });
@@ -290,7 +293,7 @@ export class BulkOperationManager {
         });
 
         // Limit concurrency
-        const concurrentBatches = [];
+        const concurrentBatches: any[] = [];
         for (let j = 0; j < batchPromises.length; j += concurrency) {
           concurrentBatches.push(Promise.all(batchPromises.slice(j, j + concurrency)));
         }
@@ -306,7 +309,7 @@ export class BulkOperationManager {
       if (operation.status === 'running') {
         operation.status = 'completed';
       }
-    } catch (error) {
+    } catch (error: any) {
       operation.status = 'failed';
     } finally {
       operation.completedAt = new Date();
@@ -522,7 +525,7 @@ export class WorkflowComposer {
           await this.executeSequential(composition, context);
           break;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (composition.errorHandling === 'fail-fast') {
         throw error;
       }
@@ -563,7 +566,7 @@ export class WorkflowVersionManager {
       throw new Error(`No versions found for workflow ${workflowId}`);
     }
 
-    const targetVersion = versions.find((v) => v.version === version);
+    const targetVersion = versions.find((v: any) => v.version === version);
     if (!targetVersion) {
       throw new Error(`Version ${version} not found for workflow ${workflowId}`);
     }

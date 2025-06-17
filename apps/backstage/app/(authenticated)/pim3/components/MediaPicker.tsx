@@ -508,7 +508,6 @@ export function MediaPickerButton({
         <Input
           component="button"
           onClick={open}
-          placeholder={value.length > 0 ? undefined : placeholder}
           styles={{
             input: {
               cursor: 'pointer',

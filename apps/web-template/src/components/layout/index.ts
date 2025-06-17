@@ -8,6 +8,7 @@ export { default as TabNavigation } from './TabNavigation';
 
 // AppLayout exports
 export { AppLayout } from './AppLayout';
+export { ServerAppLayout } from './ServerAppLayout';
 export { AppLayoutProvider, useAppLayout } from '@/react/AppLayoutContext';
 export { AppLayoutControls } from './AppLayout/AppLayoutControls';
 export type {

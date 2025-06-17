@@ -1,0 +1,160 @@
+# OpenTelemetry Collector Configuration
+# For advanced RUM and APM data collection
+
+receivers:
+  # OTLP receivers for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+          allowed_headers:
+            - "*"
+          max_age: 7200
+
+  # Prometheus receiver for scraping metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: "otel-collector"
+          scrape_interval: 10s
+          static_configs:
+            - targets: ["0.0.0.0:8889"]
+
+  # Host metrics receiver
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+      disk:
+        metrics:
+          system.disk.io:
+            enabled: true
+          system.disk.operations:
+            enabled: true
+      filesystem:
+        metrics:
+          system.filesystem.utilization:
+            enabled: true
+      network:
+        metrics:
+          system.network.io:
+            enabled: true
+      process:
+        metrics:
+          process.cpu.utilization:
+            enabled: true
+          process.memory.utilization:
+            enabled: true
+
+processors:
+  # Batch processor for performance
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  # Resource processor to add metadata
+  resource:
+    attributes:
+      - key: service.name
+        value: "monitoring-services"
+        action: upsert
+      - key: service.version
+        value: "1.0.0"
+        action: upsert
+      - key: deployment.environment
+        value: "production"
+        action: upsert
+
+  # Memory limiter
+  memory_limiter:
+    limit_mib: 512
+    spike_limit_mib: 128
+    check_interval: 5s
+
+  # Attributes processor for RUM data
+  attributes:
+    actions:
+      # Add user agent parsing
+      - key: user_agent.original
+        action: insert
+        from_attribute: http.user_agent
+      # Add geo location if available
+      - key: client.geo.country_iso_code
+        action: insert
+        from_attribute: http.request.header.cf-ipcountry
+      # Add session tracking
+      - key: session.id
+        action: insert
+        from_attribute: http.request.header.x-session-id
+
+exporters:
+  # Export to Prometheus
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      service: "otel-collector"
+
+  # Export to Loki for logs
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+    tenant_id: "monitoring"
+    labels:
+      attributes:
+        service.name: "service_name"
+        service.version: "service_version"
+        log.level: "level"
+    format: json
+
+  # Export traces to console (for debugging)
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # Export metrics to Prometheus remote write
+  prometheusremotewrite:
+    endpoint: "http://prometheus:9090/api/v1/write"
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    # Traces pipeline
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource, attributes]
+      exporters: [logging]
+
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus, hostmetrics]
+      processors: [memory_limiter, batch, resource]
+      exporters: [prometheus, prometheusremotewrite]
+
+    # Logs pipeline
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource, attributes]
+      exporters: [loki, logging]
+
+  extensions: []
+
+  telemetry:
+    logs:
+      level: "info"
+    metrics:
+      address: 0.0.0.0:8888

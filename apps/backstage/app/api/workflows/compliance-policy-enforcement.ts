@@ -13,7 +13,7 @@ import {
   withStepCircuitBreaker,
   withStepMonitoring,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ComplianceEnforcementInput = z.object({
@@ -183,8 +183,9 @@ function generateViolationDescription(policy: string, violationType: string): st
     },
   };
 
+  const policyDescriptions = descriptions[policy as keyof typeof descriptions];
   return (
-    descriptions[policy as any]?.[violationType] || `${violationType} ${policy} violation detected`
+    (policyDescriptions as any)?.[violationType] || `${violationType} ${policy} violation detected`
   );
 }
 
@@ -274,12 +275,8 @@ export const collectEntitiesStep = compose(
       input.scope.all || input.scope.products?.length > 0 || input.scope.merchants?.length > 0,
     (output) => output.entities.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 60000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['entityTypes'],
-    }),
+  (step: any) => withStepTimeout(step, 60000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock data fetching
@@ -817,11 +814,11 @@ export const runAIContentAnalysisStep = compose(
       aiViolations,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
       resetTimeout: 300000,
       threshold: 0.5,
-      timeout: 120000,
+      // timeout: 120000,
     }),
 );
 
@@ -836,7 +833,7 @@ export const consolidateViolationsStep = createStep('consolidate-violations', as
   const consolidatedViolations = deduplicateViolations(allViolations);
 
   // Sort by severity and confidence
-  consolidatedViolations.sort((a, b) => {
+  consolidatedViolations.sort((a: any, b: any) => {
     if (a.severity !== b.severity) {
       return b.severity - a.severity;
     }
@@ -933,6 +930,7 @@ function determineAction(violation: any, config: any): any {
     immediate: violation.violationType === 'critical',
     reason: violation.description,
     requiresExecution: true,
+    requiresHumanReview: false,
     scheduledFor: new Date(
       Date.now() +
         (violation.violationType === 'critical' ? 0 : config.gracePeriod * 60 * 60 * 1000),
@@ -1240,7 +1238,7 @@ export const generateComplianceAlertsStep = createStep('generate-alerts', async 
 
   // Policy trend alert
   const policyTypeCounts = calculateViolationsByType(consolidatedViolations);
-  const dominantPolicy = Object.entries(policyTypeCounts).sort((a, b) => b[1] - a[1])[0];
+  const dominantPolicy = Object.entries(policyTypeCounts).sort((a: any, b: any) => b[1] - a[1])[0];
 
   if (dominantPolicy && dominantPolicy[1] > consolidatedViolations.length * 0.4) {
     alerts.push({
@@ -1357,7 +1355,9 @@ function generateComplianceRecommendations(data: any): any[] {
 
   // Common violation types
   const violationsByType = calculateViolationsByType(data.consolidatedViolations);
-  const topViolationType = Object.entries(violationsByType).sort((a, b) => b[1] - a[1])[0];
+  const topViolationType = Object.entries(violationsByType).sort(
+    (a: any, b: any) => b[1] - a[1],
+  )[0];
 
   if (topViolationType && topViolationType[1] > 20) {
     recommendations.push({

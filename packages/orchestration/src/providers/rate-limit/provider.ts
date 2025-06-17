@@ -4,11 +4,11 @@
  */
 
 import { Ratelimit } from '@upstash/ratelimit';
+
 import { redis } from '@repo/database/redis';
 
+import { RateLimitConfig, RateLimitPattern, JsonObject } from '../../shared/types/index';
 import { createProviderError, RateLimitError } from '../../shared/utils/errors';
-
-import type { RateLimitConfig, RateLimitPattern, JsonObject } from '../../shared/types/index';
 
 export interface RateLimitProviderOptions {
   /** Rate limit algorithm */
@@ -32,6 +32,10 @@ export class RateLimitProvider {
   private rateLimiters = new Map<string, Ratelimit>();
   private useRedis: boolean;
 
+  private get redis() {
+    return redis;
+  }
+
   constructor(options: RateLimitProviderOptions) {
     this.options = {
       algorithm: 'sliding-window',
@@ -51,10 +55,7 @@ export class RateLimitProvider {
     return new RateLimitProvider({
       algorithm: config.config.algorithm,
       defaultLimit: config.config.defaultLimit,
-      redis: {
-        token: config.config.redisToken,
-        url: config.config.redisUrl,
-      },
+      enableRedis: true,
     });
   }
 
@@ -72,7 +73,7 @@ export class RateLimitProvider {
   }> {
     try {
       const rateLimiter = this.getRateLimiter(pattern);
-      const key = pattern.keyGenerator ? pattern.keyGenerator(context) : pattern.identifier;
+      const key = pattern.keyGenerator ? pattern.keyGenerator(context) : pattern.getIdentifier;
 
       const result = await rateLimiter.limit(key);
 
@@ -85,7 +86,7 @@ export class RateLimitProvider {
 
       if (!result.success && pattern.throwOnLimit) {
         throw new RateLimitError(
-          `Rate limit exceeded for ${pattern.identifier}`,
+          `Rate limit exceeded for ${pattern.getIdentifier}`,
           pattern.tokens,
           pattern.interval,
           Math.ceil((result.reset - Date.now()) / 1000),
@@ -93,13 +94,13 @@ export class RateLimitProvider {
       }
 
       return response;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof RateLimitError) {
         throw error;
       }
 
       throw createProviderError(
-        `Failed to check rate limit for ${pattern.identifier}`,
+        `Failed to check rate limit for ${pattern.getIdentifier}`,
         this.name,
         'rate-limit',
         { originalError: error as Error },
@@ -126,7 +127,9 @@ export class RateLimitProvider {
       const method = descriptor.value;
 
       descriptor.value = async function (this: unknown, ...args: unknown[]) {
-        const provider = new RateLimitProvider((this as { options: RateLimitProviderOptions }).options);
+        const provider = new RateLimitProvider(
+          (this as { options: RateLimitProviderOptions }).options,
+        );
         return provider.withRateLimit(pattern, () => method.apply(this, args));
       };
 
@@ -147,7 +150,7 @@ export class RateLimitProvider {
   }> {
     try {
       const rateLimiter = this.getRateLimiter(pattern);
-      const key = pattern.keyGenerator ? pattern.keyGenerator(context) : pattern.identifier;
+      const key = pattern.keyGenerator ? pattern.keyGenerator(context) : pattern.getIdentifier;
 
       // This would require additional methods from Upstash Ratelimit
       // For now, we'll use the limit check to get current status
@@ -158,9 +161,9 @@ export class RateLimitProvider {
         limit: result.limit,
         resetTime: new Date(result.reset),
       };
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderError(
-        `Failed to get rate limit status for ${pattern.identifier}`,
+        `Failed to get rate limit status for ${pattern.getIdentifier}`,
         this.name,
         'rate-limit',
         { originalError: error as Error },
@@ -212,11 +215,12 @@ export class RateLimitProvider {
         status: 'healthy',
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         details: {
           activeLimiters: this.rateLimiters.size,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error:
+            error instanceof Error ? (error as Error)?.message || 'Unknown error' : 'Unknown error',
           redis: 'unhealthy',
         },
         responseTime: Date.now() - startTime,
@@ -233,7 +237,7 @@ export class RateLimitProvider {
     try {
       const fullKey = key || identifier;
       await this.redis.del(`${this.options.keyPrefix}:${fullKey}`);
-    } catch (error) {
+    } catch (error: any) {
       throw createProviderError(
         `Failed to reset rate limit for ${identifier}`,
         this.name,
@@ -256,14 +260,14 @@ export class RateLimitProvider {
     if (!check.allowed) {
       if (pattern.throwOnLimit) {
         throw new RateLimitError(
-          `Rate limit exceeded for ${pattern.identifier}`,
+          `Rate limit exceeded for ${pattern.getIdentifier}`,
           pattern.tokens,
           pattern.interval,
           Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
         );
       } else {
         throw new RateLimitError(
-          `Rate limit exceeded for ${pattern.identifier}`,
+          `Rate limit exceeded for ${pattern.getIdentifier}`,
           pattern.tokens,
           pattern.interval,
           Math.ceil((check.resetTime.getTime() - Date.now()) / 1000),
@@ -278,7 +282,7 @@ export class RateLimitProvider {
    * Create or get a rate limiter for a specific identifier
    */
   private getRateLimiter(pattern: RateLimitPattern): Ratelimit {
-    const key = `${pattern.identifier}-${pattern.tokens}-${pattern.interval}-${pattern.algorithm}`;
+    const key = `${pattern.getIdentifier}-${pattern.tokens}-${pattern.interval}-${pattern.algorithm}`;
 
     if (this.rateLimiters.has(key)) {
       return this.rateLimiters.get(key)!;

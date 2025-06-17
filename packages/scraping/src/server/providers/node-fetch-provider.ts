@@ -2,7 +2,7 @@
  * Node Fetch provider - Server-side provider using Node.js fetch
  */
 
-import type {
+import {
   ScrapingProvider,
   ProviderConfig,
   ScrapeOptions,
@@ -101,7 +101,7 @@ export class NodeFetchProvider implements ScrapingProvider {
 
           if (multiple) {
             const matches = Array.from(html.matchAll(pattern));
-            data[key] = matches.map((m) => m[1].trim());
+            data[key] = matches.map((m: any) => m[1].trim());
           } else {
             const match = pattern.exec(html);
             if (match) data[key] = match[1].trim();
@@ -119,7 +119,7 @@ export class NodeFetchProvider implements ScrapingProvider {
 
           if (multiple) {
             const matches = Array.from(html.matchAll(pattern));
-            data[key] = matches.map((m) => m[1].trim());
+            data[key] = matches.map((m: any) => m[1].trim());
           } else {
             const match = pattern.exec(html);
             if (match) data[key] = match[1].trim();
@@ -133,15 +133,15 @@ export class NodeFetchProvider implements ScrapingProvider {
 
           if (multiple) {
             const matches = Array.from(html.matchAll(pattern));
-            data[key] = matches.map((m) => m[1].trim());
+            data[key] = matches.map((m: any) => m[1].trim());
           } else {
             const match = pattern.exec(html);
             if (match) data[key] = match[1].trim();
           }
         }
-      } catch (error) {
-        // Skip invalid selectors
-        continue;
+      } catch (error: any) {
+        // Re-throw extraction errors so they can be handled upstream
+        throw new Error(`Failed to extract data for selector "${selector}": ${error.message}`);
       }
     }
 
@@ -153,7 +153,8 @@ export class NodeFetchProvider implements ScrapingProvider {
       // Health check by testing fetch
       const response = await fetch('data:text/html,<html></html>');
       return response.ok;
-    } catch {
+    } catch (_error: any) {
+      // Health check failures should return false but not throw
       return false;
     }
   }

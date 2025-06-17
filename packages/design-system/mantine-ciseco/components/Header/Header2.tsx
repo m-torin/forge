@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { type FC } from 'react';
 
+import { TCollection, TNavigationItem } from '../../data/types';
 import Logo from '../shared/Logo/Logo';
 
 import AvatarDropdown from './AvatarDropdown';
@@ -9,16 +10,13 @@ import HamburgerBtnMenu from './HamburgerBtnMenu';
 import Navigation from './Navigation/Navigation';
 import SearchBtnPopover from './SearchBtnPopover';
 
-import type { TCollection } from '../../data/types';
-import type { TNavigationItem } from '../../data/types';
-
-export interface Props {
+export interface Props extends Record<string, any> {
   featuredCollection?: TCollection;
   hasBorder?: boolean;
   navigationMenu?: TNavigationItem[];
 }
 
-const Header2: FC<Props> = ({ featuredCollection, hasBorder = true, navigationMenu = [] }) => {
+const Header2: FC<Props> = ({ featuredCollection, hasBorder = true, navigationMenu = [] }: any) => {
   return (
     <div className="relative z-10 w-full bg-white">
       <div

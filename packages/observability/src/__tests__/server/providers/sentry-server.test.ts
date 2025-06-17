@@ -44,7 +44,7 @@ const {
   const mockSetExtra = vi.fn();
   const mockSetContext = vi.fn();
   const mockStartTransaction = vi.fn();
-  const mockWithScope = vi.fn((callback) => callback(mockScope));
+  const mockWithScope = vi.fn((callback: any) => callback(mockScope));
 
   return {
     mockAddBreadcrumb,
@@ -62,7 +62,8 @@ const {
   };
 });
 
-vi.mock('@sentry/node', () => ({
+// Mock both @sentry/node and @sentry/nextjs since the provider imports from @sentry/nextjs
+const sentryMock = {
   addBreadcrumb: mockAddBreadcrumb,
   captureException: mockCaptureException,
   captureMessage: mockCaptureMessage,
@@ -76,21 +77,22 @@ vi.mock('@sentry/node', () => ({
   setUser: mockSetUser,
   startTransaction: mockStartTransaction,
   withScope: mockWithScope,
-}));
+  // Add session management functions
+  startSession: vi.fn(),
+  endSession: vi.fn(),
+};
+
+vi.mock('@sentry/node', () => sentryMock);
+vi.mock('@sentry/nextjs', () => sentryMock);
 
 describe('SentryServerProvider', () => {
   let provider: SentryServerProvider;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     mockStartTransaction.mockReturnValue(mockTransaction);
-
+    // Don't initialize provider here to avoid cross-contamination
     provider = new SentryServerProvider();
-    await provider.initialize({
-      dsn: 'https://test@sentry.io/12345',
-      environment: 'test',
-      tracesSampleRate: 0.1,
-    });
   });
 
   describe('initialization', () => {
@@ -115,12 +117,22 @@ describe('SentryServerProvider', () => {
       );
     });
 
-    it('should throw error without DSN', async () => {
+    it('should skip initialization without DSN', async () => {
+      // Clear mocks to ensure we don't count calls from beforeEach
+      vi.clearAllMocks();
+
       const testProvider = new SentryServerProvider();
-      await expect(testProvider.initialize({})).rejects.toThrow('Sentry DSN is required');
+      // Should not throw, just skip initialization
+      await testProvider.initialize({});
+
+      // Sentry.init should not be called when no DSN is provided
+      expect(mockSentryInit).not.toHaveBeenCalled();
     });
 
     it('should use default values when not provided', async () => {
+      // Clear mocks to get clean test
+      vi.clearAllMocks();
+
       const testProvider = new SentryServerProvider();
       await testProvider.initialize({
         dsn: 'https://test@sentry.io/12345',
@@ -128,10 +140,11 @@ describe('SentryServerProvider', () => {
 
       expect(mockSentryInit).toHaveBeenCalledWith(
         expect.objectContaining({
-          debug: false,
+          dsn: 'https://test@sentry.io/12345',
           environment: 'production',
           profilesSampleRate: 0.1,
           tracesSampleRate: 1,
+          integrations: expect.any(Array),
         }),
       );
     });
@@ -139,6 +152,13 @@ describe('SentryServerProvider', () => {
 
   describe('captureException', () => {
     it('should capture exception with Sentry', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const error = new Error('Test error');
       await provider.captureException(error);
 
@@ -147,6 +167,13 @@ describe('SentryServerProvider', () => {
     });
 
     it('should set context when provided', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const error = new Error('Test error');
       const context = {
         extra: { version: '1.0.0' },
@@ -166,6 +193,13 @@ describe('SentryServerProvider', () => {
     });
 
     it('should set fingerprint when provided', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const error = new Error('Test error');
       const context = {
         fingerprint: ['error-type', 'user-action'],
@@ -179,6 +213,13 @@ describe('SentryServerProvider', () => {
 
   describe('captureMessage', () => {
     it('should capture message with correct level', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       await provider.captureMessage('Test message', 'info');
 
       expect(mockWithScope).toHaveBeenCalled();
@@ -186,18 +227,39 @@ describe('SentryServerProvider', () => {
     });
 
     it('should map warning level correctly', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       await provider.captureMessage('Warning message', 'warning');
 
       expect(mockCaptureMessage).toHaveBeenCalledWith('Warning message', 'warning');
     });
 
     it('should capture error messages', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       await provider.captureMessage('Error message', 'error');
 
       expect(mockCaptureMessage).toHaveBeenCalledWith('Error message', 'error');
     });
 
     it('should set context when provided', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const context = {
         extra: { attempt: 3 },
         tags: { feature: 'auth' },
@@ -213,7 +275,14 @@ describe('SentryServerProvider', () => {
   });
 
   describe('setUser', () => {
-    it('should set user with Sentry', () => {
+    it('should set user with Sentry', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const user = {
         id: 'user-123',
         username: 'testuser',
@@ -227,19 +296,40 @@ describe('SentryServerProvider', () => {
   });
 
   describe('setTag', () => {
-    it('should set tag with Sentry', () => {
+    it('should set tag with Sentry', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       provider.setTag('environment', 'production');
 
       expect(mockSetTag).toHaveBeenCalledWith('environment', 'production');
     });
 
-    it('should handle numeric values', () => {
+    it('should handle numeric values', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       provider.setTag('version', 2);
 
       expect(mockSetTag).toHaveBeenCalledWith('version', 2);
     });
 
-    it('should handle boolean values', () => {
+    it('should handle boolean values', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       provider.setTag('feature_enabled', true);
 
       expect(mockSetTag).toHaveBeenCalledWith('feature_enabled', true);
@@ -247,7 +337,14 @@ describe('SentryServerProvider', () => {
   });
 
   describe('setExtra', () => {
-    it('should set extra data with Sentry', () => {
+    it('should set extra data with Sentry', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       provider.setExtra('metadata', { custom: 'data' });
 
       expect(mockSetExtra).toHaveBeenCalledWith('metadata', { custom: 'data' });
@@ -255,7 +352,14 @@ describe('SentryServerProvider', () => {
   });
 
   describe('setContext', () => {
-    it('should set context with Sentry', () => {
+    it('should set context with Sentry', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const context = {
         environment: 'staging',
         version: '1.2.3',
@@ -268,7 +372,14 @@ describe('SentryServerProvider', () => {
   });
 
   describe('addBreadcrumb', () => {
-    it('should add breadcrumb with Sentry', () => {
+    it('should add breadcrumb with Sentry', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const breadcrumb = {
         type: 'user' as const,
         category: 'ui',
@@ -283,7 +394,14 @@ describe('SentryServerProvider', () => {
   });
 
   describe('startTransaction', () => {
-    it('should start transaction with Sentry', () => {
+    it('should start transaction with Sentry', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const transaction = provider.startTransaction('test-transaction');
 
       expect(mockStartTransaction).toHaveBeenCalledWith({
@@ -296,7 +414,14 @@ describe('SentryServerProvider', () => {
       expect(transaction.finish).toBeDefined();
     });
 
-    it('should include context when provided', () => {
+    it('should include context when provided', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const context = {
         extra: { endpoint: '/api/users' },
         operation: 'api.request',
@@ -313,7 +438,14 @@ describe('SentryServerProvider', () => {
       });
     });
 
-    it('should provide transaction methods', () => {
+    it('should provide transaction methods', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const transaction = provider.startTransaction('test');
 
       transaction.setData('key', 'value');
@@ -334,7 +466,14 @@ describe('SentryServerProvider', () => {
   });
 
   describe('startSpan', () => {
-    it('should create child span when parent provided', () => {
+    it('should create child span when parent provided', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       const parentSpan = {
         startChild: vi.fn(),
       };
@@ -347,7 +486,14 @@ describe('SentryServerProvider', () => {
       });
     });
 
-    it('should create new transaction when no parent', () => {
+    it('should create new transaction when no parent', async () => {
+      // Initialize provider for this test
+      await provider.initialize({
+        dsn: 'https://test@sentry.io/12345',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+      });
+
       provider.startSpan('root-span');
 
       expect(mockStartTransaction).toHaveBeenCalledWith({

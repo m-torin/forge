@@ -9,8 +9,8 @@ import {
 
 const authHelpers = createAuthHelpers('http://localhost:3300');
 
-test.describe('Backstage Feature Flags - Management and Configuration Testing', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('Backstage Feature Flags - Management and Configuration Testing', (_: any) => {
+  test.beforeEach(async ({ page }: any) => {
     // Sign in as admin user for all feature flag tests
     const testUser = authHelpers.createTestUser({
       name: 'Feature Flags Admin',
@@ -24,7 +24,10 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flags page loads with flag management interface', async ({ context, page }) => {
+  test('feature flags page loads with flag management interface', async ({
+    context,
+    page,
+  }: any) => {
     const { report, result } = await withPerformanceMonitoring(
       page,
       context,
@@ -91,7 +94,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     expect(result.report.metrics.lcp).toBeLessThan(3000);
   });
 
-  test('feature flag creation and configuration', async ({ context, page }) => {
+  test('feature flag creation and configuration', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock feature flag creation API
@@ -231,7 +234,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flag toggling and status management', async ({ context, page }) => {
+  test('feature flag toggling and status management', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
     const apiMocker = createApiMocker(page);
 
@@ -272,7 +275,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
           await page.waitForTimeout(1000);
 
           // Verify state changed (if it's a checkbox)
-          if (await firstToggle.evaluate((el) => el.type === 'checkbox')) {
+          if (await firstToggle.evaluate((el: any) => el.type === 'checkbox')) {
             const newState = await firstToggle.isChecked();
             expect(newState).toBe(!isChecked);
           }
@@ -328,7 +331,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flag environments and targeting', async ({ context, page }) => {
+  test('feature flag environments and targeting', async ({ context, page }: any) => {
     await page.goto('/feature-flags');
     await page.waitForLoadState('networkidle');
 
@@ -414,9 +417,9 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
       for (const selector of percentageInputs) {
         const input = page.locator(selector).first();
         if ((await input.count()) > 0 && (await input.isVisible())) {
-          if (await input.evaluate((el) => el.type === 'range')) {
+          if (await input.evaluate((el: any) => el.type === 'range')) {
             await input.fill('50');
-          } else if (await input.evaluate((el) => el.type === 'number')) {
+          } else if (await input.evaluate((el: any) => el.type === 'number')) {
             await input.fill('25');
           }
           await page.waitForTimeout(500);
@@ -442,7 +445,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flag analytics and usage tracking', async ({ context, page }) => {
+  test('feature flag analytics and usage tracking', async ({ context, page }: any) => {
     await page.goto('/feature-flags');
     await page.waitForLoadState('networkidle');
 
@@ -501,9 +504,9 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     for (const selector of dateFilters) {
       const filter = page.locator(selector).first();
       if ((await filter.count()) > 0 && (await filter.isVisible())) {
-        if (await filter.evaluate((el) => el.tagName === 'SELECT')) {
+        if (await filter.evaluate((el: any) => el.tagName === 'SELECT')) {
           await filter.selectOption({ index: 1 });
-        } else if (await filter.evaluate((el) => el.type === 'date')) {
+        } else if (await filter.evaluate((el: any) => el.type === 'date')) {
           const today = new Date().toISOString().slice(0, 10);
           await filter.fill(today);
         }
@@ -528,7 +531,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flag search and filtering capabilities', async ({ context, page }) => {
+  test('feature flag search and filtering capabilities', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
 
     await page.goto('/feature-flags');
@@ -572,7 +575,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     for (const selector of statusFilterElements) {
       const filterElement = page.locator(selector).first();
       if ((await filterElement.count()) > 0 && (await filterElement.isVisible())) {
-        if (await filterElement.evaluate((el) => el.tagName === 'SELECT')) {
+        if (await filterElement.evaluate((el: any) => el.tagName === 'SELECT')) {
           await filterElement.selectOption({ index: 1 });
         } else {
           await filterElement.click();
@@ -611,7 +614,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     for (const selector of sortElements) {
       const sortElement = page.locator(selector).first();
       if ((await sortElement.count()) > 0 && (await sortElement.isVisible())) {
-        if (await sortElement.evaluate((el) => el.tagName === 'SELECT')) {
+        if (await sortElement.evaluate((el: any) => el.tagName === 'SELECT')) {
           await sortElement.selectOption({ index: 1 });
         } else {
           await sortElement.click();
@@ -622,7 +625,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flag dependencies and relationships', async ({ context, page }) => {
+  test('feature flag dependencies and relationships', async ({ context, page }: any) => {
     await page.goto('/feature-flags');
     await page.waitForLoadState('networkidle');
 
@@ -710,7 +713,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flag import/export and backup', async ({ context, page }) => {
+  test('feature flag import/export and backup', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock import/export APIs
@@ -817,7 +820,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
     }
   });
 
-  test('feature flags performance and real-time updates', async ({ context, page }) => {
+  test('feature flags performance and real-time updates', async ({ context, page }: any) => {
     const { result } = await withPerformanceMonitoring(
       page,
       context,
@@ -875,7 +878,7 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
         for (const selector of bulkElements) {
           const element = page.locator(selector).first();
           if ((await element.count()) > 0 && (await element.isVisible())) {
-            if (await element.evaluate((el) => el.type === 'checkbox')) {
+            if (await element.evaluate((el: any) => el.type === 'checkbox')) {
               await element.check();
             } else {
               await element.click();

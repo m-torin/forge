@@ -1,15 +1,19 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { prisma, orm } from '@repo/database/prisma';
-import { auth } from '@repo/auth/server';
-
-import type { CollectionType, ContentStatus } from '@repo/database/prisma';
-
+import { auth } from '@repo/auth/server/next';
+import {
+  findManyCollectionsActionAction,
+  findFirstCollectionActionAction,
+  createCollectionAction,
+  updateCollectionAction,
+  type CollectionType,
+  type ContentStatus,
+} from '@repo/database/prisma';
 
 /**
  * PIM3-specific collection actions
- * 
+ *
  * These actions provide enhanced functionality specific to PIM3:
  * - Hierarchical collection relationships (parent/child)
  * - Soft delete/restore capabilities
@@ -32,12 +36,12 @@ export interface CollectionData {
 // Enhanced getCollections with PIM3-specific features (hierarchy, user tracking, etc.)
 export async function getCollections() {
   try {
-    const session = await auth.api.getSession();
-    if (!session) {
-      throw new Error('Unauthorized');
-    }
+    // const session = await auth.api.getSession();
+    // if (!session) {
+    //   throw new Error('Unauthorized');
+    // }
 
-    const collections = await orm.findManyCollections({
+    const collections = await findManyCollectionsAction({
       include: {
         _count: {
           select: {
@@ -89,18 +93,18 @@ export async function createCollection(data: CollectionData) {
     // }
 
     // Check if slug already exists
-    const existingCollection = await orm.findFirstCollection({
+    const existing = await findFirstCollectionAction({
       where: {
-        deletedAt: null,
         slug: data.slug,
+        deletedAt: null,
       },
     });
 
-    if (existingCollection) {
+    if (existing) {
       throw new Error('A collection with this slug already exists');
     }
 
-    const collection = await orm.createCollection({
+    const collection = await createCollectionAction({
       data: {
         name: data.name,
         type: data.type,
@@ -160,7 +164,7 @@ export async function updateCollection(id: string, data: CollectionData) {
     // }
 
     // Check if slug already exists (excluding current collection)
-    const existingCollection = await orm.findFirstCollection({
+    const existingCollection = await findFirstCollectionAction({
       where: {
         deletedAt: null,
         NOT: {
@@ -174,7 +178,7 @@ export async function updateCollection(id: string, data: CollectionData) {
       throw new Error('A collection with this slug already exists');
     }
 
-    const collection = await orm.updateCollection({
+    const collection = await updateCollectionAction({
       data: {
         name: data.name,
         type: data.type,
@@ -234,7 +238,7 @@ export async function deleteCollection(id: string) {
     //   throw new Error('Unauthorized');
     // }
 
-    await orm.updateCollection({
+    await updateCollectionAction({
       data: {
         deletedAt: new Date(),
         deletedById: 'system', // session.user.id,
@@ -258,7 +262,7 @@ export async function getRootCollections() {
     //   throw new Error('Unauthorized');
     // }
 
-    const collections = await orm.findManyCollections({
+    const collections = await findManyCollectionsAction({
       include: {
         _count: {
           select: {
@@ -322,7 +326,7 @@ export async function getChildCollections(parentId: string) {
     //   throw new Error('Unauthorized');
     // }
 
-    const collections = await orm.findManyCollections({
+    const collections = await findManyCollectionsAction({
       include: {
         _count: {
           select: {
@@ -365,8 +369,8 @@ export async function getChildCollections(parentId: string) {
   }
 }
 
-// Duplicate a collection
-export async function duplicateCollection(id: string) {
+// Get collection hierarchy (tree structure)
+export async function getCollectionTree() {
   try {
     // Remove auth check for testing
     // const session = await auth.api.getSession();
@@ -374,41 +378,7 @@ export async function duplicateCollection(id: string) {
     //   throw new Error('Unauthorized');
     // }
 
-    const originalCollection = await orm.findUniqueCollection({
-      where: { id },
-    });
-
-    if (!originalCollection) {
-      throw new Error('Collection not found');
-    }
-
-    // Generate unique slug
-    const baseSlug = `${originalCollection.slug}-copy`;
-    let slug = baseSlug;
-    let counter = 1;
-
-    while (true) {
-      const existing = await orm.findFirstCollection({
-        where: {
-          deletedAt: null,
-          slug: slug,
-        },
-      });
-
-      if (!existing) break;
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-    }
-
-    const duplicatedCollection = await orm.createCollection({
-      data: {
-        name: `${originalCollection.name} (Copy)`,
-        type: originalCollection.type,
-        copy: originalCollection.copy,
-        slug: slug,
-        status: 'DRAFT' as ContentStatus,
-        userId: 'system', // session.user.id,
-      },
+    const collections = await findManyCollectionsAction({
       include: {
         _count: {
           select: {
@@ -422,35 +392,92 @@ export async function duplicateCollection(id: string) {
             taxonomies: true,
           },
         },
-        parent: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
+      },
+      orderBy: [{ type: 'asc' }, { name: 'asc' }],
+      where: {
+        deletedAt: null,
       },
     });
 
-    return duplicatedCollection;
+    // Build tree structure
+    const collectionMap = new Map<string, any>();
+    const tree: any[] = [];
+
+    // First pass: create map
+    collections.forEach((collection: any) => {
+      collectionMap.set(collection.id, {
+        ...collection,
+        children: [],
+      });
+    });
+
+    // Second pass: build tree
+    collections.forEach((collection: any) => {
+      const collectionNode = collectionMap.get(collection.id);
+      if (collection.parentId) {
+        const parent = collectionMap.get(collection.parentId);
+        if (parent) {
+          parent.children.push(collectionNode);
+        }
+      } else {
+        tree.push(collectionNode);
+      }
+    });
+
+    return tree;
+  } catch (error) {
+    console.error('Failed to get collection tree:', error);
+    throw new Error('Failed to get collection tree');
+  }
+}
+
+// Duplicate a collection
+export async function duplicateCollection(id: string) {
+  try {
+    // Remove auth check for testing
+    // const session = await auth.api.getSession();
+    // if (!session) {
+    //   throw new Error('Unauthorized');
+    // }
+
+    const original = await findFirstCollectionAction({
+      where: { id },
+    });
+
+    if (!original) {
+      throw new Error('Collection not found');
+    }
+
+    // Generate unique slug
+    let newSlug = `${original.slug}-copy`;
+    let counter = 1;
+    while (await findFirstCollectionAction({ where: { slug: newSlug } })) {
+      newSlug = `${original.slug}-copy-${counter}`;
+      counter++;
+    }
+
+    const duplicate = await createCollectionAction({
+      data: {
+        name: `${original.name} (Copy)`,
+        type: original.type,
+        copy: original.copy ?? {},
+        parentId: original.parentId,
+        slug: newSlug,
+        status: 'DRAFT' as ContentStatus,
+        userId: original.userId,
+      },
+    });
+
+    revalidatePath('/pim3/collections');
+    return duplicate;
   } catch (error) {
     console.error('Failed to duplicate collection:', error);
-    if (error instanceof Error) {
-      throw error;
-    }
     throw new Error('Failed to duplicate collection');
   }
 }
 
-// Get products assigned to a collection
-export async function getCollectionProducts(collectionId: string) {
+// Restore a soft-deleted collection
+export async function restoreCollection(id: string) {
   try {
     // Remove auth check for testing
     // const session = await auth.api.getSession();
@@ -458,123 +485,156 @@ export async function getCollectionProducts(collectionId: string) {
     //   throw new Error('Unauthorized');
     // }
 
-    const products = await orm.findManyProducts({
-      orderBy: {
-        name: 'asc',
+    await updateCollectionAction({
+      data: {
+        deletedAt: null,
+        deletedById: null,
       },
-      select: {
-        id: true,
-        name: true,
-        brand: true,
-        category: true,
-        currency: true,
-        price: true,
-        sku: true,
-        status: true,
-      },
-      where: {
-        collections: {
-          some: {
-            id: collectionId,
+      where: { id },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to restore collection:', error);
+    throw new Error('Failed to restore collection');
+  }
+}
+
+// Update collection relationships (brands, products, categories, taxonomies)
+export async function updateCollectionRelationships(
+  id: string,
+  relationships: {
+    brandIds?: string[];
+    productIds?: string[];
+    categoryIds?: string[];
+    taxonomyIds?: string[];
+  },
+) {
+  try {
+    // Remove auth check for testing
+    // const session = await auth.api.getSession();
+    // if (!session) {
+    //   throw new Error('Unauthorized');
+    // }
+
+    const data: any = {};
+
+    if (relationships.brandIds) {
+      data.brands = {
+        set: relationships.brandIds.map((id) => ({ id })),
+      };
+    }
+
+    if (relationships.productIds) {
+      data.products = {
+        set: relationships.productIds.map((id) => ({ id })),
+      };
+    }
+
+    if (relationships.categoryIds) {
+      data.categories = {
+        set: relationships.categoryIds.map((id) => ({ id })),
+      };
+    }
+
+    if (relationships.taxonomyIds) {
+      data.taxonomies = {
+        set: relationships.taxonomyIds.map((id) => ({ id })),
+      };
+    }
+
+    await updateCollectionAction({
+      data,
+      where: { id },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update collection relationships:', error);
+    throw new Error('Failed to update collection relationships');
+  }
+}
+
+// Get collections by type
+export async function getCollectionsByType(type: CollectionType) {
+  try {
+    // Remove auth check for testing
+    // const session = await auth.api.getSession();
+    // if (!session) {
+    //   throw new Error('Unauthorized');
+    // }
+
+    const collections = await findManyCollectionsAction({
+      include: {
+        _count: {
+          select: {
+            brands: true,
+            categories: true,
+            children: true,
+            favorites: true,
+            media: true,
+            products: true,
+            registries: true,
+            taxonomies: true,
           },
         },
-        deletedAt: null,
       },
-    });
-
-    return products;
-  } catch (error) {
-    console.error('Failed to fetch collection products:', error);
-    throw new Error('Failed to fetch collection products');
-  }
-}
-
-// Add products to collection
-export async function addProductsToCollection(collectionId: string, productIds: string[]) {
-  try {
-    // Remove auth check for testing
-    // const session = await auth.api.getSession();
-    // if (!session) {
-    //   throw new Error('Unauthorized');
-    // }
-
-    await orm.updateCollection({
-      data: {
-        products: {
-          connect: productIds.map((id) => ({ id })),
-        },
-      },
-      where: { id: collectionId },
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to add products to collection:', error);
-    throw new Error('Failed to add products to collection');
-  }
-}
-
-// Remove products from collection
-export async function removeProductsFromCollection(collectionId: string, productIds: string[]) {
-  try {
-    // Remove auth check for testing
-    // const session = await auth.api.getSession();
-    // if (!session) {
-    //   throw new Error('Unauthorized');
-    // }
-
-    await orm.updateCollection({
-      data: {
-        products: {
-          disconnect: productIds.map((id) => ({ id })),
-        },
-      },
-      where: { id: collectionId },
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to remove products from collection:', error);
-    throw new Error('Failed to remove products from collection');
-  }
-}
-
-// Get all products for collection assignment
-export async function getAllProducts() {
-  try {
-    // Remove auth check for testing
-    // const session = await auth.api.getSession();
-    // if (!session) {
-    //   throw new Error('Unauthorized');
-    // }
-
-    const products = await orm.findManyProducts({
-      orderBy: {
-        name: 'asc',
-      },
-      select: {
-        id: true,
-        name: true,
-        brand: true,
-        category: true,
-        currency: true,
-        price: true,
-        sku: true,
-        status: true,
-      },
+      orderBy: { name: 'asc' },
       where: {
         deletedAt: null,
+        type: type,
       },
     });
 
-    return products;
+    return collections;
   } catch (error) {
-    console.error('Failed to fetch products:', error);
-    throw new Error('Failed to fetch products');
+    console.error('Failed to fetch collections by type:', error);
+    throw new Error('Failed to fetch collections by type');
   }
 }
 
-// Get collections for parent selection (excluding self and children)
+// Search collections
+export async function searchCollections(query: string) {
+  try {
+    // Remove auth check for testing
+    // const session = await auth.api.getSession();
+    // if (!session) {
+    //   throw new Error('Unauthorized');
+    // }
+
+    const collections = await findManyCollectionsAction({
+      include: {
+        _count: {
+          select: {
+            brands: true,
+            categories: true,
+            children: true,
+            favorites: true,
+            media: true,
+            products: true,
+            registries: true,
+            taxonomies: true,
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+      where: {
+        deletedAt: null,
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { slug: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+    });
+
+    return collections;
+  } catch (error) {
+    console.error('Failed to search collections:', error);
+    throw new Error('Failed to search collections');
+  }
+}
+
+// Get available parent collections (excludes self and its descendants)
 export async function getAvailableParentCollections(excludeId?: string) {
   try {
     // Remove auth check for testing
@@ -583,47 +643,76 @@ export async function getAvailableParentCollections(excludeId?: string) {
     //   throw new Error('Unauthorized');
     // }
 
-    const whereClause: any = {
-      deletedAt: null,
-    };
-
-    if (excludeId) {
-      whereClause.id = {
-        not: excludeId,
-      };
-    }
-
-    const collections = await orm.findManyCollections({
-      orderBy: [{ type: 'asc' }, { name: 'asc' }],
+    const collections = await findManyCollectionsAction({
+      orderBy: { name: 'asc' },
+      where: {
+        deletedAt: null,
+        ...(excludeId && { NOT: { id: excludeId } }),
+      },
       select: {
         id: true,
         name: true,
-        type: true,
-        parentId: true,
         slug: true,
+        type: true,
       },
-      where: whereClause,
     });
-
-    // Filter out collections that would create circular references
-    if (excludeId) {
-      const getDescendants = (id: string, collections: any[]): string[] => {
-        const descendants: string[] = [];
-        const children = collections.filter((c) => c.parentId === id);
-        for (const child of children) {
-          descendants.push(child.id);
-          descendants.push(...getDescendants(child.id, collections));
-        }
-        return descendants;
-      };
-
-      const descendantIds = getDescendants(excludeId, collections);
-      return collections.filter((c) => !descendantIds.includes(c.id));
-    }
 
     return collections;
   } catch (error) {
     console.error('Failed to fetch available parent collections:', error);
     throw new Error('Failed to fetch available parent collections');
+  }
+}
+
+// Get collections with products
+export async function getCollectionsWithProducts() {
+  try {
+    // Remove auth check for testing
+    // const session = await auth.api.getSession();
+    // if (!session) {
+    //   throw new Error('Unauthorized');
+    // }
+
+    const collections = await findManyCollectionsAction({
+      include: {
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+        products: {
+          include: {
+            media: {
+              orderBy: { createdAt: 'asc' },
+              take: 1,
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          where: {
+            deletedAt: null,
+            status: 'ACTIVE',
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+      where: {
+        deletedAt: null,
+        products: {
+          some: {
+            deletedAt: null,
+            status: 'ACTIVE',
+          },
+        },
+      },
+    });
+
+    return collections.map((c: any) => ({
+      ...c,
+      featuredProducts: c.products,
+    }));
+  } catch (error) {
+    console.error('Failed to fetch collections with products:', error);
+    throw new Error('Failed to fetch collections with products');
   }
 }

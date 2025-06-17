@@ -1,7 +1,7 @@
+import { Linter } from 'eslint';
+
 // eslint.config.ts
 import serverConfig from '@repo/eslint-config/server';
-
-import type { Linter } from 'eslint';
 
 // Add an extra configuration to ignore coverage files and markdown files in this package
 const config: Linter.FlatConfig[] = [

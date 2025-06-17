@@ -16,7 +16,7 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { UseFormReturnType } from '@mantine/form';
+import { UseFormReturnType, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import {
   IconChevronDown,
@@ -37,8 +37,12 @@ interface ProductVariantsProps {
 }
 
 export function ProductVariants({ onUpdate, productId, productName }: ProductVariantsProps) {
-  // Get form context
-  const form = useFormContext();
+  // Create local form instance since useFormContext doesn't exist in @mantine/form
+  const form = useForm({
+    initialValues: {
+      variants: [] as any[],
+    },
+  });
 
   // Get variants from form context
   const variants = form.values.variants || [];
@@ -99,14 +103,17 @@ export function ProductVariants({ onUpdate, productId, productName }: ProductVar
   };
 
   const calculateTotalInventory = () => {
-    return variants.reduce((total, variant) => total + (variant.inventory?.available || 0), 0);
+    return variants.reduce(
+      (total: any, variant: any) => total + (variant.inventory?.available || 0),
+      0,
+    );
   };
 
   const handleBulkStatusUpdate = (status: 'active' | 'inactive' | 'discontinued') => {
     if (selectedVariants.length === 0) return;
 
-    selectedVariants.forEach((variantId) => {
-      const index = variants.findIndex((v) => v.id === variantId);
+    selectedVariants.forEach((variantId: any) => {
+      const index = variants.findIndex((v: any) => v.id === variantId);
       if (index !== -1) {
         form.setFieldValue(`variants.${index}.status`, status);
       }
@@ -123,7 +130,7 @@ export function ProductVariants({ onUpdate, productId, productName }: ProductVar
   const handleDeleteVariants = () => {
     if (selectedVariants.length === 0) return;
 
-    const remainingVariants = variants.filter((v) => !selectedVariants.includes(v.id));
+    const remainingVariants = variants.filter((v: any) => !selectedVariants.includes(v.id));
     form.setFieldValue('variants', remainingVariants);
 
     notifications.show({
@@ -210,8 +217,8 @@ export function ProductVariants({ onUpdate, productId, productName }: ProductVar
                 {variants.length}
               </Text>
               <Text c="dimmed" size="xs">
-                {variants.filter((v) => v.isParent).length} parents,{' '}
-                {variants.filter((v) => !v.isParent).length} variants
+                {variants.filter((v: any) => v.isParent).length} parents,{' '}
+                {variants.filter((v: any) => !v.isParent).length} variants
               </Text>
             </Card>
             <Card withBorder>
@@ -232,13 +239,17 @@ export function ProductVariants({ onUpdate, productId, productName }: ProductVar
               <Text fw={700} size="xl">
                 {formatPrice(
                   Math.min(
-                    ...variants.filter((v) => !v.isParent).map((v) => v.pricing?.basePrice || 0),
+                    ...variants
+                      .filter((v: any) => !v.isParent)
+                      .map((v: any) => v.pricing?.basePrice || 0),
                   ),
                 )}{' '}
                 -{' '}
                 {formatPrice(
                   Math.max(
-                    ...variants.filter((v) => !v.isParent).map((v) => v.pricing?.basePrice || 0),
+                    ...variants
+                      .filter((v: any) => !v.isParent)
+                      .map((v: any) => v.pricing?.basePrice || 0),
                   ),
                 )}
               </Text>
@@ -251,7 +262,7 @@ export function ProductVariants({ onUpdate, productId, productName }: ProductVar
                 Total PDP Joins
               </Text>
               <Text fw={700} size="xl">
-                {variants.reduce((total, v) => total + (v.pdpJoins?.length || 0), 0)}
+                {variants.reduce((total: any, v) => total + (v.pdpJoins?.length || 0), 0)}
               </Text>
               <Text c="dimmed" size="xs">
                 Across all variants
@@ -261,7 +272,7 @@ export function ProductVariants({ onUpdate, productId, productName }: ProductVar
 
           {/* Variant List */}
           <Stack>
-            {variants.map((variant, variantIndex) => {
+            {variants.map((variant: any, variantIndex) => {
               const isExpanded = expandedVariants.has(variant.id);
               return (
                 <Card key={variant.id} withBorder>
@@ -333,7 +344,7 @@ export function ProductVariants({ onUpdate, productId, productName }: ProductVar
                     {/* Attribute Pills */}
                     {variant.attributes && variant.attributes.length > 0 && (
                       <Group gap="xs">
-                        {variant.attributes.map((attr) => (
+                        {variant.attributes.map((attr: any) => (
                           <Group key={attr.id} gap={4}>
                             <Badge
                               color={getAttributeTypeColor(attr.type)}

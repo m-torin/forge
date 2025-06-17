@@ -13,14 +13,14 @@ import { Link } from '../Link';
 const Currencies = ({ currencies }: { currencies: TCurrency[] }) => {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {currencies.map((item, index) => (
+      {currencies.map((item: any) => (
         <Link
-          key={index}
-          href={`${item.href}` as any}
+          key={item.name}
           className={clsx(
             '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-hidden dark:hover:bg-gray-700',
             item.active ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-80',
           )}
+          href={`${item.href}` as any}
         >
           <div dangerouslySetInnerHTML={{ __html: item.icon }} />
           <p className="ml-2 text-sm font-medium">{item.name}</p>
@@ -34,8 +34,8 @@ const Languages = ({
   currentLocale,
   languages,
 }: {
-  languages: TLanguage[];
   currentLocale?: string;
+  languages: TLanguage[];
 }) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -53,18 +53,18 @@ const Languages = ({
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {languages.map((item, index) => {
+      {languages.map((item: any) => {
         const locale = item.locale || item.id?.toLowerCase() || 'en';
         const isActive = currentLocale === locale;
 
         return (
           <button
-            key={index}
-            onClick={() => handleLocaleClick(locale)}
+            key={locale}
             className={clsx(
               '-m-2.5 flex items-center rounded-lg p-2.5 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-hidden dark:hover:bg-gray-700 w-full text-left',
               isActive ? 'bg-gray-100 dark:bg-gray-700' : 'opacity-80',
             )}
+            onClick={() => handleLocaleClick(locale)}
           >
             <div>
               <p className="text-sm font-medium">{item.name}</p>
@@ -77,14 +77,14 @@ const Languages = ({
   );
 };
 
-interface Props {
-  panelClassName?: string;
-  panelPosition?: 'bottom-end' | 'bottom-start';
-
+interface Props extends Record<string, any> {
   className?: string;
   currencies: TCurrency[];
+
   currentLocale?: string;
   languages: TLanguage[];
+  panelClassName?: string;
+  panelPosition?: 'bottom-end' | 'bottom-start';
 }
 
 const CurrLangDropdown: FC<Props> = ({
@@ -98,17 +98,17 @@ const CurrLangDropdown: FC<Props> = ({
   return (
     <div className={className}>
       <Menu
-        width={320}
-        offset={16}
-        position={panelPosition}
-        shadow="lg"
-        transitionProps={{ duration: 200, transition: 'pop-top-right' }}
         classNames={{
           dropdown: clsx(
             'rounded-2xl border-0 ring-1 ring-black/5 dark:ring-white/10 p-6',
             panelClassName,
           ),
         }}
+        offset={16}
+        position={panelPosition}
+        shadow="lg"
+        transitionProps={{ duration: 200, transition: 'pop-top-right' }}
+        width={320}
       >
         <Menu.Target>
           <button className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 focus:outline-hidden focus-visible:outline-hidden dark:text-neutral-200 group">

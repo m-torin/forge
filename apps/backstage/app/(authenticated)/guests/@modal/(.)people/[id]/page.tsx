@@ -1,76 +1,55 @@
 'use client';
 
-import {
-  Avatar,
-  Badge,
-  Group,
-  Stack,
-  Text,
-  Card,
-  SimpleGrid,
-  Divider,
-  Button,
-  ActionIcon,
-  Tooltip,
-} from '@mantine/core';
-import {
-  IconShield,
-  IconBan,
-  IconActivity,
-  IconBuilding,
-  IconMail,
-  IconCalendar,
-  IconEdit,
-} from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { notifications } from '@mantine/notifications';
+import { Text, Stack, Badge, Group, Avatar, Divider, Alert } from '@mantine/core';
+import { IconInfoCircle } from '@tabler/icons-react';
+
 import { ModalWrapper } from '../../modal-wrapper';
+import { getUserById } from '@repo/auth/server/next';
+import type { User } from '../../../types';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  banned: boolean;
-  createdAt: string;
-  lastActive?: string;
-  organizations?: Array<{
-    id: string;
-    name: string;
-    role: string;
-  }>;
-}
-
-interface UserDetailModalProps {
+interface UserModalPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function UserDetailModal({ params }: UserDetailModalProps) {
+export default function UserModalPage({ params }: UserModalPageProps) {
+  const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    params.then(p => setParamsData(p));
+    params.then((p) => setParamsData(p));
   }, [params]);
 
   useEffect(() => {
-    if (paramsData?.id) {
-      loadUser();
+    if (paramsData) {
+      if (paramsData.id === 'new') {
+        setLoading(false);
+      } else {
+        loadUser();
+      }
     }
-  }, [paramsData?.id]);
+  }, [paramsData]);
 
   const loadUser = async () => {
+    if (!paramsData || paramsData.id === 'new') return;
+
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/users/${paramsData?.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
+      const result = await getUserById(paramsData.id);
+      if (result.success && result.data) {
+        setUser({
+          ...result.data,
+          role: (result.data as any).role || 'user',
+          banned: (result.data as any).banned || false,
+        } as User);
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to load user details',
+          message: result.error || 'Failed to load user',
           color: 'red',
         });
       }
@@ -78,7 +57,7 @@ export default function UserDetailModal({ params }: UserDetailModalProps) {
       console.error('Failed to load user:', error);
       notifications.show({
         title: 'Error',
-        message: 'Failed to load user details',
+        message: 'Failed to load user',
         color: 'red',
       });
     } finally {
@@ -86,10 +65,26 @@ export default function UserDetailModal({ params }: UserDetailModalProps) {
     }
   };
 
+  // Handle "new" case
+  if (paramsData?.id === 'new') {
+    return (
+      <ModalWrapper title="Add New User">
+        <Alert icon={<IconInfoCircle size={20} />} title="User Creation Methods" color="blue">
+          Users should be added through the organization invitation system or self sign-up. Direct
+          user creation by administrators is not supported for security reasons.
+        </Alert>
+        <Text size="sm" c="dimmed" ta="center" mt="md">
+          Please close this modal and use the organization invitation system.
+        </Text>
+      </ModalWrapper>
+    );
+  }
+
+  // Handle view case
   if (loading || !user) {
     return (
-      <ModalWrapper title="User Details">
-        <Text>Loading...</Text>
+      <ModalWrapper title="Loading...">
+        <p>Loading user details...</p>
       </ModalWrapper>
     );
   }
@@ -97,121 +92,71 @@ export default function UserDetailModal({ params }: UserDetailModalProps) {
   return (
     <ModalWrapper title="User Details">
       <Stack gap="md">
-        <Group justify="space-between">
-          <Group gap="md">
-            <Avatar size="lg" radius="xl">
-              {user.name
-                .split(' ')
-                .map((n: string) => n[0])
-                .join('')}
-            </Avatar>
-            <div>
-              <Text fw={600} size="lg">
-                {user.name}
-              </Text>
-              <Text c="dimmed" size="sm">
-                {user.email}
-              </Text>
-            </div>
-          </Group>
-          <Group gap="xs">
-            <Tooltip label="Edit User">
-              <ActionIcon variant="light" color="blue">
-                <IconEdit size={16} />
-              </ActionIcon>
-            </Tooltip>
-            <Badge
-              color={user.banned ? 'red' : 'green'}
-              variant="dot"
-            >
-              {user.banned ? 'Banned' : 'Active'}
-            </Badge>
-          </Group>
+        <Group gap="md">
+          <Avatar size="lg" radius="xl">
+            {user.name
+              .split(' ')
+              .map((n: string) => n[0])
+              .join('')}
+          </Avatar>
+          <div>
+            <Text fw={600} size="lg">
+              {user.name}
+            </Text>
+            <Text c="dimmed" size="sm">
+              {user.email}
+            </Text>
+          </div>
         </Group>
 
         <Divider />
 
-        <SimpleGrid cols={2} spacing="md">
-          <Card padding="md" radius="md" withBorder>
-            <Stack gap="xs">
-              <Group gap="xs">
-                <IconShield size={16} />
-                <Text fw={500} size="sm">Role</Text>
-              </Group>
-              <Badge
-                color={
-                  user.role === 'admin' || user.role === 'super-admin' 
-                    ? 'red' 
-                    : user.role === 'moderator' 
-                    ? 'orange' 
+        <Stack gap="sm">
+          <Group justify="space-between">
+            <Text size="sm" c="dimmed">
+              Status
+            </Text>
+            <Badge color={user.banned ? 'red' : 'green'} variant="dot">
+              {user.banned ? 'Banned' : 'Active'}
+            </Badge>
+          </Group>
+
+          <Group justify="space-between">
+            <Text size="sm" c="dimmed">
+              Role
+            </Text>
+            <Badge
+              color={
+                user.role === 'admin' || user.role === 'super-admin'
+                  ? 'red'
+                  : user.role === 'moderator'
+                    ? 'orange'
                     : 'blue'
-                }
-                variant="light"
-              >
-                {user.role}
-              </Badge>
-            </Stack>
-          </Card>
+              }
+              variant="light"
+            >
+              {user.role}
+            </Badge>
+          </Group>
 
-          <Card padding="md" radius="md" withBorder>
-            <Stack gap="xs">
-              <Group gap="xs">
-                <IconCalendar size={16} />
-                <Text fw={500} size="sm">Member Since</Text>
-              </Group>
-              <Text size="sm">
-                {new Date(user.createdAt).toLocaleDateString()}
-              </Text>
-            </Stack>
-          </Card>
+          <Group justify="space-between">
+            <Text size="sm" c="dimmed">
+              Member Since
+            </Text>
+            <Text size="sm">{new Date(user.createdAt).toLocaleDateString()}</Text>
+          </Group>
 
-          <Card padding="md" radius="md" withBorder>
-            <Stack gap="xs">
-              <Group gap="xs">
-                <IconActivity size={16} />
-                <Text fw={500} size="sm">Last Active</Text>
-              </Group>
-              <Text size="sm">
-                {user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Never'}
-              </Text>
-            </Stack>
-          </Card>
-
-          <Card padding="md" radius="md" withBorder>
-            <Stack gap="xs">
-              <Group gap="xs">
-                <IconBuilding size={16} />
-                <Text fw={500} size="sm">Organizations</Text>
-              </Group>
-              <Text size="sm">
-                {user.organizations && user.organizations.length > 0 
-                  ? `${user.organizations.length} organization(s)` 
-                  : 'None'}
-              </Text>
-            </Stack>
-          </Card>
-        </SimpleGrid>
-
-        {user.organizations && user.organizations.length > 0 && (
-          <>
-            <Divider />
-            <div>
-              <Text fw={500} mb="xs">Organizations</Text>
-              <Stack gap="xs">
-                {user.organizations.map((org) => (
-                  <Card key={org.id} padding="sm" radius="md" withBorder>
-                    <Group justify="space-between">
-                      <Text fw={500}>{org.name}</Text>
-                      <Badge variant="light" size="sm">
-                        {org.role}
-                      </Badge>
-                    </Group>
-                  </Card>
-                ))}
-              </Stack>
-            </div>
-          </>
-        )}
+          <Group justify="space-between">
+            <Text size="sm" c="dimmed">
+              Organizations
+            </Text>
+            <Text size="sm">
+              {user.organizations && user.organizations.length > 0
+                ? `${user.organizations.length} organization(s)`
+                : 'None'}
+            </Text>
+          </Group>
+        </Stack>
       </Stack>
     </ModalWrapper>
   );

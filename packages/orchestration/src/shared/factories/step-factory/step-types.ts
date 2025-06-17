@@ -5,9 +5,10 @@
  * Extracted from the monolithic step-factory.ts for better modularity.
  */
 
-import type { CircuitBreakerOptions } from '../../patterns/index';
-import type { RetryConfig, WorkflowError } from '../../types/workflow';
-import type { z } from 'zod';
+import { z } from 'zod';
+
+import { CircuitBreakerOptions } from '../../patterns/index';
+import { RetryConfig, WorkflowError } from '../../types/workflow';
 
 // ===== SIMPLE FUNCTION-BASED TYPES =====
 
@@ -140,6 +141,8 @@ export interface StepFactoryConfig {
   enablePerformanceMonitoring?: boolean;
   /** Custom error handlers */
   errorHandlers?: Map<string, (error: Error, context: StepExecutionContext) => Promise<void>>;
+  /** Callback for step completion */
+  onStepComplete?: (stepName: string, duration: number, success: boolean) => void;
 }
 
 export type StepId = `step_${string}`;

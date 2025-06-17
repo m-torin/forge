@@ -21,18 +21,19 @@ vi.mock('firebase-admin', async () => {
   const { mockFirebaseAdmin } = await import('@repo/testing/database');
   return mockFirebaseAdmin;
 });
+};
 
 vi.mock('@upstash/vector', async () => {
   const { mockUpstashVector } = await import('@repo/testing/database');
   return mockUpstashVector;
-});
+};
 
 vi.mock('@upstash/redis', async () => {
   const { mockUpstashRedis } = await import('@repo/testing/database');
   return mockUpstashRedis;
-});
+};
 
-describe('Database Integration Tests', () => {
+describe('Database Integration Tests', (_: any) => {
   let firestoreHelper: DatabaseTestHelper;
   let vectorHelper: VectorDatabaseTestHelper;
   let redisHelper: RedisDatabaseTestHelper;
@@ -53,7 +54,7 @@ describe('Database Integration Tests', () => {
     await firestoreHelper.setup();
     await vectorHelper.setup();
     await redisHelper.setup();
-  });
+  };
 
   afterEach(async () => {
     await firestoreHelper.cleanup();
@@ -65,7 +66,7 @@ describe('Database Integration Tests', () => {
     resetMockRedisStorage();
   });
 
-  describe('Multi-Database Operations', () => {
+  describe('Multi-Database Operations', (_: any) => {
     it('should store related data across different databases', async () => {
       // Create a user in Firestore
       const user = createTestUser({ name: 'John Doe', email: 'john@example.com' });
@@ -86,7 +87,7 @@ describe('Database Integration Tests', () => {
           userId: user.id,
           preferences: ['tech', 'programming', 'javascript'],
         },
-      });
+      };
       await vectorHelper.getAdapter().create('preferences', preferencesVector);
 
       // Verify data consistency across databases
@@ -97,9 +98,9 @@ describe('Database Integration Tests', () => {
 
       const vectorPrefs = await vectorHelper.getAdapter().findUnique('preferences', {
         id: `preferences-${user.id}`,
-      });
+      };
       expect((vectorPrefs as any)?.metadata.userId).toBe(user.id);
-    });
+    };
 
     it('should handle complex workflow across databases', async () => {
       // Scenario: E-commerce user journey
@@ -125,7 +126,7 @@ describe('Database Integration Tests', () => {
           categories: ['electronics', 'books'],
           lastActivity: Date.now(),
         },
-      });
+      };
       await vectorHelper.getAdapter().create('behaviors', behaviorVector);
 
       // 4. Add items to cart (Redis)
@@ -161,10 +162,10 @@ describe('Database Integration Tests', () => {
       expect(activityCount).toBe(1);
 
       expect(similarBehaviors).toHaveLength(1); // Only one behavior vector stored
-    });
-  });
+    };
+  };
 
-  describe('Cross-Database Data Consistency', () => {
+  describe('Cross-Database Data Consistency', (_: any) => {
     it('should maintain referential integrity across databases', async () => {
       const userId = 'user-123';
 
@@ -173,7 +174,7 @@ describe('Database Integration Tests', () => {
       const userVector = createTestVector({
         id: `profile-${userId}`,
         metadata: { userId, type: 'profile' },
-      });
+      };
 
       await firestoreHelper.getAdapter().create('users', user);
       await vectorHelper.getAdapter().create('profiles', userVector);
@@ -183,16 +184,16 @@ describe('Database Integration Tests', () => {
       const firestoreUser = await firestoreHelper.getAdapter().findUnique('users', { id: userId });
       const vectorProfile = await vectorHelper.getAdapter().findUnique('profiles', {
         id: `profile-${userId}`,
-      });
+      };
       const redisCache = await redisHelper.getAdapter().findUnique('cache', { id: userId });
 
       expect((firestoreUser as any)?.id).toBe(userId);
       expect((vectorProfile as any)?.metadata.userId).toBe(userId);
       expect((redisCache as any)?.id).toBe(userId);
-    });
-  });
+    };
+  };
 
-  describe('Performance Comparison', () => {
+  describe('Performance Comparison', (_: any) => {
     it('should compare performance across database types', async () => {
       const operationCount = 50;
 
@@ -215,14 +216,14 @@ describe('Database Integration Tests', () => {
           avgCreate: redisPerf.avgCreateTime,
           avgRead: redisPerf.avgReadTime,
         },
-      });
-    });
-  });
+      };
+    };
+  };
 
-  describe('Database-Specific Features', () => {
+  describe('Database-Specific Features', (_: any) => {
     it('should utilize unique features of each database', async () => {
       // Firestore: Complex queries with filtering and ordering
-      const users = createTestUsers(5).map((user, index) => ({
+      const users = createTestUsers(5).map((user, index: any) => ({
         ...user,
         age: 20 + index * 5,
         active: index % 2 === 0,
@@ -236,7 +237,7 @@ describe('Database Integration Tests', () => {
         where: { active: true },
         orderBy: { field: 'age', direction: 'desc' },
         limit: 2,
-      });
+      };
 
       expect(activeUsers).toHaveLength(2);
       expect((activeUsers[0] as any).age).toBeGreaterThan((activeUsers[1] as any).age);
@@ -301,10 +302,10 @@ describe('Database Integration Tests', () => {
 
       expect(similarArticles).toHaveLength(3);
       expect((similarArticles[0] as any).metadata.category).toBeDefined();
-    });
-  });
+    };
+  };
 
-  describe('Error Handling Across Databases', () => {
+  describe('Error Handling Across Databases', (_: any) => {
     it('should handle errors consistently across database types', async () => {
       // Test non-existent record queries
       const firestoreResult = await firestoreHelper.getAdapter().findUnique('users', {
@@ -329,14 +330,14 @@ describe('Database Integration Tests', () => {
       expect(firestoreCount).toBe(0);
       expect(redisCount).toBe(0);
       expect(vectorCount).toBe(0);
-    });
-  });
+    };
+  };
 
-  describe('Adapter Interface Consistency', () => {
-    it('should implement consistent interfaces across all adapters', () => {
+  describe('Adapter Interface Consistency', (_: any) => {
+    it('should implement consistent interfaces across all adapters', (_: any) => {
       const adapters = [mockFirestoreAdapter, mockUpstashVectorAdapter, mockUpstashRedisAdapter];
 
-      adapters.forEach((adapter) => {
+      adapters.forEach((adapter: any) => {
         // All adapters should implement base DatabaseAdapter interface
         expect(typeof adapter.initialize).toBe('function');
         expect(typeof adapter.disconnect).toBe('function');
@@ -349,7 +350,7 @@ describe('Database Integration Tests', () => {
         expect(typeof adapter.count).toBe('function');
         expect(typeof adapter.raw).toBe('function');
       });
-    });
+    };
 
     it('should handle initialization and cleanup consistently', async () => {
       const adapters = [mockFirestoreAdapter, mockUpstashVectorAdapter, mockUpstashRedisAdapter];
@@ -363,10 +364,10 @@ describe('Database Integration Tests', () => {
       for (const adapter of adapters) {
         await expect(adapter.disconnect()).resolves.not.toThrow();
       }
-    });
-  });
+    };
+  };
 
-  describe('Real-World Scenarios', () => {
+  describe('Real-World Scenarios', (_: any) => {
     it('should handle user authentication and session management', async () => {
       // 1. User signs up
       const user = createTestUser({
@@ -392,7 +393,7 @@ describe('Database Integration Tests', () => {
           sessionId,
           actions: ['login', 'view_dashboard'],
         },
-      });
+      };
       await vectorHelper.getAdapter().create('activities', activityVector);
 
       // 4. Verify complete authentication flow
@@ -404,9 +405,9 @@ describe('Database Integration Tests', () => {
 
       const activity = await vectorHelper.getAdapter().findUnique('activities', {
         id: `activity-${user.id}`,
-      });
+      };
       expect((activity as any)?.metadata.sessionId).toBe(sessionId);
-    });
+    };
 
     it('should handle content recommendation system', async () => {
       // 1. Store user preferences in Firestore
@@ -453,7 +454,7 @@ describe('Database Integration Tests', () => {
           userId: user.id,
           preferences: (user as any).preferences,
         },
-      });
+      };
       await vectorHelper.getAdapter().create('profiles', userProfileVector);
 
       // 5. Find similar content
@@ -481,6 +482,6 @@ describe('Database Integration Tests', () => {
 
       const recentViews = await redisHelper.getAdapter().listRange('recent_views', user.id, 0, -1);
       expect(recentViews).toHaveLength(2);
-    });
-  });
-});
+    };
+  };
+};

@@ -1,7 +1,12 @@
+import Label from '@/components/Label/Label'
+import NcInputNumber from '@/components/NcInputNumber'
+import Prices from '@/components/Prices'
+import { TCardProduct, getCart } from '@/data/data'
+import Breadcrumb from '@/shared/Breadcrumb'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import Input from '@/shared/Input/Input'
 import { Coordinate01Icon, InformationCircleIcon, PaintBucketIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { TCardProduct } from '@repo/design-system/ciseco'
-import { Breadcrumb, ButtonPrimary, Input, Label, NcInputNumber, Prices, getCart } from '@repo/design-system/ciseco'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -24,7 +29,7 @@ const CheckoutPage = async () => {
           {image?.src && (
             <Image fill src={image} alt={image.alt || ''} sizes="300px" className="object-contain object-center" />
           )}
-          <Link href={`/products/${handle}`} className="absolute inset-0"></Link>
+          <Link href={'/products/' + handle} className="absolute inset-0"></Link>
         </div>
 
         <div className="ml-3 flex flex-1 flex-col sm:ml-6">
@@ -32,7 +37,7 @@ const CheckoutPage = async () => {
             <div className="flex justify-between">
               <div className="flex-[1.5]">
                 <h3 className="text-base font-semibold">
-                  <Link href={`/products/${handle}`}>{name}</Link>
+                  <Link href={'/products/' + handle}>{name}</Link>
                 </h3>
                 <div className="mt-1.5 flex text-sm text-neutral-600 sm:mt-2.5 dark:text-neutral-300">
                   <div className="flex items-center gap-x-2">
@@ -76,7 +81,7 @@ const CheckoutPage = async () => {
               <NcInputNumber className="relative z-10" />
             </div>
 
-            <div className="text-primary-600 hover:text-primary-500 relative z-10 mt-3 flex items-center text-sm font-medium">
+            <div className="relative z-10 mt-3 flex items-center text-sm font-medium text-primary-600 hover:text-primary-500">
               <span>Remove</span>
             </div>
           </div>
@@ -87,7 +92,7 @@ const CheckoutPage = async () => {
 
   return (
     <div className="nc-CheckoutPage">
-      <main className="container py-16 lg:pb-28 lg:pt-20">
+      <main className="container py-16 lg:pt-20 lg:pb-28">
         <div className="mb-16">
           <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Checkout</h2>
           <Breadcrumb
@@ -105,7 +110,7 @@ const CheckoutPage = async () => {
             <LeftSide />
           </div>
 
-          <div className="my-10 shrink-0 border-t border-neutral-200 lg:mx-10 lg:my-0 lg:border-l lg:border-t-0 xl:lg:mx-14 2xl:mx-16 dark:border-neutral-700"></div>
+          <div className="my-10 shrink-0 border-t border-neutral-200 lg:mx-10 lg:my-0 lg:border-t-0 lg:border-l xl:lg:mx-14 2xl:mx-16 dark:border-neutral-700"></div>
 
           <div className="w-full lg:w-[36%]">
             <h3 className="text-lg font-semibold">Order summary</h3>
@@ -156,7 +161,7 @@ const CheckoutPage = async () => {
                   icon={InformationCircleIcon}
                   size={16}
                   color="currentColor"
-                  className="absolute -left-1 top-0.5"
+                  className="absolute top-0.5 -left-1"
                   strokeWidth={1.5}
                 />
                 Learn more{` `}

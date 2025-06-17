@@ -13,8 +13,8 @@ function createUpstashVectorClient() {
   }
 
   return new Index({
-    url: UPSTASH_VECTOR_REST_URL,
     token: UPSTASH_VECTOR_REST_TOKEN,
+    url: UPSTASH_VECTOR_REST_URL,
   });
 }
 
@@ -22,9 +22,7 @@ function createUpstashVectorClient() {
 let upstashVector: Index | null = null;
 
 export function upstashVectorClientSingleton(): Index {
-  if (!upstashVector) {
-    upstashVector = createUpstashVectorClient();
-  }
+  upstashVector ??= createUpstashVectorClient();
   return upstashVector;
 }
 
@@ -32,9 +30,7 @@ export function upstashVectorClientSingleton(): Index {
 let _upstashInstance: Index | null = null;
 export const upstash: Index = new Proxy({} as Index, {
   get(_, prop) {
-    if (!_upstashInstance) {
-      _upstashInstance = upstashVectorClientSingleton();
-    }
+    _upstashInstance ??= upstashVectorClientSingleton();
     return _upstashInstance[prop as keyof Index];
   },
 });

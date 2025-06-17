@@ -1,82 +1,40 @@
-// @ts-ignore - eslint-plugin-node doesn't have type definitions
-import nodePlugin from 'eslint-plugin-node';
-// @ts-ignore - eslint-plugin-security doesn't have type definitions
-import securityPlugin from 'eslint-plugin-security';
-import globals from 'globals';
+import { Linter } from 'eslint';
 
-// server.ts
-import baseConfig from './index.js';
-
-import type { Linter } from 'eslint';
+import baseConfig from './index';
 
 /*
  * This is a custom ESLint configuration for use server side
  * typescript packages.
  *
  * Extends the base config and adds specific rules for server-side code:
- * - Stricter TypeScript checks
- * - Node.js environment globals
- * - Security best practices for server code
+ * - Server-side best practices
+ * - Server-side security considerations
+ *
+ * Note: eslint-plugin-node is not compatible with ESLint 9 flat config,
+ * so we use built-in ESLint rules and the security plugin for server-side linting
  */
 
 const config: Linter.FlatConfig[] = [
   ...baseConfig,
   {
-    // Server-specific configuration with Node.js and security plugins
-    files: ['**/*.js', '**/*.ts', '**/*.mjs', '**/*.cjs', '**/*.mts', '**/*.cts'],
-    plugins: {
-      node: nodePlugin,
-      security: securityPlugin,
-    },
-  },
-  {
-    // Server-side specific files with Node.js globals
+    // Server-specific overrides
     files: ['**/*.{js,ts,mjs,cjs,mts,cts}'],
-    languageOptions: {
-      globals: {
-        ...globals.es2021,
-        ...globals.node,
-        process: true, // Explicitly include process global
-      },
-    },
     rules: {
-      '@typescript-eslint/await-thenable': 'error',
-      // Enforce strict TypeScript usage in server code
-      '@typescript-eslint/explicit-function-return-type': 'off', // Too strict for practical use
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/no-misused-promises': 'error',
+      // Stricter console usage for server code
+      'no-console': 'error',
+      // Server-side best practices
+      'no-process-exit': 'error',
 
-      // Node.js specific rules
-      'node/no-deprecated-api': 'off', // Disabled due to compatibility issues with ESLint v9
-      'node/no-extraneous-import': 'error',
-      'node/no-missing-import': 'off', // TypeScript handles this better
-      'node/no-unpublished-import': 'off', // Often too strict
-      'node/no-unsupported-features/es-syntax': 'off', // TypeScript handles this
+      'no-sync': 'warn',
+      // Promise handling
+      'promise/no-callback-in-promise': 'error',
+      'promise/no-nesting': 'error',
 
-      // Additional security recommendations for server-side code
+      // Additional security for server code
       'security/detect-non-literal-fs-filename': 'error',
-      'security/detect-buffer-noassert': 'error',
-      'security/detect-child-process': 'error',
-      'security/detect-eval-with-expression': 'error',
-      'security/detect-unsafe-regex': 'error',
-    },
-  },
-  {
-    // Test file specific configuration
-    files: [
-      '**/__tests__/**/*',
-      '**/*.test.{js,ts}',
-      '**/*.spec.{js,ts}',
-      '**/vitest.config.{js,ts,mjs}',
-    ],
-    rules: {
-      '@typescript-eslint/await-thenable': 'off', // Disable type-aware rules for test config files
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-      'import/no-extraneous-dependencies': 'off',
-      'node/no-deprecated-api': 'off', // Disable for test files due to compatibility issues
+
+      'security/detect-non-literal-require': 'error',
+      'security/detect-possible-timing-attacks': 'warn',
     },
   },
 ];

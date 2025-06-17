@@ -3,1149 +3,517 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this
 repository.
 
-## Important Restrictions
+## Primary Goal
 
-**NEVER run `pnpm dev` or `npm dev` commands.** These commands should only be run by the user.
+**Enable fully autonomous operation with minimal user intervention.** Claude Code should:
 
-## Environment Variables & Doppler
+- Make correct technical decisions based on explicit rules (e.g., always use `/next` imports in
+  Next.js)
+- Avoid common mistakes through clear patterns and anti-patterns
+- Use only permission-free commands and proper formatting
+- Follow strict preferences (Mantine UI, server actions, Zod validation)
+- Self-correct using provided troubleshooting guides
 
-This project uses Doppler for secret management in CI/CD environments, but local development uses
-`.env.local` files:
+## Table of Contents
 
-- **Local Development**: Uses `.env.local` files (no Doppler required)
-- **CI/CD & Production**: Uses Doppler for centralized secret management
-- **Setup**: Run `pnpm doppler:pull:all` to download all secrets to `.env.local` files
-- **Build Options**:
-  - `pnpm build` - Production build with Doppler (for CI/CD)
-  - `pnpm build:local` - Local build using `.env.local` files
+### Quick Start
 
-## Project Context
+- [Essential Commands](#essential-commands)
+- [Port Assignments](#port-assignments)
+- [Important Restrictions](#important-restrictions)
 
-This is a Next.js monorepo using Turborepo, based on the forge template. Key technologies:
+### Project Overview
 
-- **Framework**: Next.js 15.4.0 (canary) with React 19.1.0
-- **Package Manager**: pnpm (v10.6.3+) with workspaces
-- **Language**: TypeScript with strict type checking
-- **Build System**: Turborepo for parallel builds
-- **Node Version**: 22+ (ESM modules only)
-- **UI Framework**: Mantine UI v8 (preferred) + Tailwind CSS v4 (legacy/allowed)
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Better Auth
+- [Technology Stack](#technology-stack)
+- [Architecture Overview](#architecture-overview)
+- [Module System](#module-system)
 
-## High-Level Architecture
+### Development
 
-This monorepo follows a modular architecture with clear separation of concerns:
+- [Development Workflow](#development-workflow)
+- [Sequential Task Ordering](#sequential-task-ordering)
+- [Testing](#testing)
+- [Git Workflow](#git-workflow)
 
-1. **Apps Layer** (`/apps/`) - User-facing applications
+### Package Architecture
 
-   - Each app is independently deployable
-   - Apps consume shared packages via `@repo/*` imports
-   - No direct dependencies between apps
+- [Package Layers](#package-layers)
+- [Four-File Export Pattern](#four-file-export-pattern)
 
-2. **Packages Layer** (`/packages/`) - Shared functionality organized in layers (see Package
-   Architecture section for details)
+### Guidelines
 
-3. **Authentication Flow** - Better Auth with organizations, teams, and API keys (see @repo/auth in
-   Package Architecture)
+- [Code Style](#code-style)
+- [Configuration Standards](#configuration-standards)
+- [UI Framework Guidelines](#ui-framework-guidelines)
+- [State Management](#state-management)
+- [Internationalization](#internationalization)
+- [Vercel Toolbar & Feature Flags](#vercel-toolbar--feature-flags)
 
-4. **Data Flow** - PostgreSQL with Prisma ORM (see @repo/database in Package Architecture)
+### Reference
 
-5. **Module System (Important)**
-   - ESM modules only (no CommonJS)
-   - **NO file extensions**: Never add `.js` extensions to imports - ESLint config handles this
-   - **Packages** (`/packages/*`) MUST have `"type": "module"` in package.json
-   - **Apps** (`/apps/*`) should NOT have `"type": "module"` - Next.js handles ESM automatically
-   - Packages are consumed directly from source (no build step required)
-   - All internal imports use `@repo/*` namespace
-   - DO NOT build packages - they are used as ESM modules directly
-   - **Dynamic imports**: Use `import('./path')` without extensions (TypeScript/ESLint handle
-     resolution)
+- [Troubleshooting](#troubleshooting)
+- [Documentation](#documentation)
 
-## Directory Structure
+---
 
-- `/apps/` - Contains all applications
-- `/packages/` - Shared packages across apps
-- `/turbo/` - Turbo generator configuration
-- `/scripts/` - Build and utility scripts
-- `/infra/` - Infrastructure as code
+## Essential Commands
 
-## Development Commands
+```bash
+# Setup
+pnpm install                        # Install dependencies
+pnpm doppler:pull:all              # Download secrets to .env.local files
 
-Always run these commands from the repository root:
+# Development (NEVER run these directly - user only)
+pnpm dev                           # Run all apps
+pnpm dev --filter=app              # Run specific app
 
-**IMPORTANT**: Do not use the `rg` (ripgrep) command directly. Use the Grep tool instead for
-searching file contents.
-
-````bash
-# Install dependencies
-pnpm install
-
-# Development
-pnpm dev                # Run all apps in development mode
-pnpm dev --filter=app   # Run specific app
-
-# Doppler Setup (for downloading secrets to .env.local)
-pnpm doppler:pull:all   # Download all secrets to .env.local files in each app
+# Building
+pnpm build                         # Production build with Doppler
+pnpm build:local                   # Local build with .env.local
+pnpm build --filter=app            # Build specific app
 
 # Testing
-pnpm test              # Run all tests with Vitest (parallel, concurrency=10)
-pnpm test --filter=app # Run tests for specific app
-pnpm test:watch        # Run tests in watch mode (add to specific package.json)
+pnpm test                          # Run all tests
+pnpm test --filter=app             # Test specific app
+pnpm test -- --watch               # Watch mode
 
-# Linting & Formatting
-pnpm lint              # Run ESLint and Prettier
-pnpm prettier          # Format all code files
+# Code Quality
+pnpm typecheck                     # TypeScript checking
+pnpm lint                          # ESLint and Prettier
+pnpm madge --circular              # Check circular dependencies
 
-# Type checking
-pnpm typecheck         # Run TypeScript type checking
+# Database
+pnpm migrate                       # Run Prisma migrations
+pnpm studio                        # Open Prisma Studio (port 3600)
+pnpm --filter @repo/database generate  # Regenerate Prisma client
 
-## Vercel Toolbar & Feature Flags
-
-The project includes Vercel Toolbar integration for development with feature flags powered by PostHog:
-
-### Setup
-
-1. **Link to Vercel** (run once):
-   ```bash
-   vercel link
-   ```
-
-2. **Environment Variables** (add to `.env.local` files):
-   ```bash
-   # PostHog configuration (required for feature flags)
-   NEXT_PUBLIC_POSTHOG_KEY=your-project-api-key
-   POSTHOG_KEY=your-project-api-key
-   POSTHOG_PERSONAL_API_KEY=your-personal-api-key
-   POSTHOG_PROJECT_ID=your-project-id
-   
-   # Optional (defaults to https://app.posthog.com)
-   NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
-   POSTHOG_HOST=https://app.posthog.com
-   ```
-
-### Features
-
-- **Development-only**: Toolbar only appears when `NODE_ENV === 'development'`
-- **Feature flag management**: Toggle flags in real-time via the toolbar
-- **PostHog integration**: Flags are synced with your PostHog project
-- **Type-safe**: Full TypeScript support with the `@repo/feature-flags` package
-
-### Integrated Apps
-
-The following apps have Vercel Toolbar enabled:
-
-- **Backstage** (`/apps/backstage`) - Admin panel with feature flag demo
-- **Web** (`/apps/web`) - Marketing site with A/B testing examples  
-- **Documentation** (`/apps/documentation`) - Documentation site
-
-### Usage
-
-1. Start any app in development mode: `pnpm dev`
-2. The Vercel Toolbar appears at the bottom of the page
-3. Click the toolbar to open the feature flags panel
-4. Toggle flags to see real-time changes in the UI
-
-### Discovery Endpoints
-
-Each app exposes a feature flags discovery endpoint at:
-- `/.well-known/vercel/flags` - Lists available flags from PostHog
-
-### Example Feature Flags
-
-See example implementations in:
-- `/apps/backstage/app/lib/feature-flags.ts` - Admin panel flags
-- `/apps/web/src/app/lib/feature-flags.ts` - Marketing site flags
-- Demo components show real-time flag updates
-
-## Fully Automated Workflow Development
-
-**IMPORTANT**: For AI agent step flow development, use these fully automated commands that can
-detect issues, fix them automatically, and repeat until all tests pass:
-
-### Backstage Workflow Automation Commands
-
-These commands are available in the `apps/backstage` directory and provide complete automation for
-workflow development with continuous fixing and testing:
-
-```bash
-# Single-run automated fixing and testing
-pnpm workflow:ai-fix        # AI-powered automatic error fixing
-pnpm workflow:full-auto     # Run AI fixes + feedback cycle
-pnpm workflow:ultimate      # Complete automation: AI fix + cycle + test
-
-# Continuous automated development
-pnpm workflow:auto-repeat   # Continuously retry until all tests pass
-pnpm workflow:auto-dev      # Run dev server + continuous auto-fixing
-
-# Development cycle commands
-pnpm workflow:cycle         # Manual feedback loop (check → fix → test)
-pnpm workflow:cycle:watch   # Watch files and run feedback loop on changes
-
-# Monitoring and reporting
-pnpm workflow:test          # Run workflow-specific e2e tests
-pnpm workflow:report        # Generate detailed test reports
-pnpm workflow:feedback      # Run cycle with success/failure feedback
-````
-
-### How Full Automation Works
-
-The fully automated system uses AI-powered analysis and fixing:
-
-1. **AI Error Analysis**: Uses `@repo/ai` package to intelligently analyze TypeScript errors, eslint
-   issues, and test failures
-2. **Automatic Code Fixing**: Applies intelligent fixes using pattern recognition and AI suggestions
-3. **Continuous Feedback Loop**: Repeats the cycle until all tests pass or maximum retries reached
-4. **Real-time Monitoring**: Watches files for changes and triggers automated fixing
-
-### Automation Flow
-
-```
-Code Change → TypeScript Check → AI Analysis → Auto Fix → Lint → Test → ✅ Success
-     ↑                                                                      ↓
-     ← ← ← ← ← ← ← ← ← ← ← Retry if Failed ← ← ← ← ← ← ← ← ← ← ← ← ← ← ←
+# Maintenance
+pnpm clean                         # Clean build artifacts
+pnpm bump-deps                     # Update dependencies
 ```
 
-### Usage Examples
+## Port Assignments
 
-```bash
-# Start fully automated development with live server
-cd apps/backstage
-pnpm workflow:auto-dev
+| Application       | Port | Description       |
+| ----------------- | ---- | ----------------- |
+| `/apps/web`       | 3200 | Marketing website |
+| `/apps/backstage` | 3300 | Admin panel       |
+| `/apps/workers`   | 3400 | Background jobs   |
+| `/apps/email`     | 3500 | Email preview     |
+| `/apps/studio`    | 3600 | Prisma Studio     |
+| `/apps/storybook` | 3700 | Component docs    |
+| `/apps/docs`      | 3800 | Mintlify docs     |
 
-# Single automated fix and test cycle
-pnpm workflow:ultimate
+## Important Restrictions
 
-# Continuous retry until everything passes (for CI/CD)
-pnpm workflow:auto-repeat
-```
+- **NEVER run `pnpm dev` or `npm dev` commands** - These should only be run by the user
+- **Use the Grep tool for searching** - Don't use `rg` command directly (use Claude Code's Grep tool
+  which uses rg internally)
+- **NEVER use localStorage/sessionStorage in artifacts** - Use React state or JavaScript variables
+- **NO file extensions in imports** - ESLint handles resolution automatically
+- **COMMAND PERMISSIONS**: Only use commands that don't require special permissions. Avoid commands
+  like `find` that may need elevated access on macOS. The environment is macOS with zsh - use
+  standard, permission-free commands unless absolutely necessary.
+- **COMMAND FORMATTING**: Run commands directly, not through shell processes. For example, use
+  `pnpm install` directly, NOT `bash -c "pnpm install"` or similar subprocess wrappers, as these may
+  require additional permissions.
+- **NO BULK FILE FIX SCRIPTS**: NEVER create or use bash scripts, shell scripts, or scripts in any
+  language (Python, Node.js, etc.) to bulk fix multiple files. Always fix files one by one using the
+  Edit or MultiEdit tools. This ensures precise control and prevents unintended changes.
 
-The system automatically handles:
+## Technology Stack
 
-- TypeScript compilation errors
-- Missing type definitions
-- API compatibility issues
-- Test assertion failures
-- Code style violations
+- **Framework**: Next.js 15.4.0 (canary) with React 19.1.0
+- **Package Manager**: pnpm v10.6.3+ with workspaces
+- **Language**: TypeScript with strict checking
+- **Build System**: Turborepo for parallel builds
+- **Node Version**: 22+ (ESM modules only)
+- **UI Framework**: Mantine UI v8 (primary), Tailwind CSS v4 (secondary)
+- **Forms**: Mantine form hooks with Zod validation
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: Better Auth with organizations
+- **API Design**: Server actions over API endpoints
+- **Routing**: Next.js App Router with typed routes
+- **File Storage**: Local disk or S3-compatible
+- **Email**: React Email + Resend
+- **Analytics**: PostHog, Segment, Google Analytics
+- **Error Tracking**: Sentry
+- **Rate Limiting**: Upstash Redis
+- **Job Queue**: QStash
 
-## Autonomous Workflow Development and Repair System
+## Architecture Overview
 
-The backstage app includes a comprehensive autonomous workflow development system that can generate,
-test, and repair Upstash workflow code without human intervention. This system leverages Claude CLI
-for intelligent code generation and repair.
+This monorepo follows a layered architecture with clear separation of concerns:
 
-### Autonomous System Commands
+1. **Apps Layer** (`/apps/*`) - User-facing applications
+2. **Packages Layer** (`/packages/*`) - Shared functionality in 7 layers
+3. **Infrastructure** (`/infra/*`) - Infrastructure as code
+4. **Scripts** (`/scripts/*`) - Build and utility scripts
 
-```bash
-# Core autonomous commands (run from apps/backstage)
-pnpm autonomous              # Show help and available commands
-pnpm autonomous:process      # Process workflow with standard loop
-pnpm autonomous:zhi          # Execute Zero-Human-Intervention protocol
-pnpm autonomous:zhi:rapid    # Quick prototype generation
-pnpm autonomous:zhi:reliable # High-reliability workflow generation
-pnpm autonomous:protocols    # List available protocols
-pnpm autonomous:metrics      # View system learning metrics
-```
+## Module System
 
-### Zero-Human-Intervention (ZHI) Protocols
+- **ESM modules only** - No CommonJS support
+- **Packages** (`/packages/*`) MUST have `"type": "module"`
+- **Apps** (`/apps/*`) should NOT have `"type": "module"` (Next.js handles ESM)
+- Packages are consumed directly from source (no build step)
+- All imports use `@repo/*` namespace
 
-The system provides three ZHI protocols for different use cases:
+---
 
-1. **Standard Workflow** (`standard-workflow`)
+## Environment Setup
 
-   - Complete autonomous development from specification to deployment
-   - Includes code generation, testing, repair, Git commits, and PR creation
-   - Maximum 15 iterations, 30-minute timeout
-   - Best for production-ready workflows
+### Doppler Integration
 
-2. **Rapid Prototype** (`rapid-prototype`)
+- **Local Development**: Uses `.env.local` files
+- **CI/CD & Production**: Uses Doppler for secrets
+- **Setup**: Run `pnpm doppler:pull:all` to sync secrets locally
 
-   - Quick workflow generation with relaxed validation
-   - Basic functionality testing only
-   - Single repair attempt if needed
-   - 15-minute timeout
-   - Best for proof-of-concepts and demos
+### Environment Files
 
-3. **High Reliability** (`high-reliability`)
-   - Extensive validation and testing for critical workflows
-   - Security scanning and performance benchmarks
-   - Quality gates and staging deployment
-   - 60-minute timeout
-   - Best for mission-critical workflows
+- **Location**: `env.ts` MUST be in package/app root, NEVER in `src/`
+- **Validation**: Use `@t3-oss/env-nextjs` without explicit ReturnType
+- **Structure**: Each app has its own validated environment config
 
-### Workflow Specification Format
+## Development Workflow
 
-To use the autonomous system, define a workflow specification:
+### Task Management
+
+Use TodoWrite and TodoRead tools for multi-step tasks:
+
+1. Create todo list at start
+2. Update status as you progress (pending → in_progress → completed)
+3. Ensures all steps are completed
+
+### CLI Usage
+
+- **ESLint**: `eslint . --fix` (the `.` is required)
+- **TypeScript**: `tsc --noEmit --emitDeclarationOnly false`
+- **Prettier**: Run at repo root with `pnpm prettier`
+
+## Sequential Task Ordering
+
+### Creating a New Feature
+
+1. **Check existing** - Search for similar functionality/components
+2. **Data layer** - Update schema → `pnpm migrate` → `pnpm --filter @repo/database generate`
+3. **Server action** - Create `/app/actions/feature.ts` with Zod validation
+4. **UI component** - Use Mantine components, connect to server action
+5. **Tests** - Unit tests, component tests with data-testid
+6. **Verify** - `pnpm typecheck` → `pnpm lint` → `pnpm test` → commit
+
+### Debugging Build Issues
+
+- Check circular dependencies: `pnpm madge --circular`
+- Verify TypeScript: `pnpm typecheck`
+- Check package.json exports and import paths
+- Ensure packages aren't being built
+- Verify all imports use `@repo/`
+
+## Testing
+
+- **Framework**: Vitest with React Testing Library
+- **Location**: `__tests__` directories
+- **Naming**: `*.test.ts(x)` for unit tests, `*.component.test.ts(x)` for components
+- **Concurrency**: Tests run in parallel with concurrency=10
+- **Data-TestID**: All components include standardized `data-testid` props
 
 ```typescript
-const workflowSpec = {
-  name: 'my-workflow',
-  description: 'Process customer orders',
-  type: 'data-processing', // optional: general|data-processing|api-integration|notification|scheduled
-  inputContract: {
-    type: 'object',
-    properties: {
-      orderId: { type: 'string' },
-      items: { type: 'array' },
-    },
-    required: ['orderId', 'items'],
-  },
-  outputContract: {
-    type: 'object',
-    properties: {
-      status: { type: 'string' },
-      processedAt: { type: 'string' },
-    },
-  },
-  businessLogic: [
-    'Validate order data',
-    'Check inventory availability',
-    'Process payment',
-    'Update order status',
-    'Send confirmation email',
-  ],
-  errorHandling: [
-    'Retry failed operations up to 3 times',
-    'Send to dead letter queue on permanent failure',
-    'Alert operations team for critical errors',
-  ],
-  performance: {
-    timeout: 300000, // 5 minutes
-    retries: 3,
-  },
-};
-```
-
-### Autonomous Development Process
-
-The autonomous system follows this process:
-
-1. **Specification Validation**: Ensures the workflow spec is complete
-2. **Code Generation**: Uses Claude CLI to generate implementation and tests
-3. **Test Execution**: Runs Vitest unit tests and Playwright E2E tests
-4. **Error Analysis**: Categorizes failures and determines repair strategies
-5. **AI-Powered Repair**: Applies targeted fixes using Claude CLI
-6. **Iteration**: Repeats until tests pass or limits reached
-7. **Git Operations**: Commits code and creates pull requests
-8. **CI/CD Integration**: Triggers deployment pipelines
-
-### Self-Learning Capabilities
-
-The system includes machine learning features:
-
-- **Pattern Recognition**: Identifies common error patterns
-- **Strategy Optimization**: Learns which repair strategies work best
-- **Success Prediction**: Estimates likelihood of successful generation
-- **Performance Tracking**: Monitors improvement over time
-
-Learning data is stored in `data/autonomous-learning/` and includes:
-
-- Error patterns and successful fixes
-- Repair strategy performance metrics
-- Workflow complexity analysis
-- Time-to-completion statistics
-
-### Claude CLI Integration
-
-The system uses Claude CLI programmatically:
-
-- **Non-interactive mode**: Uses `-p` flag with prompt files
-- **Model selection**: Uses Claude Opus for highest quality
-- **Temperature control**: Lower temperature (0.2) for consistent code
-- **Output management**: Parses generated files automatically
-
-### Example Usage
-
-```bash
-# Generate a simple workflow
-cd apps/backstage
-cat > workflow-spec.json << EOF
-{
-  "name": "hello-workflow",
-  "description": "Simple greeting workflow",
-  "inputContract": {
-    "type": "object",
-    "properties": {
-      "name": { "type": "string" }
-    },
-    "required": ["name"]
-  },
-  "outputContract": {
-    "type": "object",
-    "properties": {
-      "greeting": { "type": "string" }
-    }
-  },
-  "businessLogic": [
-    "Validate input name",
-    "Generate personalized greeting",
-    "Return greeting message"
-  ]
-}
-EOF
-
-# Process with standard protocol
-pnpm autonomous:zhi < workflow-spec.json
-
-# Or use rapid prototyping
-pnpm autonomous:zhi:rapid < workflow-spec.json
-```
-
-### Monitoring and Metrics
-
-View system performance and learning progress:
-
-```bash
-pnpm autonomous:metrics
-```
-
-This shows:
-
-- Total workflows processed
-- Success rate trends
-- Common error patterns
-- Strategy effectiveness
-- Learning rate improvements
-
-### CI/CD Integration
-
-The autonomous system can be integrated into CI/CD pipelines:
-
-```yaml
-# .github/workflows/autonomous-workflow.yml
-name: Autonomous Workflow Generation
-on:
-  workflow_dispatch:
-    inputs:
-      specification:
-        description: 'Workflow specification JSON'
-        required: true
-
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - name: Install dependencies
-        run: pnpm install
-      - name: Run autonomous generation
-        run: |
-          echo '${{ github.event.inputs.specification }}' > spec.json
-          cd apps/backstage
-          pnpm autonomous:zhi < spec.json
-```
-
-### Best Practices
-
-1. **Start with simple specifications** and gradually add complexity
-2. **Use rapid prototype mode** for initial development
-3. **Switch to high-reliability mode** for production workflows
-4. **Monitor learning metrics** to track system improvement
-5. **Review generated code** before production deployment
-6. **Contribute patterns** back to the learning system
-
-# CLI Usage Notes:
-
-# - ESLint: Use `eslint . --fix` in apps/packages (the . is required, --fix auto-fixes issues)
-
-# - TypeScript: Use `tsc --noEmit --emitDeclarationOnly false` for type checking
-
-# - Prettier: Run at repo root only with `pnpm prettier`
-
-# Building (see Environment Variables section for Doppler details)
-
-pnpm build # Production build with Doppler pnpm build:local # Local build using .env.local files
-pnpm build --filter=app # Build specific app
-
-# Database operations
-
-pnpm migrate # Run Prisma migrations (uses Doppler) pnpm --filter @repo/database generate #
-Regenerate Prisma client pnpm studio # Open Prisma Studio (port 3600)
-
-# Dependency management
-
-pnpm bump-deps # Update all dependencies pnpm madge --circular # Check for circular dependencies
-
-# Other utilities
-
-pnpm clean # Clean all build artifacts (./clean-everything.sh) pnpm translate # Run translations
-pnpm analyze # Analyze bundles pnpm boundaries # Check module boundaries
-
-````
-
-## Configuration Standards
-
-All apps and packages must extend their respective shared configurations. Choose the appropriate
-config based on the context:
-
-**IMPORTANT**: Always use `"catalog:"` versions in package.json when the dependency exists in the
-pnpm-workspace.yaml catalog. If a dependency is NOT in the catalog, use the appropriate version
-number (check root package.json or other apps for the version to use).
-
-1. **TypeScript**: Extend from `@repo/typescript-config`
-
-   ```json
-   {
-     "extends": "@repo/typescript-config/base.json" // or nextjs.json, react-library.json, etc.
-   }
-````
-
-2. **ESLint**: Extend from `@repo/eslint-config` - choose the right config:
-
-   - `base` - for Node.js packages
-   - `next` - for Next.js apps
-   - `react-internal` - for internal React packages
-   - `react-library` - for publishable React libraries
-
-   ```js
-   import baseConfig from '@repo/eslint-config/next'; // Choose appropriate config
-   export default [...baseConfig];
-   ```
-
-3. **Next.js**: Import and use `@repo/next-config`
-
-   ```js
-   import config from '@repo/next-config';
-   export default config(/* your config */);
-   ```
-
-4. **Vitest**: Extend from `@repo/testing` configs:
-   - Use `config/next.ts` for Next.js apps
-   - Use `config/react.ts` for React packages
-   - Use `config/node.ts` for Node.js packages
-   ```js
-   import { defineConfig } from 'vitest/config';
-   import baseConfig from '@repo/testing/config/next'; // Choose appropriate config
-   export default defineConfig({
-     ...baseConfig,
-     // your overrides
-   });
-   ```
-
-Always select the most specific configuration that matches your package/app type for optimal
-settings.
-
-## Task Management
-
-**IMPORTANT**: Use the TodoWrite and TodoRead tools to track your work:
-
-- Create a todo list at the start of any multi-step task
-- Update task status as you progress (pending → in_progress → completed)
-- This helps maintain context and ensures all steps are completed
-
-## Code Style Guidelines
-
-1. **TypeScript Usage**
-
-   - Always use TypeScript (.ts/.tsx files)
-   - Define proper types/interfaces (no `any` except when absolutely necessary)
-   - Use `_` prefix for unused variables (per ESLint config)
-   - Environment variables: Use `@t3-oss/env-nextjs` without explicit ReturnType
-   - **IMPORTANT**: When creating new files or updating existing code, ensure all code is
-     type-accurate:
-     - **Prefer types from dependency packages** (e.g.,
-       `import type { User } from '@prisma/client'`,
-       `import type { NotificationData } from '@mantine/notifications'`)
-     - Import and use existing types from the codebase when dependency types aren't available
-     - Create proper interfaces/types for new data structures only when necessary
-     - Avoid type assertions unless absolutely necessary
-     - Leverage TypeScript's type inference where appropriate
-     - Run `pnpm typecheck` to verify type accuracy before committing
-
-2. **React/Next.js**
-
-   - Use React 19.1.0 and Next.js 15.4.0 (canary) features
-   - Follow Next.js App Router conventions
-   - Use server components by default, client components only when needed
-   - Always optimize images using Next.js `Image` component
-   - Server actions for form handling
-   - Parallel routes and intercepting routes where appropriate
-   - **Use typed routes**: Enable `typedRoutes: true` in `next.config.ts` and use
-     `import { Link } from 'next/link'` for type-safe navigation
-
-3. **Imports**
-
-   - Use workspace imports for internal packages: `@repo/*`
-   - Use absolute imports from `@/` for app-specific code
-   - Group imports logically: external, internal packages, local
-
-4. **Component Structure**
-
-   - One component per file
-   - Co-locate related files (styles, tests, types)
-   - Use Mantine UI components directly (not through design-system re-exports)
-   - Only use design-system for custom/composite components
-
-5. **Styling**
-   - **Mantine UI v8** as preferred UI framework for new components
-   - **Tailwind CSS v4** (only v4, not v3) allowed for existing components or when specifically
-     directed
-   - Use Mantine's theme system for consistent styling
-   - Use Mantine's color scheme support for dark mode (no `dark` prop)
-   - Use responsive props: `{ base: value, sm: value, md: value, lg: value, xl: value }`
-   - Avoid inline styles - use Mantine's style props or Tailwind classes
-
-## Testing Guidelines
-
-- **Test Framework**: Vitest with React Testing Library
-- **Test Location**: `__tests__` directories in each package/app
-- **File Naming**: `*.test.ts(x)` for unit tests, `*.component.test.ts(x)` for component tests
-- **Running Tests**:
-  ```bash
-  pnpm test                    # Run all tests in parallel
-  pnpm test --filter=@repo/auth # Test specific package
-  pnpm test -- --watch         # Watch mode
-  pnpm test -- --coverage      # With coverage report
-  ```
-- **Test Structure**:
-  - Unit tests for utilities and pure functions
-  - Integration tests for API routes
-  - Component tests with user interactions and Storybook integration
-  - Mock external services (database, auth, email)
-
-### Data-TestID Standards
-
-All components in the design system now implement standardized `data-testid` attributes for reliable
-testing:
-
-- **Component Interface**: Every component includes `'data-testid'?: string` in its props interface
-- **Default Values**: Components provide descriptive default testid values (e.g.,
-  `'add-to-cart-button'`, `'product-card-large'`)
-- **Naming Convention**: Use kebab-case naming that describes the component's function
-- **Testing Pattern**: Prefer `getByTestId()` over role-based or text-based selectors for
-  reliability
-- **Documentation**: See `/packages/design-system/mantine-ciseco/DATA_TESTID_STANDARDS.md` for
-  complete implementation guide
-
-**Example Implementation:**
-
-```typescript
+// Component implementation
 interface ComponentProps {
   'data-testid'?: string;
-  // ... other props
 }
 
-const Component = ({ 'data-testid': testId = 'component-name', ...props }) => {
-  return <element data-testid={testId} {...props} />
+const Component = ({ 'data-testid': testId = 'component-name' }) => {
+  return <element data-testid={testId} />
 }
-```
 
-**Testing Usage:**
-
-```typescript
-// Preferred: Reliable data-testid selector
+// Test usage (preferred)
 const button = screen.getByTestId('add-to-cart-button');
-
-// Avoid: Brittle text/role selectors that can break
-const button = screen.getByRole('button'); // Less reliable
-const button = screen.getByText('Add to Cart'); // Breaks with text changes
 ```
 
 ## Git Workflow
 
-1. Create feature branches from `master`
-2. Use conventional commit messages with detailed descriptions
-3. Never commit sensitive data (API keys, secrets)
-4. Always run `pnpm lint` and `pnpm typecheck` before committing
+- Create feature branches from `master`
+- Use conventional commits: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- Run `pnpm lint` and `pnpm typecheck` before committing
+- Never commit sensitive data
 
-### Commit Message Format
+## Package Layers
 
-Follow this standardized format for all commits:
+Packages follow strict layering to prevent circular dependencies. Each layer can only depend on
+lower layers:
 
-```
-<type>: <brief description>
+### Layer 1: Foundation
 
-<detailed description with bullet points>
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
-**Types:**
-
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation
-- `style:` for formatting changes
-- `refactor:` for code refactoring
-- `test:` for adding tests
-- `chore:` for maintenance tasks
-
-**Example:**
-
-```
-feat: complete Headless UI to Mantine migration in mantine-ciseco
-
-Replace all remaining Headless UI components with Mantine equivalents:
-
-- **Transition components** → **Mantine transitions/animations**:
-  - AddToCardButton: Remove Transition wrapper, use notification animations
-  - HeaderFilterSection: Transition → Collapse component
-
-- **Switch components** → **Mantine Switch**:
-  - MySwitch: Headless UI Switch → Mantine Switch with proper sizing
-  - SwitchDarkMode2: Switch → Mantine Switch with dark mode integration
-
-All components maintain original styling and UX patterns while leveraging
-Mantine's component system for better maintainability.
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
-**Guidelines:**
-
-- Use descriptive subject lines (50-72 characters)
-- Include bullet points for multiple changes
-- Use **bold formatting** for component categories
-- Use → arrows to show transformations
-- Explain the "why" not just the "what"
-- Always include the Claude Code footer
-
-## Mantine UI Guidelines
-
-1. **Theme Configuration**
-
-   - Use MantineProvider with custom theme in root layout
-   - Define color schemes for light/dark mode support
-   - Use CSS variables for dynamic theming
-
-2. **Component Usage**
-
-   - Import Mantine components directly: `import { Button, Card } from '@mantine/core'`
-   - Use Mantine hooks: `useDisclosure`, `useMediaQuery`, etc.
-   - Prefer Mantine form hooks over react-hook-form
-   - For new work: Use Mantine unless specifically directed to use Tailwind
-
-3. **Dark Mode**
-
-   - Never use `dark` prop (removed in Mantine v8)
-   - Use `useMantineColorScheme` hook for color scheme detection
-   - Style dark mode with CSS variables or theme functions
-
-4. **Notifications**
-   - Use centralized notification configuration from `@repo/notifications/mantine-notifications`
-   - Consistent notification styles across all apps
-
-## Internationalization Guidelines
-
-When implementing internationalization in apps:
-
-1. **Dictionary Structure**
-
-   - Use concise property names for better readability
-   - **Preferred**: Use `l` for language translations instead of `languages`
-   - Example:
-     ```json
-     {
-       "app": {
-         "l": {
-           "en": "English",
-           "fr": "Français",
-           "es": "Español"
-         }
-       }
-     }
-     ```
-
-2. **Extending Base Dictionaries**
-
-   - Apps should extend the base internationalization package
-   - Create app-specific dictionaries in `/src/i18n/dictionaries/`
-   - Use `createDictionary` from `@repo/internationalization/extend`
-
-3. **Locale Codes**
-
-   - Use standard locale codes: `en`, `fr`, `es`, `pt`, `de`
-   - For regional variants: `fr-CA`, `es-MX`, `pt-BR`
-   - The package normalizes locales (e.g., `fr-CA` → `fr`)
-
-4. **Best Practices**
-   - All user-facing strings should be in dictionaries
-   - Pass dictionary strings as props to client components
-   - Use the locale-aware Link component for navigation
-   - Implement locale switchers for user control
-
-## Package Architecture & Hierarchy
-
-The packages follow a strict layered architecture to prevent circular dependencies. Each layer can
-only depend on packages from lower layers, never from higher layers.
-
-**IMPORTANT: To avoid circular dependencies, packages must only use feature flags at the application
-level, not within the package itself. For example, the analytics package should NOT import from
-feature-flags package.**
-
-### Layer 1: Foundation Packages (Core Infrastructure)
-
-These packages have no dependencies on other internal packages:
-
-#### Configuration & Build Tools
-
-- `@repo/typescript-config` - Shared TypeScript configurations
-- `@repo/eslint-config` - ESLint rules and configurations
-- `@repo/next-config` - Next.js configuration wrapper
+- `@repo/typescript-config`, `@repo/eslint-config`, `@repo/next-config`
 
 ### Layer 2: Core Services
 
-Low-level services that other packages depend on:
+- `@repo/testing` - Test utilities
+- `@repo/security` - Headers, rate limiting (Upstash)
+- `@repo/observability` - Sentry tracking
 
-#### Testing & Development
+### Layer 3: Data
 
-- `@repo/testing` - Vitest configuration and test utilities
+- `@repo/database` - Prisma ORM
 
-#### Security & Infrastructure
+### Layer 4: Business Services
 
-- `@repo/security` - Security headers, middleware, and Upstash rate limiting
-  - **Rate limiting**: Implemented via `createRateLimiter()` using Upstash Redis
-  - **Usage**: `import { createRateLimiter } from '@repo/security/rate-limit'`
-  - **Default**: 10 requests per 10 seconds sliding window
-  - **No-op fallback**: Works without Redis configuration (returns unlimited limiter)
-- `@repo/observability` - Sentry error tracking and monitoring
-
-### Layer 3: Data Management
-
-Core data services:
-
-- `@repo/database` - Prisma ORM with PostgreSQL
-  - Type-safe database client
-  - Migration management
-  - Shared models across apps
-  - Seed data utilities
-
-### Layer 4: Core Business Services
-
-Services that implement core functionality:
-
-#### Analytics & Communication
-
-- `@repo/analytics` - Multi-provider analytics (Segment, PostHog, GA) + Feature Flags
-  - **Now includes feature flags**: Feature flags are part of analytics since PostHog treats them as
-    analytics events
-  - **No circular dependencies**: Packages import only types from `@repo/analytics/types/flags`
-  - **Usage**: `import { flag, useFlag, getAuthFlags } from '@repo/analytics'`
-  - **Local dev**: Use `LOCAL_FLAGS` environment variable to override
-- `@repo/email` - Email templates with React Email and Resend
-- `@repo/notifications` - Knock (backend) and Mantine (frontend) notifications
-  - Backend: Knock integration for transactional notifications
-  - Frontend: Mantine notifications with consistent styling
-  - Email, in-app, and push notification support
-  - Template management
+- `@repo/analytics` - PostHog, Segment, GA + feature flags
+- `@repo/email` - React Email templates
+- `@repo/notifications` - Knock + Mantine
 
 ### Layer 5: Business Logic
 
-Higher-level services that compose core services:
+- `@repo/auth` - Better Auth with organizations
+- `@repo/payments` - Stripe
+- `@repo/orchestration` - Workflow engine
+- `@repo/seo`, `@repo/internationalization`
 
-#### Authentication & Payments
+### Layer 5.5: Specialized
 
-- `@repo/auth` - Better Auth with organizations, teams, and API keys
-  - Organization-based multi-tenancy
-  - Role-based permissions (owner, admin, member)
-  - API key management
-  - Session caching and middleware
-  - Impersonation support
-- `@repo/payments` - Stripe integration for subscriptions and credits
+- `@repo/ai`, `@repo/scraping`, `@repo/storage`
 
-#### Content & Orchestration
+### Layer 6: UI
 
-- `@repo/orchestration` - Workflow execution and job processing
-- `@repo/seo` - SEO metadata and structured data generation
-- `@repo/internationalization` - Multi-language support
-
-### Layer 5.5: Specialized Services
-
-Domain-specific services that may depend on multiple business logic packages:
-
-- `@repo/ai` - AI/LLM integrations and utilities
-- `@repo/scraping` - Web scraping utilities
-- `@repo/storage` - File storage abstraction
-
-### Layer 6: UI Layer
-
-Frontend packages that consume all other services:
-
-- `@repo/design-system` - Composite UI components
+- `@repo/design-system` - Composite components
 
 ### Layer 7: Applications
 
-End-user applications that consume all packages:
+- End-user applications
 
-## Dependency Rules
+## Import Patterns
 
-1. **Strict Layering**: Packages can only depend on packages from lower layers
-2. **No Circular Dependencies**: A package cannot import from a package that depends on it
-3. **Feature Flag Usage**:
-   - Feature flags should be used at the application level (Layer 7)
-   - Packages provide the functionality, apps control whether it's enabled
-   - Example: Analytics package provides tracking, apps use feature flags to enable/disable it
-4. **Provider Pattern**: Use providers at the app level to inject feature flag decisions into
-   packages
+### Four-File Export Pattern
 
-## Applications (Port Assignments)
+**Critical Rule**: In Next.js apps, ALWAYS use `/next` variants. In other environments, use base
+exports.
 
-### Core Applications
+````typescript
+// ✅ CORRECT - Next.js app
+import { useAuth } from '@repo/auth/client/next';
+import { auth } from '@repo/auth/server/next';
 
-- `/apps/web` (Port: 3200) - Marketing website with blog and demo functionality
-- `/apps/backstage` (Port: 3300) - Admin panel with user management
-- `/apps/workers` (Port: 3400) - Background job processing
+// ✅ CORRECT - Node.js worker
+import { createAuth } from '@repo/auth/server';
 
-### Development Tools
+// ❌ WRONG - Using non-Next.js import in Next.js
+import { createAuth } from '@repo/auth/client'; // NO!
 
-- `/apps/email` (Port: 3500) - Email template preview
-- `/apps/studio` (Port: 3600) - Prisma Studio database UI
-- `/apps/storybook` (Port: 3700) - Component documentation
-- `/apps/documentation` (Port: 3800) - Nextra documentation
-
-## Detailed Package Specifications
-
-### Foundation Layer Packages
-
-#### `@repo/typescript-config`
-
-- Base TypeScript configurations for different contexts
-- Strict type checking enabled
-- ESM module support
-- Configurations: base, nextjs, react-library
-
-#### `@repo/eslint-config`
-
-- Shared ESLint rules
-- Prettier integration
-- Context-specific configs: base, next, react-internal, react-library
-
-#### `@repo/testing`
-
-- Vitest configuration presets
-- React Testing Library setup
-- Mock utilities and helpers
-- Coverage configuration
-
-### Core Services Layer
-
-#### `@repo/security`
-
-- Security headers middleware
-- CSRF protection
-- Content Security Policy
-- Edge-compatible
-- **Upstash rate limiting** via `rate-limit.ts`
-  - `createRateLimiter()` function with Redis backend
-  - Configurable limits and time windows
-  - Graceful fallback when Redis not configured
-
-#### `@repo/observability`
-
-- Sentry error tracking
-- Performance monitoring
-- Custom error boundaries
-- Health check endpoints
-
-### Data & Communication Layer
-
-#### `@repo/database`
-
-See Layer 3 section above for database package details.
-
-#### `@repo/analytics`
-
-See Layer 4 section above for analytics package details.
-
-#### `@repo/notifications`
-
-See Layer 4 section above for notifications package details.
-
-### Business Logic Layer
-
-#### `@repo/auth`
-
-See Layer 5 section above for auth package details.
-
-#### `@repo/payments`
-
-- Stripe integration
-- Subscription management
-- Usage-based billing (AI credits)
-- Webhook handling
-- Payment method management
-- Invoice generation
-
-#### `@repo/orchestration`
-
-- Workflow execution engine
-- QStash integration for distributed processing
-- Event-driven architecture
-- Retry and error handling
-- Progress tracking
-
-### UI Layer
-
-#### `@repo/design-system`
-
-- Composite UI components
-- Custom auth components (sign-in, user-button)
-- Admin components (user-list, organization-detail)
-- Form handling utilities
-- Theme provider configuration
-
-## Environment Variables
-
-- Never commit `.env` files
-- Use `.env.local` for local development
-- All environment variables should be properly typed in `env.ts`
-- **CRITICAL**: `env.ts` files MUST be in the package/app root directory, NEVER in `src/`
-- Use `@t3-oss/env-nextjs` for validation
-- Each app has its own `env.ts` with required variables
-- Keys functions should NOT use explicit ReturnType annotations
-
-## Security
-
-1. Always validate user input
-2. Use CSRF protection
-3. Implement proper authentication/authorization
-4. Security headers via `@repo/security`
-
-## Performance
-
-1. Optimize bundle size
-2. Use dynamic imports for code splitting
-3. Implement proper caching strategies
-4. Monitor performance with `@repo/observability`
-5. Use Mantine's built-in performance optimizations
-
-## Common Patterns
-
-### API Routes with Better Auth
+### Standard Imports
 
 ```typescript
-// Protected API route example
-import { auth } from '@repo/auth/server';
+// Workspace packages
+import { ... } from '@repo/package-name';
 
-export async function GET(request: Request) {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+// App-specific (absolute imports)
+import { ... } from '@/components/...';
+
+// External packages
+import { ... } from 'external-package';
+````
+
+### Catalog Versions
+
+Always use `"catalog:"` versions in package.json when available:
+
+```json
+{
+  "dependencies": {
+    "react": "catalog:",
+    "custom-package": "^1.2.3" // Use specific version if not in catalog
   }
-  // Handle request...
 }
 ```
 
-### Database Queries
+## Four-File Export Pattern
+
+Packages provide environment-specific exports. **In Next.js, ALWAYS use `/next` variants:**
+
+```json
+{
+  "exports": {
+    "./client": "./src/client.ts", // Browser (non-Next.js)
+    "./server": "./src/server.ts", // Node.js (non-Next.js)
+    "./client/next": "./src/client-next.ts", // Next.js client (REQUIRED)
+    "./server/next": "./src/server-next.ts" // Next.js server (REQUIRED)
+  }
+}
+```
 
 ```typescript
-// Use the shared database client
-import { database } from '@repo/database';
+// ✅ Next.js app
+import { useAuth } from '@repo/auth/client/next';
 
-const users = await database.user.findMany({
-  where: { organizationId: session.session.activeOrganizationId },
+// ✅ Node.js worker
+import { createAuth } from '@repo/auth/server';
+
+// ❌ Wrong: non-Next import in Next.js
+import { createAuth } from '@repo/auth/client';
+```
+
+**Packages using this**: `@repo/analytics`, `@repo/auth`, `@repo/notifications`
+
+### Standard Import Patterns
+
+```typescript
+// Workspace packages
+import { ... } from '@repo/package-name';
+
+// App-specific
+import { ... } from '@/components/...';
+
+// External
+import { ... } from 'external-package';
+```
+
+## Code Style
+
+### TypeScript
+
+- Always use TypeScript (.ts/.tsx)
+- Define proper types (avoid `any`)
+- Use `_` prefix for unused variables (e.g., `_error` in catch blocks when not using the error)
+- Remove `_` prefix when actually using the variable (e.g., `error` not `_error` when throwing)
+- Ensure type accuracy with dependency types
+- Run `pnpm typecheck` before committing
+
+### React/Next.js
+
+- React 19.1.0 and Next.js 15.4.0 features
+- Server components by default
+- Use typed routes with `typedRoutes: true`
+- Optimize images with Next.js `Image`
+- Server actions for forms and mutations
+- Use typed forms with Mantine + Zod
+- Prefer server actions over API routes
+
+### Component Structure
+
+- One component per file
+- Co-locate related files (styles, tests, types)
+- **Use Mantine UI components and hooks** (see UI Framework Guidelines)
+- Design-system for custom/composite components only
+
+## Configuration Standards
+
+**Package Dependencies**: Use `"catalog:"` versions when available
+
+**TypeScript**: Extend `@repo/typescript-config/[base|nextjs|react-library].json`
+
+**ESLint**: Extend `@repo/eslint-config/[base|next|react-internal|react-library]`
+
+**Next.js**: Import and use `@repo/next-config`
+
+**Vitest**: Extend `@repo/testing/config/[node|react|next]`
+
+## UI Framework Guidelines
+
+### Mantine UI v8 (Primary)
+
+Always use Mantine as primary UI solution:
+
+- Import directly: `import { Button } from '@mantine/core'`
+- Use Mantine hooks exclusively (`useForm`, `useDisclosure`, etc.)
+- Prefer Mantine style props over Tailwind classes
+- Dark mode via `useMantineColorScheme` or `dark` prop
+- Responsive props: `{ base: value, sm: value, md: value }`
+- Notifications: `@repo/notifications/mantine-notifications`
+
+### Tailwind CSS v4 (Secondary)
+
+- Valid for specific use cases or existing code
+- Can complement Mantine when needed
+- v4 only (not v3)
+
+## State Management
+
+### Forms & Validation
+
+Always use Mantine forms with Zod:
+
+```typescript
+const schema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2),
+});
+
+const form = useForm({
+  validate: zodResolver(schema),
+  initialValues: { email: '', name: '' },
 });
 ```
 
-### Protected Pages
+### Server Actions (Preferred over API Routes)
 
 ```typescript
-// Use middleware for route protection
-import { authMiddleware } from '@repo/auth/middleware';
-export const middleware = authMiddleware;
+// app/actions/update-user.ts
+'use server';
+export async function updateUser(data: FormData) {
+  const validated = schema.parse(Object.fromEntries(data));
+  // Update logic
+}
 ```
 
-### Mantine Notifications
+### State Hierarchy
 
-```typescript
-// Use centralized notification system
-import { notify } from '@repo/notifications/mantine-notifications';
+1. **Mantine hooks**: `useForm`, `useDisclosure`, `useToggle`
+2. **Server state**: Server actions + React cache
+3. **Component state**: `useState`, `useReducer`
+4. **Global state** (rare): Zustand or Context
 
-// Success notification
-notify.success('Operation completed successfully');
+## Internationalization
 
-// Error notification
-notify.error('Something went wrong', { title: 'Error' });
-```
+Use `@repo/internationalization` package with concise property names (e.g., `l` for languages).
+Standard locale codes: `en`, `fr`, `es`, `pt`, `de`. See package docs for implementation details.
 
-## Debugging Common Issues
+---
 
-1. **Module not found errors**: Ensure packages have `"type": "module"` and use `@repo/*` imports
-2. **Type errors**: Run `pnpm typecheck` and ensure Prisma client is generated
-3. **Auth issues**: Verify environment variables and Better Auth configuration
-4. **Build failures**: Check for circular dependencies with `pnpm madge --circular`
-5. **Test failures**: Ensure test setup files are imported and mocks are configured
-6. **Dark mode issues**: Remove `dark` prop, use Mantine's color scheme system
+## Vercel Toolbar & Feature Flags
 
-## Documentation References
+Available in development mode for apps with PostHog integration. Toggle feature flags in real-time
+via toolbar. See `/apps/backstage/app/lib/feature-flags.ts` for implementation examples.
 
-The monorepo documentation is located in `/apps/documentation`. Here are direct links to all
-documentation files:
+## Troubleshooting
 
-### Getting Started
+### Common AI Agent Mistakes
 
-- **Overview**: `/apps/documentation/content/en/docs/get-started/index.mdx`
-- **Architecture**: `/apps/documentation/content/en/docs/architecture/index.mdx`
-- **Concepts**: `/apps/documentation/content/en/docs/concepts/index.mdx` - Common patterns, files
-  (keys.ts, env.ts), conventions
-- **Design System**: `/apps/documentation/content/en/docs/design-system/index.mdx`
-- **Authentication**: `/apps/documentation/content/en/docs/auth/index.mdx`
-- **Email**: `/apps/documentation/content/en/docs/email/index.mdx`
-- **Workflows**: `/apps/documentation/content/en/docs/workflows/index.mdx`
-- **Deployment**: `/apps/documentation/content/en/docs/deployment/index.mdx`
+**Import & Export Errors**
 
-### Applications Documentation
+- ❌ `import from '@repo/package/src/file'` → ✅ `import from '@repo/package'`
+- ❌ `import from './file.js'` → ✅ `import from './file'`
+- ❌ Using `/client` in Next.js → ✅ Always use `/client/next` in Next.js apps
 
-- **Web App**: `/apps/documentation/content/en/docs/apps/web.mdx`
-- **Backstage Admin**: `/apps/documentation/content/en/docs/apps/backstage.mdx`
-- **Workers**: `/apps/documentation/content/en/docs/apps/workers.mdx`
-- **Email Preview**: `/apps/documentation/content/en/docs/apps/email.mdx`
-- **Prisma Studio**: `/apps/documentation/content/en/docs/apps/studio.mdx`
-- **Storybook**: `/apps/documentation/content/en/docs/apps/storybook.mdx`
-- **Documentation**: `/apps/documentation/content/en/docs/apps/documentation.mdx`
+**Configuration Mistakes**
 
-### Package Documentation
+- ❌ `src/env.ts` → ✅ `env.ts` in package root
+- ❌ Building packages → ✅ Packages are ESM source, never built
+- ❌ Guessing versions → ✅ Use `"catalog:"` when available
 
-#### Core Infrastructure
+**Development Patterns**
 
-- **TypeScript Config**: `/apps/documentation/content/en/docs/packages/typescript-config.mdx`
-- **ESLint Config**: `/apps/documentation/content/en/docs/packages/config-eslint.mdx`
-- **Next.js Config**: `/apps/documentation/content/en/docs/packages/next-config.mdx`
-- **Config**: `/apps/documentation/content/en/docs/packages/config.mdx`
-- **Testing**: `/apps/documentation/content/en/docs/packages/testing.mdx`
+- ❌ `react-hook-form` → ✅ `@mantine/form` with Zod
+- ❌ `/app/api/*/route.ts` → ✅ `/app/actions/*.ts` server actions
+- ❌ `useEffect` + `fetch` → ✅ Server components or actions
+- ❌ `localStorage` in artifacts → ✅ React state or variables
 
-#### Data & Storage
+### Common Issues & Solutions
 
-- **Database**: `/apps/documentation/content/en/docs/packages/database.mdx`
-- **Storage**: `/apps/documentation/content/en/docs/packages/storage.mdx`
+1. **Module not found**: Ensure `"type": "module"` in packages
+2. **Type errors**: Run `pnpm typecheck`, regenerate Prisma client
+3. **Auth issues**: Verify environment variables
+4. **Build failures**: Check circular dependencies with `pnpm madge --circular`
+5. **Forms**: Always use Mantine's `useForm` hook with Zod
 
-#### Authentication & Security
+## Documentation
 
-- **Auth**: `/apps/documentation/content/en/docs/packages/auth.mdx`
-- **Security**: `/apps/documentation/content/en/docs/packages/security.mdx`
+**IMPORTANT**: The source of truth for all documentation is located in `/apps/docs/` (Mintlify).
+This is the authoritative documentation source for the entire project. Always refer to and update
+documentation in this location.
 
-#### Analytics & Monitoring
+# important-instruction-reminders
 
-- **Analytics**: `/apps/documentation/content/en/docs/packages/analytics.mdx`
-- **Observability**: `/apps/documentation/content/en/docs/packages/observability.mdx`
-
-#### Communication
-
-- **Email**: `/apps/documentation/content/en/docs/packages/email.mdx`
-- **Notifications**: `/apps/documentation/content/en/docs/packages/notifications.mdx`
-
-#### Business Logic
-
-- **Payments**: `/apps/documentation/content/en/docs/packages/payments.mdx`
-- **Orchestration**: `/apps/documentation/content/en/docs/packages/orchestration.mdx`
-- **AI**: `/apps/documentation/content/en/docs/packages/ai.mdx`
-- **Scraping**: `/apps/documentation/content/en/docs/packages/scraping.mdx`
-
-#### UI & Content
-
-- **Design System**: `/apps/documentation/content/en/docs/packages/design-system.mdx`
-- **Internationalization**: `/apps/documentation/content/en/docs/packages/internationalization.mdx`
-- **SEO**: `/apps/documentation/content/en/docs/packages/seo.mdx`
-
-### Advanced Topics
-
-- **Code Highlighting**: `/apps/documentation/content/en/docs/advanced/code-highlighting.mdx`
-- **Advanced Features**: `/apps/documentation/content/en/docs/advanced/index.mdx`
-
-### Reference Example
-
-- **Nextra Example**: `/apps/documentation/content/en/docs/nextra-complete-example.mdx`
+Do what has been asked; nothing more, nothing less. NEVER create files unless they're absolutely
+necessary for achieving your goal. ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation
+files if explicitly requested by the User.

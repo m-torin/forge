@@ -41,7 +41,7 @@ import {
   IconDeviceFloppy,
   IconShoppingCart,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { InventoryManagement } from '../../components/InventoryManagement';
@@ -297,7 +297,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
         // For new products, we'll need manual save instead of auto-save
         return;
       }
-      
+
       const result = await updateProduct(product.id, {
         name: values.name,
         type: values.type,
@@ -331,12 +331,12 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
     }
   }, 1000);
 
-  // Watch for form changes and auto-save
-  form.watch((values) => {
+  // Auto-save on form changes
+  useEffect(() => {
     if (form.isDirty()) {
-      autoSave(values);
+      autoSave(form.values);
     }
-  });
+  }, [form.values]);
 
   const formatCurrency = (price?: number | null, currency?: string | null) => {
     if (!price) return 'N/A';
@@ -413,10 +413,9 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                 )}
               </Group>
               <Text c="dimmed" size="sm">
-                {isCreating 
+                {isCreating
                   ? `SKU: ${form.values.sku || 'Enter SKU'}`
-                  : `Product ID: ${product?.id} • SKU: ${form.values.sku || product?.sku}`
-                }
+                  : `Product ID: ${product?.id} • SKU: ${form.values.sku || product?.sku}`}
               </Text>
             </div>
 
@@ -570,7 +569,6 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                           return 'Invalid JSON format';
                         }
                       })()}
-                      fontFamily="monospace"
                       onChange={(e) => {
                         try {
                           const parsed = JSON.parse(e.target.value);
@@ -583,6 +581,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                       styles={{
                         input: {
                           fontSize: '0.875rem',
+                          fontFamily: 'monospace',
                         },
                       }}
                       value={JSON.stringify(form.values.attributes, null, 2)}
@@ -623,304 +622,140 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
           {/* Advanced Features Tabs - Only show for existing products */}
           {!isCreating && product && (
             <Tabs defaultValue="pdps">
-            <Tabs.List>
-              <Tabs.Tab
-                leftSection={<IconShoppingCart size={16} />}
-                rightSection={
-                  <Badge circle size="xs">
-                    {product._count.soldBy}
-                  </Badge>
-                }
-                value="pdps"
-              >
-                PDPs/Sellers
-              </Tabs.Tab>
-              <Tabs.Tab leftSection={<IconBox size={16} />} value="inventory">
-                Inventory
-              </Tabs.Tab>
-              <Tabs.Tab leftSection={<IconPalette size={16} />} value="variants">
-                Variants
-              </Tabs.Tab>
-              <Tabs.Tab leftSection={<IconBuilding size={16} />} value="suppliers">
-                Suppliers
-              </Tabs.Tab>
-              <Tabs.Tab leftSection={<IconCurrency size={16} />} value="pricing">
-                Pricing & History
-              </Tabs.Tab>
-              <Tabs.Tab leftSection={<IconGift size={16} />} value="bundling">
-                Bundles & Recommendations
-              </Tabs.Tab>
-              <Tabs.Tab leftSection={<IconRocket size={16} />} value="lifecycle">
-                Lifecycle & Advanced
-              </Tabs.Tab>
-              <Tabs.Tab
-                leftSection={<IconPhoto size={16} />}
-                rightSection={
-                  product.digitalAssets.length > 0 && (
+              <Tabs.List>
+                <Tabs.Tab
+                  leftSection={<IconShoppingCart size={16} />}
+                  rightSection={
                     <Badge circle size="xs">
-                      {product.digitalAssets.length}
+                      {product._count.soldBy}
                     </Badge>
-                  )
-                }
-                value="assets"
-              >
-                Assets
-              </Tabs.Tab>
-              <Tabs.Tab
-                leftSection={<IconBarcode size={16} />}
-                rightSection={
-                  product.barcodes.length > 0 && (
-                    <Badge circle size="xs">
-                      {product.barcodes.length}
-                    </Badge>
-                  )
-                }
-                value="barcodes"
-              >
-                Barcodes
-              </Tabs.Tab>
-              <Tabs.Tab
-                leftSection={<IconHistory size={16} />}
-                rightSection={
-                  <Badge circle size="xs">
-                    {product._count.scanHistory}
-                  </Badge>
-                }
-                value="history"
-              >
-                Scan History
-              </Tabs.Tab>
-            </Tabs.List>
-
-            <Tabs.Panel pt="md" value="pdps">
-              <Group justify="space-between" mb="md">
-                <Text fw={500}>Product Detail Pages (PDPs)</Text>
-                <Button
-                  leftSection={<IconEdit size={16} />}
-                  onClick={openPdpModal}
-                  size="sm"
-                  variant="outline"
+                  }
+                  value="pdps"
                 >
-                  Manage Sellers
-                </Button>
-              </Group>
+                  PDPs/Sellers
+                </Tabs.Tab>
+                <Tabs.Tab leftSection={<IconBox size={16} />} value="inventory">
+                  Inventory
+                </Tabs.Tab>
+                <Tabs.Tab leftSection={<IconPalette size={16} />} value="variants">
+                  Variants
+                </Tabs.Tab>
+                <Tabs.Tab leftSection={<IconBuilding size={16} />} value="suppliers">
+                  Suppliers
+                </Tabs.Tab>
+                <Tabs.Tab leftSection={<IconCurrency size={16} />} value="pricing">
+                  Pricing & History
+                </Tabs.Tab>
+                <Tabs.Tab leftSection={<IconGift size={16} />} value="bundling">
+                  Bundles & Recommendations
+                </Tabs.Tab>
+                <Tabs.Tab leftSection={<IconRocket size={16} />} value="lifecycle">
+                  Lifecycle & Advanced
+                </Tabs.Tab>
+                <Tabs.Tab
+                  leftSection={<IconPhoto size={16} />}
+                  rightSection={
+                    product.digitalAssets.length > 0 && (
+                      <Badge circle size="xs">
+                        {product.digitalAssets.length}
+                      </Badge>
+                    )
+                  }
+                  value="assets"
+                >
+                  Assets
+                </Tabs.Tab>
+                <Tabs.Tab
+                  leftSection={<IconBarcode size={16} />}
+                  rightSection={
+                    product.barcodes.length > 0 && (
+                      <Badge circle size="xs">
+                        {product.barcodes.length}
+                      </Badge>
+                    )
+                  }
+                  value="barcodes"
+                >
+                  Barcodes
+                </Tabs.Tab>
+                <Tabs.Tab
+                  leftSection={<IconHistory size={16} />}
+                  rightSection={
+                    <Badge circle size="xs">
+                      {product._count.scanHistory}
+                    </Badge>
+                  }
+                  value="history"
+                >
+                  Scan History
+                </Tabs.Tab>
+              </Tabs.List>
 
-              {product.soldBy.length > 0 ? (
-                <Stack>
-                  {product.soldBy.map((pdp) => (
-                    <Card key={pdp.id} withBorder>
-                      <Group justify="space-between">
-                        <div>
-                          <Group gap="sm">
-                            <Text fw={600}>{pdp.brand.name}</Text>
-                            <Badge size="sm" variant="light">
-                              {pdp.brand.type}
-                            </Badge>
-                            <Badge
-                              color={pdp.brand.status === 'PUBLISHED' ? 'green' : 'yellow'}
-                              size="sm"
-                              variant="outline"
-                            >
-                              {pdp.brand.status}
-                            </Badge>
-                          </Group>
-
-                          <Text c="dimmed" size="sm">
-                            Added {formatDate(pdp.createdAt)}
-                          </Text>
-
-                          <Group gap="xs" mt="xs">
-                            {pdp.brand.baseUrl && (
-                              <>
-                                <Text c="dimmed" size="xs">
-                                  Store:
-                                </Text>
-                                <ActionIcon
-                                  href={pdp.brand.baseUrl}
-                                  component="a"
-                                  rel="noopener noreferrer"
-                                  size="xs"
-                                  target="_blank"
-                                  title="Visit store"
-                                  variant="subtle"
-                                >
-                                  <IconExternalLink size={12} />
-                                </ActionIcon>
-                              </>
-                            )}
-                          </Group>
-                        </div>
-                        <Group gap="xs">
-                          <Text c="dimmed" size="xs">
-                            PDP ID: {pdp.id.slice(-8)}
-                          </Text>
-                          <CopyButton value={pdp.id}>
-                            {({ copied, copy }) => (
-                              <Tooltip label={copied ? 'Copied' : 'Copy PDP ID'}>
-                                <ActionIcon
-                                  color={copied ? 'teal' : 'gray'}
-                                  onClick={copy}
-                                  size="xs"
-                                  variant="subtle"
-                                >
-                                  {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
-                                </ActionIcon>
-                              </Tooltip>
-                            )}
-                          </CopyButton>
-                        </Group>
-                      </Group>
-                    </Card>
-                  ))}
-                </Stack>
-              ) : (
-                <Stack align="center" py="xl">
-                  <Text c="dimmed" ta="center">
-                    No sellers/PDPs configured for this product
-                  </Text>
+              <Tabs.Panel pt="md" value="pdps">
+                <Group justify="space-between" mb="md">
+                  <Text fw={500}>Product Detail Pages (PDPs)</Text>
                   <Button
                     leftSection={<IconEdit size={16} />}
                     onClick={openPdpModal}
-                    variant="light"
+                    size="sm"
+                    variant="outline"
                   >
-                    Add Sellers
+                    Manage Sellers
                   </Button>
-                </Stack>
-              )}
-            </Tabs.Panel>
+                </Group>
 
-            <Tabs.Panel pt="md" value="inventory">
-              <InventoryManagement
-                onUpdate={() => {}}
-                productId={product.id}
-                productName={product.name}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel pt="md" value="variants">
-              <ProductVariants
-                onUpdate={() => {}}
-                productId={product.id}
-                productName={product.name}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel pt="md" value="suppliers">
-              <SupplierProcurement
-                onUpdate={() => {}}
-                productId={product.id}
-                productName={product.name}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel pt="md" value="pricing">
-              <PriceHistory
-                onUpdate={() => {}}
-                productId={product.id}
-                productName={product.name}
-                currentPrice={product.price || 0}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel pt="md" value="bundling">
-              <ProductBundling
-                onUpdate={() => {}}
-                productId={product.id}
-                productName={product.name}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel pt="md" value="lifecycle">
-              <ProductLifecycle
-                onUpdate={() => {}}
-                productId={product.id}
-                productName={product.name}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel pt="md" value="assets">
-              <Group justify="space-between" mb="md">
-                <Text fw={500}>Digital Assets</Text>
-                <Button
-                  leftSection={<IconEdit size={16} />}
-                  onClick={openMediaModal}
-                  size="sm"
-                  variant="outline"
-                >
-                  Manage Media
-                </Button>
-              </Group>
-
-              {product.digitalAssets.length > 0 ? (
-                <SimpleGrid cols={2} spacing="md">
-                  {product.digitalAssets
-                    .sort((a, b) => a.sortOrder - b.sortOrder)
-                    .map((asset) => (
-                      <Card key={asset.id} withBorder>
-                        <Stack>
-                          {asset.type === 'IMAGE' && (
-                            <Image
-                              alt={asset.alt || asset.filename}
-                              fit="cover"
-                              h={120}
-                              radius="sm"
-                              src={asset.url}
-                            />
-                          )}
+                {product.soldBy.length > 0 ? (
+                  <Stack>
+                    {product.soldBy.map((pdp) => (
+                      <Card key={pdp.id} withBorder>
+                        <Group justify="space-between">
                           <div>
-                            <Text fw={500} size="sm">
-                              {asset.filename}
-                            </Text>
-                            <Badge size="xs" variant="light">
-                              {asset.type}
-                            </Badge>
-                            {asset.description && (
-                              <Text c="dimmed" mt="xs" size="xs">
-                                {asset.description}
-                              </Text>
-                            )}
-                          </div>
-                        </Stack>
-                      </Card>
-                    ))}
-                </SimpleGrid>
-              ) : (
-                <Stack align="center" py="xl">
-                  <Text c="dimmed" ta="center">
-                    No assets found
-                  </Text>
-                  <Button
-                    leftSection={<IconEdit size={16} />}
-                    onClick={openMediaModal}
-                    variant="light"
-                  >
-                    Add Media Assets
-                  </Button>
-                </Stack>
-              )}
-            </Tabs.Panel>
+                            <Group gap="sm">
+                              <Text fw={600}>{pdp.brand.name}</Text>
+                              <Badge size="sm" variant="light">
+                                {pdp.brand.type}
+                              </Badge>
+                              <Badge
+                                color={pdp.brand.status === 'PUBLISHED' ? 'green' : 'yellow'}
+                                size="sm"
+                                variant="outline"
+                              >
+                                {pdp.brand.status}
+                              </Badge>
+                            </Group>
 
-            <Tabs.Panel pt="md" value="barcodes">
-              {product.barcodes.length > 0 ? (
-                <Table>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Barcode</Table.Th>
-                      <Table.Th>Type</Table.Th>
-                      <Table.Th>Primary</Table.Th>
-                      <Table.Th>Created</Table.Th>
-                      <Table.Th>Actions</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {product.barcodes.map((barcode) => (
-                      <Table.Tr key={barcode.id}>
-                        <Table.Td>
+                            <Text c="dimmed" size="sm">
+                              Added {formatDate(pdp.createdAt)}
+                            </Text>
+
+                            <Group gap="xs" mt="xs">
+                              {pdp.brand.baseUrl && (
+                                <>
+                                  <Text c="dimmed" size="xs">
+                                    Store:
+                                  </Text>
+                                  <ActionIcon
+                                    href={pdp.brand.baseUrl}
+                                    component="a"
+                                    rel="noopener noreferrer"
+                                    size="xs"
+                                    target="_blank"
+                                    title="Visit store"
+                                    variant="subtle"
+                                  >
+                                    <IconExternalLink size={12} />
+                                  </ActionIcon>
+                                </>
+                              )}
+                            </Group>
+                          </div>
                           <Group gap="xs">
-                            <Text ff="monospace">{barcode.barcode}</Text>
-                            <CopyButton value={barcode.barcode}>
+                            <Text c="dimmed" size="xs">
+                              PDP ID: {pdp.id.slice(-8)}
+                            </Text>
+                            <CopyButton value={pdp.id}>
                               {({ copied, copy }) => (
-                                <Tooltip label={copied ? 'Copied' : 'Copy barcode'}>
+                                <Tooltip label={copied ? 'Copied' : 'Copy PDP ID'}>
                                   <ActionIcon
                                     color={copied ? 'teal' : 'gray'}
                                     onClick={copy}
@@ -933,97 +768,262 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                               )}
                             </CopyButton>
                           </Group>
-                        </Table.Td>
-                        <Table.Td>
-                          <Badge size="sm" variant="light">
-                            {barcode.type}
-                          </Badge>
-                        </Table.Td>
-                        <Table.Td>
-                          {barcode.isPrimary && (
-                            <Badge color="blue" size="sm">
-                              Primary
-                            </Badge>
-                          )}
-                        </Table.Td>
-                        <Table.Td>{formatDate(barcode.createdAt)}</Table.Td>
-                        <Table.Td>
-                          <CopyButton value={barcode.barcode}>
-                            {({ copied, copy }) => (
-                              <ActionIcon onClick={copy} size="sm" variant="light">
-                                {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                              </ActionIcon>
-                            )}
-                          </CopyButton>
-                        </Table.Td>
-                      </Table.Tr>
+                        </Group>
+                      </Card>
                     ))}
-                  </Table.Tbody>
-                </Table>
-              ) : (
-                <Text c="dimmed" py="xl" ta="center">
-                  No barcodes found
-                </Text>
-              )}
-            </Tabs.Panel>
+                  </Stack>
+                ) : (
+                  <Stack align="center" py="xl">
+                    <Text c="dimmed" ta="center">
+                      No sellers/PDPs configured for this product
+                    </Text>
+                    <Button
+                      leftSection={<IconEdit size={16} />}
+                      onClick={openPdpModal}
+                      variant="light"
+                    >
+                      Add Sellers
+                    </Button>
+                  </Stack>
+                )}
+              </Tabs.Panel>
 
-            <Tabs.Panel pt="md" value="history">
-              {product.scanHistory && product.scanHistory.length > 0 ? (
-                <Table>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Barcode</Table.Th>
-                      <Table.Th>User</Table.Th>
-                      <Table.Th>Platform</Table.Th>
-                      <Table.Th>Status</Table.Th>
-                      <Table.Th>Scanned At</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {product.scanHistory.slice(0, 10).map((scan) => (
-                      <Table.Tr key={scan.id}>
-                        <Table.Td>
-                          <Text ff="monospace" size="sm">
-                            {scan.barcode}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td>
-                          {scan.user ? (
+              <Tabs.Panel pt="md" value="inventory">
+                <InventoryManagement
+                  onUpdate={() => {}}
+                  productId={product.id}
+                  productName={product.name}
+                />
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="variants">
+                <ProductVariants
+                  onUpdate={() => {}}
+                  productId={product.id}
+                  productName={product.name}
+                />
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="suppliers">
+                <SupplierProcurement
+                  onUpdate={() => {}}
+                  productId={product.id}
+                  productName={product.name}
+                />
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="pricing">
+                <PriceHistory
+                  onUpdate={() => {}}
+                  productId={product.id}
+                  productName={product.name}
+                  currentPrice={product.price || 0}
+                />
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="bundling">
+                <ProductBundling
+                  form={form}
+                  onUpdate={() => {}}
+                  productId={product.id}
+                  productName={product.name}
+                />
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="lifecycle">
+                <ProductLifecycle
+                  onUpdate={() => {}}
+                  productId={product.id}
+                  productName={product.name}
+                />
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="assets">
+                <Group justify="space-between" mb="md">
+                  <Text fw={500}>Digital Assets</Text>
+                  <Button
+                    leftSection={<IconEdit size={16} />}
+                    onClick={openMediaModal}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Manage Media
+                  </Button>
+                </Group>
+
+                {product.digitalAssets.length > 0 ? (
+                  <SimpleGrid cols={2} spacing="md">
+                    {product.digitalAssets
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map((asset) => (
+                        <Card key={asset.id} withBorder>
+                          <Stack>
+                            {asset.type === 'IMAGE' && (
+                              <Image
+                                alt={asset.alt || asset.filename}
+                                fit="cover"
+                                h={120}
+                                radius="sm"
+                                src={asset.url}
+                              />
+                            )}
                             <div>
-                              <Text size="sm">{scan.user.name}</Text>
-                              <Text c="dimmed" size="xs">
-                                {scan.user.email}
+                              <Text fw={500} size="sm">
+                                {asset.filename}
                               </Text>
+                              <Badge size="xs" variant="light">
+                                {asset.type}
+                              </Badge>
+                              {asset.description && (
+                                <Text c="dimmed" mt="xs" size="xs">
+                                  {asset.description}
+                                </Text>
+                              )}
                             </div>
-                          ) : (
-                            <Text c="dimmed" size="sm">
-                              Anonymous
-                            </Text>
-                          )}
-                        </Table.Td>
-                        <Table.Td>
-                          {scan.platform && (
-                            <Badge size="sm" variant="light">
-                              {scan.platform}
-                            </Badge>
-                          )}
-                        </Table.Td>
-                        <Table.Td>
-                          <Badge color={scan.success ? 'green' : 'red'} size="sm" variant="light">
-                            {scan.success ? 'Success' : 'Failed'}
-                          </Badge>
-                        </Table.Td>
-                        <Table.Td>{formatDate(scan.scannedAt)}</Table.Td>
+                          </Stack>
+                        </Card>
+                      ))}
+                  </SimpleGrid>
+                ) : (
+                  <Stack align="center" py="xl">
+                    <Text c="dimmed" ta="center">
+                      No assets found
+                    </Text>
+                    <Button
+                      leftSection={<IconEdit size={16} />}
+                      onClick={openMediaModal}
+                      variant="light"
+                    >
+                      Add Media Assets
+                    </Button>
+                  </Stack>
+                )}
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="barcodes">
+                {product.barcodes.length > 0 ? (
+                  <Table>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Barcode</Table.Th>
+                        <Table.Th>Type</Table.Th>
+                        <Table.Th>Primary</Table.Th>
+                        <Table.Th>Created</Table.Th>
+                        <Table.Th>Actions</Table.Th>
                       </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-              ) : (
-                <Text c="dimmed" py="xl" ta="center">
-                  No scan history found
-                </Text>
-              )}
-            </Tabs.Panel>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {product.barcodes.map((barcode) => (
+                        <Table.Tr key={barcode.id}>
+                          <Table.Td>
+                            <Group gap="xs">
+                              <Text ff="monospace">{barcode.barcode}</Text>
+                              <CopyButton value={barcode.barcode}>
+                                {({ copied, copy }) => (
+                                  <Tooltip label={copied ? 'Copied' : 'Copy barcode'}>
+                                    <ActionIcon
+                                      color={copied ? 'teal' : 'gray'}
+                                      onClick={copy}
+                                      size="xs"
+                                      variant="subtle"
+                                    >
+                                      {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
+                                    </ActionIcon>
+                                  </Tooltip>
+                                )}
+                              </CopyButton>
+                            </Group>
+                          </Table.Td>
+                          <Table.Td>
+                            <Badge size="sm" variant="light">
+                              {barcode.type}
+                            </Badge>
+                          </Table.Td>
+                          <Table.Td>
+                            {barcode.isPrimary && (
+                              <Badge color="blue" size="sm">
+                                Primary
+                              </Badge>
+                            )}
+                          </Table.Td>
+                          <Table.Td>{formatDate(barcode.createdAt)}</Table.Td>
+                          <Table.Td>
+                            <CopyButton value={barcode.barcode}>
+                              {({ copied, copy }) => (
+                                <ActionIcon onClick={copy} size="sm" variant="light">
+                                  {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                                </ActionIcon>
+                              )}
+                            </CopyButton>
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                ) : (
+                  <Text c="dimmed" py="xl" ta="center">
+                    No barcodes found
+                  </Text>
+                )}
+              </Tabs.Panel>
+
+              <Tabs.Panel pt="md" value="history">
+                {product.scanHistory && product.scanHistory.length > 0 ? (
+                  <Table>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Barcode</Table.Th>
+                        <Table.Th>User</Table.Th>
+                        <Table.Th>Platform</Table.Th>
+                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Scanned At</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {product.scanHistory.slice(0, 10).map((scan) => (
+                        <Table.Tr key={scan.id}>
+                          <Table.Td>
+                            <Text ff="monospace" size="sm">
+                              {scan.barcode}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td>
+                            {scan.user ? (
+                              <div>
+                                <Text size="sm">{scan.user.name}</Text>
+                                <Text c="dimmed" size="xs">
+                                  {scan.user.email}
+                                </Text>
+                              </div>
+                            ) : (
+                              <Text c="dimmed" size="sm">
+                                Anonymous
+                              </Text>
+                            )}
+                          </Table.Td>
+                          <Table.Td>
+                            {scan.platform && (
+                              <Badge size="sm" variant="light">
+                                {scan.platform}
+                              </Badge>
+                            )}
+                          </Table.Td>
+                          <Table.Td>
+                            <Badge color={scan.success ? 'green' : 'red'} size="sm" variant="light">
+                              {scan.success ? 'Success' : 'Failed'}
+                            </Badge>
+                          </Table.Td>
+                          <Table.Td>{formatDate(scan.scannedAt)}</Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                ) : (
+                  <Text c="dimmed" py="xl" ta="center">
+                    No scan history found
+                  </Text>
+                )}
+              </Tabs.Panel>
             </Tabs>
           )}
         </Stack>
@@ -1033,16 +1033,16 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
           onClose={closePdpModal}
           onUpdate={() => {}}
           opened={pdpModalOpened}
-          productId={product.id}
-          productName={product.name}
+          productId={product?.id || ''}
+          productName={product?.name || ''}
         />
 
         <MediaManagement
           onClose={closeMediaModal}
           onUpdate={() => {}}
           opened={mediaModalOpened}
-          productId={product.id}
-          productName={product.name}
+          productId={product?.id || ''}
+          productName={product?.name || ''}
         />
       </ScrollArea>
     </div>

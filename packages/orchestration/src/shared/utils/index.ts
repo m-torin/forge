@@ -25,7 +25,7 @@ export { OrchestrationManager } from './manager';
 export type { OrchestrationManagerConfig } from './manager';
 
 // Rate limiting utilities
-export { createRateLimiter, withRateLimit, createRateLimitHeaders, createRedisFromEnv } from './rate-limit';
+export { createRateLimiter, withRateLimit, createRateLimitHeaders } from './rate-limit';
 export type { RateLimitConfig, RateLimitResult } from './rate-limit';
 
 // Validation utilities
@@ -58,3 +58,41 @@ export {
   createSafeLogger,
   withMaskedErrors,
 } from './data-masking';
+
+// Workflow-specific utilities
+export {
+  CIRCUIT_BREAKER_CONFIGS,
+  RATE_LIMITER_CONFIGS,
+  processBatch,
+  ProgressReporter,
+  createErrorAccumulator,
+  addError,
+  addWarning,
+  hasErrors,
+  hasCriticalErrors,
+  getErrorSummary,
+  RETRY_STRATEGIES,
+  CommonSchemas,
+  withFallback,
+  streamProcess,
+  createMemoryEfficientProcessor,
+  createPartialSuccessResult,
+  updateSuccessRate,
+  addSuccessfulResult,
+  addFailedResult,
+  createWorkflowRateLimiter,
+  createRateLimiterWithCheck,
+  createStepIdentifier,
+  formatDuration,
+  createTimestamp,
+  isValidIdentifier,
+  sanitizeIdentifier,
+} from './workflow-utilities';
+
+export type {
+  BatchProcessingOptions,
+  BatchProcessingResult,
+  ErrorAccumulator,
+  FallbackOptions,
+  PartialSuccessResult,
+} from './workflow-utilities';

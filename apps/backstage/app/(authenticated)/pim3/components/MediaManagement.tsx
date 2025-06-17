@@ -34,6 +34,7 @@ import {
 import { useState } from 'react';
 
 import { formatDate, formatFileSize, showSuccessNotification } from '../utils/pim-helpers';
+import type { MediaType } from '@repo/database/prisma';
 
 // Media management data structures
 interface MediaAsset {
@@ -47,7 +48,7 @@ interface MediaAsset {
   mimeType: string;
   size: number;
   sortOrder: number;
-  type: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'MANUAL' | 'SPECIFICATION' | 'CERTIFICATE' | 'OTHER';
+  type: MediaType;
   updatedAt: Date;
   url: string;
 }
@@ -58,7 +59,7 @@ interface MediaUploadForm {
   associateWithProduct: boolean;
   description: string;
   files: File[];
-  type: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'MANUAL' | 'SPECIFICATION' | 'CERTIFICATE' | 'OTHER';
+  type: MediaType;
 }
 
 interface MediaManagementProps {
@@ -111,7 +112,7 @@ export function MediaManagement({
     {
       id: 'asset-3',
       filename: 'product-specs.pdf',
-      type: 'SPECIFICATION',
+      type: 'DOCUMENT',
       url: '/files/product-specs.pdf',
       associatedPdps: [],
       associatedProducts: [productId],
@@ -125,7 +126,7 @@ export function MediaManagement({
     {
       id: 'asset-4',
       filename: 'user-manual.pdf',
-      type: 'MANUAL',
+      type: 'DOCUMENT',
       url: '/files/user-manual.pdf',
       associatedPdps: ['pdp-1', 'pdp-2', 'pdp-3'],
       associatedProducts: [productId],
@@ -165,7 +166,7 @@ export function MediaManagement({
     },
     initialValues: {
       filename: '',
-      type: 'IMAGE' as const,
+      type: 'IMAGE' as MediaType,
       alt: '',
       description: '',
     },
@@ -322,394 +323,392 @@ export function MediaManagement({
       size="xl"
       title={`Media Management - ${productName}`}
     >
-        <Stack h="100%">
-          {/* Tab Navigation */}
-          <Group>
-            <Button
-              leftSection={<IconUpload size={16} />}
-              onClick={() => setActiveTab('upload')}
-              size="sm"
-              variant={activeTab === 'upload' ? 'filled' : 'light'}
+      <Stack h="100%">
+        {/* Tab Navigation */}
+        <Group>
+          <Button
+            leftSection={<IconUpload size={16} />}
+            onClick={() => setActiveTab('upload')}
+            size="sm"
+            variant={activeTab === 'upload' ? 'filled' : 'light'}
+          >
+            Upload
+          </Button>
+          <Button
+            leftSection={<IconPhoto size={16} />}
+            onClick={() => setActiveTab('manage')}
+            size="sm"
+            variant={activeTab === 'manage' ? 'filled' : 'light'}
+          >
+            Manage ({assets.length})
+          </Button>
+          <Button
+            leftSection={<IconEdit size={16} />}
+            onClick={() => setActiveTab('organize')}
+            size="sm"
+            variant={activeTab === 'organize' ? 'filled' : 'light'}
+          >
+            Organize
+          </Button>
+        </Group>
+
+        {/* Upload Tab */}
+        {activeTab === 'upload' && (
+          <Stack flex={1}>
+            <Text fw={600} size="lg">
+              Upload New Media
+            </Text>
+
+            {/* Dropzone */}
+            <Dropzone
+              onDrop={handleFileUpload}
+              onReject={(files) => {
+                notifications.show({
+                  color: 'red',
+                  message: `${files.length} file(s) rejected`,
+                  title: 'Upload Error',
+                });
+              }}
+              accept={[...IMAGE_MIME_TYPE, 'application/pdf', 'video/*']}
+              maxSize={10 * 1024 ** 2} // 10MB
+              multiple
             >
-              Upload
-            </Button>
-            <Button
-              leftSection={<IconPhoto size={16} />}
-              onClick={() => setActiveTab('manage')}
-              size="sm"
-              variant={activeTab === 'manage' ? 'filled' : 'light'}
-            >
-              Manage ({assets.length})
-            </Button>
-            <Button
-              leftSection={<IconEdit size={16} />}
-              onClick={() => setActiveTab('organize')}
-              size="sm"
-              variant={activeTab === 'organize' ? 'filled' : 'light'}
-            >
-              Organize
-            </Button>
-          </Group>
+              <Group style={{ pointerEvents: 'none' }} gap="xl" justify="center" mih={220}>
+                <Dropzone.Accept>
+                  <IconUpload color="var(--mantine-color-blue-6)" stroke={1.5} size={52} />
+                </Dropzone.Accept>
+                <Dropzone.Reject>
+                  <IconX color="var(--mantine-color-red-6)" stroke={1.5} size={52} />
+                </Dropzone.Reject>
+                <Dropzone.Idle>
+                  <IconPhoto color="var(--mantine-color-dimmed)" stroke={1.5} size={52} />
+                </Dropzone.Idle>
 
-          {/* Upload Tab */}
-          {activeTab === 'upload' && (
-            <Stack flex={1}>
-              <Text fw={600} size="lg">
-                Upload New Media
-              </Text>
+                <div>
+                  <Text inline size="xl">
+                    Drag files here or click to select
+                  </Text>
+                  <Text c="dimmed" inline mt={7} size="sm">
+                    Images, videos, and documents up to 10MB each
+                  </Text>
+                </div>
+              </Group>
+            </Dropzone>
 
-              {/* Dropzone */}
-              <Dropzone
-                onDrop={handleFileUpload}
-                onReject={(files) => {
-                  notifications.show({
-                    color: 'red',
-                    message: `${files.length} file(s) rejected`,
-                    title: 'Upload Error',
-                  });
-                }}
-                accept={[...IMAGE_MIME_TYPE, 'application/pdf', 'video/*']}
-                maxSize={10 * 1024 ** 2} // 10MB
-                multiple
-              >
-                <Group style={{ pointerEvents: 'none' }} gap="xl" justify="center" mih={220}>
-                  <Dropzone.Accept>
-                    <IconUpload color="var(--mantine-color-blue-6)" stroke={1.5} size={52} />
-                  </Dropzone.Accept>
-                  <Dropzone.Reject>
-                    <IconX color="var(--mantine-color-red-6)" stroke={1.5} size={52} />
-                  </Dropzone.Reject>
-                  <Dropzone.Idle>
-                    <IconPhoto color="var(--mantine-color-dimmed)" stroke={1.5} size={52} />
-                  </Dropzone.Idle>
+            {/* Upload Form */}
+            {uploadForm.values.files.length > 0 && (
+              <Card withBorder>
+                <Stack>
+                  <Text fw={500}>Upload Details</Text>
 
-                  <div>
-                    <Text inline size="xl">
-                      Drag files here or click to select
-                    </Text>
-                    <Text c="dimmed" inline mt={7} size="sm">
-                      Images, videos, and documents up to 10MB each
-                    </Text>
-                  </div>
-                </Group>
-              </Dropzone>
-
-              {/* Upload Form */}
-              {uploadForm.values.files.length > 0 && (
-                <Card withBorder>
-                  <Stack>
-                    <Text fw={500}>Upload Details</Text>
-
-                    <SimpleGrid cols={2} spacing="md">
-                      <Select
-                        label="Asset Type"
-                        {...uploadForm.getInputProps('type')}
-                        data={[
-                          { label: 'Image', value: 'IMAGE' },
-                          { label: 'Video', value: 'VIDEO' },
-                          { label: 'Document', value: 'DOCUMENT' },
-                          { label: 'Manual', value: 'MANUAL' },
-                          { label: 'Specification', value: 'SPECIFICATION' },
-                          { label: 'Certificate', value: 'CERTIFICATE' },
-                          { label: 'Other', value: 'OTHER' },
-                        ]}
-                        required
-                      />
-
-                      <TextInput
-                        placeholder="Describe the image for accessibility"
-                        label="Alt Text"
-                        {...uploadForm.getInputProps('alt')}
-                      />
-                    </SimpleGrid>
-
-                    <Textarea
-                      placeholder="Brief description of the asset"
-                      rows={3}
-                      label="Description"
-                      {...uploadForm.getInputProps('description')}
+                  <SimpleGrid cols={2} spacing="md">
+                    <Select
+                      label="Asset Type"
+                      {...uploadForm.getInputProps('type')}
+                      data={[
+                        { label: 'Image', value: 'IMAGE' },
+                        { label: 'Video', value: 'VIDEO' },
+                        { label: 'Document', value: 'DOCUMENT' },
+                        { label: 'Manual', value: 'MANUAL' },
+                        { label: 'Specification', value: 'SPECIFICATION' },
+                        { label: 'Certificate', value: 'CERTIFICATE' },
+                        { label: 'Other', value: 'OTHER' },
+                      ]}
+                      required
                     />
 
-                    <Text fw={500} size="sm">
-                      Selected Files ({uploadForm.values.files.length})
-                    </Text>
-                    <Stack gap="xs">
-                      {uploadForm.values.files.map((file, index) => (
-                        <Group key={index} justify="space-between">
-                          <div>
-                            <Text size="sm">{file.name}</Text>
-                            <Text c="dimmed" size="xs">
-                              {formatFileSize(file.size)}
-                            </Text>
-                          </div>
-                          <Badge color="blue" size="sm" variant="light">
-                            {file.type}
-                          </Badge>
-                        </Group>
-                      ))}
-                    </Stack>
-
-                    <Button fullWidth onClick={handleUploadSubmit}>
-                      Upload {uploadForm.values.files.length} File(s)
-                    </Button>
-                  </Stack>
-                </Card>
-              )}
-            </Stack>
-          )}
-
-          {/* Manage Tab */}
-          {activeTab === 'manage' && (
-            <Stack flex={1}>
-              <Group justify="space-between">
-                <Text fw={600} size="lg">
-                  Media Assets
-                </Text>
-                <Text c="dimmed" size="sm">
-                  {assets.length} total assets
-                </Text>
-              </Group>
-
-              {/* Product Assets */}
-              <div>
-                <Text fw={500} mb="sm">
-                  Product Assets ({productAssets.length})
-                </Text>
-                {productAssets.length > 0 ? (
-                  <SimpleGrid cols={2} spacing="md">
-                    {productAssets.map((asset) => (
-                      <Card key={asset.id} withBorder>
-                        <Stack gap="sm">
-                          {asset.type === 'IMAGE' && (
-                            <Image
-                              alt={asset.alt}
-                              fit="cover"
-                              height={120}
-                              radius="sm"
-                              src={asset.url}
-                            />
-                          )}
-
-                          <div>
-                            <Group justify="space-between" mb="xs">
-                              <Text fw={500} size="sm" truncate>
-                                {asset.filename}
-                              </Text>
-                              <Badge color={getTypeColor(asset.type)} size="xs" variant="light">
-                                {asset.type}
-                              </Badge>
-                            </Group>
-
-                            <Text c="dimmed" mb="xs" size="xs">
-                              {formatFileSize(asset.size)} • {formatDate(asset.createdAt)}
-                            </Text>
-
-                            {asset.description && (
-                              <Text lineClamp={2} size="xs">
-                                {asset.description}
-                              </Text>
-                            )}
-                          </div>
-
-                          <Group justify="space-between">
-                            <Group gap="xs">
-                              <Tooltip label="View">
-                                <ActionIcon size="sm" variant="subtle">
-                                  <IconEye size={14} />
-                                </ActionIcon>
-                              </Tooltip>
-                              <Tooltip label="Edit">
-                                <ActionIcon
-                                  onClick={() => handleEditAsset(asset.id)}
-                                  size="sm"
-                                  variant="subtle"
-                                >
-                                  <IconEdit size={14} />
-                                </ActionIcon>
-                              </Tooltip>
-                              <Tooltip label="Download">
-                                <ActionIcon size="sm" variant="subtle">
-                                  <IconDownload size={14} />
-                                </ActionIcon>
-                              </Tooltip>
-                            </Group>
-                            <Tooltip label="Delete">
-                              <ActionIcon
-                                color="red"
-                                onClick={() => handleDeleteAsset(asset.id)}
-                                size="sm"
-                                variant="subtle"
-                              >
-                                <IconTrash size={14} />
-                              </ActionIcon>
-                            </Tooltip>
-                          </Group>
-                        </Stack>
-                      </Card>
-                    ))}
+                    <TextInput
+                      placeholder="Describe the image for accessibility"
+                      label="Alt Text"
+                      {...uploadForm.getInputProps('alt')}
+                    />
                   </SimpleGrid>
-                ) : (
-                  <Text c="dimmed" py="md" ta="center">
-                    No assets associated with this product
-                  </Text>
-                )}
-              </div>
 
-              {/* PDP Assets */}
-              {pdpAssets.length > 0 && (
-                <div>
-                  <Text fw={500} mb="sm">
-                    PDP Assets ({pdpAssets.length})
+                  <Textarea
+                    placeholder="Brief description of the asset"
+                    rows={3}
+                    label="Description"
+                    {...uploadForm.getInputProps('description')}
+                  />
+
+                  <Text fw={500} size="sm">
+                    Selected Files ({uploadForm.values.files.length})
                   </Text>
-                  <SimpleGrid cols={3} spacing="sm">
-                    {pdpAssets.map((asset) => (
-                      <Card key={asset.id} withBorder>
-                        <Stack gap="xs">
-                          <Group justify="space-between">
-                            <Text fw={500} size="xs" truncate>
+                  <Stack gap="xs">
+                    {uploadForm.values.files.map((file, index) => (
+                      <Group key={index} justify="space-between">
+                        <div>
+                          <Text size="sm">{file.name}</Text>
+                          <Text c="dimmed" size="xs">
+                            {formatFileSize(file.size)}
+                          </Text>
+                        </div>
+                        <Badge color="blue" size="sm" variant="light">
+                          {file.type}
+                        </Badge>
+                      </Group>
+                    ))}
+                  </Stack>
+
+                  <Button fullWidth onClick={handleUploadSubmit}>
+                    Upload {uploadForm.values.files.length} File(s)
+                  </Button>
+                </Stack>
+              </Card>
+            )}
+          </Stack>
+        )}
+
+        {/* Manage Tab */}
+        {activeTab === 'manage' && (
+          <Stack flex={1}>
+            <Group justify="space-between">
+              <Text fw={600} size="lg">
+                Media Assets
+              </Text>
+              <Text c="dimmed" size="sm">
+                {assets.length} total assets
+              </Text>
+            </Group>
+
+            {/* Product Assets */}
+            <div>
+              <Text fw={500} mb="sm">
+                Product Assets ({productAssets.length})
+              </Text>
+              {productAssets.length > 0 ? (
+                <SimpleGrid cols={2} spacing="md">
+                  {productAssets.map((asset) => (
+                    <Card key={asset.id} withBorder>
+                      <Stack gap="sm">
+                        {asset.type === 'IMAGE' && (
+                          <Image
+                            alt={asset.alt}
+                            fit="cover"
+                            height={120}
+                            radius="sm"
+                            src={asset.url}
+                          />
+                        )}
+
+                        <div>
+                          <Group justify="space-between" mb="xs">
+                            <Text fw={500} size="sm" truncate>
                               {asset.filename}
                             </Text>
                             <Badge color={getTypeColor(asset.type)} size="xs" variant="light">
                               {asset.type}
                             </Badge>
                           </Group>
-                          <Text c="dimmed" size="xs">
-                            {asset.associatedPdps.length} PDP(s)
+
+                          <Text c="dimmed" mb="xs" size="xs">
+                            {formatFileSize(asset.size)} • {formatDate(asset.createdAt)}
                           </Text>
-                        </Stack>
-                      </Card>
-                    ))}
-                  </SimpleGrid>
-                </div>
-              )}
 
-              {/* Unassociated Assets */}
-              {unassociatedAssets.length > 0 && (
-                <div>
-                  <Text c="orange" fw={500} mb="sm">
-                    Unassociated Assets ({unassociatedAssets.length})
-                  </Text>
-                  <Text c="dimmed" mb="sm" size="sm">
-                    These assets are not associated with any products or PDPs
-                  </Text>
-                  <SimpleGrid cols={3} spacing="sm">
-                    {unassociatedAssets.map((asset) => (
-                      <Card key={asset.id} withBorder>
-                        <Stack gap="xs">
-                          <Group justify="space-between">
-                            <Text fw={500} size="xs" truncate>
-                              {asset.filename}
+                          {asset.description && (
+                            <Text lineClamp={2} size="xs">
+                              {asset.description}
                             </Text>
-                            <Badge color="gray" size="xs" variant="light">
-                              {asset.type}
-                            </Badge>
+                          )}
+                        </div>
+
+                        <Group justify="space-between">
+                          <Group gap="xs">
+                            <Tooltip label="View">
+                              <ActionIcon size="sm" variant="subtle">
+                                <IconEye size={14} />
+                              </ActionIcon>
+                            </Tooltip>
+                            <Tooltip label="Edit">
+                              <ActionIcon
+                                onClick={() => handleEditAsset(asset.id)}
+                                size="sm"
+                                variant="subtle"
+                              >
+                                <IconEdit size={14} />
+                              </ActionIcon>
+                            </Tooltip>
+                            <Tooltip label="Download">
+                              <ActionIcon size="sm" variant="subtle">
+                                <IconDownload size={14} />
+                              </ActionIcon>
+                            </Tooltip>
                           </Group>
-                          <Button size="xs" variant="light">
-                            Associate
-                          </Button>
-                        </Stack>
-                      </Card>
-                    ))}
-                  </SimpleGrid>
-                </div>
+                          <Tooltip label="Delete">
+                            <ActionIcon
+                              color="red"
+                              onClick={() => handleDeleteAsset(asset.id)}
+                              size="sm"
+                              variant="subtle"
+                            >
+                              <IconTrash size={14} />
+                            </ActionIcon>
+                          </Tooltip>
+                        </Group>
+                      </Stack>
+                    </Card>
+                  ))}
+                </SimpleGrid>
+              ) : (
+                <Text c="dimmed" py="md" ta="center">
+                  No assets associated with this product
+                </Text>
               )}
-            </Stack>
-          )}
+            </div>
 
-          {/* Organize Tab */}
-          {activeTab === 'organize' && (
-            <Stack flex={1}>
-              <Text fw={600} size="lg">
-                Organize & Sort Assets
-              </Text>
-              <Text c="dimmed" size="sm">
-                Drag and drop to reorder product assets. The first image will be used as the primary
-                product image.
-              </Text>
-
+            {/* PDP Assets */}
+            {pdpAssets.length > 0 && (
               <div>
                 <Text fw={500} mb="sm">
-                  Product Asset Order
+                  PDP Assets ({pdpAssets.length})
                 </Text>
-
-                <DragDropContext onDragEnd={handleReorderAssets}>
-                  <Droppable direction="vertical" droppableId="assets">
-                    {(provided) => (
-                      <div {...provided.droppableProps} ref={provided.innerRef}>
-                        <Stack gap="sm">
-                          {productAssets
-                            .sort((a, b) => a.sortOrder - b.sortOrder)
-                            .map((asset, index) => (
-                              <Draggable key={asset.id} draggableId={asset.id} index={index}>
-                                {(provided, snapshot) => (
-                                  <Card
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    withBorder
-                                    style={{
-                                      ...provided.draggableProps.style,
-                                      opacity: snapshot.isDragging ? 0.5 : 1,
-                                      transform: snapshot.isDragging
-                                        ? `${provided.draggableProps.style?.transform} rotate(5deg)`
-                                        : provided.draggableProps.style?.transform,
-                                    }}
-                                  >
-                                    <Group justify="space-between">
-                                      <Group gap="sm">
-                                        <div {...provided.dragHandleProps}>
-                                          <IconGripVertical
-                                            color="var(--mantine-color-gray-5)"
-                                            style={{ cursor: 'grab' }}
-                                            size={16}
-                                          />
-                                        </div>
-                                        <Badge color="blue" size="sm" variant="filled">
-                                          {index + 1}
-                                        </Badge>
-                                        {index === 0 && (
-                                          <Badge color="green" size="sm" variant="light">
-                                            Primary
-                                          </Badge>
-                                        )}
-                                        {asset.type === 'IMAGE' && (
-                                          <Image
-                                            width={40}
-                                            alt={asset.alt}
-                                            fit="cover"
-                                            height={40}
-                                            radius="sm"
-                                            src={asset.url}
-                                          />
-                                        )}
-                                        <div>
-                                          <Text fw={500} size="sm">
-                                            {asset.filename}
-                                          </Text>
-                                          <Text c="dimmed" size="xs">
-                                            {asset.type}
-                                          </Text>
-                                        </div>
-                                      </Group>
-                                      <Text c="dimmed" size="sm">
-                                        {snapshot.isDragging
-                                          ? 'Drop to reorder'
-                                          : 'Drag to reorder'}
-                                      </Text>
-                                    </Group>
-                                  </Card>
-                                )}
-                              </Draggable>
-                            ))}
-                          {provided.placeholder}
-                        </Stack>
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
+                <SimpleGrid cols={3} spacing="sm">
+                  {pdpAssets.map((asset) => (
+                    <Card key={asset.id} withBorder>
+                      <Stack gap="xs">
+                        <Group justify="space-between">
+                          <Text fw={500} size="xs" truncate>
+                            {asset.filename}
+                          </Text>
+                          <Badge color={getTypeColor(asset.type)} size="xs" variant="light">
+                            {asset.type}
+                          </Badge>
+                        </Group>
+                        <Text c="dimmed" size="xs">
+                          {asset.associatedPdps.length} PDP(s)
+                        </Text>
+                      </Stack>
+                    </Card>
+                  ))}
+                </SimpleGrid>
               </div>
-            </Stack>
-          )}
-        </Stack>
+            )}
+
+            {/* Unassociated Assets */}
+            {unassociatedAssets.length > 0 && (
+              <div>
+                <Text c="orange" fw={500} mb="sm">
+                  Unassociated Assets ({unassociatedAssets.length})
+                </Text>
+                <Text c="dimmed" mb="sm" size="sm">
+                  These assets are not associated with any products or PDPs
+                </Text>
+                <SimpleGrid cols={3} spacing="sm">
+                  {unassociatedAssets.map((asset) => (
+                    <Card key={asset.id} withBorder>
+                      <Stack gap="xs">
+                        <Group justify="space-between">
+                          <Text fw={500} size="xs" truncate>
+                            {asset.filename}
+                          </Text>
+                          <Badge color="gray" size="xs" variant="light">
+                            {asset.type}
+                          </Badge>
+                        </Group>
+                        <Button size="xs" variant="light">
+                          Associate
+                        </Button>
+                      </Stack>
+                    </Card>
+                  ))}
+                </SimpleGrid>
+              </div>
+            )}
+          </Stack>
+        )}
+
+        {/* Organize Tab */}
+        {activeTab === 'organize' && (
+          <Stack flex={1}>
+            <Text fw={600} size="lg">
+              Organize & Sort Assets
+            </Text>
+            <Text c="dimmed" size="sm">
+              Drag and drop to reorder product assets. The first image will be used as the primary
+              product image.
+            </Text>
+
+            <div>
+              <Text fw={500} mb="sm">
+                Product Asset Order
+              </Text>
+
+              <DragDropContext onDragEnd={handleReorderAssets}>
+                <Droppable direction="vertical" droppableId="assets">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef}>
+                      <Stack gap="sm">
+                        {productAssets
+                          .sort((a, b) => a.sortOrder - b.sortOrder)
+                          .map((asset, index) => (
+                            <Draggable key={asset.id} draggableId={asset.id} index={index}>
+                              {(provided, snapshot) => (
+                                <Card
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  withBorder
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                    opacity: snapshot.isDragging ? 0.5 : 1,
+                                    transform: snapshot.isDragging
+                                      ? `${provided.draggableProps.style?.transform} rotate(5deg)`
+                                      : provided.draggableProps.style?.transform,
+                                  }}
+                                >
+                                  <Group justify="space-between">
+                                    <Group gap="sm">
+                                      <div {...provided.dragHandleProps}>
+                                        <IconGripVertical
+                                          color="var(--mantine-color-gray-5)"
+                                          style={{ cursor: 'grab' }}
+                                          size={16}
+                                        />
+                                      </div>
+                                      <Badge color="blue" size="sm" variant="filled">
+                                        {index + 1}
+                                      </Badge>
+                                      {index === 0 && (
+                                        <Badge color="green" size="sm" variant="light">
+                                          Primary
+                                        </Badge>
+                                      )}
+                                      {asset.type === 'IMAGE' && (
+                                        <Image
+                                          width={40}
+                                          alt={asset.alt}
+                                          fit="cover"
+                                          height={40}
+                                          radius="sm"
+                                          src={asset.url}
+                                        />
+                                      )}
+                                      <div>
+                                        <Text fw={500} size="sm">
+                                          {asset.filename}
+                                        </Text>
+                                        <Text c="dimmed" size="xs">
+                                          {asset.type}
+                                        </Text>
+                                      </div>
+                                    </Group>
+                                    <Text c="dimmed" size="sm">
+                                      {snapshot.isDragging ? 'Drop to reorder' : 'Drag to reorder'}
+                                    </Text>
+                                  </Group>
+                                </Card>
+                              )}
+                            </Draggable>
+                          ))}
+                        {provided.placeholder}
+                      </Stack>
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </div>
+          </Stack>
+        )}
+      </Stack>
 
       {/* Edit Asset Modal */}
       <Drawer

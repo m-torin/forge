@@ -7,7 +7,7 @@ import backgroundLineSvg from '../../images/BackgroundLine.svg';
 import heroImage from '../../images/hero-right-4.png';
 import ButtonPrimary from '../shared/Button/ButtonPrimary';
 
-export interface SectionHero3Props {
+export interface SectionHero3Props extends Record<string, any> {
   className?: string;
 }
 
@@ -26,11 +26,11 @@ const SectionHero3: FC<SectionHero3Props> = ({ className = '' }) => {
             <ButtonPrimary fontSize="text-sm sm:text-base" sizeClass="px-6 py-3 lg:px-8 lg:py-4">
               Start your search
               <HugeiconsIcon
-                strokeWidth={1.5}
+                className="ms-4"
                 color="currentColor"
                 icon={Search01Icon}
-                className="ms-4"
                 size={24}
+                strokeWidth={1.5}
               />
             </ButtonPrimary>
           </div>
@@ -41,13 +41,13 @@ const SectionHero3: FC<SectionHero3Props> = ({ className = '' }) => {
         <div>
           <div className="end-0 top-0 bottom-0 mt-5 ml-auto w-full max-w-md sm:max-w-xl lg:absolute lg:mt-0 lg:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl">
             <Image
-              width={800}
-              priority
-              className="inset-0 w-full object-contain object-bottom-right sm:h-full lg:absolute"
               alt="hero"
+              className="inset-0 w-full object-contain object-bottom-right sm:h-full lg:absolute"
               height={600}
+              priority
               sizes="(max-width: 768px) 100vw, 50vw"
               src={heroImage}
+              width={800}
             />
           </div>
         </div>
@@ -56,8 +56,8 @@ const SectionHero3: FC<SectionHero3Props> = ({ className = '' }) => {
       {/* BG */}
       <div className="absolute inset-10">
         <Image
-          className="object-contain"
           alt="hero"
+          className="object-contain"
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           src={backgroundLineSvg}

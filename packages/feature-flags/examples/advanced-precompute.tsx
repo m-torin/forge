@@ -1,5 +1,4 @@
-import { generatePermutations } from '../src/server-next';
-import { flag } from '../src/server-next';
+import { generatePermutations, flag } from '../src/server-next';
 
 // Multiple flags for testing combinations
 export const featureAFlag = flag<boolean>({

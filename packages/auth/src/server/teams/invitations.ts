@@ -4,10 +4,9 @@
 
 import 'server-only';
 
-import { prisma as database } from '@repo/database/prisma';
-
 import { isValidRole, roleHasPermission } from '../../shared/teams/permissions';
 import { auth } from '../auth';
+import { getAuthHeaders } from '../helpers/get-headers';
 
 import type {
   CancelInvitationResult,
@@ -20,11 +19,11 @@ import type {
 } from '../../shared/teams/types';
 
 /**
- * Invites a user to join a team
+ * Invites a user to join a team using better-auth native method
  */
 export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeamResult> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return { error: 'Authentication required', success: false };
@@ -36,210 +35,231 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
       return { error: 'Invalid role', success: false };
     }
 
-    // Check if user can invite to this team
-    const membership = await database.teamMember.findFirst({
-      where: {
-        teamId,
-        userId: session.user.id,
-      },
+    // Get team info using better-auth to check permissions and get organization ID
+    const teamResult = await auth.api.getTeam({
+      headers: await getAuthHeaders(),
+      query: { teamId },
     });
+
+    if (!teamResult?.team) {
+      return { error: 'Team not found or access denied', success: false };
+    }
+
+    // Check if current user has permission to invite to this team
+    const membership = (teamResult.team.members || []).find(
+      (member: any) => member.userId === session.user.id,
+    );
 
     if (!membership || !roleHasPermission(membership.role, 'invitations:create')) {
       return { error: 'Insufficient permissions to invite users', success: false };
     }
 
-    // Get team info for the invitation
-    const team = await database.team.findUnique({
-      select: {
-        id: true,
-        name: true,
-        organizationId: true,
-      },
-      where: { id: teamId },
-    });
-
-    if (!team) {
-      return { error: 'Team not found', success: false };
-    }
-
     // Check if user is already a team member
-    const existingMember = await database.teamMember.findFirst({
-      where: {
-        teamId,
-        user: {
-          email,
-        },
-      },
-    });
+    const existingMember = (teamResult.team.members || []).find(
+      (member: any) => member.user?.email === email,
+    );
 
     if (existingMember) {
       return { error: 'User is already a team member', success: false };
     }
 
-    // Check if there's already a pending invitation
-    const existingInvitation = await database.invitation.findFirst({
-      where: {
+    // Use better-auth native inviteUser API with teamId for team invitation
+    const result = await auth.api.inviteUser({
+      body: {
         email,
-        status: 'pending',
-        teamId,
-      },
-    });
-
-    if (existingInvitation) {
-      return { error: 'Invitation already pending for this email', success: false };
-    }
-
-    // Create the invitation
-    const invitation = await database.invitation.create({
-      data: {
-        id: `invitation_${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: new Date(),
-        email,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        invitedById: session.user.id,
-        organizationId: team.organizationId,
-        role,
-        status: 'pending',
+        organizationId: teamResult.team.organizationId,
+        role: role as any, // Convert team role to organization role
         teamId,
         ...(message && { message }),
       },
-      include: {
-        invitedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        team: {
-          select: {
-            id: true,
-            name: true,
-            organizationId: true,
-          },
-        },
-      },
+      headers: await getAuthHeaders(),
     });
 
-    const teamInvitation: TeamInvitation = {
-      id: invitation.id,
-      createdAt: invitation.createdAt,
-      email: invitation.email,
-      expiresAt: invitation.expiresAt,
-      invitedBy: invitation.invitedById || '',
-      inviter: (invitation as any).invitedBy || null,
-      role: invitation.role,
-      status: invitation.status as 'pending',
-      team: invitation.team || { id: '', name: '', organizationId: '' },
-      teamId: invitation.teamId || '',
-    };
+    if (!result?.invitation) {
+      return { error: 'Failed to send invitation', success: false };
+    }
 
-    // TODO: Send invitation email here
-    // await sendTeamInvitationEmail(invitation);
+    // Convert better-auth invitation to our TeamInvitation format
+    const teamInvitation: TeamInvitation = {
+      id: result.invitation.id,
+      createdAt: result.invitation.createdAt,
+      email: result.invitation.email,
+      expiresAt: result.invitation.expiresAt,
+      invitedBy: result.invitation.invitedById || session.user.id,
+      inviter: {
+        id: session.user.id,
+        name: session.user.name || '',
+        email: session.user.email || '',
+      },
+      role: result.invitation.role,
+      status: result.invitation.status as 'pending',
+      team: {
+        id: teamResult.team.id,
+        name: teamResult.team.name,
+        organizationId: teamResult.team.organizationId,
+      },
+      teamId,
+    };
 
     return { invitation: teamInvitation, success: true };
   } catch (error) {
     console.error('Invite to team error:', error);
+
+    // Handle specific better-auth errors
+    if (error instanceof Error) {
+      if (error.message.includes('already invited')) {
+        return { error: 'Invitation already pending for this email', success: false };
+      }
+      if (error.message.includes('already member')) {
+        return { error: 'User is already a team member', success: false };
+      }
+    }
+
     return { error: 'Failed to send invitation', success: false };
   }
 }
 
 /**
- * Lists team invitations
+ * Lists team invitations using better-auth native method
  */
 export async function listTeamInvitations(
   teamId?: string,
   includeExpired = false,
 ): Promise<ListTeamInvitationsResult> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return { error: 'Authentication required', success: false };
     }
 
-    const whereConditions: any = {};
-
     if (teamId) {
-      // Check if user can view invitations for this team
-      const membership = await database.teamMember.findFirst({
-        where: {
-          teamId,
-          userId: session.user.id,
-        },
+      // Check if user can view invitations for this specific team
+      const teamResult = await auth.api.getTeam({
+        headers: await getAuthHeaders(),
+        query: { teamId },
       });
+
+      if (!teamResult?.team) {
+        return { error: 'Team not found or access denied', success: false };
+      }
+
+      const membership = (teamResult.team.members || []).find(
+        (member: any) => member.userId === session.user.id,
+      );
 
       if (!membership || !roleHasPermission(membership.role, 'invitations:create')) {
         return { error: 'Insufficient permissions', success: false };
       }
 
-      whereConditions.teamId = teamId;
-    } else {
-      // List invitations for all teams the user manages
-      const managedTeams = await database.teamMember.findMany({
-        select: {
-          role: true,
-          teamId: true,
-        },
-        where: {
-          userId: session.user.id,
-        },
+      // Get organization invitations and filter for this team
+      const invitationsResult = await auth.api.listInvitations({
+        query: { organizationId: teamResult.team.organizationId },
+        headers: await getAuthHeaders(),
       });
 
-      const teamIds = managedTeams
-        .filter((membership: any) => roleHasPermission(membership.role, 'invitations:create'))
-        .map((membership: any) => membership.teamId);
+      const invitations = Array.isArray(invitationsResult)
+        ? invitationsResult
+        : [invitationsResult];
+      const teamInvitations = invitations.filter(
+        (inv: any) =>
+          inv?.teamId === teamId &&
+          (includeExpired ||
+            (inv?.status !== 'expired' && inv?.expiresAt && new Date(inv.expiresAt) > new Date())),
+      );
 
-      if (teamIds.length === 0) {
-        return { invitations: [], success: true };
-      }
-
-      whereConditions.teamId = { in: teamIds };
-    }
-
-    if (!includeExpired) {
-      whereConditions.status = { not: 'expired' };
-    }
-
-    const invitations = await database.invitation.findMany({
-      include: {
-        invitedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        team: {
-          select: {
-            id: true,
-            name: true,
-            organizationId: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      where: whereConditions,
-    });
-
-    const teamInvitations: TeamInvitation[] = invitations
-      .filter((inv: any) => inv.teamId && inv.role)
-      .map((invitation: any) => ({
+      const formattedInvitations: TeamInvitation[] = teamInvitations.map((invitation: any) => ({
         id: invitation.id,
         createdAt: invitation.createdAt,
         email: invitation.email,
         expiresAt: invitation.expiresAt,
-        invitedBy: invitation.invitedById,
-        inviter: invitation.invitedBy,
-        role: invitation.role!,
+        invitedBy: invitation.invitedById || '',
+        inviter: invitation.inviter || null,
+        role: invitation.role,
         status: invitation.status as TeamInvitation['status'],
-        team: invitation.team!,
-        teamId: invitation.teamId!,
+        team: {
+          id: teamResult.team.id,
+          name: teamResult.team.name,
+          organizationId: teamResult.team.organizationId,
+        },
+        teamId: invitation.teamId,
       }));
 
-    return { invitations: teamInvitations, success: true };
+      return { invitations: formattedInvitations, success: true };
+    } else {
+      // List invitations for all teams the user manages
+      // First get all teams user is a member of
+      const teamsResult = await auth.api.listTeams({
+        headers: await getAuthHeaders(),
+      });
+
+      const managedTeams = (teamsResult?.teams || []).filter((team: any) => {
+        const membership = (team.members || []).find(
+          (member: any) => member.userId === session.user.id,
+        );
+        return membership && roleHasPermission(membership.role, 'invitations:create');
+      });
+
+      if (managedTeams.length === 0) {
+        return { invitations: [], success: true };
+      }
+
+      // Get all team invitations for each managed team's organization
+      const allInvitations: TeamInvitation[] = [];
+
+      for (const team of managedTeams) {
+        try {
+          const invitationsResult = await auth.api.listInvitations({
+            query: { organizationId: team.organizationId },
+            headers: await getAuthHeaders(),
+          });
+
+          const invitations = Array.isArray(invitationsResult)
+            ? invitationsResult
+            : [invitationsResult];
+          const teamInvitations = invitations.filter(
+            (inv: any) =>
+              inv?.teamId &&
+              managedTeams.some((t: any) => t.id === inv.teamId) &&
+              (includeExpired ||
+                (inv?.status !== 'expired' &&
+                  inv?.expiresAt &&
+                  new Date(inv.expiresAt) > new Date())),
+          );
+
+          teamInvitations.forEach((invitation: any) => {
+            const teamData = managedTeams.find((t: any) => t.id === invitation.teamId);
+            allInvitations.push({
+              id: invitation.id,
+              createdAt: invitation.createdAt,
+              email: invitation.email,
+              expiresAt: invitation.expiresAt,
+              invitedBy: invitation.invitedById || '',
+              inviter: invitation.inviter || null,
+              role: invitation.role,
+              status: invitation.status as TeamInvitation['status'],
+              team: teamData
+                ? {
+                    id: teamData.id,
+                    name: teamData.name,
+                    organizationId: teamData.organizationId,
+                  }
+                : { id: '', name: '', organizationId: '' },
+              teamId: invitation.teamId,
+            });
+          });
+        } catch (teamError) {
+          console.warn(`Failed to get invitations for team ${team.id}:`, teamError);
+        }
+      }
+
+      // Sort by creation date (newest first)
+      allInvitations.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+
+      return { invitations: allInvitations, success: true };
+    }
   } catch (error) {
     console.error('List team invitations error:', error);
     return { error: 'Failed to list invitations', success: false };
@@ -247,13 +267,13 @@ export async function listTeamInvitations(
 }
 
 /**
- * Responds to a team invitation
+ * Responds to a team invitation using better-auth native method
  */
 export async function respondToInvitation(
   data: RespondToInvitationData,
 ): Promise<RespondToInvitationResult> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return { error: 'Authentication required', success: false };
@@ -261,184 +281,160 @@ export async function respondToInvitation(
 
     const { invitationId, response } = data;
 
-    // Get the invitation
-    const invitation = await database.invitation.findUnique({
-      include: {
-        team: true,
-      },
-      where: { id: invitationId },
-    });
-
-    if (!invitation || !invitation.teamId) {
-      return { error: 'Invitation not found', success: false };
-    }
-
-    // Check if invitation is for the current user
-    if (invitation.email !== session.user.email) {
-      return { error: 'This invitation is not for you', success: false };
-    }
-
-    // Check if invitation is still valid
-    if (invitation.status !== 'pending') {
-      return { error: 'Invitation is no longer valid', success: false };
-    }
-
-    if (invitation.expiresAt < new Date()) {
-      await database.invitation.update({
-        data: { status: 'expired' },
-        where: { id: invitationId },
-      });
-      return { error: 'Invitation has expired', success: false };
-    }
-
     if (response === 'accept') {
-      // Check if user is already a team member
-      const existingMember = await database.teamMember.findFirst({
-        where: {
-          teamId: invitation.teamId,
-          userId: session.user.id,
-        },
+      // Use better-auth native acceptInvitation API
+      const result = await auth.api.acceptInvitation({
+        body: { invitationId },
+        headers: await getAuthHeaders(),
       });
 
-      if (existingMember) {
-        // Update invitation status but don't create duplicate membership
-        await database.invitation.update({
-          data: { status: 'accepted' },
-          where: { id: invitationId },
-        });
-        return { success: true, teamId: invitation.teamId };
+      if (!result?.invitation) {
+        return { error: 'Failed to accept invitation', success: false };
       }
 
-      // Create team membership
-      await database.teamMember.create({
-        data: {
-          role: invitation.role!,
-          teamId: invitation.teamId,
-          userId: session.user.id,
-        },
-      });
-
-      // Update invitation status
-      await database.invitation.update({
-        data: { status: 'accepted' },
-        where: { id: invitationId },
-      });
-
-      return { success: true, teamId: invitation.teamId };
+      // If it's a team invitation, return the teamId
+      const teamId = result.invitation.teamId;
+      return { success: true, teamId };
     } else {
-      // Decline invitation
-      await database.invitation.update({
-        data: { status: 'declined' },
-        where: { id: invitationId },
+      // Use better-auth native rejectInvitation API
+      await auth.api.rejectInvitation({
+        body: { invitationId },
+        headers: await getAuthHeaders(),
       });
 
       return { success: true };
     }
   } catch (error) {
     console.error('Respond to invitation error:', error);
+
+    // Handle specific better-auth errors
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        return { error: 'Invitation not found', success: false };
+      }
+      if (error.message.includes('expired')) {
+        return { error: 'Invitation has expired', success: false };
+      }
+      if (error.message.includes('not for you')) {
+        return { error: 'This invitation is not for you', success: false };
+      }
+      if (error.message.includes('no longer valid')) {
+        return { error: 'Invitation is no longer valid', success: false };
+      }
+    }
+
     return { error: 'Failed to respond to invitation', success: false };
   }
 }
 
 /**
- * Cancels a team invitation
+ * Cancels a team invitation using better-auth native method
  */
 export async function cancelInvitation(invitationId: string): Promise<CancelInvitationResult> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return { error: 'Authentication required', success: false };
     }
 
-    // Get the invitation
-    const invitation = await database.invitation.findUnique({
-      where: { id: invitationId },
-    });
-
-    if (!invitation || !invitation.teamId) {
-      return { error: 'Invitation not found', success: false };
-    }
-
-    // Check if user can cancel invitations for this team
-    const membership = await database.teamMember.findFirst({
-      where: {
-        teamId: invitation.teamId,
-        userId: session.user.id,
-      },
-    });
-
-    if (!membership || !roleHasPermission(membership.role, 'invitations:cancel')) {
-      return { error: 'Insufficient permissions', success: false };
-    }
-
-    // Cancel the invitation
-    await database.invitation.delete({
-      where: { id: invitationId },
+    // Use better-auth native cancelInvitation API
+    // Note: better-auth handles permission checking internally
+    await auth.api.cancelInvitation({
+      body: { invitationId },
+      headers: await getAuthHeaders(),
     });
 
     return { success: true };
   } catch (error) {
     console.error('Cancel invitation error:', error);
+
+    // Handle specific better-auth errors
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        return { error: 'Invitation not found', success: false };
+      }
+      if (error.message.includes('permission')) {
+        return { error: 'Insufficient permissions', success: false };
+      }
+    }
+
     return { error: 'Failed to cancel invitation', success: false };
   }
 }
 
 /**
- * Gets pending invitations for the current user
+ * Gets pending invitations for the current user using better-auth native method
  */
 export async function getUserPendingInvitations(): Promise<ListTeamInvitationsResult> {
   try {
-    const session = await auth.api.getSession();
+    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
     if (!session) {
       return { error: 'Authentication required', success: false };
     }
 
-    const invitations = await database.invitation.findMany({
-      include: {
-        invitedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        team: {
-          select: {
-            id: true,
-            name: true,
-            organizationId: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      where: {
-        email: session.user.email,
-        expiresAt: { gt: new Date() },
-        status: 'pending',
-        teamId: { not: null },
-      },
+    // Use better-auth native listInvitations for the current user
+    // This will get all pending invitations for the user's email
+    const invitationsResult = await auth.api.listInvitations({
+      headers: await getAuthHeaders(),
     });
 
-    const teamInvitations: TeamInvitation[] = invitations
-      .filter((inv: any) => inv.teamId && inv.role)
-      .map((invitation: any) => ({
-        id: invitation.id,
-        createdAt: invitation.createdAt,
-        email: invitation.email,
-        expiresAt: invitation.expiresAt,
-        invitedBy: invitation.invitedById,
-        inviter: invitation.invitedBy,
-        role: invitation.role!,
-        status: invitation.status as 'pending',
-        team: invitation.team!,
-        teamId: invitation.teamId!,
-      }));
+    const allInvitations = Array.isArray(invitationsResult)
+      ? invitationsResult
+      : [invitationsResult];
 
-    return { invitations: teamInvitations, success: true };
+    // Filter for team invitations that are pending and for the current user
+    const teamInvitations = allInvitations.filter(
+      (inv: any) =>
+        inv?.email === session.user.email &&
+        inv?.teamId &&
+        inv?.status === 'pending' &&
+        inv?.expiresAt &&
+        new Date(inv.expiresAt) > new Date(),
+    );
+
+    // For each team invitation, we need to get team details
+    const formattedInvitations: TeamInvitation[] = [];
+
+    for (const invitation of teamInvitations) {
+      try {
+        // Get team details for each invitation
+        const teamResult = await auth.api.getTeam({
+          headers: await getAuthHeaders(),
+          query: { teamId: invitation.teamId },
+        });
+
+        if (teamResult?.team) {
+          formattedInvitations.push({
+            id: invitation.id,
+            createdAt: invitation.createdAt,
+            email: invitation.email,
+            expiresAt: invitation.expiresAt,
+            invitedBy: invitation.invitedById || '',
+            inviter: invitation.inviter || null,
+            role: invitation.role,
+            status: 'pending',
+            team: {
+              id: teamResult.team.id,
+              name: teamResult.team.name,
+              organizationId: teamResult.team.organizationId,
+            },
+            teamId: invitation.teamId,
+          });
+        }
+      } catch (teamError) {
+        console.warn(`Failed to get team details for invitation ${invitation.id}:`, teamError);
+        // Continue with other invitations even if one team lookup fails
+      }
+    }
+
+    // Sort by creation date (newest first)
+    formattedInvitations.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+    return { invitations: formattedInvitations, success: true };
   } catch (error) {
     console.error('Get user pending invitations error:', error);
     return { error: 'Failed to get pending invitations', success: false };

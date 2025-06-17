@@ -11,13 +11,13 @@ import {
   Text,
 } from '@react-email/components';
 
-interface PasswordResetTemplateProps {
+interface PasswordResetTemplateProps extends Record<string, any> {
   readonly email: string;
-  readonly name?: string | null;
+  readonly name?: null | string;
   readonly resetLink: string;
 }
 
-export const PasswordResetTemplate = ({ name, email, resetLink }: PasswordResetTemplateProps) => (
+export const PasswordResetTemplate = ({ email, name, resetLink }: PasswordResetTemplateProps) => (
   <Tailwind>
     <Html>
       <Head />
@@ -30,7 +30,7 @@ export const PasswordResetTemplate = ({ name, email, resetLink }: PasswordResetT
                 Reset your password
               </Text>
 
-              <Text className="m-0 mb-4 text-zinc-500">Hi {name || email}!</Text>
+              <Text className="m-0 mb-4 text-zinc-500">Hi {name ?? email}!</Text>
 
               <Text className="m-0 mb-6 text-zinc-500">
                 You requested to reset your password. Click the button below to create a new
@@ -39,8 +39,8 @@ export const PasswordResetTemplate = ({ name, email, resetLink }: PasswordResetT
 
               <Section className="mb-6">
                 <Button
-                  href={resetLink}
                   className="rounded-md bg-zinc-950 px-6 py-3 text-center text-white no-underline"
+                  href={resetLink}
                 >
                   Reset Password
                 </Button>

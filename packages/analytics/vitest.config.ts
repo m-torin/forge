@@ -1,14 +1,19 @@
 import path from 'path';
-
 import { defineConfig } from 'vitest/config';
+import { reactPreset } from '@repo/testing/vitest-presets';
 
 export default defineConfig({
+  ...reactPreset,
   resolve: {
+    ...reactPreset.resolve,
     alias: {
+      ...reactPreset.resolve?.alias,
       '@': path.resolve(__dirname, './src'),
     },
   },
   test: {
+    ...reactPreset.test,
+    setupFiles: ['./src/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
       exclude: [
@@ -22,7 +27,6 @@ export default defineConfig({
         '**/__tests__/**',
         'src/examples/**',
       ],
-      reporter: ['text', 'json', 'html'],
       thresholds: {
         global: {
           branches: 90,
@@ -32,8 +36,5 @@ export default defineConfig({
         },
       },
     },
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./src/__tests__/setup.ts'],
   },
 });

@@ -303,7 +303,6 @@ export function RegistryItemModal({
                 />
 
                 <Select
-                  loading={loadingProducts}
                   placeholder="Choose a product"
                   clearable
                   data={products.map((product) => ({
@@ -359,7 +358,6 @@ export function RegistryItemModal({
                 />
 
                 <Select
-                  loading={loadingCollections}
                   placeholder="Choose a collection"
                   clearable
                   data={collections.map((collection) => ({

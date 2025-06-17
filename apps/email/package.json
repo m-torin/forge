@@ -16,7 +16,7 @@
     "doppler:open": "doppler open"
   },
   "dependencies": {
-    "@react-email/components": "0.0.41",
+    "@react-email/components": "0.0.42",
     "@repo/email": "workspace:*",
     "react": "catalog:",
     "react-email": "4.0.16"

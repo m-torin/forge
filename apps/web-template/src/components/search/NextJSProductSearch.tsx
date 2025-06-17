@@ -1,9 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Container, Stack, Title, Text, Group, Card, Avatar, Badge, Button, Skeleton } from '@mantine/core';
+import React from 'react';
+import { Container, Stack, Title, Text, Group, Card, Badge, Button, Skeleton } from '@mantine/core';
 import { IconShoppingCart, IconHeart, IconStar } from '@tabler/icons-react';
-import { InstantSearch, SearchBox, Hits, Pagination, RefinementList, Configure } from 'react-instantsearch';
+import {
+  InstantSearch,
+  SearchBox,
+  Hits,
+  Pagination,
+  RefinementList,
+  Configure,
+} from 'react-instantsearch';
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
 import { env } from '@/env';
 
@@ -83,7 +90,8 @@ function ProductHit({ hit }: { hit: ProductHit }) {
         <Group justify="space-between" align="center">
           <div>
             <Text fw={700} size="lg" c={isOnSale ? 'red' : 'blue'}>
-              {currency}{price}
+              {currency}
+              {price}
             </Text>
             {isOnSale && (
               <Badge size="xs" color="red" variant="light">
@@ -91,7 +99,7 @@ function ProductHit({ hit }: { hit: ProductHit }) {
               </Badge>
             )}
           </div>
-          
+
           {rating > 0 && (
             <Group gap={4}>
               <IconStar size={14} style={{ color: '#ffa500' }} />
@@ -138,7 +146,7 @@ function CategoryFilter() {
       <Text fw={600} size="sm" mb="sm">
         Categories
       </Text>
-      <RefinementList 
+      <RefinementList
         attribute="hierarchical_categories.lvl0"
         limit={10}
         showMore={true}
@@ -160,7 +168,7 @@ function BrandFilter() {
       <Text fw={600} size="sm" mb="sm">
         Brands
       </Text>
-      <RefinementList 
+      <RefinementList
         attribute="brand"
         limit={8}
         showMore={true}
@@ -202,12 +210,9 @@ function ProductSkeleton() {
 export default function NextJSProductSearch({ locale }: NextJSProductSearchProps) {
   return (
     <Container size="xl" py="xl">
-      <InstantSearch 
-        searchClient={searchClient} 
-        indexName="autocomplete_demo_products"
-      >
+      <InstantSearch searchClient={searchClient} indexName="autocomplete_demo_products">
         <Configure hitsPerPage={12} />
-        
+
         <Stack gap="xl">
           {/* Page Header */}
           <div>
@@ -250,7 +255,6 @@ export default function NextJSProductSearch({ locale }: NextJSProductSearchProps
                   <Pagination
                     classNames={{
                       root: 'flex justify-center',
-                      control: 'mx-1 px-3 py-2 border border-gray-300 rounded hover:bg-gray-50',
                     }}
                   />
                 </Group>

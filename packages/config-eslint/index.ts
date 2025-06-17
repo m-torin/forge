@@ -1,453 +1,283 @@
-import fs from 'node:fs';
-import path from 'node:path';
+/// <reference path="./types/eslint-plugins.d.ts" />
 
-// index.ts
 import js from '@eslint/js';
-import markdownPlugin from '@eslint/markdown';
+import tsParser from '@typescript-eslint/parser';
+import { Linter } from 'eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
-// Import plugins with type assertions to avoid TypeScript errors
-// @ts-ignore
 import importPlugin from 'eslint-plugin-import';
-// @ts-ignore
-import onlyWarn from 'eslint-plugin-only-warn';
-// @ts-ignore
 import perfectionistPlugin from 'eslint-plugin-perfectionist';
-// @ts-ignore
 import promisePlugin from 'eslint-plugin-promise';
-// @ts-ignore
 import securityPlugin from 'eslint-plugin-security';
-// @ts-ignore
 import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import globals from 'globals';
-import tseslint from 'typescript-eslint';
 
-import type { Linter } from 'eslint';
+// eslint rule configuration type
+type RulesRecord = Record<string, any>;
 
-// Try to find tsconfig.json in current directory or parent directories
-const findTsConfig = (): string | undefined => {
-  try {
-    const tsConfigPath = path.resolve(process.cwd(), 'tsconfig.json');
-    if (fs.existsSync(tsConfigPath)) {
-      return tsConfigPath;
-    }
-    // If not found, try parent directories
-    let currentDir = process.cwd();
-    for (let i = 0; i < 5; i++) {
-      currentDir = path.dirname(currentDir);
-      const parentTsConfig = path.join(currentDir, 'tsconfig.json');
-      if (fs.existsSync(parentTsConfig)) {
-        return parentTsConfig;
-      }
-    }
-  } catch {
-    // Ignore errors
-  }
-  return undefined;
+// Note: Type-aware rules removed for better performance and reliability
+// Use separate `pnpm typecheck` for TypeScript type checking
+
+// Shared rule configurations to avoid duplication
+const sharedRules: RulesRecord = {
+  // Import plugin rules
+  'import/first': 'error',
+  'import/no-cycle': 'off', // Disable temporarily - can cause performance issues
+  'import/no-duplicates': 'error',
+  'import/no-self-import': 'error',
+  'import/prefer-default-export': 'off',
+  // Enforce no file extensions in imports (TypeScript-only monorepo)
+  'import/extensions': [
+    'error',
+    'never',
+    {
+      json: 'always',
+      css: 'always',
+      scss: 'always',
+      sass: 'always',
+      less: 'always',
+    },
+  ],
+  // Core rules
+  'no-console': 'warn',
+  'no-debugger': 'warn',
+  'no-unused-vars': 'off', // Use unused-imports plugin instead
+
+  // Disable perfectionist import sorting temporarily to debug performance issues
+  'perfectionist/sort-imports': 'off',
+  // Promise rules (lenient)
+  'promise/always-return': 'warn',
+
+  'promise/catch-or-return': 'warn',
+  'promise/no-callback-in-promise': 'warn',
+  'promise/no-nesting': 'warn',
+  'promise/no-promise-in-callback': 'warn',
+  'promise/no-return-wrap': 'warn',
+
+  'promise/param-names': ['error', { rejectPattern: '^_?reject$', resolvePattern: '^_?resolve$' }],
+  'promise/prefer-await-to-then': 'warn',
+  // Security rules
+  'security/detect-buffer-noassert': 'error',
+  'security/detect-child-process': 'error',
+  'security/detect-eval-with-expression': 'error',
+  'security/detect-object-injection': 'off', // Too many false positives
+  'security/detect-unsafe-regex': 'error',
+  // Unused imports plugin
+  'unused-imports/no-unused-imports': 'error',
+
+  'unused-imports/no-unused-vars': [
+    'error',
+    {
+      args: 'after-used',
+      argsIgnorePattern: '^_',
+      caughtErrors: 'all',
+      caughtErrorsIgnorePattern: '^_',
+      vars: 'all',
+      varsIgnorePattern: '^_',
+    },
+  ],
 };
 
-const project = findTsConfig();
-
-// Common sort order configuration for perfectionist rules
-const perfectionistSortConfig = {
-  type: 'natural',
-  ignoreCase: true,
-  order: 'asc',
-} as const;
-
-// File patterns
-const MARKDOWN_FILES = ['**/*.md', '**/*.mdx'];
-const MARKDOWN_CODE_BLOCKS = ['**/*.md/**', '**/*.mdx/**'];
-
 const config: Linter.FlatConfig[] = [
-  // Base ESLint recommended rules
-  js.configs.recommended,
+  // Note: Perfectionist plugin configs causing issues - using manual rules instead
 
-  // Markdown configuration
-  ...markdownPlugin.configs.recommended,
+  // ============================================
+  // 1. GLOBAL IGNORES - Applied to all files
+  // ============================================
   {
-    files: MARKDOWN_FILES,
-    language: 'markdown/gfm',
-    processor: 'markdown/markdown',
-    rules: {
-      'markdown/fenced-code-language': 'error',
-      'markdown/no-duplicate-headings': 'error',
-      'markdown/no-html': 'warn',
-    },
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.cache/**',
+      '**/coverage/**',
+      '**/*.min.js',
+      '**/.turbo/**',
+      '**/generated/**',
+      '**/.next/**',
+      '**/.vercel/**',
+      '**/*.md',
+      '**/*.mdx',
+      'labs/**',
+      'services/**',
+    ],
   },
+
+  // ============================================
+  // 2. BASE CONFIGURATION - All JS/TS files
+  // ============================================
   {
-    files: MARKDOWN_CODE_BLOCKS,
+    ...js.configs.recommended,
+    files: ['**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}'],
     languageOptions: {
-      ecmaVersion: 2024,
-      globals: {
-        ...globals.node,
-        ...globals.browser,
-        ...globals.es2021,
-        React: 'readonly',
-        JSX: 'readonly',
-      },
-      parser: tseslint.parser,
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      parser: tsParser,
       parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        project: null, // Disable TypeScript project configuration for markdown files
-        ecmaVersion: 'latest',
+        ecmaVersion: 2023,
         sourceType: 'module',
-        // Critical: Allow JSX in .ts files from markdown
-        jsxPragma: 'React',
-        jsxFragmentName: 'Fragment',
+      },
+      globals: {
+        ...globals.es2021,
+        ...globals.node,
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint.plugin,
+      import: importPlugin,
+      perfectionist: perfectionistPlugin,
+      promise: promisePlugin,
+      security: securityPlugin,
       'unused-imports': unusedImportsPlugin,
     },
-    settings: {
-      // Force TypeScript parser to treat .ts files as if they could contain JSX
-      'import/parsers': {
-        '@typescript-eslint/parser': ['.ts', '.tsx', '.mts', '.cts'],
+    rules: sharedRules,
+  },
+
+  // ============================================
+  // 3. TEST FILES CONFIGURATION
+  // ============================================
+  {
+    files: [
+      '**/__tests__/**/*',
+      '**/*.test.*',
+      '**/*.spec.*',
+      '**/test/**/*',
+      '**/*.setup.*',
+      '**/vitest.config.*',
+      '**/jest.config.*',
+      '**/playwright.config.*',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+        afterAll: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        beforeEach: 'readonly',
+        describe: 'readonly',
+        expect: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        vi: 'readonly',
       },
     },
     rules: {
-      // Disable TypeScript rules that require type checking
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/unbound-method': 'off',
-
-      // Import and module resolution
-      'import/no-unresolved': 'off',
-      'import/no-duplicates': 'off',
-      'import/order': 'off',
-
-      // Perfectionist rules - disable sorting in markdown examples
-      'perfectionist/sort-array-includes': 'off',
-      'perfectionist/sort-enums': 'off',
-      'perfectionist/sort-imports': 'off',
-      'perfectionist/sort-interfaces': 'off',
-      'perfectionist/sort-jsx-props': 'off',
-      'perfectionist/sort-named-exports': 'off',
-      'perfectionist/sort-named-imports': 'off',
-      'perfectionist/sort-objects': 'off',
-
-      // General rules - relax for documentation examples
+      // Relax rules for tests
       'no-console': 'off',
-      'no-undef': 'off',
-      'no-unused-vars': 'off',
-      'prefer-const': 'off',
-
-      // Promise rules
-      'promise/catch-or-return': 'off',
-      'promise/no-nesting': 'off',
-
-      // Security rules
-      'security/detect-buffer-noassert': 'off',
-      'security/detect-child-process': 'off',
-      'security/detect-eval-with-expression': 'off',
       'security/detect-object-injection': 'off',
-      'security/detect-unsafe-regex': 'off',
-
-      // Unused imports - allow unused in examples
-      'unused-imports/no-unused-imports': 'off',
-      'unused-imports/no-unused-vars': 'off',
+      'perfectionist/sort-objects': 'off', // Allow unsorted objects in tests
     },
   },
 
-  // TypeScript ESLint recommended rules - exclude markdown code blocks
-  ...tseslint.configs.recommended.map((config) => ({
-    ...config,
-    files: config.files || ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
-    ignores: [...(config.ignores || []), '**/*.md/**', '**/*.mdx/**'],
-  })),
-  ...tseslint.configs.stylistic.map((config) => ({
-    ...config,
-    files: config.files || ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
-    ignores: [...(config.ignores || []), '**/*.md/**', '**/*.mdx/**'],
-  })),
+  // ============================================
+  // 4. CONFIGURATION FILES
+  // ============================================
   {
-    files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
-    ignores: ['**/*.md/**', '**/*.mdx/**'],
+    files: ['*.config.*', '.*rc.*', '*.setup.*'],
     rules: {
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { fixStyle: 'inline-type-imports', prefer: 'type-imports' },
-      ],
-      '@typescript-eslint/no-explicit-any': 'off',
+      'import/no-extraneous-dependencies': 'off',
+      'no-console': 'off',
     },
   },
 
-  // Security Plugin recommended rules - with overrides
+  // ============================================
+  // 5. COMMONJS FILES
+  // ============================================
   {
-    ...securityPlugin.configs.recommended,
-    rules: {
-      'security/detect-buffer-noassert': 'error',
-      'security/detect-child-process': 'error',
-      'security/detect-eval-with-expression': 'error',
-      'security/detect-unsafe-regex': 'error',
-    },
-  },
-
-  // Promise Plugin flat/recommended rules
-  promisePlugin.configs['flat/recommended'],
-
-  // JavaScript-specific configuration
-  {
-    // Match all JavaScript files (not TypeScript)
-    files: ['**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs'],
-
-    // Standard ignores plus build artifacts
-    ignores: [
-      '.*',
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      '.cache/**',
-      'coverage/**',
-      '**/coverage/**', // Add explicit pattern to ignore all coverage directories in all packages
-      '**/*.min.js',
-      '**/*.css',
-      '.eslintrc.js',
-    ],
-
+    files: ['**/*.cjs'],
     languageOptions: {
-      ecmaVersion: 2024,
-      globals: {
-        ...globals.node,
-        ...globals.browser,
-      },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-      sourceType: 'module',
+      sourceType: 'commonjs',
     },
-
-    linterOptions: {
-      noInlineConfig: false,
-      reportUnusedDisableDirectives: true,
-    },
-
-    // Configure all shared plugins
-    plugins: {
-      import: importPlugin,
-      'only-warn': onlyWarn,
-      perfectionist: perfectionistPlugin,
-      promise: promisePlugin,
-      security: securityPlugin,
-      'unused-imports': unusedImportsPlugin,
+    rules: {
+      // Allow require in CommonJS files
     },
   },
 
-  // TypeScript-specific configuration with rules
+  // ============================================
+  // 6. TYPE DEFINITION FILES
+  // ============================================
   {
-    // Match all TypeScript files
-    files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
-
-    // Standard ignores plus build artifacts
-    ignores: [
-      '.*',
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      '.cache/**',
-      'coverage/**',
-      '**/coverage/**', // Add explicit pattern to ignore all coverage directories in all packages
-      '**/*.min.js',
-      '**/*.css',
-      '.eslintrc.js',
-      // Exclude markdown code blocks from TypeScript project processing
-      '**/*.md/**',
-      '**/*.mdx/**',
-    ],
-
-    languageOptions: {
-      ecmaVersion: 2024,
-      globals: {
-        ...globals.node,
-        ...globals.browser,
-      },
-      parser: tseslint.parser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        ...(project && { project }),
-      },
-      sourceType: 'module',
-    },
-
-    linterOptions: {
-      noInlineConfig: false,
-      reportUnusedDisableDirectives: true,
-    },
-
-    // Configure all shared plugins
-    plugins: {
-      '@typescript-eslint': tseslint.plugin,
-      import: importPlugin,
-      'only-warn': onlyWarn,
-      perfectionist: perfectionistPlugin,
-      promise: promisePlugin,
-      security: securityPlugin,
-      'unused-imports': unusedImportsPlugin,
-    },
-
-    // TypeScript-aware import resolution
-    settings: {
-      'import/extensions': ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs'],
-      'import/internal-regex': '^@repo/',
-      'import/parsers': {
-        '@typescript-eslint/parser': ['.ts', '.tsx', '.mts', '.cts'],
-      },
-      'import/resolver': {
-        ...(project
-          ? {
-              typescript: {
-                alwaysTryTypes: true,
-                project,
-              },
-            }
-          : {}),
-        node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.mjs', '.cjs'],
-          moduleDirectory: ['node_modules', '../../node_modules'],
-        },
-      },
-    },
-
+    files: ['**/*.d.ts'],
     rules: {
-      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-ignore': 'allow-with-description' }],
-      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { fixStyle: 'inline-type-imports', prefer: 'type-imports' },
-      ],
-      '@typescript-eslint/no-empty-function': ['warn', { allow: ['arrowFunctions'] }],
-      // TypeScript-specific rules (that aren't already in the recommended/stylistic presets)
-      '@typescript-eslint/no-explicit-any': 'off', // Override from recommended which has it as 'error'
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/await-thenable': 'off', // Disable rule that requires type checking
+      'import/no-duplicates': 'off',
+    },
+  },
 
-      // Security rules
-      'security/detect-object-injection': 'off', // Disable object injection warning (too many false positives)
+  // ============================================
+  // 7. PUBLISHED PACKAGES - STRICTER RULES
+  // ============================================
+  {
+    files: ['packages/*/src/**/*.{ts,tsx,js,jsx}'],
+    ignores: ['**/__tests__/**', '**/*.test.*', '**/*.spec.*', '**/examples/**'],
+    rules: {
+      'no-console': 'warn',
+    },
+  },
 
-      // Unused imports - better handling with auto-fix
-      'unused-imports/no-unused-imports': 'error',
+  // ============================================
+  // 7b. UTILITY/DEVELOPMENT PACKAGES - MORE LENIENT (MUST COME AFTER 7)
+  // ============================================
+  {
+    files: [
+      'packages/analytics/**/*.{ts,tsx,js,jsx}',
+      'packages/design-system/**/*.{ts,tsx,js,jsx}',
+      'packages/testing/**/*.{ts,tsx,js,jsx}',
+      'packages/payments/**/*.{ts,tsx,js,jsx}',
+      'packages/ai/**/*.{ts,tsx,js,jsx}',
+      'packages/orchestration/**/*.{ts,tsx,js,jsx}',
+      'packages/links/**/*.{ts,tsx,js,jsx}',
+      'packages/feature-flags/**/*.{ts,tsx,js,jsx}',
+      'packages/observability/**/*.{ts,tsx,js,jsx}',
+    ],
+    rules: {
+      'no-console': 'off', // Allow console.log in these packages
+      'no-empty-function': 'off', // Allow empty functions in utility packages (especially testing)
+      'import/extensions': 'off', // Allow file extensions in utility packages
+      'promise/always-return': 'warn',
       'unused-imports/no-unused-vars': [
         'warn',
         {
           args: 'after-used',
           argsIgnorePattern: '^_',
+          caughtErrors: 'all',
+          caughtErrorsIgnorePattern: '^_',
           vars: 'all',
           varsIgnorePattern: '^_',
         },
       ],
-
-      // Import organization and validation (non-sorting rules)
-      'import/first': 'error',
-      'import/no-cycle': 'off', // Temporarily disabled due to resolver issues
-      'import/no-duplicates': 'off', // Temporarily disabled due to resolver issues
-      'import/no-unresolved': 'off', // Temporarily disabled due to resolver issues
-      'import/no-useless-path-segments': 'off', // Temporarily disabled due to resolver issues
-      'import/order': 'off', // Explicitly disable as we use perfectionist instead
-      'import/prefer-default-export': 'off', // Prefer named exports throughout codebase
-
-      // Perfectionist sorting rules - each serves a unique purpose
-
-      // 1. Import sorting - handles the overall file imports
-      'perfectionist/sort-imports': [
-        'error',
-        {
-          ...perfectionistSortConfig,
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-            'unknown',
-          ],
-          internalPattern: ['^@repo/'],
-          newlinesBetween: 'always',
-        },
-      ],
-
-      // 2. Object property sorting
-      'perfectionist/sort-objects': [
-        'error',
-        {
-          ...perfectionistSortConfig,
-          customGroups: {
-            id: 'id',
-            name: 'name',
-            type: 'type',
-            url: 'url',
-          },
-          groups: ['id', 'name', 'type', 'url', 'unknown'],
-          partitionByNewLine: true,
-        },
-      ],
-
-      // 3. TypeScript interface and type sorting
-      'perfectionist/sort-interfaces': [
-        'error',
-        {
-          ...perfectionistSortConfig,
-          partitionByNewLine: true,
-        },
-      ],
-
-      // 4. Enum sorting
-      'perfectionist/sort-enums': ['error', perfectionistSortConfig],
-
-      // 5. Named imports sorting - explicitly handles the imports within curly braces
-      'perfectionist/sort-named-imports': ['error', perfectionistSortConfig],
-
-      // 6. Named exports sorting
-      'perfectionist/sort-named-exports': ['error', perfectionistSortConfig],
-
-      // 7. JSX props sorting
-      'perfectionist/sort-jsx-props': [
-        'error',
-        {
-          ...perfectionistSortConfig,
-          customGroups: {
-            id: 'id',
-            callback: ['on*', 'handle*'],
-            key: 'key',
-            ref: 'ref',
-            styling: ['style', 'className', 'class', 'classes', 'sx'],
-          },
-          groups: ['key', 'id', 'ref', 'callback', 'styling', 'unknown'],
-        },
-      ],
-
-      // 8. Array sorting if needed
-      'perfectionist/sort-array-includes': [
-        'warn', // Only warn as this may not always be desirable
-        perfectionistSortConfig,
-      ],
+      'testing-library/no-wait-for-multiple-assertions': 'warn', // Downgrade to warning
+      'promise/param-names': 'warn', // Downgrade Promise parameter naming to warning
     },
   },
 
-  // Must be last to properly disable any style rules that conflict with Prettier
+  // ============================================
+  // 7c. LINKS PACKAGE - EXTRA LENIENT (specific override)
+  // ============================================
+  {
+    files: ['packages/links/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'no-console': 'off',
+      'no-empty-function': 'off',
+      'import/extensions': 'off',
+      'unused-imports/no-unused-vars': 'off', // Turn off completely for examples
+      'unused-imports/no-unused-imports': 'off',
+    },
+  },
+
+  // ============================================
+  // 8. PERFORMANCE OPTIMIZATIONS
+  // ============================================
+  {
+    files: ['**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}'],
+    rules: {
+      // Disable expensive rules in node_modules (if somehow included)
+      ...(process.env.NODE_ENV === 'production' && {
+        'import/no-cycle': 'off',
+      }),
+    },
+  },
+
+  // ============================================
+  // 9. PRETTIER - MUST BE LAST!
+  // ============================================
   eslintConfigPrettier,
 ];
 

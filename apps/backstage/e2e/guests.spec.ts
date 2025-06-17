@@ -9,8 +9,8 @@ import {
 
 const authHelpers = createAuthHelpers('http://localhost:3300');
 
-test.describe('Backstage Guests - User and Organization Management Testing', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('Backstage Guests - User and Organization Management Testing', (_: any) => {
+  test.beforeEach(async ({ page }: any) => {
     // Sign in as admin user for all guest management tests
     const testUser = authHelpers.createTestUser({
       name: 'Guests Admin',
@@ -24,7 +24,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     }
   });
 
-  test('guests main page loads with user management interface', async ({ context, page }) => {
+  test('guests main page loads with user management interface', async ({ context, page }: any) => {
     const { report, result } = await withPerformanceMonitoring(
       page,
       context,
@@ -91,7 +91,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     expect(result.report.metrics.lcp).toBeLessThan(3000);
   });
 
-  test('user creation and invitation workflow', async ({ context, page }) => {
+  test('user creation and invitation workflow', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock user creation API
@@ -239,7 +239,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     }
   });
 
-  test('user search, filtering, and role management', async ({ context, page }) => {
+  test('user search, filtering, and role management', async ({ context, page }: any) => {
     const visualTester = createVisualTester(page);
 
     await page.goto('/guests');
@@ -284,7 +284,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     for (const selector of roleFilterElements) {
       const filterElement = page.locator(selector).first();
       if ((await filterElement.count()) > 0 && (await filterElement.isVisible())) {
-        if (await filterElement.evaluate((el) => el.tagName === 'SELECT')) {
+        if (await filterElement.evaluate((el: any) => el.tagName === 'SELECT')) {
           await filterElement.selectOption({ index: 1 });
         } else {
           await filterElement.click();
@@ -306,7 +306,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     for (const selector of statusFilterElements) {
       const filterElement = page.locator(selector).first();
       if ((await filterElement.count()) > 0 && (await filterElement.isVisible())) {
-        if (await filterElement.evaluate((el) => el.tagName === 'SELECT')) {
+        if (await filterElement.evaluate((el: any) => el.tagName === 'SELECT')) {
           await filterElement.selectOption({ index: 1 });
         } else {
           await filterElement.click();
@@ -339,7 +339,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
         for (const roleSelector of roleActions) {
           const roleElement = firstItem.locator(roleSelector);
           if ((await roleElement.count()) > 0 && (await roleElement.isVisible())) {
-            if (await roleElement.evaluate((el) => el.tagName === 'SELECT')) {
+            if (await roleElement.evaluate((el: any) => el.tagName === 'SELECT')) {
               await roleElement.selectOption({ index: 1 });
             } else {
               await roleElement.click();
@@ -353,7 +353,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     }
   });
 
-  test('organization management and multi-tenancy', async ({ context, page }) => {
+  test('organization management and multi-tenancy', async ({ context, page }: any) => {
     await page.goto('/guests/organizations');
     await page.waitForLoadState('networkidle');
 
@@ -468,7 +468,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     }
   });
 
-  test('user permissions and access control', async ({ context, page }) => {
+  test('user permissions and access control', async ({ context, page }: any) => {
     await page.goto('/guests');
     await page.waitForLoadState('networkidle');
 
@@ -518,8 +518,9 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
             if ((await controls.count()) > 0) {
               const firstControl = controls.first();
               if (await firstControl.isVisible()) {
-                if (await firstControl.evaluate((el) => el.type === 'checkbox')) {
-                  await firstControl.check();
+                if (await firstControl.evaluate((el: any) => el.type === 'checkbox')) {
+                  const mockRequest = new NextRequest('http://localhost') as any;
+                  await firstControl.limit(mockRequest);
                 } else {
                   await firstControl.click();
                 }
@@ -581,7 +582,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     }
   });
 
-  test('user activity monitoring and audit logs', async ({ context, page }) => {
+  test('user activity monitoring and audit logs', async ({ context, page }: any) => {
     await page.goto('/guests');
     await page.waitForLoadState('networkidle');
 
@@ -638,9 +639,9 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     for (const selector of filterElements) {
       const filter = page.locator(selector).first();
       if ((await filter.count()) > 0 && (await filter.isVisible())) {
-        if (await filter.evaluate((el) => el.tagName === 'SELECT')) {
+        if (await filter.evaluate((el: any) => el.tagName === 'SELECT')) {
           await filter.selectOption({ index: 1 });
-        } else if (await filter.evaluate((el) => el.type === 'date')) {
+        } else if (await filter.evaluate((el: any) => el.type === 'date')) {
           const today = new Date().toISOString().slice(0, 10);
           await filter.fill(today);
         }
@@ -697,7 +698,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     }
   });
 
-  test('bulk user operations and import/export', async ({ context, page }) => {
+  test('bulk user operations and import/export', async ({ context, page }: any) => {
     const apiMocker = createApiMocker(page);
 
     // Mock bulk operations API
@@ -726,8 +727,9 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     for (const selector of bulkElements) {
       const element = page.locator(selector).first();
       if ((await element.count()) > 0 && (await element.isVisible())) {
-        if (await element.evaluate((el) => el.type === 'checkbox')) {
-          await element.check();
+        if (await element.evaluate((el: any) => el.type === 'checkbox')) {
+          const mockRequest = new NextRequest('http://localhost') as any;
+          await element.limit(mockRequest);
         } else {
           await element.click();
         }
@@ -818,7 +820,7 @@ test.describe('Backstage Guests - User and Organization Management Testing', () 
     }
   });
 
-  test('guests performance with large user datasets', async ({ context, page }) => {
+  test('guests performance with large user datasets', async ({ context, page }: any) => {
     const { result } = await withPerformanceMonitoring(page, context, '/guests', async () => {
       // Test pagination with large datasets
       const paginationElements = [

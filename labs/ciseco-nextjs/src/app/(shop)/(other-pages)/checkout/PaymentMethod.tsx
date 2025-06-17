@@ -1,6 +1,10 @@
 'use client'
 
-import { ButtonPrimary, ButtonSecondary, Input, Label, Radio } from '@repo/design-system/ciseco'
+import Label from '@/components/Label/Label'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
+import Input from '@/shared/Input/Input'
+import Radio from '@/shared/Radio/Radio'
 import { FC, useState } from 'react'
 
 interface Props {
@@ -74,7 +78,7 @@ const PaymentMethod: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => 
             <p className="font-medium">Debit / Credit Card</p>
           </label>
 
-          <div className={`mb-4 mt-6 space-y-3 sm:space-y-5 ${active ? 'block' : 'hidden'}`}>
+          <div className={`mt-6 mb-4 space-y-3 sm:space-y-5 ${active ? 'block' : 'hidden'}`}>
             <div className="max-w-lg">
               <Label className="text-sm">Card number</Label>
               <Input autoComplete="off" className="mt-1.5" type={'text'} />
@@ -83,7 +87,7 @@ const PaymentMethod: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => 
               <Label className="text-sm">Name on Card</Label>
               <Input autoComplete="off" className="mt-1.5" />
             </div>
-            <div className="flex flex-col space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
               <div className="sm:w-2/3">
                 <Label className="text-sm">Expiration date (MM/YY)</Label>
                 <Input autoComplete="off" className="mt-1.5" placeholder="MM/YY" />
@@ -157,7 +161,7 @@ const PaymentMethod: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => 
             </div>
             <p className="font-medium">Internet banking</p>
           </label>
-          <div className={`mb-4 mt-6 ${active ? 'block' : 'hidden'}`}>
+          <div className={`mt-6 mb-4 ${active ? 'block' : 'hidden'}`}>
             <p className="text-sm dark:text-neutral-300">Your order will be delivered to you after you transfer to:</p>
             <ul className="mt-3.5 space-y-2 text-sm text-neutral-500 dark:text-neutral-400">
               <li>
@@ -241,8 +245,8 @@ const PaymentMethod: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => 
             </div>
             <p className="font-medium">Google / Apple Wallet</p>
           </label>
-          <div className={`mb-4 mt-6 space-y-6 ${active ? 'block' : 'hidden'}`}>
-            <div className="prose dark:prose-invert text-sm">
+          <div className={`mt-6 mb-4 space-y-6 ${active ? 'block' : 'hidden'}`}>
+            <div className="prose text-sm dark:prose-invert">
               <p>
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque dolore quod quas fugit perspiciatis
                 architecto, temporibus quos ducimus libero explicabo?
@@ -307,7 +311,7 @@ const PaymentMethod: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => 
           </span>
           <div className="sm:ml-8">
             <h3 className="flex text-neutral-700 dark:text-neutral-400">
-              <span className="uppercase tracking-tight">PAYMENT METHOD</span>
+              <span className="tracking-tight uppercase">PAYMENT METHOD</span>
               <svg
                 fill="none"
                 viewBox="0 0 24 24"
@@ -324,7 +328,7 @@ const PaymentMethod: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => 
             </div>
           </div>
           <button
-            className="mt-5 rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto sm:mt-0 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            className="mt-5 rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:mt-0 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700"
             onClick={onOpenActive}
           >
             Change

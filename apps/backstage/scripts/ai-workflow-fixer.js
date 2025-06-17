@@ -165,7 +165,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.warn('AI fix generation error:', error.message);
+      console.warn('AI fix generation error: ', error.message);
     }
 
     return null;
@@ -214,7 +214,7 @@ class AIWorkflowFixer {
 
         // Common fixes for argument type errors
         if (originalLine.includes('execution:')) {
-          lines[line - 1] = originalLine.replace('execution: number', 'execution: any');
+          lines[line - 1] = originalLine.replace('execution: number', 'execution');
         } else if (originalLine.includes('customMetrics')) {
           // Remove problematic properties
           lines[line - 1] = originalLine.replace(/,?\s*customMetrics[^,}]*/g, '');
@@ -234,7 +234,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.error(`Error fixing file ${file}:`, error.message);
+      console.error(`Error fixing file ${file}: `, error.message);
     }
 
     return null;
@@ -269,7 +269,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.error(`Error fixing file ${file}:`, error.message);
+      console.error(`Error fixing file ${file}: `, error.message);
     }
 
     return null;
@@ -289,7 +289,7 @@ class AIWorkflowFixer {
         if (originalLine.includes('[') && originalLine.includes(']')) {
           lines[line - 1] = originalLine.replace(/\[([^\]]+)\]/, '[($1 as any)]');
         } else {
-          lines[line - 1] = originalLine.replace(/(\w+)(\s*=)/, '$1: any$2');
+          lines[line - 1] = originalLine.replace(/(\w+)(\s*=)/, '$1$2');
         }
 
         writeFileSync(file, lines.join('\n'));
@@ -303,7 +303,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.error(`Error fixing file ${file}:`, error.message);
+      console.error(`Error fixing file ${file}: `, error.message);
     }
 
     return null;
@@ -320,7 +320,7 @@ class AIWorkflowFixer {
         const originalLine = lines[line - 1];
 
         // Add explicit any[] type
-        lines[line - 1] = originalLine.replace(/(\w+)(\s*=\s*\[)/, '$1: any[]$2');
+        lines[line - 1] = originalLine.replace(/(\w+)(\s*=\s*\[)/, '$1$2');
 
         writeFileSync(file, lines.join('\n'));
         return {
@@ -333,7 +333,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.error(`Error fixing file ${file}:`, error.message);
+      console.error(`Error fixing file ${file}: `, error.message);
     }
 
     return null;
@@ -363,7 +363,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.error(`Error fixing file ${file}:`, error.message);
+      console.error(`Error fixing file ${file}: `, error.message);
     }
 
     return null;
@@ -385,7 +385,7 @@ class AIWorkflowFixer {
 
         // Add any type to parameters
         lines[line - 1] = originalLine.replace(/\(([^)]+)\)/, (match, params) => {
-          return '(' + params.replace(/(\w+)(?!\s*:)/g, '$1: any') + ')';
+          return '(' + params.replace(/(\w+)(?!\s*: )/g, '$1') + ')';
         });
 
         writeFileSync(file, lines.join('\n'));
@@ -399,7 +399,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.error(`Error fixing file ${file}:`, error.message);
+      console.error(`Error fixing file ${file}: `, error.message);
     }
 
     return null;
@@ -429,7 +429,7 @@ class AIWorkflowFixer {
         };
       }
     } catch (error) {
-      console.error(`Error fixing file ${file}:`, error.message);
+      console.error(`Error fixing file ${file}: `, error.message);
     }
 
     return null;

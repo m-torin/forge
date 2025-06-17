@@ -3,9 +3,9 @@ import React from 'react';
 const PlaceIcon = () => {
   return (
     <svg
-      viewBox="0 0 197 193"
       className="w-full h-full"
       fill="none"
+      viewBox="0 0 197 193"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path

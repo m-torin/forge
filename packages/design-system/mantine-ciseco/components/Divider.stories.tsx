@@ -1,6 +1,6 @@
-import { Divider } from './Divider';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import { Divider } from './Divider';
 
 const meta: Meta<typeof Divider> = {
   argTypes: {
@@ -32,7 +32,7 @@ export const Default: Story = {
   args: {
     soft: false,
   },
-  render: (args) => (
+  render: (args: any) => (
     <div className="w-64">
       <p className="text-sm text-gray-600 mb-4">Content above divider</p>
       <Divider {...args} />
@@ -45,7 +45,7 @@ export const Soft: Story = {
   args: {
     soft: true,
   },
-  render: (args) => (
+  render: (args: any) => (
     <div className="w-64">
       <p className="text-sm text-gray-600 mb-4">Content above divider</p>
       <Divider {...args} />
@@ -59,7 +59,7 @@ export const WithCustomStyling: Story = {
     className: 'my-8 border-blue-300',
     soft: false,
   },
-  render: (args) => (
+  render: (args: any) => (
     <div className="w-64">
       <p className="text-sm text-gray-600 mb-4">Content above divider</p>
       <Divider {...args} />

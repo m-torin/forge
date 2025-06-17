@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import { expect } from '@playwright/test';
 
-import type { Locator, Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 export interface VisualTestOptions {
   animations?: 'disabled' | 'allow'; // How to handle animations
@@ -140,7 +140,7 @@ export class VisualTester {
         passed: true,
         threshold,
       };
-    } catch (error) {
+    } catch (error: any) {
       // Generate diff image if requested
       let diffGenerated = false;
       if (generateDiff && baselineExists) {
@@ -210,7 +210,7 @@ export class VisualTester {
           animation-duration: 0s !important;
           animation-delay: 0s !important;
           transition-duration: 0s !important;
-          transition-delay: 0s !important;
+          transition-delay: 0s !important,
         }
         
         @media (prefers-reduced-motion: reduce) {
@@ -239,10 +239,10 @@ export class VisualTester {
       const images = Array.from(document.images);
       return Promise.all(
         images
-          .filter((img) => !img.complete)
+          .filter((img: any) => !img.complete)
           .map(
-            (img) =>
-              new Promise((resolve) => {
+            (img: any) =>
+              new Promise((resolve: any) => {
                 img.onload = img.onerror = resolve;
               }),
           ),

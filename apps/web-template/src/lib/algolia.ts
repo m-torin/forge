@@ -1,5 +1,4 @@
-import { liteClient as algoliasearch } from 'algoliasearch/lite';
-import { LiteClient } from 'algoliasearch/lite';
+import { liteClient as algoliasearch, LiteClient } from 'algoliasearch/lite';
 import { createInMemoryCache } from '@algolia/cache-in-memory';
 import { env } from '@/env';
 import { AlgoliaSearchConfig } from '@/types/algolia';

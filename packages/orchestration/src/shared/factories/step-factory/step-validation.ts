@@ -9,7 +9,7 @@ import { type z } from 'zod';
 
 import { createValidationError, OrchestrationErrorCodes } from '../../utils/errors';
 
-import type { StepValidationConfig, ValidationResult, WorkflowStepDefinition } from './step-types';
+import { StepValidationConfig, ValidationResult, WorkflowStepDefinition } from './step-types';
 
 /**
  * Validate a workflow step definition to ensure all required fields are present
@@ -98,7 +98,7 @@ export async function validateStepInput<TInput>(
     const result = config.input.safeParse(input);
     if (!result.success) {
       throw createValidationError(
-        `Input validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
+        `Input validation failed: ${result.error.issues.map((i: any) => i.message).join(', ')}`,
         {
           code: OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR,
           validationErrors: result.error.issues,
@@ -134,7 +134,7 @@ export async function validateStepOutput<TOutput>(
   const result = schema.safeParse(output);
   if (!result.success) {
     throw createValidationError(
-      `Output validation failed: ${result.error.issues.map((i) => i.message).join(', ')}`,
+      `Output validation failed: ${result.error.issues.map((i: any) => i.message).join(', ')}`,
       {
         code: OrchestrationErrorCodes.STEP_OUTPUT_VALIDATION_ERROR,
         validationErrors: result.error.issues,

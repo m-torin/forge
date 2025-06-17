@@ -1,0 +1,63 @@
+{
+  "$schema": "Configuration examples for multi-storage setup",
+  "example1_R2_CREDENTIALS": [
+    {
+      "name": "documents",
+      "bucket": "company-documents",
+      "accountId": "your-account-id",
+      "accessKeyId": "your-access-key",
+      "secretAccessKey": "your-secret-key"
+    },
+    {
+      "name": "user-uploads",
+      "bucket": "user-uploads-bucket",
+      "accountId": "your-account-id",
+      "accessKeyId": "your-access-key-2",
+      "secretAccessKey": "your-secret-key-2"
+    }
+  ],
+  "example2_STORAGE_CONFIG": {
+    "providers": {
+      "documents": {
+        "provider": "cloudflare-r2",
+        "cloudflareR2": {
+          "bucket": "company-documents",
+          "accountId": "your-account-id",
+          "accessKeyId": "your-access-key",
+          "secretAccessKey": "your-secret-key"
+        }
+      },
+      "user-uploads": {
+        "provider": "cloudflare-r2",
+        "cloudflareR2": {
+          "bucket": "user-uploads-bucket",
+          "accountId": "your-account-id",
+          "accessKeyId": "your-access-key-2",
+          "secretAccessKey": "your-secret-key-2"
+        }
+      },
+      "images": {
+        "provider": "cloudflare-images",
+        "cloudflareImages": {
+          "accountId": "your-cf-account-id",
+          "apiToken": "your-cf-images-api-token",
+          "deliveryUrl": "https://imagedelivery.net/your-account-hash",
+          "signingKey": "optional-signing-key"
+        }
+      },
+      "cache": {
+        "provider": "vercel-blob",
+        "vercelBlob": {
+          "token": "your-vercel-blob-token"
+        }
+      }
+    },
+    "defaultProvider": "documents",
+    "routing": {
+      "images": "images",
+      "documents": "documents",
+      "user-uploads": "user-uploads",
+      "temp": "cache"
+    }
+  }
+}

@@ -29,7 +29,7 @@ export function getRandomUserAgent(): string {
  */
 export function humanDelay(min: number = 100, max: number = 2000): Promise<void> {
   const delay = Math.floor(Math.random() * (max - min) + min);
-  return new Promise((resolve) => setTimeout(resolve, delay));
+  return new Promise((resolve: any) => setTimeout(resolve, delay));
 }
 
 export function exponentialBackoff(
@@ -61,7 +61,7 @@ export async function retryWithBackoff<T>(
   const {
     attempts = 3,
     delay = 1000,
-    multiplier = 2,
+    multiplier: _multiplier = 2,
     maxDelay = 30000,
     shouldRetry = () => true,
     onRetry,
@@ -72,7 +72,7 @@ export async function retryWithBackoff<T>(
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       return await fn();
-    } catch (error) {
+    } catch (error: any) {
       lastError = error as Error;
 
       if (attempt === attempts - 1 || !shouldRetry(lastError, attempt)) {
@@ -85,7 +85,7 @@ export async function retryWithBackoff<T>(
         onRetry(lastError, attempt + 1);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      await new Promise((resolve: any) => setTimeout(resolve, retryDelay));
     }
   }
 
@@ -139,7 +139,7 @@ export function detectCaptcha(html: string): boolean {
     /<iframe[^>]*src="[^"]*captcha[^"]*"/i,
   ];
 
-  return captchaPatterns.some((pattern) => pattern.test(html));
+  return captchaPatterns.some((pattern: any) => pattern.test(html));
 }
 
 export function detectCloudflare(html: string, headers?: Record<string, string>): boolean {
@@ -158,7 +158,7 @@ export function detectCloudflare(html: string, headers?: Record<string, string>)
       ].some(Boolean)
     : false;
 
-  return headerIndicators || htmlPatterns.some((pattern) => pattern.test(html));
+  return headerIndicators || htmlPatterns.some((pattern: any) => pattern.test(html));
 }
 
 /**
@@ -353,7 +353,7 @@ export function sanitizeFilename(url: string): string {
  */
 export function parseContentType(headers: Record<string, string>): string | null {
   const contentType = Object.entries(headers).find(
-    ([key]) => key.toLowerCase() === 'content-type',
+    ([key]: any) => key.toLowerCase() === 'content-type',
   )?.[1];
 
   return contentType ? contentType.split(';')[0].trim() : null;
@@ -386,5 +386,5 @@ export function isScrapableUrl(url: string): boolean {
   ];
 
   const urlLower = url.toLowerCase();
-  return !nonScrapableExtensions.some((ext) => urlLower.endsWith(ext));
+  return !nonScrapableExtensions.some((ext: any) => urlLower.endsWith(ext));
 }

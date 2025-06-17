@@ -1,6 +1,11 @@
 /**
- * Next.js server-side scraping exports
+ * Server-side scraping exports for Next.js
  * Server-side scraping with Next.js specific additions
+ *
+ * This file provides server-side scraping functionality specifically for Next.js applications.
+ * Use this in server components, API routes, middleware, and Next.js server environments.
+ *
+ * For non-Next.js applications, use '@repo/scraping/server' instead.
  *
  * @example
  * ```typescript
@@ -10,7 +15,7 @@
  * export const POST = handleScrapeRequest;
  *
  * // In server components
- * const scraper = await createServerScraping({ providers: { 'node-fetch': {} } });
+ * const scraper = await createServerScraping({ providers: { 'node-fetch': {} } };
  * const result = await scraper.scrape(url);
  * ```
  */

@@ -4,12 +4,12 @@ import { KnockFeedProvider, KnockProvider } from '@knocklabs/react';
 
 import { keys } from '../keys';
 
-import type { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 const knockApiKey = keys().NEXT_PUBLIC_KNOCK_API_KEY;
 const knockFeedChannelId = keys().NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID;
 
-interface NotificationsProviderProps {
+interface NotificationsProviderProps extends Record<string, any> {
   children: ReactNode;
   userId: string;
 }

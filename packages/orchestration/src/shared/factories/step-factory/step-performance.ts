@@ -5,7 +5,7 @@
  * for workflow step execution.
  */
 
-import type { ProgressState, StepPerformanceData } from './step-types';
+import { ProgressState, StepPerformanceData } from './step-types';
 
 /**
  * Add a custom metric to performance data
@@ -94,7 +94,7 @@ export function formatPerformanceData(
 
     if (performance.customMetrics && performance.customMetrics.size > 0) {
       const metrics = Array.from(performance.customMetrics.entries())
-        .map(([name, value]) => `${name}: ${value}`)
+        .map(([name, value]: any) => `${name}: ${value}`)
         .join(', ');
       result += `, Metrics: {${metrics}}`;
     }

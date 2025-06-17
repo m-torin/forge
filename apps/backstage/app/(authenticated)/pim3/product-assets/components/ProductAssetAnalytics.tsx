@@ -224,7 +224,7 @@ function UsageByPageChart({ data }: { data: AnalyticsData['usageByPage'] }) {
         <Grid>
           <Grid.Col span={6}>
             <RingProgress
-              sections={data.slice(0, 4).map((item, index) => ({
+              sections={data.slice(0, 4).map((item: any, index) => ({
                 color: ['blue', 'green', 'yellow', 'red'][index],
                 tooltip: `${item.page}: ${item.views} views`,
                 value: item.percentage,
@@ -245,7 +245,7 @@ function UsageByPageChart({ data }: { data: AnalyticsData['usageByPage'] }) {
           </Grid.Col>
           <Grid.Col span={6}>
             <Stack gap="xs">
-              {data.slice(0, 4).map((item, index) => (
+              {data.slice(0, 4).map((item: any, index) => (
                 <Group key={item.page} justify="space-between">
                   <Group gap="xs">
                     <div

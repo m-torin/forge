@@ -7,7 +7,7 @@ import { useLocale } from '../../hooks/useLocale';
 
 import CurrLangDropdown from './CurrLangDropdown';
 
-interface Props {
+interface Props extends Record<string, any> {
   className?: string;
   currencies: Awaited<ReturnType<typeof getCurrencies>>;
   languages: Awaited<ReturnType<typeof getLanguages>>;
@@ -18,7 +18,7 @@ interface Props {
 /**
  * Client-side wrapper for CurrLangDropdown that automatically detects the current locale
  */
-const CurrLangDropdownClient: FC<Props> = (props) => {
+const CurrLangDropdownClient: FC<Props> = (props: any) => {
   const currentLocale = useLocale();
 
   return <CurrLangDropdown {...props} currentLocale={currentLocale} />;

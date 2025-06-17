@@ -1,0 +1,106 @@
+// guestActions.prisma - Guest and User Action Models (Favorites, Reviews, Votes)
+
+//==============================================================================
+// GUEST ACTIONS MODELS
+//==============================================================================
+
+model Review {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedReviews", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // Review content
+  title   String?
+  content String  @db.Text
+  rating  Int // Rating (typically 1-5)
+
+  // Metadata
+  status   ContentStatus @default(PUBLISHED)
+  verified Boolean       @default(false)
+  type     ReviewType    @default(DEDICATED)
+
+  // Source information for imported reviews
+  sourceId String? // ID from the original source
+  source   String? // Name of the source (e.g., "Amazon", "Google")
+
+  // Helpfulness tracking
+  helpfulCount Int @default(0)
+  totalVotes   Int @default(0)
+
+  // Relationships
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   Product? @relation("ProductReviews", fields: [productId], references: [id], onDelete: SetNull)
+
+  // Media attachments
+  media Media[] @relation("ReviewMedia")
+
+  // Votes
+  votes ReviewVoteJoin[]
+
+  @@index([userId])
+  @@index([productId])
+  @@index([rating])
+  @@index([status])
+  @@index([verified])
+  @@index([type])
+  @@index([source])
+  @@index([helpfulCount])
+  @@index([totalVotes])
+  @@index([deletedAt])
+  @@index([deletedById])
+}
+
+//==============================================================================
+// JUNCTION MODELS
+//==============================================================================
+
+model FavoriteJoin {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User relationship
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Item relationships (only one should be set)
+  productId String?
+  product   Product? @relation("ProductFavorites", fields: [productId], references: [id], onDelete: SetNull)
+
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, productId, collectionId])
+  @@index([userId])
+  @@index([productId])
+  @@index([collectionId])
+}
+
+model ReviewVoteJoin {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Vote information
+  voteType VoteType // Whether the user found the review helpful or not
+
+  // Relationships
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+  @@index([userId])
+  @@index([reviewId])
+  @@index([voteType])
+}

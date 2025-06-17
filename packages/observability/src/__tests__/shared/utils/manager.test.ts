@@ -4,14 +4,13 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createObservabilityManager, ObservabilityManager } from '../../../shared/utils/manager';
-
-import type {
+import {
   Breadcrumb,
   ObservabilityConfig,
   ObservabilityProvider,
   ProviderRegistry,
 } from '../../../shared/types/types';
+import { createObservabilityManager, ObservabilityManager } from '../../../shared/utils/manager';
 
 // Use vi.hoisted for mock providers
 const { mockProvider, mockProvider2 } = vi.hoisted(() => {
@@ -85,6 +84,9 @@ describe('ObservabilityManager', () => {
       debug: false,
       onError: vi.fn(),
       onInfo: vi.fn(),
+      healthCheck: {
+        enabled: false, // Disable health monitoring in tests
+      },
     };
 
     manager = new ObservabilityManager(config, providerRegistry);
@@ -182,9 +184,9 @@ describe('ObservabilityManager', () => {
       await manager.captureException(error);
 
       expect(config.onError).toHaveBeenCalledWith(expect.any(Error), {
+        method: 'executeWithCircuitBreaker',
         provider: 'mock-provider-1',
-        method: 'captureException',
-        originalError: error,
+        circuitBreakerState: 'CLOSED',
       });
       expect(mockProvider2.captureException).toHaveBeenCalled(); // Other providers should still work
     });
@@ -214,10 +216,9 @@ describe('ObservabilityManager', () => {
       await manager.captureMessage(message, level);
 
       expect(config.onError).toHaveBeenCalledWith(expect.any(Error), {
+        method: 'executeWithCircuitBreaker',
         provider: 'mock-provider-1',
-        level,
-        message,
-        method: 'captureMessage',
+        circuitBreakerState: 'CLOSED',
       });
     });
   });
@@ -246,10 +247,9 @@ describe('ObservabilityManager', () => {
       await manager.log('error', 'Test message');
 
       expect(config.onError).toHaveBeenCalledWith(expect.any(Error), {
+        method: 'executeWithCircuitBreaker',
         provider: 'mock-provider-1',
-        level: 'error',
-        message: 'Test message',
-        method: 'log',
+        circuitBreakerState: 'CLOSED',
       });
     });
   });

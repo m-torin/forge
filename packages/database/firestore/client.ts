@@ -31,9 +31,7 @@ export const firestoreClientSingleton = (): Firestore => {
 
 // Export a lazy getter for the Firestore client
 export const getFirestore = (): Firestore => {
-  if (!globalForFirestore.firestoreDb) {
-    globalForFirestore.firestoreDb = firestoreClientSingleton();
-  }
+  globalForFirestore.firestoreDb ??= firestoreClientSingleton();
   return globalForFirestore.firestoreDb;
 };
 

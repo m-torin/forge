@@ -1,31 +1,73 @@
 import { aiKeys } from '../../../keys';
 
-import type { AIConfig } from '../types/config';
-import type { AIManagerConfig, ProviderConfig } from '../types/provider';
+import { AIConfig } from '../types/config';
+import { AIManagerConfig, ProviderConfig } from '../types/provider';
+
+export function convertToManagerConfig(config: AIConfig): AIManagerConfig {
+  const providers: ProviderConfig[] = [];
+
+  // Convert AIConfig providers to ProviderConfig array
+  if (config.providers?.openai?.apiKey) {
+    providers.push({
+      config: config.providers.openai,
+      name: 'openai-direct',
+      type: 'direct',
+    });
+  }
+
+  if (config.providers?.anthropic?.apiKey) {
+    providers.push({
+      config: config.providers.anthropic,
+      name: 'anthropic-direct',
+      type: 'direct',
+    });
+  }
+
+  if (config.providers?.google?.apiKey) {
+    providers.push({
+      config: config.providers.google,
+      name: 'google-ai-sdk',
+      type: 'ai-sdk',
+    });
+  }
+
+  return {
+    providers,
+    ...(config.defaultProvider && { defaultProvider: config.defaultProvider }),
+    ...(typeof config.enableLogging === 'boolean' && { enableLogging: config.enableLogging }),
+    ...(typeof config.enableRateLimit === 'boolean' && { enableRateLimit: config.enableRateLimit }),
+  };
+}
 
 export function createConfigFromEnv(): AIConfig {
   return {
     defaultProvider: 'openai',
-    providers: {
-      anthropic: {
-        apiKey: aiKeys.ANTHROPIC_API_KEY,
-      },
-      google: {
-        apiKey: aiKeys.GOOGLE_AI_API_KEY,
-      },
-      openai: {
-        apiKey: aiKeys.OPENAI_API_KEY,
-      },
-    },
     enableLogging: process.env.NODE_ENV === 'development',
     enableRateLimit: process.env.NODE_ENV === 'production',
+    providers: {
+      ...(aiKeys.ANTHROPIC_API_KEY && {
+        anthropic: {
+          apiKey: aiKeys.ANTHROPIC_API_KEY,
+        },
+      }),
+      ...(aiKeys.GOOGLE_AI_API_KEY && {
+        google: {
+          apiKey: aiKeys.GOOGLE_AI_API_KEY,
+        },
+      }),
+      ...(aiKeys.OPENAI_API_KEY && {
+        openai: {
+          apiKey: aiKeys.OPENAI_API_KEY,
+        },
+      }),
+    },
   };
 }
 
 export function validateConfig(config: AIConfig): string[] {
   const errors: string[] = [];
 
-  if (!config.providers || Object.keys(config.providers).length === 0) {
+  if (!config.providers || Object.keys(config.providers || {}).length === 0) {
     errors.push('At least one provider must be configured');
     return errors;
   }
@@ -33,21 +75,21 @@ export function validateConfig(config: AIConfig): string[] {
   // Check that at least one provider has a valid API key
   let hasValidProvider = false;
 
-  if (config.providers.openai?.apiKey) {
+  if (config.providers?.openai?.apiKey) {
     hasValidProvider = true;
-  } else if (config.providers.openai) {
+  } else if (config.providers?.openai) {
     errors.push('OpenAI provider configured but missing API key');
   }
 
-  if (config.providers.anthropic?.apiKey) {
+  if (config.providers?.anthropic?.apiKey) {
     hasValidProvider = true;
-  } else if (config.providers.anthropic) {
+  } else if (config.providers?.anthropic) {
     errors.push('Anthropic provider configured but missing API key');
   }
 
-  if (config.providers.google?.apiKey) {
+  if (config.providers?.google?.apiKey) {
     hasValidProvider = true;
-  } else if (config.providers.google) {
+  } else if (config.providers?.google) {
     errors.push('Google provider configured but missing API key');
   }
 
@@ -56,40 +98,4 @@ export function validateConfig(config: AIConfig): string[] {
   }
 
   return errors;
-}
-
-export function convertToManagerConfig(config: AIConfig): AIManagerConfig {
-  const providers: ProviderConfig[] = [];
-
-  // Convert AIConfig providers to ProviderConfig array
-  if (config.providers?.openai?.apiKey) {
-    providers.push({
-      name: 'openai-direct',
-      type: 'direct',
-      config: config.providers.openai,
-    });
-  }
-
-  if (config.providers?.anthropic?.apiKey) {
-    providers.push({
-      name: 'anthropic-direct',
-      type: 'direct',
-      config: config.providers.anthropic,
-    });
-  }
-
-  if (config.providers?.google?.apiKey) {
-    providers.push({
-      name: 'google-ai-sdk',
-      type: 'ai-sdk',
-      config: config.providers.google,
-    });
-  }
-
-  return {
-    defaultProvider: config.defaultProvider,
-    providers,
-    enableLogging: config.enableLogging,
-    enableRateLimit: config.enableRateLimit,
-  };
 }

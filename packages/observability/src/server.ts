@@ -1,6 +1,11 @@
 /**
- * Server-side observability exports
+ * Server-side observability exports (non-Next.js)
  * Complete observability solution for server/Node.js environments
+ *
+ * This file provides server-side observability functionality for non-Next.js applications.
+ * Use this in Node.js applications, API servers, and standalone server environments.
+ *
+ * For Next.js applications, use '@repo/observability/server/next' instead.
  *
  * @example
  * ```typescript
@@ -9,10 +14,10 @@
  * const observability = await createServerObservability({
  *   providers: {
  *     sentry: { dsn: 'xxx' },
- *     pino: { level: 'info' },
- *     opentelemetry: { serviceName: 'api' }
+ *     'vercel-otel': { serviceName: 'api' },
+ *     console: { enabled: process.env.NODE_ENV === 'development' }
  *   }
- * });
+ * };
  *
  * // Use observability
  * observability.captureException(new Error('Server error'));
@@ -21,25 +26,45 @@
  * ```
  */
 
-import { SentryServerProvider } from './server/providers/sentry-server';
-import { ConsoleProvider } from './shared/providers/console-provider';
-// TODO: Re-enable BetterStackProvider once bundling issues are resolved
-// import { BetterStackProvider } from './shared/providers/better-stack-provider';
-import { createObservabilityManager } from './shared/utils/manager';
+import { createServerObservabilityManager } from './server/utils/manager';
+import { ObservabilityConfig, ObservabilityManager, ProviderRegistry } from './shared/types/types';
 
-import type {
-  ObservabilityConfig,
-  ObservabilityManager,
-  ProviderRegistry,
-} from './shared/types/types';
-
-// Server-specific provider registry - minimal working providers
+// Server-specific provider registry with lazy loading for all providers
 const SERVER_PROVIDERS: ProviderRegistry = {
-  console: () => new ConsoleProvider(),
-  sentry: () => new SentryServerProvider(),
+  console: async () => {
+    const { ConsoleProvider } = await import('./shared/providers/console-provider');
+    return new ConsoleProvider();
+  },
+  opentelemetry: async () => {
+    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    return new VercelOTelProvider();
+  },
+  otel: async () => {
+    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    return new VercelOTelProvider();
+  },
+  sentry: async () => {
+    const { SentryServerProvider } = await import('./server/providers/sentry-server');
+    return new SentryServerProvider();
+  },
+  // Lazy-load OpenTelemetry provider to avoid bundling when not used
+  'vercel-otel': async () => {
+    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    return new VercelOTelProvider();
+  },
+  grafanaMonitoring: async () => {
+    const { GrafanaServerProvider } = await import('./server/providers/grafana-server');
+    return new GrafanaServerProvider();
+  },
   // TODO: Re-enable Better Stack providers once bundling issues are resolved
-  // 'better-stack': () => new BetterStackProvider(),
-  // logtail: () => new BetterStackProvider(),
+  // 'better-stack': async () => {
+  //   const { BetterStackProvider } = await import('./shared/providers/better-stack-provider');
+  //   return new BetterStackProvider();
+  // },
+  // logtail: async () => {
+  //   const { BetterStackProvider } = await import('./shared/providers/better-stack-provider');
+  //   return new BetterStackProvider();
+  // },
 };
 
 // ============================================================================
@@ -53,7 +78,7 @@ const SERVER_PROVIDERS: ProviderRegistry = {
 export async function createServerObservability(
   config: ObservabilityConfig,
 ): Promise<ObservabilityManager> {
-  const manager = createObservabilityManager(config, SERVER_PROVIDERS);
+  const manager = createServerObservabilityManager(config, SERVER_PROVIDERS);
   await manager.initialize();
   return manager;
 }
@@ -65,13 +90,61 @@ export async function createServerObservability(
 export function createServerObservabilityUninitialized(
   config: ObservabilityConfig,
 ): ObservabilityManager {
-  return createObservabilityManager(config, SERVER_PROVIDERS);
+  return createServerObservabilityManager(config, SERVER_PROVIDERS);
 }
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
+export {
+  createErrorBoundaryHandler,
+  createSafeFunction,
+  parseAndCaptureError,
+  parseError,
+  withErrorHandling,
+} from './server/utils/error';
+
+// Manager utilities
+export { createServerObservabilityManager } from './server/utils/manager';
+export { ServerObservabilityManager as ObservabilityManagerClass } from './server/utils/manager';
+export { debugConfig, validateConfig } from './server/utils/validation';
+export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
+
+// ============================================================================
+// CONFIGURATION UTILITIES
+// ============================================================================
+
+// TODO: Re-enable Better Stack types once bundling issues are resolved
+// export type { BetterStackConfig, BetterStackOptions, BetterStackMetrics, BetterStackTrace, BetterStackSpan, BetterStackEvent } from './shared/types/better-stack-types';
+// Legacy Logtail types for backward compatibility
+export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
+
+// ============================================================================
+// ERROR HANDLING UTILITIES
+// ============================================================================
+
+export type {
+  OpenTelemetryConfig,
+  OpenTelemetryOptions,
+  VercelOTelConfig,
+} from './shared/types/opentelemetry-types';
+
+// ============================================================================
+// ADVANCED UTILITIES
+// ============================================================================
+
+// Provider-specific types
+export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
+export type {
+  GrafanaMonitoringConfig,
+  GrafanaProviderConfig,
+  GrafanaMetric,
+  GrafanaBusinessMetric,
+  GrafanaHealthCheck,
+  GrafanaTrace,
+  GrafanaLogEntry,
+} from './shared/types/grafana-types';
 // Core observability types
 export type {
   Breadcrumb,
@@ -81,37 +154,3 @@ export type {
   ObservabilityProvider,
   ObservabilityProviderConfig,
 } from './shared/types/types';
-
-// Provider-specific types
-export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
-export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-// TODO: Re-enable Better Stack types once bundling issues are resolved
-// export type { BetterStackConfig, BetterStackOptions, BetterStackMetrics, BetterStackTrace, BetterStackSpan, BetterStackEvent } from './shared/types/better-stack-types';
-// Legacy Logtail types for backward compatibility
-export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
-
-// ============================================================================
-// CONFIGURATION UTILITIES
-// ============================================================================
-
-export { debugConfig, validateConfig } from './shared/utils/validation';
-
-// ============================================================================
-// ERROR HANDLING UTILITIES
-// ============================================================================
-
-export {
-  createErrorBoundaryHandler,
-  createSafeFunction,
-  parseAndCaptureError,
-  parseError,
-  withErrorHandling,
-} from './shared/utils/error';
-
-// ============================================================================
-// ADVANCED UTILITIES
-// ============================================================================
-
-// Manager utilities
-export { createObservabilityManager } from './shared/utils/manager';
-export { ObservabilityManager as ObservabilityManagerClass } from './shared/utils/manager';

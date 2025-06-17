@@ -33,6 +33,9 @@ export {
   // Two-factor authentication
   enableTwoFactor,
   forgotPassword,
+  // Password management
+  changePassword,
+  setPassword,
   getActiveMember,
   getInvitation,
   getOrganization,

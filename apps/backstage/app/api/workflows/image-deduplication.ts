@@ -14,7 +14,7 @@ import {
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const ImageDeduplicationInput = z.object({
@@ -95,23 +95,14 @@ const imageHashingStepFactory = createWorkflowStep(
     };
   },
   {
-    executionConfig: {
-      retryConfig: {
-        backoff: 'exponential',
-        maxAttempts: 3,
-        retryIf: (error) => error.message.includes('timeout') || error.message.includes('stream'),
-      },
-      timeout: { execution: 30000 }, // 30s per image
-    },
+    retries: 3,
+    timeout: 30000, // 30s per image
   },
 );
 
 // Register the reusable step
 const stepRegistry = new StepRegistry();
-stepRegistry.register(imageHashingStepFactory, {
-  category: 'media',
-  tags: ['reusable', 'hashing'],
-});
+stepRegistry.register('imageHashingStepFactory', imageHashingStepFactory);
 
 // Step 1: Stream and hash images in parallel batches
 export const streamAndHashImagesStep = compose(
@@ -161,18 +152,14 @@ export const streamAndHashImagesStep = compose(
       totalProcessed: results.length,
     };
   }),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes total
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['imagesProcessed', 'hashingTime'],
-    }),
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes total
+  (step: any) => withStepMonitoring(step),
 );
 
 // Step 2: Store hashes in database
 export const storeHashesStep = compose(
   StepTemplates.database('store-image-hashes', 'Store image hashes in PostgreSQL'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Reusable duplicate detection logic
@@ -251,12 +238,10 @@ export const findDuplicatesStep = createStep('find-duplicates', async (data: any
   // Use the duplicate detection logic
   const detector = duplicateDetectionLogic;
   const result = await detector.execute({
-    executionId: `detect_${Date.now()}`,
     input: {
       hashes: allHashes,
       threshold: options?.similarity_threshold || 0.95,
     },
-    workflowId: 'image-dedup',
   });
 
   // Group duplicates by product
@@ -300,8 +285,8 @@ export const createDeduplicationReportStep = createStep('create-report', async (
   const { duplicateAnalysis, hashedImages } = data;
 
   const report = {
-    actions: [],
-    recommendations: [],
+    actions: [] as any[],
+    recommendations: [] as any[],
     summary: {
       deduplicationRate: (duplicateAnalysis.duplicatesFound / hashedImages.length) * 100,
       duplicatesFound: duplicateAnalysis.duplicatesFound,
@@ -313,9 +298,9 @@ export const createDeduplicationReportStep = createStep('create-report', async (
   };
 
   // Generate recommendations
-  if (report.summary.deduplicationRate > 20) {
+  if ((report.summary as any).deduplicationRate > 20) {
     report.recommendations.push({
-      impact: `Could save ${Math.floor(report.summary.duplicatesFound * 2.5)}MB of storage`,
+      impact: `Could save ${Math.floor((report.summary as any).duplicatesFound * 2.5)}MB of storage`,
       message:
         'High duplication rate detected. Consider implementing duplicate prevention at upload time.',
       priority: 'high',
@@ -371,13 +356,13 @@ export const updateProductMappingsStep = compose(
       productMappings: mappings,
     };
   }),
-  (step) => withStepRetry(step, { maxAttempts: 2 }),
+  (step: any) => withStepRetry(step, { maxRetries: 2 }),
 );
 
 // Step 6: Clean up duplicate images (optional)
 export const cleanupDuplicatesStep = StepTemplates.conditional(
   'cleanup-duplicates',
-  'Remove duplicate images if confirmed',
+  (input: any) => input.shouldCleanup === true,
   {
     trueStep: createStep('perform-cleanup', async (data: any) => {
       const { productMappings } = data;
@@ -401,14 +386,7 @@ export const cleanupDuplicatesStep = StepTemplates.conditional(
 // Step 7: Send notifications
 export const sendDeduplicationNotificationStep = StepTemplates.notification(
   'dedup-notification',
-  'Notify about deduplication results',
-  {
-    channels: ['email', 'webhook'],
-    template: {
-      subject: 'Image Deduplication Report - {{totalImages}} processed',
-      webhookUrl: 'https://api.example.com/webhooks/deduplication',
-    },
-  },
+  'info',
 );
 
 // Main workflow definition

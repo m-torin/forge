@@ -1,6 +1,6 @@
 import { AIManager } from '../shared/utils/manager';
 
-import type {
+import {
   AIManagerConfig,
   ClassificationResult,
   CompletionOptions,
@@ -17,7 +17,39 @@ export class ClientAIManager extends AIManager {
 
   constructor(config?: AIManagerConfig & { baseUrl?: string }) {
     super(config);
-    this.baseUrl = config?.baseUrl || '';
+    this.baseUrl = config?.baseUrl ?? '';
+  }
+
+  async analyzeSentiment(text: string): Promise<SentimentResult> {
+    const response = await fetch(`${this.baseUrl}/api/ai/sentiment`, {
+      body: JSON.stringify({ text }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json() as Promise<SentimentResult>;
+  }
+
+  async classify(text: string, labels?: string[]): Promise<ClassificationResult> {
+    const response = await fetch(`${this.baseUrl}/api/ai/classify`, {
+      body: JSON.stringify({ labels, text }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json() as Promise<ClassificationResult>;
   }
 
   // Override methods to proxy to server
@@ -35,6 +67,38 @@ export class ClientAIManager extends AIManager {
     }
 
     return response.json();
+  }
+
+  async extractEntities(text: string): Promise<EntityResult> {
+    const response = await fetch(`${this.baseUrl}/api/ai/extract`, {
+      body: JSON.stringify({ text }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json() as Promise<EntityResult>;
+  }
+
+  async moderate(content: string): Promise<ModerationResult> {
+    const response = await fetch(`${this.baseUrl}/api/ai/moderate`, {
+      body: JSON.stringify({ content }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json() as Promise<ModerationResult>;
   }
 
   async *stream(options: StreamOptions): AsyncIterableIterator<StreamChunk> {
@@ -69,7 +133,7 @@ export class ClientAIManager extends AIManager {
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
 
-        buffer = lines.pop() || '';
+        buffer = lines.pop() ?? '';
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -86,8 +150,9 @@ export class ClientAIManager extends AIManager {
                 options.onChunk(chunk);
               }
               yield chunk;
-            } catch (_error) {
-              console.warn('Failed to parse chunk:', data);
+            } catch (error: any) {
+              // eslint-disable-next-line no-console
+              console.warn('Failed to parse chunk: ', data);
             }
           }
         }
@@ -95,69 +160,5 @@ export class ClientAIManager extends AIManager {
     } finally {
       reader.releaseLock();
     }
-  }
-
-  async moderate(content: string): Promise<ModerationResult> {
-    const response = await fetch(`${this.baseUrl}/api/ai/moderate`, {
-      body: JSON.stringify({ content }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json() as Promise<ModerationResult>;
-  }
-
-  async classify(text: string, labels?: string[]): Promise<ClassificationResult> {
-    const response = await fetch(`${this.baseUrl}/api/ai/classify`, {
-      body: JSON.stringify({ labels, text }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json() as Promise<ClassificationResult>;
-  }
-
-  async analyzeSentiment(text: string): Promise<SentimentResult> {
-    const response = await fetch(`${this.baseUrl}/api/ai/sentiment`, {
-      body: JSON.stringify({ text }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json() as Promise<SentimentResult>;
-  }
-
-  async extractEntities(text: string): Promise<EntityResult> {
-    const response = await fetch(`${this.baseUrl}/api/ai/extract`, {
-      body: JSON.stringify({ text }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json() as Promise<EntityResult>;
   }
 }

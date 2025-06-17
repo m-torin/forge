@@ -10,16 +10,13 @@ import {
   Card,
   Badge,
   Button,
-  Avatar,
   Paper,
   Tabs,
   Grid,
   ActionIcon,
-  Divider,
   Alert,
-  Progress,
   NumberFormatter,
-  Tooltip,
+  Skeleton,
 } from '@mantine/core';
 import {
   IconSearch,
@@ -33,11 +30,11 @@ import {
   IconBrain,
   IconSparkles,
   IconChartLine,
-  IconSettings,
   IconBolt,
   IconTarget,
-  IconLanguage,
+  IconAlertTriangle,
 } from '@tabler/icons-react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 import {
   InstantSearch,
@@ -50,7 +47,6 @@ import {
   ClearRefinements,
   CurrentRefinements,
   HierarchicalMenu,
-  Menu,
   RangeInput,
   ToggleRefinement,
   Breadcrumb,
@@ -59,17 +55,12 @@ import {
   Index,
   useSearchBox,
   useStats,
-  useRefinementList,
-  useSortBy,
-  useCurrentRefinements,
-  usePagination,
-  useRange,
-  useHits,
-  connectSearchBox,
-  connectHits,
-  connectRefinementList,
-  connectStats,
-  connectAutoComplete,
+  // TODO: These connect functions are deprecated in newer versions
+  // connectSearchBox,
+  // connectHits,
+  // connectRefinementList,
+  // connectStats,
+  // connectAutoComplete,
 } from 'react-instantsearch';
 
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
@@ -78,7 +69,7 @@ import { env } from '@/env';
 // Initialize search client
 const searchClient = algoliasearch(
   env.NEXT_PUBLIC_ALGOLIA_APP_ID,
-  env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY
+  env.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY,
 );
 
 // Type definitions for federated data
@@ -170,7 +161,7 @@ function EnhancedProductCard({ hit }: { hit: ProductHit }) {
               }}
             />
           )}
-          
+
           {/* Badges overlay */}
           <div style={{ position: 'absolute', top: 8, left: 8 }}>
             <Stack gap={4}>
@@ -227,7 +218,9 @@ function EnhancedProductCard({ hit }: { hit: ProductHit }) {
         {/* Color */}
         {hit.color?.original_name && (
           <Group gap={4}>
-            <Text size="xs" c="dimmed">Color:</Text>
+            <Text size="xs" c="dimmed">
+              Color:
+            </Text>
             <Text size="xs">{hit.color.original_name}</Text>
           </Group>
         )}
@@ -258,15 +251,18 @@ function EnhancedProductCard({ hit }: { hit: ProductHit }) {
             {isOnSale && discountedPrice !== price ? (
               <Group gap={4}>
                 <Text fw={700} size="lg" c="red">
-                  {currency}{discountedPrice.toFixed(2)}
+                  {currency}
+                  {discountedPrice.toFixed(2)}
                 </Text>
                 <Text size="sm" td="line-through" c="dimmed">
-                  {currency}{price.toFixed(2)}
+                  {currency}
+                  {price.toFixed(2)}
                 </Text>
               </Group>
             ) : (
               <Text fw={700} size="lg" c="blue">
-                {currency}{price.toFixed(2)}
+                {currency}
+                {price.toFixed(2)}
               </Text>
             )}
           </div>
@@ -341,7 +337,7 @@ function FAQCard({ hit }: { hit: FAQHit }) {
             {hit.list_categories.join(', ')}
           </Badge>
         </Group>
-        
+
         <Text
           fw={500}
           size="sm"
@@ -350,7 +346,7 @@ function FAQCard({ hit }: { hit: FAQHit }) {
             __html: hit._highlightResult?.title?.value || hit.title,
           }}
         />
-        
+
         <Text
           size="xs"
           c="dimmed"
@@ -359,7 +355,7 @@ function FAQCard({ hit }: { hit: FAQHit }) {
             __html: hit._highlightResult?.description?.value || hit.description,
           }}
         />
-        
+
         <Button variant="outline" size="xs" fullWidth mt="auto">
           View Answer
         </Button>
@@ -371,7 +367,7 @@ function FAQCard({ hit }: { hit: FAQHit }) {
 // Custom SearchBox with advanced features
 function AdvancedSearchBox() {
   const { query, refine } = useSearchBox();
-  
+
   return (
     <Paper p="md" shadow="sm" radius="md">
       <Stack gap="sm">
@@ -384,7 +380,8 @@ function AdvancedSearchBox() {
           classNames={{
             root: 'w-full',
             form: 'w-full',
-            input: 'w-full p-3 border border-gray-300 rounded-lg text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200',
+            input:
+              'w-full p-3 border border-gray-300 rounded-lg text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200',
             submit: 'hidden',
             reset: query ? 'block' : 'hidden',
           }}
@@ -400,7 +397,7 @@ function AdvancedSearchBox() {
 // Enhanced Stats Component
 function EnhancedStats() {
   const { nbHits, nbPages, page, processingTimeMS } = useStats();
-  
+
   return (
     <Paper p="md" shadow="sm" radius="md">
       <Group justify="space-between">
@@ -432,7 +429,8 @@ function AdvancedFilters() {
           <Text fw={600}>Filters</Text>
           <ClearRefinements
             classNames={{
-              button: 'text-blue-600 text-sm hover:text-blue-800 cursor-pointer border-none bg-transparent p-0',
+              button:
+                'text-blue-600 text-sm hover:text-blue-800 cursor-pointer border-none bg-transparent p-0',
             }}
           />
         </Group>
@@ -450,7 +448,9 @@ function AdvancedFilters() {
       <Paper p="md" shadow="sm" radius="md">
         <Group mb="sm">
           <IconFilter size={16} />
-          <Text fw={600} size="sm">Categories</Text>
+          <Text fw={600} size="sm">
+            Categories
+          </Text>
         </Group>
         <HierarchicalMenu
           attributes={[
@@ -474,7 +474,9 @@ function AdvancedFilters() {
       <Paper p="md" shadow="sm" radius="md">
         <Group mb="sm">
           <IconTarget size={16} />
-          <Text fw={600} size="sm">Brands</Text>
+          <Text fw={600} size="sm">
+            Brands
+          </Text>
         </Group>
         <RefinementList
           attribute="brand"
@@ -497,7 +499,9 @@ function AdvancedFilters() {
       <Paper p="md" shadow="sm" radius="md">
         <Group mb="sm">
           <IconTrendingUp size={16} />
-          <Text fw={600} size="sm">Price Range</Text>
+          <Text fw={600} size="sm">
+            Price Range
+          </Text>
         </Group>
         <RangeInput
           attribute="price.value"
@@ -514,7 +518,9 @@ function AdvancedFilters() {
       <Paper p="md" shadow="sm" radius="md">
         <Group mb="sm">
           <IconSparkles size={16} />
-          <Text fw={600} size="sm">Colors</Text>
+          <Text fw={600} size="sm">
+            Colors
+          </Text>
         </Group>
         <RefinementList
           attribute="color.original_name"
@@ -535,7 +541,9 @@ function AdvancedFilters() {
       <Paper p="md" shadow="sm" radius="md">
         <Group mb="sm">
           <IconBolt size={16} />
-          <Text fw={600} size="sm">Special Offers</Text>
+          <Text fw={600} size="sm">
+            Special Offers
+          </Text>
         </Group>
         <ToggleRefinement
           attribute="price.on_sales"
@@ -569,7 +577,9 @@ function AdvancedSortBy() {
     <Paper p="md" shadow="sm" radius="md">
       <Group mb="sm">
         <IconSortAscending size={16} />
-        <Text fw={600} size="sm">Sort By</Text>
+        <Text fw={600} size="sm">
+          Sort By
+        </Text>
       </Group>
       <SortBy
         items={[
@@ -588,211 +598,402 @@ function AdvancedSortBy() {
   );
 }
 
+interface ComprehensiveAlgoliaShowcaseProps {
+  loading?: boolean;
+  error?: string;
+  'data-testid'?: string;
+}
+
+// Loading skeleton for ComprehensiveAlgoliaShowcase
+function ComprehensiveAlgoliaShowcaseSkeleton({ testId }: { testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Stack gap="xl">
+        <div style={{ textAlign: 'center' }}>
+          <Skeleton height={40} width={400} mx="auto" mb="md" />
+          <Skeleton height={24} width={600} mx="auto" />
+        </div>
+        <Paper p="md">
+          <Skeleton height={60} />
+        </Paper>
+        <div>
+          <Group mb="xl">
+            {Array(3)
+              .fill(0)
+              .map((_, i) => (
+                <Skeleton key={i} height={40} width={120} />
+              ))}
+          </Group>
+          <Group align="flex-start" gap="xl">
+            <div style={{ minWidth: '280px' }}>
+              <Stack gap="lg">
+                {Array(5)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Skeleton key={i} height={120} />
+                  ))}
+              </Stack>
+            </div>
+            <div style={{ flex: 1 }}>
+              <Skeleton height={60} mb="lg" />
+              <Grid>
+                {Array(8)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Grid.Col key={i} span={3}>
+                      <Skeleton height={300} />
+                    </Grid.Col>
+                  ))}
+              </Grid>
+            </div>
+          </Group>
+        </div>
+      </Stack>
+    </Container>
+  );
+}
+
+// Error state for ComprehensiveAlgoliaShowcase
+function ComprehensiveAlgoliaShowcaseError({ error, testId }: { error: string; testId?: string }) {
+  return (
+    <Container size="xl" py="xl" data-testid={testId}>
+      <Alert icon={<IconAlertTriangle size={16} />} color="red" variant="light">
+        <Text size="sm">Algolia showcase failed to load: {error}</Text>
+      </Alert>
+    </Container>
+  );
+}
+
 // Main Showcase Component
-export default function ComprehensiveAlgoliaShowcase() {
+export default function ComprehensiveAlgoliaShowcase({
+  loading = false,
+  error,
+  'data-testid': testId = 'comprehensive-algolia-showcase',
+}: ComprehensiveAlgoliaShowcaseProps = {}) {
   const [activeIndex, setActiveIndex] = useState('products');
+  const [internalError, setInternalError] = useState<string | null>(null);
+
+  // Show loading state
+  if (loading) {
+    return <ComprehensiveAlgoliaShowcaseSkeleton testId={testId} />;
+  }
+
+  // Show error state
+  const currentError = error || internalError;
+  if (currentError) {
+    return <ComprehensiveAlgoliaShowcaseError error={currentError} testId={testId} />;
+  }
 
   return (
-    <Container size="xl" py="xl">
-      <InstantSearch searchClient={searchClient} indexName="autocomplete_demo_products">
-        <Stack gap="xl">
-          {/* Header */}
-          <div style={{ textAlign: 'center' }}>
-            <Title order={1} mb="md">
-              Complete Algolia React UI Showcase
-            </Title>
-            <Text size="lg" c="dimmed" mb="xl">
-              Demonstrating all Algolia UI components with federated e-commerce data
-            </Text>
-          </div>
+    <ErrorBoundary
+      fallback={
+        <ComprehensiveAlgoliaShowcaseError
+          error="Algolia showcase failed to render"
+          testId={testId}
+        />
+      }
+    >
+      <Container size="xl" py="xl" data-testid={testId}>
+        <ErrorBoundary
+          fallback={
+            <ComprehensiveAlgoliaShowcaseError
+              error="Search client initialization failed"
+              testId={testId}
+            />
+          }
+        >
+          <InstantSearch searchClient={searchClient} indexName="autocomplete_demo_products">
+            <Stack gap="xl">
+              {/* Header */}
+              <ErrorBoundary fallback={<Skeleton height={100} />}>
+                <div style={{ textAlign: 'center' }}>
+                  <Title order={1} mb="md">
+                    Complete Algolia React UI Showcase
+                  </Title>
+                  <Text size="lg" c="dimmed" mb="xl">
+                    Demonstrating all Algolia UI components with federated e-commerce data
+                  </Text>
+                </div>
+              </ErrorBoundary>
 
-          {/* Main Search */}
-          <AdvancedSearchBox />
+              {/* Main Search */}
+              <ErrorBoundary fallback={<Skeleton height={80} />}>
+                <AdvancedSearchBox />
+              </ErrorBoundary>
 
-          {/* Multi-Index Tabs */}
-          <Tabs value={activeIndex} onChange={(value) => setActiveIndex(value || 'products')}>
-            <Tabs.List grow>
-              <Tabs.Tab value="products" leftSection={<IconShoppingCart size={16} />}>
-                Products ({<Stats />})
-              </Tabs.Tab>
-              <Tabs.Tab value="articles" leftSection={<IconBrain size={16} />}>
-                Articles
-              </Tabs.Tab>
-              <Tabs.Tab value="faq" leftSection={<IconUsers size={16} />}>
-                FAQ
-              </Tabs.Tab>
-            </Tabs.List>
+              {/* Multi-Index Tabs */}
+              <ErrorBoundary fallback={<Skeleton height={400} />}>
+                <Tabs
+                  value={activeIndex}
+                  onChange={(value) => {
+                    try {
+                      setActiveIndex(value || 'products');
+                    } catch (err) {
+                      console.error('Failed to change tab:', err);
+                      setInternalError('Failed to change tab');
+                    }
+                  }}
+                >
+                  <Tabs.List grow>
+                    <Tabs.Tab value="products" leftSection={<IconShoppingCart size={16} />}>
+                      Products (
+                      <ErrorBoundary fallback={<span>-</span>}>
+                        <Stats />
+                      </ErrorBoundary>
+                      )
+                    </Tabs.Tab>
+                    <Tabs.Tab value="articles" leftSection={<IconBrain size={16} />}>
+                      Articles
+                    </Tabs.Tab>
+                    <Tabs.Tab value="faq" leftSection={<IconUsers size={16} />}>
+                      FAQ
+                    </Tabs.Tab>
+                  </Tabs.List>
 
-            {/* Products Tab */}
-            <Tabs.Panel value="products" pt="md">
-              <Index indexName="autocomplete_demo_products">
-                <Configure hitsPerPage={12} />
-                
-                <Group align="flex-start" gap="xl" wrap="nowrap">
-                  {/* Sidebar */}
-                  <div style={{ minWidth: '280px', maxWidth: '320px' }}>
-                    <Stack gap="lg">
-                      <AdvancedSortBy />
-                      <AdvancedFilters />
-                      <PoweredBy />
-                    </Stack>
-                  </div>
+                  {/* Products Tab */}
+                  <Tabs.Panel value="products" pt="md">
+                    <ErrorBoundary fallback={<Skeleton height={500} />}>
+                      <Index indexName="autocomplete_demo_products">
+                        <Configure hitsPerPage={12} />
 
-                  {/* Main Content */}
-                  <div style={{ flex: 1 }}>
-                    <Stack gap="lg">
-                      <EnhancedStats />
-                      
-                      <Breadcrumb
-                        attributes={[
-                          'hierarchical_categories.lvl0',
-                          'hierarchical_categories.lvl1',
-                          'hierarchical_categories.lvl2',
-                        ]}
-                        classNames={{
-                          list: 'flex space-x-2 text-sm',
-                          item: 'text-blue-600 hover:text-blue-800',
-                          separator: 'text-gray-400 mx-2',
-                        }}
-                      />
+                        <Group align="flex-start" gap="xl" wrap="nowrap">
+                          {/* Sidebar */}
+                          <div style={{ minWidth: '280px', maxWidth: '320px' }}>
+                            <Stack gap="lg">
+                              <ErrorBoundary fallback={<Skeleton height={80} />}>
+                                <AdvancedSortBy />
+                              </ErrorBoundary>
+                              <ErrorBoundary fallback={<Skeleton height={200} />}>
+                                <AdvancedFilters />
+                              </ErrorBoundary>
+                              <ErrorBoundary fallback={<Skeleton height={40} />}>
+                                <PoweredBy />
+                              </ErrorBoundary>
+                            </Stack>
+                          </div>
 
-                      <Hits
-                        hitComponent={EnhancedProductCard}
-                        classNames={{
-                          list: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4',
-                        }}
-                      />
+                          {/* Main Content */}
+                          <div style={{ flex: 1 }}>
+                            <Stack gap="lg">
+                              <ErrorBoundary fallback={<Skeleton height={60} />}>
+                                <EnhancedStats />
+                              </ErrorBoundary>
 
-                      <Group justify="center" mt="xl">
-                        <Pagination
-                          showFirst={false}
-                          showLast={false}
-                          showPrevious={true}
-                          showNext={true}
-                          classNames={{
-                            root: 'flex',
-                            item: 'mx-1 px-3 py-2 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer',
-                            link: 'block',
-                          }}
-                        />
-                      </Group>
-                    </Stack>
-                  </div>
-                </Group>
-              </Index>
-            </Tabs.Panel>
+                              <ErrorBoundary fallback={<Skeleton height={30} />}>
+                                <Breadcrumb
+                                  attributes={[
+                                    'hierarchical_categories.lvl0',
+                                    'hierarchical_categories.lvl1',
+                                    'hierarchical_categories.lvl2',
+                                  ]}
+                                  classNames={{
+                                    list: 'flex space-x-2 text-sm',
+                                    item: 'text-blue-600 hover:text-blue-800',
+                                    separator: 'text-gray-400 mx-2',
+                                  }}
+                                />
+                              </ErrorBoundary>
 
-            {/* Articles Tab */}
-            <Tabs.Panel value="articles" pt="md">
-              <Index indexName="autocomplete_demo_articles">
-                <Configure hitsPerPage={9} />
-                <Stack gap="lg">
-                  <Stats />
-                  <Hits
-                    hitComponent={ArticleCard}
-                    classNames={{
-                      list: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4',
-                    }}
-                  />
-                  <Group justify="center">
-                    <Pagination />
-                  </Group>
-                </Stack>
-              </Index>
-            </Tabs.Panel>
+                              <ErrorBoundary
+                                fallback={
+                                  <Grid>
+                                    {Array(8)
+                                      .fill(0)
+                                      .map((_, i) => (
+                                        <Grid.Col key={i} span={3}>
+                                          <Skeleton height={300} />
+                                        </Grid.Col>
+                                      ))}
+                                  </Grid>
+                                }
+                              >
+                                <Hits
+                                  hitComponent={EnhancedProductCard}
+                                  classNames={{
+                                    list: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4',
+                                  }}
+                                />
+                              </ErrorBoundary>
 
-            {/* FAQ Tab */}
-            <Tabs.Panel value="faq" pt="md">
-              <Index indexName="autocomplete_demo_faq">
-                <Configure hitsPerPage={6} />
-                <Stack gap="lg">
-                  <Group>
-                    <Stats />
-                    <RefinementList
-                      attribute="list_categories"
-                      limit={5}
-                      classNames={{
-                        list: 'flex space-x-2',
-                        item: 'text-sm',
-                        label: 'cursor-pointer bg-gray-100 px-3 py-1 rounded hover:bg-gray-200',
-                        checkbox: 'hidden',
-                      }}
-                    />
-                  </Group>
-                  <Hits
-                    hitComponent={FAQCard}
-                    classNames={{
-                      list: 'grid grid-cols-1 sm:grid-cols-2 gap-4',
-                    }}
-                  />
-                  <Group justify="center">
-                    <Pagination />
-                  </Group>
-                </Stack>
-              </Index>
-            </Tabs.Panel>
-          </Tabs>
+                              <ErrorBoundary fallback={<Skeleton height={40} />}>
+                                <Group justify="center" mt="xl">
+                                  <Pagination
+                                    showFirst={false}
+                                    showLast={false}
+                                    showPrevious={true}
+                                    showNext={true}
+                                    classNames={{
+                                      root: 'flex',
+                                      item: 'mx-1 px-3 py-2 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer',
+                                      link: 'block',
+                                    }}
+                                  />
+                                </Group>
+                              </ErrorBoundary>
+                            </Stack>
+                          </div>
+                        </Group>
+                      </Index>
+                    </ErrorBoundary>
+                  </Tabs.Panel>
 
-          {/* Features Showcase */}
-          <Paper p="xl" shadow="sm" radius="md" mt="xl">
-            <Stack gap="lg">
-              <Title order={2} ta="center">
-                Algolia Features Demonstrated
-              </Title>
-              
-              <Grid>
-                <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-                  <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
-                    <Stack gap="sm" ta="center">
-                      <IconSearch size={32} color="#4CAF50" />
-                      <Text fw={600}>InstantSearch</Text>
-                      <Text size="sm" c="dimmed">
-                        Real-time search results with highlighting and typo tolerance
-                      </Text>
-                    </Stack>
-                  </Card>
-                </Grid.Col>
+                  {/* Articles Tab */}
+                  <Tabs.Panel value="articles" pt="md">
+                    <ErrorBoundary fallback={<Skeleton height={400} />}>
+                      <Index indexName="autocomplete_demo_articles">
+                        <Configure hitsPerPage={9} />
+                        <Stack gap="lg">
+                          <ErrorBoundary fallback={<Skeleton height={30} />}>
+                            <Stats />
+                          </ErrorBoundary>
+                          <ErrorBoundary
+                            fallback={
+                              <Grid>
+                                {Array(6)
+                                  .fill(0)
+                                  .map((_, i) => (
+                                    <Grid.Col key={i} span={4}>
+                                      <Skeleton height={250} />
+                                    </Grid.Col>
+                                  ))}
+                              </Grid>
+                            }
+                          >
+                            <Hits
+                              hitComponent={ArticleCard}
+                              classNames={{
+                                list: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4',
+                              }}
+                            />
+                          </ErrorBoundary>
+                          <ErrorBoundary fallback={<Skeleton height={40} />}>
+                            <Group justify="center">
+                              <Pagination />
+                            </Group>
+                          </ErrorBoundary>
+                        </Stack>
+                      </Index>
+                    </ErrorBoundary>
+                  </Tabs.Panel>
 
-                <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-                  <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
-                    <Stack gap="sm" ta="center">
-                      <IconFilter size={32} color="#2196F3" />
-                      <Text fw={600}>Faceted Search</Text>
-                      <Text size="sm" c="dimmed">
-                        Dynamic filters with hierarchical categories and refinements
-                      </Text>
-                    </Stack>
-                  </Card>
-                </Grid.Col>
+                  {/* FAQ Tab */}
+                  <Tabs.Panel value="faq" pt="md">
+                    <ErrorBoundary fallback={<Skeleton height={400} />}>
+                      <Index indexName="autocomplete_demo_faq">
+                        <Configure hitsPerPage={6} />
+                        <Stack gap="lg">
+                          <ErrorBoundary fallback={<Skeleton height={40} />}>
+                            <Group>
+                              <Stats />
+                              <RefinementList
+                                attribute="list_categories"
+                                limit={5}
+                                classNames={{
+                                  list: 'flex space-x-2',
+                                  item: 'text-sm',
+                                  label:
+                                    'cursor-pointer bg-gray-100 px-3 py-1 rounded hover:bg-gray-200',
+                                  checkbox: 'hidden',
+                                }}
+                              />
+                            </Group>
+                          </ErrorBoundary>
+                          <ErrorBoundary
+                            fallback={
+                              <Grid>
+                                {Array(4)
+                                  .fill(0)
+                                  .map((_, i) => (
+                                    <Grid.Col key={i} span={6}>
+                                      <Skeleton height={200} />
+                                    </Grid.Col>
+                                  ))}
+                              </Grid>
+                            }
+                          >
+                            <Hits
+                              hitComponent={FAQCard}
+                              classNames={{
+                                list: 'grid grid-cols-1 sm:grid-cols-2 gap-4',
+                              }}
+                            />
+                          </ErrorBoundary>
+                          <ErrorBoundary fallback={<Skeleton height={40} />}>
+                            <Group justify="center">
+                              <Pagination />
+                            </Group>
+                          </ErrorBoundary>
+                        </Stack>
+                      </Index>
+                    </ErrorBoundary>
+                  </Tabs.Panel>
+                </Tabs>
+              </ErrorBoundary>
 
-                <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-                  <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
-                    <Stack gap="sm" ta="center">
-                      <IconBrain size={32} color="#FF9800" />
-                      <Text fw={600}>Multi-Index</Text>
-                      <Text size="sm" c="dimmed">
-                        Search across different content types with federated results
-                      </Text>
-                    </Stack>
-                  </Card>
-                </Grid.Col>
+              {/* Features Showcase */}
+              <ErrorBoundary fallback={<Skeleton height={200} />}>
+                <Paper p="xl" shadow="sm" radius="md" mt="xl">
+                  <Stack gap="lg">
+                    <Title order={2} ta="center">
+                      Algolia Features Demonstrated
+                    </Title>
 
-                <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-                  <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
-                    <Stack gap="sm" ta="center">
-                      <IconChartLine size={32} color="#9C27B0" />
-                      <Text fw={600}>Analytics</Text>
-                      <Text size="sm" c="dimmed">
-                        Search analytics, stats, and performance monitoring
-                      </Text>
-                    </Stack>
-                  </Card>
-                </Grid.Col>
-              </Grid>
+                    <Grid>
+                      <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+                        <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
+                          <Stack gap="sm" ta="center">
+                            <IconSearch size={32} color="#4CAF50" />
+                            <Text fw={600}>InstantSearch</Text>
+                            <Text size="sm" c="dimmed">
+                              Real-time search results with highlighting and typo tolerance
+                            </Text>
+                          </Stack>
+                        </Card>
+                      </Grid.Col>
+
+                      <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+                        <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
+                          <Stack gap="sm" ta="center">
+                            <IconFilter size={32} color="#2196F3" />
+                            <Text fw={600}>Faceted Search</Text>
+                            <Text size="sm" c="dimmed">
+                              Dynamic filters with hierarchical categories and refinements
+                            </Text>
+                          </Stack>
+                        </Card>
+                      </Grid.Col>
+
+                      <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+                        <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
+                          <Stack gap="sm" ta="center">
+                            <IconBrain size={32} color="#FF9800" />
+                            <Text fw={600}>Multi-Index</Text>
+                            <Text size="sm" c="dimmed">
+                              Search across different content types with federated results
+                            </Text>
+                          </Stack>
+                        </Card>
+                      </Grid.Col>
+
+                      <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+                        <Card shadow="xs" padding="lg" radius="md" withBorder h="100%">
+                          <Stack gap="sm" ta="center">
+                            <IconChartLine size={32} color="#9C27B0" />
+                            <Text fw={600}>Analytics</Text>
+                            <Text size="sm" c="dimmed">
+                              Search analytics, stats, and performance monitoring
+                            </Text>
+                          </Stack>
+                        </Card>
+                      </Grid.Col>
+                    </Grid>
+                  </Stack>
+                </Paper>
+              </ErrorBoundary>
             </Stack>
-          </Paper>
-        </Stack>
-      </InstantSearch>
-    </Container>
+          </InstantSearch>
+        </ErrorBoundary>
+      </Container>
+    </ErrorBoundary>
   );
 }

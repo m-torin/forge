@@ -1,19 +1,25 @@
 /**
- * Next.js Client Integration
+ * Client-side orchestration exports for Next.js
  * React hooks and utilities for workflow management in Next.js applications
+ *
+ * This file provides client-side orchestration functionality specifically for Next.js applications.
+ * Use this in client components, React hooks, and Next.js browser environments.
+ *
+ * For non-Next.js applications, use '@repo/orchestration/client' instead.
  */
 
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type {
-  ExecutionHistory,
-  WorkflowAlert,
-  WorkflowMetrics,
-} from './shared/features/monitoring';
-import type { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
-import type { WorkflowDefinition, WorkflowExecution, WorkflowProvider, WorkflowData } from './shared/types/index';
+import { ExecutionHistory, WorkflowAlert, WorkflowMetrics } from './shared/features/monitoring';
+import { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
+import {
+  WorkflowDefinition,
+  WorkflowExecution,
+  WorkflowProvider,
+  WorkflowData,
+} from './shared/types/index';
 
 export interface UseExecutionHistoryOptions {
   /** Enable/disable the hook */
@@ -198,7 +204,10 @@ export function useExecutionHistory(
   const { enabled = true, filter, pagination, provider, refreshInterval = 30000 } = options;
 
   // Memoize filter and pagination to prevent unnecessary re-renders
-  const memoizedFilter = useMemo(() => filter, [filter?.status, filter?.timeRange?.start, filter?.timeRange?.end]);
+  const memoizedFilter = useMemo(
+    () => filter,
+    [filter?.status, filter?.timeRange?.start, filter?.timeRange?.end],
+  );
   const memoizedPagination = useMemo(() => pagination, [pagination?.limit, pagination?.offset]);
 
   const refresh = useCallback(async () => {
@@ -211,7 +220,7 @@ export function useExecutionHistory(
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -223,12 +232,12 @@ export function useExecutionHistory(
       // This would call an execution history provider method
       // For now, this is a placeholder
       const history: ExecutionHistory[] = []; // await provider.getExecutionHistory(workflowId, { ...memoizedPagination, offset: 0, ...memoizedFilter, signal });
-      
+
       if (signal.aborted || !isMountedRef.current) return;
-      
+
       setExecutions(history);
       setHasMore(history.length === (memoizedPagination?.limit || 10));
-    } catch (err) {
+    } catch (err: any) {
       if (signal.aborted || !isMountedRef.current) return;
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
@@ -247,7 +256,7 @@ export function useExecutionHistory(
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -260,11 +269,11 @@ export function useExecutionHistory(
       const history: ExecutionHistory[] = []; // await provider.getExecutionHistory(workflowId, { ...memoizedPagination, offset: newOffset, ...memoizedFilter, signal });
 
       if (signal.aborted || !isMountedRef.current) return;
-      
-      setExecutions((prev) => [...prev, ...history]);
+
+      setExecutions((prev: any) => [...prev, ...history]);
       setOffset(newOffset);
       setHasMore(history.length === (memoizedPagination?.limit || 10));
-    } catch (err) {
+    } catch (err: any) {
       if (signal.aborted || !isMountedRef.current) return;
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
@@ -272,7 +281,16 @@ export function useExecutionHistory(
         setIsLoading(false);
       }
     }
-  }, [workflowId, provider, memoizedPagination, memoizedFilter, offset, hasMore, isLoading, enabled]);
+  }, [
+    workflowId,
+    provider,
+    memoizedPagination,
+    memoizedFilter,
+    offset,
+    hasMore,
+    isLoading,
+    enabled,
+  ]);
 
   useEffect(() => {
     if (!enabled || !provider) {
@@ -301,12 +319,14 @@ export function useExecutionHistory(
     };
   }, [refresh, refreshInterval, enabled, provider]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - only run once
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);
@@ -352,12 +372,12 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
 
     const pollStatus = async () => {
       if (!isMountedRef.current) return;
-      
+
       try {
         const status = await provider.getExecution(currentExecutionId);
-        
+
         if (!isMountedRef.current) return;
-        
+
         setExecution(status);
 
         // Stop polling if execution is complete
@@ -371,7 +391,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
           setCurrentExecutionId(null);
           clearPolling();
         }
-      } catch (err) {
+      } catch (err: any) {
         if (!isMountedRef.current) return;
         setError(err instanceof Error ? err : new Error(String(err)));
         clearPolling();
@@ -394,7 +414,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
       if (!enabled || !provider) {
         throw new Error('Workflow provider not available');
       }
-      
+
       if (!isMountedRef.current) {
         throw new Error('Component unmounted');
       }
@@ -403,7 +423,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      
+
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
 
@@ -426,18 +446,18 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
         };
 
         const execution = await provider.execute(workflowDefinition, input as WorkflowData);
-        
+
         if (signal.aborted || !isMountedRef.current) {
           throw new Error('Operation cancelled');
         }
-        
+
         setCurrentExecutionId(execution.id);
         return execution.id;
-      } catch (err) {
+      } catch (err: any) {
         if (signal.aborted || !isMountedRef.current) {
           throw new Error('Operation cancelled');
         }
-        
+
         const error = err instanceof Error ? err : new Error(String(err));
         setError(error);
         setIsExecuting(false);
@@ -454,13 +474,13 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
 
     try {
       await provider.cancelExecution(currentExecutionId);
-      
+
       if (isMountedRef.current) {
         setIsExecuting(false);
         setCurrentExecutionId(null);
         clearPolling();
       }
-    } catch (err) {
+    } catch (err: any) {
       if (isMountedRef.current) {
         setError(err instanceof Error ? err : new Error(String(err)));
       }
@@ -477,13 +497,13 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
 
   const clear = useCallback(() => {
     if (!isMountedRef.current) return;
-    
+
     setExecution(null);
     setError(null);
     setIsExecuting(false);
     setCurrentExecutionId(null);
     clearPolling();
-    
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -538,12 +558,12 @@ export function useWorkflowAlerts(
       setIsLoading(false);
       return;
     }
-    
+
     // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -554,11 +574,11 @@ export function useWorkflowAlerts(
       // This would call an alerts provider method
       // For now, this is a placeholder
       const workflowAlerts: WorkflowAlert[] = []; // await provider.getWorkflowAlerts(workflowId, { signal });
-      
+
       if (signal.aborted || !isMountedRef.current) return;
-      
+
       setAlerts(workflowAlerts);
-    } catch (err) {
+    } catch (err: any) {
       if (signal.aborted || !isMountedRef.current) return;
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
@@ -573,12 +593,12 @@ export function useWorkflowAlerts(
       if (!provider || !isMountedRef.current) {
         throw new Error('Provider not available or component unmounted');
       }
-      
+
       try {
         // This would call an alert provider method
         // await provider.acknowledgeAlert(alertId, user, note);
         await refresh();
-      } catch (err) {
+      } catch (err: any) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);
@@ -594,12 +614,12 @@ export function useWorkflowAlerts(
       if (!provider || !isMountedRef.current) {
         throw new Error('Provider not available or component unmounted');
       }
-      
+
       try {
         // This would call an alert provider method
         // await provider.resolveAlert(alertId);
         await refresh();
-      } catch (err) {
+      } catch (err: any) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);
@@ -632,12 +652,14 @@ export function useWorkflowAlerts(
     };
   }, [refresh, refreshInterval]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - only run once
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);
@@ -672,12 +694,12 @@ export function useWorkflowList(options: UseWorkflowListOptions): UseWorkflowLis
       setIsLoading(false);
       return;
     }
-    
+
     // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -688,11 +710,11 @@ export function useWorkflowList(options: UseWorkflowListOptions): UseWorkflowLis
       // Note: listWorkflows is not available in the current WorkflowProvider interface
       // This would need to be implemented or we need a different approach
       const workflowList: WorkflowDefinition[] = []; // await provider.listWorkflows(memoizedFilter, { signal });
-      
+
       if (signal.aborted || !isMountedRef.current) return;
-      
+
       setWorkflows(workflowList);
-    } catch (err) {
+    } catch (err: any) {
       if (signal.aborted || !isMountedRef.current) return;
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
@@ -725,12 +747,14 @@ export function useWorkflowList(options: UseWorkflowListOptions): UseWorkflowLis
     };
   }, [refresh, refreshInterval]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - only run once
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);
@@ -766,12 +790,12 @@ export function useWorkflowMetrics(
       setIsLoading(false);
       return;
     }
-    
+
     // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -782,11 +806,11 @@ export function useWorkflowMetrics(
       // This would call a metrics provider method
       // For now, this is a placeholder
       const workflowMetrics = null; // await provider.getWorkflowMetrics(workflowId, memoizedTimeRange, { signal });
-      
+
       if (signal.aborted || !isMountedRef.current) return;
-      
+
       setMetrics(workflowMetrics);
-    } catch (err) {
+    } catch (err: any) {
       if (signal.aborted || !isMountedRef.current) return;
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
@@ -823,12 +847,14 @@ export function useWorkflowMetrics(
     };
   }, [refresh, refreshInterval, enabled, provider]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - only run once
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);
@@ -862,12 +888,12 @@ export function useWorkflowSchedule(
     if (!currentScheduleId || !provider || !isMountedRef.current) {
       return;
     }
-    
+
     // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
@@ -878,11 +904,11 @@ export function useWorkflowSchedule(
       // This would call a schedule provider method
       // For now, this is a placeholder
       const scheduleStatus: null | ScheduleStatus = null; // await provider.getSchedule(currentScheduleId, { signal });
-      
+
       if (signal.aborted || !isMountedRef.current) return;
-      
+
       setSchedule(scheduleStatus);
-    } catch (err) {
+    } catch (err: any) {
       if (signal.aborted || !isMountedRef.current) return;
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
@@ -897,7 +923,7 @@ export function useWorkflowSchedule(
       if (!provider || !isMountedRef.current) {
         throw new Error('Provider not available or component unmounted');
       }
-      
+
       setIsLoading(true);
       setError(null);
 
@@ -905,15 +931,15 @@ export function useWorkflowSchedule(
         // This would call a schedule provider method
         // For now, this is a placeholder
         const newScheduleId = 'placeholder_schedule_id'; // await provider.createSchedule(workflowId, config);
-        
+
         if (!isMountedRef.current) {
           throw new Error('Component unmounted');
         }
-        
+
         setCurrentScheduleId(newScheduleId);
         await refresh();
         return newScheduleId;
-      } catch (err) {
+      } catch (err: any) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);
@@ -930,7 +956,7 @@ export function useWorkflowSchedule(
       if (!currentScheduleId) {
         throw new Error('No schedule to update');
       }
-      
+
       if (!provider || !isMountedRef.current) {
         throw new Error('Provider not available or component unmounted');
       }
@@ -942,7 +968,7 @@ export function useWorkflowSchedule(
         // This would call a schedule provider method
         // await provider.updateSchedule(currentScheduleId, config);
         await refresh();
-      } catch (err) {
+      } catch (err: any) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);
@@ -958,7 +984,7 @@ export function useWorkflowSchedule(
     if (!currentScheduleId) {
       throw new Error('No schedule to pause');
     }
-    
+
     if (!provider || !isMountedRef.current) {
       throw new Error('Provider not available or component unmounted');
     }
@@ -967,7 +993,7 @@ export function useWorkflowSchedule(
       // This would call a schedule provider method
       // await provider.pauseSchedule(currentScheduleId);
       await refresh();
-    } catch (err) {
+    } catch (err: any) {
       const error = err instanceof Error ? err : new Error(String(err));
       if (isMountedRef.current) {
         setError(error);
@@ -980,7 +1006,7 @@ export function useWorkflowSchedule(
     if (!currentScheduleId) {
       throw new Error('No schedule to resume');
     }
-    
+
     if (!provider || !isMountedRef.current) {
       throw new Error('Provider not available or component unmounted');
     }
@@ -989,7 +1015,7 @@ export function useWorkflowSchedule(
       // This would call a schedule provider method
       // await provider.resumeSchedule(currentScheduleId);
       await refresh();
-    } catch (err) {
+    } catch (err: any) {
       const error = err instanceof Error ? err : new Error(String(err));
       if (isMountedRef.current) {
         setError(error);
@@ -1002,7 +1028,7 @@ export function useWorkflowSchedule(
     if (!currentScheduleId) {
       throw new Error('No schedule to delete');
     }
-    
+
     if (!provider || !isMountedRef.current) {
       throw new Error('Provider not available or component unmounted');
     }
@@ -1010,12 +1036,12 @@ export function useWorkflowSchedule(
     try {
       // This would call a schedule provider method
       // await provider.deleteSchedule(currentScheduleId);
-      
+
       if (isMountedRef.current) {
         setSchedule(null);
         setCurrentScheduleId(undefined);
       }
-    } catch (err) {
+    } catch (err: any) {
       const error = err instanceof Error ? err : new Error(String(err));
       if (isMountedRef.current) {
         setError(error);
@@ -1048,12 +1074,14 @@ export function useWorkflowSchedule(
     }
   }, [refresh, refreshInterval, currentScheduleId]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - only run once
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);

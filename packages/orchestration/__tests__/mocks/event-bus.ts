@@ -61,16 +61,16 @@ export function createMockEventBus() {
 
       // Find matching subscribers
       const matchingHandlers = subscriptions
-        .filter((sub) => matchesPattern(sub.pattern, type))
-        .map((sub) => sub.handler);
+        .filter((sub: any) => matchesPattern(sub.pattern, type))
+        .map((sub: any) => sub.handler);
 
       // Execute handlers
       await Promise.all(
-        matchingHandlers.map(async (handler) => {
+        matchingHandlers.map(async (handler: any) => {
           try {
             await handler(event);
-          } catch (error) {
-            console.error(`Handler error for event ${type}:`, error);
+          } catch (error: any) {
+            console.error(`Handler error for event ${type}: `, error);
           }
         }),
       );
@@ -96,9 +96,11 @@ export function createMockEventBus() {
     },
 
     replay(pattern: string, handler: EventHandler) {
-      const matchingEvents = eventHistory.filter((event) => matchesPattern(pattern, event.type));
+      const matchingEvents = eventHistory.filter((event: any) =>
+        matchesPattern(pattern, event.type),
+      );
 
-      matchingEvents.forEach((event) => {
+      matchingEvents.forEach((event: any) => {
         handler(event);
       });
     },

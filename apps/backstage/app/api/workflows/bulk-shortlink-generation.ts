@@ -10,11 +10,11 @@ import {
   createStep,
   createStepWithValidation,
   StepTemplates,
-  withStepBulkhead,
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const BulkShortlinkGenerationInput = z.object({
@@ -151,12 +151,8 @@ export const validateLinksStep = compose(
     (input) => input.links.length > 0,
     (output) => output.validLinks.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 30000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['validationRate'],
-    }),
+  (step: any) => withStepTimeout(step, 30000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock functions
@@ -340,15 +336,15 @@ export const createShortlinksStep = compose(
       failedLinks,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 10,
-      maxQueued: 100,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -475,7 +471,7 @@ export const updateProductDatabaseStep = compose(
       databaseUpdates: updates,
     };
   }),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 6: Generate QR code assets
@@ -522,11 +518,7 @@ export const generateQRCodeAssetsStep = createStep('generate-qr-assets', async (
 // Step 7: Send notifications
 export const sendNotificationsStep = StepTemplates.notification(
   'shortlink-generation-complete',
-  'Notify about bulk shortlink generation completion',
-  {
-    channels: ['email', 'webhook'],
-    condition: (data: any) => data.createdLinks.length > 0,
-  },
+  'success',
 );
 
 // Step 8: Generate report

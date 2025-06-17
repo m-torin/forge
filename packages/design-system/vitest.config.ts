@@ -1,13 +1,13 @@
 import { resolve } from 'node:path';
-
-/// <reference types="vitest" />
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
+import { reactPreset } from '@repo/testing/vitest-presets';
 
 export default defineConfig({
-  plugins: [react()],
+  ...reactPreset,
   resolve: {
+    ...reactPreset.resolve,
     alias: {
+      ...reactPreset.resolve?.alias,
       '@': resolve(__dirname, './'),
       '@repo/analytics': resolve(__dirname, '../analytics'),
       '@repo/design-system': resolve(__dirname, './'),
@@ -18,13 +18,7 @@ export default defineConfig({
     },
   },
   test: {
-    coverage: {
-      provider: 'v8',
-      exclude: ['node_modules/', '**/*.config.*', '**/*.d.ts', '__tests__/**'],
-      reporter: ['text', 'json', 'html'],
-    },
-    environment: 'jsdom',
-    globals: true,
+    ...reactPreset.test,
     setupFiles: ['./vitest.setup.ts'],
   },
 });

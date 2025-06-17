@@ -10,11 +10,11 @@ import {
   createStep,
   createStepWithValidation,
   createWorkflowStep,
-  withStepBulkhead,
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const MerchantScoringInput = z.object({
@@ -438,7 +438,7 @@ function identifyStrengthsWeaknesses(categoryScores: Record<string, number>): an
 
   // Identify top 2 performing categories as strengths
   const strengths = entries
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 2)
     .filter(([_, score]) => score > 0.7)
     .map(([category, score]) => {
@@ -448,7 +448,7 @@ function identifyStrengthsWeaknesses(categoryScores: Record<string, number>): an
 
   // Identify bottom 2 performing categories as weaknesses
   const weaknesses = entries
-    .sort((a, b) => a[1] - b[1])
+    .sort((a: any, b: any) => a[1] - b[1])
     .slice(0, 2)
     .filter(([_, score]) => score < 0.6)
     .map(([category, score]) => {
@@ -559,12 +559,8 @@ export const collectMerchantsStep = compose(
       input.scope.regions?.length > 0,
     (output) => output.merchants.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 60000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['defaultMetric'],
-    }),
+  (step: any) => withStepTimeout(step, 60000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock merchant fetching functions
@@ -618,10 +614,10 @@ export const collectPerformanceMetricsStep = compose(
       metricsCollected: true,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 10,
-      maxQueued: 50,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 
@@ -712,11 +708,11 @@ export const calculatePerformanceScoresStep = compose(
       scoresCalculated: true,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
-      trackingMetrics: ['defaultMetric'],
+      backoff: true,
+      maxRetries: 3,
+      // trackingMetrics: ['defaultMetric'],
     }),
 );
 
@@ -809,14 +805,14 @@ function calculateAverage(values: number[]): number {
 
 function calculateMedian(values: number[]): number {
   if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = [...values].sort((a: any, b: any) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
 function calculatePercentile(value: number, values: number[]): number {
   if (values.length === 0) return 50;
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = [...values].sort((a: any, b: any) => a - b);
   const rank = sorted.filter((v) => v <= value).length;
   return (rank / sorted.length) * 100;
 }
@@ -906,7 +902,7 @@ function generateMerchantRecommendations(score: any): any[] {
 }
 
 function getImprovementAction(category: string, score: number): string {
-  const actions = {
+  const actions: Record<string, string> = {
     compliance: 'Review and update compliance procedures',
     customerService: 'Reduce response times and improve resolution processes',
     fulfillment: 'Optimize shipping processes and inventory management',
@@ -916,11 +912,11 @@ function getImprovementAction(category: string, score: number): string {
     sales: 'Focus on conversion optimization and customer acquisition',
   };
 
-  return actions[category as any] || 'Implement improvement measures';
+  return actions[category] || 'Implement improvement measures';
 }
 
 function getRiskMitigationAction(riskFactor: string): string {
-  const actions = {
+  const actions: Record<string, string> = {
     compliance_risk: 'Conduct compliance audit and training',
     customer_service_risk: 'Implement customer service training program',
     fulfillment_risk: 'Optimize logistics and fulfillment operations',
@@ -928,7 +924,7 @@ function getRiskMitigationAction(riskFactor: string): string {
     quality_risk: 'Review product quality control processes',
   };
 
-  return actions[riskFactor as any] || 'Address identified risk factors';
+  return actions[riskFactor] || 'Address identified risk factors';
 }
 
 function generateMarketplaceInsights(scores: any[], benchmarkData: any[]): any[] {
@@ -988,11 +984,11 @@ export const generateMerchantSegmentsStep = createStep('generate-segments', asyn
   }
 
   const segments = {
-    at_risk: [],
-    champions: [],
-    critical: [],
-    rising_stars: [],
-    steady_performers: [],
+    at_risk: [] as string[],
+    champions: [] as string[],
+    critical: [] as string[],
+    rising_stars: [] as string[],
+    steady_performers: [] as string[],
   };
 
   performanceScores.forEach((score: any) => {
@@ -1253,15 +1249,15 @@ function calculateTierDistribution(scores: any[]): any {
 }
 
 function analyzeTrendsOverview(scores: any[]): any {
-  const trends = { declining: 0, improving: 0, stable: 0 };
+  const trends: Record<string, number> = { declining: 0, improving: 0, stable: 0 };
 
   scores.forEach((score) => {
-    trends[score.trends.trend as any]++;
+    trends[score.trends.trend]++;
   });
 
   return {
     distribution: trends,
-    dominant: Object.entries(trends).sort((a, b) => b[1] - a[1])[0][0],
+    dominant: Object.entries(trends).sort((a: any, b: any) => b[1] - a[1])[0][0],
   };
 }
 
@@ -1281,7 +1277,7 @@ function generateTopRecommendations(merchantRecommendations: any[]): any[] {
   });
 
   return Array.from(actionCounts.entries())
-    .sort((a, b) => b[1] - a[1])
+    .sort((a: any, b: any) => b[1] - a[1])
     .slice(0, 5)
     .map(([action, count]) => ({
       action,

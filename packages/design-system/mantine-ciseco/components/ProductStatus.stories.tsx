@@ -1,6 +1,6 @@
-import ProductStatus from './ProductStatus';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import ProductStatus from './ProductStatus';
 
 const meta: Meta<typeof ProductStatus> = {
   argTypes: {
@@ -102,8 +102,8 @@ export const InProductCard: Story = {
     <div className="relative bg-white rounded-lg shadow-lg overflow-hidden w-64">
       <div className="relative">
         <img
-          className="w-full h-48 object-cover"
           alt="Product"
+          className="w-full h-48 object-cover"
           src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop"
         />
         <ProductStatus status="New in" />
@@ -144,12 +144,12 @@ export const ProductGrid: Story = {
           status: 'limited edition',
           title: 'Leather Jacket',
         },
-      ].map((product, index) => (
-        <div key={index} className="relative bg-white rounded-lg shadow-lg overflow-hidden">
+      ].map((product: any) => (
+        <div key={product.title} className="relative bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="relative">
             <img
-              className="w-full h-32 object-cover"
               alt={product.title}
+              className="w-full h-32 object-cover"
               src={`https://images.unsplash.com/${product.image}?w=300&h=200&fit=crop`}
             />
             <ProductStatus status={product.status} />

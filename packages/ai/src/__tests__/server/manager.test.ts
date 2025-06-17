@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ServerAIManager } from '../../server/manager';
 
-import type { AIProvider } from '../../shared/types';
+import { AIProvider } from '../../shared/types';
 
 // Mock the config utilities
-vi.mock('../../shared/utils/config', () => ({
+vi.mock('../../shared/utils/config', (_: any) => ({
   validateConfig: vi.fn().mockReturnValue([]),
   convertToManagerConfig: vi.fn().mockReturnValue({
     defaultProvider: 'openai',
@@ -24,7 +24,7 @@ vi.mock('../../shared/utils/config', () => ({
 }));
 
 // Mock the provider creators
-vi.mock('../../server/providers/direct-anthropic', () => ({
+vi.mock('../../server/providers/direct-anthropic', (_: any) => ({
   createDirectAnthropicProvider: vi.fn().mockReturnValue({
     name: 'direct-anthropic',
     type: 'direct',
@@ -34,7 +34,7 @@ vi.mock('../../server/providers/direct-anthropic', () => ({
   }),
 }));
 
-vi.mock('../../server/providers/direct-openai', () => ({
+vi.mock('../../server/providers/direct-openai', (_: any) => ({
   createDirectOpenAIProvider: vi.fn().mockReturnValue({
     name: 'direct-openai',
     type: 'direct',
@@ -44,7 +44,7 @@ vi.mock('../../server/providers/direct-openai', () => ({
   }),
 }));
 
-vi.mock('../../server/providers/ai-sdk-provider', () => ({
+vi.mock('../../server/providers/ai-sdk-provider', (_: any) => ({
   createAnthropicAISdkProvider: vi.fn().mockReturnValue({
     name: 'anthropic-sdk',
     type: 'ai-sdk',
@@ -61,7 +61,7 @@ vi.mock('../../server/providers/ai-sdk-provider', () => ({
   createOpenAIAISdkProvider: vi.fn().mockReturnValue({
     name: 'openai-sdk',
     type: 'ai-sdk',
-    capabilities: new Set(['complete', 'stream', 'moderate']),
+    capabilities: new Set(['complete', 'moderate', 'stream']),
     complete: vi.fn().mockResolvedValue({ text: 'response' }),
     moderate: vi.fn().mockResolvedValue({ flagged: false }),
     stream: vi.fn(),
@@ -78,7 +78,7 @@ const createMockProvider = (overrides: Partial<AIProvider> = {}): AIProvider => 
   ...overrides,
 });
 
-describe('ServerAIManager', () => {
+describe('ServerAIManager', (_: any) => {
   let manager: ServerAIManager;
 
   beforeEach(() => {
@@ -86,13 +86,13 @@ describe('ServerAIManager', () => {
     manager = new ServerAIManager();
   });
 
-  describe('constructor', () => {
-    it('should create instance without config', () => {
+  describe('constructor', (_: any) => {
+    it('should create instance without config', (_: any) => {
       const instance = new ServerAIManager();
       expect(instance).toBeInstanceOf(ServerAIManager);
     });
 
-    it('should create instance with config', () => {
+    it('should create instance with config', (_: any) => {
       const config = {
         defaultProvider: 'test-provider',
         routing: {
@@ -104,7 +104,7 @@ describe('ServerAIManager', () => {
     });
   });
 
-  describe('fromEnv', () => {
+  describe('fromEnv', (_: any) => {
     it('should create manager from environment configuration', async () => {
       const manager = await ServerAIManager.fromEnv();
       expect(manager).toBeInstanceOf(ServerAIManager);
@@ -164,7 +164,7 @@ describe('ServerAIManager', () => {
     });
   });
 
-  describe('classifyProduct', () => {
+  describe('classifyProduct', (_: any) => {
     it('should classify product successfully', async () => {
       const mockProvider = createMockProvider({
         name: 'test-classifier',
@@ -210,7 +210,7 @@ describe('ServerAIManager', () => {
     });
   });
 
-  describe('moderateContent', () => {
+  describe('moderateContent', (_: any) => {
     it('should moderate content successfully', async () => {
       const mockProvider = createMockProvider({
         name: 'test-moderator',
@@ -279,18 +279,18 @@ describe('ServerAIManager', () => {
     });
   });
 
-  describe('provider management', () => {
-    it('should inherit all capabilities from base AIManager', () => {
+  describe('provider management', (_: any) => {
+    it('should inherit all capabilities from base AIManager', (_: any) => {
       const mockProvider = createMockProvider({
         name: 'full-provider',
         analyzeSentiment: vi.fn(),
         capabilities: new Set([
-          'complete',
-          'stream',
-          'moderate',
           'classify',
-          'sentiment',
+          'complete',
           'extraction',
+          'moderate',
+          'sentiment',
+          'stream',
         ]),
         classify: vi.fn(),
         extractEntities: vi.fn(),
@@ -308,7 +308,7 @@ describe('ServerAIManager', () => {
       expect(capabilities).toContain('extraction');
     });
 
-    it('should get provider status correctly', () => {
+    it('should get provider status correctly', (_: any) => {
       const mockProvider = createMockProvider({
         name: 'status-test',
         capabilities: new Set(['complete', 'moderate']),

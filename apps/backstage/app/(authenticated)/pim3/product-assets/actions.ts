@@ -458,7 +458,6 @@ export async function getAssetUsageAnalytics(assetId: string) {
             id: true,
             name: true,
             sku: true,
-            views: true, // Assuming there's a views field
           },
         },
       },
@@ -571,6 +570,11 @@ export async function getAssetOptimizationRecommendations() {
               _count: {
                 gt: 1,
               },
+            },
+          },
+          orderBy: {
+            _count: {
+              filename: 'desc',
             },
           },
           take: 10,

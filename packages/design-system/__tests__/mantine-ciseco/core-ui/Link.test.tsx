@@ -2,19 +2,19 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
 import { Link } from '../../../mantine-ciseco/components/Link';
 
-describe('Link', () => {
-  it('renders link with text', () => {
+describe('Link', (_: any) => {
+  it('renders link with text', (_: any) => {
     render(<Link href="/test">Test Link</Link>);
     expect(screen.getByTestId('link')).toHaveTextContent('Test Link');
   });
 
-  it('renders with href attribute', () => {
+  it('renders with href attribute', (_: any) => {
     render(<Link href="/products">Products</Link>);
     const link = screen.getByTestId('link');
     expect(link).toHaveAttribute('href', '/products');
   });
 
-  it('renders external link', () => {
+  it('renders external link', (_: any) => {
     render(
       <Link href="https://example.com" target="_blank" rel="noopener noreferrer">
         External Link
@@ -25,7 +25,7 @@ describe('Link', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
-  it('handles click events', () => {
+  it('handles click events', (_: any) => {
     const mockOnClick = vi.fn();
     render(
       <Link href="/test" onClick={mockOnClick}>
@@ -38,7 +38,7 @@ describe('Link', () => {
     expect(mockOnClick).toHaveBeenCalled();
   });
 
-  it('renders with className', () => {
+  it('renders with className', (_: any) => {
     render(
       <Link href="/test" className="custom-link text-blue-500 hover:underline">
         Styled Link
@@ -47,12 +47,12 @@ describe('Link', () => {
     expect(screen.getByTestId('link')).toHaveClass('custom-link');
   });
 
-  it('renders without href (defaults to #)', () => {
+  it('renders without href (defaults to #)', (_: any) => {
     render(<Link>No Href Link</Link>);
     expect(screen.getByTestId('link')).toHaveAttribute('href', '#');
   });
 
-  it('prevents navigation for hash links', () => {
+  it('prevents navigation for hash links', (_: any) => {
     const mockPreventDefault = vi.fn();
     render(<Link href="#section">Hash Link</Link>);
 
@@ -64,7 +64,7 @@ describe('Link', () => {
     // Hash links don't prevent default in the simple implementation
   });
 
-  it('renders with all standard anchor attributes', () => {
+  it('renders with all standard anchor attributes', (_: any) => {
     render(
       <Link href="/test" title="Link Title" aria-label="Accessible Label" data-testid="test-link">
         Full Featured Link

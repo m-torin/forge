@@ -149,7 +149,7 @@ export class ModernTestAssertions {
 
   // Async validation with top-level await patterns
   async validateAsync(validator: () => Promise<boolean>, timeout = 5000) {
-    const timeoutPromise = new Promise<never>((_, reject) => {
+    const timeoutPromise = new Promise<never>((_resolve, reject) => {
       setTimeout(() => reject(new Error('Validation timeout')), timeout);
     });
 
@@ -214,7 +214,7 @@ export const testPatterns = {
 
   // Modern timeout handling
   withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-    const timeout = new Promise<never>((_, reject) => {
+    const timeout = new Promise<never>((_resolve, reject) => {
       setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms);
     });
 

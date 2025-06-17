@@ -9,7 +9,7 @@ import { useLocalizeHref } from '../hooks/useLocale';
 import { Link } from './Link';
 import NcImage from './shared/NcImage/NcImage';
 
-interface Props {
+interface Props extends Record<string, any> {
   className?: string;
   collection: TCollection;
   'data-testid'?: string;
@@ -17,30 +17,30 @@ interface Props {
 }
 
 const CollectionCard1: FC<Props> = ({
-  'data-testid': testId = 'collection-card',
   className = '',
   collection,
+  'data-testid': testId = 'collection-card',
   size = 'normal',
 }) => {
   const localizeHref = useLocalizeHref();
 
-  if (!collection || !collection.handle) {
+  if (!collection.handle) {
     return null;
   }
   return (
     <Link
+      className={`flex items-center ${className}`}
       data-testid={testId}
       href={localizeHref(`/collections/${collection.handle}`) as any}
-      className={`flex items-center ${className}`}
     >
       {collection.image?.src && (
         <NcImage
-          data-testid="collection-image"
+          alt={collection.image.alt}
           containerClassName={clsx(
             'relative mr-4 shrink-0 overflow-hidden rounded-lg',
             size === 'large' ? 'size-20' : 'size-12',
           )}
-          alt={collection.image.alt}
+          data-testid="collection-image"
           fill
           sizes="(max-width: 640px) 100vw, 40vw"
           src={collection.image}
@@ -48,11 +48,11 @@ const CollectionCard1: FC<Props> = ({
       )}
       <div>
         <h2
-          data-testid="collection-title"
           className={clsx(
             'font-semibold nc-card-title text-neutral-900 dark:text-neutral-100',
             size === 'large' ? 'text-lg' : 'text-base',
           )}
+          data-testid="collection-title"
         >
           {collection.title}
         </h2>

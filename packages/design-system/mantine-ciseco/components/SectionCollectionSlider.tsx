@@ -1,19 +1,16 @@
 'use client';
 
-import useEmblaCarousel from 'embla-carousel-react';
+import { Carousel } from '@mantine/carousel';
+import { useState } from 'react';
 
 import { type TCollection } from '../data/types';
-import { useCarouselArrowButtons } from '../hooks/use-carousel-arrow-buttons';
 
 import CollectionCard3 from './CollectionCard3';
 import Heading from './Heading/Heading';
 
-import type { EmblaOptionsType } from 'embla-carousel';
-
-interface Props {
+interface Props extends Record<string, any> {
   className?: string;
   collections: TCollection[];
-  emblaOptions?: EmblaOptionsType;
   heading?: string;
   headingDim?: string;
 }
@@ -21,46 +18,56 @@ interface Props {
 const SectionCollectionSlider = ({
   className,
   collections,
-  emblaOptions = {
-    slidesToScroll: 'auto',
-  },
   heading = 'Discover more',
   headingDim = 'Good things are waiting for you',
 }: Props) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions);
-  const { nextBtnDisabled, onNextButtonClick, onPrevButtonClick, prevBtnDisabled } =
-    useCarouselArrowButtons(emblaApi);
+  const [embla, setEmbla] = useState<any>(null);
+  const nextBtnDisabled = !embla?.canScrollNext();
+  const prevBtnDisabled = !embla?.canScrollPrev();
 
-  // Don't render anything if no collections
-  if (!collections || collections.length === 0) {
-    return null;
-  }
+  const onNextButtonClick = () => embla?.scrollNext();
+  const onPrevButtonClick = () => embla?.scrollPrev();
+
+  // Collections prop is guaranteed to exist and have content
+  // This component should not be rendered without collections
 
   return (
     <div className={className}>
       <Heading
-        onClickNext={onNextButtonClick}
-        onClickPrev={onPrevButtonClick}
         className="container mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50"
         hasNextPrev
         headingDim={headingDim}
         nextBtnDisabled={nextBtnDisabled}
         prevBtnDisabled={prevBtnDisabled}
+        onClickNext={onNextButtonClick}
+        onClickPrev={onPrevButtonClick}
       >
         {heading}
       </Heading>
 
-      <div ref={emblaRef} className="embla pl-container">
-        <div className="-ms-5 embla__container">
-          {collections?.map((collection) => (
-            <div
-              key={collection.id}
-              className="embla__slide basis-11/12 ps-5 sm:basis-2/3 lg:basis-3/7 xl:basis-2/5 2xl:basis-[34%]"
-            >
+      <div className="pl-container">
+        <Carousel
+          classNames={{
+            root: '-mx-5',
+            slide: 'px-5',
+          }}
+          getEmblaApi={setEmbla}
+          slideGap="xs"
+          slideSize={{
+            '2xl': '34%',
+            base: '91.666667%',
+            lg: '42.857143%',
+            sm: '66.666667%',
+            xl: '40%',
+          }}
+          withControls={false}
+        >
+          {collections.map((collection: any) => (
+            <Carousel.Slide key={collection.id}>
               <CollectionCard3 collection={collection} />
-            </div>
+            </Carousel.Slide>
           ))}
-        </div>
+        </Carousel>
       </div>
     </div>
   );

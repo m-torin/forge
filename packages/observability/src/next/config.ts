@@ -3,7 +3,7 @@
  * Provides default configurations that apps can extend
  */
 
-import type { ObservabilityConfig } from '../shared/types/types';
+import { ObservabilityConfig } from '../shared/types/types';
 
 /**
  * Get default observability configuration for Next.js apps
@@ -15,36 +15,36 @@ export function getObservabilityConfig(): ObservabilityConfig {
 
   return {
     providers: {
-      sentry: {
-        dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
-        environment: process.env.NEXT_PUBLIC_ENV || process.env.NODE_ENV || 'development',
-
-        profilesSampleRate: isProduction ? 0.1 : 0,
-        // Performance monitoring
-        tracesSampleRate: isProduction ? 0.1 : 1.0,
-
-        integrations: ['replay'],
-        replaysOnErrorSampleRate: 1.0,
-        // Session replay (client-side only)
-        replaysSessionSampleRate: isProduction ? 0.1 : 0.5,
-
-        // Debug in development
-        debug: isDevelopment,
-
-        hideSourceMaps: true,
-        widenClientFileUpload: true,
-        automaticVercelMonitors: true,
-        disableLogger: true,
-        // Next.js specific options
-        tunnelRoute: '/monitoring',
+      console: {
+        enabled: isDevelopment,
       },
 
       logtail: {
         sourceToken: process.env.LOGTAIL_SOURCE_TOKEN,
       },
 
-      console: {
-        enabled: isDevelopment,
+      sentry: {
+        automaticVercelMonitors: true,
+        // Debug in development
+        debug: isDevelopment,
+
+        disableLogger: true,
+        dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+
+        environment: process.env.NEXT_PUBLIC_ENV || process.env.NODE_ENV || 'development',
+        hideSourceMaps: true,
+        integrations: ['replay'],
+
+        profilesSampleRate: isProduction ? 0.1 : 0,
+
+        replaysOnErrorSampleRate: 1.0,
+        // Session replay (client-side only)
+        replaysSessionSampleRate: isProduction ? 0.1 : 0.5,
+        // Performance monitoring
+        tracesSampleRate: isProduction ? 0.1 : 1.0,
+        // Next.js specific options
+        tunnelRoute: '/monitoring',
+        widenClientFileUpload: true,
       },
     },
   };

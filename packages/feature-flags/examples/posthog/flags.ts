@@ -1,5 +1,4 @@
-import { flag } from '@vercel/flags/next';
-import { dedupe } from '@vercel/flags/next';
+import { flag, dedupe } from '@vercel/flags/next';
 
 import { postHogServerAdapter } from '@repo/feature-flags/server/next';
 

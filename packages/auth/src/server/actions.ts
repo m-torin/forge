@@ -3,6 +3,13 @@
 import { headers } from 'next/headers';
 
 import { auth } from './auth';
+import { bulkInviteUsers as bulkInviteUsersOrg } from './organizations/management';
+import {
+  bulkCreateApiKeys as bulkCreateApiKeysService,
+  getApiKeyStatistics as getApiKeyStatisticsService,
+} from './api-keys/service-auth';
+
+import type { Session } from '../shared/types';
 
 export interface BetterAuthResponse<T = any> {
   data: T | null;
@@ -73,13 +80,93 @@ export async function updateUser(data: {
   }
 }
 
-export async function deleteUser(): Promise<BetterAuthResponse> {
+export async function deleteUser(userId?: string): Promise<BetterAuthResponse> {
   try {
-    await auth.api.deleteUser({
-      body: {},
+    if (userId) {
+      // Admin deleting a specific user
+      await auth.api.deleteUser({
+        body: { userId },
+        headers: await headers(),
+      });
+    } else {
+      // User deleting their own account
+      await auth.api.deleteUser({
+        body: {},
+        headers: await headers(),
+      });
+    }
+    return { data: { message: 'User deleted' }, success: true };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+    };
+  }
+}
+
+export async function changePassword(data: {
+  currentPassword: string;
+  newPassword: string;
+  revokeOtherSessions?: boolean;
+}): Promise<BetterAuthResponse> {
+  try {
+    const result = await auth.api.changePassword({
+      body: {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        revokeOtherSessions: data.revokeOtherSessions ?? true,
+      },
       headers: await headers(),
     });
-    return { data: { message: 'User deleted' }, success: true };
+    return { data: result, success: true };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+    };
+  }
+}
+
+export async function setPassword(data: { newPassword: string }): Promise<BetterAuthResponse> {
+  try {
+    const result = await auth.api.setPassword({
+      body: data,
+      headers: await headers(),
+    });
+    return { data: result, success: true };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+    };
+  }
+}
+
+export async function listAccounts(): Promise<BetterAuthResponse> {
+  try {
+    const result = await auth.api.listUserAccounts({
+      headers: await headers(),
+    });
+    return { data: result || [], success: true };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+    };
+  }
+}
+
+export async function unlinkAccount(provider: string): Promise<BetterAuthResponse> {
+  try {
+    const result = await auth.api.unlinkAccount({
+      body: { providerId: provider },
+      headers: await headers(),
+    });
+    return { data: result, success: true };
   } catch (error) {
     return {
       data: null,
@@ -189,13 +276,14 @@ export async function unbanUser(userId: string): Promise<BetterAuthResponse> {
 export async function getActiveOrganization(): Promise<BetterAuthResponse> {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!(session?.session as any)?.activeOrganizationId) {
+    const sessionWithOrg = session?.session as Session;
+    if (!sessionWithOrg?.activeOrganizationId) {
       return { data: null, error: 'No active organization', success: false };
     }
 
     const org = await auth.api.getFullOrganization({
       headers: await headers(),
-      query: { organizationId: (session.session as any).activeOrganizationId },
+      query: { organizationId: sessionWithOrg.activeOrganizationId },
     });
     return { data: org, success: true };
   } catch (error) {
@@ -260,14 +348,15 @@ export async function updateOrganization(data: {
 }): Promise<BetterAuthResponse> {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!(session?.session as any)?.activeOrganizationId) {
+    const sessionWithOrg = session?.session as Session;
+    if (!sessionWithOrg?.activeOrganizationId) {
       return { data: null, error: 'No active organization', success: false };
     }
 
     const org = await auth.api.updateOrganization({
       body: {
         data,
-        organizationId: (session.session as any).activeOrganizationId,
+        organizationId: sessionWithOrg.activeOrganizationId,
       },
       headers: await headers(),
     });
@@ -281,15 +370,26 @@ export async function updateOrganization(data: {
   }
 }
 
-export async function deleteOrganization(): Promise<BetterAuthResponse> {
+export async function deleteOrganization(organizationId?: string): Promise<BetterAuthResponse> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!(session?.session as any)?.activeOrganizationId) {
-      return { data: null, error: 'No active organization', success: false };
+    let orgIdToDelete = organizationId;
+
+    // If no organizationId provided, use the active organization
+    if (!orgIdToDelete) {
+      const session = await auth.api.getSession({ headers: await headers() });
+      const sessionWithOrg = session?.session as Session;
+      if (!sessionWithOrg?.activeOrganizationId) {
+        return {
+          data: null,
+          error: 'No organization ID provided and no active organization',
+          success: false,
+        };
+      }
+      orgIdToDelete = sessionWithOrg.activeOrganizationId;
     }
 
     await auth.api.deleteOrganization({
-      body: { organizationId: (session.session as any).activeOrganizationId },
+      body: { organizationId: orgIdToDelete },
       headers: await headers(),
     });
     return { data: { message: 'Organization deleted' }, success: true };
@@ -317,16 +417,10 @@ export async function listUserOrganizations(): Promise<BetterAuthResponse> {
 
 export async function listAllOrganizations(): Promise<BetterAuthResponse> {
   try {
-    // Use the organization helper to get all organizations via database
-    const { prisma: database } = await import('@repo/database/prisma');
-    const organizations = await (database as any).organization.findMany({
-      include: {
-        members: {
-          include: {
-            user: true,
-          },
-        },
-      },
+    // Use better-auth admin API to list all organizations
+    const organizations = await auth.api.listAllOrganizations({
+      headers: await headers(),
+      query: { limit: 1000 }, // Admin query to get all organizations
     });
     return { data: organizations, success: true };
   } catch (error) {
@@ -386,10 +480,23 @@ export async function listApiKeys(): Promise<BetterAuthResponse> {
   }
 }
 
-export async function createApiKey(name: string): Promise<BetterAuthResponse> {
+export async function createApiKey(data: {
+  name: string;
+  organizationId?: string;
+  permissions?: string[];
+  expiresAt?: string;
+  metadata?: any;
+}): Promise<BetterAuthResponse> {
   try {
+    const body: any = { name: data.name };
+
+    if (data.organizationId) body.organizationId = data.organizationId;
+    if (data.permissions && data.permissions.length > 0) body.permissions = data.permissions;
+    if (data.expiresAt) body.expiresAt = data.expiresAt;
+    if (data.metadata) body.metadata = data.metadata;
+
     const key = await auth.api.createApiKey({
-      body: { name },
+      body,
       headers: await headers(),
     });
     return { data: key, success: true };
@@ -402,10 +509,17 @@ export async function createApiKey(name: string): Promise<BetterAuthResponse> {
   }
 }
 
-export async function updateApiKey(id: string, name: string): Promise<BetterAuthResponse> {
+export async function updateApiKey(
+  id: string,
+  data: { name?: string; enabled?: boolean },
+): Promise<BetterAuthResponse> {
   try {
+    const updateData: any = { keyId: id };
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.enabled !== undefined) updateData.enabled = data.enabled;
+
     const key = await auth.api.updateApiKey({
-      body: { name, keyId: id },
+      body: updateData,
       headers: await headers(),
     });
     return { data: key, success: true };
@@ -539,6 +653,62 @@ export async function deletePasskey(id: string): Promise<BetterAuthResponse> {
       headers: await headers(),
     });
     return { data: { message: 'Passkey deleted' }, success: true };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+    };
+  }
+}
+
+// Bulk Operations
+export async function bulkInviteUsers(data: {
+  emails: string[];
+  organizationId: string;
+  role?: 'owner' | 'admin' | 'member';
+  message?: string;
+}): Promise<BetterAuthResponse> {
+  try {
+    const result = await bulkInviteUsersOrg({
+      ...data,
+      role: data.role || 'member', // Provide default role
+    });
+    return { data: result, success: result.success };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+    };
+  }
+}
+
+export async function bulkCreateApiKeys(data: {
+  keys: Array<{
+    name: string;
+    permissions?: string[];
+    expiresAt?: string;
+    metadata?: any;
+  }>;
+  organizationId?: string;
+}): Promise<BetterAuthResponse> {
+  try {
+    const result = await bulkCreateApiKeysService(data);
+    return { data: result, success: result.success };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+    };
+  }
+}
+
+export async function getApiKeyStatistics(): Promise<BetterAuthResponse> {
+  try {
+    const result = await getApiKeyStatisticsService();
+    return { data: result.data, success: result.success };
   } catch (error) {
     return {
       data: null,

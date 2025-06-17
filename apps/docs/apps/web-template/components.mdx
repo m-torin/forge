@@ -1,0 +1,634 @@
+---
+title: 'Web Template Components'
+description: 'Comprehensive component library with Mantine UI integration and advanced features'
+icon: 'puzzle'
+---
+
+# Web Template Components
+
+Comprehensive component library built with Mantine UI v8, showcasing modern e-commerce UI patterns
+and advanced functionality.
+
+## Component Architecture
+
+### Design System Foundation
+
+<CardGroup cols={2}>
+  <Card title="Mantine UI v8" icon="paintbrush">
+    Primary component library with accessibility and theming
+  </Card>
+  <Card title="Tailwind CSS v4" icon="palette">
+    Utility-first styling for custom designs and layouts
+  </Card>
+  <Card title="TypeScript First" icon="code">
+    Fully typed components with comprehensive interfaces
+  </Card>
+  <Card title="Responsive Design" icon="mobile">
+    Mobile-first approach with breakpoint system
+  </Card>
+</CardGroup>
+
+### Component Categories
+
+The web template includes **150+ components** organized into logical categories:
+
+- **Layout Components**: Headers, footers, navigation, sidebars
+- **Product Components**: Cards, grids, details, comparisons
+- **Search Components**: 20+ Algolia search implementations
+- **Content Components**: Blog posts, media, testimonials
+- **Form Components**: Authentication, checkout, user management
+- **Section Components**: Homepage sections and landing page blocks
+
+## Layout Components
+
+### Header & Navigation
+
+<AccordionGroup>
+  <Accordion title="Header Component" icon="header">
+    ```typescript
+    import { Header } from '@/components/layout/Header';
+    
+    export function AppLayout({ children }) {
+      return (
+        <div>
+          <Header 
+            showSearch
+            showCart
+            showLocale
+            showAuth
+          />
+          <main>{children}</main>
+        </div>
+      );
+    }
+    ```
+    
+    **Features:**
+    - Multi-level navigation menus
+    - Search integration
+    - Cart dropdown with live updates
+    - Locale switcher
+    - Authentication states
+  </Accordion>
+  
+  <Accordion title="Navigation Components" icon="bars">
+    ```typescript
+    // Desktop navigation
+    import { Navigation } from '@/components/layout/Navigation';
+    
+    // Mobile sidebar
+    import { SidebarNavigation } from '@/components/layout/SidebarNavigation';
+    
+    // Tab navigation
+    import { TabNavigation } from '@/components/layout/TabNavigation';
+    ```
+    
+    **Features:**
+    - Responsive navigation patterns
+    - Breadcrumb support
+    - Active state management
+    - Category mega menus
+  </Accordion>
+  
+  <Accordion title="Footer Component" icon="footer">
+    ```typescript
+    import { Footer } from '@/components/layout/Footer';
+    
+    <Footer
+      showNewsletter
+      showSocial
+      showLinks
+      companyInfo={{
+        name: "Your Store",
+        description: "Premium e-commerce experience"
+      }}
+    />
+    ```
+    
+    **Features:**
+    - Newsletter signup integration
+    - Social media links
+    - Legal pages and policies
+    - Multi-column link organization
+  </Accordion>
+</AccordionGroup>
+
+### App Layout System
+
+```typescript
+// AppLayout with context
+import { AppLayout } from '@/components/layout/AppLayout';
+import { AppLayoutProvider } from '@/components/layout/AppLayoutContext';
+
+export function RootLayout({ children }) {
+  return (
+    <AppLayoutProvider>
+      <AppLayout>
+        {children}
+      </AppLayout>
+    </AppLayoutProvider>
+  );
+}
+```
+
+## Product Components
+
+### Product Cards
+
+<Tabs>
+  <Tab title="Standard Product Card">
+    ```typescript
+    import {ProductCard} from '@/components/ui/ProductCard';
+    
+    <ProductCard
+      product={product}
+      showFavorite
+      showQuickView
+      showCompare
+      showRating
+      layout="vertical" // or "horizontal"
+      size="medium" // "small", "medium", "large"
+    />
+    ```
+    
+    **Features:**
+    - Multiple layout options
+    - Favorite functionality
+    - Quick view modal
+    - Product comparison
+    - Rating display
+    - Responsive sizing
+  </Tab>
+
+<Tab title="Large Product Card">
+  ```typescript import {ProductCardLarge} from '@/components/ui/ProductCardLarge';
+  <ProductCardLarge
+    product={product}
+    showFullDescription
+    showVariants
+    showReviews
+    highlightFeatures
+  />
+  ``` **Features:** - Enhanced product information - Variant selection - Review summaries - Feature
+  highlighting - Call-to-action buttons
+</Tab>
+
+  <Tab title="Product Card with Favorites">
+    ```typescript
+    import {ProductCardWithFavorite} from '@/components/guest/ProductCardWithFavorite';
+    
+    <ProductCardWithFavorite
+      product={product}
+      onFavoriteChange={handleFavorite}
+      favoriteState="liked" // "liked", "neutral", "disliked"
+    />
+    ```
+    
+    **Features:**
+    - Guest favorite system
+    - Persistent favorites in localStorage
+    - Animated favorite interactions
+    - Batch favorite operations
+  </Tab>
+</Tabs>
+
+### Product Management
+
+<CodeGroup>
+```typescript Product Grid
+import { ProductGrid } from '@/components/ui/ProductGrid';
+
+<ProductGrid
+  products={products}
+  columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+  gap="md"
+  loading={isLoading}
+  emptyState={<EmptyProductsState />}
+/>
+```
+
+```typescript Product Quick View
+import { ProductQuickView } from '@/components/ui/ProductQuickView';
+
+<ProductQuickView
+  product={product}
+  isOpen={isQuickViewOpen}
+  onClose={() => setIsQuickViewOpen(false)}
+  onAddToCart={handleAddToCart}
+  showVariants
+  showReviews
+/>
+```
+
+```typescript Product Status
+import { ProductStatus } from '@/components/ui/ProductStatus';
+
+<ProductStatus
+  status={product.status} // "in-stock", "low-stock", "out-of-stock"
+  quantity={product.quantity}
+  showIcon
+  size="sm"
+/>
+```
+
+</CodeGroup>
+
+## Search Components
+
+The web template includes **20+ Algolia search implementations** demonstrating enterprise search
+capabilities:
+
+### Production Search Components
+
+<AccordionGroup>
+  <Accordion title="Federated Autocomplete" icon="search">
+    ```typescript
+    import {ProductionFederatedAutocomplete} from '@/components/search/ProductionFederatedAutocomplete';
+    
+    <ProductionFederatedAutocomplete
+      indices={['products', 'categories', 'brands']}
+      placeholder="Search products..."
+      maxSuggestions={8}
+      showRecentSearches
+      showTrendingQueries
+    />
+    ```
+    
+    **Features:**
+    - Multi-index search
+    - Real-time suggestions
+    - Recent searches
+    - Trending queries
+    - Keyboard navigation
+  </Accordion>
+
+<Accordion title="Advanced Search Features" icon="sliders">
+  ```typescript import {ComprehensiveAlgoliaShowcase} from
+  '@/components/search/ComprehensiveAlgoliaShowcase';
+  <ComprehensiveAlgoliaShowcase
+    enableVisualSearch
+    enableNeuralSearch
+    enableVoiceSearch
+    enableFilters
+    enableSorting
+    enableAnalytics
+  />
+  ``` **Features:** - Visual image search - Neural semantic search - Voice search integration -
+  Advanced filtering - Sort options - Search analytics
+</Accordion>
+
+  <Accordion title="Search Analytics" icon="chart-line">
+    ```typescript
+    import {SearchAnalytics} from '@/components/search/SearchAnalytics';
+    
+    <SearchAnalytics
+      timeRange="7d"
+      metrics={['queries', 'clicks', 'conversions']}
+      dimensions={['query', 'position', 'index']}
+      realTime
+    />
+    ```
+    
+    **Features:**
+    - Query performance tracking
+    - Click-through rates
+    - Conversion analytics
+    - Real-time monitoring
+    - Custom dashboards
+  </Accordion>
+</AccordionGroup>
+
+### Search Integration Examples
+
+<CodeGroup>
+```typescript Next.js Search
+import { NextJSProductSearch } from '@/components/search/NextJSProductSearch';
+
+export default function SearchPage({ searchParams }) {
+  return (
+    <NextJSProductSearch
+      query={searchParams.q}
+      filters={searchParams.filters}
+      serverSideSearch
+      seoOptimized
+    />
+  );
+}
+```
+
+```typescript Search Box
+import { SearchBoxClient } from '@/components/search/SearchBoxClient';
+
+<SearchBoxClient
+  placeholder="Search products, brands, categories..."
+  showSuggestions
+  showCategories
+  onSearch={handleSearch}
+  debounce={300}
+/>
+```
+
+```typescript Search Filters
+import { SearchFiltersServer } from '@/components/search/SearchFiltersServer';
+
+<SearchFiltersServer
+  facets={['brand', 'category', 'price', 'rating']}
+  refinements={selectedFilters}
+  onRefinementChange={handleFilterChange}
+  collapsible
+/>
+```
+
+</CodeGroup>
+
+## Content Components
+
+### Blog Components
+
+<Tabs>
+  <Tab title="Blog Post Cards">
+    ```typescript import {(PostCard1, PostCard2)} from '@/components/blog'; // Featured post card
+    <PostCard1 post={featuredPost} showExcerpt showAuthor showDate showTags size="large" />
+    // Compact post card
+    <PostCard2 post={post} layout="horizontal" showMetadata truncateExcerpt={120} />
+    ```
+  </Tab>
+
+  <Tab title="Blog Sections">
+    ```typescript import {(SectionGridPosts, SectionMagazine5)} from '@/components/sections'; //
+    Blog grid with pagination
+    <SectionGridPosts posts={posts} columns={3} showPagination postsPerPage={9} />
+    // Magazine-style featured posts
+    <SectionMagazine5 featuredPost={posts[0]} secondaryPosts={posts.slice(1, 5)} showCategories />
+    ```
+  </Tab>
+</Tabs>
+
+### Collection Components
+
+```typescript
+import {
+  CollectionCard1,
+  CollectionCard2,
+  CollectionCard4,
+  CollectionCard6
+} from '@/components/ui';
+
+// Different collection card layouts
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <CollectionCard1 collection={collection} layout="horizontal" />
+  <CollectionCard2 collection={collection} layout="square" />
+  <CollectionCard4 collection={collection} showArrow />
+  <CollectionCard6 collection={collection} size="compact" />
+</div>
+```
+
+## Section Components
+
+### Homepage Sections
+
+<AccordionGroup>
+  <Accordion title="Hero Sections" icon="star">
+    ```typescript import {(SectionHero, SectionHero2, SectionHero3)} from '@/components/sections';
+    // Primary hero with video background
+    <SectionHero
+      title="Discover Amazing Products"
+      subtitle="Premium quality, exceptional value"
+      ctaText="Shop Now"
+      ctaLink="/products"
+      backgroundVideo="/hero-video.mp4"
+      showSearchBar
+    />
+    // Split layout hero
+    <SectionHero2
+      title="New Collection"
+      description="Explore our latest arrivals"
+      image="/hero-image.jpg"
+      layout="split"
+      reversed
+    />
+    // Minimal hero design
+    <SectionHero3 title="Minimalist Design" centered showScrollIndicator />
+    ```
+  </Accordion>
+
+<Accordion title="Product Showcases" icon="grid">
+  ```typescript import{' '}
+  {(SectionCollectionSlider, SectionSliderLargeProduct, SectionGridFeatureItems)} from
+  '@/components/sections'; // Collection carousel
+  <SectionCollectionSlider collections={collections} autoplay infinite showDots />
+  // Large product slider
+  <SectionSliderLargeProduct products={featuredProducts} showProductInfo enableQuickView />
+  // Featured products grid
+  <SectionGridFeatureItems items={featuredItems} columns={4} showPricing showRating />
+  ```
+</Accordion>
+
+  <Accordion title="Content Sections" icon="text">
+    ```typescript import {(SectionHowItWork, SectionPromo3, SectionClientSay)} from
+    '@/components/sections'; // Process explanation
+    <SectionHowItWork steps={processSteps} layout="horizontal" showIcons animated />
+    // Newsletter signup
+    <SectionPromo3
+      title="Stay Updated"
+      description="Get the latest news and offers"
+      placeholder="Enter your email"
+      buttonText="Subscribe"
+      showPrivacyNote
+    />
+    // Customer testimonials
+    <SectionClientSay testimonials={testimonials} autoplay showAvatars showRatings />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Form Components
+
+### Authentication Forms
+
+<CodeGroup>
+```typescript Login Form
+import { LoginForm } from '@/components/auth/LoginForm';
+
+<LoginForm
+  onSubmit={handleLogin}
+  showRememberMe
+  showForgotPassword
+  showSocialLogin
+  redirectTo="/dashboard"
+/>
+```
+
+```typescript Signup Form
+import { SignupForm } from '@/components/auth/SignupForm';
+
+<SignupForm
+  onSubmit={handleSignup}
+  requireTermsAcceptance
+  showPasswordStrength
+  enableEmailValidation
+  redirectTo="/welcome"
+/>
+```
+
+```typescript Password Reset
+import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
+
+<PasswordResetForm
+  onSubmit={handlePasswordReset}
+  showSuccessMessage
+  redirectTo="/login"
+/>
+```
+
+</CodeGroup>
+
+### Shopping Forms
+
+```typescript
+// Checkout form with validation
+import { CheckoutForm } from '@/components/checkout/CheckoutForm';
+
+<CheckoutForm
+  cart={cart}
+  onSubmit={handleCheckout}
+  showShippingOptions
+  showPaymentMethods
+  enableAddressValidation
+  showOrderSummary
+/>
+
+// Address form
+import { AddressForm } from '@/components/user/AddressForm';
+
+<AddressForm
+  address={address}
+  onSubmit={handleAddressUpdate}
+  enableGeolocation
+  showAddressValidation
+  countries={supportedCountries}
+/>
+```
+
+## Interactive Components
+
+### Guest Features
+
+<CardGroup cols={2}>
+  <Card title="Favorites System" icon="heart">
+    Complete guest favorites with localStorage persistence
+  </Card>
+  <Card title="Recently Viewed" icon="clock">
+    Track and display recently viewed products
+  </Card>
+  <Card title="Product Comparison" icon="balance-scale">
+    Compare multiple products side-by-side
+  </Card>
+  <Card title="Quick Actions" icon="bolt">
+    Quick add to cart, wishlist, and share functionality
+  </Card>
+</CardGroup>
+
+### Advanced Interactions
+
+```typescript
+// Favorite button with animation
+import { FavoriteButton } from '@/components/guest/FavoriteButton';
+
+<FavoriteButton
+  productId={product.id}
+  initialState="neutral"
+  onStateChange={handleFavoriteChange}
+  showAnimation
+  size="lg"
+/>
+
+// Like and save buttons
+import { LikeSaveBtnsWithFavorites } from '@/components/guest/LikeSaveBtnsWithFavorites';
+
+<LikeSaveBtnsWithFavorites
+  item={product}
+  showShare
+  showCompare
+  showQuickView
+  position="top-right"
+/>
+```
+
+## Taxonomy Components
+
+### Category & Brand Management
+
+```typescript
+import { TaxonomyCard } from '@/components/taxonomy/TaxonomyCard';
+
+// Category display
+<TaxonomyCard
+  taxonomy={category}
+  type="category"
+  showProductCount
+  showSubcategories
+  layout="card"
+/>
+
+// Brand showcase
+<TaxonomyCard
+  taxonomy={brand}
+  type="brand"
+  showLogo
+  showDescription
+  showFeaturedProducts
+  layout="hero"
+/>
+```
+
+## Component Best Practices
+
+### TypeScript Integration
+
+<Warning>
+  **Type Safety**: All components include comprehensive TypeScript interfaces and props validation.
+</Warning>
+
+```typescript
+// Example component interface
+interface ProductCardProps {
+  product: Product;
+  showFavorite?: boolean;
+  showQuickView?: boolean;
+  showCompare?: boolean;
+  showRating?: boolean;
+  layout?: 'vertical' | 'horizontal';
+  size?: 'small' | 'medium' | 'large';
+  onFavoriteChange?: (productId: string, state: FavoriteState) => void;
+  onQuickView?: (product: Product) => void;
+  'data-testid'?: string;
+}
+```
+
+### Responsive Design
+
+Components use Mantine's responsive system:
+
+```typescript
+// Responsive grid example
+<SimpleGrid
+  cols={{ base: 1, sm: 2, md: 3, lg: 4 }}
+  spacing={{ base: 'md', md: 'lg' }}
+  verticalSpacing={{ base: 'md', md: 'xl' }}
+>
+  {products.map(product => (
+    <ProductCard key={product.id} product={product} />
+  ))}
+</SimpleGrid>
+```
+
+### Performance Optimization
+
+- **Lazy Loading**: Components lazy load images and content
+- **Memoization**: React.memo used for expensive components
+- **Bundle Splitting**: Dynamic imports for large component sets
+- **Virtual Scrolling**: For large lists and product grids
+
+The Web Template component library provides a comprehensive foundation for building modern
+e-commerce applications with enterprise-grade functionality and user experience.

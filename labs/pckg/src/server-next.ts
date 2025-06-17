@@ -13,6 +13,10 @@ export async function getServerSideProps(_context: any) {
   };
 }
 
+export async function getSession(_req?: any) {
+  return null;
+}
+
 export async function middleware(_request: any) {
   return new Response('Next.js auth middleware not implemented', { status: 501 });
 }
@@ -22,8 +26,4 @@ export function withAuth(_handler: any) {
   return async function (_req: any, res: any) {
     res.status(501).json({ error: 'Auth wrapper not implemented' });
   };
-}
-
-export async function getSession(_req?: any) {
-  return null;
 }

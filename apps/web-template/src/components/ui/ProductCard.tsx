@@ -2,14 +2,16 @@
 
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
-import { Drawer, ScrollArea } from '@mantine/core';
+import { Drawer, ScrollArea, Text, Center, Stack } from '@mantine/core';
 import { useDidUpdate, useDisclosure } from '@mantine/hooks';
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { type FC, memo, useCallback, useEffect, useRef, useState } from 'react';
+import { IconAlertTriangle, IconPackage } from '@tabler/icons-react';
 
 import { FavoriteButton } from '@/components/guest/FavoriteButton';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { type TProductItem } from '@/types';
 
 // Local component definitions
@@ -233,6 +235,48 @@ export interface ProductCardProps {
   showVariants?: boolean;
   showWishlist?: boolean;
   testId?: string;
+  error?: string;
+}
+
+// Error state for ProductCard
+function ProductCardError({ error, testId }: { error: string; testId: string }) {
+  return (
+    <div
+      className="nc-ProductCard relative flex flex-col bg-transparent border-2 border-red-200 rounded-3xl p-4"
+      data-testid={`${testId}-error`}
+    >
+      <Center py="xl">
+        <Stack align="center" gap="sm">
+          <IconAlertTriangle size={32} color="red" />
+          <Text size="sm" c="red" ta="center">
+            Failed to load product
+          </Text>
+          <Text size="xs" c="dimmed" ta="center">
+            {error}
+          </Text>
+        </Stack>
+      </Center>
+    </div>
+  );
+}
+
+// Zero state for when no product data
+function ProductCardEmpty({ testId }: { testId: string }) {
+  return (
+    <div
+      className="nc-ProductCard relative flex flex-col bg-transparent border-2 border-gray-200 rounded-3xl p-4"
+      data-testid={`${testId}-empty`}
+    >
+      <Center py="xl">
+        <Stack align="center" gap="sm">
+          <IconPackage size={32} color="gray" />
+          <Text size="sm" c="dimmed" ta="center">
+            No product data
+          </Text>
+        </Stack>
+      </Center>
+    </div>
+  );
 }
 
 const ProductCard: FC<ProductCardProps> = memo(
@@ -244,13 +288,21 @@ const ProductCard: FC<ProductCardProps> = memo(
     product,
     testId = 'product-card',
     showQuickView = true,
+    error,
     ...props
   }) => {
     const [quickViewOpened, { close: closeQuickView, open: openQuickView }] = useDisclosure(false);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const [internalError, setInternalError] = useState<string | null>(null);
 
     // Use consistent product data
     const productData = product ?? data;
+
+    // Show error state
+    const currentError = error || internalError;
+    if (currentError) {
+      return <ProductCardError error={currentError} testId={testId} />;
+    }
 
     // Optimize color rendering with delayed state
     const [shouldRenderColors, setShouldRenderColors] = useState(false);
@@ -339,11 +391,16 @@ const ProductCard: FC<ProductCardProps> = memo(
         </div>
       );
     }
+
+    // Show zero state when no product data
     if (!productData) {
-      return null;
+      return <ProductCardEmpty testId={testId} />;
     }
+
     return (
-      <>
+      <ErrorBoundary
+        fallback={<ProductCardError error="Product card failed to render" testId={testId} />}
+      >
         <div
           data-testid={testId}
           {...(props.onClick
@@ -363,29 +420,40 @@ const ProductCard: FC<ProductCardProps> = memo(
           <Link className="absolute inset-0" href={productUrl()} />
 
           <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
-            <Link className="block" href={productUrl()}>
-              {featuredImage?.src ? (
-                <div className="relative aspect-[11/12] w-full">
-                  <Image
-                    alt={featuredImage.alt || title || 'Product image'}
-                    className="object-cover"
-                    data-testid={`${testId}-image`}
-                    fill
-                    loading={props.lazyLoad ? 'lazy' : 'eager'}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
-                    src={featuredImage.src}
-                  />
+            <ErrorBoundary
+              fallback={
+                <div className="aspect-[11/12] w-full bg-red-100 flex items-center justify-center text-red-500 text-sm">
+                  Image Error
                 </div>
-              ) : (
-                <div
-                  className="flex aspect-[11/12] w-full bg-gray-200 dark:bg-gray-700"
-                  data-testid="placeholder"
-                />
-              )}
-            </Link>
-            <ProductStatus data-testId={`${testId}-status`} status="New in" />
+              }
+            >
+              <Link className="block" href={productUrl()}>
+                {featuredImage?.src ? (
+                  <div className="relative aspect-[11/12] w-full">
+                    <Image
+                      alt={featuredImage.alt || title || 'Product image'}
+                      className="object-cover"
+                      data-testid={`${testId}-image`}
+                      fill
+                      loading={props.lazyLoad ? 'lazy' : 'eager'}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                      src={featuredImage.src}
+                      onError={() => setInternalError('Failed to load product image')}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="flex aspect-[11/12] w-full bg-gray-200 dark:bg-gray-700"
+                    data-testid="placeholder"
+                  />
+                )}
+              </Link>
+            </ErrorBoundary>
+            <ErrorBoundary fallback={null}>
+              <ProductStatus data-testId={`${testId}-status`} status="New in" />
+            </ErrorBoundary>
 
-            {renderGroupButtons()}
+            <ErrorBoundary fallback={null}>{renderGroupButtons()}</ErrorBoundary>
           </div>
 
           <div className="space-y-4 px-2.5 pt-5 pb-2.5">
@@ -442,11 +510,17 @@ const ProductCard: FC<ProductCardProps> = memo(
             onClose={closeQuickView}
           >
             <ScrollArea h="100%" ref={scrollAreaRef}>
-              <ProductQuickView product={productData} onClose={closeQuickView} />
+              <ErrorBoundary
+                fallback={
+                  <div className="p-6 text-center text-red-500">Failed to load product details</div>
+                }
+              >
+                <ProductQuickView product={productData} onClose={closeQuickView} />
+              </ErrorBoundary>
             </ScrollArea>
           </Drawer>
         )}
-      </>
+      </ErrorBoundary>
     );
   },
 );

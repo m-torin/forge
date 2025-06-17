@@ -12,20 +12,26 @@
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "catalog:",
-    "react": "catalog:",
     "next": "catalog:",
+    "react": "catalog:",
     "zod": "catalog:"
   },
   "peerDependencies": {
-    "@sentry/node": "^9.27.0",
-    "@sentry/react": "^9.27.0",
-    "@sentry/nextjs": "^9.27.0",
-    "@logtail/node": "^0.5.0",
     "@logtail/next": "^0.2.0",
-    "@opentelemetry/api": "^1.7.0",
-    "@opentelemetry/sdk-node": "^0.45.0",
-    "pino": "^8.0.0",
-    "winston": "^3.11.0"
+    "@logtail/node": "^0.5.5",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.60.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.202.0",
+    "@opentelemetry/resources": "^2.0.1",
+    "@opentelemetry/sdk-node": "^0.202.0",
+    "@opentelemetry/semantic-conventions": "^1.34.0",
+    "@sentry/nextjs": "^9.28.1",
+    "@sentry/node": "^9.28.1",
+    "@sentry/react": "^9.28.1",
+    "@vercel/otel": "^1.13.0",
+    "pino": "^9.7.0",
+    "winston": "^3.17.0",
+    "@grafana/faro-web-sdk": "^1.4.0"
   },
   "peerDependenciesMeta": {
     "@sentry/node": {
@@ -40,13 +46,28 @@
     "@opentelemetry/api": {
       "optional": true
     },
+    "@opentelemetry/auto-instrumentations-node": {
+      "optional": true
+    },
+    "@opentelemetry/exporter-trace-otlp-http": {
+      "optional": true
+    },
+    "@opentelemetry/resources": {
+      "optional": true
+    },
+    "@opentelemetry/sdk-node": {
+      "optional": true
+    },
+    "@opentelemetry/semantic-conventions": {
+      "optional": true
+    },
+    "@vercel/otel": {
+      "optional": true
+    },
     "@logtail/node": {
       "optional": true
     },
     "@logtail/next": {
-      "optional": true
-    },
-    "@opentelemetry/sdk-node": {
       "optional": true
     },
     "pino": {
@@ -54,37 +75,47 @@
     },
     "winston": {
       "optional": true
+    },
+    "@grafana/faro-web-sdk": {
+      "optional": true
     }
   },
   "devDependencies": {
+    "@logtail/next": "^0.2.0",
+    "@logtail/node": "^0.5.5",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.60.0",
+    "@opentelemetry/exporter-jaeger": "^2.0.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.202.0",
+    "@opentelemetry/resources": "^2.0.1",
+    "@opentelemetry/sdk-node": "^0.202.0",
+    "@opentelemetry/semantic-conventions": "^1.34.0",
+    "@opentelemetry/winston-transport": "^0.13.0",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
+    "@sentry/nextjs": "^9.28.1",
+    "@sentry/node": "^9.28.1",
+    "@sentry/react": "^9.28.1",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.5.1",
+    "@vercel/otel": "^1.13.0",
+    "@vitejs/plugin-react": "^4.5.2",
     "eslint": "catalog:",
     "jsdom": "catalog:",
+    "pino": "^9.7.0",
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "@sentry/node": "^9.27.0",
-    "@sentry/react": "^9.27.0",
-    "@sentry/nextjs": "^9.27.0",
-    "@logtail/node": "^0.5.0",
-    "@logtail/next": "^0.2.0",
-    "@opentelemetry/api": "^1.7.0",
-    "@opentelemetry/sdk-node": "^0.45.0",
-    "pino": "^8.0.0",
-    "winston": "^3.11.0"
+    "winston": "^3.17.0"
   },
   "exports": {
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
-    "./client/next": "./client/next.ts",
-    "./server/next": "./server/next.ts"
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts"
   }
 }

@@ -2,7 +2,7 @@
  * Provider configuration and management types
  */
 
-import type { WorkflowProvider } from './workflow';
+import { WorkflowProvider } from './workflow';
 
 export type AnyProviderConfig =
   | CustomProviderConfig
@@ -39,7 +39,7 @@ export interface ProviderCapabilities {
 
 export interface ProviderConfig {
   /** Provider-specific configuration */
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   /** Whether this provider is enabled */
   enabled: boolean;
   /** Environment where this provider should be used */
@@ -58,7 +58,7 @@ export interface ProviderContext {
   /** Current execution environment */
   environment: 'development' | 'production' | 'staging';
   /** Additional context data */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   /** Request context (if available) */
   request?: {
     headers: Record<string, string>;
@@ -85,7 +85,7 @@ export type ProviderFeature =
 
 export interface ProviderHealthReport {
   /** Additional details */
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   /** Error details if unhealthy */
   error?: string;
   /** Provider name */

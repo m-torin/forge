@@ -11,7 +11,7 @@ import {
   Text,
 } from '@react-email/components';
 
-interface ApiKeyCreatedTemplateProps {
+interface ApiKeyCreatedTemplateProps extends Record<string, any> {
   readonly apiKeyId: string;
   readonly apiKeyName: string;
   readonly dashboardUrl?: string;
@@ -20,11 +20,11 @@ interface ApiKeyCreatedTemplateProps {
 }
 
 export const ApiKeyCreatedTemplate = ({
-  name,
   apiKeyId,
   apiKeyName,
   dashboardUrl = 'https://example.com/api-keys',
   email: _email,
+  name,
 }: ApiKeyCreatedTemplateProps) => (
   <Tailwind>
     <Html>
@@ -65,8 +65,8 @@ export const ApiKeyCreatedTemplate = ({
 
               <Section className="mb-6">
                 <Button
-                  href={dashboardUrl}
                   className="rounded-md bg-zinc-950 px-6 py-3 text-center text-white no-underline"
+                  href={dashboardUrl}
                 >
                   Manage API Keys
                 </Button>
@@ -99,9 +99,9 @@ export const ApiKeyCreatedTemplate = ({
 
 const ExampleApiKeyCreatedEmail = () => (
   <ApiKeyCreatedTemplate
-    dashboardUrl="https://example.com/api-keys"
     apiKeyId="forge_abc123def456"
     apiKeyName="Production API Key"
+    dashboardUrl="https://example.com/api-keys"
     email="jane@example.com"
     name="Jane Smith"
   />

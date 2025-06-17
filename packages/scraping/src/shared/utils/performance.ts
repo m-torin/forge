@@ -115,7 +115,7 @@ export function createResourceManager(limits: Record<string, number> = {}): Reso
       }
 
       // Wait for resource to become available
-      return new Promise((resolve) => {
+      return new Promise((resolve: any) => {
         if (!waiting[resource]) {
           waiting[resource] = [];
         }

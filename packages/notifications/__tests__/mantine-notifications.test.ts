@@ -9,25 +9,25 @@ const mockMantineNotifications = {
   update: vi.fn(),
 };
 
-vi.mock('@mantine/notifications', () => ({
+vi.mock('@mantine/notifications', (_: any) => ({
   notifications: mockMantineNotifications,
-  Notifications: vi.fn().mockImplementation(({ children }) => children),
+  Notifications: vi.fn().mockImplementation(({ children }: any) => children),
 }));
 
 // Mock Tabler icons
-vi.mock('@tabler/icons-react', () => ({
+vi.mock('@tabler/icons-react', (_: any) => ({
   IconAlertTriangle: vi.fn().mockImplementation(() => 'IconAlertTriangle'),
   IconCheck: vi.fn().mockImplementation(() => 'IconCheck'),
   IconInfoCircle: vi.fn().mockImplementation(() => 'IconInfoCircle'),
   IconX: vi.fn().mockImplementation(() => 'IconX'),
 }));
 
-describe('Mantine Notifications', () => {
+describe('Mantine Notifications', (_: any) => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('notify.success', () => {
+  describe('notify.success', (_: any) => {
     it('should show success notification with correct config', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -76,7 +76,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('notify.error', () => {
+  describe('notify.error', (_: any) => {
     it('should show error notification with correct config', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -124,7 +124,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('notify.info', () => {
+  describe('notify.info', (_: any) => {
     it('should show info notification with correct config', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -147,7 +147,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('notify.warning', () => {
+  describe('notify.warning', (_: any) => {
     it('should show warning notification with correct config', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -170,7 +170,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('notification management methods', () => {
+  describe('notification management methods', (_: any) => {
     it('should expose hide method', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -224,7 +224,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('default configuration', () => {
+  describe('default configuration', (_: any) => {
     it('should have consistent default config across notification types', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -249,7 +249,7 @@ describe('Mantine Notifications', () => {
       expect(mockMantineNotifications.show).toHaveBeenCalledTimes(4);
 
       const calls = mockMantineNotifications.show.mock.calls;
-      calls.forEach((call) => {
+      calls.forEach((call: any) => {
         const config = call[0];
         expect(config).toMatchObject(expectedDefaults);
       });
@@ -295,7 +295,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('icon rendering', () => {
+  describe('icon rendering', (_: any) => {
     it('should include icons in notification calls', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -306,14 +306,14 @@ describe('Mantine Notifications', () => {
 
       // Verify that all notification calls include icon objects
       const calls = mockMantineNotifications.show.mock.calls;
-      calls.forEach((call) => {
+      calls.forEach((call: any) => {
         expect(call[0]).toHaveProperty('icon');
         expect(call[0].icon).toEqual(expect.any(Object));
       });
     });
   });
 
-  describe('module exports', () => {
+  describe('module exports', (_: any) => {
     it('should export notify object with all methods', async () => {
       const module = await import('../mantine-notifications');
 
@@ -337,7 +337,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('option merging', () => {
+  describe('option merging', (_: any) => {
     it('should override default styles when custom styles provided', async () => {
       const { notify } = await import('../mantine-notifications');
 
@@ -382,7 +382,7 @@ describe('Mantine Notifications', () => {
     });
   });
 
-  describe('type safety', () => {
+  describe('type safety', (_: any) => {
     it('should accept valid NotificationData options', async () => {
       const { notify } = await import('../mantine-notifications');
 

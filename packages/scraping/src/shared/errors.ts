@@ -89,27 +89,30 @@ export class ScrapingError extends Error {
 
   toJSON() {
     return {
-      name: this.name,
       cause: this.cause?.message,
       code: this.code,
       details: this.details,
       message: this.message,
+      name: this.name,
       stack: this.stack,
     };
   }
 }
 
-export class NavigationError extends ScrapingError {
-  constructor(message: string, details?: Record<string, any>, cause?: Error) {
-    super(message, ScrapingErrorCode.NAVIGATION_FAILED, details, cause);
-    this.name = 'NavigationError';
+export class CaptchaError extends ScrapingError {
+  constructor(message: string, captchaType?: string, details?: Record<string, any>) {
+    super(message, ScrapingErrorCode.CAPTCHA_DETECTED, {
+      captchaType,
+      ...details,
+    });
+    this.name = 'CaptchaError';
   }
 }
 
-export class TimeoutError extends ScrapingError {
+export class ConfigurationError extends ScrapingError {
   constructor(message: string, details?: Record<string, any>) {
-    super(message, ScrapingErrorCode.TIMEOUT, details);
-    this.name = 'TimeoutError';
+    super(message, ScrapingErrorCode.INVALID_CONFIG, details);
+    this.name = 'ConfigurationError';
   }
 }
 
@@ -123,13 +126,10 @@ export class ElementNotFoundError extends ScrapingError {
   }
 }
 
-export class CaptchaError extends ScrapingError {
-  constructor(message: string, captchaType?: string, details?: Record<string, any>) {
-    super(message, ScrapingErrorCode.CAPTCHA_DETECTED, {
-      captchaType,
-      ...details,
-    });
-    this.name = 'CaptchaError';
+export class NavigationError extends ScrapingError {
+  constructor(message: string, details?: Record<string, any>, cause?: Error) {
+    super(message, ScrapingErrorCode.NAVIGATION_FAILED, details, cause);
+    this.name = 'NavigationError';
   }
 }
 
@@ -153,16 +153,23 @@ export class ProviderError extends ScrapingError {
   }
 }
 
-export class ConfigurationError extends ScrapingError {
+export class TimeoutError extends ScrapingError {
   constructor(message: string, details?: Record<string, any>) {
-    super(message, ScrapingErrorCode.INVALID_CONFIG, details);
-    this.name = 'ConfigurationError';
+    super(message, ScrapingErrorCode.TIMEOUT, details);
+    this.name = 'TimeoutError';
   }
 }
 
-// Error utilities
-export function isScrapingError(error: unknown): error is ScrapingError {
-  return error instanceof ScrapingError;
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return (error as Error)?.message || 'Unknown error';
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  return 'Unknown error occurred';
 }
 
 export function isRetryableError(error: unknown): boolean {
@@ -180,16 +187,9 @@ export function isRetryableError(error: unknown): boolean {
   return retryableCodes.includes(error.code);
 }
 
-export function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === 'string') {
-    return error;
-  }
-
-  return 'Unknown error occurred';
+// Error utilities
+export function isScrapingError(error: unknown): error is ScrapingError {
+  return error instanceof ScrapingError;
 }
 
 export function wrapError(
@@ -201,7 +201,7 @@ export function wrapError(
     return error;
   }
 
-  const errorMessage = message || getErrorMessage(error);
+  const errorMessage = message ?? getErrorMessage(error);
   const cause = error instanceof Error ? error : undefined;
 
   return new ScrapingError(errorMessage, code, undefined, cause);

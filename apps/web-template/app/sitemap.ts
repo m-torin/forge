@@ -1,5 +1,6 @@
 import { generateSitemapObject, type DynamicSitemapRoute } from '@repo/seo/server/next';
-import { getProducts, getBlogPosts } from '@/data/data-service';
+import { getProducts } from '@/actions/products';
+import { getArticles } from '@/actions/articles';
 import { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -8,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch dynamic content
   const products = await getProducts();
-  const blogPosts = await getBlogPosts();
+  const blogPosts = await getArticles();
 
   const routes: DynamicSitemapRoute[] = [];
 
@@ -42,20 +43,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     // Dynamic product pages
-    products.forEach((product: any) => {
+    products.data.forEach((product: any) => {
       routes.push({
-        url: `${baseUrl}/${locale}/products/${product.handle}`,
-        lastModified: new Date(),
+        url: `${baseUrl}/${locale}/products/${product.slug}`,
+        lastModified: new Date(product.updatedAt || new Date()),
         changeFrequency: 'weekly' as const,
         priority: 0.8,
       });
     });
 
     // Dynamic blog pages
-    blogPosts.forEach((post: any) => {
+    blogPosts.data.forEach((post: any) => {
       routes.push({
-        url: `${baseUrl}/${locale}/blog/${post.handle}`,
-        lastModified: new Date(post.date || new Date()),
+        url: `${baseUrl}/${locale}/blog/${post.slug}`,
+        lastModified: new Date(post.updatedAt || post.createdAt || new Date()),
         changeFrequency: 'monthly' as const,
         priority: 0.6,
       });

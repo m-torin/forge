@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
 import AccordionInfo from '../../../mantine-ciseco/components/AccordionInfo';
 
-describe('AccordionInfo', () => {
+describe('AccordionInfo', (_: any) => {
   const customData = [
     {
       name: 'Custom Section 1',
@@ -14,7 +14,7 @@ describe('AccordionInfo', () => {
     },
   ];
 
-  it('renders with default data', () => {
+  it('renders with default data', (_: any) => {
     render(<AccordionInfo />);
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Fabric + Care')).toBeInTheDocument();
@@ -22,13 +22,13 @@ describe('AccordionInfo', () => {
     expect(screen.getByText('FAQ')).toBeInTheDocument();
   });
 
-  it('renders with custom data', () => {
+  it('renders with custom data', (_: any) => {
     render(<AccordionInfo data={customData} />);
     expect(screen.getByText('Custom Section 1')).toBeInTheDocument();
     expect(screen.getByText('Custom Section 2')).toBeInTheDocument();
   });
 
-  it('expands first two sections by default', () => {
+  it('expands first two sections by default', (_: any) => {
     render(<AccordionInfo />);
     const descriptionContent = screen.getByText(/Fashion is a form of self-expression/);
     const fabricContent = screen.getByText(/Made from a sheer Belgian power micromesh/);
@@ -56,7 +56,7 @@ describe('AccordionInfo', () => {
     });
   });
 
-  it('renders HTML content safely', () => {
+  it('renders HTML content safely', (_: any) => {
     render(<AccordionInfo />);
     const fabricButton = screen.getByText('Fabric + Care');
     fireEvent.click(fabricButton);
@@ -65,7 +65,7 @@ describe('AccordionInfo', () => {
     expect(content.parentElement).toHaveClass('list-disc', 'list-inside', 'leading-7');
   });
 
-  it('renders with custom panel className', () => {
+  it('renders with custom panel className', (_: any) => {
     render(<AccordionInfo panelClassName="custom-panel" />);
     const descriptionButton = screen.getByText('Description');
     fireEvent.click(descriptionButton);

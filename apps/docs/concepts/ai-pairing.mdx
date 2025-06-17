@@ -1,0 +1,375 @@
+---
+title: 'AI Pairing with Forge'
+description: 'Best practices for AI-assisted development with Forge monorepo patterns'
+icon: 'robot'
+---
+
+# AI Pairing with Forge
+
+Best practices and patterns for AI-assisted development within the Forge monorepo architecture.
+
+## Overview
+
+Forge is designed to work seamlessly with AI coding assistants by following consistent patterns,
+clear conventions, and providing comprehensive context through documentation and code structure.
+
+## AI-Friendly Architecture
+
+### Consistent Patterns
+
+Forge follows repeatable patterns that AI assistants can easily recognize and replicate:
+
+<CardGroup cols={2}>
+  <Card title="Package Structure" icon="folder">
+    Every package follows the same structure with predictable file locations
+  </Card>
+  <Card title="Environment Management" icon="key">
+    Standardized `keys.ts` pattern for environment variable validation
+  </Card>
+  <Card title="Export Patterns" icon="share">
+    Four-file export pattern for server/client separation
+  </Card>
+  <Card title="Testing Structure" icon="flask">
+    Consistent test organization and naming conventions
+  </Card>
+</CardGroup>
+
+### Clear Documentation
+
+Each package includes comprehensive documentation that AI can reference:
+
+```
+@repo/package-name/
+├── README.md           # Overview and usage
+├── index.ts           # Main exports
+├── server.ts          # Server-side exports
+├── client.ts          # Client-side exports
+├── keys.ts            # Environment variables
+└── types.ts           # Type definitions
+```
+
+## AI Pairing Workflows
+
+### 1. Package Development
+
+When creating new packages with AI assistance:
+
+<Steps>
+  <Step title="Start with Structure">
+    Ask AI to create the standard package structure following Forge patterns
+  </Step>
+  <Step title="Environment Setup">
+    Have AI create the `keys.ts` file with proper T3 Env validation
+  </Step>
+  <Step title="Type Definitions">Define TypeScript interfaces in `types.ts` first</Step>
+  <Step title="Implementation">Implement core functionality following established patterns</Step>
+  <Step title="Tests">Add tests using the standard Vitest configuration</Step>
+</Steps>
+
+### 2. Feature Implementation
+
+<AccordionGroup>
+  <Accordion title="Server Actions" icon="server">
+    ```typescript
+    // AI can follow this pattern for new server actions
+    'use server';
+    
+    import { z } from 'zod';
+    import { auth } from '@repo/auth/server/next';
+    import { database } from '@repo/database';
+    
+    const schema = z.object({
+      name: z.string().min(2),
+      email: z.string().email(),
+    });
+    
+    export async function createUser(formData: FormData) {
+      const session = await auth();
+      if (!session?.user) {
+        throw new Error('Unauthorized');
+      }
+      
+      const data = schema.parse(Object.fromEntries(formData));
+      
+      return await database.user.create({
+        data: {
+          ...data,
+          organizationId: session.user.organizationId,
+        },
+      });
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="React Components" icon="react">
+    ```typescript
+    // Standard component pattern with Mantine UI
+    import { Button, TextInput } from '@mantine/core';
+    import { useForm, zodResolver } from '@mantine/form';
+    import { z } from 'zod';
+    
+    const schema = z.object({
+      name: z.string().min(2),
+      email: z.string().email(),
+    });
+    
+    interface ComponentProps {
+      'data-testid'?: string;
+      onSubmit: (data: z.infer<typeof schema>) => void;
+    }
+    
+    export function UserForm({ 
+      'data-testid': testId = 'user-form',
+      onSubmit 
+    }: ComponentProps) {
+      const form = useForm({
+        validate: zodResolver(schema),
+        initialValues: { name: '', email: '' },
+      });
+      
+      return (
+        <form 
+          data-testid={testId}
+          onSubmit={form.onSubmit(onSubmit)}
+        >
+          <TextInput
+            label="Name"
+            {...form.getInputProps('name')}
+          />
+          <TextInput
+            label="Email"
+            {...form.getInputProps('email')}
+          />
+          <Button type="submit">Submit</Button>
+        </form>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="API Routes" icon="api">
+    ```typescript
+    // Standard API route with auth and validation
+    import { NextRequest } from 'next/server';
+    import { auth } from '@repo/auth/server/next';
+    import { z } from 'zod';
+    
+    const schema = z.object({
+      name: z.string().min(2),
+    });
+    
+    export async function POST(request: NextRequest) {
+      try {
+        const session = await auth();
+        if (!session?.user) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        
+        const body = await request.json();
+        const data = schema.parse(body);
+        
+        // Implementation
+        
+        return Response.json({ success: true });
+      } catch (error) {
+        return Response.json(
+          { error: 'Internal server error' }, 
+          { status: 500 }
+        );
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## AI Prompting Strategies
+
+### Context-Rich Prompts
+
+When working with AI on Forge, provide comprehensive context:
+
+<Tabs>
+  <Tab title="Package Context">
+    ```
+    I'm working in a Forge monorepo with these key details:
+    - Package: @repo/analytics
+    - Tech stack: Next.js 15, TypeScript, Mantine UI
+    - Architecture: ESM modules, server/client separation
+    - Patterns: Four-file exports, T3 Env validation
+    
+    Please create a new analytics event tracking function that...
+    ```
+  </Tab>
+
+<Tab title="Component Context">
+  ``` I'm building a React component in the Forge design system: - Using Mantine UI v8 as primary
+  framework - Follows data-testid pattern for testing - Uses zodResolver for form validation -
+  Server actions for data mutations Create a component that... ```
+</Tab>
+
+  <Tab title="API Context">
+    ```
+    I'm adding a new API route to the Forge web app:
+    - Uses Better Auth for authentication
+    - Follows server action pattern over API routes
+    - Implements proper error handling
+    - Uses Zod for request validation
+    
+    Create an endpoint that...
+    ```
+  </Tab>
+</Tabs>
+
+### Effective Prompts
+
+<Warning>
+  **Avoid Vague Prompts**: Instead of "create a form", specify "create a Mantine form component with
+  Zod validation following Forge patterns"
+</Warning>
+
+**Good Prompts:**
+
+- "Create a new package in @repo/notifications following the four-file export pattern"
+- "Add a server action for user creation with Better Auth session validation"
+- "Implement a Mantine DataTable component with sorting and filtering"
+
+**Include Context:**
+
+- Current file structure
+- Related package dependencies
+- Specific patterns to follow
+- Error handling requirements
+
+## Code Review with AI
+
+### Pre-Review Checklist
+
+Before asking AI to review code in Forge:
+
+<Steps>
+  <Step title="Pattern Compliance">Verify the code follows Forge conventions and patterns</Step>
+  <Step title="Import Structure">Check import organization (React → External → @repo → Local)</Step>
+  <Step title="Type Safety">Ensure proper TypeScript usage and type definitions</Step>
+  <Step title="Error Handling">Validate comprehensive error handling implementation</Step>
+</Steps>
+
+### Review Prompt Template
+
+```
+Please review this code for Forge monorepo compliance:
+
+[CODE]
+
+Check for:
+1. Follows Forge patterns (environment management, exports, etc.)
+2. Proper TypeScript usage
+3. Mantine UI best practices
+4. Error handling completeness
+5. Import organization
+6. Test coverage considerations
+
+Suggest improvements following Forge conventions.
+```
+
+## Common AI Assistance Scenarios
+
+### 1. Package Migration
+
+When migrating external packages to Forge structure:
+
+```
+I need to migrate [package-name] to Forge patterns:
+- Create proper package structure
+- Add environment validation with T3 Env
+- Implement four-file export pattern
+- Add proper TypeScript types
+- Create comprehensive documentation
+
+Current package does: [description]
+```
+
+### 2. Component Development
+
+```
+Create a [component-name] component for Forge:
+- Use Mantine UI v8 components
+- Include data-testid props
+- Implement proper TypeScript interfaces
+- Follow responsive design patterns
+- Add accessibility features
+```
+
+### 3. Integration Tasks
+
+```
+Integrate [service] with Forge:
+- Add to @repo/[package-name]
+- Create environment validation
+- Implement graceful degradation
+- Add mock service for development
+- Include comprehensive error handling
+```
+
+## AI Tools Integration
+
+### Development Workflow
+
+<CardGroup cols={2}>
+  <Card title="Code Generation" icon="code">
+    Use AI for boilerplate following Forge patterns
+  </Card>
+  <Card title="Documentation" icon="book">
+    Generate docs that follow Forge standards
+  </Card>
+  <Card title="Testing" icon="flask">
+    Create tests using Forge testing patterns
+  </Card>
+  <Card title="Refactoring" icon="arrows-rotate">
+    Modernize code to follow current conventions
+  </Card>
+</CardGroup>
+
+### Automation Opportunities
+
+- **Package Creation**: Automate new package scaffolding
+- **Component Generation**: Create components with standard props
+- **Test Generation**: Generate test suites following patterns
+- **Documentation Updates**: Keep docs in sync with code changes
+
+## Best Practices
+
+### 1. Incremental Development
+
+Work with AI in small, focused iterations:
+
+- One pattern at a time
+- Single responsibility changes
+- Clear success criteria
+- Immediate validation
+
+### 2. Pattern Reinforcement
+
+Consistently reference Forge patterns:
+
+- Point to existing examples
+- Emphasize conventions
+- Validate against standards
+- Document deviations
+
+### 3. Context Management
+
+Maintain context throughout sessions:
+
+- Reference related files
+- Explain dependencies
+- Clarify requirements
+- Validate understanding
+
+<Note>
+  **Remember**: AI assistants work best with Forge when given clear patterns, comprehensive context,
+  and specific requirements. The consistent architecture makes it easier for AI to understand and
+  replicate successful patterns.
+</Note>
+
+AI pairing with Forge enables rapid development while maintaining architectural consistency and code
+quality through well-established patterns and comprehensive documentation.

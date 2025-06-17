@@ -111,7 +111,7 @@ export { default as VerifyIcon, type VerifyIconProps } from './VerifyIcon';
 export { default as Alert, type AlertProps } from './Alert';
 export { default as Badge, type BadgeProps, type BadgeColor } from './Badge';
 export { default as Tag, type TagProps } from './Tag';
-export { default as ButtonClose, type ButtonCloseProps } from './ButtonClose';
+// ButtonClose already exported from Filters
 export { default as ButtonCircle, type ButtonCircleProps } from './ButtonCircle';
 export { default as ButtonDropdown, type ButtonDropdownProps } from './ButtonDropdown';
 

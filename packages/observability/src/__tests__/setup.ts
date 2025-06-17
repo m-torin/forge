@@ -5,7 +5,7 @@ import { afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom';
 
 // Mock @t3-oss/env-nextjs to avoid server-side environment restrictions
-vi.mock('@t3-oss/env-nextjs', () => ({
+vi.mock('@t3-oss/env-nextjs', (_: any) => ({
   createEnv: vi.fn(() => {
     return new Proxy(
       {},
@@ -17,16 +17,16 @@ vi.mock('@t3-oss/env-nextjs', () => ({
           }
           // Provide defaults for specific environment variables
           switch (prop) {
-            case 'SENTRY_DSN':
-              return process.env.SENTRY_DSN || undefined;
-            case 'SENTRY_AUTH_TOKEN':
-              return process.env.SENTRY_AUTH_TOKEN || undefined;
-            case 'NEXT_PUBLIC_SENTRY_DSN':
-              return process.env.NEXT_PUBLIC_SENTRY_DSN || undefined;
             case 'LOGTAIL_SOURCE_TOKEN':
               return process.env.LOGTAIL_SOURCE_TOKEN || undefined;
+            case 'NEXT_PUBLIC_SENTRY_DSN':
+              return process.env.NEXT_PUBLIC_SENTRY_DSN || undefined;
             case 'NODE_ENV':
               return process.env.NODE_ENV || 'test';
+            case 'SENTRY_AUTH_TOKEN':
+              return process.env.SENTRY_AUTH_TOKEN || undefined;
+            case 'SENTRY_DSN':
+              return process.env.SENTRY_DSN || undefined;
             default:
               return undefined;
           }
@@ -37,7 +37,7 @@ vi.mock('@t3-oss/env-nextjs', () => ({
 }));
 
 // Mock Sentry to prevent actual initialization during tests
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/nextjs', (_: any) => ({
   addBreadcrumb: vi.fn(),
   captureException: vi.fn(),
   captureMessage: vi.fn(),
@@ -58,7 +58,7 @@ vi.mock('@sentry/nextjs', () => ({
 }));
 
 // Mock @sentry/node for server-side tests
-vi.mock('@sentry/node', () => ({
+vi.mock('@sentry/node', (_: any) => ({
   addBreadcrumb: vi.fn(),
   captureException: vi.fn(),
   captureMessage: vi.fn(),
@@ -81,7 +81,7 @@ vi.mock('@sentry/node', () => ({
   },
   startSpan: vi.fn(),
   startTransaction: vi.fn(),
-  withScope: vi.fn((callback) =>
+  withScope: vi.fn((callback: any) =>
     callback({
       setExtra: vi.fn(),
       setFingerprint: vi.fn(),
@@ -95,7 +95,7 @@ vi.mock('@sentry/node', () => ({
 // Note: Pino mocking is handled individually by test files to avoid conflicts
 
 // Mock winston
-vi.mock('winston', () => ({
+vi.mock('winston', (_: any) => ({
   createLogger: vi.fn(() => ({
     child: vi.fn(),
     debug: vi.fn(),
@@ -139,7 +139,7 @@ vi.mock('winston', () => ({
   },
   startSpan: vi.fn(),
   startTransaction: vi.fn(),
-  withScope: vi.fn((callback) =>
+  withScope: vi.fn((callback: any) =>
     callback({
       setExtra: vi.fn(),
       setFingerprint: vi.fn(),

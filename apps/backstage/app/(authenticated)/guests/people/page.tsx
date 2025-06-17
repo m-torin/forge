@@ -31,6 +31,8 @@ import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 
+import { listUsers, deleteUser, banUser, unbanUser, impersonateUser } from '@repo/auth/server/next';
+
 import { DataTable } from '../../components/data-table';
 import { PageHeader } from '../../components/page-header';
 import { StatsCard } from '../../components/stats-card';
@@ -53,7 +55,8 @@ interface User {
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
+  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
+    useDisclosure(false);
   const [banModalOpened, { open: openBanModal, close: closeBanModal }] = useDisclosure(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState({
@@ -73,23 +76,26 @@ export default function UsersPage() {
     },
     {
       title: 'Active Users',
-      value: users.filter(u => !u.banned).length.toString(),
+      value: users.filter((u) => !u.banned).length.toString(),
       color: 'green',
       icon: IconUserCheck,
-      progress: { 
-        label: 'of total users', 
-        value: users.length > 0 ? Math.round((users.filter(u => !u.banned).length / users.length) * 100) : 0 
+      progress: {
+        label: 'of total users',
+        value:
+          users.length > 0
+            ? Math.round((users.filter((u) => !u.banned).length / users.length) * 100)
+            : 0,
       },
     },
     {
       title: 'Banned Users',
-      value: users.filter(u => u.banned).length.toString(),
+      value: users.filter((u) => u.banned).length.toString(),
       color: 'red',
       icon: IconBan,
     },
     {
       title: 'Admin Users',
-      value: users.filter(u => u.role === 'admin' || u.role === 'super-admin').length.toString(),
+      value: users.filter((u) => u.role === 'admin' || u.role === 'super-admin').length.toString(),
       color: 'orange',
       icon: IconShield,
     },
@@ -97,11 +103,11 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadUsers();
-    
+
     // Listen for refresh events from modals
     const handleRefresh = () => loadUsers();
     window.addEventListener('refreshPeople', handleRefresh);
-    
+
     return () => {
       window.removeEventListener('refreshPeople', handleRefresh);
     };
@@ -110,14 +116,19 @@ export default function UsersPage() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/users');
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users || []);
+      const result = await listUsers();
+      if (result.success && result.data) {
+        setUsers(
+          result.data.map((user: any) => ({
+            ...user,
+            role: user.role || 'user',
+            banned: user.banned || false,
+          })) || [],
+        );
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to load users',
+          message: result.error || 'Failed to load users',
           color: 'red',
         });
       }
@@ -135,31 +146,15 @@ export default function UsersPage() {
 
   const handleCreateUser = async () => {
     try {
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
+      // Note: User creation through better-auth typically happens through the sign-up flow
+      // For admin-created users, you might need to implement a custom solution
+      // or use the invitation system
+      notifications.show({
+        title: 'Info',
+        message: 'User creation should be done through the sign-up flow or invitation system',
+        color: 'blue',
       });
-
-      if (response.ok) {
-        notifications.show({
-          title: 'Success',
-          message: 'User created successfully',
-          color: 'green',
-        });
-        closeCreateModal();
-        setNewUser({ name: '', email: '', password: '', role: 'user' });
-        await loadUsers();
-      } else {
-        const error = await response.json();
-        notifications.show({
-          title: 'Error',
-          message: error.message || 'Failed to create user',
-          color: 'red',
-        });
-      }
+      closeCreateModal();
     } catch (error) {
       console.error('Failed to create user:', error);
       notifications.show({
@@ -172,11 +167,9 @@ export default function UsersPage() {
 
   const handleBanUser = async (userId: string, ban: boolean) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/${ban ? 'ban' : 'unban'}`, {
-        method: 'POST',
-      });
+      const result = ban ? await banUser(userId) : await unbanUser(userId);
 
-      if (response.ok) {
+      if (result.success) {
         notifications.show({
           title: 'Success',
           message: `User ${ban ? 'banned' : 'unbanned'} successfully`,
@@ -186,7 +179,7 @@ export default function UsersPage() {
       } else {
         notifications.show({
           title: 'Error',
-          message: `Failed to ${ban ? 'ban' : 'unban'} user`,
+          message: result.error || `Failed to ${ban ? 'ban' : 'unban'} user`,
           color: 'red',
         });
       }
@@ -202,11 +195,9 @@ export default function UsersPage() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-      });
+      const result = await deleteUser(userId);
 
-      if (response.ok) {
+      if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'User deleted successfully',
@@ -216,7 +207,7 @@ export default function UsersPage() {
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to delete user',
+          message: result.error || 'Failed to delete user',
           color: 'red',
         });
       }
@@ -232,11 +223,9 @@ export default function UsersPage() {
 
   const handleImpersonateUser = async (userId: string) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
-        method: 'POST',
-      });
+      const result = await impersonateUser(userId);
 
-      if (response.ok) {
+      if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'User impersonation started',
@@ -247,7 +236,7 @@ export default function UsersPage() {
       } else {
         notifications.show({
           title: 'Error',
-          message: 'Failed to impersonate user',
+          message: result.error || 'Failed to impersonate user',
           color: 'red',
         });
       }
@@ -291,11 +280,11 @@ export default function UsersPage() {
       render: (value: string) => (
         <Badge
           color={
-            value === 'admin' || value === 'super-admin' 
-              ? 'red' 
-              : value === 'moderator' 
-              ? 'orange' 
-              : 'blue'
+            value === 'admin' || value === 'super-admin'
+              ? 'red'
+              : value === 'moderator'
+                ? 'orange'
+                : 'blue'
           }
           variant="light"
         >
@@ -308,10 +297,7 @@ export default function UsersPage() {
       key: 'banned',
       label: 'Status',
       render: (value: boolean) => (
-        <Badge
-          color={value ? 'red' : 'green'}
-          variant="dot"
-        >
+        <Badge color={value ? 'red' : 'green'} variant="dot">
           {value ? 'Banned' : 'Active'}
         </Badge>
       ),
@@ -321,9 +307,7 @@ export default function UsersPage() {
       key: 'organizations',
       label: 'Organizations',
       render: (value: User['organizations']) => (
-        <Text size="sm">
-          {value && value.length > 0 ? `${value.length} org(s)` : 'None'}
-        </Text>
+        <Text size="sm">{value && value.length > 0 ? `${value.length} org(s)` : 'None'}</Text>
       ),
     },
     {
@@ -361,11 +345,7 @@ export default function UsersPage() {
 
         <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
           {statsData.map((stat) => (
-            <StatsCard
-              key={stat.title}
-              {...stat}
-              loading={loading}
-            />
+            <StatsCard key={stat.title} {...stat} loading={loading} />
           ))}
         </SimpleGrid>
 
@@ -428,7 +408,7 @@ export default function UsersPage() {
             label="Name"
             placeholder="Enter user name"
             value={newUser.name}
-            onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+            onChange={(e) => setNewUser((prev) => ({ ...prev, name: e.target.value }))}
             required
           />
           <TextInput
@@ -436,7 +416,7 @@ export default function UsersPage() {
             placeholder="Enter email address"
             type="email"
             value={newUser.email}
-            onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+            onChange={(e) => setNewUser((prev) => ({ ...prev, email: e.target.value }))}
             required
           />
           <TextInput
@@ -444,13 +424,13 @@ export default function UsersPage() {
             placeholder="Enter password (optional)"
             type="password"
             value={newUser.password}
-            onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
+            onChange={(e) => setNewUser((prev) => ({ ...prev, password: e.target.value }))}
           />
           <Select
             label="Role"
             placeholder="Select user role"
             value={newUser.role}
-            onChange={(value) => setNewUser(prev => ({ ...prev, role: value || 'user' }))}
+            onChange={(value) => setNewUser((prev) => ({ ...prev, role: value || 'user' }))}
             data={[
               { value: 'user', label: 'User' },
               { value: 'moderator', label: 'Moderator' },
@@ -462,10 +442,7 @@ export default function UsersPage() {
             <Button variant="light" onClick={closeCreateModal}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleCreateUser}
-              disabled={!newUser.name || !newUser.email}
-            >
+            <Button onClick={handleCreateUser} disabled={!newUser.name || !newUser.email}>
               Create User
             </Button>
           </Group>

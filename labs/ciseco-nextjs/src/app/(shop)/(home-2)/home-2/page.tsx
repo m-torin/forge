@@ -1,23 +1,18 @@
-import {
-  BackgroundSection,
-  ButtonSecondary,
-  Divider,
-  Heading,
-  SectionCollectionSlider,
-  SectionGridFeatureItems,
-  SectionGridMoreExplore,
-  SectionHero3,
-  SectionHowItWork,
-  SectionMagazine5,
-  SectionPromo1,
-  SectionPromo3,
-  SectionSliderLargeProduct,
-  SectionSliderProductCard,
-  getBlogPosts,
-  getCollections,
-  getGroupCollections,
-  getProducts,
-} from '@repo/design-system/ciseco'
+import BackgroundSection from '@/components/BackgroundSection/BackgroundSection'
+import { Divider } from '@/components/Divider'
+import Heading from '@/components/Heading/Heading'
+import SectionCollectionSlider from '@/components/SectionCollectionSlider'
+import SectionGridFeatureItems from '@/components/SectionGridFeatureItems'
+import SectionGridMoreExplore from '@/components/SectionGridMoreExplore/SectionGridMoreExplore'
+import SectionHero3 from '@/components/SectionHero/SectionHero3'
+import SectionHowItWork from '@/components/SectionHowItWork/SectionHowItWork'
+import SectionPromo1 from '@/components/SectionPromo1'
+import SectionPromo3 from '@/components/SectionPromo3'
+import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
+import SectionSliderProductCard from '@/components/SectionSliderProductCard'
+import SectionMagazine5 from '@/components/blog/SectionMagazine5'
+import { getBlogPosts, getCollections, getGroupCollections, getProducts } from '@/data/data'
+import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 
 async function PageHome2() {
   const allCollections = await getCollections()
@@ -35,12 +30,12 @@ async function PageHome2() {
         <SectionHero3 />
       </div>
 
-      <div className="container relative my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
+      <div className="relative container my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
         <SectionHowItWork />
         <SectionSliderProductCard data={carouselProducts2} subHeading="New Sports equipment" />
         <SectionPromo3 />
         <SectionSliderLargeProduct products={carouselProducts3} />
-        <div className="relative pb-20 pt-24 lg:pt-28">
+        <div className="relative pt-24 pb-20 lg:pt-28">
           <BackgroundSection />
           <SectionGridMoreExplore groupCollections={groupCollections} />
         </div>
@@ -48,7 +43,7 @@ async function PageHome2() {
 
       <SectionCollectionSlider collections={featuredCollections} />
 
-      <div className="container relative my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
+      <div className="relative container my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
         <SectionGridFeatureItems data={products} />
         <Divider />
         <div>

@@ -1,0 +1,153 @@
+---
+title: 'Database Package Overview'
+description: 'Multi-provider database abstraction with Prisma ORM, Redis, and vector databases'
+icon: 'database'
+---
+
+# Database Package Overview
+
+Multi-provider database abstraction layer with Prisma ORM, Redis, Firestore, and vector database
+support for comprehensive data storage needs.
+
+## Overview
+
+The database package provides a comprehensive database infrastructure with multiple provider
+support, each optimized for specific use cases:
+
+<CardGroup cols={2}>
+  <Card title="Prisma ORM (PostgreSQL)" icon="database" href="/packages/database/prisma">
+    Primary database with comprehensive schema for auth, PIM, and workflows
+  </Card>
+  <Card title="Redis Cache" icon="memory" href="/packages/database/redis">
+    Upstash Redis for caching, rate limiting, and real-time data
+  </Card>
+  <Card title="Vector Database" icon="vector-square" href="/packages/database/vector">
+    Upstash Vector for AI/ML similarity search and embeddings
+  </Card>
+  <Card title="Firestore" icon="fire" href="/packages/database/firestore">
+    Google Firestore for document-based data and real-time updates
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **Better Auth Integration**: Complete user management, organizations, API keys, and sessions
+- **Product Information Management**: Barcode scanning, product catalogs, and asset management
+- **Workflow Orchestration**: Workflow configuration, execution tracking, and scheduling
+- **Type Safety**: Full TypeScript integration across all providers
+- **Environment Management**: Doppler integration with local development fallbacks
+
+## Installation
+
+```bash
+pnpm add @repo/database
+```
+
+## Environment Variables
+
+<Tabs>
+  <Tab title="Production (Doppler)">
+    ```bash # Primary Database (Prisma + PostgreSQL)
+    DATABASE_URL=postgresql://username:password@host:port/database # Upstash Redis
+    UPSTASH_REDIS_REST_URL=https://... UPSTASH_REDIS_REST_TOKEN=... # Upstash Vector Database
+    UPSTASH_VECTOR_REST_URL=https://... UPSTASH_VECTOR_REST_TOKEN=... # Google Firestore (optional)
+    GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json FIREBASE_PROJECT_ID=your-project-id
+    ```
+  </Tab>
+
+  <Tab title="Local Development">
+    ```bash # .env.local DATABASE_URL=postgresql://localhost:5432/forge_dev # Optional: Add Upstash
+    for full testing # UPSTASH_REDIS_REST_URL=... # UPSTASH_REDIS_REST_TOKEN=... ```
+  </Tab>
+</Tabs>
+
+## Database Management
+
+### Prisma Operations
+
+<CodeGroup>
+```bash Migration Commands
+# Run migrations (with Doppler)
+pnpm migrate
+
+# Run migrations (local development)
+
+pnpm migrate:local
+
+# Generate Prisma client
+
+pnpm --filter @repo/database generate
+
+# Open Prisma Studio
+
+pnpm studio
+
+````
+
+```bash Seeding Commands
+# Seed with sample data
+pnpm --filter @repo/database seed
+
+# Create admin users
+pnpm --filter @repo/database create-users
+````
+
+</CodeGroup>
+
+## Type Safety
+
+All database operations are fully type-safe with comprehensive TypeScript integration:
+
+```typescript
+// Generated Prisma types
+import type { User, Organization, Product } from '@prisma/client';
+
+// Type-safe queries with IntelliSense
+const userWithOrgs: User & {
+  organizations: Organization[];
+} = await prisma.user.findFirst({
+  include: {
+    organizations: true,
+  },
+});
+```
+
+## Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Connection Pooling" icon="link">
+    Prisma connection pool optimization for concurrent requests
+  </Card>
+  <Card title="Query Optimization" icon="magnifying-glass">
+    Proper indexing and relation loading strategies
+  </Card>
+  <Card title="Caching Strategy" icon="clock">
+    Redis for frequently accessed data with intelligent TTL
+  </Card>
+  <Card title="Vector Search" icon="search">
+    Optimized similarity queries with metadata filtering
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<Steps>
+  <Step title="Install Package">```bash pnpm add @repo/database ```</Step>
+
+<Step title="Configure Environment">
+  Set up your database URLs in environment variables or Doppler
+</Step>
+
+<Step title="Run Migrations">```bash pnpm migrate ```</Step>
+
+<Step title="Generate Client">```bash pnpm --filter @repo/database generate ```</Step>
+
+  <Step title="Start Using">
+    ```typescript import {prisma} from '@repo/database/prisma'; const users = await
+    prisma.user.findMany(); ```
+  </Step>
+</Steps>
+
+The database package provides a robust, multi-provider foundation for all data storage needs in the
+Forge platform, with specialized support for authentication, product management, AI/ML workloads,
+and real-time applications.

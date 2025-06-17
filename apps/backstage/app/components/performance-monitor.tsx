@@ -5,14 +5,14 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 export function PerformanceMonitor() {
-  const observability = useObservability();
+  const { manager } = useObservability();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!observability) return;
+    if (!manager || !manager.startTransaction) return;
 
     // Start a navigation transaction
-    const transaction = observability.startTransaction('navigation', {
+    const transaction = manager.startTransaction('navigation', {
       name: pathname,
       op: 'navigation',
       tags: {
@@ -27,14 +27,14 @@ export function PerformanceMonitor() {
       // Finish the transaction when the component unmounts
       transaction?.finish();
     };
-  }, [pathname, observability]);
+  }, [pathname, manager]);
 
   return null;
 }
 
 // Hook for tracking specific user interactions
 export function usePerformanceTracking(operationName: string) {
-  const observability = useObservability();
+  const { manager, captureException } = useObservability();
 
   const trackOperation = async <T,>(
     operation: () => Promise<T> | T,
@@ -42,13 +42,13 @@ export function usePerformanceTracking(operationName: string) {
       description?: string;
       tags?: Record<string, string>;
       data?: Record<string, any>;
-    }
+    },
   ): Promise<T> => {
-    if (!observability) {
+    if (!manager || !manager.startTransaction) {
       return operation();
     }
 
-    const transaction = observability.startTransaction('user_interaction', {
+    const transaction = manager.startTransaction('user_interaction', {
       name: operationName,
       op: 'user_interaction',
       description: options?.description,
@@ -62,7 +62,7 @@ export function usePerformanceTracking(operationName: string) {
       return result;
     } catch (error) {
       transaction?.setStatus('internal_error');
-      observability.captureException(error as Error, {
+      captureException(error as Error, {
         tags: {
           operation: operationName,
           ...options?.tags,
@@ -80,7 +80,7 @@ export function usePerformanceTracking(operationName: string) {
 
 // Hook for tracking API calls
 export function useApiTracking() {
-  const observability = useObservability();
+  const { manager, captureException } = useObservability();
 
   const trackApiCall = async <T,>(
     apiCall: () => Promise<T>,
@@ -88,13 +88,13 @@ export function useApiTracking() {
       endpoint: string;
       method: string;
       tags?: Record<string, string>;
-    }
+    },
   ): Promise<T> => {
-    if (!observability) {
+    if (!manager || !manager.startSpan) {
       return apiCall();
     }
 
-    const span = observability.startSpan('http.client', {
+    const span = manager.startSpan('http.client', {
       description: `${options.method} ${options.endpoint}`,
       tags: {
         'http.method': options.method,
@@ -109,7 +109,7 @@ export function useApiTracking() {
       return result;
     } catch (error) {
       span?.setStatus('internal_error');
-      observability.captureException(error as Error, {
+      captureException(error as Error, {
         tags: {
           endpoint: options.endpoint,
           method: options.method,

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
 import { ProgressiveImage } from '../../../mantine-ciseco/components/ProgressiveImage';
 
-describe('ProgressiveImage', () => {
+describe('ProgressiveImage', (_: any) => {
   const defaultProps = {
     src: '/high-res-image.jpg',
     alt: 'Test Image',
@@ -12,8 +12,8 @@ describe('ProgressiveImage', () => {
 
   beforeEach(() => {
     // Mock IntersectionObserver
-    global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
-      observe: vi.fn().mockImplementation((target) => {
+    global.IntersectionObserver = vi.fn().mockImplementation((callback: any) => ({
+      observe: vi.fn().mockImplementation((target: any) => {
         // Simulate image entering viewport
         setTimeout(() => {
           callback([{ isIntersecting: true, target }]);
@@ -24,13 +24,13 @@ describe('ProgressiveImage', () => {
     }));
   });
 
-  it('renders container with proper structure', () => {
+  it('renders container with proper structure', (_: any) => {
     render(<ProgressiveImage {...defaultProps} />);
     const container = screen.getByTestId('progressive-image-container');
     expect(container).toBeInTheDocument();
   });
 
-  it('shows placeholder when provided', () => {
+  it('shows placeholder when provided', (_: any) => {
     render(
       <ProgressiveImage
         {...defaultProps}
@@ -57,7 +57,7 @@ describe('ProgressiveImage', () => {
     );
   });
 
-  it('handles responsive src object', () => {
+  it('handles responsive src object', (_: any) => {
     const responsiveSrc = {
       small: '/image-small.jpg',
       medium: '/image-medium.jpg',
@@ -71,13 +71,13 @@ describe('ProgressiveImage', () => {
     expect(container).toBeInTheDocument();
   });
 
-  it('applies custom className', () => {
+  it('applies custom className', (_: any) => {
     render(<ProgressiveImage {...defaultProps} className="custom-class" />);
     const container = screen.getByTestId('progressive-image-container');
     expect(container).toHaveClass('custom-class');
   });
 
-  it('renders with blurDataURL', () => {
+  it('renders with blurDataURL', (_: any) => {
     const blurDataURL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ...';
     render(<ProgressiveImage {...defaultProps} blurDataURL={blurDataURL} />);
 
@@ -144,7 +144,7 @@ describe('ProgressiveImage', () => {
     });
   });
 
-  it('renders with custom dimensions', () => {
+  it('renders with custom dimensions', (_: any) => {
     render(<ProgressiveImage {...defaultProps} width={600} height={400} />);
 
     const container = screen.getByTestId('progressive-image-container');
@@ -161,7 +161,7 @@ describe('ProgressiveImage', () => {
     });
   });
 
-  it('uses rootMargin for intersection observer', () => {
+  it('uses rootMargin for intersection observer', (_: any) => {
     const observeMock = vi.fn();
     global.IntersectionObserver = vi.fn().mockImplementation(() => ({
       observe: observeMock,
@@ -177,7 +177,7 @@ describe('ProgressiveImage', () => {
     );
   });
 
-  it('uses threshold for intersection observer', () => {
+  it('uses threshold for intersection observer', (_: any) => {
     const observeMock = vi.fn();
     global.IntersectionObserver = vi.fn().mockImplementation(() => ({
       observe: observeMock,

@@ -247,8 +247,8 @@ export function TaxonomiesTable() {
           URL.revokeObjectURL(url);
         } else {
           // CSV format
-          const headers = result.data.headers.join(',');
-          const rows = result.data.csvData.map((row: any) =>
+          const headers = result.data.headers?.join(',') || '';
+          const rows = (result.data.csvData as any[])?.map((row: any) =>
             Object.values(row)
               .map((value) =>
                 typeof value === 'string' && value.includes(',')
@@ -257,7 +257,7 @@ export function TaxonomiesTable() {
               )
               .join(','),
           );
-          const csvContent = [headers, ...rows].join('\n');
+          const csvContent = [headers, ...(rows || [])].join('\n');
 
           const blob = new Blob([csvContent], { type: 'text/csv' });
           const url = URL.createObjectURL(blob);
@@ -651,7 +651,7 @@ export function TaxonomiesTable() {
                         event.currentTarget.checked,
                       )
                     }
-                    {...getSelectAllCheckboxProps(form, taxonomies.length)}
+                    {...getSelectAllCheckboxProps(form.values, taxonomies.length)}
                   />
                 </Table.Th>
                 <Th
@@ -742,7 +742,7 @@ export function TaxonomiesTable() {
         }}
         onUpdate={loadTaxonomies}
         opened={detailsModalOpened}
-        taxonomy={viewingTaxonomy}
+        taxonomy={viewingTaxonomy as any}
       />
 
       {/* Statistics Modal */}
@@ -804,7 +804,7 @@ export function TaxonomiesTable() {
               <Stack gap="sm">
                 {Object.entries(stats.byType).map(([type, count]) => (
                   <Group key={type} justify="space-between">
-                    <Badge color={getTaxonomyTypeColor(type as any)} variant="light">
+                    <Badge color={getTaxonomyTypeColor(type as unknown as any)} variant="light">
                       {type}
                     </Badge>
                     <Text fw={500}>{count as number}</Text>

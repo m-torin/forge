@@ -3,24 +3,23 @@
  */
 
 import { createServerObservability } from '../server-next';
-
-import type { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
+import { ObservabilityConfig, ObservabilityManager } from '../shared/types/types';
 
 export interface NextJSServerObservabilityConfig extends ObservabilityConfig {
   nextjs?: ObservabilityConfig['nextjs'];
 }
 
 export class NextJSServerObservabilityManager {
-  private manager: ObservabilityManager | null = null;
+  private manager: null | ObservabilityManager = null;
 
   constructor(private config: NextJSServerObservabilityConfig) {}
 
-  async initialize(): Promise<void> {
-    this.manager = await createServerObservability(this.config);
+  getManager(): null | ObservabilityManager {
+    return this.manager;
   }
 
-  getManager(): ObservabilityManager | null {
-    return this.manager;
+  async initialize(): Promise<void> {
+    this.manager = await createServerObservability(this.config);
   }
 }
 

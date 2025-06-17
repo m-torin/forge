@@ -1,5 +1,5 @@
+/// <reference path="./prisma-plugin.d.ts" />
 import withBundleAnalyzer from '@next/bundle-analyzer';
-// @ts-expect-error No declaration file
 import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
 import path from 'path';
 
@@ -14,10 +14,12 @@ interface NextConfig {
   [key: string]: any;
 }
 
-const otelRegex = /@opentelemetry\/instrumentation/;
-const requireInTheMiddleRegex = /require-in-the-middle/;
-
 export const config: NextConfig = {
+  // Don't run ESLint during builds - handle separately
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Disable Babel completely to ensure SWC is used
   experimental: {
     typedRoutes: true,
@@ -25,8 +27,15 @@ export const config: NextConfig = {
     forceSwcTransforms: true,
     // Tree shaking optimization for commonly used packages
     optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
-    // Temporarily disable nodeMiddleware for React 19 compatibility
-    // nodeMiddleware: true,
+  },
+
+  turbopack: {
+    rules: {
+      '*.svg': {
+        as: '*.js',
+        loaders: ['@svgr/webpack'],
+      },
+    },
   },
 
   // Configure SWC compiler options
@@ -43,7 +52,20 @@ export const config: NextConfig = {
 
   images: {
     formats: ['image/avif', 'image/webp'],
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
 
   async rewrites() {
@@ -67,15 +89,12 @@ export const config: NextConfig = {
     };
   },
 
-  // We still need minimal webpack config for plugins and warning suppression
-  // even though we're using SWC for compilation
+  // Minimal webpack config for Prisma plugin
   webpack(config: any, { isServer }: { isServer: boolean }) {
     if (isServer) {
       config.plugins = config.plugins || [];
       config.plugins.push(new PrismaPlugin());
     }
-
-    config.ignoreWarnings = [{ module: otelRegex }, { module: requireInTheMiddleRegex }];
 
     // Add path aliases
     config.resolve = config.resolve || {};

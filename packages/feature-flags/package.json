@@ -29,11 +29,11 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
     "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "eslint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

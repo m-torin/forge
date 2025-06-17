@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./rate-limit": "./rate-limit.ts",
-    "./middleware": "./middleware.ts",
-    "./keys": "./keys.ts"
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts"
   },
   "scripts": {
     "test": "vitest --run",
@@ -28,11 +28,10 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/node": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

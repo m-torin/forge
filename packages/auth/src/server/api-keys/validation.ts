@@ -13,6 +13,7 @@ import {
 import { auth } from '../auth';
 
 import type {
+  ApiKeyPermissions,
   ApiKeyValidationResult,
   PermissionCheck,
   RateLimitResult,
@@ -70,7 +71,10 @@ export async function validateApiKey(
         ? permissionsArrayToStructure(result.key.permissions)
         : result.key.permissions;
 
-      const hasRequiredPermissions = checkApiKeyPermissions(keyPermissions, permissions);
+      const hasRequiredPermissions = checkApiKeyPermissions(
+        keyPermissions as ApiKeyPermissions,
+        permissions,
+      );
 
       if (!hasRequiredPermissions) {
         return {
@@ -81,18 +85,38 @@ export async function validateApiKey(
     }
 
     // Convert permissions to ApiKeyPermissions structure if needed
-    const finalPermissions = Array.isArray(result.key.permissions)
-      ? permissionsArrayToStructure(result.key.permissions)
-      : result.key.permissions;
+    const rawPermissions = result.key!.permissions;
+    let finalPermissions: ApiKeyPermissions;
+
+    if (!rawPermissions) {
+      finalPermissions = { actions: [], resources: [] };
+    } else if (typeof rawPermissions === 'object' && !Array.isArray(rawPermissions)) {
+      // Check if it already has the expected structure
+      if ('actions' in rawPermissions && 'resources' in rawPermissions) {
+        finalPermissions = rawPermissions as unknown as ApiKeyPermissions;
+      } else {
+        // Convert from Record<string, string[]> to ApiKeyPermissions
+        const flatPermissions = Object.values(rawPermissions)
+          .flat()
+          .filter((p): p is string => typeof p === 'string');
+        finalPermissions = permissionsArrayToStructure(flatPermissions);
+      }
+    } else if (Array.isArray(rawPermissions)) {
+      finalPermissions = permissionsArrayToStructure(rawPermissions);
+    } else {
+      finalPermissions = { actions: [], resources: [] };
+    }
 
     return {
       isValid: true,
       keyData: {
-        id: result.key.id,
-        name: result.key.name,
-        expiresAt: result.key.expiresAt ? new Date(result.key.expiresAt) : undefined,
-        lastUsedAt: result.key.lastUsedAt ? new Date(result.key.lastUsedAt) : undefined,
-        organizationId: result.key.organizationId,
+        id: result.key!.id,
+        name: result.key!.name || '',
+        expiresAt: result.key!.expiresAt ? new Date(result.key!.expiresAt) : undefined,
+        lastUsedAt: (result.key as any).lastUsedAt
+          ? new Date((result.key as any).lastUsedAt)
+          : undefined,
+        organizationId: (result.key as any).organizationId || '',
         permissions: finalPermissions,
       },
     };

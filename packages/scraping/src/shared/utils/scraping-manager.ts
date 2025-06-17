@@ -2,7 +2,7 @@
  * Scraping Manager - Core orchestration for multi-provider scraping
  */
 
-import type {
+import {
   ScrapingProvider,
   ScrapingConfig,
   ProviderRegistry,
@@ -35,17 +35,21 @@ export class ScrapingManager {
           const provider = providerFactory(providerConfig);
           this.providers.set(providerName, provider);
 
-          // Initialize provider with error boundary
+          // Initialize provider with error boundary using async/await
           initPromises.push(
-            provider.initialize(providerConfig).catch((error) => {
-              if (this.config.onError) {
-                this.config.onError(error, { provider: providerName, method: 'initialize' });
+            (async () => {
+              try {
+                await provider.initialize(providerConfig);
+              } catch (error: any) {
+                if (this.config.onError) {
+                  this.config.onError(error, { provider: providerName, method: 'initialize' });
+                }
+                // Remove failed provider to ensure it doesn't affect others
+                this.providers.delete(providerName);
               }
-              // Remove failed provider to ensure it doesn't affect others
-              this.providers.delete(providerName);
-            }),
+            })(),
           );
-        } catch (error) {
+        } catch (error: any) {
           if (this.config.onError) {
             this.config.onError(error, { provider: providerName, method: 'create' });
           }
@@ -92,7 +96,7 @@ export class ScrapingManager {
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       if (this.config.onError) {
         this.config.onError(error, { provider: providerName, method: 'scrape', url });
       }
@@ -118,7 +122,7 @@ export class ScrapingManager {
 
     try {
       return await selectedProvider.extract(html, selectors);
-    } catch (error) {
+    } catch (error: any) {
       if (this.config.onError) {
         this.config.onError(error, { provider: providerName, method: 'extract' });
       }
@@ -133,7 +137,7 @@ export class ScrapingManager {
     // Process in batches
     for (let i = 0; i < urls.length; i += concurrent) {
       const batch = urls.slice(i, i + concurrent);
-      const batchPromises = batch.map(async (url, index) => {
+      const batchPromises = batch.map(async (url, index: any) => {
         try {
           const result = await this.scrape(url, options);
 
@@ -142,7 +146,7 @@ export class ScrapingManager {
           }
 
           return result;
-        } catch (error) {
+        } catch (error: any) {
           if (options.continueOnError !== false) {
             const errorResult: ScrapeResult = {
               url,
@@ -180,7 +184,7 @@ export class ScrapingManager {
 
     for (let i = 0; i < urls.length; i += concurrent) {
       const batch = urls.slice(i, i + concurrent);
-      const batchPromises = batch.map(async (url, index) => {
+      const batchPromises = batch.map(async (url, index: any) => {
         try {
           const result = await this.scrape(url, options);
 
@@ -189,7 +193,7 @@ export class ScrapingManager {
           }
 
           return result;
-        } catch (error) {
+        } catch (error: any) {
           if (options.continueOnError !== false) {
             const errorResult: ScrapeResult = {
               url,
@@ -247,8 +251,8 @@ export class ScrapingManager {
           type: provider.type,
           available: true,
         };
-      } catch (error) {
-        metrics[name] = { error: (error as Error).message };
+      } catch (error: any) {
+        metrics[name] = { error: (error as Error)?.message || 'Unknown error' };
       }
     }
 
@@ -257,14 +261,16 @@ export class ScrapingManager {
 
   async dispose(): Promise<void> {
     const disposePromises = Array.from(this.providers.values())
-      .filter((provider) => provider.dispose)
-      .map((provider) =>
-        provider.dispose!().catch((error) => {
+      .filter((provider: any) => provider.dispose)
+      .map(async (provider: any) => {
+        try {
+          await provider.dispose!();
+        } catch (error: any) {
           if (this.config.onError) {
             this.config.onError(error, { provider: provider.name, method: 'dispose' });
           }
-        }),
-      );
+        }
+      });
 
     await Promise.all(disposePromises);
     this.providers.clear();

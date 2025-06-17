@@ -11,11 +11,11 @@ import {
   createStepWithValidation,
   createWorkflowStep,
   StepTemplates,
-  withStepBulkhead,
   withStepMonitoring,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const BulkMediaImportInput = z.object({
@@ -324,12 +324,8 @@ export const parseImportSourceStep = compose(
     (input) => !!input.source.location,
     (output) => output.mediaItems.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 60000 }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      trackingMetrics: ['parseErrors'],
-    }),
+  (step: any) => withStepTimeout(step, 60000),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock parsing functions
@@ -527,15 +523,15 @@ export const downloadMediaBatchesStep = compose(
       failedDownloads,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 20,
-      maxQueued: 100,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -705,7 +701,7 @@ export const processMediaStep = compose(
       },
     };
   }),
-  (step) => withStepTimeout(step, { execution: 300000 }), // 5 minutes
+  (step: any) => withStepTimeout(step, 300000), // 5 minutes
 );
 
 // Step 6: Generate image hashes for deduplication
@@ -830,10 +826,10 @@ export const uploadToCDNStep = compose(
       uploadErrors,
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -848,12 +844,12 @@ async function uploadToCDN(media: any): Promise<any> {
   const cdnBaseUrl = 'https://cdn.example.com';
   const cdnUrls = {
     original: `${cdnBaseUrl}/${media.productId}/original.${media.processedMedia?.original.format || 'jpg'}`,
-    variants: {},
+    variants: {} as Record<string, string>,
   };
 
   if (media.processedMedia?.variants) {
     media.processedMedia.variants.forEach((variant: any) => {
-      cdnUrls.variants[variant.name as any] =
+      cdnUrls.variants[variant.name] =
         `${cdnBaseUrl}/${media.productId}/${variant.name}.${variant.format}`;
     });
   }

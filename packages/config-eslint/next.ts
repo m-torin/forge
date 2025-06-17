@@ -1,12 +1,11 @@
-import path from 'node:path';
+import * as path from 'node:path';
 
 import { FlatCompat } from '@eslint/eslintrc';
+import { Linter } from 'eslint';
 import globals from 'globals';
 
 // next.ts
-import reactConfig from './react-package.js';
-
-import type { Linter } from 'eslint';
+import reactConfig from './react-package';
 
 /*
  * This is a custom ESLint configuration for use with
@@ -51,7 +50,7 @@ const NEXT_ROUTE_FILES = [
   // Pages Router files
   ...PAGES_ROUTER_FILES,
 ];
-const ALL_ROUTER_FILES = [...APP_ROUTER_FILES, ...PAGES_ROUTER_FILES];
+const _ALL_ROUTER_FILES = [...APP_ROUTER_FILES, ...PAGES_ROUTER_FILES];
 
 // Server component patterns (default in App Router)
 const SERVER_COMPONENT_FILES = [
@@ -76,7 +75,7 @@ const NEXT_CONFIG_FILES = ['next.config.{js,ts,mjs}', 'middleware.{js,ts}'];
 const REACT_COMPONENT_FILES = ['**/*.{jsx,tsx}'];
 
 // Test file patterns
-const TEST_FILE_PATTERNS = [
+const _TEST_FILE_PATTERNS = [
   '**/*.{test,spec}.{js,jsx,ts,tsx}',
   '**/__tests__/**/*.{js,jsx,ts,tsx}',
 ];
@@ -87,17 +86,6 @@ const NEXT_TEST_FILE_PATTERNS = [
   'pages/**/*.{test,spec}.{js,jsx,ts,tsx}',
   'app/**/__tests__/**/*.{js,jsx,ts,tsx}',
   'pages/**/__tests__/**/*.{js,jsx,ts,tsx}',
-];
-
-// Cypress test file patterns
-const CYPRESS_TEST_FILE_PATTERNS = ['**/*.cy.{js,jsx,ts,tsx}', '**/cypress/**/*.{js,jsx,ts,tsx}'];
-
-// Next.js Cypress test file patterns
-const NEXT_CYPRESS_TEST_FILE_PATTERNS = [
-  'app/**/*.cy.{js,jsx,ts,tsx}',
-  'pages/**/*.cy.{js,jsx,ts,tsx}',
-  'app/**/cypress/**/*.{js,jsx,ts,tsx}',
-  'pages/**/cypress/**/*.{js,jsx,ts,tsx}',
 ];
 
 // Server component test patterns
@@ -128,10 +116,6 @@ const baseNextRules: Linter.FlatConfig = {
     },
   },
   rules: {
-    // TypeScript relaxation for Next.js
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-
     // Allow default exports for pages/components
     'import/no-default-export': 'off',
   },
@@ -146,12 +130,12 @@ const baseNextRules: Linter.FlatConfig = {
 const routeRules: Linter.FlatConfig = {
   files: NEXT_ROUTE_FILES,
   rules: {
-    // Export patterns for Next.js routes
-    'import/no-default-export': 'off',
-    'import/prefer-default-export': 'error',
-
     // Navigation patterns - disable this rule as we're using app directory
     '@next/next/no-html-link-for-pages': 'off',
+    // Export patterns for Next.js routes
+    'import/no-default-export': 'off',
+
+    'import/prefer-default-export': 'error',
   },
 };
 
@@ -159,18 +143,18 @@ const routeRules: Linter.FlatConfig = {
 const performanceRules: Linter.FlatConfig = {
   files: ALL_SOURCE_FILES,
   rules: {
-    // Image optimization
-    '@next/next/no-img-element': 'error',
-
-    '@next/next/inline-script-id': 'error',
-    '@next/next/no-before-interactive-script-outside-document': 'error',
-    '@next/next/next-script-for-ga': 'error',
-    // Script optimization
-    '@next/next/no-sync-scripts': 'error',
-
     // Font optimization
     '@next/next/google-font-display': 'warn',
+
     '@next/next/google-font-preconnect': 'warn',
+    // Image optimization
+    '@next/next/inline-script-id': 'error',
+    '@next/next/next-script-for-ga': 'error',
+    '@next/next/no-before-interactive-script-outside-document': 'error',
+
+    '@next/next/no-img-element': 'error',
+    // Script optimization
+    '@next/next/no-sync-scripts': 'error',
   },
 };
 
@@ -234,9 +218,6 @@ const nextConfigRules: Linter.FlatConfig = {
     // Allow default exports for Next.js config
     'import/no-default-export': 'off',
     'import/prefer-default-export': 'error',
-
-    // Ensure middleware is properly typed
-    '@typescript-eslint/explicit-function-return-type': 'error',
   },
 };
 
@@ -257,34 +238,12 @@ const nextTestingRules: Linter.FlatConfig = {
     // Adjust testing-library rules for Next.js
     'testing-library/no-node-access': 'off', // Allow for server component testing
 
-    // Ensure proper testing patterns for Next.js
-    'testing-library/prefer-screen-queries': 'error',
-    'testing-library/render-result-naming-convention': 'error',
-
     // Use the correct rule name for preventing render in lifecycle methods
     'testing-library/no-render-in-lifecycle': 'error',
-  },
-};
-
-// Next.js Cypress testing configuration
-const nextCypressRules: Linter.FlatConfig = {
-  files: NEXT_CYPRESS_TEST_FILE_PATTERNS,
-  rules: {
-    // Adjust Cypress rules for Next.js
-    'cypress/no-unnecessary-waiting': 'warn', // Downgrade to warning for Next.js routing
-
-    '@next/next/no-html-link-for-pages': 'off', // Allow regular links in tests
-    // Disable rules that conflict with Next.js patterns
-    '@next/next/no-img-element': 'off', // Allow img in Cypress tests
-
     // Ensure proper testing patterns for Next.js
-    'cypress/require-data-selectors': [
-      'warn',
-      {
-        allowCssSelectors: true,
-        customAttributeSelectors: ['data-testid', 'data-cy', 'data-test'],
-      },
-    ],
+    'testing-library/prefer-screen-queries': 'error',
+
+    'testing-library/render-result-naming-convention': 'error',
   },
 };
 
@@ -292,13 +251,13 @@ const nextCypressRules: Linter.FlatConfig = {
 const serverComponentTestingRules: Linter.FlatConfig = {
   files: SERVER_COMPONENT_TEST_PATTERNS,
   rules: {
-    'testing-library/no-wait-for-side-effects': 'off',
     'jest-dom/prefer-in-document': 'off',
     // Disable client-side specific rules for server component tests
     'testing-library/await-async-queries': 'off',
-
     // These rules don't apply to server component testing
     'testing-library/no-unnecessary-act': 'off',
+
+    'testing-library/no-wait-for-side-effects': 'off',
   },
 };
 
@@ -331,7 +290,6 @@ const config: Linter.FlatConfig[] = [
 
   // Next.js testing rules
   nextTestingRules,
-  nextCypressRules,
   serverComponentTestingRules,
 
   // Ignore patterns (always last)

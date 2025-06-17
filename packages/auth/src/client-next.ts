@@ -16,6 +16,9 @@ import type { AuthContextType } from './shared/types';
 // Re-export all client functionality
 export * from './client';
 
+// Explicitly export authClient for compatibility
+export { authClient } from './client/auth-client';
+
 // Auth context
 const AuthContext = createContext<AuthContextType | null>(null);
 

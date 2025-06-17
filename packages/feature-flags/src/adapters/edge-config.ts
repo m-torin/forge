@@ -32,7 +32,9 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
   const teamSlug = options.options?.teamSlug;
 
   if (!connectionString) {
-    console.warn('Edge Config connection string not configured - feature flags will return undefined');
+    console.warn(
+      'Edge Config connection string not configured - feature flags will return undefined',
+    );
     // Return a no-op adapter that returns undefined for all flags
     return function edgeConfigAdapter<T = any, E = any>(): Adapter<T, E> {
       return {
@@ -107,7 +109,7 @@ export async function getEdgeConfigProviderData(options: EdgeConfigAdapterOption
     console.warn('Edge Config connection string not configured - returning empty flags');
     return {
       provider: 'edge-config',
-      flags: []
+      flags: [],
     };
   }
 

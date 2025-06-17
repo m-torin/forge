@@ -1,6 +1,6 @@
 'use server';
 
-import { auth } from '@repo/auth/server';
+import { auth } from '@repo/auth/server/next';
 import { prisma } from '@repo/database/prisma';
 
 import type { MediaType, Prisma } from '@repo/database/prisma';
@@ -224,18 +224,18 @@ export async function getMedia(
 
   // Date filters
   if (filter.dateFrom) {
-    where.createdAt = { ...where.createdAt, gte: new Date(filter.dateFrom) };
+    where.createdAt = { ...((where.createdAt as any) || {}), gte: new Date(filter.dateFrom) };
   }
   if (filter.dateTo) {
-    where.createdAt = { ...where.createdAt, lte: new Date(filter.dateTo) };
+    where.createdAt = { ...((where.createdAt as any) || {}), lte: new Date(filter.dateTo) };
   }
 
   // Size filters
   if (filter.minSize) {
-    where.size = { ...where.size, gte: filter.minSize };
+    where.size = { ...((where.size as any) || {}), gte: filter.minSize };
   }
   if (filter.maxSize) {
-    where.size = { ...where.size, lte: filter.maxSize };
+    where.size = { ...((where.size as any) || {}), lte: filter.maxSize };
   }
 
   // User filter
@@ -347,7 +347,13 @@ export async function getMedia(
     : enrichedMedia;
 
   // Get unique folders from all media
-  const folders = Array.from(new Set(enrichedMedia.map((item) => item.folder))).sort();
+  const folders = Array.from(
+    new Set(
+      enrichedMedia
+        .map((item) => item.folder)
+        .filter((folder): folder is string => Boolean(folder)),
+    ),
+  ).sort();
 
   return {
     folders,
@@ -472,13 +478,13 @@ export async function bulkUpdateMediaAssociation(
 
   // Clear all associations first
   const clearData = {
-    articleId: null,
-    brandId: null,
-    categoryId: null,
-    collectionId: null,
-    productId: null,
-    reviewId: null,
-    taxonomyId: null,
+    articleId: null as string | null,
+    brandId: null as string | null,
+    categoryId: null as string | null,
+    collectionId: null as string | null,
+    productId: null as string | null,
+    reviewId: null as string | null,
+    taxonomyId: null as string | null,
   };
 
   // Set the new association if provided
@@ -684,6 +690,7 @@ export async function getMediaStats() {
       REVIEW: reviews,
       TAXONOMY: taxonomies,
       UNASSIGNED: unassigned,
+      USER: 0, // Users don't have media associations in current schema
     },
     byType: byType.reduce(
       (acc, item) => {

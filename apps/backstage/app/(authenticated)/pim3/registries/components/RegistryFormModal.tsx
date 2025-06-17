@@ -63,7 +63,7 @@ export function RegistryFormModal({ onClose, onSubmit, opened, registry }: Regis
   useEffect(() => {
     if (registry) {
       form.setValues({
-        type: registry.type,
+        type: 'WISHLIST',
         description: registry.description || '',
         eventDate: registry.eventDate ? new Date(registry.eventDate) : null,
         isPublic: registry.isPublic,
@@ -185,7 +185,7 @@ export function RegistryFormModal({ onClose, onSubmit, opened, registry }: Regis
                 </Button>
                 <Button
                   data-testid="registry-submit-button"
-                  loading={form.isSubmitting}
+                  loading={form.submitting}
                   type="submit"
                 >
                   {isEditing ? 'Update Registry' : 'Create Registry'}

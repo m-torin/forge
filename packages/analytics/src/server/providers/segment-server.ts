@@ -30,9 +30,9 @@ export class SegmentServerProvider implements AnalyticsProvider {
       // Dynamically import Segment Analytics Next
       // analytics-next supports Node.js runtime with flushAt: 1 for server environments
       const { Analytics } = await import(
-      /* webpackChunkName: "segment-analytics" */
-      '@segment/analytics-next'
-    );
+        /* webpackChunkName: "segment-analytics" */
+        '@segment/analytics-next'
+      );
 
       this.analytics = new Analytics({
         writeKey: this.config.writeKey,
@@ -42,7 +42,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
       });
 
       this.isInitialized = true;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         'Segment Analytics Next not available. Install with: npm install @segment/analytics-next',
       );
@@ -59,7 +59,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
         event,
         properties,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -74,7 +74,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
         traits,
         userId,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -89,7 +89,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
         name,
         properties,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -104,7 +104,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
         groupId,
         traits,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }
@@ -119,7 +119,7 @@ export class SegmentServerProvider implements AnalyticsProvider {
         previousId,
         userId,
       });
-    } catch (error) {
+    } catch (_error) {
       // Silently fail to avoid disrupting app flow
     }
   }

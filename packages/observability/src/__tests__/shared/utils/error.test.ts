@@ -15,7 +15,7 @@ describe('Error Utilities', () => {
       const error = createError('Test error', ErrorCode.INTERNAL_ERROR);
 
       expect(error).toBeInstanceOf(Error);
-      expect(error.message).toBe('Test error');
+      expect((error as Error)?.message || 'Unknown error').toBe('Test error');
       expect(error.code).toBe(ErrorCode.INTERNAL_ERROR);
     });
 
@@ -118,7 +118,7 @@ describe('Error Utilities', () => {
 
     it('should get stack from error-like object', () => {
       const errorLike = {
-        stack: 'Error: Test\n    at function (file.js:10:5)',
+        stack: 'Error: Test\n    at function (_: any)file.js:10:5)',
       };
       expect(getErrorStack(errorLike)).toBe(errorLike.stack);
     });

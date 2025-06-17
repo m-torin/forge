@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@repo/auth/server';
-import { database } from '@repo/database/prisma';
+import { auth } from '@repo/auth/server/next';
+import { prisma } from '@repo/database/prisma';
 import { Prisma } from '@repo/database/prisma';
 
 import type { ContentStatus } from '@repo/database/prisma';
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const includeDeleted = request.nextUrl.searchParams.get('includeDeleted') === 'true';
 
-    const category = await database.productCategory.findUnique({
+    const category = await prisma.productCategory.findUnique({
       include: {
         _count: {
           select: {
@@ -133,7 +133,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
 
     // Check if category exists
-    const existingCategory = await database.productCategory.findUnique({
+    const existingCategory = await prisma.productCategory.findUnique({
       where: { id },
     });
 
@@ -143,7 +143,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     // If updating slug, check uniqueness
     if (body.slug && body.slug !== existingCategory.slug) {
-      const slugExists = await database.productCategory.findUnique({
+      const slugExists = await prisma.productCategory.findUnique({
         where: { slug: body.slug },
       });
 
@@ -158,7 +158,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // If updating parent, validate and check for circular reference
     if (body.parentId !== undefined && body.parentId !== existingCategory.parentId) {
       if (body.parentId) {
-        const parentCategory = await database.productCategory.findUnique({
+        const parentCategory = await prisma.productCategory.findUnique({
           where: { id: body.parentId },
         });
 
@@ -184,16 +184,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.name !== undefined) updateData.name = body.name;
     if (body.slug !== undefined) updateData.slug = body.slug;
     if (body.status !== undefined) updateData.status = body.status as ContentStatus;
-    if (body.description !== undefined) updateData.description = body.description;
     if (body.copy !== undefined) updateData.copy = body.copy;
-    if (body.metaTitle !== undefined) updateData.metaTitle = body.metaTitle;
-    if (body.metaDescription !== undefined) updateData.metaDescription = body.metaDescription;
-    if (body.metaKeywords !== undefined) updateData.metaKeywords = body.metaKeywords;
-    if (body.parentId !== undefined) updateData.parentId = body.parentId;
+    if (body.parentId !== undefined) {
+      updateData.parent = body.parentId ? { connect: { id: body.parentId } } : { disconnect: true };
+    }
     if (body.displayOrder !== undefined) updateData.displayOrder = body.displayOrder;
 
     // Update the category
-    const updatedCategory = await database.productCategory.update({
+    const updatedCategory = await prisma.productCategory.update({
       data: updateData,
       include: {
         _count: {
@@ -257,7 +255,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const permanent = request.nextUrl.searchParams.get('permanent') === 'true';
 
     // Check if category exists
-    const category = await database.productCategory.findUnique({
+    const category = await prisma.productCategory.findUnique({
       include: {
         _count: {
           select: {
@@ -291,14 +289,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     if (permanent) {
       // Permanent delete
-      await database.productCategory.delete({
+      await prisma.productCategory.delete({
         where: { id },
       });
 
       return NextResponse.json({ message: 'Category permanently deleted' });
     } else {
       // Soft delete
-      const deletedCategory = await database.productCategory.update({
+      const deletedCategory = await prisma.productCategory.update({
         data: {
           deletedAt: new Date(),
           deletedById: session.user.id,
@@ -321,7 +319,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 async function checkCircularReference(parentId: string, childId: string): Promise<boolean> {
   if (parentId === childId) return true;
 
-  const parent = await database.productCategory.findUnique({
+  const parent = await prisma.productCategory.findUnique({
     select: { parentId: true },
     where: { id: parentId },
   });
@@ -339,15 +337,16 @@ async function getBreadcrumbs(
   let currentId: string | null = categoryId;
 
   while (currentId) {
-    const category = await database.productCategory.findUnique({
-      select: {
-        id: true,
-        name: true,
-        parentId: true,
-        slug: true,
-      },
-      where: { id: currentId },
-    });
+    const category: { id: string; name: string; parentId: string | null; slug: string } | null =
+      await prisma.productCategory.findUnique({
+        select: {
+          id: true,
+          name: true,
+          parentId: true,
+          slug: true,
+        },
+        where: { id: currentId },
+      });
 
     if (!category) break;
 

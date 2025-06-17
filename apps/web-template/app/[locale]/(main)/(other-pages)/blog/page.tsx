@@ -3,7 +3,8 @@ import React from 'react';
 import { createMetadata } from '@repo/seo/server/next';
 
 import { BgGlassmorphism, SectionPromo2 } from '@/components/ui';
-import { getBlogPosts } from '@/data/data-service';
+import { getArticles } from '@/actions/articles';
+import { transformDatabaseArticleToTBlogPost } from '@/types/database';
 import SectionMagazine5 from '@/components/sections/SectionMagazine5';
 import SectionGridPosts from '@/components/sections/SectionGridPosts';
 
@@ -42,7 +43,8 @@ export async function generateMetadata({
 
 async function BlogPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const blogPosts = await getBlogPosts();
+  const articlesResult = await getArticles({ status: 'PUBLISHED', page: 1, limit: 10 });
+  const blogPosts = (articlesResult.data || []).map(transformDatabaseArticleToTBlogPost);
 
   // If no blog posts, show zero state
   if (blogPosts.length === 0) {

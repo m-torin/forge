@@ -1,0 +1,215 @@
+# Prometheus Configuration
+# Enhanced with RUM, Node Exporter, and Blackbox monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    cluster: "monitoring-services"
+    replica: "prometheus"
+
+# Rule files for alerting
+rule_files:
+  - "alert_rules.yml"
+  - "recording_rules.yml"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Grafana monitoring
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["grafana:3000"]
+    scrape_interval: 30s
+    metrics_path: /metrics
+    basic_auth:
+      username: admin
+      password: admin
+
+  # Node Exporter - System metrics
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 15s
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: node-exporter:9100
+
+  # cAdvisor - Container metrics
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Blackbox Exporter - Synthetic monitoring
+  - job_name: "blackbox"
+    static_configs:
+      - targets: ["blackbox-exporter:9115"]
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Service health checks via Blackbox Exporter
+  - job_name: "blackbox-http"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://opengrep:3000/health
+          - http://trycomp:3000/health
+          - http://camoufox:3000/health
+          - http://firecrawl:3002/health
+          - http://nextfaster:3000/health
+          - http://postiz:3000/health
+          - http://browserless:3000/health
+          - http://activepieces:80/health
+          - http://dub:3000/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Service-specific health checks
+  - job_name: "opengrep-health"
+    metrics_path: /probe
+    params:
+      module: [opengrep_health]
+    static_configs:
+      - targets:
+          - https://opengrep.your-domain.com/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: service
+        replacement: opengrep
+
+  - job_name: "trycomp-health"
+    metrics_path: /probe
+    params:
+      module: [trycomp_health]
+    static_configs:
+      - targets:
+          - https://trycomp.your-domain.com/api/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: service
+        replacement: trycomp
+
+  - job_name: "camoufox-health"
+    metrics_path: /probe
+    params:
+      module: [camoufox_health]
+    static_configs:
+      - targets:
+          - https://camoufox.your-domain.com/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: service
+        replacement: camoufox
+
+  # Performance monitoring
+  - job_name: "performance-monitoring"
+    metrics_path: /probe
+    params:
+      module: [http_performance]
+    static_configs:
+      - targets:
+          - https://opengrep.your-domain.com
+          - https://trycomp.your-domain.com
+          - https://camoufox.your-domain.com
+          - https://firecrawl.your-domain.com
+          - https://grafana.your-domain.com
+          - https://nextfaster.your-domain.com
+          - https://postiz.your-domain.com
+          - https://browserless.your-domain.com
+          - https://activepieces.your-domain.com
+          - https://dub.your-domain.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - source_labels: [__param_target]
+        regex: 'https://([^.]+)\..*'
+        target_label: service
+        replacement: "${1}"
+
+  # AlertManager monitoring
+  - job_name: "alertmanager"
+    static_configs:
+      - targets: ["alertmanager:9093"]
+    scrape_interval: 30s
+
+  # Loki monitoring
+  - job_name: "loki"
+    static_configs:
+      - targets: ["loki:3100"]
+    scrape_interval: 30s
+
+  # OpenTelemetry Collector monitoring
+  - job_name: "otel-collector"
+    static_configs:
+      - targets: ["otel-collector:8889"]
+    scrape_interval: 15s
+
+  # RUM Collector monitoring
+  - job_name: "rum-collector"
+    static_configs:
+      - targets: ["rum-collector:12347"]
+    scrape_interval: 30s
+
+  # Database monitoring (optional)
+  - job_name: "postgres-exporter"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+    scrape_interval: 30s
+
+  # Redis monitoring (optional)
+  - job_name: "redis-exporter"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+    scrape_interval: 30s
+
+  # Pyroscope monitoring
+  - job_name: "pyroscope"
+    static_configs:
+      - targets: ["pyroscope:4040"]
+    scrape_interval: 30s

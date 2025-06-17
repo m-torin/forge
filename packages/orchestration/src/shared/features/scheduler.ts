@@ -3,7 +3,7 @@
  * Advanced cron scheduling with timezone handling and schedule management
  */
 
-import type { WorkflowDefinition, WorkflowProvider } from '../types/workflow';
+import { WorkflowDefinition, WorkflowProvider } from '../types/workflow';
 
 export interface EnhancedScheduleConfig {
   /** Whether to catch up on missed executions */
@@ -110,8 +110,8 @@ export class AdvancedScheduler {
       try {
         const executionId = await this.executeScheduledWorkflow(schedule, executionTime);
         executionIds.push(executionId);
-      } catch (error) {
-        console.error(`Failed to catch up execution for schedule ${scheduleId}:`, error);
+      } catch (error: any) {
+        console.error(`Failed to catch up execution for schedule ${scheduleId}: `, error);
       }
     }
 
@@ -221,7 +221,7 @@ export class AdvancedScheduler {
       return schedules;
     }
 
-    return schedules.filter((schedule) => {
+    return schedules.filter((schedule: any) => {
       if (filter.workflowId && schedule.workflowId !== filter.workflowId) {
         return false;
       }
@@ -251,7 +251,7 @@ export class AdvancedScheduler {
    */
   async performHealthCheck(scheduleIds?: string[]): Promise<ScheduleHealthCheck[]> {
     const schedulesToCheck = scheduleIds
-      ? (scheduleIds.map((id) => this.schedules.get(id)).filter(Boolean) as ScheduleStatus[])
+      ? (scheduleIds.map((id: any) => this.schedules.get(id)).filter(Boolean) as ScheduleStatus[])
       : Array.from(this.schedules.values());
 
     const healthChecks: ScheduleHealthCheck[] = [];
@@ -280,7 +280,7 @@ export class AdvancedScheduler {
       // Determine health status
       let status: ScheduleHealthCheck['status'] = 'healthy';
       if (issues.length > 0) {
-        status = issues.some((issue) => issue.includes('overdue')) ? 'critical' : 'warning';
+        status = issues.some((issue: any) => issue.includes('overdue')) ? 'critical' : 'warning';
       }
 
       healthChecks.push({
@@ -436,9 +436,10 @@ export class AdvancedScheduler {
 
       // Schedule next execution
       await this.scheduleNext(scheduleId);
-    } catch (error) {
+    } catch (error: any) {
       schedule.status = 'error';
-      schedule.error = error instanceof Error ? error.message : String(error);
+      schedule.error =
+        error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error);
       schedule.updatedAt = new Date();
     }
   }

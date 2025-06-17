@@ -4,19 +4,14 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import type { ReactNode } from 'react';
 
-import { TabNavigation } from './TabNavigation';
-
 interface GuestsLayoutProperties {
   readonly children: ReactNode;
   readonly modal: ReactNode;
-  readonly api_keys: ReactNode;
-  readonly organizations: ReactNode;
-  readonly people: ReactNode;
 }
 
-export default function GuestsLayout({ 
-  children, 
-  modal 
+export default function GuestsLayout({
+  children,
+  modal,
 }: GuestsLayoutProperties): React.ReactElement {
   return (
     <AppShell
@@ -49,13 +44,8 @@ export default function GuestsLayout({
         </Container>
       </AppShell.Header>
 
-      <AppShell.Main>
-        <Container size="xl">
-          <TabNavigation />
-          {children}
-        </Container>
-      </AppShell.Main>
-      
+      <AppShell.Main>{children}</AppShell.Main>
+
       {/* Modal slot for intercepting routes */}
       {modal}
     </AppShell>

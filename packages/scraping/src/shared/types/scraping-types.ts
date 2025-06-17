@@ -3,7 +3,7 @@
  */
 
 // Re-import provider types first
-import type {
+import {
   Cookie,
   ExtractedData,
   MultiScrapeOptions,
@@ -19,49 +19,30 @@ import type {
   ViewportConfig,
 } from './provider';
 
+// Add missing types from original package
+export type ExtractionResult = Record<string, null | string | string[]>;
+
 export interface ProviderConfig {
   // Provider-specific required fields
   apiKey?: string;
   endpoint?: string;
-  token?: string;
-
   options?: Record<string, any>;
+
   retries?: number;
   // Optional configuration
   timeout?: number;
+  token?: string;
   userAgent?: string;
 }
 
-export interface ScrapingProvider {
-  readonly name: string;
-  readonly type: 'browser' | 'html' | 'managed' | 'custom';
-
-  extract(html: string, selectors: SelectorMap): Promise<ExtractedData>;
-  initialize(config: ProviderConfig): Promise<void>;
-  scrape(url: string, options?: ScrapeOptions): Promise<ScrapeResult>;
-
-  dispose?(): Promise<void>;
-  healthCheck?(): Promise<boolean>;
-  pdf?(url: string, options?: PDFOptions): Promise<Buffer>;
-  // Optional methods - screenshot for browser providers doesn't take URL
-  screenshot?(options?: ScreenshotOptions): Promise<Buffer>;
-}
-
-export interface ScrapingContext {
-  attempt: number;
-  maxAttempts: number;
-  options: any;
-  provider: string;
-  startTime: number;
-  url: string;
-}
+export type ProviderRegistry = Record<string, (config: ProviderConfig) => ScrapingProvider>;
 
 export interface ScrapingConfig {
   debug?: boolean;
   defaults?: Partial<ScrapeOptions>;
   onError?: (
     error: unknown,
-    context: { provider: string; method: string; [key: string]: any },
+    context: { [key: string]: any; method: string; provider: string },
   ) => void;
   onInfo?: (message: string) => void;
   providers: Record<string, ProviderConfig>;
@@ -74,7 +55,14 @@ export interface ScrapingConfig {
   };
 }
 
-export type ProviderRegistry = Record<string, (config: ProviderConfig) => ScrapingProvider>;
+export interface ScrapingContext {
+  attempt: number;
+  maxAttempts: number;
+  options: any;
+  provider: string;
+  startTime: number;
+  url: string;
+}
 
 export interface ScrapingManager {
   dispose(): Promise<void>;
@@ -104,8 +92,20 @@ export type {
   ViewportConfig,
 };
 
-// Add missing types from original package
-export type ExtractionResult = Record<string, string | string[] | null>;
+export interface ScrapingProvider {
+  dispose?(): Promise<void>;
+  extract(html: string, selectors: SelectorMap): Promise<ExtractedData>;
+
+  healthCheck?(): Promise<boolean>;
+  initialize(config: ProviderConfig): Promise<void>;
+  readonly name: string;
+
+  pdf?(url: string, options?: PDFOptions): Promise<Buffer>;
+  scrape(url: string, options?: ScrapeOptions): Promise<ScrapeResult>;
+  // Optional methods - screenshot for browser providers doesn't take URL
+  screenshot?(options?: ScreenshotOptions): Promise<Buffer>;
+  readonly type: 'browser' | 'custom' | 'html' | 'managed';
+}
 
 // Error types from original package
 export class ScrapingError extends Error {

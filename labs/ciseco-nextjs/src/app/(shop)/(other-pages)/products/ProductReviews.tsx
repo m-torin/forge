@@ -1,5 +1,6 @@
+import ReviewItem from '@/components/ReviewItem'
+import { TReview } from '@/data/data'
 import { StarIcon } from '@heroicons/react/24/solid'
-import { ReviewItem, TReview } from '@repo/design-system/ciseco'
 import clsx from 'clsx'
 
 const ProductReviews = ({

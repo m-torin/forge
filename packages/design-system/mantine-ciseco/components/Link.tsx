@@ -13,9 +13,9 @@ export const Link = forwardRef(function Link(
     <NextLink
       {...linkProps}
       data-testid={testId}
-      href={props.href ?? '#'}
+      href={props.href}
       ref={ref}
-      onClick={(e) => {
+      onClick={(e: any) => {
         if (props.onClick) {
           props.onClick(e);
         }

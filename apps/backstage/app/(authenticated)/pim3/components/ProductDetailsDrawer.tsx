@@ -40,6 +40,7 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
+import { useForm } from '@mantine/form';
 
 import { formatCurrency, formatDate, formatDateTime, getStatusColor } from '../utils/pim-helpers';
 
@@ -167,11 +168,26 @@ export function ProductDetailsDrawer({
   product,
 }: ProductDetailsDrawerProps) {
   const [pdpModalOpened, { open: openPdpModal, close: closePdpModal }] = useDisclosure(false);
-  const [inventoryModalOpened, { open: openInventoryModal, close: closeInventoryModal }] = useDisclosure(false);
-  const [variantsModalOpened, { open: openVariantsModal, close: closeVariantsModal }] = useDisclosure(false);
-  const [supplierModalOpened, { open: openSupplierModal, close: closeSupplierModal }] = useDisclosure(false);
-  const [priceHistoryModalOpened, { open: openPriceHistoryModal, close: closePriceHistoryModal }] = useDisclosure(false);
-  const [bundlingModalOpened, { open: openBundlingModal, close: closeBundlingModal }] = useDisclosure(false);
+  const [inventoryModalOpened, { open: openInventoryModal, close: closeInventoryModal }] =
+    useDisclosure(false);
+  const [variantsModalOpened, { open: openVariantsModal, close: closeVariantsModal }] =
+    useDisclosure(false);
+  const [supplierModalOpened, { open: openSupplierModal, close: closeSupplierModal }] =
+    useDisclosure(false);
+  const [priceHistoryModalOpened, { open: openPriceHistoryModal, close: closePriceHistoryModal }] =
+    useDisclosure(false);
+  const [bundlingModalOpened, { open: openBundlingModal, close: closeBundlingModal }] =
+    useDisclosure(false);
+
+  // Form for product bundling and other features
+  const form = useForm({
+    initialValues: {
+      bundles: [],
+      variants: [],
+      suppliers: [],
+      promotions: [],
+    },
+  });
 
   if (!product) return null;
 
@@ -248,7 +264,7 @@ export function ProductDetailsDrawer({
                 <Text c="dimmed" size="sm">
                   Price
                 </Text>
-                <Text fw={500}>{formatCurrency(product.price, product.currency)}</Text>
+                <Text fw={500}>{formatCurrency(product.price, product.currency ?? undefined)}</Text>
               </div>
 
               <div>
@@ -380,7 +396,7 @@ export function ProductDetailsDrawer({
               </>
             )}
 
-            {product.attributes && Object.keys(product.attributes as any).length > 0 && (
+            {product.attributes && Object.keys(product.attributes as unknown as any).length > 0 && (
               <>
                 <Divider />
                 <div>
@@ -580,11 +596,7 @@ export function ProductDetailsDrawer({
                 <Text c="dimmed" ta="center">
                   No sellers/PDPs configured for this product
                 </Text>
-                <Button
-                  leftSection={<IconEdit size={16} />}
-                  onClick={openPdpModal}
-                  variant="light"
-                >
+                <Button leftSection={<IconEdit size={16} />} onClick={openPdpModal} variant="light">
                   Add Sellers
                 </Button>
               </Stack>
@@ -1384,7 +1396,7 @@ export function ProductDetailsDrawer({
                     Current Price
                   </Text>
                   <Text fw={700} size="xl">
-                    {formatCurrency(product.price, product.currency)}
+                    {formatCurrency(product.price, product.currency ?? undefined)}
                   </Text>
                   <Text c="dimmed" size="xs">
                     Regular pricing
@@ -1514,10 +1526,10 @@ export function ProductDetailsDrawer({
                   <div style={{ textAlign: 'right' }}>
                     <Group gap="xs" justify="flex-end">
                       <Text style={{ textDecoration: 'line-through' }} c="dimmed" size="sm">
-                        {formatCurrency(product.price, product.currency)}
+                        {formatCurrency(product.price, product.currency ?? undefined)}
                       </Text>
                       <Text c="green" fw={600} size="lg">
-                        {formatCurrency((product.price || 0) * 0.8, product.currency)}
+                        {formatCurrency((product.price || 0) * 0.8, product.currency ?? undefined)}
                       </Text>
                     </Group>
                     <Text c="dimmed" size="xs">
@@ -2204,43 +2216,22 @@ export function ProductDetailsDrawer({
         productName={product.name}
       />
 
-      <InventoryManagement
-        onClose={closeInventoryModal}
-        onUpdate={onUpdate}
-        opened={inventoryModalOpened}
-        productId={product.id}
-        productName={product.name}
-      />
+      <InventoryManagement onUpdate={onUpdate} productId={product.id} productName={product.name} />
 
-      <ProductVariants
-        onClose={closeVariantsModal}
-        onUpdate={onUpdate}
-        opened={variantsModalOpened}
-        productId={product.id}
-        productName={product.name}
-      />
+      <ProductVariants onUpdate={onUpdate} productId={product.id} productName={product.name} />
 
-      <SupplierProcurement
-        onClose={closeSupplierModal}
-        onUpdate={onUpdate}
-        opened={supplierModalOpened}
-        productId={product.id}
-        productName={product.name}
-      />
+      <SupplierProcurement onUpdate={onUpdate} productId={product.id} productName={product.name} />
 
       <PriceHistory
-        onClose={closePriceHistoryModal}
+        currentPrice={product.price || 0}
         onUpdate={onUpdate}
-        opened={priceHistoryModalOpened}
         productId={product.id}
         productName={product.name}
-        currentPrice={product.price || 0}
       />
 
       <ProductBundling
-        onClose={closeBundlingModal}
+        form={form}
         onUpdate={onUpdate}
-        opened={bundlingModalOpened}
         productId={product.id}
         productName={product.name}
       />

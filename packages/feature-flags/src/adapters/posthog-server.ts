@@ -52,7 +52,7 @@ export function createPostHogServerAdapter(
         origin: { provider: 'posthog' },
       }),
       featureFlagPayload: (transform?: (value: any) => any) => ({
-        decide: async () => transform ? transform({}) : {},
+        decide: async () => (transform ? transform({}) : {}),
         config: { reportValue: true },
         origin: { provider: 'posthog' },
       }),
@@ -152,7 +152,7 @@ export async function getProviderData(options: { personalApiKey?: string; projec
     console.warn('PostHog personal API key and project ID not configured - returning empty flags');
     return {
       provider: 'posthog',
-      flags: []
+      flags: [],
     };
   }
 

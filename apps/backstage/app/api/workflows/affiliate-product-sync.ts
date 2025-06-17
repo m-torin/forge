@@ -12,7 +12,7 @@ import {
   withStepCircuitBreaker,
   withStepMonitoring,
   withStepRetry,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const AffiliateProductSyncInput = z.object({
@@ -152,23 +152,18 @@ export const fetchFromNetworksStep = compose(
       totalProductsFetched: networkResults.reduce((sum, r) => sum + r.fetchedCount, 0),
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
       resetTimeout: 300000, // 5 minutes
       threshold: 0.5,
-      threshold: 0.5,
-      timeout: 30000,
+      // timeout: 30000,
     }),
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metrics: ['totalProductsFetched', 'networksProcessed'],
-    }),
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock network fetchers (in production, these would call real APIs)
@@ -515,7 +510,7 @@ export const calculateMetricsStep = createStep('calculate-metrics', async (data:
 // Step 5: Update product database
 export const updateDatabaseStep = compose(
   StepTemplates.database('update-products', 'Update affiliate products in database'),
-  (step) => withStepRetry(step, { maxAttempts: 3 }),
+  (step: any) => withStepRetry(step, { maxRetries: 3 }),
 );
 
 // Step 6: Update search indexes
@@ -561,7 +556,7 @@ export const generateSyncReportStep = createStep('generate-report', async (data:
       productCount: r.fetchedCount,
       success: r.success,
     })),
-    recommendations: [],
+    recommendations: [] as any[],
     summary: {
       networksProcessed: networkResults.length,
       productsWithMultipleSellers: deduplicationStats.productsWithMultipleSellers,
@@ -600,14 +595,7 @@ export const generateSyncReportStep = createStep('generate-report', async (data:
 });
 
 // Step 8: Send notifications
-export const sendNotificationsStep = StepTemplates.notification(
-  'sync-complete',
-  'Notify about affiliate product sync completion',
-  {
-    channels: ['email', 'webhook'],
-    condition: (data: any) => data.report.summary.totalProductsFetched > 0,
-  },
-);
+export const sendNotificationsStep = StepTemplates.notification('sync-complete', 'success');
 
 // Main workflow definition
 export const affiliateProductSyncWorkflow = {

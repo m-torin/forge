@@ -1,5 +1,6 @@
-import { ButtonPrimary, NcImage } from '@repo/design-system/ciseco'
-import I404Png from '@repo/design-system/ciseco/images/404.png'
+import I404Png from '@/images/404.png'
+import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import NcImage from '@/shared/NcImage/NcImage'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 const Page404 = () => (
   <div className="nc-Page404">
-    <div className="container relative pb-16 pt-5 lg:pb-20 lg:pt-5">
+    <div className="relative container pt-5 pb-16 lg:pt-5 lg:pb-20">
       {/* HEADER */}
       <header className="mx-auto max-w-2xl space-y-2 text-center">
         <NcImage src={I404Png} alt="not-found" />

@@ -1,6 +1,6 @@
-import ArchiveFilterListBox from './ArchiveFilterListBox';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import ArchiveFilterListBox from './ArchiveFilterListBox';
 
 const meta: Meta<typeof ArchiveFilterListBox> = {
   argTypes: {

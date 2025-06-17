@@ -16,12 +16,12 @@ export default function GlobalError({ error, reset }: GlobalErrorProperties): Re
 
   useEffect(() => {
     console.error('Global error:', error);
-    
+
     // Send error to Sentry
-    observability?.captureException(error, {
+    observability?.captureException(error as any as Error, {
       tags: {
         type: 'global_error',
-        digest: error.digest,
+        digest: error.digest || 'unknown',
       },
       level: 'fatal',
     });

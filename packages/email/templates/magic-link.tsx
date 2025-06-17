@@ -11,18 +11,18 @@ import {
   Text,
 } from '@react-email/components';
 
-interface MagicLinkTemplateProps {
+interface MagicLinkTemplateProps extends Record<string, any> {
   readonly email: string;
   readonly expiresIn?: string;
   readonly magicLink: string;
-  readonly name?: string | null;
+  readonly name?: null | string;
 }
 
 export const MagicLinkTemplate = ({
-  name,
   email,
   expiresIn = '20 minutes',
   magicLink,
+  name,
 }: MagicLinkTemplateProps) => (
   <Tailwind>
     <Html>
@@ -36,7 +36,7 @@ export const MagicLinkTemplate = ({
                 Sign in to your account
               </Text>
 
-              <Text className="m-0 mb-4 text-zinc-500">Hi {name || email}!</Text>
+              <Text className="m-0 mb-4 text-zinc-500">Hi {name ?? email}!</Text>
 
               <Text className="m-0 mb-6 text-zinc-500">
                 Click the button below to securely sign in to your account. No password required!
@@ -44,8 +44,8 @@ export const MagicLinkTemplate = ({
 
               <Section className="mb-6">
                 <Button
-                  href={magicLink}
                   className="rounded-md bg-zinc-950 px-6 py-3 text-center text-white no-underline"
+                  href={magicLink}
                 >
                   Sign in with Magic Link
                 </Button>

@@ -4,6 +4,15 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["src/**/*", "__tests__/**/*", "vitest.config.ts", "eslint.config.ts", "keys.ts"],
+  "include": [
+    "src/**/*",
+    "__tests__/**/*",
+    "vitest.config.ts",
+    "eslint.config.ts",
+    "keys.ts",
+    "client/**/*",
+    "server/**/*",
+    "examples/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }

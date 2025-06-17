@@ -20,7 +20,6 @@ import {
 import {
   AlgoliaABTesting,
   AlgoliaAnalyticsDashboard,
-  AlgoliaFeaturesShowcase,
   AlgoliaInsightsDemo,
   AlgoliaMultiIndex,
   AlgoliaNeuralSearch,
@@ -33,11 +32,7 @@ import {
   NextJSSearchWrapper,
 } from '@/components/search';
 
-export default function AlgoliaShowcasePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function AlgoliaShowcasePage({ params }: { params: Promise<{ locale: string }> }) {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [locale, setLocale] = useState<string>('en');
   const router = useRouter();
@@ -80,7 +75,11 @@ export default function AlgoliaShowcasePage({
         </div>
 
         {/* Feature Tabs - Left Side Layout */}
-        <Tabs value={activeTab} onChange={(value) => setActiveTab(value || 'overview')} orientation="vertical">
+        <Tabs
+          value={activeTab}
+          onChange={(value) => setActiveTab(value || 'overview')}
+          orientation="vertical"
+        >
           <Group align="flex-start" gap="xl" wrap="nowrap">
             <div style={{ minWidth: '200px' }}>
               <Tabs.List>
@@ -135,14 +134,15 @@ export default function AlgoliaShowcasePage({
                       Enterprise-grade federated search with TypeScript safety and error handling
                     </Text>
                   </div>
-                  
+
                   <Paper p="xl" shadow="sm" radius="md">
                     <Stack gap="md">
                       <Text fw={600} size="lg">
                         Production-Ready Autocomplete
                       </Text>
                       <Text c="dimmed" size="sm">
-                        Try searching for "jacket", "blue", "care", "return policy" - includes error handling, accessibility, and performance optimizations
+                        Try searching for "jacket", "blue", "care", "return policy" - includes error
+                        handling, accessibility, and performance optimizations
                       </Text>
                       <Group justify="center">
                         <ProductionFederatedAutocomplete
@@ -150,7 +150,6 @@ export default function AlgoliaShowcasePage({
                           placeholder="Search products, articles, help..."
                           locale={locale}
                           onSelect={handleFederatedSearchSelect}
-                          style={{ width: '400px' }}
                         />
                       </Group>
                     </Stack>
@@ -162,20 +161,36 @@ export default function AlgoliaShowcasePage({
                     </Title>
                     <Group gap="lg" grow>
                       <Paper p="md" shadow="xs" radius="sm">
-                        <Text fw={600} size="sm" mb="xs">Type Safety</Text>
-                        <Text size="xs" c="dimmed">Full TypeScript with strict type checking and validation</Text>
+                        <Text fw={600} size="sm" mb="xs">
+                          Type Safety
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          Full TypeScript with strict type checking and validation
+                        </Text>
                       </Paper>
                       <Paper p="md" shadow="xs" radius="sm">
-                        <Text fw={600} size="sm" mb="xs">Error Handling</Text>
-                        <Text size="xs" c="dimmed">Graceful error states with user feedback</Text>
+                        <Text fw={600} size="sm" mb="xs">
+                          Error Handling
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          Graceful error states with user feedback
+                        </Text>
                       </Paper>
                       <Paper p="md" shadow="xs" radius="sm">
-                        <Text fw={600} size="sm" mb="xs">Performance</Text>
-                        <Text size="xs" c="dimmed">Optimized with memoization and cancellation</Text>
+                        <Text fw={600} size="sm" mb="xs">
+                          Performance
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          Optimized with memoization and cancellation
+                        </Text>
                       </Paper>
                       <Paper p="md" shadow="xs" radius="sm">
-                        <Text fw={600} size="sm" mb="xs">Security</Text>
-                        <Text size="xs" c="dimmed">XSS protection and input validation</Text>
+                        <Text fw={600} size="sm" mb="xs">
+                          Security
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          XSS protection and input validation
+                        </Text>
                       </Paper>
                     </Group>
                   </div>

@@ -1,6 +1,16 @@
 'use client';
 
-import { ActionIcon, Badge, Button, Group, Stack, Text, Title } from '@mantine/core';
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Title,
+  Breadcrumbs,
+  Anchor,
+} from '@mantine/core';
 import { IconPlus, IconRefresh } from '@tabler/icons-react';
 
 import type { ReactNode } from 'react';
@@ -22,6 +32,10 @@ interface PageHeaderProps {
     label: string;
     color?: string;
   };
+  breadcrumbs?: {
+    label: string;
+    href?: string;
+  }[];
   description?: string;
   onRefresh?: () => void;
   stats?: {
@@ -35,6 +49,7 @@ interface PageHeaderProps {
 export function PageHeader({
   actions,
   badge,
+  breadcrumbs,
   description,
   onRefresh,
   stats,
@@ -42,6 +57,23 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <Stack gap="md" mb="xl">
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <Breadcrumbs>
+          {breadcrumbs.map((crumb, index) => (
+            <span key={index}>
+              {crumb.href ? (
+                <Anchor href={crumb.href} size="sm">
+                  {crumb.label}
+                </Anchor>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  {crumb.label}
+                </Text>
+              )}
+            </span>
+          ))}
+        </Breadcrumbs>
+      )}
       <Group align="flex-start" justify="space-between">
         <div>
           <Group gap="sm" mb={description ? 'xs' : 0}>

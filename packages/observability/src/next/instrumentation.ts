@@ -3,34 +3,96 @@
  * This file is imported by apps in their instrumentation.ts
  */
 
-import * as Sentry from '@sentry/nextjs';
+// Only import Sentry on Node.js runtime to avoid edge runtime issues
+import { ObservabilityConfig } from '../shared/types/types';
+import { Environment, Runtime } from '../shared/utils/environment';
 
-import type { ObservabilityConfig } from '../shared/types/types';
+let Sentry: any = null;
+
+// Dynamic import Sentry for ESM compliance
+if (typeof window === 'undefined' && !Runtime.isEdge()) {
+  try {
+    // Use dynamic import instead of require for ESM compliance
+    import('@sentry/nextjs')
+      .then((sentryModule: any) => {
+        Sentry = sentryModule;
+      })
+      .catch(() => {
+        // Sentry not available, that's okay
+      });
+  } catch {
+    // Sentry not available, that's okay
+  }
+}
 
 /**
  * Register function for Next.js instrumentation
  * Called automatically by Next.js on server startup
  */
 export async function register(config?: ObservabilityConfig) {
-  // Initialize based on runtime environment - use server-next for Next.js environments
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    const { createServerObservability } = await import('../server-next');
+  // Initialize for Node.js runtime with full observability
+  if (Runtime.isNodeJS()) {
+    try {
+      const { createServerObservabilityManager } = await import('../server/utils/manager');
 
-    // Use provided config or default config
-    const observabilityConfig = config || getDefaultServerConfig();
+      // Get Next.js server providers
+      const NEXTJS_SERVER_PROVIDERS = {
+        console: async () => {
+          const { ConsoleProvider } = await import('../shared/providers/console-provider');
+          return new ConsoleProvider();
+        },
+        sentry: async () => {
+          const { SentryServerProvider } = await import('../server/providers/sentry-server');
+          return new SentryServerProvider();
+        },
+      };
 
-    // Initialize observability providers
-    await createServerObservability(observabilityConfig);
+      // Use provided config or default config
+      const observabilityConfig = config || getDefaultServerConfig();
+
+      // Initialize observability providers
+      const manager = createServerObservabilityManager(
+        observabilityConfig,
+        NEXTJS_SERVER_PROVIDERS,
+      );
+      await manager.initialize();
+    } catch (error: any) {
+      // Silently fail if observability dependencies are not available
+      if (Environment.isDevelopment()) {
+        console.warn('[Observability] Failed to initialize server observability: ', error);
+      }
+    }
   }
 
-  if (process.env.NEXT_RUNTIME === 'edge') {
-    const { createServerObservability } = await import('../server-next');
+  // Initialize for edge runtime with edge-compatible providers
+  if (Runtime.isEdge()) {
+    try {
+      const { createServerObservabilityManager } = await import('../server/utils/manager');
 
-    // Edge runtime config might differ slightly
-    const observabilityConfig = config || getDefaultEdgeConfig();
+      // Edge-compatible providers (minimal set)
+      const EDGE_PROVIDERS = {
+        console: async () => {
+          const { ConsoleProvider } = await import('../shared/providers/console-provider');
+          return new ConsoleProvider();
+        },
+      };
 
-    // Initialize for edge runtime
-    await createServerObservability(observabilityConfig);
+      // Use edge-specific config with edge-compatible providers
+      const observabilityConfig = config || getDefaultEdgeConfig();
+
+      // Initialize edge-compatible observability providers
+      const manager = createServerObservabilityManager(observabilityConfig, EDGE_PROVIDERS);
+      await manager.initialize();
+
+      if (Environment.isDevelopment()) {
+        console.info('[Observability] Initialized edge runtime observability');
+      }
+    } catch (error: any) {
+      // Silently fail if observability dependencies are not available
+      if (Environment.isDevelopment()) {
+        console.warn('[Observability] Failed to initialize edge observability: ', error);
+      }
+    }
   }
 }
 
@@ -38,47 +100,48 @@ export async function register(config?: ObservabilityConfig) {
  * Sentry's onRequestError handler for Next.js
  * Captures errors that occur during request handling
  */
-export const onRequestError = Sentry.captureRequestError;
+export const onRequestError = Sentry?.captureRequestError || ((() => {}) as any);
 
 /**
- * Get default server configuration
+ * Get default edge configuration
+ * Uses edge-compatible providers only (no OpenTelemetry)
+ */
+function getDefaultEdgeConfig(): ObservabilityConfig {
+  return {
+    providers: {
+      console: {
+        enabled: Environment.isDevelopment(),
+      },
+      // Sentry Edge disabled to prevent OpenTelemetry bundling
+      // 'sentry-edge': {
+      //   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      //   environment: process.env.NODE_ENV,
+      //   tracesSampleRate: 0.1, // Lower sample rate for edge
+      // },
+    },
+  };
+}
+
+/**
+ * Get default server configuration (no OpenTelemetry)
  * Apps can override this by passing their own config
  */
 function getDefaultServerConfig(): ObservabilityConfig {
   return {
     providers: {
       console: {
-        enabled: process.env.NODE_ENV === 'development',
+        enabled: Environment.isDevelopment(),
       },
-      logtail: {
-        sourceToken: process.env.LOGTAIL_SOURCE_TOKEN,
-      },
-      sentry: {
-        // Remove debug option to avoid non-debug bundle conflicts
-        dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-        environment: process.env.NODE_ENV,
-        tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-      },
-    },
-  };
-}
-
-/**
- * Get default edge configuration
- * Similar to server but may have different settings for edge runtime
- */
-function getDefaultEdgeConfig(): ObservabilityConfig {
-  return {
-    providers: {
-      console: {
-        enabled: process.env.NODE_ENV === 'development',
-      },
-      sentry: {
-        debug: false, // Disable debug in edge runtime
-        dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-        environment: process.env.NODE_ENV,
-        tracesSampleRate: 0.1, // Lower sample rate for edge
-      },
+      // Logtail disabled to prevent potential OpenTelemetry issues
+      // logtail: {
+      //   sourceToken: process.env.LOGTAIL_SOURCE_TOKEN,
+      // },
+      // Sentry disabled to prevent OpenTelemetry bundling
+      // sentry: {
+      //   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      //   environment: process.env.NODE_ENV,
+      //   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+      // },
     },
   };
 }

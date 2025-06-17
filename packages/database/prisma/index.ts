@@ -1,19 +1,15 @@
-import { PrismaAdapter } from './adapter';
+// Export standard Prisma client directly
+export { prisma, prismaClientSingleton } from './clients/standard';
+export type { PrismaClient } from './clients/standard';
 
-// Re-export everything from the generated client
-export * from './generated/client';
+// Re-export from the generated Prisma client
+export * from '../prisma-generated/client';
 
-// Export our custom adapter and client
-export { PrismaAdapter } from './adapter';
-export { prisma, prismaClientSingleton } from './client';
-
-// Export ORM functions
-export * as orm from './orm/index';
+// Export observability utilities (server-only)
+export * as observability from './observability';
 
 // Export server actions
-export * as actions from './actions/index';
+export * from './src/actions';
 
-// Export a function to create a new adapter instance
-export function createPrismaAdapter(): PrismaAdapter {
-  return new PrismaAdapter();
-}
+// Export ORM functions
+export * from './src/orm';

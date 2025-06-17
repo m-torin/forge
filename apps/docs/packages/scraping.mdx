@@ -1,0 +1,663 @@
+---
+title: 'Web Scraping'
+description:
+  'Multi-provider web scraping system with browser automation, HTML parsing, and managed services
+  for intelligent data extraction'
+icon: 'spider'
+---
+
+# Web Scraping
+
+Modern, multi-provider web scraping system that supports various scraping strategies from
+lightweight HTML parsing to full browser automation and managed scraping services.
+
+## Overview
+
+The scraping package provides a comprehensive solution for web data extraction with automatic
+provider selection, smart routing, and built-in reliability features.
+
+<CardGroup cols={2}>
+  <Card title="Browser Automation" icon="robot">
+    Full JavaScript execution with Playwright, Puppeteer, and Hero for SPAs and dynamic content
+  </Card>
+  <Card title="HTML Parsing" icon="code">
+    Fast, lightweight extraction with Cheerio and JSDOM for static content and high-volume scraping
+  </Card>
+  <Card title="Managed Services" icon="cloud">
+    ScrapingBee, Bright Data, and Apify integration with built-in proxy rotation and CAPTCHA solving
+  </Card>
+  <Card title="Smart Routing" icon="route">
+    Automatic provider selection based on URL patterns, site characteristics, and performance
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+```typescript Basic Scraping
+import { createServerScraping } from '@repo/scraping/server';
+
+const scraper = await createServerScraping({ providers: [ { name: 'cheerio', type: 'html' }, { name:
+'playwright', type: 'browser' }, ], routing: { static: 'cheerio', // Use Cheerio for static sites
+dynamic: 'playwright', // Use Playwright for SPAs default: 'playwright', // Default fallback }, });
+
+// Scrape with automatic provider selection const result = await
+scraper.scrape('https://example.com', { extract: { title: 'h1', price: { selector: '.price',
+transform: (text) => parseFloat(text.replace('$', '')) }, images: { selector: 'img', attribute:
+'src', multiple: true }, }, });
+
+console.log(result.data); // { title: 'Product Name', price: 29.99, images: ['img1.jpg', 'img2.jpg']
+}
+
+````
+
+```typescript Advanced Usage
+// Force specific provider for complex sites
+const result = await scraper.scrape('https://spa-app.com', {
+  provider: 'playwright',
+  waitUntil: 'networkidle',
+  blockResources: ['image', 'stylesheet', 'font'],
+  screenshot: true,
+  executeScript: () => window.__INITIAL_DATA__,
+});
+
+// Quick one-liner scraping
+const data = await quickScrape('https://example.com', {
+  title: 'h1',
+  price: '.price',
+});
+````
+
+</CodeGroup>
+
+## Provider Types
+
+### Browser Automation
+
+Perfect for JavaScript-heavy sites and complex interactions:
+
+<Tabs>
+  <Tab title="Playwright">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: [{
+        name: 'playwright',
+        type: 'browser',
+        config: {
+          headless: true,
+          browsers: ['chromium', 'firefox'],
+          device: 'iPhone 12',
+          locale: 'en-US',
+          timezone: 'America/New_York',
+        },
+      }],
+    });
+
+    // Advanced interactions
+    const result = await scraper.scrape('https://app.com', {
+      provider: 'playwright',
+      interactions: [
+        { type: 'click', selector: '.load-more' },
+        { type: 'wait', selector: '.content', timeout: 5000 },
+        { type: 'scroll', direction: 'down', amount: 500 },
+      ],
+      screenshot: { path: 'result.png', fullPage: true },
+    });
+    ```
+
+  </Tab>
+  
+  <Tab title="Puppeteer">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: [{
+        name: 'puppeteer',
+        type: 'browser',
+        config: {
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-web-security'],
+          userDataDir: './puppeteer-data',
+        },
+      }],
+    });
+
+    // Custom page evaluation
+    const result = await scraper.scrape('https://dynamic-site.com', {
+      provider: 'puppeteer',
+      executeScript: () => {
+        return {
+          data: window.__APP_DATA__,
+          loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
+        };
+      },
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+**Best for:** SPAs, dynamic content, authenticated sessions, complex user interactions
+
+### HTML Parsing
+
+High-performance extraction for static content:
+
+<Tabs>
+  <Tab title="Cheerio">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: [{
+        name: 'cheerio',
+        type: 'html',
+        config: {
+          userAgent: 'Custom Bot/1.0',
+          timeout: 10000,
+          followRedirects: true,
+        },
+      }],
+    });
+
+    // Fast batch processing
+    const results = await scrapeMultiple(urls, {
+      title: 'h1',
+      content: '.article-content',
+      author: '.author-name',
+    }, {
+      concurrent: 10,
+      provider: 'cheerio',
+    });
+    ```
+
+  </Tab>
+  
+  <Tab title="JSDOM">
+    ```typescript
+    // JSDOM for more advanced DOM manipulation
+    const result = await scraper.scrape('https://static-site.com', {
+      provider: 'jsdom',
+      extract: {
+        processedData: (dom) => {
+          // Custom DOM processing
+          const articles = Array.from(dom.querySelectorAll('article'));
+          return articles.map(article => ({
+            title: article.querySelector('h2')?.textContent,
+            wordCount: article.textContent?.split(' ').length,
+          }));
+        },
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Best for:** Static HTML sites, RSS/XML feeds, high-volume scraping, server-side rendering
+
+### Managed Services
+
+Scalable solutions with built-in infrastructure:
+
+<Tabs>
+  <Tab title="ScrapingBee">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: [{
+        name: 'scrapingbee',
+        type: 'managed',
+        config: {
+          apiKey: process.env.SCRAPINGBEE_KEY,
+          premium: true,
+          country: 'US',
+          renderJs: true,
+          blockAds: true,
+          stealth: true,
+        },
+      }],
+    });
+
+    // Automatic CAPTCHA handling
+    const result = await scraper.scrape('https://protected-site.com', {
+      provider: 'scrapingbee',
+      waitForSelector: '.content',
+      customHeaders: {
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    ```
+
+  </Tab>
+  
+  <Tab title="Bright Data">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: [{
+        name: 'brightdata',
+        type: 'managed',
+        config: {
+          username: process.env.BRIGHTDATA_USERNAME,
+          password: process.env.BRIGHTDATA_PASSWORD,
+          zone: 'residential',
+          country: 'US',
+          session: 'session_123',
+        },
+      }],
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Best for:** Large-scale scraping, anti-bot protection, geographic distribution, CAPTCHA solving
+
+## Advanced Features
+
+### Automatic Provider Selection
+
+Smart routing based on site characteristics:
+
+```typescript
+const scraper = await createServerScraping({
+  providers: [
+    { name: 'cheerio', type: 'html' },
+    { name: 'playwright', type: 'browser' },
+    { name: 'scrapingbee', type: 'managed' },
+  ],
+  routing: {
+    // Pattern-based routing
+    patterns: {
+      '*.shopify.com': 'playwright',
+      'api.*.com': 'cheerio',
+      '*.amazonaws.com': 'scrapingbee',
+    },
+    // Content-based routing
+    contentHints: {
+      static: 'cheerio',
+      dynamic: 'playwright',
+      protected: 'scrapingbee',
+    },
+    // Fallback chain
+    fallback: ['cheerio', 'playwright', 'scrapingbee'],
+  },
+});
+
+// Hint-based selection
+const result = await scraper.scrape('https://example.com', {
+  hint: 'static', // Suggests using Cheerio
+});
+```
+
+### Concurrent Scraping
+
+Efficient parallel processing with load distribution:
+
+```typescript
+// Scrape multiple URLs with optimal provider mix
+const results = scraper.scrapeMultiple(
+  urls,
+  {
+    title: 'h1',
+    content: '.article-content',
+  },
+  {
+    concurrent: 10,
+    providers: ['cheerio', 'playwright'],
+    distribution: {
+      cheerio: 0.7, // 70% with Cheerio
+      playwright: 0.3, // 30% with Playwright
+    },
+    onProgress: (url, index, total) => {
+      console.log(`Progress: ${index}/${total} - ${url}`);
+    },
+  }
+);
+
+for await (const result of results) {
+  console.log(result.url, result.data);
+}
+```
+
+### Pagination Handling
+
+Automatic pagination with intelligent stopping:
+
+```typescript
+const allPages = await scrapeWithPagination('https://example.com/products', {
+  selectors: {
+    products: {
+      selector: '.product-card',
+      multiple: true,
+      fields: {
+        name: 'h3',
+        price: '.price',
+        image: { selector: 'img', attribute: 'src' },
+      },
+    },
+  },
+  pagination: {
+    nextSelector: 'a.next-page',
+    maxPages: 10,
+    waitBetween: 1000, // 1 second delay between pages
+    stopConditions: [
+      { type: 'noNewItems', threshold: 0.1 }, // Stop if <10% new items
+      { type: 'duplicateContent', threshold: 0.8 }, // Stop if >80% duplicates
+    ],
+  },
+});
+```
+
+### Advanced Data Extraction
+
+Sophisticated extraction patterns with transformations:
+
+```typescript
+const extracted = await scraper.extract('https://e-commerce.com', {
+  schema: {
+    products: {
+      selector: '.product-card',
+      multiple: true,
+      fields: {
+        name: {
+          selector: 'h3',
+          transform: 'trim',
+        },
+        price: {
+          selector: '.price',
+          transform: (text) => parseFloat(text.replace(/[$,]/g, '')),
+          validate: (value) => value > 0,
+        },
+        rating: {
+          selector: '.stars',
+          transform: (element) => {
+            const stars = element.querySelectorAll('.star.filled');
+            return stars.length;
+          },
+        },
+        availability: {
+          selector: '.stock-status',
+          transform: (text) => text.toLowerCase().includes('in stock'),
+        },
+        metadata: {
+          composite: true,
+          fields: {
+            sku: '[data-sku]',
+            category: '.breadcrumb a:last-child',
+            brand: '.brand-name',
+          },
+        },
+      },
+    },
+    pagination: {
+      next: 'a.next-page',
+      total: '.pagination-info',
+      current: '.current-page',
+    },
+  },
+  options: {
+    validateSchema: true,
+    stripHtml: true,
+    normalizeWhitespace: true,
+  },
+});
+```
+
+## Error Handling and Reliability
+
+### Automatic Retries and Failover
+
+```typescript
+const scraper = await createServerScraping({
+  providers: [...],
+
+  // Global defaults
+  defaults: {
+    timeout: 30000,
+    retries: 3,
+    retryDelay: 1000,
+    userAgent: 'MyBot/1.0',
+  },
+
+  // Error handling
+  errorHandling: {
+    captchaDetected: {
+      action: 'switchProvider',
+      targetProvider: 'scrapingbee',
+    },
+    timeout: {
+      action: 'retry',
+      maxRetries: 2,
+      increaseTimeout: 1.5,
+    },
+    blocked: {
+      action: 'switchProvider',
+      fallbackChain: ['scrapingbee', 'brightdata'],
+    },
+  },
+});
+
+// Error handling in code
+try {
+  const result = await scraper.scrape(url);
+} catch (error) {
+  if (error.code === 'CAPTCHA_DETECTED') {
+    // Retry with managed service
+    const result = await scraper.scrape(url, {
+      provider: 'scrapingbee',
+    });
+  } else if (error.code === 'RATE_LIMITED') {
+    // Wait and retry
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    const result = await scraper.scrape(url, {
+      retries: 1,
+    });
+  }
+}
+```
+
+### Monitoring and Health Checks
+
+```typescript
+// Health monitoring
+const health = await scraper.healthCheck();
+console.log(health);
+// {
+//   providers: {
+//     playwright: { healthy: true, latency: 234, successRate: 0.95 },
+//     cheerio: { healthy: true, latency: 12, successRate: 0.99 },
+//     scrapingbee: { healthy: true, remaining: 9876, resetTime: '2024-01-01T12:00:00Z' }
+//   }
+// }
+
+// Event monitoring
+scraper.on('scrape:start', ({ url, provider }) => {
+  console.log(`Starting scrape of ${url} with ${provider}`);
+});
+
+scraper.on('scrape:complete', ({ url, duration, provider }) => {
+  console.log(`Completed ${url} in ${duration}ms using ${provider}`);
+});
+
+scraper.on('error', ({ error, url, provider }) => {
+  console.error(`Scrape failed: ${url} with ${provider}`, error);
+});
+
+scraper.on('provider:switch', ({ from, to, reason }) => {
+  console.log(`Switched from ${from} to ${to}: ${reason}`);
+});
+```
+
+## Performance Optimization
+
+### Resource Management
+
+```typescript
+const scraper = await createServerScraping({
+  providers: [
+    {
+      name: 'playwright',
+      type: 'browser',
+      instances: 3, // Pool of 3 browser instances
+    },
+    {
+      name: 'cheerio',
+      type: 'html',
+      instances: 10, // 10 concurrent connections
+    },
+  ],
+
+  // Global resource limits
+  resources: {
+    maxConcurrent: 15,
+    maxMemory: '2GB',
+    recycleAfter: 100, // Recycle browser after 100 pages
+  },
+
+  // Performance optimizations
+  optimizations: {
+    blockResources: ['image', 'font', 'stylesheet'],
+    caching: {
+      enabled: true,
+      ttl: '1h',
+      store: 'redis',
+    },
+    compression: true,
+    keepAlive: true,
+  },
+});
+```
+
+### Caching and Rate Limiting
+
+```typescript
+// Advanced caching with Redis
+const cachedScraper = scraper.withCache({
+  store: 'redis',
+  ttl: '1h',
+  key: (url, options) => `scrape:${url}:${hash(options)}`,
+  conditions: {
+    // Only cache successful results
+    success: true,
+    // Don't cache dynamic content
+    skipDynamic: true,
+  },
+});
+
+// Rate limiting middleware
+const rateLimitedScraper = scraper.withMiddleware([
+  rateLimiter({
+    requests: 10,
+    window: '1m',
+    keyGenerator: (url) => new URL(url).hostname,
+  }),
+  logger({
+    level: 'info',
+    includeBody: false,
+  }),
+]);
+```
+
+## Next.js Integration
+
+### Server Actions
+
+```typescript
+// app/actions/scraping.ts
+'use server';
+
+import { createServerScraping } from '@repo/scraping/server/next';
+
+export async function scrapeUrl(url: string) {
+  const scraper = await createServerScraping();
+
+  try {
+    const result = await scraper.scrape(url, {
+      extract: {
+        title: 'title',
+        description: 'meta[name="description"]',
+        ogImage: 'meta[property="og:image"]',
+      },
+    });
+
+    return { success: true, data: result.data };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+```
+
+### API Routes
+
+```typescript
+// app/api/scrape/route.ts
+import { createServerScraping } from '@repo/scraping/server/next';
+
+export async function POST(request: Request) {
+  const { url, options } = await request.json();
+
+  const scraper = await createServerScraping();
+  const result = await scraper.scrape(url, options);
+
+  return Response.json(result);
+}
+```
+
+### Client Hooks
+
+```typescript
+// components/scraper.tsx
+'use client';
+
+import { useScraper } from '@repo/scraping/client/next';
+
+export function ScraperComponent() {
+  const { scrape, isLoading, data, error } = useScraper();
+
+  const handleScrape = async () => {
+    await scrape('https://example.com', {
+      extract: {
+        title: 'h1',
+        content: '.content',
+      },
+    });
+  };
+
+  return (
+    <div>
+      <button onClick={handleScrape} disabled={isLoading}>
+        {isLoading ? 'Scraping...' : 'Scrape Page'}
+      </button>
+
+      {error && <div>Error: {error.message}</div>}
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Provider Selection Strategy" icon="route">
+    - Start with lightweight HTML parsing for static content - Use browser automation for
+    JavaScript-heavy sites - Reserve managed services for scale and protection - Implement
+    intelligent fallback chains - Monitor provider performance and success rates
+  </Accordion>
+
+<Accordion title="Performance Optimization" icon="gauge">
+  - Block unnecessary resources (images, fonts, ads) - Use connection pooling and instance recycling
+  - Implement caching for repeated requests - Batch operations when possible - Monitor memory usage
+  and implement cleanup
+</Accordion>
+
+<Accordion title="Error Handling" icon="shield">
+  - Implement graceful degradation between providers - Use exponential backoff for retries - Handle
+  rate limiting with delays - Monitor for CAPTCHA and anti-bot detection - Log errors for analysis
+  and optimization
+</Accordion>
+
+  <Accordion title="Legal and Ethical" icon="scale">
+    - Respect robots.txt and rate limits - Use appropriate delays between requests - Don't overload
+    target servers - Consider website terms of service - Implement proper user agent identification
+  </Accordion>
+</AccordionGroup>
+
+The scraping package provides a comprehensive, reliable solution for web data extraction that scales
+from simple HTML parsing to complex browser automation while maintaining excellent performance and
+developer experience.

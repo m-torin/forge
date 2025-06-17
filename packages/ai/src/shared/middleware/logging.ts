@@ -1,4 +1,4 @@
-import type { CompletionOptions, CompletionResponse } from '../types';
+import { CompletionOptions, CompletionResponse } from '../types';
 
 export interface LoggingConfig {
   enabled: boolean;
@@ -21,15 +21,29 @@ export class AILogger {
     };
   }
 
-  logRequest(provider: string, operation: string, options: CompletionOptions): void {
+  logError(provider: string, operation: string, error: Error): void {
+    if (!this.config.enabled || !this.config.logErrors) return;
+
+    // eslint-disable-next-line no-console
+    console.error(`[AI] ${provider} ${operation} error:`, {
+      error: (error as Error)?.message || 'Unknown error',
+      operation,
+      provider,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  logNextRequest(provider: string, operation: string, options: CompletionOptions): void {
     if (!this.config.enabled || !this.config.logRequests) return;
 
+    // eslint-disable-next-line no-console
     console.log(`[AI] ${provider} ${operation} request:`, {
-      provider,
       maxTokens: options.maxTokens,
       model: options.model,
       operation,
       promptLength: options.prompt.length,
+      provider,
       temperature: options.temperature,
       timestamp: new Date().toISOString(),
     });
@@ -39,21 +53,23 @@ export class AILogger {
     if (!this.config.enabled) return;
 
     if (this.config.logTokenUsage && response.usage) {
+      // eslint-disable-next-line no-console
       console.log(`[AI] ${provider} ${operation} usage:`, {
-        provider,
         finishReason: response.finishReason,
         model: response.model,
         operation,
+        provider,
         timestamp: new Date().toISOString(),
         usage: response.usage,
       });
     }
 
     if (this.config.logResponses) {
+      // eslint-disable-next-line no-console
       console.log(`[AI] ${provider} ${operation} response:`, {
-        provider,
         finishReason: response.finishReason,
         operation,
+        provider,
         textLength: response.text.length,
         timestamp: new Date().toISOString(),
         usage: response.usage,
@@ -61,25 +77,14 @@ export class AILogger {
     }
   }
 
-  logError(provider: string, operation: string, error: Error): void {
-    if (!this.config.enabled || !this.config.logErrors) return;
-
-    console.error(`[AI] ${provider} ${operation} error:`, {
-      provider,
-      error: error.message,
-      operation,
-      stack: error.stack,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
   logStream(provider: string, chunkCount: number, totalText: string): void {
     if (!this.config.enabled || !this.config.logTokenUsage) return;
 
+    // eslint-disable-next-line no-console
     console.log(`[AI] ${provider} stream completed:`, {
-      provider,
       chunkCount,
       estimatedTokens: Math.ceil(totalText.length / 4),
+      provider,
       timestamp: new Date().toISOString(),
       totalLength: totalText.length,
     });

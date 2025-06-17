@@ -10,13 +10,13 @@ import {
   Text,
 } from '@react-email/components';
 
-interface ContactTemplateProps {
+interface ContactTemplateProps extends Record<string, any> {
   readonly email: string;
   readonly message: string;
   readonly name: string;
 }
 
-export const ContactTemplate = ({ name, email, message }: ContactTemplateProps) => (
+export const ContactTemplate = ({ email, message, name }: ContactTemplateProps) => (
   <Tailwind>
     <Html>
       <Head />

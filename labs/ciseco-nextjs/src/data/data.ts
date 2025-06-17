@@ -763,7 +763,7 @@ export async function getCollections() {
     {
       id: 'gid://8',
       title: 'Explore new arrivals',
-      handle: 'explore-arrivals',
+      handle: 'explore-new-arrivals',
       sortDescription: 'Shop the latest <br /> from top brands',
       description:
         'Excoolent new arrivals for every occasion, from casual to formal. Explore our collection of trendy jackets that elevate your outfit.',
@@ -1851,11 +1851,11 @@ export async function getProductDetailByHandle(handle: string) {
     selectedOptions: [
       {
         name: 'Color',
-        value: 'Pink Yarrow',
+        value: product?.options.find((option) => option.name === 'Color')?.optionValues[1].name,
       },
       {
         name: 'Size',
-        value: 'XS',
+        value: product?.options.find((option) => option.name === 'Size')?.optionValues[0].name,
       },
     ],
     features: [

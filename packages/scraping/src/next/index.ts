@@ -2,6 +2,16 @@
  * Next.js integration exports
  */
 
+// Re-export core types for convenience
+export type {
+  ExtractedData,
+  MultiScrapeOptions,
+  ScrapeOptions,
+  ScrapeResult,
+  ScrapingManagerConfig,
+  SelectorMap,
+} from '../shared/types';
+
 // React hooks
 export { useExtract, useMultiScrape, useScrape, useScrapeStatus } from './hooks';
 
@@ -24,13 +34,3 @@ export {
   handleStatusRequest,
   withRateLimit,
 } from './server';
-
-// Re-export core types for convenience
-export type {
-  ExtractedData,
-  MultiScrapeOptions,
-  ScrapeOptions,
-  ScrapeResult,
-  ScrapingManagerConfig,
-  SelectorMap,
-} from '../shared/types';

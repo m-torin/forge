@@ -369,7 +369,7 @@ export default function CategoriesPage() {
 
     const addCategories = (cats: Category[], prefix = '') => {
       if (!cats || !Array.isArray(cats)) return;
-      
+
       try {
         for (const cat of cats) {
           if (cat && cat.id && cat.name && cat.id !== excludeId) {
@@ -569,9 +569,7 @@ export default function CategoriesPage() {
         {isExpanded &&
           hasChildren &&
           category.children.map((child) => (
-            <React.Fragment key={child.id}>
-              {renderCategoryRow(child, level + 1)}
-            </React.Fragment>
+            <React.Fragment key={child.id}>{renderCategoryRow(child, level + 1)}</React.Fragment>
           ))}
       </>
     );

@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock createEnv from @t3-oss/env-nextjs
 const mockCreateEnv = vi.fn();
-vi.mock('@t3-oss/env-nextjs', () => ({
+vi.mock('@t3-oss/env-nextjs', (_: any) => ({
   createEnv: mockCreateEnv,
 }));
 
-describe('Observability Keys Configuration', () => {
+describe('Observability Keys Configuration', (_: any) => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
@@ -17,12 +17,16 @@ describe('Observability Keys Configuration', () => {
       NEXT_PUBLIC_SENTRY_DSN: 'https://test@sentry.io/12345',
       NODE_ENV: 'test',
       SENTRY_AUTH_TOKEN: 'test-auth-token',
-      SENTRY_DSN: 'https://test@sentry.io/12345',
+      SENTRY_ORG: 'test-org',
+      SENTRY_PROJECT: 'test-project',
     });
   });
 
   it('should create environment configuration with required schema', async () => {
-    await import('../../keys');
+    const { keys } = await import('../../keys');
+
+    // Call the keys function to trigger createEnv
+    keys();
 
     // Check that createEnv was called with the expected structure
     expect(mockCreateEnv).toHaveBeenCalledTimes(1);
@@ -35,12 +39,12 @@ describe('Observability Keys Configuration', () => {
 
     // Verify runtimeEnv has expected keys
     expect(call.runtimeEnv).toHaveProperty('NODE_ENV');
-    expect(call.runtimeEnv).toHaveProperty('SENTRY_DSN');
+    expect(call.runtimeEnv).toHaveProperty('NEXT_PUBLIC_SENTRY_DSN');
     expect(call.runtimeEnv).toHaveProperty('LOGTAIL_SOURCE_TOKEN');
 
     // Verify server schema has expected keys
     expect(call.server).toHaveProperty('NODE_ENV');
-    expect(call.server).toHaveProperty('SENTRY_DSN');
+    expect(call.server).toHaveProperty('SENTRY_AUTH_TOKEN');
     expect(call.server).toHaveProperty('LOGTAIL_SOURCE_TOKEN');
 
     // Verify client schema has expected keys
@@ -53,34 +57,39 @@ describe('Observability Keys Configuration', () => {
       NEXT_PUBLIC_SENTRY_DSN: undefined,
       NODE_ENV: 'test',
       SENTRY_AUTH_TOKEN: undefined,
-      SENTRY_DSN: undefined,
+      SENTRY_ORG: undefined,
+      SENTRY_PROJECT: undefined,
     });
 
     const { observabilityKeys } = await import('../../keys');
 
     expect(observabilityKeys).toBeDefined();
-    expect(observabilityKeys.SENTRY_DSN).toBeUndefined();
-    expect(observabilityKeys.SENTRY_AUTH_TOKEN).toBeUndefined();
+    const keys = observabilityKeys();
+    expect(keys.NEXT_PUBLIC_SENTRY_DSN).toBeUndefined();
+    expect(keys.SENTRY_AUTH_TOKEN).toBeUndefined();
   });
 
   it('should provide Sentry configuration when available', async () => {
     const { observabilityKeys } = await import('../../keys');
+    const keys = observabilityKeys();
 
-    expect(observabilityKeys.SENTRY_DSN).toBe('https://test@sentry.io/12345');
-    expect(observabilityKeys.SENTRY_AUTH_TOKEN).toBe('test-auth-token');
-    expect(observabilityKeys.NEXT_PUBLIC_SENTRY_DSN).toBe('https://test@sentry.io/12345');
+    expect(keys.NEXT_PUBLIC_SENTRY_DSN).toBe('https://test@sentry.io/12345');
+    expect(keys.SENTRY_AUTH_TOKEN).toBe('test-auth-token');
+    expect(keys.NEXT_PUBLIC_SENTRY_DSN).toBe('https://test@sentry.io/12345');
   });
 
   it('should provide Logtail configuration when available', async () => {
     const { observabilityKeys } = await import('../../keys');
+    const keys = observabilityKeys();
 
-    expect(observabilityKeys.LOGTAIL_SOURCE_TOKEN).toBe('test-logtail-token');
+    expect(keys.LOGTAIL_SOURCE_TOKEN).toBe('test-logtail-token');
   });
 
   it('should include NODE_ENV in configuration', async () => {
     const { observabilityKeys } = await import('../../keys');
+    const keys = observabilityKeys();
 
-    expect(observabilityKeys.NODE_ENV).toBe('test');
+    expect(keys.NODE_ENV).toBe('test');
   });
 
   it('should allow empty strings for optional fields', async () => {
@@ -89,12 +98,14 @@ describe('Observability Keys Configuration', () => {
       NEXT_PUBLIC_SENTRY_DSN: '',
       NODE_ENV: 'development',
       SENTRY_AUTH_TOKEN: '',
-      SENTRY_DSN: '',
+      SENTRY_ORG: '',
+      SENTRY_PROJECT: '',
     });
 
     const { observabilityKeys } = await import('../../keys');
+    const keys = observabilityKeys();
 
-    expect(observabilityKeys.SENTRY_DSN).toBe('');
-    expect(observabilityKeys.LOGTAIL_SOURCE_TOKEN).toBe('');
+    expect(keys.NEXT_PUBLIC_SENTRY_DSN).toBe('');
+    expect(keys.LOGTAIL_SOURCE_TOKEN).toBe('');
   });
 });

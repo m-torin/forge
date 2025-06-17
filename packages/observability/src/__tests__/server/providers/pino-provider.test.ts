@@ -2,8 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Import after mocking
 import { PinoProvider } from '../../../server/providers/pino-provider';
-
-import type { LogEntry } from '../../../shared/types/logger-types';
+import { LogEntry } from '../../../shared/types/logger-types';
 
 // Use vi.hoisted for mocks
 const { mockPino, mockPinoConstructor } = vi.hoisted(() => {
@@ -11,7 +10,7 @@ const { mockPino, mockPinoConstructor } = vi.hoisted(() => {
     child: vi.fn(),
     debug: vi.fn(),
     error: vi.fn(),
-    flush: vi.fn((cb) => cb && cb()),
+    flush: vi.fn((cb: any) => cb?.()),
     info: vi.fn(),
     warn: vi.fn(),
   };
@@ -46,7 +45,7 @@ describe('PinoProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPino.child.mockReturnValue(mockPino);
-    mockPino.flush.mockImplementation((cb) => cb && cb());
+    mockPino.flush.mockImplementation((cb: any) => cb?.());
     mockPinoConstructor.mockReturnValue(mockPino);
     // Set up .default property for ES module fallback
     (mockPinoConstructor as any).default = mockPinoConstructor;
@@ -303,7 +302,7 @@ describe('PinoProvider', () => {
     });
 
     it('should handle flush errors', async () => {
-      mockPino.flush.mockImplementation((cb) => {
+      mockPino.flush.mockImplementation((cb: any) => {
         cb(new Error('Flush failed'));
       });
 

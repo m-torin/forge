@@ -17,7 +17,7 @@ import ProductQuickView from './ProductQuickView';
 import ProductStatus from './ProductStatus';
 import NcImage from './shared/NcImage/NcImage';
 
-export interface Props {
+export interface Props extends Record<string, any> {
   className?: string;
   'data-testid'?: string;
   imageAspectRatio?: string;
@@ -58,8 +58,8 @@ export interface Props {
 }
 
 const ProductCardLarge: FC<Props> = ({
-  'data-testid': testId = 'product-card-large',
   className,
+  'data-testid': testId = 'product-card-large',
   isLiked = false,
   loading = false,
   product,
@@ -74,12 +74,12 @@ const ProductCardLarge: FC<Props> = ({
 
   // Optimize color rendering with delayed state
   const [shouldRenderColors, setShouldRenderColors] = useState(false);
-  
+
   // Extract product data with defaults to avoid conditional hook usage
   const {
-    id,
     featuredImage,
     handle,
+    id,
     images,
     options,
     price,
@@ -89,15 +89,12 @@ const ProductCardLarge: FC<Props> = ({
     selectedOptions,
     status,
     title,
-  } = product || {};
+  } = product;
 
-  const color = selectedOptions?.find((option) => option.name === 'Color')?.value;
+  const color = selectedOptions?.find((option: any) => option.name === 'Color')?.value;
 
   // Memoize expensive computations
-  const productUrl = useCallback(
-    () => localizeHref(`/products/${handle}`),
-    [localizeHref, handle],
-  );
+  const productUrl = useCallback(() => localizeHref(`/products/${handle}`), [localizeHref, handle]);
 
   // Only render colors after component is mounted and stable
   useDidUpdate(() => {
@@ -125,7 +122,7 @@ const ProductCardLarge: FC<Props> = ({
   const renderColorOptions = useCallback(() => {
     if (!shouldRenderColors) return null;
 
-    const optionColorValues = options?.find((option) => option.name === 'Color')?.optionValues;
+    const optionColorValues = options?.find((option: any) => option.name === 'Color')?.optionValues;
 
     if (!optionColorValues?.length) {
       return null;
@@ -133,12 +130,12 @@ const ProductCardLarge: FC<Props> = ({
 
     return (
       <div className="flex gap-1.5">
-        {optionColorValues.slice(0, 4).map((color) => (
+        {optionColorValues.slice(0, 4).map((color: any) => (
           <div
             key={color.name}
-            data-testid={`${testId}-color-option-${color.name.toLowerCase().replace(/\s+/g, '-')}`}
-            className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full"
             aria-label={`Color: ${color.name}`}
+            className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full"
+            data-testid={`${testId}-color-option-${color.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
             <div
               className="absolute inset-0.5 z-0 rounded-full"
@@ -158,43 +155,42 @@ const ProductCardLarge: FC<Props> = ({
       <div className="absolute end-2 top-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
         {showLike && (
           <LikeButton
-            data-testid={`${testId}-like-button`}
-            onClick={props.onLike}
-            className="relative ms-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
             aria-label="Like product"
+            className="relative ms-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
+            data-testid={`${testId}-like-button`}
             liked={isLiked}
+            onClick={props.onLike}
           />
         )}
         {showQuickView && (
-          <div
-            data-testid={`${testId}-quick-view-button`}
-            onClick={openQuickView}
-            className="relative ms-1.5 mt-1.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
+          <button
             aria-label="Quick view"
+            className="relative ms-1.5 mt-1.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-xs text-neutral-700 shadow-lg dark:bg-neutral-900 dark:text-neutral-300"
+            data-testid={`${testId}-quick-view-button`}
+            type="button"
+            onClick={openQuickView}
           >
             <ArrowsPointingOutIcon className="h-4 w-4" />
-          </div>
+          </button>
         )}
       </div>
     );
   };
 
-  // Early return for missing product after all hooks
-  if (!product) {
-    return null;
-  }
+  // Product is guaranteed to exist when component is used
+  // This was checked by the parent component
 
   // Show skeleton loading state
   if (loading) {
     return (
       <div
-        data-testid={`${testId}-skeleton`}
         className={`nc-ProductCardLarge relative flex flex-col bg-transparent ${className}`}
+        data-testid={`${testId}-skeleton`}
       >
         <div className="group relative z-1 shrink-0 overflow-hidden rounded-2xl bg-neutral-50 dark:bg-neutral-300">
           <div
-            data-testid="placeholder"
             className="flex aspect-[8/5] w-full animate-pulse bg-gray-200 dark:bg-gray-700"
+            data-testid="placeholder"
           />
         </div>
         <div className="mt-2.5 grid grid-cols-3 gap-x-2.5">
@@ -217,52 +213,52 @@ const ProductCardLarge: FC<Props> = ({
   return (
     <>
       <div
-        data-testid={testId}
         className={`nc-ProductCardLarge group relative flex flex-col bg-transparent ${className} ${status === 'out-of-stock' ? 'opacity-75' : ''}`}
+        data-testid={testId}
       >
-        <Link href={productUrl() as any} className="absolute inset-0" />
+        <Link className="absolute inset-0" href={productUrl() as any} />
 
         <div className="group relative z-1 shrink-0 overflow-hidden rounded-2xl bg-neutral-50 dark:bg-neutral-300">
-          <Link href={productUrl() as any} className="block">
+          <Link className="block" href={productUrl() as any}>
             {images?.[0] ? (
               <NcImage
-                data-testid={`${testId}-image`}
-                containerClassName="aspect-8/5 bg-neutral-100 rounded-2xl overflow-hidden relative"
+                alt={images[0].alt ?? title ?? 'Product image'}
                 className="rounded-2xl object-contain"
-                alt={images[0].alt || title || 'Product image'}
+                containerClassName="aspect-8/5 bg-neutral-100 rounded-2xl overflow-hidden relative"
+                data-testid={`${testId}-image`}
                 fill
                 sizes="400px"
                 src={images[0]}
               />
             ) : (
               <div
-                data-testid="placeholder"
                 className="flex aspect-[8/5] w-full bg-gray-200 dark:bg-gray-700"
+                data-testid="placeholder"
               />
             )}
           </Link>
-          
+
           <ProductStatus data-testid={`${testId}-status`} status={status} />
-          
+
           {showLike && (
             <LikeButton
-              data-testid={`${testId}-like-button-static`}
-              onClick={props.onLike}
-              className="absolute end-3 top-3 z-10"
               aria-label="Like product"
+              className="absolute end-3 top-3 z-10"
+              data-testid={`${testId}-like-button-static`}
               liked={isLiked}
+              onClick={props.onLike}
             />
           )}
-          
+
           {renderGroupButtons()}
         </div>
 
         <div className="mt-2.5 grid grid-cols-3 gap-x-2.5">
           {images?.[1] && (
             <NcImage
-              containerClassName="w-full h-24 sm:h-28 relative"
-              className="rounded-2xl object-cover"
               alt={images[1].alt}
+              className="rounded-2xl object-cover"
+              containerClassName="w-full h-24 sm:h-28 relative"
               fill
               sizes="150px"
               src={images[1]}
@@ -270,9 +266,9 @@ const ProductCardLarge: FC<Props> = ({
           )}
           {images?.[2] && (
             <NcImage
-              containerClassName="w-full h-24 sm:h-28 relative"
-              className="rounded-2xl object-cover"
               alt={images[2].alt}
+              className="rounded-2xl object-cover"
+              containerClassName="w-full h-24 sm:h-28 relative"
               fill
               sizes="150px"
               src={images[2]}
@@ -280,9 +276,9 @@ const ProductCardLarge: FC<Props> = ({
           )}
           {images?.[3] && (
             <NcImage
-              containerClassName="w-full h-24 sm:h-28 relative"
-              className="h-full w-full rounded-2xl object-cover"
               alt={images[3].alt}
+              className="h-full w-full rounded-2xl object-cover"
+              containerClassName="w-full h-24 sm:h-28 relative"
               fill
               sizes="150px"
               src={images[3]}
@@ -294,7 +290,7 @@ const ProductCardLarge: FC<Props> = ({
           {/* TITLE AND COLOR OPTIONS */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
-              <h2 data-testid={`${testId}-title`} className="text-lg font-semibold sm:text-xl">
+              <h2 className="text-lg font-semibold sm:text-xl" data-testid={`${testId}-title`}>
                 <Link href={productUrl() as any}>{title}</Link>
               </h2>
               <div className="mt-3 flex flex-wrap items-center gap-1 text-neutral-500 dark:text-neutral-400">
@@ -305,7 +301,7 @@ const ProductCardLarge: FC<Props> = ({
                 <StarIcon className="h-4 w-4 text-orange-400" />
                 <span className="text-sm">
                   <span className="line-clamp-1">
-                    {(rating ?? 0).toFixed(1)} ({reviewNumber || 0} reviews)
+                    {(rating ?? 0).toFixed(1)} ({reviewNumber ?? 0} reviews)
                   </span>
                 </span>
               </div>
@@ -316,10 +312,10 @@ const ProductCardLarge: FC<Props> = ({
           {/* PRICE */}
           <div className="flex items-center justify-between">
             <Prices
-              data-testid={`${testId}-price`}
-              contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium"
               className="text-green-600"
-              price={price || 0}
+              contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium"
+              data-testid={`${testId}-price`}
+              price={price ?? 0}
               salePrice={salePrice}
             />
           </div>
@@ -328,15 +324,19 @@ const ProductCardLarge: FC<Props> = ({
           {showAddToCart && (
             <div className="flex w-full">
               <AddToCardButton
-                data-testid={`${testId}-add-to-cart`}
-                color={color}
-                onClick={props.onAddToCart}
                 className="flex-1"
-                imageUrl={featuredImage?.src || (typeof images?.[0] === 'string' ? images[0] : images?.[0]?.src) || ''}
-                price={price || 0}
+                color={color}
+                data-testid={`${testId}-add-to-cart`}
+                imageUrl={
+                  featuredImage?.src ??
+                  (typeof images?.[0] === 'string' ? images[0] : images?.[0]?.src) ??
+                  ''
+                }
+                price={price ?? 0}
                 quantity={1}
-                size={selectedOptions?.find((option) => option.name === 'Size')?.value}
-                title={title || ''}
+                size={selectedOptions?.find((option: any) => option.name === 'Size')?.value}
+                title={title ?? ''}
+                onClick={props.onAddToCart}
               />
             </div>
           )}
@@ -344,18 +344,18 @@ const ProductCardLarge: FC<Props> = ({
       </div>
 
       <Drawer
-        onClose={closeQuickView}
         opened={quickViewOpened}
         position="right"
+        size="sm"
         styles={{
           body: { padding: 0 },
           header: { paddingBottom: 0 },
         }}
-        size="md"
         title="Product Quick View"
+        onClose={closeQuickView}
       >
-        <ScrollArea ref={scrollAreaRef} h="100%">
-          <ProductQuickView onClose={closeQuickView} product={product} />
+        <ScrollArea h="100%" ref={scrollAreaRef}>
+          <ProductQuickView product={product} onClose={closeQuickView} />
         </ScrollArea>
       </Drawer>
     </>

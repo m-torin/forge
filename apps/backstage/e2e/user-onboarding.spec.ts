@@ -4,14 +4,14 @@ import { AppTestHelpers, PerformanceUtils, WaitUtils } from '@repo/testing/e2e';
 import { withPerformanceMonitoring } from './utils/performance-monitor';
 import { createVisualTester } from './utils/visual-testing';
 
-import type { AppTestConfig } from '@repo/testing/e2e';
+import { AppTestConfig } from '@repo/testing/e2e';
 
-test.describe('User Onboarding Workflow', () => {
+test.describe('User Onboarding Workflow', (_: any) => {
   let helpers: AppTestHelpers;
   let waitUtils: WaitUtils;
   let perfUtils: PerformanceUtils;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }: any) => {
     const config: AppTestConfig = {
       name: 'backstage',
       appDirectory: '/Users/torin/repos/new--/forge/apps/backstage',
@@ -23,7 +23,7 @@ test.describe('User Onboarding Workflow', () => {
     perfUtils = new PerformanceUtils(page);
   });
 
-  test('user onboarding page should load successfully', async ({ context, page }) => {
+  test('user onboarding page should load successfully', async ({ context, page }: any) => {
     const { report, result } = await withPerformanceMonitoring(
       page,
       context,
@@ -56,7 +56,7 @@ test.describe('User Onboarding Workflow', () => {
     });
   });
 
-  test('workflow configuration form should be interactive', async ({ page }) => {
+  test('workflow configuration form should be interactive', async ({ page }: any) => {
     await page.goto('/workflows/user-onboarding');
     await waitUtils.forNavigation();
 
@@ -78,7 +78,7 @@ test.describe('User Onboarding Workflow', () => {
     await expect(page.locator('[data-testid="referral-code-input"]')).toHaveValue('REF123456');
   });
 
-  test('start workflow button should be enabled with valid data', async ({ page }) => {
+  test('start workflow button should be enabled with valid data', async ({ page }: any) => {
     await page.goto('/workflows/user-onboarding');
     await waitUtils.forNavigation();
 
@@ -93,7 +93,7 @@ test.describe('User Onboarding Workflow', () => {
     await expect(page.locator('[data-testid="start-workflow-button"]')).toBeEnabled();
   });
 
-  test('workflow simulation should show progress', async ({ page }) => {
+  test('workflow simulation should show progress', async ({ page }: any) => {
     await page.goto('/workflows/user-onboarding');
     await waitUtils.forNavigation();
 
@@ -114,12 +114,14 @@ test.describe('User Onboarding Workflow', () => {
     await expect(page.locator('[data-testid="step-check-referral"]')).toBeVisible();
 
     // Wait for completion or timeout
-    await page.waitForSelector('[data-testid="success-alert"]', { timeout: 10000 }).catch(() => {
-      // It's ok if it doesn't complete, we're testing the UI interaction
-    });
+    await page
+      .waitForSelector('[data-testid="success-alert"]', { timeout: 10000 })
+      .catch((_: any) => {
+        // It's ok if it doesn't complete, we're testing the UI interaction
+      });
   });
 
-  test('reset workflow button should work', async ({ page }) => {
+  test('reset workflow button should work', async ({ page }: any) => {
     await page.goto('/workflows/user-onboarding');
     await waitUtils.forNavigation();
 
@@ -145,7 +147,7 @@ test.describe('User Onboarding Workflow', () => {
     // Check that progress value is low or reset
   });
 
-  test('workflow details should be displayed', async ({ page }) => {
+  test('workflow details should be displayed', async ({ page }: any) => {
     await page.goto('/workflows/user-onboarding');
     await waitUtils.forNavigation();
 
@@ -156,7 +158,7 @@ test.describe('User Onboarding Workflow', () => {
     await expect(page.locator('text=create-user-profile, create-workspace')).toBeVisible();
   });
 
-  test('visual regression testing', async ({ page }) => {
+  test('visual regression testing', async ({ page }: any) => {
     const visualTester = createVisualTester(page, 'user-onboarding');
 
     await page.goto('/workflows/user-onboarding');
@@ -169,7 +171,7 @@ test.describe('User Onboarding Workflow', () => {
     });
   });
 
-  test('responsive design', async ({ page }) => {
+  test('responsive design', async ({ page }: any) => {
     await page.goto('/workflows/user-onboarding');
     await waitUtils.forNavigation();
 
@@ -187,7 +189,7 @@ test.describe('User Onboarding Workflow', () => {
     }
   });
 
-  test('performance monitoring', async ({ page }) => {
+  test('performance monitoring', async ({ page }: any) => {
     await page.goto('/workflows/user-onboarding');
 
     // Measure page load performance

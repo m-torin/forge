@@ -544,14 +544,10 @@ export function RegistriesTable() {
               <Table.Tr>
                 <Table.Th style={{ width: rem(40) }}>
                   <Checkbox
-                    {...getSelectAllCheckboxProps(
-                      form.values.selectedRows,
-                      registries.map((r) => r.id),
-                    )}
+                    {...getSelectAllCheckboxProps(form.values, registries.length)}
                     onChange={(event) =>
                       toggleAllRows(
                         form,
-                        'selectedRows',
                         registries.map((r) => r.id),
                         event.currentTarget.checked,
                       )

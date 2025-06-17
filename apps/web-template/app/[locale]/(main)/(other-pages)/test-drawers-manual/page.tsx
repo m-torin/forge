@@ -1,10 +1,10 @@
-import { getProducts } from '@/data/data-service';
+import { getProducts } from '@/actions/products';
 import { Title, Stack, Alert, Text, Card } from '@mantine/core';
 
 export default async function TestDrawersManualPage() {
   // Get sample products for testing quick view
-  const products = await getProducts();
-  const sampleProducts = products.slice(0, 3);
+  const productsResult = await getProducts({ limit: 3 });
+  const sampleProducts = productsResult.data;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -137,8 +137,8 @@ export default async function TestDrawersManualPage() {
                 ✅ Product Quick View
               </Text>
               <Text color="dimmed" size="md">
-                Should fetch and display full product details from getProductDetailByHandle() when
-                quick view is clicked.
+                Should fetch and display full product details from getProductByHandle() when quick
+                view is clicked.
               </Text>
             </div>
           </Stack>
@@ -155,7 +155,7 @@ export default async function TestDrawersManualPage() {
             <li>Check browser console for errors</li>
             <li>
               Verify data fetching functions are working (getCart, getNavigation,
-              getProductDetailByHandle)
+              getProductByHandle)
             </li>
             <li>Ensure drawer components are properly imported</li>
             <li>Check if loading states are stuck</li>

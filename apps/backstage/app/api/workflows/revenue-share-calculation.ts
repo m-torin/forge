@@ -10,10 +10,10 @@ import {
   createStep,
   createStepWithValidation,
   createWorkflowStep,
-  withStepBulkhead,
   withStepMonitoring,
   withStepTimeout,
-} from '@repo/orchestration';
+  withStepCircuitBreaker,
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const RevenueShareInput = z.object({
@@ -138,9 +138,9 @@ async function calculateTransactionRevenue(
 
   const netAmount = transaction.amount.gross - transaction.amount.tax - transaction.amount.shipping;
   const calculations = {
-    adjustments: [],
+    adjustments: [] as any[],
     netAmount,
-    shares: {},
+    shares: {} as Record<string, any>,
     total: 0,
     transactionId: transaction.transactionId,
   };
@@ -329,12 +329,8 @@ export const collectRevenueTransactionsStep = compose(
     (input) => !!input.period.start && !!input.period.end,
     (output) => output.transactions.length > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 180000 }), // 3 minutes
-  (step) =>
-    withStepMonitoring(step, {
-      enableDetailedLogging: true,
-      metricsToTrack: ['periodDays'],
-    }),
+  (step: any) => withStepTimeout(step, 180000), // 3 minutes
+  (step: any) => withStepMonitoring(step),
 );
 
 // Mock transaction fetching functions
@@ -408,8 +404,8 @@ export const loadRevenueShareModelsStep = createStep('load-share-models', async 
   const { transactions } = data;
 
   // Extract unique entities
-  const merchants = new Set(transactions.map((t: any) => t.merchantId));
-  const affiliates = new Set(transactions.map((t: any) => t.affiliateId).filter(Boolean));
+  const merchants = new Set<string>(transactions.map((t: any) => t.merchantId));
+  const affiliates = new Set<string>(transactions.map((t: any) => t.affiliateId).filter(Boolean));
 
   // Load share models for all entities
   const shareModels = [];
@@ -553,10 +549,10 @@ export const calculateRevenueSharesStep = compose(
       revenueCalculations: allCalculations,
     };
   }),
-  (step) =>
-    withStepBulkhead(step, {
-      maxConcurrent: 10,
-      maxQueued: 50,
+  (step: any) =>
+    withStepCircuitBreaker(step, {
+      threshold: 5,
+      resetTimeout: 60000,
     }),
 );
 
@@ -1111,10 +1107,10 @@ export const generateRevenueShareReportStep = createStep('generate-report', asyn
 });
 
 function calculateDistributionByType(shares: Record<string, any>): any {
-  const distribution = { affiliate: 0, merchant: 0, platform: 0 };
+  const distribution: Record<string, number> = { affiliate: 0, merchant: 0, platform: 0 };
 
   Object.values(shares).forEach((share: any) => {
-    distribution[share.entityType as any] += share.totalAmount;
+    distribution[share.entityType] += share.totalAmount;
   });
 
   const total = Object.values(distribution).reduce((sum, amount) => sum + amount, 0);
@@ -1142,10 +1138,10 @@ function getTopRecipients(shares: Record<string, any>): any[] {
 }
 
 function analyzePayoutMethods(payouts: any[]): any {
-  const methods = { bank_transfer: 0, check: 0, paypal: 0, stripe: 0 };
+  const methods: Record<string, number> = { bank_transfer: 0, check: 0, paypal: 0, stripe: 0 };
 
   payouts.forEach((payout) => {
-    methods[payout.method as any as any] = (methods[payout.method] || 0) + 1;
+    methods[payout.method] = (methods[payout.method] || 0) + 1;
   });
 
   return methods;

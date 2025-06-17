@@ -13,7 +13,7 @@ import {
   withStepCircuitBreaker,
   withStepRetry,
   withStepTimeout,
-} from '@repo/orchestration';
+} from '@repo/orchestration/server/next';
 
 // Input schemas
 const SitemapParserInput = z.object({
@@ -34,7 +34,7 @@ const SitemapParserInput = z.object({
       maxDepth: z.number().min(1).max(5).default(3),
       maxUrlsPerSitemap: z.number().default(50000),
       respectRobotsTxt: z.boolean().default(true),
-      timeout: z.number().default(30000), // 30 seconds per sitemap
+      // timeout: z.number().default(30000), // 30 seconds per sitemap
       userAgent: z.string().default('BackstageBot/1.0 (+https://example.com/bot)'),
     })
     .optional(),
@@ -134,8 +134,8 @@ export const discoverSitemapsStep = compose(
     (input) => input.brands.length > 0,
     (output) => output.totalSitemapsFound > 0,
   ),
-  (step) => withStepTimeout(step, { execution: 60000 }),
-  (step) => withStepRetry(step, { maxAttempts: 2 }),
+  (step: any) => withStepTimeout(step, 60000),
+  (step: any) => withStepRetry(step, { maxRetries: 2 }),
 );
 
 // Step 2: Fetch and parse sitemaps
@@ -214,12 +214,11 @@ export const fetchAndParseSitemapsStep = compose(
       totalUrlsParsed: parsedSitemaps.reduce((sum, b) => sum + b.totalUrls, 0),
     };
   }),
-  (step) =>
+  (step: any) =>
     withStepCircuitBreaker(step, {
-      failureThreshold: 5,
+      threshold: 5,
       resetTimeout: 60000,
-      threshold: 0.5,
-      timeout: 10000,
+      // timeout: 10000,
     }),
 );
 
@@ -429,10 +428,10 @@ export const storeInDatabaseStep = compose(
     'store-sitemap-data',
     'Store parsed sitemap data in PostgreSQL via Prisma',
   ),
-  (step) =>
+  (step: any) =>
     withStepRetry(step, {
-      backoff: 'exponential',
-      maxAttempts: 3,
+      backoff: true,
+      maxRetries: 3,
     }),
 );
 
@@ -493,7 +492,7 @@ export const generateParsingReportStep = createStep('generate-report', async (da
 // Step 7: Schedule follow-up crawls
 export const scheduleFollowUpStep = StepTemplates.conditional(
   'schedule-followup',
-  'Schedule next sitemap crawl based on update frequency',
+  (input: any) => input.enableFollowUp === true && input.tracking?.updateFrequency !== 'never',
   {
     trueStep: createStep('create-schedule', async (data: any) => {
       const { discoveredSitemaps, tracking } = data;

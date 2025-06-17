@@ -785,7 +785,6 @@ export default function CollectionsPage() {
                     allowDeselect
                     description="Choose a parent collection for hierarchical organization"
                     leftSection={<IconFolder size={16} />}
-                    loading={loadingParents}
                     placeholder="Select parent collection"
                     clearable
                     data={[

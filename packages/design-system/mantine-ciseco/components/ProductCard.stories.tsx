@@ -1,6 +1,6 @@
-import ProductCard from './ProductCard';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import ProductCard from './ProductCard';
 
 const meta: Meta<typeof ProductCard> = {
   argTypes: {
@@ -19,7 +19,7 @@ const meta: Meta<typeof ProductCard> = {
   },
   component: ProductCard,
   decorators: [
-    (Story) => (
+    (Story: any) => (
       <div className="w-80">
         <Story />
       </div>
@@ -41,20 +41,20 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockProduct = {
-  id: 'gid://1',
   featuredImage: {
-    width: 400,
     alt: 'Classic Cotton T-Shirt',
     height: 500,
     src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=500&fit=crop',
+    width: 400,
   },
   handle: 'classic-cotton-t-shirt',
+  id: 'gid://1',
   images: [
     {
-      width: 400,
       alt: 'Classic Cotton T-Shirt',
       height: 500,
       src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=500&fit=crop',
+      width: 400,
     },
   ],
   options: [
@@ -63,25 +63,28 @@ const mockProduct = {
       optionValues: [
         {
           name: 'Blue',
-          swatch: { color: '#3B82F6', image: null },
+          swatch: { color: '#3B82F6', image: undefined },
+          value: 'blue',
         },
         {
           name: 'Red',
-          swatch: { color: '#EF4444', image: null },
+          swatch: { color: '#EF4444', image: undefined },
+          value: 'red',
         },
         {
           name: 'Green',
-          swatch: { color: '#10B981', image: null },
+          swatch: { color: '#10B981', image: undefined },
+          value: 'green',
         },
       ],
     },
     {
       name: 'Size',
       optionValues: [
-        { name: 'S', swatch: null },
-        { name: 'M', swatch: null },
-        { name: 'L', swatch: null },
-        { name: 'XL', swatch: null },
+        { name: 'S', swatch: undefined, value: 's' },
+        { name: 'M', swatch: undefined, value: 'm' },
+        { name: 'L', swatch: undefined, value: 'l' },
+        { name: 'XL', swatch: undefined, value: 'xl' },
       ],
     },
   ],
@@ -155,10 +158,10 @@ export const ExpensiveItem: Story = {
     data: {
       ...mockProduct,
       featuredImage: {
-        width: 400,
         alt: 'Premium Designer Jacket',
         height: 500,
         src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=500&fit=crop',
+        width: 400,
       },
       price: 299.99,
       status: 'limited edition',
@@ -175,9 +178,9 @@ export const NoColorOptions: Story = {
         {
           name: 'Size',
           optionValues: [
-            { name: 'S', swatch: null },
-            { name: 'M', swatch: null },
-            { name: 'L', swatch: null },
+            { name: 'S', swatch: undefined, value: 's' },
+            { name: 'M', swatch: undefined, value: 'm' },
+            { name: 'L', swatch: undefined, value: 'l' },
           ],
         },
       ],
@@ -194,14 +197,14 @@ export const ManyColors: Story = {
         {
           name: 'Color',
           optionValues: [
-            { name: 'Blue', swatch: { color: '#3B82F6', image: null } },
-            { name: 'Red', swatch: { color: '#EF4444', image: null } },
-            { name: 'Green', swatch: { color: '#10B981', image: null } },
-            { name: 'Purple', swatch: { color: '#8B5CF6', image: null } },
-            { name: 'Pink', swatch: { color: '#EC4899', image: null } },
-            { name: 'Yellow', swatch: { color: '#F59E0B', image: null } },
-            { name: 'Black', swatch: { color: '#1F2937', image: null } },
-            { name: 'White', swatch: { color: '#F9FAFB', image: null } },
+            { name: 'Blue', swatch: { color: '#3B82F6', image: undefined }, value: 'blue' },
+            { name: 'Red', swatch: { color: '#EF4444', image: undefined }, value: 'red' },
+            { name: 'Green', swatch: { color: '#10B981', image: undefined }, value: 'green' },
+            { name: 'Purple', swatch: { color: '#8B5CF6', image: undefined }, value: 'purple' },
+            { name: 'Pink', swatch: { color: '#EC4899', image: undefined }, value: 'pink' },
+            { name: 'Yellow', swatch: { color: '#F59E0B', image: undefined }, value: 'yellow' },
+            { name: 'Black', swatch: { color: '#1F2937', image: undefined }, value: 'black' },
+            { name: 'White', swatch: { color: '#F9FAFB', image: undefined }, value: 'white' },
           ],
         },
       ],
@@ -274,16 +277,16 @@ export const ProductGrid: Story = {
           rating: 4.1,
           title: 'Casual Shirt',
         },
-      ].map((product) => (
+      ].map((product: any) => (
         <ProductCard
           key={product.id}
           data={{
             ...product,
             featuredImage: {
-              width: 400,
               alt: product.title,
               height: 500,
               src: `https://images.unsplash.com/${product.image}?w=400&h=500&fit=crop`,
+              width: 400,
             },
           }}
           isLiked={Math.random() > 0.5}
@@ -296,9 +299,9 @@ export const ProductGrid: Story = {
 export const DifferentStatuses: Story = {
   render: () => (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl">
-      {['New in', '50% Discount', 'Best Seller', 'Sold Out'].map((status, index) => (
+      {['New in', '50% Discount', 'Best Seller', 'Sold Out'].map((status, index: any) => (
         <ProductCard
-          key={index}
+          key={status}
           data={{
             ...mockProduct,
             id: `status-${index}`,
@@ -314,9 +317,9 @@ export const DifferentStatuses: Story = {
 export const PriceRange: Story = {
   render: () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl">
-      {[19.99, 49.99, 99.99, 299.99].map((price, index) => (
+      {[19.99, 49.99, 99.99, 299.99].map((price, index: any) => (
         <ProductCard
-          key={index}
+          key={price}
           data={{
             ...mockProduct,
             id: `price-${index}`,

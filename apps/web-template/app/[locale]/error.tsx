@@ -33,31 +33,22 @@ export default function Error({
             />
           </svg>
         </div>
-        
+
         <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
           Oops! Something went wrong
         </h2>
-        
+
         <p className="mb-8 text-gray-600 dark:text-gray-400">
-          We encountered an error while loading this page. 
-          Don&apos;t worry, you can try again or go back to the homepage.
+          We encountered an error while loading this page. Don&apos;t worry, you can try again or go
+          back to the homepage.
         </p>
-        
+
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-          <Button
-            onClick={reset}
-            size="md"
-            variant="filled"
-          >
+          <Button onClick={reset} size="md" variant="filled">
             Try again
           </Button>
-          
-          <Button
-            component="a"
-            href="/"
-            size="md"
-            variant="light"
-          >
+
+          <Button component="a" href="/" size="md" variant="light">
             Go home
           </Button>
         </div>

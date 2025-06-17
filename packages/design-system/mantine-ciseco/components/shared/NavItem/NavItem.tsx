@@ -1,6 +1,6 @@
 import React, { type FC, type ReactNode } from 'react';
 
-export interface NavItemProps {
+export interface NavItemProps extends Record<string, any> {
   children?: React.ReactNode;
   className?: string;
   isActive?: boolean;
@@ -21,14 +21,14 @@ const NavItem: FC<NavItemProps> = ({
     <li className="relative">
       {renderX && renderX}
       <button
-        onClick={() => {
-          onClick && onClick();
-        }}
         className={`block leading-none! font-medium whitespace-nowrap ${className} ${radius} ${
           isActive
             ? 'bg-neutral-900 text-neutral-100 dark:bg-neutral-100 dark:text-neutral-900'
             : 'text-neutral-500 hover:bg-neutral-100/75 hover:text-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
         }`}
+        onClick={() => {
+          onClick?.();
+        }}
       >
         {children}
       </button>

@@ -2,9 +2,8 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { UpstashWorkflowProvider } from '../../src/providers/upstash-workflow/provider';
 import { createAdvancedScheduler } from '../../src/shared/features/scheduler';
+import { ScheduleConfig } from '../../src/shared/types/index';
 import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
-
-import type { ScheduleConfig } from '../../src/shared/types/index';
 
 // Extended type for testing with additional tracking properties
 interface ScheduledExecution {
@@ -22,7 +21,7 @@ interface ScheduledExecution {
 // Create alias for backward compatibility with tests
 const createSchedulingService = createAdvancedScheduler;
 
-describe('Scheduling Service', () => {
+describe('Scheduling Service', (_: any) => {
   let mocks: ReturnType<typeof setupUpstashMocks>;
   let provider: UpstashWorkflowProvider;
   let schedulingService: ReturnType<typeof createSchedulingService>;
@@ -35,10 +34,7 @@ describe('Scheduling Service', () => {
       qstash: {
         token: 'test-qstash-token',
       },
-      redis: {
-        url: 'https://test-redis.upstash.io',
-        token: 'test-redis-token',
-      },
+      enableRedis: true,
     });
 
     schedulingService = createSchedulingService(provider);
@@ -48,7 +44,7 @@ describe('Scheduling Service', () => {
     resetUpstashMocks(mocks);
   });
 
-  describe('Schedule Creation', () => {
+  describe('Schedule Creation', (_: any) => {
     test.skip('should create simple cron schedule', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '0 9 * * *', // Daily at 9 AM
@@ -145,7 +141,7 @@ describe('Scheduling Service', () => {
     });
   });
 
-  describe('Schedule Management', () => {
+  describe('Schedule Management', (_: any) => {
     test.skip('should update existing schedule', async () => {
       const originalConfig: ScheduleConfig = {
         cron: '0 2 * * *', // 2 AM daily
@@ -256,12 +252,12 @@ describe('Scheduling Service', () => {
       const schedules = await schedulingService.listSchedules();
 
       expect(schedules).toHaveLength(2);
-      expect(schedules.map((s) => s.workflowId)).toContain('job-1');
-      expect(schedules.map((s) => s.workflowId)).toContain('job-2');
+      expect(schedules.map((s: any) => s.workflowId)).toContain('job-1');
+      expect(schedules.map((s: any) => s.workflowId)).toContain('job-2');
     });
   });
 
-  describe('Schedule Execution', () => {
+  describe('Schedule Execution', (_: any) => {
     test.skip('should trigger schedule manually', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '0 9 * * *',
@@ -328,7 +324,7 @@ describe('Scheduling Service', () => {
     });
   });
 
-  describe('Schedule History', () => {
+  describe('Schedule History', (_: any) => {
     test.skip('should track execution history', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '*/5 * * * *', // Every 5 minutes
@@ -434,7 +430,7 @@ describe('Scheduling Service', () => {
     });
   });
 
-  describe('Complex Scheduling Scenarios', () => {
+  describe('Complex Scheduling Scenarios', (_: any) => {
     test.skip('should handle overlapping schedule conflicts', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '*/10 * * * *', // Every 10 minutes
@@ -528,21 +524,21 @@ describe('Scheduling Service', () => {
 
       // Should be able to manage schedules as a group
       expect(schedules).toHaveLength(3);
-      schedules.forEach((scheduleId) => {
+      schedules.forEach((scheduleId: any) => {
         expect(scheduleId).toBeDefined();
       });
     });
   });
 
-  describe('Error Handling and Resilience', () => {
+  describe('Error Handling and Resilience', (_: any) => {
     test.skip('should handle QStash errors gracefully', async () => {
       mocks.qstash.schedules.create.mockRejectedValue(new Error('QStash service unavailable'));
 
-      const scheduleConfig: ScheduleConfig = {
+      const scheduleConfig = {
         cron: '0 * * * *',
         timezone: 'UTC',
         workflowId: 'error-test',
-      };
+      } satisfies ScheduleConfig;
 
       await expect(
         schedulingService.createSchedule(
@@ -553,11 +549,11 @@ describe('Scheduling Service', () => {
     });
 
     test.skip('should handle invalid cron expressions', async () => {
-      const invalidScheduleConfig: ScheduleConfig = {
+      const invalidScheduleConfig = {
         cron: 'invalid-cron-expression',
         timezone: 'UTC',
         workflowId: 'invalid-cron',
-      };
+      } satisfies ScheduleConfig;
 
       await expect(
         schedulingService.createSchedule(
@@ -575,11 +571,11 @@ describe('Scheduling Service', () => {
     });
 
     test.skip('should handle timezone errors', async () => {
-      const invalidTimezoneConfig: ScheduleConfig = {
+      const invalidTimezoneConfig = {
         cron: '0 9 * * *',
         timezone: 'Invalid/Timezone',
         workflowId: 'invalid-timezone',
-      };
+      } satisfies ScheduleConfig;
 
       // Should either throw an error or default to UTC
       await expect(

@@ -1,6 +1,6 @@
-import CollectionCard3 from './CollectionCard3';
+import { Meta, StoryObj } from '@storybook/react';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import CollectionCard3 from './CollectionCard3';
 
 const meta: Meta<typeof CollectionCard3> = {
   argTypes: {
@@ -30,16 +30,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockCollection = {
-  id: 'gid://1',
   color: 'bg-indigo-50',
   count: 77,
   description: 'Discover the latest trends in fashion',
   handle: 'new-arrivals',
+  id: 'gid://1',
   image: {
-    width: 400,
     alt: 'New arrivals collection',
     height: 400,
     src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+    width: 400,
   },
   sortDescription: 'Fresh styles for the modern wardrobe',
   title: 'New Arrivals',
@@ -57,10 +57,10 @@ export const SummerCollection: Story = {
       ...mockCollection,
       color: 'bg-yellow-50',
       image: {
-        width: 400,
         alt: 'Summer collection',
         height: 400,
         src: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
+        width: 400,
       },
       sortDescription: 'Beat the heat with our cool collection',
       title: 'Summer Essentials',
@@ -74,10 +74,10 @@ export const WinterCollection: Story = {
       ...mockCollection,
       color: 'bg-blue-50',
       image: {
-        width: 400,
         alt: 'Winter collection',
         height: 400,
         src: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=400&fit=crop',
+        width: 400,
       },
       sortDescription: 'Stay cozy with our winter essentials',
       title: 'Winter Warmth',
@@ -117,7 +117,7 @@ export const NoHandle: Story = {
   args: {
     collection: {
       ...mockCollection,
-      handle: undefined,
+      handle: '',
     },
   },
 };
@@ -181,18 +181,18 @@ export const Grid: Story = {
           image: 'photo-1521572163474-6864f9cf17ab',
           title: 'Weekend Vibes',
         },
-      ].map((item, index) => (
+      ].map((item, index: any) => (
         <CollectionCard3
-          key={index}
+          key={item.title}
           collection={{
-            id: `gid://${index}`,
             color: item.color,
             handle: item.title.toLowerCase().replace(' ', '-'),
+            id: `gid://${index}`,
             image: {
-              width: 400,
               alt: item.title,
               height: 400,
               src: `https://images.unsplash.com/${item.image}?w=400&h=400&fit=crop`,
+              width: 400,
             },
             sortDescription: item.desc,
             title: item.title,

@@ -6,28 +6,8 @@ import Link from 'next/link';
 import { createMetadata } from '@repo/seo/server/next';
 
 import { Breadcrumb, ButtonPrimary, Input, Label, NcInputNumber, Prices } from '@/components/ui';
-import { getCart } from '@/data/data-service';
-
-// Define cart product type for checkout
-type TCardProduct = {
-  id: string;
-  name: string;
-  title?: string;
-  handle?: string;
-  quantity: number;
-  price: number;
-  compareAtPrice?: number;
-  image?: {
-    src: string;
-    alt?: string;
-  };
-  featuredImage?: {
-    src: string;
-    alt?: string;
-  };
-  color?: string;
-  size?: string;
-};
+import { getCart } from '@/actions/cart';
+import type { TCartItem } from '@/types/cart';
 
 import LeftSide from './LeftSide';
 
@@ -61,22 +41,22 @@ const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
   const _dict = await getDictionary(params.locale);
   const cart = await getCart();
 
-  const renderProduct = (product: TCardProduct) => {
-    const { id, name, color, handle, image, price, quantity, size } = product;
+  const renderProduct = (item: TCartItem) => {
+    const { id, quantity, price, product, variant } = item;
 
     return (
       <div key={id} className="relative flex py-8 first:pt-0 last:pb-0 sm:py-10 xl:py-12">
         <div className="relative h-36 w-24 shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:w-32">
-          {image?.src && (
+          {product.image && (
             <Image
               className="object-contain object-center"
-              alt={image.alt || ''}
+              alt={product.name}
               fill
               sizes="300px"
-              src={image.src}
+              src={product.image}
             />
           )}
-          <Link href={`/products/${handle}`} className="absolute inset-0" />
+          <Link href={`/products/${product.slug}`} className="absolute inset-0" />
         </div>
 
         <div className="ml-3 flex flex-1 flex-col sm:ml-6">
@@ -84,19 +64,21 @@ const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
             <div className="flex justify-between">
               <div className="flex-[1.5]">
                 <h3 className="text-base font-semibold">
-                  <Link href={`/products/${handle}`}>{name}</Link>
+                  <Link href={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
-                <div className="mt-1.5 flex text-sm text-neutral-600 sm:mt-2.5 dark:text-neutral-300">
-                  <div className="flex items-center gap-x-2">
-                    <IconPaint stroke={1.5} size={16} />
-                    <span>{color}</span>
+                {variant && (
+                  <div className="mt-1.5 flex text-sm text-neutral-600 sm:mt-2.5 dark:text-neutral-300">
+                    <div className="flex items-center gap-x-2">
+                      <IconPaint stroke={1.5} size={16} />
+                      <span>{variant.name}</span>
+                    </div>
+                    <span className="mx-4 border-l border-neutral-200 dark:border-neutral-700" />
+                    <div className="flex items-center gap-x-2">
+                      <IconMapPin stroke={1.5} size={16} />
+                      <span>{variant.sku}</span>
+                    </div>
                   </div>
-                  <span className="mx-4 border-l border-neutral-200 dark:border-neutral-700" />
-                  <div className="flex items-center gap-x-2">
-                    <IconMapPin stroke={1.5} size={16} />
-                    <span>{size}</span>
-                  </div>
-                </div>
+                )}
 
                 <div className="relative mt-3 flex w-full justify-between sm:hidden">
                   <select
@@ -165,7 +147,7 @@ const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
           <div className="w-full lg:w-[36%]">
             <h3 className="text-lg font-semibold">Order summary</h3>
             <div className="mt-8 divide-y divide-neutral-200/70 dark:divide-neutral-700">
-              {cart?.lines.map(renderProduct)}
+              {cart?.items.map(renderProduct)}
             </div>
 
             <div className="mt-10 border-t border-neutral-200/70 pt-6 text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
@@ -182,22 +164,22 @@ const CheckoutPage = async ({ params }: { params: { locale: string } }) => {
               <div className="mt-4 flex justify-between py-2.5">
                 <span>Subtotal</span>
                 <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                  ${cart?.cost.subtotalAmount.amount || '0.00'}
+                  ${cart?.subtotal.toFixed(2) || '0.00'}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Shipping estimate</span>
-                <span className="font-semibold text-neutral-900 dark:text-neutral-200">$0.00</span>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-200">$10.00</span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Tax estimate</span>
                 <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                  ${cart?.cost.totalTaxAmount?.amount || '0.00'}
+                  ${(cart?.subtotal * 0.08).toFixed(2) || '0.00'}
                 </span>
               </div>
               <div className="flex justify-between pt-4 text-base font-semibold text-neutral-900 dark:text-neutral-200">
                 <span>Order total</span>
-                <span>${cart?.cost.totalAmount.amount || '0.00'}</span>
+                <span>${(cart?.subtotal + 10 + cart?.subtotal * 0.08).toFixed(2) || '0.00'}</span>
               </div>
             </div>
             <ButtonPrimary href="/order-successful" className="mt-8 w-full">

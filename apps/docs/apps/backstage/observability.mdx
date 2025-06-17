@@ -1,0 +1,282 @@
+---
+title: 'Observability & Sentry Integration'
+description: 'Comprehensive monitoring, error tracking, and performance insights with Sentry'
+icon: 'chart-line'
+---
+
+## Overview
+
+The backstage app uses the `@repo/observability` package to provide comprehensive monitoring, error
+tracking, and performance insights through Sentry integration.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Error Tracking" icon="bug">
+    Automatic capture of exceptions and errors with detailed stack traces
+  </Card>
+  <Card title="Performance Monitoring" icon="gauge">
+    Transaction and span tracking for API calls and user interactions
+  </Card>
+  <Card title="Session Replay" icon="video">
+    Record user sessions for debugging (production only)
+  </Card>
+  <Card title="Error Boundaries" icon="shield">
+    React error boundaries to catch and report UI errors
+  </Card>
+</CardGroup>
+
+## Configuration
+
+### Environment Variables
+
+Add these to your `.env.local` file:
+
+```bash
+# Client-side Sentry DSN (public)
+NEXT_PUBLIC_SENTRY_DSN=https://your-key@sentry.io/project-id
+
+# Server-side Sentry configuration
+SENTRY_DSN=https://your-key@sentry.io/project-id
+SENTRY_ORG=your-organization
+SENTRY_PROJECT=your-project
+SENTRY_AUTH_TOKEN=your-auth-token
+```
+
+### Next.js Configuration
+
+The `next.config.ts` is configured with Sentry:
+
+```typescript
+import { withObservability } from '@repo/observability/server/next';
+
+export default withObservability(nextConfig, {
+  sentry: {
+    org: env.SENTRY_ORG,
+    project: env.SENTRY_PROJECT,
+    silent: !process.env.CI,
+    tunnelRoute: '/monitoring',
+    automaticVercelMonitors: true,
+  },
+});
+```
+
+## Usage
+
+### Client-Side Error Tracking
+
+Use the `useObservability` hook in components:
+
+```typescript
+import { useObservability } from '@repo/observability/client/next';
+
+function MyComponent() {
+  const observability = useObservability();
+
+  const handleError = (error: Error) => {
+    observability?.captureException(error, {
+      tags: { component: 'MyComponent' },
+      extra: { timestamp: Date.now() },
+    });
+  };
+
+  return (
+    <button onClick={() => {
+      try {
+        // Some operation that might fail
+        riskyOperation();
+      } catch (error) {
+        handleError(error);
+      }
+    }}>
+      Click me
+    </button>
+  );
+}
+```
+
+### Server-Side Error Tracking
+
+In API routes and server components:
+
+```typescript
+import { createServerObservability } from '@repo/observability/server/next';
+
+export async function GET(request: Request) {
+  const observability = await createServerObservability();
+  const transaction = observability.startTransaction('api_request');
+
+  try {
+    // Your API logic
+    const result = await performOperation();
+    transaction?.setStatus('ok');
+    return Response.json(result);
+  } catch (error) {
+    transaction?.setStatus('internal_error');
+    observability.captureException(error as Error);
+    throw error;
+  } finally {
+    transaction?.finish();
+  }
+}
+```
+
+### Performance Monitoring
+
+Track specific operations:
+
+```typescript
+import { usePerformanceTracking } from '@/app/components/performance-monitor';
+
+function MyComponent() {
+  const { trackOperation } = usePerformanceTracking('user_action');
+
+  const handleClick = async () => {
+    await trackOperation(
+      async () => {
+        // Your operation
+        await expensiveOperation();
+      },
+      {
+        description: 'User clicked button',
+        tags: { action: 'button_click' },
+      }
+    );
+  };
+
+  return <button onClick={handleClick}>Perform Action</button>;
+}
+```
+
+### Error Boundaries
+
+The app uses error boundaries to catch React errors:
+
+```typescript
+import { ErrorBoundary } from '@/app/components/error-boundary';
+
+export default function Layout({ children }) {
+  return (
+    <ErrorBoundary>
+      {children}
+    </ErrorBoundary>
+  );
+}
+```
+
+## Components
+
+### ObservabilityProvider
+
+Configured in the root layout (`app/layout.tsx`) to provide observability context throughout the
+app.
+
+### PerformanceMonitor
+
+Automatically tracks page navigations and renders. Added to the authenticated layout.
+
+### ErrorBoundary
+
+Catches React errors and reports them to Sentry. Provides user-friendly error UI.
+
+## API Integration
+
+All API routes can use observability for tracking:
+
+<Steps>
+  <Step title="Import Server Observability">
+    Import `createServerObservability` from the observability package
+  </Step>
+  <Step title="Create Transaction">
+    Create a transaction for the request to group related operations
+  </Step>
+  <Step title="Set Status and Data">
+    Set appropriate status and include relevant data in the transaction
+  </Step>
+  <Step title="Capture Exceptions">
+    Capture exceptions in catch blocks with contextual information
+  </Step>
+  <Step title="Finish Transaction">
+    Always finish the transaction in finally block for proper cleanup
+  </Step>
+</Steps>
+
+## Best Practices
+
+<Tip>
+  **Tag Errors Appropriately**: Use meaningful tags to categorize errors for easier filtering and
+  analysis.
+</Tip>
+
+<Tip>**Add Context**: Include relevant data in error reports to help with debugging.</Tip>
+
+<Tip>
+  **Track Key Operations**: Monitor important user actions and API calls that impact user
+  experience.
+</Tip>
+
+<Tip>
+  **Use Transactions**: Group related operations into transactions for better performance insights.
+</Tip>
+
+<Tip>
+  **Set User Context**: Associate errors with user sessions when applicable for better debugging.
+</Tip>
+
+## Development vs Production
+
+| Environment     | Configuration                                |
+| --------------- | -------------------------------------------- |
+| **Development** | Minimal sampling, debug mode enabled         |
+| **Production**  | 10% session replay, 10% transaction sampling |
+| **Source Maps** | Only uploaded in production builds           |
+
+## Monitoring Dashboard
+
+View your application's health in the Sentry dashboard:
+
+<CardGroup cols={2}>
+  <Card title="Error Rates" icon="chart-line">
+    Monitor error trends and spikes over time
+  </Card>
+  <Card title="Performance Metrics" icon="gauge">
+    Track response times and throughput
+  </Card>
+  <Card title="Session Replays" icon="video">
+    Watch user sessions to understand issues
+  </Card>
+  <Card title="Release Tracking" icon="rocket">
+    Monitor deployments and their impact
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+If Sentry is not working:
+
+<AccordionGroup>
+  <Accordion title="Check Environment Variables">
+    Verify that all required environment variables are set correctly in your `.env.local` file
+  </Accordion>
+
+<Accordion title="Verify DSN Format">
+  Ensure the DSN format follows the pattern: `https://key@sentry.io/project-id`
+</Accordion>
+
+<Accordion title="Check Instrumentation">
+  Verify `instrumentation.ts` exists in the project root and is properly configured
+</Accordion>
+
+<Accordion title="Browser Console">
+  Check browser console for Sentry initialization errors or warnings
+</Accordion>
+
+  <Accordion title="Network Requests">
+    Verify network requests to Sentry are not blocked by ad blockers or firewalls
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Make sure your Sentry project has sufficient quota for the expected volume of events and session
+  replays.
+</Warning>

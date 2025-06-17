@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-describe('Storage Keys Configuration', () => {
+describe('Storage Keys Configuration', (_: any) => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe('Storage Keys Configuration', () => {
     process.env = originalEnv;
   });
 
-  describe('environment configuration behavior', () => {
+  describe('environment configuration behavior', (_: any) => {
     it('should handle Vercel Blob configuration in production', async () => {
       process.env.NODE_ENV = 'production';
       process.env.STORAGE_PROVIDER = 'vercel-blob';
@@ -47,7 +47,7 @@ describe('Storage Keys Configuration', () => {
     });
   });
 
-  describe('development environment', () => {
+  describe('development environment', (_: any) => {
     it('should handle development environment gracefully', async () => {
       process.env.NODE_ENV = 'development';
       process.env.STORAGE_PROVIDER = 'vercel-blob';
@@ -79,7 +79,7 @@ describe('Storage Keys Configuration', () => {
     });
   });
 
-  describe('function behavior', () => {
+  describe('function behavior', (_: any) => {
     it('should return a function', async () => {
       const { keys } = await import('../keys');
       expect(typeof keys).toBe('function');
