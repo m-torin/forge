@@ -219,6 +219,10 @@ describe('upstashWorkflowProvider', (_: any) => {
         member: testExecution.id,
       });
 
+      // Debug: log references
+      // eslint-disable-next-line no-console
+      console.log('mocks.redis === provider.redisClient', mocks.redis === provider.redisClient);
+
       // Double-check: get returns the value
       const raw = await mocks.redis.get(`workflow:execution:${testExecution.id}`);
       expect(raw).toBeDefined();
